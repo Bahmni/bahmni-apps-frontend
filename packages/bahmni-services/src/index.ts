@@ -144,7 +144,8 @@ export {
 } from './medicationRequestService';
 export {
   getPatientRadiologyInvestigations,
-  type RadiologyInvestigation,
+  getPatientRadiologyInvestigationBundle,
+  getPatientRadiologyInvestigationBundleWithImagingStudy,
 } from './radiologyInvestigationService';
 export {
   getPatientLabInvestigations,
@@ -157,6 +158,7 @@ export {
 export {
   getFlattenedInvestigations,
   getOrderTypes,
+  getCategoryUuidFromOrderTypes,
   type FlattenedInvestigations,
   type OrderType,
   type OrderTypeResponse,

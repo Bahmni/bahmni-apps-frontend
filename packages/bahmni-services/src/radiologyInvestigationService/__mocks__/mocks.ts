@@ -1,11 +1,11 @@
-import { Bundle, ServiceRequest } from 'fhir/r4';
-import { RadiologyInvestigation } from '../models';
+import { Bundle, ServiceRequest, ImagingStudy } from 'fhir/r4';
 
 // Mock patient UUID
 export const mockPatientUUID = 'c81876c3-b464-486a-9ebf-20eea9431fb1';
+export const mockPatientIdentifier = 'PA000001';
 
 // Mock FHIR radiology investigations based on real FHIR data structure
-export const mockFhirRadiologyTests: ServiceRequest[] = [
+export const mockRadiologyInvestigations: ServiceRequest[] = [
   // Replacing entry (status: unknown) - from original FHIR data
   {
     resourceType: 'ServiceRequest',
@@ -201,213 +201,135 @@ export const mockFhirRadiologyTests: ServiceRequest[] = [
   },
 ];
 
-// Additional test scenarios
-export const mockRadiologyTestBasic: ServiceRequest = {
-  resourceType: 'ServiceRequest',
-  id: 'order-1',
-  status: 'active',
-  intent: 'order',
-  subject: { reference: `Patient/${mockPatientUUID}` },
-  code: {
-    text: 'Chest X-Ray',
-  },
-  priority: 'urgent',
-  requester: {
-    display: 'Dr. Smith',
-  },
-  occurrencePeriod: {
-    start: '2023-10-15T10:30:00.000Z',
-  },
-};
-
-export const mockRadiologyTestWithMultipleReplaces: ServiceRequest = {
-  resourceType: 'ServiceRequest',
-  id: 'order-new',
-  status: 'active',
-  intent: 'order',
-  subject: { reference: `Patient/${mockPatientUUID}` },
-  code: {
-    text: 'Updated X-Ray',
-  },
-  priority: 'urgent',
-  requester: {
-    display: 'Dr. Smith',
-  },
-  occurrencePeriod: {
-    start: '2023-10-15T10:30:00.000Z',
-  },
-  replaces: [
-    {
-      reference: 'ServiceRequest/order-1',
-      type: 'ServiceRequest',
-    },
-    {
-      reference: 'ServiceRequest/order-2',
-      type: 'ServiceRequest',
-    },
-  ],
-};
-
-export const mockRadiologyTestWithEmptyReplaces: ServiceRequest = {
-  resourceType: 'ServiceRequest',
-  id: 'order-1',
-  status: 'active',
-  intent: 'order',
-  subject: { reference: `Patient/${mockPatientUUID}` },
-  code: {
-    text: 'X-Ray',
-  },
-  priority: 'urgent',
-  requester: {
-    display: 'Dr. Smith',
-  },
-  occurrencePeriod: {
-    start: '2023-10-15T10:30:00.000Z',
-  },
-  replaces: [
-    {
-      reference: '',
-      type: 'ServiceRequest',
-    },
-  ],
-};
-
 // Mock FHIR Bundle
-export const mockFhirRadiologyBundle: Bundle = {
+export const mockRadiologyInvestigationBundle: Bundle = {
   resourceType: 'Bundle',
   id: '6f97eba3-a4be-46fb-b94a-aa00179abce2',
   meta: {
     lastUpdated: '2025-06-13T08:50:36.091+00:00',
   },
   type: 'searchset',
-  total: mockFhirRadiologyTests.length,
+  total: mockRadiologyInvestigations.length,
   link: [
     {
       relation: 'self',
       url: `http://localhost/openmrs/ws/fhir2/R4/ServiceRequest?_count=100&_sort=-_lastUpdated&category=d3561dc0-5e07-11ef-8f7c-0242ac120002&numberOfVisits=5&patient=${mockPatientUUID}`,
     },
   ],
-  entry: mockFhirRadiologyTests.map((resource) => ({
+  entry: mockRadiologyInvestigations.map((resource) => ({
     fullUrl: `http://localhost/openmrs/ws/fhir2/R4/ServiceRequest/${resource.id}`,
     resource,
   })),
 };
 
-// Mock formatted radiology investigations
-export const mockFormattedRadiologyInvestigations: RadiologyInvestigation[] = [
+export const mockEmptyRadiologyInvestigationBundle: Bundle = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  total: 0,
+  entry: [],
+};
+
+export const mockMalformedBundle: Bundle = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  total: 1,
+  entry: [
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/test-id',
+      resource: {
+        resourceType: 'Observation',
+        id: 'test-id',
+        status: 'final',
+      } as unknown as ServiceRequest,
+    },
+  ],
+};
+
+export const mockImagingStudies: ImagingStudy[] = [
   {
-    id: '207172a2-27e3-4fef-bea2-85fb826575e4',
-    testName: 'Magnetic resonance imaging of thoracolumbar spine',
-    priority: 'routine',
-    orderedBy: 'Super Man',
-    orderedDate: '2025-06-13T08:48:15+00:00',
-    replaces: ['271f2b4f-a239-418b-ba9e-f23014093df3'],
+    resourceType: 'ImagingStudy',
+    id: '25bac216-9128-46b9-b9c9-3b8572182cd4',
+    identifier: [
+      {
+        system: 'urn:dicom:uid',
+        value: '1.2.826.0.1.3680043.8.498.1767598841000.75467815',
+      },
+    ],
+    status: 'unknown',
+    subject: {
+      reference: `Patient/${mockPatientUUID}`,
+      type: 'Patient',
+      display: `Micheal James Anderson (Patient Identifier: ${mockPatientIdentifier})`,
+    },
+    basedOn: [
+      {
+        reference: 'ServiceRequest/207172a2-27e3-4fef-bea2-85fb826575e4',
+        type: 'ServiceRequest',
+      },
+    ],
+    location: {
+      reference: 'Location/72636eba-29bf-4d6c-97c4-4b04d87a95b5',
+      type: 'Location',
+      display: 'Bahmni Hospital',
+    },
+    description:
+      'Imaging Study for Magnetic resonance imaging of thoracolumbar spine',
   },
   {
-    id: '271f2b4f-a239-418b-ba9e-f23014093df3',
-    testName: 'Magnetic resonance imaging of thoracolumbar spine',
-    priority: 'routine',
-    orderedBy: 'Super Man',
-    orderedDate: '2025-06-13T08:47:58+00:00',
-  },
-  {
-    id: '9c847638-295b-4e3e-933d-47d5cad34faf',
-    testName: 'X-ray of chest, 2 views and apical lordotic',
-    priority: 'routine',
-    orderedBy: 'Super Man',
-    orderedDate: '2025-06-13T06:24:20+00:00',
+    resourceType: 'ImagingStudy',
+    id: '5bdfd8bf-b882-491a-9d83-5c0cb16a7a18',
+    identifier: [
+      {
+        system: 'urn:dicom:uid',
+        value: '1.2.826.0.1.3680043.8.498.1767598420000.75467814',
+      },
+    ],
+    status: 'unknown',
+    subject: {
+      reference: `Patient/${mockPatientUUID}`,
+      type: 'Patient',
+      display: `Micheal James Anderson (Patient Identifier: ${mockPatientIdentifier})`,
+    },
+    basedOn: [
+      {
+        reference: 'ServiceRequest/9c847638-295b-4e3e-933d-47d5cad34faf',
+        type: 'ServiceRequest',
+      },
+    ],
+    location: {
+      reference: 'Location/72636eba-29bf-4d6c-97c4-4b04d87a95b5',
+      type: 'Location',
+      display: 'Bahmni Hospital',
+    },
+    description:
+      'Imaging Study for X-ray of chest, 2 views and apical lordotic',
   },
 ];
 
-// Mock test data for utility tests
-export const mockRadiologyInvestigationWithReplaces: RadiologyInvestigation = {
-  id: '207172a2-27e3-4fef-bea2-85fb826575e4',
-  testName: 'MRI - Replacing',
-  priority: 'routine',
-  orderedBy: 'Dr. Test',
-  orderedDate: '2023-01-01',
-  replaces: ['271f2b4f-a239-418b-ba9e-f23014093df3'],
+export const mockRadiologyInvestigationBundleWithImagingStudy: Bundle<
+  ServiceRequest | ImagingStudy
+> = {
+  resourceType: 'Bundle',
+  id: 'f1336745-611c-4d0b-9671-1342a3a2da0a',
+  meta: {
+    lastUpdated: '2026-01-05T09:56:50.889+00:00',
+  },
+  type: 'searchset',
+  total: mockRadiologyInvestigations.length + mockImagingStudies.length,
+  link: [
+    {
+      relation: 'self',
+      url: `http://localhost/openmrs/ws/fhir2/R4/ServiceRequest?_revinclude=ImagingStudy:basedon&category=d3561dc0-5e07-11ef-8f7c-0242ac120002&numberOfVisits=5&patient.identifier=${mockPatientIdentifier}`,
+    },
+  ],
+  entry: [
+    ...mockRadiologyInvestigations.map((resource) => ({
+      fullUrl: `http://localhost/openmrs/ws/fhir2/R4/ServiceRequest/${resource.id}`,
+      resource,
+    })),
+    ...mockImagingStudies.map((resource) => ({
+      fullUrl: `http://localhost/openmrs/ws/fhir2/R4/ImagingStudy/${resource.id}`,
+      resource,
+    })),
+  ],
 };
-
-export const mockRadiologyInvestigationReplaced: RadiologyInvestigation = {
-  id: '271f2b4f-a239-418b-ba9e-f23014093df3',
-  testName: 'MRI - Replaced',
-  priority: 'completed',
-  orderedBy: 'Dr. Test',
-  orderedDate: '2023-01-01',
-};
-
-export const mockRadiologyInvestigationStandalone: RadiologyInvestigation = {
-  id: '9c847638-295b-4e3e-933d-47d5cad34faf',
-  testName: 'X-Ray - Standalone',
-  priority: 'routine',
-  orderedBy: 'Dr. Test',
-  orderedDate: '2023-01-01',
-};
-
-// Complex test scenarios for utility tests
-export const mockRadiologyInvestigationsForFiltering: RadiologyInvestigation[] =
-  [
-    mockRadiologyInvestigationWithReplaces,
-    mockRadiologyInvestigationReplaced,
-    mockRadiologyInvestigationStandalone,
-  ];
-
-export const mockRadiologyInvestigationWithMultipleReplaces: RadiologyInvestigation =
-  {
-    id: 'replacing-1',
-    testName: 'New Combined Order',
-    priority: 'stat',
-    orderedBy: 'Dr. Test',
-    orderedDate: '2023-01-01',
-    replaces: ['replaced-1', 'replaced-2'],
-  };
-
-// Chain replacement scenario
-export const mockRadiologyChainReplacement: RadiologyInvestigation[] = [
-  {
-    id: 'chain-3',
-    testName: 'Third Version',
-    priority: 'stat',
-    orderedBy: 'Dr. Test',
-    orderedDate: '2023-01-01',
-    replaces: ['chain-2'],
-  },
-  {
-    id: 'chain-2',
-    testName: 'Second Version',
-    priority: 'routine',
-    orderedBy: 'Dr. Test',
-    orderedDate: '2023-01-01',
-    replaces: ['chain-1'],
-  },
-  {
-    id: 'chain-1',
-    testName: 'First Version',
-    priority: 'routine',
-    orderedBy: 'Dr. Test',
-    orderedDate: '2023-01-01',
-  },
-  {
-    id: 'standalone',
-    testName: 'Standalone',
-    priority: 'routine',
-    orderedBy: 'Dr. Test',
-    orderedDate: '2023-01-01',
-  },
-];
-
-// Helper function to create mock investigations
-export const createMockRadiologyInvestigation = (
-  id: string,
-  testName: string,
-  priority: string,
-  replaces?: string[],
-): RadiologyInvestigation => ({
-  id,
-  testName,
-  priority,
-  orderedBy: 'Dr. Test',
-  orderedDate: '2023-01-01',
-  ...(replaces && replaces.length > 0 && { replaces }),
-});

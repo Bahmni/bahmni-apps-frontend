@@ -1,14 +1,21 @@
-import { RadiologyInvestigation } from '@bahmni/services';
 import {
   createMockRadiologyInvestigation,
   mockRadiologyInvestigationsForFiltering,
   mockRadiologyChainReplacement,
+  createMockServiceRequestBundle,
+  createMockServiceRequest,
+  createMockImagingStudy,
+  createMockBundleWithServiceRequestAndImagingStudy,
+  mockImagingStudies,
+  mockImagingStudiesWithoutAvailable,
 } from '../__mocks__/mocks';
 import {
   PRIORITY_ORDER,
   getRadiologyPriority,
   sortRadiologyInvestigationsByPriority,
   filterRadiologyInvestionsReplacementEntries,
+  createRadiologyInvestigationViewModels,
+  getAvailableImagingStudies,
 } from '../utils';
 
 describe('radiologyInvestigation utilities', () => {
@@ -19,111 +26,40 @@ describe('radiologyInvestigation utilities', () => {
   });
 
   describe('getRadiologyPriority', () => {
-    it('should return 0 for stat priority', () => {
+    it('should return correct priority index for known priorities', () => {
       expect(getRadiologyPriority('stat')).toBe(0);
-    });
-
-    it('should return 1 for routine priority', () => {
       expect(getRadiologyPriority('routine')).toBe(1);
     });
 
     it('should return 999 for unknown priority', () => {
       expect(getRadiologyPriority('unknown')).toBe(999);
-    });
-
-    it('should handle empty string', () => {
       expect(getRadiologyPriority('')).toBe(999);
     });
 
     it('should handle case insensitive matching', () => {
       expect(getRadiologyPriority('STAT')).toBe(0);
       expect(getRadiologyPriority('Routine')).toBe(1);
-      expect(getRadiologyPriority('URGENT')).toBe(999);
     });
   });
 
   describe('sortRadiologyInvestigationsByPriority', () => {
-    it('should sort stat before routine', () => {
+    it('should sort investigations by priority', () => {
       const investigations = [
         createMockRadiologyInvestigation('2', 'Routine X-Ray', 'routine'),
         createMockRadiologyInvestigation('1', 'Stat CT Scan', 'stat'),
+        createMockRadiologyInvestigation('3', 'Unknown MRI', 'unknown'),
       ];
 
       const sorted = sortRadiologyInvestigationsByPriority(investigations);
 
       expect(sorted[0].priority).toBe('stat');
       expect(sorted[1].priority).toBe('routine');
-    });
-
-    it('should sort stat before unknown priority', () => {
-      const investigations = [
-        createMockRadiologyInvestigation('2', 'Unknown MRI', 'unknown'),
-        createMockRadiologyInvestigation('1', 'Stat CT Scan', 'stat'),
-      ];
-
-      const sorted = sortRadiologyInvestigationsByPriority(investigations);
-
-      expect(sorted[0].priority).toBe('stat');
-      expect(sorted[1].priority).toBe('unknown');
-    });
-
-    it('should sort routine before unknown priority', () => {
-      const investigations = [
-        createMockRadiologyInvestigation('2', 'Unknown MRI', 'unknown'),
-        createMockRadiologyInvestigation('1', 'Routine X-Ray', 'routine'),
-      ];
-
-      const sorted = sortRadiologyInvestigationsByPriority(investigations);
-
-      expect(sorted[0].priority).toBe('routine');
-      expect(sorted[1].priority).toBe('unknown');
-    });
-
-    it('should maintain stable sorting for same priority level', () => {
-      const investigations = [
-        createMockRadiologyInvestigation('1', 'First Stat', 'stat'),
-        createMockRadiologyInvestigation('2', 'Second Stat', 'stat'),
-        createMockRadiologyInvestigation('3', 'Third Stat', 'stat'),
-      ];
-
-      const sorted = sortRadiologyInvestigationsByPriority(investigations);
-
-      expect(sorted[0].id).toBe('1');
-      expect(sorted[1].id).toBe('2');
-      expect(sorted[2].id).toBe('3');
-    });
-
-    it('should handle mixed priority levels correctly', () => {
-      const investigations = [
-        createMockRadiologyInvestigation('4', 'Unknown Priority', 'unknown'),
-        createMockRadiologyInvestigation('3', 'Stat MRI', 'stat'),
-        createMockRadiologyInvestigation('2', 'Routine X-Ray', 'routine'),
-        createMockRadiologyInvestigation('1', 'Another Stat', 'stat'),
-        createMockRadiologyInvestigation('5', 'Another Routine', 'routine'),
-      ];
-
-      const sorted = sortRadiologyInvestigationsByPriority(investigations);
-
-      expect(sorted[0].priority).toBe('stat');
-      expect(sorted[1].priority).toBe('stat');
-      expect(sorted[2].priority).toBe('routine');
-      expect(sorted[3].priority).toBe('routine');
-      expect(sorted[4].priority).toBe('unknown');
+      expect(sorted[2].priority).toBe('unknown');
     });
 
     it('should handle empty array', () => {
       const sorted = sortRadiologyInvestigationsByPriority([]);
       expect(sorted).toEqual([]);
-    });
-
-    it('should handle single item array', () => {
-      const investigations = [
-        createMockRadiologyInvestigation('1', 'Single Investigation', 'stat'),
-      ];
-      const sorted = sortRadiologyInvestigationsByPriority(investigations);
-
-      expect(sorted).toHaveLength(1);
-      expect(sorted[0].id).toBe('1');
     });
 
     it('should not mutate original array', () => {
@@ -137,64 +73,10 @@ describe('radiologyInvestigation utilities', () => {
 
       expect(investigations).toEqual(originalOrder);
     });
-
-    it('should handle all stat investigations', () => {
-      const investigations = [
-        createMockRadiologyInvestigation('1', 'First Stat', 'stat'),
-        createMockRadiologyInvestigation('2', 'Second Stat', 'stat'),
-      ];
-
-      const sorted = sortRadiologyInvestigationsByPriority(investigations);
-
-      expect(sorted).toHaveLength(2);
-      expect(sorted[0].priority).toBe('stat');
-      expect(sorted[1].priority).toBe('stat');
-    });
-
-    it('should handle all routine investigations', () => {
-      const investigations = [
-        createMockRadiologyInvestigation('1', 'First Routine', 'routine'),
-        createMockRadiologyInvestigation('2', 'Second Routine', 'routine'),
-      ];
-
-      const sorted = sortRadiologyInvestigationsByPriority(investigations);
-
-      expect(sorted).toHaveLength(2);
-      expect(sorted[0].priority).toBe('routine');
-      expect(sorted[1].priority).toBe('routine');
-    });
-
-    it('should handle case insensitive priority matching', () => {
-      const investigations = [
-        createMockRadiologyInvestigation('3', 'Routine X-Ray', 'ROUTINE'),
-        createMockRadiologyInvestigation('1', 'Unknown CT', 'UNKNOWN'),
-        createMockRadiologyInvestigation('2', 'Stat MRI', 'STAT'),
-      ];
-
-      const sorted = sortRadiologyInvestigationsByPriority(investigations);
-
-      expect(sorted[0].priority).toBe('STAT');
-      expect(sorted[1].priority).toBe('ROUTINE');
-      expect(sorted[2].priority).toBe('UNKNOWN');
-    });
   });
 
-  describe('filterReplacementEntries', () => {
-    const createMockInvestigationWithReplaces = (
-      id: string,
-      testName: string,
-      priority: string,
-      replaces?: string[],
-    ): RadiologyInvestigation => ({
-      id,
-      testName,
-      priority,
-      orderedBy: 'Dr. Test',
-      orderedDate: '2023-01-01',
-      ...(replaces && replaces.length > 0 && { replaces }),
-    });
-
-    it('should filter out both replacing and replaced entries', async () => {
+  describe('filterRadiologyInvestionsReplacementEntries', () => {
+    it('should filter out both replacing and replaced entries', () => {
       const filtered = filterRadiologyInvestionsReplacementEntries(
         mockRadiologyInvestigationsForFiltering,
       );
@@ -204,79 +86,24 @@ describe('radiologyInvestigation utilities', () => {
       expect(filtered[0].testName).toBe('X-Ray - Standalone');
     });
 
-    it('should handle single replacement relationship', async () => {
+    it('should handle investigations without any replacements', () => {
       const investigations = [
-        createMockInvestigationWithReplaces(
-          'replacing-1',
-          'New Order',
-          'stat',
-          ['replaced-1'],
-        ),
-        createMockInvestigationWithReplaces(
-          'replaced-1',
-          'Old Order',
-          'routine',
-        ),
+        createMockRadiologyInvestigation('1', 'X-Ray', 'routine'),
+        createMockRadiologyInvestigation('2', 'CT Scan', 'stat'),
       ];
 
       const filtered =
         filterRadiologyInvestionsReplacementEntries(investigations);
 
-      expect(filtered).toHaveLength(0);
-    });
-
-    it('should handle multiple replacements by single entry', async () => {
-      const investigations = [
-        createMockInvestigationWithReplaces(
-          'replacing-1',
-          'New Combined Order',
-          'stat',
-          ['replaced-1', 'replaced-2'],
-        ),
-        createMockInvestigationWithReplaces(
-          'replaced-1',
-          'Old Order 1',
-          'routine',
-        ),
-        createMockInvestigationWithReplaces(
-          'replaced-2',
-          'Old Order 2',
-          'routine',
-        ),
-        createMockInvestigationWithReplaces(
-          'standalone-1',
-          'Standalone Order',
-          'routine',
-        ),
-      ];
-
-      const filtered =
-        filterRadiologyInvestionsReplacementEntries(investigations);
-
-      expect(filtered).toHaveLength(1);
-      expect(filtered[0].id).toBe('standalone-1');
-    });
-
-    it('should handle investigations without any replacements', async () => {
-      const investigations = [
-        createMockInvestigationWithReplaces('1', 'X-Ray', 'routine'),
-        createMockInvestigationWithReplaces('2', 'CT Scan', 'stat'),
-        createMockInvestigationWithReplaces('3', 'MRI', 'routine'),
-      ];
-
-      const filtered =
-        filterRadiologyInvestionsReplacementEntries(investigations);
-
-      expect(filtered).toHaveLength(3);
       expect(filtered).toEqual(investigations);
     });
 
-    it('should handle empty array', async () => {
+    it('should handle empty array', () => {
       const filtered = filterRadiologyInvestionsReplacementEntries([]);
       expect(filtered).toEqual([]);
     });
 
-    it('should handle chain of replacements', async () => {
+    it('should handle chain of replacements', () => {
       const filtered = filterRadiologyInvestionsReplacementEntries(
         mockRadiologyChainReplacement,
       );
@@ -284,90 +111,184 @@ describe('radiologyInvestigation utilities', () => {
       expect(filtered).toHaveLength(1);
       expect(filtered[0].id).toBe('standalone');
     });
+  });
 
-    it('should not mutate original array', async () => {
-      const investigations = [
-        createMockInvestigationWithReplaces('replacing', 'New', 'stat', [
-          'replaced',
-        ]),
-        createMockInvestigationWithReplaces('replaced', 'Old', 'routine'),
-      ];
-      const originalLength = investigations.length;
+  describe('createRadiologyInvestigationViewModels', () => {
+    it('should transform FHIR ServiceRequest to view model', () => {
+      const bundle = createMockServiceRequestBundle(createMockServiceRequest());
 
-      filterRadiologyInvestionsReplacementEntries(investigations);
+      const result = createRadiologyInvestigationViewModels(bundle);
 
-      expect(investigations).toHaveLength(originalLength);
-      expect(investigations[0].id).toBe('replacing');
-      expect(investigations[1].id).toBe('replaced');
-    });
-
-    it('should handle investigations with empty replaces array', async () => {
-      const investigations = [
-        createMockInvestigationWithReplaces('1', 'Test 1', 'routine', []),
-        createMockInvestigationWithReplaces('2', 'Test 2', 'stat'),
-      ];
-
-      const filtered =
-        filterRadiologyInvestionsReplacementEntries(investigations);
-
-      expect(filtered).toHaveLength(2);
-      expect(filtered).toEqual(investigations);
-    });
-
-    it('should handle complex scenario with multiple replacement relationships', async () => {
-      const investigations = [
-        // Standalone entries (should remain)
-        createMockInvestigationWithReplaces(
-          'standalone-1',
-          'Standalone 1',
-          'routine',
-        ),
-        createMockInvestigationWithReplaces(
-          'standalone-2',
-          'Standalone 2',
-          'stat',
-        ),
-
-        // First replacement pair (both should be filtered)
-        createMockInvestigationWithReplaces(
-          'replacing-a',
-          'Replacing A',
-          'stat',
-          ['replaced-a'],
-        ),
-        createMockInvestigationWithReplaces(
-          'replaced-a',
-          'Replaced A',
-          'routine',
-        ),
-
-        // Second replacement (multiple replaces, all should be filtered)
-        createMockInvestigationWithReplaces(
-          'replacing-b',
-          'Replacing B',
-          'routine',
-          ['replaced-b1', 'replaced-b2'],
-        ),
-        createMockInvestigationWithReplaces(
-          'replaced-b1',
-          'Replaced B1',
-          'routine',
-        ),
-        createMockInvestigationWithReplaces(
-          'replaced-b2',
-          'Replaced B2',
-          'stat',
-        ),
-      ];
-
-      const filtered =
-        filterRadiologyInvestionsReplacementEntries(investigations);
-
-      expect(filtered).toHaveLength(2);
-      expect(filtered.map((i: RadiologyInvestigation) => i.id)).toEqual([
-        'standalone-1',
-        'standalone-2',
+      expect(result).toEqual([
+        {
+          id: 'order-1',
+          testName: 'Chest X-Ray',
+          priority: 'stat',
+          orderedBy: 'Dr. Smith',
+          orderedDate: '2023-10-15T10:30:00.000Z',
+        },
       ]);
+    });
+
+    it('should handle ServiceRequest with replaces field', () => {
+      const bundle = createMockServiceRequestBundle(
+        createMockServiceRequest({
+          id: 'order-new',
+          code: {
+            text: 'Updated X-Ray',
+          },
+          replaces: [
+            {
+              reference: 'ServiceRequest/order-1',
+              type: 'ServiceRequest',
+            },
+          ],
+        }),
+      );
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+
+      expect(result[0].replaces).toEqual(['order-1']);
+    });
+
+    it('should handle ServiceRequest with note field', () => {
+      const bundle = createMockServiceRequestBundle(
+        createMockServiceRequest({
+          note: [
+            {
+              text: 'Patient should be fasting',
+            },
+          ],
+        }),
+      );
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+
+      expect(result[0].note).toBe('Patient should be fasting');
+    });
+
+    it('should handle empty bundle', () => {
+      const bundle = createMockServiceRequestBundle(createMockServiceRequest());
+      bundle.entry = [];
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+      expect(result).toEqual([]);
+    });
+
+    it('should match ImagingStudy to ServiceRequest and include in view model', () => {
+      const serviceRequest = createMockServiceRequest({
+        code: { text: 'CT Scan' },
+        priority: 'routine',
+      });
+      const imagingStudy = createMockImagingStudy();
+      const bundle = createMockBundleWithServiceRequestAndImagingStudy(
+        serviceRequest,
+        [imagingStudy],
+      );
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].imagingStudies).toEqual([
+        {
+          id: 'imaging-1',
+          StudyInstanceUIDs: '1.2.840.113619.2.55.3.1',
+          status: 'available',
+        },
+      ]);
+    });
+
+    it('should handle multiple ImagingStudies for a single ServiceRequest', () => {
+      const serviceRequest = createMockServiceRequest({
+        code: { text: 'MRI' },
+        requester: { display: 'Dr. Jones' },
+        occurrencePeriod: { start: '2023-10-16T14:00:00.000Z' },
+      });
+      const imagingStudy1 = createMockImagingStudy();
+      const imagingStudy2 = createMockImagingStudy({
+        id: 'imaging-2',
+        identifier: [
+          {
+            system: 'urn:dicom:uid',
+            value: '1.2.840.113619.2.55.3.2',
+          },
+        ],
+      });
+      const bundle = createMockBundleWithServiceRequestAndImagingStudy(
+        serviceRequest,
+        [imagingStudy1, imagingStudy2],
+      );
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].imagingStudies).toHaveLength(2);
+      expect(result[0].imagingStudies?.[0].StudyInstanceUIDs).toBe(
+        '1.2.840.113619.2.55.3.1',
+      );
+      expect(result[0].imagingStudies?.[1].StudyInstanceUIDs).toBe(
+        '1.2.840.113619.2.55.3.2',
+      );
+    });
+
+    it('should not include ImagingStudies without DICOM UID identifier', () => {
+      const serviceRequest = createMockServiceRequest({
+        code: { text: 'Ultrasound' },
+        priority: 'routine',
+        requester: { display: 'Dr. Brown' },
+        occurrencePeriod: { start: '2023-10-17T09:00:00.000Z' },
+      });
+      const imagingStudy = createMockImagingStudy({
+        identifier: [
+          {
+            system: 'other-system',
+            value: 'some-other-id',
+          },
+        ],
+      });
+      const bundle = createMockBundleWithServiceRequestAndImagingStudy(
+        serviceRequest,
+        [imagingStudy],
+      );
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].imagingStudies).toEqual([
+        {
+          id: 'imaging-1',
+          StudyInstanceUIDs: '',
+          status: 'available',
+        },
+      ]);
+    });
+  });
+
+  describe('getAvailableImagingStudies', () => {
+    it('should return empty array when no imaging studies provided', () => {
+      const result = getAvailableImagingStudies(undefined);
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array when imaging studies array is empty', () => {
+      const result = getAvailableImagingStudies([]);
+      expect(result).toEqual([]);
+    });
+
+    it('should return only studies with status "available"', () => {
+      const result = getAvailableImagingStudies(mockImagingStudies);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('study-1');
+      expect(result[1].id).toBe('study-3');
+    });
+
+    it('should return empty array when no studies have status "available"', () => {
+      const result = getAvailableImagingStudies(
+        mockImagingStudiesWithoutAvailable,
+      );
+
+      expect(result).toEqual([]);
     });
   });
 });

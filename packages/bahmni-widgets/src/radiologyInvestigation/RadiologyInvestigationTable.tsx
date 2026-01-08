@@ -4,30 +4,53 @@ import {
   Tag,
   Accordion,
   AccordionItem,
+  Link,
 } from '@bahmni/design-system';
 import {
-  RadiologyInvestigation,
+  getPatientRadiologyInvestigationBundleWithImagingStudy,
   useTranslation,
   groupByDate,
   formatDate,
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
-  getOrderTypes,
-  ORDER_TYPE_QUERY_KEY,
-  getPatientRadiologyInvestigations,
   shouldEnableEncounterFilter,
+  getCategoryUuidFromOrderTypes,
   getFormattedError,
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
+import { RadiologyInvestigationViewModel } from './models';
 import styles from './styles/RadiologyInvestigationTable.module.scss';
 import {
   sortRadiologyInvestigationsByPriority,
   filterRadiologyInvestionsReplacementEntries,
+  createRadiologyInvestigationViewModels,
+  getAvailableImagingStudies,
 } from './utils';
+
+export const radiologyInvestigationQueryKeys = (patientUUID: string) =>
+  ['radiologyInvestigation', patientUUID] as const;
+
+const fetchRadiologyInvestigations = async (
+  patientUUID: string,
+  category: string,
+  encounterUuids?: string[],
+  numberOfVisits?: number,
+): Promise<RadiologyInvestigationViewModel[]> => {
+  const response = await getPatientRadiologyInvestigationBundleWithImagingStudy(
+    patientUUID!,
+    category,
+    encounterUuids,
+    numberOfVisits,
+  );
+  return createRadiologyInvestigationViewModels(response);
+};
 
 /**
  * Component to display patient radiology investigations grouped by date in accordion format
@@ -38,11 +61,12 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
   encounterUuids,
   episodeOfCareUuids,
 }) => {
-  const { t } = useTranslation();
   const patientUUID = usePatientUUID();
+  const { t } = useTranslation();
   const { addNotification } = useNotification();
   const categoryName = config?.orderType as string;
   const numberOfVisits = config?.numberOfVisits as number;
+  const pacsViewerUrl = config?.pacsViewerUrl as string;
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -50,78 +74,31 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
   );
 
   const {
-    data: orderTypesData,
+    data: categoryUuid,
     isLoading: isLoadingOrderTypes,
     isError: isOrderTypesError,
     error: orderTypesError,
   } = useQuery({
-    queryKey: ORDER_TYPE_QUERY_KEY,
-    queryFn: getOrderTypes,
+    queryKey: ['categoryUuid', categoryName],
+    queryFn: () => getCategoryUuidFromOrderTypes(categoryName),
+    enabled: !!categoryName,
   });
 
-  const categoryUuid = useMemo(() => {
-    if (!orderTypesData || !categoryName) return '';
-    const orderType = orderTypesData.results.find(
-      (ot) => ot.display.toLowerCase() === categoryName.toLowerCase(),
-    );
-    return orderType?.uuid ?? '';
-  }, [orderTypesData, categoryName]);
-
-  const {
-    data: radiologyInvestigations,
-    isLoading: isLoadingRadiologyInvestigations,
-    isError: isRadiologyInvestigationsError,
-    error: radiologyInvestigationsError,
-  } = useQuery<RadiologyInvestigation[]>({
-    queryKey: [
-      'radiologyInvestigations',
-      categoryUuid,
-      patientUUID,
-      encounterUuids,
-      numberOfVisits,
-    ],
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: radiologyInvestigationQueryKeys(patientUUID!),
     enabled: !!patientUUID && !!categoryUuid && !emptyEncounterFilter,
     queryFn: () =>
-      getPatientRadiologyInvestigations(
+      fetchRadiologyInvestigations(
         patientUUID!,
-        categoryUuid,
+        categoryUuid!,
         encounterUuids,
         numberOfVisits,
       ),
   });
 
-  useEffect(() => {
-    if (isOrderTypesError) {
-      const { message } = getFormattedError(orderTypesError);
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message,
-        type: 'error',
-      });
-    }
-    if (isRadiologyInvestigationsError) {
-      const { message } = getFormattedError(radiologyInvestigationsError);
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message,
-        type: 'error',
-      });
-    }
-  }, [
-    isOrderTypesError,
-    orderTypesError,
-    isRadiologyInvestigationsError,
-    radiologyInvestigationsError,
-    addNotification,
-    t,
-  ]);
-
-  const loading = isLoadingOrderTypes || isLoadingRadiologyInvestigations;
-  const hasError = isOrderTypesError || isRadiologyInvestigationsError;
-
   const headers = useMemo(
     () => [
-      { key: 'testName', header: t('RADIOLOGY_TEST_NAME') },
+      { key: 'testName', header: t('RADIOLOGY_INVESTIGATION_NAME') },
       { key: 'results', header: t('RADIOLOGY_RESULTS') },
       { key: 'orderedBy', header: t('RADIOLOGY_ORDERED_BY') },
     ],
@@ -137,10 +114,28 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     [],
   );
 
+  const loading = isLoading || isLoadingOrderTypes;
+  const errorMessage =
+    isError && error
+      ? getFormattedError(error).message
+      : isOrderTypesError && orderTypesError
+        ? getFormattedError(orderTypesError).message
+        : '';
+  const hasError = isError || isOrderTypesError;
+
+  useEffect(() => {
+    if (hasError)
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: errorMessage,
+        type: 'error',
+      });
+  }, [hasError, errorMessage]);
+
   const processedInvestigations = useMemo(() => {
-    const investigations = radiologyInvestigations ?? [];
-    const filteredInvestigations =
-      filterRadiologyInvestionsReplacementEntries(investigations);
+    const filteredInvestigations = filterRadiologyInvestionsReplacementEntries(
+      data ?? [],
+    );
 
     const grouped = groupByDate(filteredInvestigations, (investigation) => {
       const result = formatDate(investigation.orderedDate, t, ISO_DATE_FORMAT);
@@ -158,60 +153,126 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
         investigationsByDate.investigations,
       ),
     }));
-  }, [radiologyInvestigations, t]);
+  }, [data]);
 
-  const renderCell = useCallback(
-    (investigation: RadiologyInvestigation, cellId: string) => {
-      switch (cellId) {
-        case 'testName':
-          return (
-            <>
-              <p className={styles.investigationName}>
-                <span>{investigation.testName}</span>
-                {investigation.note && (
-                  <TooltipIcon
-                    iconName="fa-file-lines"
-                    content={investigation.note}
-                    ariaLabel={investigation.note}
-                  />
-                )}
-              </p>
-              {investigation.priority === 'stat' && (
-                <Tag type="red">{t('RADIOLOGY_PRIORITY_URGENT')}</Tag>
+  const handleRadiologyResultClick = () => {
+    dispatchAuditEvent({
+      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_RADIOLOGY_RESULTS
+        .eventType as AuditEventType,
+      patientUuid: patientUUID!,
+    });
+  };
+
+  const renderResultsCell = (
+    investigation: RadiologyInvestigationViewModel,
+  ) => {
+    const availableStudies = getAvailableImagingStudies(
+      investigation.imagingStudies,
+    );
+
+    if (availableStudies.length > 0 && pacsViewerUrl) {
+      return (
+        <div
+          id={`${investigation.id}-results`}
+          data-testid={`${investigation.id}-results-test-id`}
+        >
+          {availableStudies.map((study, index) => {
+            const viewerUrl = pacsViewerUrl.replace(
+              '{{StudyInstanceUIDs}}',
+              study.StudyInstanceUIDs,
+            );
+            return (
+              <Link
+                key={study.id}
+                href={viewerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                id={`${investigation.id}-result-link-${index}`}
+                testId={`${investigation.id}-result-link-${index}-test-id`}
+                onClick={() => handleRadiologyResultClick()}
+              >
+                {t('RADIOLOGY_VIEW_RESULTS')}
+              </Link>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return (
+      <span
+        id={`${investigation.id}-results`}
+        data-testid={`${investigation.id}-results-test-id`}
+      >
+        --
+      </span>
+    );
+  };
+
+  const renderCell = (
+    investigation: RadiologyInvestigationViewModel,
+    cellId: string,
+  ) => {
+    switch (cellId) {
+      case 'testName':
+        return (
+          <div
+            id={`${investigation.id}-test-name`}
+            data-testid={`${investigation.id}-test-name-test-id`}
+          >
+            <p className={styles.investigationName}>
+              <span>{investigation.testName}</span>
+              {investigation.note && (
+                <TooltipIcon
+                  iconName="fa-file-lines"
+                  content={investigation.note}
+                  ariaLabel={investigation.note}
+                />
               )}
-            </>
-          );
-        case 'results':
-          return '--';
-        case 'orderedBy':
-          return investigation.orderedBy;
-        default:
-          return null;
-      }
-    },
-    [t],
-  );
+            </p>
+            {investigation.priority === 'stat' && (
+              <Tag
+                id={`${investigation.id}-priority`}
+                testId={`${investigation.id}-priority-test-id`}
+                type="red"
+              >
+                {t('RADIOLOGY_PRIORITY_URGENT')}
+              </Tag>
+            )}
+          </div>
+        );
+      case 'results':
+        return renderResultsCell(investigation);
+      case 'orderedBy':
+        return (
+          <span
+            id={`${investigation.id}-ordered-by`}
+            data-testid={`${investigation.id}-ordered-by-test-id`}
+          >
+            {investigation.orderedBy}
+          </span>
+        );
+    }
+  };
 
-  if (hasError) {
+  if (
+    loading ||
+    !!hasError ||
+    processedInvestigations.length === 0 ||
+    emptyEncounterFilter
+  ) {
     return (
       <div
-        className={styles.radiologyInvestigationTableBodyError}
-        data-testid="radiology-investigations-table"
+        id="radiology-investigations-table"
+        data-testid="radiology-investigations-table-test-id"
+        aria-label="radiology-investigations-table-aria-label"
       >
-        {t('RADIOLOGY_ERROR_LOADING')}
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div data-testid="radiology-investigations-table">
         <SortableDataTable
           headers={headers}
           ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
           rows={[]}
-          loading
-          errorStateMessage={''}
+          loading={loading}
+          errorStateMessage={errorMessage}
           emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
           renderCell={renderCell}
           className={styles.radiologyInvestigationTableBody}
@@ -221,22 +282,12 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     );
   }
 
-  if (
-    !loading &&
-    (processedInvestigations.length === 0 || emptyEncounterFilter)
-  ) {
-    return (
-      <div
-        className={styles.radiologyInvestigationTableBodyError}
-        data-testid="radiology-investigations-table"
-      >
-        {t('NO_RADIOLOGY_INVESTIGATIONS')}
-      </div>
-    );
-  }
-
   return (
-    <div data-testid="radiology-investigations-table">
+    <div
+      id="radiology-investigations-table"
+      data-testid="radiology-investigations-table-test-id"
+      aria-label="radiology-investigations-table-aria-label"
+    >
       <Accordion align="start">
         {processedInvestigations.map((investigationsByDate, index) => {
           const { date, investigations } = investigationsByDate;
@@ -258,7 +309,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
                 headers={headers}
                 ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
                 rows={investigations}
-                loading={false}
+                loading={isLoading}
                 errorStateMessage={''}
                 sortable={sortable}
                 emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
