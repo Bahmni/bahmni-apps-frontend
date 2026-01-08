@@ -108,7 +108,7 @@ const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
   } = useQuery<FormsEncounter>({
     queryKey: ['formsEncounter', selectedRecord?.encounterUuid],
     queryFn: () =>
-      getFormsDataByEncounterUuid(selectedRecord!.encounterUuid, false),
+      getFormsDataByEncounterUuid(selectedRecord!.encounterUuid, true),
     enabled: !!selectedRecord?.encounterUuid && isModalOpen,
   });
 
@@ -117,11 +117,11 @@ const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
     if (!formsEncounterData?.observations || !selectedRecord?.formName) {
       return [];
     }
-    
+
     // Debug: Log the form name and observations
     console.log('Selected Form Name:', selectedRecord.formName);
     console.log('All Observations:', formsEncounterData.observations);
-    
+
     // Filter observations by formFieldPath that includes the form name
     const filtered = formsEncounterData.observations.filter(
       (obs) =>
@@ -129,10 +129,10 @@ const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
         typeof obs.formFieldPath === 'string' &&
         obs.formFieldPath.includes(selectedRecord.formName),
     );
-    
+
     console.log('Filtered Observations:', filtered);
     console.log('Filtered Count:', filtered.length);
-    
+
     return filtered;
   }, [formsEncounterData?.observations, selectedRecord?.formName]);
 
@@ -296,7 +296,11 @@ const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
                 </div>
               ) : formMetadata && patientUuid ? (
                 <Container
-                  metadata={formMetadata.schema as Form2FormMetadata}
+                  metadata={{
+                    ...(formMetadata.schema as Form2FormMetadata),
+                    name: selectedRecord?.formName,
+                    version: formMetadata.version || '1',
+                  }}
                   observations={filteredObservations}
                   patient={{ uuid: patientUuid }}
                   translations={{}}
