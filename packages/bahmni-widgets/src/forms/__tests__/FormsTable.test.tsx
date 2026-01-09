@@ -497,7 +497,7 @@ describe('FormsTable', () => {
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
 
       const config = { numberOfVisits: 10 };
-      const episodeOfCareUuids = ['episode-1', 'episode-2'];
+      const episodeOfCareUuids = undefined;
       renderFormsTable({ config, episodeOfCareUuids });
 
       await waitFor(() => {
@@ -506,6 +506,70 @@ describe('FormsTable', () => {
           episodeOfCareUuids,
           10,
         );
+      });
+    });
+
+    it('filters forms by encounterUuids when provided', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      const encounterUuids = ['encounter-1', 'encounter-3'];
+      renderFormsTable({ encounterUuids });
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      // Should show Vitals Form (encounter-1) and History Form (encounter-3)
+      expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      expect(screen.getByText('History Form')).toBeInTheDocument();
+
+      // Should show Dr. Smith (encounter-1) and Dr. Williams (encounter-3)
+      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+
+      // Should NOT show Dr. Johnson (encounter-2 is filtered out)
+      expect(screen.queryByText('Dr. Johnson')).not.toBeInTheDocument();
+    });
+
+    it('shows all forms when encounterUuids is empty array', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      const encounterUuids: string[] = [];
+      renderFormsTable({ encounterUuids });
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      // Should show all providers
+      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      expect(screen.getByText('Dr. Johnson')).toBeInTheDocument();
+      expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+    });
+
+    it('shows all forms when encounterUuids is not provided', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      // Should show all providers
+      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      expect(screen.getByText('Dr. Johnson')).toBeInTheDocument();
+      expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+    });
+
+    it('shows empty state when all forms are filtered out by encounterUuids', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      const encounterUuids = ['non-existent-encounter'];
+      renderFormsTable({ encounterUuids });
+
+      await waitFor(() => {
+        expect(screen.getByText('No forms available')).toBeInTheDocument();
       });
     });
   });
