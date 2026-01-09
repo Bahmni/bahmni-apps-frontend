@@ -191,7 +191,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
                 testId={`${investigation.id}-result-link-${index}-test-id`}
                 onClick={() => handleRadiologyResultClick()}
               >
-                {t('RADIOLOGY_VIEW_RESULTS')}
+                {t('RADIOLOGY_VIEW_IMAGES')}
               </Link>
             );
           })}
