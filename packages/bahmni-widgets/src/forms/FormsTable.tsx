@@ -51,12 +51,17 @@ interface GroupedFormRecords {
  * Component to display patient forms grouped by form name in accordion format
  * Each accordion item contains a SortableDataTable with form records for that form type
  */
-const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
+const FormsTable: React.FC<WidgetProps> = ({
+  isActionAreaVisible = false,
+  episodeOfCareUuids,
+  config,
+}) => {
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] =
     useState<FormRecordViewModel | null>(null);
+  const numberOfVisits = config?.numberOfVisits as number;
 
   const {
     data: formsData = [],
@@ -64,8 +69,9 @@ const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
     isError,
     error,
   } = useQuery<FormResponseData[], Error>({
-    queryKey: ['forms', patientUuid],
-    queryFn: () => getPatientFormData(patientUuid!),
+    queryKey: ['forms', patientUuid, episodeOfCareUuids],
+    queryFn: () =>
+      getPatientFormData(patientUuid!, episodeOfCareUuids, numberOfVisits),
     enabled: !!patientUuid,
   });
 

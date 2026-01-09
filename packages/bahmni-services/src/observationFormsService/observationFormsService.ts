@@ -127,10 +127,16 @@ export const fetchFormMetadata = async (
  */
 export const getPatientFormData = async (
   patientUuid: string,
+  episodeUuids?: string[],
   numberOfVisits?: number,
 ): Promise<FormResponseData[]> => {
+  let episodeUuidString: string | undefined;
+
+  if (episodeUuids && episodeUuids.length > 0) {
+    episodeUuidString = episodeUuids.join(',');
+  }
   try {
-    const url = FORM_DATA_URL(patientUuid, numberOfVisits);
+    const url = FORM_DATA_URL(patientUuid, numberOfVisits, episodeUuidString);
     const data = await get<FormResponseData[]>(url);
 
     return Array.isArray(data) ? data : [];

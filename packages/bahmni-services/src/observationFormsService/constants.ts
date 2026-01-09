@@ -7,12 +7,18 @@ export const OBSERVATION_FORMS_URL =
 export const USER_PINNED_PREFERENCE_URL = (userUuid: string) =>
   OPENMRS_REST_V1 + `/user/${userUuid}?v=full`;
 
-export const FORM_DATA_URL = (patientUuid: string, numberOfVisits?: number) => {
+export const FORM_DATA_URL = (
+  patientUuid: string,
+  numberOfVisits?: number,
+  episodeUuid?: string,
+) => {
   const baseUrl =
     OPENMRS_REST_V1 + '/bahmnicore/patient/' + patientUuid + '/forms';
-  let url = baseUrl + '?';
-  if (numberOfVisits) {
-    url += `numberOfVisits=${numberOfVisits}`;
+  let url = baseUrl;
+  if (episodeUuid) {
+    url += `?patientProgramUuid=${episodeUuid}`;
+  } else if (numberOfVisits) {
+    url += `?numberOfVisits=${numberOfVisits}`;
   }
   return url;
 };
