@@ -11,4 +11,14 @@ export {
   type FormMetadata,
   type FormMetadataApiResponse,
   type FormResource,
+  type ComplexValue,
+  type ObservationFormTranslations,
 } from './models';
+export {
+  transformFormDataToObservations,
+  transformObservationsToFormData,
+  type FormData,
+  type FormControlData,
+  type Form2Observation,
+  type ConceptValue,
+} from './observationFormsTransformer';

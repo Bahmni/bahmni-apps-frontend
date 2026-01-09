@@ -1,5 +1,13 @@
-import { getUserPreferredLocale } from '../i18n/translationService';
-import { OBSERVATION_FORMS_URL, FORM_METADATA_URL } from './constants';
+import {
+  getUserPreferredLocale,
+  extractObservationFormTranslations,
+  type ObservationFormTranslations,
+} from '../i18n';
+import {
+  OBSERVATION_FORMS_URL,
+  FORM_METADATA_URL,
+  FORM_TRANSLATIONS_URL,
+} from './constants';
 import {
   ObservationForm,
   ApiNameTranslation,
@@ -80,9 +88,9 @@ export const fetchObservationForms = async (): Promise<ObservationForm[]> => {
 };
 
 /**
- * Fetches form metadata including the form schema/definition
+ * Fetches form metadata including the form schema/definition and translations
  * @param formUuid - The UUID of the form to fetch
- * @returns Promise resolving to parsed form metadata
+ * @returns Promise resolving to parsed form metadata with translations for current locale
  */
 export const fetchFormMetadata = async (
   formUuid: string,
@@ -102,6 +110,41 @@ export const fetchFormMetadata = async (
   }
 
   const formSchema = JSON.parse(data.resources[0].value);
+  const currentLocale = getUserPreferredLocale();
+
+  // Fetch translations from API endpoint if translationsUrl is present
+  let translations: ObservationFormTranslations = { labels: {}, concepts: {} };
+
+  if (
+    formSchema &&
+    typeof formSchema === 'object' &&
+    'translationsUrl' in formSchema &&
+    typeof formSchema.translationsUrl === 'string'
+  ) {
+    try {
+      const formName = formSchema.name ?? data.name;
+      const formUuid = data.uuid ?? formSchema.uuid;
+      const formVersion = formSchema.version ?? data.version ?? '1';
+
+      const translationsUrl = FORM_TRANSLATIONS_URL(
+        formName,
+        formUuid,
+        formVersion,
+        currentLocale,
+      );
+
+      const translationsResponse = await fetch(translationsUrl);
+      if (translationsResponse.ok) {
+        const translationsData = await translationsResponse.json();
+        translations = extractObservationFormTranslations(
+          translationsData,
+          currentLocale,
+        );
+      }
+    } catch (error) {
+      // Silently fail with empty translations
+    }
+  }
 
   return {
     uuid: data.uuid,
@@ -109,5 +152,6 @@ export const fetchFormMetadata = async (
     version: data.version,
     published: data.published,
     schema: formSchema,
+    translations,
   };
 };

@@ -12,17 +12,16 @@ import {
 import '@bahmni/form2-controls/dist/bundle.css';
 import './styles/form2-controls-fixes.scss';
 import {
-  fetchFormMetadata,
-  FormMetadata,
   ObservationForm,
+  Form2Observation,
   getFormattedError,
   getUserPreferredLocale,
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
-import { useQuery } from '@tanstack/react-query';
-import React, { useRef, useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
+import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsContainerProps {
@@ -35,6 +34,13 @@ interface ObservationFormsContainerProps {
   // Pinned forms state passed from parent (required)
   pinnedForms: ObservationForm[];
   updatePinnedForms: (newPinnedForms: ObservationForm[]) => Promise<void>;
+  // Callback to lift observation form data to parent for consultation bundle
+  onFormObservationsChange?: (
+    formUuid: string,
+    observations: Form2Observation[],
+  ) => void;
+  // Existing saved observations for the current form (for edit mode)
+  existingObservations?: Form2Observation[];
 }
 
 /**
@@ -53,63 +59,65 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onRemoveForm,
   pinnedForms,
   updatePinnedForms,
+  onFormObservationsChange,
+  existingObservations,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
-
-  const formContainerRef = useRef<Container>(null);
   const [showValidationError, setShowValidationError] = useState(false);
+  const formContainerRef = useRef<Container>(null);
 
-  // Fetch form metadata using TanStack Query
   const {
-    data: formMetadata,
-    isLoading: isLoadingMetadata,
-    error: queryError,
-  } = useQuery<FormMetadata>({
-    queryKey: ['formMetadata', viewingForm?.uuid],
-    queryFn: () => fetchFormMetadata(viewingForm!.uuid),
-    enabled: !!viewingForm?.uuid,
-  });
+    observations,
+    handleFormDataChange,
+    resetForm,
+    formMetadata,
+    isLoadingMetadata,
+    metadataError,
+  } = useObservationFormData(
+    viewingForm?.uuid ? { formUuid: viewingForm.uuid } : undefined,
+  );
 
-  // Format error for display
-  const error = queryError
-    ? new Error(
-        getFormattedError(queryError).message ??
-          t('ERROR_FETCHING_FORM_METADATA'),
-      )
-    : null;
   // Check if current form is pinned
   const isCurrentFormPinned = viewingForm
     ? pinnedForms.some((form) => form.uuid === viewingForm.uuid)
     : false;
 
+  // Handle pin/unpin toggle
   const handlePinToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (viewingForm) {
-      let newPinnedForms;
-      if (isCurrentFormPinned) {
-        newPinnedForms = pinnedForms.filter(
-          (form) => form.uuid !== viewingForm.uuid,
-        );
-      } else {
-        newPinnedForms = [...pinnedForms, viewingForm];
-      }
+      const newPinnedForms = isCurrentFormPinned
+        ? pinnedForms.filter((form) => form.uuid !== viewingForm.uuid)
+        : [...pinnedForms, viewingForm];
       updatePinnedForms(newPinnedForms);
     }
   };
 
+  // Handle form discard - remove from list and exit view mode
   const handleDiscardForm = () => {
-    setShowValidationError(false);
-    // Remove the form from selected forms list if callback is provided
     if (viewingForm && onRemoveForm) {
       onRemoveForm(viewingForm.uuid);
     }
-    // Close the form view
     onViewingFormChange(null);
   };
 
+  // Handle form save - lift observations to parent and exit view mode
   const handleSaveForm = () => {
+    if (viewingForm && onFormObservationsChange) {
+      onFormObservationsChange(viewingForm.uuid, observations);
+    }
+    onViewingFormChange(null);
+  };
+
+  // Handle back navigation - exit view mode without saving
+  const handleBack = () => {
+    onViewingFormChange(null);
+  };
+
+  // Validate form and save if no errors
+  const validateAndSave = () => {
     if (formContainerRef.current) {
       const { errors } = formContainerRef.current.getValue();
       if (errors && errors.length > 0) {
@@ -118,11 +126,30 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       }
 
       setShowValidationError(false);
-
-      // TODO: Implement actual save logic with observations
-      onViewingFormChange(null);
+      handleSaveForm();
     }
   };
+
+  // Discard form and clear validation errors
+  const discard = () => {
+    setShowValidationError(false);
+    resetForm();
+    handleDiscardForm();
+  };
+
+  // Navigate back to forms list and clear validation errors
+  const navigateToForms = () => {
+    setShowValidationError(false);
+    handleBack();
+  };
+
+  // Format error for display
+  const error = metadataError
+    ? new Error(
+        getFormattedError(metadataError).message ??
+          t('ERROR_FETCHING_FORM_METADATA'),
+      )
+    : null;
 
   // Form view content when a form is selected
   const formViewContent = (
@@ -148,15 +175,19 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         ) : formMetadata && patientUUID ? (
           <Container
             ref={formContainerRef}
-            metadata={formMetadata.schema as Form2FormMetadata}
-            observations={[]}
+            metadata={{
+              ...(formMetadata.schema as Form2FormMetadata),
+              name: viewingForm?.name,
+              version: formMetadata.version || '1',
+            }}
+            observations={existingObservations ?? []}
             patient={{ uuid: patientUUID }}
-            translations={{}}
+            translations={formMetadata.translations ?? {}}
             validate={showValidationError}
-            validateForm
+            validateForm={showValidationError}
             collapse={false}
             locale={getUserPreferredLocale()}
-            onValueUpdated={() => {}}
+            onValueUpdated={handleFormDataChange}
           />
         ) : (
           <div>{t('OBSERVATION_FORM_LOADING_METADATA_ERROR')}</div>
@@ -188,15 +219,12 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         className={styles.formViewActionArea}
         title={formTitleWithPin as unknown as string}
         primaryButtonText={t('OBSERVATION_FORM_SAVE_BUTTON')}
-        onPrimaryButtonClick={handleSaveForm}
+        onPrimaryButtonClick={validateAndSave}
         isPrimaryButtonDisabled={false}
         secondaryButtonText={t('OBSERVATION_FORM_DISCARD_BUTTON')}
-        onSecondaryButtonClick={handleDiscardForm}
+        onSecondaryButtonClick={discard}
         tertiaryButtonText={t('OBSERVATION_FORM_BACK_BUTTON')}
-        onTertiaryButtonClick={() => {
-          setShowValidationError(false);
-          onViewingFormChange(null);
-        }}
+        onTertiaryButtonClick={navigateToForms}
         content={formViewContent}
       />
     );
