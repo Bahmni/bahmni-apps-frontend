@@ -461,6 +461,55 @@ describe('FormsTable', () => {
       ).toBeInTheDocument();
     });
   });
+
+  describe('Config Props', () => {
+    it('passes numberOfVisits from config to getPatientFormData', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      const config = { numberOfVisits: 5 };
+      renderFormsTable({ config });
+
+      await waitFor(() => {
+        expect(mockGetPatientFormData).toHaveBeenCalledWith(
+          'patient-123',
+          undefined,
+          5,
+        );
+      });
+    });
+
+    it('handles config without numberOfVisits property', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      const config = {};
+      renderFormsTable({ config });
+
+      await waitFor(() => {
+        expect(mockGetPatientFormData).toHaveBeenCalledWith(
+          'patient-123',
+          undefined,
+          undefined,
+        );
+      });
+    });
+
+    it('passes episodeOfCareUuids along with numberOfVisits to getPatientFormData', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      const config = { numberOfVisits: 10 };
+      const episodeOfCareUuids = ['episode-1', 'episode-2'];
+      renderFormsTable({ config, episodeOfCareUuids });
+
+      await waitFor(() => {
+        expect(mockGetPatientFormData).toHaveBeenCalledWith(
+          'patient-123',
+          episodeOfCareUuids,
+          10,
+        );
+      });
+    });
+  });
+
   describe('Props', () => {
     it('applies correct modal class when isActionAreaVisible is true', async () => {
       const user = userEvent.setup();
