@@ -54,6 +54,7 @@ interface GroupedFormRecords {
 const FormsTable: React.FC<WidgetProps> = ({
   isActionAreaVisible = false,
   episodeOfCareUuids,
+  encounterUuids,
   config,
 }) => {
   const { t } = useTranslation();
@@ -70,10 +71,19 @@ const FormsTable: React.FC<WidgetProps> = ({
     error,
   } = useQuery<FormResponseData[], Error>({
     queryKey: ['forms', patientUuid, episodeOfCareUuids],
-    queryFn: () =>
-      getPatientFormData(patientUuid!, episodeOfCareUuids, numberOfVisits),
+    queryFn: () => getPatientFormData(patientUuid!, undefined, numberOfVisits),
     enabled: !!patientUuid,
   });
+
+  // Filter forms data by encounterUuids if provided
+  const filteredFormsData = useMemo(() => {
+    if (!encounterUuids || encounterUuids.length === 0) {
+      return formsData;
+    }
+    return formsData.filter((form) =>
+      encounterUuids.includes(form.encounterUuid),
+    );
+  }, [formsData, encounterUuids]);
 
   // Fetch published forms to get form UUIDs
   const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
@@ -153,7 +163,7 @@ const FormsTable: React.FC<WidgetProps> = ({
 
   const processedForms = useMemo(() => {
     // Group forms by formName
-    const formsByName = formsData.reduce(
+    const formsByName = filteredFormsData.reduce(
       (acc, form) => {
         const formName = form.formName;
         acc[formName] ??= [];
@@ -190,7 +200,7 @@ const FormsTable: React.FC<WidgetProps> = ({
 
     // Sort groups alphabetically by form name
     return groupedData.sort((a, b) => a.formName.localeCompare(b.formName));
-  }, [formsData, t]);
+  }, [filteredFormsData, t]);
 
   const handleRecordedOnClick = useCallback((record: FormRecordViewModel) => {
     setSelectedRecord(record);
@@ -308,7 +318,6 @@ const FormsTable: React.FC<WidgetProps> = ({
                   collapse={false}
                   locale={getUserPreferredLocale()}
                   onValueUpdated={() => {}}
-                  readonly
                 />
               ) : (
                 <div>{t('OBSERVATION_FORM_LOADING_METADATA_ERROR')}</div>
