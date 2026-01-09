@@ -240,7 +240,7 @@
   "RADIOLOGY_PRIORITY_URGENT": "Urgent",
   "RADIOLOGY_RESULTS": "Results",
   "RADIOLOGY_INVESTIGATION_NAME": "Procedure Name",
-  "RADIOLOGY_VIEW_RESULTS": "View Results",
+  "RADIOLOGY_VIEW_IMAGES": "View Images",
   "REACTIONS": "Reaction(s)",
   "REVOKED_STATUS": "Canceled",
   "SELECT_ENCOUNTER_TYPE": "Select encounter type",
