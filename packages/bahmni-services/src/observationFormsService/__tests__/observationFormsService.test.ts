@@ -337,10 +337,14 @@ describe('observationFormsService', () => {
 
       mockGet.mockResolvedValueOnce(mockFormData);
 
-      const result = await getPatientFormData(patientUuid, numberOfVisits);
+      const result = await getPatientFormData(
+        patientUuid,
+        undefined,
+        numberOfVisits,
+      );
 
       expect(mockGet).toHaveBeenCalledWith(
-        FORM_DATA_URL(patientUuid, numberOfVisits),
+        FORM_DATA_URL(patientUuid, numberOfVisits, undefined),
       );
       expect(result).toEqual(mockFormData);
     });
