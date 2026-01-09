@@ -6,10 +6,11 @@
   background-color: $background !important;
   padding: $spacing-04;
   padding-inline: 0 !important;
+  align-items: center !important;
 }
 
 .children {
-  align-content: center;
+  align-content: start;
   justify-self: start;
   padding-left: $spacing-04;
   width: -webkit-fill-available;
@@ -17,7 +18,7 @@
 
 .close {
   margin-left: 0 !important;
-  align-self: self-start;
+  align-self: center;
   justify-self: start;
 
   :global(.cds--btn--icon-only) {

@@ -55,7 +55,7 @@ export class NameOrIdSearchStrategy implements SearchStrategy {
   ): Record<string, string> {
     try {
       return jsonString ? JSON.parse(jsonString) : {};
-    } catch (e) {
+    } catch {
       return {};
     }
   }

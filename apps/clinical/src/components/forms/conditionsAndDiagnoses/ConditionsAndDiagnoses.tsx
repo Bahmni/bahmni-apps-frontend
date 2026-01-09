@@ -71,7 +71,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         type: 'error',
       });
     }
-  }, [existingConditionsLoading, existingConditionsError]);
+  }, [existingConditionsLoading, existingConditionsError, addNotification, t]);
 
   const handleSearch = (searchTerm: string) => {
     setSearchDiagnosesTerm(searchTerm);

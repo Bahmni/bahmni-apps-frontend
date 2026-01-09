@@ -8,16 +8,24 @@ import {
   AllergySeverity,
   AllergyStatus,
   FormattedAllergy,
+  getFormattedAllergies,
+  useTranslation,
+  useConsultationSaved,
 } from '@bahmni/services';
-import React, { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useMemo, useState } from 'react';
+import { usePatientUUID } from '../hooks/usePatientUUID';
+import { useNotification } from '../notification';
 import styles from './styles/AllergiesTable.module.scss';
-import { useAllergies } from './useAllergies';
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
   sortAllergiesBySeverity,
 } from './utils';
+
+//TODO: Figure out a better place to create Query Keys
+export const allergiesQueryKeys = (patientUUID: string) =>
+  ['allergies', patientUUID] as const;
 
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {
@@ -33,12 +41,48 @@ const getSeverityClassName = (severity: string): string | undefined => {
   }
 };
 
+// TODO: Take UUID As A Prop
 /**
  * Component to display patient allergies using SortableDataTable
  */
 const AllergiesTable: React.FC = () => {
+  const [allergies, setAllergies] = useState<FormattedAllergy[]>([]);
+  const patientUUID = usePatientUUID();
   const { t } = useTranslation();
-  const { allergies, loading, error } = useAllergies();
+  const { addNotification } = useNotification();
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: allergiesQueryKeys(patientUUID!),
+    enabled: !!patientUUID,
+    queryFn: () => getFormattedAllergies(patientUUID!),
+  });
+
+  // Listen to consultation saved events and refetch if allergies were updated
+  useConsultationSaved(
+    (payload) => {
+      // Only refetch if:
+      // 1. Event is for the same patient
+      // 2. Allergies were modified during consultation
+      // eslint-disable-next-line no-console
+      console.log('Received consultation saved event:', payload);
+      if (
+        payload.patientUUID === patientUUID &&
+        payload.updatedResources.allergies
+      ) {
+        refetch();
+      }
+    },
+    [patientUUID, refetch],
+  );
+
+  useEffect(() => {
+    if (isError)
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: error.message,
+        type: 'error',
+      });
+    if (data) setAllergies(data);
+  }, [data, isLoading, isError, error]);
 
   // Define table headers
   const headers = useMemo(
@@ -119,22 +163,14 @@ const AllergiesTable: React.FC = () => {
     }
   };
 
-  if (error) {
-    return (
-      <div data-testid="allergies-table-error">
-        <p className={styles.allergiesTableError}>{error.message}</p>
-      </div>
-    );
-  }
-
   return (
     <div data-testid="allergy-table">
       <SortableDataTable
         headers={headers}
         ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
         rows={displayAllergies}
-        loading={loading}
-        errorStateMessage={error}
+        loading={isLoading}
+        errorStateMessage={isError ? error.message : null}
         sortable={sortable}
         emptyStateMessage={t('NO_ALLERGIES')}
         renderCell={renderCell}

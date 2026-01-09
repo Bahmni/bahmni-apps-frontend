@@ -1,4 +1,3 @@
-@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
@@ -15,7 +14,7 @@
 }
 
 .allergiesBox {
-  margin: $spacing-06;
+  margin-top: $spacing-05;
 }
 
 .selectedAllergyItem {
@@ -33,4 +32,11 @@
   color: $text-error;
   margin-top: $spacing-03;
   font-weight: 600;
+}
+
+.duplicateNotification {
+  margin-top: $spacing-05;
+  margin-bottom: $spacing-05;
+  width: 100%;
+  max-width: 100%;
 }

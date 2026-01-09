@@ -14,14 +14,10 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   UPDATE_PATIENT_URL,
-  CREATE_VISIT_URL,
-  GET_ACTIVE_VISIT_URL,
   ADDRESS_HIERARCHY_URL,
   ADDRESS_HIERARCHY_DEFAULT_LIMIT,
   ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
   UUID_PATTERN,
-  VISIT_TYPES_URL,
-  GET_VISIT_LOCATION,
   ORDERED_ADDRESS_HIERARCHY_URL,
   PATIENT_IMAGE_URL,
   GET_PATIENT_PROFILE_URL,
@@ -36,10 +32,6 @@ import {
   CreatePatientRequest,
   CreatePatientResponse,
   AddressHierarchyEntry,
-  VisitLocationResponse,
-  ActiveVisit,
-  VisitData,
-  VisitType,
   OrderedAddressHierarchyLevels,
   PatientProfileResponse,
   PersonAttributeTypesResponse,
@@ -393,45 +385,6 @@ export const getAddressHierarchyEntries = async (
       }`,
     );
   }
-};
-
-/**
- * Fetches visit types from Bahmni configuration
- * @returns Promise<VisitType> - Visit types response
- */
-export const getVisitTypes = async (): Promise<VisitType> => {
-  return get<VisitType>(VISIT_TYPES_URL());
-};
-
-/**
- * Create a new visit for a patient
- * @param visitData - The visit data including patient UUID, visit type, and location
- * @returns Promise<unknown> - The created visit object
- */
-export const createVisit = async (visitData: VisitData): Promise<string> => {
-  return post<string>(CREATE_VISIT_URL, visitData);
-};
-
-/**
- * Get active visits for a patient
- * @param patientUuid - The UUID of the patient
- * @returns Promise<ActiveVisit> - The active visit data
- */
-export const getActiveVisitByPatient = async (
-  patientUuid: string,
-): Promise<ActiveVisit> => {
-  return get<ActiveVisit>(GET_ACTIVE_VISIT_URL(patientUuid));
-};
-
-/**
- * Get visit location UUID for a given login location
- * @param loginLocation - The login location UUID
- * @returns Promise<VisitLocationResponse> - The visit location details including UUID
- */
-export const getVisitLocationUUID = async (
-  loginLocation: string,
-): Promise<VisitLocationResponse> => {
-  return get<VisitLocationResponse>(GET_VISIT_LOCATION(loginLocation));
 };
 
 /**

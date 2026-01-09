@@ -90,7 +90,7 @@ describe('allergyService', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
-        id: mockAllergyIntolerance.id,
+        id: mockAllergyIntolerance.code.coding[0].code,
         display: mockAllergyIntolerance.code.text,
         category: mockAllergyIntolerance.category,
         criticality: mockAllergyIntolerance.criticality,
@@ -196,16 +196,21 @@ describe('allergyService', () => {
       const result = formatAllergies([mockAllergyWithType]);
 
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe(mockAllergyWithType.id);
-      expect(result[0].display).toBe(mockAllergyWithType.code.text);
+      expect(result[0].id).toBe(
+        mockAllergyWithType.code?.coding?.[0]?.code ?? mockAllergyWithType.id,
+      );
+      expect(result[0].display).toBe(mockAllergyWithType.code?.text);
     });
 
     it('should handle intolerance type field correctly', () => {
       const result = formatAllergies([mockIntoleranceWithType]);
 
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe(mockIntoleranceWithType.id);
-      expect(result[0].display).toBe(mockIntoleranceWithType.code.text);
+      expect(result[0].id).toBe(
+        mockIntoleranceWithType.code?.coding?.[0]?.code ??
+          mockIntoleranceWithType.id,
+      );
+      expect(result[0].display).toBe(mockIntoleranceWithType.code?.text);
     });
 
     // Tests for multiple categories

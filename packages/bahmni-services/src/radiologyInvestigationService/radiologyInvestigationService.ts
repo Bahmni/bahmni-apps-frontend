@@ -1,63 +1,74 @@
-import { Bundle, ServiceRequest } from 'fhir/r4';
-import { get } from '../api';
-import { PATIENT_RADIOLOGY_RESOURCE_URL } from './constants';
-import { RadiologyInvestigation } from './models';
+import { Bundle, ServiceRequest, ImagingStudy } from 'fhir/r4';
+import { getServiceRequests } from '../orderRequestService';
 
 /**
  * Fetches radiology investigations for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
+ * @param category - The category of the investigations
+ * @param encounterUuids - Optional array of encounter UUIDs to filter the investigations
+ * @param numberOfVisits - Optional number of visits to consider
  * @returns Promise resolving to a Bundle containing radiology investigations
  */
 export async function getPatientRadiologyInvestigationBundle(
   patientUUID: string,
-): Promise<Bundle> {
-  const url = PATIENT_RADIOLOGY_RESOURCE_URL(patientUUID);
-  return await get<Bundle>(url);
+  category: string,
+  encounterUuids?: string[],
+  numberOfVisits?: number,
+): Promise<Bundle<ServiceRequest>> {
+  return await getServiceRequests(
+    category,
+    patientUUID,
+    encounterUuids,
+    numberOfVisits,
+  );
 }
 
 /**
- * Formats FHIR radiology investigations into a more user-friendly format
- * @param bundle - The FHIR bundle to format
- * @returns An array of formatted radiology order investigation objects
+ * Fetches radiology investigations bundle with ImagingStudy resources included
+ * @param patientUUID - The UUID of the patient
+ * @param category - The category of the investigations
+ * @param encounterUuids - Optional array of encounter UUIDs to filter the investigations
+ * @param numberOfVisits - Optional number of visits to consider
+ * @returns Promise resolving to a Bundle containing both ServiceRequest and ImagingStudy resources
  */
-function formatRadiologyInvestigations(
-  bundle: Bundle,
-): RadiologyInvestigation[] {
-  const orders =
-    bundle.entry?.map((entry) => entry.resource as ServiceRequest) ?? [];
-
-  return orders.map((order) => {
-    const orderedDate = order.occurrencePeriod?.start as string;
-
-    const replaces = order.replaces
-      ?.map((replace) => {
-        const reference = replace.reference ?? '';
-        return reference.split('/').pop() ?? '';
-      })
-      .filter((id) => id.length > 0);
-
-    const note = order.note?.[0]?.text;
-
-    return {
-      id: order.id as string,
-      testName: order.code!.text!,
-      priority: order.priority!,
-      orderedBy: order.requester!.display!,
-      orderedDate: orderedDate,
-      ...(replaces && replaces.length > 0 && { replaces }),
-      ...(note && { note }),
-    };
-  });
+export async function getPatientRadiologyInvestigationBundleWithImagingStudy(
+  patientUUID: string,
+  category: string,
+  encounterUuids?: string[],
+  numberOfVisits?: number,
+): Promise<Bundle<ServiceRequest | ImagingStudy>> {
+  return await getServiceRequests<ServiceRequest | ImagingStudy>(
+    category,
+    patientUUID,
+    encounterUuids,
+    numberOfVisits,
+    'ImagingStudy:basedon',
+  );
 }
 
 /**
  * Fetches and formats radiology investigations for a given patient UUID
  * @param patientUUID - The UUID of the patient
+ * @param category
+ * @param encounterUuids
+ * @param numberOfVisits
  * @returns Promise resolving to an array of radiology investigations
  */
 export async function getPatientRadiologyInvestigations(
   patientUUID: string,
-): Promise<RadiologyInvestigation[]> {
-  const bundle = await getPatientRadiologyInvestigationBundle(patientUUID);
-  return formatRadiologyInvestigations(bundle);
+  category: string,
+  encounterUuids?: string[],
+  numberOfVisits?: number,
+): Promise<ServiceRequest[]> {
+  const bundle = await getServiceRequests(
+    category,
+    patientUUID,
+    encounterUuids,
+    numberOfVisits,
+  );
+  const radiologyInvestigations =
+    bundle.entry
+      ?.filter((entry) => entry.resource?.resourceType === 'ServiceRequest')
+      .map((entry) => entry.resource as ServiceRequest) ?? [];
+  return radiologyInvestigations;
 }

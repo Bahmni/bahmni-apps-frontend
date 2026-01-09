@@ -14,6 +14,7 @@ const fetchInvestigations = async (): Promise<ValueSet> => {
   return await searchFHIRConceptsByName(ALL_ORDERABLES_CONCEPT_NAME);
 };
 
+// TODO: Optimize by caching concept classes, using Service Workers
 export const getOrderTypes = async (): Promise<OrderTypeResponse> => {
   return await get(ORDER_TYPE_URL);
 };
@@ -101,4 +102,15 @@ export const getFlattenedInvestigations = async (): Promise<
   const valueSet = await fetchInvestigations();
   const orderTypes = await getOrderTypes();
   return flattenInvestigations(valueSet, flattenOrderType(orderTypes));
+};
+
+export const getCategoryUuidFromOrderTypes = async (
+  categoryName: string | undefined,
+): Promise<string | undefined> => {
+  if (!categoryName) return undefined;
+  const orderTypesData = await getOrderTypes();
+  const orderType = orderTypesData.results.find(
+    (ot) => ot.display.toLowerCase() === categoryName.toLowerCase(),
+  );
+  return orderType?.uuid;
 };

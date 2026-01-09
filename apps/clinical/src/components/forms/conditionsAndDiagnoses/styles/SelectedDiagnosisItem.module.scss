@@ -7,21 +7,17 @@
   @include type-style("heading-compact-01");
   margin: 0;
   justify-self: start;
-  align-items: start !important;
   display: flex !important;
   flex-direction: column !important;
 }
 
 .selectedDiagnosisCertainty {
-  margin: 0 1rem;
-  justify-self: end;
-  align-items: start !important;
+  align-self: center;
   width: -webkit-fill-available !important;
 }
 
 .addAsConditionLink {
   @include type-style("body-compact-01");
-  display: block;
   margin-top: $spacing-02;
   color: $link-primary;
   text-decoration: none;

@@ -1,145 +1,30 @@
 import { Button, Dropdown } from '@bahmni/design-system';
-import {
-  getVisitTypes,
-  useTranslation,
-  createVisit,
-  getActiveVisitByPatient,
-  getUserLoginLocation,
-  getVisitLocationUUID,
-  dispatchAuditEvent,
-  AUDIT_LOG_EVENT_DETAILS,
-  getRegistrationConfig,
-  type VisitData,
-  type AuditEventType,
-} from '@bahmni/services';
-import { useNotification } from '@bahmni/widgets';
-import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useTranslation } from '@bahmni/services';
+import { useParams } from 'react-router-dom';
+import { useRegistrationConfig } from '../../hooks/useRegistrationConfig';
+import { useActiveVisit, useVisitTypes } from '../../hooks/useVisit';
+import { transformVisitTypesToArray } from '../../utils/visitUtils';
 import styles from './styles/VisitTypeSelector.module.scss';
 
 interface VisitTypeSelectorProps {
-  onVisitSave: () => Promise<string | null>;
-  patientUuid?: string | null;
-  onNavigate?: () => void;
+  onVisitTypeSelect: (visitType: { name: string; uuid: string }) => void;
 }
 
 export const VisitTypeSelector = ({
-  onVisitSave,
-  patientUuid,
-  onNavigate,
+  onVisitTypeSelect,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
-  const { addNotification } = useNotification();
-  const [visitPayload, setVisitPayload] = useState<VisitData>();
+  const { patientUuid } = useParams<{ patientUuid: string }>();
+  const { hasActiveVisit } = useActiveVisit(patientUuid);
+  const { registrationConfig } = useRegistrationConfig();
+  const { visitTypes, isLoading: isLoadingVisitTypes } = useVisitTypes();
 
-  const {
-    data: visitTypes,
-    isLoading: isLoadingVisitTypes,
-    error: visitTypesError,
-  } = useQuery({
-    queryKey: ['visitTypes'],
-    queryFn: getVisitTypes,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-
-  const { data: visitLocationUUID } = useQuery({
-    queryKey: ['visitLocationUUID', getUserLoginLocation().uuid],
-    queryFn: () => getVisitLocationUUID(getUserLoginLocation().uuid),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-
-  const { data: registrationConfig } = useQuery({
-    queryKey: ['registrationConfig'],
-    queryFn: getRegistrationConfig,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-
-  const visitTypesArray = visitTypes?.visitTypes
-    ? Object.entries(visitTypes.visitTypes).map(([name, uuid]) => ({
-        name,
-        uuid,
-      }))
-    : [];
+  const visitTypesArray = transformVisitTypesToArray(visitTypes);
 
   const defaultVisitType =
     visitTypesArray.find(
       (vt) => vt.name === registrationConfig?.defaultVisitType,
     ) ?? visitTypesArray[0];
-
-  const createVisitAndLogAudit = async () => {
-    const result = await createVisit(visitPayload!);
-
-    if (visitPayload) {
-      const visitType = visitTypesArray.find(
-        (vt) => vt.uuid === visitPayload.visitType,
-      );
-      if (visitType) {
-        dispatchAuditEvent({
-          eventType: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT
-            .eventType as AuditEventType,
-          patientUuid: visitPayload.patient,
-          messageParams: { visitType: visitType.name },
-          module: AUDIT_LOG_EVENT_DETAILS.OPEN_VISIT.module,
-        });
-      }
-    }
-
-    return result;
-  };
-
-  const { error: createVisitError, isSuccess: isVisitCreated } = useQuery({
-    queryKey: ['createVisit', visitPayload],
-    queryFn: createVisitAndLogAudit,
-    enabled: Boolean(visitPayload),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-
-  const { data: activeVisit, error: getVisitError } = useQuery({
-    queryKey: ['getActiveVisitByPatient', patientUuid, isVisitCreated],
-    queryFn: () => getActiveVisitByPatient(patientUuid!),
-    enabled: Boolean(patientUuid),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-  const hasActiveVisit = activeVisit?.results && activeVisit.results.length > 0;
-  const error = visitTypesError ?? createVisitError ?? getVisitError;
-
-  useEffect(() => {
-    if (error) {
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: error instanceof Error ? error.message : 'An error occurred',
-        type: 'error',
-        timeout: 5000,
-      });
-    }
-  }, [error, t, addNotification]);
-
-  const handleVisitTypeChange = async (
-    selectedItem: { name: string; uuid: string } | null,
-  ) => {
-    if (!selectedItem) return;
-
-    const currentPatientUUID = await onVisitSave();
-
-    if (!currentPatientUUID) {
-      return;
-    }
-
-    if (currentPatientUUID && visitLocationUUID && !hasActiveVisit) {
-      setVisitPayload({
-        patient: currentPatientUUID,
-        visitType: selectedItem.uuid,
-        location: visitLocationUUID.uuid,
-      });
-    }
-
-    onNavigate?.();
-  };
 
   return (
     <div className={styles.opdVisitGroup}>
@@ -148,7 +33,7 @@ export const VisitTypeSelector = ({
         className={styles.visitButton}
         kind="tertiary"
         disabled={isLoadingVisitTypes || visitTypesArray.length === 0}
-        onClick={() => handleVisitTypeChange(defaultVisitType)}
+        onClick={() => defaultVisitType && onVisitTypeSelect(defaultVisitType)}
       >
         {!isLoadingVisitTypes && defaultVisitType
           ? hasActiveVisit
@@ -166,15 +51,13 @@ export const VisitTypeSelector = ({
           itemToString={(item) =>
             item ? t('START_VISIT_TYPE', { visitType: item.name }) : ''
           }
-          onChange={({ selectedItem }) => handleVisitTypeChange(selectedItem)}
+          onChange={({ selectedItem }) =>
+            selectedItem && onVisitTypeSelect(selectedItem)
+          }
           label=""
           type="inline"
           size="lg"
-          disabled={
-            isLoadingVisitTypes ||
-            visitTypesArray.length === 0 ||
-            hasActiveVisit
-          }
+          disabled={isLoadingVisitTypes || visitTypesArray.length === 0}
           titleText=""
           selectedItem={null}
         />

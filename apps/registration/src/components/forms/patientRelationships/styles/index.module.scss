@@ -57,6 +57,16 @@
   :global(.cds--dropdown) {
     width: $spacing-13 + $spacing-12 + $spacing-02 + $spacing-01;
     background-color: $field-01 !important;
+    
+    :global(.cds--list-box__menu-item) {
+      height: auto;
+    }
+
+    :global(.cds--list-box__menu-item__option) {
+      white-space: normal;
+      height: auto;
+      overflow-wrap: break-word;
+    }
   }
 
   :global(.cds--date-picker) {
@@ -89,9 +99,8 @@
 .readOnlyText {
   display: inline-block;
   width: $spacing-13 + $spacing-12 + $spacing-02 + $spacing-01; // 160 + 96 + 4 + 2 = 262px
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .patientLink {

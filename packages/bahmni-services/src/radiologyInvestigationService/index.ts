@@ -1,5 +1,5 @@
 export {
   getPatientRadiologyInvestigations,
   getPatientRadiologyInvestigationBundle,
+  getPatientRadiologyInvestigationBundleWithImagingStudy,
 } from './radiologyInvestigationService';
-export { type RadiologyInvestigation } from './models';

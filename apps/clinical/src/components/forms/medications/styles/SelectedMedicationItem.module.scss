@@ -5,11 +5,13 @@
 
 .column {
   margin-bottom: $spacing-04;
+  margin-left: 0;
 }
 
 .medicationTitle {
   @include type-style("heading-compact-02");
   margin-bottom: $spacing-04;
+  margin-left: 0;
 }
 
 .medicationActions {
@@ -18,6 +20,7 @@
   align-items: start !important;
   justify-self: end;
   margin-bottom: $spacing-04;
+  margin-left: 0;
 }
 
 .dosageControls {
@@ -25,6 +28,7 @@
   flex-direction: row !important;
   align-items: start !important;
   margin-bottom: $spacing-04;
+  margin-left: 0;
 }
 
 .dosageInput {
@@ -40,6 +44,7 @@
   flex-direction: row !important;
   align-items: start !important;
   margin-bottom: $spacing-04;
+  margin-left: 0;
 }
 
 .durationInput {

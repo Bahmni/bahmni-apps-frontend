@@ -1,33 +1,27 @@
-@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/colors" as *;
 
 .selectedAllergyTitle {
   @include type-style("heading-compact-01");
   margin: 0;
   justify-self: start;
-  align-self: start;
   display: flex !important;
   flex-direction: column !important;
 }
 
 .addAllergyNote {
   @include type-style("body-compact-01");
-  display: block;
   margin-top: $spacing-02;
 }
 
 .selectedAllergySeverity {
+  align-self: center;
   width: -webkit-fill-available !important;
-  justify-self: end;
-  align-self: start;
-  margin-inline-end: 0 !important;
 }
 
 .selectedAllergyReactions {
+  align-self: center;
   width: -webkit-fill-available !important;
-  justify-self: end;
-  align-self: start;
-  margin-inline-end: 0 !important;
 }

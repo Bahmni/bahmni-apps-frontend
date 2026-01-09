@@ -37,3 +37,10 @@
     padding-block-end: 0rem !important;
   }
 }
+
+.radiologyInvestigationTableBodyError {
+  padding: $spacing-06 $spacing-05;
+  text-align: center;
+
+  @include type-style("body-compact-01");
+}

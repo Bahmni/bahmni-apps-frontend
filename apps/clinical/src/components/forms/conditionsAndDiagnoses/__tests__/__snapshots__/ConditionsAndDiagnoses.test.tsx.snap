@@ -86,11 +86,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_4oucb_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_4oucb_8 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -173,7 +173,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
             </div>
           </div>
           <div
-            class="_close_4oucb_15 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -390,11 +390,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_4oucb_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_4oucb_8 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -477,7 +477,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
             </div>
           </div>
           <div
-            class="_close_4oucb_15 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -544,11 +544,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_4oucb_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_4oucb_8 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -667,7 +667,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
             </div>
           </div>
           <div
-            class="_close_4oucb_15 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -718,11 +718,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
           </div>
         </div>
         <div
-          class="_grid_4oucb_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_4oucb_8 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -841,7 +841,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
             </div>
           </div>
           <div
-            class="_close_4oucb_15 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -1058,11 +1058,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_4oucb_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_4oucb_8 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -1181,7 +1181,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
             </div>
           </div>
           <div
-            class="_close_4oucb_15 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -1232,11 +1232,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
           </div>
         </div>
         <div
-          class="_grid_4oucb_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_4oucb_8 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -1355,7 +1355,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
             </div>
           </div>
           <div
-            class="_close_4oucb_15 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -1497,11 +1497,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_4oucb_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_4oucb_8 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -1584,7 +1584,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
             </div>
           </div>
           <div
-            class="_close_4oucb_15 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"

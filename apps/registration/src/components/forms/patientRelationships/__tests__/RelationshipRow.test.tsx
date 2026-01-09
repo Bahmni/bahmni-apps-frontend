@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { PatientSuggestion } from '../../../../hooks/usePatientSearch';
 import type { RelationshipData } from '../PatientRelationships';
 import { RelationshipRow } from '../RelationshipRow';
@@ -204,5 +205,25 @@ describe('RelationshipRow', () => {
     expect(row.patientId).toBeDefined();
     expect(row.patientId.key).toContain('patient-search-rel-1');
     expect(row.patientId.key).toContain('type1');
+  });
+
+  it('should display both sides of relationship type in dropdown options', async () => {
+    const user = userEvent.setup();
+    const row = RelationshipRow({
+      relationship: { ...mockRelationship, relationshipType: '' },
+      relationshipTypes: mockRelationshipTypes,
+      suggestions: mockSuggestions,
+      errors: mockErrors,
+      ...mockCallbacks,
+    });
+
+    render(<div>{row.relationshipType}</div>);
+
+    const dropdown = screen.getByRole('combobox');
+    await user.click(dropdown);
+
+    const listbox = screen.getByRole('listbox');
+    expect(within(listbox).getByText('Parent/ Child')).toBeInTheDocument();
+    expect(within(listbox).getByText('Sibling/ Sibling')).toBeInTheDocument();
   });
 });

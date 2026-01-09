@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { PatientProgramViewModel } from './model';
-import styles from './PatientProgramsTable.module.scss';
+import styles from './styles/PatientProgramsTable.module.scss';
 import {
   createProgramHeaders,
   createPatientProgramViewModal,

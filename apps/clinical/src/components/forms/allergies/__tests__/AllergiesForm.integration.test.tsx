@@ -2,7 +2,6 @@ import * as bahmniServices from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
-import { ALLERGEN_TYPES } from '../.././../../constants/allergy';
 import i18n from '../../../../../setupTests.i18n';
 import { useClinicalConfig } from '../../../../hooks/useClinicalConfig';
 import { ClinicalConfigProvider } from '../../../../providers/ClinicalConfigProvider';
@@ -16,6 +15,59 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   fetchAndFormatAllergenConcepts: jest.fn(),
   fetchReactionConcepts: jest.fn(),
+  getFormattedAllergies: jest.fn(() => Promise.resolve([])),
+  useTranslation: jest.fn(() => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        ALLERGIES_FORM_TITLE: 'Allergies',
+        ALLERGIES_SEARCH_PLACEHOLDER: 'Search for allergies',
+        ALLERGIES_SEARCH_ARIA_LABEL: 'Search for allergies',
+        ALLERGIES_ADDED_ALLERGIES: 'Added Allergies',
+        ALLERGY_ALREADY_ADDED: 'Allergen is already added',
+        LOADING_CONCEPTS: 'Loading concepts...',
+        NO_MATCHING_ALLERGEN_FOUND:
+          'No matching allergen recorded for this term',
+        ERROR_FETCHING_CONCEPTS:
+          'An unexpected error occurred. Please try again later.',
+        ERROR_DEFAULT_TITLE: 'Error',
+        ALLERGY_CATEGORY_DRUG: 'Drug',
+        ALLERGY_CATEGORY_FOOD: 'Food',
+        ALLERGY_CATEGORY_ENVIRONMENT: 'Environment',
+        ALLERGY_CATEGORY_OTHER: 'Other',
+      };
+      return translations[key] || key;
+    },
+  })),
+}));
+
+// Mock @bahmni/widgets
+jest.mock('@bahmni/widgets', () => ({
+  useNotification: jest.fn(() => ({
+    addNotification: jest.fn(),
+  })),
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+}));
+
+// Mock @tanstack/react-query
+jest.mock('@tanstack/react-query', () => ({
+  useQuery: jest.fn(() => ({
+    data: [],
+    isLoading: false,
+    error: null,
+  })),
+}));
+
+// Mock utils/allergy
+jest.mock('../../../../utils/allergy', () => ({
+  getCategoryDisplayName: jest.fn((type: string) => {
+    const categories: Record<string, string> = {
+      medication: 'ALLERGY_CATEGORY_DRUG',
+      food: 'ALLERGY_CATEGORY_FOOD',
+      environment: 'ALLERGY_CATEGORY_ENVIRONMENT',
+      other: 'ALLERGY_CATEGORY_OTHER',
+    };
+    return categories[type] || 'ALLERGY_CATEGORY_OTHER';
+  }),
 }));
 
 const mockUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
@@ -42,6 +94,7 @@ jest.mock('../styles/AllergiesForm.module.scss', () => ({
   allergiesFormTitle: 'allergiesFormTitle',
   allergiesBox: 'allergiesBox',
   selectedAllergyItem: 'selectedAllergyItem',
+  duplicateNotification: 'duplicateNotification',
 }));
 
 const mockReactionConcepts: Coding[] = [
@@ -64,12 +117,15 @@ describe('AllergiesForm Integration Tests', () => {
     removeAllergy: jest.fn(),
     updateSeverity: jest.fn(),
     updateReactions: jest.fn(),
+    updateNote: jest.fn(),
     validateAllAllergies: jest.fn(),
     reset: jest.fn(),
+    getState: jest.fn(),
   };
 
   beforeEach(() => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
     jest.clearAllMocks();
 
     // Setup default mock implementation for useClinicalConfig
@@ -152,7 +208,7 @@ describe('AllergiesForm Integration Tests', () => {
       expect.objectContaining({
         uuid: '123',
         display: 'Penicillin',
-        type: ALLERGEN_TYPES.MEDICATION.display,
+        type: 'medication',
       }),
     );
   });
@@ -206,7 +262,7 @@ describe('AllergiesForm Integration Tests', () => {
         {
           id: '123',
           display: 'Penicillin',
-          type: ALLERGEN_TYPES.MEDICATION.display,
+          type: 'medication',
           selectedSeverity: null,
           selectedReactions: [],
           errors: {},
@@ -220,7 +276,7 @@ describe('AllergiesForm Integration Tests', () => {
       expect.objectContaining({
         uuid: '123',
         display: 'Penicillin',
-        type: ALLERGEN_TYPES.MEDICATION.display,
+        type: 'medication',
       }),
     );
 
@@ -232,7 +288,7 @@ describe('AllergiesForm Integration Tests', () => {
     );
 
     // Remove allergy
-    const removeButton = screen.getAllByTestId('selected-item-close-button');
+    const removeButton = screen.getAllByRole('button', { name: /close/i });
     await userEvent.click(removeButton[0]);
     expect(mockStore.removeAllergy).toHaveBeenCalledWith('123');
   });

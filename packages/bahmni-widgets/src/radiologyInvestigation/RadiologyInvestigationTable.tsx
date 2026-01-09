@@ -4,35 +4,101 @@ import {
   Tag,
   Accordion,
   AccordionItem,
+  Link,
 } from '@bahmni/design-system';
 import {
-  RadiologyInvestigation,
+  getPatientRadiologyInvestigationBundleWithImagingStudy,
   useTranslation,
   groupByDate,
   formatDate,
   FULL_MONTH_DATE_FORMAT,
   ISO_DATE_FORMAT,
+  shouldEnableEncounterFilter,
+  getCategoryUuidFromOrderTypes,
+  getFormattedError,
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
 } from '@bahmni/services';
-import React, { useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { useMemo, useEffect } from 'react';
+import { usePatientUUID } from '../hooks/usePatientUUID';
+import { useNotification } from '../notification';
+import { WidgetProps } from '../registry/model';
+import { RadiologyInvestigationViewModel } from './models';
 import styles from './styles/RadiologyInvestigationTable.module.scss';
-import { useRadiologyInvestigation } from './useRadiologyInvestigation';
 import {
   sortRadiologyInvestigationsByPriority,
   filterRadiologyInvestionsReplacementEntries,
+  createRadiologyInvestigationViewModels,
+  getAvailableImagingStudies,
 } from './utils';
+
+export const radiologyInvestigationQueryKeys = (patientUUID: string) =>
+  ['radiologyInvestigation', patientUUID] as const;
+
+const fetchRadiologyInvestigations = async (
+  patientUUID: string,
+  category: string,
+  encounterUuids?: string[],
+  numberOfVisits?: number,
+): Promise<RadiologyInvestigationViewModel[]> => {
+  const response = await getPatientRadiologyInvestigationBundleWithImagingStudy(
+    patientUUID!,
+    category,
+    encounterUuids,
+    numberOfVisits,
+  );
+  return createRadiologyInvestigationViewModels(response);
+};
 
 /**
  * Component to display patient radiology investigations grouped by date in accordion format
  * Each accordion item contains an SortableDataTable with radiology investigations for that date
  */
-const RadiologyInvestigationTable: React.FC = () => {
+const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
+  config,
+  encounterUuids,
+  episodeOfCareUuids,
+}) => {
+  const patientUUID = usePatientUUID();
   const { t } = useTranslation();
-  const { radiologyInvestigations, loading, error } =
-    useRadiologyInvestigation();
+  const { addNotification } = useNotification();
+  const categoryName = config?.orderType as string;
+  const numberOfVisits = config?.numberOfVisits as number;
+  const pacsViewerUrl = config?.pacsViewerUrl as string;
+
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
+
+  const {
+    data: categoryUuid,
+    isLoading: isLoadingOrderTypes,
+    isError: isOrderTypesError,
+    error: orderTypesError,
+  } = useQuery({
+    queryKey: ['categoryUuid', categoryName],
+    queryFn: () => getCategoryUuidFromOrderTypes(categoryName),
+    enabled: !!categoryName,
+  });
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: radiologyInvestigationQueryKeys(patientUUID!),
+    enabled: !!patientUUID && !!categoryUuid && !emptyEncounterFilter,
+    queryFn: () =>
+      fetchRadiologyInvestigations(
+        patientUUID!,
+        categoryUuid!,
+        encounterUuids,
+        numberOfVisits,
+      ),
+  });
 
   const headers = useMemo(
     () => [
-      { key: 'testName', header: t('RADIOLOGY_TEST_NAME') },
+      { key: 'testName', header: t('RADIOLOGY_INVESTIGATION_NAME') },
       { key: 'results', header: t('RADIOLOGY_RESULTS') },
       { key: 'orderedBy', header: t('RADIOLOGY_ORDERED_BY') },
     ],
@@ -48,9 +114,27 @@ const RadiologyInvestigationTable: React.FC = () => {
     [],
   );
 
+  const loading = isLoading || isLoadingOrderTypes;
+  const errorMessage =
+    isError && error
+      ? getFormattedError(error).message
+      : isOrderTypesError && orderTypesError
+        ? getFormattedError(orderTypesError).message
+        : '';
+  const hasError = isError || isOrderTypesError;
+
+  useEffect(() => {
+    if (hasError)
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: errorMessage,
+        type: 'error',
+      });
+  }, [hasError, errorMessage]);
+
   const processedInvestigations = useMemo(() => {
     const filteredInvestigations = filterRadiologyInvestionsReplacementEntries(
-      radiologyInvestigations,
+      data ?? [],
     );
 
     const grouped = groupByDate(filteredInvestigations, (investigation) => {
@@ -69,89 +153,174 @@ const RadiologyInvestigationTable: React.FC = () => {
         investigationsByDate.investigations,
       ),
     }));
-  }, [radiologyInvestigations]);
+  }, [data]);
 
-  const renderCell = useCallback(
-    (investigation: RadiologyInvestigation, cellId: string) => {
-      switch (cellId) {
-        case 'testName':
-          return (
-            <>
-              <p className={styles.investigationName}>
-                <span>{investigation.testName}</span>
-                {investigation.note && (
-                  <TooltipIcon
-                    iconName="fa-file-lines"
-                    content={investigation.note}
-                    ariaLabel={investigation.note}
-                  />
-                )}
-              </p>
-              {investigation.priority === 'stat' && (
-                <Tag type="red">{t('RADIOLOGY_PRIORITY_URGENT')}</Tag>
+  const handleRadiologyResultClick = () => {
+    dispatchAuditEvent({
+      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_RADIOLOGY_RESULTS
+        .eventType as AuditEventType,
+      patientUuid: patientUUID!,
+    });
+  };
+
+  const renderResultsCell = (
+    investigation: RadiologyInvestigationViewModel,
+  ) => {
+    const availableStudies = getAvailableImagingStudies(
+      investigation.imagingStudies,
+    );
+
+    if (availableStudies.length > 0 && pacsViewerUrl) {
+      return (
+        <div
+          id={`${investigation.id}-results`}
+          data-testid={`${investigation.id}-results-test-id`}
+        >
+          {availableStudies.map((study, index) => {
+            const viewerUrl = pacsViewerUrl.replace(
+              '{{StudyInstanceUIDs}}',
+              study.StudyInstanceUIDs,
+            );
+            return (
+              <Link
+                key={study.id}
+                href={viewerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                id={`${investigation.id}-result-link-${index}`}
+                testId={`${investigation.id}-result-link-${index}-test-id`}
+                onClick={() => handleRadiologyResultClick()}
+              >
+                {t('RADIOLOGY_VIEW_RESULTS')}
+              </Link>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return (
+      <span
+        id={`${investigation.id}-results`}
+        data-testid={`${investigation.id}-results-test-id`}
+      >
+        --
+      </span>
+    );
+  };
+
+  const renderCell = (
+    investigation: RadiologyInvestigationViewModel,
+    cellId: string,
+  ) => {
+    switch (cellId) {
+      case 'testName':
+        return (
+          <div
+            id={`${investigation.id}-test-name`}
+            data-testid={`${investigation.id}-test-name-test-id`}
+          >
+            <p className={styles.investigationName}>
+              <span>{investigation.testName}</span>
+              {investigation.note && (
+                <TooltipIcon
+                  iconName="fa-file-lines"
+                  content={investigation.note}
+                  ariaLabel={investigation.note}
+                />
               )}
-            </>
-          );
-        case 'results':
-          return '--';
-        case 'orderedBy':
-          return investigation.orderedBy;
-        default:
-          return null;
-      }
-    },
-    [t],
-  );
+            </p>
+            {investigation.priority === 'stat' && (
+              <Tag
+                id={`${investigation.id}-priority`}
+                testId={`${investigation.id}-priority-test-id`}
+                type="red"
+              >
+                {t('RADIOLOGY_PRIORITY_URGENT')}
+              </Tag>
+            )}
+          </div>
+        );
+      case 'results':
+        return renderResultsCell(investigation);
+      case 'orderedBy':
+        return (
+          <span
+            id={`${investigation.id}-ordered-by`}
+            data-testid={`${investigation.id}-ordered-by-test-id`}
+          >
+            {investigation.orderedBy}
+          </span>
+        );
+    }
+  };
 
-  return (
-    <div data-testid="radiology-investigations-table">
-      {loading || !!error || processedInvestigations.length === 0 ? (
+  if (
+    loading ||
+    !!hasError ||
+    processedInvestigations.length === 0 ||
+    emptyEncounterFilter
+  ) {
+    return (
+      <div
+        id="radiology-investigations-table"
+        data-testid="radiology-investigations-table-test-id"
+        aria-label="radiology-investigations-table-aria-label"
+      >
         <SortableDataTable
           headers={headers}
           ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
           rows={[]}
           loading={loading}
-          errorStateMessage={error?.message}
+          errorStateMessage={errorMessage}
           emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
           renderCell={renderCell}
           className={styles.radiologyInvestigationTableBody}
           data-testid="sortable-data-table"
         />
-      ) : (
-        <Accordion align="start">
-          {processedInvestigations.map((investigationsByDate, index) => {
-            const { date, investigations } = investigationsByDate;
-            const formattedDate = formatDate(
-              date,
-              t,
-              FULL_MONTH_DATE_FORMAT,
-            ).formattedResult;
+      </div>
+    );
+  }
 
-            return (
-              <AccordionItem
-                title={formattedDate}
-                key={date}
-                className={styles.customAccordianItem}
-                testId={'accordian-table-title'}
-                open={index === 0}
-              >
-                <SortableDataTable
-                  headers={headers}
-                  ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
-                  rows={investigations}
-                  loading={loading}
-                  errorStateMessage={''}
-                  sortable={sortable}
-                  emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
-                  renderCell={renderCell}
-                  className={styles.radiologyInvestigationTableBody}
-                  data-testid="sortable-data-table"
-                />
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
-      )}
+  return (
+    <div
+      id="radiology-investigations-table"
+      data-testid="radiology-investigations-table-test-id"
+      aria-label="radiology-investigations-table-aria-label"
+    >
+      <Accordion align="start">
+        {processedInvestigations.map((investigationsByDate, index) => {
+          const { date, investigations } = investigationsByDate;
+          const formattedDate = formatDate(
+            date,
+            t,
+            FULL_MONTH_DATE_FORMAT,
+          ).formattedResult;
+
+          return (
+            <AccordionItem
+              title={formattedDate}
+              key={date}
+              className={styles.customAccordianItem}
+              testId={'accordian-table-title'}
+              open={index === 0}
+            >
+              <SortableDataTable
+                headers={headers}
+                ariaLabel={t('RADIOLOGY_INVESTIGATION_HEADING')}
+                rows={investigations}
+                loading={isLoading}
+                errorStateMessage={''}
+                sortable={sortable}
+                emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
+                renderCell={renderCell}
+                className={styles.radiologyInvestigationTableBody}
+                data-testid="sortable-data-table"
+              />
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
     </div>
   );
 };

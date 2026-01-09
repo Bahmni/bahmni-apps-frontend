@@ -2,7 +2,7 @@ import {
   LabTestPriority,
   FormattedLabTest,
   useTranslation,
-  getOrderTypes,
+  getCategoryUuidFromOrderTypes,
   getPatientLabInvestigations,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -14,7 +14,7 @@ import LabInvestigation from '../LabInvestigation';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
-  getOrderTypes: jest.fn(),
+  getCategoryUuidFromOrderTypes: jest.fn(),
   getPatientLabInvestigations: jest.fn(),
 }));
 
@@ -34,9 +34,10 @@ const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
 
-const mockGetOrderTypes = getOrderTypes as jest.MockedFunction<
-  typeof getOrderTypes
->;
+const mockGetCategoryUuidFromOrderTypes =
+  getCategoryUuidFromOrderTypes as jest.MockedFunction<
+    typeof getCategoryUuidFromOrderTypes
+  >;
 const mockGetPatientLabInvestigations =
   getPatientLabInvestigations as jest.MockedFunction<
     typeof getPatientLabInvestigations
@@ -129,15 +130,7 @@ describe('LabInvestigation Integration Tests', () => {
       },
     } as any);
 
-    mockGetOrderTypes.mockResolvedValue({
-      results: [
-        {
-          uuid: 'lab-order-type-uuid',
-          display: 'Lab Order',
-          conceptClasses: [],
-        },
-      ],
-    } as any);
+    mockGetCategoryUuidFromOrderTypes.mockResolvedValue('lab-order-type-uuid');
   });
 
   afterEach(() => {

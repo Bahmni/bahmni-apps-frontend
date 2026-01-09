@@ -146,15 +146,20 @@ export function formatAllergies(
   allergies: AllergyIntolerance[],
 ): FormattedAllergy[] {
   return allergies.map((allergy) => {
-    const status = allergy.clinicalStatus?.coding?.[0]?.display ?? 'Unknown';
+    const statusDisplay =
+      allergy.clinicalStatus?.coding?.[0]?.display ?? 'Unknown';
     const allergySeverity = allergy.reaction?.[0]?.severity ?? 'Unknown';
 
+    // Extract concept code from allergy.code.coding, fallback to resource id
+    const conceptCode =
+      allergy.code?.coding?.[0]?.code ?? allergy.id ?? 'unknown';
+
     return {
-      id: allergy.id,
+      id: conceptCode,
       display: allergy.code?.text ?? '',
       category: allergy.category,
       criticality: allergy.criticality,
-      status,
+      status: statusDisplay,
       recordedDate: allergy.recordedDate!,
       recorder: allergy.recorder?.display,
       reactions: allergy.reaction?.map((reaction) => ({
@@ -165,7 +170,7 @@ export function formatAllergies(
       })),
       severity: allergySeverity,
       note: allergy.note?.map((note) => note.text),
-    };
+    } as FormattedAllergy;
   });
 }
 
