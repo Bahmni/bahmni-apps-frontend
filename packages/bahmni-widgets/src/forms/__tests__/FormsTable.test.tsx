@@ -6,6 +6,8 @@ import {
   fetchFormMetadata,
   fetchObservationForms,
   useTranslation,
+  getFormsDataByEncounterUuid,
+  FormsEncounter,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
@@ -23,6 +25,7 @@ jest.mock('@bahmni/services', () => ({
   fetchFormMetadata: jest.fn(),
   fetchObservationForms: jest.fn(),
   useTranslation: jest.fn(),
+  getFormsDataByEncounterUuid: jest.fn(),
   formatDate: jest.fn((date) => ({
     formattedResult: new Date(date).toLocaleDateString(),
   })),
@@ -59,6 +62,10 @@ const mockFetchFormMetadata = fetchFormMetadata as jest.MockedFunction<
 const mockFetchObservationForms = fetchObservationForms as jest.MockedFunction<
   typeof fetchObservationForms
 >;
+const mockGetFormsDataByEncounterUuid =
+  getFormsDataByEncounterUuid as jest.MockedFunction<
+    typeof getFormsDataByEncounterUuid
+  >;
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
@@ -140,6 +147,24 @@ const mockFormMetadata: FormMetadata = {
   },
 };
 
+const mockFormsEncounterData: FormsEncounter = {
+  encounterUuid: 'encounter-3',
+  encounterDateTime: 1704499200000,
+  encounterType: 'Consultation',
+  observations: [
+    {
+      uuid: 'obs-1',
+      concept: {
+        uuid: 'concept-1',
+        name: 'Temperature',
+        dataType: 'Numeric',
+      },
+      value: 98.6,
+      formFieldPath: 'History Form.1/1-0',
+    } as any,
+  ],
+};
+
 const renderFormsTable = (props = {}) => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -179,6 +204,7 @@ describe('FormsTable', () => {
 
     mockUsePatientUUID.mockReturnValue('patient-123');
     mockFetchObservationForms.mockResolvedValue(mockObservationForms);
+    mockGetFormsDataByEncounterUuid.mockResolvedValue(mockFormsEncounterData);
   });
 
   describe('Component States', () => {

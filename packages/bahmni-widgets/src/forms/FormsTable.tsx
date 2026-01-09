@@ -118,10 +118,6 @@ const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
       return [];
     }
 
-    // Debug: Log the form name and observations
-    console.log('Selected Form Name:', selectedRecord.formName);
-    console.log('All Observations:', formsEncounterData.observations);
-
     // Filter observations by formFieldPath that includes the form name
     const filtered = formsEncounterData.observations.filter(
       (obs) =>
@@ -129,9 +125,6 @@ const FormsTable: React.FC<WidgetProps> = ({ isActionAreaVisible = false }) => {
         typeof obs.formFieldPath === 'string' &&
         obs.formFieldPath.includes(selectedRecord.formName),
     );
-
-    console.log('Filtered Observations:', filtered);
-    console.log('Filtered Count:', filtered.length);
 
     return filtered;
   }, [formsEncounterData?.observations, selectedRecord?.formName]);
