@@ -24,7 +24,7 @@ export class NameOrIdSearchStrategy implements SearchStrategy {
     context: SearchContext,
   ): Promise<PatientSearchResultBundle> {
     const rawResults = await searchPatientByNameOrId(
-      encodeURI(searchTerm),
+      searchTerm,
       context.searchFields,
     );
     return this.transformResults(rawResults, context);

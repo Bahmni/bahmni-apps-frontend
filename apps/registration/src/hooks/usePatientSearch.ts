@@ -23,8 +23,7 @@ export const usePatientSearch = () => {
 
   const { data: searchResults } = useQuery({
     queryKey: ['patientSearch', searchTerms[activeSearchId ?? '']],
-    queryFn: () =>
-      searchPatientByNameOrId(encodeURI(searchTerms[activeSearchId ?? ''])),
+    queryFn: () => searchPatientByNameOrId(searchTerms[activeSearchId ?? '']),
     enabled:
       !!activeSearchId &&
       (searchTerms[activeSearchId]?.length ?? 0) >= MIN_SEARCH_LENGTH,
