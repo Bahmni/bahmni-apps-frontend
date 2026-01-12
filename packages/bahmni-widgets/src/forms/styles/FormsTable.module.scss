@@ -40,6 +40,101 @@
 
 .formContent {
   padding: $spacing-05;
+  background-color: $layer-02;
   overflow-y: auto;
   max-height: 70vh;
+}
+
+.formDetailsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-05;
+}
+
+.observation {
+  background-color: $layer-01;
+  padding: $spacing-05;
+}
+
+.groupContainer {
+  display: block;
+}
+
+.rowContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.groupLabel {
+  @include type-style('heading-compact-01');
+  color: $text-primary;
+  display: block;
+  margin-block-end: $spacing-04;
+}
+
+.rowLabel {
+  @include type-style('body-compact-01');
+  color: $text-secondary;
+}
+
+.rowValue {
+  @include type-style('body-compact-01');
+  color: $text-primary;
+}
+
+.groupMembers {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-03;
+}
+
+.memberRow {
+  display: flex;
+  padding: $spacing-03 $spacing-04;
+  background-color: $layer-01;
+}
+
+.memberLabel {
+  @include type-style('body-compact-01');
+  color: $text-secondary;
+  font-weight: 400;
+  flex-basis: 40%;
+}
+
+.memberValue {
+  @include type-style('body-compact-01');
+  color: $text-primary;
+  font-weight: 400;
+}
+
+.commentSection {
+  margin-block-start: $spacing-04;
+  padding-block-start: $spacing-04;
+  border-block-start: 1px solid $border-subtle-01;
+}
+
+.commentText {
+  @include type-style('body-compact-01');
+  color: $text-secondary;
+  font-style: italic;
+}
+
+.nestedGroup {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-03;
+  margin-block-start: $spacing-03;
+}
+
+.nestedGroupLabel {
+  @include type-style('body-compact-01');
+  color: $text-primary;
+  font-weight: 600;
+}
+
+.nestedGroupMembers {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
 }

@@ -7,11 +7,6 @@ import {
   SkeletonText,
 } from '@bahmni/design-system';
 import {
-  Container,
-  FormMetadata as Form2FormMetadata,
-} from '@bahmni/form2-controls';
-import '@bahmni/form2-controls/dist/bundle.css';
-import {
   DATE_TIME_FORMAT,
   formatDate,
   getPatientFormData,
@@ -19,7 +14,6 @@ import {
   useTranslation,
   fetchFormMetadata,
   FormMetadata,
-  getUserPreferredLocale,
   getFormattedError,
   fetchObservationForms,
   ObservationForm,
@@ -31,6 +25,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
+import { ObservationData } from './models';
+import ObservationItem from './ObservationItem';
 import styles from './styles/FormsTable.module.scss';
 
 interface FormRecordViewModel {
@@ -303,24 +299,18 @@ const FormsTable: React.FC<WidgetProps> = ({
                   {getFormattedError(formDataError).message ??
                     t('ERROR_FETCHING_FORM_DATA')}
                 </div>
-              ) : formMetadata && patientUuid ? (
-                <Container
-                  metadata={{
-                    ...(formMetadata.schema as Form2FormMetadata),
-                    name: selectedRecord?.formName,
-                    version: formMetadata.version || '1',
-                  }}
-                  observations={filteredObservations}
-                  patient={{ uuid: patientUuid }}
-                  translations={{}}
-                  validate={false}
-                  validateForm
-                  collapse={false}
-                  locale={getUserPreferredLocale()}
-                  onValueUpdated={() => {}}
-                />
+              ) : filteredObservations.length > 0 ? (
+                <div className={styles.formDetailsContainer}>
+                  {filteredObservations.map((obs, index) => (
+                    <ObservationItem
+                      key={`${obs.concept.uuid}`}
+                      observation={obs as unknown as ObservationData}
+                      index={index}
+                    />
+                  ))}
+                </div>
               ) : (
-                <div>{t('OBSERVATION_FORM_LOADING_METADATA_ERROR')}</div>
+                <div>{t('NO_FORM_DATA_AVAILABLE')}</div>
               )}
             </div>
           </Modal>,
