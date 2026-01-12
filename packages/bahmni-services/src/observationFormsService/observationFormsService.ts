@@ -188,4 +188,3 @@ export const getPatientFormData = async (
     );
   }
 };
-

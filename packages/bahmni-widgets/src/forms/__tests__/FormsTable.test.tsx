@@ -15,6 +15,8 @@ import userEvent from '@testing-library/user-event';
 import { toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import FormsTable from '../FormsTable';
+import { ObservationData } from '../models';
+import ObservationItem from '../ObservationItem';
 
 expect.extend(toHaveNoViolations);
 
@@ -242,20 +244,6 @@ describe('FormsTable', () => {
 
       // Verify the form display control gets rendered on UI
       expect(screen.getByTestId('forms-table')).toBeInTheDocument();
-    });
-
-    it('renders accordion with form groups', async () => {
-      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
-
-      renderFormsTable();
-
-      await waitFor(() => {
-        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
-      });
-
-      // Verify accordion items are rendered
-      expect(screen.getByText('Vitals Form')).toBeInTheDocument();
-      expect(screen.getByText('History Form')).toBeInTheDocument();
     });
 
     it('renders table headers correctly', async () => {
@@ -596,6 +584,226 @@ describe('FormsTable', () => {
       await waitFor(() => {
         const modal = screen.getByTestId('form-details-modal');
         expect(modal).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('ObservationItem Component', () => {
+    describe('Simple Observations (Leaf Nodes)', () => {
+      it('renders a simple observation with label and value', () => {
+        const observation: ObservationData = {
+          concept: {
+            uuid: 'concept-1',
+            name: 'Temperature',
+            shortName: 'Temp',
+          },
+          conceptNameToDisplay: 'Temperature',
+          valueAsString: '98.6',
+        };
+
+        render(<ObservationItem observation={observation} index={0} />);
+
+        expect(screen.getByText('Temperature')).toBeInTheDocument();
+        expect(screen.getByText('98.6')).toBeInTheDocument();
+      });
+
+      it('uses conceptNameToDisplay as primary display label', () => {
+        const observation: ObservationData = {
+          concept: {
+            uuid: 'concept-1',
+            name: 'Pulse',
+            shortName: 'HR',
+          },
+          conceptNameToDisplay: 'Heart Rate',
+          valueAsString: '70',
+        };
+
+        render(<ObservationItem observation={observation} index={0} />);
+
+        expect(screen.getByText('Heart Rate')).toBeInTheDocument();
+        expect(screen.queryByText('Pulse')).not.toBeInTheDocument();
+        expect(screen.queryByText('HR')).not.toBeInTheDocument();
+      });
+
+      it('renders undefined when conceptNameToDisplay is not available for top-level observation', () => {
+        const observation: ObservationData = {
+          concept: {
+            uuid: 'concept-1',
+            name: 'Pulse',
+            shortName: 'HR',
+          },
+          valueAsString: '70',
+        };
+
+        const { container } = render(
+          <ObservationItem observation={observation} index={0} />,
+        );
+
+        // Top-level ObservationItem only uses conceptNameToDisplay, no fallback
+        const label = container.querySelector('.rowLabel');
+        expect(label).toBeInTheDocument();
+        expect(screen.getByText('70')).toBeInTheDocument();
+      });
+    });
+
+    describe('Observations with Group Members', () => {
+      it('renders observation with group members', () => {
+        const observation: ObservationData = {
+          concept: {
+            uuid: 'bp-concept',
+            name: 'Blood Pressure',
+          },
+          conceptNameToDisplay: 'Blood Pressure',
+          valueAsString: '120/80',
+          groupMembers: [
+            {
+              concept: {
+                uuid: 'sbp-concept',
+                name: 'Systolic BP',
+              },
+              conceptNameToDisplay: 'Systolic',
+              valueAsString: '120',
+            },
+            {
+              concept: {
+                uuid: 'dbp-concept',
+                name: 'Diastolic BP',
+              },
+              conceptNameToDisplay: 'Diastolic',
+              valueAsString: '80',
+            },
+          ],
+        };
+
+        render(<ObservationItem observation={observation} index={0} />);
+
+        expect(screen.getByText('Blood Pressure')).toBeInTheDocument();
+        expect(screen.getByText('Systolic')).toBeInTheDocument();
+        expect(screen.getByText('120')).toBeInTheDocument();
+        expect(screen.getByText('Diastolic')).toBeInTheDocument();
+        expect(screen.getByText('80')).toBeInTheDocument();
+      });
+    });
+
+    describe('Nested Group Members (Recursive Rendering)', () => {
+      it('renders deeply nested group members', () => {
+        const observation: ObservationData = {
+          concept: {
+            uuid: 'parent-concept',
+            name: 'Parent Group',
+          },
+          conceptNameToDisplay: 'Parent Group',
+          groupMembers: [
+            {
+              concept: {
+                uuid: 'child-group-concept',
+                name: 'Child Group',
+              },
+              conceptNameToDisplay: 'Child Group',
+              groupMembers: [
+                {
+                  concept: {
+                    uuid: 'grandchild-concept',
+                    name: 'Grandchild Value',
+                  },
+                  conceptNameToDisplay: 'Grandchild',
+                  valueAsString: '100',
+                },
+              ],
+            },
+          ],
+        };
+
+        render(<ObservationItem observation={observation} index={0} />);
+
+        expect(screen.getByText('Parent Group')).toBeInTheDocument();
+        expect(screen.getByText('Child Group')).toBeInTheDocument();
+        expect(screen.getByText('Grandchild')).toBeInTheDocument();
+        expect(screen.getByText('100')).toBeInTheDocument();
+      });
+
+      it('renders mixed group members with both nested groups and leaf nodes', () => {
+        const observation: ObservationData = {
+          concept: {
+            uuid: 'vitals-concept',
+            name: 'Vitals',
+          },
+          conceptNameToDisplay: 'Vitals',
+          groupMembers: [
+            {
+              concept: {
+                uuid: 'bp-concept',
+                name: 'Blood Pressure',
+              },
+              conceptNameToDisplay: 'Blood Pressure',
+              groupMembers: [
+                {
+                  concept: {
+                    uuid: 'sbp-concept',
+                    name: 'Systolic',
+                  },
+                  conceptNameToDisplay: 'Systolic',
+                  valueAsString: '120',
+                },
+                {
+                  concept: {
+                    uuid: 'dbp-concept',
+                    name: 'Diastolic',
+                  },
+                  conceptNameToDisplay: 'Diastolic',
+                  valueAsString: '80',
+                },
+              ],
+            },
+            {
+              concept: {
+                uuid: 'temp-concept',
+                name: 'Temperature',
+              },
+              conceptNameToDisplay: 'Temperature',
+              valueAsString: '98.6',
+            },
+          ],
+        };
+
+        render(<ObservationItem observation={observation} index={0} />);
+
+        expect(screen.getByText('Vitals')).toBeInTheDocument();
+        expect(screen.getByText('Blood Pressure')).toBeInTheDocument();
+        expect(screen.getByText('Systolic')).toBeInTheDocument();
+        expect(screen.getByText('120')).toBeInTheDocument();
+        expect(screen.getByText('Diastolic')).toBeInTheDocument();
+        expect(screen.getByText('80')).toBeInTheDocument();
+        expect(screen.getByText('Temperature')).toBeInTheDocument();
+        expect(screen.getByText('98.6')).toBeInTheDocument();
+      });
+    });
+
+    describe('Comments and Provider Information', () => {
+      it('renders observation with comment and provider name', () => {
+        const observation: ObservationData = {
+          concept: {
+            uuid: 'concept-1',
+            name: 'Temperature',
+          },
+          conceptNameToDisplay: 'Temperature',
+          valueAsString: '102.5',
+          comment: 'Patient has fever',
+          providers: [
+            {
+              uuid: 'provider-1',
+              name: 'Dr. Smith',
+            },
+          ],
+        };
+
+        render(<ObservationItem observation={observation} index={0} />);
+
+        expect(screen.getByText('Temperature')).toBeInTheDocument();
+        expect(screen.getByText('102.5')).toBeInTheDocument();
+        expect(
+          screen.getByText('Patient has fever - by Dr. Smith'),
+        ).toBeInTheDocument();
       });
     });
   });
