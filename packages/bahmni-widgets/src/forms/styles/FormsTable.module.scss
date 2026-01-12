@@ -48,12 +48,12 @@
 .formDetailsContainer {
   display: flex;
   flex-direction: column;
-  gap: $spacing-05;
 }
 
 .observation {
-  background-color: $layer-01;
+  background-color: $layer-02;
   padding: $spacing-05;
+  border-bottom: 1px solid $border-subtle-02;
 }
 
 .groupContainer {
@@ -74,8 +74,8 @@
 }
 
 .rowLabel {
-  @include type-style('body-compact-01');
-  color: $text-secondary;
+  @include type-style('heading-compact-01');
+  color: $text-primary;
 }
 
 .rowValue {
@@ -92,7 +92,6 @@
 .memberRow {
   display: flex;
   padding: $spacing-03 $spacing-04;
-  background-color: $layer-01;
 }
 
 .memberLabel {
