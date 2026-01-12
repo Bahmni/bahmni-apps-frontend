@@ -138,6 +138,7 @@ jest.mock('../../../services/consultationBundleService', () => ({
   createConditionsBundleEntries: jest.fn(() => []),
   createServiceRequestBundleEntries: jest.fn(() => []),
   createMedicationRequestEntries: jest.fn(() => []),
+  createObservationBundleEntries: jest.fn(() => []),
   createEncounterBundleEntry: jest.fn(() => ({
     fullUrl: 'urn:uuid:mock-encounter-uuid',
     resource: { resourceType: 'Encounter', id: 'mock-encounter-id' },
@@ -245,7 +246,85 @@ jest.mock('../../../hooks/useObservationFormsSearch', () => ({
     error: null,
   })),
 }));
-jest.mock('../../forms/observationForms/ObservationForms', () => ({
+
+// Mock observation forms store
+// We need to use a factory function that returns new state for each component instance
+const mockObservationFormsStoreState = {
+  selectedForms: [] as any[],
+  formsData: {},
+  viewingForm: null as any,
+};
+
+const createMockObservationFormsStore = () => ({
+  get selectedForms() {
+    return mockObservationFormsStoreState.selectedForms;
+  },
+  get formsData() {
+    return mockObservationFormsStoreState.formsData;
+  },
+  get viewingForm() {
+    return mockObservationFormsStoreState.viewingForm;
+  },
+  addForm: jest.fn((form: any) => {
+    // Check if form already exists
+    const isDuplicate = mockObservationFormsStoreState.selectedForms.some(
+      (f: any) => f.uuid === form.uuid,
+    );
+    if (!isDuplicate) {
+      mockObservationFormsStoreState.selectedForms = [
+        ...mockObservationFormsStoreState.selectedForms,
+        form,
+      ];
+    }
+    // Always set viewing form when addForm is called
+    mockObservationFormsStoreState.viewingForm = form;
+  }),
+  removeForm: jest.fn((formUuid: string) => {
+    mockObservationFormsStoreState.selectedForms =
+      mockObservationFormsStoreState.selectedForms.filter(
+        (f: any) => f.uuid !== formUuid,
+      );
+    if (mockObservationFormsStoreState.viewingForm?.uuid === formUuid) {
+      mockObservationFormsStoreState.viewingForm = null;
+    }
+  }),
+  updateFormData: jest.fn(),
+  getFormData: jest.fn(() => undefined),
+  setViewingForm: jest.fn((form: any) => {
+    mockObservationFormsStoreState.viewingForm = form;
+  }),
+  getAllObservations: jest.fn(() => []),
+  getObservationFormsData: jest.fn(() => ({})),
+  validate: jest.fn(() => true),
+  reset: jest.fn(() => {
+    mockObservationFormsStoreState.selectedForms = [];
+    mockObservationFormsStoreState.formsData = {};
+    mockObservationFormsStoreState.viewingForm = null;
+  }),
+  getState: jest.fn(() => mockObservationFormsStoreState),
+});
+
+const mockObservationFormsStore = createMockObservationFormsStore();
+
+jest.mock('../../../stores/observationFormsStore', () => ({
+  __esModule: true,
+  useObservationFormsStore: () => mockObservationFormsStore,
+}));
+
+// Mock pinned observation forms hook
+const mockUsePinnedObservationForms = jest.fn(() => ({
+  pinnedForms: [],
+  updatePinnedForms: jest.fn(),
+  isLoading: false,
+  error: null,
+}));
+
+jest.mock('../../../hooks/usePinnedObservationForms', () => ({
+  __esModule: true,
+  usePinnedObservationForms: () => mockUsePinnedObservationForms(),
+}));
+
+jest.mock('../../forms/observations/ObservationForms', () => ({
   __esModule: true,
   default: ({ onFormSelect, selectedForms, onRemoveForm }: any) => (
     <div data-testid="mock-observation-forms">
@@ -291,7 +370,7 @@ jest.mock('../../forms/observationForms/ObservationForms', () => ({
   ),
 }));
 
-jest.mock('../../forms/observationForms/ObservationFormsContainer', () => ({
+jest.mock('../../forms/observations/ObservationFormsContainer', () => ({
   __esModule: true,
   default: ({ viewingForm, onViewingFormChange, onRemoveForm }: any) => (
     <div data-testid="mock-observation-forms-wrapper">
@@ -461,6 +540,32 @@ describe('ConsultationPad', () => {
       isLoading: false,
       error: null,
     });
+
+    // Reset observation forms store state
+    mockObservationFormsStoreState.selectedForms = [];
+    mockObservationFormsStoreState.formsData = {};
+    mockObservationFormsStoreState.viewingForm = null;
+    mockObservationFormsStore.addForm.mockClear();
+    mockObservationFormsStore.removeForm.mockClear();
+    mockObservationFormsStore.updateFormData.mockClear();
+    mockObservationFormsStore.getFormData.mockClear();
+    mockObservationFormsStore.getFormData.mockReturnValue(undefined);
+    mockObservationFormsStore.setViewingForm.mockClear();
+    mockObservationFormsStore.getAllObservations.mockClear();
+    mockObservationFormsStore.getAllObservations.mockReturnValue([]);
+    mockObservationFormsStore.getObservationFormsData.mockClear();
+    mockObservationFormsStore.getObservationFormsData.mockReturnValue({});
+    mockObservationFormsStore.validate.mockClear();
+    mockObservationFormsStore.validate.mockReturnValue(true);
+    mockObservationFormsStore.reset.mockClear();
+
+    // Reset pinned observation forms hook
+    mockUsePinnedObservationForms.mockReturnValue({
+      pinnedForms: [],
+      updatePinnedForms: jest.fn(),
+      isLoading: false,
+      error: null,
+    });
   });
 
   describe('Rendering', () => {
@@ -593,15 +698,24 @@ describe('ConsultationPad', () => {
     });
 
     it('should render ObservationFormsWrapper when form is selected for viewing', async () => {
-      renderWithProvider();
+      const { rerender } = renderWithProvider();
 
       const selectButton = screen.getByTestId('select-form-button');
       await userEvent.click(selectButton);
 
+      // Force a re-render to pick up the store changes
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
+      );
+
       // Should render ObservationFormsWrapper instead of consultation ActionArea
-      expect(
-        screen.getByTestId('mock-observation-forms-wrapper'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('mock-observation-forms-wrapper'),
+        ).toBeInTheDocument();
+      });
       expect(screen.getByTestId('wrapper-viewing-form')).toHaveTextContent(
         'Test Form',
       );
@@ -609,7 +723,7 @@ describe('ConsultationPad', () => {
     });
 
     it('should manage selectedForms state correctly', async () => {
-      renderWithProvider();
+      const { rerender } = renderWithProvider();
 
       // Initially should show 0 selected forms
       expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
@@ -619,96 +733,199 @@ describe('ConsultationPad', () => {
       const selectButton = screen.getByTestId('select-form-button');
       await userEvent.click(selectButton);
 
+      // Force re-render
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
+      );
+
       // After selecting, should switch to ObservationFormsWrapper
-      expect(
-        screen.getByTestId('mock-observation-forms-wrapper'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('mock-observation-forms-wrapper'),
+        ).toBeInTheDocument();
+      });
 
       // Go back to consultation view using wrapper back button
       const backButton = screen.getByTestId('wrapper-back-button');
       await userEvent.click(backButton);
 
-      // Now should show 1 selected form
-      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
-        'Selected: 1',
+      // Force re-render to pick up viewingForm = null
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
       );
+
+      // Now should show 1 selected form
+      await waitFor(() => {
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 1',
+        );
+      });
       expect(screen.getByTestId('selected-form-form-1')).toBeInTheDocument();
     });
 
     it('should prevent duplicate forms from being added to selectedForms', async () => {
-      renderWithProvider();
+      const { rerender } = renderWithProvider();
 
       const selectButton = screen.getByTestId('select-form-button');
 
       // Add the form once
       await userEvent.click(selectButton);
 
+      // Force re-render
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
+      );
+
       // Go back to consultation view using wrapper back button
+      await waitFor(() => {
+        expect(screen.getByTestId('wrapper-back-button')).toBeInTheDocument();
+      });
       const backButton = screen.getByTestId('wrapper-back-button');
       await userEvent.click(backButton);
 
+      // Force re-render
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
+      );
+
       // Try to add the same form again
+      await waitFor(() => {
+        expect(screen.getByTestId('select-form-button')).toBeInTheDocument();
+      });
       const selectButtonAgain = screen.getByTestId('select-form-button');
       await userEvent.click(selectButtonAgain);
 
+      // Force re-render again
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
+      );
+
       // Go back to consultation view again using wrapper back button
+      await waitFor(() => {
+        expect(screen.getByTestId('wrapper-back-button')).toBeInTheDocument();
+      });
       const backButtonAgain = screen.getByTestId('wrapper-back-button');
       await userEvent.click(backButtonAgain);
 
-      // Should only have one form
-      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
-        'Selected: 1',
+      // Force re-render
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
       );
+
+      // Should only have one form
+      await waitFor(() => {
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 1',
+        );
+      });
     });
 
     it('should remove forms from selectedForms when onRemoveForm is called', async () => {
-      renderWithProvider();
+      const { rerender } = renderWithProvider();
 
       // Add a form first
       const selectButton = screen.getByTestId('select-form-button');
       await userEvent.click(selectButton);
 
+      // Force re-render
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
+      );
+
       // Go back to consultation view using wrapper back button
+      await waitFor(() => {
+        expect(screen.getByTestId('wrapper-back-button')).toBeInTheDocument();
+      });
       const backButton = screen.getByTestId('wrapper-back-button');
       await userEvent.click(backButton);
 
-      // Verify form is selected
-      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
-        'Selected: 1',
+      // Force re-render
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
       );
+
+      // Verify form is selected
+      await waitFor(() => {
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 1',
+        );
+      });
       expect(screen.getByTestId('selected-form-form-1')).toBeInTheDocument();
 
       // Remove the form
       const removeButton = screen.getByTestId('remove-form-form-1');
       await userEvent.click(removeButton);
 
-      // Verify form is removed
-      expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
-        'Selected: 0',
+      // Force re-render after removal
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
       );
+
+      // Verify form is removed
+      await waitFor(() => {
+        expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
+          'Selected: 0',
+        );
+      });
       expect(
         screen.queryByTestId('selected-form-form-1'),
       ).not.toBeInTheDocument();
     });
 
     it('should remove form from selectedForms when discarded from wrapper', async () => {
-      renderWithProvider();
+      const { rerender } = renderWithProvider();
 
       // Add a form first
       const selectButton = screen.getByTestId('select-form-button');
       await userEvent.click(selectButton);
 
+      // Force re-render
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
+      );
+
       // Should render ObservationFormsWrapper
-      expect(
-        screen.getByTestId('mock-observation-forms-wrapper'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('mock-observation-forms-wrapper'),
+        ).toBeInTheDocument();
+      });
 
       // Discard the form using wrapper discard button
       const discardButton = screen.getByTestId('wrapper-discard-button');
       await userEvent.click(discardButton);
 
+      // Force re-render after discard
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
+      );
+
       // Should be back to consultation view with no selected forms
-      expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
+      });
       expect(screen.getByTestId('selected-forms-count')).toHaveTextContent(
         'Selected: 0',
       );

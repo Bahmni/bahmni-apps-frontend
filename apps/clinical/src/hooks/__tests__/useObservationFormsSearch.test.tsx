@@ -10,7 +10,7 @@ import { I18nextProvider } from 'react-i18next';
 
 import i18n from '../../../setupTests.i18n';
 
-import { filterFormsByUserPrivileges } from '../../components/forms/observationForms/utils/privilegeUtils';
+import { filterFormsByUserPrivileges } from '../../components/forms/observations/utils/privilegeUtils';
 import useObservationFormsSearch from '../useObservationFormsSearch';
 
 // Mock the common utils
@@ -22,12 +22,9 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 // Mock the local privilegeUtils
-jest.mock(
-  '../../components/forms/observationForms/utils/privilegeUtils',
-  () => ({
-    filterFormsByUserPrivileges: jest.fn(),
-  }),
-);
+jest.mock('../../components/forms/observations/utils/privilegeUtils', () => ({
+  filterFormsByUserPrivileges: jest.fn(),
+}));
 
 // Mock useUserPrivilege hook
 jest.mock('@bahmni/widgets', () => ({

@@ -222,6 +222,16 @@ export {
   HL7_CONDITION_CATEGORY_CONDITION_CODE,
   HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE,
   FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
+  FHIR_OBSERVATION_INTERPRETATION_SYSTEM,
+  FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
+  FHIR_OBSERVATION_COMPLEX_DATA_URL,
+  CONCEPT_DATATYPE_NUMERIC,
+  CONCEPT_DATATYPE_COMPLEX,
+  FHIR_OBSERVATION_STATUS_FINAL,
+  FHIR_RESOURCE_TYPE_OBSERVATION,
+  DATE_REGEX_PATTERN,
+  DATETIME_REGEX_PATTERN,
+  INTERPRETATION_TO_CODE,
 } from './constants/fhir';
 
 export {
@@ -237,6 +247,8 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  transformFormDataToObservations,
+  transformObservationsToFormData,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
@@ -244,6 +256,11 @@ export {
   type FormPrivilege,
   type ApiFormPrivilege,
   type FormMetadata,
+  type FormData,
+  type FormControlData,
+  type Form2Observation,
+  type ConceptValue,
+  type ComplexValue,
   type FormResponseData,
 } from './observationFormsService';
 

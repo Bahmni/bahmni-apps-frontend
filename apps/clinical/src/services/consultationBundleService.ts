@@ -3,6 +3,7 @@ import {
   DiagnosisInputEntry,
   calculateOnsetDate,
   post,
+  Form2Observation,
 } from '@bahmni/services';
 import { BundleEntry, Reference, Encounter } from 'fhir/r4';
 import { CONSULTATION_BUNDLE_URL } from '../constants/app';
@@ -18,6 +19,7 @@ import {
 } from '../utils/fhir/conditionResourceCreator';
 import { createBundleEntry } from '../utils/fhir/consultationBundleCreator';
 import { createMedicationRequestResource } from '../utils/fhir/medicationRequestResourceCreator';
+import { createObservationResources } from '../utils/fhir/observationResourceCreator';
 import {
   createPractitionerReference,
   createEncounterReferenceFromString,
@@ -56,6 +58,13 @@ interface CreateConditionsBundleEntriesParams {
 
 interface CreateMedicationRequestBundleEntriesParams {
   selectedMedications: MedicationInputEntry[];
+  encounterSubject: Reference;
+  encounterReference: string;
+  practitionerUUID: string;
+}
+
+interface CreateObservationBundleEntriesParams {
+  observationFormsData: Record<string, Form2Observation[]>;
   encounterSubject: Reference;
   encounterReference: string;
   practitionerUUID: string;
@@ -359,6 +368,68 @@ export function createMedicationRequestEntries({
     medicationRequestEntries.push(medicationRequestEntry);
   }
   return medicationRequestEntries;
+}
+
+/**
+ * Creates bundle entries for observations from observation forms as part of consultation bundle
+ * @param params - Parameters required for creating observation bundle entries
+ * @returns Array of BundleEntry for observations
+ * @throws Error with specific message key for translation
+ */
+export function createObservationBundleEntries({
+  observationFormsData,
+  encounterSubject,
+  encounterReference,
+  practitionerUUID,
+}: CreateObservationBundleEntriesParams): BundleEntry[] {
+  if (!observationFormsData || typeof observationFormsData !== 'object') {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+  }
+
+  if (!encounterSubject?.reference) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+  }
+
+  if (!encounterReference) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+  }
+
+  if (!practitionerUUID) {
+    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+  }
+
+  const observationEntries: BundleEntry[] = [];
+
+  // Iterate through all observation forms and their observations
+  for (const formUuid in observationFormsData) {
+    const observations = observationFormsData[formUuid];
+
+    if (!observations || !Array.isArray(observations)) {
+      continue;
+    }
+
+    // Create FHIR Observation resources from the observation payloads
+    // Returns array of { resource, fullUrl } objects
+    const observationResults = createObservationResources(
+      observations,
+      encounterSubject,
+      createEncounterReferenceFromString(encounterReference),
+      createPractitionerReference(practitionerUUID),
+    );
+
+    // Create bundle entries for each observation resource
+    // Use the pre-generated fullUrl so hasMember references work correctly
+    for (const result of observationResults) {
+      const observationBundleEntry = createBundleEntry(
+        result.fullUrl,
+        result.resource,
+        'POST',
+      );
+      observationEntries.push(observationBundleEntry);
+    }
+  }
+
+  return observationEntries;
 }
 
 /**

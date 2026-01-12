@@ -204,7 +204,7 @@ describe('SearchPatient', () => {
     expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
     expect(mockOnSearch).toHaveBeenCalled();
     expect(searchPatientByNameOrId).toHaveBeenCalledWith(
-      encodeURI('new value'),
+      'new value',
       expect.any(Array),
     );
     await waitFor(() => {
@@ -251,7 +251,7 @@ describe('SearchPatient', () => {
 
     await waitFor(() => {
       expect(searchPatientByNameOrId).toHaveBeenCalledWith(
-        encodeURI('new value'),
+        'new value',
         expect.any(Array),
       );
       expect(mockOnSearch).toHaveBeenCalled();
@@ -284,7 +284,7 @@ describe('SearchPatient', () => {
     expect(mockOnSearch).toHaveBeenCalled();
     await waitFor(() => {
       expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
-        encodeURI('1234567890'),
+        '1234567890',
         expect.any(String),
         expect.any(Array),
         expect.any(Array),
@@ -334,7 +334,7 @@ describe('SearchPatient', () => {
 
     await waitFor(() => {
       expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
-        encodeURI('1234567890'),
+        '1234567890',
         expect.any(String),
         expect.any(Array),
         expect.any(Array),
@@ -386,7 +386,7 @@ describe('SearchPatient', () => {
 
     expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
     expect(searchPatientByNameOrId).toHaveBeenCalledWith(
-      encodeURI('new value'),
+      'new value',
       expect.any(Array),
     );
     await waitFor(() => {
@@ -909,7 +909,7 @@ describe('SearchPatient', () => {
     expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
     expect(mockOnSearch).toHaveBeenCalled();
     expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
-      encodeURI('test@example.com'),
+      'test@example.com',
       'person',
       ['email'],
       expect.any(Array),

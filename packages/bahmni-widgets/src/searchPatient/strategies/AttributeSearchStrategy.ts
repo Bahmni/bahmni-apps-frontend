@@ -28,7 +28,7 @@ export class AttributeSearchStrategy implements SearchStrategy {
     const fieldsToSearch = selectedField?.fields ?? [];
 
     const rawResults = await searchPatientByCustomAttribute(
-      encodeURI(searchTerm),
+      searchTerm,
       fieldType,
       fieldsToSearch,
       searchFields,
