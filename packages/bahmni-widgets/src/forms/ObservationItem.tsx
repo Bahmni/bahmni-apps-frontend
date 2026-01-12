@@ -79,9 +79,9 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
           hasGroupMembers ? styles.groupContainer : styles.rowContainer
         }
       >
-        <span className={hasGroupMembers ? styles.groupLabel : styles.rowLabel}>
+        <p className={hasGroupMembers ? styles.groupLabel : styles.rowLabel}>
           {observation.conceptNameToDisplay}
-        </span>
+        </p>
         {hasGroupMembers ? (
           <div className={styles.groupMembers}>
             {observation.groupMembers?.map((member, idx) => (
@@ -93,7 +93,7 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
             ))}
           </div>
         ) : (
-          <span className={styles.rowValue}>{observation.valueAsString}</span>
+          <p className={styles.rowValue}>{observation.valueAsString}</p>
         )}
       </div>
       {observation.comment && (

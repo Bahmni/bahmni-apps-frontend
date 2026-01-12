@@ -54,6 +54,9 @@
   background-color: $layer-02;
   padding: $spacing-05;
   border-bottom: 1px solid $border-subtle-02;
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .groupContainer {
@@ -62,7 +65,6 @@
 
 .rowContainer {
   display: flex;
-  justify-content: space-between;
   align-items: center;
 }
 
@@ -76,6 +78,7 @@
 .rowLabel {
   @include type-style('heading-compact-01');
   color: $text-primary;
+  flex-basis: 40%
 }
 
 .rowValue {
@@ -96,15 +99,12 @@
 
 .memberLabel {
   @include type-style('body-compact-01');
-  color: $text-secondary;
-  font-weight: 400;
   flex-basis: 40%;
 }
 
 .memberValue {
   @include type-style('body-compact-01');
-  color: $text-primary;
-  font-weight: 400;
+  color: $text-secondary;
 }
 
 .commentSection {
