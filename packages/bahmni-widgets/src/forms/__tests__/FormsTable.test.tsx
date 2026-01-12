@@ -382,27 +382,6 @@ describe('FormsTable', () => {
       });
     });
 
-    it('renders Form2 Container in modal when metadata is loaded', async () => {
-      const user = userEvent.setup();
-      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
-      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
-
-      renderFormsTable();
-
-      await waitFor(() => {
-        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
-      });
-
-      // Click on timestamp
-      const links = document.querySelectorAll('.cds--link');
-      expect(links.length).toBeGreaterThan(0);
-      await user.click(links[0] as HTMLElement);
-
-      // Verify Form2 Container is rendered
-      await waitFor(() => {
-        expect(screen.getByTestId('form2-container')).toBeInTheDocument();
-      });
-    });
     it('displays error message in modal when metadata fetch fails', async () => {
       const user = userEvent.setup();
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);

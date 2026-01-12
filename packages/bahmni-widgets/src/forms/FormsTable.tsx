@@ -25,23 +25,13 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
-import { ObservationData } from './models';
+import {
+  ObservationData,
+  FormRecordViewModel,
+  GroupedFormRecords,
+} from './models';
 import ObservationItem from './ObservationItem';
 import styles from './styles/FormsTable.module.scss';
-
-interface FormRecordViewModel {
-  id: string;
-  formName: string;
-  recordedOn: string;
-  recordedBy: string;
-  encounterDateTime: number;
-  encounterUuid: string;
-}
-
-interface GroupedFormRecords {
-  formName: string;
-  records: FormRecordViewModel[];
-}
 
 /**
  * Component to display patient forms grouped by form name in accordion format
