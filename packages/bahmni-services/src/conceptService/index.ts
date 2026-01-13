@@ -6,4 +6,3 @@ export {
   getConceptUuidByName,
 } from './conceptService';
 export { type ConceptSearch, type ConceptClass } from './models';
-export { useConcept } from './useConcept';

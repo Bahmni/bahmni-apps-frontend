@@ -1,6 +1,6 @@
+import { getConceptUuidByName } from '@bahmni/services';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { getConceptUuidByName } from './conceptService';
 
 /**
  * Hook to fetch concept UUIDs with caching

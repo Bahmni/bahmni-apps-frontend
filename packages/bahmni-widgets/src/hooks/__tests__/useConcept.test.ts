@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook } from '@testing-library/react';
 import React from 'react';
 
-import * as conceptService from '../conceptService';
+import * as conceptService from '../../../../../packages/bahmni-services/src/conceptService/conceptService';
 import { useConcept } from '../useConcept';
 
 jest.mock('../conceptService');

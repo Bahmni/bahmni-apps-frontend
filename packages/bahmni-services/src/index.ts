@@ -133,7 +133,6 @@ export {
   searchFHIRConceptsByName,
   getConceptById,
   getConceptUuidByName,
-  useConcept,
   type ConceptSearch,
   type ConceptClass,
 } from './conceptService';

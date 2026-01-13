@@ -16,6 +16,8 @@ export interface FHIRObservationBundle {
           valueString?: string;
           valueQuantity?: { value: number; unit?: string };
           valueCodeableConcept?: { text: string };
+          valueBoolean?: boolean;
+          valueDateTime?: string;
           hasMember?: Array<{ reference: string }>;
           encounter?: { reference: string };
         }

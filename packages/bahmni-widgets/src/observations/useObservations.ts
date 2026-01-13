@@ -1,11 +1,11 @@
 import {
   getPatientObservations,
   formatObservations,
-  useConcept,
   type FormattedObservation,
 } from '@bahmni/services';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useConcept } from '../hooks/useConcept';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { type ObservationConfig } from './models';

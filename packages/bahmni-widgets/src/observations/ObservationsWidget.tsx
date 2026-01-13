@@ -4,7 +4,7 @@ import {
   Accordion,
   AccordionItem,
 } from '@bahmni/design-system';
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type WidgetProps } from '../registry/model';
 import { type ObservationConfig } from './models';
@@ -26,53 +26,57 @@ const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
     type: 'image' | 'video';
   } | null>(null);
 
-  const renderObservationValue = (
-    value: string,
-    conceptName: string,
-  ): React.ReactNode => {
-    if (!value) return value;
+  const renderObservationValue = useCallback(
+    (value: string, conceptName: string): React.ReactNode => {
+      if (!value) return value;
 
-    const mediaUrl = getMediaUrl(value);
-    const handleError = (e: React.SyntheticEvent<HTMLElement>) => {
-      e.currentTarget.style.display = 'none';
-      e.currentTarget.parentElement!.textContent = value;
-    };
+      const mediaUrl = getMediaUrl(value);
+      const handleError = (e: React.SyntheticEvent<HTMLElement>) => {
+        e.currentTarget.style.display = 'none';
+        e.currentTarget.parentElement!.textContent = value;
+      };
 
-    if (isImageValue(value)) {
-      return (
-        <img
-          src={mediaUrl}
-          alt={conceptName}
-          className={styles.observationImage}
-          onClick={() => setPreview({ url: mediaUrl, type: 'image' })}
-          onError={handleError}
-        />
-      );
-    }
+      if (isImageValue(value)) {
+        return (
+          <img
+            src={mediaUrl}
+            alt={conceptName}
+            className={styles.observationImage}
+            onClick={() => setPreview({ url: mediaUrl, type: 'image' })}
+            onError={handleError}
+          />
+        );
+      }
 
-    if (isVideoValue(value)) {
-      return (
-        <video
-          src={mediaUrl}
-          className={styles.observationVideo}
-          onClick={() => setPreview({ url: mediaUrl, type: 'video' })}
-          onError={handleError}
-        />
-      );
-    }
+      if (isVideoValue(value)) {
+        return (
+          <video
+            src={mediaUrl}
+            className={styles.observationVideo}
+            onClick={() => setPreview({ url: mediaUrl, type: 'video' })}
+            onError={handleError}
+          />
+        );
+      }
 
-    return value;
-  };
-
-  const groupedByDate = formatObservationsForDisplay(
-    observations,
-    renderObservationValue,
-    (conceptName) => <div className={styles.childRow}>{conceptName}</div>,
-    {
-      conceptName: t('OBSERVATION_NAME'),
-      value: t('OBSERVATION_VALUE'),
-      recordedBy: t('ALLERGY_LIST_RECORDED_BY'),
+      return value;
     },
+    [setPreview],
+  );
+
+  const groupedByDate = useMemo(
+    () =>
+      formatObservationsForDisplay(
+        observations,
+        renderObservationValue,
+        (conceptName) => <div className={styles.childRow}>{conceptName}</div>,
+        {
+          conceptName: t('OBSERVATION_NAME'),
+          value: t('OBSERVATION_VALUE'),
+          recordedBy: t('ALLERGY_LIST_RECORDED_BY'),
+        },
+      ),
+    [observations, renderObservationValue, t],
   );
 
   if (error) {
