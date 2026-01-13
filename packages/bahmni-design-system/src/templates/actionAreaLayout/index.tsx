@@ -32,7 +32,13 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
   isActionAreaVisible,
 }) => {
   return (
-    <div className={styles.layout}>
+    <div
+      className={classNames(
+        styles.layout,
+        isActionAreaVisible && styles.collapsedModal,
+      )}
+      id="actionAreaLayout"
+    >
       {headerWSideNav}
       <div
         className={classNames(

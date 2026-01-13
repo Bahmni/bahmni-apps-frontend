@@ -38,7 +38,6 @@ import styles from './styles/FormsTable.module.scss';
  * Each accordion item contains a SortableDataTable with form records for that form type
  */
 const FormsTable: React.FC<WidgetProps> = ({
-  isActionAreaVisible = false,
   episodeOfCareUuids,
   encounterUuids,
   config,
@@ -274,7 +273,6 @@ const FormsTable: React.FC<WidgetProps> = ({
             passiveModal
             size="md"
             testId="form-details-modal"
-            className={isActionAreaVisible ? styles.leftPanelModal : ''}
           >
             <div className={styles.formContent}>
               {isLoadingMetadata || isLoadingEncounterData ? (
@@ -304,7 +302,7 @@ const FormsTable: React.FC<WidgetProps> = ({
               )}
             </div>
           </Modal>,
-          document.body,
+          document.getElementById('actionAreaLayout') ?? document.body,
         )}
     </>
   );
