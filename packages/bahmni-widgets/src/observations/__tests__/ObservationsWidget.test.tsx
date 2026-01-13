@@ -39,7 +39,10 @@ describe('ObservationsWidget', () => {
 
     render(<ObservationsWidget config={mockConfig} />);
 
-    expect(screen.getByTestId('observations-widget')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('observations-widget-loading'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('OBSERVATIONS_LOADING')).toBeInTheDocument();
   });
 
   it('should render error message when error occurs', () => {
@@ -65,7 +68,7 @@ describe('ObservationsWidget', () => {
 
     render(<ObservationsWidget config={mockConfig} />);
 
-    expect(screen.getByTestId('observations-widget')).toBeInTheDocument();
+    expect(screen.getByTestId('observations-widget-empty')).toBeInTheDocument();
     expect(screen.getByText('NO_OBSERVATIONS')).toBeInTheDocument();
   });
 
@@ -302,7 +305,7 @@ describe('ObservationsWidget', () => {
 
     render(<ObservationsWidget config={{}} />);
 
-    expect(screen.getByTestId('observations-widget')).toBeInTheDocument();
+    expect(screen.getByTestId('observations-widget-empty')).toBeInTheDocument();
   });
 
   it('should handle undefined config', () => {
@@ -314,6 +317,6 @@ describe('ObservationsWidget', () => {
 
     render(<ObservationsWidget config={undefined} />);
 
-    expect(screen.getByTestId('observations-widget')).toBeInTheDocument();
+    expect(screen.getByTestId('observations-widget-empty')).toBeInTheDocument();
   });
 });
