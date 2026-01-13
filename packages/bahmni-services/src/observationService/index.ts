@@ -1,6 +1,8 @@
 export { getPatientObservations } from './observationService';
 export { formatObservations } from './utils';
 export {
-  type FHIRObservationBundle,
-  type FormattedObservation,
+  FHIRObservationBundle,
+  ObsGroup,
+  ObservationFormGroup,
+  FormattedObservations,
 } from './models';

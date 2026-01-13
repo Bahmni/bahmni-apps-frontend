@@ -192,7 +192,7 @@ describe('AllergiesTable', () => {
       );
       expect(screen.getByText('ALLERGEN')).toBeInTheDocument();
       expect(screen.getByText('REACTIONS')).toBeInTheDocument();
-      expect(screen.getByText('ALLERGY_LIST_RECORDED_BY')).toBeInTheDocument();
+      expect(screen.getByText('CLINICAL_DATA_RECORDED_BY')).toBeInTheDocument();
       expect(screen.getByText('ALLERGY_LIST_STATUS')).toBeInTheDocument();
     });
 

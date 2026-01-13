@@ -2,20 +2,6 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
-.accordionItem {
-  :global(.cds--accordion__heading) {
-    background-color: $layer-01;
-  }
-
-  :global(.cds--accordion__content),
-  :global(.cds--accordion__wrapper) {
-    padding-block: 0 !important;
-    padding-inline: 0 !important;
-    margin-block: 0 !important;
-    margin-inline: 0 !important;
-  }
-}
-
 .errorMessage {
   color: var(--cds-text-error);
   padding: $spacing-05;
@@ -28,11 +14,6 @@
   text-align: center;
 }
 
-.childRow {
-  display: flex;
-  align-items: center;
-  padding-left: $spacing-07;
-}
 
 .observationImage,
 .observationVideo {

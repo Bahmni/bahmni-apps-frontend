@@ -20,6 +20,10 @@ export interface FHIRObservationBundle {
           valueDateTime?: string;
           hasMember?: Array<{ reference: string }>;
           encounter?: { reference: string };
+          extension?: Array<{
+            url: string;
+            valueString: string;
+          }>;
         }
       | {
           resourceType: 'Encounter';
@@ -33,10 +37,7 @@ export interface FHIRObservationBundle {
   }>;
 }
 
-/**
- * Formatted observation for display
- */
-export interface FormattedObservation {
+export interface ObsGroup {
   id: string;
   conceptName: string;
   value: string;
@@ -44,5 +45,15 @@ export interface FormattedObservation {
   date: string;
   isParent: boolean;
   recordedBy?: string;
-  children: FormattedObservation[];
+  formName?: string;
+  children: ObsGroup[];
+}
+
+export interface ObservationFormGroup {
+  formName: string;
+  observations: ObsGroup[];
+}
+
+export interface FormattedObservations {
+  forms: ObservationFormGroup[];
 }

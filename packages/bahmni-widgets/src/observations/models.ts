@@ -4,23 +4,6 @@ export interface ObservationConfig {
   displayNameType?: 'FSN' | 'SHORT' | 'FULLY_SPECIFIED';
 }
 
-export interface ChildObservation {
-  id: string;
-  conceptName: string;
-  value: string;
-  unit?: string;
-}
-
-export interface Observation {
-  id: string;
-  date: string;
-  conceptName: string;
-  value: string;
-  unit?: string;
-  recordedBy?: string;
-  children: ChildObservation[];
-}
-
 export interface ObservationRow {
   id: string;
   conceptName: string;

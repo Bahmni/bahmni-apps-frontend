@@ -193,7 +193,9 @@ export {
   getPatientObservations,
   formatObservations,
   type FHIRObservationBundle,
-  type FormattedObservation,
+  type ObsGroup,
+  type ObservationFormGroup,
+  type FormattedObservations,
 } from './observationService';
 export {
   getCurrentProvider,

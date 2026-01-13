@@ -1,5 +1,5 @@
+import { type ObsGroup, type ObservationFormGroup } from '@bahmni/services';
 import {
-  type Observation,
   type ObservationRow,
   type GroupedObservations,
   type FormattedObservationGroup,
@@ -36,11 +36,11 @@ export const getMediaUrl = (filename: string): string => {
 /**
  * Group observations by date and transform them into table rows
  */
-export const groupObservationsByDate = <T extends Observation>(
-  observations: T[],
+export const groupObservationsByDate = (
+  observations: ObsGroup[],
 ): GroupedObservations[] => {
   // Group observations by date
-  const dateGroups = new Map<string, T[]>();
+  const dateGroups = new Map<string, ObsGroup[]>();
   observations.forEach((obs) => {
     if (!dateGroups.has(obs.date)) {
       dateGroups.set(obs.date, []);
@@ -69,7 +69,7 @@ export const groupObservationsByDate = <T extends Observation>(
       });
 
       if (observation.children.length > 0) {
-        observation.children.forEach((child) => {
+        observation.children.forEach((child: ObsGroup) => {
           const childValueWithUnit = child.unit
             ? `${child.value} ${child.unit}`
             : child.value;
@@ -92,8 +92,8 @@ export const groupObservationsByDate = <T extends Observation>(
 /**
  * Format grouped observations with rendering and headers for display
  */
-export const formatObservationsForDisplay = <T extends Observation>(
-  observations: T[],
+export const formatObservationsForDisplay = (
+  observations: ObsGroup[],
   renderValue: (value: string, conceptName: string) => React.ReactNode,
   childRowRenderer: (conceptName: string) => React.ReactNode,
   headers: { conceptName: string; value: string; recordedBy: string },
@@ -123,5 +123,44 @@ export const formatObservationsForDisplay = <T extends Observation>(
         recordedBy: row.recordedBy,
       };
     }),
+  }));
+};
+
+/**
+ * Extract form name from FHIR extension path
+ * Path format: "Bahmni^History and Examination.1/25-0"
+ * Returns: "History and Examination"
+ */
+export const extractFormName = (formNamespacePath: string): string => {
+  if (!formNamespacePath) return 'Unknown Form';
+
+  // Split by ^ and get the second part
+  const parts = formNamespacePath.split('^');
+  if (parts.length < 2) return 'Unknown Form';
+
+  // Get form name before the version number
+  const formPart = parts[1].split('.')[0];
+  return formPart || 'Unknown Form';
+};
+
+/**
+ * Group observations by form name
+ */
+export const groupObservationsByForm = (
+  observations: ObsGroup[],
+): ObservationFormGroup[] => {
+  const formGroups = new Map<string, ObsGroup[]>();
+
+  observations.forEach((obs) => {
+    const formName = obs.formName || 'General Observations';
+    if (!formGroups.has(formName)) {
+      formGroups.set(formName, []);
+    }
+    formGroups.get(formName)!.push(obs);
+  });
+
+  return Array.from(formGroups.entries()).map(([formName, observations]) => ({
+    formName,
+    observations,
   }));
 };

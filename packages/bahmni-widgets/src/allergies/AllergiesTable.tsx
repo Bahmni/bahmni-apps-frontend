@@ -89,7 +89,7 @@ const AllergiesTable: React.FC = () => {
     () => [
       { key: 'display', header: t('ALLERGEN') },
       { key: 'manifestation', header: t('REACTIONS') },
-      { key: 'recorder', header: t('ALLERGY_LIST_RECORDED_BY') },
+      { key: 'recorder', header: t('CLINICAL_DATA_RECORDED_BY') },
       { key: 'status', header: t('ALLERGY_LIST_STATUS') },
     ],
     [t],

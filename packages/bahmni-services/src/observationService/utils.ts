@@ -1,6 +1,6 @@
 import { OBSERVATION_DATE_TIME_FORMAT } from '../date/constants';
 import { formatDate } from '../date/date';
-import { FHIRObservationBundle, FormattedObservation } from './models';
+import { FHIRObservationBundle, ObsGroup } from './models';
 
 /**
  * Extract value and unit from FHIR observation
@@ -31,6 +31,32 @@ export const extractObservationValue = (
 };
 
 /**
+ * Extract form name from FHIR extension path
+ * Path format: "Bahmni^History and Examination.1/25-0"
+ * Returns: "History and Examination"
+ */
+const extractFormName = (
+  extensions?: Array<{ url: string; valueString: string }>,
+): string => {
+  if (!extensions) return 'General Observations';
+
+  const formExtension = extensions.find(
+    (ext) =>
+      ext.url === 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+  );
+
+  if (!formExtension?.valueString) return 'General Observations';
+
+  // Split by ^ and get the second part
+  const parts = formExtension.valueString.split('^');
+  if (parts.length < 2) return 'General Observations';
+
+  // Get form name before the version number
+  const formPart = parts[1].split('.')[0];
+  return formPart || 'General Observations';
+};
+
+/**
  * Format FHIR observation bundle into display format with parent-child relationships
  * @param bundle - FHIR observation bundle
  * @param t - Translation function for date formatting
@@ -39,7 +65,7 @@ export const extractObservationValue = (
 export function formatObservations(
   bundle: FHIRObservationBundle,
   t: (key: string) => string,
-): FormattedObservation[] {
+): ObsGroup[] {
   if (!bundle.entry || bundle.entry.length === 0) {
     return [];
   }
@@ -56,7 +82,7 @@ export function formatObservations(
     }
   });
 
-  const observationMap = new Map<string, FormattedObservation>();
+  const observationMap = new Map<string, ObsGroup>();
 
   bundle.entry.forEach((entry) => {
     if (entry.resource.resourceType !== 'Observation') return;
@@ -72,6 +98,9 @@ export function formatObservations(
     const encounterId = obs.encounter?.reference.split('/')[1];
     const recordedBy = encounterId ? encounterMap.get(encounterId) : undefined;
 
+    // Extract form name from extensions
+    const formName = extractFormName(obs.extension);
+
     const extracted = obs.hasMember
       ? { value: '', unit: undefined }
       : extractObservationValue(obs);
@@ -84,6 +113,7 @@ export function formatObservations(
       date: formattedDate,
       isParent: !!obs.hasMember,
       recordedBy,
+      formName,
       children: [],
     });
   });

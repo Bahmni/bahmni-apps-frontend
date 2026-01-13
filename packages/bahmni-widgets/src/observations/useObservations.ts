@@ -1,7 +1,7 @@
 import {
   getPatientObservations,
   formatObservations,
-  type FormattedObservation,
+  type ObsGroup,
 } from '@bahmni/services';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,7 @@ import { useNotification } from '../notification';
 import { type ObservationConfig } from './models';
 
 interface UseObservationsResult {
-  observations: FormattedObservation[];
+  observations: ObsGroup[];
   loading: boolean;
   error: Error | null;
 }
@@ -25,7 +25,7 @@ export const useObservations = (
   config: ObservationConfig,
 ): UseObservationsResult => {
   const { conceptNames = [], conceptCodes = [] } = config;
-  const [observations, setObservations] = useState<FormattedObservation[]>([]);
+  const [observations, setObservations] = useState<ObsGroup[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
