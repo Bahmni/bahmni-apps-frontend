@@ -87,9 +87,23 @@ const ObservationsWidget: React.FC<WidgetProps> = ({ config }) => {
     );
   }
 
+  if (loading) {
+    return (
+      <div
+        data-testid="observations-widget-loading"
+        className={styles.emptyState}
+      >
+        {t('OBSERVATIONS_LOADING')}
+      </div>
+    );
+  }
+
   if (observations.length === 0) {
     return (
-      <div data-testid="observations-widget" className={styles.emptyState}>
+      <div
+        data-testid="observations-widget-empty"
+        className={styles.emptyState}
+      >
         {t('NO_OBSERVATIONS')}
       </div>
     );
