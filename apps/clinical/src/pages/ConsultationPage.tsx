@@ -147,7 +147,6 @@ const ConsultationPage: React.FC = () => {
             <DashboardContainer
               sections={dashboardConfig.sections}
               activeItemId={activeItemId}
-              isActionAreaVisible={isActionAreaVisible}
             />
           </Suspense>
         }
