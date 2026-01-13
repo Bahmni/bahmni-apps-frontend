@@ -112,7 +112,6 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
             episodeOfCareUuids={allEpisodeOfCareIds}
             encounterUuids={allEncounterIds}
             visitUuids={allVisitIds}
-            isActionAreaVisible={isActionAreaVisible}
           />
         </article>
       ))}
