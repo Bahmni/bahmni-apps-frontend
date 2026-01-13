@@ -1044,9 +1044,9 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
-"@bahmni/form2-controls@^0.0.2-dev.18":
+"@bahmni/form2-controls@0.0.2-dev.18":
   version "0.0.2-dev.18"
-  resolved "https://registry.npmjs.org/@bahmni/form2-controls/-/form2-controls-0.0.2-dev.18.tgz#bfce415722159cddd8dc06091f050c61ce0b1a5e"
+  resolved "https://registry.yarnpkg.com/@bahmni/form2-controls/-/form2-controls-0.0.2-dev.18.tgz#bfce415722159cddd8dc06091f050c61ce0b1a5e"
   integrity sha512-430B6m/wncfz6aaWiSfN5aZYOQucdjwBptXCkVwTbuhWQUtw1bXHifQjsBTc5kiziC9Lz6+Tzx/5/uQSOt3LZA==
   dependencies:
     ajv "^8.17.1"

@@ -86,3 +86,19 @@ export interface ComplexValue {
 }
 
 // Consultation bundle structure (simplified - shows observation forms integration)
+
+export interface FormProvider {
+  providerName: string;
+  uuid: string;
+}
+
+export interface FormResponseData {
+  formType: string;
+  formName: string;
+  formVersion: number;
+  visitUuid: string;
+  visitStartDateTime: number;
+  encounterUuid: string;
+  encounterDateTime: number;
+  providers: FormProvider[];
+}

@@ -16,3 +16,19 @@ export const FORM_TRANSLATIONS_URL = (
   `/bahmniie/form/translations?formName=${encodeURIComponent(formName)}&formUuid=${formUuid}&formVersion=${formVersion}&locale=${locale}`;
 
 export const DEFAULT_FORM_NAMESPACE = 'Bahmni';
+
+export const FORM_DATA_URL = (
+  patientUuid: string,
+  numberOfVisits?: number,
+  episodeUuid?: string,
+) => {
+  const baseUrl =
+    OPENMRS_REST_V1 + '/bahmnicore/patient/' + patientUuid + '/forms';
+  let url = baseUrl;
+  if (episodeUuid) {
+    url += `?patientProgramUuid=${episodeUuid}`;
+  } else if (numberOfVisits) {
+    url += `?numberOfVisits=${numberOfVisits}`;
+  }
+  return url;
+};
