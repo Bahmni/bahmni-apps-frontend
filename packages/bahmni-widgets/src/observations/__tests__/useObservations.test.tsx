@@ -1,15 +1,13 @@
-import {
-  formatObservations,
-  getPatientObservations,
-  useConcept,
-} from '@bahmni/services';
+import { formatObservations, getPatientObservations } from '@bahmni/services';
 import { renderHook, waitFor } from '@testing-library/react';
 
+import { useConcept } from '../../hooks/useConcept';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
 import { useObservations } from '../useObservations';
 
 jest.mock('@bahmni/services');
+jest.mock('../../hooks/useConcept');
 jest.mock('../../hooks/usePatientUUID');
 jest.mock('../../notification');
 jest.mock('react-i18next', () => ({

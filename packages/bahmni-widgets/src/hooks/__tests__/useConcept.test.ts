@@ -1,16 +1,15 @@
+import { getConceptUuidByName } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook } from '@testing-library/react';
 import React from 'react';
 
-import * as conceptService from '../../../../../packages/bahmni-services/src/conceptService/conceptService';
 import { useConcept } from '../useConcept';
 
-jest.mock('../conceptService');
+jest.mock('@bahmni/services');
 
-const mockGetConceptUuidByName =
-  conceptService.getConceptUuidByName as jest.MockedFunction<
-    typeof conceptService.getConceptUuidByName
-  >;
+const mockGetConceptUuidByName = getConceptUuidByName as jest.MockedFunction<
+  typeof getConceptUuidByName
+>;
 
 describe('useConcept', () => {
   let queryClient: QueryClient;
