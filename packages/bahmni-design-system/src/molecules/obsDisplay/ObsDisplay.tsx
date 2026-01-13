@@ -1,6 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Accordion, AccordionItem } from '../../atoms/accordion';
+import { Modal } from '../../atoms/modal';
 import styles from './styles/ObsDisplay.module.scss';
+import { isImageValue, isVideoValue, getMediaUrl } from './utils';
 
 export interface ObsGroup {
   id: string;
@@ -29,6 +31,11 @@ const ObsDisplay: React.FC<ObsDisplayProps> = ({
   isOpen = false,
   translations = { recordedBy: 'Recorded by' },
 }) => {
+  const [preview, setPreview] = useState<{
+    url: string;
+    type: 'image' | 'video';
+  } | null>(null);
+
   // Group observations by form name
   const formGroups = useMemo(() => {
     const groups = new Map<string, ObsGroup[]>();
@@ -47,9 +54,47 @@ const ObsDisplay: React.FC<ObsDisplayProps> = ({
 
   // Render observation value with unit
   const renderValue = (obs: ObsGroup) => {
+    const value = obs.value;
+
+    // Handle error for media elements
+    const handleError = (e: React.SyntheticEvent<HTMLElement>) => {
+      e.currentTarget.style.display = 'none';
+      if (e.currentTarget.parentElement) {
+        e.currentTarget.parentElement.textContent = value;
+      }
+    };
+
+    // Check if value is an image
+    if (isImageValue(value)) {
+      const mediaUrl = getMediaUrl(value);
+      return (
+        <img
+          src={mediaUrl}
+          alt={obs.conceptName}
+          className={styles.observationImage}
+          onClick={() => setPreview({ url: mediaUrl, type: 'image' })}
+          onError={handleError}
+        />
+      );
+    }
+
+    // Check if value is a video
+    if (isVideoValue(value)) {
+      const mediaUrl = getMediaUrl(value);
+      return (
+        <video
+          src={mediaUrl}
+          className={styles.observationVideo}
+          onClick={() => setPreview({ url: mediaUrl, type: 'video' })}
+          onError={handleError}
+        />
+      );
+    }
+
+    // Regular text value with unit
     return (
       <span className={styles.obsValue}>
-        {obs.value}
+        {value}
         {obs.unit && ` ${obs.unit}`}
       </span>
     );
@@ -104,26 +149,46 @@ const ObsDisplay: React.FC<ObsDisplayProps> = ({
   );
 
   return (
-    <Accordion align="start" size="lg">
-      <AccordionItem
-        title={date}
-        open={isOpen}
-        className={styles.accordionItem}
-      >
-        <div className={styles.dateGroupContent}>
-          {formGroups.map((group) => (
-            <div key={group.formName} className={styles.formGroup}>
-              <div className={styles.formNameSubHeader}>{group.formName}</div>
-              {group.observations.map((obs) =>
-                obs.isParent && obs.children.length > 0
-                  ? renderObsGroup(obs)
-                  : renderSingleObs(obs),
-              )}
-            </div>
-          ))}
-        </div>
-      </AccordionItem>
-    </Accordion>
+    <>
+      <Accordion align="start" size="lg">
+        <AccordionItem
+          title={date}
+          open={isOpen}
+          className={styles.accordionItem}
+        >
+          <div className={styles.dateGroupContent}>
+            {formGroups.map((group) => (
+              <div key={group.formName} className={styles.formGroup}>
+                <div className={styles.formNameSubHeader}>{group.formName}</div>
+                {group.observations.map((obs) =>
+                  obs.isParent && obs.children.length > 0
+                    ? renderObsGroup(obs)
+                    : renderSingleObs(obs),
+                )}
+              </div>
+            ))}
+          </div>
+        </AccordionItem>
+      </Accordion>
+
+      {preview && (
+        <Modal
+          open
+          onRequestClose={() => setPreview(null)}
+          passiveModal
+          modalHeading=""
+          className={styles.mediaPreviewModal}
+        >
+          <div className={styles.mediaPreviewContainer}>
+            {preview.type === 'image' ? (
+              <img src={preview.url} alt="" />
+            ) : (
+              <video src={preview.url} controls autoPlay />
+            )}
+          </div>
+        </Modal>
+      )}
+    </>
   );
 };
 

@@ -1,6 +1,6 @@
 import { getMediaUrl, isImageValue, isVideoValue } from '../utils';
 
-describe('observations utils', () => {
+describe('obsDisplay utils', () => {
   describe('isImageValue', () => {
     it('should return true for PNG files', () => {
       expect(isImageValue('image.png')).toBe(true);
