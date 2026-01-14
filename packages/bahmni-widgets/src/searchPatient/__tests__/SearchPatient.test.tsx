@@ -257,6 +257,97 @@ describe('SearchPatient', () => {
       expect(mockOnSearch).toHaveBeenCalled();
     });
   });
+
+  it('should return matching patient when searching with complete name', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+
+    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
+      pageOfResults: mockSearchPatientData,
+      totalCount: mockSearchPatientData.length,
+    });
+
+    await waitFor(() => {
+      fireEvent.input(searchInput, {
+        target: { value: '    Steffi Maria Graf    ' },
+      });
+      fireEvent.click(screen.getByTestId('search-patient-search-button'));
+    });
+
+    expect(searchPatientByNameOrId).toHaveBeenCalledWith(
+      'Steffi Maria Graf',
+      [],
+    );
+    await waitFor(() => {
+      expect(mockOnSearch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pageOfResults: expect.arrayContaining([
+            expect.objectContaining({
+              identifier: 'ABC200000',
+              givenName: 'Steffi',
+              familyName: 'Graf',
+            }),
+          ]),
+          totalCount: mockSearchPatientData.length,
+        }),
+        'Steffi Maria Graf',
+        false,
+        false,
+        false,
+        expect.any(String),
+      );
+    });
+  });
+
+  it('should return empty results when searching for non-existent patient', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+
+    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
+      pageOfResults: [],
+      totalCount: 0,
+    });
+
+    await waitFor(() => {
+      fireEvent.input(searchInput, {
+        target: { value: '    John Doe    ' },
+      });
+      fireEvent.click(screen.getByTestId('search-patient-search-button'));
+    });
+
+    expect(searchPatientByNameOrId).toHaveBeenCalledWith('John Doe', []);
+    await waitFor(() => {
+      expect(mockOnSearch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pageOfResults: [],
+          totalCount: 0,
+        }),
+        'John Doe',
+        false,
+        false,
+        false,
+        expect.any(String),
+      );
+    });
+  });
   it('should search for patient when phone search input has a valid text', async () => {
     render(
       <QueryClientProvider client={queryClient}>
