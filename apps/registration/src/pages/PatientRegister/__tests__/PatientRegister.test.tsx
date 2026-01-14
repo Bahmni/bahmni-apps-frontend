@@ -7,6 +7,7 @@ import { useAdditionalIdentifiers } from '../../../hooks/useAdditionalIdentifier
 import { useCreatePatient } from '../../../hooks/useCreatePatient';
 import { usePatientDetails } from '../../../hooks/usePatientDetails';
 import { usePatientPhoto } from '../../../hooks/usePatientPhoto';
+import { useUpdatePatient } from '../../../hooks/useUpdatePatient';
 import { PersonAttributesProvider } from '../../../providers/PersonAttributesProvider';
 import { validateAllSections, collectFormData } from '../patientFormService';
 import PatientRegister from '../PatientRegister';
@@ -242,6 +243,13 @@ describe('PatientRegister', () => {
     });
 
     (useCreatePatient as jest.Mock).mockReturnValue({
+      mutateAsync: mockMutateAsync,
+      isPending: false,
+      isSuccess: false,
+      data: null,
+    });
+
+    (useUpdatePatient as jest.Mock).mockReturnValue({
       mutateAsync: mockMutateAsync,
       isPending: false,
       isSuccess: false,
@@ -673,6 +681,26 @@ describe('PatientRegister', () => {
         // Should be called multiple times
         expect(validateAllSections).toHaveBeenCalledTimes(2);
       });
+    });
+  });
+
+  describe('Loading State During Save', () => {
+    it('should prevent duplicate patient creation by showing loading state', () => {
+      (useCreatePatient as jest.Mock).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: true,
+        isSuccess: false,
+        data: null,
+      });
+
+      renderComponent();
+
+      // Should show loading indicator
+      expect(screen.getByText('SAVING_PATIENT')).toBeInTheDocument();
+
+      // Save button and form should not be visible during save
+      expect(screen.queryByText('CREATE_PATIENT_SAVE')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('patient-profile')).not.toBeInTheDocument();
     });
   });
 

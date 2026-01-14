@@ -5,6 +5,7 @@ import {
   Header,
   Icon,
   ICON_SIZE,
+  Loading,
 } from '@bahmni/design-system';
 import {
   BAHMNI_HOME_PATH,
@@ -107,6 +108,9 @@ const PatientRegister = () => {
   const createPatientMutation = useCreatePatient();
   const updatePatientMutation = useUpdatePatient();
 
+  const isSaving =
+    createPatientMutation.isPending || updatePatientMutation.isPending;
+
   // Dispatch audit event when page is viewed
   useEffect(() => {
     dispatchAuditEvent({
@@ -115,6 +119,11 @@ const PatientRegister = () => {
       module: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.module,
     });
   }, []);
+
+  // Show loading overlay during save operation
+  if (isSaving) {
+    return <Loading description={t('SAVING_PATIENT')} role="status" />;
+  }
 
   const handleSave = async (): Promise<string | null> => {
     const isValid = validateAllSections(
