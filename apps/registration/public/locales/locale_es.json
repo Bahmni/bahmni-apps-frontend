@@ -154,7 +154,6 @@
   "REGISTRATION_DAYS_SHORT": "d",
   "REGISTRATION_MONTHS_SHORT": "m",
   "REGISTRATION_YEARS_SHORT": "a",
-  "SAVING_PATIENT": "Guardando paciente...",
   "SUCCESS": "Éxito",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro"
 }

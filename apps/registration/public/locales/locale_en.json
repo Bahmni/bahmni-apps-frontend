@@ -154,7 +154,6 @@
   "REGISTRATION_DAYS_SHORT": "d",
   "REGISTRATION_MONTHS_SHORT": "m",
   "REGISTRATION_YEARS_SHORT": "y",
-  "SAVING_PATIENT": "Saving patient...",
   "SUCCESS": "Success",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app"
 }

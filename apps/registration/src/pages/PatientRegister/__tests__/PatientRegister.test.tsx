@@ -685,7 +685,7 @@ describe('PatientRegister', () => {
   });
 
   describe('Loading State During Save', () => {
-    it('should prevent duplicate patient creation by showing loading state', () => {
+    it('should prevent duplicate patient creation by disabling save button', () => {
       (useCreatePatient as jest.Mock).mockReturnValue({
         mutateAsync: mockMutateAsync,
         isPending: true,
@@ -695,12 +695,10 @@ describe('PatientRegister', () => {
 
       renderComponent();
 
-      // Should show loading indicator
-      expect(screen.getByText('SAVING_PATIENT')).toBeInTheDocument();
-
-      // Save button and form should not be visible during save
-      expect(screen.queryByText('CREATE_PATIENT_SAVE')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('patient-profile')).not.toBeInTheDocument();
+      // Save button should be disabled during save
+      const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
+      expect(saveButton).toBeInTheDocument();
+      expect(saveButton).toBeDisabled();
     });
   });
 
