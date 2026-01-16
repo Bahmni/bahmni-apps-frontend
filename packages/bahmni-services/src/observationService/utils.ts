@@ -27,6 +27,12 @@ export const extractObservationValue = (
     return { value: observation.valueCodeableConcept.text };
   }
 
+  if (observation.valueDateTime) {
+    // Format the date to a readable format
+    const date = new Date(observation.valueDateTime);
+    return { value: date.toLocaleDateString() };
+  }
+
   return { value: '' };
 };
 

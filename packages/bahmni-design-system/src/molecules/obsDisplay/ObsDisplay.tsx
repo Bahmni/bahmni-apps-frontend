@@ -105,7 +105,7 @@ const ObsDisplay: React.FC<ObsDisplayProps> = ({
     <div className={styles.childrenContainer}>
       {children.map((child) => (
         <div key={child.id} className={styles.childRow}>
-          <span className={styles.childLabel}>{child.conceptName}:</span>
+          <span className={styles.childLabel}>{child.conceptName}</span>
           {renderValue(child)}
         </div>
       ))}
@@ -115,11 +115,11 @@ const ObsDisplay: React.FC<ObsDisplayProps> = ({
   // Render a single observation (no children)
   const renderSingleObs = (obs: ObsGroup) => (
     <div className={styles.obsHeader} key={obs.id}>
-      <span className={styles.obsConceptName}>{obs.conceptName}:</span>
+      <span className={styles.obsConceptName}>{obs.conceptName}</span>
       {renderValue(obs)}
       {obs.recordedBy && (
         <span className={styles.recordedBy}>
-          {translations.recordedBy}: {obs.recordedBy}
+          {translations.recordedBy} : {obs.recordedBy}
         </span>
       )}
     </div>
@@ -135,11 +135,12 @@ const ObsDisplay: React.FC<ObsDisplayProps> = ({
               <span className={styles.obsGroupTitle}>{obs.conceptName}</span>
               {obs.recordedBy && (
                 <span className={styles.recordedBy}>
-                  {translations.recordedBy}: {obs.recordedBy}
+                  {translations.recordedBy} : {obs.recordedBy}
                 </span>
               )}
             </div>
           }
+          open
           className={styles.nestedAccordionItem}
         >
           {renderChildren(obs.children)}

@@ -1,0 +1,555 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ObsDisplay Snapshot matches snapshot with image observation 1`] = `
+<ul
+  class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+>
+  <li
+    class="cds--accordion__item"
+  >
+    <button
+      aria-controls="accordion-item-«re»"
+      aria-expanded="false"
+      class="cds--accordion__heading"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="cds--accordion__arrow"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+        />
+      </svg>
+      <div
+        class="cds--accordion__title"
+        dir="auto"
+      >
+        01 Jan 2024
+      </div>
+    </button>
+    <div
+      class="cds--accordion__wrapper"
+    >
+      <div
+        class="cds--accordion__content"
+        id="accordion-item-«re»"
+      >
+        <div>
+          <div
+            class="formGroup"
+          >
+            <div>
+              Radiology
+            </div>
+            <div
+              class="obsHeader"
+            >
+              <span
+                class="obsConceptName"
+              >
+                X-Ray Image
+              </span>
+              <img
+                alt="X-Ray Image"
+                src="/openmrs/auth?requested_document=/document_images/123/456-xray-image.jpg"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </li>
+</ul>
+`;
+
+exports[`ObsDisplay Snapshot matches snapshot with multiple observations 1`] = `
+<ul
+  class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+>
+  <li
+    class="cds--accordion__item"
+  >
+    <button
+      aria-controls="accordion-item-«rg»"
+      aria-expanded="false"
+      class="cds--accordion__heading"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="cds--accordion__arrow"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+        />
+      </svg>
+      <div
+        class="cds--accordion__title"
+        dir="auto"
+      >
+        01 Jan 2024
+      </div>
+    </button>
+    <div
+      class="cds--accordion__wrapper"
+    >
+      <div
+        class="cds--accordion__content"
+        id="accordion-item-«rg»"
+      >
+        <div>
+          <div
+            class="formGroup"
+          >
+            <div>
+              Vitals
+            </div>
+            <div
+              class="obsHeader"
+            >
+              <span
+                class="obsConceptName"
+              >
+                Temperature
+              </span>
+              <span
+                class="obsValue"
+              >
+                98.6
+                 °F
+              </span>
+              <span>
+                Recorded by
+                 : 
+                Dr. Smith
+              </span>
+            </div>
+            <div
+              class="obsGroupContainer"
+            >
+              <ul
+                class="cds--accordion cds--accordion--start cds--accordion--sm cds--layout--size-sm"
+              >
+                <li
+                  class="cds--accordion__item cds--accordion__item--active nestedAccordionItem"
+                >
+                  <button
+                    aria-controls="accordion-item-«rh»"
+                    aria-expanded="true"
+                    class="cds--accordion__heading"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="cds--accordion__arrow"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 16 16"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--accordion__title"
+                      dir="auto"
+                    >
+                      <div>
+                        <span>
+                          Blood Pressure
+                        </span>
+                        <span>
+                          Recorded by
+                           : 
+                          Dr. Smith
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                  <div
+                    class="cds--accordion__wrapper"
+                  >
+                    <div
+                      class="cds--accordion__content"
+                      id="accordion-item-«rh»"
+                    >
+                      <div
+                        class="childrenContainer"
+                      >
+                        <div
+                          class="childRow"
+                        >
+                          <span
+                            class="childLabel"
+                          >
+                            Systolic
+                          </span>
+                          <span
+                            class="obsValue"
+                          >
+                            120
+                             mmHg
+                          </span>
+                        </div>
+                        <div
+                          class="childRow"
+                        >
+                          <span
+                            class="childLabel"
+                          >
+                            Diastolic
+                          </span>
+                          <span
+                            class="obsValue"
+                          >
+                            80
+                             mmHg
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div
+            class="formGroup"
+          >
+            <div>
+              Radiology
+            </div>
+            <div
+              class="obsHeader"
+            >
+              <span
+                class="obsConceptName"
+              >
+                X-Ray Image
+              </span>
+              <img
+                alt="X-Ray Image"
+                src="/openmrs/auth?requested_document=/document_images/123/456-xray-image.jpg"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </li>
+</ul>
+`;
+
+exports[`ObsDisplay Snapshot matches snapshot with observation group 1`] = `
+<ul
+  class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+>
+  <li
+    class="cds--accordion__item"
+  >
+    <button
+      aria-controls="accordion-item-«rc»"
+      aria-expanded="false"
+      class="cds--accordion__heading"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="cds--accordion__arrow"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+        />
+      </svg>
+      <div
+        class="cds--accordion__title"
+        dir="auto"
+      >
+        01 Jan 2024
+      </div>
+    </button>
+    <div
+      class="cds--accordion__wrapper"
+    >
+      <div
+        class="cds--accordion__content"
+        id="accordion-item-«rc»"
+      >
+        <div>
+          <div
+            class="formGroup"
+          >
+            <div>
+              Vitals
+            </div>
+            <div
+              class="obsGroupContainer"
+            >
+              <ul
+                class="cds--accordion cds--accordion--start cds--accordion--sm cds--layout--size-sm"
+              >
+                <li
+                  class="cds--accordion__item cds--accordion__item--active nestedAccordionItem"
+                >
+                  <button
+                    aria-controls="accordion-item-«rd»"
+                    aria-expanded="true"
+                    class="cds--accordion__heading"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="cds--accordion__arrow"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 16 16"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--accordion__title"
+                      dir="auto"
+                    >
+                      <div>
+                        <span>
+                          Blood Pressure
+                        </span>
+                        <span>
+                          Recorded by
+                           : 
+                          Dr. Smith
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                  <div
+                    class="cds--accordion__wrapper"
+                  >
+                    <div
+                      class="cds--accordion__content"
+                      id="accordion-item-«rd»"
+                    >
+                      <div
+                        class="childrenContainer"
+                      >
+                        <div
+                          class="childRow"
+                        >
+                          <span
+                            class="childLabel"
+                          >
+                            Systolic
+                          </span>
+                          <span
+                            class="obsValue"
+                          >
+                            120
+                             mmHg
+                          </span>
+                        </div>
+                        <div
+                          class="childRow"
+                        >
+                          <span
+                            class="childLabel"
+                          >
+                            Diastolic
+                          </span>
+                          <span
+                            class="obsValue"
+                          >
+                            80
+                             mmHg
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </li>
+</ul>
+`;
+
+exports[`ObsDisplay Snapshot matches snapshot with single observation 1`] = `
+<ul
+  class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+>
+  <li
+    class="cds--accordion__item"
+  >
+    <button
+      aria-controls="accordion-item-«rb»"
+      aria-expanded="false"
+      class="cds--accordion__heading"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="cds--accordion__arrow"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+        />
+      </svg>
+      <div
+        class="cds--accordion__title"
+        dir="auto"
+      >
+        01 Jan 2024
+      </div>
+    </button>
+    <div
+      class="cds--accordion__wrapper"
+    >
+      <div
+        class="cds--accordion__content"
+        id="accordion-item-«rb»"
+      >
+        <div>
+          <div
+            class="formGroup"
+          >
+            <div>
+              Vitals
+            </div>
+            <div
+              class="obsHeader"
+            >
+              <span
+                class="obsConceptName"
+              >
+                Temperature
+              </span>
+              <span
+                class="obsValue"
+              >
+                98.6
+                 °F
+              </span>
+              <span>
+                Recorded by
+                 : 
+                Dr. Smith
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </li>
+</ul>
+`;
+
+exports[`ObsDisplay Snapshot matches snapshot with video observation 1`] = `
+<ul
+  class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+>
+  <li
+    class="cds--accordion__item"
+  >
+    <button
+      aria-controls="accordion-item-«rf»"
+      aria-expanded="false"
+      class="cds--accordion__heading"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="cds--accordion__arrow"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+        />
+      </svg>
+      <div
+        class="cds--accordion__title"
+        dir="auto"
+      >
+        01 Jan 2024
+      </div>
+    </button>
+    <div
+      class="cds--accordion__wrapper"
+    >
+      <div
+        class="cds--accordion__content"
+        id="accordion-item-«rf»"
+      >
+        <div>
+          <div
+            class="formGroup"
+          >
+            <div>
+              Procedures
+            </div>
+            <div
+              class="obsHeader"
+            >
+              <span
+                class="obsConceptName"
+              >
+                Procedure Video
+              </span>
+              <video
+                src="/openmrs/auth?requested_document=/document_images/123/456-procedure-video.mp4"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </li>
+</ul>
+`;
