@@ -260,4 +260,39 @@ describe('ActionArea', () => {
       expect(results).toHaveNoViolations();
     });
   });
+
+  describe('Hidden State', () => {
+    it('applies hidden class and aria-hidden when hidden prop is true', () => {
+      const { container } = render(<ActionArea {...defaultProps} hidden />);
+
+      // When aria-hidden="true", the element is not in the accessibility tree,
+      // so we need to query it directly from the container
+      const actionArea = container.querySelector('[aria-label="Action Area"]');
+
+      expect(actionArea).toHaveClass('hidden');
+      expect(actionArea).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    it('does not apply hidden class when hidden prop is false', () => {
+      render(<ActionArea {...defaultProps} hidden={false} />);
+
+      const actionArea = screen.getByRole('region', {
+        name: 'Action Area',
+      });
+
+      expect(actionArea).not.toHaveClass('hidden');
+      expect(actionArea).toHaveAttribute('aria-hidden', 'false');
+    });
+
+    it('is visible by default when hidden prop is not provided', () => {
+      render(<ActionArea {...defaultProps} />);
+
+      const actionArea = screen.getByRole('region', {
+        name: 'Action Area',
+      });
+
+      expect(actionArea).not.toHaveClass('hidden');
+      expect(actionArea).toHaveAttribute('aria-hidden', 'false');
+    });
+  });
 });

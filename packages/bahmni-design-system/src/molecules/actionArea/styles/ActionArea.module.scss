@@ -15,6 +15,11 @@
   overflow: hidden;
 }
 
+.hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .title {
   @include type-style("heading-03");
   padding: $spacing-06;

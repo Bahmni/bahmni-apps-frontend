@@ -62,8 +62,9 @@ jest.mock('@bahmni/design-system', () => ({
     tertiaryButtonText,
     onTertiaryButtonClick,
     content,
+    hidden,
   }: any) => (
-    <div data-testid="mock-action-area">
+    <div data-testid="mock-action-area" data-hidden={hidden}>
       <div data-testid="action-area-title">{title}</div>
       <div data-testid="action-area-content">{content}</div>
       <button
@@ -719,7 +720,7 @@ describe('ConsultationPad', () => {
       expect(screen.getByTestId('wrapper-viewing-form')).toHaveTextContent(
         'Test Form',
       );
-      expect(screen.queryByTestId('mock-action-area')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('mock-action-area')).toBeInTheDocument();
     });
 
     it('should manage selectedForms state correctly', async () => {
@@ -932,6 +933,48 @@ describe('ConsultationPad', () => {
       expect(
         screen.queryByTestId('selected-form-form-1'),
       ).not.toBeInTheDocument();
+    });
+
+    it('should hide ActionArea when viewing a form', async () => {
+      const { rerender } = renderWithProvider();
+
+      // Initially, ActionArea should not be hidden
+      const actionArea = screen.getByTestId('mock-action-area');
+      expect(actionArea).toHaveAttribute('data-hidden', 'false');
+
+      // Select a form to view
+      const selectButton = screen.getByTestId('select-form-button');
+      await userEvent.click(selectButton);
+
+      // Force re-render to pick up the store changes
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
+      );
+
+      // ActionArea should now be hidden
+      await waitFor(() => {
+        const hiddenActionArea = screen.getByTestId('mock-action-area');
+        expect(hiddenActionArea).toHaveAttribute('data-hidden', 'true');
+      });
+
+      // Go back from viewing form
+      const backButton = screen.getByTestId('wrapper-back-button');
+      await userEvent.click(backButton);
+
+      // Force re-render
+      rerender(
+        <ClinicalAppProvider episodeUuids={[]}>
+          <ConsultationPad onClose={mockOnClose} />
+        </ClinicalAppProvider>,
+      );
+
+      // ActionArea should be visible again
+      await waitFor(() => {
+        const visibleActionArea = screen.getByTestId('mock-action-area');
+        expect(visibleActionArea).toHaveAttribute('data-hidden', 'false');
+      });
     });
   });
   describe('Snapshot Tests', () => {

@@ -357,59 +357,58 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     </>
   );
 
-  // If viewing a form, let ObservationFormsWrapper take over the entire screen
-  if (viewingForm) {
-    return (
-      <ObservationFormsContainer
-        onViewingFormChange={handleViewingFormChange}
-        viewingForm={viewingForm}
-        onRemoveForm={removeForm}
-        pinnedForms={pinnedForms}
-        updatePinnedForms={updatePinnedForms}
-        onFormObservationsChange={handleFormObservationsChange}
-        existingObservations={getFormData(viewingForm.uuid)}
-      />
-    );
-  }
-
   // Otherwise, render consultation ActionArea with consultation content
   return (
-    <ActionArea
-      title={isError ? '' : t('CONSULTATION_ACTION_NEW')}
-      primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
-      onPrimaryButtonClick={handleOnPrimaryButtonClick}
-      isPrimaryButtonDisabled={
-        !isEncounterDetailsFormReady || !canSubmitConsultation || isSubmitting
-      }
-      secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
-      onSecondaryButtonClick={handleOnSecondaryButtonClick}
-      content={
-        isError ? (
-          <Grid className={styles.emptyState}>
-            <Column
-              sm={4}
-              md={8}
-              lg={16}
-              xlg={16}
-              className={styles.emptyStateTitle}
-            >
-              {t('CONSULTATION_PAD_ERROR_TITLE')}
-            </Column>
-            <Column
-              sm={4}
-              md={8}
-              lg={16}
-              xlg={16}
-              className={styles.emptyStateBody}
-            >
-              {t('CONSULTATION_PAD_ERROR_BODY')}
-            </Column>
-          </Grid>
-        ) : (
-          consultationContent
-        )
-      }
-    />
+    <>
+      <ActionArea
+        title={isError ? '' : t('CONSULTATION_ACTION_NEW')}
+        primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
+        onPrimaryButtonClick={handleOnPrimaryButtonClick}
+        isPrimaryButtonDisabled={
+          !isEncounterDetailsFormReady || !canSubmitConsultation || isSubmitting
+        }
+        hidden={!!viewingForm}
+        secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
+        onSecondaryButtonClick={handleOnSecondaryButtonClick}
+        content={
+          isError ? (
+            <Grid className={styles.emptyState}>
+              <Column
+                sm={4}
+                md={8}
+                lg={16}
+                xlg={16}
+                className={styles.emptyStateTitle}
+              >
+                {t('CONSULTATION_PAD_ERROR_TITLE')}
+              </Column>
+              <Column
+                sm={4}
+                md={8}
+                lg={16}
+                xlg={16}
+                className={styles.emptyStateBody}
+              >
+                {t('CONSULTATION_PAD_ERROR_BODY')}
+              </Column>
+            </Grid>
+          ) : (
+            consultationContent
+          )
+        }
+      />
+      {viewingForm && (
+        <ObservationFormsContainer
+          onViewingFormChange={handleViewingFormChange}
+          viewingForm={viewingForm}
+          onRemoveForm={removeForm}
+          pinnedForms={pinnedForms}
+          updatePinnedForms={updatePinnedForms}
+          onFormObservationsChange={handleFormObservationsChange}
+          existingObservations={getFormData(viewingForm.uuid)}
+        />
+      )}
+    </>
   );
 };
 
