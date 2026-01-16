@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Accordion, AccordionItem } from '../../atoms/accordion';
 import { Modal } from '../../atoms/modal';
 import styles from './styles/ObsDisplay.module.scss';
-import { isImageValue, isVideoValue, getMediaUrl } from './utils';
+import { isImageValue, isVideoValue, isPdfValue, getMediaUrl } from './utils';
 
 export interface ObsGroup {
   id: string;
@@ -63,6 +63,20 @@ const ObsDisplay: React.FC<ObsDisplayProps> = ({
         e.currentTarget.parentElement.textContent = value;
       }
     };
+
+    // Check if value is a PDF
+    if (isPdfValue(value)) {
+      const mediaUrl = getMediaUrl(value);
+      return (
+        <a href={mediaUrl} target="_blank" rel="noopener noreferrer">
+          <img
+            src="/bahmni/images/pdfIcon.png"
+            alt={obs.conceptName}
+            className={styles.observationImage}
+          />
+        </a>
+      );
+    }
 
     // Check if value is an image
     if (isImageValue(value)) {

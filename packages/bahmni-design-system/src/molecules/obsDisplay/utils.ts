@@ -19,6 +19,14 @@ export const isVideoValue = (value: string): boolean => {
 };
 
 /**
+ * Check if a value is a PDF filename
+ */
+export const isPdfValue = (value: string): boolean => {
+  if (!value) return false;
+  return value.toLowerCase().endsWith('.pdf');
+};
+
+/**
  * Get media URL for authenticated document access
  */
 export const getMediaUrl = (filename: string): string => {
