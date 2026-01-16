@@ -1,4 +1,4 @@
-export { get, post, put, del } from './api';
+export { get, post, put, patch, del } from './api';
 export {
   initAppI18n,
   useTranslation,
