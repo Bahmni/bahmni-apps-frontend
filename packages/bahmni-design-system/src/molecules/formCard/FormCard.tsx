@@ -17,6 +17,7 @@ export interface FormCardProps {
   className?: string;
   dataTestId?: string;
   ariaLabel?: string;
+  errorMessage?: string;
 }
 
 interface ActionIconProps {
@@ -148,6 +149,7 @@ export const FormCard: React.FC<FormCardProps> = ({
   className,
   dataTestId = 'form-card',
   ariaLabel,
+  errorMessage,
 }) => {
   const { handleCardClick, handleKeyDown, hasClickHandler } = useClickHandler(
     onCardClick,
@@ -162,6 +164,7 @@ export const FormCard: React.FC<FormCardProps> = ({
       [styles.disabled]: disabled,
       [styles.selected]: selected,
       [styles.clickable]: hasClickHandler,
+      [styles.error]: errorMessage,
     },
     className,
   );
@@ -191,6 +194,9 @@ export const FormCard: React.FC<FormCardProps> = ({
         onActionClick={onActionClick}
         disabled={disabled}
       />
+      {errorMessage && (
+        <div className={styles.errorMessage}>{errorMessage}</div>
+      )}
     </div>
   );
 };

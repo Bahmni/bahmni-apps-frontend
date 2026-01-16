@@ -1,11 +1,21 @@
 import { ObservationForm, Form2Observation } from '@bahmni/services';
 import { create } from 'zustand';
+import {
+  VALIDATION_STATE_EMPTY,
+  VALIDATION_STATE_MANDATORY,
+  VALIDATION_STATE_INVALID,
+} from '../constants/forms';
 
 export interface ObservationFormData {
   formUuid: string;
   formName: string;
   observations: Form2Observation[];
   timestamp: number;
+  validationState?:
+    | null
+    | typeof VALIDATION_STATE_EMPTY
+    | typeof VALIDATION_STATE_MANDATORY
+    | typeof VALIDATION_STATE_INVALID;
 }
 
 export interface ObservationFormsState {
@@ -14,8 +24,16 @@ export interface ObservationFormsState {
   viewingForm: ObservationForm | null;
   addForm: (form: ObservationForm) => void;
   removeForm: (formUuid: string) => void;
-  updateFormData: (formUuid: string, observations: Form2Observation[]) => void;
-  getFormData: (formUuid: string) => Form2Observation[] | undefined;
+  updateFormData: (
+    formUuid: string,
+    observations: Form2Observation[],
+    validationState?:
+      | null
+      | typeof VALIDATION_STATE_EMPTY
+      | typeof VALIDATION_STATE_MANDATORY
+      | typeof VALIDATION_STATE_INVALID,
+  ) => void;
+  getFormData: (formUuid: string) => ObservationFormData | undefined;
   setViewingForm: (form: ObservationForm | null) => void;
   getAllObservations: () => Form2Observation[];
   getObservationFormsData: () => Record<string, Form2Observation[]>;
@@ -81,7 +99,15 @@ export const useObservationFormsStore = create<ObservationFormsState>(
       });
     },
 
-    updateFormData: (formUuid: string, observations: Form2Observation[]) => {
+    updateFormData: (
+      formUuid: string,
+      observations: Form2Observation[],
+      validationState?:
+        | null
+        | typeof VALIDATION_STATE_EMPTY
+        | typeof VALIDATION_STATE_MANDATORY
+        | typeof VALIDATION_STATE_INVALID,
+    ) => {
       if (!validateFormUuid(formUuid)) {
         return;
       }
@@ -101,6 +127,7 @@ export const useObservationFormsStore = create<ObservationFormsState>(
             formName: form.name,
             observations,
             timestamp: Date.now(),
+            validationState,
           },
         },
       }));
@@ -112,7 +139,7 @@ export const useObservationFormsStore = create<ObservationFormsState>(
       }
 
       const state = get();
-      return state.formsData[formUuid]?.observations;
+      return state.formsData[formUuid];
     },
 
     setViewingForm: (form: ObservationForm | null) => {
@@ -147,14 +174,21 @@ export const useObservationFormsStore = create<ObservationFormsState>(
 
     validate: () => {
       const state = get();
-
       for (const form of state.selectedForms) {
         const formData = state.formsData[form.uuid];
+        // Check if form has no data
         if (!formData || formData.observations.length === 0) {
           return false;
         }
+        // Check if form has validation errors
+        if (
+          formData.validationState === VALIDATION_STATE_MANDATORY ||
+          formData.validationState === VALIDATION_STATE_EMPTY ||
+          formData.validationState === VALIDATION_STATE_INVALID
+        ) {
+          return false;
+        }
       }
-
       return true;
     },
 
