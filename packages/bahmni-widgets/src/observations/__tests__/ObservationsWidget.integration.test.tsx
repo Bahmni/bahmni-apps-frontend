@@ -13,8 +13,9 @@ jest.mock('@bahmni/services', () => {
   return {
     ...actual,
     getPatientObservations: jest.fn(),
-    formatObservations: jest.fn((bundle, t) =>
-      actual.formatObservations(bundle, t),
+    fetchFormNameTranslations: jest.fn(),
+    formatObservations: jest.fn((bundle, t, formTranslations) =>
+      actual.formatObservations(bundle, t, formTranslations),
     ),
   };
 });
@@ -42,6 +43,10 @@ const mockGetPatientObservations =
   bahmniServices.getPatientObservations as jest.MockedFunction<
     typeof bahmniServices.getPatientObservations
   >;
+const mockFetchFormNameTranslations =
+  bahmniServices.fetchFormNameTranslations as jest.MockedFunction<
+    typeof bahmniServices.fetchFormNameTranslations
+  >;
 
 describe('ObservationsWidget - Integration Test', () => {
   const mockAddNotification = jest.fn();
@@ -55,6 +60,12 @@ describe('ObservationsWidget - Integration Test', () => {
       removeNotification: jest.fn(),
       clearAllNotifications: jest.fn(),
       notifications: [],
+    });
+    // Mock form translations (simulating Spanish translations)
+    mockFetchFormNameTranslations.mockResolvedValue({
+      'History and Examination': 'Historia y examen',
+      'Registration Details': 'Detalles de registro',
+      Malaria: 'Paludismo',
     });
   });
 
@@ -358,11 +369,9 @@ describe('ObservationsWidget - Integration Test', () => {
     // Verify recorded by information is displayed
     expect(screen.getAllByText(/Dr\. Smith/).length).toBeGreaterThan(0);
 
-    // Verify form names are displayed as group headers
-    expect(
-      screen.getAllByText('History and Examination').length,
-    ).toBeGreaterThan(0);
-    expect(screen.getByText('Registration Details')).toBeInTheDocument();
-    expect(screen.getByText('Malaria')).toBeInTheDocument();
+    // Verify form names are TRANSLATED (Spanish) as group headers
+    expect(screen.getAllByText('Historia y examen').length).toBeGreaterThan(0);
+    expect(screen.getByText('Detalles de registro')).toBeInTheDocument();
+    expect(screen.getByText('Paludismo')).toBeInTheDocument();
   });
 });

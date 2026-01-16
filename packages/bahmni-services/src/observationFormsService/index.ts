@@ -2,6 +2,7 @@ export {
   fetchObservationForms,
   fetchFormMetadata,
   getPatientFormData,
+  fetchFormNameTranslations,
 } from './observationFormsService';
 export {
   type ObservationForm,

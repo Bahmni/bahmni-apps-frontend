@@ -39,10 +39,11 @@ export const extractObservationValue = (
 /**
  * Extract form name from FHIR extension path
  * Path format: "Bahmni^History and Examination.1/25-0"
- * Returns: "History and Examination"
+ * Returns: "History and Examination" or translated name if translation provided
  */
 const extractFormName = (
   extensions?: Array<{ url: string; valueString: string }>,
+  formTranslations?: Record<string, string>,
 ): string => {
   if (!extensions) return 'General Observations';
 
@@ -59,18 +60,27 @@ const extractFormName = (
 
   // Get form name before the version number
   const formPart = parts[1].split('.')[0];
-  return formPart || 'General Observations';
+  const formName = formPart || 'General Observations';
+
+  // Apply translation if available
+  if (formTranslations?.[formName]) {
+    return formTranslations[formName];
+  }
+
+  return formName;
 };
 
 /**
  * Format FHIR observation bundle into display format with parent-child relationships
  * @param bundle - FHIR observation bundle
  * @param t - Translation function for date formatting
+ * @param formTranslations - Optional map of original form names to translated names
  * @returns Array of formatted observations with nested children
  */
 export function formatObservations(
   bundle: FHIRObservationBundle,
   t: (key: string) => string,
+  formTranslations?: Record<string, string>,
 ): ObsGroup[] {
   if (!bundle.entry || bundle.entry.length === 0) {
     return [];
@@ -104,8 +114,8 @@ export function formatObservations(
     const encounterId = obs.encounter?.reference.split('/')[1];
     const recordedBy = encounterId ? encounterMap.get(encounterId) : undefined;
 
-    // Extract form name from extensions
-    const formName = extractFormName(obs.extension);
+    // Extract form name from extensions with translations
+    const formName = extractFormName(obs.extension, formTranslations);
 
     const extracted = obs.hasMember
       ? { value: '', unit: undefined }

@@ -92,6 +92,32 @@ export const fetchObservationForms = async (): Promise<ObservationForm[]> => {
 };
 
 /**
+ * Fetches a map of form names to their translations for the current locale
+ * This is used to translate form names in observations display
+ * @returns Promise resolving to a map of {originalFormName: translatedFormName}
+ */
+export const fetchFormNameTranslations = async (): Promise<
+  Record<string, string>
+> => {
+  const formsArray = await fetchAndNormalizeFormsData();
+  const currentLocale = getUserPreferredLocale();
+
+  const translationsMap: Record<string, string> = {};
+
+  formsArray.forEach((form) => {
+    const originalName = form.name;
+    const translatedName = getTranslatedFormName(form, currentLocale);
+
+    // Only add to map if translation is different from original
+    if (originalName !== translatedName) {
+      translationsMap[originalName] = translatedName;
+    }
+  });
+
+  return translationsMap;
+};
+
+/**
  * Fetches form metadata including the form schema/definition and translations
  * @param formUuid - The UUID of the form to fetch
  * @returns Promise resolving to parsed form metadata with translations for current locale

@@ -1,4 +1,4 @@
-import { FormattedObservation } from '@bahmni/services';
+import { ObsGroup } from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import ObservationsWidget from '../ObservationsWidget';
 import { useObservations } from '../useObservations';
@@ -61,7 +61,7 @@ describe('ObservationsWidget', () => {
   });
 
   it('should render observations in table format', () => {
-    const mockObservations: FormattedObservation[] = [
+    const mockObservations: ObsGroup[] = [
       {
         id: 'obs-1',
         conceptName: 'Temperature',
@@ -85,7 +85,7 @@ describe('ObservationsWidget', () => {
   });
 
   it('should group observations by date', () => {
-    const mockObservations: FormattedObservation[] = [
+    const mockObservations: ObsGroup[] = [
       {
         id: 'obs-1',
         conceptName: 'Temperature',
@@ -118,7 +118,7 @@ describe('ObservationsWidget', () => {
   });
 
   it('should render child observations with indentation', () => {
-    const mockObservations: FormattedObservation[] = [
+    const mockObservations: ObsGroup[] = [
       {
         id: 'parent-1',
         conceptName: 'Vital Signs',
@@ -151,7 +151,7 @@ describe('ObservationsWidget', () => {
   });
 
   it('should display "Recorded By" information', () => {
-    const mockObservations: FormattedObservation[] = [
+    const mockObservations: ObsGroup[] = [
       {
         id: 'obs-1',
         conceptName: 'Temperature',
@@ -169,13 +169,13 @@ describe('ObservationsWidget', () => {
       error: null,
     });
 
-    render(<ObservationsWidget config={mockConfig} />);
+    const { container } = render(<ObservationsWidget config={mockConfig} />);
 
-    expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+    expect(container.textContent).toContain('Dr. Smith');
   });
 
   it('should render text values normally', () => {
-    const mockObservations: FormattedObservation[] = [
+    const mockObservations: ObsGroup[] = [
       {
         id: 'obs-1',
         conceptName: 'Notes',

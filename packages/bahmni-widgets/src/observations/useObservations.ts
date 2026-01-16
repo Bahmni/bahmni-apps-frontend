@@ -1,6 +1,7 @@
 import {
   getPatientObservations,
   formatObservations,
+  fetchFormNameTranslations,
   type ObsGroup,
 } from '@bahmni/services';
 import { useState, useEffect } from 'react';
@@ -76,7 +77,12 @@ export const useObservations = (
           patientUUID,
           allConceptCodes,
         );
-        const formattedObs = formatObservations(bundle, t);
+
+        // Fetch form name translations
+        const formTranslations = await fetchFormNameTranslations();
+
+        // Format observations with translations
+        const formattedObs = formatObservations(bundle, t, formTranslations);
 
         if (!cancelled) {
           setObservations(formattedObs);
