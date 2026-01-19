@@ -8,8 +8,14 @@ import {
 import { ObservationForm } from '@bahmni/services';
 import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_FORM_API_NAMES } from '../../../constants/forms';
+import {
+  DEFAULT_FORM_API_NAMES,
+  VALIDATION_STATE_EMPTY,
+  VALIDATION_STATE_MANDATORY,
+  VALIDATION_STATE_INVALID,
+} from '../../../constants/forms';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
+import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import styles from './styles/ObservationForms.module.scss';
 
 interface ObservationFormsProps {
@@ -47,6 +53,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
   }) => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
+    const { getFormData } = useObservationFormsStore();
 
     const { forms: allForms, isLoading: isAllFormsLoading } =
       useObservationFormsSearch();
@@ -220,18 +227,35 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
               title={t('OBSERVATION_FORMS_ADDED_FORMS')}
               dataTestId="added-forms-container"
             >
-              {selectedForms.map((form: ObservationForm) => (
-                <FormCard
-                  key={form.uuid}
-                  title={form.name}
-                  icon="fa-file-lines"
-                  actionIcon="fa-times"
-                  onOpen={() => onFormSelect?.(form)}
-                  onActionClick={() => onRemoveForm?.(form.uuid)}
-                  dataTestId={`selected-form-${form.uuid}`}
-                  ariaLabel={`Open ${form.name} form`}
-                />
-              ))}
+              {selectedForms.map((form: ObservationForm) => {
+                const savedFormData = getFormData(form.uuid);
+                const validationState = savedFormData?.validationState;
+
+                // Show error indicator for all validation error types
+                const showError =
+                  validationState === VALIDATION_STATE_MANDATORY ||
+                  validationState === VALIDATION_STATE_INVALID ||
+                  validationState === VALIDATION_STATE_EMPTY;
+                const errorMessage = showError
+                  ? t(
+                      `OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_${validationState.toUpperCase()}`,
+                    )
+                  : undefined;
+
+                return (
+                  <FormCard
+                    key={form.uuid}
+                    title={form.name}
+                    icon="fa-file-lines"
+                    actionIcon="fa-times"
+                    onOpen={() => onFormSelect?.(form)}
+                    onActionClick={() => onRemoveForm?.(form.uuid)}
+                    dataTestId={`selected-form-${form.uuid}`}
+                    ariaLabel={`Open ${form.name} form`}
+                    errorMessage={errorMessage}
+                  />
+                );
+              })}
             </FormCardContainer>
           </div>
         )}
