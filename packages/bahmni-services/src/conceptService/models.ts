@@ -10,9 +10,21 @@ export interface Link {
   uri: string;
   resourceAlias?: string;
 }
+
 export interface ConceptClass {
   uuid: string;
   name: string;
+}
+
+export interface ConceptName {
+  display: string;
+  uuid: string;
+  name: string;
+  locale: string;
+  localePreferred: boolean;
+  conceptNameType: string;
+  links: Link[];
+  resourceVersion: string;
 }
 
 export interface ConceptData {
@@ -30,17 +42,6 @@ export interface ConceptData {
   answers: unknown[];
   setMembers: ConceptSetMember[];
   attributes: ConceptAttribute[];
-  links: Link[];
-  resourceVersion: string;
-}
-
-export interface ConceptName {
-  display: string;
-  uuid: string;
-  name: string;
-  locale: string;
-  localePreferred: boolean;
-  conceptNameType: string;
   links: Link[];
   resourceVersion: string;
 }
