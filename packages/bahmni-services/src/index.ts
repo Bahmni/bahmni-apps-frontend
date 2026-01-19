@@ -191,6 +191,7 @@ export { getCurrentUser, getUserLoginLocation, type User } from './userService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getPatientObservationsBundle,
+  getPatientObservationsWithEncounterBundle,
   getPatientObservations,
 } from './observationService';
 export {
