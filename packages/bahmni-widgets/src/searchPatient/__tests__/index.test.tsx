@@ -340,7 +340,7 @@ describe('SearchPatient', () => {
         false,
         false,
         false,
-        expect.any(String),
+        undefined,
       );
     });
   });
@@ -381,7 +381,7 @@ describe('SearchPatient', () => {
         false,
         false,
         false,
-        expect.any(String),
+        undefined,
       );
     });
   });
