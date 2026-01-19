@@ -88,6 +88,16 @@ const mockVideoObs: ObsGroup = {
   children: [],
 };
 
+const mockDateObs: ObsGroup = {
+  id: 'obs-date-1',
+  conceptName: 'Treatment start date',
+  value: '1/14/2026',
+  date: '14 Jan 2026, 03:40 PM',
+  isParent: false,
+  formName: 'Malaria',
+  children: [],
+};
+
 describe('ObsDisplay', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -142,6 +152,21 @@ describe('ObsDisplay', () => {
     expect(screen.queryByText('Temperature')).not.toBeInTheDocument();
   });
 
+  test('renders date-type observation correctly', () => {
+    const { container } = render(
+      <ObsDisplay observations={[mockDateObs]} date="14 Jan 2026" isOpen />,
+    );
+
+    // Assert on the date field (concept name)
+    expect(screen.getByText('Treatment start date')).toBeInTheDocument();
+
+    // Assert on the date value
+    expect(container.textContent).toContain('1/14/2026');
+
+    // Assert on the form name
+    expect(screen.getByText('Malaria')).toBeInTheDocument();
+  });
+
   describe('Accessibility', () => {
     test('has no accessibility violations', async () => {
       const { container } = render(
@@ -182,6 +207,13 @@ describe('ObsDisplay', () => {
     test('matches snapshot with video observation', () => {
       const { container } = render(
         <ObsDisplay observations={[mockVideoObs]} date="01 Jan 2024" />,
+      );
+      expect(container.firstChild).toMatchSnapshot();
+    });
+
+    test('matches snapshot with date observation', () => {
+      const { container } = render(
+        <ObsDisplay observations={[mockDateObs]} date="14 Jan 2026" />,
       );
       expect(container.firstChild).toMatchSnapshot();
     });

@@ -1,5 +1,76 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ObsDisplay Snapshot matches snapshot with date observation 1`] = `
+<ul
+  class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+>
+  <li
+    class="cds--accordion__item"
+  >
+    <button
+      aria-controls="accordion-item-«rh»"
+      aria-expanded="false"
+      class="cds--accordion__heading"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="cds--accordion__arrow"
+        fill="currentColor"
+        focusable="false"
+        height="16"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 16 16"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+        />
+      </svg>
+      <div
+        class="cds--accordion__title"
+        dir="auto"
+      >
+        14 Jan 2026
+      </div>
+    </button>
+    <div
+      class="cds--accordion__wrapper"
+    >
+      <div
+        class="cds--accordion__content"
+        id="accordion-item-«rh»"
+      >
+        <div>
+          <div
+            class="formGroup"
+          >
+            <div>
+              Malaria
+            </div>
+            <div
+              class="obsHeader"
+            >
+              <span
+                class="obsConceptName"
+              >
+                Treatment start date
+              </span>
+              <span
+                class="obsValue"
+              >
+                1/14/2026
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </li>
+</ul>
+`;
+
 exports[`ObsDisplay Snapshot matches snapshot with image observation 1`] = `
 <ul
   class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
@@ -8,7 +79,7 @@ exports[`ObsDisplay Snapshot matches snapshot with image observation 1`] = `
     class="cds--accordion__item"
   >
     <button
-      aria-controls="accordion-item-«re»"
+      aria-controls="accordion-item-«rf»"
       aria-expanded="false"
       class="cds--accordion__heading"
       type="button"
@@ -40,7 +111,7 @@ exports[`ObsDisplay Snapshot matches snapshot with image observation 1`] = `
     >
       <div
         class="cds--accordion__content"
-        id="accordion-item-«re»"
+        id="accordion-item-«rf»"
       >
         <div>
           <div
@@ -78,7 +149,7 @@ exports[`ObsDisplay Snapshot matches snapshot with multiple observations 1`] = `
     class="cds--accordion__item"
   >
     <button
-      aria-controls="accordion-item-«rg»"
+      aria-controls="accordion-item-«ri»"
       aria-expanded="false"
       class="cds--accordion__heading"
       type="button"
@@ -110,7 +181,7 @@ exports[`ObsDisplay Snapshot matches snapshot with multiple observations 1`] = `
     >
       <div
         class="cds--accordion__content"
-        id="accordion-item-«rg»"
+        id="accordion-item-«ri»"
       >
         <div>
           <div
@@ -149,7 +220,7 @@ exports[`ObsDisplay Snapshot matches snapshot with multiple observations 1`] = `
                   class="cds--accordion__item cds--accordion__item--active nestedAccordionItem"
                 >
                   <button
-                    aria-controls="accordion-item-«rh»"
+                    aria-controls="accordion-item-«rj»"
                     aria-expanded="true"
                     class="cds--accordion__heading"
                     type="button"
@@ -190,7 +261,7 @@ exports[`ObsDisplay Snapshot matches snapshot with multiple observations 1`] = `
                   >
                     <div
                       class="cds--accordion__content"
-                      id="accordion-item-«rh»"
+                      id="accordion-item-«rj»"
                     >
                       <div
                         class="childrenContainer"
@@ -267,7 +338,7 @@ exports[`ObsDisplay Snapshot matches snapshot with observation group 1`] = `
     class="cds--accordion__item"
   >
     <button
-      aria-controls="accordion-item-«rc»"
+      aria-controls="accordion-item-«rd»"
       aria-expanded="false"
       class="cds--accordion__heading"
       type="button"
@@ -299,7 +370,7 @@ exports[`ObsDisplay Snapshot matches snapshot with observation group 1`] = `
     >
       <div
         class="cds--accordion__content"
-        id="accordion-item-«rc»"
+        id="accordion-item-«rd»"
       >
         <div>
           <div
@@ -318,7 +389,7 @@ exports[`ObsDisplay Snapshot matches snapshot with observation group 1`] = `
                   class="cds--accordion__item cds--accordion__item--active nestedAccordionItem"
                 >
                   <button
-                    aria-controls="accordion-item-«rd»"
+                    aria-controls="accordion-item-«re»"
                     aria-expanded="true"
                     class="cds--accordion__heading"
                     type="button"
@@ -359,7 +430,7 @@ exports[`ObsDisplay Snapshot matches snapshot with observation group 1`] = `
                   >
                     <div
                       class="cds--accordion__content"
-                      id="accordion-item-«rd»"
+                      id="accordion-item-«re»"
                     >
                       <div
                         class="childrenContainer"
@@ -416,7 +487,7 @@ exports[`ObsDisplay Snapshot matches snapshot with single observation 1`] = `
     class="cds--accordion__item"
   >
     <button
-      aria-controls="accordion-item-«rb»"
+      aria-controls="accordion-item-«rc»"
       aria-expanded="false"
       class="cds--accordion__heading"
       type="button"
@@ -448,7 +519,7 @@ exports[`ObsDisplay Snapshot matches snapshot with single observation 1`] = `
     >
       <div
         class="cds--accordion__content"
-        id="accordion-item-«rb»"
+        id="accordion-item-«rc»"
       >
         <div>
           <div
@@ -493,7 +564,7 @@ exports[`ObsDisplay Snapshot matches snapshot with video observation 1`] = `
     class="cds--accordion__item"
   >
     <button
-      aria-controls="accordion-item-«rf»"
+      aria-controls="accordion-item-«rg»"
       aria-expanded="false"
       class="cds--accordion__heading"
       type="button"
@@ -525,7 +596,7 @@ exports[`ObsDisplay Snapshot matches snapshot with video observation 1`] = `
     >
       <div
         class="cds--accordion__content"
-        id="accordion-item-«rf»"
+        id="accordion-item-«rg»"
       >
         <div>
           <div
