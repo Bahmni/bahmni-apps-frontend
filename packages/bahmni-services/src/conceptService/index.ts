@@ -3,6 +3,6 @@ export {
   searchFHIRConcepts,
   searchFHIRConceptsByName,
   getConceptById,
-  getConceptUuidByName,
+  searchConceptByName,
 } from './conceptService';
 export { type ConceptSearch, type ConceptClass } from './models';

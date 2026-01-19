@@ -51,24 +51,6 @@ export async function getConceptById(uuid: string): Promise<ConceptData> {
 }
 
 /**
- * Get concept UUID by its fully specified name
- * @param conceptName - The fully specified name of the concept
- * @returns Promise resolving to concept UUID or null if not found
- */
-export async function getConceptUuidByName(
-  conceptName: string,
-): Promise<string | null> {
-  const url = CONCEPT_BY_FULLY_SPECIFIED_NAME_URL(conceptName);
-  const response = await get<ConceptSearchByNameResponse>(url);
-
-  if (response.results && response.results.length > 0) {
-    return response.results[0].uuid;
-  }
-
-  return null;
-}
-
-/**
  * Search for a concept by its fully specified name and return the full concept data
  * @param conceptName - The fully specified name of the concept
  * @returns Promise resolving to full ConceptData or null if not found
