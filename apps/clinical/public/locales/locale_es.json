@@ -11,6 +11,7 @@
   "ALLERGY_ALREADY_ADDED": "El alérgeno ya está agregado",
   "ALLERGY_LIST_ACTIVE": "Activo",
   "ALLERGY_LIST_INACTIVE": "Inactivo",
+  "ALLERGY_LIST_RECORDED_BY": "Grabado por",
   "ALLERGY_LIST_STATUS": "Estado",
   "ALLERGY_SELECT_REACTIONS": "Seleccionar Reacciones",
   "ALLERGY_SELECT_SEVERITY": "Seleccionar Gravedad",
