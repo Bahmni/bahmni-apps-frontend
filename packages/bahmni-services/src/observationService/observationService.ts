@@ -1,6 +1,6 @@
 import { get } from '../api';
 import { FHIR_OBSERVATION_URL } from './constants';
-import { type FHIRObservationBundle } from './models';
+import { Observation, Bundle } from 'fhir/r4';
 
 /**
  * Fetch patient observations from FHIR API
@@ -11,7 +11,7 @@ import { type FHIRObservationBundle } from './models';
 export async function getPatientObservations(
   patientUuid: string,
   conceptCodes: string[],
-): Promise<FHIRObservationBundle> {
+): Promise<Bundle<Observation>> {
   const url = FHIR_OBSERVATION_URL(patientUuid, conceptCodes);
-  return await get<FHIRObservationBundle>(url);
+  return await get<Bundle<Observation>>(url);
 }

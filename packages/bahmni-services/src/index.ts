@@ -189,14 +189,7 @@ export {
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
-export {
-  getPatientObservations,
-  formatObservations,
-  type FHIRObservationBundle,
-  type ObsGroup,
-  type ObservationFormGroup,
-  type FormattedObservations,
-} from './observationService';
+export { getPatientObservations } from './observationService';
 export {
   getCurrentProvider,
   type Provider,
