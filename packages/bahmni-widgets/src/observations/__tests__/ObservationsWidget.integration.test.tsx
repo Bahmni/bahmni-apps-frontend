@@ -13,9 +13,9 @@ jest.mock('@bahmni/services', () => {
   return {
     ...actual,
     getPatientObservations: jest.fn(),
-    fetchFormNameTranslations: jest.fn(),
-    formatObservations: jest.fn((bundle, t, formTranslations) =>
-      actual.formatObservations(bundle, t, formTranslations),
+    fetchObservationForms: jest.fn(),
+    formatObservations: jest.fn((bundle, t, forms) =>
+      actual.formatObservations(bundle, t, forms),
     ),
   };
 });
@@ -43,9 +43,9 @@ const mockGetPatientObservations =
   bahmniServices.getPatientObservations as jest.MockedFunction<
     typeof bahmniServices.getPatientObservations
   >;
-const mockFetchFormNameTranslations =
-  bahmniServices.fetchFormNameTranslations as jest.MockedFunction<
-    typeof bahmniServices.fetchFormNameTranslations
+const mockFetchObservationForms =
+  bahmniServices.fetchObservationForms as jest.MockedFunction<
+    typeof bahmniServices.fetchObservationForms
   >;
 
 describe('ObservationsWidget - Integration Test', () => {
@@ -61,12 +61,39 @@ describe('ObservationsWidget - Integration Test', () => {
       clearAllNotifications: jest.fn(),
       notifications: [],
     });
-    // Mock form translations (simulating Spanish translations)
-    mockFetchFormNameTranslations.mockResolvedValue({
-      'History and Examination': 'Historia y examen',
-      'Registration Details': 'Detalles de registro',
-      Malaria: 'Paludismo',
-    });
+    // Mock forms data (simulating Spanish translations)
+    mockFetchObservationForms.mockResolvedValue([
+      {
+        uuid: 'form-uuid-1',
+        name: 'Historia y examen',
+        id: 1,
+        nameTranslation: JSON.stringify([
+          { locale: 'en', display: 'History and Examination' },
+          { locale: 'es', display: 'Historia y examen' },
+        ]),
+        privileges: [],
+      },
+      {
+        uuid: 'form-uuid-2',
+        name: 'Detalles de registro',
+        id: 2,
+        nameTranslation: JSON.stringify([
+          { locale: 'en', display: 'Registration Details' },
+          { locale: 'es', display: 'Detalles de registro' },
+        ]),
+        privileges: [],
+      },
+      {
+        uuid: 'form-uuid-3',
+        name: 'Paludismo',
+        id: 3,
+        nameTranslation: JSON.stringify([
+          { locale: 'en', display: 'Malaria' },
+          { locale: 'es', display: 'Paludismo' },
+        ]),
+        privileges: [],
+      },
+    ]);
   });
 
   afterEach(() => {

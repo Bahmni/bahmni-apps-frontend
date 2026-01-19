@@ -256,7 +256,6 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
-  fetchFormNameTranslations,
   transformFormDataToObservations,
   transformObservationsToFormData,
   getPatientFormData,

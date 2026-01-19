@@ -1,5 +1,6 @@
 import { OBSERVATION_DATE_TIME_FORMAT } from '../date/constants';
 import { formatDate } from '../date/date';
+import { ObservationForm } from '../observationFormsService/models';
 import { FHIRObservationBundle, ObsGroup } from './models';
 
 /**
@@ -37,13 +38,13 @@ export const extractObservationValue = (
 };
 
 /**
- * Extract form name from FHIR extension path
+ * Extract form name from FHIR extension path and return translated name
  * Path format: "Bahmni^History and Examination.1/25-0"
- * Returns: "History and Examination" or translated name if translation provided
+ * Returns translated form name if available, otherwise the English form name
  */
 const extractFormName = (
   extensions?: Array<{ url: string; valueString: string }>,
-  formTranslations?: Record<string, string>,
+  forms?: ObservationForm[],
 ): string => {
   if (!extensions) return 'General Observations';
 
@@ -54,33 +55,41 @@ const extractFormName = (
 
   if (!formExtension?.valueString) return 'General Observations';
 
-  // Split by ^ and get the second part
-  const parts = formExtension.valueString.split('^');
-  if (parts.length < 2) return 'General Observations';
+  // Extract form name from path (e.g., "History and Examination" from "Bahmni^History and Examination.1/25-0")
+  const pathParts = formExtension.valueString.split('^');
+  if (pathParts.length < 2) return 'General Observations';
 
-  // Get form name before the version number
-  const formPart = parts[1].split('.')[0];
-  const formName = formPart || 'General Observations';
+  const englishFormName = pathParts[1].split('.')[0] || 'General Observations';
 
-  // Apply translation if available
-  if (formTranslations?.[formName]) {
-    return formTranslations[formName];
+  // Find matching form and return its translated name
+  // ObservationForm.name is already translated by fetchObservationForms()
+  if (forms && forms.length > 0) {
+    const translatedForm = forms.find((form) => {
+      const translations = JSON.parse(form.nameTranslation);
+      return translations.some(
+        (t: { display: string }) => t.display === englishFormName,
+      );
+    });
+
+    if (translatedForm) {
+      return translatedForm.name;
+    }
   }
 
-  return formName;
+  return englishFormName;
 };
 
 /**
  * Format FHIR observation bundle into display format with parent-child relationships
  * @param bundle - FHIR observation bundle
  * @param t - Translation function for date formatting
- * @param formTranslations - Optional map of original form names to translated names
+ * @param forms - Optional array of form data for translations
  * @returns Array of formatted observations with nested children
  */
 export function formatObservations(
   bundle: FHIRObservationBundle,
   t: (key: string) => string,
-  formTranslations?: Record<string, string>,
+  forms?: ObservationForm[],
 ): ObsGroup[] {
   if (!bundle.entry || bundle.entry.length === 0) {
     return [];
@@ -114,8 +123,8 @@ export function formatObservations(
     const encounterId = obs.encounter?.reference.split('/')[1];
     const recordedBy = encounterId ? encounterMap.get(encounterId) : undefined;
 
-    // Extract form name from extensions with translations
-    const formName = extractFormName(obs.extension, formTranslations);
+    // Extract form name from extensions with forms data
+    const formName = extractFormName(obs.extension, forms);
 
     const extracted = obs.hasMember
       ? { value: '', unit: undefined }

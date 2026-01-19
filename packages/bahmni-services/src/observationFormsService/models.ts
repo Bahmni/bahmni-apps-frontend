@@ -13,6 +13,7 @@ export interface ObservationForm {
   name: string;
   id: number;
   privileges: FormPrivilege[];
+  nameTranslation: string;
 }
 
 // API response interfaces (what comes from the backend)

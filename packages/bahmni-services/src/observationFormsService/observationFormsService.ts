@@ -76,6 +76,7 @@ const transformToObservationForm = (
       privilegeName: p.privilegeName,
       editable: p.editable,
     })),
+    nameTranslation: form.nameTranslation,
   };
 };
 
@@ -89,32 +90,6 @@ export const fetchObservationForms = async (): Promise<ObservationForm[]> => {
   return formsArray.map((form) =>
     transformToObservationForm(form, currentLocale),
   );
-};
-
-/**
- * Fetches a map of form names to their translations for the current locale
- * This is used to translate form names in observations display
- * @returns Promise resolving to a map of {originalFormName: translatedFormName}
- */
-export const fetchFormNameTranslations = async (): Promise<
-  Record<string, string>
-> => {
-  const formsArray = await fetchAndNormalizeFormsData();
-  const currentLocale = getUserPreferredLocale();
-
-  const translationsMap: Record<string, string> = {};
-
-  formsArray.forEach((form) => {
-    const originalName = form.name;
-    const translatedName = getTranslatedFormName(form, currentLocale);
-
-    // Only add to map if translation is different from original
-    if (originalName !== translatedName) {
-      translationsMap[originalName] = translatedName;
-    }
-  });
-
-  return translationsMap;
 };
 
 /**

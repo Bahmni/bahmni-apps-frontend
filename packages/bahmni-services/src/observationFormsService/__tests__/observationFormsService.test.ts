@@ -78,12 +78,14 @@ describe('observationFormsService', () => {
               editable: true,
             },
           ],
+          nameTranslation: '[{"display":"Formulario","locale":"es"}]',
         },
         {
           uuid: 'form-uuid-2',
           name: 'Another Form', // Should fallback to original name
           id: 2,
           privileges: [],
+          nameTranslation: '[]',
         },
       ]);
     });
@@ -121,6 +123,9 @@ describe('observationFormsService', () => {
       const result = await fetchObservationForms();
 
       expect(result[0].name).toBe('English Name');
+      expect(result[0].nameTranslation).toBe(
+        '[{"display":"Nombre Español","locale":"es"},{"display":"English Name","locale":"en"}]',
+      );
     });
 
     it('should fallback to original name when locale has no translation', async () => {
@@ -144,6 +149,9 @@ describe('observationFormsService', () => {
       const result = await fetchObservationForms();
 
       expect(result[0].name).toBe('Original Name');
+      expect(result[0].nameTranslation).toBe(
+        '[{"display":"Nombre Español","locale":"es"}]',
+      );
     });
 
     it('should handle empty translations array', async () => {
@@ -167,6 +175,7 @@ describe('observationFormsService', () => {
       const result = await fetchObservationForms();
 
       expect(result[0].name).toBe('Original Name');
+      expect(result[0].nameTranslation).toBe('[]');
     });
 
     it('should properly map privileges from API to domain model', async () => {
@@ -208,6 +217,7 @@ describe('observationFormsService', () => {
           editable: false,
         },
       ]);
+      expect(result[0].nameTranslation).toBe('[]');
     });
 
     it('should handle forms with empty privileges array', async () => {
@@ -231,6 +241,7 @@ describe('observationFormsService', () => {
       const result = await fetchObservationForms();
 
       expect(result[0].privileges).toEqual([]);
+      expect(result[0].nameTranslation).toBe('[]');
     });
 
     it('should handle network errors', async () => {
