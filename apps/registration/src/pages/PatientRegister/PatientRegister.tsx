@@ -107,6 +107,9 @@ const PatientRegister = () => {
   const createPatientMutation = useCreatePatient();
   const updatePatientMutation = useUpdatePatient();
 
+  const isSaving =
+    createPatientMutation.isPending || updatePatientMutation.isPending;
+
   // Dispatch audit event when page is viewed
   useEffect(() => {
     dispatchAuditEvent({
@@ -289,7 +292,11 @@ const PatientRegister = () => {
                 {t('CREATE_PATIENT_BACK_TO_SEARCH')}
               </Button>
               <div className={styles.actionButtons}>
-                <Button kind="tertiary" onClick={handleSave}>
+                <Button
+                  kind="tertiary"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                >
                   {t('CREATE_PATIENT_SAVE')}
                 </Button>
                 <RegistrationActions

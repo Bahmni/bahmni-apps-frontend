@@ -61,9 +61,7 @@ exports[`ObservationFormsContainer Rendering and Structure should match the snap
       </button>
       <button
         data-testid="tertiary-button"
-      >
-        translated_OBSERVATION_FORM_BACK_BUTTON
-      </button>
+      />
     </div>
   </div>
 </div>

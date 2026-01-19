@@ -3,6 +3,7 @@
 exports[`ConsultationPad Snapshot Tests should match snapshot during submission state 1`] = `
 <div>
   <div
+    data-hidden="false"
     data-testid="mock-action-area"
   >
     <div
@@ -100,6 +101,7 @@ exports[`ConsultationPad Snapshot Tests should match snapshot during submission 
 exports[`ConsultationPad Snapshot Tests should match snapshot for error state 1`] = `
 <div>
   <div
+    data-hidden="false"
     data-testid="mock-action-area"
   >
     <div
@@ -140,6 +142,7 @@ exports[`ConsultationPad Snapshot Tests should match snapshot for error state 1`
 exports[`ConsultationPad Snapshot Tests should match snapshot for form order and dividers 1`] = `
 <div>
   <div
+    data-hidden="false"
     data-testid="mock-action-area"
   >
     <div
@@ -236,6 +239,7 @@ exports[`ConsultationPad Snapshot Tests should match snapshot for form order and
 exports[`ConsultationPad Snapshot Tests should match snapshot with disabled Done button 1`] = `
 <div>
   <div
+    data-hidden="false"
     data-testid="mock-action-area"
   >
     <div

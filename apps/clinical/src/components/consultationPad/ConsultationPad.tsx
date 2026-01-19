@@ -23,6 +23,11 @@ import { useMedicationStore } from '../../../src/stores/medicationsStore';
 import { useObservationFormsStore } from '../../../src/stores/observationFormsStore';
 import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
 import { ERROR_TITLES } from '../../constants/errors';
+import {
+  VALIDATION_STATE_EMPTY,
+  VALIDATION_STATE_MANDATORY,
+  VALIDATION_STATE_INVALID,
+} from '../../constants/forms';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { usePinnedObservationForms } from '../../hooks/usePinnedObservationForms';
 import { ConsultationBundle } from '../../models/consultationBundle';
@@ -67,6 +72,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     updateFormData,
     getFormData,
     getObservationFormsData,
+    validate: validateObservationForms,
     reset: resetObservationForms,
   } = useObservationFormsStore();
 
@@ -146,8 +152,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
   // Callback to receive observation form data
   const handleFormObservationsChange = React.useCallback(
-    (formUuid: string, observations: Form2Observation[]) => {
-      updateFormData(formUuid, observations);
+    (
+      formUuid: string,
+      observations: Form2Observation[],
+      validationState?:
+        | null
+        | typeof VALIDATION_STATE_EMPTY
+        | typeof VALIDATION_STATE_MANDATORY
+        | typeof VALIDATION_STATE_INVALID,
+    ) => {
+      updateFormData(formUuid, observations, validationState);
     },
     [updateFormData],
   );
@@ -263,10 +277,22 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       const isConditionsAndDiagnosesValid = validate();
       const isAllergiesValid = validateAllAllergies();
       const isMedicationsValid = validateAllMedications();
+      const isObservationFormValid = validateObservationForms();
+
+      if (!isObservationFormValid) {
+        addNotification({
+          title: t('OBSERVATION_FORMS_MANDATORY_ERROR_TITLE'),
+          message: t('OBSERVATION_FORMS_MANDATORY_ERROR_MESSAGE'),
+          type: 'error',
+          timeout: 5000,
+        });
+      }
+
       if (
         !isConditionsAndDiagnosesValid ||
         !isAllergiesValid ||
-        !isMedicationsValid
+        !isMedicationsValid ||
+        !isObservationFormValid
       ) {
         return;
       }
@@ -357,59 +383,58 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     </>
   );
 
-  // If viewing a form, let ObservationFormsWrapper take over the entire screen
-  if (viewingForm) {
-    return (
-      <ObservationFormsContainer
-        onViewingFormChange={handleViewingFormChange}
-        viewingForm={viewingForm}
-        onRemoveForm={removeForm}
-        pinnedForms={pinnedForms}
-        updatePinnedForms={updatePinnedForms}
-        onFormObservationsChange={handleFormObservationsChange}
-        existingObservations={getFormData(viewingForm.uuid)}
-      />
-    );
-  }
-
   // Otherwise, render consultation ActionArea with consultation content
   return (
-    <ActionArea
-      title={isError ? '' : t('CONSULTATION_ACTION_NEW')}
-      primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
-      onPrimaryButtonClick={handleOnPrimaryButtonClick}
-      isPrimaryButtonDisabled={
-        !isEncounterDetailsFormReady || !canSubmitConsultation || isSubmitting
-      }
-      secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
-      onSecondaryButtonClick={handleOnSecondaryButtonClick}
-      content={
-        isError ? (
-          <Grid className={styles.emptyState}>
-            <Column
-              sm={4}
-              md={8}
-              lg={16}
-              xlg={16}
-              className={styles.emptyStateTitle}
-            >
-              {t('CONSULTATION_PAD_ERROR_TITLE')}
-            </Column>
-            <Column
-              sm={4}
-              md={8}
-              lg={16}
-              xlg={16}
-              className={styles.emptyStateBody}
-            >
-              {t('CONSULTATION_PAD_ERROR_BODY')}
-            </Column>
-          </Grid>
-        ) : (
-          consultationContent
-        )
-      }
-    />
+    <>
+      <ActionArea
+        title={isError ? '' : t('CONSULTATION_ACTION_NEW')}
+        primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
+        onPrimaryButtonClick={handleOnPrimaryButtonClick}
+        isPrimaryButtonDisabled={
+          !isEncounterDetailsFormReady || !canSubmitConsultation || isSubmitting
+        }
+        hidden={!!viewingForm}
+        secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
+        onSecondaryButtonClick={handleOnSecondaryButtonClick}
+        content={
+          isError ? (
+            <Grid className={styles.emptyState}>
+              <Column
+                sm={4}
+                md={8}
+                lg={16}
+                xlg={16}
+                className={styles.emptyStateTitle}
+              >
+                {t('CONSULTATION_PAD_ERROR_TITLE')}
+              </Column>
+              <Column
+                sm={4}
+                md={8}
+                lg={16}
+                xlg={16}
+                className={styles.emptyStateBody}
+              >
+                {t('CONSULTATION_PAD_ERROR_BODY')}
+              </Column>
+            </Grid>
+          ) : (
+            consultationContent
+          )
+        }
+      />
+      {viewingForm && (
+        <ObservationFormsContainer
+          onViewingFormChange={handleViewingFormChange}
+          viewingForm={viewingForm}
+          onRemoveForm={removeForm}
+          pinnedForms={pinnedForms}
+          updatePinnedForms={updatePinnedForms}
+          onFormObservationsChange={handleFormObservationsChange}
+          existingObservations={getFormData(viewingForm.uuid)?.observations}
+        />
+      )}
+    </>
   );
 };
 

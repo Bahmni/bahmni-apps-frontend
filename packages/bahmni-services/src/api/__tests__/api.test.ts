@@ -1,4 +1,4 @@
-import { get, post, put, del } from '../api';
+import { get, post, put, patch, del } from '../api';
 import client from '../client';
 
 // Mock dependencies
@@ -29,12 +29,14 @@ describe('Public API Methods', () => {
     const mockAxiosGet = jest.fn();
     const mockAxiosPost = jest.fn();
     const mockAxiosPut = jest.fn();
+    const mockAxiosPatch = jest.fn();
     const mockAxiosDelete = jest.fn();
 
     beforeEach(() => {
       client.get = mockAxiosGet;
       client.post = mockAxiosPost;
       client.put = mockAxiosPut;
+      client.patch = mockAxiosPatch;
       client.delete = mockAxiosDelete;
     });
 
@@ -105,6 +107,30 @@ describe('Public API Methods', () => {
 
         await expect(put('/api/patients/1', {})).rejects.toThrow('Not found');
         expect(mockAxiosPut).toHaveBeenCalledWith('/api/patients/1', {});
+      });
+    });
+
+    describe('patch', () => {
+      it('should make PATCH request and return response data', async () => {
+        const mockData = { id: 1, name: 'Partially Updated Patient' };
+        const requestData = { name: 'Partially Updated Patient' };
+        mockAxiosPatch.mockResolvedValue({ data: mockData });
+
+        const result = await patch('/api/patients/1', requestData);
+
+        expect(mockAxiosPatch).toHaveBeenCalledWith(
+          '/api/patients/1',
+          requestData,
+        );
+        expect(result).toEqual(mockData);
+      });
+
+      it('should handle PATCH request errors', async () => {
+        const error = new Error('Conflict');
+        mockAxiosPatch.mockRejectedValue(error);
+
+        await expect(patch('/api/patients/1', {})).rejects.toThrow('Conflict');
+        expect(mockAxiosPatch).toHaveBeenCalledWith('/api/patients/1', {});
       });
     });
 

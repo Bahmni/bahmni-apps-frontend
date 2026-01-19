@@ -7,6 +7,7 @@ import { useAdditionalIdentifiers } from '../../../hooks/useAdditionalIdentifier
 import { useCreatePatient } from '../../../hooks/useCreatePatient';
 import { usePatientDetails } from '../../../hooks/usePatientDetails';
 import { usePatientPhoto } from '../../../hooks/usePatientPhoto';
+import { useUpdatePatient } from '../../../hooks/useUpdatePatient';
 import { PersonAttributesProvider } from '../../../providers/PersonAttributesProvider';
 import { validateAllSections, collectFormData } from '../patientFormService';
 import PatientRegister from '../PatientRegister';
@@ -242,6 +243,13 @@ describe('PatientRegister', () => {
     });
 
     (useCreatePatient as jest.Mock).mockReturnValue({
+      mutateAsync: mockMutateAsync,
+      isPending: false,
+      isSuccess: false,
+      data: null,
+    });
+
+    (useUpdatePatient as jest.Mock).mockReturnValue({
       mutateAsync: mockMutateAsync,
       isPending: false,
       isSuccess: false,
@@ -673,6 +681,24 @@ describe('PatientRegister', () => {
         // Should be called multiple times
         expect(validateAllSections).toHaveBeenCalledTimes(2);
       });
+    });
+  });
+
+  describe('Loading State During Save', () => {
+    it('should prevent duplicate patient creation by disabling save button', () => {
+      (useCreatePatient as jest.Mock).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: true,
+        isSuccess: false,
+        data: null,
+      });
+
+      renderComponent();
+
+      // Save button should be disabled during save
+      const saveButton = screen.getByText('CREATE_PATIENT_SAVE');
+      expect(saveButton).toBeInTheDocument();
+      expect(saveButton).toBeDisabled();
     });
   });
 

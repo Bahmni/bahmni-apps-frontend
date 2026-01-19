@@ -40,6 +40,20 @@ export const put = async <T = unknown, D = unknown>(
 };
 
 /**
+ * HTTP PATCH request
+ * @param url - The URL to send the PATCH request to
+ * @param data - The data to send in the request body
+ * @returns Promise resolving to the response data
+ */
+export const patch = async <T = unknown, D = unknown>(
+  url: string,
+  data: D,
+): Promise<T> => {
+  const response: AxiosResponse<T> = await client.patch(url, data);
+  return response.data;
+};
+
+/**
  * HTTP DELETE request
  * @param url - The URL to send the DELETE request to
  * @returns Promise resolving to the response data
