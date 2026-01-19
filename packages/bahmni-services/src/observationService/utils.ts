@@ -1,4 +1,4 @@
-import { OBSERVATION_DATE_TIME_FORMAT } from '../date/constants';
+import { DATE_TIME_FORMAT } from '../date/constants';
 import { formatDate } from '../date/date';
 import { FHIRObservationBundle, ObsGroup } from './models';
 
@@ -107,7 +107,7 @@ export function formatObservations(
     const formattedDate = formatDate(
       obs.effectiveDateTime,
       t,
-      OBSERVATION_DATE_TIME_FORMAT,
+      DATE_TIME_FORMAT,
     ).formattedResult;
 
     // Extract encounter ID and get practitioner name
