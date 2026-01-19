@@ -1,1 +1,4 @@
-export { getPatientObservations } from './observationService';
+export {
+  getPatientObservationsBundle,
+  getPatientObservations,
+} from './observationService';

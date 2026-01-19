@@ -1,22 +1,30 @@
 import * as api from '../../api';
+import {
+  mockObservationBundle,
+  mockEmptyObservationBundle,
+  mockObservation,
+} from '../__mocks__/observationMocks';
 import { FHIR_OBSERVATION_URL } from '../constants';
-import { getPatientObservations } from '../observationService';
+import {
+  getPatientObservationsBundle,
+  getPatientObservations,
+} from '../observationService';
 
 jest.mock('../../api');
 
 describe('observationService', () => {
-  describe('getPatientObservations', () => {
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
+  describe('getPatientObservationsBundle', () => {
     it('should call API with correct patient and concept UUIDs', async () => {
       const patientUuid = 'patient-uuid-123';
       const conceptCodes = ['concept-1', 'concept-2'];
       const mockBundle = { resourceType: 'Bundle', entry: [] };
       (api.get as jest.Mock).mockResolvedValue(mockBundle);
 
-      await getPatientObservations(patientUuid, conceptCodes);
+      await getPatientObservationsBundle(patientUuid, conceptCodes);
 
       expect(api.get).toHaveBeenCalledWith(
         FHIR_OBSERVATION_URL(patientUuid, conceptCodes),
@@ -24,83 +32,75 @@ describe('observationService', () => {
     });
 
     it('should return observation bundle', async () => {
-      const mockBundle = {
-        resourceType: 'Bundle',
-        entry: [
-          {
-            resourceType: 'Observation',
-            id: 'f001',
-            identifier: [
-              {
-                use: 'official',
-                system: 'http://www.bmc.nl/zorgportal/identifiers/observations',
-                value: '6323',
-              },
-            ],
-            status: 'final',
-            code: {
-              coding: [
-                {
-                  system: 'http://loinc.org',
-                  code: '15074-8',
-                  display: 'Glucose [Moles/volume] in Blood',
-                },
-              ],
-            },
-            subject: {
-              reference: 'Patient/f001',
-              display: 'P. van de Heuvel',
-            },
-            effectiveDateTime: '2013-04-02T09:30:10+01:00',
-            issued: '2013-04-03T15:30:10+01:00',
-            performer: [
-              {
-                reference: 'Practitioner/f005',
-                display: 'A. Langeveld',
-              },
-            ],
-            valueQuantity: {
-              value: 6.3,
-              unit: 'mmol/l',
-              system: 'http://unitsofmeasure.org',
-              code: 'mmol/L',
-            },
-            interpretation: [
-              {
-                coding: [
-                  {
-                    system:
-                      'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-                    code: 'H',
-                    display: 'High',
-                  },
-                ],
-              },
-            ],
-            referenceRange: [
-              {
-                low: {
-                  value: 3.1,
-                  unit: 'mmol/l',
-                  system: 'http://unitsofmeasure.org',
-                  code: 'mmol/L',
-                },
-                high: {
-                  value: 6.2,
-                  unit: 'mmol/l',
-                  system: 'http://unitsofmeasure.org',
-                  code: 'mmol/L',
-                },
-              },
-            ],
-          },
-        ],
-      };
-      (api.get as jest.Mock).mockResolvedValue(mockBundle);
+      (api.get as jest.Mock).mockResolvedValue(mockObservationBundle);
+
+      const result = await getPatientObservationsBundle('patient-123', [
+        'concept-1',
+      ]);
+
+      expect(result).toEqual(mockObservationBundle);
+    });
+
+    it('should handle API errors', async () => {
+      const mockError = new Error('API error');
+      (api.get as jest.Mock).mockRejectedValue(mockError);
+
+      await expect(
+        getPatientObservationsBundle('patient-123', ['concept-1']),
+      ).rejects.toThrow(mockError);
+    });
+  });
+
+  describe('getPatientObservations', () => {
+    it('should return observations from bundle', async () => {
+      (api.get as jest.Mock).mockResolvedValue(mockObservationBundle);
 
       const result = await getPatientObservations('patient-123', ['concept-1']);
 
-      expect(result).toEqual(mockBundle);
+      expect(result).toEqual([mockObservation]);
+    });
+
+    it('should handle empty bundle', async () => {
+      (api.get as jest.Mock).mockResolvedValue(mockEmptyObservationBundle);
+
+      const result = await getPatientObservations('patient-123', ['concept-1']);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should filter out non-Observation resources', async () => {
+      const mixedBundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: mockObservation,
+          },
+          {
+            resource: {
+              resourceType: 'Encounter',
+              id: 'enc-1',
+            },
+          },
+        ],
+      };
+      (api.get as jest.Mock).mockResolvedValue(mixedBundle);
+
+      const result = await getPatientObservations('patient-123', ['concept-1']);
+
+      expect(result).toEqual([mockObservation]);
+    });
+
+    it('should handle bundle with no entry field', async () => {
+      const bundleWithoutEntry = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+      };
+      (api.get as jest.Mock).mockResolvedValue(bundleWithoutEntry);
+
+      const result = await getPatientObservations('patient-123', ['concept-1']);
+
+      expect(result).toEqual([]);
     });
 
     it('should handle API errors', async () => {
