@@ -181,6 +181,8 @@ export { findActiveEncounterInSession } from './encounterSessionService';
 export {
   getActiveVisit,
   shouldEnableEncounterFilter,
+  getFormsDataByEncounterUuid,
+  type FormsEncounter,
 } from './encounterService';
 
 export {
@@ -230,6 +232,7 @@ export {
   fetchFormMetadata,
   transformFormDataToObservations,
   transformObservationsToFormData,
+  getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
   type ApiNameTranslation,
@@ -241,6 +244,7 @@ export {
   type Form2Observation,
   type ConceptValue,
   type ComplexValue,
+  type FormResponseData,
 } from './observationFormsService';
 
 export {

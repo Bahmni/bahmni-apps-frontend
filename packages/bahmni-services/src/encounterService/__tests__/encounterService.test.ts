@@ -3,9 +3,14 @@ import {
   getPatientVisits,
   getVisits,
   getActiveVisit,
+  getFormsDataByEncounterUuid,
 } from '../../encounterService';
-import { mockVisitBundle, mockActiveVisit } from '../__mocks__/mocks';
-import { PATIENT_VISITS_URL } from '../constants';
+import {
+  mockVisitBundle,
+  mockActiveVisit,
+  mockFormsEncounter,
+} from '../__mocks__/mocks';
+import { PATIENT_VISITS_URL, BAHMNI_ENCOUNTER_URL } from '../constants';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -84,6 +89,38 @@ describe('encounterService', () => {
       const activeVisit = await getActiveVisit(patientUUID);
 
       expect(activeVisit).toBeNull();
+    });
+  });
+
+  describe('getFormsDataByEncounterUuid', () => {
+    const encounterUUID = 'e8c5eeb5-86d9-44d4-b37a-9de74a122a6e';
+
+    it('should fetch forms encounter from the correct endpoint with includeAll=false', async () => {
+      mockedGet.mockResolvedValueOnce(mockFormsEncounter);
+
+      await getFormsDataByEncounterUuid(encounterUUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        BAHMNI_ENCOUNTER_URL(encounterUUID, false),
+      );
+    });
+
+    it('should fetch forms encounter from the correct endpoint with includeAll=true', async () => {
+      mockedGet.mockResolvedValueOnce(mockFormsEncounter);
+
+      await getFormsDataByEncounterUuid(encounterUUID, true);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        BAHMNI_ENCOUNTER_URL(encounterUUID, true),
+      );
+    });
+
+    it('should return the forms encounter data', async () => {
+      mockedGet.mockResolvedValueOnce(mockFormsEncounter);
+
+      const result = await getFormsDataByEncounterUuid(encounterUUID);
+
+      expect(result).toEqual(mockFormsEncounter);
     });
   });
 });

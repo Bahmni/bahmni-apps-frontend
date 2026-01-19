@@ -1,0 +1,123 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.formsTableBody {
+  td {
+    width: 50%;
+    border-block-end: 0 !important;
+  }
+}
+
+.customAccordianItem {
+  background-color: $layer-01;
+  :global(.cds--accordion__content) {
+    margin-inline-start: 0rem !important;
+    padding-inline: 0rem !important;
+  }
+  :global(.cds--accordion__wrapper) {
+    padding-block: 0rem !important;
+    padding-block-end: 0rem !important;
+  }
+}
+
+.formContent {
+  padding: $spacing-05;
+  background-color: $layer-02;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.formDetailsContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.observation {
+  background-color: $layer-02;
+  padding: $spacing-05;
+  border-bottom: 1px solid $border-subtle-02;
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.groupContainer {
+  display: block;
+}
+
+.rowContainer {
+  display: flex;
+  align-items: center;
+}
+
+.groupLabel {
+  @include type-style('heading-compact-01');
+  color: $text-primary;
+  display: block;
+  margin-block-end: $spacing-04;
+}
+
+.rowLabel {
+  @include type-style('heading-compact-01');
+  color: $text-primary;
+  flex-basis: 40%
+}
+
+.rowValue {
+  @include type-style('body-compact-01');
+  color: $text-primary;
+}
+
+.groupMembers {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-03;
+}
+
+.memberRow {
+  display: flex;
+  padding: $spacing-03 $spacing-04;
+}
+
+.memberLabel {
+  @include type-style('body-compact-01');
+  flex-basis: 40%;
+}
+
+.memberValue {
+  @include type-style('body-compact-01');
+  color: $text-secondary;
+}
+
+.commentSection {
+  margin-block-start: $spacing-04;
+  padding-block-start: $spacing-04;
+  border-block-start: 1px solid $border-subtle-01;
+}
+
+.commentText {
+  @include type-style('body-compact-01');
+  color: $text-secondary;
+  font-style: italic;
+}
+
+.nestedGroup {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-03;
+  margin-block-start: $spacing-03;
+}
+
+.nestedGroupLabel {
+  @include type-style('body-compact-01');
+  color: $text-primary;
+  font-weight: 600;
+}
+
+.nestedGroupMembers {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+}
