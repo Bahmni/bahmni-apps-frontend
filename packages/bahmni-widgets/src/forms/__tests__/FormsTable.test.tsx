@@ -422,7 +422,7 @@ describe('FormsTable', () => {
       });
 
       // The most recent record should appear first within the Vitals Form group
-      const vitalsAccordion = screen.getAllByTestId('accordian-table-title')[1];
+      const vitalsAccordion = screen.getByTestId('accordian-title-Vitals Form');
       expect(
         within(vitalsAccordion).getByText('Vitals Form'),
       ).toBeInTheDocument();
@@ -498,20 +498,18 @@ describe('FormsTable', () => {
       expect(screen.queryByText('Dr. Johnson')).not.toBeInTheDocument();
     });
 
-    it('shows all forms when encounterUuids is empty array', async () => {
+    it('Show empty list when episode reference is given but no encounter has been generated yet', async () => {
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
 
       const encounterUuids: string[] = [];
-      renderFormsTable({ encounterUuids });
-
-      await waitFor(() => {
-        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      renderFormsTable({
+        encounterUuids,
+        episodeOfCareUuids: ['episodeUuid-1'],
       });
 
-      // Should show all providers
-      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-      expect(screen.getByText('Dr. Johnson')).toBeInTheDocument();
-      expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('No forms available')).toBeInTheDocument();
+      });
     });
 
     it('shows all forms when encounterUuids is not provided', async () => {
@@ -522,6 +520,10 @@ describe('FormsTable', () => {
       await waitFor(() => {
         expect(screen.getByText('Vitals Form')).toBeInTheDocument();
       });
+
+      // Should show all forms
+      expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      expect(screen.getByText('History Form')).toBeInTheDocument();
 
       // Should show all providers
       expect(screen.getByText('Dr. Smith')).toBeInTheDocument();

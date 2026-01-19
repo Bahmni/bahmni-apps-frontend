@@ -20,7 +20,7 @@ export interface ObservationData {
   interpretation?: string;
 }
 
-interface FormRecordViewModel {
+export interface FormRecordViewModel {
   id: string;
   formName: string;
   recordedOn: string;
@@ -29,8 +29,7 @@ interface FormRecordViewModel {
   encounterUuid: string;
 }
 
-interface GroupedFormRecords {
+export interface GroupedFormRecords {
   formName: string;
   records: FormRecordViewModel[];
 }
-export type { FormRecordViewModel, GroupedFormRecords };

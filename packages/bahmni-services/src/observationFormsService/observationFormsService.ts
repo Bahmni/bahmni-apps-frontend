@@ -177,14 +177,9 @@ export const getPatientFormData = async (
   if (episodeUuids && episodeUuids.length > 0) {
     episodeUuidString = episodeUuids.join(',');
   }
-  try {
-    const url = FORM_DATA_URL(patientUuid, numberOfVisits, episodeUuidString);
-    const data = await get<FormResponseData[]>(url);
 
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch form data for patient ${patientUuid}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
+  const url = FORM_DATA_URL(patientUuid, numberOfVisits, episodeUuidString);
+  const data = await get<FormResponseData[]>(url);
+
+  return Array.isArray(data) ? data : [];
 };

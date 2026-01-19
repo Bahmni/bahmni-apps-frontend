@@ -358,26 +358,5 @@ describe('observationFormsService', () => {
 
       expect(result).toEqual([]);
     });
-
-    it('should handle non-Error exceptions from API and show Unknown error', async () => {
-      const patientUuid = 'patient-uuid-456';
-
-      mockGet.mockRejectedValueOnce('String error');
-
-      await expect(getPatientFormData(patientUuid)).rejects.toThrow(
-        'Failed to fetch form data for patient patient-uuid-456: Unknown error',
-      );
-    });
-
-    it('should properly format error message with patient UUID when API call fails', async () => {
-      const patientUuid = 'test-patient-uuid-789';
-      const apiError = new Error('Connection timeout');
-
-      mockGet.mockRejectedValueOnce(apiError);
-
-      await expect(getPatientFormData(patientUuid)).rejects.toThrow(
-        'Failed to fetch form data for patient test-patient-uuid-789: Connection timeout',
-      );
-    });
   });
 });

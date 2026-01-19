@@ -19,6 +19,7 @@ import {
   ObservationForm,
   FormsEncounter,
   getFormsDataByEncounterUuid,
+  shouldEnableEncounterFilter,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -49,6 +50,11 @@ const FormsTable: React.FC<WidgetProps> = ({
     useState<FormRecordViewModel | null>(null);
   const numberOfVisits = config?.numberOfVisits as number;
 
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
+
   const {
     data: formsData = [],
     isLoading: loading,
@@ -57,7 +63,7 @@ const FormsTable: React.FC<WidgetProps> = ({
   } = useQuery<FormResponseData[], Error>({
     queryKey: ['forms', patientUuid, episodeOfCareUuids],
     queryFn: () => getPatientFormData(patientUuid!, undefined, numberOfVisits),
-    enabled: !!patientUuid,
+    enabled: !!patientUuid && !emptyEncounterFilter,
   });
 
   // Filter forms data by encounterUuids if provided
@@ -218,7 +224,10 @@ const FormsTable: React.FC<WidgetProps> = ({
   return (
     <>
       <div data-testid="forms-table">
-        {loading || !!isError || processedForms.length === 0 ? (
+        {loading ||
+        !!isError ||
+        processedForms.length === 0 ||
+        emptyEncounterFilter ? (
           <SortableDataTable
             headers={headers}
             ariaLabel={t('FORMS_HEADING')}
@@ -240,7 +249,7 @@ const FormsTable: React.FC<WidgetProps> = ({
                   title={formName}
                   key={formName}
                   className={styles.customAccordianItem}
-                  testId="accordian-table-title"
+                  testId={`accordian-title-${formName}`}
                   open={index === 0}
                 >
                   <SortableDataTable
@@ -253,7 +262,7 @@ const FormsTable: React.FC<WidgetProps> = ({
                     emptyStateMessage={t('FORMS_UNAVAILABLE')}
                     renderCell={renderCell}
                     className={styles.formsTableBody}
-                    data-testid="sortable-data-table"
+                    data-testid="forms-data-table"
                   />
                 </AccordionItem>
               );
@@ -266,6 +275,7 @@ const FormsTable: React.FC<WidgetProps> = ({
         selectedRecord &&
         createPortal(
           <Modal
+            id="formDetailsModal"
             open={isModalOpen}
             onRequestClose={handleCloseModal}
             modalHeading={selectedRecord.formName}

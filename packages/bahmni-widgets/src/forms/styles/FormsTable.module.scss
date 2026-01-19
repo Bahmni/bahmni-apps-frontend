@@ -53,20 +53,20 @@
 }
 
 .groupLabel {
-  @include type-style('heading-compact-01');
+  @include type-style("heading-compact-01");
   color: $text-primary;
   display: block;
   margin-block-end: $spacing-04;
 }
 
 .rowLabel {
-  @include type-style('heading-compact-01');
+  @include type-style("heading-compact-01");
   color: $text-primary;
-  flex-basis: 40%
+  flex-basis: 40%;
 }
 
 .rowValue {
-  @include type-style('body-compact-01');
+  @include type-style("body-compact-01");
   color: $text-primary;
 }
 
@@ -82,13 +82,18 @@
 }
 
 .memberLabel {
-  @include type-style('body-compact-01');
+  @include type-style("body-compact-01");
   flex-basis: 40%;
 }
 
 .memberValue {
-  @include type-style('body-compact-01');
+  @include type-style("body-compact-01");
   color: $text-secondary;
+}
+
+.abnormalValue {
+  @include type-style("heading-compact-01");
+  color: $support-error;
 }
 
 .commentSection {
@@ -98,7 +103,7 @@
 }
 
 .commentText {
-  @include type-style('body-compact-01');
+  @include type-style("body-compact-01");
   color: $text-secondary;
   font-style: italic;
 }
@@ -111,7 +116,7 @@
 }
 
 .nestedGroupLabel {
-  @include type-style('body-compact-01');
+  @include type-style("body-compact-01");
   color: $text-primary;
   font-weight: 600;
 }
