@@ -5,6 +5,7 @@ import {
   ExtractedObservation,
   GroupedObservation,
   ExtractedObservationsResult,
+  ObservationsByEncounter,
 } from './models';
 
 const extractId = (ref?: string | Reference): string | undefined => {
@@ -72,7 +73,8 @@ function extractSingleObservation(
 
   return {
     id: observation.id!,
-    display: observation.code!.text ?? observation.code!.coding![0]!.display!,
+    display:
+      observation.code?.text ?? observation.code?.coding?.[0]?.display ?? '',
     observationValue: extractObservationValue(observation),
     effectiveDateTime: observation.effectiveDateTime,
     issued: observation.issued,
@@ -124,4 +126,67 @@ export function extractObservationsFromBundle(
   });
 
   return { observations, groupedObservations };
+}
+
+export function groupObservationsByEncounter(
+  result: ExtractedObservationsResult,
+): ObservationsByEncounter[] {
+  const encounterMap = new Map<
+    string,
+    {
+      observations: ExtractedObservation[];
+      groupedObservations: GroupedObservation[];
+    }
+  >();
+
+  result.observations.forEach((obs) => {
+    if (!obs.encounter?.id) return;
+
+    const encounterId = obs.encounter.id;
+    if (!encounterMap.has(encounterId)) {
+      encounterMap.set(encounterId, {
+        observations: [],
+        groupedObservations: [],
+      });
+    }
+    encounterMap.get(encounterId)!.observations.push(obs);
+  });
+
+  result.groupedObservations.forEach((obs) => {
+    if (!obs.encounter?.id) return;
+
+    const encounterId = obs.encounter.id;
+    if (!encounterMap.has(encounterId)) {
+      encounterMap.set(encounterId, {
+        observations: [],
+        groupedObservations: [],
+      });
+    }
+    encounterMap.get(encounterId)!.groupedObservations.push(obs);
+  });
+
+  return Array.from(encounterMap.entries()).map(([encounterId, data]) => ({
+    encounterId,
+    observations: data.observations,
+    groupedObservations: data.groupedObservations,
+  }));
+}
+
+export function sortObservationsByEncounterDate(
+  observations: ObservationsByEncounter[],
+): ObservationsByEncounter[] {
+  return [...observations].sort((a, b) => {
+    const dateA =
+      a.observations[0]?.encounter?.date ??
+      a.groupedObservations[0]?.encounter?.date;
+    const dateB =
+      b.observations[0]?.encounter?.date ??
+      b.groupedObservations[0]?.encounter?.date;
+
+    if (!dateA && !dateB) return 0;
+    if (!dateA) return 1;
+    if (!dateB) return -1;
+
+    return new Date(dateB).getTime() - new Date(dateA).getTime();
+  });
 }

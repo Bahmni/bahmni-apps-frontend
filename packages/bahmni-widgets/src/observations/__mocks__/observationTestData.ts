@@ -1,0 +1,506 @@
+import { Bundle, Observation, Encounter } from 'fhir/r4';
+
+export const mockBundleWithCorrectValues: Bundle<Observation> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-1',
+        status: 'final',
+        code: {
+          text: 'Systolic blood pressure',
+          coding: [{ code: '5085', display: 'Systolic blood pressure' }],
+        },
+        valueQuantity: {
+          value: 120,
+          unit: 'mmHg',
+        },
+        effectiveDateTime: '2026-01-19T12:35:58+00:00',
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-2',
+        status: 'final',
+        code: {
+          text: 'Chief Complaint Duration',
+        },
+        valueCodeableConcept: {
+          text: 'Days',
+          coding: [{ code: '1072', display: 'Days' }],
+        },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-3',
+        status: 'final',
+        code: {
+          text: 'Chief Complaint Record',
+        },
+        valueString: 'Fever, 2.0, Days',
+      },
+    },
+  ],
+};
+
+export const mockEmptyBundle: Bundle<Observation> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [],
+};
+
+export const mockBundleWithNoEntries: Bundle<Observation> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+};
+
+export const mockBundleWithEncounterDetails: Bundle<Observation | Encounter> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-1',
+        status: 'finished',
+        class: { code: 'AMB' },
+        type: [{ coding: [{ display: 'Consultation' }] }],
+        period: { start: '2026-01-19T10:00:00+00:00' },
+        participant: [{ individual: { display: 'Dr. Smith' } }],
+        location: [{ location: { display: 'OPD' } }],
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-1',
+        status: 'final',
+        code: { text: 'Temperature' },
+        valueQuantity: { value: 98.6, unit: 'F' },
+        encounter: { reference: 'Encounter/enc-1' },
+      },
+    },
+  ],
+};
+
+export const mockBundleWithHasMember: Bundle<Observation> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'child-1',
+        status: 'final',
+        code: { text: 'Systolic' },
+        valueQuantity: { value: 120, unit: 'mmHg' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'parent-1',
+        status: 'final',
+        code: { text: 'Blood Pressure' },
+        hasMember: [{ reference: 'Observation/child-1' }],
+      },
+    },
+  ],
+};
+
+export const mockBundleWithoutValueType: Bundle<Observation> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-1',
+        status: 'final',
+        code: { text: 'Notes' },
+      },
+    },
+  ],
+};
+
+export const mockBundleWithMissingOptionalFields: Bundle<Observation> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-1',
+        status: 'final',
+        code: { coding: [{ display: 'Lab Test' }] },
+        valueCodeableConcept: {
+          coding: [{ display: 'Positive' }],
+        },
+      },
+    },
+  ],
+};
+
+export const mockBundleWithAllOptionalValues: Bundle<Observation | Encounter> =
+  {
+    resourceType: 'Bundle',
+    type: 'searchset',
+    entry: [
+      {
+        resource: {
+          resourceType: 'Encounter',
+          status: 'finished',
+          class: { code: 'AMB' },
+          type: [],
+          period: {},
+          participant: [],
+          location: [],
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Encounter',
+          id: 'enc-minimal',
+          status: 'finished',
+          class: { code: 'AMB' },
+          type: [],
+          period: {},
+          participant: [],
+          location: [],
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Observation',
+          id: 'obs-with-string-ref',
+          status: 'final',
+          code: {},
+          valueQuantity: {},
+          encounter: { reference: 'Encounter/enc-minimal' },
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Observation',
+          id: 'obs-parent',
+          status: 'final',
+          code: {},
+          hasMember: [
+            { reference: 'Observation/obs-child-valid' },
+            { reference: 'Observation/non-existent' },
+          ],
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Observation',
+          id: 'obs-child-valid',
+          status: 'final',
+          code: {},
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Observation',
+          status: 'final',
+          code: {},
+        },
+      },
+    ],
+  };
+
+export const mockBundleWithMultipleEncounters: Bundle<Observation | Encounter> =
+  {
+    resourceType: 'Bundle',
+    type: 'searchset',
+    entry: [
+      {
+        resource: {
+          resourceType: 'Encounter',
+          id: 'enc-1',
+          status: 'finished',
+          class: { code: 'AMB' },
+          period: { start: '2026-01-19T10:00:00+00:00' },
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Encounter',
+          id: 'enc-2',
+          status: 'finished',
+          class: { code: 'AMB' },
+          period: { start: '2026-01-20T14:30:00+00:00' },
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Observation',
+          id: 'obs-1',
+          status: 'final',
+          code: { text: 'Temperature' },
+          encounter: { reference: 'Encounter/enc-1' },
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Observation',
+          id: 'obs-2',
+          status: 'final',
+          code: { text: 'Blood Pressure' },
+          encounter: { reference: 'Encounter/enc-1' },
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Observation',
+          id: 'obs-3',
+          status: 'final',
+          code: { text: 'Weight' },
+          encounter: { reference: 'Encounter/enc-2' },
+        },
+      },
+    ],
+  };
+
+export const mockBundleWithMixedObservations: Bundle<Observation | Encounter> =
+  {
+    resourceType: 'Bundle',
+    type: 'searchset',
+    entry: [
+      {
+        resource: {
+          resourceType: 'Encounter',
+          id: 'enc-1',
+          status: 'finished',
+          class: { code: 'AMB' },
+          period: { start: '2026-01-19T10:00:00+00:00' },
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Observation',
+          id: 'obs-single',
+          status: 'final',
+          code: { text: 'Temperature' },
+          encounter: { reference: 'Encounter/enc-1' },
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Observation',
+          id: 'obs-child-1',
+          status: 'final',
+          code: { text: 'Systolic' },
+        },
+      },
+      {
+        resource: {
+          resourceType: 'Observation',
+          id: 'obs-parent',
+          status: 'final',
+          code: { text: 'Blood Pressure' },
+          hasMember: [{ reference: 'Observation/obs-child-1' }],
+          encounter: { reference: 'Encounter/enc-1' },
+        },
+      },
+    ],
+  };
+
+export const mockBundleWithGroupedObservationsOnly: Bundle<
+  Observation | Encounter
+> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-1',
+        status: 'finished',
+        class: { code: 'AMB' },
+        period: { start: '2026-01-18T10:00:00+00:00' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-2',
+        status: 'finished',
+        class: { code: 'AMB' },
+        period: { start: '2026-01-20T14:30:00+00:00' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-child-1',
+        status: 'final',
+        code: { text: 'Systolic' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-parent-1',
+        status: 'final',
+        code: { text: 'Blood Pressure' },
+        hasMember: [{ reference: 'Observation/obs-child-1' }],
+        encounter: { reference: 'Encounter/enc-1' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-child-2',
+        status: 'final',
+        code: { text: 'Diastolic' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-parent-2',
+        status: 'final',
+        code: { text: 'Vitals' },
+        hasMember: [{ reference: 'Observation/obs-child-2' }],
+        encounter: { reference: 'Encounter/enc-2' },
+      },
+    },
+  ],
+};
+
+export const mockBundleWithOneMissingDate: Bundle<Observation | Encounter> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-1',
+        status: 'finished',
+        class: { code: 'AMB' },
+        period: { start: '2026-01-19T10:00:00+00:00' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-2',
+        status: 'finished',
+        class: { code: 'AMB' },
+        period: {},
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-1',
+        status: 'final',
+        code: { text: 'Temperature' },
+        encounter: { reference: 'Encounter/enc-1' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-2',
+        status: 'final',
+        code: { text: 'Weight' },
+        encounter: { reference: 'Encounter/enc-2' },
+      },
+    },
+  ],
+};
+
+export const mockBundleWithBothMissingDates: Bundle<Observation | Encounter> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-3',
+        status: 'finished',
+        class: { code: 'AMB' },
+        period: {},
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-4',
+        status: 'finished',
+        class: { code: 'AMB' },
+        period: {},
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-3',
+        status: 'final',
+        code: { text: 'Heart Rate' },
+        encounter: { reference: 'Encounter/enc-3' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-4',
+        status: 'final',
+        code: { text: 'Pulse' },
+        encounter: { reference: 'Encounter/enc-4' },
+      },
+    },
+  ],
+};
+
+export const mockBundleWithReversedMissingDate: Bundle<
+  Observation | Encounter
+> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-5',
+        status: 'finished',
+        class: { code: 'AMB' },
+        period: {},
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-6',
+        status: 'finished',
+        class: { code: 'AMB' },
+        period: { start: '2026-01-19T10:00:00+00:00' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-5',
+        status: 'final',
+        code: { text: 'BP' },
+        encounter: { reference: 'Encounter/enc-5' },
+      },
+    },
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-6',
+        status: 'final',
+        code: { text: 'Temp' },
+        encounter: { reference: 'Encounter/enc-6' },
+      },
+    },
+  ],
+};

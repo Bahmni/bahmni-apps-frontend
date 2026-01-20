@@ -47,3 +47,9 @@ export interface ExtractedObservationsResult {
   observations: ExtractedObservation[];
   groupedObservations: GroupedObservation[];
 }
+
+export interface ObservationsByEncounter {
+  encounterId: string;
+  observations: ExtractedObservation[];
+  groupedObservations: GroupedObservation[];
+}
