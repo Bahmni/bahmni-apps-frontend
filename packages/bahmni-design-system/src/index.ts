@@ -43,7 +43,6 @@ export {
   SimpleDataTable,
   type SimpleDataTableProps,
 } from './molecules/simpleDataTable';
-export { ObsDisplay, type ObsDisplayProps } from './molecules/obsDisplay';
 export { TooltipIcon, type TooltipIconProps } from './molecules/tooltipIcon';
 export { StatusTag, type StatusTagProps } from './molecules/statusTag';
 export { SkeletonText, type SkeletonTextProps } from './atoms/skeletonText';
