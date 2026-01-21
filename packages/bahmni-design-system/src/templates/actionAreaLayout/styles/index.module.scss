@@ -15,17 +15,19 @@
 
 .collapsedModal {
   // Constrain the modal backdrop to left panel only
-  :global(.cds--modal) {
+  :global(#formDetailsModal) {
     position: absolute;
     top: 3rem;
     width: 40%;
   }
 
-  :global(.cds--modal-container) {
-    width: 100% !important;
-    height: 100% !important;
-    max-block-size: 100%;
-}
+  &:has([role="dialog"]) {
+    [role="dialog"] {
+      width: 100% !important;
+      height: 100% !important;
+      max-block-size: 100%;
+    }
+  }
 }
 
 .body {
@@ -39,9 +41,8 @@
 
 .collapse {
   width: calc(40vw - 3rem);
-  left: 3rem;  
+  left: 3rem;
 }
-
 
 .patientHeader {
   padding: $spacing-05 $spacing-06;
