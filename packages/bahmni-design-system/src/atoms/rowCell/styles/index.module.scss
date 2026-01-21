@@ -1,0 +1,22 @@
+.rowCell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.header {
+  flex: 0 0 30%;
+  max-width: 30%;
+}
+
+.value {
+  flex: 0 0 40%;
+  max-width: 40%;
+}
+
+.info {
+  flex: 0 0 30%;
+  max-width: 30%;
+}
