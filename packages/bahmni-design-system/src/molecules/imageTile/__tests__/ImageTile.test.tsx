@@ -1,14 +1,14 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ImageThumbnail } from '../ImageThumbnail';
+import { ImageTile } from '../ImageTile';
 
-jest.mock('../styles/ImageThumbnail.module.scss', () => ({
+jest.mock('../styles/ImageTile.module.scss', () => ({
   thumbnailButton: 'thumbnailButton-class',
   thumbnailImage: 'thumbnailImage-class',
   modalImageContainer: 'modalImageContainer-class',
   modalImage: 'modalImage-class',
 }));
 
-describe('ImageThumbnail', () => {
+describe('ImageTile', () => {
   const defaultProps = {
     imageSrc: 'https://example.com/image.jpg',
     alt: 'Test image',
@@ -16,7 +16,7 @@ describe('ImageThumbnail', () => {
   };
 
   it('should render thumbnail button and image', () => {
-    render(<ImageThumbnail {...defaultProps} />);
+    render(<ImageTile {...defaultProps} />);
 
     const button = screen.getByTestId('test-image-test-id');
     expect(button).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe('ImageThumbnail', () => {
   });
 
   it('should open modal when thumbnail is clicked', async () => {
-    render(<ImageThumbnail {...defaultProps} modalTitle="Image Preview" />);
+    render(<ImageTile {...defaultProps} modalTitle="Image Preview" />);
 
     const button = screen.getByTestId('test-image-test-id');
     fireEvent.click(button);
@@ -44,7 +44,7 @@ describe('ImageThumbnail', () => {
 
   it('should call onModalOpen callback when modal opens', () => {
     const onModalOpen = jest.fn();
-    render(<ImageThumbnail {...defaultProps} onModalOpen={onModalOpen} />);
+    render(<ImageTile {...defaultProps} onModalOpen={onModalOpen} />);
 
     const button = screen.getByTestId('test-image-test-id');
     fireEvent.click(button);
@@ -55,7 +55,7 @@ describe('ImageThumbnail', () => {
   it('should call onModalClose callback when modal closes', async () => {
     const onModalClose = jest.fn();
     render(
-      <ImageThumbnail
+      <ImageTile
         {...defaultProps}
         modalTitle="Image Preview"
         onModalClose={onModalClose}

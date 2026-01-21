@@ -1,9 +1,9 @@
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { Modal } from '../../atoms/modal';
-import styles from './styles/ImageThumbnail.module.scss';
+import styles from './styles/ImageTile.module.scss';
 
-export interface ImageThumbnailProps {
+export interface ImageTileProps {
   imageSrc: string;
   alt: string;
   id: string;
@@ -13,7 +13,7 @@ export interface ImageThumbnailProps {
   onModalClose?: () => void;
 }
 
-export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
+export const ImageTile: React.FC<ImageTileProps> = ({
   imageSrc,
   alt,
   id,
@@ -79,4 +79,4 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
   );
 };
 
-export default ImageThumbnail;
+export default ImageTile;
