@@ -18,6 +18,12 @@ export const mockBundleWithCorrectValues: Bundle<Observation> = {
           unit: 'mmHg',
         },
         effectiveDateTime: '2026-01-19T12:35:58+00:00',
+        extension: [
+          {
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            valueString: 'Bahmni^Vitals.1/10-0',
+          },
+        ],
       },
     },
     {
@@ -32,6 +38,12 @@ export const mockBundleWithCorrectValues: Bundle<Observation> = {
           text: 'Days',
           coding: [{ code: '1072', display: 'Days' }],
         },
+        extension: [
+          {
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            valueString: 'Bahmni^Registration Details.2/25-1',
+          },
+        ],
       },
     },
     {
@@ -288,6 +300,12 @@ export const mockBundleWithMixedObservations: Bundle<Observation | Encounter> =
           status: 'final',
           code: { text: 'Temperature' },
           encounter: { reference: 'Encounter/enc-1' },
+          extension: [
+            {
+              url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+              valueString: 'Bahmni^Vitals.1/10-0',
+            },
+          ],
         },
       },
       {
@@ -296,6 +314,12 @@ export const mockBundleWithMixedObservations: Bundle<Observation | Encounter> =
           id: 'obs-child-1',
           status: 'final',
           code: { text: 'Systolic' },
+          extension: [
+            {
+              url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+              valueString: 'Bahmni^Lab Results.2/20-0',
+            },
+          ],
         },
       },
       {
@@ -306,6 +330,12 @@ export const mockBundleWithMixedObservations: Bundle<Observation | Encounter> =
           code: { text: 'Blood Pressure' },
           hasMember: [{ reference: 'Observation/obs-child-1' }],
           encounter: { reference: 'Encounter/enc-1' },
+          extension: [
+            {
+              url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+              valueString: 'Bahmni^Lab Results.2/19-0',
+            },
+          ],
         },
       },
     ],
@@ -351,6 +381,12 @@ export const mockBundleWithGroupedObservationsOnly: Bundle<
         code: { text: 'Blood Pressure' },
         hasMember: [{ reference: 'Observation/obs-child-1' }],
         encounter: { reference: 'Encounter/enc-1' },
+        extension: [
+          {
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            valueString: 'Bahmni^Vitals.1/10-0',
+          },
+        ],
       },
     },
     {
@@ -369,6 +405,12 @@ export const mockBundleWithGroupedObservationsOnly: Bundle<
         code: { text: 'Vitals' },
         hasMember: [{ reference: 'Observation/obs-child-2' }],
         encounter: { reference: 'Encounter/enc-2' },
+        extension: [
+          {
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            valueString: 'Bahmni^Lab Results.2/20-0',
+          },
+        ],
       },
     },
   ],

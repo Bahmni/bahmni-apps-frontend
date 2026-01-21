@@ -29,6 +29,7 @@ export interface ExtractedObservation {
   observationValue?: ObservationValue;
   effectiveDateTime?: string;
   issued?: string;
+  fileName?: string;
   encounter?: EncounterDetails;
   members?: ExtractedObservation[];
 }
@@ -36,6 +37,7 @@ export interface ExtractedObservation {
 export interface GroupedObservation {
   id: string;
   display: string;
+  fileName?: string;
   observationValue?: ObservationValue;
   effectiveDateTime?: string;
   issued?: string;
@@ -50,6 +52,19 @@ export interface ExtractedObservationsResult {
 
 export interface ObservationsByEncounter {
   encounterId: string;
+  encounterDetails?: EncounterDetails;
   observations: ExtractedObservation[];
   groupedObservations: GroupedObservation[];
+}
+
+export interface ObservationsByForm {
+  formName: string;
+  observations: ExtractedObservation[];
+  groupedObservations: GroupedObservation[];
+}
+
+export interface ObservationsByEncounterAndForm {
+  encounterId: string;
+  encounterDetails?: EncounterDetails;
+  formGroups: ObservationsByForm[];
 }
