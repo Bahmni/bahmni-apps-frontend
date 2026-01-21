@@ -101,6 +101,11 @@ export {
   type TextAreaWCloseProps,
 } from './molecules/textAreaWClose';
 export { BoxWHeader, type BoxWHeaderProps } from './molecules/boxWHeader';
+export {
+  CollapsibleRowGroup,
+  type CollapsibleRowGroupProps,
+  type RowData,
+} from './molecules/collapsibleRowGroup';
 export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
 export {
   MenuItemDivider,
