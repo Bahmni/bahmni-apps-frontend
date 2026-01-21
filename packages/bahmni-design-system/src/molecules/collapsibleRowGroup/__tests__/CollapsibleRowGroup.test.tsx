@@ -45,12 +45,7 @@ describe('CollapsibleRowGroup Component', () => {
   });
 
   it('renders info when provided', () => {
-    render(
-      <CollapsibleRowGroup
-        title="Test Group"
-        rows={mockRows}
-      />,
-    );
+    render(<CollapsibleRowGroup title="Test Group" rows={mockRows} />);
 
     expect(
       screen.getByTestId('collapsible-row-group-test-id-row-2-info'),
@@ -67,5 +62,32 @@ describe('CollapsibleRowGroup Component', () => {
     );
 
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('renders with children instead of rows', () => {
+    render(
+      <CollapsibleRowGroup title="Custom Content" id="custom-group">
+        <div data-testid="custom-child">Custom child content</div>
+      </CollapsibleRowGroup>,
+    );
+
+    expect(screen.getByTestId('custom-child')).toHaveTextContent(
+      'Custom child content',
+    );
+  });
+
+  it('renders both rows and children together', () => {
+    render(
+      <CollapsibleRowGroup
+        title="Mixed Content"
+        rows={mockRows}
+        id="mixed-group"
+      >
+        <div data-testid="additional-content">Additional content</div>
+      </CollapsibleRowGroup>,
+    );
+
+    expect(screen.getByTestId('mixed-group-test-id-row-0')).toBeInTheDocument();
+    expect(screen.getByTestId('additional-content')).toBeInTheDocument();
   });
 });

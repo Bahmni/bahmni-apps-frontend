@@ -12,15 +12,17 @@ export interface RowData {
 }
 
 export interface CollapsibleRowGroupProps {
-  title: string;
-  rows: RowData[];
-  className?: string;
   id?: string;
+  className?: string;
+  title: string;
+  rows?: RowData[];
+  children?: React.ReactNode;
 }
 
 export const CollapsibleRowGroup: React.FC<CollapsibleRowGroupProps> = ({
   title,
   rows,
+  children,
   className,
   id = 'collapsible-row-group',
 }) => {
@@ -36,9 +38,15 @@ export const CollapsibleRowGroup: React.FC<CollapsibleRowGroupProps> = ({
           title={title}
           open
           testId={`${id}-test-id-accordion-item`}
+          className={styles.accordion}
         >
-          <div className={styles.rowsContainer}>
-            {rows.map((row) => (
+          <div
+            id={`${id}-rows`}
+            data-testid={`${id}-rows-test-id`}
+            aria-label={`${id}-rows-aria-label`}
+            className={styles.rows}
+          >
+            {rows?.map((row) => (
               <RowCell
                 key={`${id}-row-${row.index}`}
                 header={row.header}
@@ -49,6 +57,7 @@ export const CollapsibleRowGroup: React.FC<CollapsibleRowGroupProps> = ({
                 ariaLabel={`${id}-row-${row.index}-aria-label`}
               />
             ))}
+            {children}
           </div>
         </AccordionItem>
       </Accordion>

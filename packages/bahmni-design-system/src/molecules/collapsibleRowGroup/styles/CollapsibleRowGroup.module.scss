@@ -1,10 +1,35 @@
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+
 .container {
   width: 100%;
 }
 
-.rowsContainer {
+.accordion {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
+  padding-inline: 0;
+  border-block-end: none !important;
+  div:last-child {
+    padding-block: 0;
+  }
+  div[id^="accordion-item"] {
+    padding-inline: 0;
+    width: 100%;
+  }
+  button {
+    div {
+      @include type-style("heading-compact-01");
+    }
+    background-color: $layer-01;
+  }
+}
+
+.rows {
+  padding-inline-start: $spacing-07;
+}
+
+.accordion:last-child {
+  border-block-end: none;
 }
