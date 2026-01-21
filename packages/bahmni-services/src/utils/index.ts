@@ -10,4 +10,5 @@ export {
   parseQueryParams,
   formatUrl,
   blobToDataUrl,
+  getValueType,
 } from './utils';

@@ -10,9 +10,6 @@ import {
   subMonths,
   subDays,
   format,
-  isSameDay,
-  isBefore,
-  isAfter,
 } from 'date-fns';
 import type { Locale } from 'date-fns';
 import { enUS, enGB, es, fr, de } from 'date-fns/locale';
