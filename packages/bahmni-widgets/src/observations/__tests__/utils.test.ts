@@ -1,3 +1,4 @@
+import * as services from '@bahmni/services';
 import {
   mockBundleWithCorrectValues,
   mockEmptyBundle,
@@ -14,12 +15,21 @@ import {
   mockBundleWithBothMissingDates,
   mockBundleWithReversedMissingDate,
 } from '../__mocks__/observationTestData';
+import { ExtractedObservation, EncounterDetails } from '../models';
 import {
   extractObservationsFromBundle,
   groupObservationsByEncounter,
   sortObservationsByEncounterDate,
   groupObservationsByEncounterAndForm,
+  formatEncounterTitle,
+  formatObservationValue,
+  transformObservationToRowCell,
 } from '../utils';
+
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  formatDateTime: jest.fn(),
+}));
 
 describe('observationUtils', () => {
   describe('extractObservationsFromBundle', () => {
@@ -340,6 +350,121 @@ describe('observationUtils', () => {
       expect(
         groupedWithOnlyGroupedObs[1].formGroups[0].groupedObservations,
       ).toHaveLength(1);
+    });
+  });
+
+  describe('formatEncounterTitle', () => {
+    const mockT = (key: string) => key;
+    const mockFormatDateTime = services.formatDateTime as jest.MockedFunction<
+      typeof services.formatDateTime
+    >;
+
+    beforeEach(() => {
+      mockFormatDateTime.mockReturnValue({
+        formattedResult: '20/01/2026 21:07',
+      });
+    });
+
+    afterEach(() => {
+      mockFormatDateTime.mockClear();
+    });
+
+    it('should format encounter date', () => {
+      const encounterDetails: EncounterDetails = {
+        id: 'enc-1',
+        type: 'Consultation',
+        date: '2026-01-20T21:07:00Z',
+        provider: 'Super Man',
+      };
+
+      const result = formatEncounterTitle(encounterDetails, mockT);
+      expect(result).toBe('20/01/2026 21:07');
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        '2026-01-20T21:07:00Z',
+        mockT,
+      );
+    });
+
+    it('should return UNKNOWN_ENCOUNTER when date is missing', () => {
+      const result = formatEncounterTitle(undefined, mockT);
+      expect(result).toBe('UNKNOWN_ENCOUNTER');
+      expect(mockFormatDateTime).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('formatObservationValue', () => {
+    it('should format value with unit', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-1',
+        display: 'Temperature',
+        observationValue: {
+          value: 98.6,
+          unit: '°F',
+          type: 'quantity',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('98.6 °F');
+    });
+
+    it('should format value without unit', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-2',
+        display: 'Fever',
+        observationValue: {
+          value: 'Fever',
+          type: 'string',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('Fever');
+    });
+  });
+
+  describe('transformObservationToRowCell', () => {
+    it('should transform observation to row cell format with provider', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-1',
+        display: 'Temperature',
+        observationValue: {
+          value: 98.6,
+          unit: '°F',
+          type: 'quantity',
+        },
+        encounter: {
+          id: 'enc-1',
+          type: 'Consultation',
+          date: '2026-01-20',
+          provider: 'Dr. Smith',
+        },
+      };
+
+      const result = transformObservationToRowCell(observation, 0);
+      expect(result).toEqual({
+        index: 0,
+        header: 'Temperature',
+        value: '98.6 °F',
+        provider: 'Dr. Smith',
+      });
+    });
+
+    it('should transform observation without provider', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-2',
+        display: 'Fever',
+        observationValue: {
+          value: 'High',
+          type: 'string',
+        },
+      };
+
+      const result = transformObservationToRowCell(observation, 1);
+      expect(result).toEqual({
+        index: 1,
+        header: 'Fever',
+        value: 'High',
+        provider: undefined,
+      });
     });
   });
 });

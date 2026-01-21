@@ -1,3 +1,4 @@
+import { formatDateTime } from '@bahmni/services';
 import { Observation, Bundle, Encounter, Reference } from 'fhir/r4';
 import {
   EncounterDetails,
@@ -9,6 +10,36 @@ import {
   ObservationsByEncounterAndForm,
   ObservationsByForm,
 } from './models';
+
+export const formatEncounterTitle = (
+  encounterDetails: EncounterDetails | undefined,
+  t: (key: string) => string,
+): string => {
+  if (!encounterDetails?.date) {
+    return t('UNKNOWN_ENCOUNTER');
+  }
+  const result = formatDateTime(encounterDetails.date, t);
+  return result.formattedResult;
+};
+
+export const formatObservationValue = (
+  observation: ExtractedObservation | GroupedObservation,
+): string => {
+  const { value, unit } = observation.observationValue!;
+  return unit ? `${value} ${unit}` : String(value);
+};
+
+export const transformObservationToRowCell = (
+  observation: ExtractedObservation,
+  index: number,
+) => {
+  return {
+    index,
+    header: observation.display,
+    value: formatObservationValue(observation),
+    provider: observation.encounter?.provider,
+  };
+};
 
 const extractId = (ref?: string | Reference): string | undefined => {
   const referenceStr = typeof ref === 'string' ? ref : ref?.reference;
