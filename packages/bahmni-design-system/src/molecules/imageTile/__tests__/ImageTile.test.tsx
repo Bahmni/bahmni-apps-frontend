@@ -10,7 +10,7 @@ jest.mock('../styles/ImageTile.module.scss', () => ({
 
 describe('ImageTile', () => {
   const defaultProps = {
-    imageSrc: 'https://example.com/image.jpg',
+    imageSrc: '100/9-Consultation-27627c65-5f95-4118-b8e5-89f0aa8cc3b8.png',
     alt: 'Test image',
     id: 'test-image',
   };
@@ -26,7 +26,7 @@ describe('ImageTile', () => {
     expect(thumbnailImage).toBeInTheDocument();
     expect(thumbnailImage).toHaveAttribute(
       'src',
-      'https://example.com/image.jpg',
+      '/openmrs/auth?requested_document=/document_images/100/9-Consultation-27627c65-5f95-4118-b8e5-89f0aa8cc3b8.png',
     );
     expect(thumbnailImage).toHaveAttribute('alt', 'Test image');
   });
