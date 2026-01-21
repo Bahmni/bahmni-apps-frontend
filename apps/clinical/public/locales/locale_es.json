@@ -240,6 +240,7 @@
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_MANDATORY": "Faltan campos obligatorios",
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_EMPTY": "No se han introducido datos",
   "OBSERVATIONS_LOADING": "Cargando Observaciones...",
+  "OBSERVATIONS_RECORDED_BY": "Grabado por {{provider}} ",
   "PARTICIPANT": "Partícipe(es)",
   "PATIENT_HEADER_LABEL": "Cabecera del Paciente",
   "PINNED_FORMS_INVALID_DATA": "Datos de formularios anclados no válidos",

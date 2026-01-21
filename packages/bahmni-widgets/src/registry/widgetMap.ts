@@ -48,6 +48,6 @@ export const builtInWidgets: WidgetConfig[] = [
   },
   {
     type: 'observations',
-    component: lazy(() => import('../observations/ObservationsWidget')),
+    component: lazy(() => import('../observations/Observations')),
   },
 ];

@@ -240,6 +240,7 @@
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_MANDATORY": "Required fields missing",
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_EMPTY": "No data filled",
   "OBSERVATIONS_LOADING": "Loading Observations...",
+  "OBSERVATIONS_RECORDED_BY": "Recorded By {{provider}}",
   "PARTICIPANT": "Participant(s)",
   "PATIENT_HEADER_LABEL": "Patient Header",
   "PINNED_FORMS_INVALID_DATA": "Invalid pinned forms data",
