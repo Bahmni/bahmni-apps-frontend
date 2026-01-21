@@ -106,6 +106,10 @@ export {
   type CollapsibleRowGroupProps,
   type RowData,
 } from './molecules/collapsibleRowGroup';
+export {
+  ImageThumbnail,
+  type ImageThumbnailProps,
+} from './molecules/imageThumbnail';
 export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
 export {
   MenuItemDivider,
