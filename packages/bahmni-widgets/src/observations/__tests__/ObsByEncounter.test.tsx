@@ -24,6 +24,7 @@ jest.mock('../utils', () => ({
 }));
 
 jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(() => ({
     t: (key: string, params?: any) => {
       if (key === 'OBSERVATION_RECORDED_BY' && params?.provider) {
@@ -32,6 +33,7 @@ jest.mock('@bahmni/services', () => ({
       return key;
     },
   })),
+  getValueType: jest.fn(() => 'string'),
 }));
 
 describe('ObsByEncounter', () => {

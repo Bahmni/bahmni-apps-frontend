@@ -1,4 +1,10 @@
-import { CollapsibleRowGroup, RowCell } from '@bahmni/design-system';
+import {
+  CollapsibleRowGroup,
+  ImageTile,
+  RowCell,
+  VideoTile,
+} from '@bahmni/design-system';
+import { getValueType } from '@bahmni/services';
 import { ExtractedObservation, GroupedObservation } from '../models';
 import { transformObservationToRowCell } from '../utils';
 
@@ -8,6 +14,19 @@ export const renderObservation = (
   t: (key: string, options?: { provider?: string }) => string,
 ) => {
   const rowData = transformObservationToRowCell(observation, index);
+
+  const value = rowData.value;
+  const valueType = getValueType(value);
+  let valueToDisplay: React.ReactNode = value;
+
+  if (valueType === 'Image')
+    valueToDisplay = (
+      <ImageTile imageSrc={value} alt={value} id={`${value}-img`} />
+    );
+
+  if (valueType == 'Video')
+    valueToDisplay = <VideoTile id={`${value}-video`} videoSrc={value} />;
+
   const info = t('OBSERVATIONS_RECORDED_BY', {
     provider: rowData.provider,
   });
@@ -15,7 +34,7 @@ export const renderObservation = (
     <RowCell
       key={`obs-${observation.id}`}
       header={rowData.header}
-      value={rowData.value}
+      value={valueToDisplay}
       info={info}
       id={`obs-${observation.id}`}
       testId={`obs-${observation.id}-test-id`}

@@ -5,6 +5,7 @@ import {
   getPatientObservationsWithEncounterBundle,
 } from '@bahmni/services';
 import { useQuery, useQueries } from '@tanstack/react-query';
+import classNames from 'classnames';
 import { useEffect, useMemo } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
@@ -68,7 +69,7 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
   }, [conceptQueries]);
 
   const allConceptUuids = useMemo(() => {
-    return [...fetchedUuids, ...conceptUuid];
+    return [...new Set([...fetchedUuids, ...conceptUuid])];
   }, [fetchedUuids, conceptUuid]);
 
   const areConceptQueriesComplete = useMemo(() => {
@@ -134,7 +135,9 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
       id="observations"
       data-testid="observations-test-id"
       aria-label="observations-aria-label"
-      className={styles.observations}
+      className={classNames({
+        [styles.observations]: observationConfig.hideFormName !== true,
+      })}
     >
       {hasData ? (
         observationConfig.hideFormName ? (

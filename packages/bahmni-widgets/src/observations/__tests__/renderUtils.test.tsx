@@ -1,17 +1,31 @@
+import { getValueType } from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import {
   renderObservation,
   renderGroupedObservation,
 } from '../components/renderUtils';
+
 import { ExtractedObservation, GroupedObservation } from '../models';
 
+const mockGetValueType = getValueType as jest.MockedFunction<
+  typeof getValueType
+>;
+
+const mockTransformObservationToRowCell = jest.fn((obs, index) => ({
+  index,
+  header: obs.display,
+  value: '120 mmHg',
+  provider: 'Dr. Smith',
+}));
+
 jest.mock('../utils', () => ({
-  transformObservationToRowCell: jest.fn((obs, index) => ({
-    index,
-    header: obs.display,
-    value: '120 mmHg',
-    provider: 'Dr. Smith',
-  })),
+  transformObservationToRowCell: (obs: any, index: number) =>
+    mockTransformObservationToRowCell(obs, index),
+}));
+
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  getValueType: jest.fn(),
 }));
 
 const mockT = jest.fn((key: string, params?: any) => {
@@ -22,8 +36,13 @@ const mockT = jest.fn((key: string, params?: any) => {
 });
 
 describe('renderUtils', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('renderObservation', () => {
     it('should render a RowCell with correct props', () => {
+      mockGetValueType.mockReturnValue('string');
       const observation: ExtractedObservation = {
         id: 'obs-1',
         display: 'Systolic Blood Pressure',
@@ -43,6 +62,7 @@ describe('renderUtils', () => {
     });
 
     it('should render observation without provider info', () => {
+      mockGetValueType.mockReturnValue('string');
       const observation: ExtractedObservation = {
         id: 'obs-2',
         display: 'Temperature',
@@ -57,6 +77,63 @@ describe('renderUtils', () => {
       const { container } = render(<TestComponent />);
 
       expect(container.querySelector('#obs-obs-2')).toBeInTheDocument();
+    });
+
+    it('should render ImageTile when observation value is an image', () => {
+      mockGetValueType.mockReturnValue('Image');
+      const imagePath = '/documents/patient-scan.jpg';
+      mockTransformObservationToRowCell.mockReturnValueOnce({
+        index: 0,
+        header: 'X-Ray Image',
+        value: imagePath,
+        provider: 'Dr. Smith',
+      });
+
+      const observation: ExtractedObservation = {
+        id: 'obs-3',
+        display: 'X-Ray Image',
+        observationValue: {
+          value: imagePath,
+          unit: '',
+          type: 'string',
+        },
+      };
+
+      const TestComponent = () => renderObservation(observation, 0, mockT);
+      const { container } = render(<TestComponent />);
+
+      const imageElement = container.querySelector('img');
+      expect(imageElement).toBeInTheDocument();
+      expect(imageElement?.getAttribute('src')).toContain(imagePath);
+    });
+
+    it('should render VideoTile when observation value is a video', () => {
+      mockGetValueType.mockReturnValue('Video');
+      const videoPath = '/documents/procedure-recording.mp4';
+      mockTransformObservationToRowCell.mockReturnValueOnce({
+        index: 0,
+        header: 'Procedure Video',
+        value: videoPath,
+        provider: 'Dr. Smith',
+      });
+
+      const observation: ExtractedObservation = {
+        id: 'obs-4',
+        display: 'Procedure Video',
+        observationValue: {
+          value: videoPath,
+          unit: '',
+          type: 'string',
+        },
+      };
+
+      const TestComponent = () => renderObservation(observation, 0, mockT);
+      const { container } = render(<TestComponent />);
+
+      const videoElement = container.querySelector('video');
+      expect(videoElement).toBeInTheDocument();
+      const sourceElement = container.querySelector('source');
+      expect(sourceElement?.getAttribute('src')).toContain(videoPath);
     });
   });
 
