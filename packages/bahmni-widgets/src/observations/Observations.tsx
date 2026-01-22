@@ -1,4 +1,4 @@
-import { SortableDataTable } from '@bahmni/design-system';
+import { SortableDataTable, Tile } from '@bahmni/design-system';
 import {
   searchConceptByName,
   useTranslation,
@@ -20,6 +20,7 @@ import {
 export interface ObservationConfig {
   conceptNames?: string[];
   conceptUuid?: string[];
+  titleTranslationKey?: string;
 }
 
 export const conceptUuidQueryKeys = (conceptName: string) =>
@@ -31,7 +32,7 @@ export const observationsQueryKeys = (
 ) => ['observations', patientUUID, ...conceptUuids] as const;
 
 const Observations: React.FC<WidgetProps> = ({ config }) => {
-  const observationConfig = (config ?? {}) as ObservationConfig;
+  const observationConfig = config as ObservationConfig;
   const { conceptNames = [], conceptUuid = [] } = observationConfig;
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
@@ -129,6 +130,14 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
       aria-label="observations-aria-label"
       className={styles.observations}
     >
+      <Tile
+        id="observations-title"
+        testId="observations-title-test-id"
+        title={t(observationConfig.titleTranslationKey!)}
+        className={styles.title}
+      >
+        <p>{t(observationConfig.titleTranslationKey!)}</p>
+      </Tile>
       {hasData ? (
         <ObsByEncounter groupedData={groupedData} />
       ) : (

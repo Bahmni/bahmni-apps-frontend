@@ -79,11 +79,16 @@ describe('Observations', () => {
       mockSearchConceptByName.mockReturnValue(new Promise(() => {}) as any);
 
       const config = {
+        titleTranslationKey: 'Obs',
         conceptNames: ['Temperature'],
       };
 
       createWrapper(<Observations config={config} />);
 
+      expect(screen.getByText('Obs')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('observations-title-test-id'),
+      ).toBeInTheDocument();
       expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
     });
 
@@ -97,7 +102,7 @@ describe('Observations', () => {
       );
 
       const config = {
-        conceptNames: ['Temperature'],
+        conceptUuid: ['1342AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'],
       };
 
       createWrapper(<Observations config={config} />);

@@ -1,4 +1,5 @@
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
 
 .observations {
   div[id^="encounter-"] {
@@ -6,5 +7,15 @@
     > ul > li > button {
       background-color: $layer-01;
     }
+  }
+}
+
+.title {
+  background: $background !important;
+  min-block-size: fit-content !important;
+  border-top: 1px solid $border-subtle;
+  p {
+    @include type-style("heading-compact-02");
+    color: $text-primary;
   }
 }
