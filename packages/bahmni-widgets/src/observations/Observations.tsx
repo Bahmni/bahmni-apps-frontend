@@ -110,15 +110,13 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
   }, [observations, observationConfig.hideFormName]);
 
   const headers = [
-    { key: 'name', header: t('OBSERVATION_NAME') },
-    { key: 'value', header: t('VALUE') },
-    { key: 'form', header: t('FORM') },
+    { key: 'name', header: 'name' },
+    { key: 'value', header: 'value' },
+    { key: 'form', header: 'form' },
   ];
 
   const isLoading = isLoadingObservations || !areConceptQueriesComplete;
-  const hasError =
-    isObservationsError ||
-    (conceptQueries.some((q) => q.isError) && areConceptQueriesComplete);
+  const hasError = isObservationsError && areConceptQueriesComplete;
   const isEmpty =
     (!observations ||
       observations.entry?.length === 0 ||
