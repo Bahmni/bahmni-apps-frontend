@@ -17,6 +17,7 @@ export interface CollapsibleRowGroupProps {
   title: string;
   rows?: RowData[];
   children?: React.ReactNode;
+  open?: boolean;
 }
 
 export const CollapsibleRowGroup: React.FC<CollapsibleRowGroupProps> = ({
@@ -25,6 +26,7 @@ export const CollapsibleRowGroup: React.FC<CollapsibleRowGroupProps> = ({
   children,
   className,
   id = 'collapsible-row-group',
+  open = false,
 }) => {
   return (
     <div
@@ -36,7 +38,7 @@ export const CollapsibleRowGroup: React.FC<CollapsibleRowGroupProps> = ({
       <Accordion align="start" size="lg">
         <AccordionItem
           title={title}
-          open
+          open={open}
           testId={`${id}-test-id-accordion-item`}
           className={styles.accordion}
         >
