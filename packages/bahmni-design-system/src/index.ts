@@ -107,6 +107,7 @@ export {
   type RowData,
 } from './molecules/collapsibleRowGroup';
 export { ImageTile, type ImageTileProps } from './molecules/imageTile';
+export { FileTile, type FileTileProps } from './molecules/fileTile';
 export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
 export {
   MenuItemDivider,
