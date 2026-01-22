@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounterAndForm 1`] = `
+exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = `
 <div>
   <div
     aria-label="obs-by-encounter-aria-label"
@@ -14,14 +14,14 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounterAndForm
       id="encounter-enc-1"
     >
       <ul
-        class="cds--accordion cds--accordion--end"
+        class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
       >
         <li
           class="cds--accordion__item cds--accordion__item--active _accordion_1yx0q_5"
           data-testid="encounter-enc-1-test-id-accordion-item"
         >
           <button
-            aria-controls="accordion-item-«r6»"
+            aria-controls="accordion-item-«r16»"
             aria-expanded="true"
             class="cds--accordion__heading"
             type="button"
@@ -53,7 +53,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounterAndForm
           >
             <div
               class="cds--accordion__content"
-              id="accordion-item-«r6»"
+              id="accordion-item-«r16»"
             >
               <div
                 aria-label="encounter-enc-1-rows-aria-label"
@@ -89,7 +89,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounterAndForm
                     data-testid="obs-obs-single-test-id-info"
                     id="obs-obs-single-info"
                   >
-                    OBSERVATIONS_RECORDED_BY
+                    Recorded by Dr. Smith
                   </div>
                 </div>
                 <div
@@ -99,14 +99,14 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounterAndForm
                   id="grouped-obs-obs-parent"
                 >
                   <ul
-                    class="cds--accordion cds--accordion--end"
+                    class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
                   >
                     <li
                       class="cds--accordion__item cds--accordion__item--active _accordion_1yx0q_5"
                       data-testid="grouped-obs-obs-parent-test-id-accordion-item"
                     >
                       <button
-                        aria-controls="accordion-item-«r7»"
+                        aria-controls="accordion-item-«r17»"
                         aria-expanded="true"
                         class="cds--accordion__heading"
                         type="button"
@@ -138,7 +138,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounterAndForm
                       >
                         <div
                           class="cds--accordion__content"
-                          id="accordion-item-«r7»"
+                          id="accordion-item-«r17»"
                         >
                           <div
                             aria-label="grouped-obs-obs-parent-rows-aria-label"
@@ -174,7 +174,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounterAndForm
                                 data-testid="obs-obs-child-1-test-id-info"
                                 id="obs-obs-child-1-info"
                               >
-                                OBSERVATIONS_RECORDED_BY
+                                Recorded by Dr. Smith
                               </div>
                             </div>
                           </div>

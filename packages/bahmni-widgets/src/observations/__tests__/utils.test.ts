@@ -20,7 +20,6 @@ import {
   extractObservationsFromBundle,
   groupObservationsByEncounter,
   sortObservationsByEncounterDate,
-  groupObservationsByEncounterAndForm,
   formatEncounterTitle,
   formatObservationValue,
   transformObservationToRowCell,
@@ -47,7 +46,6 @@ describe('observationUtils', () => {
         },
         effectiveDateTime: '2026-01-19T12:35:58+00:00',
         issued: undefined,
-        fileName: 'Vitals',
         encounter: undefined,
         members: undefined,
       });
@@ -61,7 +59,6 @@ describe('observationUtils', () => {
         },
         effectiveDateTime: undefined,
         issued: undefined,
-        fileName: 'Registration Details',
         encounter: undefined,
         members: undefined,
       });
@@ -75,7 +72,6 @@ describe('observationUtils', () => {
         },
         effectiveDateTime: undefined,
         issued: undefined,
-        fileName: undefined,
         encounter: undefined,
         members: undefined,
       });
@@ -269,87 +265,6 @@ describe('observationUtils', () => {
 
       expect(sorted3[0].encounterId).toBe('enc-6');
       expect(sorted3[1].encounterId).toBe('enc-5');
-    });
-  });
-
-  describe('groupObservationsByEncounterAndForm', () => {
-    it('should group observations by encounter and then by form', () => {
-      const result = extractObservationsFromBundle(
-        mockBundleWithMixedObservations,
-      );
-
-      const grouped = groupObservationsByEncounterAndForm(result);
-
-      expect(grouped).toHaveLength(1);
-      expect(grouped[0].encounterId).toBe('enc-1');
-      expect(grouped[0].formGroups).toHaveLength(2);
-
-      const vitalsForm = grouped[0].formGroups.find(
-        (f) => f.formName === 'Vitals',
-      );
-      const labResultsForm = grouped[0].formGroups.find(
-        (f) => f.formName === 'Lab Results',
-      );
-
-      expect(vitalsForm).toBeDefined();
-      expect(vitalsForm?.observations).toHaveLength(1);
-      expect(vitalsForm?.observations[0].id).toBe('obs-single');
-      expect(vitalsForm?.groupedObservations).toHaveLength(0);
-
-      expect(labResultsForm).toBeDefined();
-      expect(labResultsForm?.observations).toHaveLength(0);
-      expect(labResultsForm?.groupedObservations).toHaveLength(1);
-      expect(labResultsForm?.groupedObservations[0].id).toBe('obs-parent');
-    });
-
-    it('should handle empty observations and groupedObservations', () => {
-      const result = {
-        observations: [],
-        groupedObservations: [],
-      };
-
-      const grouped = groupObservationsByEncounterAndForm(result);
-
-      expect(grouped).toHaveLength(0);
-    });
-
-    it('should skip observations without encounter or fileName', () => {
-      const resultWithoutEncounter = extractObservationsFromBundle(
-        mockBundleWithCorrectValues,
-      );
-      const groupedWithoutEncounter = groupObservationsByEncounterAndForm(
-        resultWithoutEncounter,
-      );
-      expect(groupedWithoutEncounter).toHaveLength(0);
-
-      const resultWithoutFileName = extractObservationsFromBundle(
-        mockBundleWithMultipleEncounters,
-      );
-      const groupedWithoutFileName = groupObservationsByEncounterAndForm(
-        resultWithoutFileName,
-      );
-      expect(groupedWithoutFileName).toHaveLength(0);
-
-      const resultWithGroupedObsWithoutEncounter =
-        extractObservationsFromBundle(mockBundleWithHasMember);
-      const groupedObsWithoutEncounter = groupObservationsByEncounterAndForm(
-        resultWithGroupedObsWithoutEncounter,
-      );
-      expect(groupedObsWithoutEncounter).toHaveLength(0);
-
-      const resultWithOnlyGroupedObs = extractObservationsFromBundle(
-        mockBundleWithGroupedObservationsOnly,
-      );
-      const groupedWithOnlyGroupedObs = groupObservationsByEncounterAndForm(
-        resultWithOnlyGroupedObs,
-      );
-      expect(groupedWithOnlyGroupedObs).toHaveLength(2);
-      expect(
-        groupedWithOnlyGroupedObs[0].formGroups[0].groupedObservations,
-      ).toHaveLength(1);
-      expect(
-        groupedWithOnlyGroupedObs[1].formGroups[0].groupedObservations,
-      ).toHaveLength(1);
     });
   });
 

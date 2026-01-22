@@ -1,3 +1,4 @@
+import { getValueType } from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import {
@@ -12,22 +13,29 @@ import {
 
 expect.extend(toHaveNoViolations);
 
+const mockGetValueType = getValueType as jest.MockedFunction<
+  typeof getValueType
+>;
+
+const mockTransformObservationToRowCell = jest.fn((obs, index) => ({
+  index,
+  header: obs.display,
+  value: '120 mmHg',
+  provider: 'Dr. Smith',
+}));
+
 jest.mock('../utils', () => ({
   ...jest.requireActual('../utils'),
   formatEncounterTitle: jest.fn(() => '21 Jan 2026, 10:30 AM'),
-  transformObservationToRowCell: jest.fn((obs, index) => ({
-    index,
-    header: obs.display,
-    value: '120 mmHg',
-    provider: 'Dr. Smith',
-  })),
+  transformObservationToRowCell: (obs: any, index: number) =>
+    mockTransformObservationToRowCell(obs, index),
 }));
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(() => ({
     t: (key: string, params?: any) => {
-      if (key === 'OBSERVATION_RECORDED_BY' && params?.provider) {
+      if (key === 'OBSERVATIONS_RECORDED_BY' && params?.provider) {
         return `Recorded by ${params.provider}`;
       }
       return key;
@@ -37,6 +45,11 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 describe('ObsByEncounter', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetValueType.mockReturnValue('string');
+  });
+
   it('should render encounters with observations', () => {
     const result = extractObservationsFromBundle(
       mockBundleWithMultipleEncounters,
@@ -75,8 +88,120 @@ describe('ObsByEncounter', () => {
     expect(container.querySelector('#encounter-enc-2')).toBeInTheDocument();
   });
 
+  it('should render observation with provider info', () => {
+    const result = extractObservationsFromBundle(
+      mockBundleWithMixedObservations,
+    );
+    const groupedData = groupObservationsByEncounter(result);
+
+    render(<ObsByEncounter groupedData={groupedData} />);
+
+    expect(screen.getAllByText('Recorded by Dr. Smith').length).toBeGreaterThan(
+      0,
+    );
+  });
+
+  describe('Image and Video rendering', () => {
+    it('should render ImageTile when observation value is an image', () => {
+      const imagePath = '/documents/patient-scan.jpg';
+      mockGetValueType.mockReturnValue('Image');
+      mockTransformObservationToRowCell.mockReturnValueOnce({
+        index: 0,
+        header: 'X-Ray Image',
+        value: imagePath,
+        provider: 'Dr. Smith',
+      });
+
+      const result = extractObservationsFromBundle(
+        mockBundleWithMixedObservations,
+      );
+      const groupedData = groupObservationsByEncounter(result);
+
+      const { container } = render(
+        <ObsByEncounter groupedData={groupedData} />,
+      );
+
+      const imageElement = container.querySelector('img');
+      expect(imageElement).toBeInTheDocument();
+      expect(imageElement?.getAttribute('src')).toContain(imagePath);
+    });
+
+    it('should render VideoTile when observation value is a video', () => {
+      const videoPath = '/documents/procedure-recording.mp4';
+      mockGetValueType.mockReturnValue('Video');
+      mockTransformObservationToRowCell.mockReturnValueOnce({
+        index: 0,
+        header: 'Procedure Video',
+        value: videoPath,
+        provider: 'Dr. Smith',
+      });
+
+      const result = extractObservationsFromBundle(
+        mockBundleWithMixedObservations,
+      );
+      const groupedData = groupObservationsByEncounter(result);
+
+      const { container } = render(
+        <ObsByEncounter groupedData={groupedData} />,
+      );
+
+      const videoElement = container.querySelector('video');
+      expect(videoElement).toBeInTheDocument();
+      const sourceElement = container.querySelector('source');
+      expect(sourceElement?.getAttribute('src')).toContain(videoPath);
+    });
+
+    it('should render string value as text when not image or video', () => {
+      mockGetValueType.mockReturnValue('string');
+      mockTransformObservationToRowCell.mockReturnValueOnce({
+        index: 0,
+        header: 'Temperature',
+        value: '98.6°F',
+        provider: 'Dr. Smith',
+      });
+
+      const result = extractObservationsFromBundle(
+        mockBundleWithMixedObservations,
+      );
+      const groupedData = groupObservationsByEncounter(result);
+
+      render(<ObsByEncounter groupedData={groupedData} />);
+
+      expect(screen.getByText('98.6°F')).toBeInTheDocument();
+    });
+  });
+
+  describe('Grouped observations', () => {
+    it('should render CollapsibleRowGroup for grouped observations', () => {
+      const result = extractObservationsFromBundle(
+        mockBundleWithMixedObservations,
+      );
+      const groupedData = groupObservationsByEncounter(result);
+
+      const { container } = render(
+        <ObsByEncounter groupedData={groupedData} />,
+      );
+
+      expect(
+        container.querySelector('#grouped-obs-obs-parent'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Blood Pressure')).toBeInTheDocument();
+    });
+
+    it('should render children of grouped observations', () => {
+      const result = extractObservationsFromBundle(
+        mockBundleWithMixedObservations,
+      );
+      const groupedData = groupObservationsByEncounter(result);
+
+      render(<ObsByEncounter groupedData={groupedData} />);
+
+      expect(screen.getByText('Systolic')).toBeInTheDocument();
+    });
+  });
+
   describe('Snapshot', () => {
-    it('should match snapshot for ObsByEncounterAndForm', () => {
+    it('should match snapshot for ObsByEncounter', () => {
       const result = extractObservationsFromBundle(
         mockBundleWithMixedObservations,
       );

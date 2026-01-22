@@ -11,6 +11,9 @@
   flex-direction: column;
   padding-inline: 0;
   border-block-end: none !important;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   div:last-child {
     padding-block: 0;
   }
@@ -19,15 +22,22 @@
     width: 100%;
   }
   button {
+    display: flex;
     div {
       @include type-style("heading-compact-01");
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-    background-color: $layer-01;
   }
 }
 
 .rows {
   padding-inline-start: $spacing-07;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .accordion:last-child {

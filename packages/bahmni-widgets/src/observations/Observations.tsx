@@ -5,25 +5,21 @@ import {
   getPatientObservationsWithEncounterBundle,
 } from '@bahmni/services';
 import { useQuery, useQueries } from '@tanstack/react-query';
-import classNames from 'classnames';
 import { useEffect, useMemo } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
 import { ObsByEncounter } from './components/ObsByEncounter';
-import { ObsByEncounterAndForm } from './components/ObsByEncounterAndForm';
 import styles from './styles/Observations.module.scss';
 import {
   extractObservationsFromBundle,
   groupObservationsByEncounter,
-  groupObservationsByEncounterAndForm,
   sortObservationsByEncounterDate,
 } from './utils';
 
 export interface ObservationConfig {
   conceptNames?: string[];
   conceptUuid?: string[];
-  hideFormName?: boolean;
 }
 
 export const conceptUuidQueryKeys = (conceptName: string) =>
@@ -103,11 +99,9 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
     if (!observations) return [];
 
     const extractedObs = extractObservationsFromBundle(observations);
-    const grouped = observationConfig.hideFormName
-      ? groupObservationsByEncounter(extractedObs)
-      : groupObservationsByEncounterAndForm(extractedObs);
+    const grouped = groupObservationsByEncounter(extractedObs);
     return sortObservationsByEncounterDate(grouped);
-  }, [observations, observationConfig.hideFormName]);
+  }, [observations]);
 
   const headers = [
     { key: 'name', header: 'name' },
@@ -133,16 +127,10 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
       id="observations"
       data-testid="observations-test-id"
       aria-label="observations-aria-label"
-      className={classNames({
-        [styles.observations]: observationConfig.hideFormName !== true,
-      })}
+      className={styles.observations}
     >
       {hasData ? (
-        observationConfig.hideFormName ? (
-          <ObsByEncounter groupedData={groupedData} />
-        ) : (
-          <ObsByEncounterAndForm groupedData={groupedData} />
-        )
+        <ObsByEncounter groupedData={groupedData} />
       ) : (
         <SortableDataTable
           headers={headers}

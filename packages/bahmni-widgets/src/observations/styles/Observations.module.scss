@@ -1,5 +1,10 @@
+@use "@carbon/react/scss/theme" as *;
+
 .observations {
   div[id^="encounter-"] {
     padding-inline-start: 0 !important;
+    > ul > li > button {
+      background-color: $layer-01;
+    }
   }
 }

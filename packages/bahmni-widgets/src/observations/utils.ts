@@ -7,8 +7,6 @@ import {
   GroupedObservation,
   ExtractedObservationsResult,
   ObservationsByEncounter,
-  ObservationsByEncounterAndForm,
-  ObservationsByForm,
 } from './models';
 
 export const formatEncounterTitle = (
@@ -90,22 +88,6 @@ function extractEncounterDetails(
   };
 }
 
-function extractFormNameFromExtension(
-  observation: Observation,
-): string | undefined {
-  const formExtension = observation.extension?.find(
-    (ext) =>
-      ext.url === 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
-  );
-
-  if (!formExtension?.valueString) {
-    return undefined;
-  }
-
-  const match = formExtension.valueString.match(/\^([^.]+)/);
-  return match![1];
-}
-
 function extractSingleObservation(
   observation: Observation,
   encountersMap: Map<string, Encounter>,
@@ -127,7 +109,6 @@ function extractSingleObservation(
     observationValue: extractObservationValue(observation),
     effectiveDateTime: observation.effectiveDateTime,
     issued: observation.issued,
-    fileName: extractFormNameFromExtension(observation),
     encounter: encounterId
       ? extractEncounterDetails(encounterId, encountersMap)
       : undefined,
@@ -228,9 +209,9 @@ export function groupObservationsByEncounter(
   });
 }
 
-export function sortObservationsByEncounterDate<
-  T extends ObservationsByEncounter | ObservationsByEncounterAndForm,
->(observations: T[]): T[] {
+export function sortObservationsByEncounterDate(
+  observations: ObservationsByEncounter[],
+): ObservationsByEncounter[] {
   return [...observations].sort((a, b) => {
     const dateA = a.encounterDetails?.date;
     const dateB = b.encounterDetails?.date;
@@ -240,81 +221,5 @@ export function sortObservationsByEncounterDate<
     if (!dateB) return -1;
 
     return new Date(dateB).getTime() - new Date(dateA).getTime();
-  });
-}
-
-export function groupObservationsByEncounterAndForm(
-  result: ExtractedObservationsResult,
-): ObservationsByEncounterAndForm[] {
-  const encounterMap = new Map<
-    string,
-    Map<
-      string,
-      {
-        observations: ExtractedObservation[];
-        groupedObservations: GroupedObservation[];
-      }
-    >
-  >();
-
-  result.observations.forEach((obs) => {
-    if (!obs.encounter?.id || !obs.fileName) return;
-
-    const encounterId = obs.encounter.id;
-    const formName = obs.fileName;
-
-    if (!encounterMap.has(encounterId)) {
-      encounterMap.set(encounterId, new Map());
-    }
-
-    const formMap = encounterMap.get(encounterId)!;
-    if (!formMap.has(formName)) {
-      formMap.set(formName, {
-        observations: [],
-        groupedObservations: [],
-      });
-    }
-
-    formMap.get(formName)!.observations.push(obs);
-  });
-
-  result.groupedObservations.forEach((obs) => {
-    if (!obs.encounter?.id || !obs.fileName) return;
-
-    const encounterId = obs.encounter.id;
-    const formName = obs.fileName;
-
-    if (!encounterMap.has(encounterId)) {
-      encounterMap.set(encounterId, new Map());
-    }
-
-    const formMap = encounterMap.get(encounterId)!;
-    if (!formMap.has(formName)) {
-      formMap.set(formName, {
-        observations: [],
-        groupedObservations: [],
-      });
-    }
-
-    formMap.get(formName)!.groupedObservations.push(obs);
-  });
-
-  return Array.from(encounterMap.entries()).map(([encounterId, formMap]) => {
-    const allFormData = Array.from(formMap.values());
-    const encounterDetails =
-      allFormData[0]?.observations[0]?.encounter ??
-      allFormData[0]?.groupedObservations[0]?.encounter;
-
-    return {
-      encounterId,
-      encounterDetails,
-      formGroups: Array.from(formMap.entries()).map(
-        ([formName, data]): ObservationsByForm => ({
-          formName,
-          observations: data.observations,
-          groupedObservations: data.groupedObservations,
-        }),
-      ),
-    };
   });
 }
