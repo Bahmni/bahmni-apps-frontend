@@ -9,7 +9,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
   >
     <div
       aria-label="encounter-enc-1-aria-label"
-      class="_container_1l1w9_1"
+      class="_container_1ml42_1"
       data-testid="encounter-enc-1-test-id"
       id="encounter-enc-1"
     >
@@ -17,7 +17,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
         class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
       >
         <li
-          class="cds--accordion__item cds--accordion__item--active _accordion_1l1w9_5"
+          class="cds--accordion__item cds--accordion__item--active _accordion_1ml42_5"
           data-testid="encounter-enc-1-test-id-accordion-item"
         >
           <button
@@ -57,7 +57,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
             >
               <div
                 aria-label="encounter-enc-1-rows-aria-label"
-                class="_rows_1l1w9_35"
+                class="_rows_1ml42_35"
                 data-testid="encounter-enc-1-rows-test-id"
                 id="encounter-enc-1-rows"
               >
@@ -94,7 +94,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                 </div>
                 <div
                   aria-label="grouped-obs-obs-parent-aria-label"
-                  class="_container_1l1w9_1"
+                  class="_container_1ml42_1"
                   data-testid="grouped-obs-obs-parent-test-id"
                   id="grouped-obs-obs-parent"
                 >
@@ -102,7 +102,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                     class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
                   >
                     <li
-                      class="cds--accordion__item cds--accordion__item--active _accordion_1l1w9_5"
+                      class="cds--accordion__item cds--accordion__item--active _accordion_1ml42_5"
                       data-testid="grouped-obs-obs-parent-test-id-accordion-item"
                     >
                       <button
@@ -142,7 +142,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                         >
                           <div
                             aria-label="grouped-obs-obs-parent-rows-aria-label"
-                            class="_rows_1l1w9_35"
+                            class="_rows_1ml42_35"
                             data-testid="grouped-obs-obs-parent-rows-test-id"
                             id="grouped-obs-obs-parent-rows"
                           >

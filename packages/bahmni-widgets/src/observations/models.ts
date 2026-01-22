@@ -6,6 +6,17 @@ export interface EncounterDetails {
   location?: string;
 }
 
+export interface ReferenceRange {
+  low?: {
+    value: number;
+    unit?: string;
+  };
+  high?: {
+    value: number;
+    unit?: string;
+  };
+}
+
 export interface ObservationValue {
   value: string | number | boolean;
   unit?: string;
@@ -21,6 +32,8 @@ export interface ObservationValue {
     | 'dateTime'
     | 'period'
     | 'sampledData';
+  referenceRange?: ReferenceRange;
+  isAbnormal?: boolean;
 }
 
 export interface ExtractedObservation {

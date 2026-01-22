@@ -9,6 +9,13 @@ import {
   ObservationsByEncounter,
 } from './models';
 
+const NORMAL_REFERENCE_RANGE_CODE = 'normal';
+const REFERENCE_RANGE_SYSTEM =
+  'http://terminology.hl7.org/CodeSystem/referencerange-meaning';
+const ABNORMAL_INTERPRETATION_CODE = 'A';
+const INTERPRETATION_SYSTEM =
+  'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation';
+
 export const formatEncounterTitle = (
   encounterDetails: EncounterDetails | undefined,
   t: (key: string) => string,
@@ -24,7 +31,55 @@ export const formatObservationValue = (
   observation: ExtractedObservation | GroupedObservation,
 ): string => {
   const { value, unit } = observation.observationValue!;
-  return unit ? `${value} ${unit}` : String(value);
+  const baseValue = unit ? `${value} ${unit}` : String(value);
+  return baseValue;
+};
+
+const formatObservationHeader = (
+  observation: ExtractedObservation | GroupedObservation,
+): string => {
+  const { unit, referenceRange } = observation.observationValue!;
+  const display = observation.display!;
+
+  if (!referenceRange) {
+    return String(display);
+  }
+
+  const { low, high } = referenceRange;
+
+  if (low && high) {
+    const lowStr = low.unit
+      ? `${low.value} ${low.unit}`
+      : unit
+        ? `${low.value} ${unit}`
+        : String(low.value);
+    const highStr = high.unit
+      ? `${high.value} ${high.unit}`
+      : unit
+        ? `${high.value} ${unit}`
+        : String(high.value);
+    return `${display} (${lowStr} - ${highStr})`;
+  }
+
+  if (low) {
+    const lowStr = low.unit
+      ? `${low.value} ${low.unit}`
+      : unit
+        ? `${low.value} ${unit}`
+        : String(low.value);
+    return `${display} (>${lowStr})`;
+  }
+
+  if (high) {
+    const highStr = high.unit
+      ? `${high.value} ${high.unit}`
+      : unit
+        ? `${high.value} ${unit}`
+        : String(high.value);
+    return `${display} (<${highStr})`;
+  }
+
+  return display;
 };
 
 export const transformObservationToRowCell = (
@@ -33,7 +88,7 @@ export const transformObservationToRowCell = (
 ) => {
   return {
     index,
-    header: observation.display,
+    header: formatObservationHeader(observation),
     value: formatObservationValue(observation),
     provider: observation.encounter?.provider,
   };
@@ -44,17 +99,64 @@ const extractId = (ref?: string | Reference): string | undefined => {
   return referenceStr?.split('/')?.pop();
 };
 
+function isAbnormalInterpretation(observation: Observation): boolean {
+  if (!observation.interpretation || observation.interpretation.length === 0) {
+    return false;
+  }
+
+  return observation.interpretation.some((interp) =>
+    interp.coding?.some(
+      (coding) =>
+        coding.system === INTERPRETATION_SYSTEM &&
+        coding.code === ABNORMAL_INTERPRETATION_CODE,
+    ),
+  );
+}
+
 function extractObservationValue(
   observation: Observation,
 ): ObservationValue | undefined {
-  const { valueQuantity, valueCodeableConcept, valueString } = observation;
+  const { valueQuantity, valueCodeableConcept, valueString, referenceRange } =
+    observation;
+
+  const isAbnormal = isAbnormalInterpretation(observation);
 
   if (valueQuantity) {
-    return {
+    const observationValue: ObservationValue = {
       value: valueQuantity.value ?? '',
       unit: valueQuantity.unit,
       type: 'quantity',
+      isAbnormal,
     };
+
+    if (referenceRange && referenceRange.length > 0) {
+      const normalRange = referenceRange.find((range) =>
+        range.type?.coding?.some(
+          (coding) =>
+            coding.system === REFERENCE_RANGE_SYSTEM &&
+            coding.code === NORMAL_REFERENCE_RANGE_CODE,
+        ),
+      );
+
+      if (normalRange && (normalRange.low || normalRange.high)) {
+        observationValue.referenceRange = {
+          low: normalRange.low
+            ? {
+                value: normalRange.low.value!,
+                unit: normalRange.low.unit,
+              }
+            : undefined,
+          high: normalRange.high
+            ? {
+                value: normalRange.high.value!,
+                unit: normalRange.high.unit,
+              }
+            : undefined,
+        };
+      }
+    }
+
+    return observationValue;
   }
 
   if (valueCodeableConcept) {
@@ -62,11 +164,16 @@ function extractObservationValue(
       value:
         valueCodeableConcept.text ?? valueCodeableConcept!.coding![0]!.display!,
       type: 'codeable',
+      isAbnormal,
     };
   }
 
   if (valueString) {
-    return { value: valueString, type: 'string' };
+    return {
+      value: valueString,
+      type: 'string',
+      isAbnormal,
+    };
   }
 
   return undefined;

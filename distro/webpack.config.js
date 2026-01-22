@@ -65,12 +65,14 @@ module.exports = (env, argv) => {
         // See: https://react-svgr.com/
         // svgr: false
       }),
-      new InjectManifest({
-        swSrc: join(__dirname, 'src/service-worker.ts'),
-        swDest: 'service-worker.js',
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        exclude: [/\.map$/, /^manifest.*\.js$/],
-      }),
+      ...(!isDevelopment ? [
+        new InjectManifest({
+          swSrc: join(__dirname, 'src/service-worker.ts'),
+          swDest: 'service-worker.js',
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+          exclude: [/\.map$/, /^manifest.*\.js$/],
+        }),
+      ] : []),
     ],
   };
 };

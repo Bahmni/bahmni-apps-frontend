@@ -39,15 +39,20 @@ const renderObservation = (
   const info = t('OBSERVATIONS_RECORDED_BY', {
     provider: rowData.provider,
   });
+
+  const id = observation.observationValue?.isAbnormal
+    ? `abnormal-obs-${observation.id}`
+    : `obs-${observation.id}`;
+
   return (
     <RowCell
       key={`obs-${observation.id}`}
       header={rowData.header}
       value={valueToDisplay}
       info={info}
-      id={`obs-${observation.id}`}
-      testId={`obs-${observation.id}-test-id`}
-      ariaLabel={`obs-${observation.id}-aria-label`}
+      id={id}
+      testId={`${id}-test-id`}
+      ariaLabel={`${id}-aria-label`}
     />
   );
 };

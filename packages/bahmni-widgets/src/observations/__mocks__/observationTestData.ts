@@ -546,3 +546,261 @@ export const mockBundleWithReversedMissingDate: Bundle<
     },
   ],
 };
+
+export const mockBundleWithNormalReferenceRange: Bundle<Observation> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-with-normal-range',
+        status: 'final',
+        code: { text: 'Glucose Level' },
+        valueQuantity: {
+          value: 95,
+          unit: 'mg/dL',
+        },
+        referenceRange: [
+          {
+            low: { value: 50, unit: 'mg/dL' },
+            high: { value: 100, unit: 'mg/dL' },
+            type: {
+              coding: [
+                {
+                  system: 'http://example.com/other-system',
+                  code: 'critical',
+                },
+              ],
+            },
+          },
+          {
+            low: { value: 70, unit: 'mg/dL' },
+            high: { value: 100, unit: 'mg/dL' },
+            type: {
+              coding: [
+                {
+                  system:
+                    'http://terminology.hl7.org/CodeSystem/referencerange-meaning',
+                  code: 'normal',
+                },
+              ],
+            },
+          },
+          {
+            low: { value: 60, unit: 'mg/dL' },
+            high: { value: 110, unit: 'mg/dL' },
+            type: {
+              coding: [
+                {
+                  system:
+                    'http://terminology.hl7.org/CodeSystem/referencerange-meaning',
+                  code: 'therapeutic',
+                },
+              ],
+            },
+          },
+        ],
+        interpretation: [
+          {
+            coding: [
+              {
+                system:
+                  'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+                code: 'N',
+                display: 'Normal',
+              },
+            ],
+            text: 'Normal',
+          },
+        ],
+      },
+    },
+  ],
+};
+
+export const mockBundleWithOnlyFirstReferenceRange: Bundle<Observation> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    {
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-without-normal-range',
+        status: 'final',
+        code: { text: 'Potassium' },
+        valueQuantity: {
+          value: 4.5,
+          unit: 'mEq/L',
+        },
+        referenceRange: [
+          {
+            low: { value: 3.5, unit: 'mEq/L' },
+            high: { value: 5.5, unit: 'mEq/L' },
+            type: {
+              coding: [
+                {
+                  system: 'http://example.com/other-system',
+                  code: 'normal',
+                },
+              ],
+            },
+          },
+          {
+            low: { value: 4.0, unit: 'mEq/L' },
+            high: { value: 5.0, unit: 'mEq/L' },
+            type: {
+              coding: [
+                {
+                  system:
+                    'http://terminology.hl7.org/CodeSystem/referencerange-meaning',
+                  code: 'therapeutic',
+                },
+              ],
+            },
+          },
+        ],
+        interpretation: [
+          {
+            coding: [
+              {
+                system:
+                  'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+                code: 'A',
+                display: 'Abnormal',
+              },
+            ],
+            text: 'Abnormal',
+          },
+        ],
+      },
+    },
+  ],
+};
+
+export const mockObservationWithBothRangesHavingUnits = {
+  id: 'obs-1',
+  display: 'Blood Glucose',
+  observationValue: {
+    value: 95,
+    unit: 'mg/dL',
+    type: 'quantity' as const,
+    referenceRange: {
+      low: { value: 70, unit: 'mg/dL' },
+      high: { value: 100, unit: 'mg/dL' },
+    },
+  },
+};
+
+export const mockObservationWithBothRangesUsingObsUnit = {
+  id: 'obs-2',
+  display: 'Hemoglobin',
+  observationValue: {
+    value: 14,
+    unit: 'g/dL',
+    type: 'quantity' as const,
+    referenceRange: {
+      low: { value: 12 },
+      high: { value: 16 },
+    },
+  },
+};
+
+export const mockObservationWithMixedUnits = {
+  id: 'obs-3',
+  display: 'Temperature',
+  observationValue: {
+    value: 98.6,
+    unit: '°F',
+    type: 'quantity' as const,
+    referenceRange: {
+      low: { value: 97, unit: '°F' },
+      high: { value: 99 },
+    },
+  },
+};
+
+export const mockObservationWithOnlyLowWithUnit = {
+  id: 'obs-4',
+  display: 'Systolic BP',
+  observationValue: {
+    value: 130,
+    unit: 'mmHg',
+    type: 'quantity' as const,
+    referenceRange: {
+      low: { value: 90, unit: 'mmHg' },
+    },
+  },
+};
+
+export const mockObservationWithOnlyLowUsingObsUnit = {
+  id: 'obs-5',
+  display: 'Heart Rate',
+  observationValue: {
+    value: 75,
+    unit: 'bpm',
+    type: 'quantity' as const,
+    referenceRange: {
+      low: { value: 60 },
+    },
+  },
+};
+
+export const mockObservationWithOnlyHighWithUnit = {
+  id: 'obs-6',
+  display: 'Cholesterol',
+  observationValue: {
+    value: 180,
+    unit: 'mg/dL',
+    type: 'quantity' as const,
+    referenceRange: {
+      high: { value: 200, unit: 'mg/dL' },
+    },
+  },
+};
+
+export const mockObservationWithOnlyHighUsingObsUnit = {
+  id: 'obs-7',
+  display: 'Blood Sugar',
+  observationValue: {
+    value: 110,
+    unit: 'mg/dL',
+    type: 'quantity' as const,
+    referenceRange: {
+      high: { value: 140 },
+    },
+  },
+};
+
+export const mockObservationWithNoReferenceRange = {
+  id: 'obs-8',
+  display: 'Notes',
+  observationValue: {
+    value: 'Patient feeling better',
+    type: 'string' as const,
+  },
+};
+
+export const mockObservationWithEmptyReferenceRange = {
+  id: 'obs-9',
+  display: 'Comments',
+  observationValue: {
+    value: 100,
+    unit: 'mg',
+    type: 'quantity' as const,
+    referenceRange: {},
+  },
+};
+
+export const mockObservationWithNoUnits = {
+  id: 'obs-10',
+  display: 'Count',
+  observationValue: {
+    value: 5,
+    type: 'quantity' as const,
+    referenceRange: {
+      low: { value: 2 },
+      high: { value: 10 },
+    },
+  },
+};

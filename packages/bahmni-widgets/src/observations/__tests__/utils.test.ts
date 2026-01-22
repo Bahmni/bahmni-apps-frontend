@@ -14,6 +14,18 @@ import {
   mockBundleWithOneMissingDate,
   mockBundleWithBothMissingDates,
   mockBundleWithReversedMissingDate,
+  mockBundleWithNormalReferenceRange,
+  mockBundleWithOnlyFirstReferenceRange,
+  mockObservationWithBothRangesHavingUnits,
+  mockObservationWithBothRangesUsingObsUnit,
+  mockObservationWithMixedUnits,
+  mockObservationWithOnlyLowWithUnit,
+  mockObservationWithOnlyLowUsingObsUnit,
+  mockObservationWithOnlyHighWithUnit,
+  mockObservationWithOnlyHighUsingObsUnit,
+  mockObservationWithNoReferenceRange,
+  mockObservationWithEmptyReferenceRange,
+  mockObservationWithNoUnits,
 } from '../__mocks__/observationTestData';
 import { ExtractedObservation, EncounterDetails } from '../models';
 import {
@@ -43,6 +55,7 @@ describe('observationUtils', () => {
           value: 120,
           unit: 'mmHg',
           type: 'quantity',
+          isAbnormal: false,
         },
         effectiveDateTime: '2026-01-19T12:35:58+00:00',
         issued: undefined,
@@ -56,6 +69,7 @@ describe('observationUtils', () => {
           value: 'Days',
           unit: undefined,
           type: 'codeable',
+          isAbnormal: false,
         },
         effectiveDateTime: undefined,
         issued: undefined,
@@ -69,6 +83,7 @@ describe('observationUtils', () => {
           value: 'Fever, 2.0, Days',
           unit: undefined,
           type: 'string',
+          isAbnormal: false,
         },
         effectiveDateTime: undefined,
         issued: undefined,
@@ -157,6 +172,55 @@ describe('observationUtils', () => {
       expect(result.groupedObservations[0].children[0].id).toBe(
         'obs-child-valid',
       );
+    });
+
+    it('should extract normal reference range when multiple ranges exist', () => {
+      const result = extractObservationsFromBundle(
+        mockBundleWithNormalReferenceRange,
+      );
+
+      expect(result.observations).toHaveLength(1);
+      expect(result.observations[0].observationValue?.referenceRange).toEqual({
+        low: { value: 70, unit: 'mg/dL' },
+        high: { value: 100, unit: 'mg/dL' },
+      });
+    });
+
+    it('should not extract reference range when normal type is not found', () => {
+      const result = extractObservationsFromBundle(
+        mockBundleWithOnlyFirstReferenceRange,
+      );
+
+      expect(result.observations).toHaveLength(1);
+      expect(
+        result.observations[0].observationValue?.referenceRange,
+      ).toBeUndefined();
+    });
+
+    it('should mark observation as abnormal when interpretation code is A', () => {
+      const result = extractObservationsFromBundle(
+        mockBundleWithOnlyFirstReferenceRange,
+      );
+
+      expect(result.observations).toHaveLength(1);
+      expect(result.observations[0].observationValue?.isAbnormal).toBe(true);
+    });
+
+    it('should not mark observation as abnormal when interpretation code is N', () => {
+      const result = extractObservationsFromBundle(
+        mockBundleWithNormalReferenceRange,
+      );
+
+      expect(result.observations).toHaveLength(1);
+      expect(result.observations[0].observationValue?.isAbnormal).toBe(false);
+    });
+
+    it('should mark observation as not abnormal when no interpretation exists', () => {
+      const result = extractObservationsFromBundle(mockBundleWithCorrectValues);
+
+      expect(result.observations[0].observationValue?.isAbnormal).toBe(false);
+      expect(result.observations[1].observationValue?.isAbnormal).toBe(false);
+      expect(result.observations[2].observationValue?.isAbnormal).toBe(false);
     });
   });
 
@@ -380,6 +444,86 @@ describe('observationUtils', () => {
         value: 'High',
         provider: undefined,
       });
+    });
+
+    it('should format header with both ranges having units', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithBothRangesHavingUnits,
+        0,
+      );
+      expect(result.header).toBe('Blood Glucose (70 mg/dL - 100 mg/dL)');
+    });
+
+    it('should format header with both ranges using obs unit', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithBothRangesUsingObsUnit,
+        0,
+      );
+      expect(result.header).toBe('Hemoglobin (12 g/dL - 16 g/dL)');
+    });
+
+    it('should format header with mixed units', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithMixedUnits,
+        0,
+      );
+      expect(result.header).toBe('Temperature (97 °F - 99 °F)');
+    });
+
+    it('should format header with only low range having unit', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithOnlyLowWithUnit,
+        0,
+      );
+      expect(result.header).toBe('Systolic BP (>90 mmHg)');
+    });
+
+    it('should format header with only low range using obs unit', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithOnlyLowUsingObsUnit,
+        0,
+      );
+      expect(result.header).toBe('Heart Rate (>60 bpm)');
+    });
+
+    it('should format header with only high range having unit', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithOnlyHighWithUnit,
+        0,
+      );
+      expect(result.header).toBe('Cholesterol (<200 mg/dL)');
+    });
+
+    it('should format header with only high range using obs unit', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithOnlyHighUsingObsUnit,
+        0,
+      );
+      expect(result.header).toBe('Blood Sugar (<140 mg/dL)');
+    });
+
+    it('should format header with no reference range', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithNoReferenceRange,
+        0,
+      );
+      expect(result.header).toBe('Notes');
+    });
+
+    it('should format header with empty reference range', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithEmptyReferenceRange,
+        0,
+      );
+      expect(result.header).toBe('Comments');
+    });
+
+    it('should format header with no units', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithNoUnits,
+        0,
+      );
+      expect(result.header).toBe('Count (2 - 10)');
     });
   });
 });

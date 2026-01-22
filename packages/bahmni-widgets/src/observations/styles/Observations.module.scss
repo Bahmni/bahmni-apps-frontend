@@ -8,6 +8,11 @@
       background-color: $layer-01;
     }
   }
+
+  div[id^="abnormal-obs-"][id$="-value"] {
+    color: $text-error;
+    font-weight: bold;
+  }
 }
 
 .title {

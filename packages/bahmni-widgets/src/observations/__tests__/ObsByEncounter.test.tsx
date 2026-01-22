@@ -4,6 +4,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import {
   mockBundleWithMultipleEncounters,
   mockBundleWithMixedObservations,
+  mockBundleWithOnlyFirstReferenceRange,
 } from '../__mocks__/observationTestData';
 import { ObsByEncounter } from '../components/ObsByEncounter';
 import {
@@ -213,6 +214,39 @@ describe('ObsByEncounter', () => {
 
       expect(container).toMatchSnapshot();
     });
+  });
+
+  it('should render abnormal-obs-{id} for abnormal observations', () => {
+    const abnormalBundle = {
+      ...mockBundleWithOnlyFirstReferenceRange,
+      entry: [
+        {
+          resource: {
+            resourceType: 'Encounter' as const,
+            id: 'enc-abnormal',
+            status: 'finished' as const,
+            class: { code: 'AMB' },
+            period: { start: '2026-01-20T10:00:00+00:00' },
+          },
+        },
+        {
+          ...mockBundleWithOnlyFirstReferenceRange.entry![0],
+          resource: {
+            ...mockBundleWithOnlyFirstReferenceRange.entry![0].resource!,
+            encounter: { reference: 'Encounter/enc-abnormal' },
+          },
+        },
+      ],
+    };
+
+    const result = extractObservationsFromBundle(abnormalBundle);
+    const groupedData = groupObservationsByEncounter(result);
+
+    render(<ObsByEncounter groupedData={groupedData} />);
+
+    expect(
+      screen.getByTestId('abnormal-obs-obs-without-normal-range-test-id'),
+    ).toBeInTheDocument();
   });
 
   describe('Accessibility', () => {
