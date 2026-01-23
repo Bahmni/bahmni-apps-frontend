@@ -1,5 +1,6 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { NxReactWebpackPlugin } = require('@nx/react/webpack-plugin');
+const { InjectManifest } = require('workbox-webpack-plugin');
 const webpack = require('webpack');
 const { join } = require('path');
 
@@ -8,7 +9,7 @@ module.exports = (env, argv) => {
   //TODO should we hardcode?
   const publicPath = env.PUBLIC_PATH || process.env.PUBLIC_PATH || '/bahmni-new/';
   const isDevelopment = argv.mode !== 'production';
-  
+
   return {
     output: {
       path: join(__dirname, 'dist'),
@@ -41,6 +42,7 @@ module.exports = (env, argv) => {
     plugins: [
       new webpack.DefinePlugin({
         'process.env.PUBLIC_URL': JSON.stringify(publicPath),
+        'process.env.PUBLIC_PATH': JSON.stringify(publicPath),
       }),
       new NxAppWebpackPlugin({
         tsConfig: './tsconfig.app.json',
@@ -63,6 +65,14 @@ module.exports = (env, argv) => {
         // See: https://react-svgr.com/
         // svgr: false
       }),
+      ...(!isDevelopment ? [
+        new InjectManifest({
+          swSrc: join(__dirname, 'src/service-worker.ts'),
+          swDest: 'service-worker.js',
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+          exclude: [/\.map$/, /^manifest.*\.js$/],
+        }),
+      ] : []),
     ],
   };
 };

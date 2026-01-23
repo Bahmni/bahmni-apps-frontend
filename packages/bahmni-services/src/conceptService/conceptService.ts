@@ -2,12 +2,17 @@ import { ValueSet } from 'fhir/r4';
 import { get } from '../api';
 import { getUserPreferredLocale } from '../i18n/translationService';
 import {
+  CONCEPT_BY_FULLY_SPECIFIED_NAME_URL,
   CONCEPT_GET_URL,
   CONCEPT_SEARCH_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
   FHIR_VALUESET_URL,
 } from './constants';
-import { ConceptData, ConceptSearch } from './models';
+import {
+  ConceptData,
+  ConceptSearch,
+  type ConceptSearchByNameResponse,
+} from './models';
 
 /**
  * Search for concepts matching the provided term
@@ -43,4 +48,22 @@ export const searchFHIRConceptsByName = async (
 
 export async function getConceptById(uuid: string): Promise<ConceptData> {
   return await get<ConceptData>(CONCEPT_GET_URL(uuid));
+}
+
+/**
+ * Search for a concept by its fully specified name and return the full concept data
+ * @param conceptName - The fully specified name of the concept
+ * @returns Promise resolving to full ConceptData or null if not found
+ */
+export async function searchConceptByName(
+  conceptName: string,
+): Promise<ConceptData | null> {
+  const url = CONCEPT_BY_FULLY_SPECIFIED_NAME_URL(conceptName);
+  const response = await get<ConceptSearchByNameResponse>(url);
+
+  if (!response.results || response.results.length === 0) {
+    return null;
+  }
+
+  return response.results[0];
 }

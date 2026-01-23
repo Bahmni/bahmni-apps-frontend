@@ -1,0 +1,78 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.thumbnailButton {
+  width: $spacing-10;
+  height: $spacing-10;
+  margin-block: $spacing-03;
+  border: 1px solid $border-subtle-01;
+  border-radius: $spacing-02;
+  background-color: $background;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  &:hover {
+    border-color: $border-interactive;
+    box-shadow: 0 $spacing-01 calc($spacing-01 + $spacing-02) rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+  }
+
+  &:focus {
+    outline: $spacing-01 solid $focus;
+    outline-offset: $spacing-01;
+    border-color: $border-interactive;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.thumbnailVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+
+.playIconOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: $spacing-08;
+  height: $spacing-08;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.playIcon {
+  width: $spacing-06;
+  height: $spacing-06;
+  color: white;
+  margin-left: $spacing-02;
+}
+
+.modalVideoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: $spacing-05;
+}
+
+.modalVideo {
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+  margin: $spacing-03;
+}

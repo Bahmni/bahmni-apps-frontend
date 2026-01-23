@@ -10,6 +10,7 @@ import {
   refreshQueries,
   parseQueryParams,
   formatUrl,
+  getValueType,
 } from '../utils';
 
 describe('common utility functions', () => {
@@ -1232,6 +1233,57 @@ describe('common utility functions', () => {
       expect(result).toBe(
         '/bahmni/clinical/#/default/patient/patient-abc-123/dashboard/visit/visit-xyz-789',
       );
+    });
+  });
+
+  describe('getValueType', () => {
+    it('should return "number" for numeric inputs', () => {
+      expect(getValueType(123)).toBe('number');
+      expect(getValueType(0)).toBe('number');
+      expect(getValueType(-45.67)).toBe('number');
+    });
+
+    it('should return "PDF" for .pdf files', () => {
+      expect(getValueType('document.pdf')).toBe('PDF');
+      expect(getValueType('REPORT.PDF')).toBe('PDF');
+    });
+
+    it('should return "Image" for various image extensions', () => {
+      const images = [
+        'img.png',
+        'photo.jpg',
+        'avatar.jpeg',
+        'graphic.svg',
+        'animation.gif',
+      ];
+      images.forEach((file) => {
+        expect(getValueType(file)).toBe('Image');
+      });
+    });
+
+    it('should return "string" for normal string', () => {
+      const images = ['img', 'photo', 'avatar'];
+      images.forEach((file) => {
+        expect(getValueType(file)).toBe('string');
+      });
+    });
+
+    it('should return "Video" for various video extensions', () => {
+      const videos = ['movie.mp4', 'clip.webm', 'record.mkv', 'tape.flv'];
+      videos.forEach((file) => {
+        expect(getValueType(file)).toBe('Video');
+      });
+    });
+
+    it('should return "object" for strings that do not match known extensions', () => {
+      expect(getValueType(null as any)).toBe('object');
+    });
+
+    it('should handle non-string/non-number types gracefully', () => {
+      // @ts-expect-error - testing runtime fallback
+      expect(getValueType(true)).toBe('boolean');
+      // @ts-expect-error - testing runtime fallback
+      expect(getValueType(undefined)).toBe('undefined');
     });
   });
 });

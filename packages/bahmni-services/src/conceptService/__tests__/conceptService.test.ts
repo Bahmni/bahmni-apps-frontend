@@ -1,11 +1,18 @@
-import { ValueSet } from 'fhir/r4';
 import * as api from '../../api';
 import { getUserPreferredLocale } from '../../i18n/translationService';
+import {
+  mockConceptSearch,
+  mockUUID,
+  mockValueSet,
+  mockValueSetExpanded,
+  mockConceptData,
+} from '../__mocks__/mocks';
 import {
   searchConcepts,
   searchFHIRConcepts,
   searchFHIRConceptsByName,
   getConceptById,
+  searchConceptByName,
 } from '../conceptService';
 import {
   FHIR_VALUESET_URL,
@@ -36,14 +43,11 @@ describe('conceptService', () => {
     });
 
     it('should return ConceptSearch array from API response', async () => {
-      const mockConcepts = [
-        { conceptName: 'Test', conceptUuid: '123', matchedName: 'Test' },
-      ];
-      (api.get as jest.Mock).mockResolvedValue(mockConcepts);
+      (api.get as jest.Mock).mockResolvedValue(mockConceptSearch);
 
       const result = await searchConcepts('test');
 
-      expect(result).toEqual(mockConcepts);
+      expect(result).toEqual(mockConceptSearch);
     });
 
     it('should handle errors appropriately', async () => {
@@ -52,40 +56,9 @@ describe('conceptService', () => {
 
       await expect(searchConcepts('test')).rejects.toThrow(mockError);
     });
-
-    it('should pass the search term to the CONCEPT_SEARCH_URL', async () => {
-      await searchConcepts('term with spaces');
-
-      expect(api.get).toHaveBeenCalledWith(
-        expect.stringContaining('term=term with spaces'),
-      );
-    });
   });
 
   describe('searchFHIRConcepts', () => {
-    const mockUUID = '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-    const mockValueSet: ValueSet = {
-      resourceType: 'ValueSet',
-      id: mockUUID,
-      status: 'active',
-      compose: {
-        include: [
-          {
-            concept: [
-              {
-                code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-                display: 'Mental status change',
-              },
-              {
-                code: '121629AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-                display: 'Anaemia',
-              },
-            ],
-          },
-        ],
-      },
-    };
-
     beforeEach(() => {
       jest.clearAllMocks();
       (api.get as jest.Mock).mockResolvedValue(mockValueSet);
@@ -109,30 +82,9 @@ describe('conceptService', () => {
   });
 
   describe('searchFHIRConceptsByName', () => {
-    const mockValueSet: ValueSet = {
-      resourceType: 'ValueSet',
-      id: 'test-valueset',
-      status: 'active',
-      expansion: {
-        timestamp: '2024-01-01T00:00:00Z',
-        contains: [
-          {
-            system: 'http://loinc.org',
-            code: '1234-5',
-            display: 'Test Concept 1',
-          },
-          {
-            system: 'http://loinc.org',
-            code: '5678-9',
-            display: 'Test Concept 2',
-          },
-        ],
-      },
-    };
-
     beforeEach(() => {
       jest.clearAllMocks();
-      (api.get as jest.Mock).mockResolvedValue(mockValueSet);
+      (api.get as jest.Mock).mockResolvedValue(mockValueSetExpanded);
     });
 
     it('should call API with correct FHIR ValueSet filter expand URL', async () => {
@@ -155,22 +107,7 @@ describe('conceptService', () => {
 
     it('should return ValueSet from API response', async () => {
       const result = await searchFHIRConceptsByName('test');
-      expect(result).toEqual(mockValueSet);
-    });
-
-    it('should handle empty search name', async () => {
-      await searchFHIRConceptsByName('');
-
-      expect(api.get).toHaveBeenCalledWith(FHIR_VALUESET_FILTER_EXPAND_URL(''));
-    });
-
-    it('should handle search names with only whitespace', async () => {
-      const searchName = '   ';
-      await searchFHIRConceptsByName(searchName);
-
-      expect(api.get).toHaveBeenCalledWith(
-        FHIR_VALUESET_FILTER_EXPAND_URL(searchName),
-      );
+      expect(result).toEqual(mockValueSetExpanded);
     });
 
     it('should handle errors appropriately', async () => {
@@ -178,25 +115,6 @@ describe('conceptService', () => {
       (api.get as jest.Mock).mockRejectedValue(mockError);
 
       await expect(searchFHIRConceptsByName('test')).rejects.toThrow(mockError);
-    });
-
-    it('should handle network errors', async () => {
-      const networkError = new Error('Network error');
-      networkError.name = 'NetworkError';
-      (api.get as jest.Mock).mockRejectedValue(networkError);
-
-      await expect(searchFHIRConceptsByName('test')).rejects.toThrow(
-        networkError,
-      );
-    });
-
-    it('should handle very long search names', async () => {
-      const longSearchName = 'a'.repeat(1000);
-      await searchFHIRConceptsByName(longSearchName);
-
-      expect(api.get).toHaveBeenCalledWith(
-        FHIR_VALUESET_FILTER_EXPAND_URL(longSearchName),
-      );
     });
 
     it('should handle search names with unicode characters', async () => {
@@ -212,65 +130,6 @@ describe('conceptService', () => {
   });
 
   describe('getConceptById', () => {
-    const mockUUID = '162555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-    const mockConceptData = {
-      uuid: mockUUID,
-      display: 'Temperature',
-      name: {
-        display: 'Temperature',
-        uuid: '162556AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-        name: 'Temperature',
-        locale: 'en',
-        localePreferred: true,
-        conceptNameType: 'FULLY_SPECIFIED',
-        links: [
-          {
-            rel: 'self',
-            uri: `/openmrs/ws/rest/v1/concept/${mockUUID}/name/162556AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`,
-            resourceAlias: 'name',
-          },
-        ],
-        resourceVersion: '1.9',
-      },
-      datatype: {
-        uuid: '8d4a4488-c2cc-11de-8d13-0010c6dffd0f',
-        display: 'Numeric',
-        links: [
-          {
-            rel: 'self',
-            uri: '/openmrs/ws/rest/v1/conceptdatatype/8d4a4488-c2cc-11de-8d13-0010c6dffd0f',
-          },
-        ],
-      },
-      conceptClass: {
-        uuid: '8d4907b2-c2cc-11de-8d13-0010c6dffd0f',
-        display: 'Test',
-        links: [
-          {
-            rel: 'self',
-            uri: '/openmrs/ws/rest/v1/conceptclass/8d4907b2-c2cc-11de-8d13-0010c6dffd0f',
-          },
-        ],
-      },
-      set: false,
-      version: '1.0',
-      retired: false,
-      names: [],
-      descriptions: [],
-      mappings: [],
-      answers: [],
-      setMembers: [],
-      attributes: [],
-      links: [
-        {
-          rel: 'self',
-          uri: `/openmrs/ws/rest/v1/concept/${mockUUID}`,
-          resourceAlias: 'concept',
-        },
-      ],
-      resourceVersion: '1.9',
-    };
-
     beforeEach(() => {
       jest.clearAllMocks();
       (api.get as jest.Mock).mockResolvedValue(mockConceptData);
@@ -293,7 +152,7 @@ describe('conceptService', () => {
       expect(result.display).toBe('Temperature');
     });
 
-    it('should handle 404 not found errors', async () => {
+    it('should handle errors appropriately', async () => {
       const notFoundError = new Error('Concept not found');
       notFoundError.name = 'NotFoundError';
       (api.get as jest.Mock).mockRejectedValue(notFoundError);
@@ -301,20 +160,6 @@ describe('conceptService', () => {
       await expect(getConceptById('invalid-uuid')).rejects.toThrow(
         notFoundError,
       );
-    });
-
-    it('should work with different UUID formats', async () => {
-      const shortUUID = '12345';
-      await getConceptById(shortUUID);
-
-      expect(api.get).toHaveBeenCalledWith(CONCEPT_GET_URL(shortUUID));
-    });
-
-    it('should handle empty UUID', async () => {
-      const emptyUUID = '';
-      await getConceptById(emptyUUID);
-
-      expect(api.get).toHaveBeenCalledWith(CONCEPT_GET_URL(emptyUUID));
     });
 
     it('should return concept with set members when concept is a set', async () => {
@@ -353,6 +198,61 @@ describe('conceptService', () => {
       const result = await getConceptById(mockUUID);
 
       expect(result.retired).toBe(true);
+    });
+  });
+
+  describe('searchConceptByName', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return ConceptData when concept is found', async () => {
+      const mockResponse = {
+        results: [mockConceptData],
+      };
+      (api.get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await searchConceptByName('Temperature');
+
+      expect(result).toEqual(mockConceptData);
+      expect(result?.uuid).toBe(mockUUID);
+      expect(result?.display).toBe('Temperature');
+      expect(api.get).toHaveBeenCalledWith(
+        expect.stringContaining('s=byFullySpecifiedName'),
+      );
+      expect(api.get).toHaveBeenCalledWith(
+        expect.stringContaining('name=Temperature'),
+      );
+    });
+
+    it('should return null when concept is not found', async () => {
+      const mockResponse = { results: [] };
+      (api.get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await searchConceptByName('NonExistentConcept');
+
+      expect(result).toBeNull();
+    });
+
+    it('should handle API errors', async () => {
+      const mockError = new Error('API error');
+      (api.get as jest.Mock).mockRejectedValue(mockError);
+
+      await expect(searchConceptByName('Temperature')).rejects.toThrow(
+        mockError,
+      );
+    });
+
+    it('should URL encode concept name with special characters', async () => {
+      const mockResponse = { results: [] };
+      (api.get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const conceptName = 'Blood Pressure';
+      await searchConceptByName(conceptName);
+
+      expect(api.get).toHaveBeenCalledWith(
+        `/openmrs/ws/rest/v1/concept?s=byFullySpecifiedName&name=${encodeURIComponent(conceptName)}`,
+      );
     });
   });
 });

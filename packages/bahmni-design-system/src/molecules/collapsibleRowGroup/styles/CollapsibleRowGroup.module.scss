@@ -1,0 +1,45 @@
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.container {
+  width: 100%;
+}
+
+.accordion {
+  display: flex;
+  flex-direction: column;
+  padding-inline: 0;
+  border-block: none !important;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  div:last-child {
+    padding-block: 0;
+  }
+  div[id^="accordion-item"] {
+    padding-inline: 0;
+    width: 100%;
+  }
+  button {
+    display: flex;
+    div {
+      @include type-style("heading-compact-01");
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+.rows {
+  padding-inline-start: $spacing-07;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.accordion:last-child {
+  border-block-end: none;
+}

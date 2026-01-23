@@ -37,6 +37,7 @@ export { NumberInput, type NumberInputProps } from './atoms/numberInput';
 export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
 export { TextInput, type TextInputProps } from './atoms/textInput';
 export { TextArea, type TextAreaProps } from './atoms/textArea';
+export { RowCell, type RowCellProps } from './atoms/rowCell';
 export { NotificationContainer } from './molecules/notification';
 export { SortableDataTable } from './molecules/sortableDataTable';
 export {
@@ -100,6 +101,14 @@ export {
   type TextAreaWCloseProps,
 } from './molecules/textAreaWClose';
 export { BoxWHeader, type BoxWHeaderProps } from './molecules/boxWHeader';
+export {
+  CollapsibleRowGroup,
+  type CollapsibleRowGroupProps,
+  type RowData,
+} from './molecules/collapsibleRowGroup';
+export { ImageTile, type ImageTileProps } from './molecules/imageTile';
+export { FileTile, type FileTileProps } from './molecules/fileTile';
+export { VideoTile, type VideoTileProps } from './molecules/videoTile';
 export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
 export {
   MenuItemDivider,

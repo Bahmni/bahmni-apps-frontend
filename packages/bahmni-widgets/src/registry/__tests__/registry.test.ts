@@ -264,6 +264,7 @@ describe('Widget Registry', () => {
         'flowSheet',
         'ordersControl',
         'programs',
+        'observations',
         'forms',
       ];
 
@@ -394,7 +395,7 @@ describe('Widget Registry', () => {
       resetWidgetRegistry();
       const countAfterReset = getAllWidgetTypes().length;
 
-      expect(countAfterReset).toBe(10); // Only built-in widgets
+      expect(countAfterReset).toBe(11); // Only built-in widgets
       expect(countWithCustom).toBeGreaterThan(countAfterReset);
     });
   });
