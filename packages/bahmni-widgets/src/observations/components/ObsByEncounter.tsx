@@ -33,7 +33,7 @@ const renderObservation = (
       <ImageTile imageSrc={value} alt={value} id={`${value}-img`} />
     );
 
-  if (valueType == 'Video')
+  if (valueType === 'Video')
     valueToDisplay = <VideoTile id={`${value}-video`} videoSrc={value} />;
 
   const info = t('OBSERVATIONS_RECORDED_BY', {

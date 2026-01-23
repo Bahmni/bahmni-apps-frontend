@@ -21,7 +21,7 @@ export const formatEncounterTitle = (
   t: (key: string) => string,
 ): string => {
   if (!encounterDetails?.date) {
-    return t('UNKNOWN_ENCOUNTER');
+    return t('DATE_ERROR_PARSE');
   }
   const result = formatDateTime(encounterDetails.date, t);
   return result.formattedResult;

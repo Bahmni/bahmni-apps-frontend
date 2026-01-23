@@ -364,9 +364,9 @@ describe('observationUtils', () => {
       );
     });
 
-    it('should return UNKNOWN_ENCOUNTER when date is missing', () => {
+    it('should return DATE_ERROR_PARSE when date is missing', () => {
       const result = formatEncounterTitle(undefined, mockT);
-      expect(result).toBe('UNKNOWN_ENCOUNTER');
+      expect(result).toBe('DATE_ERROR_PARSE');
       expect(mockFormatDateTime).not.toHaveBeenCalled();
     });
   });

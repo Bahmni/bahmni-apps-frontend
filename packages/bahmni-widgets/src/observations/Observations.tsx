@@ -5,7 +5,7 @@ import {
   getPatientObservationsWithEncounterBundle,
 } from '@bahmni/services';
 import { useQuery, useQueries } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
@@ -34,6 +34,7 @@ export const observationsQueryKeys = (
 const Observations: React.FC<WidgetProps> = ({ config }) => {
   const observationConfig = config as ObservationConfig;
   const { conceptNames = [], conceptUuid = [] } = observationConfig;
+  const notifiedIndices = useRef(new Set());
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const { t } = useTranslation();
@@ -48,16 +49,19 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
 
   useEffect(() => {
     conceptQueries.forEach((query, index) => {
-      if (query.isError) {
+      if (query.isError && !notifiedIndices.current.has(index)) {
         const conceptName = conceptNames[index];
         addNotification({
           title: t('ERROR_DEFAULT_TITLE'),
           message: t('ERROR_FETCHING_CONCEPT', { conceptName }),
           type: 'error',
         });
+        notifiedIndices.current.add(index);
+      } else if (!query.isError) {
+        notifiedIndices.current.delete(index);
       }
     });
-  }, [conceptQueries.map((q) => q.isError).join(',')]);
+  }, [conceptQueries, conceptNames]);
 
   const fetchedUuids = useMemo(() => {
     return conceptQueries
