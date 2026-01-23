@@ -1,0 +1,28 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.vaccinationFormTile {
+  margin: $spacing-03;
+  background-color: $background !important;
+}
+
+.vaccinationFormTitle {
+  @include type-style("heading-compact-02");
+  padding-bottom: $spacing-05;
+}
+
+.vaccinationBox {
+  margin-top: $spacing-05;
+}
+
+.selectedVaccinationItem {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid $border-subtle-02;
+}
+.selectedVaccinationItem:last-of-type {
+  border: 0 !important;
+}

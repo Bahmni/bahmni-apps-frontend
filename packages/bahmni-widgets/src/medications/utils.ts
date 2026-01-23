@@ -134,6 +134,7 @@ export function formatMedicationRequest(
     status,
     asNeeded,
     isImmediate,
+    note,
   } = medication;
 
   const dosageParts: string[] = [];
@@ -176,6 +177,7 @@ export function formatMedicationRequest(
     status,
     asNeeded,
     isImmediate,
+    note,
   };
 }
 

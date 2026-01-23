@@ -1,3 +1,5 @@
+import { ConceptClass } from '../conceptService';
+
 /**
  * Enum representing canonical statuses of a medication request
  */
@@ -41,6 +43,7 @@ export interface MedicationRequest {
   readonly additionalInstructions?: string;
   readonly asNeeded: boolean;
   readonly isImmediate: boolean;
+  readonly note?: string;
 }
 
 export interface FormattedMedicationRequest {
@@ -56,4 +59,41 @@ export interface FormattedMedicationRequest {
   readonly status: MedicationStatus;
   readonly asNeeded: boolean;
   readonly isImmediate: boolean;
+  readonly note?: string;
+}
+
+/**
+ * Interface for frequency configuration
+ */
+export interface Frequency extends ConceptClass {
+  frequencyPerDay: number;
+}
+
+/**
+ * Interface for order attributes
+ */
+export interface OrderAttribute {
+  uuid: string;
+  name: string;
+  dataType: string;
+  shortName: string;
+  units: string | null;
+  conceptClass: string;
+  hiNormal: string | null;
+  lowNormal: string | null;
+  set: boolean;
+}
+
+/**
+ * Interface for medication orders metadata response
+ */
+export interface MedicationOrdersMetadataResponse {
+  doseUnits: ConceptClass[];
+  routes: ConceptClass[];
+  durationUnits: ConceptClass[];
+  dispensingUnits: ConceptClass[];
+  dosingRules: string[];
+  dosingInstructions: ConceptClass[];
+  orderAttributes: OrderAttribute[];
+  frequencies: Frequency[];
 }

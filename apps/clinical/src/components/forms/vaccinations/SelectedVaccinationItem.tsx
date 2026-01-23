@@ -28,33 +28,32 @@ import {
   getDefaultRoute,
   isImmediateFrequency,
 } from '../../../services/medicationsValueCalculator';
-import styles from './styles/SelectedMedicationItem.module.scss';
+import styles from './styles/SelectedVaccinationItem.module.scss';
 
-export interface SelectedMedicationItemProps {
-  medicationInputEntry: MedicationInputEntry;
+export interface SelectedVaccinationItemProps {
+  vaccinationInputEntry: MedicationInputEntry;
   medicationConfig: MedicationConfig;
-  updateDosage: (medicationId: string, dosage: number) => void;
-  updateDosageUnit: (medicationId: string, unit: Concept) => void;
-  updateFrequency: (medicationId: string, frequency: Frequency | null) => void;
-  updateRoute: (medicationId: string, route: Concept) => void;
-  updateDuration: (medicationId: string, duration: number) => void;
+  updateDosage: (vaccinationId: string, dosage: number) => void;
+  updateDosageUnit: (vaccinationId: string, unit: Concept) => void;
+  updateFrequency: (vaccinationId: string, frequency: Frequency | null) => void;
+  updateRoute: (vaccinationId: string, route: Concept) => void;
+  updateDuration: (vaccinationId: string, duration: number) => void;
   updateDurationUnit: (
-    medicationId: string,
+    vaccinationId: string,
     unit: DurationUnitOption | null,
   ) => void;
-  updateInstruction: (medicationId: string, instruction: Concept) => void;
-  updateisPRN: (medicationId: string, isPRN: boolean) => void;
-  updateisSTAT: (medicationId: string, isSTAT: boolean) => void;
-  updateStartDate: (medicationId: string, date: Date) => void;
-  updateDispenseQuantity: (medicationId: string, quantity: number) => void;
-  updateDispenseUnit: (medicationId: string, unit: Concept) => void;
-  updateNote: (medicationId: string, note: string) => void;
+  updateInstruction: (vaccinationId: string, instruction: Concept) => void;
+  updateisSTAT: (vaccinationId: string, isSTAT: boolean) => void;
+  updateStartDate: (vaccinationId: string, date: Date) => void;
+  updateDispenseQuantity: (vaccinationId: string, quantity: number) => void;
+  updateDispenseUnit: (vaccinationId: string, unit: Concept) => void;
+  updateNote: (vaccinationId: string, note: string) => void;
 }
 
-const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
+const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
   React.memo(
     ({
-      medicationInputEntry,
+      vaccinationInputEntry,
       medicationConfig,
       updateDosage,
       updateDosageUnit,
@@ -63,7 +62,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
       updateDuration,
       updateDurationUnit,
       updateInstruction,
-      updateisPRN,
       updateisSTAT,
       updateStartDate,
       updateDispenseQuantity,
@@ -84,13 +82,12 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         instruction,
         display,
         isSTAT,
-        isPRN,
         dispenseQuantity,
         dispenseUnit,
         startDate,
         note,
         errors,
-      } = medicationInputEntry;
+      } = vaccinationInputEntry;
 
       const [hasNote, setHasNote] = useState(!!note);
 
@@ -184,10 +181,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
       ]);
 
       useEffect(() => {
-        if (isPRN || !isSTAT) {
-          updateFrequency(id, null);
-        }
-        if (isSTAT && !isPRN) {
+        if (isSTAT) {
           const immediateFrequency =
             medicationConfig.frequencies.find(isImmediateFrequency);
           if (immediateFrequency) {
@@ -195,13 +189,10 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           }
           updateDuration(id, 0);
           updateDurationUnit(id, null);
-        }
-        if (isSTAT) {
           updateStartDate(id, getTodayDate());
         }
       }, [
         isSTAT,
-        isPRN,
         id,
         medicationConfig.frequencies,
         updateFrequency,
@@ -215,23 +206,21 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         setDefaultDurationUnit();
       }, [setDefaultInstruction, setDefaultDurationUnit]);
 
-      const medicineName = display.split('(')[0];
-      const medicineDetails = display.includes('(')
+      const vaccineName = display.split('(')[0];
+      const VaccineDetails = display.includes('(')
         ? '(' + display.split('(').slice(1).join('(')
         : '';
 
       return (
         <>
           <Grid condensed={false} narrow={false}>
-            <Column sm={2} md={4} lg={8} className={styles.medicationTitle}>
-              <span>{medicineName}</span>
-              {medicineDetails && (
-                <span className={styles.medicineDetails}>
-                  {medicineDetails}
-                </span>
+            <Column sm={2} md={4} lg={8} className={styles.vaccinationTitle}>
+              <span>{vaccineName}</span>
+              {VaccineDetails && (
+                <span className={styles.vaccineDetails}>{VaccineDetails}</span>
               )}
             </Column>
-            <Column sm={2} md={4} lg={8} className={styles.medicationActions}>
+            <Column sm={2} md={4} lg={8} className={styles.vaccinationActions}>
               <Checkbox
                 id={`stat-${id}`}
                 labelText={t('MEDICATION_STAT')}
@@ -239,13 +228,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 checked={isSTAT}
                 onChange={(e) => updateisSTAT(id, e.target.checked)}
                 className={styles.statControl}
-              />
-              <Checkbox
-                id={`prn-${id}`}
-                labelText={t('MEDICATION_PRN')}
-                aria-label="PRN"
-                checked={isPRN}
-                onChange={(e) => updateisPRN(id, e.target.checked)}
               />
             </Column>
 
@@ -315,7 +297,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 autoAlign
                 invalid={errors.frequency ? true : false}
                 invalidText={t(errors.frequency ?? '')}
-                disabled={isSTAT && !isPRN}
+                disabled={isSTAT}
               />
             </Column>
             <Column sm={2} md={3} lg={6} className={styles.durationControls}>
@@ -337,7 +319,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 }}
                 invalid={errors.duration ? true : false}
                 invalidText={t(errors.duration ?? '')}
-                disabled={isSTAT && !isPRN}
+                disabled={isSTAT}
               />
               <Dropdown
                 id={`duration-unit-${id}`}
@@ -360,16 +342,16 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 autoAlign
                 invalid={errors.durationUnit ? true : false}
                 invalidText={t(errors.durationUnit ?? '')}
-                disabled={isSTAT && !isPRN}
+                disabled={isSTAT}
               />
             </Column>
 
             <Column sm={1} md={2} lg={4} className={styles.column}>
               <Dropdown
-                id={`med-instructions-${id}`}
+                id={`vac-instructions-${id}`}
                 titleText={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
                 label={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
-                aria-label="Medication Instructions"
+                aria-label="Vaccination Instructions"
                 hideLabel
                 size="sm"
                 items={medicationConfig.dosingInstructions ?? []}
@@ -438,21 +420,21 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                     setHasNote(true);
                   }}
                 >
-                  {t('MEDICATION_ADD_NOTE')}
+                  {t('VACCINATION_ADD_NOTE')}
                 </Link>
               )}
               <span>
-                {t('MEDICATION_TOTAL_QUANTITY')} : {dispenseQuantity}{' '}
+                {t('VACCINATION_TOTAL_QUANTITY')} : {dispenseQuantity}{' '}
                 {dispenseUnit?.name ?? ''}
               </span>
             </Column>
           </Grid>
           {hasNote && (
             <TextAreaWClose
-              id={`medication-note-${id}`}
-              data-testid={`medication-note-${id}`}
-              labelText={t('MEDICATION_ADD_NOTE')}
-              placeholder={t('MEDICATION_ADD_NOTE_PLACEHOLDER')}
+              id={`vaccination-note-${id}`}
+              data-testid={`vaccination-note-${id}`}
+              labelText={t('VACCINATION_ADD_NOTE')}
+              placeholder={t('VACCINATION_ADD_NOTE_PLACEHOLDER')}
               value={note ?? ''}
               onChange={(event) => {
                 const target = event.target;
@@ -471,6 +453,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
     },
   );
 
-SelectedMedicationItem.displayName = 'SelectedMedicationItem';
+SelectedVaccinationItem.displayName = 'SelectedVaccinationItem';
 
-export default SelectedMedicationItem;
+export default SelectedVaccinationItem;

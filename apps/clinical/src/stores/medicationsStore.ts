@@ -24,6 +24,7 @@ export interface MedicationState {
   updateStartDate: (medicationId: string, date: Date) => void;
   updateDispenseQuantity: (medicationId: string, quantity: number) => void;
   updateDispenseUnit: (medicationId: string, unit: Concept) => void;
+  updateNote: (medicationId: string, note: string) => void;
   validateAllMedications: () => boolean;
 
   reset: () => void;
@@ -51,6 +52,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
       hasBeenValidated: false,
       dispenseQuantity: 0,
       dispenseUnit: null,
+      note: '',
     };
 
     set((state) => ({
@@ -284,6 +286,19 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
         }
 
         return updatedMedication;
+      }),
+    }));
+  },
+
+  updateNote(medicationId: string, note: string) {
+    set((state) => ({
+      selectedMedications: state.selectedMedications.map((medication) => {
+        if (medication.id !== medicationId) return medication;
+
+        return {
+          ...medication,
+          note: note,
+        };
       }),
     }));
   },

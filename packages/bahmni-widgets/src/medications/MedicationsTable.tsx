@@ -9,6 +9,7 @@ import {
   Tabs,
   Tag,
   StatusTag,
+  TooltipIcon,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -19,9 +20,11 @@ import {
   ISO_DATE_FORMAT,
   FormattedMedicationRequest,
   MedicationRequest,
+  shouldEnableEncounterFilter,
 } from '@bahmni/services';
 import classNames from 'classnames';
 import React, { useMemo, useState, useCallback } from 'react';
+import { WidgetProps } from '../registry/model';
 import styles from './styles/MedicationsTable.module.scss';
 import { useMedicationRequest } from './useMedicationRequest';
 import {
@@ -72,10 +75,23 @@ const getMedicationStatusKey = (status: string): string => {
   }
 };
 
-const MedicationsTable: React.FC = () => {
+const MedicationsTable: React.FC<WidgetProps> = ({
+  config,
+  episodeOfCareUuids,
+  encounterUuids,
+}) => {
   const { t } = useTranslation();
-  const { medications, loading, error } = useMedicationRequest();
+  const code = (config?.code as string[]) || [];
+  const { medications, loading, error } = useMedicationRequest(
+    code,
+    encounterUuids!,
+  );
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
 
   const handleTabChange = (selectedIndex: number) => {
     setSelectedIndex(selectedIndex);
@@ -175,7 +191,16 @@ const MedicationsTable: React.FC = () => {
       case 'name':
         return (
           <>
-            <p className={styles.columnDataBold}>{row.name}</p>
+            <div className={styles.medicationName}>
+              <span>{row.name}</span>
+              {row.note && (
+                <TooltipIcon
+                  iconName="fa-file-lines"
+                  content={row.note}
+                  ariaLabel={row.note}
+                />
+              )}
+            </div>
             <p className={styles.medicineDetails}>{row.quantity}</p>
             {row.isImmediate && <Tag className={styles.STAT}>STAT</Tag>}
             {row.asNeeded && <Tag className={styles.PRN}>PRN</Tag>}
@@ -232,7 +257,7 @@ const MedicationsTable: React.FC = () => {
             <SortableDataTable
               headers={headers}
               ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}
-              rows={activeAndScheduledMedications}
+              rows={emptyEncounterFilter ? [] : activeAndScheduledMedications}
               loading={loading}
               errorStateMessage={error}
               sortable={sortable}
@@ -242,7 +267,10 @@ const MedicationsTable: React.FC = () => {
             />
           </TabPanel>
           <TabPanel className={styles.medicationTabs}>
-            {loading || !!error || processedAllMedications.length === 0 ? (
+            {loading ||
+            !!error ||
+            processedAllMedications.length === 0 ||
+            emptyEncounterFilter ? (
               <SortableDataTable
                 headers={headers}
                 ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}

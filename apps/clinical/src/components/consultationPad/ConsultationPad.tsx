@@ -22,6 +22,7 @@ import { useEncounterDetailsStore } from '../../../src/stores/encounterDetailsSt
 import { useMedicationStore } from '../../../src/stores/medicationsStore';
 import { useObservationFormsStore } from '../../../src/stores/observationFormsStore';
 import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
+import { useVaccinationStore } from '../../../src/stores/vaccinationsStore';
 import { ERROR_TITLES } from '../../constants/errors';
 import {
   VALIDATION_STATE_EMPTY,
@@ -51,6 +52,7 @@ import InvestigationsForm from '../forms/investigations/InvestigationsForm';
 import MedicationsForm from '../forms/medications/MedicationsForm';
 import ObservationForms from '../forms/observations/ObservationForms';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
+import VaccinationForm from '../forms/vaccinations/VaccinationForm';
 import styles from './styles/ConsultationPad.module.scss';
 
 interface ConsultationPadProps {
@@ -119,6 +121,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     reset: resetMedications,
   } = useMedicationStore();
 
+  const {
+    selectedVaccinations,
+    validateAllVaccinations,
+    reset: resetVaccinations,
+  } = useVaccinationStore();
+
   // Get encounter session state
   const { activeEncounter } = useEncounterSession();
 
@@ -130,6 +138,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       resetDiagnoses();
       resetServiceRequests();
       resetMedications();
+      resetVaccinations();
       resetObservationForms();
     };
   }, [
@@ -138,6 +147,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     resetDiagnoses,
     resetServiceRequests,
     resetMedications,
+    resetVaccinations,
     resetObservationForms,
   ]);
 
@@ -252,6 +262,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       practitionerUUID: practitionerUUID,
     });
 
+    const vaccinationEntries = createMedicationRequestEntries({
+      selectedMedications: selectedVaccinations,
+      encounterSubject: encounterResource.subject!,
+      encounterReference,
+      practitionerUUID: practitionerUUID,
+    });
+
     const observationEntries = createObservationBundleEntries({
       observationFormsData: getObservationFormsData(),
       encounterSubject: encounterResource.subject!,
@@ -266,6 +283,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       ...conditionEntries,
       ...serviceRequestEntries,
       ...medicationEntries,
+      ...vaccinationEntries,
       ...observationEntries,
     ]);
 
@@ -288,11 +306,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         });
       }
 
+      const isVaccinationsValid = validateAllVaccinations();
       if (
         !isConditionsAndDiagnosesValid ||
         !isAllergiesValid ||
         !isMedicationsValid ||
-        !isObservationFormValid
+        !isObservationFormValid ||
+        !isVaccinationsValid
       ) {
         return;
       }
@@ -317,6 +337,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         resetEncounterDetails();
         resetServiceRequests();
         resetMedications();
+        resetVaccinations();
         // Clear observation forms data after successful save
         resetObservationForms();
 
@@ -355,6 +376,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     resetAllergies();
     resetServiceRequests();
     resetMedications();
+    resetVaccinations();
     // Clear observation forms data on cancel
     resetObservationForms();
     onClose();
@@ -370,6 +392,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       <ConditionsAndDiagnoses />
       <MenuItemDivider />
       <MedicationsForm />
+      <MenuItemDivider />
+      <VaccinationForm />
       <MenuItemDivider />
       <ObservationForms
         onFormSelect={handleFormSelection}

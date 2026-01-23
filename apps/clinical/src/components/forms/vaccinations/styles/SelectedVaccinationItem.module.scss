@@ -8,16 +8,17 @@
   margin-left: 0;
 }
 
-.medicationTitle {
+.vaccinationTitle {
   @include type-style("heading-compact-02");
   margin-bottom: $spacing-04;
   margin-left: 0;
-  .medicineDetails {
+
+  .vaccineDetails {
     @include type-style("body-short-02");
   }
 }
 
-.medicationActions {
+.vaccinationActions {
   display: flex !important;
   flex-direction: row !important;
   align-items: start !important;

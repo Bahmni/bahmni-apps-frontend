@@ -1,7 +1,20 @@
-import { Bundle, MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
+import {
+  Bundle,
+  Medication,
+  MedicationRequest as FhirMedicationRequest,
+} from 'fhir/r4';
 import { get } from '../api';
-import { PATIENT_MEDICATION_RESOURCE_URL } from './constants';
-import { MedicationRequest, MedicationStatus } from './models';
+import {
+  MEDICATION_ORDERS_METADATA_URL,
+  MEDICATIONS_SEARCH_URL,
+  PATIENT_MEDICATION_RESOURCE_URL,
+  VACCINES_URL,
+} from './constants';
+import {
+  MedicationOrdersMetadataResponse,
+  MedicationRequest,
+  MedicationStatus,
+} from './models';
 
 /**
  * Maps FHIR medication request statuses to canonical MedicationStatus values
@@ -38,8 +51,25 @@ const mapMedicationStatus = (
  */
 export async function getPatientMedicationBundle(
   patientUUID: string,
+  code?: string[],
+  encounterUuids?: string[],
 ): Promise<Bundle> {
-  const url = PATIENT_MEDICATION_RESOURCE_URL(patientUUID);
+  let encounterUuidsString: string | undefined;
+
+  if (encounterUuids && encounterUuids.length > 0) {
+    encounterUuidsString = encounterUuids.join(',');
+  }
+
+  let codeString: string | undefined;
+  if (code && code.length > 0) {
+    codeString = code.join(',');
+  }
+
+  const url = PATIENT_MEDICATION_RESOURCE_URL(
+    patientUUID,
+    codeString,
+    encounterUuidsString,
+  );
   return await get<Bundle>(url);
 }
 
@@ -137,6 +167,15 @@ function getQuantity(
     unit: quantity?.unit ?? '',
   };
 }
+
+function getNote(note: FhirMedicationRequest['note']): string {
+  if (!note || note.length === 0) return '';
+  // Join all note texts with a space separator
+  return note
+    .map((n) => n.text)
+    .filter(Boolean)
+    .join(' ');
+}
 /**
  * Formats FHIR medication requests into a more user-friendly format
  * @param bundle - The FHIR bundle containing medication requests
@@ -167,13 +206,14 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       quantity: getQuantity(medication.dispenseRequest!),
       startDate: isImmediateMedication(medication)
         ? medication.authoredOn!
-        : medication.dosageInstruction?.[0]?.timing?.event?.[0],
+        : (medication.dosageInstruction?.[0]?.timing?.event?.[0] ?? ''),
       orderDate: medication.authoredOn!,
       orderedBy: medicationRequester.display!,
       instructions: getInstructions(medication.dosageInstruction),
       additionalInstructions: getAdditionalInstructions(
         medication.dosageInstruction,
       ),
+      note: getNote(medication.note),
     };
   });
 }
@@ -193,7 +233,47 @@ const isImmediateMedication = (medication: FhirMedicationRequest): boolean => {
  */
 export async function getPatientMedications(
   patientUUID: string,
+  code?: string[],
+  encounterUuids?: string[],
 ): Promise<MedicationRequest[]> {
-  const bundle = await getPatientMedicationBundle(patientUUID);
+  const bundle = await getPatientMedicationBundle(
+    patientUUID,
+    code,
+    encounterUuids,
+  );
+  // TODO : Move formatting logic to widgets package
   return formatMedications(bundle);
+}
+
+/**
+ * Fetches medication orders metadata including dose units, routes, duration units, etc.
+ * @returns Promise resolving to medication orders metadata
+ */
+export async function fetchMedicationOrdersMetadata(): Promise<MedicationOrdersMetadataResponse> {
+  return await get<MedicationOrdersMetadataResponse>(
+    MEDICATION_ORDERS_METADATA_URL,
+  );
+}
+
+/**
+ * Searches for medications by search term
+ * @param searchTerm - The term to search for in medication names
+ * @param count - Maximum number of results to return (default: 20)
+ * @returns Promise resolving to a Bundle containing medications
+ */
+export async function searchMedications(
+  searchTerm: string,
+  count: number = 20,
+): Promise<Bundle<Medication>> {
+  return await get<Bundle<Medication>>(
+    MEDICATIONS_SEARCH_URL(searchTerm, count),
+  );
+}
+
+/**
+ * Fetches vaccines from the FHIR Medication endpoint filtered by CVX code system
+ * @returns Promise resolving to a Bundle containing vaccine medications
+ */
+export async function getVaccinations(): Promise<Bundle<Medication>> {
+  return await get<Bundle<Medication>>(VACCINES_URL);
 }

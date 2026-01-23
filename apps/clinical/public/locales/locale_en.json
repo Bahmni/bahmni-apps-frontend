@@ -199,6 +199,8 @@
   "MEDICATION_START_DATE_INPUT_LABEL": "Start date",
   "MEDICATION_STAT": "STAT",
   "MEDICATION_TOTAL_QUANTITY": "Total quantity",
+  "MEDICATION_ADD_NOTE": "Add Note",
+  "MEDICATION_ADD_NOTE_PLACEHOLDER": "Add notes for the medication",
   "NETWORK_ERROR": "A network error occurred",
   "NO_ACTIVE_MEDICATIONS": "No active medications",
   "NO_ALLERGIES": "No allergies recorded",
@@ -272,6 +274,13 @@
   "SIDE_NAVIGATION": "Side navigation",
   "UNEXPECTED_ERROR": "An unexpected error occurred",
   "UNKNOWN_STATUS": "Canceled",
+  "VACCINATION_ADD_NOTE": "Add Note",
+  "VACCINATION_ADD_NOTE_PLACEHOLDER": "Add notes for the vaccination",
+  "VACCINATION_ADDED_VACCINATIONS": "Added vaccinations",
+  "VACCINATION_ALREADY_SELECTED": "Already added",
+  "VACCINATION_FORM_TITLE": "Vaccinations",
+  "VACCINATION_SEARCH_PLACEHOLDER": "Search to add vaccination",
+  "VACCINATION_TOTAL_QUANTITY": "Total quantity",
   "VIEWED_RADIOLOGY_RESULTS_MESSAGE": "Viewed radiology results",
   "VISIT_TYPE": "Visit Type",
   "VITAL_FLOW_SHEET_TABLE": "Vital Flow Sheet Table",
@@ -283,5 +292,9 @@
   "VITAL_SIGNS_PULSE": "Pulse",
   "VITAL_SIGNS_RESPIRATORY_RATE": "Respiratory rate",
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Systolic blood pressure",
-  "VITAL_SIGNS_TEMPERATURE": "Temperature"
+  "VITAL_SIGNS_TEMPERATURE": "Temperature",
+  "LOADING_VACCINATIONS": "Loading vaccinations...",
+  "ERROR_SEARCHING_VACCINATIONS": "Error searching vaccinations",
+  "NO_MATCHING_VACCINATIONS_FOUND": "No matching vaccinations found",
+  "ERROR_FETCHING_VACCINATION_CONFIG": "Error fetching vaccination configuration"
 }

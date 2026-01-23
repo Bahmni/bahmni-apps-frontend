@@ -1,35 +1,26 @@
-import { get } from '@bahmni/services';
 import { Bundle, Medication } from 'fhir/r4';
-import {
-  MEDICATION_ORDERS_METADATA_URL,
-  MEDICATIONS_SEARCH_URL,
-} from '../constants/app';
 import {
   FHIR_MEDICATION_EXTENSION_URL,
   FHIR_MEDICATION_NAME_EXTENSION_URL,
 } from '../constants/fhir';
-import { MedicationOrdersMetadataResponse } from '../models/medicationConfig';
 
-export async function fetchMedicationOrdersMetadata(): Promise<MedicationOrdersMetadataResponse> {
-  return await get<MedicationOrdersMetadataResponse>(
-    MEDICATION_ORDERS_METADATA_URL,
-  );
-}
-
-export async function searchMedications(
-  searchTerm: string,
-  count: number = 20,
-): Promise<Bundle<Medication>> {
-  return await get<Bundle<Medication>>(
-    MEDICATIONS_SEARCH_URL(searchTerm, count),
-  );
+export function getMedicationsFromBundle(
+  bundle: Bundle<Medication>,
+): Medication[] {
+  const medications: Medication[] = [];
+  bundle.entry?.map((entry) => {
+    if (entry.resource) {
+      medications.push(entry.resource);
+    }
+  });
+  return medications;
 }
 
 export function getMedicationDisplay(medication: Medication): string {
   const medicationExtensions = medication.extension?.find(
     (ext) => ext.url === FHIR_MEDICATION_EXTENSION_URL,
   );
-
+  const codeName = medication.code?.text;
   const drugNameExtension = medicationExtensions?.extension?.find(
     (ext) => ext.url === FHIR_MEDICATION_NAME_EXTENSION_URL,
   );
@@ -37,7 +28,7 @@ export function getMedicationDisplay(medication: Medication): string {
 
   let displayName = drugNameExtension?.valueString;
   if (displayName && medicationForm) {
-    displayName += ` (${medicationForm})`;
+    displayName += ` (${medicationForm})` + `- ${codeName}`;
   }
   return displayName ?? 'Unknown Medication Name';
 }

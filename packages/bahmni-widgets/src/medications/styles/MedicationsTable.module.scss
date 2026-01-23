@@ -23,6 +23,13 @@
   @include type-style("heading-compact-01");
 }
 
+.medicationName {
+  @include type-style("heading-compact-01");
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-02;
+}
+
 .medicineDetails {
   @include type-style("body-compact-01");
   color: $text-primary;

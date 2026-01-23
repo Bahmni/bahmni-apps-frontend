@@ -138,9 +138,15 @@ export {
 export {
   getPatientMedications,
   getPatientMedicationBundle,
+  fetchMedicationOrdersMetadata,
+  searchMedications,
+  getVaccinations,
   type FormattedMedicationRequest,
   type MedicationRequest,
   MedicationStatus,
+  type MedicationOrdersMetadataResponse,
+  type Frequency as MedicationFrequency,
+  type OrderAttribute,
 } from './medicationRequestService';
 export {
   getPatientRadiologyInvestigations,

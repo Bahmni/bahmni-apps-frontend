@@ -5,39 +5,54 @@ import {
   DropdownSkeleton,
   Tile,
 } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, getVaccinations } from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useRef } from 'react';
+
 import useMedicationConfig from '../../../hooks/useMedicationConfig';
-import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
-import { getMedicationDisplay } from '../../../services/medicationService';
-import { useMedicationStore } from '../../../stores/medicationsStore';
-import SelectedMedicationItem from './SelectedMedicationItem';
-import styles from './styles/MedicationsForm.module.scss';
+import {
+  getMedicationDisplay,
+  getMedicationsFromBundle,
+} from '../../../services/medicationService';
+import { useVaccinationStore } from '../../../stores/vaccinationsStore';
+import SelectedVaccinationItem from './SelectedVaccinationItem';
+import styles from './styles/VaccinationForm.module.scss';
 
 /**
- * MedicationsForm component
+ * VaccinationForm component
  *
- * A component that displays a search interface for medications and a list of selected medications.
- * It allows users to search for medications, select them, and specify dosage, frequency, route, timing, and duration.
+ * A component that displays a search interface for vaccinations and a list of selected vaccinations.
+ * It allows users to search for vaccinations, select them, and specify dosage, frequency, route, timing, and duration.
  */
-const MedicationsForm: React.FC = React.memo(() => {
+const VaccinationForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
-  const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
+  const [searchVaccinationTerm, setSearchVaccinationTerm] = useState('');
   const isSelectingRef = useRef(false);
   const {
     medicationConfig,
     loading: medicationConfigLoading,
     error: medicationConfigError,
   } = useMedicationConfig();
-  const { searchResults, loading, error } =
-    useMedicationSearch(searchMedicationTerm);
 
-  // Use Zustand store
   const {
-    selectedMedications,
-    addMedication,
-    removeMedication,
+    data: vaccinationsBundle,
+    isLoading: loading,
+    error,
+  } = useQuery({
+    queryKey: ['vaccinations'],
+    queryFn: getVaccinations,
+  });
+
+  // Extract medications from bundle
+  const searchResults = vaccinationsBundle
+    ? getMedicationsFromBundle(vaccinationsBundle)
+    : [];
+
+  const {
+    selectedVaccinations,
+    addVaccination,
+    removeVaccination,
     updateDosage,
     updateDosageUnit,
     updateFrequency,
@@ -45,18 +60,17 @@ const MedicationsForm: React.FC = React.memo(() => {
     updateDuration,
     updateDurationUnit,
     updateInstruction,
-    updateisPRN,
     updateisSTAT,
     updateDispenseQuantity,
     updateDispenseUnit,
-    updateNote,
     updateStartDate,
-  } = useMedicationStore();
+    updateNote,
+  } = useVaccinationStore();
 
   const handleSearch = (searchTerm: string) => {
     // Only update search term if we're not in the process of selecting an item
     if (!isSelectingRef.current) {
-      setSearchMedicationTerm(searchTerm);
+      setSearchVaccinationTerm(searchTerm);
     }
   };
 
@@ -64,11 +78,9 @@ const MedicationsForm: React.FC = React.memo(() => {
     if (!selectedItem) {
       return;
     }
-    // Set flag to prevent search when ComboBox updates its input
     isSelectingRef.current = true;
-    addMedication(selectedItem.medication!, selectedItem.displayName);
-    // Clear the search term after selection
-    setSearchMedicationTerm('');
+    addVaccination(selectedItem.medication!, selectedItem.displayName);
+    setSearchVaccinationTerm('');
     // Reset the flag after a short delay to allow ComboBox to update
     setTimeout(() => {
       isSelectingRef.current = false;
@@ -76,13 +88,13 @@ const MedicationsForm: React.FC = React.memo(() => {
   };
 
   const filteredSearchResults = useMemo(() => {
-    if (!searchMedicationTerm || searchMedicationTerm.trim() === '') {
+    if (!searchVaccinationTerm || searchVaccinationTerm.trim() === '') {
       return [];
     }
     if (loading) {
       return [
         {
-          displayName: t('LOADING_MEDICATIONS'),
+          displayName: t('LOADING_VACCINATIONS'),
           disabled: true,
         },
       ];
@@ -90,8 +102,8 @@ const MedicationsForm: React.FC = React.memo(() => {
     if (error) {
       return [
         {
-          displayName: t('ERROR_SEARCHING_MEDICATIONS', {
-            error: error.message,
+          displayName: t('ERROR_SEARCHING_VACCINATIONS', {
+            error: (error as Error).message,
           }),
           disabled: true,
         },
@@ -100,74 +112,89 @@ const MedicationsForm: React.FC = React.memo(() => {
     if (!searchResults || searchResults.length === 0) {
       return [
         {
-          displayName: t('NO_MATCHING_MEDICATIONS_FOUND'),
+          displayName: t('NO_MATCHING_VACCINATIONS_FOUND'),
           disabled: true,
         },
       ];
     }
 
-    return searchResults.map((item) => {
-      const isAlreadySelected = selectedMedications.some(
-        (m) => m.id === item.id,
+    // Filter vaccines based on search term
+    const filtered = searchResults.filter((item) => {
+      const displayName = getMedicationDisplay(item).toLowerCase();
+      return displayName.includes(searchVaccinationTerm.toLowerCase());
+    });
+
+    if (filtered.length === 0) {
+      return [
+        {
+          displayName: t('NO_MATCHING_VACCINATIONS_FOUND'),
+          disabled: true,
+        },
+      ];
+    }
+
+    return filtered.map((item) => {
+      const isAlreadySelected = selectedVaccinations.some(
+        (v) => v.id === item.id,
       );
       return {
         medication: item,
         displayName: isAlreadySelected
-          ? `${getMedicationDisplay(item)} (${t('MEDICATION_ALREADY_SELECTED')})`
+          ? `${getMedicationDisplay(item)} (${t('VACCINATION_ALREADY_SELECTED')})`
           : getMedicationDisplay(item),
         disabled: isAlreadySelected,
       };
     });
   }, [
-    searchMedicationTerm,
+    searchVaccinationTerm,
     loading,
     error,
     searchResults,
-    selectedMedications,
+    selectedVaccinations,
     t,
   ]);
 
   return (
-    <Tile className={styles.medicationsFormTile}>
-      <div className={styles.medicationsFormTitle}>
-        {t('MEDICATIONS_FORM_TITLE')}
+    <Tile className={styles.vaccinationFormTile}>
+      <div className={styles.vaccinationFormTitle}>
+        {t('VACCINATION_FORM_TITLE')}
       </div>
       {medicationConfigLoading && <DropdownSkeleton />}
       {medicationConfigError && (
         <div>
-          {t('ERROR_FETCHING_MEDICATION_CONFIG', {
+          {t('ERROR_FETCHING_VACCINATION_CONFIG', {
             error: medicationConfigError.message,
           })}
         </div>
       )}
       {!medicationConfigLoading && !medicationConfigError && (
         <ComboBox
-          id="medications-search"
-          placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
+          id="vaccinations-search"
+          placeholder={t('VACCINATION_SEARCH_PLACEHOLDER')}
           items={filteredSearchResults}
           itemToString={(item) => (item ? item.displayName : '')}
           onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           size="md"
           autoAlign
-          aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
+          aria-label={t('VACCINATION_SEARCH_PLACEHOLDER')}
         />
       )}
       {medicationConfig &&
-        selectedMedications &&
-        selectedMedications.length > 0 && (
+        selectedVaccinations &&
+        selectedVaccinations.length > 0 && (
           <BoxWHeader
-            title={t('MEDICATIONS_ADDED_MEDICATIONS')}
-            className={styles.medicationsBox}
+            title={t('VACCINATION_ADDED_VACCINATIONS')}
+            className={styles.vaccinationBox}
           >
-            {selectedMedications.map((medication) => (
+            {selectedVaccinations.map((vaccination) => (
               <SelectedItem
-                onClose={() => removeMedication(medication.id)}
-                className={styles.selectedMedicationItem}
-                key={medication.id}
+                onClose={() => removeVaccination(vaccination.id)}
+                className={styles.selectedVaccinationItem}
+                key={vaccination.id}
               >
-                <SelectedMedicationItem
-                  medicationInputEntry={medication}
+                <SelectedVaccinationItem
+                  vaccinationInputEntry={vaccination}
                   medicationConfig={medicationConfig!}
                   updateDosage={updateDosage}
                   updateDosageUnit={updateDosageUnit}
@@ -176,12 +203,11 @@ const MedicationsForm: React.FC = React.memo(() => {
                   updateDuration={updateDuration}
                   updateDurationUnit={updateDurationUnit}
                   updateInstruction={updateInstruction}
-                  updateisPRN={updateisPRN}
                   updateisSTAT={updateisSTAT}
                   updateDispenseQuantity={updateDispenseQuantity}
                   updateDispenseUnit={updateDispenseUnit}
-                  updateNote={updateNote}
                   updateStartDate={updateStartDate}
+                  updateNote={updateNote}
                 />
               </SelectedItem>
             ))}
@@ -191,6 +217,6 @@ const MedicationsForm: React.FC = React.memo(() => {
   );
 });
 
-MedicationsForm.displayName = 'MedicationsForm';
+VaccinationForm.displayName = 'VaccinationForm';
 
-export default MedicationsForm;
+export default VaccinationForm;

@@ -95,7 +95,6 @@ describe('medicationRequestResourceCreator', () => {
 
   describe('createMedicationRequestResource', () => {
     it('should create a complete MedicationRequest resource with all fields', () => {
-      // Act
       const result = createMedicationRequestResource(
         mockMedicationEntry,
         mockSubjectReference,
@@ -103,7 +102,6 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       expect(result).toMatchObject({
         resourceType: 'MedicationRequest',
         status: 'active',
@@ -168,13 +166,11 @@ describe('medicationRequestResourceCreator', () => {
     });
 
     it('should create MedicationRequest with PRN set to true', () => {
-      // Arrange
       const prnEntry = {
         ...mockMedicationEntry,
         isPRN: true,
       };
 
-      // Act
       const result = createMedicationRequestResource(
         prnEntry,
         mockSubjectReference,
@@ -182,12 +178,10 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       expect(result.dosageInstruction![0].asNeededBoolean).toBe(true);
     });
 
     it('should create MedicationRequest without optional fields', () => {
-      // Arrange
       const minimalEntry: MedicationInputEntry = {
         ...mockMedicationEntry,
         dosageUnit: null,
@@ -199,7 +193,6 @@ describe('medicationRequestResourceCreator', () => {
         dispenseUnit: null,
       };
 
-      // Act
       const result = createMedicationRequestResource(
         minimalEntry,
         mockSubjectReference,
@@ -207,7 +200,6 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       expect(result.dosageInstruction).toHaveLength(1);
       const dosage = result.dosageInstruction![0];
 
@@ -222,13 +214,11 @@ describe('medicationRequestResourceCreator', () => {
     });
 
     it('should handle medication entry without instruction', () => {
-      // Arrange
       const entryWithoutInstruction = {
         ...mockMedicationEntry,
         instruction: null,
       };
 
-      // Act
       const result = createMedicationRequestResource(
         entryWithoutInstruction,
         mockSubjectReference,
@@ -236,19 +226,16 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       const dosingInstruction = JSON.parse(result.dosageInstruction![0].text!);
       expect(dosingInstruction).toEqual({});
     });
 
     it('should handle medication entry without dosage', () => {
-      // Arrange
       const entryWithoutDosage = {
         ...mockMedicationEntry,
         dosage: 0,
       };
 
-      // Act
       const result = createMedicationRequestResource(
         entryWithoutDosage,
         mockSubjectReference,
@@ -256,18 +243,15 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       expect(result.dosageInstruction![0].doseAndRate).toBeUndefined();
     });
 
     it('should create timing without duration when duration is not provided', () => {
-      // Arrange
       const entryWithoutDuration = {
         ...mockMedicationEntry,
         duration: 0,
       };
 
-      // Act
       const result = createMedicationRequestResource(
         entryWithoutDuration,
         mockSubjectReference,
@@ -275,7 +259,6 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       const timing = result.dosageInstruction![0].timing;
       expect(timing).toBeDefined();
       expect(timing!.repeat).toBeUndefined();
@@ -284,13 +267,11 @@ describe('medicationRequestResourceCreator', () => {
     });
 
     it('should create timing without start date when not provided', () => {
-      // Arrange
       const entryWithoutStartDate = {
         ...mockMedicationEntry,
         startDate: undefined,
       };
 
-      // Act
       const result = createMedicationRequestResource(
         entryWithoutStartDate,
         mockSubjectReference,
@@ -298,7 +279,6 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       const timing = result.dosageInstruction![0].timing;
       expect(timing).toBeDefined();
       expect(timing!.event).toBeUndefined();
@@ -309,7 +289,6 @@ describe('medicationRequestResourceCreator', () => {
     });
 
     it('should handle different duration units correctly', () => {
-      // Arrange
       const weekDurationUnit: DurationUnitOption = {
         code: 'wk',
         display: 'weeks',
@@ -322,7 +301,6 @@ describe('medicationRequestResourceCreator', () => {
         durationUnit: weekDurationUnit,
       };
 
-      // Act
       const result = createMedicationRequestResource(
         entryWithWeeks,
         mockSubjectReference,
@@ -330,7 +308,6 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       expect(result.dosageInstruction![0].timing!.repeat).toEqual({
         duration: 2,
         durationUnit: 'wk',
@@ -338,13 +315,11 @@ describe('medicationRequestResourceCreator', () => {
     });
 
     it('should handle dispense request with zero quantity', () => {
-      // Arrange
       const entryWithZeroDispense = {
         ...mockMedicationEntry,
         dispenseQuantity: 0,
       };
 
-      // Act
       const result = createMedicationRequestResource(
         entryWithZeroDispense,
         mockSubjectReference,
@@ -352,7 +327,6 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       expect(result.dispenseRequest).toEqual({
         numberOfRepeatsAllowed: 0,
         quantity: {
@@ -361,11 +335,65 @@ describe('medicationRequestResourceCreator', () => {
         },
       });
     });
+
+    it('should include note when provided', () => {
+      const entryWithNote = {
+        ...mockMedicationEntry,
+        note: 'Take with food. Avoid alcohol.',
+      };
+
+      const result = createMedicationRequestResource(
+        entryWithNote,
+        mockSubjectReference,
+        mockEncounterReference,
+        mockRequesterReference,
+      );
+
+      expect(result.note).toBeDefined();
+      expect(result.note).toHaveLength(1);
+      expect(result.note![0]).toEqual({
+        text: 'Take with food. Avoid alcohol.',
+      });
+    });
+
+    it('should trim whitespace from note', () => {
+      const entryWithWhitespaceNote = {
+        ...mockMedicationEntry,
+        note: '   Important instructions   ',
+      };
+
+      const result = createMedicationRequestResource(
+        entryWithWhitespaceNote,
+        mockSubjectReference,
+        mockEncounterReference,
+        mockRequesterReference,
+      );
+
+      expect(result.note).toBeDefined();
+      expect(result.note![0]).toEqual({
+        text: 'Important instructions',
+      });
+    });
+
+    it('should not include note when not provided', () => {
+      const entryWithoutNote = {
+        ...mockMedicationEntry,
+        note: undefined,
+      };
+
+      const result = createMedicationRequestResource(
+        entryWithoutNote,
+        mockSubjectReference,
+        mockEncounterReference,
+        mockRequesterReference,
+      );
+
+      expect(result.note).toBeUndefined();
+    });
   });
 
   describe('createMedicationRequestResources', () => {
     it('should create multiple MedicationRequest resources', () => {
-      // Arrange
       const medicationEntries = [
         mockMedicationEntry,
         {
@@ -381,7 +409,6 @@ describe('medicationRequestResourceCreator', () => {
         },
       ];
 
-      // Act
       const results = createMedicationRequestResources(
         medicationEntries,
         mockSubjectReference,
@@ -389,7 +416,6 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       expect(results).toHaveLength(3);
       expect(results[0]).toMatchObject({
         resourceType: 'MedicationRequest',
@@ -424,7 +450,6 @@ describe('medicationRequestResourceCreator', () => {
     });
 
     it('should handle empty array of medication entries', () => {
-      // Act
       const results = createMedicationRequestResources(
         [],
         mockSubjectReference,
@@ -432,12 +457,10 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       expect(results).toEqual([]);
     });
 
     it('should handle single medication entry', () => {
-      // Act
       const results = createMedicationRequestResources(
         [mockMedicationEntry],
         mockSubjectReference,
@@ -445,7 +468,6 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       expect(results).toHaveLength(1);
       expect(results[0]).toMatchObject({
         resourceType: 'MedicationRequest',
@@ -461,7 +483,6 @@ describe('medicationRequestResourceCreator', () => {
 
   describe('Edge cases and error scenarios', () => {
     it('should handle medication entry with all null optional fields', () => {
-      // Arrange
       const nullFieldsEntry: MedicationInputEntry = {
         id: 'med-null',
         medication: {
@@ -484,7 +505,6 @@ describe('medicationRequestResourceCreator', () => {
         hasBeenValidated: false,
       };
 
-      // Act
       const result = createMedicationRequestResource(
         nullFieldsEntry,
         mockSubjectReference,
@@ -492,7 +512,6 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       expect(result).toMatchObject({
         resourceType: 'MedicationRequest',
         status: 'active',
@@ -504,14 +523,12 @@ describe('medicationRequestResourceCreator', () => {
     });
 
     it('should preserve timezone information in start date', () => {
-      // Arrange
       const dateWithTimezone = new Date('2024-06-15T14:30:00+05:30');
       const entryWithTimezone = {
         ...mockMedicationEntry,
         startDate: dateWithTimezone,
       };
 
-      // Act
       const result = createMedicationRequestResource(
         entryWithTimezone,
         mockSubjectReference,
@@ -519,7 +536,6 @@ describe('medicationRequestResourceCreator', () => {
         mockRequesterReference,
       );
 
-      // Assert
       const timing = result.dosageInstruction![0].timing;
       expect(timing!.event![0]).toBe(dateWithTimezone.toISOString());
     });

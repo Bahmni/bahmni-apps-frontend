@@ -113,7 +113,11 @@ describe('useMedicationRequest hook', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(mockedGetPatientMedications).toHaveBeenCalledWith(mockPatientUUID);
+    expect(mockedGetPatientMedications).toHaveBeenCalledWith(
+      mockPatientUUID,
+      undefined,
+      undefined,
+    );
     expect(result.current.medications).toEqual(mockMedications);
     expect(result.current.error).toBeNull();
   });
@@ -311,7 +315,11 @@ describe('useMedicationRequest hook', () => {
       expect(result.current.medications).toEqual(newMedications);
     });
 
-    expect(mockedGetPatientMedications).toHaveBeenCalledWith(newPatientUUID);
+    expect(mockedGetPatientMedications).toHaveBeenCalledWith(
+      newPatientUUID,
+      undefined,
+      undefined,
+    );
   });
 
   it('clears error on successful refetch', async () => {

@@ -13,20 +13,16 @@ export interface MedicationInputEntry {
   medication: Medication;
   display: string;
 
-  // Dosage controls
   dosage: number;
   dosageUnit: Concept | null;
 
-  // Frequency and timing
   frequency: Frequency | null;
   instruction: Concept | null;
 
-  // Route and duration
   route: Concept | null;
   duration: number;
   durationUnit: DurationUnitOption | null;
 
-  // Flags
   isSTAT: boolean;
   isPRN: boolean;
 
@@ -34,6 +30,8 @@ export interface MedicationInputEntry {
 
   dispenseQuantity: number;
   dispenseUnit: Concept | null;
+
+  note?: string;
 
   // Validation
   errors: {

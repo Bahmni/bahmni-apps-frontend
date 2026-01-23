@@ -173,7 +173,9 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               <div
                 class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
               >
-                Paracetamol 500mg
+                <span>
+                  Paracetamol 500mg
+                </span>
               </div>
               <div
                 class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
@@ -802,6 +804,12 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               <div
                 class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
               >
+                <a
+                  class="cds--link"
+                  href="#"
+                >
+                  Add Note
+                </a>
                 <span>
                   Total quantity
                    : 

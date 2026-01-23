@@ -18,7 +18,10 @@ interface MedicationRequestResult {
  * Custom hook to fetch and manage medications for the current patient
  * @returns Object containing medications, loading state, error state, and refetch function
  */
-export const useMedicationRequest = (): MedicationRequestResult => {
+export const useMedicationRequest = (
+  code?: string[],
+  encounterUuids?: string[],
+): MedicationRequestResult => {
   const [medications, setMedications] = useState<MedicationRequest[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -32,7 +35,11 @@ export const useMedicationRequest = (): MedicationRequestResult => {
         setError(new Error(t('ERROR_INVALID_PATIENT_UUID')));
         return;
       }
-      const medicationsData = await getPatientMedications(patientUUID);
+      const medicationsData = await getPatientMedications(
+        patientUUID,
+        code,
+        encounterUuids,
+      );
       setMedications(medicationsData);
       setError(null);
     } catch (err) {

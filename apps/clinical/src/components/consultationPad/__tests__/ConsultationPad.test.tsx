@@ -131,6 +131,13 @@ jest.mock('../../../components/forms/medications/MedicationsForm', () => ({
   ),
 }));
 
+jest.mock('../../../components/forms/vaccinations/VaccinationForm', () => ({
+  __esModule: true,
+  default: () => (
+    <div data-testid="mock-vaccination-forms">Vaccination Form</div>
+  ),
+}));
+
 // Mock services
 jest.mock('../../../services/consultationBundleService', () => ({
   postConsultationBundle: jest.fn(),
@@ -605,7 +612,7 @@ describe('ConsultationPad', () => {
     it('should render dividers between forms', () => {
       renderWithProvider();
       const dividers = screen.getAllByTestId('mock-divider');
-      expect(dividers).toHaveLength(6);
+      expect(dividers).toHaveLength(7);
     });
 
     it('should render forms and dividers in the correct sequence', () => {
@@ -615,7 +622,7 @@ describe('ConsultationPad', () => {
       const children = Array.from(content.children);
 
       // Verify the exact sequence of forms and dividers
-      expect(children).toHaveLength(12); // 6 forms + 6 dividers
+      expect(children).toHaveLength(14); // 7 forms + 7 dividers
 
       // Check each element in order
       expect(children[0]).toHaveAttribute(
@@ -641,6 +648,11 @@ describe('ConsultationPad', () => {
       );
       expect(children[9]).toHaveAttribute('data-testid', 'mock-divider');
       expect(children[10]).toHaveAttribute(
+        'data-testid',
+        'mock-vaccination-forms',
+      );
+      expect(children[11]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[12]).toHaveAttribute(
         'data-testid',
         'mock-observation-forms',
       );
@@ -1540,8 +1552,8 @@ describe('ConsultationPad', () => {
         expect(bundleArg.entry[0].resource.resourceType).toBe('Encounter');
         expect(bundleArg.entry[0].fullUrl).toMatch(/^urn:uuid:/);
 
-        // Verify total number of entries (1 encounter + 5 from bundle creation functions)
-        expect(bundleArg.entry).toHaveLength(6);
+        // Verify total number of entries (1 encounter + 6 from bundle creation functions)
+        expect(bundleArg.entry).toHaveLength(7);
       });
     });
 

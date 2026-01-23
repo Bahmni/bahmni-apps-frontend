@@ -199,6 +199,8 @@
   "MEDICATION_START_DATE_INPUT_LABEL": "Fecha de inicio",
   "MEDICATION_STAT": "STAT",
   "MEDICATION_TOTAL_QUANTITY": "Cantidad total",
+  "MEDICATION_ADD_NOTE": "Agregar Nota",
+  "MEDICATION_ADD_NOTE_PLACEHOLDER": "Agregar notas para el medicamento",
   "NETWORK_ERROR": "Se produjo un error de red",
   "NO_ACTIVE_MEDICATIONS": "No hay medicamentos activos",
   "NO_ALLERGIES": "No hay alergias registradas para este paciente",
@@ -272,6 +274,13 @@
   "SIDE_NAVIGATION": "Navegación lateral",
   "UNEXPECTED_ERROR": "Se produjo un error inesperado",
   "UNKNOWN_STATUS": "Cancelado",
+  "VACCINATION_ADD_NOTE": "Agregar Nota",
+  "VACCINATION_ADD_NOTE_PLACEHOLDER": "Agregar notas para la vacuna",
+  "VACCINATION_ADDED_VACCINATIONS": "Vacunas agregadas",
+  "VACCINATION_ALREADY_SELECTED": "Ya agregado",
+  "VACCINATION_FORM_TITLE": "Vacunas",
+  "VACCINATION_SEARCH_PLACEHOLDER": "Buscar para agregar vacuna",
+  "VACCINATION_TOTAL_QUANTITY": "Cantidad total",
   "VIEWED_RADIOLOGY_RESULTS_MESSAGE": "Resultados de radiología vistos",
   "VISIT_TYPE": "Tipo de visita",
   "VITAL_FLOW_SHEET_TABLE": "Tabla de Signos Vitales",
@@ -283,5 +292,9 @@
   "VITAL_SIGNS_PULSE": "Pulso",
   "VITAL_SIGNS_RESPIRATORY_RATE": "Frecuencia respiratoria",
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Presión arterial sistólica",
-  "VITAL_SIGNS_TEMPERATURE": "Temperatura"
+  "VITAL_SIGNS_TEMPERATURE": "Temperatura",
+  "LOADING_VACCINATIONS": "Cargando vacunas...",
+  "ERROR_SEARCHING_VACCINATIONS": "Error al buscar vacunas",
+  "NO_MATCHING_VACCINATIONS_FOUND": "No se encontraron vacunas coincidentes",
+  "ERROR_FETCHING_VACCINATION_CONFIG": "Error al obtener la configuración de vacunas"
 }

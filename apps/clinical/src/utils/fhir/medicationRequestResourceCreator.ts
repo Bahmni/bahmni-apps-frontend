@@ -38,6 +38,14 @@ export const createMedicationRequestResource = (
   };
   medicationRequest.dispenseRequest = createDispenseRequest(medicationEntry);
 
+  if (medicationEntry.note && medicationEntry.note.trim() !== '') {
+    medicationRequest.note = [
+      {
+        text: medicationEntry.note.trim(),
+      },
+    ];
+  }
+
   return medicationRequest;
 };
 

@@ -1,6 +1,8 @@
-import { Bundle, Medication } from 'fhir/r4';
+import { searchMedications } from '@bahmni/services';
+import { Medication } from 'fhir/r4';
 import { useState, useEffect } from 'react';
-import { searchMedications } from '../services/medicationService';
+
+import { getMedicationsFromBundle } from '../services/medicationService';
 import useDebounce from './useDebounce';
 
 interface MedicationSearchResult {
@@ -8,6 +10,8 @@ interface MedicationSearchResult {
   loading: boolean;
   error: Error | null;
 }
+
+// TODO : Remove custom hook and use tanstack query for concept search
 
 export const useMedicationSearch = (
   searchTerm: string,
@@ -18,18 +22,6 @@ export const useMedicationSearch = (
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const debouncedSearchTerm = useDebounce(searchTerm, debounceDelay);
-
-  const getMedicationsFromBundle = (
-    bundle: Bundle<Medication>,
-  ): Medication[] => {
-    const medications: Medication[] = [];
-    bundle.entry?.map((entry) => {
-      if (entry.resource) {
-        medications.push(entry.resource);
-      }
-    });
-    return medications;
-  };
 
   useEffect(() => {
     if (!debouncedSearchTerm || debouncedSearchTerm.trim() === '') {
