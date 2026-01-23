@@ -136,6 +136,7 @@ export {
   searchConceptByName,
   type ConceptSearch,
   type ConceptClass,
+  type ConceptData,
 } from './conceptService';
 export {
   getPatientMedications,
@@ -254,7 +255,6 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
-  fetchFormNameTranslations,
   transformFormDataToObservations,
   transformObservationsToFormData,
   getPatientFormData,
