@@ -5,17 +5,56 @@ import {
   Diagnosis,
   DATE_FORMAT,
   useTranslation,
+  getPatientDiagnoses,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
-import React, { useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { useMemo, useCallback, useEffect } from 'react';
+import { usePatientUUID } from '../hooks/usePatientUUID';
+import { useNotification } from '../notification';
 import styles from './styles/DiagnosesTable.module.scss';
-import { useDiagnoses } from './useDiagnoses';
 
 /**
  * Component to display patient diagnoses using SortableDataTable
  */
 const DiagnosesTable: React.FC = () => {
   const { t } = useTranslation();
-  const { diagnoses, loading, error } = useDiagnoses();
+  const patientUUID = usePatientUUID();
+  const { addNotification } = useNotification();
+
+  // Use TanStack Query for data fetching and caching
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['diagnoses', patientUUID!],
+    enabled: !!patientUUID,
+    queryFn: () => getPatientDiagnoses(patientUUID!),
+  });
+
+  // Listen to consultation saved events and refetch if diagnoses were updated
+  useSubscribeConsultationSaved(
+    (payload) => {
+      // Only refetch if:
+      // 1. Event is for the same patient
+      // 2. Conditions/diagnoses were modified during consultation
+      if (
+        payload.patientUUID === patientUUID &&
+        payload.updatedResources.conditions
+      ) {
+        refetch();
+      }
+    },
+    [patientUUID, refetch],
+  );
+
+  // Handle errors with notifications
+  useEffect(() => {
+    if (isError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: error.message,
+        type: 'error',
+      });
+    }
+  }, [isError, error, addNotification, t]);
 
   // Define table headers
   const headers = useMemo(
@@ -28,8 +67,8 @@ const DiagnosesTable: React.FC = () => {
   );
 
   const processedDiagnoses = useMemo(() => {
-    return sortByDate(diagnoses, 'recordedDate');
-  }, [diagnoses]);
+    return sortByDate(data ?? [], 'recordedDate');
+  }, [data]);
 
   const renderCell = useCallback(
     (diagnosis: Diagnosis, cellId: string) => {
@@ -78,8 +117,8 @@ const DiagnosesTable: React.FC = () => {
           headers={headers}
           ariaLabel={t('DIAGNOSES_DISPLAY_CONTROL_HEADING')}
           rows={processedDiagnoses}
-          loading={loading}
-          errorStateMessage={error?.message}
+          loading={isLoading}
+          errorStateMessage={isError ? error.message : null}
           emptyStateMessage={t('NO_DIAGNOSES')}
           renderCell={renderCell}
           className={styles.diagnosesTableBody}

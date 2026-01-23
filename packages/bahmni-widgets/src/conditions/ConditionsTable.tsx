@@ -4,7 +4,7 @@ import {
   useTranslation,
   FormatDateResult,
   formatDateDistance,
-  useConsultationSaved,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -13,10 +13,6 @@ import { useNotification } from '../notification';
 import { ConditionViewModel, ConditionStatus } from './models';
 import styles from './styles/ConditionsTable.module.scss';
 import { createConditionViewModels } from './utils';
-
-//TODO: Figure out a better place to create Query Keys
-export const conditionsQueryKeys = (patientUUID: string) =>
-  ['conditions', patientUUID] as const;
 
 const fetchConditions = async (
   patientUUID: string,
@@ -35,19 +31,17 @@ const ConditionsTable: React.FC = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: conditionsQueryKeys(patientUUID!),
+    queryKey: ['conditions', patientUUID!],
     enabled: !!patientUUID,
     queryFn: () => fetchConditions(patientUUID!),
   });
 
   // Listen to consultation saved events and refetch if conditions were updated
-  useConsultationSaved(
+  useSubscribeConsultationSaved(
     (payload) => {
       // Only refetch if:
       // 1. Event is for the same patient
       // 2. Conditions were modified during consultation
-      // eslint-disable-next-line no-console
-      console.log('Received consultation saved event:', payload);
       if (
         payload.patientUUID === patientUUID &&
         payload.updatedResources.conditions
@@ -66,7 +60,7 @@ const ConditionsTable: React.FC = () => {
         type: 'error',
       });
     if (data) setConditions(data);
-  }, [data, isLoading, isError, error]);
+  }, [data, isLoading, isError, error, addNotification, t]);
 
   const headers = useMemo(
     () => [

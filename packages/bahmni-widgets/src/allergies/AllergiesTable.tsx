@@ -10,7 +10,7 @@ import {
   FormattedAllergy,
   getFormattedAllergies,
   useTranslation,
-  useConsultationSaved,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -22,10 +22,6 @@ import {
   getSeverityDisplayName,
   sortAllergiesBySeverity,
 } from './utils';
-
-//TODO: Figure out a better place to create Query Keys
-export const allergiesQueryKeys = (patientUUID: string) =>
-  ['allergies', patientUUID] as const;
 
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {
@@ -51,19 +47,17 @@ const AllergiesTable: React.FC = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: allergiesQueryKeys(patientUUID!),
+    queryKey: ['allergies', patientUUID!],
     enabled: !!patientUUID,
     queryFn: () => getFormattedAllergies(patientUUID!),
   });
 
   // Listen to consultation saved events and refetch if allergies were updated
-  useConsultationSaved(
+  useSubscribeConsultationSaved(
     (payload) => {
       // Only refetch if:
       // 1. Event is for the same patient
       // 2. Allergies were modified during consultation
-      // eslint-disable-next-line no-console
-      console.log('Received consultation saved event:', payload);
       if (
         payload.patientUUID === patientUUID &&
         payload.updatedResources.allergies
@@ -82,7 +76,7 @@ const AllergiesTable: React.FC = () => {
         type: 'error',
       });
     if (data) setAllergies(data);
-  }, [data, isLoading, isError, error]);
+  }, [data, isLoading, isError, error, addNotification, t]);
 
   // Define table headers
   const headers = useMemo(

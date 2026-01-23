@@ -3,19 +3,17 @@ import {
   Tile,
   BoxWHeader,
   SelectedItem,
+  InlineNotification,
 } from '@bahmni/design-system';
 import {
   useTranslation,
   type ConceptSearch,
   getConditions,
+  getPatientDiagnoses,
 } from '@bahmni/services';
-import {
-  conditionsQueryKeys,
-  useNotification,
-  usePatientUUID,
-} from '@bahmni/widgets';
+import { useNotification, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useConceptSearch } from '../../../hooks/useConceptSearch';
 import { useConditionsAndDiagnosesStore } from '../../../stores/conditionsAndDiagnosesStore';
 import SelectedConditionItem from './SelectedConditionItem';
@@ -33,6 +31,8 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
+  const [showDuplicateNotification, setShowDuplicateNotification] =
+    useState(false);
 
   // Use Zustand store
   const {
@@ -58,9 +58,20 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     isLoading: existingConditionsLoading,
     error: existingConditionsError,
   } = useQuery({
-    queryKey: conditionsQueryKeys(patientUUID!),
+    queryKey: ['conditions', patientUUID!],
     enabled: !!patientUUID,
     queryFn: () => getConditions(patientUUID!),
+  });
+
+  // Fetch existing diagnoses from backend
+  const {
+    data: existingDiagnoses,
+    isLoading: existingDiagnosesLoading,
+    error: existingDiagnosesError,
+  } = useQuery({
+    queryKey: ['diagnoses', patientUUID!],
+    enabled: !!patientUUID,
+    queryFn: () => getPatientDiagnoses(patientUUID!),
   });
 
   useEffect(() => {
@@ -73,15 +84,57 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     }
   }, [existingConditionsLoading, existingConditionsError, addNotification, t]);
 
+  useEffect(() => {
+    if (existingDiagnosesError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: existingDiagnosesError.message,
+        type: 'error',
+      });
+    }
+  }, [existingDiagnosesLoading, existingDiagnosesError, addNotification, t]);
+
   const handleSearch = (searchTerm: string) => {
     setSearchDiagnosesTerm(searchTerm);
   };
 
-  const handleOnChange = (selectedItem: ConceptSearch) => {
+  const isDuplicateDiagnosis = useCallback(
+    (diagnosisId: string, diagnosisDisplay: string): boolean => {
+      // Normalize for case-insensitive comparison (same as backend deduplication)
+      const normalizedDisplay = diagnosisDisplay.toLowerCase().trim();
+
+      // Check against existing diagnoses from backend by display name
+      const isExistingDiagnosis = existingDiagnoses?.some(
+        (d) => d.display.toLowerCase().trim() === normalizedDisplay,
+      );
+
+      // Check against currently selected diagnoses in the form by ID
+      const isSelectedDiagnosis = selectedDiagnoses.some(
+        (d) => d.id === diagnosisId,
+      );
+
+      // We need || here (not ??) because we're checking boolean false values
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      return !!(isExistingDiagnosis || isSelectedDiagnosis);
+    },
+    [existingDiagnoses, selectedDiagnoses],
+  );
+
+  const handleOnChange = (selectedItem: ConceptSearch | null) => {
     if (!selectedItem?.conceptUuid || !selectedItem.conceptName) {
       return;
     }
 
+    // Check for duplicate BEFORE adding
+    if (
+      isDuplicateDiagnosis(selectedItem.conceptUuid, selectedItem.conceptName)
+    ) {
+      setShowDuplicateNotification(true);
+      return; // Don't add duplicate!
+    }
+
+    // Successfully added, clear any previous duplicate notification
+    setShowDuplicateNotification(false);
     addDiagnosis(selectedItem);
   };
 
@@ -97,7 +150,11 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
 
   const filteredSearchResults: ConceptSearch[] = useMemo(() => {
     if (searchDiagnosesTerm.length === 0) return [];
-    if (isSearchLoading || existingConditionsLoading) {
+    if (
+      isSearchLoading ||
+      existingConditionsLoading ||
+      existingDiagnosesLoading
+    ) {
       return [
         {
           conceptName: t('LOADING_CONCEPTS'),
@@ -138,7 +195,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
       return {
         ...item,
         conceptName: isAlreadySelected
-          ? `${item.conceptName} ${t('DIAGNOSIS_ALREADY_SELECTED')}`
+          ? `${item.conceptName} (${t('DIAGNOSIS_ALREADY_ADDED')})`
           : item.conceptName,
         disabled: isAlreadySelected,
       };
@@ -146,6 +203,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   }, [
     isSearchLoading,
     existingConditionsLoading,
+    existingDiagnosesLoading,
     searchResults,
     searchDiagnosesTerm,
     searchError,
@@ -164,12 +222,22 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
         items={filteredSearchResults}
         itemToString={(item) => item?.conceptName ?? ''}
-        onChange={(data) => handleOnChange(data.selectedItem!)}
+        onChange={(data) => handleOnChange(data.selectedItem ?? null)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
         size="md"
         autoAlign
         aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
       />
+      {showDuplicateNotification && (
+        <InlineNotification
+          kind="error"
+          lowContrast
+          subtitle={t('DIAGNOSIS_ALREADY_ADDED')}
+          onClose={() => setShowDuplicateNotification(false)}
+          hideCloseButton={false}
+          className={styles.duplicateNotification}
+        />
+      )}
       {selectedDiagnoses && selectedDiagnoses.length > 0 && (
         <BoxWHeader
           title={t('DIAGNOSES_ADDED_DIAGNOSES')}

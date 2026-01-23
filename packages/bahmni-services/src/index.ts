@@ -293,7 +293,7 @@ export {
 
 export {
   dispatchConsultationSaved,
-  useConsultationSaved,
+  useSubscribeConsultationSaved,
   CONSULTATION_SAVED_EVENT,
   type ConsultationSavedEventPayload,
 } from './events/consultationEvents';

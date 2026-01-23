@@ -122,6 +122,7 @@ describe('diagnosesService', () => {
         const mockConditions = [
           createMockDiagnosis({
             id: 'confirmed-diagnosis',
+            code: { text: 'Confirmed Condition' },
             verificationStatus: {
               coding: [
                 { code: 'confirmed', display: 'Confirmed', system: 'test' },
@@ -130,6 +131,7 @@ describe('diagnosesService', () => {
           }),
           createMockDiagnosis({
             id: 'provisional-diagnosis',
+            code: { text: 'Provisional Condition' },
             verificationStatus: {
               coding: [
                 { code: 'provisional', display: 'Provisional', system: 'test' },
@@ -143,8 +145,16 @@ describe('diagnosesService', () => {
 
         const result = await getPatientDiagnoses(patientUUID);
 
-        expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[0]); // confirmed
-        expect(result[1].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // provisional
+        expect(result).toHaveLength(2);
+        const confirmedResult = result.find(
+          (d) => d.display === 'Confirmed Condition',
+        );
+        const provisionalResult = result.find(
+          (d) => d.display === 'Provisional Condition',
+        );
+
+        expect(confirmedResult?.certainty).toEqual(CERTAINITY_CONCEPTS[0]); // confirmed
+        expect(provisionalResult?.certainty).toEqual(CERTAINITY_CONCEPTS[1]); // provisional
       });
 
       it('should handle malformed FHIR data', async () => {
@@ -403,6 +413,252 @@ describe('diagnosesService', () => {
         expect(result[0].certainty).toEqual(CERTAINITY_CONCEPTS[0]); // confirmed
         expect(result[1].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // provisional
         expect(result[2].certainty).toEqual(CERTAINITY_CONCEPTS[1]); // defaults to provisional
+      });
+    });
+
+    describe('Deduplication', () => {
+      it('should deduplicate diagnoses with same display name', async () => {
+        const mockConditions = [
+          createMockDiagnosis({
+            id: 'diagnosis-1',
+            code: { text: 'Wasting syndrome' },
+            recordedDate: '2024-01-13T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-2',
+            code: { text: 'Wasting syndrome' },
+            recordedDate: '2024-01-13T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-3',
+            code: { text: 'Wasting syndrome' },
+            recordedDate: '2024-01-13T10:00:00+00:00',
+          }),
+        ];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].display).toBe('Wasting syndrome');
+      });
+
+      it('should keep most recent diagnosis by recordedDate', async () => {
+        const mockConditions = [
+          createMockDiagnosis({
+            id: 'old-diagnosis',
+            code: { text: 'Diabetes' },
+            recordedDate: '2024-01-10T10:00:00+00:00',
+            recorder: { display: 'Dr. Smith' },
+          }),
+          createMockDiagnosis({
+            id: 'new-diagnosis',
+            code: { text: 'Diabetes' },
+            recordedDate: '2024-01-15T10:00:00+00:00',
+            recorder: { display: 'Dr. Johnson' },
+          }),
+        ];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].id).toBe('new-diagnosis');
+        expect(result[0].recorder).toBe('Dr. Johnson');
+        expect(result[0].recordedDate).toBe('2024-01-15T10:00:00+00:00');
+      });
+
+      it('should use id as tiebreaker when recordedDate is same', async () => {
+        const mockConditions = [
+          createMockDiagnosis({
+            id: 'diagnosis-a',
+            code: { text: 'Hypertension' },
+            recordedDate: '2024-01-13T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-z',
+            code: { text: 'Hypertension' },
+            recordedDate: '2024-01-13T10:00:00+00:00',
+          }),
+        ];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].id).toBe('diagnosis-z'); // Higher alphabetically
+      });
+
+      it('should be case-insensitive when deduplicating', async () => {
+        const mockConditions = [
+          createMockDiagnosis({
+            id: 'diagnosis-1',
+            code: { text: 'diabetes' },
+            recordedDate: '2024-01-10T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-2',
+            code: { text: 'Diabetes' },
+            recordedDate: '2024-01-15T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-3',
+            code: { text: 'DIABETES' },
+            recordedDate: '2024-01-12T10:00:00+00:00',
+          }),
+        ];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].id).toBe('diagnosis-2'); // Most recent
+        expect(result[0].display).toBe('Diabetes'); // Preserves original casing
+      });
+
+      it('should trim whitespace when deduplicating', async () => {
+        const mockConditions = [
+          createMockDiagnosis({
+            id: 'diagnosis-1',
+            code: { text: 'Asthma' },
+            recordedDate: '2024-01-10T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-2',
+            code: { text: '  Asthma  ' },
+            recordedDate: '2024-01-15T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-3',
+            code: { text: ' Asthma' },
+            recordedDate: '2024-01-12T10:00:00+00:00',
+          }),
+        ];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].id).toBe('diagnosis-2'); // Most recent
+      });
+
+      it('should keep different diagnoses when names are different', async () => {
+        const mockConditions = [
+          createMockDiagnosis({
+            id: 'diagnosis-1',
+            code: { text: 'Diabetes' },
+            recordedDate: '2024-01-13T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-2',
+            code: { text: 'Hypertension' },
+            recordedDate: '2024-01-13T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diagnosis-3',
+            code: { text: 'Asthma' },
+            recordedDate: '2024-01-13T10:00:00+00:00',
+          }),
+        ];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toHaveLength(3);
+        expect(result.map((d) => d.display).sort()).toEqual([
+          'Asthma',
+          'Diabetes',
+          'Hypertension',
+        ]);
+      });
+
+      it('should handle empty array deduplication', async () => {
+        const emptyBundle = createMockBundle([]);
+        (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toEqual([]);
+      });
+
+      it('should handle single diagnosis (no duplicates)', async () => {
+        const mockConditions = [
+          createMockDiagnosis({
+            id: 'single-diagnosis',
+            code: { text: 'Single Diagnosis' },
+            recordedDate: '2024-01-13T10:00:00+00:00',
+          }),
+        ];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].id).toBe('single-diagnosis');
+      });
+
+      it('should deduplicate mixed scenario with some duplicates', async () => {
+        const mockConditions = [
+          // Duplicate group 1: Diabetes (3 entries)
+          createMockDiagnosis({
+            id: 'diabetes-1',
+            code: { text: 'Diabetes' },
+            recordedDate: '2024-01-10T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diabetes-2',
+            code: { text: 'Diabetes' },
+            recordedDate: '2024-01-15T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'diabetes-3',
+            code: { text: 'Diabetes' },
+            recordedDate: '2024-01-12T10:00:00+00:00',
+          }),
+          // Unique diagnosis
+          createMockDiagnosis({
+            id: 'unique-1',
+            code: { text: 'Asthma' },
+            recordedDate: '2024-01-13T10:00:00+00:00',
+          }),
+          // Duplicate group 2: Hypertension (2 entries)
+          createMockDiagnosis({
+            id: 'hypertension-1',
+            code: { text: 'Hypertension' },
+            recordedDate: '2024-01-11T10:00:00+00:00',
+          }),
+          createMockDiagnosis({
+            id: 'hypertension-2',
+            code: { text: 'Hypertension' },
+            recordedDate: '2024-01-14T10:00:00+00:00',
+          }),
+        ];
+        const mockBundle = createMockBundle(mockConditions);
+
+        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+        const result = await getPatientDiagnoses(patientUUID);
+
+        expect(result).toHaveLength(3);
+        const resultMap = new Map(result.map((d) => [d.display, d]));
+
+        expect(resultMap.get('Diabetes')?.id).toBe('diabetes-2'); // Most recent
+        expect(resultMap.get('Asthma')?.id).toBe('unique-1'); // Only one
+        expect(resultMap.get('Hypertension')?.id).toBe('hypertension-2'); // Most recent
       });
     });
   });

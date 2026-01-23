@@ -5,11 +5,13 @@ import {
   MedicationStatus,
   useTranslation,
 } from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { useNotification } from '../../notification';
 import MedicationsTable from '../MedicationsTable';
-import { useMedicationRequest } from '../useMedicationRequest';
 import {
   formatMedicationRequest,
   sortMedicationsByDateDistance,
@@ -19,12 +21,18 @@ import {
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('../useMedicationRequest');
+jest.mock('../../hooks/usePatientUUID');
+jest.mock('../../notification');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
   formatDate: jest.fn(),
   groupByDate: jest.fn(),
+  useSubscribeConsultationSaved: jest.fn(),
+}));
+
+jest.mock('@tanstack/react-query', () => ({
+  useQuery: jest.fn(),
 }));
 
 jest.mock('../utils', () => ({
@@ -38,8 +46,12 @@ jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),
 }));
 
-const mockUseMedicationRequest = useMedicationRequest as jest.MockedFunction<
-  typeof useMedicationRequest
+const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
+const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
+>;
+const mockUseNotification = useNotification as jest.MockedFunction<
+  typeof useNotification
 >;
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
@@ -113,6 +125,14 @@ describe('MedicationsTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    // Mock usePatientUUID
+    mockUsePatientUUID.mockReturnValue('patient-uuid-123');
+
+    // Mock useNotification
+    mockUseNotification.mockReturnValue({
+      addNotification: jest.fn(),
+    } as any);
+
     Object.defineProperty(globalThis, 'matchMedia', {
       writable: true,
       value: jest.fn().mockImplementation((query: string) => ({
@@ -155,7 +175,9 @@ describe('MedicationsTable', () => {
         };
         return translations[key] || key;
       }) as any,
-    });
+      i18n: {} as any,
+      ready: true,
+    } as any);
 
     mockFormatDate.mockReturnValue({ formattedResult: '15/01/2024' });
 
@@ -183,36 +205,39 @@ describe('MedicationsTable', () => {
   });
 
   it('renders error state', () => {
-    mockUseMedicationRequest.mockReturnValue({
-      medications: [],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: true,
       error: new Error('Network error'),
       refetch: jest.fn(),
-    });
+    } as any);
 
     render(<MedicationsTable />);
     expect(screen.getByText('Error fetching medications')).toBeInTheDocument();
   });
 
   it('renders empty state', () => {
-    mockUseMedicationRequest.mockReturnValue({
-      medications: [],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
       error: null,
       refetch: jest.fn(),
-    });
+    } as any);
 
     render(<MedicationsTable />);
     expect(screen.getByText('No active medications')).toBeInTheDocument();
   });
 
   it('renders medications with correct content', () => {
-    mockUseMedicationRequest.mockReturnValue({
-      medications: [mockMedications[0]],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [mockMedications[0]],
+      isLoading: false,
+      isError: false,
       error: null,
       refetch: jest.fn(),
-    });
+    } as any);
 
     render(<MedicationsTable />);
     expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument();
@@ -227,24 +252,26 @@ describe('MedicationsTable', () => {
       asNeeded: true,
     };
 
-    mockUseMedicationRequest.mockReturnValue({
-      medications: [prnMedication],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [prnMedication],
+      isLoading: false,
+      isError: false,
       error: null,
       refetch: jest.fn(),
-    });
+    } as any);
 
     render(<MedicationsTable />);
     expect(screen.getByText('PRN')).toBeInTheDocument();
   });
 
   it('displays STAT tag for immediate medications', () => {
-    mockUseMedicationRequest.mockReturnValue({
-      medications: [mockMedications[1]],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [mockMedications[1]],
+      isLoading: false,
+      isError: false,
       error: null,
       refetch: jest.fn(),
-    });
+    } as any);
 
     render(<MedicationsTable />);
     expect(screen.getByText('STAT')).toBeInTheDocument();
@@ -256,24 +283,26 @@ describe('MedicationsTable', () => {
       orderedBy: '',
     };
 
-    mockUseMedicationRequest.mockReturnValue({
-      medications: [medicationWithEmptyOrderedBy],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [medicationWithEmptyOrderedBy],
+      isLoading: false,
+      isError: false,
       error: null,
       refetch: jest.fn(),
-    });
+    } as any);
 
     render(<MedicationsTable />);
     expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument();
   });
 
   it('displays formatted dates', () => {
-    mockUseMedicationRequest.mockReturnValue({
-      medications: [mockMedications[0]],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [mockMedications[0]],
+      isLoading: false,
+      isError: false,
       error: null,
       refetch: jest.fn(),
-    });
+    } as any);
 
     render(<MedicationsTable />);
     const dateElements = screen.getAllByText('15/01/2024');
@@ -281,12 +310,13 @@ describe('MedicationsTable', () => {
   });
 
   it('switches between tabs correctly', async () => {
-    mockUseMedicationRequest.mockReturnValue({
-      medications: mockMedications,
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: mockMedications,
+      isLoading: false,
+      isError: false,
       error: null,
       refetch: jest.fn(),
-    });
+    } as any);
 
     render(<MedicationsTable />);
 
@@ -303,12 +333,13 @@ describe('MedicationsTable', () => {
   });
 
   it('shows different empty messages per tab', async () => {
-    mockUseMedicationRequest.mockReturnValue({
-      medications: [],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
       error: null,
       refetch: jest.fn(),
-    });
+    } as any);
 
     render(<MedicationsTable />);
 
@@ -323,43 +354,61 @@ describe('MedicationsTable', () => {
   });
 
   it('has no accessibility violations', async () => {
-    mockUseMedicationRequest.mockReturnValue({
-      medications: mockMedications,
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: mockMedications,
+      isLoading: false,
+      isError: false,
       error: null,
       refetch: jest.fn(),
-    });
+    } as any);
 
     const { container } = render(<MedicationsTable />);
     expect(await axe(container)).toHaveNoViolations();
   });
 
   it('processes and groups medications by date correctly', async () => {
+    // Use formatted medications instead of raw ones
+    const formattedMeds = mockMedications.map((med) => ({
+      id: med.id,
+      name: med.name,
+      dosage: `${med.dose?.value} ${med.dose?.unit}`,
+      dosageUnit: med.dose?.unit ?? '',
+      quantity: `${med.quantity.value} ${med.quantity.unit}`,
+      instruction: med.instructions,
+      startDate: med.startDate,
+      orderDate: med.orderDate,
+      orderedBy: med.orderedBy,
+      status: med.status,
+      asNeeded: med.asNeeded,
+      isImmediate: med.isImmediate,
+    }));
+
     const medicationsByDate = [
       {
         date: '2024-01-15',
-        medications: [mockMedications[0], mockMedications[1]],
+        items: [formattedMeds[0], formattedMeds[1]],
       },
       {
         date: '2024-01-10',
-        medications: [mockMedications[2]],
+        items: [formattedMeds[2]],
       },
     ];
 
     mockGroupByDate.mockReturnValue(medicationsByDate);
-    mockFormatDate.mockImplementation((date, format) => {
+    mockFormatDate.mockImplementation((date: any, t: any, format: any) => {
       if (format === 'FULL_MONTH_DATE_FORMAT') {
         return { formattedResult: 'January 15, 2024' };
       }
       return { formattedResult: '15/01/2024' };
     });
 
-    mockUseMedicationRequest.mockReturnValue({
-      medications: mockMedications,
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: mockMedications,
+      isLoading: false,
+      isError: false,
       error: null,
       refetch: jest.fn(),
-    });
+    } as any);
 
     render(<MedicationsTable />);
 

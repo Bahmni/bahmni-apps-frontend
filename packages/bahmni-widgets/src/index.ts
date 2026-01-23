@@ -3,7 +3,7 @@ import '@bahmni/design-system/styles';
 // Widget Components
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
-export { ConditionsTable, conditionsQueryKeys } from './conditions';
+export { ConditionsTable } from './conditions';
 export { DiagnosesTable } from './diagnoses';
 export { MedicationsTable } from './medications';
 export { RadiologyInvestigationTable } from './radiologyInvestigation';

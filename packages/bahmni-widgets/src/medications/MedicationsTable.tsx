@@ -21,12 +21,17 @@ import {
   FormattedMedicationRequest,
   MedicationRequest,
   shouldEnableEncounterFilter,
+  useSubscribeConsultationSaved,
+  ConsultationSavedEventPayload,
+  getPatientMedications,
 } from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import classNames from 'classnames';
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { usePatientUUID } from '../hooks/usePatientUUID';
+import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
 import styles from './styles/MedicationsTable.module.scss';
-import { useMedicationRequest } from './useMedicationRequest';
 import {
   formatMedicationRequest,
   sortMedicationsByStatus,
@@ -81,17 +86,52 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   encounterUuids,
 }) => {
   const { t } = useTranslation();
+  const patientUUID = usePatientUUID();
+  const { addNotification } = useNotification();
   const code = (config?.code as string[]) || [];
-  const { medications, loading, error } = useMedicationRequest(
-    code,
-    encounterUuids!,
-  );
+
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
     encounterUuids,
   );
+
+  // Use TanStack Query for data fetching and caching
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['medications', patientUUID!],
+    enabled: !!patientUUID,
+    queryFn: () => getPatientMedications(patientUUID!, code, encounterUuids!),
+  });
+
+  // Handle errors with notifications
+  useEffect(() => {
+    if (isError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: error.message,
+        type: 'error',
+      });
+    }
+  }, [isError, error, addNotification, t]);
+
+  // Listen to consultation saved events and refetch if medications were updated
+  useSubscribeConsultationSaved(
+    (payload: ConsultationSavedEventPayload) => {
+      // Only refetch if:
+      // 1. Event is for the same patient
+      // 2. Medications were modified during consultation
+      if (
+        payload.patientUUID === patientUUID &&
+        payload.updatedResources.medications
+      ) {
+        refetch();
+      }
+    },
+    [patientUUID, refetch],
+  );
+
+  const medications = data ?? [];
 
   const handleTabChange = (selectedIndex: number) => {
     setSelectedIndex(selectedIndex);
@@ -126,7 +166,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         medications: group.items,
       }));
     },
-    [],
+    [t],
   );
 
   const headers = useMemo(
@@ -206,8 +246,29 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             {row.asNeeded && <Tag className={styles.PRN}>PRN</Tag>}
           </>
         );
-      case 'dosage':
-        return <p className={styles.columnDataBold}>{row.dosage}</p>;
+      case 'dosage': {
+        if (typeof row.dosage === 'string') {
+          return <p className={styles.columnDataBold}>{row.dosage}</p>;
+        }
+        if (
+          row.dosage &&
+          typeof row.dosage === 'object' &&
+          'value' in row.dosage &&
+          'unit' in row.dosage
+        ) {
+          const dosage = row.dosage as { value: number; unit: string };
+          return (
+            <p className={styles.columnDataBold}>
+              {dosage.value} {dosage.unit}
+            </p>
+          );
+        }
+        return (
+          <p className={styles.columnDataBold}>
+            {t('MEDICATIONS_TABLE_NOT_AVAILABLE')}
+          </p>
+        );
+      }
       case 'instruction':
         return row.instruction;
       case 'startDate':
@@ -258,7 +319,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
               headers={headers}
               ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}
               rows={emptyEncounterFilter ? [] : activeAndScheduledMedications}
-              loading={loading}
+              loading={isLoading}
               errorStateMessage={error}
               sortable={sortable}
               emptyStateMessage={t('NO_ACTIVE_MEDICATIONS')}
@@ -267,7 +328,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             />
           </TabPanel>
           <TabPanel className={styles.medicationTabs}>
-            {loading ||
+            {isLoading ||
             !!error ||
             processedAllMedications.length === 0 ||
             emptyEncounterFilter ? (
@@ -275,7 +336,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                 headers={headers}
                 ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}
                 rows={[]}
-                loading={loading}
+                loading={isLoading}
                 errorStateMessage={error}
                 sortable={sortable}
                 emptyStateMessage={t('NO_MEDICATION_HISTORY')}
@@ -302,7 +363,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                         headers={headers}
                         ariaLabel={t('MEDICATIONS_DISPLAY_CONTROL_HEADING')}
                         rows={medications}
-                        loading={loading}
+                        loading={isLoading}
                         errorStateMessage={error}
                         sortable={sortable}
                         emptyStateMessage={t('NO_MEDICATION_HISTORY')}

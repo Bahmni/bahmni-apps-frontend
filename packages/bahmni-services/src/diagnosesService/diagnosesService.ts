@@ -78,13 +78,47 @@ function formatDiagnoses(bundle: Bundle): Diagnosis[] {
 }
 
 /**
+ * Deduplicates diagnoses by display name, keeping the most recent
+ * @param diagnoses - Array of diagnoses that may contain duplicates
+ * @returns Deduplicated array of diagnoses
+ */
+function deduplicateDiagnoses(diagnoses: Diagnosis[]): Diagnosis[] {
+  const diagnosisMap = new Map<string, Diagnosis>();
+
+  for (const diagnosis of diagnoses) {
+    // Use lowercase and trimmed display name as key for case-insensitive deduplication
+    const key = diagnosis.display.toLowerCase().trim();
+    const existing = diagnosisMap.get(key);
+
+    if (!existing) {
+      diagnosisMap.set(key, diagnosis);
+      continue;
+    }
+
+    // Keep the most recent by recordedDate, use id as tiebreaker
+    const existingDate = new Date(existing.recordedDate).getTime();
+    const currentDate = new Date(diagnosis.recordedDate).getTime();
+
+    if (
+      currentDate > existingDate ||
+      (currentDate === existingDate && diagnosis.id > existing.id)
+    ) {
+      diagnosisMap.set(key, diagnosis);
+    }
+  }
+
+  return Array.from(diagnosisMap.values());
+}
+
+/**
  * Fetches and formats diagnoses for a given patient UUID
  * @param patientUUID - The UUID of the patient
- * @returns Promise resolving to an array of diagnoses
+ * @returns Promise resolving to an array of deduplicated diagnoses
  */
 export async function getPatientDiagnoses(
   patientUUID: string,
 ): Promise<Diagnosis[]> {
   const bundle = await getPatientDiagnosesBundle(patientUUID);
-  return formatDiagnoses(bundle);
+  const formattedDiagnoses = formatDiagnoses(bundle);
+  return deduplicateDiagnoses(formattedDiagnoses);
 }

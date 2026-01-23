@@ -29,6 +29,7 @@ jest.mock('../../../../hooks/useConceptSearch');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getConditions: jest.fn(),
+  getPatientDiagnoses: jest.fn(),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -36,6 +37,7 @@ jest.mock('@bahmni/widgets', () => ({
   useNotification: jest.fn(),
   usePatientUUID: jest.fn(),
   conditionsQueryKeys: jest.fn(),
+  diagnosesQueryKeys: jest.fn(),
 }));
 
 jest.mock('@tanstack/react-query', () => ({
@@ -360,7 +362,7 @@ describe('ConditionsAndDiagnoses', () => {
       await user.type(searchInput, 'hyper');
 
       const disabledOption = await screen.findByText(
-        `${mockConcepts[0].conceptName} (Already selected)`,
+        `${mockConcepts[0].conceptName} (Diagnosis is already added)`,
       );
       expect(disabledOption).toBeInTheDocument();
       const disabledListItem = disabledOption.closest('li');
@@ -382,7 +384,7 @@ describe('ConditionsAndDiagnoses', () => {
       await user.type(searchInput, 'hyper');
 
       const disabledOption = await screen.findByText(
-        `${mockConcepts[0].conceptName} (Already selected)`,
+        `${mockConcepts[0].conceptName} (Diagnosis is already added)`,
       );
       expect(disabledOption).toBeInTheDocument();
 
@@ -697,7 +699,7 @@ describe('ConditionsAndDiagnoses', () => {
       await user.type(searchInput, 'hyper');
 
       const disabledOption = await screen.findByText(
-        `${mockConcepts[0].conceptName} (Already selected)`,
+        `${mockConcepts[0].conceptName} (Diagnosis is already added)`,
       );
       expect(disabledOption).toBeInTheDocument();
       const disabledListItem = disabledOption.closest('li');

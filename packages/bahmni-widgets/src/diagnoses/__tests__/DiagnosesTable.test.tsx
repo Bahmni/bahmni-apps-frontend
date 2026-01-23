@@ -4,28 +4,38 @@ import {
   sortByDate,
   DATE_FORMAT,
   useTranslation,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { useNotification } from '../../notification';
 import DiagnosesTable from '../DiagnosesTable';
-import { useDiagnoses } from '../useDiagnoses';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('../useDiagnoses');
+jest.mock('@tanstack/react-query');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
   formatDate: jest.fn(),
   sortByDate: jest.fn(),
+  useSubscribeConsultationSaved: jest.fn(),
 }));
+jest.mock('../../hooks/usePatientUUID');
+jest.mock('../../notification');
 
-jest.mock('react-router-dom', () => ({
-  useParams: jest.fn(),
-}));
-
-const mockUseDiagnoses = useDiagnoses as jest.MockedFunction<
-  typeof useDiagnoses
+const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
+const mockuseSubscribeConsultationSaved =
+  useSubscribeConsultationSaved as jest.MockedFunction<
+    typeof useSubscribeConsultationSaved
+  >;
+const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
+>;
+const mockUseNotification = useNotification as jest.MockedFunction<
+  typeof useNotification
 >;
 const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
 const mockSortByDate = sortByDate as jest.MockedFunction<typeof sortByDate>;
@@ -58,8 +68,19 @@ const mockDiagnoses: Diagnosis[] = [
 ];
 
 describe('DiagnosesTable', () => {
+  const mockAddNotification = jest.fn();
+  const mockRefetch = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
+
+    mockUsePatientUUID.mockReturnValue('patient-123');
+    mockUseNotification.mockReturnValue({
+      addNotification: mockAddNotification,
+      notifications: [],
+      removeNotification: jest.fn(),
+      clearAllNotifications: jest.fn(),
+    } as any);
 
     mockUseTranslation.mockReturnValue({
       t: (key: string) => {
@@ -72,70 +93,83 @@ describe('DiagnosesTable', () => {
           DIAGNOSIS_TABLE_NOT_AVAILABLE: 'Not available',
           CERTAINITY_CONFIRMED: 'Confirmed',
           CERTAINITY_PROVISIONAL: 'Provisional',
+          ERROR_DEFAULT_TITLE: 'Error',
         };
         return translations[key] || key;
       },
-    });
+    } as any);
 
     mockFormatDate.mockReturnValue({ formattedResult: '15/01/2024' });
     mockSortByDate.mockImplementation((data) => data);
+    mockuseSubscribeConsultationSaved.mockImplementation(() => {});
   });
 
   it('renders loading state', () => {
-    mockUseDiagnoses.mockReturnValue({
-      diagnoses: [],
-      loading: true,
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
       error: null,
-      refetch: jest.fn(),
-    });
+      refetch: mockRefetch,
+    } as any);
 
     render(<DiagnosesTable />);
     expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
   });
 
   it('renders error state', () => {
-    mockUseDiagnoses.mockReturnValue({
-      diagnoses: [],
-      loading: false,
-      error: new Error('Network error'),
-      refetch: jest.fn(),
-    });
+    const mockError = new Error('Network error');
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: mockError,
+      refetch: mockRefetch,
+    } as any);
 
     render(<DiagnosesTable />);
     expect(screen.getByText('Network error')).toBeInTheDocument();
+    expect(mockAddNotification).toHaveBeenCalledWith({
+      title: 'Error',
+      message: 'Network error',
+      type: 'error',
+    });
   });
 
   it('renders empty state', () => {
-    mockUseDiagnoses.mockReturnValue({
-      diagnoses: [],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
       error: null,
-      refetch: jest.fn(),
-    });
+      refetch: mockRefetch,
+    } as any);
 
     render(<DiagnosesTable />);
     expect(screen.getByText('No diagnoses recorded')).toBeInTheDocument();
   });
 
   it('sorts diagnoses by date', () => {
-    mockUseDiagnoses.mockReturnValue({
-      diagnoses: mockDiagnoses,
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: mockDiagnoses,
+      isLoading: false,
+      isError: false,
       error: null,
-      refetch: jest.fn(),
-    });
+      refetch: mockRefetch,
+    } as any);
 
     render(<DiagnosesTable />);
     expect(mockSortByDate).toHaveBeenCalledWith(mockDiagnoses, 'recordedDate');
   });
 
   it('renders diagnosis display cell with confirmed certainty', () => {
-    mockUseDiagnoses.mockReturnValue({
-      diagnoses: [mockDiagnoses[0]],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [mockDiagnoses[0]],
+      isLoading: false,
+      isError: false,
       error: null,
-      refetch: jest.fn(),
-    });
+      refetch: mockRefetch,
+    } as any);
 
     render(<DiagnosesTable />);
     expect(screen.getByText('Hypertension')).toBeInTheDocument();
@@ -143,12 +177,13 @@ describe('DiagnosesTable', () => {
   });
 
   it('renders diagnosis display cell with provisional certainty', () => {
-    mockUseDiagnoses.mockReturnValue({
-      diagnoses: [mockDiagnoses[1]],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [mockDiagnoses[1]],
+      isLoading: false,
+      isError: false,
       error: null,
-      refetch: jest.fn(),
-    });
+      refetch: mockRefetch,
+    } as any);
 
     render(<DiagnosesTable />);
     expect(screen.getByText('Diabetes Type 2')).toBeInTheDocument();
@@ -156,12 +191,13 @@ describe('DiagnosesTable', () => {
   });
 
   it('renders formatted recorded date', () => {
-    mockUseDiagnoses.mockReturnValue({
-      diagnoses: [mockDiagnoses[0]],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [mockDiagnoses[0]],
+      isLoading: false,
+      isError: false,
       error: null,
-      refetch: jest.fn(),
-    });
+      refetch: mockRefetch,
+    } as any);
 
     render(<DiagnosesTable />);
     expect(mockFormatDate).toHaveBeenCalledWith(
@@ -173,36 +209,127 @@ describe('DiagnosesTable', () => {
   });
 
   it('renders recorder name when available', () => {
-    mockUseDiagnoses.mockReturnValue({
-      diagnoses: [mockDiagnoses[0]],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [mockDiagnoses[0]],
+      isLoading: false,
+      isError: false,
       error: null,
-      refetch: jest.fn(),
-    });
+      refetch: mockRefetch,
+    } as any);
 
     render(<DiagnosesTable />);
     expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
   });
 
   it('renders "Not available" when recorder is empty', () => {
-    mockUseDiagnoses.mockReturnValue({
-      diagnoses: [mockDiagnoses[2]],
-      loading: false,
+    mockUseQuery.mockReturnValue({
+      data: [mockDiagnoses[2]],
+      isLoading: false,
+      isError: false,
       error: null,
-      refetch: jest.fn(),
-    });
+      refetch: mockRefetch,
+    } as any);
 
     render(<DiagnosesTable />);
     expect(screen.getByText('Not available')).toBeInTheDocument();
   });
 
-  it('has no accessibility violations', async () => {
-    mockUseDiagnoses.mockReturnValue({
-      diagnoses: mockDiagnoses,
-      loading: false,
+  it('registers consultation saved event listener', () => {
+    mockUseQuery.mockReturnValue({
+      data: mockDiagnoses,
+      isLoading: false,
+      isError: false,
       error: null,
-      refetch: jest.fn(),
+      refetch: mockRefetch,
+    } as any);
+
+    render(<DiagnosesTable />);
+    expect(mockuseSubscribeConsultationSaved).toHaveBeenCalled();
+  });
+
+  it('refetches data when consultation saved event is triggered with conditions update', () => {
+    let eventCallback: any;
+    mockuseSubscribeConsultationSaved.mockImplementation((callback) => {
+      eventCallback = callback;
     });
+
+    mockUseQuery.mockReturnValue({
+      data: mockDiagnoses,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: mockRefetch,
+    } as any);
+
+    render(<DiagnosesTable />);
+
+    // Trigger the event
+    eventCallback({
+      patientUUID: 'patient-123',
+      updatedResources: { conditions: true, allergies: false },
+    });
+
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('does not refetch when event is for different patient', () => {
+    let eventCallback: any;
+    mockuseSubscribeConsultationSaved.mockImplementation((callback) => {
+      eventCallback = callback;
+    });
+
+    mockUseQuery.mockReturnValue({
+      data: mockDiagnoses,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: mockRefetch,
+    } as any);
+
+    render(<DiagnosesTable />);
+
+    // Trigger event for different patient
+    eventCallback({
+      patientUUID: 'different-patient',
+      updatedResources: { conditions: true, allergies: false },
+    });
+
+    expect(mockRefetch).not.toHaveBeenCalled();
+  });
+
+  it('does not refetch when conditions were not updated', () => {
+    let eventCallback: any;
+    mockuseSubscribeConsultationSaved.mockImplementation((callback) => {
+      eventCallback = callback;
+    });
+
+    mockUseQuery.mockReturnValue({
+      data: mockDiagnoses,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: mockRefetch,
+    } as any);
+
+    render(<DiagnosesTable />);
+
+    // Trigger event without conditions update
+    eventCallback({
+      patientUUID: 'patient-123',
+      updatedResources: { conditions: false, allergies: true },
+    });
+
+    expect(mockRefetch).not.toHaveBeenCalled();
+  });
+
+  it('has no accessibility violations', async () => {
+    mockUseQuery.mockReturnValue({
+      data: mockDiagnoses,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: mockRefetch,
+    } as any);
 
     const { container } = render(<DiagnosesTable />);
     expect(await axe(container)).toHaveNoViolations();
