@@ -3,14 +3,13 @@ import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
+import { CACHE_MAX_AGE, PUBLIC_PATH } from './constants/app';
 
 declare const self: ServiceWorkerGlobalScope;
 
 clientsClaim();
 
 precacheAndRoute(self.__WB_MANIFEST);
-
-const PUBLIC_PATH = process.env.PUBLIC_PATH ?? '/';
 
 const fileExtensionRegexp = /\/[^/?]+\.[^/]+$/;
 registerRoute(
@@ -28,8 +27,6 @@ registerRoute(
   },
   createHandlerBoundToURL(`${PUBLIC_PATH}index.html`),
 );
-
-const CACHE_MAX_AGE = 7 * 24 * 60 * 60;
 
 const createCacheStrategy = (cacheName: string, maxEntries: number) =>
   new StaleWhileRevalidate({
@@ -54,12 +51,12 @@ const metadataEndpoints = [
   '/openmrs/ws/rest/v1/bahmniie/form/latestPublishedForms',
   '/openmrs/ws/rest/v1/personattributetype',
   '/openmrs/ws/rest/v1/relationshiptype',
+  '/openmrs/ws/rest/v1/form',
 ];
 
 registerRoute(
   ({ url }) =>
-    metadataEndpoints.some((endpoint) => url.pathname.includes(endpoint)) ??
-    url.pathname.match(/\/openmrs\/ws\/rest\/v1\/form\/[^/]+/) !== null,
+    metadataEndpoints.some((endpoint) => url.pathname.includes(endpoint)),
   createCacheStrategy('bahmni-metadata-cache-v1', 100),
 );
 

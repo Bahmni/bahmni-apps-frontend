@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 
 import App from './app/app';
+import { PUBLIC_PATH } from './constants/app';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -10,7 +11,7 @@ const root = ReactDOM.createRoot(
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    const publicPath = process.env.PUBLIC_URL ?? '/';
+    const publicPath = PUBLIC_PATH ?? '/';
     navigator.serviceWorker
       .register(`${publicPath}service-worker.js`)
       .catch(() => {});
@@ -19,7 +20,7 @@ if ('serviceWorker' in navigator) {
 
 root.render(
   <StrictMode>
-    <BrowserRouter basename={process.env.PUBLIC_URL ?? '/'}>
+    <BrowserRouter basename={PUBLIC_PATH ?? '/'}>
       <App />
     </BrowserRouter>
   </StrictMode>,
