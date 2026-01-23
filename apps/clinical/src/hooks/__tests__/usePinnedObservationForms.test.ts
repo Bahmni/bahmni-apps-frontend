@@ -1,17 +1,11 @@
 import { ObservationForm } from '@bahmni/services';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import * as pinnedFormsService from '../../services/pinnedFormsService';
-import useObservationFormsSearch from '../useObservationFormsSearch';
 import { usePinnedObservationForms } from '../usePinnedObservationForms';
 
 // Mock the dependencies
-jest.mock('../useObservationFormsSearch');
 jest.mock('../../services/pinnedFormsService');
 
-const mockUseObservationFormsSearch =
-  useObservationFormsSearch as jest.MockedFunction<
-    typeof useObservationFormsSearch
-  >;
 const mockLoadPinnedForms =
   pinnedFormsService.loadPinnedForms as jest.MockedFunction<
     typeof pinnedFormsService.loadPinnedForms
@@ -43,38 +37,24 @@ describe('usePinnedObservationForms', () => {
     },
   ];
 
+  const mockUserUuid = 'user-123';
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseObservationFormsSearch.mockReturnValue({
-      forms: mockForms,
-      isLoading: false,
-      error: null,
-    });
     mockLoadPinnedForms.mockResolvedValue([]);
     mockSavePinnedForms.mockResolvedValue(undefined);
   });
 
   describe('Initial Loading', () => {
-    it('should start with loading state', () => {
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [],
-        isLoading: true,
-        error: null,
-      });
-
-      const { result } = renderHook(() => usePinnedObservationForms());
-
-      expect(result.current.isLoading).toBe(true);
-      expect(result.current.pinnedForms).toEqual([]);
-    });
-
-    it('should load pinned forms when forms finish loading', async () => {
+    it('should load pinned forms when forms and userUuid are available', async () => {
       mockLoadPinnedForms.mockResolvedValue([
         'History and Examination',
         'Vitals',
       ]);
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -90,7 +70,9 @@ describe('usePinnedObservationForms', () => {
     it('should match pinned forms by name from available forms', async () => {
       mockLoadPinnedForms.mockResolvedValue(['Vitals']);
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -103,7 +85,9 @@ describe('usePinnedObservationForms', () => {
     it('should handle empty pinned forms list', async () => {
       mockLoadPinnedForms.mockResolvedValue([]);
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -115,7 +99,9 @@ describe('usePinnedObservationForms', () => {
     it('should ignore pinned form names that do not match available forms', async () => {
       mockLoadPinnedForms.mockResolvedValue(['Vitals', 'Non-existent Form']);
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -124,23 +110,6 @@ describe('usePinnedObservationForms', () => {
       expect(result.current.pinnedForms).toHaveLength(1);
       expect(result.current.pinnedForms[0].name).toBe('Vitals');
     });
-
-    it('should set empty array when available forms is empty', async () => {
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [],
-        isLoading: false,
-        error: null,
-      });
-      mockLoadPinnedForms.mockResolvedValue(['History and Examination']);
-
-      const { result } = renderHook(() => usePinnedObservationForms());
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.pinnedForms).toEqual([]);
-    });
   });
 
   describe('Error Handling', () => {
@@ -148,7 +117,9 @@ describe('usePinnedObservationForms', () => {
       const error = new Error('Failed to load');
       mockLoadPinnedForms.mockRejectedValue(error);
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -162,7 +133,9 @@ describe('usePinnedObservationForms', () => {
     it('should set pinnedForms to empty array on error', async () => {
       mockLoadPinnedForms.mockRejectedValue(new Error('Network error'));
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -176,7 +149,9 @@ describe('usePinnedObservationForms', () => {
       const saveError = new Error('Save failed');
       mockSavePinnedForms.mockRejectedValue(saveError);
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -199,7 +174,9 @@ describe('usePinnedObservationForms', () => {
     it('should update pinned forms optimistically', async () => {
       mockLoadPinnedForms.mockResolvedValue([]);
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -221,7 +198,9 @@ describe('usePinnedObservationForms', () => {
     it('should save pinned form names to backend', async () => {
       mockLoadPinnedForms.mockResolvedValue([]);
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -232,7 +211,7 @@ describe('usePinnedObservationForms', () => {
       });
 
       await waitFor(() => {
-        expect(mockSavePinnedForms).toHaveBeenCalledWith([
+        expect(mockSavePinnedForms).toHaveBeenCalledWith(mockUserUuid, [
           'History and Examination',
           'Progress Notes',
         ]);
@@ -242,7 +221,9 @@ describe('usePinnedObservationForms', () => {
     it('should handle clearing all pinned forms', async () => {
       mockLoadPinnedForms.mockResolvedValue(['Vitals']);
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.pinnedForms).toHaveLength(1);
@@ -256,7 +237,7 @@ describe('usePinnedObservationForms', () => {
         expect(result.current.pinnedForms).toEqual([]);
       });
       await waitFor(() => {
-        expect(mockSavePinnedForms).toHaveBeenCalledWith([]);
+        expect(mockSavePinnedForms).toHaveBeenCalledWith(mockUserUuid, []);
       });
     });
 
@@ -264,7 +245,9 @@ describe('usePinnedObservationForms', () => {
       mockLoadPinnedForms.mockResolvedValue([]);
       mockSavePinnedForms.mockRejectedValue(new Error('Save failed'));
 
-      const { result } = renderHook(() => usePinnedObservationForms());
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -287,7 +270,7 @@ describe('usePinnedObservationForms', () => {
       mockLoadPinnedForms.mockResolvedValue(['Vitals']);
 
       const { result, rerender } = renderHook(() =>
-        usePinnedObservationForms(),
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
       );
 
       await waitFor(() => {
@@ -306,8 +289,10 @@ describe('usePinnedObservationForms', () => {
     it('should not reload when forms list changes after initial load', async () => {
       mockLoadPinnedForms.mockResolvedValue(['Vitals']);
 
-      const { result, rerender } = renderHook(() =>
-        usePinnedObservationForms(),
+      const { result, rerender } = renderHook(
+        ({ forms }) =>
+          usePinnedObservationForms(forms, { userUuid: mockUserUuid }),
+        { initialProps: { forms: mockForms } },
       );
 
       await waitFor(() => {
@@ -315,66 +300,15 @@ describe('usePinnedObservationForms', () => {
       });
 
       // Change the available forms
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [
-          ...mockForms,
-          { uuid: 'form-4', name: 'New Form', id: 4, privileges: [] },
-        ],
-        isLoading: false,
-        error: null,
-      });
+      const newForms = [
+        ...mockForms,
+        { uuid: 'form-4', name: 'New Form', id: 4, privileges: [] },
+      ];
 
-      rerender();
+      rerender({ forms: newForms });
 
       // Should still only have loaded once
       expect(mockLoadPinnedForms).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('Integration with useObservationFormsSearch', () => {
-    it('should wait for forms to finish loading before loading pinned forms', async () => {
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [],
-        isLoading: true,
-        error: null,
-      });
-
-      const { result, rerender } = renderHook(() =>
-        usePinnedObservationForms(),
-      );
-
-      expect(mockLoadPinnedForms).not.toHaveBeenCalled();
-      expect(result.current.isLoading).toBe(true);
-
-      // Forms finish loading
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: mockForms,
-        isLoading: false,
-        error: null,
-      });
-
-      rerender();
-
-      await waitFor(() => {
-        expect(mockLoadPinnedForms).toHaveBeenCalledTimes(1);
-        expect(result.current.isLoading).toBe(false);
-      });
-    });
-
-    it('should handle when useObservationFormsSearch returns error', async () => {
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [],
-        isLoading: false,
-        error: { name: 'Error', message: 'Failed to fetch forms' },
-      });
-
-      const { result } = renderHook(() => usePinnedObservationForms());
-
-      // Should still work and just have no forms to match
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-      expect(result.current.pinnedForms).toEqual([]);
     });
   });
 });

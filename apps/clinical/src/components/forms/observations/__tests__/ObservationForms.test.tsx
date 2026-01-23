@@ -157,19 +157,21 @@ jest.mock('@bahmni/design-system', () => ({
 // BahmniIcon is already mocked as part of the design system mock above
 
 describe('ObservationForms', () => {
+  // Test data factories
+  const createForm = (
+    name: string,
+    uuid: string,
+    id: number,
+  ): ObservationForm => ({
+    name,
+    uuid,
+    id,
+    privileges: [],
+  });
+
   const mockForms: ObservationForm[] = [
-    {
-      name: 'Admission Letter',
-      uuid: 'form-1',
-      id: 1,
-      privileges: [],
-    },
-    {
-      name: 'Death Note',
-      uuid: 'form-2',
-      id: 2,
-      privileges: [],
-    },
+    createForm('Admission Letter', 'form-1', 1),
+    createForm('Death Note', 'form-2', 2),
   ];
 
   const defaultProps = {
@@ -179,31 +181,44 @@ describe('ObservationForms', () => {
     pinnedForms: [],
     updatePinnedForms: jest.fn(),
     isPinnedFormsLoading: false,
+    allForms: mockForms,
+    isAllFormsLoading: false,
+    observationFormsError: null,
+  };
+
+  // Test helpers
+  const getSearchInput = () => screen.getByTestId('combobox-input');
+
+  const simulateSearch = (searchTerm: string) => {
+    const input = getSearchInput();
+    fireEvent.change(input, { target: { value: searchTerm } });
+    return input;
+  };
+
+  const getComboBoxOnChange = () => {
+    const ComboBox = jest.requireMock('@bahmni/design-system').ComboBox;
+    if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
+      const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
+      return lastCall[0].onChange;
+    }
+    return null;
+  };
+
+  const simulateComboBoxSelection = (
+    selectedItem: {
+      id: string;
+      label: string;
+      disabled?: boolean;
+    } | null,
+  ) => {
+    const onChange = getComboBoxOnChange();
+    if (onChange) {
+      onChange({ selectedItem });
+    }
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Default mock for useObservationFormsSearch
-    const mockUseObservationFormsSearch = jest.requireMock(
-      '../../../../hooks/useObservationFormsSearch',
-    ).default;
-    mockUseObservationFormsSearch.mockReturnValue({
-      forms: mockForms,
-      isLoading: false,
-      error: null,
-    });
-
-    // Default mock for usePinnedObservationForms
-    const mockUsePinnedObservationForms = jest.requireMock(
-      '../../../../hooks/usePinnedObservationForms',
-    ).usePinnedObservationForms;
-    mockUsePinnedObservationForms.mockReturnValue({
-      pinnedForms: [],
-      updatePinnedForms: jest.fn(),
-      isLoading: false,
-      error: null,
-    });
   });
 
   describe('Rendering and Structure', () => {
@@ -256,16 +271,12 @@ describe('ObservationForms', () => {
     });
 
     it('should handle search input changes', () => {
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
       render(<ObservationForms {...defaultProps} />);
 
-      const input = screen.getByTestId('combobox-input');
-      fireEvent.change(input, { target: { value: 'History' } });
+      const input = simulateSearch('History');
 
-      // Verify the search hook was called with the search term
-      expect(mockUseObservationFormsSearch).toHaveBeenCalled();
+      // The search is now handled client-side, so just verify the input value changed
+      expect(input).toHaveValue('History');
     });
 
     it('should not call onFormSelect for disabled items', () => {
@@ -394,16 +405,14 @@ describe('ObservationForms', () => {
 
   describe('Loading and Error States', () => {
     it('should show loading state in dropdown', () => {
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [],
-        isLoading: true,
-        error: null,
-      });
-
-      render(<ObservationForms {...defaultProps} />);
+      render(
+        <ObservationForms
+          {...defaultProps}
+          allForms={[]}
+          isAllFormsLoading
+          observationFormsError={null}
+        />,
+      );
 
       expect(
         screen.getByText('translated_OBSERVATION_FORMS_LOADING_FORMS'),
@@ -412,16 +421,14 @@ describe('ObservationForms', () => {
     });
 
     it('should show error state in dropdown', () => {
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [],
-        isLoading: false,
-        error: new Error('Failed to load forms'),
-      });
-
-      render(<ObservationForms {...defaultProps} />);
+      render(
+        <ObservationForms
+          {...defaultProps}
+          allForms={[]}
+          isAllFormsLoading={false}
+          observationFormsError={new Error('Failed to load forms')}
+        />,
+      );
 
       expect(
         screen.getByText('translated_OBSERVATION_FORMS_ERROR_LOADING_FORMS'),
@@ -429,20 +436,16 @@ describe('ObservationForms', () => {
     });
 
     it('should show no forms found message when search returns empty results', () => {
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [],
-        isLoading: false,
-        error: null,
-      });
+      render(
+        <ObservationForms
+          {...defaultProps}
+          allForms={[]}
+          isAllFormsLoading={false}
+          observationFormsError={null}
+        />,
+      );
 
-      render(<ObservationForms {...defaultProps} />);
-
-      // Simulate search input to trigger the "no forms found" state
-      const input = screen.getByTestId('combobox-input');
-      fireEvent.change(input, { target: { value: 'nonexistent form' } });
+      simulateSearch('nonexistent form');
 
       expect(
         screen.getByText('translated_OBSERVATION_FORMS_NO_FORMS_FOUND'),
@@ -450,16 +453,14 @@ describe('ObservationForms', () => {
     });
 
     it('should show no forms available message when no forms exist', () => {
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [],
-        isLoading: false,
-        error: null,
-      });
-
-      render(<ObservationForms {...defaultProps} />);
+      render(
+        <ObservationForms
+          {...defaultProps}
+          allForms={[]}
+          isAllFormsLoading={false}
+          observationFormsError={null}
+        />,
+      );
 
       expect(screen.getByText('No forms available')).toBeInTheDocument();
     });
@@ -472,13 +473,7 @@ describe('ObservationForms', () => {
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
-      // Simulate ComboBox onChange with null selectedItem by clicking a disabled item
-      const ComboBox = jest.requireMock('@bahmni/design-system').ComboBox;
-      if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
-        const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
-        const onChange = lastCall[0].onChange;
-        onChange({ selectedItem: null });
-      }
+      simulateComboBoxSelection(null);
 
       expect(mockOnFormSelect).not.toHaveBeenCalled();
     });
@@ -489,15 +484,11 @@ describe('ObservationForms', () => {
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
-      // Simulate ComboBox onChange with selectedItem without id
-      const ComboBox = jest.requireMock('@bahmni/design-system').ComboBox;
-      if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
-        const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
-        const onChange = lastCall[0].onChange;
-        onChange({
-          selectedItem: { id: '', label: 'Loading...', disabled: true },
-        });
-      }
+      simulateComboBoxSelection({
+        id: '',
+        label: 'Loading...',
+        disabled: true,
+      });
 
       expect(mockOnFormSelect).not.toHaveBeenCalled();
     });
@@ -549,8 +540,7 @@ describe('ObservationForms', () => {
     it('should handle empty search term correctly', () => {
       render(<ObservationForms {...defaultProps} />);
 
-      const input = screen.getByTestId('combobox-input');
-      fireEvent.change(input, { target: { value: '' } });
+      simulateSearch('');
 
       // Should show all available forms when search is empty
       expect(screen.getByTestId('combobox-item-form-1')).toBeInTheDocument();
@@ -560,8 +550,7 @@ describe('ObservationForms', () => {
     it('should handle whitespace-only search terms', () => {
       render(<ObservationForms {...defaultProps} />);
 
-      const input = screen.getByTestId('combobox-input');
-      fireEvent.change(input, { target: { value: '   ' } });
+      simulateSearch('   ');
 
       // Should treat whitespace-only as empty search
       expect(screen.getByTestId('combobox-item-form-1')).toBeInTheDocument();
@@ -570,8 +559,7 @@ describe('ObservationForms', () => {
     it('should handle special characters in search', () => {
       render(<ObservationForms {...defaultProps} />);
 
-      const input = screen.getByTestId('combobox-input');
-      fireEvent.change(input, { target: { value: '@#$%' } });
+      const input = simulateSearch('@#$%');
 
       // Should not crash with special characters
       expect(input).toHaveValue('@#$%');
@@ -581,8 +569,7 @@ describe('ObservationForms', () => {
       render(<ObservationForms {...defaultProps} />);
 
       const longSearchTerm = 'a'.repeat(1000);
-      const input = screen.getByTestId('combobox-input');
-      fireEvent.change(input, { target: { value: longSearchTerm } });
+      const input = simulateSearch(longSearchTerm);
 
       expect(input).toHaveValue(longSearchTerm);
     });
@@ -608,21 +595,11 @@ describe('ObservationForms', () => {
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
-      // Simulate ComboBox onChange with a selectedItem that doesn't exist in availableForms
-      const ComboBox = jest.requireMock('@bahmni/design-system').ComboBox;
-      if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
-        const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
-        const onChange = lastCall[0].onChange;
-
-        // Use an ID that doesn't exist in mockForms
-        onChange({
-          selectedItem: {
-            id: 'non-existent-form-id',
-            label: 'Non-existent Form',
-            disabled: false,
-          },
-        });
-      }
+      simulateComboBoxSelection({
+        id: 'non-existent-form-id',
+        label: 'Non-existent Form',
+        disabled: false,
+      });
 
       // Should not call onFormSelect when form is not found (covers line 62 branch)
       expect(mockOnFormSelect).not.toHaveBeenCalled();
@@ -634,16 +611,11 @@ describe('ObservationForms', () => {
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
-      const ComboBox = jest.requireMock('@bahmni/design-system').ComboBox;
-      if (ComboBox.mock && ComboBox.mock.calls.length > 0) {
-        const lastCall = ComboBox.mock.calls[ComboBox.mock.calls.length - 1];
-        const onChange = lastCall[0].onChange;
-
-        // Test with disabled selectedItem
-        onChange({
-          selectedItem: { id: 'form-1', label: 'Test Form', disabled: true },
-        });
-      }
+      simulateComboBoxSelection({
+        id: 'form-1',
+        label: 'Test Form',
+        disabled: true,
+      });
 
       expect(mockOnFormSelect).not.toHaveBeenCalled();
     });
@@ -651,29 +623,19 @@ describe('ObservationForms', () => {
 
   describe('Pinned Forms Coverage', () => {
     it('should render pinned forms section with user-pinned forms', () => {
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [
-          {
-            name: 'History and Examination',
-            uuid: 'default-1',
-            id: 1,
-            privileges: [],
-          },
-          { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
-        ],
-        isLoading: false,
-        error: null,
-      });
-
-      const userPinnedForms = [
-        { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
+      const allForms = [
+        createForm('History and Examination', 'default-1', 1),
+        createForm('Custom Form', 'user-1', 2),
       ];
 
+      const userPinnedForms = [createForm('Custom Form', 'user-1', 2)];
+
       render(
-        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
+        <ObservationForms
+          {...defaultProps}
+          allForms={allForms}
+          pinnedForms={userPinnedForms}
+        />,
       );
 
       // This covers lines 59, 62-64, 67-69 (userPinnedUuids mapping and sorting logic)
@@ -682,67 +644,21 @@ describe('ObservationForms', () => {
     });
 
     it('should handle empty pinned forms array', () => {
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [
-          {
-            name: 'History and Examination',
-            uuid: 'default-1',
-            id: 1,
-            privileges: [],
-          },
-        ],
-        isLoading: false,
-        error: null,
-      });
+      const allForms = [createForm('History and Examination', 'default-1', 1)];
 
-      const mockUsePinnedObservationForms = jest.requireMock(
-        '../../../../hooks/usePinnedObservationForms',
-      ).usePinnedObservationForms;
-      mockUsePinnedObservationForms.mockReturnValue({
-        pinnedForms: [],
-        updatePinnedForms: jest.fn(),
-        isLoading: false,
-        error: null,
-      });
-
-      render(<ObservationForms {...defaultProps} />);
+      render(<ObservationForms {...defaultProps} allForms={allForms} />);
 
       // This covers the empty pinnedForms case for line 59
       expect(screen.getByTestId('pinned-form-default-1')).toBeInTheDocument();
     });
 
     it('should trigger sorting for multiple default forms', () => {
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [
-          { name: 'Vitals', uuid: 'default-2', id: 2, privileges: [] },
-          {
-            name: 'History and Examination',
-            uuid: 'default-1',
-            id: 1,
-            privileges: [],
-          },
-        ],
-        isLoading: false,
-        error: null,
-      });
+      const allForms = [
+        createForm('Vitals', 'default-2', 2),
+        createForm('History and Examination', 'default-1', 1),
+      ];
 
-      const mockUsePinnedObservationForms = jest.requireMock(
-        '../../../../hooks/usePinnedObservationForms',
-      ).usePinnedObservationForms;
-      mockUsePinnedObservationForms.mockReturnValue({
-        pinnedForms: [],
-        updatePinnedForms: jest.fn(),
-        isLoading: false,
-        error: null,
-      });
-
-      render(<ObservationForms {...defaultProps} />);
+      render(<ObservationForms {...defaultProps} allForms={allForms} />);
 
       // This covers the .sort() function for default forms (line 64)
       expect(screen.getByTestId('pinned-form-default-1')).toBeInTheDocument();
@@ -750,25 +666,22 @@ describe('ObservationForms', () => {
     });
 
     it('should trigger sorting for multiple user-pinned forms', () => {
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [
-          { name: 'Z Form', uuid: 'user-2', id: 3, privileges: [] },
-          { name: 'A Form', uuid: 'user-1', id: 2, privileges: [] },
-        ],
-        isLoading: false,
-        error: null,
-      });
+      const allForms = [
+        createForm('Z Form', 'user-2', 3),
+        createForm('A Form', 'user-1', 2),
+      ];
 
       const userPinnedForms = [
-        { name: 'Z Form', uuid: 'user-2', id: 3, privileges: [] },
-        { name: 'A Form', uuid: 'user-1', id: 2, privileges: [] },
+        createForm('Z Form', 'user-2', 3),
+        createForm('A Form', 'user-1', 2),
       ];
 
       render(
-        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
+        <ObservationForms
+          {...defaultProps}
+          allForms={allForms}
+          pinnedForms={userPinnedForms}
+        />,
       );
 
       // This covers the .sort() function for user-pinned forms (lines 67-69)
@@ -778,22 +691,14 @@ describe('ObservationForms', () => {
 
     it('should call onFormSelect when clicking pinned form', () => {
       const mockOnFormSelect = jest.fn();
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [{ name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] }],
-        isLoading: false,
-        error: null,
-      });
+      const allForms = [createForm('Custom Form', 'user-1', 2)];
 
-      const pinnedForms = [
-        { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
-      ];
+      const pinnedForms = [createForm('Custom Form', 'user-1', 2)];
 
       render(
         <ObservationForms
           {...defaultProps}
+          allForms={allForms}
           onFormSelect={mockOnFormSelect}
           pinnedForms={pinnedForms}
         />,
@@ -808,22 +713,14 @@ describe('ObservationForms', () => {
 
     it('should call updatePinnedForms when clicking thumbtack on pinned form', () => {
       const mockUpdatePinnedForms = jest.fn();
-      const mockUseObservationFormsSearch = jest.requireMock(
-        '../../../../hooks/useObservationFormsSearch',
-      ).default;
-      mockUseObservationFormsSearch.mockReturnValue({
-        forms: [{ name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] }],
-        isLoading: false,
-        error: null,
-      });
+      const allForms = [createForm('Custom Form', 'user-1', 2)];
 
-      const pinnedForms = [
-        { name: 'Custom Form', uuid: 'user-1', id: 2, privileges: [] },
-      ];
+      const pinnedForms = [createForm('Custom Form', 'user-1', 2)];
 
       render(
         <ObservationForms
           {...defaultProps}
+          allForms={allForms}
           pinnedForms={pinnedForms}
           updatePinnedForms={mockUpdatePinnedForms}
         />,

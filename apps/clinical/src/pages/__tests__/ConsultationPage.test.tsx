@@ -123,6 +123,14 @@ jest.mock('@bahmni/widgets', () => ({
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['Get Patients', 'Add Patients'],
   })),
+  useActivePractitioner: jest.fn(() => ({
+    practitioner: {
+      uuid: 'mock-practitioner-uuid',
+      person: { display: 'Mock Practitioner' },
+    },
+    isLoading: false,
+    error: null,
+  })),
   UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) => {
     return <div data-testid="mocked-user-privilege-provider">{children}</div>;
   },

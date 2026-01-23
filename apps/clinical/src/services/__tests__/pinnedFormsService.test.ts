@@ -1,9 +1,4 @@
-import {
-  get,
-  post,
-  getCurrentUser,
-  USER_PINNED_PREFERENCE_URL,
-} from '@bahmni/services';
+import { get, post, USER_PINNED_PREFERENCE_URL } from '@bahmni/services';
 import { PINNED_FORMS_ERROR_MESSAGES } from '../../constants/errors';
 import { loadPinnedForms, savePinnedForms } from '../pinnedFormsService';
 
@@ -11,16 +6,12 @@ import { loadPinnedForms, savePinnedForms } from '../pinnedFormsService';
 jest.mock('@bahmni/services', () => ({
   get: jest.fn(),
   post: jest.fn(),
-  getCurrentUser: jest.fn(),
   USER_PINNED_PREFERENCE_URL: jest.fn(),
   getFormattedError: jest.fn((error) => ({ message: error.message })),
 }));
 
 describe('pinnedFormsService', () => {
-  const mockUser = {
-    uuid: 'user-uuid-123',
-    username: 'testuser',
-  };
+  const mockUserUuid = 'user-uuid-123';
 
   const mockUserData = {
     uuid: 'user-uuid-123',
@@ -39,12 +30,10 @@ describe('pinnedFormsService', () => {
 
   describe('loadPinnedForms', () => {
     it('should load and parse pinned forms successfully', async () => {
-      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
       (get as jest.Mock).mockResolvedValue(mockUserData);
 
-      const result = await loadPinnedForms();
+      const result = await loadPinnedForms(mockUserUuid);
 
-      expect(getCurrentUser).toHaveBeenCalled();
       expect(USER_PINNED_PREFERENCE_URL).toHaveBeenCalledWith('user-uuid-123');
       expect(get).toHaveBeenCalledWith(
         '/openmrs/ws/rest/v1/user/user-uuid-123',
@@ -52,14 +41,11 @@ describe('pinnedFormsService', () => {
       expect(result).toEqual(['Form A', 'Form B', 'Form C']);
     });
 
-    it('should throw error when no user found', async () => {
-      (getCurrentUser as jest.Mock).mockResolvedValue(null);
-
-      await expect(loadPinnedForms()).rejects.toThrow(
+    it('should throw error when no userUuid provided', async () => {
+      await expect(loadPinnedForms('')).rejects.toThrow(
         PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND,
       );
 
-      expect(getCurrentUser).toHaveBeenCalled();
       expect(get).not.toHaveBeenCalled();
     });
 
@@ -69,10 +55,9 @@ describe('pinnedFormsService', () => {
         username: 'testuser',
       };
 
-      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
       (get as jest.Mock).mockResolvedValue(userDataWithoutProperties);
 
-      const result = await loadPinnedForms();
+      const result = await loadPinnedForms(mockUserUuid);
 
       expect(result).toEqual([]);
     });
@@ -85,10 +70,9 @@ describe('pinnedFormsService', () => {
         },
       };
 
-      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
       (get as jest.Mock).mockResolvedValue(userDataWithEmptyString);
 
-      const result = await loadPinnedForms();
+      const result = await loadPinnedForms(mockUserUuid);
 
       expect(result).toEqual([]);
     });
@@ -96,9 +80,11 @@ describe('pinnedFormsService', () => {
     it('should throw error message when request fails', async () => {
       const error = new Error('API request failed');
 
-      (getCurrentUser as jest.Mock).mockRejectedValue(error);
+      (get as jest.Mock).mockRejectedValue(error);
 
-      await expect(loadPinnedForms()).rejects.toThrow('API request failed');
+      await expect(loadPinnedForms(mockUserUuid)).rejects.toThrow(
+        'API request failed',
+      );
     });
   });
 
@@ -106,12 +92,10 @@ describe('pinnedFormsService', () => {
     it('should save pinned forms successfully', async () => {
       const formNames = ['New Form A', 'New Form B'];
 
-      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
       (post as jest.Mock).mockResolvedValue({});
 
-      await savePinnedForms(formNames);
+      await savePinnedForms(mockUserUuid, formNames);
 
-      expect(getCurrentUser).toHaveBeenCalled();
       // Should NOT call get - directly POST the new values
       expect(get).not.toHaveBeenCalled();
       expect(post).toHaveBeenCalledWith(
@@ -124,14 +108,11 @@ describe('pinnedFormsService', () => {
       );
     });
 
-    it('should throw error when no user found', async () => {
-      (getCurrentUser as jest.Mock).mockResolvedValue(null);
-
-      await expect(savePinnedForms(['Form A'])).rejects.toThrow(
+    it('should throw error when no userUuid provided', async () => {
+      await expect(savePinnedForms('', ['Form A'])).rejects.toThrow(
         PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND,
       );
 
-      expect(getCurrentUser).toHaveBeenCalled();
       expect(get).not.toHaveBeenCalled();
       expect(post).not.toHaveBeenCalled();
     });
@@ -139,15 +120,15 @@ describe('pinnedFormsService', () => {
     it('should throw error message when request fails', async () => {
       const error = new Error('Save request failed');
 
-      (getCurrentUser as jest.Mock).mockRejectedValue(error);
+      (post as jest.Mock).mockRejectedValue(error);
 
-      await expect(savePinnedForms(['Form A'])).rejects.toThrow(
+      await expect(savePinnedForms(mockUserUuid, ['Form A'])).rejects.toThrow(
         'Save request failed',
       );
     });
 
     it('should throw error when invalid data provided', async () => {
-      await expect(savePinnedForms(null as any)).rejects.toThrow(
+      await expect(savePinnedForms(mockUserUuid, null as any)).rejects.toThrow(
         PINNED_FORMS_ERROR_MESSAGES.INVALID_DATA,
       );
     });

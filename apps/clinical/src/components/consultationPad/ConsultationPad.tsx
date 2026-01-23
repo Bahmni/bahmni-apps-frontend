@@ -13,7 +13,7 @@ import {
   Form2Observation,
   dispatchConsultationSaved,
 } from '@bahmni/services';
-import { useNotification } from '@bahmni/widgets';
+import { useNotification, useActivePractitioner } from '@bahmni/widgets';
 import React, { useEffect } from 'react';
 import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
 import useAllergyStore from '../../../src/stores/allergyStore';
@@ -30,6 +30,7 @@ import {
   VALIDATION_STATE_INVALID,
 } from '../../constants/forms';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
+import useObservationFormsSearch from '../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../hooks/usePinnedObservationForms';
 import { ConsultationBundle } from '../../models/consultationBundle';
 import {
@@ -77,13 +78,26 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     validate: validateObservationForms,
     reset: resetObservationForms,
   } = useObservationFormsStore();
+  // Fetch user once at this level - shared by pinned forms and encounter details
+  const practitionerState = useActivePractitioner();
+  const { user: currentUser } = practitionerState;
+
+  // Fetch observation forms once at parent level to avoid redundant API calls
+  const {
+    forms: allObservationForms,
+    isLoading: isObservationFormsLoading,
+    error: observationFormsError,
+  } = useObservationFormsSearch();
 
   // Lift pinned forms state to parent - shared by both ObservationForms and ObservationFormsContainer
   const {
     pinnedForms,
     updatePinnedForms,
     isLoading: isPinnedFormsLoading,
-  } = usePinnedObservationForms();
+  } = usePinnedObservationForms(allObservationForms, {
+    userUuid: currentUser?.uuid,
+    isFormsLoading: isObservationFormsLoading,
+  });
 
   // Use the diagnosis store
   const {
@@ -127,8 +141,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     reset: resetVaccinations,
   } = useVaccinationStore();
 
-  // Get encounter session state
-  const { activeEncounter } = useEncounterSession();
+  const { activeEncounter } = useEncounterSession({
+    practitioner: practitionerState.practitioner,
+  });
 
   // Clean up on unmount
   useEffect(() => {
@@ -389,7 +404,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   };
   const consultationContent = (
     <>
-      <BasicForm />
+      <BasicForm practitionerState={practitionerState} />
       <MenuItemDivider />
       <AllergiesForm />
       <MenuItemDivider />
@@ -408,6 +423,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         pinnedForms={pinnedForms}
         updatePinnedForms={updatePinnedForms}
         isPinnedFormsLoading={isPinnedFormsLoading}
+        allForms={allObservationForms}
+        isAllFormsLoading={isObservationFormsLoading}
+        observationFormsError={observationFormsError}
       />
       <MenuItemDivider />
     </>

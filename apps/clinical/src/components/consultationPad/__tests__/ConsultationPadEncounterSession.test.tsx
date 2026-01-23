@@ -33,11 +33,18 @@ jest.mock('@tanstack/react-query', () => ({
     .QueryClientProvider,
 }));
 
-// Mock useUserPrivilege hook
+// Mock useUserPrivilege hook and ActivePractitioner
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['Get Patients', 'Add Patients'],
+  })),
+  useActivePractitioner: jest.fn(() => ({
+    practitioner: { uuid: 'practitioner-123', display: 'Dr. Test' },
+    user: { uuid: 'user-123', username: 'testuser' },
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
   })),
   useNotification: jest.fn(() => ({
     addNotification: jest.fn(),
@@ -47,6 +54,9 @@ jest.mock('@bahmni/widgets', () => ({
     patientUUID,
   ]),
   UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  ActivePractitionerProvider: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
 }));

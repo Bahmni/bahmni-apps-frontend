@@ -14,7 +14,6 @@ import {
   VALIDATION_STATE_MANDATORY,
   VALIDATION_STATE_INVALID,
 } from '../../../constants/forms';
-import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import styles from './styles/ObservationForms.module.scss';
 
@@ -26,6 +25,10 @@ interface ObservationFormsProps {
   pinnedForms: ObservationForm[];
   updatePinnedForms: (newPinnedForms: ObservationForm[]) => Promise<void>;
   isPinnedFormsLoading: boolean;
+  // Forms data passed from parent to avoid redundant API calls
+  allForms: ObservationForm[];
+  isAllFormsLoading: boolean;
+  observationFormsError: Error | null;
 }
 
 /**
@@ -50,19 +53,33 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     pinnedForms,
     updatePinnedForms,
     isPinnedFormsLoading,
+    allForms,
+    isAllFormsLoading,
+    observationFormsError,
   }) => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const { getFormData } = useObservationFormsStore();
 
-    const { forms: allForms, isLoading: isAllFormsLoading } =
-      useObservationFormsSearch();
+    // Client-side filtering based on search term
+    // Uses OR logic: searching "Vitals History" matches forms containing either "vitals" OR "history"
+    // This provides more flexible and user-friendly search results
+    const availableForms = useMemo(() => {
+      if (!searchTerm.trim()) return allForms;
 
-    const {
-      forms: availableForms,
-      isLoading: isSearchLoading,
-      error: searchError,
-    } = useObservationFormsSearch(searchTerm);
+      const searchTermLower = searchTerm.toLowerCase().trim();
+      const searchWords = searchTermLower.split(/\s+/);
+
+      return allForms.filter((form) => {
+        const nameLower = form.name.toLowerCase();
+        // OR logic: match if ANY search word is found in the form name
+        return searchWords.some((word) => nameLower.includes(word));
+      });
+    }, [allForms, searchTerm]);
+
+    // Use same loading and error state for search
+    const isSearchLoading = isAllFormsLoading;
+    const searchError = observationFormsError;
 
     // Validate and filter available forms - handle malformed data
     const validatedAvailableForms = useMemo(() => {

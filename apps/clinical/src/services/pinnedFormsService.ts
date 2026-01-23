@@ -1,7 +1,6 @@
 import {
   get,
   post,
-  getCurrentUser,
   USER_PINNED_PREFERENCE_URL,
   getFormattedError,
 } from '@bahmni/services';
@@ -11,16 +10,16 @@ import { UserData } from '../models/observationForms';
 
 /**
  * Load pinned observation form names from user preferences
+ * @param userUuid - The UUID of the current user
  * @returns Array of pinned form names
  */
-export const loadPinnedForms = async (): Promise<string[]> => {
+export const loadPinnedForms = async (userUuid: string): Promise<string[]> => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    if (!userUuid) {
       throw new Error(PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
-    const userData = await get<UserData>(USER_PINNED_PREFERENCE_URL(user.uuid));
+    const userData = await get<UserData>(USER_PINNED_PREFERENCE_URL(userUuid));
 
     // Validate user data structure
     if (!userData || typeof userData !== 'object') {
@@ -45,10 +44,18 @@ export const loadPinnedForms = async (): Promise<string[]> => {
 
 /**
  * Save pinned observation form names to user preferences
+ * @param userUuid - The UUID of the current user
  * @param formNames Array of form names to pin
  */
-export const savePinnedForms = async (formNames: string[]): Promise<void> => {
+export const savePinnedForms = async (
+  userUuid: string,
+  formNames: string[],
+): Promise<void> => {
   try {
+    if (!userUuid) {
+      throw new Error(PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND);
+    }
+
     if (!Array.isArray(formNames)) {
       throw new Error(PINNED_FORMS_ERROR_MESSAGES.INVALID_DATA);
     }
@@ -58,14 +65,9 @@ export const savePinnedForms = async (formNames: string[]): Promise<void> => {
       (name) => typeof name === 'string' && name.trim().length > 0,
     );
 
-    const user = await getCurrentUser();
-    if (!user) {
-      throw new Error(PINNED_FORMS_ERROR_MESSAGES.USER_NOT_FOUND);
-    }
-
     // Directly POST the pinned forms without fetching existing user data
     // The backend will merge with existing userProperties
-    await post(USER_PINNED_PREFERENCE_URL(user.uuid), {
+    await post(USER_PINNED_PREFERENCE_URL(userUuid), {
       userProperties: {
         pinnedObsTemplates: validFormNames.join(PINNED_FORMS_DELIMITER),
       },

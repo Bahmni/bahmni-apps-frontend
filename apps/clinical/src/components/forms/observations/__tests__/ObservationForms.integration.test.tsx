@@ -76,6 +76,9 @@ describe('ObservationForms Integration Tests', () => {
     pinnedForms: [],
     updatePinnedForms: jest.fn(),
     isPinnedFormsLoading: false,
+    allForms: mockAvailableForms,
+    isAllFormsLoading: false,
+    observationFormsError: null,
   };
 
   // Mock factories for consistent test data
@@ -110,13 +113,16 @@ describe('ObservationForms Integration Tests', () => {
   });
 
   const renderComponent = (component: React.ReactElement) => {
-    // Get the mocked values and inject them as props
-    const mockedValues = mockUsePinnedObservationForms();
+    const mockedPinnedValues = mockUsePinnedObservationForms();
+    const mockedFormsValues = mockUseObservationFormsSearch();
     const componentWithProps = React.cloneElement(component, {
-      ...(component.props ?? {}), // Start with existing props
-      pinnedForms: mockedValues.pinnedForms,
-      updatePinnedForms: mockedValues.updatePinnedForms,
-      isPinnedFormsLoading: mockedValues.isLoading,
+      ...(component.props ?? {}),
+      pinnedForms: mockedPinnedValues.pinnedForms,
+      updatePinnedForms: mockedPinnedValues.updatePinnedForms,
+      isPinnedFormsLoading: mockedPinnedValues.isLoading,
+      allForms: mockedFormsValues.forms,
+      isAllFormsLoading: mockedFormsValues.isLoading,
+      observationFormsError: mockedFormsValues.error,
     } as any);
     return render(componentWithProps);
   };

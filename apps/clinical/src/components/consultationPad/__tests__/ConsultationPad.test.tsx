@@ -209,6 +209,13 @@ jest.mock('@bahmni/widgets', () => ({
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['VIEW_PATIENTS', 'EDIT_ENCOUNTERS'],
   })),
+  useActivePractitioner: jest.fn(() => ({
+    user: { uuid: 'user-123', username: 'testuser' },
+    practitioner: { uuid: 'practitioner-123' },
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
+  })),
   conditionsQueryKeys: jest.fn((patientUUID: string) => [
     'conditions',
     patientUUID,
