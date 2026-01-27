@@ -99,7 +99,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
 
   // Use TanStack Query for data fetching and caching
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['medications', patientUUID!],
+    queryKey: ['medications', patientUUID!, code, encounterUuids],
     enabled: !!patientUUID,
     queryFn: () => getPatientMedications(patientUUID!, code, encounterUuids!),
   });

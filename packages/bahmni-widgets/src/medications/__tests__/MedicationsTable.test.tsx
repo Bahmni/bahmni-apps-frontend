@@ -419,4 +419,42 @@ describe('MedicationsTable', () => {
     expect(mockSortMedicationsByPriority).toHaveBeenCalled();
     expect(mockSortMedicationsByStatus).toHaveBeenCalled();
   });
+
+  it('calls API with updated query key when code changes', () => {
+    const mockRefetch = jest.fn();
+
+    mockUseQuery.mockReturnValue({
+      data: mockMedications,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: mockRefetch,
+    } as any);
+
+    const { rerender } = render(
+      <MedicationsTable config={{ code: ['medication-code-1'] }} />,
+    );
+
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: [
+          'medications',
+          'patient-uuid-123',
+          ['medication-code-1'],
+          undefined,
+        ],
+      }),
+    );
+
+    mockUseQuery.mockClear();
+
+    // Re-render with updated code for medications (medications do not have any specific code)
+    rerender(<MedicationsTable />);
+
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: ['medications', 'patient-uuid-123', [], undefined],
+      }),
+    );
+  });
 });
