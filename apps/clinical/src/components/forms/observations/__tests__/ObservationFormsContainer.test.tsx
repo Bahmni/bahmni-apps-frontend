@@ -855,6 +855,67 @@ describe('ObservationFormsContainer', () => {
       });
     });
 
+    it('should use observations from form container (not hook state) when Continue Anyway is clicked', async () => {
+      const mockOnFormObservationsChange = jest.fn();
+      const mockOnViewingFormChange = jest.fn();
+
+      // Hook returns stale observations (without invalid values)
+      const hookObservations = [
+        { concept: { uuid: 'hook-obs' }, value: 'hook value' },
+      ];
+
+      // Form container returns fresh observations (with invalid values preserved)
+      const containerObservations = [
+        { concept: { uuid: 'container-obs' }, value: 'invalid value' },
+        { concept: { uuid: 'container-obs-2' }, value: 'another invalid' },
+      ];
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: hookObservations,
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: mockMetadata,
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      // Mock form container to return different observations than hook state
+      mockGetValue.mockReturnValue({
+        observations: containerObservations,
+        errors: [{ message: 'invalid' }],
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          onFormObservationsChange={mockOnFormObservationsChange}
+          onViewingFormChange={mockOnViewingFormChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+
+      // First click - should show validation error
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('inline-notification')).toBeInTheDocument();
+      });
+
+      // Second click - Continue Anyway
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        // Should use observations from form container, NOT from hook state
+        expect(mockOnFormObservationsChange).toHaveBeenCalledWith(
+          mockForm.uuid,
+          containerObservations, // Form container observations, not hookObservations
+          'invalid',
+        );
+      });
+    });
+
     it('should display correct subtitle for each validation error type', async () => {
       // Setup with formMetadata for mandatory error test
       mockUseObservationFormData.mockReturnValue({
