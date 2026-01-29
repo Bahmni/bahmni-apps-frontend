@@ -106,7 +106,7 @@
   background: $background-active;
   border-radius: $spacing-01;
   z-index: 11;
-  pointer-events: none; // Allow mouse events to pass through to parent Separator
+  pointer-events: none;
 }
 
 .panelGroup {
