@@ -2,6 +2,8 @@
 
 A React TypeScript application for the Bahmni Clinical module, built with Webpack and Carbon Design System. This application includes PWA support for offline capabilities.
 
+<!-- Dummy change for CLA signing -->)
+
 ## Features
 
 - **TypeScript** - Type-safe JavaScript
