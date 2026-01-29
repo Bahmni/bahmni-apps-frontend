@@ -57,11 +57,11 @@
   flex-shrink: 0;
   z-index: 2;
   box-shadow: 0 2px 6px $shadow;
-  min-height: 5rem;
+  height: 5rem;
 }
 
 .collapsedPatientHeader {
-  min-height: 10rem;
+  height: 10rem;
 }
 
 .mainDisplay {
@@ -104,14 +104,12 @@
   pointer-events: none; // Allow mouse events to pass through to parent Separator
 }
 
-// Panel group
 .panelGroup {
   flex: 1;
   min-height: 0;
 
-  // Panel styling
   >[data-panel] {
-    position: relative; // Positioning context for absolute children
+    position: relative;
     min-width: 0;
     overflow: hidden;
 
@@ -152,9 +150,8 @@
   }
 
   .panelGroup {
-    margin-left: $spacing-09; // Start after collapsed side nav
+    margin-left: $spacing-09;
 
-    // Override panel flex sizes - hide first panel only when second panel exists
     >[data-panel] {
       &:first-child:not(:last-child) {
         display: none !important;
