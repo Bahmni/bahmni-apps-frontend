@@ -175,7 +175,12 @@ describe('ActionAreaLayout', () => {
     test('has no accessibility violations', async () => {
       const { container } = render(<ActionAreaLayout {...defaultProps} />);
 
-      const results = await axe(container);
+      // Exclude aria-allowed-attr rule due to react-resizable-panels Separator
+      const results = await axe(container, {
+        rules: {
+          'aria-allowed-attr': { enabled: false },
+        },
+      });
       expect(results).toHaveNoViolations();
     });
   });
