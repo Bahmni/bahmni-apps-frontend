@@ -1,5 +1,8 @@
 import classNames from 'classnames';
 import React, { ReactNode } from 'react';
+import { Group, Panel, Separator } from 'react-resizable-panels';
+import { ICON_SIZE } from '../../molecules/icon/constants';
+import { Icon } from '../../molecules/icon/Icon';
 import styles from './styles/index.module.scss';
 
 interface ActionAreaLayoutProps {
@@ -40,32 +43,49 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
       id="actionAreaLayout"
     >
       {headerWSideNav}
-      <div
-        className={classNames(
-          styles.body,
-          isActionAreaVisible ? styles.collapse : styles.expand,
+      <Group orientation="horizontal" className={styles.panelGroup}>
+        <Panel defaultSize={40}>
+          <div
+            className={classNames(
+              styles.body,
+              isActionAreaVisible ? styles.collapse : styles.expand,
+            )}
+          >
+            <div
+              className={classNames(
+                styles.patientHeader,
+                isActionAreaVisible && styles.collapsedPatientHeader,
+              )}
+            >
+              {patientHeader}
+            </div>
+            <div
+              className={classNames(
+                styles.mainDisplay,
+                isActionAreaVisible && styles.collapsedMainDisplay,
+              )}
+            >
+              {mainDisplay}
+            </div>
+          </div>
+        </Panel>
+        {isActionAreaVisible && (
+          <>
+            <Separator className={styles.separator}>
+              <div className={styles.separatorGrip}>
+                <Icon
+                  name="fa-grip-vertical"
+                  id="separator-grip-icon"
+                  size={ICON_SIZE.XS}
+                />
+              </div>
+            </Separator>
+            <Panel defaultSize={60}>
+              <div className={styles.actionArea}>{actionArea}</div>
+            </Panel>
+          </>
         )}
-      >
-        <div
-          className={classNames(
-            styles.patientHeader,
-            isActionAreaVisible && styles.collapsedPatientHeader,
-          )}
-        >
-          {patientHeader}
-        </div>
-        <div
-          className={classNames(
-            styles.mainDisplay,
-            isActionAreaVisible && styles.collapsedMainDisplay,
-          )}
-        >
-          {mainDisplay}
-        </div>
-      </div>
-      {isActionAreaVisible && (
-        <div className={styles.actionArea}>{actionArea}</div>
-      )}
+      </Group>
     </div>
   );
 };
