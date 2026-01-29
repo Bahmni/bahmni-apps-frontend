@@ -139,7 +139,7 @@ export const ADDRESS_HIERARCHY_URL = (
 export const ORDERED_ADDRESS_HIERARCHY_URL = `/openmrs/module/addresshierarchy/ajax/getOrderedAddressHierarchyLevels.form`;
 
 export const RELATIONSHIP_TYPES_URL =
-  OPENMRS_REST_V1 + '/relationshiptype?v=custom:(aIsToB,bIsToA,uuid)';
+  OPENMRS_REST_V1 + '/relationshiptype?v=custom:(aIsToB,bIsToA,uuid)&limit=150';
 
 // Search and pagination constants
 export const ADDRESS_HIERARCHY_DEFAULT_LIMIT = 20;

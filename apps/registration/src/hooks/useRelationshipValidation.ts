@@ -1,7 +1,11 @@
 import { useTranslation, getRelationshipTypes } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
+import {
+  getRelationshipTypesFromCache,
+  saveRelationshipTypesToCache,
+} from '../utils/relationshipTypesCache';
 
 export interface ValidationErrors {
   [key: string]: {
@@ -13,11 +17,26 @@ export interface ValidationErrors {
 export const useRelationshipValidation = () => {
   const { t } = useTranslation();
 
+  // Get cached data from localStorage to use as initial data
+  const cachedData = getRelationshipTypesFromCache();
+
   const { data: relationshipTypes = [] } = useQuery({
     queryKey: ['relationshipTypes'],
     queryFn: getRelationshipTypes,
-    staleTime: 30 * 60 * 1000,
+    // Use cached data as placeholder while fetching fresh data in background
+    placeholderData: cachedData ?? undefined,
+    // Data is considered fresh for 24 hours (relationship types rarely change)
+    staleTime: 24 * 60 * 60 * 1000,
+    // Keep data in cache for 7 days even when component unmounts
+    gcTime: 7 * 24 * 60 * 60 * 1000,
   });
+
+  // Save to localStorage whenever new data is fetched
+  useEffect(() => {
+    if (relationshipTypes.length > 0) {
+      saveRelationshipTypesToCache(relationshipTypes);
+    }
+  }, [relationshipTypes]);
 
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
     {},

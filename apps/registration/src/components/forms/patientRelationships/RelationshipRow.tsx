@@ -1,6 +1,5 @@
 import {
   Button,
-  Dropdown,
   DatePicker,
   DatePickerInput,
   ComboBox,
@@ -102,10 +101,10 @@ export const RelationshipRow = ({
   return {
     id: relationship.id,
     relationshipType: (
-      <Dropdown
+      <ComboBox
         id={`relationship-type-${relationship.id}`}
         titleText=""
-        label={t('REGISTRATION_SELECT')}
+        placeholder={t('REGISTRATION_SELECT')}
         items={relationshipTypes}
         itemToString={(item) => (item ? `${item.aIsToB}/ ${item.bIsToA}` : '')}
         selectedItem={
@@ -115,6 +114,11 @@ export const RelationshipRow = ({
         }
         invalid={!!errors.relationshipType}
         invalidText={errors.relationshipType}
+        shouldFilterItem={({ item, inputValue }) => {
+          if (!inputValue) return true;
+          const searchString = `${item.aIsToB}/ ${item.bIsToA}`.toLowerCase();
+          return searchString.includes(inputValue.toLowerCase());
+        }}
         onChange={({ selectedItem }) =>
           onUpdateRelationship(
             relationship.id,
