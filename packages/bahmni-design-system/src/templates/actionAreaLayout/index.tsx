@@ -11,6 +11,7 @@ interface ActionAreaLayoutProps {
   mainDisplay: ReactNode;
   actionArea: ReactNode;
   isActionAreaVisible: boolean;
+  isViewingForm?: boolean;
 }
 
 /**
@@ -33,6 +34,7 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
   mainDisplay,
   actionArea,
   isActionAreaVisible,
+  isViewingForm = false,
 }) => {
   return (
     <div
@@ -81,7 +83,14 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
               </div>
             </Separator>
             <Panel defaultSize={60}>
-              <div className={styles.actionArea}>{actionArea}</div>
+              <div
+                className={classNames(
+                  styles.actionArea,
+                  isViewingForm && styles.viewingForm,
+                )}
+              >
+                {actionArea}
+              </div>
             </Panel>
           </>
         )}

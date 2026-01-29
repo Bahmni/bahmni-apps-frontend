@@ -76,7 +76,12 @@
 
 .actionArea {
   height: 100%;
-  overflow: auto;
+}
+
+.viewingForm {
+  height: 200%;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 // Separator styles
