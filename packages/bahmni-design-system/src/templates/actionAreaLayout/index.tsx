@@ -5,6 +5,10 @@ import { ICON_SIZE } from '../../molecules/icon/constants';
 import { Icon } from '../../molecules/icon/Icon';
 import styles from './styles/index.module.scss';
 
+const MAIN_DISPLAY_PANEL_DEFAULT_SIZE = 40;
+const ACTION_AREA_PANEL_DEFAULT_SIZE = 60;
+const PANEL_MIN_SIZE = 40;
+
 interface ActionAreaLayoutProps {
   headerWSideNav: ReactNode;
   patientHeader: ReactNode;
@@ -46,7 +50,10 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
     >
       {headerWSideNav}
       <Group orientation="horizontal" className={styles.panelGroup}>
-        <Panel defaultSize={40} minSize={40}>
+        <Panel
+          defaultSize={MAIN_DISPLAY_PANEL_DEFAULT_SIZE}
+          minSize={PANEL_MIN_SIZE}
+        >
           <div
             className={classNames(
               styles.body,
@@ -82,7 +89,10 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
                 />
               </div>
             </Separator>
-            <Panel defaultSize={60} minSize={40}>
+            <Panel
+              defaultSize={ACTION_AREA_PANEL_DEFAULT_SIZE}
+              minSize={PANEL_MIN_SIZE}
+            >
               <div
                 className={classNames(
                   styles.actionArea,
