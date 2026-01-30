@@ -72,7 +72,7 @@ const ConsultationPage: React.FC = () => {
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
   const [searchParams] = useSearchParams();
-  const { viewingForm } = useObservationFormsStore();
+  const viewingForm = useObservationFormsStore((state) => state.viewingForm);
 
   const episodeUuids = useMemo(() => {
     const episodeUuid = searchParams.get('episodeUuid');
