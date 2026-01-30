@@ -46,7 +46,7 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
     >
       {headerWSideNav}
       <Group orientation="horizontal" className={styles.panelGroup}>
-        <Panel defaultSize={40}>
+        <Panel defaultSize={40} minSize={40}>
           <div
             className={classNames(
               styles.body,
@@ -82,7 +82,7 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
                 />
               </div>
             </Separator>
-            <Panel defaultSize={60}>
+            <Panel defaultSize={60} minSize={40}>
               <div
                 className={classNames(
                   styles.actionArea,
