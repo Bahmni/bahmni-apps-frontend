@@ -37,7 +37,7 @@ const globalActions = [
     id: 'search',
     label: 'Search',
     renderIcon: <Icon id="search-icon" name="fa-search" size={ICON_SIZE.LG} />,
-    onClick: () => {},
+    onClick: () => { },
   },
   {
     id: 'notifications',
@@ -45,13 +45,13 @@ const globalActions = [
     renderIcon: (
       <Icon id="notifications-icon" name="fa-bell" size={ICON_SIZE.LG} />
     ),
-    onClick: () => {},
+    onClick: () => { },
   },
   {
     id: 'user',
     label: 'User',
     renderIcon: <Icon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />,
-    onClick: () => {},
+    onClick: () => { },
   },
 ];
 
@@ -80,10 +80,20 @@ const ConsultationPage: React.FC = () => {
       .map((id) => id.trim())
       .filter(Boolean);
   }, [searchParams]);
+
   const currentDashboard = useMemo(() => {
     if (!clinicalConfig) return null;
-    return getDefaultDashboard(clinicalConfig.dashboards || []);
-  }, [clinicalConfig]);
+
+    const currentDashboardParam = searchParams.get('currentDashboard');
+    if (!currentDashboardParam) {
+      return getDefaultDashboard(clinicalConfig.dashboards || []);
+    }
+    const dashboardByName = clinicalConfig.dashboards?.find(
+      (dashboard) => dashboard.name === currentDashboardParam,
+    );
+    return dashboardByName || null;
+
+  }, [clinicalConfig, searchParams]);
 
   const dashboardUrl = currentDashboard?.url ?? null;
   const { dashboardConfig } = useDashboardConfig(dashboardUrl);
