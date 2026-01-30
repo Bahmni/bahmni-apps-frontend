@@ -9,13 +9,15 @@ const MAIN_DISPLAY_PANEL_DEFAULT_SIZE = 40;
 const ACTION_AREA_PANEL_DEFAULT_SIZE = 60;
 const PANEL_MIN_SIZE = 40;
 
+type LayoutVariant = 'default' | 'extended';
+
 interface ActionAreaLayoutProps {
   headerWSideNav: ReactNode;
   patientHeader: ReactNode;
   mainDisplay: ReactNode;
   actionArea: ReactNode;
   isActionAreaVisible: boolean;
-  isViewingForm?: boolean;
+  layoutVariant?: LayoutVariant;
 }
 
 /**
@@ -38,7 +40,7 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
   mainDisplay,
   actionArea,
   isActionAreaVisible,
-  isViewingForm = false,
+  layoutVariant = 'default',
 }) => {
   return (
     <div
@@ -96,7 +98,7 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
               <div
                 className={classNames(
                   styles.actionArea,
-                  isViewingForm && styles.viewingForm,
+                  layoutVariant === 'extended' && styles.extended,
                 )}
               >
                 {actionArea}

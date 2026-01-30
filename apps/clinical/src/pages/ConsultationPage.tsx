@@ -153,7 +153,7 @@ const ConsultationPage: React.FC = () => {
           </Suspense>
         }
         isActionAreaVisible={isActionAreaVisible}
-        isViewingForm={!!viewingForm}
+        layoutVariant={viewingForm ? 'extended' : 'default'}
         actionArea={
           <ConsultationPad
             onClose={() => setIsActionAreaVisible((prev) => !prev)}
