@@ -45,7 +45,6 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "@types/carbon__layout": "^0.0.3",
-    "@types/react-resizable": "^3"
+    "@types/carbon__layout": "^0.0.3"
   }
 }
