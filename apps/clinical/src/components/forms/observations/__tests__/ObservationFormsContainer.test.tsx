@@ -71,6 +71,13 @@ jest.mock('../../../../constants/forms', () => ({
   VALIDATION_STATE_INVALID: 'invalid',
 }));
 
+// Mock the formEventExecutor
+const mockExecuteOnFormSaveEvent = jest.fn();
+jest.mock('../utils/formEventExecutor', () => ({
+  executeOnFormSaveEvent: (...args: unknown[]) =>
+    mockExecuteOnFormSaveEvent(...args),
+}));
+
 // Mock ActionArea component
 jest.mock('@bahmni/design-system', () => ({
   ActionArea: jest.fn(
@@ -214,6 +221,11 @@ describe('ObservationFormsContainer', () => {
       isLoadingMetadata: false,
       metadataError: null,
     });
+
+    // Mock executeOnFormSaveEvent to return observations as-is (pass-through by default)
+    mockExecuteOnFormSaveEvent.mockImplementation(
+      (_metadata, observations) => observations,
+    );
   });
 
   describe('Rendering and Structure', () => {
@@ -297,6 +309,8 @@ describe('ObservationFormsContainer', () => {
       expect(mockOnFormObservationsChange).toHaveBeenCalledWith(
         mockForm.uuid,
         expect.any(Array),
+        null,
+        null,
       );
       expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
     });
@@ -850,6 +864,7 @@ describe('ObservationFormsContainer', () => {
           mockForm.uuid,
           expect.any(Array),
           'mandatory', // validationState is passed with the error type
+          'mandatory', // validationErrorType is also passed
         );
         expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
       });
@@ -912,6 +927,7 @@ describe('ObservationFormsContainer', () => {
           mockForm.uuid,
           containerObservations, // Form container observations, not hookObservations
           'invalid',
+          'invalid', // validationErrorType is also passed
         );
       });
     });
@@ -976,6 +992,254 @@ describe('ObservationFormsContainer', () => {
           'translated_OBSERVATION_FORM_VALIDATION_ERROR_SUBTITLE_EMPTY',
         );
       });
+    });
+  });
+
+  describe('Script Modification of Observations', () => {
+    it('should save modified observations returned by form script, not original observations', () => {
+      const mockOnFormObservationsChange = jest.fn();
+      const mockOnViewingFormChange = jest.fn();
+
+      const originalObservations = [
+        {
+          concept: { uuid: 'weight-uuid', name: 'Weight' },
+          value: 70,
+          formFieldPath: 'form.1/1-0',
+        },
+        {
+          concept: { uuid: 'height-uuid', name: 'Height' },
+          value: 170,
+          formFieldPath: 'form.1/2-0',
+        },
+      ];
+
+      const modifiedObservations = [
+        {
+          concept: { uuid: 'weight-uuid', name: 'Weight' },
+          value: 70,
+          formFieldPath: 'form.1/1-0',
+        },
+        {
+          concept: { uuid: 'height-uuid', name: 'Height' },
+          value: 170,
+          formFieldPath: 'form.1/2-0',
+        },
+        {
+          concept: { uuid: 'bmi-uuid', name: 'BMI' },
+          value: 24.2, // Calculated by script
+          formFieldPath: 'form.1/calculated-0',
+        },
+      ];
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: originalObservations,
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: {
+          name: 'Vitals Form',
+          uuid: 'vitals-form-uuid',
+          schema: {
+            name: 'Vitals Schema',
+            controls: [],
+            events: {
+              onFormSave: btoa('function(form) { /* calculate BMI */ }'),
+            },
+          },
+        },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      mockGetValue.mockReturnValue({
+        errors: [],
+        observations: originalObservations,
+      });
+
+      mockExecuteOnFormSaveEvent.mockReturnValue(modifiedObservations);
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          onFormObservationsChange={mockOnFormObservationsChange}
+          onViewingFormChange={mockOnViewingFormChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      expect(mockOnFormObservationsChange).toHaveBeenCalledWith(
+        mockForm.uuid,
+        modifiedObservations,
+        null,
+        null,
+      );
+
+      expect(mockOnFormObservationsChange).not.toHaveBeenCalledWith(
+        mockForm.uuid,
+        originalObservations,
+        null,
+      );
+
+      // Verify executeOnFormSaveEvent was called
+      expect(mockExecuteOnFormSaveEvent).toHaveBeenCalled();
+
+      // Check call arguments
+      const callArgs = mockExecuteOnFormSaveEvent.mock.calls[0];
+      expect(callArgs[0]).toMatchObject({
+        name: 'Vitals Form',
+        uuid: 'vitals-form-uuid',
+      });
+      expect(callArgs[1]).toEqual(expect.any(Array));
+      expect(callArgs[2]).toBe('test-patient-uuid');
+
+      expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
+    });
+  });
+
+  describe('Script Execution Error Handling', () => {
+    it('should display error notification when onFormSave event script throws Error', () => {
+      const mockOnFormObservationsChange = jest.fn();
+      const mockOnViewingFormChange = jest.fn();
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: {
+          schema: { name: 'Test Form Schema', controls: [] },
+        },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      mockGetValue.mockReturnValue({
+        errors: [],
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+      });
+
+      // Mock executeOnFormSaveEvent to throw an Error with form name wrapper
+      mockExecuteOnFormSaveEvent.mockImplementation(() => {
+        throw new Error(
+          'Error in onFormSave event for form "Test Form Schema": Validation failed: Date must be in the future',
+        );
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          onFormObservationsChange={mockOnFormObservationsChange}
+          onViewingFormChange={mockOnViewingFormChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      // Error notification should be displayed with the error message including form name
+      expect(screen.getByTestId('inline-notification')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /Error in onFormSave event for form "Test Form Schema": Validation failed: Date must be in the future/,
+        ),
+      ).toBeInTheDocument();
+
+      // Should NOT call onFormObservationsChange when script fails
+      expect(mockOnFormObservationsChange).not.toHaveBeenCalled();
+      expect(mockOnViewingFormChange).not.toHaveBeenCalled();
+    });
+
+    it('should display fallback error when onFormSave event script throws non-Error object', () => {
+      const mockOnFormObservationsChange = jest.fn();
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: {
+          schema: { name: 'Test Form Schema', controls: [] },
+        },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      mockGetValue.mockReturnValue({
+        errors: [],
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+      });
+
+      // Mock executeOnFormSaveEvent to throw an Error with form name wrapper
+      // (simulating how the real function wraps errors from non-Error objects)
+      mockExecuteOnFormSaveEvent.mockImplementation(() => {
+        throw new Error(
+          'Error in onFormSave event for form "Test Form Schema": Custom error object',
+        );
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          onFormObservationsChange={mockOnFormObservationsChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      // Should display error message with form name
+      expect(screen.getByTestId('inline-notification')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /Error in onFormSave event for form "Test Form Schema": Custom error object/,
+        ),
+      ).toBeInTheDocument();
+
+      // Should NOT call onFormObservationsChange when script fails
+      expect(mockOnFormObservationsChange).not.toHaveBeenCalled();
+    });
+
+    it('should close script error notification when close button is clicked', () => {
+      mockUseObservationFormData.mockReturnValue({
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: {
+          schema: { name: 'Test Form Schema', controls: [] },
+        },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      mockGetValue.mockReturnValue({
+        errors: [],
+      });
+
+      // Mock executeOnFormSaveEvent to throw an Error
+      mockExecuteOnFormSaveEvent.mockImplementation(() => {
+        throw new Error('Script error');
+      });
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      // Error notification should be displayed
+      expect(screen.getByTestId('inline-notification')).toBeInTheDocument();
+
+      // Click close button on notification
+      const closeButton = screen.getByTestId('notification-close');
+      fireEvent.click(closeButton);
+
+      // Error notification should be removed
+      expect(
+        screen.queryByTestId('inline-notification'),
+      ).not.toBeInTheDocument();
     });
   });
 });

@@ -6,7 +6,7 @@ import {
   SkeletonText,
 } from '@bahmni/design-system';
 import {
-  Container,
+  Container as Form2Container,
   FormMetadata as Form2FormMetadata,
 } from '@bahmni/form2-controls';
 import '@bahmni/form2-controls/dist/bundle.css';
@@ -25,21 +25,18 @@ import {
   VALIDATION_STATE_EMPTY,
   VALIDATION_STATE_MANDATORY,
   VALIDATION_STATE_INVALID,
+  VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import styles from './styles/ObservationFormsContainer.module.scss';
+import { executeOnFormSaveEvent } from './utils/formEventExecutor';
 
 interface ObservationFormsContainerProps {
-  // Callback to notify parent when form viewing starts/ends
   onViewingFormChange: (viewingForm: ObservationForm | null) => void;
-  // The currently viewing form (passed from parent)
   viewingForm?: ObservationForm | null;
-  // Callback to remove form from selected forms list
   onRemoveForm?: (formUuid: string) => void;
-  // Pinned forms state passed from parent (required)
   pinnedForms: ObservationForm[];
   updatePinnedForms: (newPinnedForms: ObservationForm[]) => Promise<void>;
-  // Callback to lift observation form data to parent for consultation bundle
   onFormObservationsChange?: (
     formUuid: string,
     observations: Form2Observation[],
@@ -47,9 +44,9 @@ interface ObservationFormsContainerProps {
       | null
       | typeof VALIDATION_STATE_EMPTY
       | typeof VALIDATION_STATE_MANDATORY
-      | typeof VALIDATION_STATE_INVALID,
+      | typeof VALIDATION_STATE_INVALID
+      | typeof VALIDATION_STATE_SCRIPT_ERROR,
   ) => void;
-  // Existing saved observations for the current form (for edit mode)
   existingObservations?: Form2Observation[];
 }
 
@@ -79,8 +76,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     | typeof VALIDATION_STATE_EMPTY
     | typeof VALIDATION_STATE_MANDATORY
     | typeof VALIDATION_STATE_INVALID
+    | typeof VALIDATION_STATE_SCRIPT_ERROR
   >(null);
-  const formContainerRef = useRef<Container>(null);
+  const [validationErrorMessage, setValidationErrorMessage] = useState<
+    string | null
+  >(null);
+  const formContainerRef = useRef<React.ComponentRef<
+    typeof Form2Container
+  > | null>(null);
 
   const {
     observations,
@@ -93,14 +96,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     viewingForm?.uuid ? { formUuid: viewingForm.uuid } : undefined,
   );
 
-  // Wrap handleFormDataChange to clear validation error when user starts editing
   const handleFormDataChange = React.useCallback(
     (data: unknown) => {
-      // Clear validation error type when user makes changes
       if (validationErrorType) {
         setValidationErrorType(null);
       }
-      // Clear stored validation state in the store
       if (viewingForm && onFormObservationsChange) {
         onFormObservationsChange(viewingForm.uuid, observations, null);
       }
@@ -115,12 +115,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     ],
   );
 
-  // Check if current form is pinned
   const isCurrentFormPinned = viewingForm
     ? pinnedForms.some((form) => form.uuid === viewingForm.uuid)
     : false;
 
-  // Handle pin/unpin toggle
   const handlePinToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -132,7 +130,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     }
   };
 
-  // Handle form discard - remove from list and exit view mode
   const handleDiscardForm = () => {
     setValidationErrorType(null);
     if (viewingForm && onRemoveForm) {
@@ -141,37 +138,36 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     onViewingFormChange(null);
   };
 
-  // Handle form save - lift observations to parent and exit view mode
-  const handleSaveForm = () => {
+  const handleSaveForm = (
+    observationsToSave: Form2Observation[],
+    validationState:
+      | null
+      | typeof VALIDATION_STATE_EMPTY
+      | typeof VALIDATION_STATE_MANDATORY
+      | typeof VALIDATION_STATE_INVALID
+      | typeof VALIDATION_STATE_SCRIPT_ERROR = null,
+  ) => {
     if (viewingForm && onFormObservationsChange) {
-      // Get current observations from form container if available
-      // This ensures we save the latest values, not stale state
-      let observationsToSave = observations;
-      if (formContainerRef.current) {
-        const { observations: currentObservations } =
-          formContainerRef.current.getValue();
-        if (currentObservations && currentObservations.length > 0) {
-          observationsToSave = currentObservations as Form2Observation[];
-        }
-      }
-
       onFormObservationsChange(
         viewingForm.uuid,
         observationsToSave,
+        validationState,
         validationErrorType,
       );
     }
     onViewingFormChange(null);
   };
 
-  // Validate form and save if no errors
   const validateAndSave = () => {
     if (formContainerRef.current) {
-      // If validationErrorType is already set, user clicked "Continue Anyway"
-      // Skip validation and save directly
       if (validationErrorType) {
         setValidationErrorType(null);
-        handleSaveForm();
+        const { observations: currentObservations } =
+          formContainerRef.current.getValue();
+        handleSaveForm(
+          currentObservations as Form2Observation[],
+          validationErrorType,
+        );
         return;
       }
 
@@ -181,18 +177,16 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       const isEmpty = !currentObservations || currentObservations.length === 0;
       const hasErrors = errors && errors.length > 0;
 
-      // Check for empty form
       if (isEmpty) {
         setValidationErrorType(VALIDATION_STATE_EMPTY);
         return;
       }
 
-      // Check for validation errors
       if (hasErrors) {
         const hasMandatoryError = errors
           .flat()
           .some(
-            (err) =>
+            (err: { get?: (key: string) => string; message?: string }) =>
               (err.get?.('message') ?? err.message) ===
               VALIDATION_STATE_MANDATORY,
           );
@@ -204,36 +198,68 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         return;
       }
 
-      // If we reach here, validation passed
       setValidationErrorType(null);
+      setValidationErrorMessage(null);
 
-      const observationsToSave: Form2Observation[] =
-        currentObservations && currentObservations.length > 0
-          ? (currentObservations as Form2Observation[])
-          : observations;
+      try {
+        const hasValidData = (obs: (typeof currentObservations)[number]) =>
+          obs.value !== undefined ||
+          (obs.groupMembers && obs.groupMembers.length > 0);
 
-      // Save with observations from Container
-      if (viewingForm && onFormObservationsChange) {
-        onFormObservationsChange(viewingForm.uuid, observationsToSave);
+        const validCurrentObservations =
+          currentObservations?.filter(hasValidData);
+
+        const observationsToValidate: Form2Observation[] =
+          validCurrentObservations && validCurrentObservations.length > 0
+            ? (validCurrentObservations as Form2Observation[])
+            : observations;
+
+        const containerState = (
+          formContainerRef.current as {
+            state?: { data?: Record<string, unknown> };
+          } | null
+        )?.state;
+        const formData = containerState?.data as
+          | Record<string, unknown>
+          | undefined;
+
+        const processedObservations = executeOnFormSaveEvent(
+          formMetadata!,
+          observationsToValidate,
+          patientUUID!,
+          formData,
+        );
+
+        handleSaveForm(processedObservations, null);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : t('OBSERVATION_FORM_SCRIPT_ERROR_MESSAGE');
+        setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
+        setValidationErrorMessage(errorMessage);
       }
-      onViewingFormChange(null);
     }
   };
 
-  // Continue anyway - save form even with validation errors
   const continueAnyway = () => {
     setValidationErrorType(null);
-    handleSaveForm();
+    if (formContainerRef.current) {
+      const { observations: currentObservations } =
+        formContainerRef.current.getValue();
+      handleSaveForm(
+        currentObservations as Form2Observation[],
+        validationErrorType,
+      );
+    }
   };
 
-  // Discard form and clear validation errors
   const discard = () => {
     setValidationErrorType(null);
     resetForm();
     handleDiscardForm();
   };
 
-  // Format error for display
   const error = metadataError
     ? new Error(
         getFormattedError(metadataError).message ??
@@ -241,25 +267,42 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       )
     : null;
 
-  // Form view content when a form is selected
   const formViewContent = (
     <div className={styles.formView}>
-      {validationErrorType && (
-        <div className={styles.errorNotificationWrapper}>
-          <InlineNotification
-            kind="error"
-            title={t(
-              `OBSERVATION_FORM_VALIDATION_ERROR_TITLE_${validationErrorType.toUpperCase()}`,
-            )}
-            subtitle={t(
-              `OBSERVATION_FORM_VALIDATION_ERROR_SUBTITLE_${validationErrorType.toUpperCase()}`,
-            )}
-            lowContrast
-            hideCloseButton={false}
-            onClose={() => setValidationErrorType(null)}
-          />
-        </div>
-      )}
+      {validationErrorType &&
+        validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR && (
+          <div className={styles.errorNotificationWrapper}>
+            <InlineNotification
+              kind="error"
+              title={t(
+                `OBSERVATION_FORM_VALIDATION_ERROR_TITLE_${validationErrorType.toUpperCase()}`,
+              )}
+              subtitle={t(
+                `OBSERVATION_FORM_VALIDATION_ERROR_SUBTITLE_${validationErrorType.toUpperCase()}`,
+              )}
+              lowContrast
+              hideCloseButton={false}
+              onClose={() => setValidationErrorType(null)}
+            />
+          </div>
+        )}
+
+      {validationErrorType === VALIDATION_STATE_SCRIPT_ERROR &&
+        validationErrorMessage && (
+          <div className={styles.errorNotificationWrapper}>
+            <InlineNotification
+              kind="error"
+              title={t('OBSERVATION_FORM_SCRIPT_ERROR_TITLE')}
+              subtitle={validationErrorMessage}
+              lowContrast
+              hideCloseButton={false}
+              onClose={() => {
+                setValidationErrorType(null);
+                setValidationErrorMessage(null);
+              }}
+            />
+          </div>
+        )}
 
       <div className={styles.formContent}>
         {isLoadingMetadata ? (
@@ -267,7 +310,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         ) : error ? (
           <div>{error.message}</div>
         ) : formMetadata && patientUUID ? (
-          <Container
+          <Form2Container
             ref={formContainerRef}
             metadata={{
               ...(formMetadata.schema as Form2FormMetadata),
@@ -290,7 +333,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     </div>
   );
 
-  // Create a custom title with pin icon
   const formTitleWithPin = (
     <div className={styles.formTitleContainer}>
       <span>{viewingForm?.name}</span>
@@ -306,7 +348,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     </div>
   );
 
-  // If viewing a form, render the form with its own ActionArea
   if (viewingForm) {
     return (
       <ActionArea
@@ -328,7 +369,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     );
   }
 
-  // If no form is being viewed, render nothing
   return null;
 };
 

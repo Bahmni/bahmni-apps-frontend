@@ -211,12 +211,12 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r18»"
+                id="table-sort-_r_18_"
               >
                 Click to sort rows by Medication header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r18»"
+                aria-describedby="table-sort-_r_18_"
                 class="cds--table-sort"
                 type="button"
               >
@@ -271,12 +271,12 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r19»"
+                id="table-sort-_r_19_"
               >
                 Click to sort rows by Dosage header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r19»"
+                aria-describedby="table-sort-_r_19_"
                 class="cds--table-sort"
                 type="button"
               >
@@ -331,12 +331,12 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1a»"
+                id="table-sort-_r_1a_"
               >
                 Click to sort rows by Instruction header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1a»"
+                aria-describedby="table-sort-_r_1a_"
                 class="cds--table-sort"
                 type="button"
               >
@@ -391,12 +391,12 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1b»"
+                id="table-sort-_r_1b_"
               >
                 Click to sort rows by Start Date header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1b»"
+                aria-describedby="table-sort-_r_1b_"
                 class="cds--table-sort"
                 type="button"
               >
@@ -451,12 +451,12 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1c»"
+                id="table-sort-_r_1c_"
               >
                 Click to sort rows by Order Date header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1c»"
+                aria-describedby="table-sort-_r_1c_"
                 class="cds--table-sort"
                 type="button"
               >
@@ -511,12 +511,12 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1d»"
+                id="table-sort-_r_1d_"
               >
                 Click to sort rows by Ordered By header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1d»"
+                aria-describedby="table-sort-_r_1d_"
                 class="cds--table-sort"
                 type="button"
               >
@@ -571,12 +571,12 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1e»"
+                id="table-sort-_r_1e_"
               >
                 Click to sort rows by Quantity header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1e»"
+                aria-describedby="table-sort-_r_1e_"
                 class="cds--table-sort"
                 type="button"
               >
@@ -631,12 +631,12 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1f»"
+                id="table-sort-_r_1f_"
               >
                 Click to sort rows by Status header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1f»"
+                aria-describedby="table-sort-_r_1f_"
                 class="cds--table-sort"
                 type="button"
               >

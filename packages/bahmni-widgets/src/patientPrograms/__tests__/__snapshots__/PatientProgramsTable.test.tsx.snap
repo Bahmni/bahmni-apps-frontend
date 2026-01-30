@@ -27,12 +27,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-«ra»"
+                  id="table-sort-_r_a_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_PROGRAM_NAME header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-«ra»"
+                  aria-describedby="table-sort-_r_a_"
                   class="cds--table-sort"
                   type="button"
                 >
@@ -87,12 +87,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-«rb»"
+                  id="table-sort-_r_b_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_START_DATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-«rb»"
+                  aria-describedby="table-sort-_r_b_"
                   class="cds--table-sort"
                   type="button"
                 >
@@ -147,12 +147,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-«rc»"
+                  id="table-sort-_r_c_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_END_DATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-«rc»"
+                  aria-describedby="table-sort-_r_c_"
                   class="cds--table-sort"
                   type="button"
                 >
@@ -207,12 +207,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-«rd»"
+                  id="table-sort-_r_d_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_STATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-«rd»"
+                  aria-describedby="table-sort-_r_d_"
                   class="cds--table-sort"
                   type="button"
                 >
@@ -267,12 +267,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-«re»"
+                  id="table-sort-_r_e_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_OUTCOME header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-«re»"
+                  aria-describedby="table-sort-_r_e_"
                   class="cds--table-sort"
                   type="button"
                 >

@@ -125,8 +125,6 @@ export const TimePicker: React.FC<TimePickerProps> = ({
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       const char = event.key;
       const currentValue = (event.target as HTMLInputElement).value;
-      const cursorPosition =
-        (event.target as HTMLInputElement).selectionStart ?? 0;
 
       // Allow control keys (backspace, delete, tab, escape, enter, arrows, etc.)
       if (

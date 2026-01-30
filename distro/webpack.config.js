@@ -53,7 +53,7 @@ module.exports = (env, argv) => {
         assets: [
           './src/assets',
           { input: isDevelopment ? '../apps/clinical/public/locales' : '../apps/clinical/dist/locales', glob: '**/*', output: 'clinical/locales' },
-          { input: isDevelopment ? '../apps/registration/public/locales' : '../apps/registration/dist/locales', glob: '**/*', output: 'registration/locales' }
+          { input: isDevelopment ? '../apps/registration/public/locales' : '../apps/registration/dist/locales', glob: '**/*', output: 'registration/locales' },
         ],
         styles: ['./src/styles.scss'],
         outputHashing:

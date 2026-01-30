@@ -30,12 +30,12 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r1i»-menu"
+            aria-controls="downshift-_r_1i_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Diagnoses Certainty"
             class="cds--list-box__field"
-            id="downshift-«r1i»-toggle-button"
+            id="downshift-_r_1i_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Confirmed"
@@ -71,9 +71,9 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r1i»-label"
+            aria-labelledby="downshift-_r_1i_-label"
             class="cds--list-box__menu"
-            id="downshift-«r1i»-menu"
+            id="downshift-_r_1i_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -114,12 +114,12 @@ exports[`SelectedDiagnosisItem Snapshot Tests disabled condition link matches sn
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r1o»-menu"
+            aria-controls="downshift-_r_1o_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Diagnoses Certainty"
             class="cds--list-box__field"
-            id="downshift-«r1o»-toggle-button"
+            id="downshift-_r_1o_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Confirmed"
@@ -155,9 +155,9 @@ exports[`SelectedDiagnosisItem Snapshot Tests disabled condition link matches sn
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r1o»-label"
+            aria-labelledby="downshift-_r_1o_-label"
             class="cds--list-box__menu"
-            id="downshift-«r1o»-menu"
+            id="downshift-_r_1o_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -198,12 +198,12 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-«r1l»-menu"
+            aria-controls="downshift-_r_1l_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Diagnoses Certainty"
             class="cds--list-box__field"
-            id="downshift-«r1l»-toggle-button"
+            id="downshift-_r_1l_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Select Certainty"
@@ -239,9 +239,9 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-«r1l»-label"
+            aria-labelledby="downshift-_r_1l_-label"
             class="cds--list-box__menu"
-            id="downshift-«r1l»-menu"
+            id="downshift-_r_1l_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />

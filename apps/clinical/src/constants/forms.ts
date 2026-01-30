@@ -18,3 +18,4 @@ export const FORM_CONTROL_TYPE_MULTISELECT = 'multiselect';
 export const VALIDATION_STATE_EMPTY = 'empty';
 export const VALIDATION_STATE_MANDATORY = 'mandatory';
 export const VALIDATION_STATE_INVALID = 'invalid';
+export const VALIDATION_STATE_SCRIPT_ERROR = 'script_error';

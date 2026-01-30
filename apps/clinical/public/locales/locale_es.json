@@ -246,6 +246,7 @@
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_INVALID": "Entrada de datos inválida",
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_MANDATORY": "Faltan campos obligatorios",
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_EMPTY": "No se han introducido datos",
+  "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_SCRIPT_ERROR": "Error de Script (Guardar)",
   "OBSERVATIONS_LOADING": "Cargando Observaciones...",
   "OBSERVATIONS_RECORDED_BY": "Grabado por {{provider}} ",
   "PARTICIPANT": "Partícipe(es)",
