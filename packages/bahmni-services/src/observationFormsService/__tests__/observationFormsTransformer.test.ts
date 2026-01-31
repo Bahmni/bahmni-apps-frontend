@@ -2,6 +2,8 @@ import { FormMetadata } from '../models';
 import {
   transformFormDataToObservations,
   transformObservationsToFormData,
+  convertImmutableToPlainObject,
+  extractNotesFromFormData,
   FormData,
   ConceptValue,
   Form2Observation,
@@ -578,6 +580,376 @@ describe('observationFormsTransformer', () => {
       );
 
       expect(result.metadata).toEqual({ formMetadata: mockMetadata });
+    });
+  });
+
+  describe('convertImmutableToPlainObject', () => {
+    it('should return undefined for null input', () => {
+      const result = convertImmutableToPlainObject(
+        null as unknown as undefined,
+      );
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined for undefined input', () => {
+      const result = convertImmutableToPlainObject(undefined);
+      expect(result).toBeUndefined();
+    });
+
+    it('should return plain object as-is', () => {
+      const plainObject = { field1: 'value1', field2: 42 };
+      const result = convertImmutableToPlainObject(plainObject);
+      expect(result).toBe(plainObject);
+      expect(result).toEqual(plainObject);
+    });
+
+    it('should call toJS() for Immutable.js structures', () => {
+      const plainObject = { field1: 'value1', nested: { field2: 42 } };
+      const mockToJS = jest.fn(() => plainObject);
+      const immutableObject = {
+        toJS: mockToJS,
+        someOtherMethod: () => {},
+      };
+
+      const result = convertImmutableToPlainObject(immutableObject);
+
+      expect(mockToJS).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(plainObject);
+    });
+
+    it('should handle nested plain objects', () => {
+      const nestedObject = {
+        level1: {
+          level2: {
+            value: 'deep value',
+          },
+        },
+      };
+      const result = convertImmutableToPlainObject(nestedObject);
+      expect(result).toBe(nestedObject);
+      expect(result).toEqual(nestedObject);
+    });
+
+    it('should return undefined for non-object types', () => {
+      expect(
+        convertImmutableToPlainObject('string' as unknown as undefined),
+      ).toBeUndefined();
+      expect(
+        convertImmutableToPlainObject(123 as unknown as undefined),
+      ).toBeUndefined();
+      expect(
+        convertImmutableToPlainObject(true as unknown as undefined),
+      ).toBeUndefined();
+    });
+  });
+
+  describe('extractNotesFromFormData', () => {
+    it('should return early if formData is undefined', () => {
+      const transformedObservations: Form2Observation[] = [];
+      extractNotesFromFormData(undefined, transformedObservations);
+      expect(transformedObservations).toHaveLength(0);
+    });
+
+    it('should return early if formData.children is not an array', () => {
+      const formData = { someField: 'value' };
+      const transformedObservations: Form2Observation[] = [];
+      extractNotesFromFormData(formData, transformedObservations);
+      expect(transformedObservations).toHaveLength(0);
+    });
+
+    it('should extract notes from fields without values', () => {
+      const formData = {
+        children: [
+          {
+            conceptUuid: 'concept-uuid-1',
+            value: null,
+            comment: 'This is a note',
+            id: 'field1',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(1);
+      expect(transformedObservations[0]).toMatchObject({
+        concept: { uuid: 'concept-uuid-1', datatype: undefined },
+        value: null,
+        comment: 'This is a note',
+        formFieldPath: 'field1',
+      });
+    });
+
+    it('should extract interpretation from fields without values', () => {
+      const formData = {
+        children: [
+          {
+            conceptUuid: 'concept-uuid-1',
+            value: '',
+            interpretation: 'ABNORMAL',
+            id: 'field1',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(1);
+      expect(transformedObservations[0]).toMatchObject({
+        concept: { uuid: 'concept-uuid-1', datatype: undefined },
+        value: null,
+        interpretation: 'ABNORMAL',
+        formFieldPath: 'field1',
+      });
+    });
+
+    it('should extract both comment and interpretation', () => {
+      const formData = {
+        children: [
+          {
+            conceptUuid: 'concept-uuid-1',
+            value: undefined,
+            comment: 'Patient refused to answer',
+            interpretation: 'NOT_APPLICABLE',
+            formFieldPath: 'sensitiveQuestion',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(1);
+      expect(transformedObservations[0]).toMatchObject({
+        concept: { uuid: 'concept-uuid-1', datatype: undefined },
+        value: null,
+        comment: 'Patient refused to answer',
+        interpretation: 'NOT_APPLICABLE',
+        formFieldPath: 'sensitiveQuestion',
+      });
+    });
+
+    it('should not extract notes if field has a value', () => {
+      const formData = {
+        children: [
+          {
+            conceptUuid: 'concept-uuid-1',
+            value: 'Some value',
+            comment: 'This note should be ignored',
+            id: 'field1',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(0);
+    });
+
+    it('should handle nested children recursively', () => {
+      const formData = {
+        children: [
+          {
+            conceptUuid: 'parent-uuid',
+            value: 'Parent value',
+            children: [
+              {
+                conceptUuid: 'child-uuid',
+                value: null,
+                comment: 'Nested note',
+                id: 'nestedField',
+              },
+            ],
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(1);
+      expect(transformedObservations[0]).toMatchObject({
+        concept: { uuid: 'child-uuid', datatype: undefined },
+        value: null,
+        comment: 'Nested note',
+        formFieldPath: 'nestedField',
+      });
+    });
+
+    it('should not create duplicate observations for existing concepts', () => {
+      const formData = {
+        children: [
+          {
+            conceptUuid: 'concept-uuid-1',
+            value: null,
+            comment: 'This note should be ignored',
+            id: 'field1',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [
+        {
+          concept: { uuid: 'concept-uuid-1', datatype: 'Text' },
+          value: 'Existing value',
+          obsDatetime: '2024-01-15T10:00:00.000Z',
+          formNamespace: 'Bahmni',
+          formFieldPath: 'field1',
+        },
+      ];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(1);
+      expect(transformedObservations[0].value).toBe('Existing value');
+    });
+
+    it('should extract conceptUuid from nested value.concept structure', () => {
+      const formData = {
+        children: [
+          {
+            value: {
+              value: null,
+              comment: 'Note from value object',
+              concept: { uuid: 'nested-concept-uuid' },
+            },
+            id: 'field1',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(1);
+      expect(transformedObservations[0]).toMatchObject({
+        concept: { uuid: 'nested-concept-uuid', datatype: undefined },
+        value: null,
+        comment: 'Note from value object',
+        formFieldPath: 'field1',
+      });
+    });
+
+    it('should extract conceptUuid from control.concept structure', () => {
+      const formData = {
+        children: [
+          {
+            value: null,
+            comment: 'Note from control',
+            control: { concept: { uuid: 'control-concept-uuid' } },
+            id: 'field1',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(1);
+      expect(transformedObservations[0]).toMatchObject({
+        concept: { uuid: 'control-concept-uuid', datatype: undefined },
+        value: null,
+        comment: 'Note from control',
+        formFieldPath: 'field1',
+      });
+    });
+
+    it('should handle multiple notes-only fields', () => {
+      const formData = {
+        children: [
+          {
+            conceptUuid: 'concept-uuid-1',
+            value: null,
+            comment: 'Note 1',
+            id: 'field1',
+          },
+          {
+            conceptUuid: 'concept-uuid-2',
+            value: '',
+            interpretation: 'CRITICAL',
+            id: 'field2',
+          },
+          {
+            conceptUuid: 'concept-uuid-3',
+            value: undefined,
+            comment: 'Note 3',
+            interpretation: 'NORMAL',
+            formFieldPath: 'field3',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(3);
+      expect(transformedObservations[0].comment).toBe('Note 1');
+      expect(transformedObservations[1].interpretation).toBe('CRITICAL');
+      expect(transformedObservations[2].comment).toBe('Note 3');
+      expect(transformedObservations[2].interpretation).toBe('NORMAL');
+    });
+
+    it('should skip children without conceptUuid', () => {
+      const formData = {
+        children: [
+          {
+            value: null,
+            comment: 'This should be skipped',
+            id: 'field1',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(0);
+    });
+
+    it('should skip children without notes', () => {
+      const formData = {
+        children: [
+          {
+            conceptUuid: 'concept-uuid-1',
+            value: null,
+            id: 'field1',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(0);
+    });
+
+    it('should use formFieldPath when available, fallback to id', () => {
+      const formData = {
+        children: [
+          {
+            conceptUuid: 'concept-uuid-1',
+            value: null,
+            comment: 'Note with formFieldPath',
+            formFieldPath: 'customPath',
+            id: 'field1',
+          },
+          {
+            conceptUuid: 'concept-uuid-2',
+            value: null,
+            comment: 'Note with id only',
+            id: 'field2',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(2);
+      expect(transformedObservations[0].formFieldPath).toBe('customPath');
+      expect(transformedObservations[1].formFieldPath).toBe('field2');
     });
   });
 });

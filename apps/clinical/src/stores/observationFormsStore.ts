@@ -12,7 +12,7 @@ export interface ObservationFormData {
   formName: string;
   observations: Form2Observation[];
   timestamp: number;
-  validationState?:
+  validationErrorType?:
     | null
     | typeof VALIDATION_STATE_EMPTY
     | typeof VALIDATION_STATE_MANDATORY
@@ -29,7 +29,7 @@ export interface ObservationFormsState {
   updateFormData: (
     formUuid: string,
     observations: Form2Observation[],
-    validationState?:
+    validationErrorType?:
       | null
       | typeof VALIDATION_STATE_EMPTY
       | typeof VALIDATION_STATE_MANDATORY
@@ -105,7 +105,7 @@ export const useObservationFormsStore = create<ObservationFormsState>(
     updateFormData: (
       formUuid: string,
       observations: Form2Observation[],
-      validationState?:
+      validationErrorType?:
         | null
         | typeof VALIDATION_STATE_EMPTY
         | typeof VALIDATION_STATE_MANDATORY
@@ -131,7 +131,7 @@ export const useObservationFormsStore = create<ObservationFormsState>(
             formName: form.name,
             observations,
             timestamp: Date.now(),
-            validationState,
+            validationErrorType,
           },
         },
       }));
@@ -186,10 +186,10 @@ export const useObservationFormsStore = create<ObservationFormsState>(
         }
         // Check if form has validation errors
         if (
-          formData.validationState === VALIDATION_STATE_MANDATORY ||
-          formData.validationState === VALIDATION_STATE_EMPTY ||
-          formData.validationState === VALIDATION_STATE_INVALID ||
-          formData.validationState === VALIDATION_STATE_SCRIPT_ERROR
+          formData.validationErrorType === VALIDATION_STATE_MANDATORY ||
+          formData.validationErrorType === VALIDATION_STATE_EMPTY ||
+          formData.validationErrorType === VALIDATION_STATE_INVALID ||
+          formData.validationErrorType === VALIDATION_STATE_SCRIPT_ERROR
         ) {
           return false;
         }
