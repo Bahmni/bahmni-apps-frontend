@@ -1,4 +1,5 @@
 import * as services from '@bahmni/services';
+import { Bundle, Observation } from 'fhir/r4';
 import {
   mockBundleWithCorrectValues,
   mockEmptyBundle,
@@ -26,6 +27,7 @@ import {
   mockObservationWithNoReferenceRange,
   mockObservationWithEmptyReferenceRange,
   mockObservationWithNoUnits,
+  mockObservationWithoutObservationValue,
 } from '../__mocks__/observationTestData';
 import { ExtractedObservation, EncounterDetails } from '../models';
 import {
@@ -222,6 +224,50 @@ describe('observationUtils', () => {
       expect(result.observations[1].observationValue?.isAbnormal).toBe(false);
       expect(result.observations[2].observationValue?.isAbnormal).toBe(false);
     });
+
+    it('should extract observation with valueBoolean', () => {
+      const bundle: Bundle<Observation> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-bool',
+              status: 'final',
+              code: { text: 'Is Smoker' },
+              valueBoolean: true,
+            },
+          },
+        ],
+      };
+
+      const result = extractObservationsFromBundle(bundle);
+      expect(result.observations[0].observationValue?.value).toBe(true);
+      expect(result.observations[0].observationValue?.type).toBe('boolean');
+    });
+
+    it('should extract observation with valueInteger', () => {
+      const bundle: Bundle<Observation> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-int',
+              status: 'final',
+              code: { text: 'Count' },
+              valueInteger: 5,
+            },
+          },
+        ],
+      };
+
+      const result = extractObservationsFromBundle(bundle);
+      expect(result.observations[0].observationValue?.value).toBe(5);
+      expect(result.observations[0].observationValue?.type).toBe('integer');
+    });
   });
 
   describe('groupObservationsByEncounter', () => {
@@ -398,6 +444,16 @@ describe('observationUtils', () => {
 
       expect(formatObservationValue(observation)).toBe('Fever');
     });
+
+    it('should return empty string when observationValue is undefined', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-3',
+        display: 'Test',
+        observationValue: undefined,
+      };
+
+      expect(formatObservationValue(observation)).toBe('');
+    });
   });
 
   describe('transformObservationToRowCell', () => {
@@ -524,6 +580,15 @@ describe('observationUtils', () => {
         0,
       );
       expect(result.header).toBe('Count (2 - 10)');
+    });
+
+    it('should format header when observationValue is undefined', () => {
+      const result = transformObservationToRowCell(
+        mockObservationWithoutObservationValue,
+        0,
+      );
+      expect(result.header).toBe('Notes Only');
+      expect(result.value).toBe('');
     });
   });
 });

@@ -804,3 +804,9 @@ export const mockObservationWithNoUnits = {
     },
   },
 };
+
+export const mockObservationWithoutObservationValue = {
+  id: 'obs-11',
+  display: 'Notes Only',
+  observationValue: undefined,
+};
