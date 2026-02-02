@@ -30,7 +30,10 @@ export const formatEncounterTitle = (
 export const formatObservationValue = (
   observation: ExtractedObservation | GroupedObservation,
 ): string => {
-  const { value, unit } = observation.observationValue!;
+  if (!observation.observationValue?.value) {
+    return '';
+  }
+  const { value, unit } = observation.observationValue;
   const baseValue = unit ? `${value} ${unit}` : String(value);
   return baseValue;
 };
@@ -38,8 +41,13 @@ export const formatObservationValue = (
 const formatObservationHeader = (
   observation: ExtractedObservation | GroupedObservation,
 ): string => {
-  const { unit, referenceRange } = observation.observationValue!;
   const display = observation.display!;
+
+  if (!observation.observationValue) {
+    return String(display);
+  }
+
+  const { unit, referenceRange } = observation.observationValue;
 
   if (!referenceRange) {
     return String(display);
@@ -116,8 +124,14 @@ function isAbnormalInterpretation(observation: Observation): boolean {
 function extractObservationValue(
   observation: Observation,
 ): ObservationValue | undefined {
-  const { valueQuantity, valueCodeableConcept, valueString, referenceRange } =
-    observation;
+  const {
+    valueQuantity,
+    valueCodeableConcept,
+    valueString,
+    valueBoolean,
+    valueInteger,
+    referenceRange,
+  } = observation;
 
   const isAbnormal = isAbnormalInterpretation(observation);
 
@@ -172,6 +186,22 @@ function extractObservationValue(
     return {
       value: valueString,
       type: 'string',
+      isAbnormal,
+    };
+  }
+
+  if (valueBoolean !== undefined) {
+    return {
+      value: valueBoolean,
+      type: 'boolean',
+      isAbnormal,
+    };
+  }
+
+  if (valueInteger !== undefined) {
+    return {
+      value: valueInteger,
+      type: 'integer',
       isAbnormal,
     };
   }
