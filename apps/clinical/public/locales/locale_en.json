@@ -113,6 +113,7 @@
   "ERROR_CONSULTATION_PAD_NOT_FOUND": "Consultation pad configuration not found",
   "ERROR_CONSULTATION_TITLE": "Consultation Error",
   "ERROR_DASHBOARD_CONFIG_TITLE": "Department Configuration Error",
+  "ERROR_DASHBOARD_NOT_CONFIGURED": "{{dashboardName}} is not configured",
   "ERROR_DEFAULT_TITLE": "Error",
   "ERROR_DUPLICATE_ACTIVE_MEDICATION": "One or more drugs you are trying to order are already active. Please change the start date of the conflicting drug or remove them from the new prescription.",
   "ERROR_FETCHING_CLINICAL_DATA": "Invalid episode uuid",
