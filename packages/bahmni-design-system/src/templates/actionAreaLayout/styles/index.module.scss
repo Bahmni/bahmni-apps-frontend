@@ -6,14 +6,18 @@
 @use "@carbon/react/scss/theme" as *;
 
 .layout {
+  position: fixed;
+  top: $spacing-09;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  height: 100vh; // Full viewport height
-  width: 100%; // Full width but not forcing vw which can cause overflow
-  overflow: hidden; // Prevent scrolling of the overall layout
+  overflow: hidden;
 }
 
 .collapsedModal {
+
   // Constrain the modal backdrop to left panel only
   :global(#formDetailsModal) {
     position: absolute;
@@ -31,24 +35,26 @@
 }
 
 .body {
-  margin-top: 1rem;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .expand {
-  width: calc(100vw - 16rem);
   left: 16rem;
 }
 
 .collapse {
-  width: calc(40vw - 3rem);
   left: 3rem;
 }
 
 .patientHeader {
   padding: $spacing-05 $spacing-06;
-  position: fixed;
-  width: inherit;
-  left: inherit;
+  flex-shrink: 0;
   z-index: 2;
   box-shadow: 0 2px 6px $shadow;
   height: 5rem;
@@ -59,13 +65,9 @@
 }
 
 .mainDisplay {
-  overflow-y: auto;
-  position: fixed;
-  bottom: 0;
-  left: inherit;
-  width: inherit;
-  padding: 1.5rem;
-  top: 8rem;
+  flex: 1;
+  overflow: auto;
+  padding: $spacing-05;
 }
 
 .collapsedMainDisplay {
@@ -73,17 +75,63 @@
 }
 
 .actionArea {
-  position: fixed;
-  top: 3rem !important;
-  right: 0;
-  height: calc(100vh - 3rem) !important;
-  z-index: 1000;
+  height: 100%;
+}
+
+.extended {
+  height: 200%;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+// Separator styles
+.separator {
+  position: relative;
+  width: $spacing-02;
+  background: $background-hover;
+  cursor: col-resize;
+  z-index: 10;
+}
+
+.separatorGrip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $spacing-05;
+  height: $spacing-07;
+  background: $background-active;
+  border-radius: $spacing-01;
+  z-index: 11;
+  pointer-events: none;
+}
+
+.panelGroup {
+  flex: 1;
+  min-height: 0;
+
+  >[data-panel] {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+
+    &:first-child {
+      min-width: 40% !important;
+    }
+
+    &:last-child {
+      min-width: 40% !important;
+    }
+  }
 }
 
 // Responsive adjustments using Carbon breakpoints
 @include breakpoint-down(lg) {
   .body {
-    left: 3rem;
+    left: 0;
   }
 
   .patientHeader {
@@ -103,6 +151,24 @@
   }
 
   .collapse {
+    display: none;
+  }
+
+  .panelGroup {
+    margin-left: $spacing-09;
+
+    >[data-panel] {
+      &:first-child:not(:last-child) {
+        display: none !important;
+      }
+
+      &:last-child {
+        flex: 1 1 100% !important;
+      }
+    }
+  }
+
+  .separator {
     display: none;
   }
 }

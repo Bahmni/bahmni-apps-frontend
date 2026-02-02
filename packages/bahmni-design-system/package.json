@@ -31,7 +31,8 @@
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
-    "@bahmni/services": "^0.0.1-0"
+    "@bahmni/services": "^0.0.1-0",
+    "react-resizable-panels": "^4.5.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

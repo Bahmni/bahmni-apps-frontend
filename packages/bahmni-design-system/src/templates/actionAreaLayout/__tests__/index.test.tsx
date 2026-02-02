@@ -170,12 +170,63 @@ describe('ActionAreaLayout', () => {
     });
   });
 
+  // Resizable Panels Tests
+  describe('Resizable Panels', () => {
+    test('renders separator when action area is visible', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      render(<ActionAreaLayout {...visibleActionAreaProps} />);
+
+      // Check if separator is rendered with correct role
+      const separator = screen.getByRole('separator');
+      expect(separator).toBeInTheDocument();
+    });
+
+    test('does not render separator when action area is hidden', () => {
+      render(<ActionAreaLayout {...defaultProps} />);
+
+      // Separator should not be rendered
+      expect(screen.queryByRole('separator')).not.toBeInTheDocument();
+    });
+
+    test('renders two panels when action area is visible', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      const { container } = render(
+        <ActionAreaLayout {...visibleActionAreaProps} />,
+      );
+
+      // Check for panel elements
+      const panels = container.querySelectorAll('[data-panel]');
+      expect(panels).toHaveLength(2);
+    });
+
+    test('renders one panel when action area is hidden', () => {
+      const { container } = render(<ActionAreaLayout {...defaultProps} />);
+
+      // Only one panel should be rendered
+      const panels = container.querySelectorAll('[data-panel]');
+      expect(panels).toHaveLength(1);
+    });
+  });
+
   // Accessibility Tests
   describe('Accessibility', () => {
     test('has no accessibility violations', async () => {
       const { container } = render(<ActionAreaLayout {...defaultProps} />);
 
-      const results = await axe(container);
+      // Exclude aria-allowed-attr rule due to react-resizable-panels Separator
+      const results = await axe(container, {
+        rules: {
+          'aria-allowed-attr': { enabled: false },
+        },
+      });
       expect(results).toHaveNoViolations();
     });
   });

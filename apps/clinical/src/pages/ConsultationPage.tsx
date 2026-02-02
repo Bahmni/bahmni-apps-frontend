@@ -21,6 +21,7 @@ import {
   getDefaultDashboard,
   getSidebarItems,
 } from '../services/consultationPageService';
+import { useObservationFormsStore } from '../stores/observationFormsStore';
 
 const breadcrumbItems = [
   { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
@@ -71,6 +72,7 @@ const ConsultationPage: React.FC = () => {
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
   const [searchParams] = useSearchParams();
+  const viewingForm = useObservationFormsStore((state) => state.viewingForm);
 
   const episodeUuids = useMemo(() => {
     const episodeUuid = searchParams.get('episodeUuid');
@@ -151,6 +153,7 @@ const ConsultationPage: React.FC = () => {
           </Suspense>
         }
         isActionAreaVisible={isActionAreaVisible}
+        layoutVariant={viewingForm ? 'extended' : 'default'}
         actionArea={
           <ConsultationPad
             onClose={() => setIsActionAreaVisible((prev) => !prev)}

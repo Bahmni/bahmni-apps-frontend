@@ -4,11 +4,9 @@
 @use "@carbon/react/scss/type" as *;
 
 .actionArea {
-  position: fixed;
-  left: inherit;
-  right: 0;
-  height: inherit;
-  width: 60vw;
+  position: relative;
+  height: 100%;
+  width: 100%;
   border-left: 1px solid $gray-20;
   display: flex;
   flex-direction: column;
@@ -50,6 +48,7 @@
   .actionArea {
     width: 100%; // Full width on mobile
   }
+
   .buttonSet {
     flex-direction: column-reverse;
     gap: $spacing-02;
