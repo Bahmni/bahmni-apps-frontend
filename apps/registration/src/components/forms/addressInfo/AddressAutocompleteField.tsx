@@ -62,11 +62,11 @@ export const AddressAutocompleteField = ({
     <div
       key={fieldName}
       className={styles.col}
-      data-testid="address-autocomplete-field"
+      data-testid={`address-autocomplete-field-${fieldName}`}
     >
       <ComboBox
         id={fieldName}
-        data-testid="address-autocomplete-combobox"
+        data-testid={`address-autocomplete-combobox-${fieldName}`}
         titleText={level.required ? `${translatedLabel} *` : translatedLabel}
         placeholder={translatedLabel}
         items={suggestions}

@@ -366,11 +366,11 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
         <div
           key={fieldName}
           className={styles.col}
-          data-testid="address-free-text-field"
+          data-testid={`address-free-text-field-${fieldName}`}
         >
           <TextInput
             id={fieldName}
-            data-testid="address-free-text-input"
+            data-testid={`address-free-text-input-${fieldName}`}
             labelText={
               level.required ? `${translatedLabel} *` : translatedLabel
             }

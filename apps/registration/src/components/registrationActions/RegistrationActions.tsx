@@ -77,7 +77,7 @@ export const RegistrationActions = ({
   };
 
   return (
-    <div data-testid="registration-actions-container">
+    <>
       {filteredExtensions.map((extension) => {
         if (extension.type === 'startVisit') {
           return (
@@ -113,6 +113,6 @@ export const RegistrationActions = ({
           </Button>
         );
       })}
-    </div>
+    </>
   );
 };

@@ -435,9 +435,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
   // Otherwise, render consultation ActionArea with consultation content
   return (
-    <div data-testid="consultation-pad-container">
+    <>
       <ActionArea
-        data-testid="consultation-action-area"
+        data-testid="consultation-pad-action-area"
         title={isError ? '' : t('CONSULTATION_ACTION_NEW')}
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
         onPrimaryButtonClick={handleOnPrimaryButtonClick}
@@ -485,7 +485,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
           existingObservations={getFormData(viewingForm.uuid)?.observations}
         />
       )}
-    </div>
+    </>
   );
 };
 

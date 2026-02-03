@@ -39,7 +39,7 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
           xlg={11}
           className={styles.selectedDiagnosisTitle}
         >
-          {display}
+          <span data-testid={`diagnosis-display-name-${id}`}>{display}</span>
           <Link
             data-testid="add-as-condition-link"
             href="#"

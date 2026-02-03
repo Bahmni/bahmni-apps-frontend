@@ -4,11 +4,14 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
 <div>
   <div
     class="cds--css-grid"
+    data-testid="selected-vaccination-item-grid-entry-1"
   >
     <div
       class="vaccinationTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
     >
-      <span>
+      <span
+        data-testid="vaccination-name-entry-1"
+      >
         COVID-19 Vaccine
       </span>
     </div>
@@ -21,6 +24,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
         <input
           aria-label="STAT"
           class="cds--checkbox"
+          data-testid="vaccination-stat-checkbox-entry-1"
           id="stat-entry-1"
           type="checkbox"
         />
@@ -63,6 +67,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
             <input
               aria-invalid="false"
               aria-label="Dosage"
+              data-testid="vaccination-dosage-input-entry-1"
               id="dosage-unit-entry-1"
               inputmode="decimal"
               min="0"
@@ -132,6 +137,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
       </div>
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper dosageUnit"
+        data-testid="vaccination-dosage-unit-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -201,6 +207,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="vaccination-frequency-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -287,6 +294,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
             <input
               aria-invalid="false"
               aria-label="Duration"
+              data-testid="vaccination-duration-input-entry-1"
               id="duration-entry-1"
               inputmode="decimal"
               min="0"
@@ -356,6 +364,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
       </div>
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper durationUnit"
+        data-testid="vaccination-duration-unit-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -425,6 +434,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="vaccination-instructions-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -494,6 +504,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="vaccination-route-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -563,6 +574,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
     >
       <div
         class="cds--form-item"
+        data-testid="vaccination-start-date-picker-entry-1"
       >
         <div
           class="cds--date-picker cds--date-picker--single"
@@ -584,6 +596,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
                 <input
                   aria-label="Start Date"
                   class="cds--date-picker__input cds--date-picker__input--sm flatpickr-input"
+                  data-testid="vaccination-start-date-input-entry-1"
                   id="start-date-entry-1"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
                   placeholder="d/m/Y"
@@ -616,11 +629,14 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
     >
       <a
         class="cds--link"
+        data-testid="vaccination-add-note-link-entry-1"
         href="#"
       >
         Add Note
       </a>
-      <span>
+      <span
+        data-testid="vaccination-total-quantity-entry-1"
+      >
         Total quantity
          : 
         0
@@ -635,11 +651,14 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
 <div>
   <div
     class="cds--css-grid"
+    data-testid="selected-vaccination-item-grid-entry-1"
   >
     <div
       class="vaccinationTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
     >
-      <span>
+      <span
+        data-testid="vaccination-name-entry-1"
+      >
         COVID-19 Vaccine
       </span>
     </div>
@@ -652,6 +671,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
         <input
           aria-label="STAT"
           class="cds--checkbox"
+          data-testid="vaccination-stat-checkbox-entry-1"
           id="stat-entry-1"
           type="checkbox"
         />
@@ -697,6 +717,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
               aria-invalid="true"
               aria-label="Dosage"
               data-invalid="true"
+              data-testid="vaccination-dosage-input-entry-1"
               id="dosage-unit-entry-1"
               inputmode="decimal"
               min="0"
@@ -793,6 +814,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
       </div>
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper dosageUnit"
+        data-testid="vaccination-dosage-unit-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -888,6 +910,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="vaccination-frequency-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -1003,6 +1026,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
               aria-invalid="true"
               aria-label="Duration"
               data-invalid="true"
+              data-testid="vaccination-duration-input-entry-1"
               id="duration-entry-1"
               inputmode="decimal"
               min="0"
@@ -1099,6 +1123,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
       </div>
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper durationUnit"
+        data-testid="vaccination-duration-unit-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -1194,6 +1219,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="vaccination-instructions-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -1263,6 +1289,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="vaccination-route-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -1358,6 +1385,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
     >
       <div
         class="cds--form-item"
+        data-testid="vaccination-start-date-picker-entry-1"
       >
         <div
           class="cds--date-picker cds--date-picker--single"
@@ -1379,6 +1407,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
                 <input
                   aria-label="Start Date"
                   class="cds--date-picker__input cds--date-picker__input--sm flatpickr-input"
+                  data-testid="vaccination-start-date-input-entry-1"
                   id="start-date-entry-1"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
                   placeholder="d/m/Y"
@@ -1411,11 +1440,14 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
     >
       <a
         class="cds--link"
+        data-testid="vaccination-add-note-link-entry-1"
         href="#"
       >
         Add Note
       </a>
-      <span>
+      <span
+        data-testid="vaccination-total-quantity-entry-1"
+      >
         Total quantity
          : 
         0
@@ -1430,11 +1462,14 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
 <div>
   <div
     class="cds--css-grid"
+    data-testid="selected-vaccination-item-grid-entry-1"
   >
     <div
       class="vaccinationTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
     >
-      <span>
+      <span
+        data-testid="vaccination-name-entry-1"
+      >
         COVID-19 Vaccine
       </span>
     </div>
@@ -1447,6 +1482,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
         <input
           aria-label="STAT"
           class="cds--checkbox"
+          data-testid="vaccination-stat-checkbox-entry-1"
           id="stat-entry-1"
           type="checkbox"
         />
@@ -1489,6 +1525,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
             <input
               aria-invalid="false"
               aria-label="Dosage"
+              data-testid="vaccination-dosage-input-entry-1"
               id="dosage-unit-entry-1"
               inputmode="decimal"
               min="0"
@@ -1558,6 +1595,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
       </div>
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper dosageUnit"
+        data-testid="vaccination-dosage-unit-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -1627,6 +1665,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="vaccination-frequency-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -1713,6 +1752,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
             <input
               aria-invalid="false"
               aria-label="Duration"
+              data-testid="vaccination-duration-input-entry-1"
               id="duration-entry-1"
               inputmode="decimal"
               min="0"
@@ -1782,6 +1822,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
       </div>
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper durationUnit"
+        data-testid="vaccination-duration-unit-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -1851,6 +1892,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="vaccination-instructions-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -1920,6 +1962,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="vaccination-route-dropdown-entry-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -1989,6 +2032,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
     >
       <div
         class="cds--form-item"
+        data-testid="vaccination-start-date-picker-entry-1"
       >
         <div
           class="cds--date-picker cds--date-picker--single"
@@ -2010,6 +2054,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
                 <input
                   aria-label="Start Date"
                   class="cds--date-picker__input cds--date-picker__input--sm flatpickr-input"
+                  data-testid="vaccination-start-date-input-entry-1"
                   id="start-date-entry-1"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
                   placeholder="d/m/Y"
@@ -2040,7 +2085,9 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
     <div
       class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
     >
-      <span>
+      <span
+        data-testid="vaccination-total-quantity-entry-1"
+      >
         Total quantity
          : 
         0

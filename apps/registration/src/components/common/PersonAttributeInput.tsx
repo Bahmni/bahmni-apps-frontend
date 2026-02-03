@@ -61,7 +61,7 @@ export const PersonAttributeInput = ({
       return (
         <TextInput
           id={uuid}
-          data-testid="person-attribute-text-input"
+          data-testid={`person-attribute-text-input-${uuid}`}
           type="text"
           labelText={label}
           placeholder={placeholder ?? label}
@@ -79,12 +79,12 @@ export const PersonAttributeInput = ({
       return (
         <CheckboxGroup
           legendText={label}
-          data-testid="person-attribute-checkbox-group"
+          data-testid={`person-attribute-checkbox-group-${uuid}`}
         >
           <div className={styles.checkboxField}>
             <Checkbox
               id={uuid}
-              data-testid="person-attribute-checkbox"
+              data-testid={`person-attribute-checkbox-${uuid}`}
               checked={value === true || value === 'true'}
               onChange={(evt, { checked }) => onChange(checked)}
               labelText={''}
@@ -107,7 +107,7 @@ export const PersonAttributeInput = ({
       return (
         <Dropdown
           id={uuid}
-          data-testid="person-attribute-dropdown"
+          data-testid={`person-attribute-dropdown-${uuid}`}
           titleText={label}
           label={placeholder ?? `Select ${label}`}
           items={items}
@@ -126,7 +126,7 @@ export const PersonAttributeInput = ({
       return (
         <DatePicker
           datePickerType="single"
-          data-testid="person-attribute-date-picker"
+          data-testid={`person-attribute-date-picker-${uuid}`}
           onChange={(dates: Date[]) => {
             if (dates && dates.length > 0) {
               onChange(dates[0].toISOString().split('T')[0]);
@@ -135,7 +135,7 @@ export const PersonAttributeInput = ({
         >
           <DatePickerInput
             id={uuid}
-            data-testid="person-attribute-date-input"
+            data-testid={`person-attribute-date-input-${uuid}`}
             labelText={label}
             placeholder={placeholder ?? 'mm/dd/yyyy'}
             invalid={!!error}
@@ -169,7 +169,7 @@ export const PersonAttributeInput = ({
       return (
         <TextInput
           id={uuid}
-          data-testid="person-attribute-number-input"
+          data-testid={`person-attribute-number-input-${uuid}`}
           type="text"
           labelText={label}
           placeholder={placeholder ?? label}
@@ -186,7 +186,7 @@ export const PersonAttributeInput = ({
       return (
         <TextInput
           id={uuid}
-          data-testid="person-attribute-default-input"
+          data-testid={`person-attribute-default-input-${uuid}`}
           type="text"
           labelText={label}
           placeholder={placeholder ?? label}

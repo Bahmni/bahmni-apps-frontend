@@ -6,15 +6,17 @@ import React from 'react';
 
 export type ButtonProps = CarbonButtonProps<'button'> & {
   testId?: string;
+  'data-testid'?: string;
 };
 
 export const Button: React.FC<ButtonProps> = ({
   testId,
+  'data-testid': dataTestId,
   children,
   ...carbonProps
 }) => {
   return (
-    <CarbonButton {...carbonProps} data-testid={testId}>
+    <CarbonButton {...carbonProps} data-testid={testId ?? dataTestId}>
       {children}
     </CarbonButton>
   );
