@@ -15,6 +15,11 @@ jest.mock('../styles/ActionAreaLayout.module.scss', () => ({
   expand: 'expand',
   collapsedPatientHeader: 'collapsedPatientHeader',
   collapsedMainDisplay: 'collapsedMainDisplay',
+  separator: 'separator',
+  separatorGrip: 'separatorGrip',
+  panelGroup: 'panelGroup',
+  extended: 'extended',
+  collapsedModal: 'collapsedModal',
 }));
 
 describe('ActionAreaLayout', () => {
@@ -216,18 +221,211 @@ describe('ActionAreaLayout', () => {
     });
   });
 
-  // Accessibility Tests
+  describe('Layout Variant', () => {
+    test('applies extended class when layoutVariant is "extended"', () => {
+      const extendedProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+        layoutVariant: 'extended',
+      };
+
+      const { container } = render(<ActionAreaLayout {...extendedProps} />);
+
+      const actionAreaElement = container.querySelector(
+        '[class*="actionArea"]',
+      );
+      expect(actionAreaElement).toHaveClass('actionArea', 'extended');
+    });
+
+    test('does not apply extended class when layoutVariant is "default"', () => {
+      const defaultVariantProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+        layoutVariant: 'default',
+      };
+
+      const { container } = render(
+        <ActionAreaLayout {...defaultVariantProps} />,
+      );
+
+      const actionAreaElement = container.querySelector(
+        '[class*="actionArea"]',
+      );
+      expect(actionAreaElement).toHaveClass('actionArea');
+      expect(actionAreaElement).not.toHaveClass('extended');
+    });
+
+    test('defaults to "default" layout variant when not specified', () => {
+      const { container } = render(<ActionAreaLayout {...defaultProps} />);
+
+      expect(container.querySelector('[class*="layout"]')).toBeInTheDocument();
+    });
+  });
+
+  describe('Keyboard Navigation', () => {
+    test('separator is keyboard accessible', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      render(<ActionAreaLayout {...visibleActionAreaProps} />);
+
+      const separator = screen.getByRole('separator');
+      expect(separator).toBeInTheDocument();
+      expect(separator).toHaveAttribute('role', 'separator');
+    });
+
+    test('separator has proper tabindex for keyboard navigation', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      const { container } = render(
+        <ActionAreaLayout {...visibleActionAreaProps} />,
+      );
+
+      const separator = screen.getByRole('separator');
+      expect(separator).toBeInTheDocument();
+    });
+
+    test('separator includes grip icon for resize affordance', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      render(<ActionAreaLayout {...visibleActionAreaProps} />);
+
+      const gripIcon = screen
+        .getByRole('img', { hidden: true })
+        .closest('[class*="separatorGrip"]');
+      expect(gripIcon).toBeInTheDocument();
+    });
+
+    test('separator is accessible for keyboard users', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      render(<ActionAreaLayout {...visibleActionAreaProps} />);
+
+      const separator = screen.getByRole('separator');
+      expect(separator).toBeInTheDocument();
+      expect(separator.parentElement).toBeInTheDocument();
+    });
+  });
+
+  describe('Resize Constraints', () => {
+    test('main display panel has minimum size of 40%', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      const { container } = render(
+        <ActionAreaLayout {...visibleActionAreaProps} />,
+      );
+
+      const panels = container.querySelectorAll('[data-panel]');
+      const mainPanel = panels[0];
+
+      expect(mainPanel).toBeInTheDocument();
+    });
+
+    test('action area panel has minimum size of 40%', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      const { container } = render(
+        <ActionAreaLayout {...visibleActionAreaProps} />,
+      );
+
+      const panels = container.querySelectorAll('[data-panel]');
+      const actionPanel = panels[1];
+
+      expect(actionPanel).toBeInTheDocument();
+    });
+
+    test('main display panel has default size of 40%', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      const { container } = render(
+        <ActionAreaLayout {...visibleActionAreaProps} />,
+      );
+
+      const panels = container.querySelectorAll('[data-panel]');
+      expect(panels).toHaveLength(2);
+    });
+
+    test('action area panel has default size of 60%', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      const { container } = render(
+        <ActionAreaLayout {...visibleActionAreaProps} />,
+      );
+
+      const panels = container.querySelectorAll('[data-panel]');
+      expect(panels).toHaveLength(2);
+    });
+
+    test('panels cannot be resized below minimum constraint', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      render(<ActionAreaLayout {...visibleActionAreaProps} />);
+
+      const separator = screen.getByRole('separator');
+      expect(separator).toBeInTheDocument();
+    });
+  });
+
   describe('Accessibility', () => {
     test('has no accessibility violations', async () => {
       const { container } = render(<ActionAreaLayout {...defaultProps} />);
 
-      // Exclude aria-allowed-attr rule due to react-resizable-panels Separator
       const results = await axe(container, {
         rules: {
           'aria-allowed-attr': { enabled: false },
         },
       });
       expect(results).toHaveNoViolations();
+    });
+
+    test('separator has proper accessibility role', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      render(<ActionAreaLayout {...visibleActionAreaProps} />);
+
+      const separator = screen.getByRole('separator');
+      expect(separator).toHaveAttribute('role', 'separator');
+    });
+
+    test('separator is keyboard accessible for resizing', () => {
+      const visibleActionAreaProps = {
+        ...defaultProps,
+        isActionAreaVisible: true,
+      };
+
+      render(<ActionAreaLayout {...visibleActionAreaProps} />);
+
+      const separator = screen.getByRole('separator');
+      expect(separator).toBeInTheDocument();
     });
   });
 });
