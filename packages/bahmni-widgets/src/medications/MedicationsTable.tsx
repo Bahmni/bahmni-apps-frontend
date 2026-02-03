@@ -325,6 +325,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
               emptyStateMessage={t('NO_ACTIVE_MEDICATIONS')}
               renderCell={renderCell}
               className={styles.medicationsTableBody}
+              dataTestId="medications-active-scheduled-table"
             />
           </TabPanel>
           <TabPanel className={styles.medicationTabs}>
@@ -342,6 +343,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                 emptyStateMessage={t('NO_MEDICATION_HISTORY')}
                 renderCell={renderCell}
                 className={styles.medicationsTableBody}
+                dataTestId="medications-all-table"
               />
             ) : (
               <Accordion align="start">
@@ -372,6 +374,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                           styles.medicationsTableBody,
                           styles.rowSeperator,
                         )}
+                        dataTestId={`medications-table-${formattedDate}`}
                       />
                     </AccordionItem>
                   );

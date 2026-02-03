@@ -450,7 +450,9 @@ describe('PatientProgramsTable Integration', () => {
     expect(
       screen.getByTestId('patient-programs-table-test-id'),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('patient-programs-table-skeleton'),
+    ).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText('HIV Program')).toBeInTheDocument();
@@ -499,7 +501,9 @@ describe('PatientProgramsTable Integration', () => {
     ).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('patient-programs-table-error'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -557,7 +561,9 @@ describe('PatientProgramsTable Integration', () => {
     ).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('patient-programs-table-empty'),
+      ).toBeInTheDocument();
     });
 
     expect(getPatientPrograms).toHaveBeenCalledTimes(1);

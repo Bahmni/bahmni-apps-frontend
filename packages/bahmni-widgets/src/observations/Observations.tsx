@@ -127,23 +127,32 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
 
   const hasData = groupedData.length > 0 && !isLoading && !hasError;
 
+  const titleKey = observationConfig.titleTranslationKey;
+  const translatedTitle = titleKey ? t(titleKey) : '';
+
   return (
     <div
       id="observations"
-      data-testid="observations-test-id"
+      data-testid={
+        titleKey ? `observations-${translatedTitle}` : 'observations'
+      }
       aria-label="observations-aria-label"
       className={styles.observations}
     >
       <Tile
         id="observations-title"
-        testId="observations-title-test-id"
-        title={t(observationConfig.titleTranslationKey!)}
+        testId={
+          titleKey
+            ? `observations-title-${translatedTitle}`
+            : 'observations-title'
+        }
+        title={translatedTitle}
         className={styles.title}
       >
-        <p>{t(observationConfig.titleTranslationKey!)}</p>
+        <p>{translatedTitle}</p>
       </Tile>
       {hasData ? (
-        <ObsByEncounter groupedData={groupedData} />
+        <ObsByEncounter groupedData={groupedData} title={translatedTitle} />
       ) : (
         <SortableDataTable
           headers={headers}
@@ -152,6 +161,7 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
           loading={isLoading}
           errorStateMessage={errorMessage}
           emptyStateMessage={emptyMessage}
+          dataTestId="observations-table"
         />
       )}
     </div>

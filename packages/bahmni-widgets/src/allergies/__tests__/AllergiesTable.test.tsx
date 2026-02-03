@@ -137,7 +137,9 @@ describe('AllergiesTable', () => {
       render(wrapper);
 
       expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('allergies-table-skeleton'),
+      ).toBeInTheDocument();
     });
 
     it('displays error state with error message', () => {
@@ -151,7 +153,7 @@ describe('AllergiesTable', () => {
       render(wrapper);
 
       expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'ERROR_DEFAULT_TITLE',
@@ -170,7 +172,7 @@ describe('AllergiesTable', () => {
       render(wrapper);
 
       expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+      expect(screen.getByTestId('allergies-table-empty')).toBeInTheDocument();
       expect(screen.getByText('NO_ALLERGIES')).toBeInTheDocument();
     });
   });

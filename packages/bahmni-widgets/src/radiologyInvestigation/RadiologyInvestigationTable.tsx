@@ -276,7 +276,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
           emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
           renderCell={renderCell}
           className={styles.radiologyInvestigationTableBody}
-          data-testid="sortable-data-table"
+          dataTestId="radiology-investigations-table"
         />
       </div>
     );
@@ -315,7 +315,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
                 emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
                 renderCell={renderCell}
                 className={styles.radiologyInvestigationTableBody}
-                data-testid="sortable-data-table"
+                dataTestId={`radiology-investigations-table-${formattedDate}`}
               />
             </AccordionItem>
           );

@@ -56,7 +56,7 @@ describe('ConditionsTable', () => {
     });
     render(wrapper);
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('conditions-table-skeleton')).toBeInTheDocument();
   });
 
   it('should show error state when an error occurs', () => {
@@ -68,7 +68,7 @@ describe('ConditionsTable', () => {
     });
     render(wrapper);
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+    expect(screen.getByTestId('conditions-table-error')).toBeInTheDocument();
     expect(mockAddNotification).toHaveBeenCalledWith({
       type: 'error',
       title: 'ERROR_DEFAULT_TITLE',
@@ -85,7 +85,7 @@ describe('ConditionsTable', () => {
     });
     render(wrapper);
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+    expect(screen.getByTestId('conditions-table-empty')).toBeInTheDocument();
   });
 
   it('should show conditions table when an there patient has conditions marked', () => {

@@ -183,8 +183,9 @@ describe('ObsByEncounter', () => {
         <ObsByEncounter groupedData={groupedData} />,
       );
 
+      // id format: grouped-obs-{display}-{groupIndex}
       expect(
-        container.querySelector('#grouped-obs-obs-parent'),
+        container.querySelector('#grouped-obs-Blood\\ Pressure-0'),
       ).toBeInTheDocument();
       expect(screen.getByText('Blood Pressure')).toBeInTheDocument();
     });
@@ -244,8 +245,10 @@ describe('ObsByEncounter', () => {
 
     render(<ObsByEncounter groupedData={groupedData} />);
 
+    // data-testid format: {testIdPrefix}-{obsName}-{encounterIndex}-{obsIndex}
+    // obsName is 'Potassium' (from display), encounterIndex is 0, obsIndex is 0
     expect(
-      screen.getByTestId('abnormal-obs-obs-without-normal-range-test-id'),
+      screen.getByTestId('abnormal-obs-Potassium-0-0'),
     ).toBeInTheDocument();
   });
 

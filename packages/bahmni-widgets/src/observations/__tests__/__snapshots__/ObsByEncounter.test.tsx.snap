@@ -62,48 +62,48 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                 id="encounter-enc-1-rows"
               >
                 <div
-                  aria-label="obs-obs-single-aria-label"
+                  aria-label="obs-Temperature-0-0"
                   class="_rowCell_ajzol_1"
-                  data-testid="obs-obs-single-test-id"
-                  id="obs-obs-single"
+                  data-testid="obs-Temperature-0-0"
+                  id="obs-Temperature-0-0"
                 >
                   <div
-                    aria-label="obs-obs-single-aria-label-header"
+                    aria-label="obs-Temperature-0-0-header"
                     class="_header_ajzol_11"
-                    data-testid="obs-obs-single-test-id-header"
-                    id="obs-obs-single-header"
+                    data-testid="obs-Temperature-0-0-header"
+                    id="obs-Temperature-0-0-header"
                   >
                     Temperature
                   </div>
                   <div
-                    aria-label="obs-obs-single-aria-label-value"
+                    aria-label="obs-Temperature-0-0-value"
                     class="_value_ajzol_20"
-                    data-testid="obs-obs-single-test-id-value"
-                    id="obs-obs-single-value"
+                    data-testid="obs-Temperature-0-0-value"
+                    id="obs-Temperature-0-0-value"
                   >
                     120 mmHg
                   </div>
                   <div
-                    aria-label="obs-obs-single-aria-label-info"
+                    aria-label="obs-Temperature-0-0-info"
                     class="_info_ajzol_29"
-                    data-testid="obs-obs-single-test-id-info"
-                    id="obs-obs-single-info"
+                    data-testid="obs-Temperature-0-0-info"
+                    id="obs-Temperature-0-0-info"
                   >
                     Recorded by Dr. Smith
                   </div>
                 </div>
                 <div
-                  aria-label="grouped-obs-obs-parent-aria-label"
+                  aria-label="grouped-obs-Blood Pressure-0-aria-label"
                   class="_container_1ml42_1"
-                  data-testid="grouped-obs-obs-parent-test-id"
-                  id="grouped-obs-obs-parent"
+                  data-testid="grouped-obs-Blood Pressure-0-test-id"
+                  id="grouped-obs-Blood Pressure-0"
                 >
                   <ul
                     class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
                   >
                     <li
                       class="cds--accordion__item cds--accordion__item--active _accordion_1ml42_5"
-                      data-testid="grouped-obs-obs-parent-test-id-accordion-item"
+                      data-testid="grouped-obs-Blood Pressure-0-test-id-accordion-item"
                     >
                       <button
                         aria-controls="accordion-item-_r_17_"
@@ -141,38 +141,38 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                           id="accordion-item-_r_17_"
                         >
                           <div
-                            aria-label="grouped-obs-obs-parent-rows-aria-label"
+                            aria-label="grouped-obs-Blood Pressure-0-rows-aria-label"
                             class="_rows_1ml42_35"
-                            data-testid="grouped-obs-obs-parent-rows-test-id"
-                            id="grouped-obs-obs-parent-rows"
+                            data-testid="grouped-obs-Blood Pressure-0-rows-test-id"
+                            id="grouped-obs-Blood Pressure-0-rows"
                           >
                             <div
-                              aria-label="obs-obs-child-1-aria-label"
+                              aria-label="obs-Systolic-0-0"
                               class="_rowCell_ajzol_1"
-                              data-testid="obs-obs-child-1-test-id"
-                              id="obs-obs-child-1"
+                              data-testid="obs-Systolic-0-0"
+                              id="obs-Systolic-0-0"
                             >
                               <div
-                                aria-label="obs-obs-child-1-aria-label-header"
+                                aria-label="obs-Systolic-0-0-header"
                                 class="_header_ajzol_11"
-                                data-testid="obs-obs-child-1-test-id-header"
-                                id="obs-obs-child-1-header"
+                                data-testid="obs-Systolic-0-0-header"
+                                id="obs-Systolic-0-0-header"
                               >
                                 Systolic
                               </div>
                               <div
-                                aria-label="obs-obs-child-1-aria-label-value"
+                                aria-label="obs-Systolic-0-0-value"
                                 class="_value_ajzol_20"
-                                data-testid="obs-obs-child-1-test-id-value"
-                                id="obs-obs-child-1-value"
+                                data-testid="obs-Systolic-0-0-value"
+                                id="obs-Systolic-0-0-value"
                               >
                                 120 mmHg
                               </div>
                               <div
-                                aria-label="obs-obs-child-1-aria-label-info"
+                                aria-label="obs-Systolic-0-0-info"
                                 class="_info_ajzol_29"
-                                data-testid="obs-obs-child-1-test-id-info"
-                                id="obs-obs-child-1-info"
+                                data-testid="obs-Systolic-0-0-info"
+                                id="obs-Systolic-0-0-info"
                               >
                                 Recorded by Dr. Smith
                               </div>

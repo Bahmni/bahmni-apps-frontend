@@ -218,7 +218,7 @@ describe('FormsTable', () => {
       renderFormsTable();
 
       expect(screen.getByTestId('forms-table')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+      expect(screen.getByTestId('forms-table-skeleton')).toBeInTheDocument();
     });
 
     it('displays empty state when no forms', async () => {

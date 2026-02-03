@@ -233,7 +233,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
           emptyStateMessage={t('NO_SERVICE_REQUESTS')}
           renderCell={renderCell}
           className={styles.serviceRequestTableBody}
-          data-testid="sortable-data-table"
+          dataTestId="generic-service-request-table"
         />
       ) : (
         <Accordion align="start">
@@ -263,7 +263,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                   emptyStateMessage={t('NO_SERVICE_REQUESTS')}
                   renderCell={renderCell}
                   className={styles.serviceRequestTableBody}
-                  data-testid="sortable-data-table"
+                  dataTestId={`generic-service-request-table-${formattedDate}`}
                 />
               </AccordionItem>
             );

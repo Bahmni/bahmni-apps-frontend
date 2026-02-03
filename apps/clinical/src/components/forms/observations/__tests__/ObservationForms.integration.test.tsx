@@ -140,17 +140,15 @@ describe('ObservationForms Integration Tests', () => {
           screen.getByTestId('pinned-forms-container-title'),
         ).toHaveTextContent('DEFAULT_AND_PINNED_FORMS_TITLE');
         expect(
-          screen.getByTestId('pinned-form-history-exam-uuid'),
+          screen.getByTestId('pinned-form-History and Examination'),
         ).toBeInTheDocument();
-        expect(
-          screen.getByTestId('pinned-form-vitals-uuid'),
-        ).toBeInTheDocument();
+        expect(screen.getByTestId('pinned-form-Vitals')).toBeInTheDocument();
       });
 
       // Verify default forms don't have unpin action icons (they should be permanent)
       const defaultFormCards = [
-        screen.getByTestId('pinned-form-history-exam-uuid'),
-        screen.getByTestId('pinned-form-vitals-uuid'),
+        screen.getByTestId('pinned-form-History and Examination'),
+        screen.getByTestId('pinned-form-Vitals'),
       ];
 
       defaultFormCards.forEach((card) => {
@@ -179,17 +177,15 @@ describe('ObservationForms Integration Tests', () => {
 
       // Verify all forms are displayed: default + user pinned
       expect(
-        screen.getByTestId('pinned-form-history-exam-uuid'),
+        screen.getByTestId('pinned-form-History and Examination'),
       ).toBeInTheDocument(); // Default
-      expect(screen.getByTestId('pinned-form-vitals-uuid')).toBeInTheDocument(); // Default
+      expect(screen.getByTestId('pinned-form-Vitals')).toBeInTheDocument(); // Default
       expect(
-        screen.getByTestId('pinned-form-custom-form-1-uuid'),
+        screen.getByTestId('pinned-form-Custom Form 1'),
       ).toBeInTheDocument(); // User pinned
 
       // Verify only user-pinned forms have action icons
-      const userPinnedCard = screen.getByTestId(
-        'pinned-form-custom-form-1-uuid',
-      );
+      const userPinnedCard = screen.getByTestId('pinned-form-Custom Form 1');
       expect(
         userPinnedCard.querySelector('[id*="action-icon-fa-thumbtack"]'),
       ).toBeInTheDocument();
@@ -211,14 +207,12 @@ describe('ObservationForms Integration Tests', () => {
       renderComponent(<ObservationForms {...defaultProps} />);
       await waitFor(() => {
         expect(
-          screen.getByTestId('pinned-form-custom-form-1-uuid'),
+          screen.getByTestId('pinned-form-Custom Form 1'),
         ).toBeInTheDocument();
       });
 
       // Verify pinned form has unpin button
-      const pinnedFormCard = screen.getByTestId(
-        'pinned-form-custom-form-1-uuid',
-      );
+      const pinnedFormCard = screen.getByTestId('pinned-form-Custom Form 1');
       const unpinAction = pinnedFormCard.querySelector(
         '[id*="action-icon-fa-thumbtack"]',
       );
@@ -241,14 +235,12 @@ describe('ObservationForms Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId('pinned-form-custom-form-1-uuid'),
+          screen.getByTestId('pinned-form-Custom Form 1'),
         ).toBeInTheDocument();
       });
 
       // Find and click the unpin action
-      const pinnedFormCard = screen.getByTestId(
-        'pinned-form-custom-form-1-uuid',
-      );
+      const pinnedFormCard = screen.getByTestId('pinned-form-Custom Form 1');
       const actionContainer = pinnedFormCard.querySelector(
         '[id*="action-icon-fa-thumbtack"]',
       );
@@ -278,7 +270,7 @@ describe('ObservationForms Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId('pinned-form-custom-form-1-uuid'),
+          screen.getByTestId('pinned-form-Custom Form 1'),
         ).toBeInTheDocument();
       });
 
@@ -290,13 +282,13 @@ describe('ObservationForms Integration Tests', () => {
       // Verify forms persist across sessions
       await waitFor(() => {
         expect(
-          screen.getByTestId('pinned-form-custom-form-1-uuid'),
+          screen.getByTestId('pinned-form-Custom Form 1'),
         ).toBeInTheDocument();
       });
 
       // Verify the form is displayed correctly
       expect(
-        screen.getByTestId('pinned-form-custom-form-1-uuid'),
+        screen.getByTestId('pinned-form-Custom Form 1'),
       ).toBeInTheDocument();
     });
 
@@ -309,11 +301,9 @@ describe('ObservationForms Integration Tests', () => {
       await waitFor(() => {
         // Should still show default forms even if user pinned forms fail to load
         expect(
-          screen.getByTestId('pinned-form-history-exam-uuid'),
+          screen.getByTestId('pinned-form-History and Examination'),
         ).toBeInTheDocument();
-        expect(
-          screen.getByTestId('pinned-form-vitals-uuid'),
-        ).toBeInTheDocument();
+        expect(screen.getByTestId('pinned-form-Vitals')).toBeInTheDocument();
       });
 
       consoleSpy.mockRestore();
@@ -337,11 +327,11 @@ describe('ObservationForms Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId('pinned-form-custom-form-1-uuid'),
+          screen.getByTestId('pinned-form-Custom Form 1'),
         ).toBeInTheDocument();
       });
 
-      const form1Card = screen.getByTestId('pinned-form-custom-form-1-uuid');
+      const form1Card = screen.getByTestId('pinned-form-Custom Form 1');
       const actionContainer = form1Card.querySelector(
         '[id*="action-icon-fa-thumbtack"]',
       );
@@ -358,19 +348,17 @@ describe('ObservationForms Integration Tests', () => {
       // Should only show default forms when no user pinned forms
       await waitFor(() => {
         expect(
-          screen.getByTestId('pinned-form-history-exam-uuid'),
+          screen.getByTestId('pinned-form-History and Examination'),
         ).toBeInTheDocument();
-        expect(
-          screen.getByTestId('pinned-form-vitals-uuid'),
-        ).toBeInTheDocument();
+        expect(screen.getByTestId('pinned-form-Vitals')).toBeInTheDocument();
       });
 
       // Verify no user-pinned forms are displayed
       expect(
-        screen.queryByTestId('pinned-form-custom-form-1-uuid'),
+        screen.queryByTestId('pinned-form-Custom Form 1'),
       ).not.toBeInTheDocument();
       expect(
-        screen.queryByTestId('pinned-form-custom-form-2-uuid'),
+        screen.queryByTestId('pinned-form-Custom Form 2'),
       ).not.toBeInTheDocument();
     });
   });
@@ -391,7 +379,7 @@ describe('ObservationForms Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId('pinned-form-custom-form-1-uuid'),
+          screen.getByTestId('pinned-form-Custom Form 1'),
         ).toBeInTheDocument();
       });
 
@@ -443,7 +431,7 @@ describe('ObservationForms Integration Tests', () => {
             screen.getByTestId('pinned-forms-container-title'),
           ).toHaveTextContent('DEFAULT_AND_PINNED_FORMS_TITLE');
           expect(
-            screen.getByTestId('pinned-form-history-exam-uuid'),
+            screen.getByTestId('pinned-form-History and Examination'),
           ).toBeInTheDocument();
         },
         { timeout: 10000 },
@@ -469,11 +457,11 @@ describe('ObservationForms Integration Tests', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId('pinned-form-custom-form-1-uuid'),
+          screen.getByTestId('pinned-form-Custom Form 1'),
         ).toBeInTheDocument();
       });
 
-      const formCard = screen.getByTestId('pinned-form-custom-form-1-uuid');
+      const formCard = screen.getByTestId('pinned-form-Custom Form 1');
       const actionContainer = formCard.querySelector(
         '[id*="action-icon-fa-thumbtack"]',
       );
@@ -521,9 +509,7 @@ describe('ObservationForms Integration Tests', () => {
 
       // Verify selected forms are properly displayed
       expect(screen.getByTestId('added-forms-section')).toBeInTheDocument();
-      expect(
-        screen.getByTestId('selected-form-vitals-uuid'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('selected-form-Vitals')).toBeInTheDocument();
 
       // This verifies the integration where already selected forms
       // would be marked as disabled in the search results
@@ -672,9 +658,9 @@ describe('ObservationForms Integration Tests', () => {
         screen.queryByTestId('pinned-forms-skeleton'),
       ).not.toBeInTheDocument();
       expect(
-        screen.getByTestId('pinned-form-history-exam-uuid'),
+        screen.getByTestId('pinned-form-History and Examination'),
       ).toBeInTheDocument();
-      expect(screen.getByTestId('pinned-form-vitals-uuid')).toBeInTheDocument();
+      expect(screen.getByTestId('pinned-form-Vitals')).toBeInTheDocument();
     });
   });
 
@@ -703,11 +689,11 @@ describe('ObservationForms Integration Tests', () => {
 
         await waitFor(() => {
           expect(
-            screen.getByTestId('pinned-form-custom-form-1-uuid'),
+            screen.getByTestId('pinned-form-Custom Form 1'),
           ).toBeInTheDocument();
         });
 
-        const formCard = screen.getByTestId('pinned-form-custom-form-1-uuid');
+        const formCard = screen.getByTestId('pinned-form-Custom Form 1');
         const actionContainer = formCard.querySelector(
           '[id*="action-icon-fa-thumbtack"]',
         );
@@ -733,11 +719,9 @@ describe('ObservationForms Integration Tests', () => {
         // Should still render default forms even if service is unavailable
         await waitFor(() => {
           expect(
-            screen.getByTestId('pinned-form-history-exam-uuid'),
+            screen.getByTestId('pinned-form-History and Examination'),
           ).toBeInTheDocument();
-          expect(
-            screen.getByTestId('pinned-form-vitals-uuid'),
-          ).toBeInTheDocument();
+          expect(screen.getByTestId('pinned-form-Vitals')).toBeInTheDocument();
         });
 
         consoleSpy.mockRestore();
@@ -764,11 +748,11 @@ describe('ObservationForms Integration Tests', () => {
 
         await waitFor(() => {
           expect(
-            screen.getByTestId('pinned-form-custom-form-1-uuid'),
+            screen.getByTestId('pinned-form-Custom Form 1'),
           ).toBeInTheDocument();
         });
 
-        const formCard = screen.getByTestId('pinned-form-custom-form-1-uuid');
+        const formCard = screen.getByTestId('pinned-form-Custom Form 1');
         const actionContainer = formCard.querySelector(
           '[id*="action-icon-fa-thumbtack"]',
         );
@@ -803,16 +787,16 @@ describe('ObservationForms Integration Tests', () => {
 
         await waitFor(() => {
           expect(
-            screen.getByTestId('pinned-form-custom-form-1-uuid'),
+            screen.getByTestId('pinned-form-Custom Form 1'),
           ).toBeInTheDocument();
           expect(
-            screen.getByTestId('pinned-form-custom-form-2-uuid'),
+            screen.getByTestId('pinned-form-Custom Form 2'),
           ).toBeInTheDocument();
         });
 
         // Try to unpin multiple forms rapidly (simulate concurrent modifications)
-        const form1Card = screen.getByTestId('pinned-form-custom-form-1-uuid');
-        const form2Card = screen.getByTestId('pinned-form-custom-form-2-uuid');
+        const form1Card = screen.getByTestId('pinned-form-Custom Form 1');
+        const form2Card = screen.getByTestId('pinned-form-Custom Form 2');
 
         const action1 = form1Card.querySelector(
           '[id*="action-icon-fa-thumbtack"]',
@@ -855,16 +839,14 @@ describe('ObservationForms Integration Tests', () => {
         // Should still render default forms
         await waitFor(() => {
           expect(
-            screen.getByTestId('pinned-form-history-exam-uuid'),
+            screen.getByTestId('pinned-form-History and Examination'),
           ).toBeInTheDocument();
-          expect(
-            screen.getByTestId('pinned-form-vitals-uuid'),
-          ).toBeInTheDocument();
+          expect(screen.getByTestId('pinned-form-Vitals')).toBeInTheDocument();
         });
 
         // Enhanced implementation now correctly filters out orphaned forms
         expect(
-          screen.queryByTestId('pinned-form-deleted-form-uuid'),
+          screen.queryByTestId('pinned-form-Deleted Form'),
         ).not.toBeInTheDocument();
 
         consoleSpy.mockRestore();
@@ -922,13 +904,13 @@ describe('ObservationForms Integration Tests', () => {
 
         await waitFor(() => {
           expect(
-            screen.getByTestId('pinned-form-history-exam-uuid'),
+            screen.getByTestId('pinned-form-History and Examination'),
           ).toBeInTheDocument();
         });
 
         // Should only render one instance of the form
         const duplicateForms = screen.getAllByTestId(
-          'pinned-form-history-exam-uuid',
+          'pinned-form-History and Examination',
         );
         expect(duplicateForms).toHaveLength(1);
 
@@ -952,11 +934,9 @@ describe('ObservationForms Integration Tests', () => {
         // Should render default forms despite malformed data
         await waitFor(() => {
           expect(
-            screen.getByTestId('pinned-form-history-exam-uuid'),
+            screen.getByTestId('pinned-form-History and Examination'),
           ).toBeInTheDocument();
-          expect(
-            screen.getByTestId('pinned-form-vitals-uuid'),
-          ).toBeInTheDocument();
+          expect(screen.getByTestId('pinned-form-Vitals')).toBeInTheDocument();
         });
 
         consoleSpy.mockRestore();
@@ -1007,11 +987,9 @@ describe('ObservationForms Integration Tests', () => {
         // Should fallback to default forms
         await waitFor(() => {
           expect(
-            screen.getByTestId('pinned-form-history-exam-uuid'),
+            screen.getByTestId('pinned-form-History and Examination'),
           ).toBeInTheDocument();
-          expect(
-            screen.getByTestId('pinned-form-vitals-uuid'),
-          ).toBeInTheDocument();
+          expect(screen.getByTestId('pinned-form-Vitals')).toBeInTheDocument();
         });
 
         consoleSpy.mockRestore();

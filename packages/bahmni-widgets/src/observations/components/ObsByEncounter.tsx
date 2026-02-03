@@ -15,11 +15,14 @@ import { formatEncounterTitle, transformObservationToRowCell } from '../utils';
 
 export interface ObsByEncounterProps {
   groupedData: ObservationsByEncounter[];
+  title?: string;
 }
 
 const renderObservation = (
   observation: ExtractedObservation,
   index: number,
+  encounterIndex: number,
+  title: string,
   t: (key: string, options?: { provider?: string }) => string,
 ) => {
   const rowData = transformObservationToRowCell(observation, index);
@@ -40,9 +43,12 @@ const renderObservation = (
     provider: rowData.provider,
   });
 
-  const id = observation.observationValue?.isAbnormal
-    ? `abnormal-obs-${observation.id}`
-    : `obs-${observation.id}`;
+  const obsName = observation.display;
+  const isAbnormal = observation.observationValue?.isAbnormal;
+  const testIdPrefix = isAbnormal ? 'abnormal-obs' : 'obs';
+  const testIdBase = title
+    ? `${title}-${testIdPrefix}-${obsName}-${encounterIndex}-${index}`
+    : `${testIdPrefix}-${obsName}-${encounterIndex}-${index}`;
 
   return (
     <RowCell
@@ -50,9 +56,9 @@ const renderObservation = (
       header={rowData.header}
       value={valueToDisplay}
       info={info}
-      id={id}
-      testId={`${id}-test-id`}
-      ariaLabel={`${id}-aria-label`}
+      id={testIdBase}
+      testId={testIdBase}
+      ariaLabel={testIdBase}
     />
   );
 };
@@ -61,16 +67,19 @@ const renderGroupedObservation = (
   groupedObs: GroupedObservation,
   t: (key: string, options?: { provider?: string }) => string,
   isLatestEncounter: boolean,
+  groupIndex: number,
+  encounterIndex: number,
+  title: string,
 ) => {
   return (
     <CollapsibleRowGroup
       key={`grouped-obs-${groupedObs.id}`}
       title={groupedObs.display}
-      id={`grouped-obs-${groupedObs.id}`}
+      id={`grouped-obs-${groupedObs.display}-${groupIndex}`}
       open={isLatestEncounter}
     >
       {groupedObs.children.map((child, childIndex) =>
-        renderObservation(child, childIndex, t),
+        renderObservation(child, childIndex, encounterIndex, title, t),
       )}
     </CollapsibleRowGroup>
   );
@@ -78,11 +87,13 @@ const renderGroupedObservation = (
 
 export const ObsByEncounter: React.FC<ObsByEncounterProps> = ({
   groupedData,
+  title = '',
 }) => {
   const { t } = useTranslation();
   const renderEncounter = (
     encounter: ObservationsByEncounter,
     isLatestEncounter: boolean,
+    encounterIndex: number,
   ) => {
     const encounterTitle = formatEncounterTitle(encounter.encounterDetails, t);
 
@@ -94,10 +105,17 @@ export const ObsByEncounter: React.FC<ObsByEncounterProps> = ({
         open={isLatestEncounter}
       >
         {encounter.observations.map((obs, obsIndex) =>
-          renderObservation(obs, obsIndex, t),
+          renderObservation(obs, obsIndex, encounterIndex, title, t),
         )}
-        {encounter.groupedObservations.map((groupedObs) =>
-          renderGroupedObservation(groupedObs, t, isLatestEncounter),
+        {encounter.groupedObservations.map((groupedObs, groupIndex) =>
+          renderGroupedObservation(
+            groupedObs,
+            t,
+            isLatestEncounter,
+            groupIndex,
+            encounterIndex,
+            title,
+          ),
         )}
       </CollapsibleRowGroup>
     );
@@ -110,7 +128,7 @@ export const ObsByEncounter: React.FC<ObsByEncounterProps> = ({
       aria-label={`obs-by-encounter-aria-label`}
     >
       {groupedData.map((encounter, index) =>
-        renderEncounter(encounter, index === 0),
+        renderEncounter(encounter, index === 0, index),
       )}
     </div>
   );

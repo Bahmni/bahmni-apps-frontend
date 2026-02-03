@@ -106,7 +106,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
           key={section.id}
           className={styles.displayControlSection}
           ref={sectionRefs.current[section.id]}
-          data-testid="dashboard-section-article"
+          data-testid={`dashboard-section-article-${section.name}`}
         >
           <DashboardSection
             section={section}

@@ -142,7 +142,7 @@ describe('VitalFlowSheet Integration Tests', () => {
     render(<VitalFlowSheet {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('vital-flow-sheet-table')).toBeInTheDocument();
     });
 
     expect(mockGetVitalFlowSheetData).toHaveBeenCalledWith(
@@ -173,11 +173,13 @@ describe('VitalFlowSheet Integration Tests', () => {
 
     render(<VitalFlowSheet {...defaultProps} />);
 
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('vital-flow-sheet-table-skeleton'),
+    ).toBeInTheDocument();
 
     resolvePromise!(mockVitalFlowSheetData);
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('vital-flow-sheet-table')).toBeInTheDocument();
     });
   });
 
@@ -188,12 +190,16 @@ describe('VitalFlowSheet Integration Tests', () => {
     render(<VitalFlowSheet {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('vital-flow-sheet-table-error'),
+      ).toBeInTheDocument();
     });
 
     expect(screen.getByText('Network timeout')).toBeInTheDocument();
     expect(mockGetFormattedError).toHaveBeenCalledWith(serviceError);
-    expect(screen.queryByTestId('sortable-data-table')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('vital-flow-sheet-table'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows empty state when no vital signs data is returned', async () => {
@@ -202,13 +208,17 @@ describe('VitalFlowSheet Integration Tests', () => {
     render(<VitalFlowSheet {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('vital-flow-sheet-table-empty'),
+      ).toBeInTheDocument();
     });
 
     expect(
       screen.getByText('No vital signs data available'),
     ).toBeInTheDocument();
-    expect(screen.queryByTestId('sortable-data-table')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('vital-flow-sheet-table'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows empty state when tabularData has no observations', async () => {
@@ -234,13 +244,17 @@ describe('VitalFlowSheet Integration Tests', () => {
     render(<VitalFlowSheet {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('vital-flow-sheet-table-empty'),
+      ).toBeInTheDocument();
     });
 
     expect(
       screen.getByText('No vital signs data available'),
     ).toBeInTheDocument();
-    expect(screen.queryByTestId('sortable-data-table')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('vital-flow-sheet-table'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows empty state when conceptDetails is empty', async () => {
@@ -258,13 +272,17 @@ describe('VitalFlowSheet Integration Tests', () => {
     render(<VitalFlowSheet {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('vital-flow-sheet-table-empty'),
+      ).toBeInTheDocument();
     });
 
     expect(
       screen.getByText('No vital signs data available'),
     ).toBeInTheDocument();
-    expect(screen.queryByTestId('sortable-data-table')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('vital-flow-sheet-table'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows empty state when patient UUID is missing', async () => {
@@ -275,7 +293,9 @@ describe('VitalFlowSheet Integration Tests', () => {
 
     // Should show empty state since no data will be fetched
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('vital-flow-sheet-table-empty'),
+      ).toBeInTheDocument();
     });
 
     expect(
@@ -291,7 +311,7 @@ describe('VitalFlowSheet Integration Tests', () => {
     const { rerender } = render(<VitalFlowSheet {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('vital-flow-sheet-table')).toBeInTheDocument();
     });
 
     // Simulate patient change - component would show loading state
@@ -307,7 +327,9 @@ describe('VitalFlowSheet Integration Tests', () => {
     rerender(<VitalFlowSheet {...defaultProps} />);
 
     // Should show loading state for new patient
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('vital-flow-sheet-table-skeleton'),
+    ).toBeInTheDocument();
 
     // Resolve with new data
     const newPatientData: VitalFlowSheetData = {
@@ -330,7 +352,7 @@ describe('VitalFlowSheet Integration Tests', () => {
 
     resolvePromise!(newPatientData);
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('vital-flow-sheet-table')).toBeInTheDocument();
     });
 
     expect(mockGetVitalFlowSheetData).toHaveBeenCalledWith(
@@ -347,7 +369,7 @@ describe('VitalFlowSheet Integration Tests', () => {
     const { rerender } = render(<VitalFlowSheet {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('vital-flow-sheet-table')).toBeInTheDocument();
     });
 
     // Change parameters
@@ -416,7 +438,9 @@ describe('VitalFlowSheet Integration Tests', () => {
     render(<VitalFlowSheet {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('vital-flow-sheet-table-error'),
+      ).toBeInTheDocument();
     });
 
     expect(screen.getByText('Failed to fetch vital signs')).toBeInTheDocument();
@@ -433,24 +457,28 @@ describe('VitalFlowSheet Integration Tests', () => {
     render(<VitalFlowSheet {...defaultProps} />);
 
     // Initially should show loading
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
-    expect(screen.queryByTestId('sortable-data-table')).not.toBeInTheDocument();
     expect(
-      screen.queryByTestId('sortable-table-empty'),
+      screen.getByTestId('vital-flow-sheet-table-skeleton'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('vital-flow-sheet-table'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('vital-flow-sheet-table-empty'),
     ).not.toBeInTheDocument();
 
     // Resolve with data
     resolvePromise!(mockVitalFlowSheetData);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-data-table')).toBeInTheDocument();
+      expect(screen.getByTestId('vital-flow-sheet-table')).toBeInTheDocument();
     });
 
     expect(
-      screen.queryByTestId('sortable-table-skeleton'),
+      screen.queryByTestId('vital-flow-sheet-table-skeleton'),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByTestId('sortable-table-empty'),
+      screen.queryByTestId('vital-flow-sheet-table-empty'),
     ).not.toBeInTheDocument();
   });
 
@@ -462,7 +490,9 @@ describe('VitalFlowSheet Integration Tests', () => {
 
     // Should show empty state since no data will be fetched
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('vital-flow-sheet-table-empty'),
+      ).toBeInTheDocument();
     });
 
     expect(
