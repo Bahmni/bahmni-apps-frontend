@@ -306,7 +306,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     : null;
 
   const formViewContent = (
-    <div className={styles.formView}>
+    <div className={styles.formView} data-testid="observation-form-view">
       {validationErrorType &&
         validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR && (
           <div className={styles.errorNotificationWrapper}>
@@ -342,9 +342,16 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           </div>
         )}
 
-      <div className={styles.formContent}>
+      <div
+        className={styles.formContent}
+        data-testid="observation-form-content"
+      >
         {isLoadingMetadata ? (
-          <SkeletonText width="100%" lineCount={3} />
+          <SkeletonText
+            width="100%"
+            lineCount={3}
+            data-testid="observation-form-loading"
+          />
         ) : error ? (
           <div>{error.message}</div>
         ) : formMetadata && patientUUID ? (
@@ -372,8 +379,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   );
 
   const formTitleWithPin = (
-    <div className={styles.formTitleContainer}>
-      <span>{viewingForm?.name}</span>
+    <div
+      className={styles.formTitleContainer}
+      data-testid="observation-form-title-container"
+    >
+      <span data-testid="observation-form-name">{viewingForm?.name}</span>
       {!DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '') && (
         <div
           onClick={handlePinToggle}
