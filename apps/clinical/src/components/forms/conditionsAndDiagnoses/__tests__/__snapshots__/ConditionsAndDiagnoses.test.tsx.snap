@@ -7,6 +7,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -236,6 +237,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests empty form matches snapshot 1`] =
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -311,6 +313,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -904,6 +907,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with search results matches 
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -979,6 +983,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -1418,6 +1423,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>

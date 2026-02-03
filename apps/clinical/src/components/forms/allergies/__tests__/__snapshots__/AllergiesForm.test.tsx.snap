@@ -7,6 +7,7 @@ exports[`AllergiesForm Snapshots should match snapshot with no allergies 1`] = `
   >
     <div
       class="allergiesFormTitle"
+      data-testid="allergies-form-title"
     >
       Allergies
     </div>
@@ -82,6 +83,7 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
   >
     <div
       class="allergiesFormTitle"
+      data-testid="allergies-form-title"
     >
       Allergies
     </div>

@@ -184,7 +184,7 @@ describe('DashboardSection Component', () => {
 
       renderDashboardSectionWithProvider(mockSection, mockRef);
 
-      expect(screen.getByTestId('carbon-tile')).toBeInTheDocument();
+      expect(screen.getByTestId('dashboard-section-tile')).toBeInTheDocument();
     });
 
     it('accepts a ref prop', () => {
@@ -198,7 +198,7 @@ describe('DashboardSection Component', () => {
 
       renderDashboardSectionWithProvider(mockSection, testRef);
 
-      expect(screen.getByTestId('carbon-tile')).toBeInTheDocument();
+      expect(screen.getByTestId('dashboard-section-tile')).toBeInTheDocument();
     });
 
     it('uses translationKey instead of name when available', () => {

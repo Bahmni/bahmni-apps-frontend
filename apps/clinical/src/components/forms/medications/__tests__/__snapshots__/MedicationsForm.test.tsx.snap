@@ -7,6 +7,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with no medications 1`]
   >
     <div
       class="medicationsFormTitle"
+      data-testid="medications-form-title"
     >
       Prescribe medication
     </div>
@@ -82,6 +83,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
   >
     <div
       class="medicationsFormTitle"
+      data-testid="medications-form-title"
     >
       Prescribe medication
     </div>

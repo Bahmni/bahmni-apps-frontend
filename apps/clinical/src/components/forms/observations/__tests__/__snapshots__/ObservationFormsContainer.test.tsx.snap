@@ -13,8 +13,11 @@ exports[`ObservationFormsContainer Rendering and Structure should match the snap
     >
       <div
         class="formTitleContainer"
+        data-testid="observation-form-title-container"
       >
-        <span>
+        <span
+          data-testid="observation-form-name"
+        >
           Test Form
         </span>
         <div
@@ -36,9 +39,11 @@ exports[`ObservationFormsContainer Rendering and Structure should match the snap
     >
       <div
         class="formView"
+        data-testid="observation-form-view"
       >
         <div
           class="formContent"
+          data-testid="observation-form-content"
         >
           <div>
             translated_OBSERVATION_FORM_LOADING_METADATA_ERROR
