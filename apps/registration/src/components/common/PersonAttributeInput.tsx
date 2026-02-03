@@ -61,6 +61,7 @@ export const PersonAttributeInput = ({
       return (
         <TextInput
           id={uuid}
+          data-testid="person-attribute-text-input"
           type="text"
           labelText={label}
           placeholder={placeholder ?? label}
@@ -76,10 +77,14 @@ export const PersonAttributeInput = ({
 
     case AttributeInputType.CHECKBOX:
       return (
-        <CheckboxGroup legendText={label}>
+        <CheckboxGroup
+          legendText={label}
+          data-testid="person-attribute-checkbox-group"
+        >
           <div className={styles.checkboxField}>
             <Checkbox
               id={uuid}
+              data-testid="person-attribute-checkbox"
               checked={value === true || value === 'true'}
               onChange={(evt, { checked }) => onChange(checked)}
               labelText={''}
@@ -102,6 +107,7 @@ export const PersonAttributeInput = ({
       return (
         <Dropdown
           id={uuid}
+          data-testid="person-attribute-dropdown"
           titleText={label}
           label={placeholder ?? `Select ${label}`}
           items={items}
@@ -120,6 +126,7 @@ export const PersonAttributeInput = ({
       return (
         <DatePicker
           datePickerType="single"
+          data-testid="person-attribute-date-picker"
           onChange={(dates: Date[]) => {
             if (dates && dates.length > 0) {
               onChange(dates[0].toISOString().split('T')[0]);
@@ -128,6 +135,7 @@ export const PersonAttributeInput = ({
         >
           <DatePickerInput
             id={uuid}
+            data-testid="person-attribute-date-input"
             labelText={label}
             placeholder={placeholder ?? 'mm/dd/yyyy'}
             invalid={!!error}
@@ -161,6 +169,7 @@ export const PersonAttributeInput = ({
       return (
         <TextInput
           id={uuid}
+          data-testid="person-attribute-number-input"
           type="text"
           labelText={label}
           placeholder={placeholder ?? label}
@@ -177,6 +186,7 @@ export const PersonAttributeInput = ({
       return (
         <TextInput
           id={uuid}
+          data-testid="person-attribute-default-input"
           type="text"
           labelText={label}
           placeholder={placeholder ?? label}

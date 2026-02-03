@@ -108,18 +108,28 @@ export const PatientRelationships = ({
     });
 
   return (
-    <div className={styles.relationshipSection}>
-      <Tile className={styles.headerTile}>
+    <div
+      className={styles.relationshipSection}
+      data-testid="patient-relationships-section"
+    >
+      <Tile
+        className={styles.headerTile}
+        data-testid="patient-relationships-header"
+      >
         <span className={styles.headerTitle}>
           {t('CREATE_PATIENT_SECTION_RELATIONSHIPS_INFO')}
         </span>
       </Tile>
 
-      <div className={styles.tableContainer}>
+      <div
+        className={styles.tableContainer}
+        data-testid="patient-relationships-table-container"
+      >
         <SimpleDataTable
           headers={headers}
           rows={rows}
           ariaLabel={t('REGISTRATION_RELATIONSHIPS_TABLE')}
+          data-testid="patient-relationships-table"
         />
       </div>
 
@@ -128,6 +138,7 @@ export const PatientRelationships = ({
           kind="tertiary"
           className={styles.wrapButton}
           onClick={addRelationship}
+          data-testid="add-relationship-button"
         >
           {t('REGISTRATION_ADD_RELATIONSHIP')}
         </Button>
