@@ -608,4 +608,215 @@ describe('ConsultationPage', () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  describe('CurrentDashboard Selection', () => {
+    it('should select dashboard when currentDashboardParam matches an existing dashboard name', () => {
+      const { useQuery } = jest.requireMock('@tanstack/react-query');
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { encounterIds: [], visitIds: [] },
+        isLoading: false,
+        error: null,
+      });
+
+      const configWithMultipleDashboards = {
+        ...validFullClinicalConfig,
+        dashboards: [
+          { name: 'Dashboard1', url: 'url1', default: true },
+          { name: 'Dashboard2', url: 'url2', default: false },
+          { name: 'CustomDashboard', url: 'url3', default: false },
+        ],
+      };
+
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: configWithMultipleDashboards,
+      });
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+      });
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: ['Get Patients', 'Add Patients'],
+      });
+
+      renderWithProvider(
+        <ConsultationPage />,
+        '/consultation?episodeUuid=test-episode&currentDashboard=CustomDashboard',
+      );
+
+      expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('mocked-dashboard-container'),
+      ).toBeInTheDocument();
+
+      expect(useDashboardConfig).toHaveBeenCalledWith('url3');
+    });
+
+    it('should return undefined and show error when currentDashboardParam does not match any dashboard', () => {
+      const configWithDashboards = {
+        ...validFullClinicalConfig,
+        dashboards: [
+          { name: 'Dashboard1', url: 'url1', default: true },
+          { name: 'Dashboard2', url: 'url2', default: false },
+        ],
+      };
+
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: configWithDashboards,
+      });
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: ['Get Patients', 'Add Patients'],
+      });
+
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+      });
+
+      renderWithProvider(
+        <ConsultationPage />,
+        '/consultation?episodeUuid=test-episode&currentDashboard=NonExistentDashboard',
+      );
+
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'translated_ERROR_DEFAULT_TITLE',
+        message: 'translated_ERROR_DASHBOARD_NOT_CONFIGURED',
+        type: 'error',
+      });
+
+      expect(screen.getByTestId('carbon-loading')).toHaveTextContent(
+        'translated_ERROR_LOADING_DASHBOARD',
+      );
+      expect(screen.getByTestId('carbon-loading')).toHaveAttribute(
+        'role',
+        'alert',
+      );
+    });
+
+    it('should use default dashboard when currentDashboardParam is not provided', () => {
+      const { useQuery } = jest.requireMock('@tanstack/react-query');
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { encounterIds: [], visitIds: [] },
+        isLoading: false,
+        error: null,
+      });
+
+      const configWithMultipleDashboards = {
+        ...validFullClinicalConfig,
+        dashboards: [
+          { name: 'Dashboard1', url: 'url1', default: false },
+          { name: 'DefaultDashboard', url: 'url-default', default: true },
+          { name: 'Dashboard3', url: 'url3', default: false },
+        ],
+      };
+
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: configWithMultipleDashboards,
+      });
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+      });
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: ['Get Patients', 'Add Patients'],
+      });
+
+      renderWithProvider(
+        <ConsultationPage />,
+        '/consultation?episodeUuid=test-episode',
+      );
+
+      expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+
+      expect(useDashboardConfig).toHaveBeenCalledWith('url-default');
+    });
+
+    it('should use first dashboard when no default is specified and no currentDashboardParam', () => {
+      const { useQuery } = jest.requireMock('@tanstack/react-query');
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { encounterIds: [], visitIds: [] },
+        isLoading: false,
+        error: null,
+      });
+
+      const configWithNonDefaultDashboards = {
+        ...validFullClinicalConfig,
+        dashboards: [
+          { name: 'FirstDashboard', url: 'url-first', default: false },
+          { name: 'SecondDashboard', url: 'url-second', default: false },
+        ],
+      };
+
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: configWithNonDefaultDashboards,
+      });
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+      });
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: ['Get Patients', 'Add Patients'],
+      });
+
+      renderWithProvider(
+        <ConsultationPage />,
+        '/consultation?episodeUuid=test-episode',
+      );
+
+      expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+
+      expect(useDashboardConfig).toHaveBeenCalledWith('url-first');
+    });
+
+    it('should handle clinicalConfig.dashboards being undefined by using empty array fallback', () => {
+      const configWithoutDashboards = {
+        ...validFullClinicalConfig,
+        dashboards: undefined as any,
+      };
+
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: configWithoutDashboards,
+      });
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: ['Get Patients', 'Add Patients'],
+      });
+
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+      });
+
+      renderWithProvider(
+        <ConsultationPage />,
+        '/consultation?episodeUuid=test-episode',
+      );
+
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'translated_ERROR_DEFAULT_TITLE',
+        message: 'translated_ERROR_NO_DEFAULT_DASHBOARD',
+        type: 'error',
+      });
+
+      expect(screen.getByTestId('carbon-loading')).toHaveTextContent(
+        'translated_ERROR_LOADING_DASHBOARD',
+      );
+    });
+
+    it('should return null when clinicalConfig is null', () => {
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: null,
+      });
+
+      renderWithProvider(<ConsultationPage />);
+
+      expect(screen.getByTestId('carbon-loading')).toHaveTextContent(
+        'translated_LOADING_CLINICAL_CONFIG',
+      );
+
+      expect(
+        screen.queryByTestId('mocked-clinical-layout'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });

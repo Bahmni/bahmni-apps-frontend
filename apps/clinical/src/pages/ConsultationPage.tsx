@@ -82,10 +82,20 @@ const ConsultationPage: React.FC = () => {
       .map((id) => id.trim())
       .filter(Boolean);
   }, [searchParams]);
+
+  const currentDashboardParam = searchParams.get('currentDashboard');
+
   const currentDashboard = useMemo(() => {
     if (!clinicalConfig) return null;
-    return getDefaultDashboard(clinicalConfig.dashboards || []);
-  }, [clinicalConfig]);
+
+    if (!currentDashboardParam) {
+      return getDefaultDashboard(clinicalConfig.dashboards || []);
+    }
+
+    return clinicalConfig.dashboards?.find(
+      (dashboard) => dashboard.name === currentDashboardParam,
+    );
+  }, [clinicalConfig, currentDashboardParam]);
 
   const dashboardUrl = currentDashboard?.url ?? null;
   const { dashboardConfig } = useDashboardConfig(dashboardUrl);
@@ -104,9 +114,15 @@ const ConsultationPage: React.FC = () => {
     return <Loading description={t('LOADING_USER_PRIVILEGES')} role="status" />;
   }
   if (!currentDashboard) {
+    const errorMessage = currentDashboardParam
+      ? t('ERROR_DASHBOARD_NOT_CONFIGURED', {
+          dashboardName: currentDashboardParam,
+        })
+      : t('ERROR_NO_DEFAULT_DASHBOARD');
+
     addNotification({
       title: t('ERROR_DEFAULT_TITLE'),
-      message: t('ERROR_NO_DEFAULT_DASHBOARD'),
+      message: errorMessage,
       type: 'error',
     });
     return <Loading description={t('ERROR_LOADING_DASHBOARD')} role="alert" />;
