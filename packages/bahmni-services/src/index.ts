@@ -156,14 +156,13 @@ export {
   getPatientRadiologyInvestigationBundle,
   getPatientRadiologyInvestigationBundleWithImagingStudy,
 } from './radiologyInvestigationService';
+export { getLabInvestigationsBundle } from './labInvestigationService';
 export {
-  getPatientLabInvestigations,
-  groupLabTestsByDate,
-  formatLabTests,
-  type FormattedLabTest,
-  LabTestPriority,
-  type LabTestsByDate,
-} from './labInvestigationService';
+  getDiagnosticReports,
+  getDiagnosticReportBundle,
+  PROCESSED_REPORT_STATUSES,
+  PENDING_REPORT_STATUSES,
+} from './diagnosticReportService';
 export {
   getFlattenedInvestigations,
   getOrderTypes,
@@ -246,6 +245,7 @@ export {
   DATE_REGEX_PATTERN,
   DATETIME_REGEX_PATTERN,
   INTERPRETATION_TO_CODE,
+  FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL,
 } from './constants/fhir';
 
 export {

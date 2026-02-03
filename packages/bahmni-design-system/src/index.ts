@@ -51,6 +51,10 @@ export {
   DropdownSkeleton,
   type DropdownSkeletonProps,
 } from './atoms/dropdownSkeleton';
+export {
+  CodeSnippetSkeleton,
+  type CodeSnippetSkeletonProps,
+} from './atoms/codeSnippetSkeleton';
 export { Dropdown, type DropdownProps } from './atoms/dropdown';
 export { Checkbox, type CheckboxProps } from './atoms/checkbox';
 export { CheckboxGroup, type CheckboxGroupProps } from './atoms/checkboxGroup';

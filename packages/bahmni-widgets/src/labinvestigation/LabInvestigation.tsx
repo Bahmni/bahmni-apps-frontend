@@ -1,21 +1,52 @@
-import { Accordion, AccordionItem, SkeletonText } from '@bahmni/design-system';
 import {
-  groupLabTestsByDate,
+  Accordion,
+  AccordionItem,
+  CodeSnippetSkeleton,
+} from '@bahmni/design-system';
+import {
   shouldEnableEncounterFilter,
   useTranslation,
-  LabTestsByDate,
-  FormattedLabTest,
   getCategoryUuidFromOrderTypes,
   getFormattedError,
-  getPatientLabInvestigations,
+  getLabInvestigationsBundle,
+  getDiagnosticReports,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
-import React, { useMemo, useEffect } from 'react';
+import { useQuery, useQueries } from '@tanstack/react-query';
+import type { DiagnosticReport } from 'fhir/r4';
+import React, { useMemo, useEffect, useState } from 'react';
+
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
 import LabInvestigationItem from './LabInvestigationItem';
+import { FormattedLabInvestigations, LabInvestigationsByDate } from './models';
 import styles from './styles/LabInvestigation.module.scss';
+import {
+  filterLabInvestigationEntries,
+  formatLabInvestigations,
+  groupLabInvestigationsByDate,
+  getProcessedTestIds,
+  getTestIdToReportIdMap,
+  extractDiagnosticReportsFromBundle,
+  sortLabInvestigationsByPriority,
+} from './utils';
+
+const fetchLabInvestigations = async (
+  patientUUID: string,
+  category: string,
+  t: (key: string) => string,
+  encounterUuids?: string[],
+  numberOfVisits?: number,
+): Promise<FormattedLabInvestigations[]> => {
+  const bundle = await getLabInvestigationsBundle(
+    patientUUID,
+    category,
+    encounterUuids,
+    numberOfVisits,
+  );
+  const filteredEntries = filterLabInvestigationEntries(bundle);
+  return formatLabInvestigations(filteredEntries, t);
+};
 
 const LabInvestigation: React.FC<WidgetProps> = ({
   config,
@@ -27,6 +58,9 @@ const LabInvestigation: React.FC<WidgetProps> = ({
   const { addNotification } = useNotification();
   const categoryName = config?.orderType as string;
   const numberOfVisits = config?.numberOfVisits as number;
+  const [openAccordionIndices, setOpenAccordionIndices] = useState<Set<number>>(
+    new Set([0]),
+  );
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -49,7 +83,7 @@ const LabInvestigation: React.FC<WidgetProps> = ({
     isLoading: isLoadingLabInvestigations,
     isError: isLabInvestigationsError,
     error: labInvestigationsError,
-  } = useQuery<FormattedLabTest[]>({
+  } = useQuery<FormattedLabInvestigations[]>({
     queryKey: [
       'labInvestigations',
       categoryUuid,
@@ -59,9 +93,9 @@ const LabInvestigation: React.FC<WidgetProps> = ({
     ],
     enabled: !!patientUUID && !!categoryUuid && !emptyEncounterFilter,
     queryFn: () =>
-      getPatientLabInvestigations(
+      fetchLabInvestigations(
         patientUUID!,
-        categoryUuid,
+        categoryUuid!,
         t,
         encounterUuids,
         numberOfVisits,
@@ -94,14 +128,50 @@ const LabInvestigation: React.FC<WidgetProps> = ({
     t,
   ]);
 
-  const labTests: FormattedLabTest[] = labTestsData ?? [];
+  const labTests: FormattedLabInvestigations[] = useMemo(
+    () => labTestsData ?? [],
+    [labTestsData],
+  );
   const isLoading = isLoadingOrderTypes || isLoadingLabInvestigations;
   const hasError = isOrderTypesError || isLabInvestigationsError;
 
-  // Group the lab tests by date
-  const labTestsByDate = useMemo<LabTestsByDate[]>(() => {
-    return groupLabTestsByDate(labTests);
+  const sortedLabInvestigationsByDate = useMemo<
+    LabInvestigationsByDate[]
+  >(() => {
+    const groupedTests = groupLabInvestigationsByDate(labTests);
+    return sortLabInvestigationsByPriority(groupedTests);
   }, [labTests]);
+
+  // Fetch diagnostic reports for each accordion separately to enable caching
+  const diagnosticReportQueries = useQueries({
+    queries: sortedLabInvestigationsByDate.map((group, index) => {
+      const testIds = group.tests.map((test) => test.id);
+      return {
+        queryKey: ['diagnosticReports', patientUUID, index, testIds],
+        queryFn: () => getDiagnosticReports(patientUUID!, testIds),
+        enabled:
+          !!patientUUID &&
+          openAccordionIndices.has(index) &&
+          testIds.length > 0,
+      };
+    }),
+  });
+
+  // Merge all diagnostic reports from open accordions
+  const diagnosticReports = useMemo<DiagnosticReport[]>(() => {
+    const reports = diagnosticReportQueries
+      .filter((query) => query.data)
+      .flatMap((query) => extractDiagnosticReportsFromBundle(query.data));
+    return reports;
+  }, [diagnosticReportQueries]);
+
+  const processedTestIds = useMemo(() => {
+    return getProcessedTestIds(diagnosticReports);
+  }, [diagnosticReports]);
+
+  const testIdToReportIdMap = useMemo(() => {
+    return getTestIdToReportIdMap(diagnosticReports);
+  }, [diagnosticReports]);
 
   if (hasError) {
     return (
@@ -113,10 +183,11 @@ const LabInvestigation: React.FC<WidgetProps> = ({
 
   if (isLoading) {
     return (
-      <>
-        <SkeletonText lineCount={3} width="100%" />
-        <div>{t('LAB_TEST_LOADING')}</div>
-      </>
+      <CodeSnippetSkeleton
+        type="multi"
+        className={styles.labSkeleton}
+        testId="lab-skeleton"
+      />
     );
   }
 
@@ -129,42 +200,39 @@ const LabInvestigation: React.FC<WidgetProps> = ({
   }
 
   return (
-    <section>
-      <Accordion align="start" size="lg" className={styles.accordianHeader}>
-        {labTestsByDate.map((group: LabTestsByDate, index) => (
+    <Accordion align="start">
+      {sortedLabInvestigationsByDate.map(
+        (group: LabInvestigationsByDate, index) => (
           <AccordionItem
             key={group.date}
             className={styles.accordionItem}
-            open={index === 0}
-            title={
-              <span className={styles.accordionTitle}>
-                <strong>{group.date}</strong>
-              </span>
-            }
+            open={openAccordionIndices.has(index)}
+            onHeadingClick={() => {
+              setOpenAccordionIndices((prev) => {
+                const newSet = new Set(prev);
+                if (newSet.has(index)) {
+                  newSet.delete(index);
+                } else {
+                  newSet.add(index);
+                }
+                return newSet;
+              });
+            }}
+            title={group.date}
           >
-            {/* Render 'urgent' tests first */}
-            {group.tests
-              ?.filter((test) => test.priority === 'Urgent')
-              .map((test) => (
-                <LabInvestigationItem
-                  key={`urgent-${group.date}-${test.testName}-${test.id || test.testName}`}
-                  test={test}
-                />
-              ))}
-
-            {/* Then render non-urgent tests */}
-            {group.tests
-              ?.filter((test) => test.priority !== 'Urgent')
-              .map((test) => (
-                <LabInvestigationItem
-                  key={`nonurgent-${group.date}-${test.testName}-${test.id || test.testName}`}
-                  test={test}
-                />
-              ))}
+            {group.tests?.map((test) => (
+              <LabInvestigationItem
+                key={`${group.date}-${test.testName}-${test.id || test.testName}`}
+                test={test}
+                isOpen={openAccordionIndices.has(index)}
+                hasProcessedReport={processedTestIds.includes(test.id)}
+                reportId={testIdToReportIdMap.get(test.id)}
+              />
+            ))}
           </AccordionItem>
-        ))}
-      </Accordion>
-    </section>
+        ),
+      )}
+    </Accordion>
   );
 };
 

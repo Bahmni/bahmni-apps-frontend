@@ -1,18 +1,12 @@
-/**
- * Enum representing the possible priorities of a lab test
- */
-export enum LabTestPriority {
+export enum LabInvestigationPriority {
   stat = 'Urgent',
   routine = 'Routine',
 }
 
-/**
- * Interface representing a formatted lab test for easier consumption by components
- */
-export interface FormattedLabTest {
+export interface FormattedLabInvestigations {
   readonly id: string;
   readonly testName: string;
-  readonly priority: LabTestPriority;
+  readonly priority: LabInvestigationPriority;
   readonly orderedBy: string;
   readonly orderedDate: string; // ISO date string
   readonly formattedDate: string; // Formatted date for display
@@ -21,13 +15,10 @@ export interface FormattedLabTest {
   readonly note?: string;
 }
 
-/**
- * Interface representing lab tests grouped by date
- */
-export interface LabTestsByDate {
+export interface LabInvestigationsByDate {
   readonly date: string; // Formatted date string
   readonly rawDate: string; // Original ISO date string for sorting
-  readonly tests: FormattedLabTest[];
+  readonly tests: FormattedLabInvestigations[];
 }
 
 export interface LabTestResult {
@@ -37,4 +28,5 @@ export interface LabTestResult {
   referenceRange: string;
   reportedOn: string;
   actions: string;
+  interpretation?: string;
 }

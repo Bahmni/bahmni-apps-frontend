@@ -3,47 +3,57 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
-.accordianHeader {
-  background-color: $layer-01;
+.labSkeleton {
+  max-inline-size: 100% !important;
 }
 
-.accordionTitle {
-  display: flex;
-  align-items: center;
-  gap: $spacing-03;
-  font-weight: 600;
-}
-
-/* Lab test item styles */
-.labBox {
-  padding: $spacing-04;
+.labTest {
   background-color: $layer-02;
+  border-bottom: 1px solid $border-subtle;
 }
 
-.labHeaderWrapper {
+.labTestHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   row-gap: $spacing-05;
   flex-wrap: nowrap;
+  padding: $spacing-04;
 }
 
-.labTestNameWrapper {
+.labTestInfo {
   @include type-style("heading-compact-01");
-  color: $text-primary;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: $spacing-02;
-  height: $spacing-08;
+  text-transform: capitalize;
 }
 
-.testInfo {
+.testName {
+  @include type-style("body-compact-01");
+  text-transform: capitalize;
+}
+
+.abnormalResult {
+  @include type-style("body-compact-01");
+  color: $text-error;
+  font-weight: 700;
+}
+
+.testDetails {
   @include type-style("body-compact-01");
   color: $text-secondary;
 }
 
+.testResultsPending {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+  padding: 0 $spacing-04 $spacing-04;
+}
+
 .accordionItem {
+  background-color: $layer-01;
   :global(.cds--accordion__content),
   :global(.cds--accordion__wrapper) {
     padding-block: 0% !important;
@@ -58,4 +68,12 @@
   text-align: center;
 
   @include type-style("body-compact-01");
+}
+
+.labTestResultsTable {
+  td {
+    width: 20%;
+    border-block-end: none !important;
+    border-block-start: none !important;
+  }
 }
