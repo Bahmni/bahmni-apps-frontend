@@ -23,6 +23,7 @@ export interface ValidationConfig {
 
 export interface PersonAttributeInputProps {
   uuid: string;
+  name: string;
   label: string;
   format: string;
   value: string | number | boolean | undefined;
@@ -44,6 +45,7 @@ const isNumericValue = (value: string): boolean => {
  */
 export const PersonAttributeInput = ({
   uuid,
+  name,
   label,
   format,
   value,
@@ -61,7 +63,7 @@ export const PersonAttributeInput = ({
       return (
         <TextInput
           id={uuid}
-          data-testid={`person-attribute-text-input-${uuid}`}
+          data-testid={`person-attribute-text-input-${name}`}
           type="text"
           labelText={label}
           placeholder={placeholder ?? label}
@@ -79,14 +81,14 @@ export const PersonAttributeInput = ({
       return (
         <CheckboxGroup
           legendText={label}
-          data-testid={`person-attribute-checkbox-group-${uuid}`}
+          data-testid={`person-attribute-checkbox-group-${name}`}
         >
           <div className={styles.checkboxField}>
             <Checkbox
               id={uuid}
-              data-testid={`person-attribute-checkbox-${uuid}`}
+              data-testid={`person-attribute-checkbox-${name}`}
               checked={value === true || value === 'true'}
-              onChange={(evt, { checked }) => onChange(checked)}
+              onChange={(_, { checked }) => onChange(checked)}
               labelText={''}
             />
           </div>
@@ -107,7 +109,7 @@ export const PersonAttributeInput = ({
       return (
         <Dropdown
           id={uuid}
-          data-testid={`person-attribute-dropdown-${uuid}`}
+          data-testid={`person-attribute-dropdown-${name}`}
           titleText={label}
           label={placeholder ?? `Select ${label}`}
           items={items}
@@ -126,7 +128,7 @@ export const PersonAttributeInput = ({
       return (
         <DatePicker
           datePickerType="single"
-          data-testid={`person-attribute-date-picker-${uuid}`}
+          data-testid={`person-attribute-date-picker-${name}`}
           onChange={(dates: Date[]) => {
             if (dates && dates.length > 0) {
               onChange(dates[0].toISOString().split('T')[0]);
@@ -135,7 +137,7 @@ export const PersonAttributeInput = ({
         >
           <DatePickerInput
             id={uuid}
-            data-testid={`person-attribute-date-input-${uuid}`}
+            data-testid={`person-attribute-date-input-${name}`}
             labelText={label}
             placeholder={placeholder ?? 'mm/dd/yyyy'}
             invalid={!!error}
@@ -169,7 +171,7 @@ export const PersonAttributeInput = ({
       return (
         <TextInput
           id={uuid}
-          data-testid={`person-attribute-number-input-${uuid}`}
+          data-testid={`person-attribute-number-input-${name}`}
           type="text"
           labelText={label}
           placeholder={placeholder ?? label}
@@ -186,7 +188,7 @@ export const PersonAttributeInput = ({
       return (
         <TextInput
           id={uuid}
-          data-testid={`person-attribute-default-input-${uuid}`}
+          data-testid={`person-attribute-default-input-${name}`}
           type="text"
           labelText={label}
           placeholder={placeholder ?? label}

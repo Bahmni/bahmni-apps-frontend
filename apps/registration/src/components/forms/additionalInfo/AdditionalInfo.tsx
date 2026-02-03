@@ -134,6 +134,7 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
               >
                 <PersonAttributeInput
                   uuid={field.uuid}
+                  name={fieldName}
                   label={label}
                   format={field.format}
                   value={value}

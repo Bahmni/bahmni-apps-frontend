@@ -129,6 +129,7 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
             >
               <PersonAttributeInput
                 uuid={field.uuid}
+                name={fieldName}
                 label={label}
                 format={field.format}
                 value={value}

@@ -219,6 +219,7 @@ const PatientSearchPage: React.FC = () => {
                 className={styles.actionButton}
                 kind="tertiary"
                 size="sm"
+                data-testid={`patient-action-button-${action.translationKey}`}
                 disabled={
                   !isActionButtonEnabled(
                     action.enabledRule,
@@ -323,6 +324,7 @@ const PatientSearchPage: React.FC = () => {
             onClick={handleCreateNewPatient}
             size="md"
             className={styles.headerButton}
+            data-testid="create-new-patient-button"
           >
             {t('CREATE_PATIENT_BUTTON_TEXT')}
           </Button>
