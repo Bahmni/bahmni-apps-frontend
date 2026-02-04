@@ -3,6 +3,7 @@
 exports[`ConsultationPage Rendering and Structure should match the snapshot 1`] = `
 <div>
   <div
+    data-layout-variant="default"
     data-testid="mocked-clinical-layout"
   >
     <div

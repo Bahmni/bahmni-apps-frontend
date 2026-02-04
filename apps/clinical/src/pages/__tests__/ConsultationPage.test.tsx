@@ -36,6 +36,11 @@ jest.mock('react', () => ({
 jest.mock('../../hooks/useClinicalConfig');
 jest.mock('../../hooks/useDashboardConfig');
 jest.mock('../../hooks/useEncounterSession');
+jest.mock('../../stores/observationFormsStore', () => ({
+  useObservationFormsStore: jest.fn((selector) =>
+    selector({ viewingForm: null }),
+  ),
+}));
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn(() => ({
     t: jest.fn((key) => `translated_${key}`),
@@ -78,8 +83,12 @@ jest.mock('@bahmni/design-system', () => ({
       mainDisplay,
       isActionAreaVisible,
       actionArea,
+      layoutVariant,
     }) => (
-      <div data-testid="mocked-clinical-layout">
+      <div
+        data-testid="mocked-clinical-layout"
+        data-layout-variant={layoutVariant}
+      >
         <div data-testid="mocked-header">{headerWSideNav}</div>
         <div data-testid="mocked-patient-section">{patientHeader}</div>
         <div data-testid="mocked-sidebar">{sidebar}</div>
@@ -606,6 +615,73 @@ describe('ConsultationPage', () => {
       expect(
         screen.queryByTestId('mocked-clinical-layout'),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Layout Variant Integration', () => {
+    it('should pass layoutVariant as "default" when viewingForm is null', () => {
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+      });
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: ['Get Patients', 'Add Patients'],
+      });
+      const { useObservationFormsStore } = jest.requireMock(
+        '../../stores/observationFormsStore',
+      );
+      (useObservationFormsStore as jest.Mock).mockImplementation((selector) =>
+        selector({ viewingForm: null }),
+      );
+      const { useQuery } = jest.requireMock('@tanstack/react-query');
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { encounterIds: [], visitIds: [] },
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProvider(<ConsultationPage />);
+
+      const layoutElement = screen.getByTestId('mocked-clinical-layout');
+      expect(layoutElement).toHaveAttribute('data-layout-variant', 'default');
+    });
+
+    it('should pass layoutVariant as "extended" when viewingForm is set', () => {
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: validFullClinicalConfig,
+      });
+      (useDashboardConfig as jest.Mock).mockReturnValue({
+        dashboardConfig: validDashboardConfig,
+      });
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: ['Get Patients', 'Add Patients'],
+      });
+      const { useObservationFormsStore } = jest.requireMock(
+        '../../stores/observationFormsStore',
+      );
+      (useObservationFormsStore as jest.Mock).mockImplementation((selector) =>
+        selector({
+          viewingForm: {
+            uuid: 'test-form-uuid',
+            display: 'Test Form',
+          },
+        }),
+      );
+      const { useQuery } = jest.requireMock('@tanstack/react-query');
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { encounterIds: [], visitIds: [] },
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProvider(<ConsultationPage />);
+
+      const layoutElement = screen.getByTestId('mocked-clinical-layout');
+      expect(layoutElement).toHaveAttribute('data-layout-variant', 'extended');
     });
   });
 
