@@ -52,6 +52,16 @@
     :global(.cds--text-input) {
       background-color: $field-01 !important;  
     }
+
+    :global(.cds--list-box__menu-item) {
+      height: auto;
+    }
+
+    :global(.cds--list-box__menu-item__option) {
+      white-space: normal;
+      height: auto;
+      overflow-wrap: break-word;
+    }
   }
 
   :global(.cds--dropdown) {
