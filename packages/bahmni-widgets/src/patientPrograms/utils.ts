@@ -1,14 +1,9 @@
-import { PatientProgramsResponse } from '@bahmni/services';
+import {
+  camelToScreamingSnakeCase,
+  PatientProgramsResponse,
+} from '@bahmni/services';
 import { KNOWN_FIELDS } from './constants';
 import { PatientProgramViewModel } from './model';
-
-function camelToScreamingSnakeCase(str: string): string {
-  return str
-    .replace(/\s+/g, '_')
-    .replace(/([a-z])([A-Z])/g, '$1_$2')
-    .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
-    .toUpperCase();
-}
 
 export function extractProgramAttributeNames(fields?: string[]): string[] {
   if (!fields) return [];

@@ -11,6 +11,7 @@ import {
   parseQueryParams,
   formatUrl,
   getValueType,
+  camelToScreamingSnakeCase,
 } from '../utils';
 
 describe('common utility functions', () => {
@@ -1284,6 +1285,15 @@ describe('common utility functions', () => {
       expect(getValueType(true)).toBe('boolean');
       // @ts-expect-error - testing runtime fallback
       expect(getValueType(undefined)).toBe('undefined');
+    });
+  });
+
+  describe('camelToScreamingSnakeCase', () => {
+    it('should convert camelCase to SCREAMING_SNAKE_CASE', () => {
+      expect(camelToScreamingSnakeCase('camelCase')).toBe('CAMEL_CASE');
+      expect(camelToScreamingSnakeCase('myVariableName')).toBe(
+        'MY_VARIABLE_NAME',
+      );
     });
   });
 });
