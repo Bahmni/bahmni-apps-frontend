@@ -1,5 +1,7 @@
 import {
   camelToScreamingSnakeCase,
+  extractAttributes,
+  getCurrentStateName,
   PatientProgramsResponse,
 } from '@bahmni/services';
 import { KNOWN_FIELDS } from './constants';
@@ -18,60 +20,6 @@ export function createProgramHeaders(
     key: field,
     header: t(`PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field)}`),
   }));
-}
-
-function getCurrentStateName(
-  enrollment: PatientProgramsResponse['results'][0],
-): string | null {
-  if (enrollment.states.length === 0) {
-    return null;
-  }
-  if (enrollment.dateCompleted !== null) {
-    const statesWithEndDate = enrollment.states.filter(
-      (state) => state.endDate !== null,
-    );
-    const sortedStates = statesWithEndDate.sort((a, b) => {
-      const dateA = new Date(a.endDate!).getTime();
-      const dateB = new Date(b.endDate!).getTime();
-      return dateA - dateB;
-    });
-    const latestState = sortedStates[sortedStates.length - 1];
-    return latestState.state.concept.display ?? '';
-  } else {
-    const activeState = enrollment.states.find(
-      (state) => state.endDate === null,
-    );
-    return activeState!.state.concept.display ?? '';
-  }
-}
-
-function extractAttributes(
-  enrollment: PatientProgramsResponse['results'][0],
-  programAttributes: string[],
-): Record<string, string | null> {
-  if (programAttributes.length === 0) {
-    return {};
-  }
-
-  const attributesMap: Record<string, string | null> = {};
-
-  for (const attributeName of programAttributes) {
-    const foundAttribute = enrollment.attributes.find(
-      (attr) => attr.attributeType.display === attributeName,
-    );
-
-    if (foundAttribute) {
-      if (typeof foundAttribute.value === 'string') {
-        attributesMap[attributeName] = foundAttribute.value;
-      } else {
-        attributesMap[attributeName] = foundAttribute.value.name!.name;
-      }
-    } else {
-      attributesMap[attributeName] = null;
-    }
-  }
-
-  return attributesMap;
 }
 
 export function createPatientProgramViewModal(

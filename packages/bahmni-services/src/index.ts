@@ -291,6 +291,9 @@ export {
 export { getServiceRequests } from './orderRequestService';
 export {
   getPatientPrograms,
+  getProgramByUUID,
+  getCurrentStateName,
+  extractAttributes,
   type ProgramEnrollment,
   type PatientProgramsResponse,
 } from './programService';
