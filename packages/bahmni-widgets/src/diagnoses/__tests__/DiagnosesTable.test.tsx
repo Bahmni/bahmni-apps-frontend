@@ -114,7 +114,7 @@ describe('DiagnosesTable', () => {
     } as any);
 
     render(<DiagnosesTable />);
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('diagnoses-table-skeleton')).toBeInTheDocument();
   });
 
   it('renders error state', () => {

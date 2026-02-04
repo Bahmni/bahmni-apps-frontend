@@ -78,7 +78,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
     return (
       <>
         {section.controls.map((control, index) =>
-          renderControl(control, index, section.controls.length, t),
+          renderControl(control, index, section.controls.length),
         )}
       </>
     );
@@ -89,11 +89,16 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
       id={`section-${section.id}`}
       ref={ref}
       className={styles.sectionWrapper}
+      data-testid={`dashboard-section-wrapper-${section.name}`}
     >
-      <Tile id={`section-${section.id}`} className={styles.sectionName}>
+      <Tile
+        id={`section-${section.id}`}
+        className={styles.sectionName}
+        data-testid={`dashboard-section-tile-${section.name}`}
+      >
         <p>{t(section.translationKey ?? section.name)}</p>
       </Tile>
-      {renderSectionContent(section, t)}
+      {renderSectionContent(section)}
     </div>
   );
 };

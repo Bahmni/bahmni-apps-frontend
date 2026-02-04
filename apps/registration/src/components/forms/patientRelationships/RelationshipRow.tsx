@@ -65,7 +65,10 @@ export const RelationshipRow = ({
     return {
       id: relationship.id,
       relationshipType: (
-        <span className={styles.readOnlyText}>
+        <span
+          className={styles.readOnlyText}
+          data-testid="existing-relationship-type"
+        >
           {relationshipTypeDisplay ?? '-'}
         </span>
       ),
@@ -75,12 +78,16 @@ export const RelationshipRow = ({
           className={styles.patientLink}
           target="_blank"
           rel="noopener noreferrer"
+          data-testid="existing-relationship-patient-link"
         >
           {relationship.patientName}
         </Link>
       ),
       tillDate: (
-        <span className={styles.readOnlyText}>
+        <span
+          className={styles.readOnlyText}
+          data-testid="existing-relationship-till-date"
+        >
           {relationship.tillDate ?? '-'}
         </span>
       ),
@@ -91,6 +98,7 @@ export const RelationshipRow = ({
           hasIconOnly
           iconDescription={t('REGISTRATION_REMOVE')}
           onClick={() => onRemove(relationship.id)}
+          data-testid="existing-relationship-remove-button"
         >
           <Close size={16} />
         </Button>
@@ -103,6 +111,7 @@ export const RelationshipRow = ({
     relationshipType: (
       <ComboBox
         id={`relationship-type-${relationship.id}`}
+        data-testid="new-relationship-type-combobox"
         titleText=""
         placeholder={t('REGISTRATION_SELECT')}
         items={relationshipTypes}
@@ -132,6 +141,7 @@ export const RelationshipRow = ({
       <ComboBox
         key={`patient-search-${relationship.id}-${relationship.relationshipType}`}
         id={`patient-search-${relationship.id}`}
+        data-testid="new-relationship-patient-search-combobox"
         titleText=""
         placeholder={t('REGISTRATION_ENTER_PATIENT_ID')}
         items={suggestions}
@@ -156,6 +166,7 @@ export const RelationshipRow = ({
         datePickerType="single"
         value={relationship.tillDate}
         minDate={new Date()}
+        data-testid="new-relationship-till-date-picker"
         onChange={(dates) => {
           if (dates[0]) {
             onUpdateRelationship(
@@ -168,6 +179,7 @@ export const RelationshipRow = ({
       >
         <DatePickerInput
           id={`till-date-${relationship.id}`}
+          data-testid="new-relationship-till-date-input"
           placeholder={t('REGISTRATION_SELECT_DATE')}
           labelText=""
         />
@@ -180,6 +192,7 @@ export const RelationshipRow = ({
         hasIconOnly
         iconDescription={t('REGISTRATION_REMOVE')}
         onClick={() => onRemove(relationship.id)}
+        data-testid="new-relationship-remove-button"
       >
         <Close size={16} />
       </Button>

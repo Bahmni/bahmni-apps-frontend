@@ -222,11 +222,18 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
 
       return (
         <>
-          <Grid condensed={false} narrow={false}>
+          <Grid
+            condensed={false}
+            narrow={false}
+            data-testid={`selected-medication-item-grid-${id}`}
+          >
             <Column sm={2} md={4} lg={8} className={styles.medicationTitle}>
-              <span>{medicineName}</span>
+              <span data-testid={`medication-name-${id}`}>{medicineName}</span>
               {medicineDetails && (
-                <span className={styles.medicineDetails}>
+                <span
+                  className={styles.medicineDetails}
+                  data-testid={`medication-details-${id}`}
+                >
                   {medicineDetails}
                 </span>
               )}
@@ -234,6 +241,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <Column sm={2} md={4} lg={8} className={styles.medicationActions}>
               <Checkbox
                 id={`stat-${id}`}
+                data-testid={`medication-stat-checkbox-${id}`}
                 labelText={t('MEDICATION_STAT')}
                 aria-label="STAT"
                 checked={isSTAT}
@@ -242,6 +250,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               />
               <Checkbox
                 id={`prn-${id}`}
+                data-testid={`medication-prn-checkbox-${id}`}
                 labelText={t('MEDICATION_PRN')}
                 aria-label="PRN"
                 checked={isPRN}
@@ -252,6 +261,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <Column sm={2} md={3} lg={6} className={styles.dosageControls}>
               <NumberInput
                 id={`dosage-unit-${id}`}
+                data-testid={`medication-dosage-input-${id}`}
                 min={0}
                 size="sm"
                 step={1}
@@ -272,6 +282,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
 
               <Dropdown
                 id={`dosage-unit-${id}`}
+                data-testid={`medication-dosage-unit-dropdown-${id}`}
                 titleText={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
                 label={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
                 aria-label="Dosage Unit"
@@ -295,6 +306,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <Column sm={1} md={2} lg={4} className={styles.column}>
               <Dropdown
                 id={`frequency-${id}`}
+                data-testid={`medication-frequency-dropdown-${id}`}
                 titleText={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
                 label={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
                 aria-label="Frequency"
@@ -321,6 +333,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <Column sm={2} md={3} lg={6} className={styles.durationControls}>
               <NumberInput
                 id={`duration-${id}`}
+                data-testid={`medication-duration-input-${id}`}
                 label={t('MEDICATION_DURATION_INPUT_LABEL')}
                 aria-label="Duration"
                 className={styles.durationInput}
@@ -341,6 +354,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               />
               <Dropdown
                 id={`duration-unit-${id}`}
+                data-testid={`medication-duration-unit-dropdown-${id}`}
                 titleText={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
                 label={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
                 aria-label="Duration Unit"
@@ -367,6 +381,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <Column sm={1} md={2} lg={4} className={styles.column}>
               <Dropdown
                 id={`med-instructions-${id}`}
+                data-testid={`medication-instructions-dropdown-${id}`}
                 titleText={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
                 label={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
                 aria-label="Medication Instructions"
@@ -387,6 +402,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <Column sm={1} md={2} lg={4} className={styles.column}>
               <Dropdown
                 id={`route-${id}`}
+                data-testid={`medication-route-dropdown-${id}`}
                 titleText={t('MEDICATION_ROUTE_INPUT_LABEL')}
                 label={t('MEDICATION_ROUTE_INPUT_LABEL')}
                 aria-label="Route"
@@ -410,6 +426,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               <DatePicker
                 datePickerType="single"
                 dateFormat={DATE_PICKER_INPUT_FORMAT}
+                data-testid={`medication-start-date-picker-${id}`}
                 value={startDate}
                 minDate={getTodayDate()}
                 onChange={(date) => {
@@ -420,6 +437,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               >
                 <DatePickerInput
                   id={`start-date-${id}`}
+                  data-testid={`medication-start-date-input-${id}`}
                   placeholder={DATE_PICKER_INPUT_FORMAT}
                   labelText={t('MEDICATION_START_DATE_INPUT_LABEL')}
                   aria-label="Start Date"
@@ -433,6 +451,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               {!hasNote && (
                 <Link
                   href="#"
+                  data-testid={`medication-add-note-link-${id}`}
                   onClick={(e) => {
                     e.preventDefault();
                     setHasNote(true);
@@ -441,7 +460,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   {t('MEDICATION_ADD_NOTE')}
                 </Link>
               )}
-              <span>
+              <span data-testid={`medication-total-quantity-${id}`}>
                 {t('MEDICATION_TOTAL_QUANTITY')} : {dispenseQuantity}{' '}
                 {dispenseUnit?.name ?? ''}
               </span>

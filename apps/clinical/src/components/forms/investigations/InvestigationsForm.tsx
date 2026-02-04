@@ -144,12 +144,19 @@ const InvestigationsForm: React.FC = React.memo(() => {
   };
 
   return (
-    <Tile className={styles.investigationsFormTile}>
-      <div className={styles.investigationsFormTitle}>
+    <Tile
+      className={styles.investigationsFormTile}
+      data-testid="investigations-form-tile"
+    >
+      <div
+        className={styles.investigationsFormTitle}
+        data-testid="investigations-form-title"
+      >
         {t('INVESTIGATIONS_FORM_TITLE')}
       </div>
       <ComboBox
         id="investigations-procedures-search"
+        data-testid="investigations-search-combobox"
         placeholder={t('INVESTIGATIONS_SEARCH_PLACEHOLDER')}
         items={filteredInvestigations}
         itemToString={(item) => item?.display ?? ''}

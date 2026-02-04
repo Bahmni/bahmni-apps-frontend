@@ -363,9 +363,14 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
       const translatedLabel = translationKey ? t(translationKey) : level.name;
 
       return (
-        <div key={fieldName} className={styles.col}>
+        <div
+          key={fieldName}
+          className={styles.col}
+          data-testid={`address-free-text-field-${fieldName}`}
+        >
           <TextInput
             id={fieldName}
+            data-testid={`address-free-text-input-${fieldName}`}
             labelText={
               level.required ? `${translatedLabel} *` : translatedLabel
             }
@@ -389,7 +394,10 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
 
   if (isLoadingLevels) {
     return (
-      <div className={styles.formSection}>
+      <div
+        className={styles.formSection}
+        data-testid="address-info-section-loading"
+      >
         <span className={styles.sectionTitle}>
           {t('CREATE_PATIENT_SECTION_ADDRESS_INFO')}
         </span>
@@ -401,12 +409,12 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
   }
 
   return (
-    <div className={styles.formSection}>
-      <span className={styles.sectionTitle}>
+    <div className={styles.formSection} data-testid="address-info-section">
+      <span className={styles.sectionTitle} data-testid="address-info-title">
         {t('CREATE_PATIENT_SECTION_ADDRESS_INFO')}
       </span>
 
-      <div className={styles.row}>
+      <div className={styles.row} data-testid="address-info-fields-row">
         {displayLevels.map((level) => {
           const fieldName = level.addressField;
 

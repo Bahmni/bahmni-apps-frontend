@@ -145,7 +145,7 @@ describe('DiagnosesTable Integration', () => {
     renderWithQueryClient(<DiagnosesTable />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('diagnoses-table-error')).toBeInTheDocument();
       expect(screen.getByText(/Network timeout/)).toBeInTheDocument();
     });
 
@@ -162,7 +162,7 @@ describe('DiagnosesTable Integration', () => {
     renderWithQueryClient(<DiagnosesTable />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+      expect(screen.getByTestId('diagnoses-table-empty')).toBeInTheDocument();
       expect(screen.getByText('No diagnoses recorded')).toBeInTheDocument();
     });
   });
@@ -173,7 +173,7 @@ describe('DiagnosesTable Integration', () => {
     renderWithQueryClient(<DiagnosesTable />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+      expect(screen.getByTestId('diagnoses-table-empty')).toBeInTheDocument();
     });
 
     expect(mockGetPatientDiagnoses).not.toHaveBeenCalled();
@@ -188,7 +188,7 @@ describe('DiagnosesTable Integration', () => {
 
     renderWithQueryClient(<DiagnosesTable />);
 
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('diagnoses-table-skeleton')).toBeInTheDocument();
 
     resolvePromise!(mockDiagnoses);
     await waitFor(() => {

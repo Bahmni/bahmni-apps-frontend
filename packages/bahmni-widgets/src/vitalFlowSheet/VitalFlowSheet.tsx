@@ -270,6 +270,7 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
       emptyStateMessage={t('NO_VITAL_SIGNS_DATA')}
       renderCell={renderCell}
       className={styles.vitalFlowSheetDataTable}
+      dataTestId="vital-flow-sheet-table"
     />
   );
 };

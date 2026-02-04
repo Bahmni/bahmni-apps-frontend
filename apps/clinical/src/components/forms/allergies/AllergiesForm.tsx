@@ -207,12 +207,19 @@ const AllergiesForm: React.FC = React.memo(() => {
   ]);
 
   return (
-    <Tile className={styles.allergiesFormTile}>
-      <div className={styles.allergiesFormTitle}>
+    <Tile
+      className={styles.allergiesFormTile}
+      data-testid="allergies-form-tile"
+    >
+      <div
+        className={styles.allergiesFormTitle}
+        data-testid="allergies-form-title"
+      >
         {t('ALLERGIES_FORM_TITLE')}
       </div>
       <ComboBox
         id="allergies-search"
+        data-testid="allergies-search-combobox"
         placeholder={t('ALLERGIES_SEARCH_PLACEHOLDER')}
         items={filteredSearchResults}
         itemToString={(item) => {

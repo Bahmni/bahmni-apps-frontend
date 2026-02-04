@@ -23,6 +23,7 @@ interface SortableDataTableProps<T> {
   emptyStateMessage?: string;
   renderCell?: (row: T, cellId: string) => React.ReactNode;
   className?: string;
+  dataTestId?: string;
 }
 
 export const SortableDataTable = <T extends { id: string }>({
@@ -36,11 +37,12 @@ export const SortableDataTable = <T extends { id: string }>({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderCell = (row, cellId) => (row as any)[cellId],
   className = 'sortable-data-table',
+  dataTestId = 'sortable-data-table',
 }: SortableDataTableProps<T>) => {
   if (errorStateMessage) {
     return (
       <p
-        data-testid="sortable-table-error"
+        data-testid={`${dataTestId}-error`}
         className={styles.sortableDataTableBodyEmpty}
       >
         {errorStateMessage}
@@ -50,7 +52,7 @@ export const SortableDataTable = <T extends { id: string }>({
 
   if (loading) {
     return (
-      <div data-testid="sortable-table-skeleton" className={className}>
+      <div data-testid={`${dataTestId}-skeleton`} className={className}>
         <DataTableSkeleton
           columnCount={headers.length}
           rowCount={5}
@@ -66,7 +68,7 @@ export const SortableDataTable = <T extends { id: string }>({
   if (!rows || rows.length === 0) {
     return (
       <p
-        data-testid="sortable-table-empty"
+        data-testid={`${dataTestId}-empty`}
         className={styles.sortableDataTableBodyEmpty}
       >
         {emptyStateMessage}
@@ -79,7 +81,7 @@ export const SortableDataTable = <T extends { id: string }>({
   return (
     <div
       className={classnames(className, styles.sortableDataTableBody)}
-      data-testid="sortable-data-table"
+      data-testid={dataTestId}
     >
       <DataTable rows={rows} headers={headers} isSortable size="md">
         {({
@@ -100,7 +102,11 @@ export const SortableDataTable = <T extends { id: string }>({
                       false,
                   });
                   return (
-                    <TableHeader {...headerProps} key={header.key}>
+                    <TableHeader
+                      {...headerProps}
+                      key={header.key}
+                      data-testid={`table-header-${header.key}`}
+                    >
                       {header.header}
                     </TableHeader>
                   );
@@ -111,9 +117,16 @@ export const SortableDataTable = <T extends { id: string }>({
               {tableRows.map((row) => {
                 const originalRow = rowMap.get(row.id)!;
                 return (
-                  <TableRow {...getRowProps({ row })} key={row.id}>
+                  <TableRow
+                    {...getRowProps({ row })}
+                    key={row.id}
+                    data-testid={`table-row-${row.id}`}
+                  >
                     {row.cells.map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell
+                        key={cell.id}
+                        data-testid={`table-cell-${row.id}-${cell.info.header}`}
+                      >
                         {renderCell(originalRow, cell.info.header)}
                       </TableCell>
                     ))}

@@ -24,6 +24,7 @@ const mockGetInputTypeForFormat = getInputTypeForFormat as jest.MockedFunction<
 describe('PersonAttributeInput', () => {
   const defaultProps: PersonAttributeInputProps = {
     uuid: 'test-uuid',
+    name: 'testField',
     label: 'Test Label',
     format: 'java.lang.String',
     value: '',

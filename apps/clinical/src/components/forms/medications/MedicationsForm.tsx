@@ -131,8 +131,14 @@ const MedicationsForm: React.FC = React.memo(() => {
   ]);
 
   return (
-    <Tile className={styles.medicationsFormTile}>
-      <div className={styles.medicationsFormTitle}>
+    <Tile
+      className={styles.medicationsFormTile}
+      data-testid="medications-form-tile"
+    >
+      <div
+        className={styles.medicationsFormTitle}
+        data-testid="medications-form-title"
+      >
         {t('MEDICATIONS_FORM_TITLE')}
       </div>
       {medicationConfigLoading && <DropdownSkeleton />}
@@ -146,6 +152,7 @@ const MedicationsForm: React.FC = React.memo(() => {
       {!medicationConfigLoading && !medicationConfigError && (
         <ComboBox
           id="medications-search"
+          data-testid="medications-search-combobox"
           placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
           items={filteredSearchResults}
           itemToString={(item) => (item ? item.displayName : '')}

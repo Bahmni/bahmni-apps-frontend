@@ -122,6 +122,7 @@ const DiagnosesTable: React.FC = () => {
           emptyStateMessage={t('NO_DIAGNOSES')}
           renderCell={renderCell}
           className={styles.diagnosesTableBody}
+          dataTestId="diagnoses-table"
         />
       </div>
     </>

@@ -184,7 +184,10 @@ describe('DashboardSection Component', () => {
 
       renderDashboardSectionWithProvider(mockSection, mockRef);
 
-      expect(screen.getByTestId('carbon-tile')).toBeInTheDocument();
+      // data-testid includes section name for uniqueness
+      expect(
+        screen.getByTestId('dashboard-section-tile-Test Section'),
+      ).toBeInTheDocument();
     });
 
     it('accepts a ref prop', () => {
@@ -198,7 +201,10 @@ describe('DashboardSection Component', () => {
 
       renderDashboardSectionWithProvider(mockSection, testRef);
 
-      expect(screen.getByTestId('carbon-tile')).toBeInTheDocument();
+      // data-testid includes section name for uniqueness
+      expect(
+        screen.getByTestId('dashboard-section-tile-Test Section'),
+      ).toBeInTheDocument();
     });
 
     it('uses translationKey instead of name when available', () => {

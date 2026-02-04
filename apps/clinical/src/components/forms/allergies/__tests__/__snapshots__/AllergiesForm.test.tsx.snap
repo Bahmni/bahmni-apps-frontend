@@ -4,9 +4,11 @@ exports[`AllergiesForm Snapshots should match snapshot with no allergies 1`] = `
 <div>
   <div
     class="cds--tile allergiesFormTile"
+    data-testid="allergies-form-tile"
   >
     <div
       class="allergiesFormTitle"
+      data-testid="allergies-form-title"
     >
       Allergies
     </div>
@@ -28,6 +30,7 @@ exports[`AllergiesForm Snapshots should match snapshot with no allergies 1`] = `
             aria-label="Search for allergies"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
+            data-testid="allergies-search-combobox"
             id="allergies-search"
             placeholder="Search for allergies"
             role="combobox"
@@ -79,9 +82,11 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
 <div>
   <div
     class="cds--tile allergiesFormTile"
+    data-testid="allergies-form-tile"
   >
     <div
       class="allergiesFormTitle"
+      data-testid="allergies-form-title"
     >
       Allergies
     </div>
@@ -103,6 +108,7 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
             aria-label="Search for allergies"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
+            data-testid="allergies-search-combobox"
             id="allergies-search"
             placeholder="Search for allergies"
             role="combobox"
@@ -169,16 +175,22 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
+              data-testid="selected-allergy-item-grid-test-allergy-1"
             >
               <div
                 class="cds--sm:col-span-4 cds--md:col-span-5 cds--lg:col-span-8 cds--xlg:col-span-8 cds--css-grid-column"
               >
-                Peanut Allergy
-                 [
-                Other
-                ]
+                <span
+                  data-testid="allergy-display-name-test-allergy-1"
+                >
+                  Peanut Allergy
+                   [
+                  Other
+                  ]
+                </span>
                 <a
                   class="cds--link"
+                  data-testid="allergy-add-note-link-test-allergy-1"
                   href="#"
                 >
                   ADD_ALLERGY_NOTE
@@ -189,6 +201,7 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  data-testid="allergy-severity-dropdown-test-allergy-1"
                 >
                   <label
                     class="cds--label cds--visually-hidden"

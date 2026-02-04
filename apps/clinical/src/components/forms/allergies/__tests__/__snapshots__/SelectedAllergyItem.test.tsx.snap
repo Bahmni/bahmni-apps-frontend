@@ -4,16 +4,22 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
 <div>
   <div
     class="cds--css-grid"
+    data-testid="selected-allergy-item-grid-test-allergy-1"
   >
     <div
       class="selectedAllergyTitle cds--sm:col-span-4 cds--md:col-span-5 cds--lg:col-span-8 cds--xlg:col-span-8 cds--css-grid-column"
     >
-      Peanut Allergy
-       [
-      Food
-      ]
+      <span
+        data-testid="allergy-display-name-test-allergy-1"
+      >
+        Peanut Allergy
+         [
+        Food
+        ]
+      </span>
       <a
         class="cds--link"
+        data-testid="allergy-add-note-link-test-allergy-1"
         href="#"
       >
         Add Note
@@ -24,6 +30,7 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="allergy-severity-dropdown-test-allergy-1"
       >
         <label
           class="cds--label cds--visually-hidden"
@@ -201,16 +208,22 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
 <div>
   <div
     class="cds--css-grid"
+    data-testid="selected-allergy-item-grid-test-allergy-1"
   >
     <div
       class="selectedAllergyTitle cds--sm:col-span-4 cds--md:col-span-5 cds--lg:col-span-8 cds--xlg:col-span-8 cds--css-grid-column"
     >
-      Peanut Allergy
-       [
-      Food
-      ]
+      <span
+        data-testid="allergy-display-name-test-allergy-1"
+      >
+        Peanut Allergy
+         [
+        Food
+        ]
+      </span>
       <a
         class="cds--link"
+        data-testid="allergy-add-note-link-test-allergy-1"
         href="#"
       >
         Add Note
@@ -221,6 +234,7 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="allergy-severity-dropdown-test-allergy-1"
       >
         <label
           class="cds--label cds--visually-hidden"

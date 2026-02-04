@@ -86,10 +86,11 @@ describe('Observations', () => {
       createWrapper(<Observations config={config} />);
 
       expect(screen.getByText('Obs')).toBeInTheDocument();
+      // testId includes the translated title when titleTranslationKey is provided
+      expect(screen.getByTestId('observations-title-Obs')).toBeInTheDocument();
       expect(
-        screen.getByTestId('observations-title-test-id'),
+        screen.getByTestId('observations-table-skeleton'),
       ).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
     });
 
     it('should show loading state when observations query is loading', async () => {
@@ -109,7 +110,7 @@ describe('Observations', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId('sortable-table-skeleton'),
+          screen.getByTestId('observations-table-skeleton'),
         ).toBeInTheDocument();
       });
     });

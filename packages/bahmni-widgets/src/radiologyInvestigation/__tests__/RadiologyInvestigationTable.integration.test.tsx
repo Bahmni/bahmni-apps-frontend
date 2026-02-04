@@ -78,7 +78,9 @@ describe('RadiologyInvestigationTable', () => {
       screen.getByTestId('radiology-investigations-table-test-id'),
     ).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('radiology-investigations-table-error'),
+      ).toBeInTheDocument();
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'ERROR_DEFAULT_TITLE',

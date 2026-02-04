@@ -3,13 +3,19 @@
 exports[`SelectedInvestigationItem Snapshot matches snapshot 1`] = `
 <div
   class="cds--css-grid"
+  data-testid="selected-investigation-item-grid-test-investigation-1"
 >
   <div
     class="selectedInvestigationTitle cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
   >
-    Complete Blood Count (CBC)
+    <span
+      data-testid="investigation-display-name-test-investigation-1"
+    >
+      Complete Blood Count (CBC)
+    </span>
     <a
       class="cds--link addInvestigationNote"
+      data-testid="investigation-add-note-link-test-investigation-1"
       href="#"
     >
       Add Note
@@ -23,6 +29,7 @@ exports[`SelectedInvestigationItem Snapshot matches snapshot 1`] = `
     >
       <input
         class="cds--checkbox"
+        data-testid="investigation-priority-checkbox-test-investigation-1"
         id="investigation-priority-checkbox-test-investigation-1"
         type="checkbox"
       />
@@ -49,11 +56,16 @@ exports[`SelectedInvestigationItem Snapshot matches snapshot 1`] = `
 exports[`SelectedInvestigationItem Snapshot matches snapshot with existing note 1`] = `
 <div
   class="cds--css-grid"
+  data-testid="selected-investigation-item-grid-test-investigation-1"
 >
   <div
     class="selectedInvestigationTitle cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
   >
-    Complete Blood Count (CBC)
+    <span
+      data-testid="investigation-display-name-test-investigation-1"
+    >
+      Complete Blood Count (CBC)
+    </span>
   </div>
   <div
     class="selectedInvestigationUrgentPriority cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-4 cds--xlg:col-span-4 cds--css-grid-column"
@@ -63,6 +75,7 @@ exports[`SelectedInvestigationItem Snapshot matches snapshot with existing note 
     >
       <input
         class="cds--checkbox"
+        data-testid="investigation-priority-checkbox-test-investigation-1"
         id="investigation-priority-checkbox-test-investigation-1"
         type="checkbox"
       />

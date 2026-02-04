@@ -318,7 +318,9 @@ describe('ObservationForms', () => {
       expect(titles[0]).toHaveTextContent(
         'translated_OBSERVATION_FORMS_ADDED_FORMS',
       );
-      expect(screen.getByTestId('selected-form-form-1')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('selected-form-Admission Letter'),
+      ).toBeInTheDocument();
     });
 
     it('should display selected form details correctly', () => {
@@ -343,7 +345,7 @@ describe('ObservationForms', () => {
         />,
       );
 
-      const formCard = screen.getByTestId('selected-form-form-1');
+      const formCard = screen.getByTestId('selected-form-Admission Letter');
       fireEvent.click(formCard);
 
       expect(mockOnFormSelect).toHaveBeenCalledWith(mockForms[0]);
@@ -639,8 +641,10 @@ describe('ObservationForms', () => {
       );
 
       // This covers lines 59, 62-64, 67-69 (userPinnedUuids mapping and sorting logic)
-      expect(screen.getByTestId('pinned-form-default-1')).toBeInTheDocument();
-      expect(screen.getByTestId('pinned-form-user-1')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('pinned-form-History and Examination'),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('pinned-form-Custom Form')).toBeInTheDocument();
     });
 
     it('should handle empty pinned forms array', () => {
@@ -649,7 +653,9 @@ describe('ObservationForms', () => {
       render(<ObservationForms {...defaultProps} allForms={allForms} />);
 
       // This covers the empty pinnedForms case for line 59
-      expect(screen.getByTestId('pinned-form-default-1')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('pinned-form-History and Examination'),
+      ).toBeInTheDocument();
     });
 
     it('should trigger sorting for multiple default forms', () => {
@@ -661,8 +667,10 @@ describe('ObservationForms', () => {
       render(<ObservationForms {...defaultProps} allForms={allForms} />);
 
       // This covers the .sort() function for default forms (line 64)
-      expect(screen.getByTestId('pinned-form-default-1')).toBeInTheDocument();
-      expect(screen.getByTestId('pinned-form-default-2')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('pinned-form-History and Examination'),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('pinned-form-Vitals')).toBeInTheDocument();
     });
 
     it('should trigger sorting for multiple user-pinned forms', () => {
@@ -685,8 +693,8 @@ describe('ObservationForms', () => {
       );
 
       // This covers the .sort() function for user-pinned forms (lines 67-69)
-      expect(screen.getByTestId('pinned-form-user-1')).toBeInTheDocument();
-      expect(screen.getByTestId('pinned-form-user-2')).toBeInTheDocument();
+      expect(screen.getByTestId('pinned-form-A Form')).toBeInTheDocument();
+      expect(screen.getByTestId('pinned-form-Z Form')).toBeInTheDocument();
     });
 
     it('should call onFormSelect when clicking pinned form', () => {
@@ -704,7 +712,7 @@ describe('ObservationForms', () => {
         />,
       );
 
-      const pinnedForm = screen.getByTestId('pinned-form-user-1');
+      const pinnedForm = screen.getByTestId('pinned-form-Custom Form');
       fireEvent.click(pinnedForm);
 
       // This covers the onOpen callback (line 207)
@@ -726,7 +734,7 @@ describe('ObservationForms', () => {
         />,
       );
 
-      const pinnedFormCard = screen.getByTestId('pinned-form-user-1');
+      const pinnedFormCard = screen.getByTestId('pinned-form-Custom Form');
       const thumbtackIcon = pinnedFormCard.querySelector(
         '[data-testid="action-icon-fa-thumbtack"]',
       );

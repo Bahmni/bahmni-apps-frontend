@@ -97,12 +97,16 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   }
 
   return (
-    <Section className={styles.sectionContainer}>
+    <Section
+      className={styles.sectionContainer}
+      data-testid="dashboard-container"
+    >
       {sections.map((section) => (
         <article
           key={section.id}
           className={styles.displayControlSection}
           ref={sectionRefs.current[section.id]}
+          data-testid={`dashboard-section-article-${section.name}`}
         >
           <DashboardSection
             section={section}

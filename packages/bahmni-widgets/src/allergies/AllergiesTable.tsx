@@ -169,6 +169,7 @@ const AllergiesTable: React.FC = () => {
         emptyStateMessage={t('NO_ALLERGIES')}
         renderCell={renderCell}
         className={styles.allergiesTableBody}
+        dataTestId="allergies-table"
       />
     </div>
   );

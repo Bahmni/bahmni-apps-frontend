@@ -237,7 +237,7 @@ const FormsTable: React.FC<WidgetProps> = ({
             emptyStateMessage={t('FORMS_UNAVAILABLE')}
             renderCell={renderCell}
             className={styles.formsTableBody}
-            data-testid="sortable-data-table"
+            dataTestId="forms-table"
           />
         ) : (
           <Accordion align="start">
@@ -262,7 +262,7 @@ const FormsTable: React.FC<WidgetProps> = ({
                     emptyStateMessage={t('FORMS_UNAVAILABLE')}
                     renderCell={renderCell}
                     className={styles.formsTableBody}
-                    data-testid="forms-data-table"
+                    dataTestId={`forms-table-${formName}`}
                   />
                 </AccordionItem>
               );
@@ -304,6 +304,7 @@ const FormsTable: React.FC<WidgetProps> = ({
                       key={`${obs.concept.uuid}`}
                       observation={obs as unknown as ObservationData}
                       index={index}
+                      formName={selectedRecord.formName}
                     />
                   ))}
                 </div>
