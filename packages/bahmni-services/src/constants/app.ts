@@ -7,5 +7,3 @@ export const BAHMNI_HOME_PATH = '/bahmni/home/index.html';
 export const USER_PRIVILEGES_URL = OPENMRS_REST_V1 + '/bahmnicore/whoami';
 export const VISIT_LOCATION_UUID =
   OPENMRS_REST_V1 + '/bahmnicore/visitLocation/';
-export const PATIENT_PROGRAMS_URL = (patientUUID: string) =>
-  `${OPENMRS_REST_V1}/bahmniprogramenrollment?patient=${patientUUID}&v=full`;

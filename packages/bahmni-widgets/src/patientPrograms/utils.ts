@@ -27,7 +27,7 @@ export function createProgramHeaders(
 
 function getCurrentStateName(
   enrollment: PatientProgramsResponse['results'][0],
-): string {
+): string | null {
   if (enrollment.states.length === 0) {
     return null;
   }
