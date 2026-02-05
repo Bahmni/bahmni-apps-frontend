@@ -15,6 +15,7 @@ import {
   groupByDate,
   shouldEnableEncounterFilter,
   useTranslation,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo } from 'react';
@@ -82,6 +83,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     isLoading: isLoadingServiceRequests,
     isError: isServiceRequestsError,
     error: serviceRequestsError,
+    refetch,
   } = useQuery({
     queryKey: genericServiceRequestQueryKeys(
       categoryUuid,
@@ -92,6 +94,19 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     queryFn: () =>
       fetchServiceRequests(categoryUuid, patientUUID!, encounterUuids),
   });
+
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (
+        payload.patientUUID === patientUUID &&
+        categoryName &&
+        payload.updatedResources.serviceRequests?.[categoryName.toLowerCase()]
+      ) {
+        refetch();
+      }
+    },
+    [patientUUID, categoryName],
+  );
 
   useEffect(() => {
     if (isOrderTypesError) {

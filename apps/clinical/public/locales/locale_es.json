@@ -151,6 +151,7 @@
   "INVESTIGATIONS_SEARCH_ARIA_LABEL": "Buscar investigaciones/procedimientos",
   "INVESTIGATIONS_SEARCH_PLACEHOLDER": "Busque para agregar investigaciones/procedimientos",
   "INVESTIGATION_ALREADY_SELECTED": "(Ya seleccionado)",
+  "INVESTIGATION_ALREADY_ADDED": "La investigación ya está ordenada",
   "INVESTIGATION_PANEL": "Panel",
   "INVESTIGATION_PRIORITY_URGENT": "Urgente",
   "IN_PROGRESS_STATUS": "En progreso",

@@ -10,6 +10,7 @@ import {
   getFormattedError,
   getLabInvestigationsBundle,
   getDiagnosticReports,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import type { DiagnosticReport } from 'fhir/r4';
@@ -83,6 +84,7 @@ const LabInvestigation: React.FC<WidgetProps> = ({
     isLoading: isLoadingLabInvestigations,
     isError: isLabInvestigationsError,
     error: labInvestigationsError,
+    refetch: refetchLabInvestigations,
   } = useQuery<FormattedLabInvestigations[]>({
     queryKey: [
       'labInvestigations',
@@ -101,6 +103,19 @@ const LabInvestigation: React.FC<WidgetProps> = ({
         numberOfVisits,
       ),
   });
+
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (
+        payload.patientUUID === patientUUID &&
+        categoryName &&
+        payload.updatedResources.serviceRequests?.[categoryName.toLowerCase()]
+      ) {
+        refetchLabInvestigations();
+      }
+    },
+    [patientUUID, categoryName],
+  );
 
   useEffect(() => {
     if (isOrderTypesError) {

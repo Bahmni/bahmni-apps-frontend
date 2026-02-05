@@ -20,6 +20,7 @@ export interface ConsultationSavedEventPayload {
     conditions: boolean;
     allergies: boolean;
     medications: boolean;
+    serviceRequests: Record<string, boolean>;
   };
 }
 

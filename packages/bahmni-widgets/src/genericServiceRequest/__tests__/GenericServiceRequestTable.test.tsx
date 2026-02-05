@@ -7,6 +7,7 @@ import {
   getFormattedError,
   getCategoryUuidFromOrderTypes,
   getServiceRequests,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -29,6 +30,7 @@ jest.mock('@bahmni/services', () => ({
   getFormattedError: jest.fn(),
   getCategoryUuidFromOrderTypes: jest.fn(),
   getServiceRequests: jest.fn(),
+  useSubscribeConsultationSaved: jest.fn(),
 }));
 
 jest.mock('../utils', () => ({
@@ -72,6 +74,10 @@ const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
 const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
 >;
+const mockUseSubscribeConsultationSaved =
+  useSubscribeConsultationSaved as jest.MockedFunction<
+    typeof useSubscribeConsultationSaved
+  >;
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -232,6 +238,7 @@ describe('GenericServiceRequestTable', () => {
     mockGetCategoryUuidFromOrderTypes.mockResolvedValue('lab-uuid');
     mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
     mockMapServiceRequest.mockReturnValue(mockServiceRequests);
+    mockUseSubscribeConsultationSaved.mockImplementation(() => {});
   });
 
   describe('Loading state', () => {
@@ -1338,6 +1345,202 @@ describe('GenericServiceRequestTable', () => {
           );
         });
       });
+    });
+  });
+
+  describe('consultation saved event subscription', () => {
+    it('registers consultation saved event listener', async () => {
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [mockServiceRequests[0]] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable
+          config={{ orderType: 'Procedure Order' }}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(mockUseSubscribeConsultationSaved).toHaveBeenCalled();
+      });
+    });
+
+    it('refetches data when consultation saved event is triggered with matching category', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [mockServiceRequests[0]] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable
+          config={{ orderType: 'Procedure Order' }}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(1);
+      });
+
+      // Clear the mock to track new calls
+      mockGetServiceRequests.mockClear();
+
+      // Trigger the event with matching category
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'procedure order': true },
+        },
+      });
+
+      // Verify refetch was triggered
+      await waitFor(() => {
+        expect(mockGetServiceRequests).toHaveBeenCalled();
+      });
+    });
+
+    it('does not refetch when event is for different patient', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [mockServiceRequests[0]] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable
+          config={{ orderType: 'Procedure Order' }}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(1);
+      });
+
+      // Clear the mock to track new calls
+      mockGetServiceRequests.mockClear();
+
+      // Trigger event for different patient
+      eventCallback({
+        patientUUID: 'different-patient',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'procedure order': true },
+        },
+      });
+
+      // Give some time to ensure no refetch happens
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify refetch was NOT triggered
+      expect(mockGetServiceRequests).not.toHaveBeenCalled();
+    });
+
+    it('does not refetch when different category was updated', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [mockServiceRequests[0]] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable
+          config={{ orderType: 'Procedure Order' }}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(1);
+      });
+
+      // Clear the mock to track new calls
+      mockGetServiceRequests.mockClear();
+
+      // Trigger event with different category
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'lab order': true },
+        },
+      });
+
+      // Give some time to ensure no refetch happens
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify refetch was NOT triggered
+      expect(mockGetServiceRequests).not.toHaveBeenCalled();
+    });
+
+    it('does not refetch when serviceRequests is empty', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [mockServiceRequests[0]] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable
+          config={{ orderType: 'Procedure Order' }}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(1);
+      });
+
+      // Clear the mock to track new calls
+      mockGetServiceRequests.mockClear();
+
+      // Trigger event with empty serviceRequests
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: true,
+          allergies: false,
+          medications: false,
+          serviceRequests: {},
+        },
+      });
+
+      // Give some time to ensure no refetch happens
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify refetch was NOT triggered
+      expect(mockGetServiceRequests).not.toHaveBeenCalled();
     });
   });
 });

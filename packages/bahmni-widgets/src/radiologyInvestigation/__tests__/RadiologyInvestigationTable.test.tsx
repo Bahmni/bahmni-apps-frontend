@@ -28,9 +28,11 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientRadiologyInvestigations: jest.fn(),
   dispatchAuditEvent: jest.fn(),
+  useSubscribeConsultationSaved: jest.fn(),
 }));
 
 const mockAddNotification = jest.fn();
+const { useSubscribeConsultationSaved } = jest.requireMock('@bahmni/services');
 
 describe('RadiologyInvestigationTable', () => {
   const queryClient: QueryClient = new QueryClient({
@@ -296,6 +298,169 @@ describe('RadiologyInvestigationTable', () => {
         const results = await axe(container);
         expect(results).toHaveNoViolations();
       });
+    });
+  });
+
+  describe('consultation saved event subscription', () => {
+    it('registers consultation saved event listener', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: mockRadiologyInvestigations,
+        error: null,
+        isError: false,
+        isLoading: false,
+        refetch: jest.fn(),
+      });
+
+      render(wrapper);
+
+      expect(useSubscribeConsultationSaved).toHaveBeenCalled();
+    });
+
+    it('refetches data when consultation saved event is triggered with matching category', () => {
+      const mockRefetch = jest.fn();
+      let eventCallback: (payload: any) => void = () => {};
+
+      useSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          eventCallback = callback;
+        },
+      );
+
+      (useQuery as jest.Mock)
+        .mockReturnValueOnce({
+          data: mockCategoryUuid,
+          isLoading: false,
+          isError: false,
+          error: null,
+        })
+        .mockReturnValueOnce({
+          data: mockRadiologyInvestigations,
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: mockRefetch,
+        });
+
+      const wrapperWithConfig = (
+        <QueryClientProvider client={queryClient}>
+          <RadiologyInvestigationTable
+            config={{ orderType: 'Radiology Order' }}
+          />
+        </QueryClientProvider>
+      );
+
+      render(wrapperWithConfig);
+
+      // Trigger the event with matching category
+      eventCallback({
+        patientUUID: 'test-patient-uuid',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'radiology order': true },
+        },
+      });
+
+      expect(mockRefetch).toHaveBeenCalled();
+    });
+
+    it('does not refetch when event is for different patient', () => {
+      const mockRefetch = jest.fn();
+      let eventCallback: (payload: any) => void = () => {};
+
+      useSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          eventCallback = callback;
+        },
+      );
+
+      (useQuery as jest.Mock)
+        .mockReturnValueOnce({
+          data: mockCategoryUuid,
+          isLoading: false,
+          isError: false,
+          error: null,
+        })
+        .mockReturnValueOnce({
+          data: mockRadiologyInvestigations,
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: mockRefetch,
+        });
+
+      const wrapperWithConfig = (
+        <QueryClientProvider client={queryClient}>
+          <RadiologyInvestigationTable
+            config={{ orderType: 'Radiology Order' }}
+          />
+        </QueryClientProvider>
+      );
+
+      render(wrapperWithConfig);
+
+      // Trigger event for different patient
+      eventCallback({
+        patientUUID: 'different-patient',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'radiology order': true },
+        },
+      });
+
+      expect(mockRefetch).not.toHaveBeenCalled();
+    });
+
+    it('does not refetch when different category was updated', () => {
+      const mockRefetch = jest.fn();
+      let eventCallback: (payload: any) => void = () => {};
+
+      useSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          eventCallback = callback;
+        },
+      );
+
+      (useQuery as jest.Mock)
+        .mockReturnValueOnce({
+          data: mockCategoryUuid,
+          isLoading: false,
+          isError: false,
+          error: null,
+        })
+        .mockReturnValueOnce({
+          data: mockRadiologyInvestigations,
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: mockRefetch,
+        });
+
+      const wrapperWithConfig = (
+        <QueryClientProvider client={queryClient}>
+          <RadiologyInvestigationTable
+            config={{ orderType: 'Radiology Order' }}
+          />
+        </QueryClientProvider>
+      );
+
+      render(wrapperWithConfig);
+
+      // Trigger event with different category
+      eventCallback({
+        patientUUID: 'test-patient-uuid',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'lab order': true },
+        },
+      });
+
+      expect(mockRefetch).not.toHaveBeenCalled();
     });
   });
 });
