@@ -15,6 +15,10 @@ export {
 } from './molecules/icon';
 export { initFontAwesome } from './fontawesome';
 export {
+  DescriptionItem,
+  type DescriptionItemProps,
+} from './atoms/descriptionItem';
+export {
   Accordion,
   AccordionItem,
   type AccordionProps,
