@@ -12,6 +12,7 @@ export { SearchPatient } from './searchPatient';
 export { VitalFlowSheet } from './vitalFlowSheet';
 export { GenericServiceRequestTable } from './genericServiceRequest';
 export { PatientProgramsTable } from './patientPrograms';
+export { ProgramDetails } from './programDetails';
 
 // Notification System
 export {

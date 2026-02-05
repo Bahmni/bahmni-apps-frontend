@@ -125,6 +125,7 @@
   "ERROR_FETCHING_OBSERVATIONS": "Error fetching observations",
   "ERROR_FETCHING_MEDICATION_CONFIG": "Error fetching medication configuration",
   "ERROR_FETCHING_PRACTITIONERS_DETAILS": "Error fetching practitioners details",
+  "ERROR_FETCHING_PROGRAM_DETAILS": "Error fetching program details",
   "ERROR_FETCHING_USER_DETAILS": "Error fetching user details",
   "ERROR_FETCHING_USER_LOCATION_DETAILS": "Login location is missing or invalid. Please reauthenticate.",
   "ERROR_INVALID_PATIENT_UUID": "Invalid patient UUID",
