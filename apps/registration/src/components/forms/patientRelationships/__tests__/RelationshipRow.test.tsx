@@ -227,6 +227,37 @@ describe('RelationshipRow', () => {
     expect(within(listbox).getByText('Sibling/ Sibling')).toBeInTheDocument();
   });
 
+  it('should display complete relationship text in dropdown without truncation', async () => {
+    const user = userEvent.setup();
+    const longRelationshipTypes = [
+      {
+        uuid: 'type-long',
+        aIsToB: 'Great Great Great Grandfather',
+        bIsToA: 'Great Great Great Grandchild',
+      },
+    ];
+
+    const row = RelationshipRow({
+      relationship: { ...mockRelationship, relationshipType: '' },
+      relationshipTypes: longRelationshipTypes,
+      suggestions: mockSuggestions,
+      errors: mockErrors,
+      ...mockCallbacks,
+    });
+
+    render(<div>{row.relationshipType}</div>);
+
+    const dropdown = screen.getByRole('combobox');
+    await user.click(dropdown);
+
+    const listbox = screen.getByRole('listbox');
+    expect(
+      within(listbox).getByText(
+        'Great Great Great Grandfather/ Great Great Great Grandchild',
+      ),
+    ).toBeInTheDocument();
+  });
+
   it('should render relationship type as a searchable combobox with placeholder', () => {
     const row = RelationshipRow({
       relationship: { ...mockRelationship, relationshipType: '' },
