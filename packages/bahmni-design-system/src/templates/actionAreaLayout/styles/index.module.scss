@@ -16,7 +16,7 @@
 }
 
 .collapsedModal {
-    :global(#formDetailsModal) {
+  :global(#formDetailsModal) {
     position: absolute;
     top: 3rem;
     width: 40%;
@@ -42,7 +42,7 @@
 
 .expand {
   left: 16rem;
-  max-width: calc(100vw - 16rem);
+  width: calc(100vw - 16rem);
 }
 
 .collapse {
@@ -51,6 +51,7 @@
 
 .actionArea {
   height: 100%;
+  background: $background;
 }
 
 .extended {
@@ -103,19 +104,24 @@
 }
 
 @include breakpoint-down(lg) {
-  .mainDisplay {
-    width: calc(100vw - 3rem);
-    left: 3rem;
-  }
 
   .actionArea {
-    width: calc(100vw - 3rem);
-    left: 3rem;
+    left: $spacing-09;
+    width: 100%;
+    left: 0 !important;
+    z-index: 999999;
+    position: fixed;
+  }
+
+  .expand {
+    left: $spacing-05 !important;
+    width: calc(100vw - $spacing-11) !important;
   }
 
   .collapse {
     display: none;
   }
+
   .panelGroup {
     margin-left: $spacing-09;
 

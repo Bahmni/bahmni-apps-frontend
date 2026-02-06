@@ -38,7 +38,7 @@ describe('ActionAreaLayout', () => {
   });
 
   test('displays action area when isActionAreaVisible is true', () => {
-    render(<ActionAreaLayout {...defaultProps} isActionAreaVisible={true} />);
+    render(<ActionAreaLayout {...defaultProps} isActionAreaVisible />);
 
     expect(screen.getByTestId('mock-action-area')).toBeInTheDocument();
   });
@@ -50,7 +50,7 @@ describe('ActionAreaLayout', () => {
   });
 
   test('renders separator when action area is visible', () => {
-    render(<ActionAreaLayout {...defaultProps} isActionAreaVisible={true} />);
+    render(<ActionAreaLayout {...defaultProps} isActionAreaVisible />);
 
     expect(screen.getByRole('separator')).toBeInTheDocument();
   });
@@ -63,7 +63,7 @@ describe('ActionAreaLayout', () => {
 
   test('renders two panels when action area is visible', () => {
     const { container } = render(
-      <ActionAreaLayout {...defaultProps} isActionAreaVisible={true} />,
+      <ActionAreaLayout {...defaultProps} isActionAreaVisible />,
     );
 
     const panels = container.querySelectorAll('[data-panel]');

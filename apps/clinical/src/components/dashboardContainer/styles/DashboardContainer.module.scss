@@ -1,6 +1,7 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/breakpoint" as *;
 
 .sectionContainer {
   display: flex;
@@ -16,4 +17,10 @@
 
 .displayControlSection {
   width: 100%;
+}
+
+@include breakpoint-down(lg) {
+  .sectionContainer {
+    padding-inline: 0;
+  }
 }

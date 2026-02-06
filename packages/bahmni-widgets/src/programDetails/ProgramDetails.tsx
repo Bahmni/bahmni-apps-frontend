@@ -134,7 +134,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
       </Tile>
       <Grid className={styles.grid}>
         {Object.keys(headers).map((field) => (
-          <Column sm={2} md={4} lg={3} key={field} className={styles.column}>
+          <Column sm={2} md={2} lg={3} key={field} className={styles.column}>
             <DescriptionItem
               id={`program-details-${field}`}
               label={headers[field]}

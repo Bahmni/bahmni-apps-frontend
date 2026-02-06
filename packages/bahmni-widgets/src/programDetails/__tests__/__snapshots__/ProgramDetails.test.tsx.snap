@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ProgramDetails should match snapshot with program data 1`] = `
+exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
 <div>
   <div
     aria-label="patient-programs-tile-aria-label"
@@ -33,7 +33,7 @@ exports[`ProgramDetails should match snapshot with program data 1`] = `
       class="grid cds--css-grid"
     >
       <div
-        class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-3 cds--css-grid-column"
+        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
       >
         <dl
           aria-label="program-details-programName-aria-label"
@@ -59,7 +59,7 @@ exports[`ProgramDetails should match snapshot with program data 1`] = `
         </dl>
       </div>
       <div
-        class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-3 cds--css-grid-column"
+        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
       >
         <dl
           aria-label="program-details-startDate-aria-label"
@@ -85,7 +85,7 @@ exports[`ProgramDetails should match snapshot with program data 1`] = `
         </dl>
       </div>
       <div
-        class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-3 cds--css-grid-column"
+        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
       >
         <dl
           aria-label="program-details-endDate-aria-label"
@@ -111,7 +111,7 @@ exports[`ProgramDetails should match snapshot with program data 1`] = `
         </dl>
       </div>
       <div
-        class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-3 cds--css-grid-column"
+        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
       >
         <dl
           aria-label="program-details-state-aria-label"
@@ -137,7 +137,7 @@ exports[`ProgramDetails should match snapshot with program data 1`] = `
         </dl>
       </div>
       <div
-        class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-3 cds--css-grid-column"
+        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
       >
         <dl
           aria-label="program-details-outcome-aria-label"

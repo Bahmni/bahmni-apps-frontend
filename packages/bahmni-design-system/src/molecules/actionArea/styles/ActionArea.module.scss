@@ -46,12 +46,15 @@
 
 @include breakpoint-down(lg) {
   .actionArea {
-    width: 100%; // Full width on mobile
+    width: 100%;
   }
 
   .buttonSet {
-    flex-direction: column-reverse;
-    gap: $spacing-02;
+    position: fixed;
+    bottom: 0;
+    display: grid;
+    gap: 0;
+    grid-template-columns: repeat(2, calc(100vw / 2));
 
     .twoButtons {
       min-width: 100%;
