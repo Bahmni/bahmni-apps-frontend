@@ -5,6 +5,7 @@
   "type": "object",
   "required": [
     "patientInformation",
+    "contextInformation",
     "actions",
     "dashboards",
     "consultationPad"
@@ -15,6 +16,28 @@
       "type": "object",
       "description": "Patient information configuration",
       "additionalProperties": false
+    },
+    "contextInformation": {
+      "type": "object",
+      "description": "Context information configuration for displaying additional patient context",
+      "additionalProperties": false,
+      "properties": {
+        "program": {
+          "type": "object",
+          "description": "Program details configuration",
+          "required": ["fields"],
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "type": "array",
+              "description": "List of fields to display in program details",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
     },
     "actions": {
       "type": "array",

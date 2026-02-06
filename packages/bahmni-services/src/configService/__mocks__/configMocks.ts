@@ -7,6 +7,11 @@ export const validFullClinicalConfig = {
     showPatientPhoto: true,
     additionalAttributes: ['caste', 'education', 'occupation'],
   },
+  contextInformation: {
+    program: {
+      fields: ['ID_Number', 'startDate', 'endDate', 'outcome', 'state'],
+    },
+  },
   actions: [
     {
       name: 'Start Visit',

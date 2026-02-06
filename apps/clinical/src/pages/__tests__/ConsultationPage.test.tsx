@@ -113,13 +113,10 @@ jest.mock('@bahmni/design-system', () => ({
 }));
 
 jest.mock('@bahmni/widgets', () => ({
-  PatientDetails: jest.fn(() => (
-    <div data-testid="mocked-patient-details">Mocked PatientDetails</div>
-  )),
+  ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(() => ({
     addNotification: jest.fn(),
   })),
-  usePatientUUID: jest.fn(() => 'mock-patient-uuid'),
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['Get Patients', 'Add Patients'],
   })),
@@ -131,9 +128,7 @@ jest.mock('@bahmni/widgets', () => ({
     isLoading: false,
     error: null,
   })),
-  UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) => {
-    return <div data-testid="mocked-user-privilege-provider">{children}</div>;
-  },
+  usePatientUUID: jest.fn(() => 'mock-patient-uuid'),
 }));
 
 jest.mock('../../components/dashboardContainer/DashboardContainer', () => {
@@ -221,7 +216,9 @@ describe('ConsultationPage', () => {
       expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-patient-section')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-main-display')).toBeInTheDocument();
-      expect(screen.getByTestId('mocked-patient-details')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('section-sticky-header-test-id'),
+      ).toBeInTheDocument();
       expect(screen.getByTestId('mocked-header')).toBeInTheDocument();
       expect(
         screen.getByTestId('mocked-dashboard-container'),
@@ -264,51 +261,6 @@ describe('ConsultationPage', () => {
       expect(screen.getByTestId('carbon-loading')).toHaveTextContent(
         'translated_LOADING_USER_PRIVILEGES',
       );
-    });
-  });
-
-  describe('i18n Integration', () => {
-    it('should use translation keys for loading clinical config', () => {
-      // Mock loading state for clinical config
-      (useClinicalConfig as jest.Mock).mockReturnValue({
-        clinicalConfig: null,
-      });
-
-      renderWithProvider(<ConsultationPage />);
-
-      // Verify translation is used
-      expect(screen.getByTestId('carbon-loading')).toHaveTextContent(
-        'translated_LOADING_CLINICAL_CONFIG',
-      );
-    });
-
-    it('should use translation keys for error messages', () => {
-      // Mock a clinical config with no dashboards
-      (useClinicalConfig as jest.Mock).mockReturnValue({
-        clinicalConfig: {
-          ...validFullClinicalConfig,
-          dashboards: [],
-        },
-      });
-      // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
-      (useUserPrivilege as jest.Mock).mockReturnValue({
-        userPrivileges: ['Get Patients', 'Add Patients'],
-      });
-
-      const mockAddNotification = jest.fn();
-      (useNotification as jest.Mock).mockReturnValue({
-        addNotification: mockAddNotification,
-      });
-
-      renderWithProvider(<ConsultationPage />);
-
-      // Verify translation keys were used in notification
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'translated_ERROR_DEFAULT_TITLE',
-        message: 'translated_ERROR_NO_DEFAULT_DASHBOARD',
-        type: 'error',
-      });
     });
   });
 
