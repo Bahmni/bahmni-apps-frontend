@@ -4,6 +4,7 @@ import {
   getLabInvestigationsBundle,
   getDiagnosticReports,
   getDiagnosticReportBundle,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -25,6 +26,7 @@ jest.mock('@bahmni/services', () => ({
   getLabInvestigationsBundle: jest.fn(),
   getDiagnosticReports: jest.fn(),
   getDiagnosticReportBundle: jest.fn(),
+  useSubscribeConsultationSaved: jest.fn(),
 }));
 
 jest.mock('react-router-dom', () => ({
@@ -74,6 +76,10 @@ const mockUseNotification = useNotification as jest.MockedFunction<
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
+const mockUseSubscribeConsultationSaved =
+  useSubscribeConsultationSaved as jest.MockedFunction<
+    typeof useSubscribeConsultationSaved
+  >;
 
 const renderLabInvestigations = (
   config: Record<string, unknown> = { orderType: 'Lab Order' },
@@ -198,6 +204,7 @@ describe('LabInvestigation', () => {
       type: 'searchset',
       entry: [],
     });
+    mockUseSubscribeConsultationSaved.mockImplementation(() => {});
   });
 
   it('renders loading state with message', async () => {
@@ -465,6 +472,147 @@ describe('LabInvestigation', () => {
           'test-1',
         ]);
       });
+    });
+  });
+
+  describe('consultation saved event subscription', () => {
+    it('registers consultation saved event listener', async () => {
+      render(renderLabInvestigations());
+
+      await waitFor(() => {
+        expect(mockUseSubscribeConsultationSaved).toHaveBeenCalled();
+      });
+    });
+
+    it('refetches data when consultation saved event is triggered with matching category', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      render(renderLabInvestigations({ orderType: 'Lab Order' }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+      });
+
+      // Clear the mock to track new calls
+      mockGetLabInvestigationsBundle.mockClear();
+
+      // Trigger the event with matching category
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'lab order': true },
+        },
+      });
+
+      // Verify refetch was triggered (getPatientLabInvestigations called again)
+      await waitFor(() => {
+        expect(mockGetLabInvestigationsBundle).toHaveBeenCalled();
+      });
+    });
+
+    it('does not refetch when event is for different patient', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      render(renderLabInvestigations({ orderType: 'Lab Order' }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+      });
+
+      // Clear the mock to track new calls
+      mockGetLabInvestigationsBundle.mockClear();
+
+      // Trigger event for different patient
+      eventCallback({
+        patientUUID: 'different-patient',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'lab order': true },
+        },
+      });
+
+      // Give some time to ensure no refetch happens
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify refetch was NOT triggered
+      expect(mockGetLabInvestigationsBundle).not.toHaveBeenCalled();
+    });
+
+    it('does not refetch when different category was updated', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      render(renderLabInvestigations({ orderType: 'Lab Order' }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+      });
+
+      // Clear the mock to track new calls
+      mockGetLabInvestigationsBundle.mockClear();
+
+      // Trigger event with different category
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'radiology order': true },
+        },
+      });
+
+      // Give some time to ensure no refetch happens
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify refetch was NOT triggered
+      expect(mockGetLabInvestigationsBundle).not.toHaveBeenCalled();
+    });
+
+    it('does not refetch when serviceRequests is empty', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      render(renderLabInvestigations({ orderType: 'Lab Order' }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+      });
+
+      // Clear the mock to track new calls
+      mockGetLabInvestigationsBundle.mockClear();
+
+      // Trigger event with empty serviceRequests
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: true,
+          allergies: false,
+          medications: false,
+          serviceRequests: {},
+        },
+      });
+
+      // Give some time to ensure no refetch happens
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify refetch was NOT triggered
+      expect(mockGetLabInvestigationsBundle).not.toHaveBeenCalled();
     });
   });
 });

@@ -213,12 +213,19 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   ]);
 
   return (
-    <Tile className={styles.conditionsAndDiagnosesTile}>
-      <div className={styles.conditionsAndDiagnosesTitle}>
+    <Tile
+      className={styles.conditionsAndDiagnosesTile}
+      data-testid="conditions-and-diagnoses-tile"
+    >
+      <div
+        className={styles.conditionsAndDiagnosesTitle}
+        data-testid="conditions-and-diagnoses-title"
+      >
         {t('CONDITIONS_AND_DIAGNOSES_FORM_TITLE')}
       </div>
       <ComboBox
         id="diagnoses-search"
+        data-testid="diagnoses-search-combobox"
         placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
         items={filteredSearchResults}
         itemToString={(item) => item?.conceptName ?? ''}

@@ -355,10 +355,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
         resetServiceRequests();
         resetMedications();
         resetVaccinations();
-        // Clear observation forms data after successful save
         resetObservationForms();
 
-        // Dispatch consultation saved event
+        const selectedServiceRequest: Record<string, boolean> = {};
+        selectedServiceRequests.forEach((_, category) => {
+          selectedServiceRequest[category.toLowerCase()] = true;
+        });
+
         dispatchConsultationSaved({
           patientUUID: patientUUID!,
           updatedResources: {
@@ -366,6 +369,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
               selectedDiagnoses.length > 0 || selectedConditions.length > 0,
             allergies: selectedAllergies.length > 0,
             medications: selectedMedications.length > 0,
+            serviceRequests: selectedServiceRequest,
           },
         });
 
@@ -437,6 +441,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   return (
     <>
       <ActionArea
+        data-testid="consultation-pad-action-area"
         title={isError ? '' : t('CONSULTATION_ACTION_NEW')}
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
         onPrimaryButtonClick={handleOnPrimaryButtonClick}

@@ -31,7 +31,7 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
     const hasCertaintyError = !!(hasBeenValidated && errors.certainty);
 
     return (
-      <Grid>
+      <Grid data-testid="selected-diagnosis-item-grid">
         <Column
           sm={4}
           md={7}
@@ -39,8 +39,9 @@ const SelectedDiagnosisItem: React.FC<SelectedDiagnosisItemProps> = React.memo(
           xlg={11}
           className={styles.selectedDiagnosisTitle}
         >
-          {display}
+          <span data-testid={`diagnosis-display-name-${id}`}>{display}</span>
           <Link
+            data-testid="add-as-condition-link"
             href="#"
             onClick={(e) => {
               e.preventDefault();

@@ -6,11 +6,14 @@ import styles from './styles/FormsTable.module.scss';
 interface ObservationItemProps {
   observation: ObservationData;
   index: number;
+  formName?: string;
 }
 
 interface ObservationMemberProps {
   member: ObservationData;
   depth?: number;
+  memberIndex?: number;
+  formName?: string;
 }
 
 const INTERPRETATION_ABNORMAL = 'ABNORMAL';
@@ -47,30 +50,42 @@ const getObservationDisplayInfo = (observation: ObservationData) => {
 const ObservationMember: React.FC<ObservationMemberProps> = ({
   member,
   depth = 0,
+  memberIndex = 0,
+  formName = '',
 }) => {
   const hasGroupMembers = member.groupMembers && member.groupMembers.length > 0;
   const displayLabel =
     member.conceptNameToDisplay ??
     member.concept?.shortName ??
     member.concept?.name;
+  const testIdPrefix = formName ? `${formName}-` : '';
 
   if (hasGroupMembers) {
     // Render as a nested group - label at current depth, children at depth + 1
     return (
-      <div className={styles.nestedGroup}>
+      <div
+        className={styles.nestedGroup}
+        data-testid={`${testIdPrefix}obs-nested-group-${displayLabel}-${memberIndex}`}
+      >
         <div
           className={styles.nestedGroupLabel}
+          data-testid={`${testIdPrefix}obs-nested-group-label-${displayLabel}-${memberIndex}`}
           // eslint-disable-next-line react/forbid-dom-props
           style={{ paddingLeft: `${depth * 16}px` }}
         >
           {displayLabel}
         </div>
-        <div className={styles.nestedGroupMembers}>
-          {member.groupMembers?.map((nestedMember) => (
+        <div
+          className={styles.nestedGroupMembers}
+          data-testid={`${testIdPrefix}obs-nested-group-members-${displayLabel}-${memberIndex}`}
+        >
+          {member.groupMembers?.map((nestedMember, nestedIndex) => (
             <ObservationMember
               key={`${nestedMember.concept.uuid}`}
               member={nestedMember}
               depth={depth + 1}
+              memberIndex={nestedIndex}
+              formName={formName}
             />
           ))}
         </div>
@@ -84,6 +99,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
   return (
     <div
       className={styles.memberRow}
+      data-testid={`${testIdPrefix}obs-member-row-${displayLabel}-${memberIndex}`}
       // eslint-disable-next-line react/forbid-dom-props
       style={{ paddingLeft: `${depth * 16}px` }}
     >
@@ -92,6 +108,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
           styles.memberLabel,
           isAbnormal ? styles.abnormalValue : '',
         )}
+        data-testid={`${testIdPrefix}obs-member-label-${displayLabel}-${memberIndex}`}
       >
         {displayLabel}
         {rangeString}
@@ -101,6 +118,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
           styles.memberValue,
           isAbnormal ? styles.abnormalValue : '',
         )}
+        data-testid={`${testIdPrefix}obs-member-value-${displayLabel}-${memberIndex}`}
       >
         {member.valueAsString}
         {units && ` ${units}`}
@@ -112,6 +130,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
 export const ObservationItem: React.FC<ObservationItemProps> = ({
   observation,
   index,
+  formName = '',
 }) => {
   const hasGroupMembers =
     observation.groupMembers && observation.groupMembers.length > 0;
@@ -119,21 +138,26 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
   const { units, rangeString, isAbnormal } =
     getObservationDisplayInfo(observation);
 
+  const testIdPrefix = formName ? `${formName}-` : '';
+
   return (
     <div
       key={`${observation.concept.uuid}-${index}`}
       className={styles.observation}
+      data-testid={`${testIdPrefix}observation-item-${observation.conceptNameToDisplay}-${index}`}
     >
       <div
         className={
           hasGroupMembers ? styles.groupContainer : styles.rowContainer
         }
+        data-testid={`${testIdPrefix}observation-container-${observation.conceptNameToDisplay}-${index}`}
       >
         <p
           className={classNames(
             hasGroupMembers ? styles.groupLabel : styles.rowLabel,
             !hasGroupMembers && isAbnormal ? styles.abnormalValue : '',
           )}
+          data-testid={`${testIdPrefix}observation-label-${observation.conceptNameToDisplay}-${index}`}
         >
           {observation.conceptNameToDisplay}
           {!hasGroupMembers && rangeString && (
@@ -141,12 +165,17 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
           )}
         </p>
         {hasGroupMembers ? (
-          <div className={styles.groupMembers}>
-            {observation.groupMembers?.map((member) => (
+          <div
+            className={styles.groupMembers}
+            data-testid={`${testIdPrefix}observation-group-members-${observation.conceptNameToDisplay}-${index}`}
+          >
+            {observation.groupMembers?.map((member, memberIndex) => (
               <ObservationMember
                 key={`${member.concept.uuid}`}
                 member={member}
                 depth={0}
+                memberIndex={memberIndex}
+                formName={formName}
               />
             ))}
           </div>
@@ -156,6 +185,7 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
               styles.rowValue,
               isAbnormal ? styles.abnormalValue : '',
             )}
+            data-testid={`${testIdPrefix}observation-value-${observation.conceptNameToDisplay}-${index}`}
           >
             {observation.valueAsString}
             {units && ` ${units}`}
@@ -163,7 +193,10 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
         )}
       </div>
       {observation.comment && (
-        <div className={styles.commentSection}>
+        <div
+          className={styles.commentSection}
+          data-testid={`${testIdPrefix}observation-comment-${observation.conceptNameToDisplay}-${index}`}
+        >
           <span className={styles.commentText}>
             {observation.comment}
             {observation.providers?.[0]?.name &&

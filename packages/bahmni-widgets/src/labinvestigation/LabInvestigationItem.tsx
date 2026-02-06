@@ -118,7 +118,7 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
         loading={isLoading}
         errorStateMessage={isError ? t('LAB_TEST_ERROR_LOADING') : undefined}
         ariaLabel={`${test.testName} results`}
-        data-testid={`lab-test-results-table-${test.testName}`}
+        dataTestId={`lab-test-results-table-${test.testName}`}
         renderCell={renderCell}
         className={styles.labTestResultsTable}
       />

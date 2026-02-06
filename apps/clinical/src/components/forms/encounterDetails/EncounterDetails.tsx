@@ -248,7 +248,7 @@ const EncounterDetails: React.FC<{
   ]);
 
   return (
-    <Grid condensed={false} narrow={false}>
+    <Grid condensed={false} narrow={false} data-testid="encounter-details-grid">
       <Column sm={4} md={8} lg={5} xl={12} className={styles.column}>
         <FormField
           isLoading={!selectedLocation && !locationsError}
@@ -256,6 +256,7 @@ const EncounterDetails: React.FC<{
         >
           <Dropdown
             id="location-dropdown"
+            data-testid="location-dropdown"
             titleText={t('LOCATION')}
             label={t('SELECT_LOCATION')}
             items={locations}
@@ -274,6 +275,7 @@ const EncounterDetails: React.FC<{
         >
           <Dropdown
             id="encounter-type-dropdown"
+            data-testid="encounter-type-dropdown"
             titleText={t('ENCOUNTER_TYPE')}
             label={t('SELECT_ENCOUNTER_TYPE')}
             items={encounterConcepts?.encounterTypes ?? []}
@@ -292,6 +294,7 @@ const EncounterDetails: React.FC<{
         >
           <Dropdown
             id="visit-type-dropdown"
+            data-testid="visit-type-dropdown"
             titleText={t('VISIT_TYPE')}
             label={t('SELECT_VISIT_TYPE')}
             items={encounterConcepts?.visitTypes ?? []}
@@ -310,6 +313,7 @@ const EncounterDetails: React.FC<{
         >
           <Dropdown
             id="practitioner-dropdown"
+            data-testid="practitioner-dropdown"
             titleText={t('PARTICIPANT')}
             label={t('SELECT_PRACTITIONER')}
             items={availablePractitioners}
@@ -324,9 +328,14 @@ const EncounterDetails: React.FC<{
       </Column>
 
       <Column sm={4} md={8} lg={5} className={styles.column}>
-        <DatePicker datePickerType="single" dateFormat={DATE_FORMAT}>
+        <DatePicker
+          datePickerType="single"
+          dateFormat={DATE_FORMAT}
+          data-testid="encounter-date-picker"
+        >
           <DatePickerInput
             id="encounter-date-picker-input"
+            data-testid="encounter-date-picker-input"
             placeholder={formattedDate.formattedResult}
             title={t('ENCOUNTER_DATE')}
             labelText={t('ENCOUNTER_DATE')}

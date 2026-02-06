@@ -12,8 +12,8 @@ jest.mock('@bahmni/services', () => ({
 
 // Mock PersonAttributeInput component
 jest.mock('../../../common/PersonAttributeInput', () => ({
-  PersonAttributeInput: ({ label, value, onChange, error }: any) => (
-    <div>
+  PersonAttributeInput: ({ name, label, value, onChange, error }: any) => (
+    <div data-testid={`person-attribute-input-${name}`}>
       <label htmlFor={label}>{label}</label>
       <input
         id={label}

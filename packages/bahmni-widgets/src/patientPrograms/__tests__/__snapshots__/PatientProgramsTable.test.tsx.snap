@@ -9,7 +9,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
   >
     <div
       class="table _sortableDataTableBody_1xyik_1"
-      data-testid="sortable-data-table"
+      data-testid="patient-programs-table"
     >
       <div
         class="cds--data-table-content"
@@ -34,6 +34,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 <button
                   aria-describedby="table-sort-_r_a_"
                   class="cds--table-sort"
+                  data-testid="table-header-programName"
                   type="button"
                 >
                   <span
@@ -94,6 +95,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 <button
                   aria-describedby="table-sort-_r_b_"
                   class="cds--table-sort"
+                  data-testid="table-header-startDate"
                   type="button"
                 >
                   <span
@@ -154,6 +156,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 <button
                   aria-describedby="table-sort-_r_c_"
                   class="cds--table-sort"
+                  data-testid="table-header-endDate"
                   type="button"
                 >
                   <span
@@ -214,6 +217,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 <button
                   aria-describedby="table-sort-_r_d_"
                   class="cds--table-sort"
+                  data-testid="table-header-state"
                   type="button"
                 >
                   <span
@@ -274,6 +278,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 <button
                   aria-describedby="table-sort-_r_e_"
                   class="cds--table-sort"
+                  data-testid="table-header-outcome"
                   type="button"
                 >
                   <span
@@ -325,8 +330,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
           <tbody
             aria-live="polite"
           >
-            <tr>
-              <td>
+            <tr
+              data-testid="table-row-program-1"
+            >
+              <td
+                data-testid="table-cell-program-1-programName"
+              >
                 <span
                   data-testid="program-uuid-1-program-name-test-id"
                   id="program-uuid-1-program-name"
@@ -334,7 +343,9 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   HIV Program
                 </span>
               </td>
-              <td>
+              <td
+                data-testid="table-cell-program-1-startDate"
+              >
                 <span
                   data-testid="program-uuid-1-start-date-test-id"
                   id="program-uuid-1-start-date"
@@ -342,10 +353,14 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   15/01/2023
                 </span>
               </td>
-              <td>
+              <td
+                data-testid="table-cell-program-1-endDate"
+              >
                 -
               </td>
-              <td>
+              <td
+                data-testid="table-cell-program-1-state"
+              >
                 <div
                   class="cds--tag cds--tag--outline"
                   data-testid="program-uuid-1-state-test-id"
@@ -360,7 +375,9 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   </span>
                 </div>
               </td>
-              <td>
+              <td
+                data-testid="table-cell-program-1-outcome"
+              >
                 <div
                   class="outcome"
                   data-testid="program-uuid-1-outcome-test-id"
@@ -372,8 +389,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 </div>
               </td>
             </tr>
-            <tr>
-              <td>
+            <tr
+              data-testid="table-row-program-2"
+            >
+              <td
+                data-testid="table-cell-program-2-programName"
+              >
                 <span
                   data-testid="program-uuid-2-program-name-test-id"
                   id="program-uuid-2-program-name"
@@ -381,7 +402,9 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   TB Program
                 </span>
               </td>
-              <td>
+              <td
+                data-testid="table-cell-program-2-startDate"
+              >
                 <span
                   data-testid="program-uuid-2-start-date-test-id"
                   id="program-uuid-2-start-date"
@@ -389,7 +412,9 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   10/06/2022
                 </span>
               </td>
-              <td>
+              <td
+                data-testid="table-cell-program-2-endDate"
+              >
                 <span
                   data-testid="program-uuid-2-end-date-test-id"
                   id="program-uuid-2-end-date"
@@ -397,7 +422,9 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   10/01/2023
                 </span>
               </td>
-              <td>
+              <td
+                data-testid="table-cell-program-2-state"
+              >
                 <div
                   class="cds--tag cds--tag--outline"
                   data-testid="program-uuid-2-state-test-id"
@@ -412,7 +439,9 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   </span>
                 </div>
               </td>
-              <td>
+              <td
+                data-testid="table-cell-program-2-outcome"
+              >
                 <div
                   class="outcome"
                   data-testid="program-uuid-2-outcome-test-id"

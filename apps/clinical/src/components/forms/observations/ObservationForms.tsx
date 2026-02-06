@@ -277,7 +277,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
                     actionIcon="fa-times"
                     onOpen={() => onFormSelect?.(form)}
                     onActionClick={() => onRemoveForm?.(form.uuid)}
-                    dataTestId={`selected-form-${form.uuid}`}
+                    dataTestId={`selected-form-${form.name}`}
                     ariaLabel={`Open ${form.name} form`}
                     errorMessage={errorMessage}
                   />
@@ -322,7 +322,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
                     );
                     updatePinnedForms(newPinnedForms);
                   }}
-                  dataTestId={`pinned-form-${form.uuid}`}
+                  dataTestId={`pinned-form-${form.name}`}
                   ariaLabel={`Open ${form.name} form`}
                 />
               ))

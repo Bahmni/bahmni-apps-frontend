@@ -143,7 +143,7 @@ describe('SortableDataTable', () => {
       />,
     );
 
-    const errorElement = screen.getByTestId('sortable-table-error');
+    const errorElement = screen.getByTestId('sortable-data-table-error');
     expect(errorElement).toBeInTheDocument();
     expect(errorElement.textContent).toBe('Something failed');
   });
@@ -158,7 +158,7 @@ describe('SortableDataTable', () => {
       />,
     );
 
-    const skeleton = screen.getByTestId('sortable-table-skeleton');
+    const skeleton = screen.getByTestId('sortable-data-table-skeleton');
     expect(skeleton).toBeInTheDocument();
   });
 
@@ -171,7 +171,7 @@ describe('SortableDataTable', () => {
       />,
     );
 
-    const empty = screen.getByTestId('sortable-table-empty');
+    const empty = screen.getByTestId('sortable-data-table-empty');
     expect(empty).toBeInTheDocument();
     expect(empty.textContent).toBe('No data available.');
   });
@@ -186,7 +186,7 @@ describe('SortableDataTable', () => {
       />,
     );
 
-    const empty = screen.getByTestId('sortable-table-empty');
+    const empty = screen.getByTestId('sortable-data-table-empty');
     expect(empty.textContent).toBe('Nothing to show');
   });
 
@@ -212,7 +212,7 @@ describe('SortableDataTable', () => {
       />,
     );
 
-    expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+    expect(screen.getByTestId('sortable-data-table-empty')).toBeInTheDocument();
   });
 
   it('handles null rows gracefully', () => {
@@ -224,7 +224,7 @@ describe('SortableDataTable', () => {
       />,
     );
 
-    expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+    expect(screen.getByTestId('sortable-data-table-empty')).toBeInTheDocument();
   });
 
   it('applies custom className and CSS module class', () => {

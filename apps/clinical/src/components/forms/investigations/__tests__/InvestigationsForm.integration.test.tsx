@@ -2,8 +2,10 @@ import {
   getFlattenedInvestigations,
   getFormattedError,
 } from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import i18n from '../../../../../setupTests.i18n';
 import { FlattenedInvestigations } from '../../../../models/investigations';
 import { ServiceRequestInputEntry } from '../../../../models/serviceRequest';
@@ -14,51 +16,88 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFlattenedInvestigations: jest.fn(),
   getFormattedError: jest.fn(),
+  getOrderTypes: jest.fn().mockResolvedValue({
+    results: [
+      { uuid: 'LAB', display: 'Lab Order', conceptClasses: [] },
+      { uuid: 'RAD', display: 'Radiology Order', conceptClasses: [] },
+      { uuid: 'PROC', display: 'Procedure Order', conceptClasses: [] },
+    ],
+  }),
+  getExistingServiceRequestsForAllCategories: jest.fn().mockResolvedValue([]),
+}));
+
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
+  usePatientUUID: jest.fn().mockReturnValue('mock-patient-uuid'),
+  useActivePractitioner: jest.fn().mockReturnValue({
+    practitioner: { uuid: 'mock-practitioner-uuid' },
+  }),
+}));
+
+jest.mock('../../../../hooks/useEncounterSession', () => ({
+  useEncounterSession: jest.fn().mockReturnValue({
+    activeEncounter: { id: 'mock-encounter-id' },
+  }),
 }));
 
 jest.mock('../../../../stores/serviceRequestStore');
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+  Wrapper.displayName = 'QueryClientWrapper';
+  return Wrapper;
+};
 
 const mockFlattenedInvestigations: FlattenedInvestigations[] = [
   {
     code: 'cbc-001',
     display: 'Complete Blood Count',
-    category: 'Laboratory',
+    category: 'Lab Order',
     categoryCode: 'LAB',
   },
   {
     code: 'hb-001',
     display: 'Hemoglobin',
-    category: 'Laboratory',
+    category: 'Lab Order',
     categoryCode: 'LAB',
   },
   {
     code: 'glucose-001',
     display: 'Blood Glucose Test',
-    category: 'Laboratory',
+    category: 'Lab Order',
     categoryCode: 'LAB',
   },
   {
     code: 'lipid-001',
     display: 'Lipid Profile',
-    category: 'Laboratory',
+    category: 'Lab Order',
     categoryCode: 'LAB',
   },
   {
     code: 'xray-chest-001',
     display: 'Chest X-Ray',
-    category: 'Radiology',
+    category: 'Radiology Order',
     categoryCode: 'RAD',
   },
   {
     code: 'xray-abdomen-001',
     display: 'Abdomen X-Ray',
-    category: 'Radiology',
+    category: 'Radiology Order',
     categoryCode: 'RAD',
   },
   {
     code: 'ct-head-001',
     display: 'CT Head',
-    category: 'Radiology',
+    category: 'Radiology Order',
     categoryCode: 'RAD',
   },
 ];
@@ -69,10 +108,12 @@ describe('InvestigationsForm Integration Tests', () => {
     addServiceRequest: jest.fn(),
     removeServiceRequest: jest.fn(),
     updatePriority: jest.fn(),
+    updateNote: jest.fn(),
     reset: jest.fn(),
     getState: jest.fn(() => ({
       selectedServiceRequests: new Map<string, ServiceRequestInputEntry[]>(),
     })),
+    isSelectedInCategory: jest.fn(() => false),
   };
 
   beforeEach(() => {
@@ -97,7 +138,7 @@ describe('InvestigationsForm Integration Tests', () => {
   describe('Component Initialization and Search', () => {
     test('should load investigations on component mount and display them when searching', async () => {
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       expect(
         screen.getByText('Order Investigations/Procedures'),
@@ -116,7 +157,7 @@ describe('InvestigationsForm Integration Tests', () => {
         const options = screen.getAllByRole('option');
         expect(options.length).toBeGreaterThan(0);
 
-        expect(screen.getByText(/laboratory/i)).toBeInTheDocument();
+        expect(screen.getByText(/lab order/i)).toBeInTheDocument();
         expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
         expect(screen.getByText('Blood Glucose Test')).toBeInTheDocument();
       });
@@ -124,7 +165,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should filter investigations based on search term', async () => {
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
 
@@ -140,7 +181,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should show "No matching investigations found" when search returns no results', async () => {
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
 
@@ -177,7 +218,7 @@ describe('InvestigationsForm Integration Tests', () => {
     });
     test('should add investigation when selected and display it with priority checkbox', async () => {
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
 
@@ -196,7 +237,7 @@ describe('InvestigationsForm Integration Tests', () => {
       await user.click(option);
 
       await waitFor(() => {
-        expect(screen.getByText('Added Laboratory')).toBeInTheDocument();
+        expect(screen.getByText('Added Lab Order')).toBeInTheDocument();
 
         expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
 
@@ -206,7 +247,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should handle multiple investigation selections from different categories', async () => {
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
 
@@ -230,11 +271,11 @@ describe('InvestigationsForm Integration Tests', () => {
       await user.click(screen.getByRole('option', { name: 'Chest X-Ray' }));
 
       await waitFor(() => {
-        expect(screen.getByText('Added Laboratory')).toBeInTheDocument();
-        expect(screen.getByText('Added Radiology')).toBeInTheDocument();
+        expect(screen.getByText('Added Lab Order')).toBeInTheDocument();
+        expect(screen.getByText('Added Radiology Order')).toBeInTheDocument();
 
-        const labBox = screen.getByLabelText('Added Laboratory');
-        const radBox = screen.getByLabelText('Added Radiology');
+        const labBox = screen.getByLabelText('Added Lab Order');
+        const radBox = screen.getByLabelText('Added Radiology Order');
 
         expect(
           within(labBox).getByText('Blood Glucose Test'),
@@ -245,7 +286,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should toggle investigation priority when urgent checkbox is clicked', async () => {
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
 
@@ -270,7 +311,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should remove investigation when close button is clicked', async () => {
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
 
@@ -282,8 +323,8 @@ describe('InvestigationsForm Integration Tests', () => {
       await user.click(screen.getByRole('option', { name: 'Lipid Profile' }));
 
       await waitFor(() => {
-        expect(screen.getByText('Added Laboratory')).toBeInTheDocument();
-        const labBox = screen.getByLabelText('Added Laboratory');
+        expect(screen.getByText('Added Lab Order')).toBeInTheDocument();
+        const labBox = screen.getByLabelText('Added Lab Order');
         expect(within(labBox).getByText('Lipid Profile')).toBeInTheDocument();
       });
 
@@ -301,7 +342,7 @@ describe('InvestigationsForm Integration Tests', () => {
       (getFlattenedInvestigations as jest.Mock).mockResolvedValue([]);
 
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -320,7 +361,7 @@ describe('InvestigationsForm Integration Tests', () => {
       );
 
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -338,7 +379,7 @@ describe('InvestigationsForm Integration Tests', () => {
       (getFlattenedInvestigations as jest.Mock).mockResolvedValue([]);
 
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -361,7 +402,7 @@ describe('InvestigationsForm Integration Tests', () => {
       );
 
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'test');
@@ -378,7 +419,7 @@ describe('InvestigationsForm Integration Tests', () => {
     test('should handle adding multiple investigations of same category and managing priorities', async () => {
       const user = userEvent.setup();
 
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
 
@@ -394,7 +435,7 @@ describe('InvestigationsForm Integration Tests', () => {
       );
 
       expect(mockStore.addServiceRequest).toHaveBeenCalledWith(
-        'Laboratory',
+        'Lab Order',
         'cbc-001',
         'Complete Blood Count',
       );
@@ -408,7 +449,7 @@ describe('InvestigationsForm Integration Tests', () => {
       await user.click(screen.getByRole('option', { name: 'Hemoglobin' }));
 
       expect(mockStore.addServiceRequest).toHaveBeenCalledWith(
-        'Laboratory',
+        'Lab Order',
         'hb-001',
         'Hemoglobin',
       );
@@ -418,7 +459,7 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should maintain search input value after selection', async () => {
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
 
@@ -443,7 +484,7 @@ describe('InvestigationsForm Integration Tests', () => {
         {
           code: 'panel-001',
           display: 'Liver Function Test (Panel)',
-          category: 'Laboratory',
+          category: 'Lab Order',
           categoryCode: 'LAB',
         },
       ];
@@ -453,7 +494,7 @@ describe('InvestigationsForm Integration Tests', () => {
       );
 
       const user = userEvent.setup();
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'liver');
@@ -473,7 +514,7 @@ describe('InvestigationsForm Integration Tests', () => {
         ...mockStore,
         selectedServiceRequests: new Map([
           [
-            'Laboratory',
+            'Lab Order',
             [
               {
                 id: 'cbc-001',
@@ -489,14 +530,14 @@ describe('InvestigationsForm Integration Tests', () => {
         mockStoreWithSelection,
       );
 
-      render(<InvestigationsForm />);
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
       await user.type(combobox, 'complete blood');
 
       await waitFor(() => {
         const option = screen.getByRole('option', {
-          name: /Complete Blood Count.*already selected/i,
+          name: /Complete Blood Count.*already/i,
         });
         expect(option).toBeInTheDocument();
         expect(option).toHaveAttribute('disabled');

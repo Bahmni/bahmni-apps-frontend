@@ -213,16 +213,26 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
 
       return (
         <>
-          <Grid condensed={false} narrow={false}>
+          <Grid
+            condensed={false}
+            narrow={false}
+            data-testid={`selected-vaccination-item-grid-${id}`}
+          >
             <Column sm={2} md={4} lg={8} className={styles.vaccinationTitle}>
-              <span>{vaccineName}</span>
+              <span data-testid={`vaccination-name-${id}`}>{vaccineName}</span>
               {VaccineDetails && (
-                <span className={styles.vaccineDetails}>{VaccineDetails}</span>
+                <span
+                  className={styles.vaccineDetails}
+                  data-testid={`vaccination-details-${id}`}
+                >
+                  {VaccineDetails}
+                </span>
               )}
             </Column>
             <Column sm={2} md={4} lg={8} className={styles.vaccinationActions}>
               <Checkbox
                 id={`stat-${id}`}
+                data-testid={`vaccination-stat-checkbox-${id}`}
                 labelText={t('MEDICATION_STAT')}
                 aria-label="STAT"
                 checked={isSTAT}
@@ -234,6 +244,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
             <Column sm={2} md={3} lg={6} className={styles.dosageControls}>
               <NumberInput
                 id={`dosage-unit-${id}`}
+                data-testid={`vaccination-dosage-input-${id}`}
                 min={0}
                 size="sm"
                 step={1}
@@ -254,6 +265,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
 
               <Dropdown
                 id={`dosage-unit-${id}`}
+                data-testid={`vaccination-dosage-unit-dropdown-${id}`}
                 titleText={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
                 label={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
                 aria-label="Dosage Unit"
@@ -277,6 +289,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
             <Column sm={1} md={2} lg={4} className={styles.column}>
               <Dropdown
                 id={`frequency-${id}`}
+                data-testid={`vaccination-frequency-dropdown-${id}`}
                 titleText={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
                 label={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
                 aria-label="Frequency"
@@ -303,6 +316,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
             <Column sm={2} md={3} lg={6} className={styles.durationControls}>
               <NumberInput
                 id={`duration-${id}`}
+                data-testid={`vaccination-duration-input-${id}`}
                 label={t('MEDICATION_DURATION_INPUT_LABEL')}
                 aria-label="Duration"
                 className={styles.durationInput}
@@ -323,6 +337,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
               />
               <Dropdown
                 id={`duration-unit-${id}`}
+                data-testid={`vaccination-duration-unit-dropdown-${id}`}
                 titleText={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
                 label={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
                 aria-label="Duration Unit"
@@ -349,6 +364,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
             <Column sm={1} md={2} lg={4} className={styles.column}>
               <Dropdown
                 id={`vac-instructions-${id}`}
+                data-testid={`vaccination-instructions-dropdown-${id}`}
                 titleText={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
                 label={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
                 aria-label="Vaccination Instructions"
@@ -369,6 +385,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
             <Column sm={1} md={2} lg={4} className={styles.column}>
               <Dropdown
                 id={`route-${id}`}
+                data-testid={`vaccination-route-dropdown-${id}`}
                 titleText={t('MEDICATION_ROUTE_INPUT_LABEL')}
                 label={t('MEDICATION_ROUTE_INPUT_LABEL')}
                 aria-label="Route"
@@ -392,6 +409,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
               <DatePicker
                 datePickerType="single"
                 dateFormat={DATE_PICKER_INPUT_FORMAT}
+                data-testid={`vaccination-start-date-picker-${id}`}
                 value={startDate}
                 minDate={getTodayDate()}
                 onChange={(date) => {
@@ -402,6 +420,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
               >
                 <DatePickerInput
                   id={`start-date-${id}`}
+                  data-testid={`vaccination-start-date-input-${id}`}
                   placeholder={DATE_PICKER_INPUT_FORMAT}
                   labelText={t('MEDICATION_START_DATE_INPUT_LABEL')}
                   aria-label="Start Date"
@@ -415,6 +434,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
               {!hasNote && (
                 <Link
                   href="#"
+                  data-testid={`vaccination-add-note-link-${id}`}
                   onClick={(e) => {
                     e.preventDefault();
                     setHasNote(true);
@@ -423,7 +443,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                   {t('VACCINATION_ADD_NOTE')}
                 </Link>
               )}
-              <span>
+              <span data-testid={`vaccination-total-quantity-${id}`}>
                 {t('VACCINATION_TOTAL_QUANTITY')} : {dispenseQuantity}{' '}
                 {dispenseUnit?.name ?? ''}
               </span>

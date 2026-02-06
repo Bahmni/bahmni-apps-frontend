@@ -151,6 +151,7 @@ const PatientProgramsTable: React.FC<PatientProgramsTableProps> = ({
         emptyStateMessage={t('PROGRAMS_TABLE_MESSAGE_NO_DATA')}
         renderCell={renderCell}
         className={styles.table}
+        dataTestId="patient-programs-table"
       />
     </div>
   );

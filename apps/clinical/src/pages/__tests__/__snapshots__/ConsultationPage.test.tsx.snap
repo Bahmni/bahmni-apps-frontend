@@ -3,6 +3,7 @@
 exports[`ConsultationPage Rendering and Structure should match the snapshot 1`] = `
 <div>
   <div
+    data-layout-variant="default"
     data-testid="mocked-clinical-layout"
   >
     <div
@@ -46,6 +47,7 @@ exports[`ConsultationPage Rendering and Structure should match the snapshot 1`] 
         <div
           aria-label="translated_PATIENT_HEADER_LABEL"
           class="header"
+          data-testid="patient-header"
         >
           <div
             class="_skeletonContainer_14cqd_1"

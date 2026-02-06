@@ -61,7 +61,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
 
     return (
       <>
-        <Grid>
+        <Grid data-testid={`selected-allergy-item-grid-${id}`}>
           <Column
             sm={4}
             md={5}
@@ -69,10 +69,13 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             xlg={8}
             className={styles.selectedAllergyTitle}
           >
-            {display} [{t(getCategoryDisplayName(type))}]
+            <span data-testid={`allergy-display-name-${id}`}>
+              {display} [{t(getCategoryDisplayName(type))}]
+            </span>
             {!hasNote && (
               <Link
                 href="#"
+                data-testid={`allergy-add-note-link-${id}`}
                 onClick={(e) => {
                   e.preventDefault();
                   setHasNote(true);

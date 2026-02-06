@@ -4,9 +4,11 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with no medications 1`]
 <div>
   <div
     class="cds--tile medicationsFormTile"
+    data-testid="medications-form-tile"
   >
     <div
       class="medicationsFormTitle"
+      data-testid="medications-form-title"
     >
       Prescribe medication
     </div>
@@ -28,6 +30,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with no medications 1`]
             aria-label="Search to add medication"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
+            data-testid="medications-search-combobox"
             id="medications-search"
             placeholder="Search to add medication"
             role="combobox"
@@ -79,9 +82,11 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
 <div>
   <div
     class="cds--tile medicationsFormTile"
+    data-testid="medications-form-tile"
   >
     <div
       class="medicationsFormTitle"
+      data-testid="medications-form-title"
     >
       Prescribe medication
     </div>
@@ -103,6 +108,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
             aria-label="Search to add medication"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
+            data-testid="medications-search-combobox"
             id="medications-search"
             placeholder="Search to add medication"
             role="combobox"
@@ -169,11 +175,14 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
+              data-testid="selected-medication-item-grid-test-medication-1"
             >
               <div
                 class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
               >
-                <span>
+                <span
+                  data-testid="medication-name-test-medication-1"
+                >
                   Paracetamol 500mg
                 </span>
               </div>
@@ -186,6 +195,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   <input
                     aria-label="STAT"
                     class="cds--checkbox"
+                    data-testid="medication-stat-checkbox-test-medication-1"
                     id="stat-test-medication-1"
                     type="checkbox"
                   />
@@ -211,6 +221,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   <input
                     aria-label="PRN"
                     class="cds--checkbox"
+                    data-testid="medication-prn-checkbox-test-medication-1"
                     id="prn-test-medication-1"
                     type="checkbox"
                   />
@@ -253,6 +264,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                       <input
                         aria-invalid="false"
                         aria-label="Dosage"
+                        data-testid="medication-dosage-input-test-medication-1"
                         id="dosage-unit-test-medication-1"
                         inputmode="decimal"
                         min="0"
@@ -322,6 +334,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  data-testid="medication-dosage-unit-dropdown-test-medication-1"
                 >
                   <label
                     class="cds--label cds--visually-hidden"
@@ -391,6 +404,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  data-testid="medication-frequency-dropdown-test-medication-1"
                 >
                   <label
                     class="cds--label cds--visually-hidden"
@@ -477,6 +491,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                       <input
                         aria-invalid="false"
                         aria-label="Duration"
+                        data-testid="medication-duration-input-test-medication-1"
                         id="duration-test-medication-1"
                         inputmode="decimal"
                         min="0"
@@ -546,6 +561,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  data-testid="medication-duration-unit-dropdown-test-medication-1"
                 >
                   <label
                     class="cds--label cds--visually-hidden"
@@ -615,6 +631,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  data-testid="medication-instructions-dropdown-test-medication-1"
                 >
                   <label
                     class="cds--label cds--visually-hidden"
@@ -684,6 +701,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  data-testid="medication-route-dropdown-test-medication-1"
                 >
                   <label
                     class="cds--label cds--visually-hidden"
@@ -753,6 +771,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               >
                 <div
                   class="cds--form-item"
+                  data-testid="medication-start-date-picker-test-medication-1"
                 >
                   <div
                     class="cds--date-picker cds--date-picker--single"
@@ -774,6 +793,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                           <input
                             aria-label="Start Date"
                             class="cds--date-picker__input cds--date-picker__input--sm flatpickr-input"
+                            data-testid="medication-start-date-input-test-medication-1"
                             id="start-date-test-medication-1"
                             pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
                             placeholder="d/m/Y"
@@ -806,11 +826,14 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               >
                 <a
                   class="cds--link"
+                  data-testid="medication-add-note-link-test-medication-1"
                   href="#"
                 >
                   Add Note
                 </a>
-                <span>
+                <span
+                  data-testid="medication-total-quantity-test-medication-1"
+                >
                   Total quantity
                    : 
                   10

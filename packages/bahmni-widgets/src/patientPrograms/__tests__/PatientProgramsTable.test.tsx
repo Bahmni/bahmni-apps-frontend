@@ -59,7 +59,9 @@ describe('PatientProgramsTable', () => {
     expect(
       screen.getByTestId('patient-programs-table-test-id'),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('patient-programs-table-skeleton'),
+    ).toBeInTheDocument();
   });
 
   it('should show error state when an error occurs', () => {
@@ -73,7 +75,9 @@ describe('PatientProgramsTable', () => {
     expect(
       screen.getByTestId('patient-programs-table-test-id'),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('patient-programs-table-error'),
+    ).toBeInTheDocument();
   });
 
   it('should show empty state when there is no data', () => {
@@ -87,7 +91,9 @@ describe('PatientProgramsTable', () => {
     expect(
       screen.getByTestId('patient-programs-table-test-id'),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('sortable-table-empty')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('patient-programs-table-empty'),
+    ).toBeInTheDocument();
   });
 
   it('should show programs table when patient has programs', () => {

@@ -24,7 +24,11 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   const { t } = useTranslation();
 
   return (
-    <div aria-label={t('PATIENT_HEADER_LABEL')} className={styles.header}>
+    <div
+      aria-label={t('PATIENT_HEADER_LABEL')}
+      className={styles.header}
+      data-testid="patient-header"
+    >
       <PatientDetails />
       <ConsultationActionButton
         isActionAreaVisible={isActionAreaVisible}

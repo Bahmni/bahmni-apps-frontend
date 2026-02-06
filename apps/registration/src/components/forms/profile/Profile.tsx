@@ -438,15 +438,23 @@ export const Profile = ({
   }));
 
   return (
-    <div className={styles.formSection}>
-      <span className={styles.formSectionTitle}>
+    <div className={styles.formSection} data-testid="profile-section">
+      <span
+        className={styles.formSectionTitle}
+        data-testid="profile-section-title"
+      >
         {patientIdentifier ? (
-          <span className={styles.patientUuid}>{patientIdentifier}</span>
+          <span
+            className={styles.patientUuid}
+            data-testid="profile-patient-identifier"
+          >
+            {patientIdentifier}
+          </span>
         ) : (
           t('CREATE_PATIENT_SECTION_BASIC_INFO')
         )}
       </span>
-      <div className={styles.row}>
+      <div className={styles.row} data-testid="profile-main-row">
         <PatientPhotoUpload
           onPhotoConfirm={setPatientImage}
           initialPhoto={initialPhoto ?? undefined}
@@ -455,9 +463,13 @@ export const Profile = ({
         <div className={styles.col}>
           <div className={styles.row}>
             {!patientUuidFromUrl && (
-              <div className={styles.dropdownField}>
+              <div
+                className={styles.dropdownField}
+                data-testid="patient-id-format-field"
+              >
                 <Dropdown
                   id="patient-id-format"
+                  data-testid="patient-id-format-dropdown"
                   titleText={t('CREATE_PATIENT_PATIENT_ID_FORMAT')}
                   label={
                     (formData.patientIdFormat || identifierPrefixes[0]) ??
@@ -472,12 +484,16 @@ export const Profile = ({
               </div>
             )}
             {(patientInfoConfig?.showEnterManually ?? false) && (
-              <div className={styles.col}>
-                <CheckboxGroup legendText={t('CREATE_PATIENT_ENTRY_TYPE')}>
+              <div className={styles.col} data-testid="entry-type-field">
+                <CheckboxGroup
+                  legendText={t('CREATE_PATIENT_ENTRY_TYPE')}
+                  data-testid="entry-type-checkbox-group"
+                >
                   <div className={styles.checkboxField}>
                     <Checkbox
                       labelText={t('CREATE_PATIENT_ENTER_MANUALLY')}
                       id="entry-type"
+                      data-testid="entry-type-checkbox"
                       checked={formData.entryType}
                       onChange={(e) =>
                         handleInputChange('entryType', e.target.checked)
@@ -489,9 +505,13 @@ export const Profile = ({
             )}
           </div>
 
-          <div className={`${styles.row} ${styles.nameFields}`}>
+          <div
+            className={`${styles.row} ${styles.nameFields}`}
+            data-testid="profile-name-fields-row"
+          >
             <TextInput
               id="first-name"
+              data-testid="first-name-input"
               labelText={getRequiredLabel(
                 'CREATE_PATIENT_FIRST_NAME',
                 patientInfoConfig?.isFirstNameMandatory ?? true,
@@ -507,6 +527,7 @@ export const Profile = ({
             {showMiddleName && (
               <TextInput
                 id="middle-name"
+                data-testid="middle-name-input"
                 labelText={getRequiredLabel(
                   'CREATE_PATIENT_MIDDLE_NAME',
                   isMiddleNameMandatory,
@@ -527,6 +548,7 @@ export const Profile = ({
             {showLastName && (
               <TextInput
                 id="last-name"
+                data-testid="last-name-input"
                 labelText={getRequiredLabel(
                   'CREATE_PATIENT_LAST_NAME',
                   isLastNameMandatory,
@@ -541,10 +563,14 @@ export const Profile = ({
             )}
           </div>
 
-          <div className={`${styles.row} ${styles.demographicsFields}`}>
-            <div className={styles.dropdownField}>
+          <div
+            className={`${styles.row} ${styles.demographicsFields}`}
+            data-testid="profile-demographics-row"
+          >
+            <div className={styles.dropdownField} data-testid="gender-field">
               <Dropdown
                 id="gender"
+                data-testid="gender-dropdown"
                 titleText={getRequiredLabel(
                   'CREATE_PATIENT_GENDER',
                   patientInfoConfig?.isGenderMandatory ?? true,
@@ -562,11 +588,15 @@ export const Profile = ({
               />
             </div>
 
-            <div className={styles.col}>
-              <div className={styles.ageFieldsWrapper}>
+            <div className={styles.col} data-testid="age-fields-container">
+              <div
+                className={styles.ageFieldsWrapper}
+                data-testid="age-fields-wrapper"
+              >
                 <div className={styles.ageInputs}>
                   <TextInput
                     id="age-years"
+                    data-testid="age-years-input"
                     labelText={t('CREATE_PATIENT_AGE_YEARS')}
                     type="number"
                     required
@@ -586,6 +616,7 @@ export const Profile = ({
                 <div className={styles.ageInputs}>
                   <TextInput
                     id="age-months"
+                    data-testid="age-months-input"
                     labelText={t('CREATE_PATIENT_AGE_MONTHS')}
                     type="number"
                     required
@@ -605,6 +636,7 @@ export const Profile = ({
                 <div className={styles.ageInputs}>
                   <TextInput
                     id="age-days"
+                    data-testid="age-days-input"
                     labelText={t('CREATE_PATIENT_AGE_DAYS')}
                     type="number"
                     min={0}
@@ -621,11 +653,15 @@ export const Profile = ({
             </div>
           </div>
 
-          <div className={`${styles.row} ${styles.birthInfoFields}`}>
-            <div>
+          <div
+            className={`${styles.row} ${styles.birthInfoFields}`}
+            data-testid="profile-birth-info-row"
+          >
+            <div data-testid="date-of-birth-field">
               <DatePicker
                 dateFormat="d/m/Y"
                 datePickerType="single"
+                data-testid="date-of-birth-picker"
                 minDate={(() => {
                   const date = new Date();
                   date.setFullYear(date.getFullYear() - MAX_PATIENT_AGE_YEARS);
@@ -642,6 +678,7 @@ export const Profile = ({
               >
                 <DatePickerInput
                   id="date-of-birth"
+                  data-testid="date-of-birth-input"
                   placeholder={t('CREATE_PATIENT_DATE_OF_BIRTH_PLACEHOLDER')}
                   labelText={getRequiredLabel(
                     'CREATE_PATIENT_DATE_OF_BIRTH',
@@ -658,11 +695,15 @@ export const Profile = ({
               </DatePicker>
             </div>
 
-            <CheckboxGroup legendText={t('CREATE_PATIENT_ACCURACY')}>
+            <CheckboxGroup
+              legendText={t('CREATE_PATIENT_ACCURACY')}
+              data-testid="accuracy-checkbox-group"
+            >
               <div className={styles.checkboxField}>
                 <Checkbox
                   labelText={t('CREATE_PATIENT_ESTIMATED')}
                   id="accuracy"
+                  data-testid="accuracy-checkbox"
                   checked={dobEstimated}
                   onChange={() => setDobEstimated(!dobEstimated)}
                 />
@@ -670,9 +711,10 @@ export const Profile = ({
             </CheckboxGroup>
 
             {(patientInfoConfig?.showBirthTime ?? false) && (
-              <div>
+              <div data-testid="birth-time-field">
                 <TextInput
                   id="birth-time"
+                  data-testid="birth-time-input"
                   type="time"
                   value={formData.birthTime}
                   onChange={(e) => handleBirthTimeChange(e.target.value, e)}

@@ -5,8 +5,15 @@ import {
 
 export type ComboBoxProps<T> = CarbonComboBoxProps<T> & {
   testId?: string;
+  'data-testid'?: string;
 };
 
-export const ComboBox = <T,>({ testId, ...carbonProps }: ComboBoxProps<T>) => {
-  return <CarbonComboBox<T> {...carbonProps} data-testid={testId} />;
+export const ComboBox = <T,>({
+  testId,
+  'data-testid': dataTestId,
+  ...carbonProps
+}: ComboBoxProps<T>) => {
+  return (
+    <CarbonComboBox<T> {...carbonProps} data-testid={testId ?? dataTestId} />
+  );
 };

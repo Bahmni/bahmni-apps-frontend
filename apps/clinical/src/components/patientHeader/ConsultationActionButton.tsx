@@ -33,6 +33,7 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
       size="md"
       disabled={isActionAreaVisible || isLoading}
       onClick={() => setIsActionAreaVisible(!isActionAreaVisible)}
+      data-testid="consultation-action-button"
     >
       {isActionAreaVisible
         ? t('CONSULTATION_ACTION_IN_PROGRESS')

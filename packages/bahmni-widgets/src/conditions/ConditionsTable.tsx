@@ -131,6 +131,7 @@ const ConditionsTable: React.FC = () => {
           emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}
           renderCell={renderCell}
           className={styles.conditionsTableBody}
+          dataTestId="conditions-table"
         />
       </div>
     </>

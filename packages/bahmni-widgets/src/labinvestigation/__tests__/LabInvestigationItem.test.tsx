@@ -278,11 +278,17 @@ describe('LabInvestigationItem', () => {
       />,
     );
 
-    expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+    expect(
+      screen.getByTestId(
+        'lab-test-results-table-Complete Blood Count-skeleton',
+      ),
+    ).toBeInTheDocument();
 
     await waitFor(() => {
       expect(
-        screen.queryByTestId('sortable-table-skeleton'),
+        screen.queryByTestId(
+          'lab-test-results-table-Complete Blood Count-skeleton',
+        ),
       ).not.toBeInTheDocument();
       expect(screen.getByText('Hemoglobin')).toBeInTheDocument();
     });

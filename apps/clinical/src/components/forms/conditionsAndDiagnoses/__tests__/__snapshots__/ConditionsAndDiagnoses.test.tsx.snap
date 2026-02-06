@@ -4,9 +4,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
 <div>
   <div
     class="cds--tile conditionsAndDiagnosesTile"
+    data-testid="conditions-and-diagnoses-tile"
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -28,6 +30,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
             aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
+            data-testid="diagnoses-search-combobox"
             id="diagnoses-search"
             placeholder="Search to add new diagnosis"
             role="combobox"
@@ -94,14 +97,20 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
+              data-testid="selected-diagnosis-item-grid"
             >
               <div
                 class="selectedDiagnosisTitle cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
               >
-                Hypertension
+                <span
+                  data-testid="diagnosis-display-name-uuid-1"
+                >
+                  Hypertension
+                </span>
                 <a
                   aria-disabled="false"
                   class="cds--link addAsConditionLink"
+                  data-testid="add-as-condition-link"
                   href="#"
                 >
                   Add as condition
@@ -233,9 +242,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests empty form matches snapshot 1`] =
 <div>
   <div
     class="cds--tile conditionsAndDiagnosesTile"
+    data-testid="conditions-and-diagnoses-tile"
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -257,6 +268,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests empty form matches snapshot 1`] =
             aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
+            data-testid="diagnoses-search-combobox"
             id="diagnoses-search"
             placeholder="Search to add new diagnosis"
             role="combobox"
@@ -308,9 +320,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
 <div>
   <div
     class="cds--tile conditionsAndDiagnosesTile"
+    data-testid="conditions-and-diagnoses-tile"
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -332,6 +346,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
             aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
+            data-testid="diagnoses-search-combobox"
             id="diagnoses-search"
             placeholder="Search to add new diagnosis"
             role="combobox"
@@ -398,14 +413,20 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
+              data-testid="selected-diagnosis-item-grid"
             >
               <div
                 class="selectedDiagnosisTitle cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
               >
-                Hypertension
+                <span
+                  data-testid="diagnosis-display-name-uuid-1"
+                >
+                  Hypertension
+                </span>
                 <a
                   aria-disabled="false"
                   class="cds--link addAsConditionLink"
+                  data-testid="add-as-condition-link"
                   href="#"
                 >
                   Add as condition
@@ -583,6 +604,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                     >
                       <input
                         class="cds--text-input cds--text-input--sm cds--layout--size-sm"
+                        data-testid="condition-duration-value-uuid-3"
                         id="condition-duration-value-uuid-3"
                         placeholder="Enter duration"
                         title="Enter duration"
@@ -757,6 +779,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                     >
                       <input
                         class="cds--text-input cds--text-input--sm cds--layout--size-sm"
+                        data-testid="condition-duration-value-uuid-4"
                         id="condition-duration-value-uuid-4"
                         placeholder="Enter duration"
                         title="Enter duration"
@@ -901,9 +924,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with search results matches 
 <div>
   <div
     class="cds--tile conditionsAndDiagnosesTile"
+    data-testid="conditions-and-diagnoses-tile"
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -925,6 +950,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with search results matches 
             aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
+            data-testid="diagnoses-search-combobox"
             id="diagnoses-search"
             placeholder="Search to add new diagnosis"
             role="combobox"
@@ -976,9 +1002,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
 <div>
   <div
     class="cds--tile conditionsAndDiagnosesTile"
+    data-testid="conditions-and-diagnoses-tile"
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -1000,6 +1028,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
             aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
+            data-testid="diagnoses-search-combobox"
             id="diagnoses-search"
             placeholder="Search to add new diagnosis"
             role="combobox"
@@ -1097,6 +1126,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                     >
                       <input
                         class="cds--text-input cds--text-input--sm cds--layout--size-sm"
+                        data-testid="condition-duration-value-uuid-3"
                         id="condition-duration-value-uuid-3"
                         placeholder="Enter duration"
                         title="Enter duration"
@@ -1271,6 +1301,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                     >
                       <input
                         class="cds--text-input cds--text-input--sm cds--layout--size-sm"
+                        data-testid="condition-duration-value-uuid-4"
                         id="condition-duration-value-uuid-4"
                         placeholder="Enter duration"
                         title="Enter duration"
@@ -1415,9 +1446,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
 <div>
   <div
     class="cds--tile conditionsAndDiagnosesTile"
+    data-testid="conditions-and-diagnoses-tile"
   >
     <div
       class="conditionsAndDiagnosesTitle"
+      data-testid="conditions-and-diagnoses-title"
     >
       Conditions and Diagnoses
     </div>
@@ -1439,6 +1472,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
             aria-label="Search for diagnoses"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
+            data-testid="diagnoses-search-combobox"
             id="diagnoses-search"
             placeholder="Search to add new diagnosis"
             role="combobox"
@@ -1505,14 +1539,20 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
+              data-testid="selected-diagnosis-item-grid"
             >
               <div
                 class="selectedDiagnosisTitle cds--sm:col-span-4 cds--md:col-span-7 cds--lg:col-span-11 cds--xlg:col-span-11 cds--css-grid-column"
               >
-                Hypertension
+                <span
+                  data-testid="diagnosis-display-name-uuid-1"
+                >
+                  Hypertension
+                </span>
                 <a
                   aria-disabled="false"
                   class="cds--link addAsConditionLink"
+                  data-testid="add-as-condition-link"
                   href="#"
                 >
                   Add as condition

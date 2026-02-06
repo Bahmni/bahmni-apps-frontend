@@ -288,6 +288,7 @@ const PatientRegister = () => {
               <Button
                 kind="tertiary"
                 onClick={() => navigate('/registration/search')}
+                data-testid="back-to-patient-search-button"
               >
                 {t('CREATE_PATIENT_BACK_TO_SEARCH')}
               </Button>
@@ -296,6 +297,7 @@ const PatientRegister = () => {
                   kind="tertiary"
                   onClick={handleSave}
                   disabled={isSaving}
+                  data-testid="save-patient-button"
                 >
                   {t('CREATE_PATIENT_SAVE')}
                 </Button>

@@ -127,7 +127,10 @@ export const AdditionalIdentifiers = ({
       );
       const isRequired = identifierType?.required ?? false;
       return (
-        <span className={styles.identifierField}>
+        <span
+          className={styles.identifierField}
+          data-testid="additional-identifier-label"
+        >
           {translatedName}
           {isRequired && <span className={styles.requiredAsterisk}>*</span>}
         </span>
@@ -140,9 +143,13 @@ export const AdditionalIdentifiers = ({
         initialData?.[row.uuid] && initialData[row.uuid].trim() !== '',
       );
       return (
-        <div className={styles.identifierField}>
+        <div
+          className={styles.identifierField}
+          data-testid="additional-identifier-field"
+        >
           <TextInput
             id={`identifier-${row.uuid}`}
+            data-testid="additional-identifier-input"
             labelText=""
             placeholder={translatedName}
             value={value}
@@ -158,8 +165,14 @@ export const AdditionalIdentifiers = ({
   };
 
   return (
-    <div className={styles.formSection}>
-      <Tile className={styles.headerTile}>
+    <div
+      className={styles.formSection}
+      data-testid="additional-identifiers-section"
+    >
+      <Tile
+        className={styles.headerTile}
+        data-testid="additional-identifiers-header"
+      >
         <span className={styles.headerTitle}>
           {t('ADDITIONAL_IDENTIFIERS_HEADER_TITLE')}
         </span>
@@ -170,6 +183,7 @@ export const AdditionalIdentifiers = ({
         ariaLabel=""
         renderCell={renderCell}
         className={styles.identifierTable}
+        data-testid="additional-identifiers-table"
       />
     </div>
   );

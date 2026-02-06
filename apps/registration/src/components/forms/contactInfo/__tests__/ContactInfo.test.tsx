@@ -7,18 +7,20 @@ import type { ContactInfoRef } from '../ContactInfo';
 jest.mock('../../../common/PersonAttributeInput', () => ({
   PersonAttributeInput: ({
     uuid,
+    name,
     label,
     value,
     onChange,
     error,
   }: {
     uuid: string;
+    name: string;
     label: string;
     value: string | number | boolean;
     onChange: (value: string | number | boolean) => void;
     error: string;
   }) => (
-    <div>
+    <div data-testid={`person-attribute-input-${name}`}>
       <label htmlFor={uuid}>{label}</label>
       <input
         id={uuid}

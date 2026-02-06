@@ -108,11 +108,17 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
   }
 
   return (
-    <div className={styles.additionalInfoSection}>
-      <Tile className={styles.headerTile}>
+    <div
+      className={styles.additionalInfoSection}
+      data-testid="additional-info-section"
+    >
+      <Tile className={styles.headerTile} data-testid="additional-info-header">
         <span className={styles.headerTitle}>{t(sectionTitle)}</span>
       </Tile>
-      <div className={styles.fieldsContainer}>
+      <div
+        className={styles.fieldsContainer}
+        data-testid="additional-info-fields-container"
+      >
         <div className={styles.row}>
           {fieldsToShow.map((field) => {
             const fieldName = field.name;
@@ -121,9 +127,14 @@ export const AdditionalInfo = ({ initialData, ref }: AdditionalInfoProps) => {
             const label = getFieldLabel(fieldName, fieldTranslationMap, t);
 
             return (
-              <div key={field.uuid} className={styles.attributeField}>
+              <div
+                key={field.uuid}
+                className={styles.attributeField}
+                data-testid="additional-info-attribute-field"
+              >
                 <PersonAttributeInput
                   uuid={field.uuid}
+                  name={fieldName}
                   label={label}
                   format={field.format}
                   value={value}
