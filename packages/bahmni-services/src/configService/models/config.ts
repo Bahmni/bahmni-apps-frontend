@@ -31,7 +31,7 @@ export interface ContextInformation {
  */
 export interface ClinicalConfig {
   patientInformation: Record<string, unknown>;
-  contextInformation: ContextInformation;
+  contextInformation?: ContextInformation;
   actions: Array<unknown>;
   dashboards: Array<Dashboard>;
   consultationPad: ConsultationPad;

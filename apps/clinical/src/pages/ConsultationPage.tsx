@@ -141,7 +141,7 @@ const ConsultationPage: React.FC = () => {
 
   const renderContextInformation = () => {
     const programUUID = searchParams.get('programUuid');
-    if (programUUID && clinicalConfig.contextInformation.program?.fields)
+    if (programUUID && clinicalConfig.contextInformation?.program)
       return (
         <ProgramDetails
           programUUID={programUUID}

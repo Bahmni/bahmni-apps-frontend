@@ -5,7 +5,6 @@
   "type": "object",
   "required": [
     "patientInformation",
-    "contextInformation",
     "actions",
     "dashboards",
     "consultationPad"

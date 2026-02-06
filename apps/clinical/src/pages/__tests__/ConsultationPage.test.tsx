@@ -637,6 +637,96 @@ describe('ConsultationPage', () => {
     });
   });
 
+  it('should render ProgramDetails when programUuid is present and contextInformation.program.fields are configured', () => {
+    const configWithContextInfo = {
+      ...validFullClinicalConfig,
+      contextInformation: {
+        program: {
+          fields: ['dateEnrolled', 'dateCompleted', 'outcome'],
+        },
+      },
+    };
+
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      clinicalConfig: configWithContextInfo,
+    });
+    (useDashboardConfig as jest.Mock).mockReturnValue({
+      dashboardConfig: validDashboardConfig,
+    });
+    const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: ['Get Patients', 'Add Patients'],
+    });
+    const { useQuery } = jest.requireMock('@tanstack/react-query');
+    (useQuery as jest.Mock).mockImplementation((options) => {
+      if (options.queryKey?.[0] === 'programs') {
+        return {
+          data: {
+            programName: 'Test Program',
+            dateEnrolled: '2024-01-01',
+            dateCompleted: '2024-12-31',
+            outcomeName: 'Completed',
+            currentStateName: 'Active',
+            attributes: {},
+          },
+          isLoading: false,
+          isError: false,
+        };
+      }
+      return {
+        data: { encounterIds: [], visitIds: [] },
+        isLoading: false,
+        error: null,
+      };
+    });
+
+    renderWithProvider(
+      <ConsultationPage />,
+      '/consultation?episodeUuid=test-episode&programUuid=test-program-uuid',
+    );
+
+    expect(
+      screen.getByTestId('patient-programs-tile-test-id'),
+    ).toBeInTheDocument();
+  });
+
+  it('should not render ProgramDetails when programUuid is not available', () => {
+    const configWithContextInfo = {
+      ...validFullClinicalConfig,
+      contextInformation: {
+        program: {
+          fields: ['dateEnrolled', 'dateCompleted', 'outcome'],
+        },
+      },
+    };
+
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      clinicalConfig: configWithContextInfo,
+    });
+    (useDashboardConfig as jest.Mock).mockReturnValue({
+      dashboardConfig: validDashboardConfig,
+    });
+    const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: ['Get Patients', 'Add Patients'],
+    });
+    const { useQuery } = jest.requireMock('@tanstack/react-query');
+    (useQuery as jest.Mock).mockReturnValue({
+      data: { encounterIds: [], visitIds: [] },
+      isLoading: false,
+      error: null,
+    });
+
+    renderWithProvider(
+      <ConsultationPage />,
+      '/consultation?episodeUuid=test-episode',
+    );
+
+    expect(
+      screen.queryByTestId('mocked-program-details'),
+    ).not.toBeInTheDocument();
+  });
+
   describe('CurrentDashboard Selection', () => {
     it('should select dashboard when currentDashboardParam matches an existing dashboard name', () => {
       const { useQuery } = jest.requireMock('@tanstack/react-query');
