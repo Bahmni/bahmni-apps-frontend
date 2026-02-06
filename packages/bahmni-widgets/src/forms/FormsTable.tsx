@@ -79,7 +79,7 @@ const FormsTable: React.FC<WidgetProps> = ({
   // Fetch published forms to get form UUIDs
   const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
     queryKey: ['observationForms'],
-    queryFn: fetchObservationForms,
+    queryFn: () => fetchObservationForms(),
   });
 
   // Get form UUID by matching form name

@@ -1,9 +1,9 @@
 import {
-  getFormattedError,
   getCurrentUserPrivileges,
   fetchObservationForms,
 } from '@bahmni/services';
 import { UserPrivilegeProvider } from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -16,7 +16,6 @@ import useObservationFormsSearch from '../useObservationFormsSearch';
 // Mock the common utils
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  getFormattedError: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   fetchObservationForms: jest.fn(),
 }));
@@ -42,13 +41,6 @@ jest.mock('../useDebounce', () => ({
   __esModule: true,
   default: jest.fn((value) => value),
 }));
-
-// Test wrapper with i18n and privilege providers
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <I18nextProvider i18n={i18n}>
-    <UserPrivilegeProvider>{children}</UserPrivilegeProvider>
-  </I18nextProvider>
-);
 
 // Mock data shared across all tests
 const mockFormsData = [
@@ -83,12 +75,32 @@ const mockFormsData = [
 ];
 
 describe('useObservationFormsSearch', () => {
+  let queryClient: QueryClient;
+
+  const createWrapper = () => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+          staleTime: Infinity,
+          gcTime: Infinity,
+        },
+      },
+    });
+
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={queryClient}>
+        <I18nextProvider i18n={i18n}>
+          <UserPrivilegeProvider>{children}</UserPrivilegeProvider>
+        </I18nextProvider>
+      </QueryClientProvider>
+    );
+    Wrapper.displayName = 'TestWrapper';
+    return Wrapper;
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
-    (getFormattedError as jest.Mock).mockReturnValue({
-      title: 'Error',
-      message: 'Something went wrong',
-    });
 
     // Reset useUserPrivilege mock to default state
     const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
@@ -114,8 +126,13 @@ describe('useObservationFormsSearch', () => {
     (fetchObservationForms as jest.Mock).mockResolvedValue(mockFormsData);
   });
 
+  afterEach(() => {
+    queryClient?.clear();
+  });
+
   describe('basic functionality', () => {
     it('should call fetchObservationForms service when hook is used', async () => {
+      const wrapper = createWrapper();
       const { result } = renderHook(() => useObservationFormsSearch(), {
         wrapper,
       });
@@ -133,32 +150,6 @@ describe('useObservationFormsSearch', () => {
       expect(result.current.error).toBeNull();
       expect(fetchObservationForms).toHaveBeenCalledTimes(1);
     });
-
-    it('should handle service error with fallback error message when formatted error has no message', async () => {
-      const serviceError = new Error('Service error');
-      (fetchObservationForms as jest.Mock).mockRejectedValue(serviceError);
-
-      // Mock getFormattedError to return an object with null/undefined message to test fallback
-      (getFormattedError as jest.Mock).mockReturnValue({
-        title: 'Error',
-        message: undefined,
-      });
-
-      const { result } = renderHook(() => useObservationFormsSearch(), {
-        wrapper,
-      });
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      // The fallback should use the translation for ERROR_FETCHING_CONCEPTS
-      expect(result.current.error?.message).toBe(
-        'An unexpected error occurred. Please try again later.',
-      );
-      expect(result.current.forms).toEqual([]);
-      expect(getFormattedError).toHaveBeenCalledWith(serviceError);
-    });
   });
 
   describe('privilege filtering', () => {
@@ -171,6 +162,7 @@ describe('useObservationFormsSearch', () => {
 
       (getCurrentUserPrivileges as jest.Mock).mockResolvedValue(null);
 
+      const wrapper = createWrapper();
       const { result } = renderHook(() => useObservationFormsSearch(), {
         wrapper,
       });
@@ -199,6 +191,7 @@ describe('useObservationFormsSearch', () => {
         mockFormsData[0], // Only first form
       ]);
 
+      const wrapper = createWrapper();
       const { result } = renderHook(() => useObservationFormsSearch(), {
         wrapper,
       });
@@ -220,6 +213,7 @@ describe('useObservationFormsSearch', () => {
 
       (filterFormsByUserPrivileges as jest.Mock).mockReturnValue([]);
 
+      const wrapper = createWrapper();
       const { result } = renderHook(() => useObservationFormsSearch(), {
         wrapper,
       });
@@ -232,6 +226,50 @@ describe('useObservationFormsSearch', () => {
     });
   });
 
+  describe('episodeUuids filtering', () => {
+    it('should pass episodeUuids array to fetchObservationForms', async () => {
+      const episodeUuids = ['uuid-1', 'uuid-2'];
+
+      const wrapper = createWrapper();
+      const { result } = renderHook(
+        () => useObservationFormsSearch('', episodeUuids),
+        { wrapper },
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(fetchObservationForms).toHaveBeenCalledWith(['uuid-1', 'uuid-2']);
+    });
+
+    it('should pass empty array when episodeUuids is empty', async () => {
+      const wrapper = createWrapper();
+      const { result } = renderHook(() => useObservationFormsSearch('', []), {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(fetchObservationForms).toHaveBeenCalledWith([]);
+    });
+
+    it('should pass undefined when episodeUuids is not provided', async () => {
+      const wrapper = createWrapper();
+      const { result } = renderHook(() => useObservationFormsSearch(), {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(fetchObservationForms).toHaveBeenCalledWith(undefined);
+    });
+  });
+
   describe('search functionality', () => {
     beforeEach(() => {
       // Mock privilege filtering to return all forms for search tests
@@ -241,6 +279,7 @@ describe('useObservationFormsSearch', () => {
     });
 
     it('should filter forms based on search term (case-insensitive)', async () => {
+      const wrapper = createWrapper();
       const { result } = renderHook(
         () => useObservationFormsSearch('PATIENT'),
         {
@@ -258,6 +297,7 @@ describe('useObservationFormsSearch', () => {
     });
 
     it('should handle multi-word search terms', async () => {
+      const wrapper = createWrapper();
       const { result } = renderHook(
         () => useObservationFormsSearch('patient history'),
         { wrapper },
@@ -272,6 +312,7 @@ describe('useObservationFormsSearch', () => {
     });
 
     it('should return all forms when search term is empty or whitespace', async () => {
+      const wrapper = createWrapper();
       const { result: emptyResult } = renderHook(
         () => useObservationFormsSearch(''),
         { wrapper },
@@ -284,9 +325,10 @@ describe('useObservationFormsSearch', () => {
       expect(emptyResult.current.forms).toHaveLength(3);
 
       // Test whitespace-only search
+      const wrapper2 = createWrapper();
       const { result: whitespaceResult } = renderHook(
         () => useObservationFormsSearch('   '),
-        { wrapper },
+        { wrapper: wrapper2 },
       );
 
       await waitFor(() => {
@@ -297,6 +339,7 @@ describe('useObservationFormsSearch', () => {
     });
 
     it('should search in name field only', async () => {
+      const wrapper = createWrapper();
       const { result } = renderHook(
         () => useObservationFormsSearch('examination'),
         {
@@ -314,6 +357,7 @@ describe('useObservationFormsSearch', () => {
     });
 
     it('should handle search with no matches', async () => {
+      const wrapper = createWrapper();
       const { result } = renderHook(
         () => useObservationFormsSearch('nonexistent'),
         {
@@ -329,6 +373,7 @@ describe('useObservationFormsSearch', () => {
     });
 
     it('should handle partial word matches', async () => {
+      const wrapper = createWrapper();
       const { result } = renderHook(() => useObservationFormsSearch('lab'), {
         wrapper,
       });

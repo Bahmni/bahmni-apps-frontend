@@ -1,11 +1,7 @@
-import {
-  fetchObservationForms,
-  getFormattedError,
-  ObservationForm,
-} from '@bahmni/services';
+import { fetchObservationForms, ObservationForm } from '@bahmni/services';
 import { useUserPrivilege } from '@bahmni/widgets';
-import { useEffect, useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { filterFormsByUserPrivileges } from '../components/forms/observations/utils/privilegeUtils';
 import useDebounce from './useDebounce';
 
@@ -24,35 +20,19 @@ interface UseObservationFormsSearchResult {
  */
 const useObservationFormsSearch = (
   searchTerm: string = '',
+  episodeUuids?: string[],
 ): UseObservationFormsSearchResult => {
-  const [allForms, setAllForms] = useState<ObservationForm[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
   const debouncedSearchTerm = useDebounce(searchTerm);
-  const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
 
-  // Load all observation forms
-  useEffect(() => {
-    const fetchForms = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const mappedForms = await fetchObservationForms();
-        setAllForms(mappedForms);
-      } catch (err) {
-        const formattedError = getFormattedError(err);
-        setError(
-          new Error(formattedError.message ?? t('ERROR_FETCHING_CONCEPTS')),
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchForms();
-  }, [t]);
+  const {
+    data: allForms = [],
+    isLoading,
+    error,
+  } = useQuery<ObservationForm[], Error>({
+    queryKey: ['observationForms', episodeUuids],
+    queryFn: () => fetchObservationForms(episodeUuids),
+  });
 
   // Filter forms based on user privileges and search term
   const filteredForms = useMemo(() => {

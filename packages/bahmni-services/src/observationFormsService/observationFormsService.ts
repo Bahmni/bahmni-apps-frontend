@@ -20,8 +20,16 @@ import {
   FormResponseData,
 } from './models';
 
-const fetchAndNormalizeFormsData = async (): Promise<FormApiResponse[]> => {
-  const response = await fetch(OBSERVATION_FORMS_URL);
+const fetchAndNormalizeFormsData = async (
+  episodeUuids?: string[],
+): Promise<FormApiResponse[]> => {
+  let episodeUuidString: string | undefined;
+
+  if (episodeUuids && episodeUuids.length > 0) {
+    episodeUuidString = episodeUuids.join(',');
+  }
+
+  const response = await fetch(OBSERVATION_FORMS_URL(episodeUuidString));
 
   if (!response.ok) {
     throw new Error(
@@ -70,8 +78,10 @@ const transformToObservationForm = (
   };
 };
 
-export const fetchObservationForms = async (): Promise<ObservationForm[]> => {
-  const formsArray = await fetchAndNormalizeFormsData();
+export const fetchObservationForms = async (
+  episodeUuids?: string[],
+): Promise<ObservationForm[]> => {
+  const formsArray = await fetchAndNormalizeFormsData(episodeUuids);
   const currentLocale = getUserPreferredLocale();
 
   return formsArray.map((form) =>
