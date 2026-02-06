@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import DescriptionItem from '..';
+import { DescriptionItem } from '..';
 
 expect.extend(toHaveNoViolations);
 
 describe('DescriptionItem', () => {
-  it('should render with required props', () => {
+  it('should render label and value', () => {
     render(
       <DescriptionItem id="test-item" label="Test Label" value="Test Value" />,
     );
@@ -35,7 +35,7 @@ describe('DescriptionItem', () => {
     expect(dlElement?.tagName).toBe('DL');
   });
 
-  it('should apply value test id when provided', () => {
+  it('should apply custom valueId when provided', () => {
     render(
       <DescriptionItem
         id="test-item"
