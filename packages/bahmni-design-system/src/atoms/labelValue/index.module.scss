@@ -1,0 +1,24 @@
+@use '@carbon/react/scss/spacing' as *;
+@use '@carbon/react/scss/type' as *;
+@use '@carbon/react/scss/theme' as *;
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-03;
+  dt {
+    @include type-style('label-01');
+    color: $text-secondary;
+    padding-top: $spacing-05;
+  }
+}
+
+.definition {
+  @include type-style('heading-compact-01');
+  color: $text-primary;
+}
+
+.definitionNormal {
+  @include type-style('body-compact-01');
+  color: $text-primary;
+}

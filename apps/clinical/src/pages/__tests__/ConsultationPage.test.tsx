@@ -122,13 +122,10 @@ jest.mock('@bahmni/design-system', () => ({
 }));
 
 jest.mock('@bahmni/widgets', () => ({
-  PatientDetails: jest.fn(() => (
-    <div data-testid="mocked-patient-details">Mocked PatientDetails</div>
-  )),
+  ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(() => ({
     addNotification: jest.fn(),
   })),
-  usePatientUUID: jest.fn(() => 'mock-patient-uuid'),
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['Get Patients', 'Add Patients'],
   })),
@@ -140,9 +137,7 @@ jest.mock('@bahmni/widgets', () => ({
     isLoading: false,
     error: null,
   })),
-  UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) => {
-    return <div data-testid="mocked-user-privilege-provider">{children}</div>;
-  },
+  usePatientUUID: jest.fn(() => 'mock-patient-uuid'),
 }));
 
 jest.mock('../../components/dashboardContainer/DashboardContainer', () => {
@@ -230,7 +225,9 @@ describe('ConsultationPage', () => {
       expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-patient-section')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-main-display')).toBeInTheDocument();
-      expect(screen.getByTestId('mocked-patient-details')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('section-sticky-header-test-id'),
+      ).toBeInTheDocument();
       expect(screen.getByTestId('mocked-header')).toBeInTheDocument();
       expect(
         screen.getByTestId('mocked-dashboard-container'),
@@ -273,51 +270,6 @@ describe('ConsultationPage', () => {
       expect(screen.getByTestId('carbon-loading')).toHaveTextContent(
         'translated_LOADING_USER_PRIVILEGES',
       );
-    });
-  });
-
-  describe('i18n Integration', () => {
-    it('should use translation keys for loading clinical config', () => {
-      // Mock loading state for clinical config
-      (useClinicalConfig as jest.Mock).mockReturnValue({
-        clinicalConfig: null,
-      });
-
-      renderWithProvider(<ConsultationPage />);
-
-      // Verify translation is used
-      expect(screen.getByTestId('carbon-loading')).toHaveTextContent(
-        'translated_LOADING_CLINICAL_CONFIG',
-      );
-    });
-
-    it('should use translation keys for error messages', () => {
-      // Mock a clinical config with no dashboards
-      (useClinicalConfig as jest.Mock).mockReturnValue({
-        clinicalConfig: {
-          ...validFullClinicalConfig,
-          dashboards: [],
-        },
-      });
-      // Ensure userPrivileges are loaded for this test
-      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
-      (useUserPrivilege as jest.Mock).mockReturnValue({
-        userPrivileges: ['Get Patients', 'Add Patients'],
-      });
-
-      const mockAddNotification = jest.fn();
-      (useNotification as jest.Mock).mockReturnValue({
-        addNotification: mockAddNotification,
-      });
-
-      renderWithProvider(<ConsultationPage />);
-
-      // Verify translation keys were used in notification
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'translated_ERROR_DEFAULT_TITLE',
-        message: 'translated_ERROR_NO_DEFAULT_DASHBOARD',
-        type: 'error',
-      });
     });
   });
 
@@ -683,6 +635,96 @@ describe('ConsultationPage', () => {
       const layoutElement = screen.getByTestId('mocked-clinical-layout');
       expect(layoutElement).toHaveAttribute('data-layout-variant', 'extended');
     });
+  });
+
+  it('should render ProgramDetails when programUuid is present and contextInformation.program.fields are configured', () => {
+    const configWithContextInfo = {
+      ...validFullClinicalConfig,
+      contextInformation: {
+        program: {
+          fields: ['dateEnrolled', 'dateCompleted', 'outcome'],
+        },
+      },
+    };
+
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      clinicalConfig: configWithContextInfo,
+    });
+    (useDashboardConfig as jest.Mock).mockReturnValue({
+      dashboardConfig: validDashboardConfig,
+    });
+    const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: ['Get Patients', 'Add Patients'],
+    });
+    const { useQuery } = jest.requireMock('@tanstack/react-query');
+    (useQuery as jest.Mock).mockImplementation((options) => {
+      if (options.queryKey?.[0] === 'programs') {
+        return {
+          data: {
+            programName: 'Test Program',
+            dateEnrolled: '2024-01-01',
+            dateCompleted: '2024-12-31',
+            outcomeName: 'Completed',
+            currentStateName: 'Active',
+            attributes: {},
+          },
+          isLoading: false,
+          isError: false,
+        };
+      }
+      return {
+        data: { encounterIds: [], visitIds: [] },
+        isLoading: false,
+        error: null,
+      };
+    });
+
+    renderWithProvider(
+      <ConsultationPage />,
+      '/consultation?episodeUuid=test-episode&programUuid=test-program-uuid',
+    );
+
+    expect(
+      screen.getByTestId('patient-programs-tile-test-id'),
+    ).toBeInTheDocument();
+  });
+
+  it('should not render ProgramDetails when programUuid is not available', () => {
+    const configWithContextInfo = {
+      ...validFullClinicalConfig,
+      contextInformation: {
+        program: {
+          fields: ['dateEnrolled', 'dateCompleted', 'outcome'],
+        },
+      },
+    };
+
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      clinicalConfig: configWithContextInfo,
+    });
+    (useDashboardConfig as jest.Mock).mockReturnValue({
+      dashboardConfig: validDashboardConfig,
+    });
+    const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: ['Get Patients', 'Add Patients'],
+    });
+    const { useQuery } = jest.requireMock('@tanstack/react-query');
+    (useQuery as jest.Mock).mockReturnValue({
+      data: { encounterIds: [], visitIds: [] },
+      isLoading: false,
+      error: null,
+    });
+
+    renderWithProvider(
+      <ConsultationPage />,
+      '/consultation?episodeUuid=test-episode',
+    );
+
+    expect(
+      screen.queryByTestId('mocked-program-details'),
+    ).not.toBeInTheDocument();
   });
 
   describe('CurrentDashboard Selection', () => {

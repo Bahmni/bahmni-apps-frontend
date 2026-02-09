@@ -8,7 +8,8 @@
   flex-wrap: wrap;
   row-gap: $spacing-04;
   align-items: center;
-  height: 100%;
+  padding: $spacing-05;
+  padding-inline: $spacing-06;
 }
 
 .controls {

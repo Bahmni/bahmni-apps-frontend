@@ -1,4 +1,4 @@
-import { initFontAwesome } from './fontawesome';
+import { initFontAwesome } from './src/fontawesome';
 
 initFontAwesome();
 

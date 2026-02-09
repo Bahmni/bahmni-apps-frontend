@@ -1,0 +1,42 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.error {
+  padding: $spacing-05;
+  @include type-style("body-compact-01");
+  color: $support-error;
+  font-style: italic;
+  text-align: center;
+  background-color: $layer-01;
+  width: 100%;
+}
+
+.loading {
+  padding: $spacing-05;
+  inline-size: 100%;
+  max-inline-size: 100%;
+}
+
+.grid{
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+.title {
+  @include type-style("heading-compact-02");
+  padding-top: $spacing-05;
+  padding-bottom: 0;
+  font-weight: 600;
+  min-block-size: fit-content;
+  #program-status {
+    padding-left: $spacing-04;
+  }
+}
+
+.programDetails {
+  background-color: $layer-01;
+  padding-bottom: $spacing-05;
+  padding-inline: $spacing-03;
+}

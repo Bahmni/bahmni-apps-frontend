@@ -7,7 +7,11 @@ import {
   ActionAreaLayout,
 } from '@bahmni/design-system';
 import { useTranslation, BAHMNI_HOME_PATH } from '@bahmni/services';
-import { useNotification, useUserPrivilege } from '@bahmni/widgets';
+import {
+  ProgramDetails,
+  useNotification,
+  useUserPrivilege,
+} from '@bahmni/widgets';
 import React, { Suspense, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ConsultationPad from '../components/consultationPad/ConsultationPad';
@@ -22,6 +26,12 @@ import {
   getSidebarItems,
 } from '../services/consultationPageService';
 import { useObservationFormsStore } from '../stores/observationFormsStore';
+import {
+  CURRENT_DASHBOARD_SEARCH_PARAMS_KEY,
+  EPISODE_UUID_SEARCH_PARAMS_KEY,
+  PROGRAM_UUID_SEARCH_PARAMS_KEY,
+} from './constant';
+import styles from './styles/ConsultationPage.module.scss';
 
 const breadcrumbItems = [
   { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
@@ -75,7 +85,7 @@ const ConsultationPage: React.FC = () => {
   const viewingForm = useObservationFormsStore((state) => state.viewingForm);
 
   const episodeUuids = useMemo(() => {
-    const episodeUuid = searchParams.get('episodeUuid');
+    const episodeUuid = searchParams.get(EPISODE_UUID_SEARCH_PARAMS_KEY);
     if (!episodeUuid) return [];
     return episodeUuid
       .split(',')
@@ -83,7 +93,9 @@ const ConsultationPage: React.FC = () => {
       .filter(Boolean);
   }, [searchParams]);
 
-  const currentDashboardParam = searchParams.get('currentDashboard');
+  const currentDashboardParam = searchParams.get(
+    CURRENT_DASHBOARD_SEARCH_PARAMS_KEY,
+  );
 
   const currentDashboard = useMemo(() => {
     if (!clinicalConfig) return null;
@@ -134,6 +146,20 @@ const ConsultationPage: React.FC = () => {
     );
   }
 
+  const renderContextInformation = () => {
+    const programUUID = searchParams.get(PROGRAM_UUID_SEARCH_PARAMS_KEY);
+    if (programUUID && clinicalConfig.contextInformation?.program)
+      return (
+        <ProgramDetails
+          programUUID={programUUID}
+          config={{
+            fields: clinicalConfig.contextInformation?.program?.fields ?? [],
+          }}
+        />
+      );
+    return null;
+  };
+
   return (
     <ClinicalAppProvider episodeUuids={episodeUuids}>
       <ActionAreaLayout
@@ -147,12 +173,6 @@ const ConsultationPage: React.FC = () => {
             isRail={isActionAreaVisible}
           />
         }
-        patientHeader={
-          <PatientHeader
-            isActionAreaVisible={isActionAreaVisible}
-            setIsActionAreaVisible={setIsActionAreaVisible}
-          />
-        }
         mainDisplay={
           <Suspense
             fallback={
@@ -162,6 +182,18 @@ const ConsultationPage: React.FC = () => {
               />
             }
           >
+            <div
+              id="section-sticky-header"
+              data-testid="section-sticky-header-test-id"
+              aria-label="section-sticky-header-aria-label"
+              className={styles.stickySection}
+            >
+              <PatientHeader
+                isActionAreaVisible={isActionAreaVisible}
+                setIsActionAreaVisible={setIsActionAreaVisible}
+              />
+              {renderContextInformation()}
+            </div>
             <DashboardContainer
               sections={dashboardConfig.sections}
               activeItemId={activeItemId}

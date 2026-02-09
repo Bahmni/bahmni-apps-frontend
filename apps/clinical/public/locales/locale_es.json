@@ -124,6 +124,7 @@
   "ERROR_FETCHING_OBSERVATIONS": "Error al obtener observaciones",
   "ERROR_FETCHING_MEDICATION_CONFIG": "Error al obtener la configuración de medicamentos",
   "ERROR_FETCHING_PRACTITIONERS_DETAILS": "Error al obtener detalles de profesionales médicos",
+  "ERROR_FETCHING_PROGRAM_DETAILS": "Error al obtener detalles del programa",
   "ERROR_FETCHING_USER_DETAILS": "Error al obtener detalles del usuario",
   "ERROR_FETCHING_USER_LOCATION_DETAILS": "La ubicación de inicio de sesión no está disponible o no es válida. Vuelva a autenticarse.",
   "ERROR_INVALID_PATIENT_UUID": "UUID de paciente inválido",

@@ -17,12 +17,21 @@ export interface Dashboard {
   default?: boolean;
 }
 
+export interface ProgramConfig {
+  fields: string[];
+}
+
+export interface ContextInformation {
+  program?: ProgramConfig;
+}
+
 /**
  * Dashboard configuration interface matching appConfig.schema.json
  * Represents the structure of the main dashboard configuration
  */
 export interface ClinicalConfig {
   patientInformation: Record<string, unknown>;
+  contextInformation?: ContextInformation;
   actions: Array<unknown>;
   dashboards: Array<Dashboard>;
   consultationPad: ConsultationPad;

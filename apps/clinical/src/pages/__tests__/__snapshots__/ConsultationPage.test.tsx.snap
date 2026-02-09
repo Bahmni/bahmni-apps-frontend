@@ -31,30 +31,45 @@ exports[`ConsultationPage Rendering and Structure should match the snapshot 1`] 
     </div>
     <div
       data-testid="mocked-patient-section"
-    >
-      <div
-        aria-label="translated_PATIENT_HEADER_LABEL"
-        class="header"
-        data-testid="patient-header"
-      >
-        <div
-          data-testid="mocked-patient-details"
-        >
-          Mocked PatientDetails
-        </div>
-        <button
-          data-testid="carbon-button"
-        >
-          translated_CONSULTATION_ACTION_NEW
-        </button>
-      </div>
-    </div>
+    />
     <div
       data-testid="mocked-sidebar"
     />
     <div
       data-testid="mocked-main-display"
     >
+      <div
+        aria-label="section-sticky-header-aria-label"
+        class="stickySection"
+        data-testid="section-sticky-header-test-id"
+        id="section-sticky-header"
+      >
+        <div
+          aria-label="translated_PATIENT_HEADER_LABEL"
+          class="header"
+          data-testid="patient-header"
+        >
+          <div
+            class="_skeletonContainer_14cqd_1"
+          >
+            <p
+              class="cds--skeleton__text cds--skeleton__heading"
+              data-testid="skeleton-loader"
+              style="width: 20%;"
+            />
+            <p
+              class="cds--skeleton__text"
+              data-testid="skeleton-loade-subheader"
+              style="width: 50%;"
+            />
+          </div>
+          <button
+            data-testid="carbon-button"
+          >
+            translated_CONSULTATION_ACTION_NEW
+          </button>
+        </div>
+      </div>
       <div
         data-testid="mocked-dashboard-container"
       >

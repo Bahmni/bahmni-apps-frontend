@@ -1,0 +1,22 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+
+.stickySection {
+  position: sticky;
+  top: 0rem;
+  z-index: 10;
+  margin-inline: -$spacing-05;
+  margin-top: -$spacing-05;
+  box-shadow: 0 2px 6px $shadow;
+  background: $layer-background-01;
+  padding-inline: $spacing-05;
+}
+
+@include breakpoint-down(lg) {
+  .stickySection {
+    padding-inline: 0;
+  }
+}

@@ -1,0 +1,168 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
+<div>
+  <div
+    aria-label="patient-programs-tile-aria-label"
+    class="programDetails"
+    data-testid="patient-programs-tile-test-id"
+    id="patient-programs-tile"
+  >
+    <div
+      class="cds--tile title"
+      data-testid="program-name-test-id"
+      id="program-name"
+      title="HIV Program"
+    >
+      HIV Program
+      <div
+        class="cds--tag cds--tag--outline"
+        data-testid="program-status-test-id"
+        id="program-status"
+      >
+        <span
+          class="cds--tag__label"
+          dir="auto"
+          title="On ART"
+        >
+          On ART
+        </span>
+      </div>
+    </div>
+    <div
+      class="grid cds--css-grid"
+    >
+      <div
+        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
+      >
+        <dl
+          aria-label="program-details-programName-aria-label"
+          class="_item_a7no3_1"
+          data-testid="program-details-programName-test-id"
+          id="program-details-programName"
+        >
+          <dt
+            aria-label="program-details-programName-label-aria-label"
+            data-testid="program-details-programName-label-test-id"
+            id="program-details-programName-label"
+          >
+            PROGRAMS_TABLE_HEADER_PROGRAM_NAME
+          </dt>
+          <dd
+            aria-label="program-details-programName-value-aria-label"
+            class="_definition_a7no3_15"
+            data-testid="program-details-programName-value-test-id"
+            id="program-details-programName-value"
+          >
+            HIV Program
+          </dd>
+        </dl>
+      </div>
+      <div
+        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
+      >
+        <dl
+          aria-label="program-details-startDate-aria-label"
+          class="_item_a7no3_1"
+          data-testid="program-details-startDate-test-id"
+          id="program-details-startDate"
+        >
+          <dt
+            aria-label="program-details-startDate-label-aria-label"
+            data-testid="program-details-startDate-label-test-id"
+            id="program-details-startDate-label"
+          >
+            PROGRAMS_TABLE_HEADER_START_DATE
+          </dt>
+          <dd
+            aria-label="program-details-startDate-value-aria-label"
+            class="_definition_a7no3_15"
+            data-testid="program-details-startDate-value-test-id"
+            id="program-details-startDate-value"
+          >
+            15/01/2023
+          </dd>
+        </dl>
+      </div>
+      <div
+        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
+      >
+        <dl
+          aria-label="program-details-endDate-aria-label"
+          class="_item_a7no3_1"
+          data-testid="program-details-endDate-test-id"
+          id="program-details-endDate"
+        >
+          <dt
+            aria-label="program-details-endDate-label-aria-label"
+            data-testid="program-details-endDate-label-test-id"
+            id="program-details-endDate-label"
+          >
+            PROGRAMS_TABLE_HEADER_END_DATE
+          </dt>
+          <dd
+            aria-label="program-details-endDate-value-aria-label"
+            class="_definition_a7no3_15"
+            data-testid="program-details-endDate-value-test-id"
+            id="program-details-endDate-value"
+          >
+            -
+          </dd>
+        </dl>
+      </div>
+      <div
+        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
+      >
+        <dl
+          aria-label="program-details-state-aria-label"
+          class="_item_a7no3_1"
+          data-testid="program-details-state-test-id"
+          id="program-details-state"
+        >
+          <dt
+            aria-label="program-details-state-label-aria-label"
+            data-testid="program-details-state-label-test-id"
+            id="program-details-state-label"
+          >
+            PROGRAMS_TABLE_HEADER_STATE
+          </dt>
+          <dd
+            aria-label="program-details-state-value-aria-label"
+            class="_definition_a7no3_15"
+            data-testid="program-details-state-value-test-id"
+            id="program-details-state-value"
+          >
+            On ART
+          </dd>
+        </dl>
+      </div>
+      <div
+        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
+      >
+        <dl
+          aria-label="program-details-outcome-aria-label"
+          class="_item_a7no3_1"
+          data-testid="program-details-outcome-test-id"
+          id="program-details-outcome"
+        >
+          <dt
+            aria-label="program-details-outcome-label-aria-label"
+            data-testid="program-details-outcome-label-test-id"
+            id="program-details-outcome-label"
+          >
+            PROGRAMS_TABLE_HEADER_OUTCOME
+          </dt>
+          <dd
+            aria-label="program-details-outcome-value-aria-label"
+            class="_definition_a7no3_15"
+            data-testid="program-details-outcome-value-test-id"
+            id="program-details-outcome-value"
+          >
+            -
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+`;

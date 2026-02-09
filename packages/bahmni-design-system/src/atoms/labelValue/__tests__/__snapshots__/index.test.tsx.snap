@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LabelValue Snapshot should match snapshot 1`] = `
+<div>
+  <dl
+    aria-label="test-item-aria-label"
+    class="item"
+    data-testid="test-item-test-id"
+    id="test-item"
+  >
+    <dt
+      aria-label="label-id-aria-label"
+      data-testid="label-id-test-id"
+      id="label-id"
+    >
+      Test Label
+    </dt>
+    <dd
+      aria-label="value-id-aria-label"
+      class="definition"
+      data-testid="value-id-test-id"
+      id="value-id"
+    >
+      Test Value
+    </dd>
+  </dl>
+</div>
+`;
