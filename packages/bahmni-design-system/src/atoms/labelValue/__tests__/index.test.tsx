@@ -1,14 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { DescriptionItem } from '..';
+import { LabelValue } from '..';
 
 expect.extend(toHaveNoViolations);
 
-describe('DescriptionItem', () => {
+describe('LabelValue', () => {
   it('should render label and value', () => {
-    render(
-      <DescriptionItem id="test-item" label="Test Label" value="Test Value" />,
-    );
+    render(<LabelValue id="test-item" label="Test Label" value="Test Value" />);
 
     expect(screen.getByText('Test Label')).toBeInTheDocument();
     expect(screen.getByText('Test Value')).toBeInTheDocument();
@@ -16,7 +14,7 @@ describe('DescriptionItem', () => {
 
   it('should apply correct id attribute', () => {
     const { container } = render(
-      <DescriptionItem id="patient-id" label="Patient ID" value="ABC123" />,
+      <LabelValue id="patient-id" label="Patient ID" value="ABC123" />,
     );
 
     const dlElement = container.querySelector('#patient-id');
@@ -31,7 +29,7 @@ describe('DescriptionItem', () => {
 
   it('should apply custom valueId when provided', () => {
     render(
-      <DescriptionItem
+      <LabelValue
         id="test-item"
         label="Label"
         value="Value"
@@ -47,7 +45,7 @@ describe('DescriptionItem', () => {
   describe('Snapshot', () => {
     it('should match snapshot', () => {
       const { container } = render(
-        <DescriptionItem
+        <LabelValue
           id="test-item"
           label="Test Label"
           value="Test Value"
@@ -63,11 +61,7 @@ describe('DescriptionItem', () => {
   describe('Accessibility', () => {
     it('should have no accessibility violations', async () => {
       const { container } = render(
-        <DescriptionItem
-          id="test-item"
-          label="Test Label"
-          value="Test Value"
-        />,
+        <LabelValue id="test-item" label="Test Label" value="Test Value" />,
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();

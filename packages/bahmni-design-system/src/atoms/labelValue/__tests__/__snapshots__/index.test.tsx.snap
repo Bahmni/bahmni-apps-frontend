@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DescriptionItem Snapshot should match snapshot 1`] = `
+exports[`LabelValue Snapshot should match snapshot 1`] = `
 <div>
   <dl
     aria-label="test-item-aria-label"

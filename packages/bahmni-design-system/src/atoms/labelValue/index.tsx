@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import styles from './index.module.scss';
 
-export interface DescriptionItemProps {
+export interface LabelValueProps {
   id: string;
   label: string;
   value: ReactNode;
@@ -10,7 +10,7 @@ export interface DescriptionItemProps {
   valueClassName?: string;
 }
 
-export const DescriptionItem: React.FC<DescriptionItemProps> = ({
+export const LabelValue: React.FC<LabelValueProps> = ({
   id,
   label,
   value,

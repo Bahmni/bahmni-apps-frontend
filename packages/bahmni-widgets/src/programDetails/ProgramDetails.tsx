@@ -1,7 +1,7 @@
 import {
   CodeSnippetSkeleton,
   Column,
-  DescriptionItem,
+  LabelValue,
   Grid,
   Tag,
   Tile,
@@ -135,7 +135,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
       <Grid className={styles.grid}>
         {Object.keys(headers).map((field) => (
           <Column sm={2} md={2} lg={3} key={field} className={styles.column}>
-            <DescriptionItem
+            <LabelValue
               id={`program-details-${field}`}
               label={headers[field]}
               value={

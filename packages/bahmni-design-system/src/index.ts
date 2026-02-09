@@ -14,10 +14,7 @@ export {
   ICON_PADDING,
 } from './molecules/icon';
 export { initFontAwesome } from './fontawesome';
-export {
-  DescriptionItem,
-  type DescriptionItemProps,
-} from './atoms/descriptionItem';
+export { LabelValue, type LabelValueProps } from './atoms/labelValue';
 export {
   Accordion,
   AccordionItem,
