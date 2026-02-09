@@ -141,9 +141,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
               value={
                 KNOWN_FIELDS.includes(field)
                   ? renderKnownField(field)
-                  : field in data.attributes
-                    ? data.attributes[field]
-                    : '-'
+                  : (data?.attributes?.[field] ?? '-')
               }
             />
           </Column>
