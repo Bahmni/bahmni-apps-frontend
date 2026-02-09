@@ -3,13 +3,16 @@ import {
   TooltipIcon,
   SortableDataTable,
   Link,
+  Modal,
 } from '@bahmni/design-system';
 import { useTranslation, getDiagnosticReportBundle } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
+import AttachmentViewer from './AttachmentViewer';
 import { FormattedLabInvestigations, LabInvestigationPriority } from './models';
 import styles from './styles/LabInvestigation.module.scss';
-import { mapSingleDiagnosticReportBundleToTestResults } from './utils';
+import { mapDiagnosticReportBundleToTestResults } from './utils';
 
 interface LabInvestigationItemProps {
   test: FormattedLabInvestigations;
@@ -24,6 +27,7 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
   reportId,
 }) => {
   const { t } = useTranslation();
+  const [isAttachmentsModalOpen, setIsAttachmentsModalOpen] = useState(false);
 
   const {
     data: diagnosticReportBundle,
@@ -37,10 +41,7 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
 
   const testResults = useMemo(() => {
     if (!diagnosticReportBundle) return undefined;
-    return mapSingleDiagnosticReportBundleToTestResults(
-      diagnosticReportBundle,
-      t,
-    );
+    return mapDiagnosticReportBundleToTestResults(diagnosticReportBundle, t);
   }, [diagnosticReportBundle, t]);
 
   const hasResults = Array.isArray(testResults) && testResults.length > 0;
@@ -50,7 +51,8 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
     return testResults.map((result, index) => ({
       id: `${test.id}-${index}`,
       testName: result.TestName,
-      result: result.Result,
+      value: result.value,
+      unit: result.unit,
       referenceRange: result.referenceRange,
       reportedOn: result.reportedOn,
       status: result.status,
@@ -64,7 +66,6 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
       { key: 'result', header: t('LAB_TEST_RESULT') },
       { key: 'referenceRange', header: t('LAB_TEST_REFERENCE_RANGE') },
       { key: 'reportedOn', header: t('LAB_TEST_REPORTED_ON') },
-      { key: 'actions', header: t('LAB_TEST_ACTIONS') },
     ],
     [t],
   );
@@ -74,27 +75,20 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
 
     switch (cellId) {
       case 'testName':
-        return <span className={styles.testName}>{row.testName || '--'}</span>;
+        return <span className={styles.testName}>{row.testName ?? '--'}</span>;
       case 'result':
-        return (
-          <span className={isAbnormal ? styles.abnormalResult : undefined}>
-            {row.result || '--'}
-          </span>
+        return row.value ? (
+          <div className={isAbnormal ? styles.abnormalResult : styles.result}>
+            <span>{row.value}</span>
+            {row.unit && <span> {row.unit}</span>}
+          </div>
+        ) : (
+          '--'
         );
       case 'referenceRange':
-        return row.referenceRange || '--';
+        return row.referenceRange ?? '--';
       case 'reportedOn':
-        return row.reportedOn || '--';
-      case 'actions':
-        return (
-          <Link
-            onClick={() => {
-              // TODO: Implement attachment view logic
-            }}
-          >
-            {t('LAB_TEST_VIEW_ATTACHMENT')}
-          </Link>
-        );
+        return row.reportedOn ?? '--';
       default:
         return undefined;
     }
@@ -125,6 +119,12 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
     );
   };
 
+  const hasAttachments = test.attachments && test.attachments.length > 0;
+
+  const viewAttachmentText =
+    test.attachments &&
+    t('LAB_TEST_VIEW_ATTACHMENT', { count: test.attachments!.length });
+
   return (
     <div className={styles.labTest}>
       <div className={styles.labTestHeader}>
@@ -134,6 +134,14 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
             <span className={styles.testDetails}>
               {t(`LAB_TEST_${test.testType.toUpperCase()}`)}
             </span>
+          )}
+          {hasAttachments && (
+            <Link
+              onClick={() => setIsAttachmentsModalOpen(true)}
+              className={styles.viewAttachmentsLink}
+            >
+              {viewAttachmentText}
+            </Link>
           )}
           {test.note && (
             <TooltipIcon
@@ -153,6 +161,34 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
         </span>
       </div>
       {renderTestResults()}
+
+      {hasAttachments &&
+        isAttachmentsModalOpen &&
+        createPortal(
+          <Modal
+            open={isAttachmentsModalOpen}
+            onRequestClose={() => setIsAttachmentsModalOpen(false)}
+            passiveModal
+            modalHeading={viewAttachmentText}
+            testId="attachments-modal"
+            size="lg"
+            id="modalIdForActionAreaLayout"
+          >
+            <Modal.Body>
+              <div className={styles.attachmentsContainer}>
+                {test.attachments!.map((attachment, index) => (
+                  <AttachmentViewer
+                    key={attachment.id || index}
+                    attachment={attachment}
+                    index={index + 1}
+                    totalCount={test.attachments!.length}
+                  />
+                ))}
+              </div>
+            </Modal.Body>
+          </Modal>,
+          document.getElementById('actionAreaLayout') ?? document.body,
+        )}
     </div>
   );
 };

@@ -13,7 +13,7 @@ env:
 
 jobs:
   lint-and-test:
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,18 +28,20 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Lint code
-        run: npx nx run-many --target=lint
+        run: yarn lint
 
       # - name: Lint styles
       #   run: yarn lint:styles
-      - name: Build dependencies first
-        run: |
-          npx nx build @bahmni/services
-          npx nx build @bahmni/design-system
-          npx nx build @bahmni/widgets
 
       - name: Run tests
-        run: npx nx run-many --target=test
+        run: yarn test:coverage
+
+      - name: Upload coverage report as artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report
+          path: test-output/jest/coverage/
+          retention-days: 30
 
       - name: Scan for package vulnerabilities
         uses: aquasecurity/trivy-action@0.30.0
@@ -48,6 +50,39 @@ jobs:
           format: "table"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
+
+  deploy-coverage:
+    needs: lint-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download coverage report
+        uses: actions/download-artifact@v7
+        with:
+          name: coverage-report
+          path: coverage
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact to Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: coverage
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
   build-and-publish:
     needs: lint-and-test
@@ -66,7 +101,7 @@ jobs:
         run: |
           wget -q https://raw.githubusercontent.com/Bahmni/bahmni-infra-utils/main/setArtifactVersion.sh && chmod +x setArtifactVersion.sh
           ./setArtifactVersion.sh .appversion
-          rm setArtifactVersion.sh  
+          rm setArtifactVersion.sh
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -77,14 +112,8 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build dependencies first
-        run: |
-          npx nx build @bahmni/services
-          npx nx build @bahmni/design-system
-          npx nx build @bahmni/widgets
-
       - name: Build
-        run: npx nx build distro
+        run: yarn nx build distro
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

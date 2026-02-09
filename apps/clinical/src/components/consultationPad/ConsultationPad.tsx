@@ -83,12 +83,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const practitionerState = useActivePractitioner();
   const { user: currentUser } = practitionerState;
 
+  const { episodeOfCare } = useClinicalAppData();
+
+  const episodeOfCareUuids: string[] = episodeOfCare.map((eoc) => eoc.uuid);
+
   // Fetch observation forms once at parent level to avoid redundant API calls
   const {
     forms: allObservationForms,
     isLoading: isObservationFormsLoading,
     error: observationFormsError,
-  } = useObservationFormsSearch();
+  } = useObservationFormsSearch('', episodeOfCareUuids);
 
   // Lift pinned forms state to parent - shared by both ObservationForms and ObservationFormsContainer
   const {
@@ -202,10 +206,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     selectedEncounterType &&
     encounterParticipants.length > 0
   );
-
-  const { episodeOfCare } = useClinicalAppData();
-
-  const episodeOfCareUuids: string[] = episodeOfCare.map((eoc) => eoc.uuid);
 
   // TODO: Extract Business Logic
   // 1. Create a consultationService to handle submission logic

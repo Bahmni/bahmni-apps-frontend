@@ -79,7 +79,7 @@ const FormsTable: React.FC<WidgetProps> = ({
   // Fetch published forms to get form UUIDs
   const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
     queryKey: ['observationForms'],
-    queryFn: fetchObservationForms,
+    queryFn: () => fetchObservationForms(),
   });
 
   // Get form UUID by matching form name
@@ -275,7 +275,7 @@ const FormsTable: React.FC<WidgetProps> = ({
         selectedRecord &&
         createPortal(
           <Modal
-            id="formDetailsModal"
+            id="modalIdForActionAreaLayout"
             open={isModalOpen}
             onRequestClose={handleCloseModal}
             modalHeading={selectedRecord.formName}

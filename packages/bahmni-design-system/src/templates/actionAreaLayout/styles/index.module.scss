@@ -16,9 +16,8 @@
 }
 
 .collapsedModal {
-  :global(#formDetailsModal) {
+  :global(#modalIdForActionAreaLayout) {
     position: absolute;
-    top: 3rem;
     width: 40%;
   }
 

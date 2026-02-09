@@ -45,13 +45,13 @@ jobs:
           # Build all affected projects including their dependencies
           # This ensures all packages are built in correct dependency order
           echo "Building affected projects and their dependencies..."
-          npx nx affected --target=build --base=${{ github.event.before }} || echo "No affected projects to build"
+          yarn build:affected --base=${{ github.event.before }} || echo "No affected projects to build"
 
       - name: Test affected projects
         run: |
           # Test all affected projects
           echo "Testing affected projects..."
-          npx nx affected --target=test --base=${{ github.event.before }} || echo "No affected projects to test"
+          yarn test:affected --base=${{ github.event.before }} || echo "No affected projects to test"
 
       - name: Detect affected packages and apps for publishing
         id: set-matrix

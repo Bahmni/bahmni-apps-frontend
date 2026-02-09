@@ -3,6 +3,12 @@ export enum LabInvestigationPriority {
   routine = 'Routine',
 }
 
+export interface Attachment {
+  readonly url: string;
+  readonly id: string;
+  readonly contentType?: string;
+}
+
 export interface FormattedLabInvestigations {
   readonly id: string;
   readonly testName: string;
@@ -13,6 +19,8 @@ export interface FormattedLabInvestigations {
   readonly result?: string | LabTestResult[];
   readonly testType: string; // "Panel" or not
   readonly note?: string;
+  readonly reportId?: string; // DiagnosticReport ID if report exists
+  readonly attachments?: Attachment[]; // For panel test attachments
 }
 
 export interface LabInvestigationsByDate {
@@ -24,9 +32,11 @@ export interface LabInvestigationsByDate {
 export interface LabTestResult {
   status: string;
   TestName: string;
-  Result: string;
+  value: string;
+  unit: string;
   referenceRange: string;
   reportedOn: string;
   actions: string;
   interpretation?: string;
+  attachment?: Attachment; // For single test attachment
 }

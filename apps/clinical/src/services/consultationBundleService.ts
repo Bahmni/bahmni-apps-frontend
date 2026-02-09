@@ -409,7 +409,6 @@ export function createObservationBundleEntries({
     }
 
     // Create FHIR Observation resources from the observation payloads
-    // Returns array of { resource, fullUrl } objects
     const observationResults = createObservationResources(
       observations,
       encounterSubject,

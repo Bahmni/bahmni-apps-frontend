@@ -24,10 +24,10 @@
     "**/*.test.js",
     "**/*.spec.jsx",
     "**/*.test.jsx",
-    "**/*.stories.ts",      
-    "**/*.stories.tsx",     
-    "**/*.stories.js",      
-    "**/*.stories.jsx",  
+    "**/*.stories.ts",
+    "**/*.stories.tsx",
+    "**/*.stories.js",
+    "**/*.stories.jsx",
     "jest.config.ts",
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
@@ -35,7 +35,7 @@
     "eslint.config.cjs",
     "eslint.config.mjs"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx", "setupTests.ts"],
   "references": [
     {
       "path": "../bahmni-services/tsconfig.lib.json"

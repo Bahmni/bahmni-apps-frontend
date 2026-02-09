@@ -26,8 +26,7 @@ import {
   filterLabInvestigationEntries,
   formatLabInvestigations,
   groupLabInvestigationsByDate,
-  getProcessedTestIds,
-  getTestIdToReportIdMap,
+  updateInvestigationsWithReportInfo,
   extractDiagnosticReportsFromBundle,
   sortLabInvestigationsByPriority,
 } from './utils';
@@ -150,16 +149,15 @@ const LabInvestigation: React.FC<WidgetProps> = ({
   const isLoading = isLoadingOrderTypes || isLoadingLabInvestigations;
   const hasError = isOrderTypesError || isLabInvestigationsError;
 
-  const sortedLabInvestigationsByDate = useMemo<
-    LabInvestigationsByDate[]
-  >(() => {
+  // Group and sort tests first (before enrichment)
+  const sortedLabInvestigations = useMemo<LabInvestigationsByDate[]>(() => {
     const groupedTests = groupLabInvestigationsByDate(labTests);
     return sortLabInvestigationsByPriority(groupedTests);
   }, [labTests]);
 
   // Fetch diagnostic reports for each accordion separately to enable caching
   const diagnosticReportQueries = useQueries({
-    queries: sortedLabInvestigationsByDate.map((group, index) => {
+    queries: sortedLabInvestigations.map((group, index) => {
       const testIds = group.tests.map((test) => test.id);
       return {
         queryKey: ['diagnosticReports', patientUUID, index, testIds],
@@ -180,13 +178,13 @@ const LabInvestigation: React.FC<WidgetProps> = ({
     return reports;
   }, [diagnosticReportQueries]);
 
-  const processedTestIds = useMemo(() => {
-    return getProcessedTestIds(diagnosticReports);
-  }, [diagnosticReports]);
-
-  const testIdToReportIdMap = useMemo(() => {
-    return getTestIdToReportIdMap(diagnosticReports);
-  }, [diagnosticReports]);
+  // Enrich the grouped tests with diagnostic report info (reportId and attachments)
+  const updatedLabInvestigations = useMemo<LabInvestigationsByDate[]>(() => {
+    return sortedLabInvestigations.map((group) => ({
+      ...group,
+      tests: updateInvestigationsWithReportInfo(group.tests, diagnosticReports),
+    }));
+  }, [sortedLabInvestigations, diagnosticReports]);
 
   if (hasError) {
     return (
@@ -216,37 +214,35 @@ const LabInvestigation: React.FC<WidgetProps> = ({
 
   return (
     <Accordion align="start">
-      {sortedLabInvestigationsByDate.map(
-        (group: LabInvestigationsByDate, index) => (
-          <AccordionItem
-            key={group.date}
-            className={styles.accordionItem}
-            open={openAccordionIndices.has(index)}
-            onHeadingClick={() => {
-              setOpenAccordionIndices((prev) => {
-                const newSet = new Set(prev);
-                if (newSet.has(index)) {
-                  newSet.delete(index);
-                } else {
-                  newSet.add(index);
-                }
-                return newSet;
-              });
-            }}
-            title={group.date}
-          >
-            {group.tests?.map((test) => (
-              <LabInvestigationItem
-                key={`${group.date}-${test.testName}-${test.id || test.testName}`}
-                test={test}
-                isOpen={openAccordionIndices.has(index)}
-                hasProcessedReport={processedTestIds.includes(test.id)}
-                reportId={testIdToReportIdMap.get(test.id)}
-              />
-            ))}
-          </AccordionItem>
-        ),
-      )}
+      {updatedLabInvestigations.map((group: LabInvestigationsByDate, index) => (
+        <AccordionItem
+          key={group.date}
+          className={styles.accordionItem}
+          open={openAccordionIndices.has(index)}
+          onHeadingClick={() => {
+            setOpenAccordionIndices((prev) => {
+              const newSet = new Set(prev);
+              if (newSet.has(index)) {
+                newSet.delete(index);
+              } else {
+                newSet.add(index);
+              }
+              return newSet;
+            });
+          }}
+          title={group.date}
+        >
+          {group.tests?.map((test) => (
+            <LabInvestigationItem
+              key={`${group.date}-${test.testName}-${test.id || test.testName}`}
+              test={test}
+              isOpen={openAccordionIndices.has(index)}
+              hasProcessedReport={!!test.reportId}
+              reportId={test.reportId}
+            />
+          ))}
+        </AccordionItem>
+      ))}
     </Accordion>
   );
 };

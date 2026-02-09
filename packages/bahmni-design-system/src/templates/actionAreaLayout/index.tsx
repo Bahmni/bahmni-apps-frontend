@@ -82,8 +82,10 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
                 className={styles.separatorGrip}
               >
                 <Icon
-                  name="fa-grip-vertical"
                   id="separator-grip-icon"
+                  data-testid="separator-grip-icon-test-id"
+                  aria-label="separator-grip-icon-aria-label"
+                  name="fa-grip-vertical"
                   size={ICON_SIZE.XS}
                 />
               </div>
