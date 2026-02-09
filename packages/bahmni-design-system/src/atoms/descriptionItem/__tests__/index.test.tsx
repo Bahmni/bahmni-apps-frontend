@@ -17,19 +17,19 @@ describe('DescriptionItem', () => {
   it('should apply correct id attribute', () => {
     const { container } = render(
       <DescriptionItem
-        id="destination-country"
-        label="Country"
-        value="United States"
+        id="patient-id"
+        label="Patient ID"
+        value="ABC123"
       />,
     );
 
-    const dlElement = container.querySelector('#destination-country');
+    const dlElement = container.querySelector('#patient-id');
     expect(
-      screen.getByTestId('destination-country-test-id'),
+      screen.getByTestId('patient-id-test-id'),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('destination-country-test-id')).toHaveAttribute(
+    expect(screen.getByTestId('patient-id-test-id')).toHaveAttribute(
       'aria-label',
-      'destination-country-aria-label',
+      'patient-id-aria-label',
     );
     expect(dlElement).toBeInTheDocument();
     expect(dlElement?.tagName).toBe('DL');
