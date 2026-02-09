@@ -1,6 +1,7 @@
 import { useTranslation, getDiagnosticReportBundle } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Bundle } from 'fhir/r4';
 
 import LabInvestigationItem from '../LabInvestigationItem';
@@ -73,7 +74,7 @@ describe('LabInvestigationItem', () => {
           LAB_TEST_REFERENCE_RANGE: 'Reference Range',
           LAB_TEST_REPORTED_ON: 'Reported On',
           LAB_TEST_ACTIONS: 'Actions',
-          LAB_TEST_VIEW_ATTACHMENT: 'View Attachment',
+          LAB_TEST_VIEW_ATTACHMENT: 'View Attachment (2)',
           LAB_TEST_ERROR_LOADING: 'Error loading results',
         };
         return translations[key] || key;
@@ -291,6 +292,187 @@ describe('LabInvestigationItem', () => {
         ),
       ).not.toBeInTheDocument();
       expect(screen.getByText('Hemoglobin')).toBeInTheDocument();
+    });
+  });
+
+  describe('attachments', () => {
+    it('does not show view attachments link when no attachments', () => {
+      renderWithQueryClient(
+        <LabInvestigationItem
+          test={baseLabTest}
+          isOpen={false}
+          hasProcessedReport={false}
+        />,
+      );
+
+      expect(screen.queryByText(/View Attachment/i)).not.toBeInTheDocument();
+    });
+
+    it('shows view attachments link with count when attachments exist', () => {
+      const testWithAttachments = {
+        ...baseLabTest,
+        attachments: [
+          {
+            id: 'attachment-1',
+            url: 'path/to/report1.pdf',
+            contentType: 'application/pdf',
+          },
+          {
+            id: 'attachment-2',
+            url: 'path/to/report2.jpg',
+            contentType: 'image/jpeg',
+          },
+        ],
+      };
+
+      const { container } = renderWithQueryClient(
+        <LabInvestigationItem
+          test={testWithAttachments}
+          isOpen={false}
+          hasProcessedReport={false}
+        />,
+      );
+
+      const link = container.querySelector('.viewAttachmentsLink');
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveTextContent('View Attachment (2)');
+    });
+
+    it('opens attachments modal when clicking view attachments link', async () => {
+      const user = userEvent.setup();
+      const testWithAttachments = {
+        ...baseLabTest,
+        attachments: [
+          {
+            id: 'attachment-1',
+            url: 'path/to/report.pdf',
+            contentType: 'application/pdf',
+          },
+        ],
+      };
+
+      const { container } = renderWithQueryClient(
+        <LabInvestigationItem
+          test={testWithAttachments}
+          isOpen={false}
+          hasProcessedReport={false}
+        />,
+      );
+
+      const viewAttachmentsLink = container.querySelector(
+        '.viewAttachmentsLink',
+      );
+      expect(viewAttachmentsLink).toBeInTheDocument();
+      await user.click(viewAttachmentsLink!);
+
+      expect(screen.getByTestId('attachments-modal')).toBeInTheDocument();
+    });
+
+    it('displays modal with correct heading and attachment count', async () => {
+      const user = userEvent.setup();
+      const testWithAttachments = {
+        ...baseLabTest,
+        attachments: [
+          {
+            id: 'attachment-1',
+            url: 'path/to/report1.pdf',
+            contentType: 'application/pdf',
+          },
+          {
+            id: 'attachment-2',
+            url: 'path/to/report2.jpg',
+            contentType: 'image/jpeg',
+          },
+        ],
+      };
+
+      const { container } = renderWithQueryClient(
+        <LabInvestigationItem
+          test={testWithAttachments}
+          isOpen={false}
+          hasProcessedReport={false}
+        />,
+      );
+
+      const viewAttachmentsLink = container.querySelector(
+        '.viewAttachmentsLink',
+      );
+      expect(viewAttachmentsLink).toBeInTheDocument();
+      await user.click(viewAttachmentsLink!);
+
+      expect(
+        screen.getByRole('heading', { name: /View Attachment \(2\)/i }),
+      ).toBeInTheDocument();
+    });
+
+    it('renders attachment viewer for each attachment', async () => {
+      const user = userEvent.setup();
+      const testWithAttachments = {
+        ...baseLabTest,
+        attachments: [
+          {
+            id: 'attachment-1',
+            url: 'path/to/report1.pdf',
+            contentType: 'application/pdf',
+          },
+          {
+            id: 'attachment-2',
+            url: 'path/to/image.jpg',
+            contentType: 'image/jpeg',
+          },
+        ],
+      };
+
+      const { container } = renderWithQueryClient(
+        <LabInvestigationItem
+          test={testWithAttachments}
+          isOpen={false}
+          hasProcessedReport={false}
+        />,
+      );
+
+      const viewAttachmentsLink = container.querySelector(
+        '.viewAttachmentsLink',
+      );
+      expect(viewAttachmentsLink).toBeInTheDocument();
+      await user.click(viewAttachmentsLink!);
+
+      const iframe = screen.getByTitle('attachment-1');
+      const img = screen.getByAltText('attachment-2');
+      expect(iframe).toBeInTheDocument();
+      expect(img).toBeInTheDocument();
+    });
+
+    it('shows view attachments link for panel tests with attachments', () => {
+      const panelTestWithAttachments = {
+        ...baseLabTest,
+        testType: 'Panel',
+        attachments: [
+          {
+            id: 'attachment-1',
+            url: 'path/to/panel-report.pdf',
+            contentType: 'application/pdf',
+          },
+          {
+            id: 'attachment-2',
+            url: 'path/to/panel-report.pdf',
+            contentType: 'application/pdf',
+          },
+        ],
+      };
+
+      const { container } = renderWithQueryClient(
+        <LabInvestigationItem
+          test={panelTestWithAttachments}
+          isOpen={false}
+          hasProcessedReport={false}
+        />,
+      );
+
+      expect(screen.getByText('Panel')).toBeInTheDocument();
+      const link = container.querySelector('.viewAttachmentsLink');
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveTextContent('View Attachment (2)');
     });
   });
 });

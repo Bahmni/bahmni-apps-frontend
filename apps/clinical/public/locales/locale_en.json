@@ -168,7 +168,7 @@
   "LAB_TEST_RESULTS_PENDING": "Results Pending",
   "LAB_TEST_UNAVAILABLE": "No lab investigations recorded",
   "LAB_TEST_URGENT": "Urgent",
-  "LAB_TEST_VIEW_ATTACHMENT": "View attachment",
+  "LAB_TEST_VIEW_ATTACHMENT": "View attachments ({{count}})",
   "LOADING_CLINICAL_CONFIG": "Loading clinical configuration...",
   "LOADING_CONCEPTS": "Loading concepts...",
   "LOADING_DASHBOARD_CONFIG": "Loading dashboard configuration...",

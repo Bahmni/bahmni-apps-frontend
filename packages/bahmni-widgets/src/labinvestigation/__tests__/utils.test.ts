@@ -11,13 +11,12 @@ import {
   determineInvestigationType,
   formatLabInvestigations,
   groupLabInvestigationsByDate,
-  getProcessedTestIds,
-  getTestIdToReportIdMap,
+  updateInvestigationsWithReportInfo,
   extractObservationsFromBundle,
   formatObservationsAsLabTestResults,
-  mapDiagnosticReportBundlesToTestResults,
-  mapSingleDiagnosticReportBundleToTestResults,
+  mapDiagnosticReportBundleToTestResults,
   updateTestsWithResults,
+  REFERENCE_RANGE_CODE,
 } from '../utils';
 
 jest.mock('@bahmni/services', () => ({
@@ -354,8 +353,29 @@ describe('Lab Investigation Utils', () => {
     });
   });
 
-  describe('getProcessedTestIds', () => {
-    it('should extract test IDs from basedOn references', () => {
+  describe('updateInvestigationsWithReportInfo', () => {
+    it('should enrich tests with reportId and attachments', () => {
+      const mockTests = [
+        {
+          id: 'test-1',
+          testName: 'Blood Test',
+          priority: LabInvestigationPriority.routine,
+          orderedBy: 'Dr. Smith',
+          orderedDate: '2024-01-01',
+          formattedDate: 'January 1, 2024',
+          testType: 'Single Test',
+        },
+        {
+          id: 'test-2',
+          testName: 'Urine Test',
+          priority: LabInvestigationPriority.stat,
+          orderedBy: 'Dr. Jones',
+          orderedDate: '2024-01-02',
+          formattedDate: 'January 2, 2024',
+          testType: 'Panel',
+        },
+      ] as FormattedLabInvestigations[];
+
       const mockReports = [
         {
           resourceType: 'DiagnosticReport' as const,
@@ -370,43 +390,60 @@ describe('Lab Investigation Utils', () => {
           status: 'amended' as const,
           code: { text: 'Test' },
           basedOn: [{ reference: 'ServiceRequest/test-2' }],
-        },
-      ];
-
-      const result = getProcessedTestIds(mockReports);
-
-      expect(result).toHaveLength(2);
-      expect(result).toContain('test-1');
-      expect(result).toContain('test-2');
-    });
-
-    it('should return empty array for undefined', () => {
-      const result = getProcessedTestIds(undefined);
-      expect(result).toEqual([]);
-    });
-
-    it('should handle multiple basedOn references', () => {
-      const mockReports = [
-        {
-          resourceType: 'DiagnosticReport' as const,
-          id: 'report-1',
-          status: 'final' as const,
-          code: { text: 'Test' },
-          basedOn: [
-            { reference: 'ServiceRequest/test-1' },
-            { reference: 'ServiceRequest/test-2' },
+          presentedForm: [
+            {
+              id: 'attachment-1',
+              url: 'https://example.com/report.pdf',
+              contentType: 'application/pdf',
+            },
           ],
         },
       ];
 
-      const result = getProcessedTestIds(mockReports);
+      const result = updateInvestigationsWithReportInfo(mockTests, mockReports);
 
       expect(result).toHaveLength(2);
-      expect(result).toContain('test-1');
-      expect(result).toContain('test-2');
+      expect(result[0].reportId).toBe('report-1');
+      expect(result[0].attachments).toBeUndefined();
+      expect(result[1].reportId).toBe('report-2');
+      expect(result[1].attachments).toBeDefined();
+      expect(result[1].attachments).toHaveLength(1);
+      expect(result[1].attachments?.[0].url).toBe(
+        'https://example.com/report.pdf',
+      );
+    });
+
+    it('should return tests unchanged when no diagnostic reports', () => {
+      const mockTests = [
+        {
+          id: 'test-1',
+          testName: 'Blood Test',
+          priority: LabInvestigationPriority.routine,
+          orderedBy: 'Dr. Smith',
+          orderedDate: '2024-01-01',
+          formattedDate: 'January 1, 2024',
+          testType: 'Single Test',
+        },
+      ] as FormattedLabInvestigations[];
+
+      const result = updateInvestigationsWithReportInfo(mockTests, undefined);
+
+      expect(result).toEqual(mockTests);
     });
 
     it('should filter out non-processed statuses', () => {
+      const mockTests = [
+        {
+          id: 'test-1',
+          testName: 'Blood Test',
+          priority: LabInvestigationPriority.routine,
+          orderedBy: 'Dr. Smith',
+          orderedDate: '2024-01-01',
+          formattedDate: 'January 1, 2024',
+          testType: 'Single Test',
+        },
+      ] as FormattedLabInvestigations[];
+
       const mockReports = [
         {
           resourceType: 'DiagnosticReport' as const,
@@ -417,66 +454,13 @@ describe('Lab Investigation Utils', () => {
         },
       ];
 
-      const result = getProcessedTestIds(mockReports);
+      const result = updateInvestigationsWithReportInfo(mockTests, mockReports);
 
-      expect(result).toEqual([]);
+      expect(result[0].reportId).toBeUndefined();
     });
   });
 
-  describe('getTestIdToReportIdMap', () => {
-    it('should create mapping from test IDs to report IDs', () => {
-      const mockReports = [
-        {
-          resourceType: 'DiagnosticReport' as const,
-          id: 'report-1',
-          status: 'final' as const,
-          code: { text: 'Test' },
-          basedOn: [{ reference: 'ServiceRequest/test-1' }],
-        },
-        {
-          resourceType: 'DiagnosticReport' as const,
-          id: 'report-2',
-          status: 'amended' as const,
-          code: { text: 'Test' },
-          basedOn: [{ reference: 'ServiceRequest/test-2' }],
-        },
-      ];
-
-      const result = getTestIdToReportIdMap(mockReports);
-
-      expect(result.size).toBe(2);
-      expect(result.get('test-1')).toBe('report-1');
-      expect(result.get('test-2')).toBe('report-2');
-    });
-
-    it('should return empty map for undefined', () => {
-      const result = getTestIdToReportIdMap(undefined);
-      expect(result.size).toBe(0);
-    });
-
-    it('should handle multiple basedOn references for same report', () => {
-      const mockReports = [
-        {
-          resourceType: 'DiagnosticReport' as const,
-          id: 'report-1',
-          status: 'final' as const,
-          code: { text: 'Test' },
-          basedOn: [
-            { reference: 'ServiceRequest/test-1' },
-            { reference: 'ServiceRequest/test-2' },
-          ],
-        },
-      ];
-
-      const result = getTestIdToReportIdMap(mockReports);
-
-      expect(result.size).toBe(2);
-      expect(result.get('test-1')).toBe('report-1');
-      expect(result.get('test-2')).toBe('report-1');
-    });
-  });
-
-  describe('mapSingleDiagnosticReportBundleToTestResults', () => {
+  describe('mapDiagnosticReportBundleToTestResults', () => {
     it('should map single bundle to test results', () => {
       const mockBundle = {
         resourceType: 'Bundle' as const,
@@ -502,7 +486,7 @@ describe('Lab Investigation Utils', () => {
         ],
       };
 
-      const result = mapSingleDiagnosticReportBundleToTestResults(
+      const result = mapDiagnosticReportBundleToTestResults(
         mockBundle,
         mockTranslate,
       );
@@ -528,7 +512,7 @@ describe('Lab Investigation Utils', () => {
         ],
       };
 
-      const result = mapSingleDiagnosticReportBundleToTestResults(
+      const result = mapDiagnosticReportBundleToTestResults(
         mockBundle,
         mockTranslate,
       );
@@ -537,7 +521,7 @@ describe('Lab Investigation Utils', () => {
     });
 
     it('should return undefined for undefined bundle', () => {
-      const result = mapSingleDiagnosticReportBundleToTestResults(
+      const result = mapDiagnosticReportBundleToTestResults(
         undefined,
         mockTranslate,
       );
@@ -597,6 +581,13 @@ describe('Lab Investigation Utils', () => {
           },
           referenceRange: [
             {
+              type: {
+                coding: [
+                  {
+                    code: REFERENCE_RANGE_CODE.NORMAL,
+                  },
+                ],
+              },
               low: { value: 12, unit: 'g/dL' },
               high: { value: 16, unit: 'g/dL' },
             },
@@ -612,8 +603,9 @@ describe('Lab Investigation Utils', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].TestName).toBe('Hemoglobin');
-      expect(result[0].Result).toBe('14.5 g/dL');
-      expect(result[0].referenceRange).toBe('12 - 16 g/dL');
+      expect(result[0].value).toBe('14.5');
+      expect(result[0].unit).toBe('g/dL');
+      expect(result[0].referenceRange).toBe('12 - 16');
     });
 
     it('should handle string values', () => {
@@ -632,7 +624,8 @@ describe('Lab Investigation Utils', () => {
         mockTranslate,
       );
 
-      expect(result[0].Result).toBe('O+');
+      expect(result[0].value).toBe('O+');
+      expect(result[0].unit).toBe('');
     });
 
     it('should handle boolean values - true as Positive', () => {
@@ -651,7 +644,8 @@ describe('Lab Investigation Utils', () => {
         mockTranslate,
       );
 
-      expect(result[0].Result).toBe('Positive');
+      expect(result[0].value).toBe('Positive');
+      expect(result[0].unit).toBe('');
     });
 
     it('should handle boolean values - false as Negative', () => {
@@ -670,7 +664,8 @@ describe('Lab Investigation Utils', () => {
         mockTranslate,
       );
 
-      expect(result[0].Result).toBe('Negative');
+      expect(result[0].value).toBe('Negative');
+      expect(result[0].unit).toBe('');
     });
 
     it('should handle integer values', () => {
@@ -689,7 +684,8 @@ describe('Lab Investigation Utils', () => {
         mockTranslate,
       );
 
-      expect(result[0].Result).toBe('8500');
+      expect(result[0].value).toBe('8500');
+      expect(result[0].unit).toBe('');
     });
 
     it('should handle CodeableConcept text values', () => {
@@ -710,72 +706,8 @@ describe('Lab Investigation Utils', () => {
         mockTranslate,
       );
 
-      expect(result[0].Result).toBe('Abnormal');
-    });
-  });
-
-  describe('mapDiagnosticReportBundlesToTestResults', () => {
-    it('should map diagnostic report bundles to test results', () => {
-      const bundles = [
-        {
-          resourceType: 'Bundle' as const,
-          type: 'collection' as const,
-          entry: [
-            {
-              resource: {
-                resourceType: 'DiagnosticReport' as const,
-                id: 'report-1',
-                status: 'final' as const,
-                code: { text: 'CBC' },
-                basedOn: [{ reference: 'ServiceRequest/test-1' }],
-              },
-            },
-            {
-              resource: {
-                resourceType: 'Observation' as const,
-                id: 'obs-1',
-                status: 'final' as const,
-                code: { text: 'Hemoglobin' },
-                valueQuantity: { value: 14.5, unit: 'g/dL' },
-              },
-            },
-          ],
-        },
-      ];
-
-      const result = mapDiagnosticReportBundlesToTestResults(
-        bundles,
-        mockTranslate,
-      );
-
-      expect(result.size).toBe(1);
-      expect(result.has('test-1')).toBe(true);
-    });
-
-    it('should handle bundles without basedOn references', () => {
-      const bundles = [
-        {
-          resourceType: 'Bundle' as const,
-          type: 'collection' as const,
-          entry: [
-            {
-              resource: {
-                resourceType: 'DiagnosticReport' as const,
-                id: 'report-1',
-                status: 'final' as const,
-                code: { text: 'CBC' },
-              },
-            },
-          ],
-        },
-      ];
-
-      const result = mapDiagnosticReportBundlesToTestResults(
-        bundles,
-        mockTranslate,
-      );
-
-      expect(result.size).toBe(0);
+      expect(result[0].value).toBe('Abnormal');
+      expect(result[0].unit).toBe('');
     });
   });
 
