@@ -20,7 +20,7 @@
     "url": "git+https://github.com/Bahmni/bahmni-apps-frontend.git",
     "directory": "bahmni-apps-frontend/packages/bahmni-services"
   },
-   "scripts": {
+  "scripts": {
     "build": "vite build",
     "prepublishOnly": "yarn run build"
   },
