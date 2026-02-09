@@ -26,6 +26,11 @@ import {
   getSidebarItems,
 } from '../services/consultationPageService';
 import { useObservationFormsStore } from '../stores/observationFormsStore';
+import {
+  CURRENT_DASHBOARD_SEARCH_PARAMS_KEY,
+  EPISODE_UUID_SEARCH_PARAMS_KEY,
+  PROGRAM_UUID_SEARCH_PARAMS_KEY,
+} from './constant';
 import styles from './styles/ConsultationPage.module.scss';
 
 const breadcrumbItems = [
@@ -80,7 +85,7 @@ const ConsultationPage: React.FC = () => {
   const viewingForm = useObservationFormsStore((state) => state.viewingForm);
 
   const episodeUuids = useMemo(() => {
-    const episodeUuid = searchParams.get('episodeUuid');
+    const episodeUuid = searchParams.get(EPISODE_UUID_SEARCH_PARAMS_KEY);
     if (!episodeUuid) return [];
     return episodeUuid
       .split(',')
@@ -88,7 +93,9 @@ const ConsultationPage: React.FC = () => {
       .filter(Boolean);
   }, [searchParams]);
 
-  const currentDashboardParam = searchParams.get('currentDashboard');
+  const currentDashboardParam = searchParams.get(
+    CURRENT_DASHBOARD_SEARCH_PARAMS_KEY,
+  );
 
   const currentDashboard = useMemo(() => {
     if (!clinicalConfig) return null;
@@ -140,7 +147,7 @@ const ConsultationPage: React.FC = () => {
   }
 
   const renderContextInformation = () => {
-    const programUUID = searchParams.get('programUuid');
+    const programUUID = searchParams.get(PROGRAM_UUID_SEARCH_PARAMS_KEY);
     if (programUUID && clinicalConfig.contextInformation?.program)
       return (
         <ProgramDetails
