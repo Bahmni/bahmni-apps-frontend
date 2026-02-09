@@ -313,7 +313,7 @@ const FormsTable: React.FC<WidgetProps> = ({
               )}
             </div>
           </Modal>,
-          document.getElementById('actionAreaLayout') ?? document.body,
+          document.getElementById('action-area-layout') ?? document.body,
         )}
     </>
   );

@@ -187,7 +187,7 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
               </div>
             </Modal.Body>
           </Modal>,
-          document.getElementById('actionAreaLayout') ?? document.body,
+          document.getElementById('action-area-layout') ?? document.body,
         )}
     </div>
   );
