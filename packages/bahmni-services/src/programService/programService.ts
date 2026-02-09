@@ -1,5 +1,5 @@
 import { get } from '../api';
-import { PATIENT_PROGRAMS_URL, PROGRAM_URL } from './constants';
+import { PATIENT_PROGRAMS_URL, PROGRAM_DETAILS_URL } from './constants';
 import { PatientProgramsResponse, ProgramEnrollment } from './model';
 
 // TODO: Add Optional parameters for pagination and filtering
@@ -22,7 +22,7 @@ export const getPatientPrograms = async (
 export const getProgramByUUID = async (
   programUUID: string,
 ): Promise<ProgramEnrollment> => {
-  return await get<ProgramEnrollment>(PROGRAM_URL(programUUID));
+  return await get<ProgramEnrollment>(PROGRAM_DETAILS_URL(programUUID));
 };
 
 /**
