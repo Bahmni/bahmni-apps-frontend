@@ -233,11 +233,6 @@ describe('AddressInfo', () => {
       const data = ref.current?.getData();
       expect(data).toEqual({
         address1: '123',
-        address2: '',
-        cityVillage: '',
-        countyDistrict: '',
-        postalCode: '',
-        stateProvince: '',
       });
     });
 
@@ -256,10 +251,6 @@ describe('AddressInfo', () => {
       expect(data).toEqual({
         address1: '123',
         address2: 'Street',
-        cityVillage: '',
-        countyDistrict: '',
-        postalCode: '',
-        stateProvince: '',
       });
     });
   });
@@ -566,6 +557,100 @@ describe('AddressInfo', () => {
         'cityVillage',
         'postalCode',
       ]);
+    });
+  });
+
+  describe('Field Value Preservation', () => {
+    it('should preserve child field values when typing in a parent field', async () => {
+      await renderWithQueryClient(<AddressInfo />);
+
+      // In the mock hierarchy: address1 > address2 > stateProvince > countyDistrict > cityVillage > postalCode
+      // postalCode is a descendant of cityVillage.
+      // With showAddressFieldsTopDown=false, display order is reversed:
+      // postalCode, cityVillage, countyDistrict, stateProvince, address2, address1
+      // So the user types in postalCode first (child), then cityVillage (parent).
+      const pincodeInput = screen.getByLabelText(/CREATE_PATIENT_PINCODE/);
+      fireEvent.change(pincodeInput, { target: { value: '400001' } });
+      expect(pincodeInput).toHaveValue('400001');
+
+      // Now type in cityVillage - a parent of postalCode in the hierarchy
+      const cityInput = screen.getByLabelText(/CREATE_PATIENT_CITY/);
+      fireEvent.change(cityInput, { target: { value: 'Mumbai' } });
+
+      // postalCode (child) should still have its value
+      expect(pincodeInput).toHaveValue('400001');
+      expect(cityInput).toHaveValue('Mumbai');
+    });
+
+    it('should preserve all field values when filling fields in display order', async () => {
+      const ref = createRef<AddressInfoRef>();
+      await renderWithQueryClient(<AddressInfo ref={ref} />);
+
+      // Fill fields in the bottom-up display order (child → parent):
+      // postalCode, cityVillage, countyDistrict, stateProvince, address2, address1
+      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_PINCODE/), {
+        target: { value: '400001' },
+      });
+      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_CITY/), {
+        target: { value: 'Mumbai' },
+      });
+      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_DISTRICT/), {
+        target: { value: 'Mumbai District' },
+      });
+      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_STATE/), {
+        target: { value: 'Maharashtra' },
+      });
+      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_LOCALITY/), {
+        target: { value: 'Andheri' },
+      });
+      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/), {
+        target: { value: '42B' },
+      });
+
+      // All fields should retain their values
+      const data = ref.current?.getData();
+      expect(data).toEqual({
+        address1: '42B',
+        address2: 'Andheri',
+        stateProvince: 'Maharashtra',
+        countyDistrict: 'Mumbai District',
+        cityVillage: 'Mumbai',
+        postalCode: '400001',
+      });
+    });
+
+    it('should preserve pre-filled field values when editing another field', async () => {
+      const initialData = {
+        address1: '123 Main St',
+        address2: 'Locality A',
+        stateProvince: 'State X',
+        countyDistrict: 'District Y',
+        cityVillage: 'City Z',
+        postalCode: '12345',
+      };
+
+      await renderWithQueryClient(<AddressInfo initialData={initialData} />);
+
+      // Verify initial values loaded
+      expect(screen.getByLabelText(/CREATE_PATIENT_PINCODE/)).toHaveValue(
+        '12345',
+      );
+      expect(screen.getByLabelText(/CREATE_PATIENT_CITY/)).toHaveValue(
+        'City Z',
+      );
+
+      // Edit cityVillage (parent of postalCode in the hierarchy)
+      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_CITY/), {
+        target: { value: 'New City' },
+      });
+
+      // postalCode (child) should still have its value
+      expect(screen.getByLabelText(/CREATE_PATIENT_PINCODE/)).toHaveValue(
+        '12345',
+      );
+      expect(screen.getByLabelText(/CREATE_PATIENT_CITY/)).toHaveValue(
+        'New City',
+      );
     });
   });
 

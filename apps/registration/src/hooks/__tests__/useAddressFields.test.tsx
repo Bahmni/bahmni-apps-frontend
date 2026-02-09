@@ -208,7 +208,7 @@ describe('useAddressFields', () => {
       expect(result.current.address.stateProvince).toBe('Maharashtra');
     });
 
-    it('should clear child fields when parent field changes', () => {
+    it('should not clear child fields when parent field value changes via handleFieldChange', () => {
       const config: AddressHierarchyConfig = {
         showAddressFieldsTopDown: true,
       };
@@ -229,9 +229,36 @@ describe('useAddressFields', () => {
       });
 
       expect(result.current.address.stateProvince).toBe('Karnataka');
+      // Child fields should NOT be cleared by handleFieldChange
+      expect(result.current.address.countyDistrict).toBe('Mumbai District');
+      expect(result.current.address.cityVillage).toBe('Mumbai');
+      expect(result.current.address.country).toBe('India');
+    });
+
+    it('should clear child fields when clearChildFields is called directly', () => {
+      const config: AddressHierarchyConfig = {
+        showAddressFieldsTopDown: true,
+      };
+
+      const initialAddress = {
+        country: 'India',
+        stateProvince: 'Maharashtra',
+        countyDistrict: 'Mumbai District',
+        cityVillage: 'Mumbai',
+      };
+
+      const { result } = renderHook(() =>
+        useAddressFields(mockAddressLevels, config, initialAddress),
+      );
+
+      act(() => {
+        result.current.clearChildFields('stateProvince');
+      });
+
+      expect(result.current.address.stateProvince).toBe('Maharashtra');
       expect(result.current.address.countyDistrict).toBeNull();
       expect(result.current.address.cityVillage).toBeNull();
-      expect(result.current.address.country).toBe('India'); // Parent should remain
+      expect(result.current.address.country).toBe('India');
     });
 
     it('should clear metadata when manually typing', () => {
