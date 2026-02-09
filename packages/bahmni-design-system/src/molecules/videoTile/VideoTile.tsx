@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Modal } from '../../atoms/modal';
 import styles from './styles/VideoTile.module.scss';
 
@@ -66,27 +67,31 @@ export const VideoTile: React.FC<VideoTileProps> = ({
         </div>
       </button>
 
-      <Modal
-        open={isModalOpen}
-        onRequestClose={handleModalClose}
-        modalHeading={modalTitle}
-        passiveModal
-        size="lg"
-        id={`${id}-modal`}
-        testId={`${id}-modal-test-id`}
-      >
-        <div className={styles.modalVideoContainer}>
-          <video
-            id={`${id}-modal-video`}
-            data-testid={`${id}-modal-video-test-id`}
-            aria-label={`${id}-modal-video-aria-label`}
-            src={baseURL + videoSrc}
-            className={styles.modalVideo}
-            controls
-            autoPlay
-          />
-        </div>
-      </Modal>
+      {isModalOpen &&
+        createPortal(
+          <Modal
+            open={isModalOpen}
+            onRequestClose={handleModalClose}
+            modalHeading={modalTitle}
+            passiveModal
+            size="lg"
+            id="modalIdForActionAreaLayout"
+            testId={`${id}-modal-test-id`}
+          >
+            <div className={styles.modalVideoContainer}>
+              <video
+                id={`${id}-modal-video`}
+                data-testid={`${id}-modal-video-test-id`}
+                aria-label={`${id}-modal-video-aria-label`}
+                src={baseURL + videoSrc}
+                className={styles.modalVideo}
+                controls
+                autoPlay
+              />
+            </div>
+          </Modal>,
+          document.getElementById('action-area-layout') ?? document.body,
+        )}
     </>
   );
 };
