@@ -3,6 +3,20 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
+    "create:app": "node ./scripts/create-app.js",
+    "dev": "nx serve distro",
+    "lint": "nx run-many --target=lint --all",
+    "lint:affected": "nx affected --target=lint",
+    "lint:fix": "nx run-many --target=lint --all -- --fix",
+    "typecheck": "nx run-many --target=typecheck --all",
+    "typecheck:affected": "nx affected --target=typecheck",
+    "test": "nx run-many --target=test --all",
+    "test:affected": "nx affected --target=test",
+    "test:coverage": "nx run-many --target=test --coverage && node scripts/merge-coverage-reports.js",
+    "test:watch": "nx run-many --target=test --coverage --watch",
+    "build": "nx run-many --target=build --all",
+    "build:affected": "nx affected --target=build",
+    "clean": "nx reset && rm -rf dist coverage",
     "prepare": "husky"
   },
   "private": true,
@@ -104,8 +118,8 @@
   ],
   "lint-staged": {
     "*.{ts,tsx}": [
-      "nx run-many --all --target=lint",
-      "nx format:write"
+      "eslint --fix",
+      "nx format:write --uncommitted"
     ]
   }
 }
