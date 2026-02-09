@@ -16,17 +16,11 @@ describe('DescriptionItem', () => {
 
   it('should apply correct id attribute', () => {
     const { container } = render(
-      <DescriptionItem
-        id="patient-id"
-        label="Patient ID"
-        value="ABC123"
-      />,
+      <DescriptionItem id="patient-id" label="Patient ID" value="ABC123" />,
     );
 
     const dlElement = container.querySelector('#patient-id');
-    expect(
-      screen.getByTestId('patient-id-test-id'),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('patient-id-test-id')).toBeInTheDocument();
     expect(screen.getByTestId('patient-id-test-id')).toHaveAttribute(
       'aria-label',
       'patient-id-aria-label',

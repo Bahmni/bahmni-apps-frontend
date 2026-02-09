@@ -106,9 +106,8 @@
 @include breakpoint-down(lg) {
 
   .actionArea {
-    left: $spacing-09;
     width: 100%;
-    left: 0 !important;
+    left: 0;
     z-index: 999999;
     position: fixed;
   }
