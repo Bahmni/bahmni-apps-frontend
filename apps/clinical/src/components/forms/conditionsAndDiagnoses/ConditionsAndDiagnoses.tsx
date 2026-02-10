@@ -31,6 +31,8 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
+  const [selectedDiagnosisItem, setSelectedDiagnosisItem] =
+    useState<ConceptSearch | null>(null);
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
 
@@ -121,6 +123,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   );
 
   const handleOnChange = (selectedItem: ConceptSearch | null) => {
+    setShowDuplicateNotification(false);
     if (!selectedItem?.conceptUuid || !selectedItem.conceptName) {
       return;
     }
@@ -136,6 +139,14 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     // Successfully added, clear any previous duplicate notification
     setShowDuplicateNotification(false);
     addDiagnosis(selectedItem);
+    // Clear the search term after selection
+    setSearchDiagnosesTerm('');
+    // First set the selected item, then clear it to reset ComboBox
+    setSelectedDiagnosisItem(selectedItem);
+    // Clear the selection after a short delay to allow ComboBox to update
+    setTimeout(() => {
+      setSelectedDiagnosisItem(null);
+    }, 1);
   };
 
   const isConditionDuplicate = (diagnosisId: string): boolean => {
@@ -231,6 +242,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         itemToString={(item) => item?.conceptName ?? ''}
         onChange={(data) => handleOnChange(data.selectedItem ?? null)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+        selectedItem={selectedDiagnosisItem}
         size="md"
         autoAlign
         aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}

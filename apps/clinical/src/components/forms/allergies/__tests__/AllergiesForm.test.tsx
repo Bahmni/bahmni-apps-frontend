@@ -1,4 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
@@ -71,6 +75,7 @@ jest.mock('../../../../utils/allergy', () => ({
 
 // Mock @tanstack/react-query
 jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
   useQuery: jest.fn(() => ({
     data: [],
     isLoading: false,
@@ -133,7 +138,7 @@ const renderAllergiesForm = (overrides = {}) => {
     useAllergyStore as jest.MockedFunction<typeof useAllergyStore>
   ).mockReturnValue(mockStore);
 
-  return render(<AllergiesForm />);
+  return render(<AllergiesForm />, { wrapper: createWrapper() });
 };
 
 const mockAllergenSearchHook = (overrides = {}) => {
@@ -146,12 +151,30 @@ const mockAllergenSearchHook = (overrides = {}) => {
 const getSearchCombobox = () =>
   screen.getByRole('combobox', { name: /search for allergies/i });
 
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+  Wrapper.displayName = 'QueryClientWrapper';
+  return Wrapper;
+};
+
 describe('AllergiesForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation(() => {});
     jest.spyOn(console, 'log').mockImplementation(() => {});
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
+    // Reset mock store state to prevent test pollution
+    mockAllergyStore.selectedAllergies = [];
 
     // Set default mocks
     (
@@ -233,6 +256,66 @@ describe('AllergiesForm', () => {
 
       await waitFor(() => {
         expect(mockAddAllergy).toHaveBeenCalledWith(mockAllergen);
+      });
+    });
+
+    it('should clear search term after selecting allergy', async () => {
+      const user = userEvent.setup();
+      mockAllergenSearchHook({ allergens: [mockAllergen] });
+      renderAllergiesForm();
+
+      const searchBox = getSearchCombobox();
+      await user.type(searchBox, 'peanut');
+      await waitFor(() => {
+        expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
+      });
+      await user.click(screen.getByText('Peanut Allergy [Food]'));
+      await waitFor(() => {
+        expect(searchBox).toHaveValue('');
+      });
+    });
+
+    it('should reset ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
+      const user = userEvent.setup();
+      const mockAddAllergy = jest.fn();
+
+      const secondAllergen: AllergenConcept = {
+        uuid: 'test-allergy-2',
+        display: 'Shellfish Allergy',
+        type: 'food',
+        disabled: false,
+      };
+
+      mockAllergenSearchHook({ allergens: [mockAllergen, secondAllergen] });
+      renderAllergiesForm({ addAllergy: mockAddAllergy });
+
+      const searchBox = getSearchCombobox();
+
+      // First selection
+      await user.type(searchBox, 'peanut');
+      await waitFor(() => {
+        expect(screen.getByText('Peanut Allergy [Food]')).toBeInTheDocument();
+      });
+      await user.click(screen.getByText('Peanut Allergy [Food]'));
+
+      // Verify combobox is reset (selectedItem is null, allowing new searches)
+      await waitFor(() => {
+        expect(searchBox).toHaveValue('');
+      });
+
+      // Verify we can immediately search for another item (proves selectedItem was reset to null)
+      await user.type(searchBox, 'shellfish');
+      await waitFor(() => {
+        expect(
+          screen.getByText('Shellfish Allergy [Food]'),
+        ).toBeInTheDocument();
+      });
+
+      // Verify the new search works correctly - this proves selectedItem is null
+      // because the ComboBox wouldn't accept new input if selectedItem was still set
+      await user.click(screen.getByText('Shellfish Allergy [Food]'));
+      await waitFor(() => {
+        expect(mockAddAllergy).toHaveBeenCalledWith(secondAllergen);
       });
     });
 
@@ -661,6 +744,47 @@ describe('AllergiesForm', () => {
       const { container } = renderAllergiesForm();
       const results = await axe(container);
       expect(results).toHaveNoViolations();
+    });
+  });
+
+  describe('Keyboard Navigation', () => {
+    it('should support keyboard navigation and selection in allergies ComboBox', async () => {
+      const user = userEvent.setup();
+      // Create fresh allergen instance for this test to avoid reference pollution
+      const freshAllergen: AllergenConcept = {
+        uuid: 'keyboard-test-allergy',
+        display: 'Keyboard Test Allergy',
+        type: 'food',
+        disabled: false,
+      };
+      mockAllergenSearchHook({ allergens: [freshAllergen] });
+      const mockAddAllergy = jest.fn();
+      // Explicitly set selectedAllergies to empty for this test
+      renderAllergiesForm({
+        selectedAllergies: [],
+        addAllergy: mockAddAllergy,
+      });
+
+      const searchBox = screen.getByRole('combobox', {
+        name: /search for allergies/i,
+      });
+
+      // Type to open dropdown
+      await user.type(searchBox, 'keyboard');
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Keyboard Test Allergy [Food]'),
+        ).toBeInTheDocument();
+      });
+
+      // Navigate with arrow key and select with Enter
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{Enter}');
+
+      await waitFor(() => {
+        expect(mockAddAllergy).toHaveBeenCalledWith(freshAllergen);
+      });
     });
   });
 

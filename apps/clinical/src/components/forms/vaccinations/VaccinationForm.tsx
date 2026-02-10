@@ -28,6 +28,8 @@ import styles from './styles/VaccinationForm.module.scss';
 const VaccinationForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchVaccinationTerm, setSearchVaccinationTerm] = useState('');
+  const [selectedVaccinationItem, setSelectedVaccinationItem] =
+    useState<MedicationFilterResult | null>(null);
   const isSelectingRef = useRef(false);
   const {
     medicationConfig,
@@ -81,10 +83,13 @@ const VaccinationForm: React.FC = React.memo(() => {
     isSelectingRef.current = true;
     addVaccination(selectedItem.medication!, selectedItem.displayName);
     setSearchVaccinationTerm('');
-    // Reset the flag after a short delay to allow ComboBox to update
+    // First set the selected item, then clear it to re
+    setSelectedVaccinationItem(selectedItem);
+    // Reset the flag and clear the selection after a short delay to allow ComboBox to update
     setTimeout(() => {
+      setSelectedVaccinationItem(null);
       isSelectingRef.current = false;
-    }, 100);
+    }, 1);
   };
 
   const filteredSearchResults = useMemo(() => {
@@ -182,6 +187,7 @@ const VaccinationForm: React.FC = React.memo(() => {
           itemToString={(item) => (item ? item.displayName : '')}
           onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+          selectedItem={selectedVaccinationItem}
           size="md"
           autoAlign
           aria-label={t('VACCINATION_SEARCH_PLACEHOLDER')}

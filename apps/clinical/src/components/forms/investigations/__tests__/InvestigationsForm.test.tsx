@@ -359,6 +359,63 @@ describe('InvestigationsForm', () => {
         );
       });
     });
+
+    test('clears search term after selecting investigation', async () => {
+      const user = userEvent.setup();
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+      const combobox = screen.getByRole('combobox');
+      await user.type(combobox, 'complete');
+      await waitFor(() => {
+        expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
+      });
+      await user.click(screen.getByText('Complete Blood Count'));
+      await waitFor(() => {
+        expect(combobox).toHaveValue('');
+      });
+    });
+
+    test('resets ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
+      const user = userEvent.setup();
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+      const combobox = screen.getByRole('combobox');
+
+      // First selection
+      await user.type(combobox, 'complete');
+      await waitFor(() => {
+        expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
+      });
+      await user.click(screen.getByText('Complete Blood Count'));
+
+      // Verify combobox is reset (selectedItem is null, allowing new searches)
+      await waitFor(() => {
+        expect(combobox).toHaveValue('');
+      });
+
+      // Verify we can immediately search for another item (proves selectedItem was reset to null)
+      await user.type(combobox, 'glucose');
+      await waitFor(() => {
+        expect(screen.getByText('Blood Glucose Test')).toBeInTheDocument();
+      });
+
+      // Verify the new search works correctly - this proves selectedItem is null
+      // because the ComboBox wouldn't accept new input if selectedItem was still set
+      await user.click(screen.getByText('Blood Glucose Test'));
+      expect(mockStore.addServiceRequest).toHaveBeenCalledWith(
+        'Lab Order',
+        'glucose-001',
+        'Blood Glucose Test',
+      );
+    });
   });
 
   describe('Selected Investigations Display', () => {
@@ -1113,6 +1170,38 @@ describe('InvestigationsForm', () => {
       expect(
         screen.getByRole('option', { name: 'LAB ORDER' }),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('Keyboard Navigation', () => {
+    test('should support keyboard navigation and selection in ComboBox', async () => {
+      const user = userEvent.setup();
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+
+      const searchBox = screen.getByRole('combobox', {
+        name: /search for investigations/i,
+      });
+
+      // Type to open dropdown
+      await user.type(searchBox, 'glucose');
+
+      await waitFor(() => {
+        expect(screen.getByText('Blood Glucose Test')).toBeInTheDocument();
+      });
+
+      // Navigate with arrow key and select with Enter
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{Enter}');
+
+      await waitFor(() => {
+        expect(mockStore.addServiceRequest).toHaveBeenCalled();
+      });
     });
   });
 

@@ -24,6 +24,8 @@ import styles from './styles/MedicationsForm.module.scss';
 const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
+  const [selectedMedicationItem, setSelectedMedicationItem] =
+    useState<MedicationFilterResult | null>(null);
   const isSelectingRef = useRef(false);
   const {
     medicationConfig,
@@ -70,10 +72,13 @@ const MedicationsForm: React.FC = React.memo(() => {
     addMedication(selectedItem.medication, selectedItem.displayName);
     // Clear the search term after selection
     setSearchMedicationTerm('');
-    // Reset the flag after a short delay to allow ComboBox to update
+    // First set the selected item, then clear it to reset ComboBox
+    setSelectedMedicationItem(selectedItem);
+    // Reset the flag and clear the selection after a short delay to allow ComboBox to update
     setTimeout(() => {
+      setSelectedMedicationItem(null);
       isSelectingRef.current = false;
-    }, 100);
+    }, 1);
   };
 
   const filteredSearchResults = useMemo(() => {
@@ -158,6 +163,7 @@ const MedicationsForm: React.FC = React.memo(() => {
           itemToString={(item) => (item ? item.displayName : '')}
           onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+          selectedItem={selectedMedicationItem}
           size="md"
           autoAlign
           aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}

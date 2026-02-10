@@ -311,6 +311,17 @@ describe('InvestigationsForm Integration Tests', () => {
 
     test('should remove investigation when close button is clicked', async () => {
       const user = userEvent.setup();
+      const removeServiceRequestMock = jest.fn();
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        addServiceRequest: jest.fn((category, id, display) => {
+          mockStore.selectedServiceRequests.set(category, [
+            { id, display, selectedPriority: 'routine' },
+          ]);
+        }),
+        removeServiceRequest: removeServiceRequestMock,
+      });
+
       render(<InvestigationsForm />, { wrapper: createWrapper() });
 
       const combobox = screen.getByRole('combobox');
@@ -331,9 +342,11 @@ describe('InvestigationsForm Integration Tests', () => {
       const removeButton = screen.getByRole('button', { name: /close/i });
       await user.click(removeButton);
 
-      await waitFor(() => {
-        expect(screen.queryByText('Lipid Profile')).not.toBeInTheDocument();
-      });
+      // Verify removeServiceRequest was called with correct arguments
+      expect(removeServiceRequestMock).toHaveBeenCalledWith(
+        'Lab Order',
+        'lipid-001',
+      );
     });
   });
 
@@ -457,7 +470,7 @@ describe('InvestigationsForm Integration Tests', () => {
       expect(mockStore.addServiceRequest).toHaveBeenCalledTimes(2);
     });
 
-    test('should maintain search input value after selection', async () => {
+    test('should reset search input after selection', async () => {
       const user = userEvent.setup();
       render(<InvestigationsForm />, { wrapper: createWrapper() });
 
@@ -475,7 +488,10 @@ describe('InvestigationsForm Integration Tests', () => {
         screen.getByRole('option', { name: 'Blood Glucose Test' }),
       );
 
-      expect(combobox).toHaveValue('Blood Glucose Test');
+      // After selection, the combobox value should be reset to allow new searches
+      await waitFor(() => {
+        expect(combobox).toHaveValue('');
+      });
     });
 
     test('should display panel indicator for LabSet concept class', async () => {

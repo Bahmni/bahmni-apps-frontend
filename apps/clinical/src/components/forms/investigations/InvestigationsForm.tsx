@@ -31,6 +31,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
   const currentPractitionerUuid = practitioner?.uuid;
 
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedInvestigationItem, setSelectedInvestigationItem] =
+    useState<FlattenedInvestigations | null>(null);
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
   const [duplicateInvestigationId, setDuplicateInvestigationId] = useState<
@@ -274,6 +276,14 @@ const InvestigationsForm: React.FC = React.memo(() => {
       selectedItem.code,
       selectedItem.display,
     );
+    // Clear the search term after selection
+    setSearchTerm('');
+    // First set the selected item, then clear it to reset ComboBox
+    setSelectedInvestigationItem(selectedItem);
+    // Clear the selection after a short delay to allow ComboBox to update
+    setTimeout(() => {
+      setSelectedInvestigationItem(null);
+    }, 1);
   };
 
   return (
@@ -295,6 +305,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
         itemToString={(item) => item?.display ?? ''}
         onChange={({ selectedItem }) => handleChange(selectedItem)}
         onInputChange={(input) => setSearchTerm(input)}
+        selectedItem={selectedInvestigationItem}
         autoAlign
         aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}
         size="md"

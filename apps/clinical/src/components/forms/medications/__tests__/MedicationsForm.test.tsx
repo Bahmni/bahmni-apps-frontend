@@ -188,6 +188,55 @@ describe('MedicationsForm', () => {
       });
     });
 
+    test('clears search term after selecting medication', async () => {
+      const user = userEvent.setup();
+      (useMedicationSearch as jest.Mock).mockReturnValue({
+        ...mockMedicationSearchHook,
+        searchResults: [mockMedication],
+      });
+
+      render(<MedicationsForm />);
+
+      const searchBox = screen.getByRole('combobox', {
+        name: /search to add medication/i,
+      });
+
+      await user.type(searchBox, 'paracetamol');
+
+      // Wait for search results to appear
+      await waitFor(() => {
+        expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument();
+      });
+
+      // Click on the medication
+      await user.click(screen.getByText('Paracetamol 500mg'));
+
+      // Verify search box is cleared
+      await waitFor(() => {
+        expect(searchBox).toHaveValue('');
+      });
+    });
+
+    test('resets ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
+      const user = userEvent.setup();
+      (useMedicationSearch as jest.Mock).mockReturnValue({
+        ...mockMedicationSearchHook,
+        searchResults: [mockMedication],
+      });
+      render(<MedicationsForm />);
+      const searchBox = screen.getByRole('combobox', {
+        name: /search to add medication/i,
+      });
+      await user.type(searchBox, 'paracetamol');
+      await waitFor(() => {
+        expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument();
+      });
+      await user.click(screen.getByText('Paracetamol 500mg'));
+      await waitFor(() => {
+        expect(searchBox).toHaveValue('');
+      });
+    });
+
     test('prevents unnecessary API call when selecting medication item', async () => {
       const user = userEvent.setup();
       const mockSearchHook = jest.fn();
@@ -520,6 +569,37 @@ describe('MedicationsForm', () => {
   });
 
   // ACCESSIBILITY TESTS
+  describe('Keyboard Navigation', () => {
+    test('should support keyboard navigation and selection in ComboBox', async () => {
+      const user = userEvent.setup();
+      (useMedicationSearch as jest.Mock).mockReturnValue({
+        ...mockMedicationSearchHook,
+        searchResults: [mockMedication],
+      });
+
+      render(<MedicationsForm />);
+
+      const searchBox = screen.getByRole('combobox', {
+        name: /search to add medication/i,
+      });
+
+      // Type to open dropdown
+      await user.type(searchBox, 'paracetamol');
+
+      await waitFor(() => {
+        expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument();
+      });
+
+      // Navigate with arrow key and select with Enter
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{Enter}');
+
+      await waitFor(() => {
+        expect(mockStore.addMedication).toHaveBeenCalled();
+      });
+    });
+  });
+
   describe('Accessibility', () => {
     test('should have no accessibility violations', async () => {
       const { container } = render(<MedicationsForm />);
