@@ -23,5 +23,6 @@
   "DRUG_ORDERS_TABLE": "Ordonnances de Médicaments",
   "SEARCH_ORDERS_PLACEHOLDER": "Rechercher par Nom du Patient, Identifiant, Prestataire ou Propriétaire",
   "SEARCH_ORDERS_LABEL": "Rechercher des ordonnances",
-  "CLEAR_SEARCH_INPUT": "Effacer la recherche"
+  "CLEAR_SEARCH_INPUT": "Effacer la recherche",
+  "LABEL_SPEECH_THERAPY_ORDERS_KEY": "Thérapie de la Parole"
 }
