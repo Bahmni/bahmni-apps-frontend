@@ -23,5 +23,6 @@
   "DRUG_ORDERS_TABLE": "Órdenes de Medicamentos",
   "SEARCH_ORDERS_PLACEHOLDER": "Buscar por Nombre del Paciente, Identificador, Proveedor o Propietario",
   "SEARCH_ORDERS_LABEL": "Buscar órdenes",
-  "CLEAR_SEARCH_INPUT": "Limpiar búsqueda"
+  "CLEAR_SEARCH_INPUT": "Limpiar búsqueda",
+  "LABEL_SPEECH_THERAPY_ORDERS_KEY": "Terapia del Habla"
 }
