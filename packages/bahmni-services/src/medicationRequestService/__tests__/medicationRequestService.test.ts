@@ -4,6 +4,7 @@ import {
   Medication,
 } from 'fhir/r4';
 import { get } from '../../api';
+import { VACCINES_URL } from '../constants';
 import {
   getPatientMedications,
   fetchMedicationOrdersMetadata,
@@ -1157,9 +1158,7 @@ describe('medicationRequestService', () => {
 
       const result = await getVaccinations();
 
-      expect(get).toHaveBeenCalledWith(
-        '/openmrs/ws/fhir2/R4/Medication?code=http://hl7.org/fhir/sid/cvx|',
-      );
+      expect(get).toHaveBeenCalledWith(VACCINES_URL);
       expect(result).toEqual(mockBundle);
       expect(result.entry).toHaveLength(2);
     });
