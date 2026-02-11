@@ -17,6 +17,12 @@ export const Modal: React.FC<ModalProps> & {
   Body: typeof ModalBody;
   Footer: typeof ModalFooter;
 } = ({ testId, children, ...carbonProps }) => {
+  /*
+    Portal to div with id main-display-area for consistent positioning and stacking with
+    layout-based modals and falls back to document.body if main-display-area doesn't exist.
+    This ensures, consistent z-index stacking and positioning across all modals and
+    layout-specific styling
+  */
   return createPortal(
     <div
       id="modal-root"
@@ -31,7 +37,6 @@ export const Modal: React.FC<ModalProps> & {
   );
 };
 
-// Attach subcomponents to Modal
 Modal.Header = ModalHeader;
 Modal.Body = ModalBody;
 Modal.Footer = ModalFooter;
