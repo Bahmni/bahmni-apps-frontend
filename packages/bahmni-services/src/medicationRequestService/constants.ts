@@ -27,4 +27,4 @@ export const MEDICATIONS_SEARCH_URL = (searchTerm: string, count: number) =>
   `/Medication?name=${encodeURIComponent(searchTerm)}&_count=${count}`;
 
 export const VACCINES_URL =
-  OPENMRS_FHIR_R4 + '/Medication?code=http://hl7.org/fhir/sid/cvx|';
+  OPENMRS_FHIR_R4 + '/Medication?code=http://hl7.org/fhir/sid/cvx|&_count=100';
