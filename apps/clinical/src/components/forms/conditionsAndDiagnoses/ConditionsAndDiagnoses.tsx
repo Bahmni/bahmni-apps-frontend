@@ -139,11 +139,8 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     // Successfully added, clear any previous duplicate notification
     setShowDuplicateNotification(false);
     addDiagnosis(selectedItem);
-    // Clear the search term after selection
     setSearchDiagnosesTerm('');
-    // First set the selected item, then clear it to reset ComboBox
     setSelectedDiagnosisItem(selectedItem);
-    // Clear the selection after a short delay to allow ComboBox to update
     setTimeout(() => {
       setSelectedDiagnosisItem(null);
     }, 1);

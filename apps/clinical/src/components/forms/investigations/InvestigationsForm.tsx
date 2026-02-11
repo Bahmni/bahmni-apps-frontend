@@ -276,11 +276,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
       selectedItem.code,
       selectedItem.display,
     );
-    // Clear the search term after selection
     setSearchTerm('');
-    // First set the selected item, then clear it to reset ComboBox
     setSelectedInvestigationItem(selectedItem);
-    // Clear the selection after a short delay to allow ComboBox to update
     setTimeout(() => {
       setSelectedInvestigationItem(null);
     }, 1);

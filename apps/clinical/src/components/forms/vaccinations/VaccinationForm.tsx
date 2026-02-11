@@ -83,9 +83,7 @@ const VaccinationForm: React.FC = React.memo(() => {
     isSelectingRef.current = true;
     addVaccination(selectedItem.medication!, selectedItem.displayName);
     setSearchVaccinationTerm('');
-    // First set the selected item, then clear it to re
     setSelectedVaccinationItem(selectedItem);
-    // Reset the flag and clear the selection after a short delay to allow ComboBox to update
     setTimeout(() => {
       setSelectedVaccinationItem(null);
       isSelectingRef.current = false;

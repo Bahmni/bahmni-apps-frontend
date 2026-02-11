@@ -145,11 +145,8 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         );
         if (form) {
           onFormSelect?.(form);
-          // Clear the search term after selection
           setSearchTerm('');
-          // First set the selected item, then clear it to reset ComboBox
           setSelectedItem(selected);
-          // Clear the selection after a short delay to allow ComboBox to update
           setTimeout(() => {
             setSelectedItem(null);
           }, 1);

@@ -146,11 +146,8 @@ const AllergiesForm: React.FC = React.memo(() => {
     setShowDuplicateNotification(false);
     setDuplicateAllergyId(null);
     addAllergy(selectedItem as AllergenConcept);
-    // Clear the search term after selection
     setSearchAllergenTerm('');
-    // First set the selected item, then clear it to reset ComboBox
     setSelectedAllergenItem(selectedItem as AllergenConcept);
-    // Clear the selection after a short delay to allow ComboBox to update
     setTimeout(() => {
       setSelectedAllergenItem(null);
     }, 1);

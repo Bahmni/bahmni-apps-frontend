@@ -70,11 +70,8 @@ const MedicationsForm: React.FC = React.memo(() => {
     // Set flag to prevent search when ComboBox updates its input
     isSelectingRef.current = true;
     addMedication(selectedItem.medication, selectedItem.displayName);
-    // Clear the search term after selection
     setSearchMedicationTerm('');
-    // First set the selected item, then clear it to reset ComboBox
     setSelectedMedicationItem(selectedItem);
-    // Reset the flag and clear the selection after a short delay to allow ComboBox to update
     setTimeout(() => {
       setSelectedMedicationItem(null);
       isSelectingRef.current = false;
