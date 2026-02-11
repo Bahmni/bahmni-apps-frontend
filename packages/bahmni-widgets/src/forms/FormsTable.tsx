@@ -23,7 +23,6 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
 import {
@@ -271,50 +270,47 @@ const FormsTable: React.FC<WidgetProps> = ({
         )}
       </div>
 
-      {isModalOpen &&
-        selectedRecord &&
-        createPortal(
-          <Modal
-            id="modalIdForActionAreaLayout"
-            open={isModalOpen}
-            onRequestClose={handleCloseModal}
-            modalHeading={selectedRecord.formName}
-            modalLabel={`${selectedRecord.recordedOn} | ${selectedRecord.recordedBy}`}
-            passiveModal
-            size="md"
-            testId="form-details-modal"
-          >
-            <div className={styles.formContent}>
-              {isLoadingMetadata || isLoadingEncounterData ? (
-                <SkeletonText width="100%" lineCount={3} />
-              ) : metadataError ? (
-                <div>
-                  {getFormattedError(metadataError).message ??
-                    t('ERROR_FETCHING_FORM_METADATA')}
-                </div>
-              ) : formDataError ? (
-                <div>
-                  {getFormattedError(formDataError).message ??
-                    t('ERROR_FETCHING_FORM_DATA')}
-                </div>
-              ) : filteredObservations.length > 0 ? (
-                <div className={styles.formDetailsContainer}>
-                  {filteredObservations.map((obs, index) => (
-                    <ObservationItem
-                      key={`${obs.concept.uuid}`}
-                      observation={obs as unknown as ObservationData}
-                      index={index}
-                      formName={selectedRecord.formName}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div>{t('NO_FORM_DATA_AVAILABLE')}</div>
-              )}
-            </div>
-          </Modal>,
-          document.getElementById('actionAreaLayout') ?? document.body,
-        )}
+      {isModalOpen && selectedRecord && (
+        <Modal
+          id="modalIdForActionAreaLayout"
+          open={isModalOpen}
+          onRequestClose={handleCloseModal}
+          modalHeading={selectedRecord.formName}
+          modalLabel={`${selectedRecord.recordedOn} | ${selectedRecord.recordedBy}`}
+          passiveModal
+          size="md"
+          testId="form-details-modal"
+        >
+          <div className={styles.formContent}>
+            {isLoadingMetadata || isLoadingEncounterData ? (
+              <SkeletonText width="100%" lineCount={3} />
+            ) : metadataError ? (
+              <div>
+                {getFormattedError(metadataError).message ??
+                  t('ERROR_FETCHING_FORM_METADATA')}
+              </div>
+            ) : formDataError ? (
+              <div>
+                {getFormattedError(formDataError).message ??
+                  t('ERROR_FETCHING_FORM_DATA')}
+              </div>
+            ) : filteredObservations.length > 0 ? (
+              <div className={styles.formDetailsContainer}>
+                {filteredObservations.map((obs, index) => (
+                  <ObservationItem
+                    key={`${obs.concept.uuid}`}
+                    observation={obs as unknown as ObservationData}
+                    index={index}
+                    formName={selectedRecord.formName}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div>{t('NO_FORM_DATA_AVAILABLE')}</div>
+            )}
+          </div>
+        </Modal>
+      )}
     </>
   );
 };

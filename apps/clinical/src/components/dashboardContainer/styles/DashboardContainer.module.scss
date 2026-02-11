@@ -20,6 +20,9 @@
 }
 
 @include breakpoint-down(lg) {
+  .displayControlSection {
+    padding-inline: calc($spacing-01 + $spacing-02);
+  }
   .sectionContainer {
     padding-inline: 0;
   }

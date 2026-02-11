@@ -16,16 +16,17 @@
 }
 
 .collapsedModal {
-  :global(#modalIdForActionAreaLayout) {
-    position: absolute;
-    width: 40%;
-  }
-
-  &:has([role="dialog"]) {
-    [role="dialog"] {
-      width: 100% !important;
-      height: 100% !important;
-      max-block-size: 100%;
+  :global(#modal-root) {
+    [role="presentation"] {
+      position: absolute;
+      left: -$spacing-09;
+      width: calc(100% + $spacing-09);
+      z-index: 9000;
+      [role="dialog"] {
+        width: 100% !important;
+        height: 100% !important;
+        max-block-size: 100%;
+      }
     }
   }
 }
@@ -64,7 +65,7 @@
   width: $spacing-02;
   background: $background-hover;
   cursor: col-resize;
-  z-index: 10;
+  z-index: 9999;
 }
 
 .separatorGrip {
@@ -79,7 +80,6 @@
   height: $spacing-07;
   background: $layer-active-02;
   border-radius: $spacing-01;
-  z-index: 11;
   pointer-events: none;
 }
 

@@ -66,27 +66,29 @@ export const VideoTile: React.FC<VideoTileProps> = ({
         </div>
       </button>
 
-      <Modal
-        open={isModalOpen}
-        onRequestClose={handleModalClose}
-        modalHeading={modalTitle}
-        passiveModal
-        size="lg"
-        id={`${id}-modal`}
-        testId={`${id}-modal-test-id`}
-      >
-        <div className={styles.modalVideoContainer}>
-          <video
-            id={`${id}-modal-video`}
-            data-testid={`${id}-modal-video-test-id`}
-            aria-label={`${id}-modal-video-aria-label`}
-            src={baseURL + videoSrc}
-            className={styles.modalVideo}
-            controls
-            autoPlay
-          />
-        </div>
-      </Modal>
+      {isModalOpen && (
+        <Modal
+          open={isModalOpen}
+          onRequestClose={handleModalClose}
+          modalHeading={modalTitle}
+          passiveModal
+          size="lg"
+          id="modalIdForActionAreaLayout"
+          testId={`${id}-modal-test-id`}
+        >
+          <div className={styles.modalVideoContainer}>
+            <video
+              id={`${id}-modal-video`}
+              data-testid={`${id}-modal-video-test-id`}
+              aria-label={`${id}-modal-video-aria-label`}
+              src={baseURL + videoSrc}
+              className={styles.modalVideo}
+              controls
+              autoPlay
+            />
+          </div>
+        </Modal>
+      )}
     </>
   );
 };
