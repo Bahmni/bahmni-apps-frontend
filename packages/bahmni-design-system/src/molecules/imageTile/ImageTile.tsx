@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Modal } from '../../atoms/modal';
 import styles from './styles/ImageTile.module.scss';
 
@@ -58,30 +57,28 @@ export const ImageTile: React.FC<ImageTileProps> = ({
         />
       </button>
 
-      {isModalOpen &&
-        createPortal(
-          <Modal
-            open={isModalOpen}
-            onRequestClose={handleModalClose}
-            modalHeading={modalTitle}
-            passiveModal
-            size="lg"
-            id="modalIdForActionAreaLayout"
-            testId={`${id}-modal-test-id`}
-          >
-            <div className={styles.modalImageContainer}>
-              <img
-                id={`${id}-modal-image`}
-                data-testid={`${id}-modal-image-test-id`}
-                aria-label={`${id}-modal-image-aria-label`}
-                src={baseURL + imageSrc}
-                alt={alt}
-                className={styles.modalImage}
-              />
-            </div>
-          </Modal>,
-          document.getElementById('action-area-layout') ?? document.body,
-        )}
+      {isModalOpen && (
+        <Modal
+          open={isModalOpen}
+          onRequestClose={handleModalClose}
+          modalHeading={modalTitle}
+          passiveModal
+          size="lg"
+          id="modalIdForActionAreaLayout"
+          testId={`${id}-modal-test-id`}
+        >
+          <div className={styles.modalImageContainer}>
+            <img
+              id={`${id}-modal-image`}
+              data-testid={`${id}-modal-image-test-id`}
+              aria-label={`${id}-modal-image-aria-label`}
+              src={baseURL + imageSrc}
+              alt={alt}
+              className={styles.modalImage}
+            />
+          </div>
+        </Modal>
+      )}
     </>
   );
 };
