@@ -1694,5 +1694,108 @@ describe('consultationBundleService', () => {
 
       expect(result).toHaveLength(0);
     });
+
+    describe('Parameter Validation - All 4 Paths', () => {
+      it('should throw error when observationFormsData is null', () => {
+        expect(() =>
+          createObservationBundleEntries({
+            observationFormsData: null as any,
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+      });
+
+      it('should throw error when encounterSubject is null', () => {
+        expect(() =>
+          createObservationBundleEntries({
+            observationFormsData: { 'form-uuid-1': mockObservations },
+            encounterSubject: null as any,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+      });
+
+      it('should throw error when encounterReference is empty', () => {
+        expect(() =>
+          createObservationBundleEntries({
+            observationFormsData: { 'form-uuid-1': mockObservations },
+            encounterSubject: mockEncounterSubject,
+            encounterReference: '',
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+      });
+
+      it('should throw error when practitionerUUID is empty', () => {
+        expect(() =>
+          createObservationBundleEntries({
+            observationFormsData: { 'form-uuid-1': mockObservations },
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: '',
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+      });
+    });
+
+    describe('Multiple Forms Handling', () => {
+      it('should handle multiple forms with observations', () => {
+        const obs2: Form2Observation[] = [
+          {
+            concept: { uuid: 'concept-uuid-2', datatype: 'Numeric' },
+            value: 98.6,
+          },
+        ];
+
+        const result = createObservationBundleEntries({
+          observationFormsData: {
+            'form-uuid-1': mockObservations,
+            'form-uuid-2': obs2,
+          },
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+        expect(
+          result.every((r) => r.resource?.resourceType === 'Observation'),
+        ).toBe(true);
+      });
+
+      it('should skip null form data in multiple forms', () => {
+        const result = createObservationBundleEntries({
+          observationFormsData: {
+            'form-uuid-1': mockObservations,
+            'form-uuid-2': null as any,
+            'form-uuid-3': mockObservations,
+          },
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+      });
+
+      it('should create valid bundle structure for all entries', () => {
+        const result = createObservationBundleEntries({
+          observationFormsData: { 'form-uuid-1': mockObservations },
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        result.forEach((entry) => {
+          expect(entry.fullUrl).toBeDefined();
+          expect(entry.resource?.resourceType).toBe('Observation');
+          expect(entry.request?.method).toBe('POST');
+          expect(entry.request?.url).toBe('Observation');
+        });
+      });
+    });
   });
 });
