@@ -24,7 +24,7 @@ exports[`AllergiesForm Snapshots should match snapshot with no allergies 1`] = `
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_5s_-menu"
+            aria-controls="downshift-_r_65_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for allergies"
@@ -40,11 +40,11 @@ exports[`AllergiesForm Snapshots should match snapshot with no allergies 1`] = `
             value=""
           />
           <button
-            aria-controls="downshift-_r_5s_-menu"
+            aria-controls="downshift-_r_65_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_5s_-toggle-button"
+            id="downshift-_r_65_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -66,9 +66,9 @@ exports[`AllergiesForm Snapshots should match snapshot with no allergies 1`] = `
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_5s_-label"
+          aria-labelledby="downshift-_r_65_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_5s_-menu"
+          id="downshift-_r_65_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -102,7 +102,7 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_5v_-menu"
+            aria-controls="downshift-_r_68_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for allergies"
@@ -118,11 +118,11 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
             value=""
           />
           <button
-            aria-controls="downshift-_r_5v_-menu"
+            aria-controls="downshift-_r_68_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_5v_-toggle-button"
+            id="downshift-_r_68_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -144,9 +144,9 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_5v_-label"
+          aria-labelledby="downshift-_r_68_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_5v_-menu"
+          id="downshift-_r_68_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -205,8 +205,8 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-_r_62_-toggle-button"
-                    id="downshift-_r_62_-label"
+                    for="downshift-_r_6b_-toggle-button"
+                    id="downshift-_r_6b_-label"
                   >
                     ALLERGY_SELECT_SEVERITY
                   </label>
@@ -216,12 +216,12 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_62_-menu"
+                      aria-controls="downshift-_r_6b_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="ALLERGY_SEVERITY_ARIA_LABEL"
                       class="cds--list-box__field"
-                      id="downshift-_r_62_-toggle-button"
+                      id="downshift-_r_6b_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="ALLERGY_SELECT_SEVERITY"
@@ -257,9 +257,9 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_62_-label"
+                      aria-labelledby="downshift-_r_6b_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_62_-menu"
+                      id="downshift-_r_6b_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -352,7 +352,7 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_67_"
+                  aria-labelledby="tooltip-_r_6g_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -377,7 +377,7 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_67_"
+                id="tooltip-_r_6g_"
                 role="tooltip"
               >
                 <span

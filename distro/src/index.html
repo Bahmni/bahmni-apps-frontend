@@ -7,6 +7,14 @@
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
   </head>
   <body>
+    <script>
+      // Suppress ResizeObserver loop warning (caused by Carbon's ComboBox autoAlign)
+      window.addEventListener('error', function(e) {
+        if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
+          e.stopImmediatePropagation();
+        }
+      });
+    </script>
     <div id="root"></div>
   </body>
 </html>

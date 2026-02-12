@@ -31,6 +31,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
   const currentPractitionerUuid = practitioner?.uuid;
 
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedInvestigationItem, setSelectedInvestigationItem] =
+    useState<FlattenedInvestigations | null>(null);
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
   const [duplicateInvestigationId, setDuplicateInvestigationId] = useState<
@@ -274,6 +276,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
       selectedItem.code,
       selectedItem.display,
     );
+    setSearchTerm('');
+    setSelectedInvestigationItem(selectedItem);
   };
 
   return (
@@ -295,6 +299,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
         itemToString={(item) => item?.display ?? ''}
         onChange={({ selectedItem }) => handleChange(selectedItem)}
         onInputChange={(input) => setSearchTerm(input)}
+        selectedItem={selectedInvestigationItem}
+        clearSelectedOnChange
         autoAlign
         aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}
         size="md"

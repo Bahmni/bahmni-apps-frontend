@@ -145,8 +145,8 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         );
         if (form) {
           onFormSelect?.(form);
-          // Clear the selection after selecting a form
-          setSelectedItem(null);
+          setSearchTerm('');
+          setSelectedItem(selected);
         }
       },
       [availableForms, onFormSelect],
@@ -239,6 +239,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
             selectedItem={selectedItem}
             onChange={handleOnChange}
             onInputChange={handleSearch}
+            clearSelectedOnChange
             size="md"
             autoAlign
             disabled={isSearchLoading}
