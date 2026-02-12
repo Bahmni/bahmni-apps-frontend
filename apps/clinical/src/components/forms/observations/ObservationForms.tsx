@@ -15,6 +15,7 @@ import {
   VALIDATION_STATE_INVALID,
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
+import useComboBoxSelection from '../../../hooks/useComboBoxSelection';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import styles from './styles/ObservationForms.module.scss';
 
@@ -60,11 +61,11 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
   }) => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedItem, setSelectedItem] = useState<{
+    const { selectedItem, resetSelection } = useComboBoxSelection<{
       id: string;
       label: string;
       disabled?: boolean;
-    } | null>(null);
+    }>();
     const { getFormData } = useObservationFormsStore();
 
     // Client-side filtering based on search term
@@ -146,13 +147,10 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         if (form) {
           onFormSelect?.(form);
           setSearchTerm('');
-          setSelectedItem(selected);
-          setTimeout(() => {
-            setSelectedItem(null);
-          }, 1);
+          resetSelection(selected);
         }
       },
-      [availableForms, onFormSelect],
+      [availableForms, onFormSelect, resetSelection],
     );
 
     const searchResults = useMemo(() => {

@@ -10,6 +10,7 @@ import { useNotification, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useAllergenSearch from '../../../hooks/useAllergenSearch';
+import useComboBoxSelection from '../../../hooks/useComboBoxSelection';
 import { AllergenConcept } from '../../../models/allergy';
 import { useAllergyStore } from '../../../stores/allergyStore';
 import { getCategoryDisplayName } from '../../../utils/allergy';
@@ -31,8 +32,8 @@ const AllergiesForm: React.FC = React.memo(() => {
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const [searchAllergenTerm, setSearchAllergenTerm] = useState('');
-  const [selectedAllergenItem, setSelectedAllergenItem] =
-    useState<AllergenConcept | null>(null);
+  const { selectedItem: selectedAllergenItem, resetSelection } =
+    useComboBoxSelection<AllergenConcept>();
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
   const [duplicateAllergyId, setDuplicateAllergyId] = useState<string | null>(
@@ -147,10 +148,7 @@ const AllergiesForm: React.FC = React.memo(() => {
     setDuplicateAllergyId(null);
     addAllergy(selectedItem as AllergenConcept);
     setSearchAllergenTerm('');
-    setSelectedAllergenItem(selectedItem as AllergenConcept);
-    setTimeout(() => {
-      setSelectedAllergenItem(null);
-    }, 1);
+    resetSelection(selectedItem as AllergenConcept);
   };
 
   const filteredSearchResults = useMemo(() => {

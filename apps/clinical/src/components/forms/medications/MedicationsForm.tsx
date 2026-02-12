@@ -6,7 +6,8 @@ import {
   Tile,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
+import useComboBoxSelection from '../../../hooks/useComboBoxSelection';
 import useMedicationConfig from '../../../hooks/useMedicationConfig';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
@@ -24,9 +25,8 @@ import styles from './styles/MedicationsForm.module.scss';
 const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
-  const [selectedMedicationItem, setSelectedMedicationItem] =
-    useState<MedicationFilterResult | null>(null);
-  const isSelectingRef = useRef(false);
+  const { selectedItem: selectedMedicationItem, resetSelection } =
+    useComboBoxSelection<MedicationFilterResult>();
   const {
     medicationConfig,
     loading: medicationConfigLoading,
@@ -56,10 +56,7 @@ const MedicationsForm: React.FC = React.memo(() => {
   } = useMedicationStore();
 
   const handleSearch = (searchTerm: string) => {
-    // Only update search term if we're not in the process of selecting an item
-    if (!isSelectingRef.current) {
-      setSearchMedicationTerm(searchTerm);
-    }
+    setSearchMedicationTerm(searchTerm);
   };
 
   const handleOnChange = (selectedItem: MedicationFilterResult) => {
@@ -67,15 +64,9 @@ const MedicationsForm: React.FC = React.memo(() => {
       return;
     }
 
-    // Set flag to prevent search when ComboBox updates its input
-    isSelectingRef.current = true;
     addMedication(selectedItem.medication, selectedItem.displayName);
     setSearchMedicationTerm('');
-    setSelectedMedicationItem(selectedItem);
-    setTimeout(() => {
-      setSelectedMedicationItem(null);
-      isSelectingRef.current = false;
-    }, 1);
+    resetSelection(selectedItem);
   };
 
   const filteredSearchResults = useMemo(() => {
