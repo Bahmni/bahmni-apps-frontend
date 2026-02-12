@@ -208,7 +208,7 @@ describe('useAddressFields', () => {
       expect(result.current.address.stateProvince).toBe('Maharashtra');
     });
 
-    it('should clear child fields when parent field changes', () => {
+    it('should not clear child fields when parent field value changes via handleFieldChange', () => {
       const config: AddressHierarchyConfig = {
         showAddressFieldsTopDown: true,
       };
@@ -229,9 +229,93 @@ describe('useAddressFields', () => {
       });
 
       expect(result.current.address.stateProvince).toBe('Karnataka');
+      // Child fields should NOT be cleared by handleFieldChange
+      expect(result.current.address.countyDistrict).toBe('Mumbai District');
+      expect(result.current.address.cityVillage).toBe('Mumbai');
+      expect(result.current.address.country).toBe('India');
+    });
+
+    it('should clear child fields when clearChildFields is called directly', () => {
+      const config: AddressHierarchyConfig = {
+        showAddressFieldsTopDown: true,
+        strictAutocompleteFromLevel: 'countyDistrict', // Mark countyDistrict and its parents as strict
+      };
+
+      const initialAddress = {
+        country: 'India',
+        stateProvince: 'Maharashtra',
+        countyDistrict: 'Mumbai District',
+        cityVillage: 'Mumbai',
+      };
+
+      const { result } = renderHook(() =>
+        useAddressFields(mockAddressLevels, config, initialAddress),
+      );
+
+      act(() => {
+        result.current.clearChildFields('stateProvince');
+      });
+
+      expect(result.current.address.stateProvince).toBe('Maharashtra');
+      // Descendants of stateProvince: [cityVillage, countyDistrict]
+      // countyDistrict is strict (parent of configured level), so it gets cleared
       expect(result.current.address.countyDistrict).toBeNull();
-      expect(result.current.address.cityVillage).toBeNull();
-      expect(result.current.address.country).toBe('India'); // Parent should remain
+      // cityVillage is free text (child of configured level), so it's preserved
+      expect(result.current.address.cityVillage).toBe('Mumbai');
+      // country is not a descendant (it's a parent), so it stays unchanged
+      expect(result.current.address.country).toBe('India');
+    });
+
+    it('should clear only autocomplete child fields and preserve free text child fields', () => {
+      // Setup: Create address levels with mix of autocomplete and free text fields
+      // Hierarchy: country (auto) -> stateProvince (auto) -> countyDistrict (auto) -> cityVillage (free text)
+      const mixedLevels: AddressLevel[] = [
+        { addressField: 'country', name: 'Country', required: true },
+        { addressField: 'stateProvince', name: 'State', required: true },
+        { addressField: 'countyDistrict', name: 'District', required: false },
+        { addressField: 'cityVillage', name: 'Village', required: false },
+      ];
+
+      const config: AddressHierarchyConfig = {
+        showAddressFieldsTopDown: true,
+        strictAutocompleteFromLevel: 'countyDistrict', // Only countyDistrict and parents (stateProvince, country) are strict
+      };
+
+      const initialAddress = {
+        country: 'India',
+        stateProvince: 'Maharashtra',
+        countyDistrict: 'Mumbai District',
+        cityVillage: 'Mumbai Free Text', // Free text field (child of countyDistrict)
+      };
+
+      const { result } = renderHook(() =>
+        useAddressFields(mixedLevels, config, initialAddress),
+      );
+
+      // Verify initial state
+      expect(result.current.address.country).toBe('India');
+      expect(result.current.address.stateProvince).toBe('Maharashtra');
+      expect(result.current.address.countyDistrict).toBe('Mumbai District');
+      expect(result.current.address.cityVillage).toBe('Mumbai Free Text');
+
+      // Clear child fields when stateProvince is changed
+      act(() => {
+        result.current.clearChildFields('stateProvince');
+      });
+
+      // Assert: Autocomplete descendants should be cleared, free text descendants should be preserved
+      // Descendants of stateProvince are: [cityVillage, countyDistrict]
+      expect(result.current.address.stateProvince).toBe('Maharashtra'); // Field itself unchanged
+      expect(result.current.address.country).toBe('India'); // Parent (not descendant) unchanged
+      expect(result.current.address.countyDistrict).toBeNull(); // Autocomplete descendant cleared
+      expect(result.current.address.cityVillage).toBe('Mumbai Free Text'); // Free text descendant preserved
+
+      // Verify selectedMetadata is also updated correctly
+      expect(result.current.selectedMetadata.country.value).toBe('India'); // Not a descendant
+      expect(result.current.selectedMetadata.countyDistrict.value).toBeNull();
+      expect(result.current.selectedMetadata.cityVillage.value).toBe(
+        'Mumbai Free Text',
+      ); // Preserved
     });
 
     it('should clear metadata when manually typing', () => {
