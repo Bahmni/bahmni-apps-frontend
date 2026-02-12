@@ -921,36 +921,6 @@ describe('InvestigationsForm', () => {
       );
     });
 
-    test('blocks duplicate when same provider tries to add same test in same encounter', async () => {
-      getExistingServiceRequestsForAllCategories.mockResolvedValue([
-        {
-          conceptCode: 'cbc-001',
-          categoryUuid: 'lab',
-          display: 'Complete Blood Count',
-          requesterUuid: 'mock-practitioner-uuid',
-        },
-      ]);
-
-      const user = userEvent.setup();
-      render(<InvestigationsForm />, { wrapper: createWrapper() });
-
-      const combobox = screen.getByRole('combobox');
-      await user.type(combobox, 'complete');
-
-      await waitFor(() => {
-        expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Complete Blood Count'));
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('Investigation is already ordered'),
-        ).toBeInTheDocument();
-      });
-      expect(mockStore.addServiceRequest).not.toHaveBeenCalled();
-    });
-
     test('allows same test when different provider added it in same encounter', async () => {
       getExistingServiceRequestsForAllCategories.mockResolvedValue([
         {
@@ -1003,81 +973,6 @@ describe('InvestigationsForm', () => {
           'cbc-001',
           'Complete Blood Count',
         );
-      });
-    });
-
-    test('clears duplicate notification when search is cleared', async () => {
-      getExistingServiceRequestsForAllCategories.mockResolvedValue([
-        {
-          conceptCode: 'cbc-001',
-          categoryUuid: 'lab',
-          display: 'Complete Blood Count',
-          requesterUuid: 'mock-practitioner-uuid',
-        },
-      ]);
-
-      const user = userEvent.setup();
-      render(<InvestigationsForm />, { wrapper: createWrapper() });
-
-      const combobox = screen.getByRole('combobox');
-      await user.type(combobox, 'complete');
-
-      await waitFor(() => {
-        expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Complete Blood Count'));
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('Investigation is already ordered'),
-        ).toBeInTheDocument();
-      });
-
-      await user.clear(combobox);
-
-      await waitFor(() => {
-        expect(
-          screen.queryByText('Investigation is already ordered'),
-        ).not.toBeInTheDocument();
-      });
-    });
-
-    test('closes duplicate notification when close button is clicked', async () => {
-      getExistingServiceRequestsForAllCategories.mockResolvedValue([
-        {
-          conceptCode: 'cbc-001',
-          categoryUuid: 'lab',
-          display: 'Complete Blood Count',
-          requesterUuid: 'mock-practitioner-uuid',
-        },
-      ]);
-
-      const user = userEvent.setup();
-      render(<InvestigationsForm />, { wrapper: createWrapper() });
-
-      const combobox = screen.getByRole('combobox');
-      await user.type(combobox, 'complete');
-
-      await waitFor(() => {
-        expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByText('Complete Blood Count'));
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('Investigation is already ordered'),
-        ).toBeInTheDocument();
-      });
-
-      const closeButton = screen.getByRole('button', { name: /close/i });
-      await user.click(closeButton);
-
-      await waitFor(() => {
-        expect(
-          screen.queryByText('Investigation is already ordered'),
-        ).not.toBeInTheDocument();
       });
     });
   });

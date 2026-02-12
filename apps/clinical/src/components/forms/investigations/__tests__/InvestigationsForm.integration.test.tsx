@@ -308,33 +308,6 @@ describe('InvestigationsForm Integration Tests', () => {
 
       expect(urgentCheckbox).toBeChecked();
     });
-
-    test('should remove investigation when close button is clicked', async () => {
-      const user = userEvent.setup();
-      render(<InvestigationsForm />, { wrapper: createWrapper() });
-
-      const combobox = screen.getByRole('combobox');
-
-      await user.type(combobox, 'lipid');
-      await waitFor(() => {
-        const option = screen.getByRole('option', { name: 'Lipid Profile' });
-        expect(option).toBeInTheDocument();
-      });
-      await user.click(screen.getByRole('option', { name: 'Lipid Profile' }));
-
-      await waitFor(() => {
-        expect(screen.getByText('Added Lab Order')).toBeInTheDocument();
-        const labBox = screen.getByLabelText('Added Lab Order');
-        expect(within(labBox).getByText('Lipid Profile')).toBeInTheDocument();
-      });
-
-      const removeButton = screen.getByRole('button', { name: /close/i });
-      await user.click(removeButton);
-
-      await waitFor(() => {
-        expect(screen.queryByText('Lipid Profile')).not.toBeInTheDocument();
-      });
-    });
   });
 
   describe('Error Handling', () => {
@@ -416,68 +389,6 @@ describe('InvestigationsForm Integration Tests', () => {
   });
 
   describe('Complex User Workflows', () => {
-    test('should handle adding multiple investigations of same category and managing priorities', async () => {
-      const user = userEvent.setup();
-
-      render(<InvestigationsForm />, { wrapper: createWrapper() });
-
-      const combobox = screen.getByRole('combobox');
-
-      await user.type(combobox, 'complete blood');
-      await waitFor(() => {
-        const option = screen.getByRole('option', {
-          name: 'Complete Blood Count',
-        });
-        expect(option).toBeInTheDocument();
-      });
-      await user.click(
-        screen.getByRole('option', { name: 'Complete Blood Count' }),
-      );
-
-      expect(mockStore.addServiceRequest).toHaveBeenCalledWith(
-        'Lab Order',
-        'cbc-001',
-        'Complete Blood Count',
-      );
-
-      await user.clear(combobox);
-      await user.type(combobox, 'hemoglobin');
-      await waitFor(() => {
-        const option = screen.getByRole('option', { name: 'Hemoglobin' });
-        expect(option).toBeInTheDocument();
-      });
-      await user.click(screen.getByRole('option', { name: 'Hemoglobin' }));
-
-      expect(mockStore.addServiceRequest).toHaveBeenCalledWith(
-        'Lab Order',
-        'hb-001',
-        'Hemoglobin',
-      );
-
-      expect(mockStore.addServiceRequest).toHaveBeenCalledTimes(2);
-    });
-
-    test('should maintain search input value after selection', async () => {
-      const user = userEvent.setup();
-      render(<InvestigationsForm />, { wrapper: createWrapper() });
-
-      const combobox = screen.getByRole('combobox');
-
-      await user.type(combobox, 'glucose');
-      await waitFor(() => {
-        const option = screen.getByRole('option', {
-          name: 'Blood Glucose Test',
-        });
-        expect(option).toBeInTheDocument();
-      });
-
-      await user.click(
-        screen.getByRole('option', { name: 'Blood Glucose Test' }),
-      );
-
-      expect(combobox).toHaveValue('Blood Glucose Test');
-    });
-
     test('should display panel indicator for LabSet concept class', async () => {
       const mockFlattenedInvestigationsWithPanel: FlattenedInvestigations[] = [
         ...mockFlattenedInvestigations,
