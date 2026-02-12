@@ -7,7 +7,6 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React, { useState, useMemo } from 'react';
-import useComboBoxSelection from '../../../hooks/useComboBoxSelection';
 import useMedicationConfig from '../../../hooks/useMedicationConfig';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
@@ -25,8 +24,8 @@ import styles from './styles/MedicationsForm.module.scss';
 const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
-  const { selectedItem: selectedMedicationItem, resetSelection } =
-    useComboBoxSelection<MedicationFilterResult>();
+  const [selectedMedicationItem, setSelectedMedicationItem] =
+    useState<MedicationFilterResult | null>(null);
   const {
     medicationConfig,
     loading: medicationConfigLoading,
@@ -66,7 +65,7 @@ const MedicationsForm: React.FC = React.memo(() => {
 
     addMedication(selectedItem.medication, selectedItem.displayName);
     setSearchMedicationTerm('');
-    resetSelection(selectedItem);
+    setSelectedMedicationItem(selectedItem);
   };
 
   const filteredSearchResults = useMemo(() => {
@@ -152,6 +151,7 @@ const MedicationsForm: React.FC = React.memo(() => {
           onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           selectedItem={selectedMedicationItem}
+          clearSelectedOnChange
           size="md"
           autoAlign
           aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}

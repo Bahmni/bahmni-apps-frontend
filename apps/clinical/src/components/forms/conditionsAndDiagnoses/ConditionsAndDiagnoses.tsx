@@ -14,7 +14,6 @@ import {
 import { useNotification, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import useComboBoxSelection from '../../../hooks/useComboBoxSelection';
 import { useConceptSearch } from '../../../hooks/useConceptSearch';
 import { useConditionsAndDiagnosesStore } from '../../../stores/conditionsAndDiagnosesStore';
 import SelectedConditionItem from './SelectedConditionItem';
@@ -32,8 +31,8 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
-  const { selectedItem: selectedDiagnosisItem, resetSelection } =
-    useComboBoxSelection<ConceptSearch>();
+  const [selectedDiagnosisItem, setSelectedDiagnosisItem] =
+    useState<ConceptSearch | null>(null);
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
 
@@ -140,7 +139,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     // Successfully added, clear any previous duplicate notification
     addDiagnosis(selectedItem);
     setSearchDiagnosesTerm('');
-    resetSelection(selectedItem);
+    setSelectedDiagnosisItem(selectedItem);
   };
 
   const isConditionDuplicate = (diagnosisId: string): boolean => {
@@ -237,6 +236,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         onChange={(data) => handleOnChange(data.selectedItem ?? null)}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
         selectedItem={selectedDiagnosisItem}
+        clearSelectedOnChange
         size="md"
         autoAlign
         aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}

@@ -15,7 +15,6 @@ import {
   VALIDATION_STATE_INVALID,
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
-import useComboBoxSelection from '../../../hooks/useComboBoxSelection';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import styles from './styles/ObservationForms.module.scss';
 
@@ -61,11 +60,11 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
   }) => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
-    const { selectedItem, resetSelection } = useComboBoxSelection<{
+    const [selectedItem, setSelectedItem] = useState<{
       id: string;
       label: string;
       disabled?: boolean;
-    }>();
+    } | null>(null);
     const { getFormData } = useObservationFormsStore();
 
     // Client-side filtering based on search term
@@ -147,10 +146,10 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         if (form) {
           onFormSelect?.(form);
           setSearchTerm('');
-          resetSelection(selected);
+          setSelectedItem(selected);
         }
       },
-      [availableForms, onFormSelect, resetSelection],
+      [availableForms, onFormSelect],
     );
 
     const searchResults = useMemo(() => {
@@ -240,6 +239,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
             selectedItem={selectedItem}
             onChange={handleOnChange}
             onInputChange={handleSearch}
+            clearSelectedOnChange
             size="md"
             autoAlign
             disabled={isSearchLoading}

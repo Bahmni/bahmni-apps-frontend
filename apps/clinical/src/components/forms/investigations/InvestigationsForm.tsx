@@ -14,7 +14,6 @@ import {
 import { usePatientUUID, useActivePractitioner } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
-import useComboBoxSelection from '../../../hooks/useComboBoxSelection';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
 import type { FlattenedInvestigations } from '../../../models/investigations';
@@ -32,8 +31,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
   const currentPractitionerUuid = practitioner?.uuid;
 
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const { selectedItem: selectedInvestigationItem, resetSelection } =
-    useComboBoxSelection<FlattenedInvestigations>();
+  const [selectedInvestigationItem, setSelectedInvestigationItem] =
+    useState<FlattenedInvestigations | null>(null);
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
   const [duplicateInvestigationId, setDuplicateInvestigationId] = useState<
@@ -278,7 +277,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
       selectedItem.display,
     );
     setSearchTerm('');
-    resetSelection(selectedItem);
+    setSelectedInvestigationItem(selectedItem);
   };
 
   return (
@@ -301,6 +300,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
         onChange={({ selectedItem }) => handleChange(selectedItem)}
         onInputChange={(input) => setSearchTerm(input)}
         selectedItem={selectedInvestigationItem}
+        clearSelectedOnChange
         autoAlign
         aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}
         size="md"

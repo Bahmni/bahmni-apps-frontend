@@ -9,7 +9,6 @@ import { useTranslation, getVaccinations } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo } from 'react';
 
-import useComboBoxSelection from '../../../hooks/useComboBoxSelection';
 import useMedicationConfig from '../../../hooks/useMedicationConfig';
 import { MedicationFilterResult } from '../../../models/medication';
 import {
@@ -29,8 +28,8 @@ import styles from './styles/VaccinationForm.module.scss';
 const VaccinationForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchVaccinationTerm, setSearchVaccinationTerm] = useState('');
-  const { selectedItem: selectedVaccinationItem, resetSelection } =
-    useComboBoxSelection<MedicationFilterResult>();
+  const [selectedVaccinationItem, setSelectedVaccinationItem] =
+    useState<MedicationFilterResult | null>(null);
   const {
     medicationConfig,
     loading: medicationConfigLoading,
@@ -79,7 +78,7 @@ const VaccinationForm: React.FC = React.memo(() => {
     }
     addVaccination(selectedItem.medication!, selectedItem.displayName);
     setSearchVaccinationTerm('');
-    resetSelection(selectedItem);
+    setSelectedVaccinationItem(selectedItem);
   };
 
   const filteredSearchResults = useMemo(() => {
@@ -178,6 +177,7 @@ const VaccinationForm: React.FC = React.memo(() => {
           onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           selectedItem={selectedVaccinationItem}
+          clearSelectedOnChange
           size="md"
           autoAlign
           aria-label={t('VACCINATION_SEARCH_PLACEHOLDER')}
