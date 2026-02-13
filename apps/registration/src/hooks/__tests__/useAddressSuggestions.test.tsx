@@ -245,7 +245,7 @@ describe('useAddressSuggestions', () => {
       });
     });
 
-    it('should filter suggestions by parent UUID on frontend', async () => {
+    it('should return all suggestions without filtering by parent UUID', async () => {
       const selectedMetadata: SelectedAddressMetadata = {
         stateProvince: {
           uuid: 'state-uuid-1',
@@ -296,10 +296,13 @@ describe('useAddressSuggestions', () => {
       });
 
       await waitFor(() => {
-        // Should only include suggestions matching parent UUID
-        expect(result.current.suggestions['countyDistrict']).toHaveLength(1);
+        // Returns all suggestions without parent UUID filtering
+        expect(result.current.suggestions['countyDistrict']).toHaveLength(2);
         expect(result.current.suggestions['countyDistrict'][0].name).toBe(
           'Bangalore Urban',
+        );
+        expect(result.current.suggestions['countyDistrict'][1].name).toBe(
+          'Chennai',
         );
       });
     });
