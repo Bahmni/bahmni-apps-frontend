@@ -7,7 +7,7 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation, getVaccinations } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 
 import useMedicationConfig from '../../../hooks/useMedicationConfig';
 import { MedicationFilterResult } from '../../../models/medication';
@@ -28,7 +28,8 @@ import styles from './styles/VaccinationForm.module.scss';
 const VaccinationForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchVaccinationTerm, setSearchVaccinationTerm] = useState('');
-  const isSelectingRef = useRef(false);
+  const [selectedVaccinationItem, setSelectedVaccinationItem] =
+    useState<MedicationFilterResult | null>(null);
   const {
     medicationConfig,
     loading: medicationConfigLoading,
@@ -68,23 +69,16 @@ const VaccinationForm: React.FC = React.memo(() => {
   } = useVaccinationStore();
 
   const handleSearch = (searchTerm: string) => {
-    // Only update search term if we're not in the process of selecting an item
-    if (!isSelectingRef.current) {
-      setSearchVaccinationTerm(searchTerm);
-    }
+    setSearchVaccinationTerm(searchTerm);
   };
 
   const handleOnChange = (selectedItem: MedicationFilterResult) => {
     if (!selectedItem) {
       return;
     }
-    isSelectingRef.current = true;
     addVaccination(selectedItem.medication!, selectedItem.displayName);
     setSearchVaccinationTerm('');
-    // Reset the flag after a short delay to allow ComboBox to update
-    setTimeout(() => {
-      isSelectingRef.current = false;
-    }, 100);
+    setSelectedVaccinationItem(selectedItem);
   };
 
   const filteredSearchResults = useMemo(() => {
@@ -182,6 +176,8 @@ const VaccinationForm: React.FC = React.memo(() => {
           itemToString={(item) => (item ? item.displayName : '')}
           onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+          selectedItem={selectedVaccinationItem}
+          clearSelectedOnChange
           size="md"
           autoAlign
           aria-label={t('VACCINATION_SEARCH_PLACEHOLDER')}

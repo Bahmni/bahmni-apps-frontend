@@ -34,8 +34,8 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_6c_-toggle-button"
-          id="downshift-_r_6c_-label"
+          for="downshift-_r_7p_-toggle-button"
+          id="downshift-_r_7p_-label"
         >
           Select Severity
         </label>
@@ -45,12 +45,12 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_6c_-menu"
+            aria-controls="downshift-_r_7p_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Select severity for this allergy"
             class="cds--list-box__field"
-            id="downshift-_r_6c_-toggle-button"
+            id="downshift-_r_7p_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Mild"
@@ -86,9 +86,9 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_6c_-label"
+            aria-labelledby="downshift-_r_7p_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_6c_-menu"
+            id="downshift-_r_7p_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -238,8 +238,8 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_6i_-toggle-button"
-          id="downshift-_r_6i_-label"
+          for="downshift-_r_7v_-toggle-button"
+          id="downshift-_r_7v_-label"
         >
           Select Severity
         </label>
@@ -270,12 +270,12 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
           </svg>
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_6i_-menu"
+            aria-controls="downshift-_r_7v_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Select severity for this allergy"
             class="cds--list-box__field"
-            id="downshift-_r_6i_-toggle-button"
+            id="downshift-_r_7v_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Select Severity"
@@ -311,9 +311,9 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_6i_-label"
+            aria-labelledby="downshift-_r_7v_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_6i_-menu"
+            id="downshift-_r_7v_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />

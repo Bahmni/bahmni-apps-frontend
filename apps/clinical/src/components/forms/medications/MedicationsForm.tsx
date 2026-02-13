@@ -6,7 +6,7 @@ import {
   Tile,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import useMedicationConfig from '../../../hooks/useMedicationConfig';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
@@ -24,7 +24,8 @@ import styles from './styles/MedicationsForm.module.scss';
 const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
-  const isSelectingRef = useRef(false);
+  const [selectedMedicationItem, setSelectedMedicationItem] =
+    useState<MedicationFilterResult | null>(null);
   const {
     medicationConfig,
     loading: medicationConfigLoading,
@@ -54,10 +55,7 @@ const MedicationsForm: React.FC = React.memo(() => {
   } = useMedicationStore();
 
   const handleSearch = (searchTerm: string) => {
-    // Only update search term if we're not in the process of selecting an item
-    if (!isSelectingRef.current) {
-      setSearchMedicationTerm(searchTerm);
-    }
+    setSearchMedicationTerm(searchTerm);
   };
 
   const handleOnChange = (selectedItem: MedicationFilterResult) => {
@@ -65,15 +63,9 @@ const MedicationsForm: React.FC = React.memo(() => {
       return;
     }
 
-    // Set flag to prevent search when ComboBox updates its input
-    isSelectingRef.current = true;
     addMedication(selectedItem.medication, selectedItem.displayName);
-    // Clear the search term after selection
     setSearchMedicationTerm('');
-    // Reset the flag after a short delay to allow ComboBox to update
-    setTimeout(() => {
-      isSelectingRef.current = false;
-    }, 100);
+    setSelectedMedicationItem(selectedItem);
   };
 
   const filteredSearchResults = useMemo(() => {
@@ -158,6 +150,8 @@ const MedicationsForm: React.FC = React.memo(() => {
           itemToString={(item) => (item ? item.displayName : '')}
           onChange={(data) => handleOnChange(data.selectedItem!)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+          selectedItem={selectedMedicationItem}
+          clearSelectedOnChange
           size="md"
           autoAlign
           aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}

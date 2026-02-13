@@ -13,7 +13,13 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  within,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Condition } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -323,7 +329,19 @@ describe('ConditionsAndDiagnoses', () => {
   });
 
   describe('User Workflow: Search, Select, and Remove Diagnoses', () => {
-    test('should display selected diagnosis after selection', async () => {
+    test('should display selected diagnosis after selection', () => {
+      // Render with selected diagnosis already in store to verify display
+      renderComponent(
+        [createMockDiagnosisEntry({ display: 'Hypertension', id: 'uuid-1' })],
+        [],
+        mockConcepts,
+      );
+
+      expect(screen.getByText('Hypertension')).toBeInTheDocument();
+      expect(screen.getByText('Added Diagnoses')).toBeInTheDocument();
+    });
+
+    test('should clear search term after selecting diagnosis', async () => {
       const user = userEvent.setup();
       renderComponent([], [], mockConcepts);
 
@@ -333,18 +351,40 @@ describe('ConditionsAndDiagnoses', () => {
       await user.type(searchInput, 'hyper');
       await user.click(screen.getByText('Hypertension'));
 
-      mockedUseConditionsAndDiagnosesStore.mockReturnValue({
-        ...mockedUseConditionsAndDiagnosesStore(),
-        selectedDiagnoses: [
-          createMockDiagnosisEntry({ display: 'Hypertension', id: 'uuid-1' }),
-        ],
+      await waitFor(() => {
+        expect(searchInput).toHaveValue('');
       });
-      renderComponent([
-        createMockDiagnosisEntry({ display: 'Hypertension', id: 'uuid-1' }),
-      ]);
+    });
 
-      expect(screen.getByText('Hypertension')).toBeInTheDocument();
-      expect(screen.getByText('Added Diagnoses')).toBeInTheDocument();
+    test('should reset ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
+      const user = userEvent.setup();
+      renderComponent([], [], mockConcepts);
+
+      const searchInput = screen.getByPlaceholderText(
+        'Search to add new diagnosis',
+      );
+
+      // First selection
+      await user.type(searchInput, 'hyper');
+      await user.click(screen.getByText('Hypertension'));
+
+      // Verify combobox is reset (selectedItem is null, allowing new searches)
+      await waitFor(() => {
+        expect(searchInput).toHaveValue('');
+      });
+
+      // Verify we can immediately search for another item (proves selectedItem was reset to null)
+      await user.type(searchInput, 'diab');
+      await waitFor(() => {
+        expect(screen.getByText('Diabetes')).toBeInTheDocument();
+      });
+
+      // Verify the new search works correctly - this proves selectedItem is null
+      // because the ComboBox wouldn't accept new input if selectedItem was still set
+      await user.click(screen.getByText('Diabetes'));
+      await waitFor(() => {
+        expect(addDiagnosisMock).toHaveBeenCalledTimes(2);
+      });
     });
 
     test('should display already selected diagnoses as disabled with indicator text', async () => {
@@ -832,6 +872,32 @@ describe('ConditionsAndDiagnoses', () => {
       expect(addDiagnosisMock).not.toHaveBeenCalled();
     });
   });
+  describe('Keyboard Navigation', () => {
+    it('should support keyboard navigation and selection in ComboBox', async () => {
+      const user = userEvent.setup();
+      renderComponent([], [], mockConcepts);
+
+      const searchBox = screen.getByPlaceholderText(
+        'Search to add new diagnosis',
+      );
+
+      // Type to open dropdown
+      await user.type(searchBox, 'hyper');
+
+      await waitFor(() => {
+        expect(screen.getByText('Hypertension')).toBeInTheDocument();
+      });
+
+      // Navigate with arrow key and select with Enter
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{Enter}');
+
+      await waitFor(() => {
+        expect(addDiagnosisMock).toHaveBeenCalled();
+      });
+    });
+  });
+
   describe('Snapshot Tests', () => {
     it('empty form matches snapshot', () => {
       const { container } = renderComponent();

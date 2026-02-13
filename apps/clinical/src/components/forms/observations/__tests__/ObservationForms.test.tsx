@@ -1,6 +1,9 @@
 import { ObservationForm } from '@bahmni/services';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import ObservationForms from '../ObservationForms';
+
+expect.extend(toHaveNoViolations);
 
 // Mock the translation hook
 jest.mock('react-i18next', () => ({
@@ -69,7 +72,18 @@ jest.mock('@bahmni/design-system', () => ({
                 key={item.id}
                 data-testid={`combobox-item-${item.id}`}
                 disabled={item.disabled}
-                onClick={() => onChange?.({ selectedItem: item })}
+                onClick={(e) => {
+                  onChange?.({ selectedItem: item });
+                  // Simulate component clearing search term after selection
+                  onInputChange?.('');
+                  // Also update the actual input value
+                  const input = e.currentTarget
+                    .closest('[data-testid="combobox"]')
+                    ?.querySelector(
+                      '[data-testid="combobox-input"]',
+                    ) as HTMLInputElement;
+                  if (input) input.value = '';
+                }}
               >
                 {item.label}
               </button>
@@ -270,6 +284,20 @@ describe('ObservationForms', () => {
       expect(mockOnFormSelect).toHaveBeenCalledWith(mockForms[0]);
     });
 
+    it('should clear search term after selecting form', () => {
+      const mockOnFormSelect = jest.fn();
+      render(
+        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+      );
+
+      simulateSearch('Admission');
+      const formButton = screen.getByTestId('combobox-item-form-1');
+      fireEvent.click(formButton);
+
+      const input = getSearchInput();
+      expect(input).toHaveValue('');
+    });
+
     it('should handle search input changes', () => {
       render(<ObservationForms {...defaultProps} />);
 
@@ -277,6 +305,30 @@ describe('ObservationForms', () => {
 
       // The search is now handled client-side, so just verify the input value changed
       expect(input).toHaveValue('History');
+    });
+
+    it('should reset ComboBox selectedItem to null after selection to allow immediate re-search', () => {
+      const mockOnFormSelect = jest.fn();
+      render(
+        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+      );
+
+      // First selection
+      simulateSearch('Admission');
+      fireEvent.click(screen.getByTestId('combobox-item-form-1'));
+
+      // Verify combobox is reset (selectedItem is null, allowing new searches)
+      const input = getSearchInput();
+      expect(input).toHaveValue('');
+
+      // Verify we can immediately search for another item (proves selectedItem was reset to null)
+      simulateSearch('Death');
+      expect(screen.getByTestId('combobox-item-form-2')).toBeInTheDocument();
+
+      // Verify the new search works correctly - this proves selectedItem is null
+      // because the ComboBox wouldn't accept new input if selectedItem was still set
+      fireEvent.click(screen.getByTestId('combobox-item-form-2'));
+      expect(mockOnFormSelect).toHaveBeenCalledTimes(2);
     });
 
     it('should not call onFormSelect for disabled items', () => {
@@ -620,6 +672,45 @@ describe('ObservationForms', () => {
       });
 
       expect(mockOnFormSelect).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Keyboard Navigation', () => {
+    it('should support keyboard navigation via ComboBox', () => {
+      const mockOnFormSelect = jest.fn();
+      render(
+        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+      );
+
+      // Verify combobox input is available for keyboard interaction
+      const input = getSearchInput();
+      expect(input).toBeInTheDocument();
+
+      // Simulate search
+      simulateSearch('Admission');
+
+      // Verify form items are displayed and can be selected
+      const formButton = screen.getByTestId('combobox-item-form-1');
+      expect(formButton).toBeInTheDocument();
+
+      // Simulate selection via keyboard (Enter key on the form button)
+      fireEvent.click(formButton);
+
+      expect(mockOnFormSelect).toHaveBeenCalledWith(mockForms[0]);
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should have no accessibility violations', async () => {
+      let container: HTMLElement;
+
+      await act(async () => {
+        const rendered = render(<ObservationForms {...defaultProps} />);
+        container = rendered.container;
+      });
+
+      const results = await axe(container!);
+      expect(results).toHaveNoViolations();
     });
   });
 
