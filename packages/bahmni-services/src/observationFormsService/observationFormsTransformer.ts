@@ -361,6 +361,8 @@ export function transformContainerObservationsToForm2Observations(
       // Filter out voided group members
       const nonVoidedGroupMembers = obs.groupMembers.filter((member) => {
         const isMemberVoided = member.voided || (member.value && typeof member.value === 'string' && member.value.endsWith('voided'));
+        return !isMemberVoided;
+      });
       observation.groupMembers = nonVoidedGroupMembers.map(transform);
     }
 
