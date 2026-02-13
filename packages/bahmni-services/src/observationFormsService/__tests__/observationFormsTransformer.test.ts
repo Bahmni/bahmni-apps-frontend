@@ -2,6 +2,7 @@ import { FormMetadata } from '../models';
 import {
   transformFormDataToObservations,
   transformObservationsToFormData,
+  transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
   FormData,
@@ -950,6 +951,81 @@ describe('observationFormsTransformer', () => {
       expect(transformedObservations).toHaveLength(2);
       expect(transformedObservations[0].formFieldPath).toBe('customPath');
       expect(transformedObservations[1].formFieldPath).toBe('field2');
+    });
+  });
+
+  describe('transformContainerObservationsToForm2Observations - voided filtering for media', () => {
+    it('should filter NEW voided media observations (no UUID) - user deleted uploaded image before saving', () => {
+      const containerObservations = [
+        {
+          concept: { uuid: 'image-concept-uuid', datatype: 'Complex' },
+          value: '/uploaded-image.jpg',
+          voided: true,
+          formFieldPath: 'History and Examination.1/5-0',
+        },
+        {
+          concept: { uuid: 'text-concept-uuid', datatype: 'Text' },
+          value: 'Valid text',
+          formFieldPath: 'History and Examination.1/6-0',
+        },
+      ];
+
+      const result = transformContainerObservationsToForm2Observations(
+        containerObservations,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].concept.uuid).toBe('text-concept-uuid');
+    });
+
+    it('should keep EXISTING voided media observations (with UUID) - user deleted previously saved image', () => {
+      const containerObservations = [
+        {
+          concept: { uuid: 'image-concept-uuid', datatype: 'Complex' },
+          value: '/previously-uploaded-image.jpg',
+          voided: true,
+          uuid: 'obs-uuid-12345',
+          formFieldPath: 'History and Examination.1/5-0',
+        },
+        {
+          concept: { uuid: 'text-concept-uuid', datatype: 'Text' },
+          value: 'Valid text',
+          formFieldPath: 'History and Examination.1/6-0',
+        },
+      ];
+
+      const result = transformContainerObservationsToForm2Observations(
+        containerObservations,
+      );
+
+      // Current implementation keeps existing voided observations (with UUID) to track deletions
+      expect(result).toHaveLength(2);
+      expect(result[0].concept.uuid).toBe('image-concept-uuid');
+      expect(result[0].value).toBe('/previously-uploaded-image.jpg');
+      expect(result[1].concept.uuid).toBe('text-concept-uuid');
+      expect(result[1].value).toBe('Valid text');
+    });
+
+    it('should filter observations with "voided" suffix in value string', () => {
+      const containerObservations = [
+        {
+          concept: { uuid: 'image-concept-uuid', datatype: 'Complex' },
+          value: '/uploaded-image.jpgvoided',
+          formFieldPath: 'History and Examination.1/5-0',
+        },
+        {
+          concept: { uuid: 'text-concept-uuid', datatype: 'Text' },
+          value: 'Valid text',
+          formFieldPath: 'History and Examination.1/6-0',
+        },
+      ];
+
+      const result = transformContainerObservationsToForm2Observations(
+        containerObservations,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].concept.uuid).toBe('text-concept-uuid');
     });
   });
 });
