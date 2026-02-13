@@ -73,10 +73,10 @@ const VaccinationForm: React.FC = React.memo(() => {
   };
 
   const handleOnChange = (selectedItem: MedicationFilterResult) => {
-    if (!selectedItem) {
+    if (!selectedItem?.medication) {
       return;
     }
-    addVaccination(selectedItem.medication!, selectedItem.displayName);
+    addVaccination(selectedItem.medication, selectedItem.displayName);
     setSearchVaccinationTerm('');
     setSelectedVaccinationItem(selectedItem);
   };
@@ -178,6 +178,7 @@ const VaccinationForm: React.FC = React.memo(() => {
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           selectedItem={selectedVaccinationItem}
           clearSelectedOnChange
+          allowCustomValue
           size="md"
           autoAlign
           aria-label={t('VACCINATION_SEARCH_PLACEHOLDER')}
