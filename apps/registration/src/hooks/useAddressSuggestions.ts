@@ -73,25 +73,11 @@ export function useAddressSuggestions(
         result[fieldName] = [];
       } else {
         const rawSuggestions = suggestionQueries[index]?.data ?? [];
-
-        const expectedParentUuid = getParentUuid(fieldName);
-        if (expectedParentUuid) {
-          const filtered = rawSuggestions.filter((entry) => {
-            return entry.parent?.uuid === expectedParentUuid;
-          });
-          result[fieldName] = filtered;
-        } else {
-          result[fieldName] = rawSuggestions;
-        }
+        result[fieldName] = rawSuggestions;
       }
     });
     return result;
-  }, [
-    autocompleteFields,
-    suggestionQueries,
-    clearedSuggestions,
-    getParentUuid,
-  ]);
+  }, [autocompleteFields, suggestionQueries, clearedSuggestions]);
 
   const debouncedSearchAddress = useCallback(
     (field: string, searchText: string) => {

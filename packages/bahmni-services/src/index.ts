@@ -69,6 +69,8 @@ export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
   getAppointmentById,
+  getUpcomingAppointments,
+  getPastAppointments,
 } from './AppointmentService/appointmmetService';
 export {
   type Appointment,

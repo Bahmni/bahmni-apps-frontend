@@ -2,6 +2,8 @@ export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
   getAppointmentById,
+  getUpcomingAppointments,
+  getPastAppointments,
 } from './appointmmetService';
 export {
   type Appointment,

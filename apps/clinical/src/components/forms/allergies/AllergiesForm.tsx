@@ -241,6 +241,7 @@ const AllergiesForm: React.FC = React.memo(() => {
         selectedItem={selectedAllergenItem}
         clearSelectedOnChange
         size="md"
+        allowCustomValue
         autoAlign
         aria-label={t('ALLERGIES_SEARCH_ARIA_LABEL')}
       />
