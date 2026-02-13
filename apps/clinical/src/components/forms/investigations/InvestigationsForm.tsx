@@ -254,7 +254,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
   const handleChange = (
     selectedItem: FlattenedInvestigations | null | undefined,
   ) => {
-    if (!selectedItem) return;
+    if (!selectedItem?.code) return;
 
     if (
       isDuplicateInvestigation(
@@ -301,6 +301,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
         onInputChange={(input) => setSearchTerm(input)}
         selectedItem={selectedInvestigationItem}
         clearSelectedOnChange
+        allowCustomValue
         autoAlign
         aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}
         size="md"

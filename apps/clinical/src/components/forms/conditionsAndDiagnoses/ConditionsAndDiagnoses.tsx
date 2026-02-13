@@ -237,6 +237,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
         selectedItem={selectedDiagnosisItem}
         clearSelectedOnChange
+        allowCustomValue
         size="md"
         autoAlign
         aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
