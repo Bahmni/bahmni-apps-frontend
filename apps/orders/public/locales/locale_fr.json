@@ -24,5 +24,17 @@
   "SEARCH_ORDERS_PLACEHOLDER": "Rechercher par Nom du Patient, Identifiant, Prestataire ou Propriétaire",
   "SEARCH_ORDERS_LABEL": "Rechercher des ordonnances",
   "CLEAR_SEARCH_INPUT": "Effacer la recherche",
-  "LABEL_SPEECH_THERAPY_ORDERS_KEY": "Thérapie de la Parole"
+  "LABEL_SPEECH_THERAPY_ORDERS_KEY": "Thérapie de la Parole",
+  "MANAGE_ORDER": "Gérer l'Ordonnance",
+  "PROVIDER_COMMENTS": "Commentaires du Prestataire",
+  "PATIENT_DETAILS": "Détails du Patient",
+  "AGE": "Âge",
+  "GENDER": "Genre",
+  "DOB": "Date de Naissance",
+  "APPLY": "Appliquer",
+  "CANCEL": "Annuler",
+  "SAVE": "Enregistrer",
+  "CHOOSE_AN_OPTION": "Choisir une option",
+  "ORDER_OWNER":  "Propriétaire de l'Ordonnance",
+  "NOTES": "Remarques"
 }

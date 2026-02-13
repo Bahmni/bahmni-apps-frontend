@@ -1,4 +1,8 @@
-import { PatientOrderRow, Order } from '../models/orderFulfillment';
+import {
+  PatientOrderRow,
+  Order,
+  PatientDetails,
+} from '../models/orderFulfillment';
 
 const createOrder = (
   id: string,
@@ -8,6 +12,8 @@ const createOrder = (
   provider: string,
   dateTime: string,
   owner: string | null,
+  providerComments?: string,
+  patient?: PatientDetails,
 ): Order => ({
   id,
   orderName,
@@ -17,6 +23,8 @@ const createOrder = (
   provider,
   dateTime,
   owner,
+  providerComments,
+  patient,
 });
 
 export const rehabOrdersMockData: PatientOrderRow[] = [
@@ -37,6 +45,14 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
         'Mike Ronoh',
         '12 Nov 25 04:24 PM',
         null,
+        'Post-operative X-ray for assessing healing or implant position | Monitoring of progress for alignment / comparative purposes | High Risk | Request from ward | Request from clinic | Pre-operative X-ray for diagnostic or planning purposes',
+        {
+          age: '8 years 11 months 8 days',
+          dateOfBirth: '09 Jan 2017',
+          gender: 'Male',
+          address: '123 Nairobi St, Kenya',
+          phoneNumber: '+254 700 123 456',
+        },
       ),
       createOrder(
         'order-1-2',
@@ -46,6 +62,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
         'Mike Ronoh',
         '12 Nov 25 04:24 PM',
         'Ted Okatch',
+        'Continue rehabilitation exercises focusing on range of motion and strength building.',
       ),
       createOrder(
         'order-1-3',
@@ -75,6 +92,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
         'Sarah Kimani',
         '12 Nov 25 03:15 PM',
         null,
+        'Patient requires comprehensive physiotherapy evaluation for lower limb mobility issues.',
       ),
       createOrder(
         'order-2-2',
@@ -84,6 +102,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
         'Sarah Kimani',
         '12 Nov 25 03:15 PM',
         null,
+        'Assessment needed for activities of daily living and adaptive equipment recommendations.',
       ),
       createOrder(
         'order-2-3',
@@ -420,3 +439,11 @@ export const getTabCount = (tabLabel: string): number => {
   const data = mockDataByTabLabel[tabLabel];
   return data ? data.length : 0;
 };
+
+export const availableProviders = [
+  { id: 'provider1', name: 'Dr. Smith' },
+  { id: 'provider2', name: 'Dr. Johnson' },
+  { id: 'provider3', name: 'Dr. Williams' },
+  { id: 'provider4', name: 'Mike Ronoh' },
+  { id: 'provider5', name: 'Ted Okatch' },
+];

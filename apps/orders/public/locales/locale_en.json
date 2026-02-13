@@ -24,5 +24,17 @@
   "SEARCH_ORDERS_PLACEHOLDER": "Search by Patient Name, Identifier, Provider or Owner",
   "SEARCH_ORDERS_LABEL": "Search orders",
   "CLEAR_SEARCH_INPUT": "Clear search input",
-  "LABEL_SPEECH_THERAPY_ORDERS_KEY": "Speech Therapy"
+  "LABEL_SPEECH_THERAPY_ORDERS_KEY": "Speech Therapy",
+  "MANAGE_ORDER": "Manage Order",
+  "PROVIDER_COMMENTS": "Provider Comments",
+  "PATIENT_DETAILS": "Patient Details",
+  "AGE": "Age",
+  "GENDER": "Gender",
+  "DOB": "Date of Birth",
+  "APPLY": "Apply",
+  "CANCEL": "Cancel",
+  "SAVE": "Save",
+  "CHOOSE_AN_OPTION": "Choose an option",
+  "ORDER_OWNER": "Order Owner",
+  "NOTES": "Notes"
 }
