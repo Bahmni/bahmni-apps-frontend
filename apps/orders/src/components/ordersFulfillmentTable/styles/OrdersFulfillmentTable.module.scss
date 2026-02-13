@@ -4,17 +4,25 @@
 @use "@carbon/react/scss/theme" as *;
 
 .statusHeader {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  background-color: white;
 }
 
 .statusCaret {
   display: inline;
   vertical-align: middle;
-  pointer-events: none;
+  pointer-events: all;
   opacity: 0.7;
+  transition: opacity 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 1;
+  }
 }
 
 $row-height: 48px;
@@ -32,8 +40,10 @@ $col-owner: 13%;
 
 .ordersTable {
   width: 100%;
+  overflow-x: auto;
 
   table {
+    min-width: 928px;
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;

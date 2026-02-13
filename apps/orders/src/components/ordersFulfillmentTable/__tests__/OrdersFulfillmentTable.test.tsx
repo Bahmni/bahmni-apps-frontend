@@ -9,6 +9,16 @@ jest.mock('@bahmni/services', () => ({
   }),
 }));
 
+jest.mock('../../../hooks/useOrdersConfig', () => ({
+  useOrdersConfig: () => ({
+    ordersTableConfig: {
+      orderStatusesAvailable: ['New', 'In Progress', 'Completed'],
+      orderStatusesPreSelected: ['New', 'In Progress'],
+      manageOrdersPanelPatientDetails: [],
+    },
+  }),
+}));
+
 const mockRows: PatientOrderRow[] = [
   {
     id: 'patient-1',

@@ -24,5 +24,17 @@
   "SEARCH_ORDERS_PLACEHOLDER": "Buscar por Nombre del Paciente, Identificador, Proveedor o Propietario",
   "SEARCH_ORDERS_LABEL": "Buscar órdenes",
   "CLEAR_SEARCH_INPUT": "Limpiar búsqueda",
-  "LABEL_SPEECH_THERAPY_ORDERS_KEY": "Terapia del Habla"
+  "LABEL_SPEECH_THERAPY_ORDERS_KEY": "Terapia del Habla",
+  "MANAGE_ORDER": "Gestionar Orden",
+  "PROVIDER_COMMENTS": "Comentarios del Proveedor",
+  "PATIENT_DETAILS": "Detalles del Paciente",
+  "AGE": "Edad",
+  "GENDER": "Género",
+  "DOB": "Fecha de Nacimiento",
+  "APPLY": "Aplicar",
+  "CANCEL": "Cancelar",
+  "SAVE": "Guardar",
+  "CHOOSE_AN_OPTION": "Elegir una opción",
+  "ORDER_OWNER": "Propietario de la Orden",
+  "NOTES": "Notas"
 }

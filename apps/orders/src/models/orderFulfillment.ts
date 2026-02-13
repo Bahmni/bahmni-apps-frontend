@@ -1,6 +1,14 @@
 export type OrderPriority = 'Routine' | 'Urgent' | 'STAT';
 export type OrderStatus = 'New' | 'In Progress' | 'Acknowledged' | 'Completed';
 
+export interface PatientDetails {
+  age?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  address?: string;
+  phoneNumber?: string;
+}
+
 export interface Order {
   id: string;
   orderName: string;
@@ -10,6 +18,8 @@ export interface Order {
   provider: string;
   dateTime: string;
   owner: string | null;
+  providerComments?: string;
+  patient?: PatientDetails;
 }
 
 export interface PatientOrderRow {
