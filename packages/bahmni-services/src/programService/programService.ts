@@ -1,6 +1,36 @@
 import { get } from '../api';
-import { PATIENT_PROGRAMS_URL, PROGRAM_DETAILS_URL } from './constants';
+import {
+  PATIENT_PROGRAMS_URL,
+  PROGRAM_DETAILS_URL,
+  CONCEPT_NAME_TYPE_SHORT,
+  CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+} from './constants';
 import { PatientProgramsResponse, ProgramEnrollment } from './model';
+
+interface ConceptName {
+  name: string;
+  conceptNameType: string;
+}
+
+function getDisplayNameForConcept(
+  names: ConceptName[] | undefined,
+): string | null {
+  if (!names?.length) return null;
+
+  let conceptName: string | null = null;
+
+  for (const n of names) {
+    if (n.conceptNameType === CONCEPT_NAME_TYPE_SHORT) {
+      return n.name;
+    }
+
+    if (n.conceptNameType === CONCEPT_NAME_TYPE_FULLY_SPECIFIED) {
+      conceptName = n.name;
+    }
+  }
+
+  return conceptName ?? names[0].name ?? null;
+}
 
 // TODO: Add Optional parameters for pagination and filtering
 /**
@@ -36,6 +66,9 @@ export function getCurrentStateName(
   if (enrollment.states.length === 0) {
     return null;
   }
+
+  let currentState;
+
   if (enrollment.dateCompleted !== null) {
     const statesWithEndDate = enrollment.states.filter(
       (state) => state.endDate !== null,
@@ -45,14 +78,20 @@ export function getCurrentStateName(
       const dateB = new Date(b.endDate!).getTime();
       return dateA - dateB;
     });
-    const latestState = sortedStates[sortedStates.length - 1];
-    return latestState.state.concept.display;
+    currentState = sortedStates[sortedStates.length - 1];
   } else {
-    const activeState = enrollment.states.find(
-      (state) => state.endDate === null,
-    );
-    return activeState!.state.concept.display;
+    currentState = enrollment.states.find((state) => state.endDate === null);
   }
+
+  if (!currentState) {
+    return null;
+  }
+
+  const conceptName = getDisplayNameForConcept(
+    currentState.state.concept.names,
+  );
+
+  return conceptName ?? currentState.state.concept.display;
 }
 
 /**

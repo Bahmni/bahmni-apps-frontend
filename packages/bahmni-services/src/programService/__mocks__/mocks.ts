@@ -1,4 +1,8 @@
 import { ProgramEnrollment } from '..';
+import {
+  CONCEPT_NAME_TYPE_SHORT,
+  CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+} from '../constants';
 
 export const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 export const mockEnrollments: ProgramEnrollment[] = [
@@ -289,6 +293,7 @@ export const mockEnrollments: ProgramEnrollment[] = [
           concept: {
             uuid: 'concept-state-1',
             display: 'Initial Treatment',
+            names: [],
             links: [],
             resourceVersion: '1.0',
           },
@@ -309,6 +314,28 @@ export const mockEnrollments: ProgramEnrollment[] = [
           concept: {
             uuid: 'concept-state-2',
             display: 'Continuation Phase',
+            names: [
+              {
+                uuid: 'name-1',
+                display: 'Continuation Phase',
+                name: 'Continuation Phase',
+                locale: 'en',
+                localePreferred: true,
+                conceptNameType: CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+                links: [],
+                resourceVersion: '1.9',
+              },
+              {
+                uuid: 'name-2',
+                display: 'In Progress',
+                name: 'In Progress',
+                locale: 'en',
+                localePreferred: false,
+                conceptNameType: CONCEPT_NAME_TYPE_SHORT,
+                links: [],
+                resourceVersion: '1.9',
+              },
+            ],
             links: [],
             resourceVersion: '1.0',
           },
@@ -445,6 +472,18 @@ export const mockEnrollments: ProgramEnrollment[] = [
           concept: {
             uuid: 'concept-state-5',
             display: 'Recovery',
+            names: [
+              {
+                uuid: 'name-1',
+                display: 'Phase de continuation',
+                name: 'Phase de continuation',
+                locale: 'fr',
+                localePreferred: true,
+                conceptNameType: CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+                links: [],
+                resourceVersion: '1.9',
+              },
+            ],
             links: [],
             resourceVersion: '1.0',
           },
@@ -455,6 +494,103 @@ export const mockEnrollments: ProgramEnrollment[] = [
     ],
     attributes: [],
     episodeUuid: 'episode-3',
+    auditInfo: {
+      creator: {
+        uuid: 'user-1',
+        display: 'Admin User',
+        links: [],
+      },
+      dateCreated: '2023-01-01T10:00:00.000+0000',
+      changedBy: null,
+      dateChanged: null,
+    },
+    links: [],
+    resourceVersion: '1.0',
+  },
+  {
+    uuid: 'enrollment-4',
+    display: 'Test Program - Empty Names',
+    patient: {
+      uuid: patientUUID,
+      display: 'John Doe',
+      identifiers: [
+        {
+          uuid: 'identifier-1',
+          display: 'BAH123456',
+          links: [],
+        },
+      ],
+      person: {
+        uuid: 'person-1',
+        display: 'John Doe',
+        gender: 'M',
+        age: 35,
+        birthdate: '1988-01-01',
+        birthdateEstimated: false,
+        dead: false,
+        deathDate: null,
+        causeOfDeath: null,
+        preferredName: {
+          uuid: 'name-1',
+          display: 'John Doe',
+        },
+        preferredAddress: null,
+        attributes: [],
+        voided: false,
+        birthtime: null,
+        deathdateEstimated: false,
+        links: [],
+        resourceVersion: '1.0',
+      },
+      voided: false,
+      links: [],
+      resourceVersion: '1.0',
+    },
+    program: {
+      uuid: 'program-4',
+      name: 'Test Program',
+      display: 'Test Program',
+      retired: false,
+      concept: {
+        uuid: 'concept-4',
+        display: 'Test Program Concept',
+        links: [],
+        resourceVersion: '1.0',
+      },
+      allWorkflows: [],
+      links: [],
+      resourceVersion: '1.0',
+    },
+    dateEnrolled: '2023-01-01',
+    dateCompleted: '2024-12-31',
+    location: null,
+    voided: false,
+    outcome: null,
+    states: [
+      {
+        uuid: 'state-empty-names',
+        startDate: '2023-01-01',
+        endDate: '2024-12-31',
+        voided: false,
+        state: {
+          uuid: 'workflow-state-empty',
+          display: 'Initial Treatment',
+          description: 'State with empty names array',
+          retired: false,
+          concept: {
+            uuid: 'concept-empty-names',
+            display: 'Initial Treatment',
+            names: [],
+            links: [],
+            resourceVersion: '1.0',
+          },
+          links: [],
+          resourceVersion: '1.0',
+        },
+      },
+    ],
+    attributes: [],
+    episodeUuid: 'episode-4',
     auditInfo: {
       creator: {
         uuid: 'user-1',
