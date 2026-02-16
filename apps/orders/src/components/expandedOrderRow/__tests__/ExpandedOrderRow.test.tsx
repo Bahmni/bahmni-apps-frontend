@@ -96,4 +96,56 @@ describe('ExpandedOrderRow', () => {
 
     expect(screen.getByTestId('expanded-order-row')).toBeInTheDocument();
   });
+
+  describe('Row Highlighting', () => {
+    it('applies selectedChildRow class when isSelected is true', () => {
+      const { container } = render(
+        <ExpandedOrderRow order={mockAssignedOrder} isSelected />,
+      );
+
+      const rowElement = container.querySelector('tr');
+      expect(rowElement).toHaveClass('selectedChildRow');
+    });
+
+    it('does not apply selectedChildRow class when isSelected is false', () => {
+      const { container } = render(
+        <ExpandedOrderRow order={mockAssignedOrder} />,
+      );
+
+      const rowElement = container.querySelector('tr');
+      expect(rowElement).not.toHaveClass('selectedChildRow');
+    });
+
+    it('does not apply selectedChildRow class when isSelected is undefined', () => {
+      const { container } = render(
+        <ExpandedOrderRow order={mockAssignedOrder} />,
+      );
+
+      const rowElement = container.querySelector('tr');
+      expect(rowElement).not.toHaveClass('selectedChildRow');
+    });
+
+    it('still renders order content when highlighted', () => {
+      render(<ExpandedOrderRow order={mockAssignedOrder} isSelected />);
+
+      expect(screen.getByText('New Cast - Plaster')).toBeInTheDocument();
+      expect(screen.getByText('Mike Ronoh')).toBeInTheDocument();
+    });
+
+    it('still calls onOrderClick when highlighted row is clicked', () => {
+      const onOrderClick = jest.fn();
+      render(
+        <ExpandedOrderRow
+          order={mockAssignedOrder}
+          isSelected
+          onOrderClick={onOrderClick}
+        />,
+      );
+
+      const link = screen.getByRole('link', { name: 'New Cast - Plaster' });
+      fireEvent.click(link);
+
+      expect(onOrderClick).toHaveBeenCalledWith('order-1');
+    });
+  });
 });

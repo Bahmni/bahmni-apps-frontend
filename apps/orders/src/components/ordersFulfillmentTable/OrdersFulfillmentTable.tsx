@@ -32,6 +32,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   const { ordersTableConfig } = useOrdersConfig();
   const statusHeaderRef = useRef<HTMLSpanElement>(null);
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const availableStatuses: OrderStatus[] =
     ordersTableConfig?.orderStatusesAvailable as OrderStatus[];
@@ -164,7 +165,11 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
         <ExpandedOrderRow
           key={order.id}
           order={order}
-          onOrderClick={onOrderClick}
+          isSelected={selectedOrderId === order.id}
+          onOrderClick={(orderId) => {
+            setSelectedOrderId(orderId);
+            onOrderClick?.(orderId);
+          }}
         />
       ))}
     </Fragment>
