@@ -203,6 +203,36 @@ export const mockEnrollments: ProgramEnrollment[] = [
       },
     ],
     episodeUuid: 'episode-1',
+    allowedStates: [
+      {
+        uuid: 'allowed-state-1',
+        display: 'Active',
+        description: 'Patient is actively enrolled',
+        retired: false,
+        concept: {
+          uuid: 'concept-active-1',
+          display: 'Active',
+          links: [],
+          resourceVersion: '1.0',
+        },
+        links: [],
+        resourceVersion: '1.0',
+      },
+      {
+        uuid: 'allowed-state-2',
+        display: 'On Hold',
+        description: 'Program on hold',
+        retired: false,
+        concept: {
+          uuid: 'concept-hold-1',
+          display: 'On Hold',
+          links: [],
+          resourceVersion: '1.0',
+        },
+        links: [],
+        resourceVersion: '1.0',
+      },
+    ],
     auditInfo: {
       creator: {
         uuid: 'user-1',
@@ -319,6 +349,36 @@ export const mockEnrollments: ProgramEnrollment[] = [
     ],
     attributes: [],
     episodeUuid: 'episode-2',
+    allowedStates: [
+      {
+        uuid: 'allowed-state-3',
+        display: 'Continuation Phase',
+        description: 'Continuation treatment phase',
+        retired: false,
+        concept: {
+          uuid: 'concept-continuation',
+          display: 'Continuation Phase',
+          links: [],
+          resourceVersion: '1.0',
+        },
+        links: [],
+        resourceVersion: '1.0',
+      },
+      {
+        uuid: 'allowed-state-4',
+        display: 'Treatment Complete',
+        description: 'Treatment completed successfully',
+        retired: false,
+        concept: {
+          uuid: 'concept-complete',
+          display: 'Treatment Complete',
+          links: [],
+          resourceVersion: '1.0',
+        },
+        links: [],
+        resourceVersion: '1.0',
+      },
+    ],
     auditInfo: {
       creator: {
         uuid: 'user-1',
@@ -455,6 +515,7 @@ export const mockEnrollments: ProgramEnrollment[] = [
     ],
     attributes: [],
     episodeUuid: 'episode-3',
+    allowedStates: [],
     auditInfo: {
       creator: {
         uuid: 'user-1',

@@ -181,6 +181,7 @@ export interface ProgramEnrollment extends BaseResource {
   states: ProgramEnrollmentState[];
   attributes: ProgramEnrollmentAttribute[];
   episodeUuid: string;
+  allowedStates: WorkflowState[];
   auditInfo: AuditInfo;
   links: Link[];
   resourceVersion: string;
