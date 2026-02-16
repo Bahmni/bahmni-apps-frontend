@@ -19,8 +19,6 @@ import {
   FHIR_VALUESET_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
   CONCEPT_GET_URL,
-  CONCEPT_NAME_TYPE_SHORT,
-  CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
 } from '../constants';
 
 jest.mock('../../api');
@@ -263,12 +261,12 @@ describe('conceptService', () => {
     it('should return SHORT name when available', () => {
       const names = [
         {
-          name: 'Assessment in progress',
-          conceptNameType: CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+          name: 'Program Completed',
+          conceptNameType: 'FULLY_SPECIFIED',
         },
         {
           name: 'Completed',
-          conceptNameType: CONCEPT_NAME_TYPE_SHORT,
+          conceptNameType: 'SHORT',
         },
       ];
 
@@ -280,14 +278,14 @@ describe('conceptService', () => {
     it('should return FULLY_SPECIFIED name when SHORT name not available', () => {
       const names = [
         {
-          name: 'Assessment in progress',
-          conceptNameType: CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+          name: 'Program Completed',
+          conceptNameType: 'FULLY_SPECIFIED',
         },
       ];
 
       const result = getDisplayNameForConcept(names);
 
-      expect(result).toBe('Assessment in progress');
+      expect(result).toBe('Program Completed');
     });
 
     it('should return first name as fallback when no SHORT or FULLY_SPECIFIED found', () => {

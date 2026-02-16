@@ -1,8 +1,4 @@
 import { ProgramEnrollment } from '..';
-import {
-  CONCEPT_NAME_TYPE_SHORT,
-  CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
-} from '../../conceptService';
 
 export const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 export const mockEnrollments: ProgramEnrollment[] = [
@@ -321,7 +317,7 @@ export const mockEnrollments: ProgramEnrollment[] = [
                 name: 'Continuation Phase',
                 locale: 'en',
                 localePreferred: true,
-                conceptNameType: CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+                conceptNameType: 'FULLY_SPECIFIED',
                 links: [],
                 resourceVersion: '1.9',
               },
@@ -331,7 +327,7 @@ export const mockEnrollments: ProgramEnrollment[] = [
                 name: 'In Progress',
                 locale: 'en',
                 localePreferred: false,
-                conceptNameType: CONCEPT_NAME_TYPE_SHORT,
+                conceptNameType: 'SHORT',
                 links: [],
                 resourceVersion: '1.9',
               },
@@ -479,7 +475,7 @@ export const mockEnrollments: ProgramEnrollment[] = [
                 name: 'Phase de continuation',
                 locale: 'fr',
                 localePreferred: true,
-                conceptNameType: CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+                conceptNameType: 'FULLY_SPECIFIED',
                 links: [],
                 resourceVersion: '1.9',
               },
