@@ -7,7 +7,6 @@ import {
   TableBody,
   TableCell,
   TableExpandRow,
-  TableExpandedRow,
   TableExpandHeader,
   DataTableHeader,
   DataTableSkeleton,
@@ -171,17 +170,9 @@ export const ExpandableSortableDataTable = <
                         </TableCell>
                       ))}
                     </TableExpandRow>
-                    {isExpanded && isRowExpandable && (
-                      <TableExpandedRow
-                        colSpan={headers.length + 1}
-                        className={classnames(
-                          styles.expandedRowContent,
-                          expandedRowClassName,
-                        )}
-                      >
-                        {renderExpandedContent(originalRow)}
-                      </TableExpandedRow>
-                    )}
+                    {isExpanded &&
+                      isRowExpandable &&
+                      renderExpandedContent(originalRow)}
                   </React.Fragment>
                 );
               })}

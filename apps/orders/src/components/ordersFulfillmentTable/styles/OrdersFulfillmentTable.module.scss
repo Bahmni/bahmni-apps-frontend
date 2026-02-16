@@ -39,17 +39,6 @@ $col-date-time: 11%;
 $col-owner: 13%;
 
 .ordersTable {
-  width: 100%;
-  overflow-x: auto;
-
-  table {
-    min-width: 928px;
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-  }
-
-  
   thead tr th:nth-child(1),
   tbody tr td:nth-child(1) {
     width: $col-expand;
@@ -83,13 +72,11 @@ $col-owner: 13%;
   thead tr th:nth-child(6) {
     width: $col-priority;
     min-width: 70px;
-    text-align: left !important;
   }
 
   tbody tr td:nth-child(6) {
     width: $col-priority;
     min-width: 70px;
-    text-align: left !important;
   }
 
   thead tr th:nth-child(7),
@@ -134,164 +121,11 @@ $col-owner: 13%;
     font-weight: 600 !important;
     height: $row-height;
   }
-  thead tr th button {
-    font-weight: 600 !important;
-    color: #161616 !important;
-    background-color: transparent !important;
-  }
-
-  thead tr th button span {
-    font-weight: 600 !important;
-  }
-
-  thead tr th:nth-child(6) {
-    text-align: left !important;
-  }
-
-  thead tr th:nth-child(6) button {
-    display: flex !important;
-    justify-content: flex-start !important;
-    width: 100% !important;
-  }
-
-
-  thead tr th:nth-child(6) button :global(.cds--table-sort__flex) {
-    display: flex !important; 
-    justify-content: flex-start !important;
-  }
 
   tbody tr {
     height: $row-height;
   }
-
-  tbody tr td {
-    @include type-style("body-compact-01");
-    background-color: #f4f4f4 !important;
-    color: #161616;
-    padding-inline: $spacing-05;
-    padding-block: $spacing-02 !important;
-    text-align: left;
-    box-sizing: border-box;
-    vertical-align: middle;
-    
-    line-height: 1.25rem;
-    border-bottom: 1px solid #e0e0e0;
-    height: $row-height;
-  }
-
-  tbody tr td:nth-child(1) :global(.cds--table-expand__button) {
-    block-size: 100% !important;
-    padding-block: 0 !important;
-  }
-
-  :global(.cds--data-table) td:global(.cds--table-expand) {
-    padding-block: $spacing-02 !important;
-    padding-inline-end: 0 !important;
-  }
-
-  :global(.cds--parent-row.cds--expandable-row) td,
-  :global(.cds--parent-row.cds--expandable-row.cds--expandable-row--expanded) td
-  {
-    background-color: #f4f4f4 !important;
-    padding-inline: $spacing-05 !important;
-    padding-block: $spacing-02 !important;
-  }
 }
-
-.identifierLink {
-  @include type-style("body-compact-01");
-  color: $link-primary;
-  text-decoration: none;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-.priorityCell {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  min-width: 70px;
-  width: 100%;
-  height: 100%;
-}
-
-.expandedContent {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0;
-  overflow: hidden;
-  line-height: normal;
-  position: relative;
-
-  // Flush separator without adding extra height
-  &::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background-color: #e0e0e0;
-    pointer-events: none;
-  }
-}
-
-.expandedRow {
-  background-color: #ffffff !important;
-  border: none !important;
-  td {
-    background-color: #ffffff !important;
-    padding: 0 !important;
-    border: none !important;
-  }
-}
-
-
-:global(.cds--data-table) tbody tr:global(.cds--expanded-row),
-:global(.cds--data-table) tbody tr:global(.cds--expanded-row) td {
-  background-color: #ffffff !important;
-  border: none !important;
-}
-
-:global(.cds--data-table) tbody tr:global(.cds--expanded-row) td {
-  padding: 0 !important;
-  padding-block: 0 !important;
-  padding-inline: 0 !important;
-  padding-block-end: 0 !important;
-  height: auto !important;
-  vertical-align: top !important;
-  line-height: 0 !important;
-}
-
-:global(.cds--data-table) tbody tr:global([data-child-row]) td {
-  padding: 0 !important;
-  padding-block: 0 !important;
-  padding-inline: 0 !important;
-  height: auto !important;
-  vertical-align: top !important;
-  line-height: 0 !important;
-}
-
-.ordersTable :global(.cds--data-table) tbody tr:global(.cds--expanded-row) td,
-.ordersTable :global(.cds--data-table) tbody tr:global(.cds--expanded-row) td:global(.cds--table-expand) {
-  padding: 0 !important;
-  padding-block: 0 !important;
-  padding-inline: 0 !important;
-}
-
-:global(.cds--data-table) tbody tr:global(.cds--expanded-row):hover,
-:global(.cds--data-table) tbody tr:global(.cds--expanded-row):hover td {
-  background-color: #ffffff !important;
-}
-
-.expandedContent > * {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
-
 .ordersTable :global(.cds--data-table) thead tr th {
   height: $row-height !important;
 }
@@ -300,22 +134,3 @@ $col-owner: 13%;
 .ordersTable :global(.cds--data-table) tbody tr td {
   height: $row-height !important;
 }
-
-:global(.cds--data-table) tbody tr:global(.cds--expanded-row) td :global(.cds--child-row-inner-container) {
-  padding-block: 0 !important;
-  padding-block-start: 0 !important;
-  padding-block-end: 0 !important;
-  padding-inline: 0 !important;
-  margin: 0 !important;
-  min-block-size: 0 !important;
-  max-block-size: none !important;
-  line-height: 0 !important;
-}
-
-:global(.cds--data-table) tbody tr:global([data-child-row]) td :global(.cds--child-row-inner-container) {
-  padding-block: 0 !important;
-  padding-inline: 0 !important;
-  margin: 0 !important;
-  line-height: 0 !important;
-}
-

@@ -1,4 +1,5 @@
-export type OrderPriority = 'Routine' | 'Urgent' | 'STAT';
+import { ORDER_PRIORITY } from './ordersConfig';
+
 export type OrderStatus = 'New' | 'In Progress' | 'Acknowledged' | 'Completed';
 
 export interface PatientDetails {
@@ -13,7 +14,7 @@ export interface Order {
   id: string;
   orderName: string;
   orderType: string;
-  priority: OrderPriority;
+  priority: ORDER_PRIORITY;
   status: OrderStatus;
   provider: string;
   dateTime: string;

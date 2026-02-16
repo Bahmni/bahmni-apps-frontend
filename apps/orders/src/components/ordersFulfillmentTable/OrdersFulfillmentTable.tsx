@@ -1,7 +1,7 @@
 import { ExpandableSortableDataTable, Link } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
-import React, { useMemo, useState, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useRef, useCallback, Fragment } from 'react';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import { PatientOrderRow, OrderStatus } from '../../models/orderFulfillment';
 import { ExpandedOrderRow } from '../expandedOrderRow';
@@ -159,7 +159,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   };
 
   const renderExpandedContent = (row: PatientOrderRow) => (
-    <div className={styles.expandedContent}>
+    <Fragment>
       {row.orders.map((order) => (
         <ExpandedOrderRow
           key={order.id}
@@ -167,7 +167,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
           onOrderClick={onOrderClick}
         />
       ))}
-    </div>
+    </Fragment>
   );
 
   if (isDrugOrderTab) {
@@ -195,7 +195,6 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       loading={loading}
       emptyStateMessage={t('NO_ORDERS_FOUND')}
       className={styles.ordersTable}
-      expandedRowClassName={styles.expandedRow}
     />
   );
 };
