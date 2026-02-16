@@ -2,7 +2,7 @@ import { ProgramEnrollment } from '..';
 import {
   CONCEPT_NAME_TYPE_SHORT,
   CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
-} from '../constants';
+} from '../../conceptService';
 
 export const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 export const mockEnrollments: ProgramEnrollment[] = [

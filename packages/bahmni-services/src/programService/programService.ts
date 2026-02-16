@@ -1,36 +1,7 @@
 import { get } from '../api';
-import {
-  PATIENT_PROGRAMS_URL,
-  PROGRAM_DETAILS_URL,
-  CONCEPT_NAME_TYPE_SHORT,
-  CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
-} from './constants';
+import { getDisplayNameForConcept } from '../conceptService';
+import { PATIENT_PROGRAMS_URL, PROGRAM_DETAILS_URL } from './constants';
 import { PatientProgramsResponse, ProgramEnrollment } from './model';
-
-interface ConceptName {
-  name: string;
-  conceptNameType: string;
-}
-
-function getDisplayNameForConcept(
-  names: ConceptName[] | undefined,
-): string | null {
-  if (!names?.length) return null;
-
-  let conceptName: string | null = null;
-
-  for (const n of names) {
-    if (n.conceptNameType === CONCEPT_NAME_TYPE_SHORT) {
-      return n.name;
-    }
-
-    if (n.conceptNameType === CONCEPT_NAME_TYPE_FULLY_SPECIFIED) {
-      conceptName = n.name;
-    }
-  }
-
-  return conceptName ?? names[0].name ?? null;
-}
 
 // TODO: Add Optional parameters for pagination and filtering
 /**

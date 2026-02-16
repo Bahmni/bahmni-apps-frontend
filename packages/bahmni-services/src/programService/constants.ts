@@ -7,6 +7,3 @@ export const PATIENT_PROGRAMS_URL = (patientUUID: string) =>
   `${OPENMRS_REST_V1}/bahmniprogramenrollment?patient=${patientUUID}&v=${PROGRAM_ENROLLMENT_CUSTOM_REP}`;
 export const PROGRAM_DETAILS_URL = (programUUID: string) =>
   `${OPENMRS_REST_V1}/bahmniprogramenrollment/${programUUID}?v=${PROGRAM_ENROLLMENT_CUSTOM_REP}`;
-
-export const CONCEPT_NAME_TYPE_SHORT = 'SHORT';
-export const CONCEPT_NAME_TYPE_FULLY_SPECIFIED = 'FULLY_SPECIFIED';

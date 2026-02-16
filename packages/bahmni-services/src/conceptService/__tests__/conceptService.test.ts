@@ -13,11 +13,14 @@ import {
   searchFHIRConceptsByName,
   getConceptById,
   searchConceptByName,
+  getDisplayNameForConcept,
 } from '../conceptService';
 import {
   FHIR_VALUESET_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
   CONCEPT_GET_URL,
+  CONCEPT_NAME_TYPE_SHORT,
+  CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
 } from '../constants';
 
 jest.mock('../../api');
@@ -253,6 +256,63 @@ describe('conceptService', () => {
       expect(api.get).toHaveBeenCalledWith(
         `/openmrs/ws/rest/v1/concept?s=byFullySpecifiedName&name=${encodeURIComponent(conceptName)}`,
       );
+    });
+  });
+
+  describe('getDisplayNameForConcept', () => {
+    it('should return SHORT name when available', () => {
+      const names = [
+        {
+          name: 'Assessment in progress',
+          conceptNameType: CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+        },
+        {
+          name: 'Completed',
+          conceptNameType: CONCEPT_NAME_TYPE_SHORT,
+        },
+      ];
+
+      const result = getDisplayNameForConcept(names);
+
+      expect(result).toBe('Completed');
+    });
+
+    it('should return FULLY_SPECIFIED name when SHORT name not available', () => {
+      const names = [
+        {
+          name: 'Assessment in progress',
+          conceptNameType: CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+        },
+      ];
+
+      const result = getDisplayNameForConcept(names);
+
+      expect(result).toBe('Assessment in progress');
+    });
+
+    it('should return first name as fallback when no SHORT or FULLY_SPECIFIED found', () => {
+      const names = [
+        {
+          name: 'In progress',
+          conceptNameType: 'Some other type',
+        },
+      ];
+
+      const result = getDisplayNameForConcept(names);
+
+      expect(result).toBe('In progress');
+    });
+
+    it('should return null when names array is empty', () => {
+      const result = getDisplayNameForConcept([]);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when names is undefined', () => {
+      const result = getDisplayNameForConcept(undefined);
+
+      expect(result).toBeNull();
     });
   });
 });
