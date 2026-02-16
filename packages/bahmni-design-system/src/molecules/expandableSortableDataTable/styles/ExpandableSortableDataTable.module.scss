@@ -42,6 +42,7 @@
     min-inline-size: 48px !important;
     max-inline-size: 48px !important;
     padding: 0 !important;
+    border-bottom: 1px solid #e0e0e0
   }
 
   :global(.cds--table-expand__button) {
@@ -60,7 +61,6 @@
 
   :global(.cds--data-table) tbody tr td {
     @include type-style("body-compact-01");
-    background-color: #f4f4f4 !important;
     color: #161616 !important;
     height: $spacing-10;
     vertical-align: middle;
@@ -139,6 +139,7 @@
   :global(.cds--table-sort) {
     pointer-events: none !important;
     cursor: default !important;
+    padding-inline: 1rem;
   }
 
   :global(.cds--table-sort__icon),

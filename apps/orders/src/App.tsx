@@ -13,10 +13,12 @@ import { queryClientConfig } from './config/tanstackQuery';
 import { ORDERS_NAMESPACE } from './constants/app';
 import { OrdersPage } from './pages/OrdersPage';
 import { OrdersConfigProvider } from './providers/OrdersConfigProvider';
+import useOrdersStore from './stores/ordersStore';
 
 const queryClient = new QueryClient(queryClientConfig);
 const OrdersApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
+  const { fetchCurrentUser, setCurrentLocation } = useOrdersStore();
   useEffect(() => {
     const initializeApp = async () => {
       try {
@@ -24,6 +26,8 @@ const OrdersApp: React.FC = () => {
         initFontAwesome();
         initializeAuditListener();
         setIsInitialized(true);
+        fetchCurrentUser();
+        setCurrentLocation();
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to initialize app:', error);

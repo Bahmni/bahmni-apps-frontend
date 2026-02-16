@@ -8,14 +8,14 @@ import {
   Search,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { OrderFulfillmentSlider } from '../components/orderFulfillmentSlider';
 import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
 import { OrdersHeader } from '../components/ordersHeader/OrdersHeader';
 import { useOrdersConfig } from '../hooks/useOrdersConfig';
 import { useOrdersFulfillment } from '../hooks/useOrdersFulfillment';
-import { useOrdersTabCounts } from '../hooks/useOrdersTabCounts';
 import { Order, PatientOrderRow } from '../models/orderFulfillment';
+import useOrdersStore from '../stores/ordersStore';
 import styles from './styles/OrdersPage.module.scss';
 
 interface OrdersTabContentProps {
@@ -28,11 +28,11 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
   onOrderClick,
 }) => {
   const { t } = useTranslation();
-  const { rows, headers, isLoading, isDrugOrderTab } =
-    useOrdersFulfillment(tabLabel);
+  const { headers, isLoading, isDrugOrderTab } = useOrdersFulfillment(tabLabel);
 
+  const { ordersData } = useOrdersStore();
   const handleOrderClick = (orderId: string) => {
-    onOrderClick(orderId, rows);
+    onOrderClick(orderId, ordersData[tabLabel]);
   };
 
   return (
@@ -48,7 +48,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
       </div>
       <div className={styles.ordersTable}>
         <OrdersFulfillmentTable
-          rows={rows}
+          rows={ordersData[tabLabel]}
           headers={headers}
           loading={isLoading}
           isDrugOrderTab={isDrugOrderTab}
@@ -62,8 +62,15 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 export const OrdersPage: React.FC = () => {
   const { t } = useTranslation();
   const { tabs, isLoading, error } = useOrdersConfig();
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const tabCounts = useOrdersTabCounts(tabs);
+  const {
+    selectedIndex,
+    currentUser,
+    tabCounts,
+    setSelectedIndex,
+    fetchAllPendingOrders,
+    fetchOrdersForTab,
+    isLoading: loading,
+  } = useOrdersStore();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
 
@@ -77,7 +84,12 @@ export const OrdersPage: React.FC = () => {
       }
     }
   };
-
+  useEffect(() => {
+    fetchAllPendingOrders(tabs);
+  }, [tabs, currentUser]);
+  useEffect(() => {
+    fetchOrdersForTab(selectedIndex);
+  }, [selectedIndex]);
   const handleCloseSlider = () => {
     setIsSliderOpen(false);
     setSelectedOrder(null);
@@ -100,6 +112,7 @@ export const OrdersPage: React.FC = () => {
   return (
     <div className={styles.pageContainer}>
       <OrdersHeader />
+      {loading && <Loading />}
       <div className={styles.mainContentWrapper}>
         <div
           className={`${styles.contentContainer} ${isSliderOpen ? styles.contentContainerWithSlider : ''}`}
@@ -113,7 +126,7 @@ export const OrdersPage: React.FC = () => {
                 {tabs.map((tab) => (
                   <Tab key={tab.id}>
                     {t(tab.translationKey) || tab.display} (
-                    {tabCounts[tab.label] ?? 0})
+                    {loading ? '...' : (tabCounts[tab.label] ?? 0)})
                   </Tab>
                 ))}
               </TabList>

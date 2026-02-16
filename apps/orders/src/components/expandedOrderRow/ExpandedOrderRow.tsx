@@ -21,12 +21,12 @@ export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
   };
 
   return (
-    <div className={styles.expandedOrderRow} data-testid="expanded-order-row">
-      <div className={styles.emptyCell} />
-      <div className={styles.emptyCell} />
-      <div className={styles.identifierCell}>{order.identifier}</div>
-      <div className={styles.patientNameCell}>{order.patientName}</div>
-      <div className={styles.orderNameCell}>
+    <tr className={styles.expandedOrderRow} data-testid="expanded-order-row">
+      <td />
+      <td />
+      <td />
+      <td />
+      <td className={styles.orderNameCell}>
         <Link
           href="#"
           onClick={(e: React.MouseEvent) => {
@@ -37,18 +37,18 @@ export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
         >
           {order.orderName}
         </Link>
-      </div>
-      <div className={styles.priorityCell}>
+      </td>
+      <td>
         <PriorityBadge priority={order.priority} />
-      </div>
-      <div className={styles.statusCell}>{order.status}</div>
-      <div className={styles.providerCell}>{order.provider}</div>
-      <div className={styles.dateTimeCell}>{order.dateTime}</div>
-      <div className={styles.ownerCell}>
+      </td>
+      <td className={styles.statusCell}>{order.status}</td>
+      <td className={styles.providerCell}>{order.provider}</td>
+      <td className={styles.dateTimeCell}>{order.dateTime}</td>
+      <td className={styles.ownerCell}>
         {order.owner ?? (
           <span className={styles.unassigned}>{t('UNASSIGNED')}</span>
         )}
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 };

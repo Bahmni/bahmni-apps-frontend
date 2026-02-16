@@ -4,18 +4,15 @@
 
 $row-height: 48px;
 
-$columns: 4fr 6fr 8fr 13fr 17fr 8fr 8fr 12fr 11fr 13fr;
-
 .expandedOrderRow {
-  display: grid;
-  grid-template-columns: $columns;
-  align-items: stretch; 
+  align-items: stretch;
   height: $row-height;
-  block-size: $row-height; 
+  block-size: $row-height;
   background-color: #ffffff !important;
   box-sizing: border-box;
   width: 100%;
   border-bottom: 1px solid $border-subtle-01;
+  white-space: nowrap;
 
   &:last-child {
     border-bottom: none;
@@ -36,20 +33,6 @@ $columns: 4fr 6fr 8fr 13fr 17fr 8fr 8fr 12fr 11fr 13fr;
   > div:first-child {
     padding: 0;
   }
-}
-
-.emptyCell {
-}
-
-.orderNameCell {
-}
-
-.priorityCell {
-  justify-content: flex-start;
-  align-items: center;
-  display: flex;
-  min-width: 70px;
-  width: 100%;
 }
 
 .statusCell {

@@ -1,8 +1,8 @@
+import { SaveAndCancelButtons } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
 import { ComboBox, TextArea } from '@carbon/react';
 import React, { useState } from 'react';
-import { SaveAndCancelButtons } from '../../../../../packages/bahmni-design-system/src/molecules/saveAndCancelButtons';
 import { availableProviders } from '../../__mocks__/ordersMockData';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import { Order, OrderStatus } from '../../models/orderFulfillment';

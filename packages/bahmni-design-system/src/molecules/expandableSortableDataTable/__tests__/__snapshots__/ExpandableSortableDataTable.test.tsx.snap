@@ -365,24 +365,11 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
               3
             </td>
           </tr>
-          <tr
-            class="cds--expandable-row expandedRowContent"
-            data-child-row="true"
+          <div
+            data-testid="expanded-row-1"
           >
-            <td
-              colspan="4"
-            >
-              <div
-                class="cds--child-row-inner-container"
-              >
-                <div
-                  data-testid="expanded-row-1"
-                >
-                  Details for Patient A
-                </div>
-              </div>
-            </td>
-          </tr>
+            Details for Patient A
+          </div>
           <tr
             class="cds--parent-row"
             data-parent-row="true"
