@@ -250,4 +250,103 @@ describe('OrdersFulfillmentTable', () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  describe('Child Row Highlighting', () => {
+    it('highlights selected order row when clicked', () => {
+      const { container } = render(
+        <OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />,
+      );
+
+      // Expand first patient row
+      const expandButtons = screen.getAllByRole('button', {
+        name: /expand row/i,
+      });
+      fireEvent.click(expandButtons[0]);
+
+      // Click on first order link
+      const orderLinks = screen.getAllByRole('link', {
+        name: /New Cast - Plaster|Rehab Therapy - Limb/,
+      });
+      fireEvent.click(orderLinks[0]);
+
+      // Check that the selected row has the highlighting class
+      const highlightedRows = container.querySelectorAll('tr.selectedChildRow');
+      expect(highlightedRows).toHaveLength(1);
+    });
+
+    it('updates highlight when different order is clicked', () => {
+      const { container } = render(
+        <OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />,
+      );
+
+      // Expand first patient row
+      const expandButtons = screen.getAllByRole('button', {
+        name: /expand row/i,
+      });
+      fireEvent.click(expandButtons[0]);
+
+      const orderLinks = screen.getAllByRole('link', {
+        name: /New Cast - Plaster|Rehab Therapy - Limb/,
+      });
+
+      // Click first order
+      fireEvent.click(orderLinks[0]);
+      let highlightedRows = container.querySelectorAll('tr.selectedChildRow');
+      expect(highlightedRows).toHaveLength(1);
+
+      // Click second order
+      fireEvent.click(orderLinks[1]);
+      highlightedRows = container.querySelectorAll('tr.selectedChildRow');
+      expect(highlightedRows).toHaveLength(1);
+    });
+
+    it('calls onOrderClick when highlighted order is clicked', () => {
+      const onOrderClick = jest.fn();
+      render(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={mockHeaders}
+          onOrderClick={onOrderClick}
+        />,
+      );
+
+      // Expand first patient row
+      const expandButtons = screen.getAllByRole('button', {
+        name: /expand row/i,
+      });
+      fireEvent.click(expandButtons[0]);
+
+      // Click on order link
+      const orderLink = screen.getByRole('link', {
+        name: 'New Cast - Plaster',
+      });
+      fireEvent.click(orderLink);
+
+      expect(onOrderClick).toHaveBeenCalledWith('order-1-1');
+    });
+
+    it('only one order row is highlighted at a time', () => {
+      const { container } = render(
+        <OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />,
+      );
+
+      // Expand first patient row
+      const expandButtons = screen.getAllByRole('button', {
+        name: /expand row/i,
+      });
+      fireEvent.click(expandButtons[0]);
+
+      const orderLinks = screen.getAllByRole('link', {
+        name: /New Cast - Plaster|Rehab Therapy - Limb/,
+      });
+
+      // Click first order
+      fireEvent.click(orderLinks[0]);
+      // Click second order
+      fireEvent.click(orderLinks[1]);
+
+      const highlightedRows = container.querySelectorAll('tr.selectedChildRow');
+      expect(highlightedRows).toHaveLength(1);
+    });
+  });
 });

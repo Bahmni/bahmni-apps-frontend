@@ -8,11 +8,13 @@ import styles from './styles/ExpandedOrderRow.module.scss';
 interface ExpandedOrderRowProps {
   order: Order;
   onOrderClick?: (orderId: string) => void;
+  isSelected?: boolean;
 }
 
 export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
   order,
   onOrderClick,
+  isSelected,
 }) => {
   const { t } = useTranslation();
 
@@ -21,7 +23,12 @@ export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
   };
 
   return (
-    <tr className={styles.expandedOrderRow} data-testid="expanded-order-row">
+    <tr
+      className={`${styles.expandedOrderRow} ${
+        isSelected ? styles.selectedChildRow : ''
+      }`}
+      data-testid="expanded-order-row"
+    >
       <td />
       <td />
       <td />

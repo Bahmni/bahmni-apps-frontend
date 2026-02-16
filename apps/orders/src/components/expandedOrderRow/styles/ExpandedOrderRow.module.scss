@@ -40,6 +40,14 @@ $row-height: 48px;
   color: $text-primary;
 }
 
+.selectedChildRow {
+  background-color: #e5e5e5 !important;
+
+  td {
+    background-color: #e5e5e5 !important;
+  }
+}
+
 .providerCell {
   @include type-style("body-compact-01");
   color: $text-primary;
