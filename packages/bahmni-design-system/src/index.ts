@@ -115,10 +115,12 @@ export { ImageTile, type ImageTileProps } from './molecules/imageTile';
 export { FileTile, type FileTileProps } from './molecules/fileTile';
 export { VideoTile, type VideoTileProps } from './molecules/videoTile';
 export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
+export { MenuItem, type MenuItemProps } from './atoms/menuItem';
 export {
   MenuItemDivider,
   type MenuItemDividerProps,
 } from './atoms/menuItemDivider';
+export { MenuButton, type MenuButtonProps } from './atoms/menuButton';
 export {
   FormCardContainer,
   type FormCardContainerProps,
