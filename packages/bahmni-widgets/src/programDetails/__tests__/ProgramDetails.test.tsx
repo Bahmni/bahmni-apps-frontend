@@ -1,10 +1,14 @@
+import { updateProgramState } from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { useNotification } from '../../notification';
+import { mockProgramWithAttributes } from '../__mocks__/mocks';
 import ProgramDetails from '../ProgramDetails';
 
 expect.extend(toHaveNoViolations);
@@ -15,8 +19,11 @@ jest.mock('@tanstack/react-query', () => ({
 }));
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
+  updateProgramState: jest.fn(),
 }));
+jest.mock('../../notification');
 
+const mockAddNotification = jest.fn();
 describe('ProgramDetails', () => {
   const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
@@ -28,6 +35,9 @@ describe('ProgramDetails', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: mockAddNotification,
+    });
   });
 
   afterEach(() => {
@@ -280,7 +290,7 @@ describe('ProgramDetails', () => {
       screen.getByTestId('patient-programs-state-uuid-2-button-test-id'),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText('UPDATE_PROGRAM_STATUS_BUTTON'),
+      screen.queryByText('UPDATE_PROGRAM_STATE_BUTTON'),
     ).not.toBeInTheDocument();
   });
 
@@ -309,12 +319,131 @@ describe('ProgramDetails', () => {
 
     render(wrapper);
 
-    expect(
-      screen.getByText('UPDATE_PROGRAM_STATUS_BUTTON'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('UPDATE_PROGRAM_STATE_BUTTON')).toBeInTheDocument();
     expect(
       screen.queryByTestId('patient-programs-state-uuid-1-button-test-id'),
     ).not.toBeInTheDocument();
+  });
+
+  it('should update state when update button is clicked', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 'program-1',
+        uuid: 'program-uuid-1',
+        programName: 'TB Program',
+        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+        dateCompleted: null,
+        outcomeName: null,
+        outcomeDetails: null,
+        currentStateName: 'Treatment Phase',
+        attributes: {},
+        allowedStates: [
+          { uuid: 'allowed-state-2', display: 'Follow-up Phase' },
+          { uuid: 'allowed-state-3', display: 'Completed' },
+        ],
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+
+    const updatedMockProgram = {
+      ...mockProgramWithAttributes,
+      states: [
+        {
+          ...mockProgramWithAttributes.states[0],
+          state: {
+            ...mockProgramWithAttributes.states[0].state,
+            uuid: 'allowed-state-2',
+            display: 'Follow-up Phase',
+            concept: {
+              ...mockProgramWithAttributes.states[0].state.concept,
+              display: 'Follow-up Phase',
+              name: {
+                ...mockProgramWithAttributes.states[0].state.concept.name,
+                display: 'Follow-up Phase',
+                name: 'Follow-up Phase',
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    (updateProgramState as jest.Mock).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve(updatedMockProgram), 100);
+        }),
+    );
+
+    render(wrapper);
+
+    const button = screen.getByTestId(
+      'patient-programs-allowed-state-2-button-test-id',
+    );
+
+    await userEvent.click(button);
+
+    expect(
+      screen.getByTestId('patient-programs-table-loading-test-id'),
+    ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(updateProgramState).toHaveBeenCalledWith(
+        'test-program-uuid',
+        'allowed-state-2',
+      );
+      expect(
+        screen.getByTestId('patient-programs-tile-test-id'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('patient-programs-allowed-state-2-button-test-id'),
+      ).toHaveTextContent('Follow-up Phase');
+    });
+  });
+
+  it('should show notification when program state update fails', async () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 'program-1',
+        uuid: 'program-uuid-1',
+        programName: 'TB Program',
+        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+        dateCompleted: null,
+        outcomeName: null,
+        outcomeDetails: null,
+        currentStateName: 'Treatment Phase',
+        attributes: {},
+        allowedStates: [
+          { uuid: 'allowed-state-2', display: 'Follow-up Phase' },
+          { uuid: 'allowed-state-3', display: 'Completed' },
+        ],
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+
+    (updateProgramState as jest.Mock).mockRejectedValue(
+      new Error('Failed to update program state'),
+    );
+
+    render(wrapper);
+
+    const button = screen.getByTestId(
+      'patient-programs-allowed-state-2-button-test-id',
+    );
+
+    await userEvent.click(button);
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'ERROR_UPDATING_PROGRAM_STATE',
+      });
+    });
   });
 
   describe('Snapshot', () => {

@@ -12,11 +12,13 @@ import {
 import {
   useTranslation,
   getProgramByUUID,
+  updateProgramState,
   DATE_FORMAT,
   formatDate,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
-import React, { useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
+import { useNotification } from '../notification';
 import { KNOWN_FIELDS } from './constants';
 import { ProgramDetailsViewModel } from './model';
 import styles from './styles/ProgramDetails.module.scss';
@@ -53,6 +55,9 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   config,
 }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const { addNotification } = useNotification();
+  const [isUpdatingState, setIsUpdatingState] = useState(false);
 
   const programAttributes = useMemo(
     () => extractProgramAttributeNames(config?.fields),
@@ -65,6 +70,31 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     enabled: !!programUUID,
   });
 
+  const handleButtonClick = (stateUuid: string) => {
+    setIsUpdatingState(true);
+    updateProgramState(programUUID, stateUuid)
+      .then((updatedEnrollment) => {
+        const updatedViewModel = createProgramDetailsViewModel(
+          updatedEnrollment,
+          programAttributes,
+        );
+        queryClient.setQueryData(
+          programsQueryKeys(programUUID!),
+          updatedViewModel,
+        );
+      })
+      .catch((error) => {
+        addNotification({
+          type: 'error',
+          title: t('ERROR_DEFAULT_TITLE'),
+          message: t('ERROR_UPDATING_PROGRAM_STATE'),
+        });
+      })
+      .finally(() => {
+        setIsUpdatingState(false);
+      });
+  };
+
   const headers: Record<string, string> = useMemo(() => {
     if (!config?.fields || config.fields.length === 0) return {};
     return config.fields.reduce(
@@ -76,7 +106,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     );
   }, [config?.fields]);
 
-  if (isLoading) {
+  if (isLoading || isUpdatingState) {
     return (
       <div
         id="patient-programs-table-loading"
@@ -114,6 +144,8 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           aria-label={`patient-programs-${state.uuid}-button-aria-label`}
           kind="ghost"
           key={state.uuid}
+          disabled={isUpdatingState}
+          onClick={() => handleButtonClick(state.uuid)}
         >
           {t(createWorkflowStateButtonHeaders(state.display), state.display)}
         </Button>
@@ -121,7 +153,11 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     }
 
     return (
-      <MenuButton label={t('UPDATE_PROGRAM_STATUS_BUTTON')} kind="ghost">
+      <MenuButton
+        label={t('UPDATE_PROGRAM_STATE_BUTTON')}
+        kind="ghost"
+        disabled={isUpdatingState}
+      >
         {allowedStates.map((state) => (
           <MenuItem
             id={`patient-programs-${state.uuid}-button`}
@@ -132,7 +168,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
               createWorkflowStateButtonHeaders(state.display),
               state.display,
             )}
-            onClick={() => {}}
+            onClick={() => handleButtonClick(state.uuid)}
           />
         ))}
       </MenuButton>
