@@ -207,6 +207,21 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     encounterParticipants.length > 0
   );
 
+  // Helper function to extract concept UUIDs from observation bundle entries
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const extractConceptUuidsFromObservations = (entries: any[]): string[] => {
+    const conceptUuids = new Set<string>();
+    entries.forEach((entry) => {
+      if (
+        entry.resource?.resourceType === 'Observation' &&
+        entry.resource?.code?.coding?.[0]?.code
+      ) {
+        conceptUuids.add(entry.resource.code.coding[0].code);
+      }
+    });
+    return Array.from(conceptUuids);
+  };
+
   // TODO: Extract Business Logic
   // 1. Create a consultationService to handle submission logic
   // 2. Extract validation logic into a custom hook
@@ -304,7 +319,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       ...observationEntries,
     ]);
 
-    return postConsultationBundle<ConsultationBundle>(consultationBundle);
+    // Extract concept UUIDs from observation entries for smart refetch
+    const updatedConceptUuids =
+      extractConceptUuidsFromObservations(observationEntries);
+
+    return postConsultationBundle<ConsultationBundle>(consultationBundle).then(
+      (response) => ({
+        response,
+        updatedConceptUuids,
+      }),
+    );
   };
 
   const handleOnPrimaryButtonClick = async () => {
@@ -336,9 +360,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
       try {
         setIsSubmitting(true);
-        await submitConsultation();
+        const { updatedConceptUuids } = await submitConsultation();
 
         setIsSubmitting(false);
+
+        // Capture observation data before resetting the store
+        const observationFormsData = getObservationFormsData();
+        const hasObservations = Object.keys(observationFormsData).length > 0;
 
         // Dispatch audit event for successful encounter edit/creation
         dispatchAuditEvent({
@@ -370,8 +398,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             allergies: selectedAllergies.length > 0,
             medications:
               selectedMedications.length > 0 || selectedVaccinations.length > 0,
+            observations: hasObservations,
             serviceRequests: selectedServiceRequest,
           },
+          updatedConceptUuids,
         });
 
         addNotification({
