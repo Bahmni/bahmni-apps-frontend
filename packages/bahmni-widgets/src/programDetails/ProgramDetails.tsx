@@ -55,7 +55,6 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   config,
 }) => {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
   const { addNotification } = useNotification();
   const [isUpdatingState, setIsUpdatingState] = useState(false);
 
@@ -64,7 +63,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     [config?.fields],
   );
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: programsQueryKeys(programUUID!),
     queryFn: () => fetchProgramDetails(programUUID!, programAttributes),
     enabled: !!programUUID,
@@ -73,17 +72,10 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   const handleButtonClick = (stateUuid: string) => {
     setIsUpdatingState(true);
     updateProgramState(programUUID, stateUuid)
-      .then((updatedEnrollment) => {
-        const updatedViewModel = createProgramDetailsViewModel(
-          updatedEnrollment,
-          programAttributes,
-        );
-        queryClient.setQueryData(
-          programsQueryKeys(programUUID!),
-          updatedViewModel,
-        );
+      .then(() => {
+        refetch();
       })
-      .catch((error) => {
+      .catch(() => {
         addNotification({
           type: 'error',
           title: t('ERROR_DEFAULT_TITLE'),
