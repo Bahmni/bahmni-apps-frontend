@@ -4,6 +4,7 @@ export {
   searchFHIRConceptsByName,
   getConceptById,
   searchConceptByName,
+  getDisplayNameForConcept,
 } from './conceptService';
 export {
   type ConceptSearch,

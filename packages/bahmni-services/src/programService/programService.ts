@@ -1,4 +1,5 @@
 import { get } from '../api';
+import { getDisplayNameForConcept } from '../conceptService';
 import { PATIENT_PROGRAMS_URL, PROGRAM_DETAILS_URL } from './constants';
 import { PatientProgramsResponse, ProgramEnrollment } from './model';
 
@@ -36,6 +37,9 @@ export function getCurrentStateName(
   if (enrollment.states.length === 0) {
     return null;
   }
+
+  let currentState;
+
   if (enrollment.dateCompleted !== null) {
     const statesWithEndDate = enrollment.states.filter(
       (state) => state.endDate !== null,
@@ -45,14 +49,20 @@ export function getCurrentStateName(
       const dateB = new Date(b.endDate!).getTime();
       return dateA - dateB;
     });
-    const latestState = sortedStates[sortedStates.length - 1];
-    return latestState.state.concept.display;
+    currentState = sortedStates[sortedStates.length - 1];
   } else {
-    const activeState = enrollment.states.find(
-      (state) => state.endDate === null,
-    );
-    return activeState!.state.concept.display;
+    currentState = enrollment.states.find((state) => state.endDate === null);
   }
+
+  if (!currentState) {
+    return null;
+  }
+
+  const conceptName = getDisplayNameForConcept(
+    currentState.state.concept.names,
+  );
+
+  return conceptName ?? currentState.state.concept.display;
 }
 
 /**

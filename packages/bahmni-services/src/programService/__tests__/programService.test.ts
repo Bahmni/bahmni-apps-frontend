@@ -9,6 +9,7 @@ import {
 } from '../programService';
 
 jest.mock('../../api');
+
 describe('programService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -26,7 +27,7 @@ describe('programService', () => {
 
       expect(result).toEqual(mockResponse);
       expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/rest/v1/bahmniprogramenrollment?patient=${patientUUID}&v=full`,
+        `/openmrs/ws/rest/v1/bahmniprogramenrollment?patient=${patientUUID}&v=custom:(uuid,patient,program,display,dateEnrolled,dateCompleted,location,voided,outcome,states:(uuid,startDate,endDate,voided,state:(uuid,concept:(uuid,display,name,names))),auditInfo,attributes)`,
       );
     });
 
@@ -52,7 +53,7 @@ describe('programService', () => {
 
       expect(result).toEqual(mockProgramEnrollment);
       expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/rest/v1/bahmniprogramenrollment/${programUUID}?v=full`,
+        `/openmrs/ws/rest/v1/bahmniprogramenrollment/${programUUID}?v=custom:(uuid,patient,program,display,dateEnrolled,dateCompleted,location,voided,outcome,states:(uuid,startDate,endDate,voided,state:(uuid,concept:(uuid,display,name,names))),auditInfo,attributes)`,
       );
     });
   });
@@ -112,14 +113,29 @@ describe('programService', () => {
       const mockEnrollment: ProgramEnrollment = mockEnrollments[2];
 
       const result = getCurrentStateName(mockEnrollment);
-      expect(result).toBe('Recovery');
+      expect(result).toBe('Phase de continuation');
     });
 
     it('should return the active state name if the program is not completed', () => {
       const mockEnrollment: ProgramEnrollment = mockEnrollments[1];
 
       const result = getCurrentStateName(mockEnrollment);
-      expect(result).toBe('Continuation Phase');
+      expect(result).toBe('In Progress');
+    });
+
+    it('should return SHORT name when available', () => {
+      const result = getCurrentStateName(mockEnrollments[1]);
+      expect(result).toBe('In Progress');
+    });
+
+    it('should return FULLY_SPECIFIED name when SHORT not available', () => {
+      const result = getCurrentStateName(mockEnrollments[2]);
+      expect(result).toBe('Phase de continuation');
+    });
+
+    it('should fallback to display when names array is empty', () => {
+      const result = getCurrentStateName(mockEnrollments[3]);
+      expect(result).toBe('Initial Treatment');
     });
   });
 });
