@@ -27,7 +27,7 @@ describe('programService', () => {
 
       expect(result).toEqual(mockResponse);
       expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/rest/v1/bahmniprogramenrollment?patient=${patientUUID}&v=custom:(uuid,patient,program,display,dateEnrolled,dateCompleted,location,voided,outcome,states:(uuid,startDate,endDate,voided,state:(uuid,concept:(uuid,display,name,names))),auditInfo,attributes)`,
+        `/openmrs/ws/rest/v1/bahmniprogramenrollment?patient=${patientUUID}&v=custom:(uuid,episodeUuid,patient,program,display,dateEnrolled,dateCompleted,location,voided,outcome,states:(uuid,startDate,endDate,voided,state:(uuid,concept:(uuid,display,name,names))),auditInfo,attributes)`,
       );
     });
 
@@ -53,7 +53,7 @@ describe('programService', () => {
 
       expect(result).toEqual(mockProgramEnrollment);
       expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/rest/v1/bahmniprogramenrollment/${programUUID}?v=custom:(uuid,patient,program,display,dateEnrolled,dateCompleted,location,voided,outcome,states:(uuid,startDate,endDate,voided,state:(uuid,concept:(uuid,display,name,names))),auditInfo,attributes)`,
+        `/openmrs/ws/rest/v1/bahmniprogramenrollment/${programUUID}?v=custom:(uuid,episodeUuid,patient,program,display,dateEnrolled,dateCompleted,location,voided,outcome,states:(uuid,startDate,endDate,voided,state:(uuid,concept:(uuid,display,name,names))),auditInfo,attributes)`,
       );
     });
   });
