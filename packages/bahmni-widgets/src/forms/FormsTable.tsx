@@ -20,6 +20,8 @@ import {
   FormsEncounter,
   getFormsDataByEncounterUuid,
   shouldEnableEncounterFilter,
+  useSubscribeConsultationSaved,
+  ConsultationSavedEventPayload,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -59,11 +61,25 @@ const FormsTable: React.FC<WidgetProps> = ({
     isLoading: loading,
     isError,
     error,
+    refetch,
   } = useQuery<FormResponseData[], Error>({
     queryKey: ['forms', patientUuid, episodeOfCareUuids],
     queryFn: () => getPatientFormData(patientUuid!, undefined, numberOfVisits),
     enabled: !!patientUuid && !emptyEncounterFilter,
   });
+
+  // Listen to consultation saved events and refetch if observations were updated
+  useSubscribeConsultationSaved(
+    (payload: ConsultationSavedEventPayload) => {
+      if (
+        payload.patientUUID === patientUuid &&
+        payload.updatedResources.observations
+      ) {
+        refetch();
+      }
+    },
+    [patientUuid, refetch],
+  );
 
   // Filter forms data by encounterUuids if provided
   const filteredFormsData = useMemo(() => {

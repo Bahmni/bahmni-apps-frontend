@@ -3,6 +3,8 @@ import {
   searchConceptByName,
   useTranslation,
   getPatientObservationsWithEncounterBundle,
+  useSubscribeConsultationSaved,
+  ConsultationSavedEventPayload,
 } from '@bahmni/services';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef } from 'react';
@@ -82,6 +84,7 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
     data: observations,
     isLoading: isLoadingObservations,
     isError: isObservationsError,
+    refetch,
   } = useQuery({
     queryKey: observationsQueryKeys(patientUUID!, allConceptUuids),
     queryFn: () =>
@@ -89,6 +92,25 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
     enabled:
       !!patientUUID && allConceptUuids.length > 0 && areConceptQueriesComplete,
   });
+
+  // Smart refetch: only refetch if one of the updated concepts matches our configured concepts
+  useSubscribeConsultationSaved(
+    (payload: ConsultationSavedEventPayload) => {
+      if (
+        payload.patientUUID === patientUUID &&
+        payload.updatedResources.observations
+      ) {
+        const hasMatchingConcept = payload.updatedConceptUuids?.some(
+          (conceptUuid) => allConceptUuids.includes(conceptUuid),
+        );
+
+        if (hasMatchingConcept) {
+          refetch();
+        }
+      }
+    },
+    [patientUUID, allConceptUuids, refetch],
+  );
 
   useEffect(() => {
     if (isObservationsError) {
