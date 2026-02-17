@@ -324,8 +324,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       extractConceptUuidsFromObservations(observationEntries);
 
     return postConsultationBundle<ConsultationBundle>(consultationBundle).then(
-      (response) => ({
-        response,
+      () => ({
         updatedConceptUuids,
       }),
     );
