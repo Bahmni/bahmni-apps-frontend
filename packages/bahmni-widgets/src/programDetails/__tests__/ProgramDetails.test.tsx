@@ -112,6 +112,7 @@ describe('ProgramDetails', () => {
         outcomeDetails: null,
         currentStateName: null,
         attributes: {},
+        allowedStates: [],
       },
       error: null,
       isError: false,
@@ -166,6 +167,7 @@ describe('ProgramDetails', () => {
         attributes: {
           'Registration Number': 'REG123456',
         },
+        allowedStates: [],
       },
       error: null,
       isError: false,
@@ -202,6 +204,7 @@ describe('ProgramDetails', () => {
         outcomeDetails: null,
         currentStateName: 'Treatment Phase',
         attributes: {},
+        allowedStates: [],
       },
       error: null,
       isError: false,
@@ -218,6 +221,102 @@ describe('ProgramDetails', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('should not render buttons when allowedStates is empty', () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 'program-1',
+        uuid: 'program-uuid-1',
+        programName: 'TB Program',
+        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+        dateCompleted: null,
+        outcomeName: null,
+        outcomeDetails: null,
+        currentStateName: 'Treatment Phase',
+        attributes: {},
+        allowedStates: [],
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+
+    render(wrapper);
+
+    const buttonGroup = screen.getByTestId(
+      'patient-programs-state-change-button-group-test-id',
+    );
+    expect(buttonGroup).toBeInTheDocument();
+    expect(buttonGroup).toBeEmptyDOMElement();
+  });
+
+  it('should render individual Button components when allowedStates has less than 3 items', () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 'program-1',
+        uuid: 'program-uuid-1',
+        programName: 'TB Program',
+        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+        dateCompleted: null,
+        outcomeName: null,
+        outcomeDetails: null,
+        currentStateName: 'Treatment Phase',
+        attributes: {},
+        allowedStates: [
+          { uuid: 'state-uuid-1', display: 'Follow-up Phase' },
+          { uuid: 'state-uuid-2', display: 'Completed' },
+        ],
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+
+    render(wrapper);
+
+    expect(
+      screen.getByTestId('patient-programs-state-uuid-1-button-test-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('patient-programs-state-uuid-2-button-test-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('UPDATE_PROGRAM_STATUS_BUTTON'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should render MenuButton with MenuItems when allowedStates has 3 or more items', () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 'program-1',
+        uuid: 'program-uuid-1',
+        programName: 'TB Program',
+        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+        dateCompleted: null,
+        outcomeName: null,
+        outcomeDetails: null,
+        currentStateName: 'Treatment Phase',
+        attributes: {},
+        allowedStates: [
+          { uuid: 'state-uuid-1', display: 'Treatment Phase' },
+          { uuid: 'state-uuid-2', display: 'Follow-up Phase' },
+          { uuid: 'state-uuid-3', display: 'Completed' },
+        ],
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+
+    render(wrapper);
+
+    expect(
+      screen.getByText('UPDATE_PROGRAM_STATUS_BUTTON'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('patient-programs-state-uuid-1-button-test-id'),
+    ).not.toBeInTheDocument();
+  });
+
   describe('Snapshot', () => {
     it('should match snapshot with program data', () => {
       (useQuery as jest.Mock).mockReturnValue({
@@ -231,6 +330,7 @@ describe('ProgramDetails', () => {
           outcomeDetails: null,
           currentStateName: 'On ART',
           attributes: {},
+          allowedStates: [],
         },
         error: null,
         isError: false,
@@ -254,6 +354,7 @@ describe('ProgramDetails', () => {
           outcomeDetails: null,
           currentStateName: 'On ART',
           attributes: {},
+          allowedStates: [],
         },
         error: null,
         isError: false,

@@ -22,11 +22,25 @@
 .grid{
   margin-inline: 0;
   padding-inline: 0;
+  dt {
+    padding-top: $spacing-04;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding-inline-end: $spacing-04;
+  padding-top: $spacing-03;
+  #patient-programs-state-change-button-group {
+    display: flex;
+    gap: $spacing-02
+  }
 }
 
 .title {
   @include type-style("heading-compact-02");
-  padding-top: $spacing-05;
+  padding-top: $spacing-04;
   padding-bottom: 0;
   font-weight: 600;
   min-block-size: fit-content;

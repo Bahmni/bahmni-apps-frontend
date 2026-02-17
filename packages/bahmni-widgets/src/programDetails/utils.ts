@@ -16,6 +16,10 @@ export function createProgramHeader(field: string): string {
   return `PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field)}`;
 }
 
+export function createWorkflowStateButtonHeaders(field: string): string {
+  return `PROGRAMS_STATE_BUTTON_${camelToScreamingSnakeCase(field)}`;
+}
+
 export function createProgramDetailsViewModel(
   enrollment: ProgramEnrollment,
   programAttributes: string[],
@@ -39,5 +43,9 @@ export function createProgramDetailsViewModel(
       : null,
     currentStateName: getCurrentStateName(enrollment),
     attributes: extractAttributes(enrollment, programAttributes),
+    allowedStates: enrollment.allowedStates.map((state) => ({
+      uuid: state.uuid,
+      display: state.concept.display,
+    })),
   };
 }

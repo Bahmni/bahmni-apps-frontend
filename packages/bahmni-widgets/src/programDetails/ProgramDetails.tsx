@@ -5,6 +5,9 @@ import {
   Grid,
   Tag,
   Tile,
+  Button,
+  MenuButton,
+  MenuItem,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -20,6 +23,7 @@ import styles from './styles/ProgramDetails.module.scss';
 import {
   createProgramDetailsViewModel,
   extractProgramAttributeNames,
+  createWorkflowStateButtonHeaders,
   createProgramHeader,
 } from './utils';
 
@@ -97,6 +101,44 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     );
   }
 
+  const renderButtons = (
+    allowedStates: { uuid: string; display: string }[],
+  ) => {
+    if (!allowedStates || allowedStates.length === 0) return null;
+
+    if (allowedStates.length < 3) {
+      return allowedStates.map((state) => (
+        <Button
+          id={`patient-programs-${state.uuid}-button`}
+          data-testid={`patient-programs-${state.uuid}-button-test-id`}
+          aria-label={`patient-programs-${state.uuid}-button-aria-label`}
+          kind="ghost"
+          key={state.uuid}
+        >
+          {t(createWorkflowStateButtonHeaders(state.display), state.display)}
+        </Button>
+      ));
+    }
+
+    return (
+      <MenuButton label={t('UPDATE_PROGRAM_STATUS_BUTTON')} kind="ghost">
+        {allowedStates.map((state) => (
+          <MenuItem
+            id={`patient-programs-${state.uuid}-button`}
+            data-testid={`patient-programs-${state.uuid}-button-test-id`}
+            aria-label={`patient-programs-${state.uuid}-button-aria-label`}
+            key={state.uuid}
+            label={t(
+              createWorkflowStateButtonHeaders(state.display),
+              state.display,
+            )}
+            onClick={() => {}}
+          />
+        ))}
+      </MenuButton>
+    );
+  };
+
   const renderKnownField = (field: string) => {
     switch (field) {
       case 'programName':
@@ -121,20 +163,40 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
       aria-label="patient-programs-tile-aria-label"
       className={styles.programDetails}
     >
-      <Tile
-        id="program-name"
-        testId="program-name-test-id"
-        title={data.programName}
-        className={styles.title}
+      <div
+        id="patient-programs-header"
+        data-testid="patient-programs-header-test-id"
+        aria-label="patient-programs-header-aria-label"
+        className={styles.header}
       >
-        {data.programName}
-        <Tag id="program-status" testId="program-status-test-id" type="outline">
-          {data.currentStateName}
-        </Tag>
-      </Tile>
+        <Tile
+          id="program-name"
+          testId="program-name-test-id"
+          title={data.programName}
+          className={styles.title}
+        >
+          {data.programName}
+          <Tag
+            id="program-status"
+            testId="program-status-test-id"
+            type="outline"
+          >
+            {data.currentStateName}
+          </Tag>
+        </Tile>
+        <div
+          id="patient-programs-state-change-button-group"
+          data-testid="patient-programs-state-change-button-group-test-id"
+          aria-label="patient-programs-state-change-button-group-aria-label"
+          role="group"
+          className={styles.buttons}
+        >
+          {renderButtons(data.allowedStates)}
+        </div>
+      </div>
       <Grid className={styles.grid}>
         {Object.keys(headers).map((field) => (
-          <Column sm={2} md={2} lg={3} key={field} className={styles.column}>
+          <Column sm={2} md={2} lg={3} key={field}>
             <LabelValue
               id={`program-details-${field}`}
               label={headers[field]}

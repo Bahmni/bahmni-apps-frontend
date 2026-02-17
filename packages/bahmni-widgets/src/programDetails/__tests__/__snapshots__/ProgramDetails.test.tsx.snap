@@ -9,35 +9,49 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
     id="patient-programs-tile"
   >
     <div
-      class="cds--tile title"
-      data-testid="program-name-test-id"
-      id="program-name"
-      title="HIV Program"
+      aria-label="patient-programs-header-aria-label"
+      class="header"
+      data-testid="patient-programs-header-test-id"
+      id="patient-programs-header"
     >
-      HIV Program
       <div
-        class="cds--tag cds--tag--outline"
-        data-testid="program-status-test-id"
-        id="program-status"
+        class="cds--tile title"
+        data-testid="program-name-test-id"
+        id="program-name"
+        title="HIV Program"
       >
-        <span
-          class="cds--tag__label"
-          dir="auto"
-          title="On ART"
+        HIV Program
+        <div
+          class="cds--tag cds--tag--outline"
+          data-testid="program-status-test-id"
+          id="program-status"
         >
-          On ART
-        </span>
+          <span
+            class="cds--tag__label"
+            dir="auto"
+            title="On ART"
+          >
+            On ART
+          </span>
+        </div>
       </div>
+      <div
+        aria-label="patient-programs-state-change-button-group-aria-label"
+        class="buttons"
+        data-testid="patient-programs-state-change-button-group-test-id"
+        id="patient-programs-state-change-button-group"
+        role="group"
+      />
     </div>
     <div
       class="grid cds--css-grid"
     >
       <div
-        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
+        class="cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
       >
         <dl
           aria-label="program-details-programName-aria-label"
-          class="_item_a7no3_1"
+          class="_item_vyhzj_1"
           data-testid="program-details-programName-test-id"
           id="program-details-programName"
         >
@@ -50,7 +64,7 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
           </dt>
           <dd
             aria-label="program-details-programName-value-aria-label"
-            class="_definition_a7no3_15"
+            class="_definition_vyhzj_14"
             data-testid="program-details-programName-value-test-id"
             id="program-details-programName-value"
           >
@@ -59,11 +73,11 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
         </dl>
       </div>
       <div
-        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
+        class="cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
       >
         <dl
           aria-label="program-details-startDate-aria-label"
-          class="_item_a7no3_1"
+          class="_item_vyhzj_1"
           data-testid="program-details-startDate-test-id"
           id="program-details-startDate"
         >
@@ -76,7 +90,7 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
           </dt>
           <dd
             aria-label="program-details-startDate-value-aria-label"
-            class="_definition_a7no3_15"
+            class="_definition_vyhzj_14"
             data-testid="program-details-startDate-value-test-id"
             id="program-details-startDate-value"
           >
@@ -85,11 +99,11 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
         </dl>
       </div>
       <div
-        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
+        class="cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
       >
         <dl
           aria-label="program-details-endDate-aria-label"
-          class="_item_a7no3_1"
+          class="_item_vyhzj_1"
           data-testid="program-details-endDate-test-id"
           id="program-details-endDate"
         >
@@ -102,7 +116,7 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
           </dt>
           <dd
             aria-label="program-details-endDate-value-aria-label"
-            class="_definition_a7no3_15"
+            class="_definition_vyhzj_14"
             data-testid="program-details-endDate-value-test-id"
             id="program-details-endDate-value"
           >
@@ -111,11 +125,11 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
         </dl>
       </div>
       <div
-        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
+        class="cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
       >
         <dl
           aria-label="program-details-state-aria-label"
-          class="_item_a7no3_1"
+          class="_item_vyhzj_1"
           data-testid="program-details-state-test-id"
           id="program-details-state"
         >
@@ -128,7 +142,7 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
           </dt>
           <dd
             aria-label="program-details-state-value-aria-label"
-            class="_definition_a7no3_15"
+            class="_definition_vyhzj_14"
             data-testid="program-details-state-value-test-id"
             id="program-details-state-value"
           >
@@ -137,11 +151,11 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
         </dl>
       </div>
       <div
-        class="column cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
+        class="cds--sm:col-span-2 cds--md:col-span-2 cds--lg:col-span-3 cds--css-grid-column"
       >
         <dl
           aria-label="program-details-outcome-aria-label"
-          class="_item_a7no3_1"
+          class="_item_vyhzj_1"
           data-testid="program-details-outcome-test-id"
           id="program-details-outcome"
         >
@@ -154,7 +168,7 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
           </dt>
           <dd
             aria-label="program-details-outcome-value-aria-label"
-            class="_definition_a7no3_15"
+            class="_definition_vyhzj_14"
             data-testid="program-details-outcome-value-test-id"
             id="program-details-outcome-value"
           >
