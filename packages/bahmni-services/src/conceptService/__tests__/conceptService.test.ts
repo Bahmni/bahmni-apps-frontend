@@ -13,6 +13,7 @@ import {
   searchFHIRConceptsByName,
   getConceptById,
   searchConceptByName,
+  getDisplayNameForConcept,
 } from '../conceptService';
 import {
   FHIR_VALUESET_URL,
@@ -253,6 +254,63 @@ describe('conceptService', () => {
       expect(api.get).toHaveBeenCalledWith(
         `/openmrs/ws/rest/v1/concept?s=byFullySpecifiedName&name=${encodeURIComponent(conceptName)}`,
       );
+    });
+  });
+
+  describe('getDisplayNameForConcept', () => {
+    it('should return SHORT name when available', () => {
+      const names = [
+        {
+          name: 'Program Completed',
+          conceptNameType: 'FULLY_SPECIFIED',
+        },
+        {
+          name: 'Completed',
+          conceptNameType: 'SHORT',
+        },
+      ];
+
+      const result = getDisplayNameForConcept(names);
+
+      expect(result).toBe('Completed');
+    });
+
+    it('should return FULLY_SPECIFIED name when SHORT name not available', () => {
+      const names = [
+        {
+          name: 'Program Completed',
+          conceptNameType: 'FULLY_SPECIFIED',
+        },
+      ];
+
+      const result = getDisplayNameForConcept(names);
+
+      expect(result).toBe('Program Completed');
+    });
+
+    it('should return first name as fallback when no SHORT or FULLY_SPECIFIED found', () => {
+      const names = [
+        {
+          name: 'In progress',
+          conceptNameType: 'Some other type',
+        },
+      ];
+
+      const result = getDisplayNameForConcept(names);
+
+      expect(result).toBe('In progress');
+    });
+
+    it('should return null when names array is empty', () => {
+      const result = getDisplayNameForConcept([]);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when names is undefined', () => {
+      const result = getDisplayNameForConcept(undefined);
+
+      expect(result).toBeNull();
     });
   });
 });

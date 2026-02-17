@@ -98,10 +98,12 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   );
 
   // Use TanStack Query for data fetching and caching
+  // includeRelated=true fetches related Medication resources with form information
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['medications', patientUUID!, code, encounterUuids],
     enabled: !!patientUUID,
-    queryFn: () => getPatientMedications(patientUUID!, code, encounterUuids!),
+    queryFn: () =>
+      getPatientMedications(patientUUID!, code, encounterUuids!, true),
   });
 
   // Handle errors with notifications
@@ -241,7 +243,11 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                 />
               )}
             </div>
-            <p className={styles.medicineDetails}>{row.quantity}</p>
+            <p className={styles.medicineDetails}>
+              {row.doseForm
+                ? `${row.doseForm} | ${row.quantity}`
+                : row.quantity}
+            </p>
             {row.isImmediate && <Tag className={styles.STAT}>STAT</Tag>}
             {row.asNeeded && <Tag className={styles.PRN}>PRN</Tag>}
           </>

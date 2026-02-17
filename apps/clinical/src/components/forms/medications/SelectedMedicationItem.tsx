@@ -88,6 +88,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         dispenseQuantity,
         dispenseUnit,
         startDate,
+        doseForm,
         note,
         errors,
       } = medicationInputEntry;
@@ -235,6 +236,14 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   data-testid={`medication-details-${id}`}
                 >
                   {medicineDetails}
+                </span>
+              )}
+              {doseForm && (
+                <span
+                  className={styles.doseForm}
+                  data-testid={`medication-dose-form-${id}`}
+                >
+                  {doseForm}
                 </span>
               )}
             </Column>
@@ -430,7 +439,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 value={startDate}
                 minDate={getTodayDate()}
                 onChange={(date) => {
-                  if (date?.[0] && date[0] > getTodayDate()) {
+                  if (date?.[0] && date[0] >= getTodayDate()) {
                     updateStartDate(id, date[0]);
                   }
                 }}

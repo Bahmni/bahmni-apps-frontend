@@ -30,9 +30,9 @@
     "@bahmni/services": "^0.0.1-0"
   },
   "peerDependencies": {
+    "@tanstack/react-query": "^5.85.5",
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
-    "@tanstack/react-query": "^5.85.5"
+    "react-dom": ">=18.0.0"
   },
   "description": "Reusable React display controls and components extracted for sharing across Bahmni modules. Includes common clinical widgets and notification provider to avoid duplication across different Bahmni applications.",
   "files": [

@@ -24,7 +24,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with no medications 1`]
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_4j_-menu"
+            aria-controls="downshift-_r_af_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search to add medication"
@@ -40,11 +40,11 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with no medications 1`]
             value=""
           />
           <button
-            aria-controls="downshift-_r_4j_-menu"
+            aria-controls="downshift-_r_af_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_4j_-toggle-button"
+            id="downshift-_r_af_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -66,9 +66,9 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with no medications 1`]
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_4j_-label"
+          aria-labelledby="downshift-_r_af_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_4j_-menu"
+          id="downshift-_r_af_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -102,7 +102,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_4m_-menu"
+            aria-controls="downshift-_r_ai_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search to add medication"
@@ -118,11 +118,11 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
             value=""
           />
           <button
-            aria-controls="downshift-_r_4m_-menu"
+            aria-controls="downshift-_r_ai_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_4m_-toggle-button"
+            id="downshift-_r_ai_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -144,9 +144,9 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_4m_-label"
+          aria-labelledby="downshift-_r_ai_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_4m_-menu"
+          id="downshift-_r_ai_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -338,8 +338,8 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-_r_4r_-toggle-button"
-                    id="downshift-_r_4r_-label"
+                    for="downshift-_r_an_-toggle-button"
+                    id="downshift-_r_an_-label"
                   >
                     Dosage unit
                   </label>
@@ -349,12 +349,12 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_4r_-menu"
+                      aria-controls="downshift-_r_an_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Dosage Unit"
                       class="cds--list-box__field"
-                      id="downshift-_r_4r_-toggle-button"
+                      id="downshift-_r_an_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Dosage unit"
@@ -390,9 +390,9 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_4r_-label"
+                      aria-labelledby="downshift-_r_an_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_4r_-menu"
+                      id="downshift-_r_an_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -408,8 +408,8 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-_r_4u_-toggle-button"
-                    id="downshift-_r_4u_-label"
+                    for="downshift-_r_aq_-toggle-button"
+                    id="downshift-_r_aq_-label"
                   >
                     Frequency
                   </label>
@@ -419,12 +419,12 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_4u_-menu"
+                      aria-controls="downshift-_r_aq_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Frequency"
                       class="cds--list-box__field"
-                      id="downshift-_r_4u_-toggle-button"
+                      id="downshift-_r_aq_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Frequency"
@@ -460,9 +460,9 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_4u_-label"
+                      aria-labelledby="downshift-_r_aq_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_4u_-menu"
+                      id="downshift-_r_aq_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -565,8 +565,8 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-_r_51_-toggle-button"
-                    id="downshift-_r_51_-label"
+                    for="downshift-_r_at_-toggle-button"
+                    id="downshift-_r_at_-label"
                   >
                     Duration unit
                   </label>
@@ -576,12 +576,12 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_51_-menu"
+                      aria-controls="downshift-_r_at_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Duration Unit"
                       class="cds--list-box__field"
-                      id="downshift-_r_51_-toggle-button"
+                      id="downshift-_r_at_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Duration unit"
@@ -617,9 +617,9 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_51_-label"
+                      aria-labelledby="downshift-_r_at_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_51_-menu"
+                      id="downshift-_r_at_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -635,8 +635,8 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-_r_54_-toggle-button"
-                    id="downshift-_r_54_-label"
+                    for="downshift-_r_b0_-toggle-button"
+                    id="downshift-_r_b0_-label"
                   >
                     Instructions
                   </label>
@@ -646,12 +646,12 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_54_-menu"
+                      aria-controls="downshift-_r_b0_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Medication Instructions"
                       class="cds--list-box__field"
-                      id="downshift-_r_54_-toggle-button"
+                      id="downshift-_r_b0_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Instructions"
@@ -687,9 +687,9 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_54_-label"
+                      aria-labelledby="downshift-_r_b0_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_54_-menu"
+                      id="downshift-_r_b0_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -705,8 +705,8 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-_r_57_-toggle-button"
-                    id="downshift-_r_57_-label"
+                    for="downshift-_r_b3_-toggle-button"
+                    id="downshift-_r_b3_-label"
                   >
                     Route
                   </label>
@@ -716,12 +716,12 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_57_-menu"
+                      aria-controls="downshift-_r_b3_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Route"
                       class="cds--list-box__field"
-                      id="downshift-_r_57_-toggle-button"
+                      id="downshift-_r_b3_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Route"
@@ -757,9 +757,9 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_57_-label"
+                      aria-labelledby="downshift-_r_b3_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_57_-menu"
+                      id="downshift-_r_b3_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -853,7 +853,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_5a_"
+                  aria-labelledby="tooltip-_r_b6_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -878,7 +878,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_5a_"
+                id="tooltip-_r_b6_"
                 role="tooltip"
               >
                 <span

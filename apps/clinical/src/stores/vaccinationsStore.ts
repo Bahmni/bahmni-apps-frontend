@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { Concept } from '../models/encounterConcepts';
 import { DurationUnitOption, MedicationInputEntry } from '../models/medication';
 import { Frequency } from '../models/medicationConfig';
+import { extractDoseForm } from '../utils/fhir/medicationUtilities';
 
 export interface VaccinationState {
   selectedVaccinations: MedicationInputEntry[];
@@ -34,6 +35,8 @@ export const useVaccinationStore = create<VaccinationState>((set, get) => ({
   selectedVaccinations: [],
 
   addVaccination: (vaccination: Medication, displayName: string) => {
+    const doseForm = extractDoseForm(vaccination, displayName);
+
     const newVaccination: MedicationInputEntry = {
       id: vaccination.id!,
       display: displayName,
@@ -52,6 +55,7 @@ export const useVaccinationStore = create<VaccinationState>((set, get) => ({
       hasBeenValidated: false,
       dispenseQuantity: 0,
       dispenseUnit: null,
+      doseForm: doseForm,
     };
 
     set((state) => ({

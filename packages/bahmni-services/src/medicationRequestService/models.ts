@@ -44,6 +44,7 @@ export interface MedicationRequest {
   readonly asNeeded: boolean;
   readonly isImmediate: boolean;
   readonly note?: string;
+  readonly doseForm?: string;
 }
 
 export interface FormattedMedicationRequest {
@@ -60,6 +61,7 @@ export interface FormattedMedicationRequest {
   readonly asNeeded: boolean;
   readonly isImmediate: boolean;
   readonly note?: string;
+  readonly doseForm?: string;
 }
 
 /**

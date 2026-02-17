@@ -5,6 +5,8 @@ import {
   CONCEPT_BY_FULLY_SPECIFIED_NAME_URL,
   CONCEPT_GET_URL,
   CONCEPT_SEARCH_URL,
+  CONCEPT_NAME_TYPE_SHORT,
+  CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
   FHIR_VALUESET_FILTER_EXPAND_URL,
   FHIR_VALUESET_URL,
 } from './constants';
@@ -13,6 +15,11 @@ import {
   ConceptSearch,
   type ConceptSearchByNameResponse,
 } from './models';
+
+interface ConceptName {
+  name: string;
+  conceptNameType: string;
+}
 
 /**
  * Search for concepts matching the provided term
@@ -66,4 +73,24 @@ export async function searchConceptByName(
   }
 
   return response.results[0];
+}
+
+export function getDisplayNameForConcept(
+  names: ConceptName[] | undefined,
+): string | null {
+  if (!names?.length) return null;
+
+  let conceptName: string | null = null;
+
+  for (const n of names) {
+    if (n.conceptNameType === CONCEPT_NAME_TYPE_SHORT) {
+      return n.name;
+    }
+
+    if (n.conceptNameType === CONCEPT_NAME_TYPE_FULLY_SPECIFIED) {
+      conceptName = n.name;
+    }
+  }
+
+  return conceptName ?? names[0].name ?? null;
 }

@@ -368,7 +368,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             conditions:
               selectedDiagnoses.length > 0 || selectedConditions.length > 0,
             allergies: selectedAllergies.length > 0,
-            medications: selectedMedications.length > 0,
+            medications:
+              selectedMedications.length > 0 || selectedVaccinations.length > 0,
             serviceRequests: selectedServiceRequest,
           },
         });
