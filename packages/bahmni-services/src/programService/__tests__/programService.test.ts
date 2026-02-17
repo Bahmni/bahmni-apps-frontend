@@ -1,5 +1,6 @@
 import { get, post } from '../../api';
 import { mockEnrollments, patientUUID } from '../__mocks__/mocks';
+import { PROGRAM_DETAILS_URL, PATIENT_PROGRAMS_URL } from '../constants';
 import { ProgramEnrollment, PatientProgramsResponse } from '../model';
 import {
   extractAttributes,
@@ -27,9 +28,7 @@ describe('programService', () => {
       const result = await getPatientPrograms(patientUUID);
 
       expect(result).toEqual(mockResponse);
-      expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/rest/v1/bahmniprogramenrollment?patient=${patientUUID}&v=custom:(uuid,episodeUuid,patient,program,display,dateEnrolled,dateCompleted,location,voided,outcome,states:(uuid,startDate,endDate,voided,state:(uuid,concept:(uuid,display,name,names))),auditInfo,attributes)`,
-      );
+      expect(get).toHaveBeenCalledWith(PATIENT_PROGRAMS_URL(patientUUID));
     });
 
     it('should return empty array when no enrollments exist', async () => {
@@ -53,9 +52,7 @@ describe('programService', () => {
       const result = await getProgramByUUID(programUUID);
 
       expect(result).toEqual(mockProgramEnrollment);
-      expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/rest/v1/bahmniprogramenrollment/${programUUID}?v=custom:(uuid,episodeUuid,patient,program,display,dateEnrolled,dateCompleted,location,voided,outcome,states:(uuid,startDate,endDate,voided,state:(uuid,concept:(uuid,display,name,names))),auditInfo,attributes)`,
-      );
+      expect(get).toHaveBeenCalledWith(PROGRAM_DETAILS_URL(programUUID));
     });
   });
 
