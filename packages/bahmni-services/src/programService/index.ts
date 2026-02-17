@@ -3,5 +3,6 @@ export {
   getProgramByUUID,
   getCurrentStateName,
   extractAttributes,
+  updateProgramState,
 } from './programService';
 export { type ProgramEnrollment, type PatientProgramsResponse } from './model';

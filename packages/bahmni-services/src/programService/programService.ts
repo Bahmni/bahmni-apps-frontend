@@ -1,5 +1,9 @@
-import { get } from '../api';
-import { PATIENT_PROGRAMS_URL, PROGRAM_DETAILS_URL } from './constants';
+import { get, post } from '../api';
+import {
+  PATIENT_PROGRAMS_URL,
+  PROGRAM_DETAILS_URL,
+  PROGRAMS_URL,
+} from './constants';
 import { PatientProgramsResponse, ProgramEnrollment } from './model';
 
 // TODO: Add Optional parameters for pagination and filtering
@@ -23,6 +27,30 @@ export const getProgramByUUID = async (
   programUUID: string,
 ): Promise<ProgramEnrollment> => {
   return await get<ProgramEnrollment>(PROGRAM_DETAILS_URL(programUUID));
+};
+
+/**
+ * Updates the state of a program enrollment
+ * @param programEnrollmentUUID - The UUID of the program enrollment to update
+ * @param stateConceptUUID - The UUID of the new state concept to set for the program enrollment
+ * @returns Promise resolving to the updated program enrollment
+ */
+export const updateProgramState = async (
+  programEnrollmentUUID: string,
+  stateConceptUUID: string,
+): Promise<ProgramEnrollment> => {
+  const body = {
+    uuid: programEnrollmentUUID,
+    states: [
+      {
+        state: { uuid: stateConceptUUID },
+      },
+    ],
+  };
+  return await post<ProgramEnrollment>(
+    PROGRAMS_URL(programEnrollmentUUID),
+    body,
+  );
 };
 
 /**
