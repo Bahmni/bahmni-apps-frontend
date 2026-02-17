@@ -42,7 +42,7 @@ jest.mock('@bahmni/design-system', () => ({
   },
 }));
 
-// Mock translation service
+// Mock translation service and hooks
 jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => {
@@ -55,6 +55,12 @@ jest.mock('@bahmni/services', () => ({
     },
   }),
   formatDate: jest.fn(() => ({ formattedResult: '01 Jan, 2024' })),
+  useSubscribeConsultationSaved: jest.fn(),
+}));
+
+// Mock usePatientUUID hook
+jest.mock('../../hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
 
 describe('VitalFlowSheet Empty State', () => {
