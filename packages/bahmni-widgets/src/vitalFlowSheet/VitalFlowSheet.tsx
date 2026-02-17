@@ -3,8 +3,11 @@ import {
   useTranslation,
   VitalFlowSheetConceptDetail,
   formatDate,
+  useSubscribeConsultationSaved,
+  ConsultationSavedEventPayload,
 } from '@bahmni/services';
 import React, { useMemo } from 'react';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 import styles from './styles/VitalFlowSheet.module.scss';
 import { useVitalFlowSheet } from './useVitalFlowSheet';
 import {
@@ -55,16 +58,31 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
   config: { latestCount, obsConcepts, groupBy },
 }) => {
   const { t } = useTranslation();
+  const patientUuid = usePatientUUID();
 
   const {
     data: vitalsData,
     loading,
     error,
+    refetch,
   } = useVitalFlowSheet({
     latestCount,
     obsConcepts,
     groupBy: groupBy ?? 'obstime',
   });
+
+  // Listen to consultation saved events and refetch if observations were updated
+  useSubscribeConsultationSaved(
+    (payload: ConsultationSavedEventPayload) => {
+      if (
+        payload.patientUUID === patientUuid &&
+        payload.updatedResources.observations
+      ) {
+        refetch();
+      }
+    },
+    [patientUuid, refetch],
+  );
 
   // Static headers for skeleton loading state
   const staticHeaders = useMemo(
