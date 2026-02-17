@@ -31,6 +31,7 @@ export interface MedicationInputEntry {
   dispenseQuantity: number;
   dispenseUnit: Concept | null;
 
+  doseForm?: string;
   note?: string;
 
   // Validation

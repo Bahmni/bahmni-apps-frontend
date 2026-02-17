@@ -457,4 +457,292 @@ describe('MedicationsTable', () => {
       }),
     );
   });
+
+  describe('Medication doseForm display', () => {
+    it('displays doseForm with quantity when doseForm is provided', () => {
+      const medicationWithDoseForm: MedicationRequest = {
+        id: '4',
+        name: 'Paracetamol 500 mg',
+        dose: { value: 500, unit: 'mg' },
+        quantity: { value: 10, unit: 'Tablets' },
+        startDate: '2024-01-15T10:00:00Z',
+        orderDate: '2024-01-15T09:00:00Z',
+        orderedBy: 'Dr. Smith',
+        status: MedicationStatus.Active,
+        isImmediate: false,
+        asNeeded: false,
+        priority: 'routine',
+        instructions: 'Take with food',
+        doseForm: 'Tablet',
+      };
+
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) => ({
+          id: med.id,
+          name: med.name,
+          dosage: `${med.dose?.value} ${med.dose?.unit}`,
+          dosageUnit: med.dose?.unit ?? '',
+          quantity: `${med.quantity.value} ${med.quantity.unit}`,
+          instruction: med.instructions,
+          startDate: med.startDate,
+          orderDate: med.orderDate,
+          orderedBy: med.orderedBy,
+          status: med.status,
+          asNeeded: med.asNeeded,
+          isImmediate: med.isImmediate,
+          doseForm: med.doseForm,
+        }),
+      );
+
+      mockUseQuery.mockReturnValue({
+        data: [medicationWithDoseForm],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+
+      // Should display the medication name
+      expect(screen.getByText('Paracetamol 500 mg')).toBeInTheDocument();
+      // Should display doseForm and quantity with | separator
+      expect(screen.getByText('Tablet | 10 Tablets')).toBeInTheDocument();
+    });
+
+    it('displays only quantity when doseForm is not provided', () => {
+      const medicationWithoutDoseForm: MedicationRequest = {
+        id: '5',
+        name: 'Aspirin 100mg',
+        dose: { value: 100, unit: 'mg' },
+        quantity: { value: 14, unit: 'tablets' },
+        startDate: '2024-01-10T08:00:00Z',
+        orderDate: '2024-01-10T07:30:00Z',
+        orderedBy: 'Dr. Johnson',
+        status: MedicationStatus.Active,
+        isImmediate: false,
+        asNeeded: false,
+        priority: 'routine',
+        instructions: 'After meals',
+      };
+
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) => ({
+          id: med.id,
+          name: med.name,
+          dosage: `${med.dose?.value} ${med.dose?.unit}`,
+          dosageUnit: med.dose?.unit ?? '',
+          quantity: `${med.quantity.value} ${med.quantity.unit}`,
+          instruction: med.instructions,
+          startDate: med.startDate,
+          orderDate: med.orderDate,
+          orderedBy: med.orderedBy,
+          status: med.status,
+          asNeeded: med.asNeeded,
+          isImmediate: med.isImmediate,
+        }),
+      );
+
+      mockUseQuery.mockReturnValue({
+        data: [medicationWithoutDoseForm],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+
+      // Should display the full medication name
+      expect(screen.getByText('Aspirin 100mg')).toBeInTheDocument();
+      // Should display only quantity (no doseForm, no | separator)
+      expect(screen.getByText('14 tablets')).toBeInTheDocument();
+    });
+
+    it('should pass includeRelated=true to getPatientMedications', () => {
+      mockUseQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(
+        <MedicationsTable
+          config={{ code: [] }}
+          episodeOfCareUuids={[]}
+          encounterUuids={[]}
+        />,
+      );
+
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: expect.arrayContaining(['medications']),
+        }),
+      );
+    });
+
+    it('should format doseForm with quantity in medication name row', () => {
+      const medicationWithDoseForm: MedicationRequest = {
+        id: '6',
+        name: 'Vitamin A 50000 IU',
+        dose: { value: 50000, unit: 'IU' },
+        quantity: { value: 1, unit: 'Capsule' },
+        startDate: '2024-01-15T10:00:00Z',
+        orderDate: '2024-01-15T09:00:00Z',
+        orderedBy: 'Dr. Smith',
+        status: MedicationStatus.Active,
+        isImmediate: true,
+        asNeeded: false,
+        priority: 'stat',
+        instructions: 'Once',
+        doseForm: 'Capsule',
+      };
+
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) => ({
+          id: med.id,
+          name: med.name,
+          dosage: `${med.dose?.value} ${med.dose?.unit}`,
+          dosageUnit: med.dose?.unit ?? '',
+          quantity: `${med.quantity.value} ${med.quantity.unit}`,
+          instruction: med.instructions,
+          startDate: med.startDate,
+          orderDate: med.orderDate,
+          orderedBy: med.orderedBy,
+          status: med.status,
+          asNeeded: med.asNeeded,
+          isImmediate: med.isImmediate,
+          doseForm: med.doseForm,
+        }),
+      );
+
+      mockUseQuery.mockReturnValue({
+        data: [medicationWithDoseForm],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+
+      expect(screen.getByText('Capsule | 1 Capsule')).toBeInTheDocument();
+    });
+
+    it('should handle multiple medications with varying doseForm presence', () => {
+      const medications: MedicationRequest[] = [
+        {
+          id: '7',
+          name: 'Paracetamol',
+          dose: { value: 500, unit: 'mg' },
+          quantity: { value: 2, unit: 'Tablet' },
+          startDate: '2024-01-15T10:00:00Z',
+          orderDate: '2024-01-15T09:00:00Z',
+          orderedBy: 'Dr. Smith',
+          status: MedicationStatus.Active,
+          isImmediate: false,
+          asNeeded: false,
+          priority: 'routine',
+          instructions: 'TID',
+          doseForm: 'Tablet',
+        },
+        {
+          id: '8',
+          name: 'Custom Liquid',
+          dose: { value: 5, unit: 'ml' },
+          quantity: { value: 1, unit: 'bottle' },
+          startDate: '2024-01-15T10:00:00Z',
+          orderDate: '2024-01-15T09:00:00Z',
+          orderedBy: 'Dr. Smith',
+          status: MedicationStatus.Active,
+          isImmediate: false,
+          asNeeded: false,
+          priority: 'routine',
+          instructions: 'BID',
+        },
+      ];
+
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) => ({
+          id: med.id,
+          name: med.name,
+          dosage: `${med.dose?.value} ${med.dose?.unit}`,
+          dosageUnit: med.dose?.unit ?? '',
+          quantity: `${med.quantity.value} ${med.quantity.unit}`,
+          instruction: med.instructions,
+          startDate: med.startDate,
+          orderDate: med.orderDate,
+          orderedBy: med.orderedBy,
+          status: med.status,
+          asNeeded: med.asNeeded,
+          isImmediate: med.isImmediate,
+          doseForm: med.doseForm,
+        }),
+      );
+
+      mockUseQuery.mockReturnValue({
+        data: medications,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+
+      expect(screen.getByText('Tablet | 2 Tablet')).toBeInTheDocument();
+      expect(screen.getByText('1 bottle')).toBeInTheDocument();
+    });
+
+    it('should render STAT tag when medication is immediate', () => {
+      const statMedication: MedicationRequest = {
+        id: '9',
+        name: 'Urgent Drug',
+        dose: { value: 100, unit: 'mg' },
+        quantity: { value: 1, unit: 'vial' },
+        startDate: '2024-01-15T10:00:00Z',
+        orderDate: '2024-01-15T09:00:00Z',
+        orderedBy: 'Dr. Smith',
+        status: MedicationStatus.Active,
+        isImmediate: true,
+        asNeeded: false,
+        priority: 'stat',
+        instructions: 'Once',
+        doseForm: 'IV Injection',
+      };
+
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) => ({
+          id: med.id,
+          name: med.name,
+          dosage: `${med.dose?.value} ${med.dose?.unit}`,
+          dosageUnit: med.dose?.unit ?? '',
+          quantity: `${med.quantity.value} ${med.quantity.unit}`,
+          instruction: med.instructions,
+          startDate: med.startDate,
+          orderDate: med.orderDate,
+          orderedBy: med.orderedBy,
+          status: med.status,
+          asNeeded: med.asNeeded,
+          isImmediate: med.isImmediate,
+          doseForm: med.doseForm,
+        }),
+      );
+
+      mockUseQuery.mockReturnValue({
+        data: [statMedication],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+
+      expect(screen.getByText('STAT')).toBeInTheDocument();
+      expect(screen.getByText('IV Injection | 1 vial')).toBeInTheDocument();
+    });
+  });
 });

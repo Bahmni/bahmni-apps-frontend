@@ -85,6 +85,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
         dispenseQuantity,
         dispenseUnit,
         startDate,
+        doseForm,
         note,
         errors,
       } = vaccinationInputEntry;
@@ -226,6 +227,14 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                   data-testid={`vaccination-details-${id}`}
                 >
                   {VaccineDetails}
+                </span>
+              )}
+              {doseForm && (
+                <span
+                  className={styles.doseForm}
+                  data-testid={`vaccination-dose-form-${id}`}
+                >
+                  {doseForm}
                 </span>
               )}
             </Column>

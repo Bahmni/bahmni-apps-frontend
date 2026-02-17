@@ -1,7 +1,10 @@
+import { useNotification, usePatientUUID } from '@bahmni/widgets';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Medication } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
+
 import useMedicationConfig from '../../../../hooks/useMedicationConfig';
 import { useMedicationSearch } from '../../../../hooks/useMedicationSearch';
 import { MedicationInputEntry } from '../../../../models/medication';
@@ -21,6 +24,26 @@ jest.mock('../../../../services/medicationService', () => ({
     (medication) =>
       medication?.code?.text ?? medication?.code?.display ?? 'Test Medication',
   ),
+  getActiveMedicationsFromBundle: jest.fn(() => ({
+    activeMedications: [],
+    medicationMap: {},
+  })),
+}));
+
+// Mock @bahmni/widgets hooks
+jest.mock('@bahmni/widgets', () => {
+  const widgets = jest.requireActual('@bahmni/widgets');
+  return {
+    ...widgets,
+    useNotification: jest.fn(),
+    usePatientUUID: jest.fn(),
+  };
+});
+
+// Mock TanStack Query
+jest.mock('@tanstack/react-query', () => ({
+  useQuery: jest.fn(),
+  useQueryClient: jest.fn(),
 }));
 
 // Mock CSS modules
@@ -28,7 +51,19 @@ jest.mock('../styles/MedicationsForm.module.scss', () => ({
   medicationsFormTile: 'medicationsFormTile',
   medicationsFormTitle: 'medicationsFormTitle',
   medicationsBox: 'medicationsBox',
+  duplicateNotification: 'duplicateNotification',
 }));
+
+const mockUseNotification = useNotification as jest.MockedFunction<
+  typeof useNotification
+>;
+const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
+>;
+const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
+const mockUseQueryClient = useQueryClient as jest.MockedFunction<
+  typeof useQueryClient
+>;
 
 // Mock data
 const mockMedication: Medication = {
@@ -108,6 +143,7 @@ const mockStore = {
   updateDispenseQuantity: jest.fn(),
   updateDispenseUnit: jest.fn(),
   updateStartDate: jest.fn(),
+  updateNote: jest.fn(),
   validateAllMedications: jest.fn(),
   reset: jest.fn(),
   getState: jest.fn(),
@@ -138,6 +174,24 @@ describe('MedicationsForm', () => {
     (useMedicationSearch as jest.Mock).mockReturnValue(
       mockMedicationSearchHook,
     );
+
+    // Mock @bahmni/widgets hooks
+    mockUseNotification.mockReturnValue({
+      addNotification: jest.fn(),
+    } as ReturnType<typeof useNotification>);
+    mockUsePatientUUID.mockReturnValue('patient-uuid-123');
+
+    // Mock TanStack Query for existing medications
+    mockUseQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: null,
+    } as ReturnType<typeof useQuery>);
+
+    // Mock TanStack Query client
+    mockUseQueryClient.mockReturnValue({
+      invalidateQueries: jest.fn(),
+    } as unknown as ReturnType<typeof useQueryClient>);
   });
 
   // HAPPY PATH TESTS
@@ -608,6 +662,183 @@ describe('MedicationsForm', () => {
 
       const results = await axe(container);
       expect(results).toHaveNoViolations();
+    });
+  });
+
+  // DUPLICATE NOTIFICATION TESTS
+  describe('Duplicate Notification Feature', () => {
+    const duplicateNotificationPattern =
+      /one or more drugs you are trying to order are already active/i;
+
+    test('shows duplicate notification when medications have overlapping dates', async () => {
+      const med1: MedicationInputEntry = {
+        ...mockSelectedMedication,
+        id: 'med-1',
+        startDate: new Date('2025-01-01'),
+        duration: 10,
+        durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
+        medication: {
+          ...mockMedication,
+          code: {
+            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
+          },
+        },
+      };
+
+      const med2: MedicationInputEntry = {
+        ...mockSelectedMedication,
+        id: 'med-2',
+        startDate: new Date('2025-01-05'),
+        duration: 10,
+        durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
+        medication: {
+          ...mockMedication,
+          code: {
+            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
+          },
+        },
+      };
+
+      (useMedicationStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedMedications: [med1, med2],
+      });
+
+      render(<MedicationsForm />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(duplicateNotificationPattern),
+        ).toBeInTheDocument();
+      });
+    });
+
+    test('does not show duplicate notification when medications have non-overlapping dates', async () => {
+      const med1: MedicationInputEntry = {
+        ...mockSelectedMedication,
+        id: 'med-1',
+        startDate: new Date('2025-01-01'),
+        duration: 5,
+        durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
+        medication: {
+          ...mockMedication,
+          code: {
+            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
+          },
+        },
+      };
+
+      const med2: MedicationInputEntry = {
+        ...mockSelectedMedication,
+        id: 'med-2',
+        startDate: new Date('2025-01-10'),
+        duration: 5,
+        durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
+        medication: {
+          ...mockMedication,
+          code: {
+            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
+          },
+        },
+      };
+
+      (useMedicationStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedMedications: [med1, med2],
+      });
+
+      render(<MedicationsForm />);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(duplicateNotificationPattern),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    test('shows duplicate notification when STAT medication matches another with same code', async () => {
+      const statMed: MedicationInputEntry = {
+        ...mockSelectedMedication,
+        id: 'stat-med',
+        isSTAT: true,
+        medication: {
+          ...mockMedication,
+          code: {
+            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
+          },
+        },
+      };
+
+      const regularMed: MedicationInputEntry = {
+        ...mockSelectedMedication,
+        id: 'regular-med',
+        isSTAT: false,
+        startDate: new Date('2025-01-15'),
+        duration: 5,
+        durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
+        medication: {
+          ...mockMedication,
+          code: {
+            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
+          },
+        },
+      };
+
+      (useMedicationStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedMedications: [statMed, regularMed],
+      });
+
+      render(<MedicationsForm />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(duplicateNotificationPattern),
+        ).toBeInTheDocument();
+      });
+    });
+
+    test('does not show duplicate notification for PRN medications with same code', async () => {
+      const prnMed: MedicationInputEntry = {
+        ...mockSelectedMedication,
+        id: 'prn-med',
+        isPRN: true,
+        medication: {
+          ...mockMedication,
+          code: {
+            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
+          },
+        },
+      };
+
+      const scheduledMed: MedicationInputEntry = {
+        ...mockSelectedMedication,
+        id: 'scheduled-med',
+        isPRN: false,
+        isSTAT: false,
+        startDate: new Date('2025-01-01'),
+        duration: 10,
+        durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
+        medication: {
+          ...mockMedication,
+          code: {
+            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
+          },
+        },
+      };
+
+      (useMedicationStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedMedications: [prnMed, scheduledMed],
+      });
+
+      render(<MedicationsForm />);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(duplicateNotificationPattern),
+        ).not.toBeInTheDocument();
+      });
     });
   });
 

@@ -4,6 +4,7 @@ import { Concept } from '../../models/encounterConcepts';
 import { DurationUnitOption } from '../../models/medication';
 import { Frequency } from '../../models/medicationConfig';
 import { useMedicationStore } from '../medicationsStore';
+import { useVaccinationStore } from '../vaccinationsStore';
 
 describe('useMedicationStore', () => {
   const mockMedication: Medication = {
@@ -812,6 +813,219 @@ describe('useMedicationStore', () => {
       expect(medication.isSTAT).toBe(false);
       expect(medication.dispenseQuantity).toBe(0);
       expect(medication.dispenseUnit).toBeNull();
+    });
+  });
+
+  describe('doseForm extraction with two-stage fallback', () => {
+    it('should extract doseForm from medication.form.text', () => {
+      const { result } = renderHook(() => useMedicationStore());
+
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+        form: { text: 'Tablet' },
+      };
+
+      act(() => {
+        result.current.addMedication(medication, 'Paracetamol');
+      });
+
+      expect(result.current.selectedMedications[0].doseForm).toBe('Tablet');
+    });
+
+    it('should extract doseForm from medication.form.coding[0].display', () => {
+      const { result } = renderHook(() => useMedicationStore());
+
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+        form: {
+          coding: [{ display: 'Capsule' }],
+        },
+      };
+
+      act(() => {
+        result.current.addMedication(medication, 'Vitamin A');
+      });
+
+      expect(result.current.selectedMedications[0].doseForm).toBe('Capsule');
+    });
+
+    it('should fallback to regex extraction from displayName when form undefined', () => {
+      const { result } = renderHook(() => useMedicationStore());
+
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+      };
+
+      act(() => {
+        result.current.addMedication(
+          medication,
+          'Paracetamol (Tablet) - 500mg',
+        );
+      });
+
+      expect(result.current.selectedMedications[0].doseForm).toBe('Tablet');
+    });
+
+    it('should extract form from displayName with multiple parentheses', () => {
+      const { result } = renderHook(() => useMedicationStore());
+
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+      };
+
+      act(() => {
+        result.current.addMedication(
+          medication,
+          'Drug Name (Injection) (100mg)',
+        );
+      });
+
+      expect(result.current.selectedMedications[0].doseForm).toBe('Injection');
+    });
+
+    it('should not extract dosage values as doseForm', () => {
+      const { result } = renderHook(() => useMedicationStore());
+
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+      };
+
+      act(() => {
+        result.current.addMedication(medication, 'Paracetamol (500mg)');
+      });
+
+      expect(result.current.selectedMedications[0].doseForm).toBeUndefined();
+    });
+
+    it('should not extract numeric values as doseForm', () => {
+      const { result } = renderHook(() => useMedicationStore());
+
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+      };
+
+      act(() => {
+        result.current.addMedication(medication, 'Medicine (1000IU)');
+      });
+
+      expect(result.current.selectedMedications[0].doseForm).toBeUndefined();
+    });
+
+    it('should prefer direct form extraction over displayName fallback', () => {
+      const { result } = renderHook(() => useMedicationStore());
+
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+        form: { text: 'Capsule' },
+      };
+
+      act(() => {
+        result.current.addMedication(
+          medication,
+          'Paracetamol (Tablet) - 500mg',
+        );
+      });
+
+      expect(result.current.selectedMedications[0].doseForm).toBe('Capsule');
+    });
+
+    it('should handle empty form object gracefully', () => {
+      const { result } = renderHook(() => useMedicationStore());
+
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+        form: {},
+      };
+
+      act(() => {
+        result.current.addMedication(medication, 'Drug (Vial)');
+      });
+
+      expect(result.current.selectedMedications[0].doseForm).toBe('Vial');
+    });
+
+    it('should preserve whitespace in extracted form', () => {
+      const { result } = renderHook(() => useMedicationStore());
+
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+      };
+
+      act(() => {
+        result.current.addMedication(medication, 'Drug ( Tablet ) - 100mg');
+      });
+
+      expect(result.current.selectedMedications[0].doseForm).toBe('Tablet');
+    });
+  });
+
+  describe('vaccinationsStore doseForm extraction', () => {
+    beforeEach(() => {
+      const store = useVaccinationStore.getState();
+      store.reset?.();
+    });
+
+    it('should extract doseForm from vaccination.form.text', () => {
+      const { result } = renderHook(() => useVaccinationStore());
+
+      const vaccination: Medication = {
+        resourceType: 'Medication',
+        id: 'vac-1',
+        form: { text: 'Vial' },
+      };
+
+      act(() => {
+        result.current.addVaccination(vaccination, 'COVID-19 Vaccine');
+      });
+
+      expect(result.current.selectedVaccinations[0].doseForm).toBe('Vial');
+    });
+
+    it('should fallback to displayName regex for vaccinations', () => {
+      const { result } = renderHook(() => useVaccinationStore());
+
+      const vaccination: Medication = {
+        resourceType: 'Medication',
+        id: 'vac-1',
+      };
+
+      act(() => {
+        result.current.addVaccination(vaccination, 'Polio Vaccine (Injection)');
+      });
+
+      expect(result.current.selectedVaccinations[0].doseForm).toBe('Injection');
+    });
+
+    it('should maintain consistency with medications store', () => {
+      const { result: medResult } = renderHook(() => useMedicationStore());
+      const { result: vacResult } = renderHook(() => useVaccinationStore());
+
+      const medication: Medication = {
+        resourceType: 'Medication',
+        id: 'med-1',
+      };
+      const vaccination: Medication = {
+        resourceType: 'Medication',
+        id: 'vac-1',
+      };
+
+      act(() => {
+        medResult.current.addMedication(medication, 'Drug (Tablet)');
+        vacResult.current.addVaccination(vaccination, 'Vaccine (Tablet)');
+      });
+
+      expect(medResult.current.selectedMedications[0].doseForm).toBe(
+        vacResult.current.selectedVaccinations[0].doseForm,
+      );
     });
   });
 });

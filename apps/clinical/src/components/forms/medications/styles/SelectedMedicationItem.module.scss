@@ -13,7 +13,13 @@
   margin-bottom: $spacing-04;
   margin-left: 0;
   .medicineDetails {
-    @include type-style("body-short-02");
+    @include type-style("body-compact-02");
+  }
+  .doseForm {
+    @include type-style("body-compact-02");
+    color: $text-secondary;
+    display: block;
+    margin-top: $spacing-02;
   }
 }
 

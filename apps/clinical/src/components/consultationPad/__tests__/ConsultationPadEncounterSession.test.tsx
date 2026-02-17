@@ -46,6 +46,9 @@ jest.mock('@bahmni/widgets', () => ({
     error: null,
     refetch: jest.fn(),
   })),
+  useEncounterSession: jest.fn(() => ({
+    activeEncounter: { id: 'encounter-123' },
+  })),
   useNotification: jest.fn(() => ({
     addNotification: jest.fn(),
   })),

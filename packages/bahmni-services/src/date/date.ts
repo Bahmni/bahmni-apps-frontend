@@ -4,6 +4,7 @@ import {
   differenceInYears,
   differenceInMonths,
   differenceInDays,
+  addDays,
   addYears,
   addMonths,
   subYears,
@@ -419,6 +420,56 @@ export function calculateAgeinYearsAndMonths(
  * @param ascending - Sort order: true for ascending (oldest first), false for descending (newest first)
  * @returns sorted array
  */
+/**
+ * Mapping of FHIR/UCUM duration unit codes to their equivalent in days.
+ * Used to convert duration values into a common unit for date calculations.
+ */
+export const DURATION_UNIT_TO_DAYS: Record<string, number> = {
+  d: 1,
+  wk: 7,
+  mo: 30,
+  a: 365,
+  h: 1 / 24,
+  min: 1 / 1440,
+  s: 1 / 86400,
+};
+
+/**
+ * Calculates an end date by adding a duration to a start date.
+ * @param startDate - The start date (Date object or ISO string)
+ * @param duration - The duration value
+ * @param durationUnit - The FHIR/UCUM duration unit code (e.g., 'd', 'wk', 'mo')
+ * @returns The calculated end date
+ * @throws Error if the start date is invalid
+ */
+export const calculateEndDate = (
+  startDate: Date | string,
+  duration: number,
+  durationUnit: string,
+): Date => {
+  const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
+  // Validate that the date is valid
+  if (isNaN(start.getTime())) {
+    throw new Error(`Invalid date: ${startDate}`);
+  }
+  const daysMultiplier = DURATION_UNIT_TO_DAYS[durationUnit] ?? 1;
+  const totalDays = duration * daysMultiplier;
+  return addDays(start, totalDays);
+};
+
+/**
+ * Checks whether two date ranges overlap.
+ * Uses inclusive comparison: ranges that share an endpoint are considered overlapping.
+ */
+export const doDateRangesOverlap = (
+  start1: Date,
+  end1: Date,
+  start2: Date,
+  end2: Date,
+): boolean => {
+  return start1 <= end2 && start2 <= end1;
+};
+
 export function sortByDate(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   array: any[],

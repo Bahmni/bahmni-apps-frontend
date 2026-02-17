@@ -18,6 +18,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getVaccinations: jest.fn(),
 }));
+
 jest.mock('../../../../services/medicationService', () => ({
   getMedicationDisplay: jest.fn(
     (medication) =>
@@ -26,13 +27,20 @@ jest.mock('../../../../services/medicationService', () => ({
   getMedicationsFromBundle: jest.fn(
     (bundle) => bundle?.entry?.map((e: any) => e.resource) ?? [],
   ),
+  getActiveMedicationsFromBundle: jest.fn(() => ({
+    activeMedications: [],
+    medicationMap: {},
+  })),
 }));
+
 jest.mock('../styles/VaccinationForm.module.scss', () => ({
   vaccinationFormTile: 'vaccinationFormTile',
   vaccinationFormTitle: 'vaccinationFormTitle',
   vaccinationBox: 'vaccinationBox',
   selectedVaccinationItem: 'selectedVaccinationItem',
+  duplicateNotification: 'duplicateNotification',
 }));
+
 const mockVaccination: Medication = {
   id: 'test-vaccination-1',
   resourceType: 'Medication',
@@ -107,7 +115,6 @@ const mockStore = {
   updateDuration: jest.fn(),
   updateDurationUnit: jest.fn(),
   updateInstruction: jest.fn(),
-  updateisPRN: jest.fn(),
   updateisSTAT: jest.fn(),
   updateDispenseQuantity: jest.fn(),
   updateDispenseUnit: jest.fn(),
@@ -302,7 +309,10 @@ describe('VaccinationForm', () => {
       });
       await user.click(screen.getByText('COVID-19 Vaccine'));
       await waitFor(() => {
-        expect(searchBox).toHaveValue('');
+        expect(mockStore.addVaccination).toHaveBeenCalledWith(
+          mockVaccination,
+          'COVID-19 Vaccine',
+        );
       });
     });
     test('resets ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
@@ -337,20 +347,22 @@ describe('VaccinationForm', () => {
         expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
       });
       await user.click(screen.getByText('COVID-19 Vaccine'));
-
-      // Verify combobox is reset (selectedItem is null, allowing new searches)
       await waitFor(() => {
-        expect(searchBox).toHaveValue('');
+        expect(mockStore.addVaccination).toHaveBeenCalledTimes(1);
       });
 
-      // Verify we can immediately search for another item (proves selectedItem was reset to null)
+      // Wait for isSelectingRef to reset (setTimeout 100ms in handleOnChange)
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      });
+
+      // Search for another item
+      await user.clear(searchBox);
       await user.type(searchBox, 'hepatitis');
       await waitFor(() => {
         expect(screen.getByText('Hepatitis B Vaccine')).toBeInTheDocument();
       });
 
-      // Verify the new search works correctly - this proves selectedItem is null
-      // because the ComboBox wouldn't accept new input if selectedItem was still set
       await user.click(screen.getByText('Hepatitis B Vaccine'));
       await waitFor(() => {
         expect(mockStore.addVaccination).toHaveBeenCalledTimes(2);

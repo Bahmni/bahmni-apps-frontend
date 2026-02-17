@@ -134,6 +134,7 @@
   "ERROR_DASHBOARD_CONFIG_TITLE": "Error de configuración del departamento",
   "ERROR_DEFAULT_TITLE": "Error",
   "ERROR_DUPLICATE_ACTIVE_MEDICATION": "Uno o más medicamentos que está intentando ordenar ya están activos. Cambie la fecha de inicio del medicamento en conflicto o elimínelo de la nueva receta.",
+  "ERROR_DUPLICATE_ACTIVE_VACCINATION": "Una o más vacunas que está intentando ordenar ya están activas. Cambie la fecha de inicio de la vacuna en conflicto o elimínela de la nueva prescripción.",
   "ERROR_FETCHING_CLINICAL_DATA": "Invalid episode uuid",
   "ERROR_FETCHING_CONCEPT": "Error al obtener el concepto: {{conceptName}}",
   "ERROR_FETCHING_CONCEPTS": "Se produjo un error inesperado. Por favor, inténtelo de nuevo mas tarde.",
