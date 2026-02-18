@@ -1,6 +1,8 @@
+import { useSubscribeConsultationSaved } from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
+import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useVitalFlowSheet } from '../useVitalFlowSheet';
 import VitalFlowSheet from '../VitalFlowSheet';
 
@@ -8,6 +10,15 @@ import VitalFlowSheet from '../VitalFlowSheet';
 jest.mock('../useVitalFlowSheet');
 const mockUseVitalFlowSheet = useVitalFlowSheet as jest.MockedFunction<
   typeof useVitalFlowSheet
+>;
+
+const mockUseSubscribeConsultationSaved =
+  useSubscribeConsultationSaved as jest.MockedFunction<
+    typeof useSubscribeConsultationSaved
+  >;
+
+const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
 >;
 
 // Mock react-router-dom to avoid TextEncoder issues
@@ -219,5 +230,212 @@ describe('VitalFlowSheet Empty State', () => {
     expect(screen.getByText('Failed to fetch vital signs')).toBeInTheDocument();
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
     expect(screen.queryByTestId('data-table')).not.toBeInTheDocument();
+  });
+});
+
+describe('VitalFlowSheet Auto-Refresh', () => {
+  const defaultProps = {
+    config: {
+      latestCount: 5,
+      obsConcepts: ['Temperature', 'Blood Pressure'],
+      groupBy: 'obstime',
+    },
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUsePatientUUID.mockReturnValue('test-patient-uuid');
+  });
+
+  it('should call useSubscribeConsultationSaved with correct dependencies', () => {
+    // Arrange
+    const mockRefetch = jest.fn();
+    mockUseVitalFlowSheet.mockReturnValue({
+      data: {
+        tabularData: {
+          '2024-01-01 10:00:00': {
+            Temperature: { value: '36.5', abnormal: false },
+          },
+        },
+        conceptDetails: [
+          {
+            name: 'Temperature',
+            fullName: 'Temperature (C)',
+            units: '°C',
+            hiNormal: 37.5,
+            lowNormal: 36.0,
+            attributes: {},
+          },
+        ],
+      },
+      loading: false,
+      error: null,
+      refetch: mockRefetch,
+    });
+
+    // Act
+    render(<VitalFlowSheet {...defaultProps} />);
+
+    // Assert
+    expect(mockUseSubscribeConsultationSaved).toHaveBeenCalled();
+  });
+
+  it('should refetch when consultation is saved with matching patient UUID and observations updated', () => {
+    // Arrange
+    const mockRefetch = jest.fn();
+    let capturedCallback: ((payload: any) => void) | null = null;
+
+    mockUseSubscribeConsultationSaved.mockImplementation(
+      (callback: (payload: any) => void) => {
+        capturedCallback = callback;
+      },
+    );
+
+    mockUseVitalFlowSheet.mockReturnValue({
+      data: {
+        tabularData: {
+          '2024-01-01 10:00:00': {
+            Temperature: { value: '36.5', abnormal: false },
+          },
+        },
+        conceptDetails: [
+          {
+            name: 'Temperature',
+            fullName: 'Temperature (C)',
+            units: '°C',
+            hiNormal: 37.5,
+            lowNormal: 36.0,
+            attributes: {},
+          },
+        ],
+      },
+      loading: false,
+      error: null,
+      refetch: mockRefetch,
+    });
+
+    mockUsePatientUUID.mockReturnValue('test-patient-uuid');
+
+    // Act
+    render(<VitalFlowSheet {...defaultProps} />);
+
+    // Simulate consultation saved event with matching patient and observations
+    if (capturedCallback) {
+      (capturedCallback as jest.Mock)({
+        patientUUID: 'test-patient-uuid',
+        updatedResources: {
+          observations: true,
+        },
+      });
+    }
+
+    // Assert
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('should not refetch when consultation is saved but patient UUID does not match', () => {
+    // Arrange
+    const mockRefetch = jest.fn();
+    let capturedCallback: ((payload: any) => void) | null = null;
+
+    mockUseSubscribeConsultationSaved.mockImplementation(
+      (callback: (payload: any) => void) => {
+        capturedCallback = callback;
+      },
+    );
+
+    mockUseVitalFlowSheet.mockReturnValue({
+      data: {
+        tabularData: {
+          '2024-01-01 10:00:00': {
+            Temperature: { value: '36.5', abnormal: false },
+          },
+        },
+        conceptDetails: [
+          {
+            name: 'Temperature',
+            fullName: 'Temperature (C)',
+            units: '°C',
+            hiNormal: 37.5,
+            lowNormal: 36.0,
+            attributes: {},
+          },
+        ],
+      },
+      loading: false,
+      error: null,
+      refetch: mockRefetch,
+    });
+
+    mockUsePatientUUID.mockReturnValue('test-patient-uuid');
+
+    // Act
+    render(<VitalFlowSheet {...defaultProps} />);
+
+    // Simulate consultation saved event with different patient UUID
+    if (capturedCallback) {
+      (capturedCallback as jest.Mock)({
+        patientUUID: 'different-patient-uuid',
+        updatedResources: {
+          observations: true,
+        },
+      });
+    }
+
+    // Assert
+    expect(mockRefetch).not.toHaveBeenCalled();
+  });
+
+  it('should not refetch when consultation is saved but observations were not updated', () => {
+    // Arrange
+    const mockRefetch = jest.fn();
+    let capturedCallback: ((payload: any) => void) | null = null;
+
+    mockUseSubscribeConsultationSaved.mockImplementation(
+      (callback: (payload: any) => void) => {
+        capturedCallback = callback;
+      },
+    );
+
+    mockUseVitalFlowSheet.mockReturnValue({
+      data: {
+        tabularData: {
+          '2024-01-01 10:00:00': {
+            Temperature: { value: '36.5', abnormal: false },
+          },
+        },
+        conceptDetails: [
+          {
+            name: 'Temperature',
+            fullName: 'Temperature (C)',
+            units: '°C',
+            hiNormal: 37.5,
+            lowNormal: 36.0,
+            attributes: {},
+          },
+        ],
+      },
+      loading: false,
+      error: null,
+      refetch: mockRefetch,
+    });
+
+    mockUsePatientUUID.mockReturnValue('test-patient-uuid');
+
+    // Act
+    render(<VitalFlowSheet {...defaultProps} />);
+
+    // Simulate consultation saved event with matching patient but no observation updates
+    if (capturedCallback) {
+      (capturedCallback as jest.Mock)({
+        patientUUID: 'test-patient-uuid',
+        updatedResources: {
+          observations: false,
+        },
+      });
+    }
+
+    // Assert
+    expect(mockRefetch).not.toHaveBeenCalled();
   });
 });
