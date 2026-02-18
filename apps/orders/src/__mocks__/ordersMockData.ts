@@ -3,11 +3,12 @@ import {
   Order,
   PatientDetails,
 } from '../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../models/ordersConfig';
 
 const createOrder = (
   id: string,
   orderName: string,
-  priority: 'Routine' | 'Urgent',
+  priority: ORDER_PRIORITY,
   status: 'New' | 'In Progress' | 'Acknowledged',
   provider: string,
   dateTime: string,
@@ -40,7 +41,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-1-1',
         'New Cast - Plaster',
-        'Urgent',
+        ORDER_PRIORITY.STAT,
         'New',
         'Mike Ronoh',
         '12 Nov 25 04:24 PM',
@@ -57,7 +58,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-1-2',
         'Rehab Therapy - Limb',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'In Progress',
         'Mike Ronoh',
         '12 Nov 25 04:24 PM',
@@ -67,7 +68,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-1-3',
         'New Cast - Plaster',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Mike Ronoh',
         '12 Nov 25 04:24 PM',
@@ -87,7 +88,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-2-1',
         'Physiotherapy Evaluation',
-        'Urgent',
+        ORDER_PRIORITY.STAT,
         'New',
         'Sarah Kimani',
         '12 Nov 25 03:15 PM',
@@ -97,7 +98,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-2-2',
         'Occupational Therapy',
-        'Urgent',
+        ORDER_PRIORITY.STAT,
         'New',
         'Sarah Kimani',
         '12 Nov 25 03:15 PM',
@@ -107,7 +108,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-2-3',
         'Mobility Assessment',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'In Progress',
         'Sarah Kimani',
         '12 Nov 25 02:30 PM',
@@ -116,7 +117,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-2-4',
         'Prosthetic Fitting',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Sarah Kimani',
         '12 Nov 25 01:00 PM',
@@ -136,7 +137,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-3-1',
         'Gait Training',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'In Progress',
         'Dr. Amara Okonkwo',
         '11 Nov 25 10:00 AM',
@@ -145,7 +146,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-3-2',
         'Balance Assessment',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Dr. Amara Okonkwo',
         '11 Nov 25 09:30 AM',
@@ -154,7 +155,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-3-3',
         'Strength Training',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Dr. Amara Okonkwo',
         '10 Nov 25 02:00 PM',
@@ -163,7 +164,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-3-4',
         'Range of Motion',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Dr. Amara Okonkwo',
         '10 Nov 25 11:00 AM',
@@ -183,7 +184,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-4-1',
         'Hydrotherapy',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'In Progress',
         'Dr. Fatou Diallo',
         '10 Nov 25 03:00 PM',
@@ -192,7 +193,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-4-2',
         'Electrotherapy',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Dr. Fatou Diallo',
         '10 Nov 25 01:30 PM',
@@ -201,7 +202,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-4-3',
         'Massage Therapy',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Dr. Fatou Diallo',
         '09 Nov 25 04:00 PM',
@@ -221,7 +222,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-5-1',
         'Rehabilitation Assessment',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Dr. Kofi Asante',
         '08 Nov 25 11:00 AM',
@@ -230,7 +231,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-5-2',
         'Exercise Program',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Dr. Kofi Asante',
         '08 Nov 25 10:00 AM',
@@ -250,7 +251,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-6-1',
         'Speech Therapy',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'In Progress',
         'Dr. Nadia Hassan',
         '07 Nov 25 02:00 PM',
@@ -259,7 +260,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-6-2',
         'Cognitive Rehab',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Dr. Nadia Hassan',
         '07 Nov 25 11:30 AM',
@@ -268,7 +269,7 @@ export const rehabOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-6-3',
         'Swallowing Assessment',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Dr. Nadia Hassan',
         '06 Nov 25 03:00 PM',
@@ -291,7 +292,7 @@ export const radiologyOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-r-1-1',
         'X-Ray Chest',
-        'Urgent',
+        ORDER_PRIORITY.STAT,
         'New',
         'Dr. James Mwangi',
         '12 Nov 25 05:00 PM',
@@ -300,7 +301,7 @@ export const radiologyOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-r-1-2',
         'CT Scan - Head',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'In Progress',
         'Dr. James Mwangi',
         '12 Nov 25 04:00 PM',
@@ -320,7 +321,7 @@ export const radiologyOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-r-2-1',
         'MRI - Spine',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'Acknowledged',
         'Dr. Lucy Wambui',
         '11 Nov 25 09:00 AM',
@@ -343,7 +344,7 @@ export const laboratoryOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-l-1-1',
         'Complete Blood Count',
-        'Urgent',
+        ORDER_PRIORITY.STAT,
         'New',
         'Dr. Eric Otieno',
         '12 Nov 25 06:00 PM',
@@ -352,7 +353,7 @@ export const laboratoryOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-l-1-2',
         'Liver Function Test',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'New',
         'Dr. Eric Otieno',
         '12 Nov 25 05:30 PM',
@@ -361,7 +362,7 @@ export const laboratoryOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-l-1-3',
         'Urinalysis',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'In Progress',
         'Dr. Eric Otieno',
         '12 Nov 25 04:00 PM',
@@ -407,7 +408,7 @@ export const prostheticAndOrthoticOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-po-1-1',
         'Prosthetic Limb Assessment',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'New',
         'Dr. Helen Mutiso',
         '12 Nov 25 03:00 PM',
@@ -416,7 +417,7 @@ export const prostheticAndOrthoticOrdersMockData: PatientOrderRow[] = [
       createOrder(
         'order-po-1-2',
         'Orthotic Fitting',
-        'Routine',
+        ORDER_PRIORITY.ROUTINE,
         'In Progress',
         'Dr. Helen Mutiso',
         '12 Nov 25 01:00 PM',
