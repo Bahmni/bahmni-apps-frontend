@@ -326,6 +326,7 @@ describe('ProgramDetails', () => {
   });
 
   it('should update state when update button is clicked', async () => {
+    const mockRefetch = jest.fn();
     (useQuery as jest.Mock).mockReturnValue({
       data: {
         id: 'program-1',
@@ -345,6 +346,7 @@ describe('ProgramDetails', () => {
       error: null,
       isError: false,
       isLoading: false,
+      refetch: mockRefetch,
     });
 
     const updatedMockProgram = {
@@ -390,10 +392,16 @@ describe('ProgramDetails', () => {
     ).toBeInTheDocument();
 
     await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'success',
+        title: 'PROGRAM_STATE_UPDATED_SUCCESSFULLY_TITLE',
+        message: 'PROGRAM_STATE_UPDATED_SUCCESSFULLY_MESSAGE',
+      });
       expect(updateProgramState).toHaveBeenCalledWith(
         'test-program-uuid',
         'allowed-state-2',
       );
+      expect(mockRefetch).toHaveBeenCalled();
       expect(
         screen.getByTestId('patient-programs-tile-test-id'),
       ).toBeInTheDocument();

@@ -284,6 +284,8 @@
   "PATIENT_HEADER_LABEL": "Patient Header",
   "PINNED_FORMS_INVALID_DATA": "Invalid pinned forms data",
   "PINNED_FORMS_USER_NOT_FOUND": "User not found",
+  "PROGRAM_STATE_UPDATED_SUCCESSFULLY_MESSAGE": "Program state updated successfully",
+  "PROGRAM_STATE_UPDATED_SUCCESSFULLY_TITLE": "Success",
   "PROGRAMS_TABLE_ARIA_LABEL": "Programs table",
   "PROGRAMS_TABLE_HEADER_END_DATE": "End Date",
   "PROGRAMS_TABLE_HEADER_OUTCOME": "Outcome",

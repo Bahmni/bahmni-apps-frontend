@@ -15,8 +15,9 @@ import {
   updateProgramState,
   DATE_FORMAT,
   formatDate,
+  camelToScreamingSnakeCase,
 } from '@bahmni/services';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { useNotification } from '../notification';
 import { KNOWN_FIELDS } from './constants';
@@ -25,8 +26,6 @@ import styles from './styles/ProgramDetails.module.scss';
 import {
   createProgramDetailsViewModel,
   extractProgramAttributeNames,
-  createWorkflowStateButtonHeaders,
-  createProgramHeader,
 } from './utils';
 
 export const programsQueryKeys = (programUUID: string) =>
@@ -74,6 +73,11 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     updateProgramState(programUUID, stateUuid)
       .then(() => {
         refetch();
+        addNotification({
+          type: 'success',
+          title: t('PROGRAM_STATE_UPDATED_SUCCESSFULLY_TITLE'),
+          message: t('PROGRAM_STATE_UPDATED_SUCCESSFULLY_MESSAGE'),
+        });
       })
       .catch(() => {
         addNotification({
@@ -91,7 +95,9 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     if (!config?.fields || config.fields.length === 0) return {};
     return config.fields.reduce(
       (acc, field) => {
-        acc[field] = t(createProgramHeader(field));
+        acc[field] = t(
+          `PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field)}`,
+        );
         return acc;
       },
       {} as Record<string, string>,
@@ -139,7 +145,10 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           disabled={isUpdatingState}
           onClick={() => handleButtonClick(state.uuid)}
         >
-          {t(createWorkflowStateButtonHeaders(state.display), state.display)}
+          {t(
+            `PROGRAMS_STATE_BUTTON_${camelToScreamingSnakeCase(state.display)}`,
+            state.display,
+          )}
         </Button>
       ));
     }
@@ -157,7 +166,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
             aria-label={`patient-programs-${state.uuid}-button-aria-label`}
             key={state.uuid}
             label={t(
-              createWorkflowStateButtonHeaders(state.display),
+              `PROGRAMS_STATE_BUTTON_${camelToScreamingSnakeCase(state.display)}`,
               state.display,
             )}
             onClick={() => handleButtonClick(state.uuid)}

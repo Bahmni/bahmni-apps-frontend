@@ -1,5 +1,4 @@
 import {
-  camelToScreamingSnakeCase,
   extractAttributes,
   getCurrentStateName,
   ProgramEnrollment,
@@ -10,14 +9,6 @@ import { ProgramDetailsViewModel } from './model';
 export function extractProgramAttributeNames(fields?: string[]): string[] {
   if (!fields) return [];
   return fields.filter((field) => !KNOWN_FIELDS.includes(field));
-}
-
-export function createProgramHeader(field: string): string {
-  return `PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field)}`;
-}
-
-export function createWorkflowStateButtonHeaders(field: string): string {
-  return `PROGRAMS_STATE_BUTTON_${camelToScreamingSnakeCase(field)}`;
 }
 
 export function createProgramDetailsViewModel(

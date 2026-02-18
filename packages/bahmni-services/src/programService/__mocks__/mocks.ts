@@ -648,6 +648,7 @@ export const mockEnrollments: ProgramEnrollment[] = [
     ],
     attributes: [],
     episodeUuid: 'episode-4',
+    allowedStates: [],
     auditInfo: {
       creator: {
         uuid: 'user-1',

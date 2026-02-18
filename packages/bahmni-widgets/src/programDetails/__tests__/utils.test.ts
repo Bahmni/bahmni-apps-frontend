@@ -1,7 +1,6 @@
 import { ProgramEnrollment } from '@bahmni/services';
 import {
   extractProgramAttributeNames,
-  createProgramHeader,
   createProgramDetailsViewModel,
 } from '../utils';
 
@@ -42,18 +41,6 @@ describe('Utils', () => {
       ];
       const result = extractProgramAttributeNames(fields);
       expect(result).toEqual([]);
-    });
-  });
-
-  describe('createProgramHeader', () => {
-    it('should convert field to SCREAMING_SNAKE_CASE with prefix', () => {
-      expect(createProgramHeader('programName')).toBe(
-        'PROGRAMS_TABLE_HEADER_PROGRAM_NAME',
-      );
-      expect(createProgramHeader('state')).toBe('PROGRAMS_TABLE_HEADER_STATE');
-      expect(createProgramHeader('dateEnrolled')).toBe(
-        'PROGRAMS_TABLE_HEADER_DATE_ENROLLED',
-      );
     });
   });
 
