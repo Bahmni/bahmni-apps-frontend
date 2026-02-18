@@ -1,0 +1,52 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`VitalFlowSheet Snapshots should match snapshot in empty state 1`] = `
+<div>
+  <div
+    data-testid="empty-state"
+  >
+    No vital signs data available
+  </div>
+</div>
+`;
+
+exports[`VitalFlowSheet Snapshots should match snapshot in error state 1`] = `
+<div>
+  <div
+    data-testid="error-state"
+  >
+    Failed to fetch vital signs
+  </div>
+</div>
+`;
+
+exports[`VitalFlowSheet Snapshots should match snapshot in loading state 1`] = `
+<div>
+  <div
+    data-testid="loading-state"
+  >
+    Loading...
+  </div>
+</div>
+`;
+
+exports[`VitalFlowSheet Snapshots should match snapshot with vital data 1`] = `
+<div>
+  <div
+    data-testid="data-table"
+  >
+    <div
+      data-testid="headers"
+    >
+      2
+       headers
+    </div>
+    <div
+      data-testid="rows"
+    >
+      2
+       rows
+    </div>
+  </div>
+</div>
+`;

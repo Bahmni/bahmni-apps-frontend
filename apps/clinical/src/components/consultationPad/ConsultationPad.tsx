@@ -210,6 +210,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   // Helper function to extract concept UUIDs from observation bundle entries
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const extractConceptUuidsFromObservations = (entries: any[]): string[] => {
+    if (!entries || !Array.isArray(entries)) return [];
     const conceptUuids = new Set<string>();
     entries.forEach((entry) => {
       if (
