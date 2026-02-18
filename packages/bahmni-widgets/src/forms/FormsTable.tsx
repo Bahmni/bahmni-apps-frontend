@@ -23,7 +23,7 @@ import {
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
@@ -56,30 +56,19 @@ const FormsTable: React.FC<WidgetProps> = ({
     encounterUuids,
   );
 
+  const queryClient = useQueryClient();
+
   const {
     data: formsData = [],
     isLoading: loading,
     isError,
     error,
-    refetch,
   } = useQuery<FormResponseData[], Error>({
     queryKey: ['forms', patientUuid, episodeOfCareUuids],
     queryFn: () => getPatientFormData(patientUuid!, undefined, numberOfVisits),
     enabled: !!patientUuid && !emptyEncounterFilter,
+    staleTime: 0,
   });
-
-  // Listen to consultation saved events and refetch if observations were updated
-  useSubscribeConsultationSaved(
-    (payload: ConsultationSavedEventPayload) => {
-      if (
-        payload.patientUUID === patientUuid &&
-        payload.updatedResources.observations
-      ) {
-        refetch();
-      }
-    },
-    [patientUuid],
-  );
 
   // Filter forms data by encounterUuids if provided
   const filteredFormsData = useMemo(() => {
@@ -121,6 +110,7 @@ const FormsTable: React.FC<WidgetProps> = ({
     queryKey: ['formMetadata', selectedFormUuid],
     queryFn: () => fetchFormMetadata(selectedFormUuid!),
     enabled: !!selectedFormUuid && isModalOpen,
+    staleTime: 0,
   });
 
   const {
@@ -132,7 +122,26 @@ const FormsTable: React.FC<WidgetProps> = ({
     queryFn: () =>
       getFormsDataByEncounterUuid(selectedRecord!.encounterUuid, true),
     enabled: !!selectedRecord?.encounterUuid && isModalOpen,
+    staleTime: 0,
   });
+
+  // Listen to consultation saved events and invalidate cached data if observations were updated
+  useSubscribeConsultationSaved(
+    (payload: ConsultationSavedEventPayload) => {
+      if (
+        payload.patientUUID === patientUuid &&
+        payload.updatedResources.observations
+      ) {
+        // Invalidate all related caches - this works for both active and inactive queries.
+        // Unlike refetch(), invalidateQueries marks disabled queries (e.g., modal closed) as stale
+        // so they refetch fresh data when re-enabled.
+        queryClient.invalidateQueries({ queryKey: ['forms'] });
+        queryClient.invalidateQueries({ queryKey: ['formsEncounter'] });
+        queryClient.invalidateQueries({ queryKey: ['formMetadata'] });
+      }
+    },
+    [patientUuid, queryClient],
+  );
 
   // Filter observations to only include those belonging to the selected form
   const filteredObservations = useMemo(() => {
