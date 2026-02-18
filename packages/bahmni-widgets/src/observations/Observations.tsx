@@ -109,7 +109,7 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
         }
       }
     },
-    [patientUUID, allConceptUuids, refetch],
+    [patientUUID, allConceptUuids],
   );
 
   useEffect(() => {

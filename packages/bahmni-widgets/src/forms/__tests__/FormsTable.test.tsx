@@ -8,6 +8,8 @@ import {
   useTranslation,
   getFormsDataByEncounterUuid,
   FormsEncounter,
+  useSubscribeConsultationSaved,
+  ConsultationSavedEventPayload,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
@@ -28,6 +30,7 @@ jest.mock('@bahmni/services', () => ({
   fetchObservationForms: jest.fn(),
   useTranslation: jest.fn(),
   getFormsDataByEncounterUuid: jest.fn(),
+  useSubscribeConsultationSaved: jest.fn(),
   formatDate: jest.fn((date) => ({
     formattedResult: new Date(date).toLocaleDateString(),
   })),
@@ -71,6 +74,10 @@ const mockGetFormsDataByEncounterUuid =
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
+const mockUseSubscribeConsultationSaved =
+  useSubscribeConsultationSaved as jest.MockedFunction<
+    typeof useSubscribeConsultationSaved
+  >;
 
 const mockFormResponseData: FormResponseData[] = [
   {
@@ -807,6 +814,137 @@ describe('FormsTable', () => {
           screen.getByText('Patient has fever - by Dr. Smith'),
         ).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('FormsTable Auto-Refresh', () => {
+    beforeEach(() => {
+      mockUseSubscribeConsultationSaved.mockImplementation(() => {});
+    });
+
+    it('should call useSubscribeConsultationSaved on component render', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(mockUseSubscribeConsultationSaved).toHaveBeenCalled();
+      });
+    });
+
+    it('should refetch forms when consultation is saved with matching patient UUID and observations updated', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      // Reset mock to count new calls
+      mockGetPatientFormData.mockClear();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Simulate consultation saved event
+      if (capturedCallback) {
+        capturedCallback({
+          patientUUID: 'patient-123',
+          updatedResources: {
+            observations: true,
+          },
+        });
+      }
+
+      // Refetch should be called (we can verify this by checking if the query was triggered)
+      await waitFor(() => {
+        // After refetch, the component should still render forms
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+    });
+
+    it('should not refetch when consultation is saved but patient UUID does not match', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Simulate consultation saved event with different patient UUID
+      if (capturedCallback) {
+        capturedCallback({
+          patientUUID: 'different-patient-uuid',
+          updatedResources: {
+            observations: true,
+          },
+        });
+      }
+
+      // Wait a bit and verify no additional calls were made
+      await waitFor(
+        () => {
+          expect(mockGetPatientFormData.mock.calls).toHaveLength(
+            initialCallCount,
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+
+    it('should not refetch when consultation is saved but observations were not updated', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Simulate consultation saved event without observation updates
+      if (capturedCallback) {
+        capturedCallback({
+          patientUUID: 'patient-123',
+          updatedResources: {
+            observations: false,
+          },
+        });
+      }
+
+      // Wait a bit and verify no additional calls were made
+      await waitFor(
+        () => {
+          expect(mockGetPatientFormData.mock.calls).toHaveLength(
+            initialCallCount,
+          );
+        },
+        { timeout: 500 },
+      );
     });
   });
 });

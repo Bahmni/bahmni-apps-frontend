@@ -1,4 +1,8 @@
-import { AUDIT_LOG_EVENT_DETAILS, dispatchAuditEvent } from '@bahmni/services';
+import {
+  AUDIT_LOG_EVENT_DETAILS,
+  dispatchAuditEvent,
+  dispatchConsultationSaved,
+} from '@bahmni/services';
 import {
   render,
   screen,
@@ -24,6 +28,7 @@ import ConsultationPad from '../ConsultationPad';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
+  dispatchConsultationSaved: jest.fn(),
   findActiveEncounterInSession: jest.fn().mockResolvedValue(null),
   __esModule: true,
   useTranslation: () => ({
@@ -496,6 +501,10 @@ Object.defineProperty(global, 'crypto', {
 const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
   typeof dispatchAuditEvent
 >;
+const mockDispatchConsultationSaved =
+  dispatchConsultationSaved as jest.MockedFunction<
+    typeof dispatchConsultationSaved
+  >;
 
 describe('ConsultationPad', () => {
   const mockOnClose = jest.fn();
@@ -1932,6 +1941,290 @@ describe('ConsultationPad', () => {
         expect(callArgs.messageParams).toEqual({
           encounterType: 'Consultation',
         });
+      });
+    });
+
+    it('should dispatch consultation saved event with observations flag', async () => {
+      jest
+        .spyOn(consultationBundleService, 'postConsultationBundle')
+        .mockResolvedValue({
+          id: 'bundle-123',
+          type: 'transaction-response',
+        });
+
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationSaved).toHaveBeenCalled();
+        const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
+
+        // Verify event payload structure
+        expect(callArgs).toHaveProperty('patientUUID');
+        expect(callArgs).toHaveProperty('updatedResources');
+        expect(callArgs.updatedResources).toHaveProperty('observations');
+        expect(callArgs.updatedResources).toHaveProperty('allergies');
+        expect(callArgs.updatedResources).toHaveProperty('medications');
+        expect(callArgs.updatedResources).toHaveProperty('conditions');
+        expect(callArgs.updatedResources).toHaveProperty('serviceRequests');
+      });
+    });
+
+    it('should dispatch consultation saved event with updatedConceptUuids when observations are present', async () => {
+      jest
+        .spyOn(consultationBundleService, 'postConsultationBundle')
+        .mockResolvedValue({
+          id: 'bundle-123',
+          type: 'transaction-response',
+        });
+
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationSaved).toHaveBeenCalled();
+        const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
+
+        // Verify updatedConceptUuids property exists
+        expect(callArgs).toHaveProperty('updatedConceptUuids');
+        expect(Array.isArray(callArgs.updatedConceptUuids)).toBe(true);
+      });
+    });
+
+    it('should dispatch consultation saved event with correct patient UUID', async () => {
+      jest
+        .spyOn(consultationBundleService, 'postConsultationBundle')
+        .mockResolvedValue({
+          id: 'bundle-123',
+          type: 'transaction-response',
+        });
+
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationSaved).toHaveBeenCalled();
+        const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
+
+        // Verify patientUUID is present and is a string
+        expect(callArgs.patientUUID).toBeDefined();
+        expect(typeof callArgs.patientUUID).toBe('string');
+      });
+    });
+
+    it('should extract concept UUIDs from consultation bundle observations and include them in dispatch', async () => {
+      // Mock observation bundle entries with concept codes/UUIDs
+      const mockObservationEntries = [
+        {
+          fullUrl: 'urn:uuid:obs-1',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-1',
+            code: {
+              coding: [
+                {
+                  code: 'temperature-uuid-001',
+                  display: 'Temperature',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-2',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-2',
+            code: {
+              coding: [
+                {
+                  code: 'blood-pressure-uuid-002',
+                  display: 'Blood Pressure',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-3',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-3',
+            code: {
+              coding: [
+                {
+                  code: 'heart-rate-uuid-003',
+                  display: 'Heart Rate',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-4',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-4',
+            code: {
+              coding: [
+                {
+                  code: 'temperature-uuid-001', // Duplicate concept
+                  display: 'Temperature',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+      ];
+
+      // Mock createObservationBundleEntries to return our test observation entries
+      (
+        consultationBundleService.createObservationBundleEntries as jest.Mock
+      ).mockReturnValue(mockObservationEntries);
+
+      // Mock observation forms store to return observation data (non-empty to set hasObservations = true)
+      mockObservationFormsStore.getObservationFormsData.mockReturnValue({
+        'form-1': { data: 'some-observation-data' },
+      });
+
+      jest
+        .spyOn(consultationBundleService, 'postConsultationBundle')
+        .mockResolvedValue({
+          id: 'bundle-123',
+          type: 'transaction-response',
+        });
+
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationSaved).toHaveBeenCalled();
+        const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
+
+        // Verify the dispatch was called with extracted concept UUIDs
+        expect(callArgs).toHaveProperty('updatedConceptUuids');
+        expect(Array.isArray(callArgs.updatedConceptUuids)).toBe(true);
+
+        // Verify that the UUIDs were correctly extracted from Observation entries
+        expect(callArgs.updatedConceptUuids).toContain('temperature-uuid-001');
+        expect(callArgs.updatedConceptUuids).toContain(
+          'blood-pressure-uuid-002',
+        );
+        expect(callArgs.updatedConceptUuids).toContain('heart-rate-uuid-003');
+
+        // Verify no duplicates and correct count (3 unique concepts from 4 observation entries)
+        expect(callArgs.updatedConceptUuids).toHaveLength(3);
+
+        // Verify observations flag is set to true when observations are present
+        expect(callArgs.updatedResources.observations).toBe(true);
+
+        // Verify patient UUID is correct
+        expect(callArgs.patientUUID).toBeDefined();
+        expect(typeof callArgs.patientUUID).toBe('string');
+      });
+    });
+
+    it('should extract concept UUIDs only from valid Observation entries with code.coding[0].code', async () => {
+      // Mock observation bundle entries with mixed valid and invalid structures
+      const mockObservationEntries = [
+        {
+          fullUrl: 'urn:uuid:obs-valid',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-valid',
+            code: {
+              coding: [
+                {
+                  code: 'valid-uuid-001',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-no-code',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-no-code',
+            // Missing code property
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-no-coding',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-no-coding',
+            code: {
+              // Missing coding array
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-valid-2',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-valid-2',
+            code: {
+              coding: [
+                {
+                  code: 'another-valid-uuid-002',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+      ];
+
+      // Mock createObservationBundleEntries to return mixed valid/invalid entries
+      (
+        consultationBundleService.createObservationBundleEntries as jest.Mock
+      ).mockReturnValue(mockObservationEntries);
+
+      // Mock observation forms store to return observation data
+      mockObservationFormsStore.getObservationFormsData.mockReturnValue({
+        'form-1': { data: 'some-observation-data' },
+      });
+
+      jest
+        .spyOn(consultationBundleService, 'postConsultationBundle')
+        .mockResolvedValue({
+          id: 'bundle-123',
+          type: 'transaction-response',
+        });
+
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationSaved).toHaveBeenCalled();
+        const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
+
+        // Verify only valid concept UUIDs are extracted
+        expect(callArgs.updatedConceptUuids).toEqual([
+          'valid-uuid-001',
+          'another-valid-uuid-002',
+        ]);
+
+        // Invalid entries should be skipped, so only 2 UUIDs extracted from 4 observation entries
+        expect(callArgs.updatedConceptUuids).toHaveLength(2);
       });
     });
   });

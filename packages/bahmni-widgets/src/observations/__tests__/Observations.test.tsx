@@ -2,6 +2,7 @@ import {
   searchConceptByName,
   useTranslation,
   getPatientObservationsWithEncounterBundle,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -15,6 +16,7 @@ jest.mock('@bahmni/services', () => ({
   searchConceptByName: jest.fn(),
   useTranslation: jest.fn(),
   getPatientObservationsWithEncounterBundle: jest.fn(),
+  useSubscribeConsultationSaved: jest.fn(),
 }));
 
 jest.mock('../../hooks/usePatientUUID');
@@ -46,6 +48,10 @@ const mockUseNotification = useNotification as jest.MockedFunction<
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
+const mockUseSubscribeConsultationSaved =
+  useSubscribeConsultationSaved as jest.MockedFunction<
+    typeof useSubscribeConsultationSaved
+  >;
 
 const mockAddNotification = jest.fn();
 
@@ -258,6 +264,191 @@ describe('Observations', () => {
       await waitFor(() => {
         expect(screen.getByText('NO_OBSERVATIONS_FOUND')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Observations Auto-Refresh', () => {
+    beforeEach(() => {
+      mockUseSubscribeConsultationSaved.mockImplementation(() => {});
+      jest.clearAllMocks();
+      mockUsePatientUUID.mockReturnValue('patient-uuid-123');
+      mockUseNotification.mockReturnValue({
+        addNotification: mockAddNotification,
+      } as any);
+      mockUseTranslation.mockReturnValue({
+        t: (key: string) => key,
+      } as any);
+    });
+
+    it('should call useSubscribeConsultationSaved on component render', async () => {
+      mockSearchConceptByName.mockResolvedValue({
+        uuid: 'temp-uuid',
+        display: 'Temperature',
+      } as any);
+      mockGetPatientObservationsWithEncounterBundle.mockResolvedValue({
+        entry: [],
+      } as any);
+
+      const config = {
+        conceptNames: ['Temperature'],
+      };
+
+      createWrapper(<Observations config={config} />);
+
+      await waitFor(() => {
+        expect(mockUseSubscribeConsultationSaved).toHaveBeenCalled();
+      });
+    });
+
+    it('should refetch observations when consultation is saved with matching patient UUID and concept', async () => {
+      mockSearchConceptByName.mockResolvedValue({
+        uuid: 'temp-uuid',
+        display: 'Temperature',
+      } as any);
+      mockGetPatientObservationsWithEncounterBundle.mockResolvedValue({
+        entry: [],
+      } as any);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      const config = {
+        conceptNames: ['Temperature'],
+      };
+
+      createWrapper(<Observations config={config} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('NO_OBSERVATIONS_FOUND')).toBeInTheDocument();
+      });
+
+      // Reset mock
+      mockGetPatientObservationsWithEncounterBundle.mockClear();
+      mockGetPatientObservationsWithEncounterBundle.mockResolvedValue({
+        entry: [],
+      } as any);
+
+      // Simulate consultation saved event with matching patient and concept
+      if (capturedCallback) {
+        capturedCallback({
+          patientUUID: 'patient-uuid-123',
+          updatedResources: {
+            observations: true,
+          },
+          updatedConceptUuids: ['temp-uuid'], // Temperature concept UUID
+        });
+      }
+
+      // Component should remain in document after refetch
+      await waitFor(() => {
+        expect(screen.getByText('NO_OBSERVATIONS_FOUND')).toBeInTheDocument();
+      });
+    });
+
+    it('should not refetch observations when consultation is saved but patient UUID does not match', async () => {
+      mockSearchConceptByName.mockResolvedValue({
+        uuid: 'temp-uuid',
+        display: 'Temperature',
+      } as any);
+      mockGetPatientObservationsWithEncounterBundle.mockResolvedValue({
+        entry: [],
+      } as any);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      const config = {
+        conceptNames: ['Temperature'],
+      };
+
+      createWrapper(<Observations config={config} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('NO_OBSERVATIONS_FOUND')).toBeInTheDocument();
+      });
+
+      const initialCallCount =
+        mockGetPatientObservationsWithEncounterBundle.mock.calls.length;
+
+      // Simulate consultation saved event with different patient UUID
+      if (capturedCallback) {
+        capturedCallback({
+          patientUUID: 'different-patient-uuid',
+          updatedResources: {
+            observations: true,
+          },
+          updatedConceptUuids: ['temp-uuid'],
+        });
+      }
+
+      // Wait and verify no additional calls were made
+      await waitFor(
+        () => {
+          expect(
+            mockGetPatientObservationsWithEncounterBundle.mock.calls,
+          ).toHaveLength(initialCallCount);
+        },
+        { timeout: 500 },
+      );
+    });
+
+    it('should not refetch observations when concept UUID does not match configured concepts', async () => {
+      mockSearchConceptByName.mockResolvedValue({
+        uuid: 'temp-uuid',
+        display: 'Temperature',
+      } as any);
+      mockGetPatientObservationsWithEncounterBundle.mockResolvedValue({
+        entry: [],
+      } as any);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      const config = {
+        conceptNames: ['Temperature'],
+      };
+
+      createWrapper(<Observations config={config} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('NO_OBSERVATIONS_FOUND')).toBeInTheDocument();
+      });
+
+      const initialCallCount =
+        mockGetPatientObservationsWithEncounterBundle.mock.calls.length;
+
+      // Simulate consultation saved event with different concept UUID
+      if (capturedCallback) {
+        capturedCallback({
+          patientUUID: 'patient-uuid-123',
+          updatedResources: {
+            observations: true,
+          },
+          updatedConceptUuids: ['different-concept-uuid'], // Not Temperature
+        });
+      }
+
+      // Wait and verify no additional calls were made
+      await waitFor(
+        () => {
+          expect(
+            mockGetPatientObservationsWithEncounterBundle.mock.calls,
+          ).toHaveLength(initialCallCount);
+        },
+        { timeout: 500 },
+      );
     });
   });
 });

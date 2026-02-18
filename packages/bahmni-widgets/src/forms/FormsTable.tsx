@@ -78,7 +78,7 @@ const FormsTable: React.FC<WidgetProps> = ({
         refetch();
       }
     },
-    [patientUuid, refetch],
+    [patientUuid],
   );
 
   // Filter forms data by encounterUuids if provided

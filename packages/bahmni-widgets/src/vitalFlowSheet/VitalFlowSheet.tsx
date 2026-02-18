@@ -81,7 +81,7 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
         refetch();
       }
     },
-    [patientUuid, refetch],
+    [patientUuid],
   );
 
   // Static headers for skeleton loading state
