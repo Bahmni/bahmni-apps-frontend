@@ -16,11 +16,13 @@ import {
   DATE_FORMAT,
   formatDate,
   camelToScreamingSnakeCase,
+  hasPrivilege,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { useNotification } from '../notification';
-import { KNOWN_FIELDS } from './constants';
+import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
+import { EDIT_PATIENT_PROGRAMS_PRIVILEGE, KNOWN_FIELDS } from './constants';
 import { ProgramDetailsViewModel } from './model';
 import styles from './styles/ProgramDetails.module.scss';
 import {
@@ -56,6 +58,11 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isUpdatingState, setIsUpdatingState] = useState(false);
+  const { userPrivileges } = useUserPrivilege();
+  const hasEditPatientProgramsPrivilege = hasPrivilege(
+    userPrivileges,
+    EDIT_PATIENT_PROGRAMS_PRIVILEGE,
+  );
 
   const programAttributes = useMemo(
     () => extractProgramAttributeNames(config?.fields),
@@ -132,7 +139,12 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   const renderButtons = (
     allowedStates: { uuid: string; display: string }[],
   ) => {
-    if (!allowedStates || allowedStates.length === 0) return null;
+    if (
+      !allowedStates ||
+      allowedStates.length === 0 ||
+      !hasEditPatientProgramsPrivilege
+    )
+      return null;
 
     if (allowedStates.length < 3) {
       return allowedStates.map((state) => (

@@ -8,6 +8,7 @@ import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useNotification } from '../../notification';
+import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import { mockProgramWithAttributes } from '../__mocks__/mocks';
 import ProgramDetails from '../ProgramDetails';
 
@@ -22,6 +23,7 @@ jest.mock('@bahmni/services', () => ({
   updateProgramState: jest.fn(),
 }));
 jest.mock('../../notification');
+jest.mock('../../userPrivileges/useUserPrivilege');
 
 const mockAddNotification = jest.fn();
 describe('ProgramDetails', () => {
@@ -37,6 +39,11 @@ describe('ProgramDetails', () => {
     jest.clearAllMocks();
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
+    });
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: [
+        { uuid: 'privilege-uuid-1', name: 'Edit Patient Programs' },
+      ],
     });
   });
 
@@ -322,6 +329,47 @@ describe('ProgramDetails', () => {
     expect(screen.getByText('UPDATE_PROGRAM_STATE_BUTTON')).toBeInTheDocument();
     expect(
       screen.queryByTestId('patient-programs-state-uuid-1-button-test-id'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should not render buttons when user does not have Edit Patient Programs privilege', () => {
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: [],
+    });
+
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 'program-1',
+        uuid: 'program-uuid-1',
+        programName: 'TB Program',
+        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+        dateCompleted: null,
+        outcomeName: null,
+        outcomeDetails: null,
+        currentStateName: 'Treatment Phase',
+        attributes: {},
+        allowedStates: [
+          { uuid: 'state-uuid-1', display: 'Follow-up Phase' },
+          { uuid: 'state-uuid-2', display: 'Completed' },
+        ],
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+
+    render(wrapper);
+
+    const buttonGroup = screen.getByTestId(
+      'patient-programs-state-change-button-group-test-id',
+    );
+    expect(buttonGroup).toBeInTheDocument();
+    expect(buttonGroup).toBeEmptyDOMElement();
+    expect(
+      screen.queryByTestId('patient-programs-state-uuid-1-button-test-id'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('patient-programs-state-uuid-2-button-test-id'),
     ).not.toBeInTheDocument();
   });
 

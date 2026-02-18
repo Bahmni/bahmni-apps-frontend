@@ -1,5 +1,9 @@
 import { useSidebarNavigation } from '@bahmni/design-system';
-import { NotificationProvider, useNotification } from '@bahmni/widgets';
+import {
+  NotificationProvider,
+  useNotification,
+  UserPrivilegeProvider,
+} from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -685,7 +689,9 @@ describe('ConsultationPage', () => {
 
     renderWithProvider(
       <NotificationProvider>
-        <ConsultationPage />
+        <UserPrivilegeProvider>
+          <ConsultationPage />
+        </UserPrivilegeProvider>
       </NotificationProvider>,
       '/consultation?episodeUuid=test-episode&programUuid=test-program-uuid',
     );

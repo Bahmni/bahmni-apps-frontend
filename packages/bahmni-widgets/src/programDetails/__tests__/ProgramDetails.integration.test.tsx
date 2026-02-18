@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useNotification } from '../../notification';
+import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import { mockProgramWithAttributes } from '../__mocks__/mocks';
 import ProgramDetails from '../ProgramDetails';
 
@@ -12,6 +13,7 @@ jest.mock('@bahmni/services', () => ({
   updateProgramState: jest.fn(),
 }));
 jest.mock('../../notification');
+jest.mock('../../userPrivileges/useUserPrivilege');
 
 describe('ProgramDetails Integration', () => {
   const queryClient: QueryClient = new QueryClient({
@@ -27,6 +29,11 @@ describe('ProgramDetails Integration', () => {
     jest.clearAllMocks();
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: jest.fn(),
+    });
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: [
+        { uuid: 'privilege-uuid-1', name: 'Edit Patient Programs' },
+      ],
     });
   });
 

@@ -5,3 +5,5 @@ export const KNOWN_FIELDS: string[] = [
   'outcome',
   'state',
 ];
+
+export const EDIT_PATIENT_PROGRAMS_PRIVILEGE = 'Edit Patient Programs';
