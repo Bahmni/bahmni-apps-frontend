@@ -9,6 +9,7 @@ import {
   getFormsDataByEncounterUuid,
   FormsEncounter,
   useSubscribeConsultationSaved,
+  dispatchConsultationSaved,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
@@ -827,6 +828,42 @@ describe('FormsTable', () => {
     });
   });
 
+  describe('Snapshots', () => {
+    it('should match snapshot with form data', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      const { container } = renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      expect(container).toMatchSnapshot();
+    });
+
+    it('should match snapshot in loading state', () => {
+      mockGetPatientFormData.mockImplementation(
+        () => new Promise(() => {}), // Never resolves
+      );
+
+      const { container } = renderFormsTable();
+
+      expect(container).toMatchSnapshot();
+    });
+
+    it('should match snapshot in empty state', async () => {
+      mockGetPatientFormData.mockResolvedValue([]);
+
+      const { container } = renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('No forms available')).toBeInTheDocument();
+      });
+
+      expect(container).toMatchSnapshot();
+    });
+  });
+
   describe('FormsTable Auto-Refresh', () => {
     beforeEach(() => {
       mockUseSubscribeConsultationSaved.mockImplementation(() => {});
@@ -1008,6 +1045,144 @@ describe('FormsTable', () => {
 
       // After rerender, should use cache (no new API call)
       expect(mockGetPatientFormData.mock.calls).toHaveLength(0);
+    });
+  });
+
+  describe('FormsTable Auto-Refresh with Real Events', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.useFakeTimers();
+      mockUsePatientUUID.mockReturnValue('patient-123');
+    });
+
+    afterEach(() => {
+      jest.runOnlyPendingTimers();
+      jest.useRealTimers();
+    });
+
+    it('should refetch forms when real consultation saved event is dispatched with matching patient and observations', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Use real event subscription for this test
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        const handler = (event: Event) => {
+          const customEvent = event as CustomEvent;
+          callback(customEvent.detail);
+        };
+        window.addEventListener('consultation:saved', handler);
+        return () => window.removeEventListener('consultation:saved', handler);
+      });
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Dispatch real event with matching patient UUID and observations updated
+      dispatchConsultationSaved({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          observations: true,
+          serviceRequests: {},
+        },
+        updatedConceptUuids: ['concept-1', 'concept-2'],
+      });
+
+      // Run all timers to process the setTimeout in dispatchConsultationSaved
+      jest.runAllTimers();
+
+      // Verify refetch was triggered (more calls than initial)
+      await waitFor(() => {
+        expect(mockGetPatientFormData.mock.calls.length).toBeGreaterThan(
+          initialCallCount,
+        );
+      });
+    });
+
+    it('should not refetch when real event is dispatched with different patient UUID', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Use real event subscription for this test
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        const handler = (event: Event) => {
+          const customEvent = event as CustomEvent;
+          callback(customEvent.detail);
+        };
+        window.addEventListener('consultation:saved', handler);
+        return () => window.removeEventListener('consultation:saved', handler);
+      });
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Dispatch real event with different patient UUID
+      dispatchConsultationSaved({
+        patientUUID: 'different-patient-uuid',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          observations: true,
+          serviceRequests: {},
+        },
+      });
+
+      // Run all timers to process the setTimeout in dispatchConsultationSaved
+      jest.runAllTimers();
+
+      // Verify no additional calls were made
+      expect(mockGetPatientFormData.mock.calls).toHaveLength(initialCallCount);
+    });
+
+    it('should not refetch when real event is dispatched without observations update', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Use real event subscription for this test
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        const handler = (event: Event) => {
+          const customEvent = event as CustomEvent;
+          callback(customEvent.detail);
+        };
+        window.addEventListener('consultation:saved', handler);
+        return () => window.removeEventListener('consultation:saved', handler);
+      });
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Dispatch real event with matching patient but no observations update
+      dispatchConsultationSaved({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: true,
+          allergies: false,
+          medications: false,
+          observations: false,
+          serviceRequests: {},
+        },
+      });
+
+      // Run all timers to process the setTimeout in dispatchConsultationSaved
+      jest.runAllTimers();
+
+      // Verify no additional calls were made
+      expect(mockGetPatientFormData.mock.calls).toHaveLength(initialCallCount);
     });
   });
 });

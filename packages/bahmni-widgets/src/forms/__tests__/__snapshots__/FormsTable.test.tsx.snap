@@ -1,0 +1,529 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FormsTable Snapshots should match snapshot in empty state 1`] = `
+<div>
+  <div
+    data-testid="forms-table"
+  >
+    <p
+      class="_sortableDataTableBodyEmpty_1xyik_26"
+      data-testid="forms-table-empty"
+    >
+      No forms available
+    </p>
+  </div>
+</div>
+`;
+
+exports[`FormsTable Snapshots should match snapshot in loading state 1`] = `
+<div>
+  <div
+    data-testid="forms-table"
+  >
+    <div
+      class="formsTableBody"
+      data-testid="forms-table-skeleton"
+    >
+      <div
+        class="cds--skeleton cds--data-table-container"
+      >
+        <table
+          class="_sortableDataTableSkeleton_1xyik_21 cds--skeleton cds--data-table cds--data-table--compact"
+        >
+          <thead>
+            <tr>
+              <th>
+                <span />
+              </th>
+              <th>
+                <span />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span />
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
+<div>
+  <div
+    data-testid="forms-table"
+  >
+    <ul
+      class="cds--accordion cds--accordion--start"
+    >
+      <li
+        class="cds--accordion__item cds--accordion__item--active customAccordianItem"
+        data-testid="accordian-title-History Form"
+      >
+        <button
+          aria-controls="accordion-item-_r_3c_"
+          aria-expanded="true"
+          class="cds--accordion__heading"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="cds--accordion__arrow"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 16 16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+            />
+          </svg>
+          <div
+            class="cds--accordion__title"
+            dir="auto"
+          >
+            History Form
+          </div>
+        </button>
+        <div
+          class="cds--accordion__wrapper"
+        >
+          <div
+            class="cds--accordion__content"
+            id="accordion-item-_r_3c_"
+          >
+            <div
+              class="formsTableBody _sortableDataTableBody_1xyik_1"
+              data-testid="forms-table-History Form"
+            >
+              <div
+                class="cds--data-table-content"
+              >
+                <table
+                  aria-label="Forms"
+                  class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+                >
+                  <thead>
+                    <tr>
+                      <th
+                        aria-sort="none"
+                        class="cds--table-sort__header"
+                        scope="col"
+                      >
+                        <div
+                          class="cds--table-sort__description"
+                          id="table-sort-_r_3d_"
+                        >
+                          Click to sort rows by Recorded On header in ascending order
+                        </div>
+                        <button
+                          aria-describedby="table-sort-_r_3d_"
+                          class="cds--table-sort"
+                          data-testid="table-header-recordedOn"
+                          type="button"
+                        >
+                          <span
+                            class="cds--table-sort__flex"
+                          >
+                            <div
+                              class="cds--table-header-label"
+                            >
+                              Recorded On
+                            </div>
+                            <svg
+                              aria-hidden="true"
+                              class="cds--table-sort__icon"
+                              fill="currentColor"
+                              focusable="false"
+                              height="20"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                              />
+                            </svg>
+                            <svg
+                              aria-hidden="true"
+                              class="cds--table-sort__icon-unsorted"
+                              fill="currentColor"
+                              focusable="false"
+                              height="20"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                              />
+                            </svg>
+                            <div
+                              class="cds--table-header-label--decorator-inner"
+                            />
+                          </span>
+                        </button>
+                      </th>
+                      <th
+                        aria-sort="none"
+                        class="cds--table-sort__header"
+                        scope="col"
+                      >
+                        <div
+                          class="cds--table-sort__description"
+                          id="table-sort-_r_3e_"
+                        >
+                          Click to sort rows by Recorded By header in ascending order
+                        </div>
+                        <button
+                          aria-describedby="table-sort-_r_3e_"
+                          class="cds--table-sort"
+                          data-testid="table-header-recordedBy"
+                          type="button"
+                        >
+                          <span
+                            class="cds--table-sort__flex"
+                          >
+                            <div
+                              class="cds--table-header-label"
+                            >
+                              Recorded By
+                            </div>
+                            <svg
+                              aria-hidden="true"
+                              class="cds--table-sort__icon"
+                              fill="currentColor"
+                              focusable="false"
+                              height="20"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                              />
+                            </svg>
+                            <svg
+                              aria-hidden="true"
+                              class="cds--table-sort__icon-unsorted"
+                              fill="currentColor"
+                              focusable="false"
+                              height="20"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                              />
+                            </svg>
+                            <div
+                              class="cds--table-header-label--decorator-inner"
+                            />
+                          </span>
+                        </button>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    aria-live="polite"
+                  >
+                    <tr
+                      data-testid="table-row-encounter-3"
+                    >
+                      <td
+                        data-testid="table-cell-encounter-3-recordedOn"
+                      >
+                        <a
+                          class="cds--link"
+                        >
+                          1/6/2024
+                        </a>
+                      </td>
+                      <td
+                        data-testid="table-cell-encounter-3-recordedBy"
+                      >
+                        Dr. Williams
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li
+        class="cds--accordion__item customAccordianItem"
+        data-testid="accordian-title-Vitals Form"
+      >
+        <button
+          aria-controls="accordion-item-_r_3f_"
+          aria-expanded="false"
+          class="cds--accordion__heading"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="cds--accordion__arrow"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 16 16"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+            />
+          </svg>
+          <div
+            class="cds--accordion__title"
+            dir="auto"
+          >
+            Vitals Form
+          </div>
+        </button>
+        <div
+          class="cds--accordion__wrapper"
+        >
+          <div
+            class="cds--accordion__content"
+            id="accordion-item-_r_3f_"
+          >
+            <div
+              class="formsTableBody _sortableDataTableBody_1xyik_1"
+              data-testid="forms-table-Vitals Form"
+            >
+              <div
+                class="cds--data-table-content"
+              >
+                <table
+                  aria-label="Forms"
+                  class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+                >
+                  <thead>
+                    <tr>
+                      <th
+                        aria-sort="none"
+                        class="cds--table-sort__header"
+                        scope="col"
+                      >
+                        <div
+                          class="cds--table-sort__description"
+                          id="table-sort-_r_3g_"
+                        >
+                          Click to sort rows by Recorded On header in ascending order
+                        </div>
+                        <button
+                          aria-describedby="table-sort-_r_3g_"
+                          class="cds--table-sort"
+                          data-testid="table-header-recordedOn"
+                          type="button"
+                        >
+                          <span
+                            class="cds--table-sort__flex"
+                          >
+                            <div
+                              class="cds--table-header-label"
+                            >
+                              Recorded On
+                            </div>
+                            <svg
+                              aria-hidden="true"
+                              class="cds--table-sort__icon"
+                              fill="currentColor"
+                              focusable="false"
+                              height="20"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                              />
+                            </svg>
+                            <svg
+                              aria-hidden="true"
+                              class="cds--table-sort__icon-unsorted"
+                              fill="currentColor"
+                              focusable="false"
+                              height="20"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                              />
+                            </svg>
+                            <div
+                              class="cds--table-header-label--decorator-inner"
+                            />
+                          </span>
+                        </button>
+                      </th>
+                      <th
+                        aria-sort="none"
+                        class="cds--table-sort__header"
+                        scope="col"
+                      >
+                        <div
+                          class="cds--table-sort__description"
+                          id="table-sort-_r_3h_"
+                        >
+                          Click to sort rows by Recorded By header in ascending order
+                        </div>
+                        <button
+                          aria-describedby="table-sort-_r_3h_"
+                          class="cds--table-sort"
+                          data-testid="table-header-recordedBy"
+                          type="button"
+                        >
+                          <span
+                            class="cds--table-sort__flex"
+                          >
+                            <div
+                              class="cds--table-header-label"
+                            >
+                              Recorded By
+                            </div>
+                            <svg
+                              aria-hidden="true"
+                              class="cds--table-sort__icon"
+                              fill="currentColor"
+                              focusable="false"
+                              height="20"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                              />
+                            </svg>
+                            <svg
+                              aria-hidden="true"
+                              class="cds--table-sort__icon-unsorted"
+                              fill="currentColor"
+                              focusable="false"
+                              height="20"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                              />
+                            </svg>
+                            <div
+                              class="cds--table-header-label--decorator-inner"
+                            />
+                          </span>
+                        </button>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    aria-live="polite"
+                  >
+                    <tr
+                      data-testid="table-row-encounter-1"
+                    >
+                      <td
+                        data-testid="table-cell-encounter-1-recordedOn"
+                      >
+                        <a
+                          class="cds--link"
+                        >
+                          1/8/2024
+                        </a>
+                      </td>
+                      <td
+                        data-testid="table-cell-encounter-1-recordedBy"
+                      >
+                        Dr. Smith
+                      </td>
+                    </tr>
+                    <tr
+                      data-testid="table-row-encounter-2"
+                    >
+                      <td
+                        data-testid="table-cell-encounter-2-recordedOn"
+                      >
+                        <a
+                          class="cds--link"
+                        >
+                          1/7/2024
+                        </a>
+                      </td>
+                      <td
+                        data-testid="table-cell-encounter-2-recordedBy"
+                      >
+                        Dr. Johnson
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+`;
