@@ -8,13 +8,14 @@ import {
   Search,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { OrderFulfillmentSlider } from '../components/orderFulfillmentSlider';
 import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
 import { OrdersHeader } from '../components/ordersHeader/OrdersHeader';
 import { useOrdersConfig } from '../hooks/useOrdersConfig';
 import { useOrdersFulfillment } from '../hooks/useOrdersFulfillment';
 import { Order, PatientOrderRow } from '../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../models/ordersConfig';
 import useOrdersStore from '../stores/ordersStore';
 import styles from './styles/OrdersPage.module.scss';
 
@@ -29,11 +30,65 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 }) => {
   const { t } = useTranslation();
   const { headers, isLoading, isDrugOrderTab } = useOrdersFulfillment(tabLabel);
+  const [searchInput, setSearchInput] = useState('');
 
   const { ordersData } = useOrdersStore();
   const handleOrderClick = (orderId: string) => {
     onOrderClick(orderId, ordersData[tabLabel]);
   };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(event.target.value);
+  };
+
+  const filteredRows = useMemo(() => {
+    const rows = ordersData[tabLabel] || [];
+
+    if (!searchInput || searchInput.trim().length < 3) {
+      return rows;
+    }
+
+    const searchTerm = searchInput.trim().toLowerCase();
+
+    return rows.reduce<PatientOrderRow[]>((acc, row) => {
+      const matchesPatientName = row.patientName
+        ?.toLowerCase()
+        .includes(searchTerm);
+      const matchesIdentifier = row.identifier
+        ?.toLowerCase()
+        .includes(searchTerm);
+
+      if (matchesPatientName || matchesIdentifier) {
+        acc.push(row);
+        return acc;
+      }
+
+      const matchingOrders = row.orders.filter((order) => {
+        const matchesOwner =
+          order.owner?.toLowerCase().includes(searchTerm) ?? false;
+        const matchesProvider =
+          order.provider?.toLowerCase().includes(searchTerm) ?? false;
+        return matchesOwner || matchesProvider;
+      });
+
+      if (matchingOrders.length === 0) {
+        return acc;
+      }
+
+      const urgentCount = matchingOrders.filter(
+        (order) => order.priority === ORDER_PRIORITY.STAT,
+      ).length;
+
+      acc.push({
+        ...row,
+        orders: matchingOrders,
+        totalOrdersCount: matchingOrders.length,
+        urgentCount,
+      });
+
+      return acc;
+    }, []);
+  }, [ordersData, tabLabel, searchInput]);
 
   return (
     <div className={styles.tabContent}>
@@ -43,12 +98,13 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
           labelText={t('SEARCH_ORDERS_LABEL')}
           closeButtonLabelText={t('CLEAR_SEARCH_INPUT')}
           size="md"
-          onChange={() => {}}
+          value={searchInput}
+          onChange={handleSearchChange}
         />
       </div>
       <div className={styles.ordersTable}>
         <OrdersFulfillmentTable
-          rows={ordersData[tabLabel]}
+          rows={filteredRows}
           headers={headers}
           loading={isLoading}
           isDrugOrderTab={isDrugOrderTab}

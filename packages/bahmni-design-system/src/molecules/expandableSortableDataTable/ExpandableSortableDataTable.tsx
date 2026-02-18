@@ -104,12 +104,21 @@ export const ExpandableSortableDataTable = <
 
   const rowMap = new Map(rows.map((row) => [row.id, row]));
 
+  // Create a stable key based on row IDs to force remount when rows change
+  const tableKey = rows.map((row) => row.id).join('-');
+
   return (
     <div
       className={classnames(className, styles.expandableDataTableBody)}
       data-testid="expandable-sortable-data-table"
     >
-      <DataTable rows={rows} headers={headers} isSortable size="md">
+      <DataTable
+        key={tableKey}
+        rows={rows}
+        headers={headers}
+        isSortable
+        size="md"
+      >
         {({
           rows: tableRows,
           headers: tableHeaders,
@@ -147,7 +156,12 @@ export const ExpandableSortableDataTable = <
             </TableHead>
             <TableBody>
               {tableRows.map((row) => {
-                const originalRow = rowMap.get(row.id)!;
+                const originalRow = rowMap.get(row.id);
+
+                if (!originalRow) {
+                  return null;
+                }
+
                 const isExpanded = expandedRows.has(row.id);
                 const isRowExpandable = originalRow.isExpandable !== false;
                 const { key: _key, ...rowProps } = getRowProps({ row });
