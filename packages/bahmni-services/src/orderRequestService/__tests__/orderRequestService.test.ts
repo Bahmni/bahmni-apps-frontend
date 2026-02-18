@@ -116,6 +116,57 @@ describe('serviceRequestService', () => {
         `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&patient=${patientUuid}&category=${category}&_revinclude=${revinclude}&encounter=${encounterUuids}`,
       );
     });
+
+    it('should construct URL with basedOn parameter', () => {
+      const basedOn = 'parent-service-request-uuid';
+      const url = SERVICE_REQUESTS_URL(
+        category,
+        patientUuid,
+        undefined,
+        undefined,
+        undefined,
+        basedOn,
+      );
+
+      expect(url).toBe(
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&patient=${patientUuid}&category=${category}&based-on=${basedOn}`,
+      );
+    });
+
+    it('should construct URL with basedOn and encounterUuids parameters', () => {
+      const encounterUuids = 'encounter-1';
+      const basedOn = 'parent-service-request-uuid';
+      const url = SERVICE_REQUESTS_URL(
+        category,
+        patientUuid,
+        encounterUuids,
+        undefined,
+        undefined,
+        basedOn,
+      );
+
+      expect(url).toBe(
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&patient=${patientUuid}&category=${category}&encounter=${encounterUuids}&based-on=${basedOn}`,
+      );
+    });
+
+    it('should construct URL with all parameters including basedOn', () => {
+      const encounterUuids = 'encounter-1,encounter-2';
+      const revinclude = 'ImagingStudy:basedon';
+      const basedOn = 'parent-service-request-uuid';
+      const url = SERVICE_REQUESTS_URL(
+        category,
+        patientUuid,
+        encounterUuids,
+        undefined,
+        revinclude,
+        basedOn,
+      );
+
+      expect(url).toBe(
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&patient=${patientUuid}&category=${category}&_revinclude=${revinclude}&encounter=${encounterUuids}&based-on=${basedOn}`,
+      );
+    });
   });
 
   describe('getServiceRequests', () => {
@@ -201,6 +252,62 @@ describe('serviceRequestService', () => {
           'encounter-1',
           undefined,
           revinclude,
+        ),
+      );
+    });
+
+    it('should fetch service requests with basedOn parameter', async () => {
+      const category = '3f224d3e-afd7-4e90-8f14-34cf481b6d0f';
+      const patientUuid = '6db60a96-a688-4891-b9f6-59c78db52215';
+      const basedOn = 'parent-service-request-uuid';
+      mockedGet.mockResolvedValueOnce(mockServiceRequestBundle);
+
+      await getServiceRequests(
+        category,
+        patientUuid,
+        undefined,
+        undefined,
+        undefined,
+        basedOn,
+      );
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        SERVICE_REQUESTS_URL(
+          category,
+          patientUuid,
+          undefined,
+          undefined,
+          undefined,
+          basedOn,
+        ),
+      );
+    });
+
+    it('should fetch service requests with all parameters including basedOn', async () => {
+      const category = '3f224d3e-afd7-4e90-8f14-34cf481b6d0f';
+      const patientUuid = '6db60a96-a688-4891-b9f6-59c78db52215';
+      const encounterUuids = ['encounter-1', 'encounter-2'];
+      const revinclude = 'ImagingStudy:basedon';
+      const basedOn = 'parent-service-request-uuid';
+      mockedGet.mockResolvedValueOnce(mockServiceRequestBundle);
+
+      await getServiceRequests(
+        category,
+        patientUuid,
+        encounterUuids,
+        undefined,
+        revinclude,
+        basedOn,
+      );
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        SERVICE_REQUESTS_URL(
+          category,
+          patientUuid,
+          'encounter-1,encounter-2',
+          undefined,
+          revinclude,
+          basedOn,
         ),
       );
     });
