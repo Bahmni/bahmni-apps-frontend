@@ -63,11 +63,11 @@ const FormsTable: React.FC<WidgetProps> = ({
     isLoading: loading,
     isError,
     error,
+    refetch: refetchForms,
   } = useQuery<FormResponseData[], Error>({
     queryKey: ['forms', patientUuid, episodeOfCareUuids],
     queryFn: () => getPatientFormData(patientUuid!, undefined, numberOfVisits),
     enabled: !!patientUuid && !emptyEncounterFilter,
-    staleTime: 0,
   });
 
   // Filter forms data by encounterUuids if provided
@@ -110,7 +110,6 @@ const FormsTable: React.FC<WidgetProps> = ({
     queryKey: ['formMetadata', selectedFormUuid],
     queryFn: () => fetchFormMetadata(selectedFormUuid!),
     enabled: !!selectedFormUuid && isModalOpen,
-    staleTime: 0,
   });
 
   const {
@@ -122,25 +121,20 @@ const FormsTable: React.FC<WidgetProps> = ({
     queryFn: () =>
       getFormsDataByEncounterUuid(selectedRecord!.encounterUuid, true),
     enabled: !!selectedRecord?.encounterUuid && isModalOpen,
-    staleTime: 0,
   });
 
-  // Listen to consultation saved events and invalidate cached data if observations were updated
+  // Listen to consultation saved events and refetch cached data if observations were updated
   useSubscribeConsultationSaved(
     (payload: ConsultationSavedEventPayload) => {
       if (
         payload.patientUUID === patientUuid &&
         payload.updatedResources.observations
       ) {
-        // Invalidate all related caches - this works for both active and inactive queries.
-        // Unlike refetch(), invalidateQueries marks disabled queries (e.g., modal closed) as stale
-        // so they refetch fresh data when re-enabled.
-        queryClient.invalidateQueries({ queryKey: ['forms'] });
+        refetchForms();
         queryClient.invalidateQueries({ queryKey: ['formsEncounter'] });
-        queryClient.invalidateQueries({ queryKey: ['formMetadata'] });
       }
     },
-    [patientUuid, queryClient],
+    [patientUuid],
   );
 
   // Filter observations to only include those belonging to the selected form

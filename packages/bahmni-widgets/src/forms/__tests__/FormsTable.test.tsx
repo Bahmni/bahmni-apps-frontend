@@ -9,7 +9,6 @@ import {
   getFormsDataByEncounterUuid,
   FormsEncounter,
   useSubscribeConsultationSaved,
-  ConsultationSavedEventPayload,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
@@ -179,17 +178,28 @@ const renderFormsTable = (props = {}) => {
     defaultOptions: {
       queries: {
         retry: false,
-        staleTime: 0,
-        gcTime: 0,
+        staleTime: 5 * 60 * 1000, // Match the app config
+        gcTime: 10 * 60 * 1000,
       },
     },
   });
 
-  return render(
+  const renderResult = render(
     <QueryClientProvider client={queryClient}>
       <FormsTable {...props} />
     </QueryClientProvider>,
   );
+
+  // Return a custom rerender that preserves the QueryClientProvider
+  return {
+    ...renderResult,
+    rerender: (newProps: any) =>
+      renderResult.rerender(
+        <QueryClientProvider client={queryClient}>
+          <FormsTable {...newProps} />
+        </QueryClientProvider>,
+      ),
+  };
 };
 
 describe('FormsTable', () => {
@@ -854,7 +864,7 @@ describe('FormsTable', () => {
 
       // Simulate consultation saved event
       if (capturedCallback) {
-        capturedCallback({
+        (capturedCallback as jest.Mock)({
           patientUUID: 'patient-123',
           updatedResources: {
             observations: true,
@@ -889,7 +899,7 @@ describe('FormsTable', () => {
 
       // Simulate consultation saved event with different patient UUID
       if (capturedCallback) {
-        capturedCallback({
+        (capturedCallback as jest.Mock)({
           patientUUID: 'different-patient-uuid',
           updatedResources: {
             observations: true,
@@ -928,7 +938,7 @@ describe('FormsTable', () => {
 
       // Simulate consultation saved event without observation updates
       if (capturedCallback) {
-        capturedCallback({
+        (capturedCallback as jest.Mock)({
           patientUUID: 'patient-123',
           updatedResources: {
             observations: false,
@@ -945,6 +955,59 @@ describe('FormsTable', () => {
         },
         { timeout: 500 },
       );
+    });
+
+    it('should trigger fresh API call when consultation is saved, but use cache on second click', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      const { rerender } = renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      // Get the initial call count (from initial load)
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Simulate consultation saved event to trigger refetch
+      if (capturedCallback) {
+        (capturedCallback as jest.Mock)({
+          patientUUID: 'patient-123',
+          updatedResources: {
+            observations: true,
+          },
+        });
+      }
+
+      // Wait for the refetch to complete (triggered by subscription callback)
+      await waitFor(() => {
+        expect(mockGetPatientFormData.mock.calls.length).toBeGreaterThan(
+          initialCallCount,
+        );
+      });
+
+      // Reset call count to track calls from rerender
+      const callCountAfterRefetch = mockGetPatientFormData.mock.calls.length;
+      mockGetPatientFormData.mockClear();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Rerender component - should use cache, not make new API call
+      // Use same props as initial render (empty) to keep queryKey unchanged
+      rerender({});
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      // After rerender, should use cache (no new API call)
+      expect(mockGetPatientFormData.mock.calls).toHaveLength(0);
     });
   });
 });
