@@ -65,7 +65,7 @@ describe('serviceRequestService', () => {
       const url = SERVICE_REQUESTS_URL(category, patientUuid);
 
       expect(url).toBe(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${category}&patient=${patientUuid}`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&patient=${patientUuid}&category=${category}`,
       );
     });
 
@@ -80,7 +80,7 @@ describe('serviceRequestService', () => {
       );
 
       expect(url).toBe(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${category}&patient=${patientUuid}&numberOfVisits=${numberOfVisits}`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&patient=${patientUuid}&category=${category}&numberOfVisits=${numberOfVisits}`,
       );
     });
 
@@ -96,7 +96,7 @@ describe('serviceRequestService', () => {
       );
 
       expect(url).toBe(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${category}&patient=${patientUuid}&encounter=${encounterUuids}`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&patient=${patientUuid}&category=${category}&encounter=${encounterUuids}`,
       );
       expect(url).not.toContain('numberOfVisits');
     });
@@ -113,7 +113,7 @@ describe('serviceRequestService', () => {
       );
 
       expect(url).toBe(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&category=${category}&patient=${patientUuid}&_revinclude=${revinclude}&encounter=${encounterUuids}`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?_sort=-_lastUpdated&patient=${patientUuid}&category=${category}&_revinclude=${revinclude}&encounter=${encounterUuids}`,
       );
     });
   });

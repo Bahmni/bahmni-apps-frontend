@@ -9,6 +9,7 @@ import { SERVICE_REQUESTS_URL } from './constants';
  * @param encounterUuids - Optional encounter UUIDs to filter by
  * @param numberOfVisits
  * @param revinclude - Optional _revinclude parameter for related resources
+ * @param basedOn - Optional based-on UUID to filter by parent ServiceRequest
  * @returns Promise resolving to ServiceRequest Bundle
  */
 export async function getServiceRequests<T extends Resource = ServiceRequest>(
@@ -17,6 +18,7 @@ export async function getServiceRequests<T extends Resource = ServiceRequest>(
   encounterUuids?: string[],
   numberOfVisits?: number,
   revinclude?: string,
+  basedOn?: string,
 ): Promise<Bundle<T>> {
   let encounterUuidsString: string | undefined;
 
@@ -31,6 +33,7 @@ export async function getServiceRequests<T extends Resource = ServiceRequest>(
       encounterUuidsString,
       numberOfVisits,
       revinclude,
+      basedOn,
     ),
   );
 }
