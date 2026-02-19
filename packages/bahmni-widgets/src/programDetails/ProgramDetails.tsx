@@ -139,13 +139,6 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   const renderButtons = (
     allowedStates: { uuid: string; display: string }[],
   ) => {
-    if (
-      !allowedStates ||
-      allowedStates.length === 0 ||
-      !hasEditPatientProgramsPrivilege
-    )
-      return null;
-
     if (allowedStates.length < 3) {
       return allowedStates.map((state) => (
         <Button
@@ -187,6 +180,11 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
       </MenuButton>
     );
   };
+
+  const enableButtons =
+    data.allowedStates &&
+    data.allowedStates.length > 0 &&
+    hasEditPatientProgramsPrivilege;
 
   const renderKnownField = (field: string) => {
     switch (field) {
@@ -233,15 +231,17 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
             {data.currentStateName}
           </Tag>
         </Tile>
-        <div
-          id="patient-programs-state-change-button-group"
-          data-testid="patient-programs-state-change-button-group-test-id"
-          aria-label="patient-programs-state-change-button-group-aria-label"
-          role="group"
-          className={styles.buttons}
-        >
-          {renderButtons(data.allowedStates)}
-        </div>
+        {enableButtons && (
+          <div
+            id="patient-programs-state-change-button-group"
+            data-testid="patient-programs-state-change-button-group-test-id"
+            aria-label="patient-programs-state-change-button-group-aria-label"
+            role="group"
+            className={styles.buttons}
+          >
+            {renderButtons(data.allowedStates)}
+          </div>
+        )}
       </div>
       <Grid className={styles.grid}>
         {Object.keys(headers).map((field) => (

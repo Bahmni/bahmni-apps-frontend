@@ -35,13 +35,6 @@ exports[`ProgramDetails Snapshot should match snapshot with program data 1`] = `
           </span>
         </div>
       </div>
-      <div
-        aria-label="patient-programs-state-change-button-group-aria-label"
-        class="buttons"
-        data-testid="patient-programs-state-change-button-group-test-id"
-        id="patient-programs-state-change-button-group"
-        role="group"
-      />
     </div>
     <div
       class="grid cds--css-grid"

@@ -259,11 +259,17 @@ describe('ProgramDetails', () => {
 
     render(wrapper);
 
-    const buttonGroup = screen.getByTestId(
-      'patient-programs-state-change-button-group-test-id',
-    );
-    expect(buttonGroup).toBeInTheDocument();
-    expect(buttonGroup).toBeEmptyDOMElement();
+    expect(
+      screen.queryByTestId(
+        'patient-programs-state-change-button-group-test-id',
+      ),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('patient-programs-state-uuid-1-button-test-id'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('patient-programs-state-uuid-2-button-test-id'),
+    ).not.toBeInTheDocument();
   });
 
   it('should render individual Button components when allowedStates has less than 3 items', () => {
@@ -360,11 +366,11 @@ describe('ProgramDetails', () => {
 
     render(wrapper);
 
-    const buttonGroup = screen.getByTestId(
-      'patient-programs-state-change-button-group-test-id',
-    );
-    expect(buttonGroup).toBeInTheDocument();
-    expect(buttonGroup).toBeEmptyDOMElement();
+    expect(
+      screen.queryByTestId(
+        'patient-programs-state-change-button-group-test-id',
+      ),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByTestId('patient-programs-state-uuid-1-button-test-id'),
     ).not.toBeInTheDocument();
