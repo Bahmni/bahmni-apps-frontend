@@ -1,35 +1,55 @@
 import { SaveAndCancelButtons } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, Provider } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
 import { ComboBox, TextArea } from '@carbon/react';
-import React, { useState } from 'react';
-import { availableProviders } from '../../__mocks__/ordersMockData';
+import React, { useEffect, useState } from 'react';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import { Order, OrderStatus } from '../../models/orderFulfillment';
+import useOrdersStore from '../../stores/ordersStore';
 import styles from './styles/OrderFulfillmentSlider.module.scss';
 
 interface OrderFulfillmentSliderProps {
   order: Order | null;
   onClose: () => void;
   isOpen: boolean;
+  tabLabel?: string;
 }
 
 export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   order,
   onClose,
   isOpen,
+  tabLabel = '',
 }) => {
   const { t } = useTranslation();
   const { ordersTableConfig } = useOrdersConfig();
+  const { fetchProviders, providers } = useOrdersStore();
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState<OrderStatus | ''>('');
   const [owner, setOwner] = useState('');
+  const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
 
   const availableStatuses: OrderStatus[] =
-    ordersTableConfig?.orderStatusesAvailable as OrderStatus[];
+    (ordersTableConfig?.orderStatusesAvailable as OrderStatus[]) ?? [];
 
   const patientDetailFields =
     ordersTableConfig?.manageOrdersPanelPatientDetails ?? [];
+
+  useEffect(() => {
+    if (isOpen && tabLabel) {
+      fetchProviders(tabLabel);
+    } else if (!isOpen) {
+      setNotes('');
+      setStatus('');
+      setOwner('');
+    }
+  }, [isOpen, tabLabel, fetchProviders]);
+
+  useEffect(() => {
+    if (tabLabel && providers[tabLabel] && providers[tabLabel].length > 0) {
+      setCurrentProviders(providers[tabLabel]);
+    }
+  }, [tabLabel, providers]);
 
   const getNestedValue = (obj: Order, key: string): string => {
     const keys = key.split('.');
@@ -67,7 +87,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
             <Close size={20} />
           </button>
         </div>
-        <div className={styles.orderName}>{order.orderName}</div>
+        <div className={styles.sliderTitle}>{order.orderName}</div>
       </div>
       <div className={styles.sliderContent}>
         {order.providerComments && (
@@ -105,7 +125,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
               data-testid="order-owner-select"
               titleText={t('ORDER_OWNER')}
               placeholder={t('CHOOSE_AN_OPTION')}
-              items={availableProviders}
+              items={currentProviders}
               itemToString={(item) => (item ? item.name : '')}
               shouldFilterItem={({ item, inputValue }) => {
                 if (!inputValue) return true;
@@ -114,7 +134,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   .includes(inputValue.toLowerCase());
               }}
               selectedItem={
-                availableProviders.find((p) => p.id === owner) ?? null
+                currentProviders.find((p) => p.id === owner) ?? null
               }
               onChange={({ selectedItem }) =>
                 setOwner(selectedItem ? selectedItem.id : '')
@@ -146,7 +166,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   'Escape',
                   'Tab',
                 ];
-                if (!allowedKeys.includes(e.key)) {
+                if (!allowedKeys.includes(e.key) && e.key.length === 1) {
                   e.preventDefault();
                 }
               }}
