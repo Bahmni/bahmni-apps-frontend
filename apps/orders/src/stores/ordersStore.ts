@@ -18,7 +18,9 @@ export const transformOrderData = (
 ): PatientOrderRow[] => {
   return ordersInfo.map((order) => {
     const { orders: ordersData = '' } = order;
-    const orders: OrderItem[] = JSON.parse(ordersData.replace(/\n/g, '\\n'));
+    const orders: OrderItem[] = ordersData
+      ? JSON.parse(ordersData.replace(/\n/g, '\\n'))
+      : [];
     let urgentOrders = 0;
     const { birthdate } = order;
     const age = calculateAge(moment(birthdate).format('YYYY-MM-DD'));
@@ -74,7 +76,7 @@ export interface OrdersStoreState {
   fetchAllPendingOrders: (tabs: OrderTab[]) => void;
   isLoading: boolean;
   setIsLoading: (value: boolean) => void;
-  ordersData: Record<string, PatientOrderRow[]>;
+  ordersData: PatientOrderRow[];
 }
 
 export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
@@ -84,7 +86,7 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
   isLoading: false,
   currentUser: {} as User,
   currentLocation: { name: '', uuid: '' },
-  ordersData: {},
+  ordersData: [],
   setSelectedIndex: (selected: number) => set({ selectedIndex: selected }),
   fetchCurrentUser: async () => {
     const userData = await getCurrentUser();
@@ -109,11 +111,12 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
       });
       set((state) => ({
         ...state,
-        ordersData: {
-          ...state.ordersData,
-          [tabs[tabIndex].label]: transformOrderData(orders),
-        },
+        ordersData: transformOrderData(orders),
         isLoading: false,
+        tabCounts: {
+          ...state.tabCounts,
+          [tabs[tabIndex].label]: orders.length,
+        },
       }));
     }
   },
@@ -135,27 +138,27 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
           }),
         ),
       );
-      const { tabCounts, result } = responses.reduce<{
+      const { tabCounts } = responses.reduce<{
         tabCounts: Record<string, number>;
-        result: Record<string, PatientOrderRow[]>;
       }>(
         (acc, res, idx) => {
           const label = tabs[idx].label;
           if (res.status === 'fulfilled') {
             acc.tabCounts[label] = res.value.length;
-            acc.result[label] = transformOrderData(res.value);
           } else {
             acc.tabCounts[label] = 0;
-            acc.result[label] = [];
           }
           return acc;
         },
-        { tabCounts: {}, result: {} },
+        { tabCounts: {} },
       );
-
+      let res: PatientOrderRow[] = [];
+      if (responses[0].status === 'fulfilled') {
+        res = transformOrderData(responses[0].value);
+      }
       set((state) => ({
         ...state,
-        ordersData: result,
+        ordersData: res,
         tabs,
         tabCounts,
       }));

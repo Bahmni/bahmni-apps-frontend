@@ -1,5 +1,6 @@
 import { Link } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
+import { TableRow, TableCell } from '@carbon/react';
 import React from 'react';
 import { Order } from '../../models/orderFulfillment';
 import { PriorityBadge } from '../priorityBadge';
@@ -23,17 +24,17 @@ export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
   };
 
   return (
-    <tr
+    <TableRow
       className={`${styles.expandedOrderRow} ${
         isSelected ? styles.selectedChildRow : ''
       }`}
       data-testid="expanded-order-row"
     >
-      <td />
-      <td />
-      <td />
-      <td />
-      <td className={styles.orderNameCell}>
+      <TableCell />
+      <TableCell />
+      <TableCell />
+      <TableCell />
+      <TableCell className={styles.orderNameCell}>
         <Link
           href="#"
           onClick={(e: React.MouseEvent) => {
@@ -44,18 +45,18 @@ export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
         >
           {order.orderName}
         </Link>
-      </td>
-      <td>
+      </TableCell>
+      <TableCell className={styles.priority}>
         <PriorityBadge priority={order.priority} />
-      </td>
-      <td className={styles.statusCell}>{order.status}</td>
-      <td className={styles.providerCell}>{order.provider}</td>
-      <td className={styles.dateTimeCell}>{order.dateTime}</td>
-      <td className={styles.ownerCell}>
+      </TableCell>
+      <TableCell className={styles.statusCell}>{order.status}</TableCell>
+      <TableCell className={styles.providerCell}>{order.provider}</TableCell>
+      <TableCell className={styles.dateTimeCell}>{order.dateTime}</TableCell>
+      <TableCell className={styles.ownerCell}>
         {order.owner ?? (
           <span className={styles.unassigned}>{t('UNASSIGNED')}</span>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 };
