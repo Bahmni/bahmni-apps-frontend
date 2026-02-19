@@ -1,5 +1,5 @@
 import { get } from '../api';
-import { ORDERS_URL } from './constants';
+import { FETCH_ORDERS_URL } from './constants';
 
 export interface OrderSearchParams {
   locationUuid: string;
@@ -30,7 +30,7 @@ export async function fetchOrders(
       q: q || '',
       v: 'full',
     });
-    const url = `${ORDERS_URL}?${searchParams.toString()}`;
+    const url = `${FETCH_ORDERS_URL}?${searchParams.toString()}`;
     return await get(url);
   }
 }

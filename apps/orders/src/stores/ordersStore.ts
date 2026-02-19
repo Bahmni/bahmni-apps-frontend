@@ -5,6 +5,8 @@ import {
   getCurrentUser,
   OrderResponseItem,
   User,
+  fetchProvidersByTab,
+  Provider,
 } from '@bahmni/services';
 import moment from 'moment';
 import { create } from 'zustand';
@@ -18,9 +20,21 @@ export const transformOrderData = (
 ): PatientOrderRow[] => {
   return ordersInfo.map((order) => {
     const { orders: ordersData = '' } = order;
-    const orders: OrderItem[] = ordersData
-      ? JSON.parse(ordersData.replace(/\n/g, '\\n'))
-      : [];
+    let orders: OrderItem[] = [];
+
+    if (ordersData) {
+      try {
+        orders = JSON.parse(ordersData);
+      } catch {
+        try {
+          const sanitized = ordersData.replace(/\n/g, '\\n');
+          orders = JSON.parse(sanitized);
+        } catch {
+          orders = [];
+        }
+      }
+    }
+
     let urgentOrders = 0;
     const { birthdate } = order;
     const age = calculateAge(moment(birthdate).format('YYYY-MM-DD'));
@@ -32,12 +46,9 @@ export const transformOrderData = (
       return {
         id: item.orderUuid,
         orderName: item.orderName,
-        // orderType: 'Rehab Order',
         priority: item.priority,
-        // status,
         provider: item.providerName,
         dateTime: moment(item.dateTime).format('DD MMM YY hh:mm A'),
-        // owner,
         providerComments: item.providerComments,
         orderType: '',
         status: '',
@@ -74,9 +85,11 @@ export interface OrdersStoreState {
   setCurrentLocation: () => void;
   fetchOrdersForTab: (selected: number) => void;
   fetchAllPendingOrders: (tabs: OrderTab[]) => void;
+  fetchProviders: (tabLabel: string) => void;
   isLoading: boolean;
   setIsLoading: (value: boolean) => void;
   ordersData: PatientOrderRow[];
+  providers: Record<string, Provider[]>;
 }
 
 export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
@@ -87,6 +100,7 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
   currentUser: {} as User,
   currentLocation: { name: '', uuid: '' },
   ordersData: [],
+  providers: {},
   setSelectedIndex: (selected: number) => set({ selectedIndex: selected }),
   fetchCurrentUser: async () => {
     const userData = await getCurrentUser();
@@ -95,10 +109,14 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
   setCurrentLocation: () => {
     const cookieValue = getCookieByName(USER_LOCATION_COOKIE);
     const decodedCookie = decodeURIComponent(cookieValue);
-    set((state) => ({
-      ...state,
-      currentLocation: JSON.parse(decodedCookie),
-    }));
+    try {
+      set((state) => ({
+        ...state,
+        currentLocation: JSON.parse(decodedCookie),
+      }));
+    } catch {
+      // Silently fail if cookie is invalid, keep current location
+    }
   },
   fetchOrdersForTab: async (tabIndex: number) => {
     const { tabs, currentLocation, currentUser, setIsLoading } = get();
@@ -164,6 +182,26 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
       }));
     } finally {
       setIsLoading(false);
+    }
+  },
+  fetchProviders: async (tabLabel: string) => {
+    const { providers: existingProviders } = get();
+
+    if (existingProviders[tabLabel]) {
+      return;
+    }
+
+    try {
+      const providers = await fetchProvidersByTab(tabLabel);
+      set((state) => ({
+        ...state,
+        providers: {
+          ...state.providers,
+          [tabLabel]: providers,
+        },
+      }));
+    } catch {
+      // Silently fail, providers will remain empty for this tab
     }
   },
   setIsLoading: (value: boolean) =>
