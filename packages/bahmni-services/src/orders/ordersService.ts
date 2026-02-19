@@ -10,10 +10,7 @@ export interface OrderResponseItem {
   name: string;
   identifier: string;
   uuid: string;
-  activeVisitUuid: string;
-  hasBeenAdmitted: string;
-  kid: string;
-  orders: string;
+  orders?: string;
   birthdate: number;
   gender: string;
 }

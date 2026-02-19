@@ -34,7 +34,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 
   const { ordersData } = useOrdersStore();
   const handleOrderClick = (orderId: string) => {
-    onOrderClick(orderId, ordersData[tabLabel]);
+    onOrderClick(orderId, ordersData);
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +42,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
   };
 
   const filteredRows = useMemo(() => {
-    const rows = ordersData[tabLabel] || [];
+    const rows = ordersData || [];
 
     if (!searchInput || searchInput.trim().length < 3) {
       return rows;

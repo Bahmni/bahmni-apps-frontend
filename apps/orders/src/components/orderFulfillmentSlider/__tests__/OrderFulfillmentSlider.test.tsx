@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useOrdersConfig } from '../../../hooks/useOrdersConfig';
 import { Order } from '../../../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../../../models/ordersConfig';
 import { OrderFulfillmentSlider } from '../OrderFulfillmentSlider';
 
 jest.mock('@bahmni/services', () => ({
@@ -28,7 +29,7 @@ const mockOrder: Order = {
   id: 'order-1',
   orderName: 'New Cast - Plaster',
   orderType: 'Rehab Order',
-  priority: 'Urgent',
+  priority: ORDER_PRIORITY.STAT,
   status: 'New',
   provider: 'Mike Ronoh',
   dateTime: '12 Nov 25 04:24 PM',

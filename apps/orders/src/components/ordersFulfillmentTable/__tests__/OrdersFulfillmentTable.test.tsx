@@ -1,12 +1,14 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { PatientOrderRow } from '../../../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../../../models/ordersConfig';
 import { OrdersFulfillmentTable } from '../OrdersFulfillmentTable';
 
 jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
+  formatUrl: (url: string) => url,
 }));
 
 jest.mock('../../../hooks/useOrdersConfig', () => ({
@@ -16,6 +18,19 @@ jest.mock('../../../hooks/useOrdersConfig', () => ({
       orderStatusesPreSelected: ['New', 'In Progress'],
       manageOrdersPanelPatientDetails: [],
     },
+    tabs: [
+      {
+        id: 'bahmni.clinical.patients.search.RadiologyOrderAllPatients',
+        label: 'Radiology Order',
+        display: 'Radiology Orders',
+        translationKey: 'LABEL_RADIOLOGY_ORDERS_KEY',
+        order: 1,
+        searchHandler: 'emrapi.sqlSearch.v2.patientsHasPendingOrders',
+        forwardUrl:
+          '/bahmni/clinical/index.html#/default/patient/{{patientUuid}}/dashboard',
+        targetedTab: 'Radiology Orders',
+      },
+    ],
   }),
 }));
 
@@ -33,7 +48,7 @@ const mockRows: PatientOrderRow[] = [
         id: 'order-1-1',
         orderName: 'New Cast - Plaster',
         orderType: 'Rehab Order',
-        priority: 'Urgent',
+        priority: ORDER_PRIORITY.STAT,
         status: 'New',
         provider: 'Mike Ronoh',
         dateTime: '12 Nov 25 04:24 PM',
@@ -43,7 +58,7 @@ const mockRows: PatientOrderRow[] = [
         id: 'order-1-2',
         orderName: 'Rehab Therapy - Limb',
         orderType: 'Rehab Order',
-        priority: 'Routine',
+        priority: ORDER_PRIORITY.ROUTINE,
         status: 'In Progress',
         provider: 'Mike Ronoh',
         dateTime: '12 Nov 25 04:24 PM',
@@ -64,7 +79,7 @@ const mockRows: PatientOrderRow[] = [
         id: 'order-2-1',
         orderName: 'Physiotherapy Evaluation',
         orderType: 'Rehab Order',
-        priority: 'Routine',
+        priority: ORDER_PRIORITY.ROUTINE,
         status: 'In Progress',
         provider: 'Sarah Kimani',
         dateTime: '12 Nov 25 03:15 PM',
@@ -160,22 +175,6 @@ describe('OrdersFulfillmentTable', () => {
     fireEvent.click(expandButtons[0]);
 
     expect(screen.getByText('UNASSIGNED')).toBeInTheDocument();
-  });
-
-  it('calls onPatientClick when identifier is clicked', () => {
-    const onPatientClick = jest.fn();
-    render(
-      <OrdersFulfillmentTable
-        rows={mockRows}
-        headers={mockHeaders}
-        onPatientClick={onPatientClick}
-      />,
-    );
-
-    const identifierLink = screen.getByRole('link', { name: 'CRK262350' });
-    fireEvent.click(identifierLink);
-
-    expect(onPatientClick).toHaveBeenCalledWith('patient-1');
   });
 
   it('calls onOrderClick when order name is clicked', () => {

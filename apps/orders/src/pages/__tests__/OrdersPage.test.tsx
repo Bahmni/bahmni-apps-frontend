@@ -357,12 +357,12 @@ describe('OrdersPage Component', () => {
         t: (key: string) => key,
       } as any);
       useOrdersStore.setState({
-        ordersData: { 'Radiology Order': rehabOrdersMockData },
+        ordersData: rehabOrdersMockData,
       });
     });
 
     afterEach(() => {
-      useOrdersStore.setState({ ordersData: {} });
+      useOrdersStore.setState({ ordersData: [] });
     });
 
     const renderPage = () =>

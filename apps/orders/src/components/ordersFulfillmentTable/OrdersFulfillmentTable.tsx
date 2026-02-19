@@ -1,10 +1,12 @@
-import { ExpandableSortableDataTable, Link } from '@bahmni/design-system';
+import { ExpandableSortableDataTable } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
 import React, { useMemo, useState, useRef, useCallback, Fragment } from 'react';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import { PatientOrderRow, OrderStatus } from '../../models/orderFulfillment';
+import useOrdersStore from '../../stores/ordersStore';
 import { ExpandedOrderRow } from '../expandedOrderRow';
+import LinkButton from '../linkButton/LinkButton';
 import { NewBadge } from '../newBadge';
 import { PriorityBadge } from '../priorityBadge';
 import { StatusFilter } from '../statusFilter';
@@ -16,7 +18,6 @@ interface OrdersFulfillmentTableProps {
   headers: DataTableHeader[];
   loading?: boolean;
   isDrugOrderTab?: boolean;
-  onPatientClick?: (patientId: string) => void;
   onOrderClick?: (orderId: string) => void;
 }
 
@@ -25,14 +26,14 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   headers,
   loading = false,
   isDrugOrderTab = false,
-  onPatientClick,
   onOrderClick,
 }) => {
   const { t } = useTranslation();
-  const { ordersTableConfig } = useOrdersConfig();
+  const { ordersTableConfig, tabs } = useOrdersConfig();
   const statusHeaderRef = useRef<HTMLSpanElement>(null);
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const { selectedIndex } = useOrdersStore();
 
   const availableStatuses: OrderStatus[] =
     ordersTableConfig?.orderStatusesAvailable as OrderStatus[];
@@ -105,30 +106,19 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
           <NewBadge count={row.recentOrdersCount} />
         ) : null;
       case 'identifier':
-        return isDrugOrderTab ? (
-          <span className={drugOrderTableStyles.drugOrderCell}>
-            <Link
-              href="#"
-              onClick={(e: React.MouseEvent) => {
-                e.preventDefault();
-                onPatientClick?.(row.id);
-              }}
+        return (
+          <span
+            className={isDrugOrderTab ? drugOrderTableStyles.drugOrderCell : ''}
+          >
+            <LinkButton
+              forwardUrl={tabs[selectedIndex].forwardUrl}
+              targetedTab={tabs[selectedIndex].targetedTab}
+              id={row.id}
               className={styles.identifierLink}
             >
               {row.identifier}
-            </Link>
+            </LinkButton>
           </span>
-        ) : (
-          <Link
-            href="#"
-            onClick={(e: React.MouseEvent) => {
-              e.preventDefault();
-              onPatientClick?.(row.id);
-            }}
-            className={styles.identifierLink}
-          >
-            {row.identifier}
-          </Link>
         );
       case 'patientName':
         return isDrugOrderTab ? (
