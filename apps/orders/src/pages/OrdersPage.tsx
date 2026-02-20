@@ -98,7 +98,11 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
     <div className={styles.tabContent}>
       <div className={styles.searchContainer}>
         <Search
-          placeholder={t('SEARCH_ORDERS_PLACEHOLDER')}
+          placeholder={t(
+            isDrugOrderTab
+              ? 'SEARCH_ORDERS_FOR_LAB_OR_DRUG_TAB_PLACEHOLDER'
+              : 'SEARCH_ORDERS_PLACEHOLDER',
+          )}
           labelText={t('SEARCH_ORDERS_LABEL')}
           closeButtonLabelText={t('CLEAR_SEARCH_INPUT')}
           size="md"

@@ -205,11 +205,13 @@ describe('OrdersPage Component', () => {
       getOrdersConfig.mockResolvedValue(configMocks.minimalOrdersConfig);
     });
 
-    test('renders search input with correct placeholder', async () => {
+    test('renders search input with correct placeholder for drug/lab order tabs', async () => {
       const translateFn = jest.fn((key: string) => {
         const translations: Record<string, string> = {
           SEARCH_ORDERS_PLACEHOLDER:
             'Search by Patient Name, Identifier, Provider or Owner',
+          SEARCH_ORDERS_FOR_LAB_OR_DRUG_TAB_PLACEHOLDER:
+            'Search by Patient Name or Identifier',
           SEARCH_ORDERS_LABEL: 'Search orders',
           CLEAR_SEARCH_INPUT: 'Clear search input',
         };

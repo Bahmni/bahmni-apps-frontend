@@ -2,6 +2,12 @@ import { ORDER_PRIORITY } from './ordersConfig';
 
 export type OrderStatus = 'New' | 'In Progress' | 'Acknowledged' | 'Completed';
 
+export interface OrderStatusConfig {
+  value: OrderStatus;
+  label: string;
+  translationKey: string;
+}
+
 export interface PatientDetails {
   age?: string;
   dateOfBirth?: string;
