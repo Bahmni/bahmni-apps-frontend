@@ -4,7 +4,11 @@ import { Close } from '@carbon/icons-react';
 import { ComboBox, TextArea } from '@carbon/react';
 import React, { useEffect, useState } from 'react';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
-import { Order, OrderStatus } from '../../models/orderFulfillment';
+import {
+  Order,
+  OrderStatus,
+  OrderStatusConfig,
+} from '../../models/orderFulfillment';
 import useOrdersStore from '../../stores/ordersStore';
 import styles from './styles/OrderFulfillmentSlider.module.scss';
 
@@ -29,8 +33,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [owner, setOwner] = useState('');
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
 
-  const availableStatuses: OrderStatus[] =
-    (ordersTableConfig?.orderStatusesAvailable as OrderStatus[]) ?? [];
+  const availableStatuses: OrderStatusConfig[] =
+    (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? [];
 
   const patientDetailFields =
     ordersTableConfig?.manageOrdersPanelPatientDetails ?? [];
@@ -148,15 +152,13 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
               data-testid="order-status-select"
               titleText={t('STATUS')}
               placeholder={t('CHOOSE_AN_OPTION')}
-              items={availableStatuses.map((s) => ({ id: s, value: s }))}
-              itemToString={(item) => (item ? item.value : '')}
+              items={availableStatuses}
+              itemToString={(item) => (item ? t(item.translationKey) : '')}
               selectedItem={
-                availableStatuses
-                  .map((s) => ({ id: s, value: s }))
-                  .find((s) => s.id === status) ?? null
+                availableStatuses.find((s) => s.value === status) ?? null
               }
               onChange={({ selectedItem }) =>
-                setStatus(selectedItem ? (selectedItem.id as OrderStatus) : '')
+                setStatus(selectedItem ? selectedItem.value : '')
               }
               onKeyDown={(e: React.KeyboardEvent) => {
                 const allowedKeys = [
@@ -191,6 +193,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
         onSave={() => {}}
         onClose={onClose}
         isSaveDisabled={!hasChanges}
+        primaryButtonText={t('SAVE')}
+        cancelButtonText={t('CANCEL')}
       />
     </div>
   );

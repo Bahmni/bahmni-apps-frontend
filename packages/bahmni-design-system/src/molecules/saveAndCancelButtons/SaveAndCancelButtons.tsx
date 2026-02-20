@@ -8,6 +8,7 @@ export interface SaveAndCancelButtonsProps {
   onClose: () => void;
   isSaveDisabled?: boolean;
   primaryButtonText?: React.ReactNode;
+  cancelButtonText?: React.ReactNode;
 }
 
 export const SaveAndCancelButtons: React.FC<SaveAndCancelButtonsProps> = ({
@@ -15,6 +16,7 @@ export const SaveAndCancelButtons: React.FC<SaveAndCancelButtonsProps> = ({
   onClose,
   isSaveDisabled = false,
   primaryButtonText = <FormattedMessage id="SAVE" defaultMessage="Save" />,
+  cancelButtonText = <FormattedMessage id="CANCEL" defaultMessage="Cancel" />,
 }) => {
   return (
     <div className={styles.footer}>
@@ -25,9 +27,7 @@ export const SaveAndCancelButtons: React.FC<SaveAndCancelButtonsProps> = ({
         onClick={onClose}
         className={styles.cancelButton}
       >
-        <span>
-          <FormattedMessage id="CANCEL" defaultMessage="Cancel" />
-        </span>
+        <span>{cancelButtonText}</span>
       </Button>
       <Button
         kind="primary"

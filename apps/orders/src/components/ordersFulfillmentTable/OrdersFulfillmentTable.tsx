@@ -3,7 +3,10 @@ import { useTranslation } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
 import React, { useMemo, useState, useRef, useCallback, Fragment } from 'react';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
-import { PatientOrderRow, OrderStatus } from '../../models/orderFulfillment';
+import {
+  PatientOrderRow,
+  OrderStatusConfig,
+} from '../../models/orderFulfillment';
 import useOrdersStore from '../../stores/ordersStore';
 import { ExpandedOrderRow } from '../expandedOrderRow';
 import LinkButton from '../linkButton/LinkButton';
@@ -35,14 +38,14 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { selectedIndex } = useOrdersStore();
 
-  const availableStatuses: OrderStatus[] =
-    ordersTableConfig?.orderStatusesAvailable as OrderStatus[];
+  const availableStatuses: OrderStatusConfig[] =
+    (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? [];
 
-  const [selectedStatuses, setSelectedStatuses] = useState<OrderStatus[]>(
-    ordersTableConfig?.orderStatusesPreSelected as OrderStatus[],
+  const [selectedStatuses, setSelectedStatuses] = useState<OrderStatusConfig[]>(
+    (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ?? [],
   );
 
-  const handleStatusFilterApply = (statuses: OrderStatus[]) => {
+  const handleStatusFilterApply = (statuses: OrderStatusConfig[]) => {
     setSelectedStatuses(statuses);
   };
 
@@ -58,7 +61,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
               ...h,
               header: (
                 <span ref={statusHeaderRef} className={styles.statusHeader}>
-                  Status
+                  {h.header}
                   <svg
                     width="16"
                     height="16"

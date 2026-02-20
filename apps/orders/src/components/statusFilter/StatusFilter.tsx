@@ -1,15 +1,15 @@
+import { useTranslation } from '@bahmni/services';
 import { Checkbox } from '@carbon/react';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { FormattedMessage } from 'react-intl';
 import { Button } from '../../../../../packages/bahmni-design-system/src/atoms/button';
-import { OrderStatus } from '../../models/orderFulfillment';
+import { OrderStatusConfig } from '../../models/orderFulfillment';
 import styles from './styles/StatusFilter.module.scss';
 
 interface StatusFilterProps {
-  availableStatuses: OrderStatus[];
-  selectedStatuses: OrderStatus[];
-  onApply: (selectedStatuses: OrderStatus[]) => void;
+  availableStatuses: OrderStatusConfig[];
+  selectedStatuses: OrderStatusConfig[];
+  onApply: (selectedStatuses: OrderStatusConfig[]) => void;
   isOpen: boolean;
   onToggle: () => void;
   anchorRef: React.RefObject<HTMLElement>;
@@ -23,8 +23,9 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
   onToggle,
   anchorRef,
 }) => {
+  const { t } = useTranslation();
   const [tempSelection, setTempSelection] =
-    useState<OrderStatus[]>(selectedStatuses);
+    useState<OrderStatusConfig[]>(selectedStatuses);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -71,11 +72,16 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onToggle, anchorRef]);
 
-  const handleCheckboxChange = (status: OrderStatus, checked: boolean) => {
+  const handleCheckboxChange = (
+    statusConfig: OrderStatusConfig,
+    checked: boolean,
+  ) => {
     if (checked) {
-      setTempSelection([...tempSelection, status]);
+      setTempSelection([...tempSelection, statusConfig]);
     } else {
-      setTempSelection(tempSelection.filter((s) => s !== status));
+      setTempSelection(
+        tempSelection.filter((s) => s.value !== statusConfig.value),
+      );
     }
   };
 
@@ -100,14 +106,16 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
     >
       <div className={styles.filterContent}>
         <div className={styles.checkboxList}>
-          {availableStatuses.map((status) => (
+          {availableStatuses.map((statusConfig) => (
             <Checkbox
-              key={status}
-              id={`status-${status}`}
-              labelText={status}
-              checked={tempSelection.includes(status)}
+              key={statusConfig.value}
+              id={`status-${statusConfig.value}`}
+              labelText={t(statusConfig.translationKey)}
+              checked={tempSelection.some(
+                (s) => s.value === statusConfig.value,
+              )}
               onChange={(_, { checked }) =>
-                handleCheckboxChange(status, checked)
+                handleCheckboxChange(statusConfig, checked)
               }
             />
           ))}
@@ -117,9 +125,7 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
           onClick={handleApply}
           className={styles.applyButton}
         >
-          <span>
-            <FormattedMessage id={'APPLY'} defaultMessage={'Apply'} />
-          </span>
+          <span>{t('APPLY')}</span>
         </Button>
       </div>
     </div>
