@@ -237,8 +237,60 @@ describe('ProgramDetails Integration', () => {
     await waitFor(() => {
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
-        title: 'ERROR_DEFAULT_TITLE',
-        message: 'ERROR_UPDATING_PROGRAM_STATE',
+        title: 'PROGRAM_DETAILS_STATE_CHANGE_ERROR_TITLE',
+        message: 'PROGRAM_DETAILS_ERROR_UPDATING_STATE',
+      });
+    });
+  });
+
+  it('should parse error message with brackets and convert to translation key', async () => {
+    const mockAddNotification = jest.fn();
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: mockAddNotification,
+    });
+
+    (getProgramByUUID as jest.Mock).mockResolvedValue(
+      mockProgramWithAttributes,
+    );
+
+    (updateProgramState as jest.Mock).mockRejectedValue(
+      new Error('Operation failed [invalidStateTransition] for program'),
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ProgramDetails
+          programUUID="enrollment-uuid-2"
+          config={{
+            fields: [
+              'programName',
+              'Registration Number',
+              'Treatment Category',
+              'startDate',
+              'state',
+            ],
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('patient-programs-tile-test-id'),
+      ).toBeInTheDocument();
+    });
+
+    const menuButton = screen.getByText('UPDATE_PROGRAM_STATE_BUTTON');
+    await userEvent.click(menuButton);
+
+    const menuItem = await screen.findByText('Follow-up Phase');
+    await userEvent.click(menuItem);
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'PROGRAM_DETAILS_STATE_CHANGE_ERROR_TITLE',
+        message: 'INVALID_STATE_TRANSITION',
       });
     });
   });

@@ -502,8 +502,8 @@ describe('ProgramDetails', () => {
     await waitFor(() => {
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
-        title: 'ERROR_DEFAULT_TITLE',
-        message: 'ERROR_UPDATING_PROGRAM_STATE',
+        title: 'PROGRAM_DETAILS_STATE_CHANGE_ERROR_TITLE',
+        message: 'PROGRAM_DETAILS_ERROR_UPDATING_STATE',
       });
     });
   });

@@ -86,11 +86,19 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           message: t('PROGRAM_STATE_UPDATED_SUCCESSFULLY_MESSAGE'),
         });
       })
-      .catch(() => {
+      .catch((error) => {
+        const errorString = String(error);
+        const start = errorString.indexOf('[') + 1;
+        const end = errorString.indexOf(']');
+
+        const errorMessage =
+          start > 0 && end > start
+            ? camelToScreamingSnakeCase(errorString.substring(start, end))
+            : t('PROGRAM_DETAILS_ERROR_UPDATING_STATE');
         addNotification({
           type: 'error',
-          title: t('ERROR_DEFAULT_TITLE'),
-          message: t('ERROR_UPDATING_PROGRAM_STATE'),
+          title: t('PROGRAM_DETAILS_STATE_CHANGE_ERROR_TITLE'),
+          message: t(errorMessage),
         });
       })
       .finally(() => {
