@@ -143,7 +143,7 @@ interface ProgramEnrollmentState {
   endDate: string | null;
   voided: boolean;
   state: WorkflowState;
-  auditInfo?: AuditInfo;
+  auditInfo: AuditInfo;
 }
 
 interface Workflow extends BaseResource {
