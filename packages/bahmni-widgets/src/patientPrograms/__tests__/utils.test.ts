@@ -97,6 +97,15 @@ describe('Utils', () => {
         startDate,
         endDate,
         state: { concept: { display: name } },
+        auditInfo: {
+          creator: {
+            uuid: 'user-1',
+            display: 'Admin User',
+            links: [],
+          },
+          dateCreated: startDate,
+          changedBy: null,
+        },
       }) as any;
 
     const mockEnrollment = (overrides: any) =>
