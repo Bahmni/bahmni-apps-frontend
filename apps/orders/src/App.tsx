@@ -28,6 +28,7 @@ const OrdersApp: React.FC = () => {
         setIsInitialized(true);
         fetchCurrentUser();
         setCurrentLocation();
+        document.title = 'Orders';
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to initialize app:', error);

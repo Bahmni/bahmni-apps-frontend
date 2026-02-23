@@ -72,11 +72,15 @@ $col-owner: 13%;
   thead tr th:nth-child(6) {
     width: $col-priority;
     min-width: 70px;
+    *{
+      justify-content: center;
+    }
   }
 
   tbody tr td:nth-child(6) {
     width: $col-priority;
     min-width: 70px;
+    text-align: center;
   }
 
   thead tr th:nth-child(7),
