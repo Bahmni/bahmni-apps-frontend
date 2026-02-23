@@ -5,7 +5,7 @@ export const PROVIDER_ENDPOINT_PATTERN =
 
 export const TAB_PRACTITIONER_TYPE_MAP: Record<string, string> = {
   'Radiology Order': 'Radiology%20Technologist',
-  'Rehab Order': 'Rehab',
+  'Rehab Order': 'Physiotherapist',
   'P&O Order': 'P%26O%20Technician',
   'Speech Therapy Order': 'Speech%20Therapist',
 };
