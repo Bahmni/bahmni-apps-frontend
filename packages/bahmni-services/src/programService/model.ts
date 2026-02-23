@@ -17,7 +17,7 @@ interface User extends BaseResource {
 
 interface AuditInfo {
   creator?: User;
-  dateCreated?: string;
+  dateCreated: string;
   changedBy?: User | null;
   dateChanged?: string | null;
 }

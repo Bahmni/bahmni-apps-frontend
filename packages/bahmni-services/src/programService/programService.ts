@@ -70,11 +70,11 @@ export function getCurrentStateName(
 
   if (enrollment.dateCompleted !== null) {
     const statesWithEndDate = enrollment.states.filter(
-      (state) => state.endDate !== null && state.auditInfo.dateChanged !== null,
+      (state) => state.endDate !== null,
     );
     const sortedStates = statesWithEndDate.sort((a, b) => {
-      const dateA = new Date(a.auditInfo.dateChanged).getTime();
-      const dateB = new Date(b.auditInfo.dateChanged).getTime();
+      const dateA = new Date(a.auditInfo.dateCreated).getTime();
+      const dateB = new Date(b.auditInfo.dateCreated).getTime();
       return dateA - dateB;
     });
     currentState = sortedStates[sortedStates.length - 1];
