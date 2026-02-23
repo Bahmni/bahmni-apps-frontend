@@ -36,7 +36,12 @@ const LinkButton: React.FC<LinkButtonProps> = ({
   };
 
   return (
-    <Link onClick={handleClick} className={className} role={'link'}>
+    <Link
+      onClick={handleClick}
+      className={className}
+      style={{ cursor: 'pointer' }}
+      role={'link'}
+    >
       {children}
     </Link>
   );

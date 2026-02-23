@@ -27,7 +27,7 @@ export const transformOrderData = (
         orders = JSON.parse(ordersData);
       } catch {
         try {
-          const sanitized = ordersData.replace(/\n/g, '\\n');
+          const sanitized = ordersData.replace(/\n/g, ' | ');
           orders = JSON.parse(sanitized);
         } catch {
           orders = [];

@@ -168,7 +168,7 @@ export const OrdersPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <Loading />;
+    return <Loading withOverlay />;
   }
 
   if (error) {
@@ -184,7 +184,7 @@ export const OrdersPage: React.FC = () => {
   return (
     <div className={styles.pageContainer}>
       <OrdersHeader />
-      {loading && <Loading />}
+      {loading && <Loading withOverlay />}
       <div className={styles.mainContentWrapper}>
         <div
           className={`${styles.contentContainer} ${isSliderOpen ? styles.contentContainerWithSlider : ''}`}
