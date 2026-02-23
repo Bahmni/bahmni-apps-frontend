@@ -128,7 +128,7 @@ const FormsTable: React.FC<WidgetProps> = ({
     (payload: ConsultationSavedEventPayload) => {
       if (
         payload.patientUUID === patientUuid &&
-        payload.updatedResources.observations
+        payload.updatedConcepts.size > 0
       ) {
         refetchForms();
         queryClient.invalidateQueries({ queryKey: ['formsEncounter'] });

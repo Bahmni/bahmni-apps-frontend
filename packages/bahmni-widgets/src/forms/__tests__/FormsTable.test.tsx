@@ -903,9 +903,8 @@ describe('FormsTable', () => {
       if (capturedCallback) {
         (capturedCallback as jest.Mock)({
           patientUUID: 'patient-123',
-          updatedResources: {
-            observations: true,
-          },
+          updatedResources: {},
+          updatedConcepts: new Map([['concept-1', 'Concept 1']]),
         });
       }
 
@@ -938,9 +937,8 @@ describe('FormsTable', () => {
       if (capturedCallback) {
         (capturedCallback as jest.Mock)({
           patientUUID: 'different-patient-uuid',
-          updatedResources: {
-            observations: true,
-          },
+          updatedResources: {},
+          updatedConcepts: new Map(),
         });
       }
 
@@ -977,9 +975,8 @@ describe('FormsTable', () => {
       if (capturedCallback) {
         (capturedCallback as jest.Mock)({
           patientUUID: 'patient-123',
-          updatedResources: {
-            observations: false,
-          },
+          updatedResources: {},
+          updatedConcepts: new Map(),
         });
       }
 
@@ -1017,9 +1014,8 @@ describe('FormsTable', () => {
       if (capturedCallback) {
         (capturedCallback as jest.Mock)({
           patientUUID: 'patient-123',
-          updatedResources: {
-            observations: true,
-          },
+          updatedResources: {},
+          updatedConcepts: new Map([['concept-1', 'Concept 1']]),
         });
       }
 
@@ -1031,7 +1027,6 @@ describe('FormsTable', () => {
       });
 
       // Reset call count to track calls from rerender
-      const callCountAfterRefetch = mockGetPatientFormData.mock.calls.length;
       mockGetPatientFormData.mockClear();
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
 
@@ -1082,16 +1077,19 @@ describe('FormsTable', () => {
       const initialCallCount = mockGetPatientFormData.mock.calls.length;
 
       // Dispatch real event with matching patient UUID and observations updated
+      const updatedConcepts = new Map<string, string>();
+      updatedConcepts.set('concept-1', 'Concept 1');
+      updatedConcepts.set('concept-2', 'Concept 2');
+
       dispatchConsultationSaved({
         patientUUID: 'patient-123',
         updatedResources: {
           conditions: false,
           allergies: false,
           medications: false,
-          observations: true,
           serviceRequests: {},
         },
-        updatedConceptUuids: ['concept-1', 'concept-2'],
+        updatedConcepts,
       });
 
       // Run all timers to process the setTimeout in dispatchConsultationSaved
@@ -1133,9 +1131,9 @@ describe('FormsTable', () => {
           conditions: false,
           allergies: false,
           medications: false,
-          observations: true,
           serviceRequests: {},
         },
+        updatedConcepts: new Map([['concept-1', 'Concept 1']]),
       });
 
       // Run all timers to process the setTimeout in dispatchConsultationSaved
@@ -1173,9 +1171,9 @@ describe('FormsTable', () => {
           conditions: true,
           allergies: false,
           medications: false,
-          observations: false,
           serviceRequests: {},
         },
+        updatedConcepts: new Map(),
       });
 
       // Run all timers to process the setTimeout in dispatchConsultationSaved

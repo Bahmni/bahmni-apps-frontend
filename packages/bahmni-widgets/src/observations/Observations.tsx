@@ -98,10 +98,10 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
     (payload: ConsultationSavedEventPayload) => {
       if (
         payload.patientUUID === patientUUID &&
-        payload.updatedResources.observations
+        payload.updatedConcepts.size > 0
       ) {
-        const hasMatchingConcept = payload.updatedConceptUuids?.some(
-          (conceptUuid) => allConceptUuids.includes(conceptUuid),
+        const hasMatchingConcept = [...payload.updatedConcepts.keys()].some(
+          (uuid) => allConceptUuids.includes(uuid),
         );
 
         if (hasMatchingConcept) {

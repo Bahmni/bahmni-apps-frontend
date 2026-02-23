@@ -1964,20 +1964,21 @@ describe('ConsultationPad', () => {
         // Verify event payload structure
         expect(callArgs).toHaveProperty('patientUUID');
         expect(callArgs).toHaveProperty('updatedResources');
-        expect(callArgs.updatedResources).toHaveProperty('observations');
         expect(callArgs.updatedResources).toHaveProperty('allergies');
         expect(callArgs.updatedResources).toHaveProperty('medications');
         expect(callArgs.updatedResources).toHaveProperty('conditions');
         expect(callArgs.updatedResources).toHaveProperty('serviceRequests');
+        expect(callArgs).toHaveProperty('updatedConcepts');
       });
     });
 
-    it('should dispatch consultation saved event with updatedConceptUuids when observations are present', async () => {
+    it('should dispatch consultation saved event with updatedConcepts when observations are present', async () => {
       jest
         .spyOn(consultationBundleService, 'postConsultationBundle')
         .mockResolvedValue({
-          id: 'bundle-123',
+          resourceType: 'Bundle',
           type: 'transaction-response',
+          entry: [],
         });
 
       renderWithProvider();
@@ -1989,9 +1990,8 @@ describe('ConsultationPad', () => {
         expect(mockDispatchConsultationSaved).toHaveBeenCalled();
         const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
 
-        // Verify updatedConceptUuids property exists
-        expect(callArgs).toHaveProperty('updatedConceptUuids');
-        expect(Array.isArray(callArgs.updatedConceptUuids)).toBe(true);
+        expect(callArgs).toHaveProperty('updatedConcepts');
+        expect(callArgs.updatedConcepts instanceof Map).toBe(true);
       });
     });
 
@@ -2097,12 +2097,76 @@ describe('ConsultationPad', () => {
         'form-1': { data: 'some-observation-data' },
       });
 
+      const mockResponseBundle = {
+        resourceType: 'Bundle',
+        type: 'transaction-response',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-1',
+              code: {
+                coding: [
+                  {
+                    code: 'temperature-uuid-001',
+                    display: 'Temperature',
+                  },
+                ],
+              },
+            },
+            response: { status: '201' },
+          },
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-2',
+              code: {
+                coding: [
+                  {
+                    code: 'blood-pressure-uuid-002',
+                    display: 'Blood Pressure',
+                  },
+                ],
+              },
+            },
+            response: { status: '201' },
+          },
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-3',
+              code: {
+                coding: [
+                  {
+                    code: 'heart-rate-uuid-003',
+                    display: 'Heart Rate',
+                  },
+                ],
+              },
+            },
+            response: { status: '201' },
+          },
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-4',
+              code: {
+                coding: [
+                  {
+                    code: 'temperature-uuid-001',
+                    display: 'Temperature',
+                  },
+                ],
+              },
+            },
+            response: { status: '201' },
+          },
+        ],
+      };
+
       jest
         .spyOn(consultationBundleService, 'postConsultationBundle')
-        .mockResolvedValue({
-          id: 'bundle-123',
-          type: 'transaction-response',
-        });
+        .mockResolvedValue(mockResponseBundle);
 
       renderWithProvider();
 
@@ -2113,31 +2177,22 @@ describe('ConsultationPad', () => {
         expect(mockDispatchConsultationSaved).toHaveBeenCalled();
         const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
 
-        // Verify the dispatch was called with extracted concept UUIDs
-        expect(callArgs).toHaveProperty('updatedConceptUuids');
-        expect(Array.isArray(callArgs.updatedConceptUuids)).toBe(true);
+        expect(callArgs).toHaveProperty('updatedConcepts');
+        expect(callArgs.updatedConcepts instanceof Map).toBe(true);
 
-        // Verify that the UUIDs were correctly extracted from Observation entries
-        expect(callArgs.updatedConceptUuids).toContain('temperature-uuid-001');
-        expect(callArgs.updatedConceptUuids).toContain(
-          'blood-pressure-uuid-002',
-        );
-        expect(callArgs.updatedConceptUuids).toContain('heart-rate-uuid-003');
+        const concepts = callArgs.updatedConcepts as Map<string, string>;
+        expect(concepts.get('temperature-uuid-001')).toBe('Temperature');
+        expect(concepts.get('blood-pressure-uuid-002')).toBe('Blood Pressure');
+        expect(concepts.get('heart-rate-uuid-003')).toBe('Heart Rate');
 
-        // Verify no duplicates and correct count (3 unique concepts from 4 observation entries)
-        expect(callArgs.updatedConceptUuids).toHaveLength(3);
+        expect(concepts.size).toBe(3);
 
-        // Verify observations flag is set to true when observations are present
-        expect(callArgs.updatedResources.observations).toBe(true);
-
-        // Verify patient UUID is correct
         expect(callArgs.patientUUID).toBeDefined();
         expect(typeof callArgs.patientUUID).toBe('string');
       });
     });
 
-    it('should extract concept UUIDs only from valid Observation entries with code.coding[0].code', async () => {
-      // Mock observation bundle entries with mixed valid and invalid structures
+    it('should extract concept names only from valid Observation entries with code.coding[0]', async () => {
       const mockObservationEntries = [
         {
           fullUrl: 'urn:uuid:obs-valid',
@@ -2148,6 +2203,7 @@ describe('ConsultationPad', () => {
               coding: [
                 {
                   code: 'valid-uuid-001',
+                  display: 'Valid Concept 1',
                 },
               ],
             },
@@ -2159,17 +2215,20 @@ describe('ConsultationPad', () => {
           resource: {
             resourceType: 'Observation',
             id: 'obs-no-code',
-            // Missing code property
           },
           request: { method: 'POST', url: 'Observation' },
         },
         {
-          fullUrl: 'urn:uuid:obs-no-coding',
+          fullUrl: 'urn:uuid:obs-no-display',
           resource: {
             resourceType: 'Observation',
-            id: 'obs-no-coding',
+            id: 'obs-no-display',
             code: {
-              // Missing coding array
+              coding: [
+                {
+                  code: 'missing-display-uuid',
+                },
+              ],
             },
           },
           request: { method: 'POST', url: 'Observation' },
@@ -2183,6 +2242,7 @@ describe('ConsultationPad', () => {
               coding: [
                 {
                   code: 'another-valid-uuid-002',
+                  display: 'Valid Concept 2',
                 },
               ],
             },
@@ -2191,22 +2251,23 @@ describe('ConsultationPad', () => {
         },
       ];
 
-      // Mock createObservationBundleEntries to return mixed valid/invalid entries
+      const mockResponseBundle = {
+        resourceType: 'Bundle',
+        type: 'transaction-response',
+        entry: mockObservationEntries,
+      };
+
       (
         consultationBundleService.createObservationBundleEntries as jest.Mock
       ).mockReturnValue(mockObservationEntries);
 
-      // Mock observation forms store to return observation data
       mockObservationFormsStore.getObservationFormsData.mockReturnValue({
         'form-1': { data: 'some-observation-data' },
       });
 
       jest
         .spyOn(consultationBundleService, 'postConsultationBundle')
-        .mockResolvedValue({
-          id: 'bundle-123',
-          type: 'transaction-response',
-        });
+        .mockResolvedValue(mockResponseBundle);
 
       renderWithProvider();
 
@@ -2217,14 +2278,12 @@ describe('ConsultationPad', () => {
         expect(mockDispatchConsultationSaved).toHaveBeenCalled();
         const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
 
-        // Verify only valid concept UUIDs are extracted
-        expect(callArgs.updatedConceptUuids).toEqual([
-          'valid-uuid-001',
-          'another-valid-uuid-002',
-        ]);
+        expect(callArgs.updatedConcepts instanceof Map).toBe(true);
+        const concepts = callArgs.updatedConcepts as Map<string, string>;
 
-        // Invalid entries should be skipped, so only 2 UUIDs extracted from 4 observation entries
-        expect(callArgs.updatedConceptUuids).toHaveLength(2);
+        expect(concepts.size).toBe(2);
+        expect(concepts.get('valid-uuid-001')).toBe('Valid Concept 1');
+        expect(concepts.get('another-valid-uuid-002')).toBe('Valid Concept 2');
       });
     });
   });

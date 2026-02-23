@@ -76,12 +76,15 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
     (payload: ConsultationSavedEventPayload) => {
       if (
         payload.patientUUID === patientUuid &&
-        payload.updatedResources.observations
+        payload.updatedConcepts.size > 0 &&
+        [...payload.updatedConcepts.values()].some((name) =>
+          obsConcepts.includes(name),
+        )
       ) {
         refetch();
       }
     },
-    [patientUuid],
+    [patientUuid, obsConcepts],
   );
 
   // Static headers for skeleton loading state

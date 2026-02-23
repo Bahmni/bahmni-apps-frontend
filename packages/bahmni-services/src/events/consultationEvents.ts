@@ -20,12 +20,9 @@ export interface ConsultationSavedEventPayload {
     conditions: boolean;
     allergies: boolean;
     medications: boolean;
-    observations: boolean;
     serviceRequests: Record<string, boolean>;
   };
-  // List of concept UUIDs that were updated in observations
-  // Allows display controls to check if specific concepts they display were updated
-  updatedConceptUuids?: string[];
+  updatedConcepts: Map<string, string>;
 }
 
 /**

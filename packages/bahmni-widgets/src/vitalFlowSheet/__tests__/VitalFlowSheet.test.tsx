@@ -432,11 +432,12 @@ describe('VitalFlowSheet Auto-Refresh', () => {
 
     // Simulate consultation saved event with matching patient and observations
     if (capturedCallback) {
-      (capturedCallback as jest.Mock)({
+      const updatedConcepts = new Map<string, string>();
+      updatedConcepts.set('temp-uuid', 'Temperature');
+      (capturedCallback as (payload: any) => void)({
         patientUUID: 'test-patient-uuid',
-        updatedResources: {
-          observations: true,
-        },
+        updatedResources: {},
+        updatedConcepts,
       });
     }
 
@@ -487,9 +488,7 @@ describe('VitalFlowSheet Auto-Refresh', () => {
     if (capturedCallback) {
       (capturedCallback as jest.Mock)({
         patientUUID: 'different-patient-uuid',
-        updatedResources: {
-          observations: true,
-        },
+        updatedResources: {},
       });
     }
 
@@ -538,11 +537,11 @@ describe('VitalFlowSheet Auto-Refresh', () => {
 
     // Simulate consultation saved event with matching patient but no observation updates
     if (capturedCallback) {
+      const emptyMap = new Map<string, string>();
       (capturedCallback as jest.Mock)({
         patientUUID: 'test-patient-uuid',
-        updatedResources: {
-          observations: false,
-        },
+        updatedResources: {},
+        updatedConcepts: emptyMap,
       });
     }
 
@@ -612,17 +611,18 @@ describe('VitalFlowSheet Auto-Refresh with Real Events', () => {
     // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
-    // Dispatch real event with matching patient UUID and observations updated
+    const updatedConcepts = new Map<string, string>();
+    updatedConcepts.set('temp-concept-uuid', 'Temperature');
+
     dispatchConsultationSaved({
       patientUUID: 'test-patient-uuid',
       updatedResources: {
         conditions: false,
         allergies: false,
         medications: false,
-        observations: true,
         serviceRequests: {},
       },
-      updatedConceptUuids: ['temp-concept-uuid'],
+      updatedConcepts,
     });
 
     // Run all timers to process the setTimeout in dispatchConsultationSaved
@@ -674,15 +674,16 @@ describe('VitalFlowSheet Auto-Refresh with Real Events', () => {
     render(<VitalFlowSheet {...defaultProps} />);
 
     // Dispatch real event with different patient UUID
+    const emptyMap = new Map<string, string>();
     dispatchConsultationSaved({
       patientUUID: 'different-patient-uuid',
       updatedResources: {
         conditions: false,
         allergies: false,
         medications: false,
-        observations: true,
         serviceRequests: {},
       },
+      updatedConcepts: emptyMap,
     });
 
     // Run all timers to process the setTimeout in dispatchConsultationSaved
@@ -734,21 +735,79 @@ describe('VitalFlowSheet Auto-Refresh with Real Events', () => {
     render(<VitalFlowSheet {...defaultProps} />);
 
     // Dispatch real event with matching patient but no observations update
+    const emptyMap = new Map<string, string>();
     dispatchConsultationSaved({
       patientUUID: 'test-patient-uuid',
       updatedResources: {
         conditions: true,
         allergies: true,
         medications: false,
-        observations: false,
         serviceRequests: {},
       },
+      updatedConcepts: emptyMap,
     });
 
     // Run all timers to process the setTimeout in dispatchConsultationSaved
     jest.runAllTimers();
 
-    // Assert - refetch should NOT be called because observations flag is false
+    // Assert - refetch should NOT be called because no concepts were updated
+    expect(mockRefetch).not.toHaveBeenCalled();
+  });
+
+  it('should not refetch when real event is dispatched with non-matching concept names', () => {
+    const mockRefetch = jest.fn();
+    mockUseVitalFlowSheet.mockReturnValue({
+      data: {
+        tabularData: {
+          '2024-01-01 10:00:00': {
+            Temperature: { value: '36.5', abnormal: false },
+          },
+        },
+        conceptDetails: [
+          {
+            name: 'Temperature',
+            fullName: 'Temperature (C)',
+            units: '°C',
+            hiNormal: 37.5,
+            lowNormal: 36.0,
+            attributes: {},
+          },
+        ],
+      },
+      loading: false,
+      error: null,
+      refetch: mockRefetch,
+    });
+
+    mockUsePatientUUID.mockReturnValue('test-patient-uuid');
+
+    mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+      const handler = (event: Event) => {
+        const customEvent = event as CustomEvent;
+        callback(customEvent.detail);
+      };
+      window.addEventListener('consultation:saved', handler);
+      return () => window.removeEventListener('consultation:saved', handler);
+    });
+
+    render(<VitalFlowSheet {...defaultProps} />);
+
+    const updatedConcepts = new Map<string, string>();
+    updatedConcepts.set('other-uuid', 'Other Concept');
+
+    dispatchConsultationSaved({
+      patientUUID: 'test-patient-uuid',
+      updatedResources: {
+        conditions: false,
+        allergies: false,
+        medications: false,
+        serviceRequests: {},
+      },
+      updatedConcepts,
+    });
+
+    jest.runAllTimers();
+
     expect(mockRefetch).not.toHaveBeenCalled();
   });
 });

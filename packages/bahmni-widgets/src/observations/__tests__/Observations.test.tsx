@@ -334,12 +334,14 @@ describe('Observations', () => {
 
       // Simulate consultation saved event with matching patient and concept
       if (capturedCallback) {
-        capturedCallback({
+        const updatedConcepts = new Map<string, string>();
+        updatedConcepts.set('temp-uuid', 'Temperature');
+        (capturedCallback as jest.Mock)({
           patientUUID: 'patient-uuid-123',
           updatedResources: {
             observations: true,
           },
-          updatedConceptUuids: ['temp-uuid'], // Temperature concept UUID
+          updatedConcepts,
         });
       }
 
@@ -380,12 +382,14 @@ describe('Observations', () => {
 
       // Simulate consultation saved event with different patient UUID
       if (capturedCallback) {
-        capturedCallback({
+        const updatedConcepts = new Map<string, string>();
+        updatedConcepts.set('temp-uuid', 'Temperature');
+        (capturedCallback as jest.Mock)({
           patientUUID: 'different-patient-uuid',
           updatedResources: {
             observations: true,
           },
-          updatedConceptUuids: ['temp-uuid'],
+          updatedConcepts,
         });
       }
 
@@ -431,12 +435,14 @@ describe('Observations', () => {
 
       // Simulate consultation saved event with different concept UUID
       if (capturedCallback) {
-        capturedCallback({
+        const updatedConcepts = new Map<string, string>();
+        updatedConcepts.set('different-concept-uuid', 'Other Concept');
+        (capturedCallback as jest.Mock)({
           patientUUID: 'patient-uuid-123',
           updatedResources: {
             observations: true,
           },
-          updatedConceptUuids: ['different-concept-uuid'], // Not Temperature
+          updatedConcepts,
         });
       }
 

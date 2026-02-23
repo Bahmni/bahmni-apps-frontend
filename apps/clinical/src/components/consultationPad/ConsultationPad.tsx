@@ -14,6 +14,7 @@ import {
   dispatchConsultationSaved,
 } from '@bahmni/services';
 import { useNotification, useActivePractitioner } from '@bahmni/widgets';
+import { Bundle, Observation } from 'fhir/r4';
 import React, { useEffect } from 'react';
 import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
 import useAllergyStore from '../../../src/stores/allergyStore';
@@ -33,7 +34,6 @@ import {
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../hooks/usePinnedObservationForms';
-import { ConsultationBundle } from '../../models/consultationBundle';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,
@@ -207,20 +207,22 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     encounterParticipants.length > 0
   );
 
-  // Helper function to extract concept UUIDs from observation bundle entries
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const extractConceptUuidsFromObservations = (entries: any[]): string[] => {
-    if (!entries || !Array.isArray(entries)) return [];
-    const conceptUuids = new Set<string>();
-    entries.forEach((entry) => {
-      if (
-        entry.resource?.resourceType === 'Observation' &&
-        entry.resource?.code?.coding?.[0]?.code
-      ) {
-        conceptUuids.add(entry.resource.code.coding[0].code);
+  const extractConceptsFromResponseBundle = (
+    bundle: Bundle,
+  ): Map<string, string> => {
+    const conceptMap = new Map<string, string>();
+    bundle?.entry?.forEach((entry) => {
+      if (entry.resource?.resourceType === 'Observation') {
+        const obs = entry.resource as Observation;
+        const coding = obs.code?.coding?.[0];
+        const uuid = coding?.code;
+        const name = coding?.display ?? obs.code?.text;
+        if (uuid && name) {
+          conceptMap.set(uuid, name);
+        }
       }
     });
-    return Array.from(conceptUuids);
+    return conceptMap;
   };
 
   // TODO: Extract Business Logic
@@ -320,13 +322,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
       ...observationEntries,
     ]);
 
-    // Extract concept UUIDs from observation entries for smart refetch
-    const updatedConceptUuids =
-      extractConceptUuidsFromObservations(observationEntries);
-
-    return postConsultationBundle<ConsultationBundle>(consultationBundle).then(
-      () => ({
-        updatedConceptUuids,
+    return postConsultationBundle<Bundle>(consultationBundle).then(
+      (responseBundle) => ({
+        updatedConcepts: extractConceptsFromResponseBundle(responseBundle),
       }),
     );
   };
@@ -360,13 +358,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
 
       try {
         setIsSubmitting(true);
-        const { updatedConceptUuids } = await submitConsultation();
+        const { updatedConcepts } = await submitConsultation();
 
         setIsSubmitting(false);
-
-        // Capture observation data before resetting the store
-        const observationFormsData = getObservationFormsData();
-        const hasObservations = Object.keys(observationFormsData).length > 0;
 
         // Dispatch audit event for successful encounter edit/creation
         dispatchAuditEvent({
@@ -398,10 +392,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
             allergies: selectedAllergies.length > 0,
             medications:
               selectedMedications.length > 0 || selectedVaccinations.length > 0,
-            observations: hasObservations,
             serviceRequests: selectedServiceRequest,
           },
-          updatedConceptUuids,
+          updatedConcepts,
         });
 
         addNotification({
