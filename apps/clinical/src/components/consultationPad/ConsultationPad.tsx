@@ -14,7 +14,7 @@ import {
   dispatchConsultationSaved,
 } from '@bahmni/services';
 import { useNotification, useActivePractitioner } from '@bahmni/widgets';
-import { Bundle, Observation } from 'fhir/r4';
+import { Bundle } from 'fhir/r4';
 import React, { useEffect } from 'react';
 import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
 import useAllergyStore from '../../../src/stores/allergyStore';
@@ -45,6 +45,7 @@ import {
   createEncounterBundleEntry,
   getEncounterReference,
 } from '../../services/consultationBundleService';
+import { extractConceptsFromResponseBundle } from '../../utils/fhir/conceptExtractor';
 import { createConsultationBundle } from '../../utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
 import AllergiesForm from '../forms/allergies/AllergiesForm';
@@ -206,24 +207,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     selectedEncounterType &&
     encounterParticipants.length > 0
   );
-
-  const extractConceptsFromResponseBundle = (
-    bundle: Bundle,
-  ): Map<string, string> => {
-    const conceptMap = new Map<string, string>();
-    bundle?.entry?.forEach((entry) => {
-      if (entry.resource?.resourceType === 'Observation') {
-        const obs = entry.resource as Observation;
-        const coding = obs.code?.coding?.[0];
-        const uuid = coding?.code;
-        const name = coding?.display ?? obs.code?.text;
-        if (uuid && name) {
-          conceptMap.set(uuid, name);
-        }
-      }
-    });
-    return conceptMap;
-  };
 
   // TODO: Extract Business Logic
   // 1. Create a consultationService to handle submission logic
