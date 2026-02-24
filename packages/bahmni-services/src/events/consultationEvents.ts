@@ -14,6 +14,20 @@ import { useEffect, useRef } from 'react';
 export const CONSULTATION_SAVED_EVENT = 'consultation:saved';
 
 // Event payload interface
+/**
+ * ConsultationSavedEventPayload - Event data published when consultation is saved
+ *
+ * NOTE ON CONCEPT MATCHING STRATEGIES:
+ * Different subscribers use updatedConcepts differently based on their configuration:
+ * - Observations widget: Matches by concept UUID (keys) since config specifies UUIDs
+ * - VitalFlowSheet widget: Matches by concept NAME (values) since config specifies names
+ *
+ * The Map structure supports both strategies:
+ * - Keys: Concept UUIDs (for UUID-based matching)
+ * - Values: Concept names (for name-based matching)
+ *
+ * Subscribers should choose the matching strategy that aligns with their concept configuration.
+ */
 export interface ConsultationSavedEventPayload {
   patientUUID: string;
   updatedResources: {
