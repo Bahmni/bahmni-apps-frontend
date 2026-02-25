@@ -230,13 +230,13 @@ describe('OrdersFulfillmentTable', () => {
     expect(screen.getByText('NO_ORDERS_FOUND')).toBeInTheDocument();
   });
 
-  describe('Drug Order Tab', () => {
-    it('renders with limited columns for drug order tab', () => {
+  describe('Custom View Tab', () => {
+    it('renders with custom columns when isCustomOrderTab is true', () => {
       render(
         <OrdersFulfillmentTable
           rows={mockRows}
           headers={drugOrderHeaders}
-          isDrugOrderTab
+          isCustomOrderTab
         />,
       );
 
@@ -244,13 +244,16 @@ describe('OrdersFulfillmentTable', () => {
       expect(screen.getByText('CRK262350')).toBeInTheDocument();
     });
 
-    it('disables expansion for drug order tab rows', () => {
-      const drugRows = mockRows.map((row) => ({ ...row, isExpandable: false }));
+    it('disables expansion for custom view tab rows', () => {
+      const customRows = mockRows.map((row) => ({
+        ...row,
+        isExpandable: false,
+      }));
       render(
         <OrdersFulfillmentTable
-          rows={drugRows}
+          rows={customRows}
           headers={drugOrderHeaders}
-          isDrugOrderTab
+          isCustomOrderTab
         />,
       );
 

@@ -34,7 +34,6 @@ jest.mock('../../components/ordersHeader/OrdersHeader', () => ({
 
 jest.mock('../../hooks/useOrdersFulfillment', () => ({
   useOrdersFulfillment: () => ({
-    rows: [],
     headers: [
       { key: 'badge', header: '' },
       { key: 'patientName', header: 'Patient Name' },
@@ -42,7 +41,7 @@ jest.mock('../../hooks/useOrdersFulfillment', () => ({
     ],
     isLoading: false,
     error: null,
-    isDrugOrderTab: false,
+    isCustomOrderTab: false,
   }),
 }));
 

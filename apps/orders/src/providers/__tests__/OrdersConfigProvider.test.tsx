@@ -17,7 +17,6 @@ import * as configMocks from '../../__mocks__/configMocks';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import { OrdersConfigProvider } from '../OrdersConfigProvider';
 
-// Mock the notificationService
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getOrdersConfig: jest.fn(),
@@ -38,16 +37,14 @@ const mockGetTableConfig = getOrdersTableConfig as jest.MockedFunction<
   typeof getOrdersTableConfig
 >;
 
-// Mock the timer functions
 jest.useFakeTimers();
 
-// Test component that uses the useOrdersConfig hook
 const TestComponent = () => {
   const {
     ordersConfig,
     tabs,
-    defaultColumnConfigs,
-    drugOrderColumnConfigs,
+    ordersTableColumnHeadersGeneric,
+    ordersTableColumnHeadersCustom,
     isLoading,
     error,
   } = useOrdersConfig();
@@ -60,14 +57,14 @@ const TestComponent = () => {
       <div data-testid="tabs-data">
         {tabs.length > 0 ? JSON.stringify(tabs) : 'No tabs'}
       </div>
-      <div data-testid="default-column-configs">
-        {defaultColumnConfigs.length > 0
-          ? JSON.stringify(defaultColumnConfigs)
+      <div data-testid="orders-table-column-headers-Generic">
+        {ordersTableColumnHeadersGeneric.length > 0
+          ? JSON.stringify(ordersTableColumnHeadersGeneric)
           : 'No default configs'}
       </div>
-      <div data-testid="drug-order-column-configs">
-        {drugOrderColumnConfigs.length > 0
-          ? JSON.stringify(drugOrderColumnConfigs)
+      <div data-testid="orders-table-column-headers-Custom">
+        {ordersTableColumnHeadersCustom.length > 0
+          ? JSON.stringify(ordersTableColumnHeadersCustom)
           : 'No drug configs'}
       </div>
       <div data-testid="config-error">{error ? error.message : 'No error'}</div>
@@ -75,7 +72,6 @@ const TestComponent = () => {
   );
 };
 
-// Test component that uses the context setter functions
 const TestComponentWithSetters = () => {
   const {
     ordersConfig,
@@ -138,7 +134,7 @@ describe('OrdersConfigProvider', () => {
   describe('Configuration Loading Tests', () => {
     test('should load and provide configuration successfully', async () => {
       const mockTableConfig: OrdersTableConfig = {
-        ordersTableColumnHeaders: [
+        ordersTableColumnHeadersGeneric: [
           {
             key: 'badge',
             header: '',
@@ -161,7 +157,7 @@ describe('OrdersConfigProvider', () => {
             sortable: true,
           },
         ],
-        drugTabsColumnHeaders: [
+        ordersTableColumnHeadersCustom: [
           {
             key: 'patientName',
             header: 'Patient Name',
@@ -199,12 +195,12 @@ describe('OrdersConfigProvider', () => {
       );
       expect(screen.getByTestId('config-error').textContent).toBe('No error');
       expect(screen.getByTestId('tabs-data').textContent).not.toBe('No tabs');
-      expect(screen.getByTestId('default-column-configs').textContent).toBe(
-        JSON.stringify(mockTableConfig.ordersTableColumnHeaders),
-      );
-      expect(screen.getByTestId('drug-order-column-configs').textContent).toBe(
-        JSON.stringify(mockTableConfig.drugTabsColumnHeaders),
-      );
+      expect(
+        screen.getByTestId('orders-table-column-headers-Generic').textContent,
+      ).toBe(JSON.stringify(mockTableConfig.ordersTableColumnHeadersGeneric));
+      expect(
+        screen.getByTestId('orders-table-column-headers-Custom').textContent,
+      ).toBe(JSON.stringify(mockTableConfig.ordersTableColumnHeadersCustom));
     });
 
     test('should handle minimal configuration', async () => {
@@ -227,12 +223,12 @@ describe('OrdersConfigProvider', () => {
         JSON.stringify(configMocks.minimalOrdersConfig),
       );
       expect(screen.getByTestId('config-error').textContent).toBe('No error');
-      expect(screen.getByTestId('default-column-configs').textContent).toBe(
-        'No default configs',
-      );
-      expect(screen.getByTestId('drug-order-column-configs').textContent).toBe(
-        'No drug configs',
-      );
+      expect(
+        screen.getByTestId('orders-table-column-headers-Generic').textContent,
+      ).toBe('No default configs');
+      expect(
+        screen.getByTestId('orders-table-column-headers-Custom').textContent,
+      ).toBe('No drug configs');
     });
 
     test('should handle empty configuration', async () => {
@@ -294,9 +290,9 @@ describe('OrdersConfigProvider', () => {
       });
 
       const tabs = JSON.parse(screen.getByTestId('tabs-data').textContent);
-      expect(tabs[0].order).toBe(1); // Radiology should be first
-      expect(tabs[1].order).toBe(2); // Lab should be second
-      expect(tabs[2].order).toBe(5); // Rehab should be last
+      expect(tabs[0].order).toBe(1);
+      expect(tabs[1].order).toBe(2);
+      expect(tabs[2].order).toBe(5);
     });
   });
 
@@ -317,12 +313,10 @@ describe('OrdersConfigProvider', () => {
         expect(screen.getByTestId('config-test').textContent).toBe('Loaded');
       });
 
-      // Simulate concurrent updates
       fireEvent.click(screen.getByTestId('set-loading-true'));
       fireEvent.click(screen.getByTestId('set-error'));
       fireEvent.click(screen.getByTestId('set-config'));
 
-      // Verify all updates were applied
       expect(screen.getByTestId('config-test').textContent).toBe('Loading');
       expect(screen.getByTestId('config-error').textContent).toBe('Test error');
       expect(screen.getByTestId('config-data').textContent).toBe(
@@ -346,17 +340,14 @@ describe('OrdersConfigProvider', () => {
         expect(screen.getByTestId('config-test').textContent).toBe('Loaded');
       });
 
-      // Initial config
       expect(screen.getByTestId('config-data').textContent).toBe(
         JSON.stringify(configMocks.validFullOrdersConfig),
       );
 
-      // Rapid sequential updates
       for (let i = 0; i < 5; i++) {
         fireEvent.click(screen.getByTestId('set-config'));
       }
 
-      // Verify final update was applied
       expect(screen.getByTestId('config-data').textContent).toBe(
         JSON.stringify(configMocks.minimalOrdersConfig),
       );
@@ -378,13 +369,11 @@ describe('OrdersConfigProvider', () => {
         expect(screen.getByTestId('config-test').textContent).toBe('Loaded');
       });
 
-      // Update config
       fireEvent.click(screen.getByTestId('set-config'));
       expect(screen.getByTestId('config-data').textContent).toBe(
         JSON.stringify(configMocks.minimalOrdersConfig),
       );
 
-      // Re-render with different children
       rerender(
         <OrdersConfigProvider>
           <div>Different child</div>
@@ -392,14 +381,12 @@ describe('OrdersConfigProvider', () => {
         </OrdersConfigProvider>,
       );
 
-      // Verify state persists
       expect(screen.getByTestId('config-data').textContent).toBe(
         JSON.stringify(configMocks.minimalOrdersConfig),
       );
     });
 
     test('should handle state updates during loading', async () => {
-      // Mock delayed config response
       mockGetConfig.mockImplementationOnce(
         () =>
           new Promise((resolve) => {
@@ -417,25 +404,20 @@ describe('OrdersConfigProvider', () => {
         </OrdersConfigProvider>,
       );
 
-      // Initially should be loading
       expect(screen.getByTestId('config-test').textContent).toBe('Loading');
 
-      // Update state during loading
       fireEvent.click(screen.getByTestId('set-config'));
       fireEvent.click(screen.getByTestId('set-loading-false'));
 
-      // Verify updates were applied
       expect(screen.getByTestId('config-test').textContent).toBe('Loaded');
       expect(screen.getByTestId('config-data').textContent).toBe(
         JSON.stringify(configMocks.minimalOrdersConfig),
       );
 
-      // Fast-forward time
       act(() => {
         jest.advanceTimersByTime(1000);
       });
 
-      // Verify config from API doesn't override manual updates
       expect(screen.getByTestId('config-data').textContent).toBe(
         JSON.stringify(configMocks.minimalOrdersConfig),
       );

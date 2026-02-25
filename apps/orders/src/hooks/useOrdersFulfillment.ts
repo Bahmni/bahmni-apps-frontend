@@ -1,35 +1,30 @@
 import { useTranslation } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
 import { useMemo } from 'react';
-import { mockDataByTabLabel } from '../__mocks__/ordersMockData';
-import { PatientOrderRow, isDrugOrderTab } from '../models/orderFulfillment';
+import { isCustomOrderTab } from '../models/orderFulfillment';
 import { useOrdersConfig } from './useOrdersConfig';
 
 interface UseOrdersFulfillmentReturn {
-  rows: PatientOrderRow[];
   headers: DataTableHeader[];
   isLoading: boolean;
   error: Error | null;
-  isDrugOrderTab: boolean;
+  isCustomOrderTab: boolean;
 }
 
 export const useOrdersFulfillment = (
-  tabLabel: string,
+  view?: string,
 ): UseOrdersFulfillmentReturn => {
   const { t } = useTranslation();
-  const { defaultColumnConfigs, drugOrderColumnConfigs } = useOrdersConfig();
+  const { ordersTableColumnHeadersGeneric, ordersTableColumnHeadersCustom } =
+    useOrdersConfig();
 
-  const isDrugTab = isDrugOrderTab(tabLabel);
-
-  const rows = useMemo(() => {
-    return mockDataByTabLabel[tabLabel] ?? [];
-  }, [tabLabel]);
+  const isCustomTab = isCustomOrderTab(view);
 
   const headers = useMemo(() => {
     // Use config from server - drug order config for drug tabs, default config for others
-    const columnConfig = isDrugTab
-      ? drugOrderColumnConfigs
-      : defaultColumnConfigs;
+    const columnConfig = isCustomTab
+      ? ordersTableColumnHeadersCustom
+      : ordersTableColumnHeadersGeneric;
 
     return columnConfig
       .filter((col) => col.visible)
@@ -38,13 +33,17 @@ export const useOrdersFulfillment = (
         header: col.translationKey ? t(col.translationKey) : col.header,
         isSortable: col.sortable,
       }));
-  }, [isDrugTab, t, defaultColumnConfigs, drugOrderColumnConfigs]);
+  }, [
+    isCustomTab,
+    t,
+    ordersTableColumnHeadersGeneric,
+    ordersTableColumnHeadersCustom,
+  ]);
 
   return {
-    rows,
     headers,
     isLoading: false,
     error: null,
-    isDrugOrderTab: isDrugTab,
+    isCustomOrderTab: isCustomTab,
   };
 };

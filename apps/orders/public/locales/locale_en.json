@@ -24,7 +24,6 @@
   "NO_ORDERS_FOUND": "No orders found",
   "ORDERS_TABS": "Orders tabs",
   "ORDERS_FULFILLMENT_TABLE": "Orders Fulfillment Queue",
-  "DRUG_ORDERS_TABLE": "Drug Orders",
   "SEARCH_ORDERS_PLACEHOLDER": "Search by Patient Name, Identifier, Provider or Owner",
   "SEARCH_ORDERS_FOR_LAB_OR_DRUG_TAB_PLACEHOLDER": "Search by Patient Name or Identifier",
   "SEARCH_ORDERS_LABEL": "Search orders",
