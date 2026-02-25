@@ -12,6 +12,7 @@ export interface OrderTab {
   searchHandler: string;
   forwardUrl: string;
   targetedTab?: string;
+  view?: string;
 }
 /**
  * Transforms orders extension configuration to tab array
@@ -46,6 +47,7 @@ export const transformExtensionConfigToTabs = (
       searchHandler: ext.extensionParams.searchHandler,
       forwardUrl: ext.extensionParams.forwardUrl,
       targetedTab: ext.extensionParams.targetedTab,
+      view: ext.extensionParams.view,
     }))
     .sort((a, b) => a.order - b.order);
 };

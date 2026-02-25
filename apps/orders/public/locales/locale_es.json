@@ -24,7 +24,6 @@
   "NO_ORDERS_FOUND": "No se encontraron órdenes",
   "ORDERS_TABS": "Pestañas de órdenes",
   "ORDERS_FULFILLMENT_TABLE": "Cola de Cumplimiento de Órdenes",
-  "DRUG_ORDERS_TABLE": "Órdenes de Medicamentos",
   "SEARCH_ORDERS_PLACEHOLDER": "Buscar por Nombre del Paciente, Identificador, Proveedor o Propietario",
   "SEARCH_ORDERS_FOR_LAB_OR_DRUG_TAB_PLACEHOLDER": "Buscar por Nombre del Paciente o Identificador",
   "SEARCH_ORDERS_LABEL": "Buscar órdenes",

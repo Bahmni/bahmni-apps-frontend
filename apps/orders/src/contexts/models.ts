@@ -14,8 +14,8 @@ export interface OrdersConfigContextType {
   ordersTableConfig: OrdersTableConfig | null;
   setOrdersTableConfig: (config: OrdersTableConfig | null) => void;
   tabs: OrderTab[];
-  defaultColumnConfigs: OrderColumnConfig[];
-  drugOrderColumnConfigs: OrderColumnConfig[];
+  ordersTableColumnHeadersGeneric: OrderColumnConfig[];
+  ordersTableColumnHeadersCustom: OrderColumnConfig[];
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
   error: Error | null;

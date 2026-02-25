@@ -1,12 +1,12 @@
 import { ORDER_PRIORITY } from './ordersConfig';
 
-export type OrderStatus = 'New' | 'In Progress' | 'Acknowledged' | 'Completed';
-
 export interface OrderStatusConfig {
-  value: OrderStatus;
+  value: string;
   label: string;
   translationKey: string;
 }
+
+export type OrderStatus = OrderStatusConfig['value'];
 
 export interface PatientDetails {
   age?: string;
@@ -48,9 +48,6 @@ export interface OrderColumnConfig {
   sortable: boolean;
 }
 
-export const DRUG_ORDER_TAB_LABELS = ['Drug Order', 'IPD Drug Order'];
-
-export const isDrugOrderTab = (tabLabel: string): boolean =>
-  DRUG_ORDER_TAB_LABELS.some((label) =>
-    tabLabel.toLowerCase().includes(label.toLowerCase()),
-  );
+export const isCustomOrderTab = (view: string | undefined): boolean => {
+  return view?.toLowerCase().includes('custom') ?? false;
+};

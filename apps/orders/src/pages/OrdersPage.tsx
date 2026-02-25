@@ -21,6 +21,7 @@ import styles from './styles/OrdersPage.module.scss';
 
 interface OrdersTabContentProps {
   tabLabel: string;
+  view?: string;
   onOrderClick: (
     orderId: string,
     rows: PatientOrderRow[],
@@ -30,10 +31,11 @@ interface OrdersTabContentProps {
 
 const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
   tabLabel,
+  view,
   onOrderClick,
 }) => {
   const { t } = useTranslation();
-  const { headers, isLoading, isDrugOrderTab } = useOrdersFulfillment(tabLabel);
+  const { headers, isLoading, isCustomOrderTab } = useOrdersFulfillment(view);
   const [searchInput, setSearchInput] = useState('');
 
   const { ordersData } = useOrdersStore();
@@ -99,7 +101,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
       <div className={styles.searchContainer}>
         <Search
           placeholder={t(
-            isDrugOrderTab
+            isCustomOrderTab
               ? 'SEARCH_ORDERS_FOR_LAB_OR_DRUG_TAB_PLACEHOLDER'
               : 'SEARCH_ORDERS_PLACEHOLDER',
           )}
@@ -115,7 +117,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
           rows={filteredRows}
           headers={headers}
           loading={isLoading}
-          isDrugOrderTab={isDrugOrderTab}
+          isCustomOrderTab={isCustomOrderTab}
           onOrderClick={handleOrderClick}
         />
       </div>
@@ -156,12 +158,12 @@ export const OrdersPage: React.FC = () => {
   };
   useEffect(() => {
     fetchAllPendingOrders(tabs);
-  }, [tabs, currentUser]);
+  }, [tabs, currentUser, fetchAllPendingOrders]);
   useEffect(() => {
     fetchOrdersForTab(selectedIndex);
     setIsSliderOpen(false);
     setSelectedOrder(null);
-  }, [selectedIndex]);
+  }, [selectedIndex, fetchOrdersForTab]);
   const handleCloseSlider = () => {
     setIsSliderOpen(false);
     setSelectedOrder(null);
@@ -208,6 +210,7 @@ export const OrdersPage: React.FC = () => {
                     {index === selectedIndex && (
                       <OrdersTabContent
                         tabLabel={tab.label}
+                        view={tab.view}
                         onOrderClick={handleOrderClick}
                       />
                     )}

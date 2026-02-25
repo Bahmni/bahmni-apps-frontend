@@ -8,9 +8,16 @@ jest.mock('@bahmni/services', () => ({
   }),
 }));
 
+jest.mock('../../stores/ordersStore', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    isLoading: false,
+  })),
+}));
+
 jest.mock('../useOrdersConfig', () => ({
   useOrdersConfig: () => ({
-    defaultColumnConfigs: [
+    ordersTableColumnHeadersGeneric: [
       {
         key: 'ordersPending',
         header: 'Orders Pending',
@@ -68,7 +75,7 @@ jest.mock('../useOrdersConfig', () => ({
         sortable: true,
       },
     ],
-    drugOrderColumnConfigs: [
+    ordersTableColumnHeadersCustom: [
       {
         key: 'patientName',
         header: 'Patient Name',
@@ -97,17 +104,26 @@ jest.mock('../useOrdersConfig', () => ({
 }));
 
 describe('useOrdersFulfillment', () => {
-  describe('Rehab Orders tab', () => {
-    it('returns rows for Rehab Order tab', () => {
-      const { result } = renderHook(() => useOrdersFulfillment('Rehab Order'));
+  describe('Generic view tabs (no view or non-custom view)', () => {
+    it('returns full column headers when no view is specified', () => {
+      const { result } = renderHook(() => useOrdersFulfillment());
 
-      expect(result.current.rows).toBeDefined();
-      expect(result.current.rows.length).toBeGreaterThan(0);
-      expect(result.current.rows[0].patientName).toBe('David Kamau');
+      expect(result.current.headers).toBeDefined();
+      expect(result.current.headers.length).toBeGreaterThan(2);
+
+      const headerKeys = result.current.headers.map((h) => h.key);
+      expect(headerKeys).toContain('patientName');
+      expect(headerKeys).toContain('identifier');
+      expect(headerKeys).toContain('ordersPending');
+      expect(headerKeys).toContain('priority');
+      expect(headerKeys).toContain('status');
+      expect(headerKeys).toContain('provider');
+      expect(headerKeys).toContain('dateTime');
+      expect(headerKeys).toContain('owner');
     });
 
-    it('returns full column headers for Rehab Order tab', () => {
-      const { result } = renderHook(() => useOrdersFulfillment('Rehab Order'));
+    it('returns full column headers for tabular view', () => {
+      const { result } = renderHook(() => useOrdersFulfillment('tabular'));
 
       expect(result.current.headers).toBeDefined();
       expect(result.current.headers.length).toBeGreaterThan(2);
@@ -124,7 +140,7 @@ describe('useOrdersFulfillment', () => {
     });
 
     it('returns headers with isSortable property from config', () => {
-      const { result } = renderHook(() => useOrdersFulfillment('Rehab Order'));
+      const { result } = renderHook(() => useOrdersFulfillment('tabular'));
 
       expect(result.current.headers).toBeDefined();
 
@@ -144,80 +160,59 @@ describe('useOrdersFulfillment', () => {
       expect(ownerHeader?.isSortable).toBe(true);
     });
 
-    it('returns isDrugOrderTab as false for Rehab Order tab', () => {
-      const { result } = renderHook(() => useOrdersFulfillment('Rehab Order'));
+    it('returns isCustomOrderTab as false for no view specified', () => {
+      const { result } = renderHook(() => useOrdersFulfillment());
 
-      expect(result.current.isDrugOrderTab).toBe(false);
+      expect(result.current.isCustomOrderTab).toBe(false);
+    });
+
+    it('returns isCustomOrderTab as false for tabular view', () => {
+      const { result } = renderHook(() => useOrdersFulfillment('tabular'));
+
+      expect(result.current.isCustomOrderTab).toBe(false);
     });
   });
 
-  describe('Drug Orders tabs', () => {
-    it('returns limited column headers for Drug Order tab', () => {
-      const { result } = renderHook(() => useOrdersFulfillment('Drug Order'));
+  describe('Custom view tabs', () => {
+    it('returns custom column headers for custom view', () => {
+      const { result } = renderHook(() => useOrdersFulfillment('custom'));
 
       expect(result.current.headers).toBeDefined();
+      expect(result.current.headers).toHaveLength(2);
 
       const headerKeys = result.current.headers.map((h) => h.key);
       expect(headerKeys).toContain('patientName');
       expect(headerKeys).toContain('identifier');
       expect(headerKeys).not.toContain('ordersPending');
       expect(headerKeys).not.toContain('priority');
+      expect(headerKeys).not.toContain('status');
+      expect(headerKeys).not.toContain('provider');
+      expect(headerKeys).not.toContain('dateTime');
+      expect(headerKeys).not.toContain('owner');
     });
 
-    it('returns isDrugOrderTab as true for Drug Order tab', () => {
-      const { result } = renderHook(() => useOrdersFulfillment('Drug Order'));
+    it('returns isCustomOrderTab as true when view contains "custom"', () => {
+      const { result } = renderHook(() => useOrdersFulfillment('custom'));
 
-      expect(result.current.isDrugOrderTab).toBe(true);
+      expect(result.current.isCustomOrderTab).toBe(true);
     });
 
-    it('returns isDrugOrderTab as true for IPD Drug Order tab', () => {
-      const { result } = renderHook(() =>
-        useOrdersFulfillment('IPD Drug Order'),
-      );
+    it('returns custom headers even when view is uppercase CUSTOM', () => {
+      const { result } = renderHook(() => useOrdersFulfillment('CUSTOM'));
 
-      expect(result.current.isDrugOrderTab).toBe(true);
-    });
-  });
-
-  describe('Radiology Orders tab', () => {
-    it('returns rows for Radiology Order tab', () => {
-      const { result } = renderHook(() =>
-        useOrdersFulfillment('Radiology Order'),
-      );
-
-      expect(result.current.rows).toBeDefined();
-      expect(result.current.rows.length).toBeGreaterThan(0);
-    });
-
-    it('returns full column headers for Radiology Order tab', () => {
-      const { result } = renderHook(() =>
-        useOrdersFulfillment('Radiology Order'),
-      );
-
-      const headerKeys = result.current.headers.map((h) => h.key);
-      expect(headerKeys).toContain('ordersPending');
-      expect(headerKeys).toContain('priority');
+      expect(result.current.isCustomOrderTab).toBe(true);
+      expect(result.current.headers).toHaveLength(2);
     });
   });
 
-  describe('Unknown tab', () => {
-    it('returns empty rows for unknown tab', () => {
-      const { result } = renderHook(() =>
-        useOrdersFulfillment('Unknown Order Type'),
-      );
-
-      expect(result.current.rows).toEqual([]);
-    });
-  });
-
-  it('returns loading as false (mock implementation)', () => {
-    const { result } = renderHook(() => useOrdersFulfillment('Rehab Order'));
+  it('returns loading state from store', () => {
+    const { result } = renderHook(() => useOrdersFulfillment());
 
     expect(result.current.isLoading).toBe(false);
   });
 
   it('returns error as null (mock implementation)', () => {
-    const { result } = renderHook(() => useOrdersFulfillment('Rehab Order'));
+    const { result } = renderHook(() => useOrdersFulfillment());
 
     expect(result.current.error).toBeNull();
   });

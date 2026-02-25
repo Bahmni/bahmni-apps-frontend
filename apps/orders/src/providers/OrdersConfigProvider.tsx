@@ -45,12 +45,12 @@ export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
     () => transformExtensionConfigToTabs(ordersConfig),
     [ordersConfig],
   );
-  const defaultColumnConfigs = useMemo(
-    () => ordersTableConfig?.ordersTableColumnHeaders ?? [],
+  const ordersTableColumnHeadersGeneric = useMemo(
+    () => ordersTableConfig?.ordersTableColumnHeadersGeneric ?? [],
     [ordersTableConfig],
   );
-  const drugOrderColumnConfigs = useMemo(
-    () => ordersTableConfig?.drugTabsColumnHeaders ?? [],
+  const ordersTableColumnHeadersCustom = useMemo(
+    () => ordersTableConfig?.ordersTableColumnHeadersCustom ?? [],
     [ordersTableConfig],
   );
   const value = useMemo(
@@ -60,8 +60,8 @@ export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
       ordersTableConfig,
       setOrdersTableConfig,
       tabs,
-      defaultColumnConfigs,
-      drugOrderColumnConfigs,
+      ordersTableColumnHeadersGeneric,
+      ordersTableColumnHeadersCustom,
       isLoading,
       setIsLoading,
       error,
@@ -71,8 +71,8 @@ export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
       ordersConfig,
       ordersTableConfig,
       tabs,
-      defaultColumnConfigs,
-      drugOrderColumnConfigs,
+      ordersTableColumnHeadersGeneric,
+      ordersTableColumnHeadersCustom,
       isLoading,
       error,
     ],

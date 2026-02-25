@@ -23,8 +23,8 @@ export interface PatientDetailField {
  * Contains table-specific settings like column configurations for default and drug orders
  */
 export interface OrdersTableConfig {
-  ordersTableColumnHeaders: OrderColumnConfig[];
-  drugTabsColumnHeaders: OrderColumnConfig[];
+  ordersTableColumnHeadersGeneric: OrderColumnConfig[];
+  ordersTableColumnHeadersCustom: OrderColumnConfig[];
   manageOrdersPanelPatientDetails?: PatientDetailField[];
   orderStatusesAvailable?: string[];
   orderStatusesPreSelected?: string[];

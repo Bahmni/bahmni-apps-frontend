@@ -2,17 +2,6 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
-// Custom: Drug Order Tab - Patient Name and Identifier columns left-aligned and 50% width each
-.expandableDataTableBody.drugOrderTab :global(.cds--data-table) thead tr th:nth-child(1),
-.expandableDataTableBody.drugOrderTab :global(.cds--data-table) thead tr th:nth-child(2),
-.expandableDataTableBody.drugOrderTab :global(.cds--data-table) tbody tr td:nth-child(1),
-.expandableDataTableBody.drugOrderTab :global(.cds--data-table) tbody tr td:nth-child(2) {
-  text-align: left !important;
-  width: 50% !important;
-  min-width: 50% !important;
-  max-width: 50% !important;
-}
-
 .expandableDataTableBody {
   :global(.cds--data-table) thead tr th,
   :global(.cds--data-table) thead tr th * {

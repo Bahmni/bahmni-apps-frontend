@@ -24,7 +24,6 @@
   "NO_ORDERS_FOUND": "Aucune ordonnance trouvée",
   "ORDERS_TABS": "Onglets des ordonnances",
   "ORDERS_FULFILLMENT_TABLE": "File d'Exécution des Ordonnances",
-  "DRUG_ORDERS_TABLE": "Ordonnances de Médicaments",
   "SEARCH_ORDERS_PLACEHOLDER": "Rechercher par Nom du Patient, Identifiant, Prestataire ou Propriétaire",
   "SEARCH_ORDERS_FOR_LAB_OR_DRUG_TAB_PLACEHOLDER": "Rechercher par Nom du Patient ou Identifiant",
   "SEARCH_ORDERS_LABEL": "Rechercher des ordonnances",
