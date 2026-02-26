@@ -501,3 +501,4 @@ export {
 } from './extensions';
 
 export * from './orders';
+export { createTask, type CreateTaskPayload } from './taskService';

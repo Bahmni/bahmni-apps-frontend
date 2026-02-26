@@ -25,6 +25,7 @@ export interface Order {
   provider: string;
   dateTime: string;
   owner: string | null;
+  ownerUuid?: string;
   providerComments?: string;
   patient?: PatientDetails;
 }

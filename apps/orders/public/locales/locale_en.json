@@ -40,5 +40,7 @@
   "SAVE": "Save",
   "CHOOSE_AN_OPTION": "Choose an option",
   "ORDER_OWNER": "Order Owner",
-  "NOTES": "Notes"
+  "NOTES": "Notes",
+  "ORDER_SAVE_SUCCESS": "Order details updated successfully",
+  "ORDER_SAVE_ERROR": "Failed to update order details"
 }

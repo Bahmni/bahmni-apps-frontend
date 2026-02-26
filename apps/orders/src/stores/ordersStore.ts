@@ -10,6 +10,7 @@ import {
 } from '@bahmni/services';
 import moment from 'moment';
 import { create } from 'zustand';
+import { DB_FULFILLER_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
 import { PatientOrderRow } from '../models/orderFulfillment';
 import { ORDER_PRIORITY, OrderItem, OrderTab } from '../models/ordersConfig';
 
@@ -36,12 +37,16 @@ export const transformOrderData = (
     }
 
     let urgentOrders = 0;
+    let newOrders = 0;
     const { birthdate } = order;
     const age = calculateAge(moment(birthdate).format('YYYY-MM-DD'));
     const { years, months, days } = age ?? { years: 0, months: 0, days: 0 };
     const ordersDetails = orders.map((item) => {
       if (item.priority === ORDER_PRIORITY.STAT) {
         urgentOrders += 1;
+      }
+      if (!item.fulfillerStatus) {
+        newOrders += 1;
       }
       return {
         id: item.orderUuid,
@@ -51,8 +56,12 @@ export const transformOrderData = (
         dateTime: moment(item.dateTime).format('DD MMM YY hh:mm A'),
         providerComments: item.providerComments,
         orderType: '',
-        status: '',
-        owner: '',
+        status: item.fulfillerStatus
+          ? (DB_FULFILLER_STATUS_TO_UI_STATUS[item.fulfillerStatus] ?? 'New')
+          : 'New',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        owner: item.ownerName ? item.ownerName : null,
+        ownerUuid: item.ownerUuid ?? '',
         patient: {
           dateOfBirth: moment(order.birthdate).format('DD MMM YYYY'),
           gender: order.gender,
@@ -64,7 +73,7 @@ export const transformOrderData = (
     return {
       identifier: order.identifier,
       id: order.uuid,
-      recentOrdersCount: 0,
+      recentOrdersCount: newOrders,
       totalOrdersCount: orders.length,
       patientName: order.name,
       urgentCount: urgentOrders,

@@ -40,5 +40,7 @@
   "SAVE": "Sauvegarder",
   "CHOOSE_AN_OPTION": "Choisir une option",
   "ORDER_OWNER":  "Propriétaire de l'Ordonnance",
-  "NOTES": "Remarques"
+  "NOTES": "Remarques",
+  "ORDER_SAVE_SUCCESS": "Détails de l'ordonnance mis à jour avec succès",
+  "ORDER_SAVE_ERROR": "Échec de la mise à jour des détails de l'ordonnance"
 }

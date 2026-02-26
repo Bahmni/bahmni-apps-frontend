@@ -7,9 +7,20 @@ import { ORDER_PRIORITY } from '../../../models/ordersConfig';
 import useOrdersStore from '../../../stores/ordersStore';
 import { OrderFulfillmentSlider } from '../OrderFulfillmentSlider';
 
+const mockCreateTask = jest.fn();
+
 jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
+  }),
+  createTask: (...args: unknown[]) => mockCreateTask(...args),
+}));
+
+const mockAddNotification = jest.fn();
+
+jest.mock('@bahmni/widgets', () => ({
+  useNotification: () => ({
+    addNotification: mockAddNotification,
   }),
 }));
 
@@ -103,14 +114,14 @@ describe('OrderFulfillmentSlider', () => {
       orderStatusesAvailable: [
         { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
         {
-          value: 'In Progress',
-          label: 'In Progress',
-          translationKey: 'STATUS_IN_PROGRESS',
-        },
-        {
           value: 'Acknowledged',
           label: 'Acknowledged',
           translationKey: 'STATUS_ACKNOWLEDGED',
+        },
+        {
+          value: 'In Progress',
+          label: 'In Progress',
+          translationKey: 'STATUS_IN_PROGRESS',
         },
         {
           value: 'Completed',
@@ -992,6 +1003,292 @@ describe('OrderFulfillmentSlider', () => {
       expect(screen.getByTestId('order-owner-select')).toBeInTheDocument();
       expect(screen.getByTestId('order-status-select')).toBeInTheDocument();
       expect(screen.getByTestId('order-notes')).toBeInTheDocument();
+    });
+  });
+
+  describe('Save Notifications', () => {
+    const orderWithMappableStatus: Order = {
+      ...mockOrder,
+      status: 'In Progress',
+    };
+
+    it('shows success notification with timeout on successful save', async () => {
+      mockCreateTask.mockResolvedValue({});
+      useOrdersConfig.mockReturnValue(mockConfig);
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={orderWithMappableStatus}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+
+      const notesTextarea = screen.getByTestId('order-notes');
+      fireEvent.change(notesTextarea, { target: { value: 'Test note' } });
+
+      const saveButton = screen.getByText('SAVE');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ORDER_SAVE_SUCCESS',
+          message: '',
+          type: 'success',
+          timeout: 5000,
+        });
+      });
+    });
+
+    it('shows error notification with timeout on save failure', async () => {
+      mockCreateTask.mockRejectedValue(new Error('Network error'));
+      useOrdersConfig.mockReturnValue(mockConfig);
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={orderWithMappableStatus}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+
+      const notesTextarea = screen.getByTestId('order-notes');
+      fireEvent.change(notesTextarea, { target: { value: 'Test note' } });
+
+      const saveButton = screen.getByText('SAVE');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ORDER_SAVE_ERROR',
+          message: '',
+          type: 'error',
+          timeout: 5000,
+        });
+      });
+    });
+
+    it('calls onSaveSuccess callback after successful save', async () => {
+      mockCreateTask.mockResolvedValue({});
+      useOrdersConfig.mockReturnValue(mockConfig);
+      const mockOnSaveSuccess = jest.fn();
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={orderWithMappableStatus}
+          onClose={mockOnClose}
+          isOpen
+          onSaveSuccess={mockOnSaveSuccess}
+        />,
+      );
+
+      const notesTextarea = screen.getByTestId('order-notes');
+      fireEvent.change(notesTextarea, { target: { value: 'Test note' } });
+
+      const saveButton = screen.getByText('SAVE');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockOnSaveSuccess).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('saves New order immediately without adding notes (auto-acknowledged)', async () => {
+      mockCreateTask.mockResolvedValue({});
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      fireEvent.click(screen.getByText('SAVE'));
+      await waitFor(() => {
+        expect(mockCreateTask).toHaveBeenCalledWith(
+          'order-1',
+          'requested',
+          undefined,
+          undefined,
+        );
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'success' }),
+        );
+      });
+    });
+
+    it('does not call onSaveSuccess on save failure', async () => {
+      mockCreateTask.mockRejectedValue(new Error('Network error'));
+      useOrdersConfig.mockReturnValue(mockConfig);
+      const mockOnSaveSuccess = jest.fn();
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={orderWithMappableStatus}
+          onClose={mockOnClose}
+          isOpen
+          onSaveSuccess={mockOnSaveSuccess}
+        />,
+      );
+
+      const notesTextarea = screen.getByTestId('order-notes');
+      fireEvent.change(notesTextarea, { target: { value: 'Test note' } });
+
+      const saveButton = screen.getByText('SAVE');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        );
+      });
+
+      expect(mockOnSaveSuccess).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Status Auto-Population for New Orders', () => {
+    it('auto-populates status with Acknowledged when order status is New', () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      const statusInput = screen.getByTestId(
+        'order-status-select',
+      ) as HTMLInputElement;
+      expect(statusInput.value).toBe('STATUS_ACKNOWLEDGED');
+    });
+
+    it('does not auto-populate status for a non-New order', () => {
+      const inProgressOrder: Order = { ...mockOrder, status: 'In Progress' };
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={inProgressOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      const statusInput = screen.getByTestId(
+        'order-status-select',
+      ) as HTMLInputElement;
+      expect(statusInput.value).toBe('STATUS_IN_PROGRESS');
+    });
+
+    it('does not show New as an option in the status dropdown', () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      expect(screen.queryByText('STATUS_NEW')).not.toBeInTheDocument();
+    });
+
+    it('auto-populates Acknowledged again when slider closes and reopens for a New order', () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      const { rerender } = renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      rerender(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen={false}
+        />,
+      );
+      rerender(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      const statusInput = screen.getByTestId(
+        'order-status-select',
+      ) as HTMLInputElement;
+      expect(statusInput.value).toBe('STATUS_ACKNOWLEDGED');
+    });
+  });
+
+  describe('SAVE and CANCEL Button States', () => {
+    it('SAVE is enabled immediately on open for a New order (auto-acknowledged)', () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      expect(screen.getByText('SAVE').closest('button')).not.toBeDisabled();
+    });
+
+    it('SAVE is disabled on open for a non-New order with no changes', () => {
+      const inProgressOrder: Order = { ...mockOrder, status: 'In Progress' };
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={inProgressOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      expect(screen.getByText('SAVE').closest('button')).toBeDisabled();
+    });
+
+    it('SAVE is enabled when notes are added to a non-New order', () => {
+      const inProgressOrder: Order = { ...mockOrder, status: 'In Progress' };
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={inProgressOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      fireEvent.change(screen.getByTestId('order-notes'), {
+        target: { value: 'A note' },
+      });
+      expect(screen.getByText('SAVE').closest('button')).not.toBeDisabled();
+    });
+
+    it('SAVE is disabled when notes contain only whitespace', () => {
+      const inProgressOrder: Order = { ...mockOrder, status: 'In Progress' };
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={inProgressOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      fireEvent.change(screen.getByTestId('order-notes'), {
+        target: { value: '   ' },
+      });
+      expect(screen.getByText('SAVE').closest('button')).toBeDisabled();
+    });
+
+    it('CANCEL is always enabled regardless of form state', () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      expect(screen.getByText('CANCEL').closest('button')).not.toBeDisabled();
     });
   });
 
