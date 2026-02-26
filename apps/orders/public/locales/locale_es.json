@@ -40,5 +40,7 @@
   "SAVE": "Guardar",
   "CHOOSE_AN_OPTION": "Elegir una opción",
   "ORDER_OWNER": "Propietario de la Orden",
-  "NOTES": "Notas"
+  "NOTES": "Notas",
+  "ORDER_SAVE_SUCCESS": "Detalles de la orden actualizados correctamente",
+  "ORDER_SAVE_ERROR": "Error al actualizar los detalles de la orden"
 }

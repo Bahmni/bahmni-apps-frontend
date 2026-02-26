@@ -585,6 +585,46 @@ describe('ordersStore', () => {
       expect(result[0].totalOrdersCount).toBe(3);
     });
 
+    it('should count orders without a fulfiller status as recent orders', () => {
+      const mockResponse: OrderResponseItem[] = [
+        {
+          uuid: 'patient-123',
+          identifier: 'PAT001',
+          name: 'John Doe',
+          gender: 'Male',
+          birthdate: new Date('1990-01-15').getTime(),
+          orders: JSON.stringify([
+            {
+              orderUuid: 'order-1',
+              orderName: 'Blood Test',
+              priority: ORDER_PRIORITY.ROUTINE,
+              providerName: 'Dr. Smith',
+              dateTime: '2025-02-15T10:30:00',
+            },
+            {
+              orderUuid: 'order-2',
+              orderName: 'X-Ray',
+              priority: ORDER_PRIORITY.STAT,
+              providerName: 'Dr. Jones',
+              dateTime: '2025-02-15T11:00:00',
+              fulfillerStatus: 'IN_PROGRESS',
+            },
+            {
+              orderUuid: 'order-3',
+              orderName: 'Rehab Therapy',
+              priority: ORDER_PRIORITY.ROUTINE,
+              providerName: 'Dr. Smith',
+              dateTime: '2025-02-15T12:00:00',
+            },
+          ]),
+        },
+      ];
+
+      const result = transformOrderData(mockResponse);
+
+      expect(result[0].recentOrdersCount).toBe(2);
+    });
+
     it('should handle null age from calculateAge', () => {
       (calculateAge as jest.Mock).mockReturnValue(null);
 

@@ -169,6 +169,12 @@ export const OrdersPage: React.FC = () => {
     setSelectedOrder(null);
   };
 
+  const handleSaveSuccess = () => {
+    setIsSliderOpen(false);
+    setSelectedOrder(null);
+    fetchOrdersForTab(selectedIndex);
+  };
+
   if (isLoading) {
     return <Loading withOverlay />;
   }
@@ -227,6 +233,7 @@ export const OrdersPage: React.FC = () => {
               isOpen={isSliderOpen}
               onClose={handleCloseSlider}
               tabLabel={selectedTabLabel}
+              onSaveSuccess={handleSaveSuccess}
             />
           </div>
         )}
