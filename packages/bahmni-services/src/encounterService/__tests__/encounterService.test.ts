@@ -113,5 +113,13 @@ describe('encounterService', () => {
       expect(result.resourceType).toBe('Bundle');
       expect(result.entry).toBeDefined();
     });
+
+    it('should propagate errors when the FHIR API call fails', async () => {
+      mockedGet.mockRejectedValueOnce(new Error('Network failure'));
+
+      await expect(
+        getObservationsBundleByEncounterUuid(encounterUUID),
+      ).rejects.toThrow('Network failure');
+    });
   });
 });
