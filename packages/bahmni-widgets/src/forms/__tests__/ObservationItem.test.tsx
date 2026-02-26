@@ -1,7 +1,10 @@
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 
 import { ExtractedObservation } from '../../observations/models';
 import { ObservationItem } from '../ObservationItem';
+
+expect.extend(toHaveNoViolations);
 
 // Mock the design system components
 jest.mock('@bahmni/design-system', () => ({
@@ -547,6 +550,85 @@ describe('ObservationItem', () => {
       expect(
         screen.queryByTestId(/obs-member-comment/),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('has no accessibility violations for normal observation', async () => {
+      const observation: ExtractedObservation = {
+        id: 'concept-1',
+        display: 'Temperature',
+        observationValue: {
+          value: '98.6',
+          type: 'string',
+        },
+      };
+
+      const { container } = render(
+        <ObservationItem observation={observation} index={0} />,
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('has no accessibility violations for abnormal observation', async () => {
+      const abnormalObs: ExtractedObservation = {
+        id: 'concept-1',
+        display: 'Potassium',
+        observationValue: {
+          value: 7.0,
+          type: 'quantity',
+          unit: 'mmol/L',
+          referenceRange: {
+            low: { value: 3.5 },
+            high: { value: 5.0 },
+          },
+          isAbnormal: true,
+        },
+      };
+
+      const { container } = render(
+        <ObservationItem observation={abnormalObs} index={0} />,
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('has no accessibility violations for observation with group members', async () => {
+      const observation: ExtractedObservation = {
+        id: 'bp-concept',
+        display: 'Blood Pressure',
+        members: [
+          {
+            id: 'sbp-concept',
+            display: 'Systolic',
+            observationValue: {
+              value: '140',
+              type: 'quantity',
+              unit: 'mmHg',
+              isAbnormal: true,
+            },
+          },
+          {
+            id: 'dbp-concept',
+            display: 'Diastolic',
+            observationValue: {
+              value: '90',
+              type: 'quantity',
+              unit: 'mmHg',
+            },
+          },
+        ],
+      };
+
+      const { container } = render(
+        <ObservationItem observation={observation} index={0} />,
+      );
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
   });
 });

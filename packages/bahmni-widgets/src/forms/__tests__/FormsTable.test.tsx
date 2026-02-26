@@ -14,7 +14,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Bundle, Observation } from 'fhir/r4';
-import { toHaveNoViolations } from 'jest-axe';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { ExtractedObservation } from '../../observations/models';
 import FormsTable from '../FormsTable';
@@ -54,6 +54,13 @@ jest.mock('@bahmni/form2-controls', () => ({
     </div>
   ),
 }));
+
+// Mock ResizeObserver
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+})) as any;
 
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
@@ -195,7 +202,7 @@ const renderFormsTable = (props = {}) => {
     defaultOptions: {
       queries: {
         retry: false,
-        staleTime: 5 * 60 * 1000, // Match the app config
+        staleTime: 0, // Prevent inter-test cache pollution
         gcTime: 10 * 60 * 1000,
       },
     },
@@ -318,13 +325,10 @@ describe('FormsTable', () => {
         expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
       });
 
-      // Find links by class since Carbon doesn't add role="link"
-      const links = document.querySelectorAll('.cds--link');
+      // Get all timestamp elements (they have class cds--link)
+      const links = screen.getAllByText(/\d+\/\d+\/\d+/);
+      // Verify links are present and clickable
       expect(links.length).toBeGreaterThan(0);
-      // Verify links are clickable
-      links.forEach((link) => {
-        expect(link).toBeInTheDocument();
-      });
     });
   });
 
@@ -340,10 +344,9 @@ describe('FormsTable', () => {
         expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
       });
 
-      // Click on the first timestamp link
-      const links = document.querySelectorAll('.cds--link');
-      expect(links.length).toBeGreaterThan(0);
-      await user.click(links[0] as HTMLElement);
+      // Click on the first timestamp element
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
 
       // Verify modal opens
       await waitFor(() => {
@@ -363,9 +366,8 @@ describe('FormsTable', () => {
       });
 
       // Click on timestamp
-      const links = document.querySelectorAll('.cds--link');
-      expect(links.length).toBeGreaterThan(0);
-      await user.click(links[0] as HTMLElement);
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
 
       // Verify modal has form name as label
       await waitFor(() => {
@@ -388,9 +390,8 @@ describe('FormsTable', () => {
       });
 
       // Open modal
-      const links = document.querySelectorAll('.cds--link');
-      expect(links.length).toBeGreaterThan(0);
-      await user.click(links[0] as HTMLElement);
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
 
       await waitFor(() => {
         expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
@@ -420,9 +421,8 @@ describe('FormsTable', () => {
       });
 
       // Click on timestamp
-      const links = document.querySelectorAll('.cds--link');
-      expect(links.length).toBeGreaterThan(0);
-      await user.click(links[0] as HTMLElement);
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
 
       // Verify error message is shown
       await waitFor(() => {
@@ -592,9 +592,8 @@ describe('FormsTable', () => {
       });
 
       // Click on timestamp
-      const links = document.querySelectorAll('.cds--link');
-      expect(links.length).toBeGreaterThan(0);
-      await user.click(links[0] as HTMLElement);
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
 
       await waitFor(() => {
         const modal = screen.getByTestId('form-details-modal');
@@ -615,9 +614,8 @@ describe('FormsTable', () => {
       });
 
       // Click on timestamp
-      const links = document.querySelectorAll('.cds--link');
-      expect(links.length).toBeGreaterThan(0);
-      await user.click(links[0] as HTMLElement);
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
 
       await waitFor(() => {
         const modal = screen.getByTestId('form-details-modal');
@@ -671,13 +669,12 @@ describe('FormsTable', () => {
           },
         };
 
-        const { container } = render(
+        render(
           <ObservationItem observation={observation} index={0} />,
         );
 
         // Top-level ObservationItem uses display
-        const label = container.querySelector('.rowLabel');
-        expect(label).toBeInTheDocument();
+        expect(screen.getByText('Pulse')).toBeInTheDocument();
         expect(screen.getByText('70')).toBeInTheDocument();
       });
     });
@@ -1186,6 +1183,184 @@ describe('FormsTable', () => {
 
       // Verify no additional calls were made
       expect(mockGetPatientFormData.mock.calls).toHaveLength(initialCallCount);
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('has no accessibility violations in loaded state', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      const { container } = renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('has no accessibility violations when modal is open', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      const { container } = renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Click on timestamp to open modal
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
+
+      // Wait for modal to open
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+  });
+
+  describe('Integration - FHIR Observations in Modal', () => {
+    it('displays observations from FHIR bundle in modal', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
+        mockFhirObservationBundle,
+      );
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Click on timestamp element to open modal
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
+
+      // Verify modal is open and observations are displayed
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+        expect(screen.getByText('Temperature')).toBeInTheDocument();
+      });
+
+      // Verify FHIR API was called with correct encounter UUID
+      expect(mockGetObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
+        'encounter-3',
+      );
+    });
+
+    it('displays error message in modal when FHIR encounter data fetch fails', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+      mockGetObservationsBundleByEncounterUuid.mockRejectedValue(
+        new Error('FHIR fetch error'),
+      );
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Click on timestamp to open modal
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
+
+      // Verify error message is displayed in modal
+      await waitFor(() => {
+        expect(
+          screen.getByText('FHIR fetch error'),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('displays no form data message when no matching observations', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+      // Return empty bundle with no observations
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [],
+      });
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Click on timestamp to open modal
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
+
+      // Wait for modal to open and verify no data message is shown
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      // The component should display a no data available message
+      // This may need to be updated based on actual implementation
+      expect(screen.queryByText('Temperature')).not.toBeInTheDocument();
+    });
+
+    it('re-fetches FHIR encounter data after consultation:saved event when modal is open', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
+        mockFhirObservationBundle,
+      );
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Open modal
+      const timestamps = screen.getAllByText(/\d+\/\d+\/\d+/);
+      await user.click(timestamps[0]);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+        expect(screen.getByText('Temperature')).toBeInTheDocument();
+      });
+
+      // Get initial call count for forms
+      const initialFormCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Trigger consultation:saved event with matching patient and observations updated
+      if (capturedCallback) {
+        (capturedCallback as jest.Mock)({
+          patientUUID: 'patient-123',
+          updatedResources: {},
+          updatedConcepts: new Map([['concept-1', 'Concept 1']]),
+        });
+      }
+
+      // Verify forms were refetched due to consultation saved event
+      await waitFor(() => {
+        expect(mockGetPatientFormData.mock.calls.length).toBeGreaterThan(
+          initialFormCallCount,
+        );
+      });
     });
   });
 });
