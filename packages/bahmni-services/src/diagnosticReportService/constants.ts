@@ -11,3 +11,7 @@ export const DIAGNOSTIC_REPORTS_URL = (
 export const DIAGNOSTIC_REPORT_BUNDLE_URL = (diagnosticReportId: string) => {
   return `${OPENMRS_FHIR_R4}/DiagnosticReport/${diagnosticReportId}/$fetch-bundle`;
 };
+
+export const DIAGNOSTIC_REPORT_UPDATE_URL = (diagnosticReportId: string) => {
+  return `${OPENMRS_FHIR_R4}/DiagnosticReport/${diagnosticReportId}/$update-bundle`;
+};
