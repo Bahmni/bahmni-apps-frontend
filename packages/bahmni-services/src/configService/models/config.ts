@@ -7,6 +7,7 @@ export interface AllergyConceptMap {
 
 export interface ConsultationPad {
   allergyConceptMap: AllergyConceptMap;
+  statDurationInMilliseconds?: number;
 }
 
 export interface Dashboard {

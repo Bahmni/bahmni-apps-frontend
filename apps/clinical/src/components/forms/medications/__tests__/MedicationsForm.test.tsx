@@ -756,7 +756,7 @@ describe('MedicationsForm', () => {
       });
     });
 
-    test('shows duplicate notification when STAT medication matches another with same code', async () => {
+    test('does not show duplicate notification when STAT medication matches another with same code', async () => {
       const statMed: MedicationInputEntry = {
         ...mockSelectedMedication,
         id: 'stat-med',
@@ -793,8 +793,8 @@ describe('MedicationsForm', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(duplicateNotificationPattern),
-        ).toBeInTheDocument();
+          screen.queryByText(duplicateNotificationPattern),
+        ).not.toBeInTheDocument();
       });
     });
 

@@ -61,6 +61,7 @@ interface CreateMedicationRequestBundleEntriesParams {
   encounterSubject: Reference;
   encounterReference: string;
   practitionerUUID: string;
+  statDurationInMilliseconds?: number;
 }
 
 interface CreateObservationBundleEntriesParams {
@@ -333,6 +334,7 @@ export function createMedicationRequestEntries({
   encounterSubject,
   encounterReference,
   practitionerUUID,
+  statDurationInMilliseconds,
 }: CreateMedicationRequestBundleEntriesParams): BundleEntry[] {
   if (!selectedMedications || !Array.isArray(selectedMedications)) {
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
@@ -357,6 +359,7 @@ export function createMedicationRequestEntries({
       encounterSubject,
       createEncounterReferenceFromString(encounterReference),
       createPractitionerReference(practitionerUUID),
+      statDurationInMilliseconds,
     );
 
     const medicationRequestEntry = createBundleEntry(

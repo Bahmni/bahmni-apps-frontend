@@ -1409,6 +1409,36 @@ describe('medicationRequestService', () => {
       expect(result[0].doseForm).toBe('Capsule');
     });
 
+    it('should filter out MedicationRequest entries with no id', async () => {
+      const mockBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'MedicationRequest',
+              status: 'active',
+              subject: { reference: `Patient/${patientUUID}` },
+              medicationReference: { display: 'Aspirin' },
+            } as FhirMedicationRequest,
+          },
+          {
+            resource: createMockMedicationRequest({
+              id: 'med-req-valid',
+              medicationReference: { display: 'Paracetamol' },
+            }),
+          },
+        ],
+      };
+
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('med-req-valid');
+    });
+
     it('should handle multiple MedicationRequest entries with mixed Medication entries', async () => {
       const mockBundle: Bundle = {
         resourceType: 'Bundle',

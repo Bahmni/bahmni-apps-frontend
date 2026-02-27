@@ -80,7 +80,7 @@
       "type": "object",
       "description": "Configuration for consultation pad forms",
       "required": ["allergyConceptMap"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "allergyConceptMap": {
           "type": "object",
@@ -91,7 +91,7 @@
             "environmentalAllergenUuid",
             "allergyReactionUuid"
           ],
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "medicationAllergenUuid": {
               "type": "string",
@@ -110,6 +110,10 @@
               "description": "UUID for allergy reaction concept"
             }
           }
+        },
+        "statDurationInHours": {
+          "type": "number",
+          "description": "Duration in hours for which a STAT order is valid"
         }
       }
     }

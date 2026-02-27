@@ -1,4 +1,5 @@
 import { MedicationRequest, Reference, Dosage, Timing } from 'fhir/r4';
+import { STAT_ORDER_VALIDITY_MS } from '../../constants/medications';
 import {
   DurationUnitOption,
   MedicationInputEntry,
@@ -24,6 +25,7 @@ export const createMedicationRequestResource = (
   subjectReference: Reference,
   encounterReference: Reference,
   requesterReference: Reference,
+  statDurationInMilliseconds?: number,
 ): MedicationRequest => {
   const medicationRequest: MedicationRequest = {
     resourceType: 'MedicationRequest',
@@ -33,7 +35,10 @@ export const createMedicationRequestResource = (
     subject: subjectReference,
     encounter: encounterReference,
     requester: requesterReference,
-    dosageInstruction: createDosageInstructions(medicationEntry),
+    dosageInstruction: createDosageInstructions(
+      medicationEntry,
+      statDurationInMilliseconds,
+    ),
     priority: medicationEntry.isSTAT ? 'stat' : 'routine',
   };
   medicationRequest.dispenseRequest = createDispenseRequest(medicationEntry);
@@ -56,6 +61,7 @@ export const createMedicationRequestResource = (
  */
 const createDosageInstructions = (
   medicationEntry: MedicationInputEntry,
+  statDurationInMilliseconds?: number,
 ): Dosage[] => {
   const dosage: Dosage = {};
 
@@ -73,6 +79,8 @@ const createDosageInstructions = (
       medicationEntry.startDate,
       medicationEntry.duration,
       medicationEntry.durationUnit,
+      medicationEntry.isSTAT,
+      statDurationInMilliseconds,
     );
   }
 
@@ -107,6 +115,7 @@ const createDosageInstructions = (
  * @param startDate - The start date for the medication
  * @param duration - The duration value
  * @param durationUnit - The duration unit
+ * @param isSTAT - Whether this is a STAT (immediate) order
  * @returns Timing object
  */
 const createTiming = (
@@ -114,22 +123,37 @@ const createTiming = (
   startDate?: Date,
   duration?: number,
   durationUnit?: DurationUnitOption | null,
+  isSTAT?: boolean,
+  statDurationInMilliseconds?: number,
 ): Timing => {
   const timing: Timing = {};
 
-  // Add event (start date)
-  if (startDate) {
-    // Convert to ISO format with timezone
-    const date = new Date(startDate);
-    timing.event = [date.toISOString()];
-  }
-
-  // Add repeat information if duration is specified
-  if (duration && durationUnit) {
+  if (isSTAT) {
+    const now = new Date();
+    const statExpiryTime = new Date(
+      now.getTime() + (statDurationInMilliseconds ?? STAT_ORDER_VALIDITY_MS),
+    );
     timing.repeat = {
-      duration: duration,
-      durationUnit: durationUnit.code,
+      boundsPeriod: {
+        start: now.toISOString(),
+        end: statExpiryTime.toISOString(),
+      },
     };
+  } else {
+    // Add event (start date) for non-STAT orders
+    if (startDate) {
+      // Convert to ISO format with timezone
+      const date = new Date(startDate);
+      timing.event = [date.toISOString()];
+    }
+
+    if (duration && durationUnit) {
+      // Add repeat information if duration is specified
+      timing.repeat = {
+        duration: duration,
+        durationUnit: durationUnit.code,
+      };
+    }
   }
 
   // Add frequency code
@@ -166,6 +190,7 @@ export const createMedicationRequestResources = (
   subjectReference: Reference,
   encounterReference: Reference,
   requesterReference: Reference,
+  statDurationInMilliseconds?: number,
 ): MedicationRequest[] => {
   return medicationEntries.map((entry) =>
     createMedicationRequestResource(
@@ -173,6 +198,7 @@ export const createMedicationRequestResources = (
       subjectReference,
       encounterReference,
       requesterReference,
+      statDurationInMilliseconds,
     ),
   );
 };

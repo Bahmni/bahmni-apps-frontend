@@ -12,6 +12,15 @@ const mockUseEncounterSession = jest.fn();
 jest.mock('../../../hooks/useEncounterSession', () => ({
   useEncounterSession: () => mockUseEncounterSession(),
 }));
+
+jest.mock('../../../hooks/useClinicalConfig', () => ({
+  __esModule: true,
+  useClinicalConfig: () => ({
+    clinicalConfig: null,
+    isLoading: false,
+    error: null,
+  }),
+}));
 // Mock TanStack Query
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),

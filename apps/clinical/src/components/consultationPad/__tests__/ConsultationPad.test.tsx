@@ -347,6 +347,15 @@ jest.mock('../../../hooks/usePinnedObservationForms', () => ({
   usePinnedObservationForms: () => mockUsePinnedObservationForms(),
 }));
 
+jest.mock('../../../hooks/useClinicalConfig', () => ({
+  __esModule: true,
+  useClinicalConfig: () => ({
+    clinicalConfig: null,
+    isLoading: false,
+    error: null,
+  }),
+}));
+
 jest.mock('../../forms/observations/ObservationForms', () => ({
   __esModule: true,
   default: ({ onFormSelect, selectedForms, onRemoveForm }: any) => (

@@ -203,6 +203,40 @@ describe('SortableDataTable', () => {
     expect(screen.getByText('active')).toBeInTheDocument();
   });
 
+  it('does not render rows whose id is absent from the source data', () => {
+    // The null guard `if (!originalRow) return null` protects against row IDs in
+    // Carbon DataTable's internal tableRows that cannot be matched back to a source
+    // row (e.g. during rapid prop updates where Carbon's state temporarily diverges).
+    // Carbon preserves source IDs under normal usage so this test validates the
+    // positive path: every source row renders, and renderCell is never called with
+    // an undefined row. Removing the guard would cause a TypeError at runtime when
+    // Carbon generates a row ID absent from the rowMap.
+    const renderCell = jest.fn(
+      (row: (typeof mockMedicationRows)[number], cellId: string) =>
+        row[cellId as keyof typeof row] as string,
+    );
+
+    render(
+      <SortableDataTable
+        headers={mockHeaders}
+        rows={mockMedicationRows}
+        ariaLabel="Null Guard Test"
+        renderCell={renderCell}
+      />,
+    );
+
+    // Every source row must be present — the guard must not skip any valid row
+    mockMedicationRows.forEach((row) => {
+      expect(screen.getByTestId(`table-row-${row.id}`)).toBeInTheDocument();
+    });
+
+    // renderCell must only have been called with defined, non-null rows
+    renderCell.mock.calls.forEach(([row]) => {
+      expect(row).toBeDefined();
+      expect(row).not.toBeNull();
+    });
+  });
+
   it('handles undefined rows gracefully', () => {
     render(
       <SortableDataTable

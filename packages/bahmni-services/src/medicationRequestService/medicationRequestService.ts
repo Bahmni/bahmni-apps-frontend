@@ -283,7 +283,7 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       ?.filter((entry) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const resource = entry.resource as any;
-        return resource?.resourceType === 'MedicationRequest';
+        return resource?.resourceType === 'MedicationRequest' && !!resource?.id;
       })
       .map((entry) => entry.resource as FhirMedicationRequest) ?? [];
 
