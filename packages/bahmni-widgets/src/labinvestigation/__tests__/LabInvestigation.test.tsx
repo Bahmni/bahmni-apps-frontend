@@ -221,8 +221,8 @@ describe('LabInvestigation', () => {
     render(renderLabInvestigations());
 
     await waitFor(() => {
-      expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
-      expect(screen.getByText(/April 9, 2025/i)).toBeInTheDocument();
+      expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
+      expect(screen.getByText(/April 09, 2025/i)).toBeInTheDocument();
     });
 
     const labItems = screen.getAllByTestId('lab-investigation-item');
@@ -282,14 +282,14 @@ describe('LabInvestigation', () => {
     render(renderLabInvestigations());
 
     await waitFor(() => {
-      expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+      expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
     });
 
     const firstAccordionButton = screen.getByRole('button', {
-      name: /May 8, 2025/i,
+      name: /May 08, 2025/i,
     });
     const secondAccordionButton = screen.getByRole('button', {
-      name: /April 9, 2025/i,
+      name: /April 09, 2025/i,
     });
 
     expect(firstAccordionButton).toHaveAttribute('aria-expanded', 'true');
@@ -325,7 +325,7 @@ describe('LabInvestigation', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       expect(mockGetLabInvestigationsBundle).toHaveBeenCalled();
@@ -341,7 +341,7 @@ describe('LabInvestigation', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       expect(mockGetLabInvestigationsBundle).toHaveBeenCalled();
@@ -351,7 +351,7 @@ describe('LabInvestigation', () => {
       render(renderLabInvestigations({ orderType: 'Lab Order' }));
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       expect(mockGetLabInvestigationsBundle).toHaveBeenCalled();
@@ -364,11 +364,11 @@ describe('LabInvestigation', () => {
       render(renderLabInvestigations());
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       const secondAccordionButton = screen.getByRole('button', {
-        name: /April 9, 2025/i,
+        name: /April 09, 2025/i,
       });
 
       await user.click(secondAccordionButton);
@@ -378,7 +378,7 @@ describe('LabInvestigation', () => {
       });
 
       const firstAccordionButton = screen.getByRole('button', {
-        name: /May 8, 2025/i,
+        name: /May 08, 2025/i,
       });
       // Both accordions should be open
       expect(firstAccordionButton).toHaveAttribute('aria-expanded', 'true');
@@ -390,11 +390,11 @@ describe('LabInvestigation', () => {
       render(renderLabInvestigations());
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       const firstAccordionButton = screen.getByRole('button', {
-        name: /May 8, 2025/i,
+        name: /May 08, 2025/i,
       });
 
       expect(firstAccordionButton).toHaveAttribute('aria-expanded', 'true');
@@ -432,7 +432,7 @@ describe('LabInvestigation', () => {
       render(renderLabInvestigations());
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       await waitFor(() => {
@@ -464,7 +464,7 @@ describe('LabInvestigation', () => {
       render(renderLabInvestigations());
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       await waitFor(() => {
@@ -493,7 +493,7 @@ describe('LabInvestigation', () => {
       render(renderLabInvestigations({ orderType: 'Lab Order' }));
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       // Clear the mock to track new calls
@@ -525,7 +525,7 @@ describe('LabInvestigation', () => {
       render(renderLabInvestigations({ orderType: 'Lab Order' }));
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       // Clear the mock to track new calls
@@ -558,7 +558,7 @@ describe('LabInvestigation', () => {
       render(renderLabInvestigations({ orderType: 'Lab Order' }));
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       // Clear the mock to track new calls
@@ -591,7 +591,7 @@ describe('LabInvestigation', () => {
       render(renderLabInvestigations({ orderType: 'Lab Order' }));
 
       await waitFor(() => {
-        expect(screen.getByText(/May 8, 2025/i)).toBeInTheDocument();
+        expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
       });
 
       // Clear the mock to track new calls

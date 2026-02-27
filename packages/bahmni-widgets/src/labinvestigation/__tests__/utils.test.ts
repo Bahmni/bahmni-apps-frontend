@@ -28,8 +28,8 @@ describe('Lab Investigation Utils', () => {
     jest.clearAllMocks();
     (formatDate as jest.Mock).mockImplementation((date) => ({
       formattedResult: date.includes('2025-05-08')
-        ? 'May 8, 2025'
-        : 'April 9, 2025',
+        ? 'May 08, 2025'
+        : 'April 09, 2025',
     }));
   });
 
@@ -244,7 +244,7 @@ describe('Lab Investigation Utils', () => {
         priority: LabInvestigationPriority.routine,
         orderedBy: 'Dr. Smith',
         orderedDate: '2025-05-08T12:44:24+00:00',
-        formattedDate: 'May 8, 2025',
+        formattedDate: 'May 08, 2025',
         result: undefined,
         testType: 'Single Test',
         note: undefined,
@@ -292,7 +292,7 @@ describe('Lab Investigation Utils', () => {
           priority: LabInvestigationPriority.routine,
           orderedBy: 'Dr. Smith',
           orderedDate: '2025-05-08T12:44:24+00:00',
-          formattedDate: 'May 8, 2025',
+          formattedDate: 'May 08, 2025',
           result: undefined,
           testType: 'Single Test',
         },
@@ -302,7 +302,7 @@ describe('Lab Investigation Utils', () => {
           priority: LabInvestigationPriority.routine,
           orderedBy: 'Dr. Smith',
           orderedDate: '2025-05-08T14:30:00+00:00',
-          formattedDate: 'May 8, 2025',
+          formattedDate: 'May 08, 2025',
           result: undefined,
           testType: 'Single Test',
         },
@@ -311,7 +311,7 @@ describe('Lab Investigation Utils', () => {
       const result = groupLabInvestigationsByDate(mockFormattedTests);
 
       expect(result).toHaveLength(1);
-      expect(result[0].date).toBe('May 8, 2025');
+      expect(result[0].date).toBe('May 08, 2025');
       expect(result[0].tests).toHaveLength(2);
     });
 
@@ -612,7 +612,7 @@ describe('Lab Investigation Utils', () => {
           priority: LabInvestigationPriority.routine,
           orderedBy: 'Dr. Smith',
           orderedDate: '2025-05-08T12:44:24+00:00',
-          formattedDate: 'May 8, 2025',
+          formattedDate: 'May 08, 2025',
           result: undefined,
           testType: 'Single Test',
         },
@@ -625,7 +625,7 @@ describe('Lab Investigation Utils', () => {
           TestName: 'Hemoglobin',
           Result: '14.5 g/dL',
           referenceRange: '12-16 g/dL',
-          reportedOn: 'May 8, 2025',
+          reportedOn: 'May 08, 2025',
           actions: '',
         },
       ]);
@@ -644,7 +644,7 @@ describe('Lab Investigation Utils', () => {
           priority: LabInvestigationPriority.routine,
           orderedBy: 'Dr. Smith',
           orderedDate: '2025-05-08T12:44:24+00:00',
-          formattedDate: 'May 8, 2025',
+          formattedDate: 'May 08, 2025',
           result: undefined,
           testType: 'Single Test',
         },
