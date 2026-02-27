@@ -1,7 +1,10 @@
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 
 import { ExtractedObservation } from '../../observations/models';
 import { ObservationItem } from '../ObservationItem';
+
+expect.extend(toHaveNoViolations);
 
 // Mock the design system components
 jest.mock('@bahmni/design-system', () => ({
@@ -547,6 +550,84 @@ describe('ObservationItem', () => {
       expect(
         screen.queryByTestId(/obs-member-comment/),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('has no accessibility violations for normal observation', async () => {
+      const observation: ExtractedObservation = {
+        id: 'hr-uuid',
+        display: 'HR',
+        observationValue: {
+          value: 75,
+          type: 'quantity',
+          unit: 'beats/min',
+        },
+      };
+
+      const { container } = render(
+        <ObservationItem observation={observation} index={0} />,
+      );
+
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it('has no accessibility violations for abnormal observation', async () => {
+      const abnormalObs: ExtractedObservation = {
+        id: 'hr-uuid',
+        display: 'HR',
+        observationValue: {
+          value: 120,
+          type: 'quantity',
+          unit: 'beats/min',
+          referenceRange: {
+            low: { value: 60 },
+            high: { value: 100 },
+          },
+          isAbnormal: true,
+        },
+      };
+
+      const { container } = render(
+        <ObservationItem observation={abnormalObs} index={0} />,
+      );
+
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it('has no accessibility violations for grouped observations', async () => {
+      const observation: ExtractedObservation = {
+        id: 'vitals-uuid',
+        display: 'Vitals',
+        members: [
+          {
+            id: 'hr-uuid',
+            display: 'HR',
+            observationValue: {
+              value: 120,
+              type: 'quantity',
+              unit: 'beats/min',
+              isAbnormal: true,
+            },
+          },
+          {
+            id: 'sbp-uuid',
+            display: 'Systolic BP',
+            observationValue: {
+              value: 150,
+              type: 'quantity',
+              unit: 'mmHg',
+              isAbnormal: true,
+            },
+          },
+        ],
+      };
+
+      const { container } = render(
+        <ObservationItem observation={observation} index={0} />,
+      );
+
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 });

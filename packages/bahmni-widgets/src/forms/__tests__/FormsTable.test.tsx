@@ -79,6 +79,13 @@ const mockUseSubscribeConsultationSaved =
     typeof useSubscribeConsultationSaved
   >;
 
+// Mock ResizeObserver to avoid "ResizeObserver is not defined" errors
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
+
 const mockFormResponseData: FormResponseData[] = [
   {
     formType: 'v2',
@@ -1186,6 +1193,162 @@ describe('FormsTable', () => {
 
       // Verify no additional calls were made
       expect(mockGetPatientFormData.mock.calls).toHaveLength(initialCallCount);
+    });
+  });
+
+  describe('Integration - Modal FHIR Observations', () => {
+    it('displays observations from FHIR bundle in modal', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
+        mockFhirObservationBundle,
+      );
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Click on timestamp link to open modal
+      const links = document.querySelectorAll('.cds--link');
+      expect(links.length).toBeGreaterThan(0);
+      await user.click(links[0] as HTMLElement);
+
+      // Verify modal opens and observations are displayed
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      // Verify FHIR observation (Temperature) is displayed in modal
+      await waitFor(() => {
+        expect(screen.getByText('Temperature')).toBeInTheDocument();
+      });
+
+      // Verify the API was called with correct encounter UUID
+      expect(mockGetObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
+        'encounter-3',
+      );
+    });
+
+    it('displays error message in modal when FHIR encounter data fetch fails', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockGetObservationsBundleByEncounterUuid.mockRejectedValue(
+        new Error('FHIR fetch error'),
+      );
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Click on timestamp link to open modal
+      const links = document.querySelectorAll('.cds--link');
+      expect(links.length).toBeGreaterThan(0);
+      await user.click(links[0] as HTMLElement);
+
+      // Verify modal opens and error is displayed
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      // Verify error message is shown
+      await waitFor(() => {
+        expect(screen.getByText('FHIR fetch error')).toBeInTheDocument();
+      });
+    });
+
+    it('displays no form data message when no matching observations', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        total: 0,
+        entry: [],
+      } as Bundle<Observation>);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Click on timestamp link to open modal
+      const links = document.querySelectorAll('.cds--link');
+      expect(links.length).toBeGreaterThan(0);
+      await user.click(links[0] as HTMLElement);
+
+      // Verify modal opens
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      // Verify empty state message is displayed
+      await waitFor(() => {
+        expect(screen.getByText('NO_FORM_DATA_AVAILABLE')).toBeInTheDocument();
+      });
+    });
+
+    it('re-fetches FHIR encounter data after consultation:saved event when modal is open', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
+        mockFhirObservationBundle,
+      );
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Open modal
+      const links = document.querySelectorAll('.cds--link');
+      expect(links.length).toBeGreaterThan(0);
+      await user.click(links[0] as HTMLElement);
+
+      // Verify modal is open
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      // Verify Temperature is displayed
+      await waitFor(() => {
+        expect(screen.getByText('Temperature')).toBeInTheDocument();
+      });
+
+      // Get initial call count
+      const initialCallCount =
+        mockGetObservationsBundleByEncounterUuid.mock.calls.length;
+
+      // Simulate consultation:saved event with observations updated
+      const updatedConcepts = new Map<string, string>();
+      updatedConcepts.set('concept-1', 'Concept 1');
+
+      dispatchConsultationSaved({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: {},
+        },
+        updatedConcepts,
+      });
+
+      // Verify re-fetch was triggered
+      await waitFor(() => {
+        expect(
+          mockGetObservationsBundleByEncounterUuid.mock.calls.length,
+        ).toBeGreaterThan(initialCallCount);
+      });
     });
   });
 });
