@@ -98,8 +98,15 @@ export {
   getAllWidgetTypes,
   getAllWidgetConfigs,
   resetWidgetRegistry,
-  type WidgetConfig,
 } from './registry';
+
+// User Global Action
+export {
+  UserGlobalAction,
+  UserActionProvider,
+  useUserActionRegistry,
+  type UserAction,
+} from './userGlobalAction';
 
 // Location
 export {
