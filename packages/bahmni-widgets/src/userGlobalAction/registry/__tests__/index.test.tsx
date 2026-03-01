@@ -21,15 +21,22 @@ describe('UserActionRegistry', () => {
       consoleError.mockRestore();
     });
 
-    it('should return context when used within provider', () => {
-      const { result } = renderHook(() => useUserActionRegistry(), { wrapper });
+    it.each([
+      ['registerAction'],
+      ['unregisterAction'],
+      ['getActions'],
+      ['clear'],
+    ])(
+      'should return context with %s method when used within provider',
+      (method) => {
+        const { result } = renderHook(() => useUserActionRegistry(), {
+          wrapper,
+        });
 
-      expect(result.current).toBeDefined();
-      expect(result.current.registerAction).toBeInstanceOf(Function);
-      expect(result.current.unregisterAction).toBeInstanceOf(Function);
-      expect(result.current.getActions).toBeInstanceOf(Function);
-      expect(result.current.clear).toBeInstanceOf(Function);
-    });
+        expect(result.current).toBeDefined();
+        expect(result.current[method]).toBeInstanceOf(Function);
+      },
+    );
   });
 
   describe('UserActionProvider', () => {
@@ -137,47 +144,36 @@ describe('UserActionRegistry', () => {
       expect(result.current.getActions()).toHaveLength(0);
     });
 
-    it('should throw error when registering action without id', () => {
-      const { result } = renderHook(() => useUserActionRegistry(), { wrapper });
-
-      expect(() => {
-        act(() => {
-          result.current.registerAction({
-            id: '',
-            label: 'Test',
-            onClick: jest.fn(),
-          });
+    it.each([
+      {
+        testCase: 'without id',
+        action: { id: '', label: 'Test', onClick: jest.fn() },
+        expectedError: 'Action id must be a non-empty string',
+      },
+      {
+        testCase: 'without label',
+        action: { id: 'test', label: '', onClick: jest.fn() },
+        expectedError: 'Action label must be a non-empty string',
+      },
+      {
+        testCase: 'without onClick',
+        action: { id: 'test', label: 'Test', onClick: null as any },
+        expectedError: 'Action onClick must be a function',
+      },
+    ])(
+      'should throw error when registering action $testCase',
+      ({ action, expectedError }) => {
+        const { result } = renderHook(() => useUserActionRegistry(), {
+          wrapper,
         });
-      }).toThrow('Action id must be a non-empty string');
-    });
 
-    it('should throw error when registering action without label', () => {
-      const { result } = renderHook(() => useUserActionRegistry(), { wrapper });
-
-      expect(() => {
-        act(() => {
-          result.current.registerAction({
-            id: 'test',
-            label: '',
-            onClick: jest.fn(),
+        expect(() => {
+          act(() => {
+            result.current.registerAction(action);
           });
-        });
-      }).toThrow('Action label must be a non-empty string');
-    });
-
-    it('should throw error when registering action without onClick', () => {
-      const { result } = renderHook(() => useUserActionRegistry(), { wrapper });
-
-      expect(() => {
-        act(() => {
-          result.current.registerAction({
-            id: 'test',
-            label: 'Test',
-            onClick: null as any,
-          });
-        });
-      }).toThrow('Action onClick must be a function');
-    });
+        }).toThrow(expectedError);
+      },
+    );
 
     it('should handle actions without priority with default value', () => {
       const { result } = renderHook(() => useUserActionRegistry(), { wrapper });
