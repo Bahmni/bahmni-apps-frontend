@@ -16,7 +16,7 @@ const validateAction = (action: UserAction) => {
     throw new Error('Action label must be a non-empty string');
   }
   if (typeof action.onClick !== 'function') {
-    throw new Error('Action onClick must be a function');
+    throw new TypeError('Action onClick must be a function');
   }
 };
 
