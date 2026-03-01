@@ -6,6 +6,7 @@ import {
   NotificationServiceComponent,
   UserPrivilegeProvider,
   ActivePractitionerProvider,
+  UserActionProvider,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -51,10 +52,12 @@ const ClinicalApp: React.FC = () => {
             <UserPrivilegeProvider>
               <ActivePractitionerProvider>
                 <CommandPaletteProvider>
-                  <Suspense fallback={<Loading />}>
-                    <Routes>{renderRoutes(routes)}</Routes>
-                  </Suspense>
-                  <ReactQueryDevtools initialIsOpen={false} />
+                  <UserActionProvider>
+                    <Suspense fallback={<Loading />}>
+                      <Routes>{renderRoutes(routes)}</Routes>
+                    </Suspense>
+                    <ReactQueryDevtools initialIsOpen={false} />
+                  </UserActionProvider>
                 </CommandPaletteProvider>
               </ActivePractitionerProvider>
             </UserPrivilegeProvider>

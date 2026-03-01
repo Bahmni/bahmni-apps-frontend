@@ -20,6 +20,7 @@ import {
   useNotification,
   useUserPrivilege,
   usePatientUUID,
+  UserGlobalAction,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, {
@@ -117,7 +118,7 @@ const ConsultationPage: React.FC = () => {
       {
         id: 'user',
         label: t('GLOBAL_ACTION_USER'),
-        renderIcon: <Icon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />,
+        renderIcon: <UserGlobalAction />,
         onClick: () => {},
       },
     ],
