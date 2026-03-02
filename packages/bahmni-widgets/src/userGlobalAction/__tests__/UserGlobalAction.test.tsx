@@ -53,6 +53,25 @@ describe('UserGlobalAction', () => {
     });
   });
 
+  it('should close menu when onClose is triggered', async () => {
+    render(wrapper);
+    const button = screen.getByRole('button', {
+      name: 'USER_GLOBAL_ACTION_BUTTON',
+    });
+
+    await userEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    await userEvent.keyboard('{Escape}');
+
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    });
+  });
+
   it('should register default actions on mount', () => {
     render(wrapper);
     expect(registerDefaultActions).toHaveBeenCalledTimes(1);
@@ -73,7 +92,7 @@ describe('UserGlobalAction', () => {
             id: 'action-with-privilege',
             label: 'ACTION_WITH_PRIVILEGE',
             onClick: jest.fn(),
-            requiredPrivilege: 'Required Privilege',
+            requiredPrivilege: ['Required Privilege'],
           },
         ],
         expectedVisibleActions: ['ACTION_WITHOUT_PRIVILEGE'],
@@ -92,7 +111,7 @@ describe('UserGlobalAction', () => {
             id: 'action-with-privilege',
             label: 'ACTION_WITH_PRIVILEGE',
             onClick: jest.fn(),
-            requiredPrivilege: 'Required Privilege',
+            requiredPrivilege: ['Required Privilege'],
           },
         ],
         expectedVisibleActions: ['ACTION_WITHOUT_PRIVILEGE'],

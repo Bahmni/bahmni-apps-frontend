@@ -3,6 +3,11 @@
 .container {
   position: relative;
   display: inline-block;
+  button,
+  button:hover,
+  button:active {
+    color: white;
+  }
 }
 
 .menu {

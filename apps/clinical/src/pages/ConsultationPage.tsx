@@ -108,14 +108,6 @@ const ConsultationPage: React.FC = () => {
         onClick: handleSearchOpen,
       },
       {
-        id: 'notifications',
-        label: t('GLOBAL_ACTION_NOTIFICATIONS'),
-        renderIcon: (
-          <Icon id="notifications-icon" name="fa-bell" size={ICON_SIZE.LG} />
-        ),
-        onClick: () => {},
-      },
-      {
         id: 'user',
         label: t('GLOBAL_ACTION_USER'),
         renderIcon: <UserGlobalAction />,

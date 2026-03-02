@@ -32,7 +32,9 @@ export const UserGlobalAction = () => {
       .filter(
         (action) =>
           !action.requiredPrivilege ||
-          hasPrivilege(userPrivileges, action.requiredPrivilege),
+          action.requiredPrivilege.every((privilege) =>
+            hasPrivilege(userPrivileges, privilege),
+          ),
       )
       .filter((action) => !action.disabled);
   }, [userPrivileges, version]);

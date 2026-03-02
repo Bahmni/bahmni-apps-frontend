@@ -3,6 +3,6 @@ export interface UserAction {
   label: string;
   onClick: () => void | Promise<void>;
   priority?: number;
-  requiredPrivilege?: string;
+  requiredPrivilege?: string[];
   disabled?: boolean;
 }
