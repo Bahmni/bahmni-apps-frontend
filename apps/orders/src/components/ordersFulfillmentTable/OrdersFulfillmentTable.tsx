@@ -50,54 +50,67 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     setIsStatusFilterOpen(!isStatusFilterOpen);
   }, [isStatusFilterOpen]);
 
+  const totalNewOrdersCount = useMemo(
+    () => rows.reduce((sum, row) => sum + row.recentOrdersCount, 0),
+    [rows],
+  );
+
   const customHeaders = useMemo(() => {
     const availableStatuses: OrderStatusConfig[] =
       (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? [];
 
-    return headers.map((h) =>
-      h.key === 'status'
-        ? {
-            ...h,
-            header: (
-              <span ref={statusHeaderRef} className={styles.statusHeader}>
-                {h.header}
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={styles.statusCaret}
-                  aria-hidden="true"
-                  onClick={toggleStatusFilter}
-                >
-                  <path
-                    d="M4 6L8 10L12 6"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <StatusFilter
-                  availableStatuses={availableStatuses}
-                  selectedStatuses={selectedStatuses}
-                  onApply={handleStatusFilterApply}
-                  isOpen={isStatusFilterOpen}
-                  onToggle={toggleStatusFilter}
-                  anchorRef={statusHeaderRef}
+    return headers.map((h) => {
+      if (h.key === 'badge' && totalNewOrdersCount > 0) {
+        return {
+          ...h,
+          header: <NewBadge count={totalNewOrdersCount} />,
+        };
+      }
+      if (h.key === 'status') {
+        return {
+          ...h,
+          header: (
+            <span ref={statusHeaderRef} className={styles.statusHeader}>
+              {h.header}
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className={styles.statusCaret}
+                aria-hidden="true"
+                onClick={toggleStatusFilter}
+              >
+                <path
+                  d="M4 6L8 10L12 6"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-              </span>
-            ),
-          }
-        : h,
-    );
+              </svg>
+              <StatusFilter
+                availableStatuses={availableStatuses}
+                selectedStatuses={selectedStatuses}
+                onApply={handleStatusFilterApply}
+                isOpen={isStatusFilterOpen}
+                onToggle={toggleStatusFilter}
+                anchorRef={statusHeaderRef}
+              />
+            </span>
+          ),
+        };
+      }
+      return h;
+    });
   }, [
     ordersTableConfig,
     headers,
     isStatusFilterOpen,
     selectedStatuses,
     toggleStatusFilter,
+    totalNewOrdersCount,
   ]);
 
   const renderCell = (row: PatientOrderRow, cellId: string) => {

@@ -138,9 +138,45 @@ describe('OrdersFulfillmentTable', () => {
   it('renders new badge for patients with recent orders', () => {
     render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
 
-    const newBadge = screen.getByTestId('new-badge');
-    expect(newBadge).toBeInTheDocument();
-    expect(newBadge).toHaveTextContent('1 NEW');
+    const newBadges = screen.getAllByTestId('new-badge');
+    expect(newBadges.length).toBeGreaterThanOrEqual(1);
+    newBadges.forEach((badge) => expect(badge).toHaveTextContent('1 NEW'));
+  });
+
+  it('renders new badge in header with total count of recent orders', () => {
+    render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
+
+    const newBadges = screen.getAllByTestId('new-badge');
+    expect(newBadges).toHaveLength(2); // one in header, one in row
+  });
+
+  it('does not render new badge in header when no recent orders', () => {
+    const rowsWithNoRecent = mockRows.map((row) => ({
+      ...row,
+      recentOrdersCount: 0,
+    }));
+    render(
+      <OrdersFulfillmentTable rows={rowsWithNoRecent} headers={mockHeaders} />,
+    );
+
+    expect(screen.queryByTestId('new-badge')).not.toBeInTheDocument();
+  });
+
+  it('renders header badge with sum across multiple rows with recent orders', () => {
+    const rowsWithMultipleRecent = mockRows.map((row, i) => ({
+      ...row,
+      recentOrdersCount: i + 1,
+    }));
+    render(
+      <OrdersFulfillmentTable
+        rows={rowsWithMultipleRecent}
+        headers={mockHeaders}
+      />,
+    );
+
+    const newBadges = screen.getAllByTestId('new-badge');
+    const headerBadge = newBadges[0];
+    expect(headerBadge).toHaveTextContent('3 NEW');
   });
 
   it('renders priority badge for patients with urgent orders', () => {
@@ -257,7 +293,6 @@ describe('OrdersFulfillmentTable', () => {
         />,
       );
 
-      // Expand buttons should exist but clicking them should not expand any row
       const expandButtons = screen.getAllByRole('button', {
         name: /expand row/i,
       });
@@ -265,7 +300,6 @@ describe('OrdersFulfillmentTable', () => {
         fireEvent.click(button);
       });
 
-      // No expanded content should be visible
       expect(
         screen.queryByTestId('expanded-order-row'),
       ).not.toBeInTheDocument();
@@ -278,19 +312,16 @@ describe('OrdersFulfillmentTable', () => {
         <OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />,
       );
 
-      // Expand first patient row
       const expandButtons = screen.getAllByRole('button', {
         name: /expand row/i,
       });
       fireEvent.click(expandButtons[0]);
 
-      // Click on first order link
       const orderLinks = screen.getAllByRole('link', {
         name: /New Cast - Plaster|Rehab Therapy - Limb/,
       });
       fireEvent.click(orderLinks[0]);
 
-      // Check that the selected row has the highlighting class
       const highlightedRows = container.querySelectorAll('tr.selectedChildRow');
       expect(highlightedRows).toHaveLength(1);
     });
@@ -300,7 +331,6 @@ describe('OrdersFulfillmentTable', () => {
         <OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />,
       );
 
-      // Expand first patient row
       const expandButtons = screen.getAllByRole('button', {
         name: /expand row/i,
       });
@@ -310,12 +340,10 @@ describe('OrdersFulfillmentTable', () => {
         name: /New Cast - Plaster|Rehab Therapy - Limb/,
       });
 
-      // Click first order
       fireEvent.click(orderLinks[0]);
       let highlightedRows = container.querySelectorAll('tr.selectedChildRow');
       expect(highlightedRows).toHaveLength(1);
 
-      // Click second order
       fireEvent.click(orderLinks[1]);
       highlightedRows = container.querySelectorAll('tr.selectedChildRow');
       expect(highlightedRows).toHaveLength(1);
@@ -331,13 +359,11 @@ describe('OrdersFulfillmentTable', () => {
         />,
       );
 
-      // Expand first patient row
       const expandButtons = screen.getAllByRole('button', {
         name: /expand row/i,
       });
       fireEvent.click(expandButtons[0]);
 
-      // Click on order link
       const orderLink = screen.getByRole('link', {
         name: 'New Cast - Plaster',
       });
@@ -351,7 +377,6 @@ describe('OrdersFulfillmentTable', () => {
         <OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />,
       );
 
-      // Expand first patient row
       const expandButtons = screen.getAllByRole('button', {
         name: /expand row/i,
       });
@@ -361,9 +386,7 @@ describe('OrdersFulfillmentTable', () => {
         name: /New Cast - Plaster|Rehab Therapy - Limb/,
       });
 
-      // Click first order
       fireEvent.click(orderLinks[0]);
-      // Click second order
       fireEvent.click(orderLinks[1]);
 
       const highlightedRows = container.querySelectorAll('tr.selectedChildRow');

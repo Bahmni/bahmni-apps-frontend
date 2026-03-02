@@ -3,8 +3,7 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 .expandableDataTableBody {
-  :global(.cds--data-table) thead tr th,
-  :global(.cds--data-table) thead tr th * {
+  :global(.cds--data-table) thead tr th {
     background-color: #e0e0e0 !important;
     font-weight: 600 !important;
     color: #161616 !important;
