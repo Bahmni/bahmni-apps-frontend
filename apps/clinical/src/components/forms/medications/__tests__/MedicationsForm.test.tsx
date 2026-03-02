@@ -129,6 +129,7 @@ const mockSelectedMedication: MedicationInputEntry = {
 
 const mockStore = {
   selectedMedications: [],
+  hasOverlapDuplicates: false,
   addMedication: jest.fn(),
   removeMedication: jest.fn(),
   updateDosage: jest.fn(),
@@ -145,6 +146,8 @@ const mockStore = {
   updateStartDate: jest.fn(),
   updateNote: jest.fn(),
   validateAllMedications: jest.fn(),
+  validateMedicationsForOverlaps: jest.fn(),
+  setOverlapDuplicates: jest.fn(),
   reset: jest.fn(),
   getState: jest.fn(),
 };
@@ -756,7 +759,7 @@ describe('MedicationsForm', () => {
       });
     });
 
-    test('does not show duplicate notification when STAT medication matches another with same code', async () => {
+    test('shows duplicate notification when STAT medication matches another with same code', async () => {
       const statMed: MedicationInputEntry = {
         ...mockSelectedMedication,
         id: 'stat-med',
@@ -794,15 +797,18 @@ describe('MedicationsForm', () => {
       await waitFor(() => {
         expect(
           screen.queryByText(duplicateNotificationPattern),
-        ).not.toBeInTheDocument();
+        ).toBeInTheDocument();
       });
     });
 
-    test('does not show duplicate notification for PRN medications with same code', async () => {
+    test('shows duplicate notification for PRN medications with same code and overlapping dates', async () => {
       const prnMed: MedicationInputEntry = {
         ...mockSelectedMedication,
         id: 'prn-med',
         isPRN: true,
+        startDate: new Date('2025-01-01'),
+        duration: 10,
+        durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
         medication: {
           ...mockMedication,
           code: {
@@ -837,7 +843,7 @@ describe('MedicationsForm', () => {
       await waitFor(() => {
         expect(
           screen.queryByText(duplicateNotificationPattern),
-        ).not.toBeInTheDocument();
+        ).toBeInTheDocument();
       });
     });
   });

@@ -8,9 +8,38 @@ import { MedicationInputEntry } from '../../models/medication';
 
 import { FHIRCode, extractCodesFromConcept } from './codeUtilities';
 
-/**
- * Generic type for FHIR resources or objects with optional code properties
- */
+export const makeEndDateExclusive = (endDate: Date): Date => {
+  const exclusiveEnd = new Date(endDate);
+  exclusiveEnd.setDate(exclusiveEnd.getDate() - 1);
+  return exclusiveEnd;
+};
+
+export const isDateToday = (startDate: Date | string | undefined): boolean => {
+  if (!startDate) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dateAtMidnight = new Date(startDate);
+  dateAtMidnight.setHours(0, 0, 0, 0);
+
+  return dateAtMidnight.getTime() === today.getTime();
+};
+
+export const isDateTodayOrPast = (
+  startDate: Date | string | undefined,
+): boolean => {
+  if (!startDate) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dateAtMidnight = new Date(startDate);
+  dateAtMidnight.setHours(0, 0, 0, 0);
+
+  return dateAtMidnight.getTime() <= today.getTime();
+};
+
 interface CodeableResource {
   code?: {
     coding?: Array<{
@@ -34,12 +63,10 @@ export const extractMedicationCodes = (
   const codes: FHIRCode[] = [];
   const resource = medication as CodeableResource;
 
-  // Extract from code field (Medication resource)
   if (resource?.code) {
     codes.push(...extractCodesFromConcept(resource.code));
   }
 
-  // Extract from medicationCodeableConcept (MedicationRequest)
   if (resource?.medicationCodeableConcept) {
     codes.push(...extractCodesFromConcept(resource.medicationCodeableConcept));
   }
@@ -59,7 +86,6 @@ export const medicationsMatchByCode = (
     return false;
   }
 
-  // Check for exact code matches (same system + code)
   for (const c1 of codes1) {
     for (const c2 of codes2) {
       if (c1.code === c2.code && c1.system === c2.system) {
@@ -68,7 +94,6 @@ export const medicationsMatchByCode = (
     }
   }
 
-  // For OpenMRS concept codes (no system), match by code value alone
   for (const c1 of codes1) {
     if (!c1.system) {
       for (const c2 of codes2) {
@@ -82,27 +107,20 @@ export const medicationsMatchByCode = (
   return false;
 };
 
-/**
- * Safely extract medication ID from FHIR medicationReference
- * Returns undefined if reference is malformed or missing
- */
 export const extractMedicationRefId = (
   reference: string | undefined,
 ): string | undefined => {
   if (!reference) return undefined;
   const parts = reference.split('/');
-  // Expected format: "Medication/123"
   if (parts.length !== 2 || parts[0] !== 'Medication' || !parts[1])
     return undefined;
   return parts[1];
 };
 
-// Extract dose form from Medication resource or display name
 export const extractDoseForm = (
   medication: Record<string, unknown>,
   displayName: string,
 ): string | undefined => {
-  // Try to extract from Medication resource's form property
   const form = medication?.form as Record<string, unknown>;
   const coding = form?.coding as Array<Record<string, unknown>>;
   let doseForm =
@@ -110,12 +128,10 @@ export const extractDoseForm = (
     (coding?.[0]?.display as string | undefined) ??
     undefined;
 
-  // Fallback: extract from displayName if form info is embedded there
   if (!doseForm && displayName) {
     const formMatch = displayName.match(/\(([^)]+)\)/);
     if (formMatch?.[1]) {
       const extracted = formMatch[1].trim();
-      // Only use if it looks like a form (not a dosage like "500mg")
       if (!/^\d+/.test(extracted)) {
         doseForm = extracted;
       }
@@ -125,7 +141,6 @@ export const extractDoseForm = (
   return doseForm;
 };
 
-// Check if any selected medications overlap with each other or with existing active medications
 export const checkMedicationsOverlap = (
   selectedMedications: MedicationInputEntry[],
   activeMedications: FhirMedicationRequest[],
@@ -136,7 +151,6 @@ export const checkMedicationsOverlap = (
 
     if (!current.startDate) continue;
 
-    // Check against other selected medications
     for (let j = i + 1; j < selectedMedications.length; j++) {
       const other = selectedMedications[j];
 
@@ -145,35 +159,44 @@ export const checkMedicationsOverlap = (
       }
 
       if (current.isSTAT || other.isSTAT) {
-        continue;
-      }
-
-      if (current.isPRN || other.isPRN) {
-        continue;
+        return true;
       }
 
       if (!other.startDate) continue;
 
+      if (!current.durationUnit || !other.durationUnit) {
+        continue;
+      }
+
       const currentStart = new Date(current.startDate);
-      const currentEnd = calculateEndDate(
+      currentStart.setHours(0, 0, 0, 0);
+      const currentBaseDuration = current.duration > 0 ? current.duration : 1;
+      const currentDuration =
+        currentBaseDuration + (isDateToday(current.startDate) ? 1 : 0);
+      const currentEndInclusive = calculateEndDate(
         currentStart,
-        current.duration > 0 ? current.duration : 1,
+        currentDuration,
         current.durationUnit?.code ?? 'd',
       );
+      const currentEnd = makeEndDateExclusive(currentEndInclusive);
 
       const otherStart = new Date(other.startDate);
-      const otherEnd = calculateEndDate(
+      otherStart.setHours(0, 0, 0, 0);
+      const otherBaseDuration = other.duration > 0 ? other.duration : 1;
+      const otherDuration =
+        otherBaseDuration + (isDateToday(other.startDate) ? 1 : 0);
+      const otherEndInclusive = calculateEndDate(
         otherStart,
-        other.duration > 0 ? other.duration : 1,
+        otherDuration,
         other.durationUnit?.code ?? 'd',
       );
+      const otherEnd = makeEndDateExclusive(otherEndInclusive);
 
       if (doDateRangesOverlap(currentStart, currentEnd, otherStart, otherEnd)) {
         return true;
       }
     }
 
-    // Check against existing backend medications
     const isExistingOverlap = activeMedications.some(
       (med: FhirMedicationRequest) => {
         const refId = extractMedicationRefId(
@@ -189,31 +212,41 @@ export const checkMedicationsOverlap = (
         }
 
         const isImmediate = med.priority === 'stat';
-        const isPRN = med.dosageInstruction?.[0]?.asNeededBoolean ?? false;
         const startDate =
           med.dosageInstruction?.[0]?.timing?.event?.[0] ?? med.authoredOn;
         const duration =
-          med.dosageInstruction?.[0]?.timing?.repeat?.duration ?? 7;
+          med.dosageInstruction?.[0]?.timing?.repeat?.duration ?? 1;
         const durationUnit =
           med.dosageInstruction?.[0]?.timing?.repeat?.durationUnit ?? 'd';
 
-        if (isImmediate || current.isSTAT) return false;
-        if (isPRN || current.isPRN) return false;
+        if (isImmediate || current.isSTAT) return true;
         if (!startDate || !current.startDate) return false;
 
+        if (!current.durationUnit) return false;
+
         const existingStart = new Date(startDate);
-        const existingEnd = calculateEndDate(
+        existingStart.setHours(0, 0, 0, 0);
+        const existingBaseDuration = duration > 0 ? duration : 1;
+        const existingDuration =
+          existingBaseDuration + (isDateTodayOrPast(startDate) ? 1 : 0);
+        const existingEndInclusive = calculateEndDate(
           existingStart,
-          duration,
+          existingDuration,
           durationUnit,
         );
+        const existingEnd = makeEndDateExclusive(existingEndInclusive);
 
         const currentStart = new Date(current.startDate);
-        const currentEnd = calculateEndDate(
+        currentStart.setHours(0, 0, 0, 0);
+        const currentBaseDuration = current.duration > 0 ? current.duration : 1;
+        const currentDuration =
+          currentBaseDuration + (isDateToday(current.startDate) ? 1 : 0);
+        const currentEndInclusive = calculateEndDate(
           currentStart,
-          current.duration > 0 ? current.duration : 1,
+          currentDuration,
           current.durationUnit?.code ?? 'd',
         );
+        const currentEnd = makeEndDateExclusive(currentEndInclusive);
 
         return doDateRangesOverlap(
           existingStart,
@@ -230,7 +263,6 @@ export const checkMedicationsOverlap = (
   return false;
 };
 
-// Check if a new medication would be a duplicate of existing or selected medications
 export const isDuplicateMedication = (
   newMedication: Medication,
   newStartDate: Date,
@@ -240,13 +272,17 @@ export const isDuplicateMedication = (
   selectedMedications: MedicationInputEntry[],
   medicationMap: Record<string, Medication>,
 ): boolean => {
-  const effectiveDuration = newDuration > 0 ? newDuration : 1;
+  const baseDuration = newDuration > 0 ? newDuration : 1;
   const effectiveUnit = newDurationUnit ?? 'd';
-  const newEndDate = calculateEndDate(
-    newStartDate,
+  const effectiveDuration = baseDuration + (isDateToday(newStartDate) ? 1 : 0);
+  const newStartDateNormalized = new Date(newStartDate);
+  newStartDateNormalized.setHours(0, 0, 0, 0);
+  const newEndDateInclusive = calculateEndDate(
+    newStartDateNormalized,
     effectiveDuration,
     effectiveUnit,
   );
+  const newEndDate = makeEndDateExclusive(newEndDateInclusive);
 
   const isExistingDuplicate = activeMedications.some(
     (med: FhirMedicationRequest) => {
@@ -265,29 +301,35 @@ export const isDuplicateMedication = (
         med.dosageInstruction?.[0]?.timing?.event?.[0] ?? med.authoredOn;
 
       if (isImmediate) {
-        return false;
+        return true;
       }
 
       if (!startDate) {
         return false;
       }
 
-      const existingDuration =
-        med.dosageInstruction?.[0]?.timing?.repeat?.duration ?? 7;
+      const existingRawDuration =
+        med.dosageInstruction?.[0]?.timing?.repeat?.duration ?? 1;
       const existingDurationUnit =
         med.dosageInstruction?.[0]?.timing?.repeat?.durationUnit ?? 'd';
+      const existingBaseDuration =
+        existingRawDuration > 0 ? existingRawDuration : 1;
+      const existingDuration =
+        existingBaseDuration + (isDateTodayOrPast(startDate) ? 1 : 0);
 
       const existingStartDate = new Date(startDate);
-      const existingEndDate = calculateEndDate(
+      existingStartDate.setHours(0, 0, 0, 0);
+      const existingEndDateInclusive = calculateEndDate(
         existingStartDate,
         existingDuration,
         existingDurationUnit,
       );
+      const existingEndDate = makeEndDateExclusive(existingEndDateInclusive);
 
       return doDateRangesOverlap(
         existingStartDate,
         existingEndDate,
-        newStartDate,
+        newStartDateNormalized,
         newEndDate,
       );
     },
@@ -300,4 +342,16 @@ export const isDuplicateMedication = (
   );
 
   return isExistingDuplicate || isSelectedDuplicate;
+};
+
+export const validateMedicationsForOverlaps = (
+  selectedMedications: MedicationInputEntry[],
+  activeMedications: FhirMedicationRequest[],
+  medicationMap: Record<string, Medication>,
+): boolean => {
+  return !checkMedicationsOverlap(
+    selectedMedications,
+    activeMedications,
+    medicationMap,
+  );
 };

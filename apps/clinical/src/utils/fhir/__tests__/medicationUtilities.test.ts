@@ -296,17 +296,17 @@ describe('Medication Utilities', () => {
       expect(result).toBe(true);
     });
 
-    test('returns false when a STAT medication is paired with another selected medication with same code', () => {
+    test('returns true when a STAT medication is paired with another selected medication with same code', () => {
       const med = makeMedication('paracetamol-500');
       const entry1 = makeEntry({ medication: med, isSTAT: true });
       const entry2 = makeEntry({ medication: med });
 
       const result = checkMedicationsOverlap([entry1, entry2], [], {});
 
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
 
-    test('returns false when selected STAT medication matches an active backend medication with same code', () => {
+    test('returns true when selected STAT medication matches an active backend medication with same code', () => {
       const medResource = makeMedication('paracetamol-500');
       const statEntry = makeEntry({
         medication: medResource,
@@ -335,10 +335,10 @@ describe('Medication Utilities', () => {
         medicationMap,
       );
 
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
 
-    test('returns false when active backend medication is STAT and selected medication has same code', () => {
+    test('returns true when active backend medication is STAT and selected medication has same code', () => {
       const medResource = makeMedication('paracetamol-500');
       const regularEntry = makeEntry({
         medication: medResource,
@@ -359,10 +359,10 @@ describe('Medication Utilities', () => {
         medicationMap,
       );
 
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
 
-    test('returns false when PRN medications have same code', () => {
+    test('returns true when PRN medications have same code and overlapping dates', () => {
       const med = makeMedication('paracetamol-500');
       const entry1 = makeEntry({
         medication: med,
@@ -379,7 +379,7 @@ describe('Medication Utilities', () => {
 
       const result = checkMedicationsOverlap([entry1, entry2], [], {});
 
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
 
     test('returns true when selected medication overlaps with existing backend medication', () => {
@@ -477,6 +477,44 @@ describe('Medication Utilities', () => {
       });
 
       const result = checkMedicationsOverlap([entry1, entry2], [], {});
+
+      expect(result).toBe(true);
+    });
+
+    test('detects duplicate when existing backend med was ordered yesterday for 1 day and new med is for today', () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const medResource = makeMedication('albendazole-200');
+      const entry = makeEntry({
+        medication: medResource,
+        startDate: today,
+        duration: 1,
+      });
+      const activeMed = makeActiveMed({
+        medicationReference: { reference: 'Medication/active-1' },
+        dosageInstruction: [
+          {
+            timing: {
+              event: [yesterday.toISOString()],
+              repeat: { duration: 1, durationUnit: 'd' },
+            },
+          },
+        ],
+      });
+      const medicationMap: Record<string, Medication> = {
+        'active-1': medResource,
+      };
+
+      const result = checkMedicationsOverlap(
+        [entry],
+        [activeMed],
+        medicationMap,
+      );
 
       expect(result).toBe(true);
     });
@@ -603,7 +641,7 @@ describe('Medication Utilities', () => {
       expect(result).toBe(true);
     });
 
-    test('returns false when existing medication is STAT and codes match', () => {
+    test('returns true when existing medication is STAT and codes match', () => {
       const newMed = makeMedication('paracetamol-500');
       const existingMedResource = makeMedication('paracetamol-500');
       const activeMed = makeActiveMed({
@@ -624,7 +662,7 @@ describe('Medication Utilities', () => {
         medicationMap,
       );
 
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
 
     test('returns false when dates do not overlap even though codes match', () => {
@@ -680,6 +718,44 @@ describe('Medication Utilities', () => {
         newMed,
         new Date('2025-01-01'),
         0,
+        'd',
+        [activeMed],
+        [],
+        medicationMap,
+      );
+
+      expect(result).toBe(true);
+    });
+
+    test('detects duplicate when existing med was ordered yesterday for 1 day and new med is for today', () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const newMed = makeMedication('albendazole-200');
+      const existingMedResource = makeMedication('albendazole-200');
+      const activeMed = makeActiveMed({
+        medicationReference: { reference: 'Medication/active-1' },
+        dosageInstruction: [
+          {
+            timing: {
+              event: [yesterday.toISOString()],
+              repeat: { duration: 1, durationUnit: 'd' },
+            },
+          },
+        ],
+      });
+      const medicationMap: Record<string, Medication> = {
+        'active-1': existingMedResource,
+      };
+
+      const result = isDuplicateMedication(
+        newMed,
+        today,
+        1,
         'd',
         [activeMed],
         [],
