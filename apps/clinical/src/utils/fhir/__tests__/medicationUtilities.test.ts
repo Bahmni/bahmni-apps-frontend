@@ -135,9 +135,7 @@ describe('Medication Utilities', () => {
       const med2 = {
         id: 'med-2',
         code: {
-          coding: [
-            { code: 'ibuprofen-400', system: 'http://snomed.info/sct' },
-          ],
+          coding: [{ code: 'ibuprofen-400', system: 'http://snomed.info/sct' }],
         },
       };
 
