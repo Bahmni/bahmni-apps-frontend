@@ -10,6 +10,7 @@ import {
 } from '@bahmni/services';
 import moment from 'moment';
 import { create } from 'zustand';
+import { ORDERS_SELECTED_TAB_STORAGE_KEY } from '../constants/app';
 import { DB_FULFILLER_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
 import { PatientOrderRow } from '../models/orderFulfillment';
 import { ORDER_PRIORITY, OrderItem, OrderTab } from '../models/ordersConfig';
@@ -110,7 +111,20 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
   currentLocation: { name: '', uuid: '' },
   ordersData: [],
   providers: {},
-  setSelectedIndex: (selected: number) => set({ selectedIndex: selected }),
+  setSelectedIndex: (selected: number) => {
+    const { tabs, currentUser } = get();
+    const selectedTab = tabs[selected];
+    if (selectedTab && currentUser?.uuid) {
+      const existing = JSON.parse(
+        localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',
+      );
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({ ...existing, [currentUser.uuid]: selectedTab.label }),
+      );
+    }
+    set({ selectedIndex: selected });
+  },
   fetchCurrentUser: async () => {
     const userData = await getCurrentUser();
     if (userData) set((state) => ({ ...state, currentUser: userData }));
@@ -183,11 +197,20 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
       if (responses[0].status === 'fulfilled') {
         res = transformOrderData(responses[0].value);
       }
+      const existingSelectedTabs = JSON.parse(
+        localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',
+      );
+      const savedTabLabel = existingSelectedTabs[providerUuid];
+      const savedIndex = savedTabLabel
+        ? tabs.findIndex((tab) => tab.label === savedTabLabel)
+        : -1;
+
       set((state) => ({
         ...state,
         ordersData: res,
         tabs,
         tabCounts,
+        selectedIndex: savedIndex >= 0 ? savedIndex : state.selectedIndex,
       }));
     } finally {
       setIsLoading(false);

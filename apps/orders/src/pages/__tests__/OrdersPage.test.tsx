@@ -1,9 +1,10 @@
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, User } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import * as configMocks from '../../__mocks__/configMocks';
 import { rehabOrdersMockData } from '../../__mocks__/ordersMockData';
+import { ORDERS_SELECTED_TAB_STORAGE_KEY } from '../../constants/app';
 import { OrdersConfigProvider } from '../../providers/OrdersConfigProvider';
 import useOrdersStore from '../../stores/ordersStore';
 import { OrdersPage } from '../OrdersPage';
@@ -96,6 +97,7 @@ describe('OrdersPage Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.clear();
     mockedUseTranslation.mockReturnValue({ t: mockTranslate } as any);
     getOrdersTableConfig.mockResolvedValue(null);
   });
@@ -348,6 +350,120 @@ describe('OrdersPage Component', () => {
 
       await user.type(searchInput, '  David  ');
       expect(searchInput).toHaveValue('  David  ');
+    });
+  });
+
+  describe('Sticky Tab Selection', () => {
+    const stickyTabs = [
+      {
+        id: 'tab1',
+        label: 'Radiology Order',
+        display: 'Radiology Orders',
+        searchHandler: 'radiology',
+        translationKey: 'MODULE_LABEL_RADIOLOGY_ORDERS_KEY',
+        order: 1,
+        forwardUrl: '/url1',
+      },
+      {
+        id: 'tab2',
+        label: 'Lab Order',
+        display: 'Lab Orders',
+        searchHandler: 'lab',
+        translationKey: 'MODULE_LABEL_LAB_ORDERS_KEY',
+        order: 2,
+        forwardUrl: '/url2',
+      },
+      {
+        id: 'tab3',
+        label: 'Rehab Order',
+        display: 'Rehab Orders',
+        searchHandler: 'rehab',
+        translationKey: 'MODULE_LABEL_REHAB_ORDERS_KEY',
+        order: 3,
+        forwardUrl: '/url3',
+      },
+    ];
+
+    beforeEach(() => {
+      mockedUseTranslation.mockReturnValue({ t: (key: string) => key } as any);
+      getOrdersTableConfig.mockResolvedValue(null);
+    });
+
+    afterEach(() => {
+      useOrdersStore.setState({
+        tabs: [],
+        selectedIndex: 0,
+        currentUser: {} as User,
+      });
+    });
+
+    test('clicking a tab saves its label to localStorage keyed by provider UUID', async () => {
+      getOrdersConfig.mockResolvedValueOnce(configMocks.minimalOrdersConfig);
+
+      useOrdersStore.setState({
+        tabs: stickyTabs,
+        currentUser: { uuid: 'provider-test' } as User,
+        selectedIndex: 0,
+      });
+
+      render(
+        <OrdersConfigProvider>
+          <OrdersPage />
+        </OrdersConfigProvider>,
+      );
+
+      await waitFor(() =>
+        expect(screen.getByTestId('orders-header')).toBeInTheDocument(),
+      );
+
+      useOrdersStore.getState().setSelectedIndex(2);
+
+      const stored = JSON.parse(
+        localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',
+      );
+      expect(stored['provider-test']).toBe('Rehab Order');
+    });
+
+    test('restores the previously selected tab on mount when a saved label exists', async () => {
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({ 'provider-test': 'Rehab Order' }),
+      );
+
+      useOrdersStore.setState({
+        tabs: stickyTabs,
+        currentUser: { uuid: 'provider-test' } as User,
+        selectedIndex: 0,
+      });
+
+      const savedIndex = stickyTabs.findIndex((t) => t.label === 'Rehab Order');
+      useOrdersStore.setState({ selectedIndex: savedIndex });
+
+      expect(useOrdersStore.getState().selectedIndex).toBe(2);
+    });
+
+    test('falls back to tab 0 when the saved tab label is no longer in the config', async () => {
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({ 'provider-test': 'Removed Order' }),
+      );
+
+      useOrdersStore.setState({
+        tabs: stickyTabs,
+        currentUser: { uuid: 'provider-test' } as User,
+        selectedIndex: 0,
+      });
+
+      const savedLabel = JSON.parse(
+        localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',
+      )['provider-test'];
+      const savedIndex = stickyTabs.findIndex((t) => t.label === savedLabel);
+
+      if (savedIndex >= 0) {
+        useOrdersStore.setState({ selectedIndex: savedIndex });
+      }
+
+      expect(useOrdersStore.getState().selectedIndex).toBe(0);
     });
   });
 

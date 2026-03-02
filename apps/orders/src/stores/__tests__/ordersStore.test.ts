@@ -7,6 +7,7 @@ import {
   User,
 } from '@bahmni/services';
 import { renderHook, act } from '@testing-library/react';
+import { ORDERS_SELECTED_TAB_STORAGE_KEY } from '../../constants/app';
 import { ORDER_PRIORITY, OrderTab } from '../../models/ordersConfig';
 import useOrdersStore, { transformOrderData } from '../ordersStore';
 
@@ -27,6 +28,7 @@ jest.mock('moment', () => {
 describe('ordersStore', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.clear();
     const { result } = renderHook(() => useOrdersStore());
     act(() => {
       result.current.setSelectedIndex(0);
@@ -428,6 +430,275 @@ describe('ordersStore', () => {
       });
 
       expect(fetchOrders).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('setSelectedIndex – localStorage persistence', () => {
+    beforeEach(() => {
+      localStorage.clear();
+      useOrdersStore.setState({ tabs: [], currentUser: {} as User });
+    });
+
+    const persistenceTabs: OrderTab[] = [
+      {
+        id: 'tab1',
+        label: 'Radiology Order',
+        display: 'Radiology Orders',
+        searchHandler: 'radiology',
+        translationKey: 'MODULE_LABEL_RADIOLOGY_ORDERS_KEY',
+        order: 1,
+        forwardUrl: '/url1',
+      },
+      {
+        id: 'tab2',
+        label: 'Lab Order',
+        display: 'Lab Orders',
+        searchHandler: 'lab',
+        translationKey: 'MODULE_LABEL_LAB_ORDERS_KEY',
+        order: 2,
+        forwardUrl: '/url2',
+      },
+      {
+        id: 'tab3',
+        label: 'Rehab Order',
+        display: 'Rehab Orders',
+        searchHandler: 'rehab',
+        translationKey: 'MODULE_LABEL_REHAB_ORDERS_KEY',
+        order: 3,
+        forwardUrl: '/url3',
+      },
+    ];
+
+    it('writes the tab label keyed by provider UUID when a tab is selected', () => {
+      act(() => {
+        useOrdersStore.setState({
+          tabs: persistenceTabs,
+          currentUser: { uuid: 'provider-abc' } as User,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setSelectedIndex(2);
+      });
+
+      const stored = JSON.parse(
+        localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',
+      );
+      expect(stored['provider-abc']).toBe('Rehab Order');
+      expect(result.current.selectedIndex).toBe(2);
+    });
+
+    it('overwrites the stored label when the user changes tabs', () => {
+      act(() => {
+        useOrdersStore.setState({
+          tabs: persistenceTabs,
+          currentUser: { uuid: 'provider-abc' } as User,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setSelectedIndex(2);
+      });
+      act(() => {
+        result.current.setSelectedIndex(1);
+      });
+
+      const stored = JSON.parse(
+        localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',
+      );
+      expect(stored['provider-abc']).toBe('Lab Order');
+    });
+
+    it('does not write to localStorage when tabs array is empty', () => {
+      act(() => {
+        useOrdersStore.setState({
+          tabs: [],
+          currentUser: { uuid: 'provider-abc' } as User,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setSelectedIndex(0);
+      });
+
+      expect(localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY)).toBeNull();
+    });
+
+    it('does not write to localStorage when currentUser has no UUID', () => {
+      act(() => {
+        useOrdersStore.setState({
+          tabs: persistenceTabs,
+          currentUser: {} as User,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setSelectedIndex(0);
+      });
+
+      expect(localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY)).toBeNull();
+    });
+  });
+
+  describe('fetchAllPendingOrders – localStorage restore', () => {
+    const restoreTabs: OrderTab[] = [
+      {
+        id: 'tab1',
+        label: 'Radiology Order',
+        display: 'Radiology Orders',
+        searchHandler: 'radiology',
+        translationKey: 'MODULE_LABEL_RADIOLOGY_ORDERS_KEY',
+        order: 1,
+        forwardUrl: '/url1',
+      },
+      {
+        id: 'tab2',
+        label: 'Lab Order',
+        display: 'Lab Orders',
+        searchHandler: 'lab',
+        translationKey: 'MODULE_LABEL_LAB_ORDERS_KEY',
+        order: 2,
+        forwardUrl: '/url2',
+      },
+      {
+        id: 'tab3',
+        label: 'Rehab Order',
+        display: 'Rehab Orders',
+        searchHandler: 'rehab',
+        translationKey: 'MODULE_LABEL_REHAB_ORDERS_KEY',
+        order: 3,
+        forwardUrl: '/url3',
+      },
+    ];
+
+    beforeEach(() => {
+      (calculateAge as jest.Mock).mockReturnValue({
+        years: 30,
+        months: 0,
+        days: 0,
+      });
+      (fetchOrders as jest.Mock).mockResolvedValue([]);
+    });
+
+    it('restores the saved tab index for the current provider', async () => {
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({ 'provider-abc': 'Rehab Order' }),
+      );
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'provider-abc' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+          selectedIndex: 0,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(restoreTabs);
+      });
+
+      expect(result.current.selectedIndex).toBe(2);
+    });
+
+    it('leaves selectedIndex unchanged when no entry exists for the provider', async () => {
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'provider-abc' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+          selectedIndex: 0,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(restoreTabs);
+      });
+
+      expect(result.current.selectedIndex).toBe(0);
+    });
+
+    it('falls back to current selectedIndex when the saved label is no longer in the tabs config', async () => {
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({ 'provider-abc': 'Stale Order' }),
+      );
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'provider-abc' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+          selectedIndex: 1,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(restoreTabs);
+      });
+
+      expect(result.current.selectedIndex).toBe(1);
+    });
+
+    it('correctly restores index 0 (boundary case)', async () => {
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({ 'provider-abc': 'Radiology Order' }),
+      );
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'provider-abc' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+          selectedIndex: 2,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(restoreTabs);
+      });
+
+      expect(result.current.selectedIndex).toBe(0);
+    });
+
+    it('uses only the current provider entry, not another provider entry', async () => {
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({
+          'other-provider': 'Rehab Order',
+          'provider-abc': 'Lab Order',
+        }),
+      );
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'provider-abc' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+          selectedIndex: 0,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(restoreTabs);
+      });
+
+      expect(result.current.selectedIndex).toBe(1);
     });
   });
 
