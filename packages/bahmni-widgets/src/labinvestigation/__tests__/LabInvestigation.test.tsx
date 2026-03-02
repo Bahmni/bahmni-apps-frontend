@@ -9,7 +9,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Bundle, ServiceRequest, DiagnosticReport } from 'fhir/r4';
+import { Bundle, DiagnosticReport } from 'fhir/r4';
 
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
@@ -18,6 +18,7 @@ import {
   FormattedLabInvestigations,
   LabInvestigationPriority,
 } from '../models';
+import { createMockBundle, createMockServiceRequest } from './testHelpers';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -110,22 +111,10 @@ const renderLabInvestigations = (
 describe('LabInvestigation', () => {
   const mockAddNotification = jest.fn();
 
-  const createMockBundle = (
-    resources: ServiceRequest[],
-  ): Bundle<ServiceRequest> => ({
-    resourceType: 'Bundle',
-    type: 'searchset',
-    entry: resources.map((resource) => ({
-      resource,
-    })),
-  });
-
-  const mockServiceRequests: ServiceRequest[] = [
-    {
-      resourceType: 'ServiceRequest',
+  const mockServiceRequests = [
+    createMockServiceRequest({
       id: 'test-1',
       status: 'active',
-      intent: 'order',
       subject: { reference: 'Patient/patient-123' },
       code: { text: 'Complete Blood Count' },
       priority: 'routine',
@@ -137,12 +126,10 @@ describe('LabInvestigation', () => {
           valueString: 'Panel',
         },
       ],
-    },
-    {
-      resourceType: 'ServiceRequest',
+    }),
+    createMockServiceRequest({
       id: 'test-2',
       status: 'active',
-      intent: 'order',
       subject: { reference: 'Patient/patient-123' },
       code: { text: 'Lipid Panel' },
       priority: 'stat',
@@ -154,18 +141,16 @@ describe('LabInvestigation', () => {
           valueString: 'Panel',
         },
       ],
-    },
-    {
-      resourceType: 'ServiceRequest',
+    }),
+    createMockServiceRequest({
       id: 'test-3',
       status: 'active',
-      intent: 'order',
       subject: { reference: 'Patient/patient-123' },
       code: { text: 'Liver Function' },
       priority: 'routine',
       requester: { display: 'Dr. Williams' },
       occurrencePeriod: { start: '2025-04-09T13:21:22+00:00' },
-    },
+    }),
   ];
 
   beforeEach(() => {

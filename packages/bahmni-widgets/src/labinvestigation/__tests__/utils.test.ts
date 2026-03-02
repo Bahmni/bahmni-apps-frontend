@@ -1,10 +1,6 @@
 import { formatDate } from '@bahmni/services';
-import { ServiceRequest, Bundle } from 'fhir/r4';
 
-import {
-  LabInvestigationPriority,
-  FormattedLabInvestigations,
-} from '../models';
+import { LabInvestigationPriority } from '../models';
 import {
   filterLabInvestigationEntries,
   mapLabInvestigationPriority,
@@ -17,6 +13,12 @@ import {
   updateTestsWithResults,
   REFERENCE_RANGE_CODE,
 } from '../utils';
+import {
+  createMockBundle,
+  createMockServiceRequest,
+  createMockObservation,
+  createMockFormattedLabInvestigation,
+} from './testHelpers';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -31,42 +33,6 @@ describe('Lab Investigation Utils', () => {
         ? 'May 08, 2025'
         : 'April 09, 2025',
     }));
-  });
-
-  const createMockServiceRequest = (
-    overrides: Partial<ServiceRequest> = {},
-  ): ServiceRequest => ({
-    resourceType: 'ServiceRequest',
-    id: 'test-id',
-    status: 'completed',
-    intent: 'order',
-    code: {
-      text: 'Test Name',
-    },
-    subject: {
-      reference: 'Patient/test-patient',
-    },
-    priority: 'routine',
-    occurrencePeriod: {
-      start: '2025-05-08T12:44:24+00:00',
-    },
-    requester: {
-      display: 'Test Doctor',
-    },
-    ...overrides,
-  });
-
-  const createMockBundle = (
-    serviceRequests: ServiceRequest[] = [],
-  ): Bundle<ServiceRequest> => ({
-    resourceType: 'Bundle',
-    id: 'bundle-id',
-    type: 'searchset',
-    total: serviceRequests.length,
-    entry: serviceRequests.map((resource) => ({
-      resource,
-      fullUrl: `http://example.com/ServiceRequest/${resource.id}`,
-    })),
   });
 
   const mockTranslate = (key: string) => key;
@@ -146,7 +112,7 @@ describe('Lab Investigation Utils', () => {
 
   describe('filterLabInvestigationEntries', () => {
     it('should return empty array when bundle has no entries', () => {
-      const emptyBundle = createMockBundle([]);
+      const emptyBundle = createMockBundle();
       const result = filterLabInvestigationEntries(emptyBundle);
       expect(result).toEqual([]);
     });
@@ -285,27 +251,19 @@ describe('Lab Investigation Utils', () => {
 
   describe('groupLabInvestigationsByDate', () => {
     it('should group tests by date', () => {
-      const mockFormattedTests: FormattedLabInvestigations[] = [
-        {
+      const mockFormattedTests = [
+        createMockFormattedLabInvestigation({
           id: 'test-1',
           testName: 'Test 1',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
           orderedDate: '2025-05-08T12:44:24+00:00',
           formattedDate: 'May 08, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
-        {
+        }),
+        createMockFormattedLabInvestigation({
           id: 'test-2',
           testName: 'Test 2',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
           orderedDate: '2025-05-08T14:30:00+00:00',
           formattedDate: 'May 08, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
+        }),
       ];
 
       const result = groupLabInvestigationsByDate(mockFormattedTests);
@@ -316,27 +274,19 @@ describe('Lab Investigation Utils', () => {
     });
 
     it('should sort dates newest first', () => {
-      const mockFormattedTests: FormattedLabInvestigations[] = [
-        {
+      const mockFormattedTests = [
+        createMockFormattedLabInvestigation({
           id: 'test-1',
           testName: 'Old Test',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
           orderedDate: '2025-01-01T00:00:00+00:00',
           formattedDate: 'Jan 1, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
-        {
+        }),
+        createMockFormattedLabInvestigation({
           id: 'test-2',
           testName: 'New Test',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
           orderedDate: '2025-12-31T00:00:00+00:00',
           formattedDate: 'Dec 31, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
+        }),
       ];
 
       const result = groupLabInvestigationsByDate(mockFormattedTests);
@@ -462,10 +412,7 @@ describe('Lab Investigation Utils', () => {
   describe('formatObservationsAsLabTestResults', () => {
     it('should format observations with quantity values', () => {
       const mockObservations = [
-        {
-          resourceType: 'Observation' as const,
-          id: 'obs-1',
-          status: 'final' as const,
+        createMockObservation({
           code: { text: 'Hemoglobin' },
           valueQuantity: {
             value: 14.5,
@@ -485,7 +432,7 @@ describe('Lab Investigation Utils', () => {
             },
           ],
           issued: '2025-05-08T12:44:24+00:00',
-        },
+        }),
       ];
 
       const result = formatObservationsAsLabTestResults(
@@ -502,13 +449,10 @@ describe('Lab Investigation Utils', () => {
 
     it('should handle string values', () => {
       const mockObservations = [
-        {
-          resourceType: 'Observation' as const,
-          id: 'obs-1',
-          status: 'final' as const,
+        createMockObservation({
           code: { text: 'Blood Type' },
           valueString: 'O+',
-        },
+        }),
       ];
 
       const result = formatObservationsAsLabTestResults(
@@ -522,13 +466,10 @@ describe('Lab Investigation Utils', () => {
 
     it('should handle boolean values - true as Positive', () => {
       const mockObservations = [
-        {
-          resourceType: 'Observation' as const,
-          id: 'obs-1',
-          status: 'final' as const,
+        createMockObservation({
           code: { text: 'COVID-19 Test' },
           valueBoolean: true,
-        },
+        }),
       ];
 
       const result = formatObservationsAsLabTestResults(
@@ -542,13 +483,10 @@ describe('Lab Investigation Utils', () => {
 
     it('should handle boolean values - false as Negative', () => {
       const mockObservations = [
-        {
-          resourceType: 'Observation' as const,
-          id: 'obs-1',
-          status: 'final' as const,
+        createMockObservation({
           code: { text: 'COVID-19 Test' },
           valueBoolean: false,
-        },
+        }),
       ];
 
       const result = formatObservationsAsLabTestResults(
@@ -562,13 +500,10 @@ describe('Lab Investigation Utils', () => {
 
     it('should handle integer values', () => {
       const mockObservations = [
-        {
-          resourceType: 'Observation' as const,
-          id: 'obs-1',
-          status: 'final' as const,
+        createMockObservation({
           code: { text: 'White Blood Cell Count' },
           valueInteger: 8500,
-        },
+        }),
       ];
 
       const result = formatObservationsAsLabTestResults(
@@ -582,15 +517,12 @@ describe('Lab Investigation Utils', () => {
 
     it('should handle CodeableConcept text values', () => {
       const mockObservations = [
-        {
-          resourceType: 'Observation' as const,
-          id: 'obs-1',
-          status: 'final' as const,
+        createMockObservation({
           code: { text: 'Test Result' },
           valueCodeableConcept: {
             text: 'Abnormal',
           },
-        },
+        }),
       ];
 
       const result = formatObservationsAsLabTestResults(
@@ -605,17 +537,11 @@ describe('Lab Investigation Utils', () => {
 
   describe('updateTestsWithResults', () => {
     it('should update tests with results from map', () => {
-      const tests: FormattedLabInvestigations[] = [
-        {
+      const tests = [
+        createMockFormattedLabInvestigation({
           id: 'test-1',
           testName: 'Blood Test',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
-          orderedDate: '2025-05-08T12:44:24+00:00',
-          formattedDate: 'May 08, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
+        }),
       ];
 
       const resultsMap = new Map();
@@ -637,17 +563,11 @@ describe('Lab Investigation Utils', () => {
     });
 
     it('should not modify tests without results', () => {
-      const tests: FormattedLabInvestigations[] = [
-        {
+      const tests = [
+        createMockFormattedLabInvestigation({
           id: 'test-1',
           testName: 'Blood Test',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
-          orderedDate: '2025-05-08T12:44:24+00:00',
-          formattedDate: 'May 08, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
+        }),
       ];
 
       const resultsMap = new Map();
