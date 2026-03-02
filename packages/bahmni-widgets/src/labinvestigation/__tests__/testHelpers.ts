@@ -45,13 +45,14 @@ export const createMockBundle = (
 
 export const createMockObservation = (
   overrides: Partial<Observation> = {},
-): Observation => ({
-  resourceType: 'Observation',
-  id: 'obs-1',
-  status: 'final',
-  code: { text: 'Test Observation' },
-  ...overrides,
-} as Observation);
+): Observation =>
+  ({
+    resourceType: 'Observation',
+    id: 'obs-1',
+    status: 'final',
+    code: { text: 'Test Observation' },
+    ...overrides,
+  }) as Observation;
 
 export const createMockFormattedLabInvestigation = (
   overrides: Partial<FormattedLabInvestigations> = {},
