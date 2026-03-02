@@ -24,7 +24,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_8j_-menu"
+            aria-controls="downshift-_r_9b_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
@@ -40,11 +40,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
             value=""
           />
           <button
-            aria-controls="downshift-_r_8j_-menu"
+            aria-controls="downshift-_r_9b_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_8j_-toggle-button"
+            id="downshift-_r_9b_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -60,15 +60,15 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
               />
             </svg>
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_8j_-label"
+          aria-labelledby="downshift-_r_9b_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_8j_-menu"
+          id="downshift-_r_9b_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -89,11 +89,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_1dyfm_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_1dyfm_10 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -129,12 +129,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_8l_-menu"
+                      aria-controls="downshift-_r_9e_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Diagnoses Certainty"
                       class="cds--list-box__field"
-                      id="downshift-_r_8l_-toggle-button"
+                      id="downshift-_r_9e_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Confirmed"
@@ -161,7 +161,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
                           xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
-                            d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                           />
                           <title>
                             Open menu
@@ -170,9 +170,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_8l_-label"
+                      aria-labelledby="downshift-_r_9e_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_8l_-menu"
+                      id="downshift-_r_9e_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -182,7 +182,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
             </div>
           </div>
           <div
-            class="_close_1dyfm_17 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -192,7 +192,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_8n_"
+                  aria-labelledby="tooltip-_r_9g_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -209,7 +209,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M17.4141 16 24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
                     />
                   </svg>
                 </button>
@@ -217,7 +217,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_8n_"
+                id="tooltip-_r_9g_"
                 role="tooltip"
               >
                 <span
@@ -262,7 +262,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests empty form matches snapshot 1`] =
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_84_-menu"
+            aria-controls="downshift-_r_8r_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
@@ -278,11 +278,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests empty form matches snapshot 1`] =
             value=""
           />
           <button
-            aria-controls="downshift-_r_84_-menu"
+            aria-controls="downshift-_r_8r_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_84_-toggle-button"
+            id="downshift-_r_8r_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -298,15 +298,15 @@ exports[`ConditionsAndDiagnoses Snapshot Tests empty form matches snapshot 1`] =
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
               />
             </svg>
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_84_-label"
+          aria-labelledby="downshift-_r_8r_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_84_-menu"
+          id="downshift-_r_8r_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -340,7 +340,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_9b_-menu"
+            aria-controls="downshift-_r_a6_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
@@ -356,11 +356,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
             value=""
           />
           <button
-            aria-controls="downshift-_r_9b_-menu"
+            aria-controls="downshift-_r_a6_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_9b_-toggle-button"
+            id="downshift-_r_a6_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -376,15 +376,15 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
               />
             </svg>
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_9b_-label"
+          aria-labelledby="downshift-_r_a6_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_9b_-menu"
+          id="downshift-_r_a6_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -405,11 +405,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_1dyfm_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_1dyfm_10 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -445,12 +445,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_9d_-menu"
+                      aria-controls="downshift-_r_a9_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Diagnoses Certainty"
                       class="cds--list-box__field"
-                      id="downshift-_r_9d_-toggle-button"
+                      id="downshift-_r_a9_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Confirmed"
@@ -477,7 +477,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                           xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
-                            d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                           />
                           <title>
                             Open menu
@@ -486,9 +486,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_9d_-label"
+                      aria-labelledby="downshift-_r_a9_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_9d_-menu"
+                      id="downshift-_r_a9_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -498,7 +498,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
             </div>
           </div>
           <div
-            class="_close_1dyfm_17 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -508,7 +508,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_9f_"
+                  aria-labelledby="tooltip-_r_ab_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -525,7 +525,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M17.4141 16 24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
                     />
                   </svg>
                 </button>
@@ -533,7 +533,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_9f_"
+                id="tooltip-_r_ab_"
                 role="tooltip"
               >
                 <span
@@ -565,11 +565,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_1dyfm_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_1dyfm_10 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -625,8 +625,8 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-_r_9j_-toggle-button"
-                    id="downshift-_r_9j_-label"
+                    for="downshift-_r_ag_-toggle-button"
+                    id="downshift-_r_ag_-label"
                   >
                     Unit
                   </label>
@@ -636,12 +636,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_9j_-menu"
+                      aria-controls="downshift-_r_ag_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
-                      aria-labelledby="downshift-_r_9j_-label"
+                      aria-labelledby="downshift-_r_ag_-label"
                       class="cds--list-box__field"
-                      id="downshift-_r_9j_-toggle-button"
+                      id="downshift-_r_ag_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Months"
@@ -668,7 +668,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                           xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
-                            d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                           />
                           <title>
                             Open menu
@@ -677,9 +677,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_9j_-label"
+                      aria-labelledby="downshift-_r_ag_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_9j_-menu"
+                      id="downshift-_r_ag_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -689,7 +689,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
             </div>
           </div>
           <div
-            class="_close_1dyfm_17 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -699,7 +699,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_9l_"
+                  aria-labelledby="tooltip-_r_ai_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -716,7 +716,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M17.4141 16 24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
                     />
                   </svg>
                 </button>
@@ -724,7 +724,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_9l_"
+                id="tooltip-_r_ai_"
                 role="tooltip"
               >
                 <span
@@ -740,11 +740,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
           </div>
         </div>
         <div
-          class="_grid_1dyfm_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_1dyfm_10 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -800,8 +800,8 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-_r_9p_-toggle-button"
-                    id="downshift-_r_9p_-label"
+                    for="downshift-_r_an_-toggle-button"
+                    id="downshift-_r_an_-label"
                   >
                     Unit
                   </label>
@@ -811,12 +811,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_9p_-menu"
+                      aria-controls="downshift-_r_an_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
-                      aria-labelledby="downshift-_r_9p_-label"
+                      aria-labelledby="downshift-_r_an_-label"
                       class="cds--list-box__field"
-                      id="downshift-_r_9p_-toggle-button"
+                      id="downshift-_r_an_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Unit"
@@ -843,7 +843,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                           xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
-                            d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                           />
                           <title>
                             Open menu
@@ -852,9 +852,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_9p_-label"
+                      aria-labelledby="downshift-_r_an_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_9p_-menu"
+                      id="downshift-_r_an_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -864,7 +864,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
             </div>
           </div>
           <div
-            class="_close_1dyfm_17 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -874,7 +874,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_9r_"
+                  aria-labelledby="tooltip-_r_ap_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -891,7 +891,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M17.4141 16 24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
                     />
                   </svg>
                 </button>
@@ -899,7 +899,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_9r_"
+                id="tooltip-_r_ap_"
                 role="tooltip"
               >
                 <span
@@ -944,7 +944,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with search results matches 
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_87_-menu"
+            aria-controls="downshift-_r_8u_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
@@ -960,11 +960,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with search results matches 
             value=""
           />
           <button
-            aria-controls="downshift-_r_87_-menu"
+            aria-controls="downshift-_r_8u_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_87_-toggle-button"
+            id="downshift-_r_8u_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -980,15 +980,15 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with search results matches 
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
               />
             </svg>
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_87_-label"
+          aria-labelledby="downshift-_r_8u_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_87_-menu"
+          id="downshift-_r_8u_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -1022,7 +1022,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_8s_-menu"
+            aria-controls="downshift-_r_9l_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
@@ -1038,11 +1038,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
             value=""
           />
           <button
-            aria-controls="downshift-_r_8s_-menu"
+            aria-controls="downshift-_r_9l_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_8s_-toggle-button"
+            id="downshift-_r_9l_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -1058,15 +1058,15 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
               />
             </svg>
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_8s_-label"
+          aria-labelledby="downshift-_r_9l_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_8s_-menu"
+          id="downshift-_r_9l_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -1087,11 +1087,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_1dyfm_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_1dyfm_10 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -1147,8 +1147,8 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-_r_8u_-toggle-button"
-                    id="downshift-_r_8u_-label"
+                    for="downshift-_r_9o_-toggle-button"
+                    id="downshift-_r_9o_-label"
                   >
                     Unit
                   </label>
@@ -1158,12 +1158,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_8u_-menu"
+                      aria-controls="downshift-_r_9o_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
-                      aria-labelledby="downshift-_r_8u_-label"
+                      aria-labelledby="downshift-_r_9o_-label"
                       class="cds--list-box__field"
-                      id="downshift-_r_8u_-toggle-button"
+                      id="downshift-_r_9o_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Months"
@@ -1190,7 +1190,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                           xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
-                            d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                           />
                           <title>
                             Open menu
@@ -1199,9 +1199,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_8u_-label"
+                      aria-labelledby="downshift-_r_9o_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_8u_-menu"
+                      id="downshift-_r_9o_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -1211,7 +1211,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
             </div>
           </div>
           <div
-            class="_close_1dyfm_17 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -1221,7 +1221,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_90_"
+                  aria-labelledby="tooltip-_r_9q_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -1238,7 +1238,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M17.4141 16 24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
                     />
                   </svg>
                 </button>
@@ -1246,7 +1246,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_90_"
+                id="tooltip-_r_9q_"
                 role="tooltip"
               >
                 <span
@@ -1262,11 +1262,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
           </div>
         </div>
         <div
-          class="_grid_1dyfm_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedConditionItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_1dyfm_10 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -1322,8 +1322,8 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                 >
                   <label
                     class="cds--label cds--visually-hidden"
-                    for="downshift-_r_94_-toggle-button"
-                    id="downshift-_r_94_-label"
+                    for="downshift-_r_9v_-toggle-button"
+                    id="downshift-_r_9v_-label"
                   >
                     Unit
                   </label>
@@ -1333,12 +1333,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_94_-menu"
+                      aria-controls="downshift-_r_9v_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
-                      aria-labelledby="downshift-_r_94_-label"
+                      aria-labelledby="downshift-_r_9v_-label"
                       class="cds--list-box__field"
-                      id="downshift-_r_94_-toggle-button"
+                      id="downshift-_r_9v_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Unit"
@@ -1365,7 +1365,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                           xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
-                            d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                           />
                           <title>
                             Open menu
@@ -1374,9 +1374,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_94_-label"
+                      aria-labelledby="downshift-_r_9v_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_94_-menu"
+                      id="downshift-_r_9v_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -1386,7 +1386,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
             </div>
           </div>
           <div
-            class="_close_1dyfm_17 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -1396,7 +1396,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_96_"
+                  aria-labelledby="tooltip-_r_a1_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -1413,7 +1413,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M17.4141 16 24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
                     />
                   </svg>
                 </button>
@@ -1421,7 +1421,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_96_"
+                id="tooltip-_r_a1_"
                 role="tooltip"
               >
                 <span
@@ -1466,7 +1466,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_8a_-menu"
+            aria-controls="downshift-_r_91_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search for diagnoses"
@@ -1482,11 +1482,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
             value=""
           />
           <button
-            aria-controls="downshift-_r_8a_-menu"
+            aria-controls="downshift-_r_91_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_8a_-toggle-button"
+            id="downshift-_r_91_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -1502,15 +1502,15 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
               />
             </svg>
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_8a_-label"
+          aria-labelledby="downshift-_r_91_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_8a_-menu"
+          id="downshift-_r_91_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -1531,11 +1531,11 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_1dyfm_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedDiagnosisItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
-            class="_children_1dyfm_10 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
               class="cds--subgrid cds--subgrid--wide"
@@ -1571,12 +1571,12 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
                   >
                     <button
                       aria-activedescendant=""
-                      aria-controls="downshift-_r_8c_-menu"
+                      aria-controls="downshift-_r_94_-menu"
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-label="Diagnoses Certainty"
                       class="cds--list-box__field"
-                      id="downshift-_r_8c_-toggle-button"
+                      id="downshift-_r_94_-toggle-button"
                       role="combobox"
                       tabindex="0"
                       title="Confirmed"
@@ -1603,7 +1603,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
                           xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
-                            d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                           />
                           <title>
                             Open menu
@@ -1612,9 +1612,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
                       </div>
                     </button>
                     <ul
-                      aria-labelledby="downshift-_r_8c_-label"
+                      aria-labelledby="downshift-_r_94_-label"
                       class="cds--list-box__menu"
-                      id="downshift-_r_8c_-menu"
+                      id="downshift-_r_94_-menu"
                       role="listbox"
                       style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
                     />
@@ -1624,7 +1624,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
             </div>
           </div>
           <div
-            class="_close_1dyfm_17 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
           >
             <span
               class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -1634,7 +1634,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_8e_"
+                  aria-labelledby="tooltip-_r_96_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -1651,7 +1651,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M17.4141 16 24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
                     />
                   </svg>
                 </button>
@@ -1659,7 +1659,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_8e_"
+                id="tooltip-_r_96_"
                 role="tooltip"
               >
                 <span

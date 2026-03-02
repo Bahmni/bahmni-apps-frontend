@@ -21,7 +21,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot when loading 1`] = `
       class="cds--skeleton cds--data-table-container"
     >
       <table
-        class="expandableDataTableSkeleton cds--skeleton cds--data-table cds--data-table--lg cds--data-table--compact"
+        class="expandableDataTableSkeleton cds--skeleton cds--data-table cds--data-table--compact"
       >
         <thead>
           <tr>
@@ -275,7 +275,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -290,10 +290,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -339,7 +336,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -354,10 +351,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -403,7 +397,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -418,10 +412,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -467,7 +458,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -482,10 +473,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -531,7 +519,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -546,10 +534,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -595,7 +580,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -610,10 +595,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -659,7 +641,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -674,10 +656,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -723,7 +702,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -738,10 +717,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -762,10 +738,10 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
           >
             <td
               class="cds--table-expand"
-              headers="data-table-12-expand"
+              headers="expand"
             >
               <button
-                aria-controls="data-table-12-expanded-row-2c6a89df-64a5-4a99-a078-4c3fda0b2f15"
+                aria-controls="expanded-row-2c6a89df-64a5-4a99-a078-4c3fda0b2f15"
                 aria-expanded="false"
                 aria-label="Expand current row"
                 class="cds--table-expand__button"
@@ -783,7 +759,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M11 8 6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
                   />
                 </svg>
               </button>
@@ -836,10 +812,10 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
           >
             <td
               class="cds--table-expand"
-              headers="data-table-12-expand"
+              headers="expand"
             >
               <button
-                aria-controls="data-table-12-expanded-row-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604"
+                aria-controls="expanded-row-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604"
                 aria-expanded="false"
                 aria-label="Expand current row"
                 class="cds--table-expand__button"
@@ -857,7 +833,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M11 8 6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
                   />
                 </svg>
               </button>
@@ -910,10 +886,10 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
           >
             <td
               class="cds--table-expand"
-              headers="data-table-12-expand"
+              headers="expand"
             >
               <button
-                aria-controls="data-table-12-expanded-row-1124a9bb-1891-44bb-9842-103239aa2ca3"
+                aria-controls="expanded-row-1124a9bb-1891-44bb-9842-103239aa2ca3"
                 aria-expanded="false"
                 aria-label="Expand current row"
                 class="cds--table-expand__button"
@@ -931,7 +907,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M11 8 6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
                   />
                 </svg>
               </button>
@@ -984,10 +960,10 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
           >
             <td
               class="cds--table-expand"
-              headers="data-table-12-expand"
+              headers="expand"
             >
               <button
-                aria-controls="data-table-12-expanded-row-1d2d372e-0ec3-4544-accd-aa5743d1bf70"
+                aria-controls="expanded-row-1d2d372e-0ec3-4544-accd-aa5743d1bf70"
                 aria-expanded="false"
                 aria-label="Expand current row"
                 class="cds--table-expand__button"
@@ -1005,7 +981,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M11 8 6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
                   />
                 </svg>
               </button>
@@ -1058,10 +1034,10 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
           >
             <td
               class="cds--table-expand"
-              headers="data-table-12-expand"
+              headers="expand"
             >
               <button
-                aria-controls="data-table-12-expanded-row-cb23207e-102d-480f-b4e7-6b7ee2084ae7"
+                aria-controls="expanded-row-cb23207e-102d-480f-b4e7-6b7ee2084ae7"
                 aria-expanded="false"
                 aria-label="Expand current row"
                 class="cds--table-expand__button"
@@ -1079,7 +1055,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M11 8 6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
                   />
                 </svg>
               </button>
@@ -1132,10 +1108,10 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
           >
             <td
               class="cds--table-expand"
-              headers="data-table-12-expand"
+              headers="expand"
             >
               <button
-                aria-controls="data-table-12-expanded-row-c5396e12-dbfe-4259-9e42-92a52a2761a8"
+                aria-controls="expanded-row-c5396e12-dbfe-4259-9e42-92a52a2761a8"
                 aria-expanded="false"
                 aria-label="Expand current row"
                 class="cds--table-expand__button"
@@ -1153,7 +1129,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with full data and expan
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M11 8 6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
                   />
                 </svg>
               </button>
@@ -1258,7 +1234,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -1273,10 +1249,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -1322,7 +1295,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -1337,10 +1310,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -1386,7 +1356,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -1401,10 +1371,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -1450,7 +1417,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -1465,10 +1432,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -1514,7 +1478,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -1529,10 +1493,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -1578,7 +1539,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -1593,10 +1554,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -1642,7 +1600,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -1657,10 +1615,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
@@ -1706,7 +1661,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M16 4 6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
                     />
                   </svg>
                   <svg
@@ -1721,10 +1676,7 @@ exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M27.6 20.6 24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22z"
-                    />
-                    <path
-                      d="M9 4 3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
                     />
                   </svg>
                   <div
