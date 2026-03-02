@@ -18,7 +18,13 @@ import {
   FormattedLabInvestigations,
   LabInvestigationPriority,
 } from '../models';
-import { createMockBundle, createMockServiceRequest } from './testHelpers';
+import {
+  createMockBundle,
+  createMockServiceRequest,
+  LAB_ORDER_PANEL_EXTENSION,
+  createConsultationSavedEventPayload,
+  setupConsultationSavedEventCallback,
+} from './testHelpers';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -120,12 +126,7 @@ describe('LabInvestigation', () => {
       priority: 'routine',
       requester: { display: 'Dr. Smith' },
       occurrencePeriod: { start: '2025-05-08T12:44:24+00:00' },
-      extension: [
-        {
-          url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
-          valueString: 'Panel',
-        },
-      ],
+      extension: LAB_ORDER_PANEL_EXTENSION,
     }),
     createMockServiceRequest({
       id: 'test-2',
@@ -135,12 +136,7 @@ describe('LabInvestigation', () => {
       priority: 'stat',
       requester: { display: 'Dr. Johnson' },
       occurrencePeriod: { start: '2025-04-09T13:21:22+00:00' },
-      extension: [
-        {
-          url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
-          valueString: 'Panel',
-        },
-      ],
+      extension: LAB_ORDER_PANEL_EXTENSION,
     }),
     createMockServiceRequest({
       id: 'test-3',
@@ -470,10 +466,9 @@ describe('LabInvestigation', () => {
     });
 
     it('refetches data when consultation saved event is triggered with matching category', async () => {
-      let eventCallback: (payload: any) => void = () => {};
-      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
-        eventCallback = callback;
-      });
+      const { eventCallback } = setupConsultationSavedEventCallback(
+        mockUseSubscribeConsultationSaved,
+      );
 
       render(renderLabInvestigations({ orderType: 'Lab Order' }));
 
@@ -485,15 +480,7 @@ describe('LabInvestigation', () => {
       mockGetLabInvestigationsBundle.mockClear();
 
       // Trigger the event with matching category
-      eventCallback({
-        patientUUID: 'patient-123',
-        updatedResources: {
-          conditions: false,
-          allergies: false,
-          medications: false,
-          serviceRequests: { 'lab order': true },
-        },
-      });
+      eventCallback(createConsultationSavedEventPayload());
 
       // Verify refetch was triggered (getPatientLabInvestigations called again)
       await waitFor(() => {
@@ -502,10 +489,9 @@ describe('LabInvestigation', () => {
     });
 
     it('does not refetch when event is for different patient', async () => {
-      let eventCallback: (payload: any) => void = () => {};
-      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
-        eventCallback = callback;
-      });
+      const { eventCallback } = setupConsultationSavedEventCallback(
+        mockUseSubscribeConsultationSaved,
+      );
 
       render(renderLabInvestigations({ orderType: 'Lab Order' }));
 
@@ -517,15 +503,11 @@ describe('LabInvestigation', () => {
       mockGetLabInvestigationsBundle.mockClear();
 
       // Trigger event for different patient
-      eventCallback({
-        patientUUID: 'different-patient',
-        updatedResources: {
-          conditions: false,
-          allergies: false,
-          medications: false,
-          serviceRequests: { 'lab order': true },
-        },
-      });
+      eventCallback(
+        createConsultationSavedEventPayload({
+          patientUUID: 'different-patient',
+        }),
+      );
 
       // Give some time to ensure no refetch happens
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -535,10 +517,9 @@ describe('LabInvestigation', () => {
     });
 
     it('does not refetch when different category was updated', async () => {
-      let eventCallback: (payload: any) => void = () => {};
-      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
-        eventCallback = callback;
-      });
+      const { eventCallback } = setupConsultationSavedEventCallback(
+        mockUseSubscribeConsultationSaved,
+      );
 
       render(renderLabInvestigations({ orderType: 'Lab Order' }));
 
@@ -550,15 +531,16 @@ describe('LabInvestigation', () => {
       mockGetLabInvestigationsBundle.mockClear();
 
       // Trigger event with different category
-      eventCallback({
-        patientUUID: 'patient-123',
-        updatedResources: {
-          conditions: false,
-          allergies: false,
-          medications: false,
-          serviceRequests: { 'radiology order': true },
-        },
-      });
+      eventCallback(
+        createConsultationSavedEventPayload({
+          updatedResources: {
+            conditions: false,
+            allergies: false,
+            medications: false,
+            serviceRequests: { 'radiology order': true },
+          },
+        }),
+      );
 
       // Give some time to ensure no refetch happens
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -568,10 +550,9 @@ describe('LabInvestigation', () => {
     });
 
     it('does not refetch when serviceRequests is empty', async () => {
-      let eventCallback: (payload: any) => void = () => {};
-      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
-        eventCallback = callback;
-      });
+      const { eventCallback } = setupConsultationSavedEventCallback(
+        mockUseSubscribeConsultationSaved,
+      );
 
       render(renderLabInvestigations({ orderType: 'Lab Order' }));
 
@@ -583,15 +564,16 @@ describe('LabInvestigation', () => {
       mockGetLabInvestigationsBundle.mockClear();
 
       // Trigger event with empty serviceRequests
-      eventCallback({
-        patientUUID: 'patient-123',
-        updatedResources: {
-          conditions: true,
-          allergies: false,
-          medications: false,
-          serviceRequests: {},
-        },
-      });
+      eventCallback(
+        createConsultationSavedEventPayload({
+          updatedResources: {
+            conditions: true,
+            allergies: false,
+            medications: false,
+            serviceRequests: {},
+          },
+        }),
+      );
 
       // Give some time to ensure no refetch happens
       await new Promise((resolve) => setTimeout(resolve, 100));

@@ -67,3 +67,35 @@ export const createMockFormattedLabInvestigation = (
   testType: 'Single Test',
   ...overrides,
 });
+
+export const LAB_ORDER_PANEL_EXTENSION = [
+  {
+    url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
+    valueString: 'Panel',
+  },
+];
+
+export const createConsultationSavedEventPayload = (
+  overrides: Record<string, any> = {},
+) => ({
+  patientUUID: 'patient-123',
+  updatedResources: {
+    conditions: false,
+    allergies: false,
+    medications: false,
+    serviceRequests: { 'lab order': true },
+  },
+  ...overrides,
+});
+
+export const setupConsultationSavedEventCallback = (
+  mockFn: any,
+): { eventCallback: any } => {
+  const container = { fn: (() => {}) as any };
+  mockFn.mockImplementation((callback: any) => {
+    container.fn = callback;
+  });
+  return {
+    eventCallback: (payload: any) => container.fn(payload),
+  };
+};
