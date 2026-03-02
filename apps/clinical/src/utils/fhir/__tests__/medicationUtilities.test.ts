@@ -13,6 +13,61 @@ import {
   extractDoseForm,
 } from '../medicationUtilities';
 
+const makeMedication = (
+  id: string,
+  code?: string,
+  system = 'http://snomed.info/sct',
+): Medication => ({
+  resourceType: 'Medication',
+  id,
+  code: {
+    coding: [{ code: code ?? id, system }],
+  },
+});
+
+const makeEntry = (
+  overrides: Partial<MedicationInputEntry> & { medication: Medication },
+): MedicationInputEntry => ({
+  id: `entry-${Math.random().toString(36).slice(2)}`,
+  display: 'Test Medication',
+  dosage: 1,
+  dosageUnit: null,
+  frequency: null,
+  instruction: null,
+  route: null,
+  duration: 7,
+  durationUnit: { code: 'd', display: 'Day(s)', daysMultiplier: 1 },
+  isSTAT: false,
+  isPRN: false,
+  startDate: new Date('2025-01-01'),
+  dispenseQuantity: 10,
+  dispenseUnit: null,
+  errors: {},
+  hasBeenValidated: false,
+  ...overrides,
+});
+
+const makeActiveMed = (
+  overrides: Partial<FhirMedicationRequest> = {},
+): FhirMedicationRequest => ({
+  resourceType: 'MedicationRequest',
+  id: `mr-${Math.random().toString(36).slice(2)}`,
+  status: 'active',
+  intent: 'order',
+  subject: { reference: 'Patient/test-patient' },
+  medicationReference: { reference: 'Medication/backend-ref' },
+  authoredOn: '2025-01-01',
+  dosageInstruction: [
+    {
+      timing: {
+        event: ['2025-01-01'],
+        repeat: { duration: 7, durationUnit: 'd' },
+      },
+    },
+  ],
+  ...overrides,
+});
+
 describe('Medication Utilities', () => {
   describe('extractMedicationCodes', () => {
     test('extracts codes from Medication.code field', () => {
@@ -213,61 +268,6 @@ describe('Medication Utilities', () => {
   });
 
   describe('checkMedicationsOverlap', () => {
-    const makeMedication = (
-      id: string,
-      code?: string,
-      system = 'http://snomed.info/sct',
-    ): Medication => ({
-      resourceType: 'Medication',
-      id,
-      code: {
-        coding: [{ code: code ?? id, system }],
-      },
-    });
-
-    const makeEntry = (
-      overrides: Partial<MedicationInputEntry> & { medication: Medication },
-    ): MedicationInputEntry => ({
-      id: `entry-${Math.random().toString(36).slice(2)}`,
-      display: 'Test Medication',
-      dosage: 1,
-      dosageUnit: null,
-      frequency: null,
-      instruction: null,
-      route: null,
-      duration: 7,
-      durationUnit: { code: 'd', display: 'Day(s)', daysMultiplier: 1 },
-      isSTAT: false,
-      isPRN: false,
-      startDate: new Date('2025-01-01'),
-      dispenseQuantity: 10,
-      dispenseUnit: null,
-      errors: {},
-      hasBeenValidated: false,
-      ...overrides,
-    });
-
-    const makeActiveMed = (
-      overrides: Partial<FhirMedicationRequest> = {},
-    ): FhirMedicationRequest => ({
-      resourceType: 'MedicationRequest',
-      id: `mr-${Math.random().toString(36).slice(2)}`,
-      status: 'active',
-      intent: 'order',
-      subject: { reference: 'Patient/test-patient' },
-      medicationReference: { reference: 'Medication/med-abc' },
-      authoredOn: '2025-01-01',
-      dosageInstruction: [
-        {
-          timing: {
-            event: ['2025-01-01'],
-            repeat: { duration: 7, durationUnit: 'd' },
-          },
-        },
-      ],
-      ...overrides,
-    });
-
     test('returns false for empty selected medications', () => {
       const result = checkMedicationsOverlap([], [], {});
 
@@ -590,61 +590,6 @@ describe('Medication Utilities', () => {
   });
 
   describe('isDuplicateMedication', () => {
-    const makeMedication = (
-      id: string,
-      code?: string,
-      system = 'http://snomed.info/sct',
-    ): Medication => ({
-      resourceType: 'Medication',
-      id,
-      code: {
-        coding: [{ code: code ?? id, system }],
-      },
-    });
-
-    const makeEntry = (
-      overrides: Partial<MedicationInputEntry> & { medication: Medication },
-    ): MedicationInputEntry => ({
-      id: `entry-${Math.random().toString(36).slice(2)}`,
-      display: 'Test Medication',
-      dosage: 1,
-      dosageUnit: null,
-      frequency: null,
-      instruction: null,
-      route: null,
-      duration: 7,
-      durationUnit: { code: 'd', display: 'Day(s)', daysMultiplier: 1 },
-      isSTAT: false,
-      isPRN: false,
-      startDate: new Date('2025-01-01'),
-      dispenseQuantity: 10,
-      dispenseUnit: null,
-      errors: {},
-      hasBeenValidated: false,
-      ...overrides,
-    });
-
-    const makeActiveMed = (
-      overrides: Partial<FhirMedicationRequest> = {},
-    ): FhirMedicationRequest => ({
-      resourceType: 'MedicationRequest',
-      id: `mr-${Math.random().toString(36).slice(2)}`,
-      status: 'active',
-      intent: 'order',
-      subject: { reference: 'Patient/test-patient' },
-      medicationReference: { reference: 'Medication/backend-ref' },
-      authoredOn: '2025-01-01',
-      dosageInstruction: [
-        {
-          timing: {
-            event: ['2025-01-01'],
-            repeat: { duration: 7, durationUnit: 'd' },
-          },
-        },
-      ],
-      ...overrides,
-    });
-
     test('returns false when no matching medications exist', () => {
       const newMed = makeMedication('med-paracetamol-500');
 
