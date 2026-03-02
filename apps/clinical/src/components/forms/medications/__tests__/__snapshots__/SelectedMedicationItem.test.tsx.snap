@@ -33,12 +33,12 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
           for="stat-entry-1"
           title=""
         >
-          <span
+          <div
             class="cds--checkbox-label-text"
             dir="auto"
           >
             STAT
-          </span>
+          </div>
         </label>
         <div
           class="cds--checkbox__validation-msg"
@@ -59,12 +59,12 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
           for="prn-entry-1"
           title=""
         >
-          <span
+          <div
             class="cds--checkbox-label-text"
             dir="auto"
           >
             PRN
-          </span>
+          </div>
         </label>
         <div
           class="cds--checkbox__validation-msg"
@@ -150,7 +150,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
+                    d="M17 15 17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
                   />
                 </svg>
               </button>
@@ -167,8 +167,8 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_s8_-toggle-button"
-          id="downshift-_r_s8_-label"
+          for="downshift-_r_kd_-toggle-button"
+          id="downshift-_r_kd_-label"
         >
           Dosage unit
         </label>
@@ -178,12 +178,12 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_s8_-menu"
+            aria-controls="downshift-_r_kd_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Dosage Unit"
             class="cds--list-box__field"
-            id="downshift-_r_s8_-toggle-button"
+            id="downshift-_r_kd_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Dosage unit"
@@ -210,7 +210,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
                 <title>
                   Open menu
@@ -219,9 +219,9 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_s8_-label"
+            aria-labelledby="downshift-_r_kd_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_s8_-menu"
+            id="downshift-_r_kd_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -237,8 +237,8 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_sb_-toggle-button"
-          id="downshift-_r_sb_-label"
+          for="downshift-_r_kf_-toggle-button"
+          id="downshift-_r_kf_-label"
         >
           Frequency
         </label>
@@ -248,12 +248,12 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_sb_-menu"
+            aria-controls="downshift-_r_kf_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Frequency"
             class="cds--list-box__field"
-            id="downshift-_r_sb_-toggle-button"
+            id="downshift-_r_kf_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Frequency"
@@ -280,7 +280,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
                 <title>
                   Open menu
@@ -289,9 +289,9 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_sb_-label"
+            aria-labelledby="downshift-_r_kf_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_sb_-menu"
+            id="downshift-_r_kf_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -377,7 +377,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
+                    d="M17 15 17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
                   />
                 </svg>
               </button>
@@ -394,8 +394,8 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_se_-toggle-button"
-          id="downshift-_r_se_-label"
+          for="downshift-_r_kh_-toggle-button"
+          id="downshift-_r_kh_-label"
         >
           Duration unit
         </label>
@@ -405,12 +405,12 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_se_-menu"
+            aria-controls="downshift-_r_kh_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Duration Unit"
             class="cds--list-box__field"
-            id="downshift-_r_se_-toggle-button"
+            id="downshift-_r_kh_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Duration unit"
@@ -437,7 +437,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
                 <title>
                   Open menu
@@ -446,9 +446,9 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_se_-label"
+            aria-labelledby="downshift-_r_kh_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_se_-menu"
+            id="downshift-_r_kh_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -464,8 +464,8 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_sh_-toggle-button"
-          id="downshift-_r_sh_-label"
+          for="downshift-_r_kj_-toggle-button"
+          id="downshift-_r_kj_-label"
         >
           Instructions
         </label>
@@ -475,12 +475,12 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_sh_-menu"
+            aria-controls="downshift-_r_kj_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Medication Instructions"
             class="cds--list-box__field"
-            id="downshift-_r_sh_-toggle-button"
+            id="downshift-_r_kj_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Instructions"
@@ -507,7 +507,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
                 <title>
                   Open menu
@@ -516,9 +516,9 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_sh_-label"
+            aria-labelledby="downshift-_r_kj_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_sh_-menu"
+            id="downshift-_r_kj_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -534,8 +534,8 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_sk_-toggle-button"
-          id="downshift-_r_sk_-label"
+          for="downshift-_r_kl_-toggle-button"
+          id="downshift-_r_kl_-label"
         >
           Route
         </label>
@@ -545,12 +545,12 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_sk_-menu"
+            aria-controls="downshift-_r_kl_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Route"
             class="cds--list-box__field"
-            id="downshift-_r_sk_-toggle-button"
+            id="downshift-_r_kl_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Route"
@@ -577,7 +577,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
                 <title>
                   Open menu
@@ -586,9 +586,9 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_sk_-label"
+            aria-labelledby="downshift-_r_kl_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_sk_-menu"
+            id="downshift-_r_kl_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -706,12 +706,12 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           for="stat-entry-1"
           title=""
         >
-          <span
+          <div
             class="cds--checkbox-label-text"
             dir="auto"
           >
             STAT
-          </span>
+          </div>
         </label>
         <div
           class="cds--checkbox__validation-msg"
@@ -732,12 +732,12 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           for="prn-entry-1"
           title=""
         >
-          <span
+          <div
             class="cds--checkbox-label-text"
             dir="auto"
           >
             PRN
-          </span>
+          </div>
         </label>
         <div
           class="cds--checkbox__validation-msg"
@@ -846,7 +846,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
+                    d="M17 15 17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
                   />
                 </svg>
               </button>
@@ -870,8 +870,8 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_sq_-toggle-button"
-          id="downshift-_r_sq_-label"
+          for="downshift-_r_kq_-toggle-button"
+          id="downshift-_r_kq_-label"
         >
           Dosage unit
         </label>
@@ -902,12 +902,13 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           </svg>
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_sq_-menu"
+            aria-controls="downshift-_r_kq_-menu"
+            aria-describedby="dosage-unit-entry-1-error-msg"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Dosage Unit"
             class="cds--list-box__field"
-            id="downshift-_r_sq_-toggle-button"
+            id="downshift-_r_kq_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Dosage unit"
@@ -934,7 +935,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
                 <title>
                   Open menu
@@ -943,15 +944,16 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_sq_-label"
+            aria-labelledby="downshift-_r_kq_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_sq_-menu"
+            id="downshift-_r_kq_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
         <div
           class="cds--form-requirement"
+          id="dosage-unit-entry-1-error-msg"
         >
           Please select a value
         </div>
@@ -966,8 +968,8 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_st_-toggle-button"
-          id="downshift-_r_st_-label"
+          for="downshift-_r_ks_-toggle-button"
+          id="downshift-_r_ks_-label"
         >
           Frequency
         </label>
@@ -998,12 +1000,13 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           </svg>
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_st_-menu"
+            aria-controls="downshift-_r_ks_-menu"
+            aria-describedby="frequency-entry-1-error-msg"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Frequency"
             class="cds--list-box__field"
-            id="downshift-_r_st_-toggle-button"
+            id="downshift-_r_ks_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Frequency"
@@ -1030,7 +1033,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
                 <title>
                   Open menu
@@ -1039,15 +1042,16 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_st_-label"
+            aria-labelledby="downshift-_r_ks_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_st_-menu"
+            id="downshift-_r_ks_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
         <div
           class="cds--form-requirement"
+          id="frequency-entry-1-error-msg"
         >
           Please select a value
         </div>
@@ -1155,7 +1159,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
+                    d="M17 15 17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
                   />
                 </svg>
               </button>
@@ -1179,8 +1183,8 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_t0_-toggle-button"
-          id="downshift-_r_t0_-label"
+          for="downshift-_r_ku_-toggle-button"
+          id="downshift-_r_ku_-label"
         >
           Duration unit
         </label>
@@ -1211,12 +1215,13 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           </svg>
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_t0_-menu"
+            aria-controls="downshift-_r_ku_-menu"
+            aria-describedby="duration-unit-entry-1-error-msg"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Duration Unit"
             class="cds--list-box__field"
-            id="downshift-_r_t0_-toggle-button"
+            id="downshift-_r_ku_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Duration unit"
@@ -1243,7 +1248,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
                 <title>
                   Open menu
@@ -1252,15 +1257,16 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_t0_-label"
+            aria-labelledby="downshift-_r_ku_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_t0_-menu"
+            id="downshift-_r_ku_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
         <div
           class="cds--form-requirement"
+          id="duration-unit-entry-1-error-msg"
         >
           Please select a value
         </div>
@@ -1275,8 +1281,8 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_t3_-toggle-button"
-          id="downshift-_r_t3_-label"
+          for="downshift-_r_l0_-toggle-button"
+          id="downshift-_r_l0_-label"
         >
           Instructions
         </label>
@@ -1286,12 +1292,12 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_t3_-menu"
+            aria-controls="downshift-_r_l0_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Medication Instructions"
             class="cds--list-box__field"
-            id="downshift-_r_t3_-toggle-button"
+            id="downshift-_r_l0_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Instructions"
@@ -1318,7 +1324,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
                 <title>
                   Open menu
@@ -1327,9 +1333,9 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_t3_-label"
+            aria-labelledby="downshift-_r_l0_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_t3_-menu"
+            id="downshift-_r_l0_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -1345,8 +1351,8 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_t6_-toggle-button"
-          id="downshift-_r_t6_-label"
+          for="downshift-_r_l2_-toggle-button"
+          id="downshift-_r_l2_-label"
         >
           Route
         </label>
@@ -1377,12 +1383,13 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           </svg>
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_t6_-menu"
+            aria-controls="downshift-_r_l2_-menu"
+            aria-describedby="route-entry-1-error-msg"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Route"
             class="cds--list-box__field"
-            id="downshift-_r_t6_-toggle-button"
+            id="downshift-_r_l2_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Route"
@@ -1409,7 +1416,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  d="M8 11 3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
                 <title>
                   Open menu
@@ -1418,15 +1425,16 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_t6_-label"
+            aria-labelledby="downshift-_r_l2_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_t6_-menu"
+            id="downshift-_r_l2_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
         </div>
         <div
           class="cds--form-requirement"
+          id="route-entry-1-error-msg"
         >
           Please select a value
         </div>

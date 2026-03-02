@@ -38,12 +38,12 @@ exports[`SelectedInvestigationItem Snapshot matches snapshot 1`] = `
         for="investigation-priority-checkbox-test-investigation-1"
         title=""
       >
-        <span
+        <div
           class="cds--checkbox-label-text"
           dir="auto"
         >
           Urgent
-        </span>
+        </div>
       </label>
       <div
         class="cds--checkbox__validation-msg"
@@ -84,12 +84,12 @@ exports[`SelectedInvestigationItem Snapshot matches snapshot with existing note 
         for="investigation-priority-checkbox-test-investigation-1"
         title=""
       >
-        <span
+        <div
           class="cds--checkbox-label-text"
           dir="auto"
         >
           Urgent
-        </span>
+        </div>
       </label>
       <div
         class="cds--checkbox__validation-msg"
