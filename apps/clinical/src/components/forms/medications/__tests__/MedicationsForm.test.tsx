@@ -673,33 +673,21 @@ describe('MedicationsForm', () => {
     const duplicateNotificationPattern =
       /one or more drugs you are trying to order are already active/i;
 
-    test('shows duplicate notification when medications have overlapping dates', async () => {
+    test('shows duplicate notification when same medication is added with overlapping dates', async () => {
       const med1: MedicationInputEntry = {
         ...mockSelectedMedication,
-        id: 'med-1',
+        id: 'entry-1',
         startDate: new Date('2025-01-01'),
         duration: 10,
         durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
-        medication: {
-          ...mockMedication,
-          code: {
-            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
-          },
-        },
       };
 
       const med2: MedicationInputEntry = {
         ...mockSelectedMedication,
-        id: 'med-2',
+        id: 'entry-2',
         startDate: new Date('2025-01-05'),
         duration: 10,
         durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
-        medication: {
-          ...mockMedication,
-          code: {
-            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
-          },
-        },
       };
 
       (useMedicationStore as unknown as jest.Mock).mockReturnValue({
@@ -716,33 +704,21 @@ describe('MedicationsForm', () => {
       });
     });
 
-    test('does not show duplicate notification when medications have non-overlapping dates', async () => {
+    test('does not show duplicate notification when same medication has non-overlapping dates', async () => {
       const med1: MedicationInputEntry = {
         ...mockSelectedMedication,
-        id: 'med-1',
+        id: 'entry-1',
         startDate: new Date('2025-01-01'),
         duration: 5,
         durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
-        medication: {
-          ...mockMedication,
-          code: {
-            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
-          },
-        },
       };
 
       const med2: MedicationInputEntry = {
         ...mockSelectedMedication,
-        id: 'med-2',
+        id: 'entry-2',
         startDate: new Date('2025-01-10'),
         duration: 5,
         durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
-        medication: {
-          ...mockMedication,
-          code: {
-            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
-          },
-        },
       };
 
       (useMedicationStore as unknown as jest.Mock).mockReturnValue({
@@ -759,32 +735,20 @@ describe('MedicationsForm', () => {
       });
     });
 
-    test('shows duplicate notification when STAT medication matches another with same code', async () => {
+    test('shows duplicate notification when STAT medication matches same drug', async () => {
       const statMed: MedicationInputEntry = {
         ...mockSelectedMedication,
-        id: 'stat-med',
+        id: 'entry-stat',
         isSTAT: true,
-        medication: {
-          ...mockMedication,
-          code: {
-            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
-          },
-        },
       };
 
       const regularMed: MedicationInputEntry = {
         ...mockSelectedMedication,
-        id: 'regular-med',
+        id: 'entry-regular',
         isSTAT: false,
         startDate: new Date('2025-01-15'),
         duration: 5,
         durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
-        medication: {
-          ...mockMedication,
-          code: {
-            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
-          },
-        },
       };
 
       (useMedicationStore as unknown as jest.Mock).mockReturnValue({
@@ -801,36 +765,24 @@ describe('MedicationsForm', () => {
       });
     });
 
-    test('shows duplicate notification for PRN medications with same code and overlapping dates', async () => {
+    test('shows duplicate notification for PRN medications with same drug and overlapping dates', async () => {
       const prnMed: MedicationInputEntry = {
         ...mockSelectedMedication,
-        id: 'prn-med',
+        id: 'entry-prn',
         isPRN: true,
         startDate: new Date('2025-01-01'),
         duration: 10,
         durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
-        medication: {
-          ...mockMedication,
-          code: {
-            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
-          },
-        },
       };
 
       const scheduledMed: MedicationInputEntry = {
         ...mockSelectedMedication,
-        id: 'scheduled-med',
+        id: 'entry-scheduled',
         isPRN: false,
         isSTAT: false,
         startDate: new Date('2025-01-01'),
         duration: 10,
         durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
-        medication: {
-          ...mockMedication,
-          code: {
-            coding: [{ code: 'code1', system: 'http://snomed.info/sct' }],
-          },
-        },
       };
 
       (useMedicationStore as unknown as jest.Mock).mockReturnValue({
@@ -844,6 +796,48 @@ describe('MedicationsForm', () => {
         expect(
           screen.queryByText(duplicateNotificationPattern),
         ).toBeInTheDocument();
+      });
+    });
+
+    test('does not show duplicate notification for different formulations of the same concept', async () => {
+      const paracetamol500: Medication = {
+        ...mockMedication,
+        id: 'med-paracetamol-500',
+      };
+      const paracetamol650: Medication = {
+        ...mockMedication,
+        id: 'med-paracetamol-650',
+      };
+
+      const entry1: MedicationInputEntry = {
+        ...mockSelectedMedication,
+        id: 'entry-1',
+        medication: paracetamol500,
+        startDate: new Date('2025-01-01'),
+        duration: 10,
+        durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
+      };
+
+      const entry2: MedicationInputEntry = {
+        ...mockSelectedMedication,
+        id: 'entry-2',
+        medication: paracetamol650,
+        startDate: new Date('2025-01-01'),
+        duration: 10,
+        durationUnit: { code: 'd', display: 'Days', daysMultiplier: 1 },
+      };
+
+      (useMedicationStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedMedications: [entry1, entry2],
+      });
+
+      render(<MedicationsForm />);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(duplicateNotificationPattern),
+        ).not.toBeInTheDocument();
       });
     });
   });

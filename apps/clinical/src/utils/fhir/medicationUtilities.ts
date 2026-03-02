@@ -74,7 +74,7 @@ export const extractMedicationCodes = (
   return codes;
 };
 
-export const medicationsMatchByCode = (
+export const medicationsMatchByConceptCode = (
   medication1: CodeableResource | unknown,
   medication2: CodeableResource | unknown,
 ): boolean => {
@@ -105,6 +105,16 @@ export const medicationsMatchByCode = (
   }
 
   return false;
+};
+
+export const medicationsMatchById = (
+  medication1: CodeableResource | unknown,
+  medication2: CodeableResource | unknown,
+): boolean => {
+  if (!medication1 || !medication2) return false;
+  const med1 = medication1 as { id?: string };
+  const med2 = medication2 as { id?: string };
+  return !!med1.id && !!med2.id && med1.id === med2.id;
 };
 
 export const extractMedicationRefId = (
@@ -154,7 +164,7 @@ export const checkMedicationsOverlap = (
     for (let j = i + 1; j < selectedMedications.length; j++) {
       const other = selectedMedications[j];
 
-      if (!medicationsMatchByCode(current.medication, other.medication)) {
+      if (!medicationsMatchById(current.medication, other.medication)) {
         continue;
       }
 
@@ -206,7 +216,7 @@ export const checkMedicationsOverlap = (
 
         if (
           !medicationResource ||
-          !medicationsMatchByCode(current.medication, medicationResource)
+          !medicationsMatchById(current.medication, medicationResource)
         ) {
           return false;
         }
@@ -291,7 +301,7 @@ export const isDuplicateMedication = (
 
       if (
         !medicationResource ||
-        !medicationsMatchByCode(newMedication, medicationResource)
+        !medicationsMatchById(newMedication, medicationResource)
       ) {
         return false;
       }
@@ -337,7 +347,7 @@ export const isDuplicateMedication = (
 
   const isSelectedDuplicate = selectedMedications.some(
     (selected: MedicationInputEntry) => {
-      return medicationsMatchByCode(newMedication, selected.medication);
+      return medicationsMatchById(newMedication, selected.medication);
     },
   );
 

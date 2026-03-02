@@ -8,7 +8,8 @@ import {
   checkMedicationsOverlap,
   extractMedicationCodes,
   isDuplicateMedication,
-  medicationsMatchByCode,
+  medicationsMatchByConceptCode,
+  medicationsMatchById,
   extractDoseForm,
 } from '../medicationUtilities';
 
@@ -86,7 +87,7 @@ describe('Medication Utilities', () => {
         },
       };
 
-      const matches = medicationsMatchByCode(med1, med2);
+      const matches = medicationsMatchByConceptCode(med1, med2);
 
       expect(matches).toBe(true);
     });
@@ -98,16 +99,13 @@ describe('Medication Utilities', () => {
     });
   });
 
-  describe('medicationsMatchByCode', () => {
+  describe('medicationsMatchByConceptCode', () => {
     test('matches medications with identical SNOMED codes', () => {
       const med1 = {
         id: 'med-1',
         code: {
           coding: [
-            {
-              code: 'paracetamol-500',
-              system: 'http://snomed.info/sct',
-            },
+            { code: 'paracetamol-500', system: 'http://snomed.info/sct' },
           ],
         },
       };
@@ -116,17 +114,12 @@ describe('Medication Utilities', () => {
         id: 'med-2',
         code: {
           coding: [
-            {
-              code: 'paracetamol-500',
-              system: 'http://snomed.info/sct',
-            },
+            { code: 'paracetamol-500', system: 'http://snomed.info/sct' },
           ],
         },
       };
 
-      const matches = medicationsMatchByCode(med1, med2);
-
-      expect(matches).toBe(true);
+      expect(medicationsMatchByConceptCode(med1, med2)).toBe(true);
     });
 
     test('does not match medications with different codes', () => {
@@ -134,10 +127,7 @@ describe('Medication Utilities', () => {
         id: 'med-1',
         code: {
           coding: [
-            {
-              code: 'paracetamol-500',
-              system: 'http://snomed.info/sct',
-            },
+            { code: 'paracetamol-500', system: 'http://snomed.info/sct' },
           ],
         },
       };
@@ -146,45 +136,52 @@ describe('Medication Utilities', () => {
         id: 'med-2',
         code: {
           coding: [
-            {
-              code: 'ibuprofen-400',
-              system: 'http://snomed.info/sct',
-            },
+            { code: 'ibuprofen-400', system: 'http://snomed.info/sct' },
           ],
         },
       };
 
-      const matches = medicationsMatchByCode(med1, med2);
-
-      expect(matches).toBe(false);
+      expect(medicationsMatchByConceptCode(med1, med2)).toBe(false);
     });
 
     test('matches OpenMRS concepts by code value alone', () => {
-      const med1 = {
-        id: 'med-1',
-        code: {
-          coding: [
-            {
-              code: '5000',
-            },
-          ],
-        },
-      };
+      const med1 = { id: 'med-1', code: { coding: [{ code: '5000' }] } };
+      const med2 = { id: 'med-2', code: { coding: [{ code: '5000' }] } };
 
-      const med2 = {
-        id: 'med-2',
-        code: {
-          coding: [
-            {
-              code: '5000',
-            },
-          ],
-        },
-      };
+      expect(medicationsMatchByConceptCode(med1, med2)).toBe(true);
+    });
+  });
 
-      const matches = medicationsMatchByCode(med1, med2);
+  describe('medicationsMatchById', () => {
+    test('matches medications with the same ID', () => {
+      const med1 = { id: 'med-paracetamol-500', code: {} };
+      const med2 = { id: 'med-paracetamol-500', code: {} };
 
-      expect(matches).toBe(true);
+      expect(medicationsMatchById(med1, med2)).toBe(true);
+    });
+
+    test('does not match medications with different IDs', () => {
+      const med1 = { id: 'med-paracetamol-500', code: {} };
+      const med2 = { id: 'med-paracetamol-650', code: {} };
+
+      expect(medicationsMatchById(med1, med2)).toBe(false);
+    });
+
+    test('returns false when either medication is null or undefined', () => {
+      const med = { id: 'med-1', code: {} };
+
+      expect(medicationsMatchById(null, med)).toBe(false);
+      expect(medicationsMatchById(med, null)).toBe(false);
+      expect(medicationsMatchById(null, null)).toBe(false);
+      expect(medicationsMatchById(undefined, undefined)).toBe(false);
+    });
+
+    test('returns false when either medication has no ID', () => {
+      const medWithId = { id: 'med-1', code: {} };
+      const medWithoutId = { code: {} };
+
+      expect(medicationsMatchById(medWithId, medWithoutId)).toBe(false);
+      expect(medicationsMatchById(medWithoutId, medWithId)).toBe(false);
     });
   });
 
@@ -219,13 +216,14 @@ describe('Medication Utilities', () => {
 
   describe('checkMedicationsOverlap', () => {
     const makeMedication = (
-      code: string,
+      id: string,
+      code?: string,
       system = 'http://snomed.info/sct',
     ): Medication => ({
       resourceType: 'Medication',
-      id: `med-${code}`,
+      id,
       code: {
-        coding: [{ code, system }],
+        coding: [{ code: code ?? id, system }],
       },
     });
 
@@ -278,8 +276,8 @@ describe('Medication Utilities', () => {
       expect(result).toBe(false);
     });
 
-    test('returns true when two selected medications with same FHIR code have overlapping dates', () => {
-      const med = makeMedication('paracetamol-500');
+    test('returns true when same medication is added twice with overlapping dates', () => {
+      const med = makeMedication('med-paracetamol-500');
       const entry1 = makeEntry({
         medication: med,
         startDate: new Date('2025-01-01'),
@@ -296,8 +294,8 @@ describe('Medication Utilities', () => {
       expect(result).toBe(true);
     });
 
-    test('returns true when a STAT medication is paired with another selected medication with same code', () => {
-      const med = makeMedication('paracetamol-500');
+    test('returns true when a STAT medication is paired with same medication', () => {
+      const med = makeMedication('med-paracetamol-500');
       const entry1 = makeEntry({ medication: med, isSTAT: true });
       const entry2 = makeEntry({ medication: med });
 
@@ -306,8 +304,8 @@ describe('Medication Utilities', () => {
       expect(result).toBe(true);
     });
 
-    test('returns true when selected STAT medication matches an active backend medication with same code', () => {
-      const medResource = makeMedication('paracetamol-500');
+    test('returns true when selected STAT medication matches an active backend medication', () => {
+      const medResource = makeMedication('med-paracetamol-500');
       const statEntry = makeEntry({
         medication: medResource,
         isSTAT: true,
@@ -315,7 +313,9 @@ describe('Medication Utilities', () => {
         duration: 7,
       });
       const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/active-1' },
+        medicationReference: {
+          reference: 'Medication/med-paracetamol-500-ref',
+        },
         dosageInstruction: [
           {
             timing: {
@@ -326,7 +326,7 @@ describe('Medication Utilities', () => {
         ],
       });
       const medicationMap: Record<string, Medication> = {
-        'active-1': medResource,
+        'med-paracetamol-500-ref': medResource,
       };
 
       const result = checkMedicationsOverlap(
@@ -338,19 +338,21 @@ describe('Medication Utilities', () => {
       expect(result).toBe(true);
     });
 
-    test('returns true when active backend medication is STAT and selected medication has same code', () => {
-      const medResource = makeMedication('paracetamol-500');
+    test('returns true when active backend medication is STAT and selected medication is the same drug', () => {
+      const medResource = makeMedication('med-paracetamol-500');
       const regularEntry = makeEntry({
         medication: medResource,
         startDate: new Date('2025-01-03'),
         duration: 7,
       });
       const statActiveMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/active-1' },
+        medicationReference: {
+          reference: 'Medication/med-paracetamol-500-ref',
+        },
         priority: 'stat',
       });
       const medicationMap: Record<string, Medication> = {
-        'active-1': medResource,
+        'med-paracetamol-500-ref': medResource,
       };
 
       const result = checkMedicationsOverlap(
@@ -362,8 +364,8 @@ describe('Medication Utilities', () => {
       expect(result).toBe(true);
     });
 
-    test('returns true when PRN medications have same code and overlapping dates', () => {
-      const med = makeMedication('paracetamol-500');
+    test('returns true when PRN medications with same ID have overlapping dates', () => {
+      const med = makeMedication('med-paracetamol-500');
       const entry1 = makeEntry({
         medication: med,
         isPRN: true,
@@ -382,15 +384,17 @@ describe('Medication Utilities', () => {
       expect(result).toBe(true);
     });
 
-    test('returns true when selected medication overlaps with existing backend medication', () => {
-      const medResource = makeMedication('paracetamol-500');
+    test('returns true when selected medication overlaps with active backend medication', () => {
+      const medResource = makeMedication('med-paracetamol-500');
       const entry = makeEntry({
         medication: medResource,
         startDate: new Date('2025-01-03'),
         duration: 7,
       });
       const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/active-1' },
+        medicationReference: {
+          reference: 'Medication/med-paracetamol-500-ref',
+        },
         dosageInstruction: [
           {
             timing: {
@@ -401,7 +405,7 @@ describe('Medication Utilities', () => {
         ],
       });
       const medicationMap: Record<string, Medication> = {
-        'active-1': medResource,
+        'med-paracetamol-500-ref': medResource,
       };
 
       const result = checkMedicationsOverlap(
@@ -413,15 +417,17 @@ describe('Medication Utilities', () => {
       expect(result).toBe(true);
     });
 
-    test('returns false when selected and existing medications have same code but non-overlapping dates', () => {
-      const medResource = makeMedication('paracetamol-500');
+    test('returns false when same medication has non-overlapping dates', () => {
+      const medResource = makeMedication('med-paracetamol-500');
       const entry = makeEntry({
         medication: medResource,
         startDate: new Date('2025-02-01'),
         duration: 7,
       });
       const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/active-1' },
+        medicationReference: {
+          reference: 'Medication/med-paracetamol-500-ref',
+        },
         dosageInstruction: [
           {
             timing: {
@@ -432,7 +438,7 @@ describe('Medication Utilities', () => {
         ],
       });
       const medicationMap: Record<string, Medication> = {
-        'active-1': medResource,
+        'med-paracetamol-500-ref': medResource,
       };
 
       const result = checkMedicationsOverlap(
@@ -444,9 +450,9 @@ describe('Medication Utilities', () => {
       expect(result).toBe(false);
     });
 
-    test('returns false when medications have different codes', () => {
-      const med1 = makeMedication('paracetamol-500');
-      const med2 = makeMedication('ibuprofen-400');
+    test('returns false when different medications have overlapping dates', () => {
+      const med1 = makeMedication('med-paracetamol-500');
+      const med2 = makeMedication('med-ibuprofen-400');
       const entry1 = makeEntry({
         medication: med1,
         startDate: new Date('2025-01-01'),
@@ -463,8 +469,71 @@ describe('Medication Utilities', () => {
       expect(result).toBe(false);
     });
 
+    test('returns false for different formulations of the same concept with overlapping dates', () => {
+      const paracetamol500 = makeMedication(
+        'med-paracetamol-500',
+        'paracetamol-concept',
+      );
+      const paracetamol650 = makeMedication(
+        'med-paracetamol-650',
+        'paracetamol-concept',
+      );
+      const entry1 = makeEntry({
+        medication: paracetamol500,
+        startDate: new Date('2025-01-01'),
+        duration: 7,
+      });
+      const entry2 = makeEntry({
+        medication: paracetamol650,
+        startDate: new Date('2025-01-01'),
+        duration: 7,
+      });
+
+      const result = checkMedicationsOverlap([entry1, entry2], [], {});
+
+      expect(result).toBe(false);
+    });
+
+    test('returns false for different formulations against active backend medication', () => {
+      const paracetamol500 = makeMedication(
+        'med-paracetamol-500',
+        'paracetamol-concept',
+      );
+      const paracetamol650 = makeMedication(
+        'med-paracetamol-650',
+        'paracetamol-concept',
+      );
+      const entry = makeEntry({
+        medication: paracetamol650,
+        startDate: new Date('2025-01-03'),
+        duration: 7,
+      });
+      const activeMed = makeActiveMed({
+        medicationReference: { reference: 'Medication/backend-ref' },
+        dosageInstruction: [
+          {
+            timing: {
+              event: ['2025-01-01'],
+              repeat: { duration: 7, durationUnit: 'd' },
+            },
+          },
+        ],
+      });
+      const medicationMap: Record<string, Medication> = {
+        'backend-ref': paracetamol500,
+      };
+
+      const result = checkMedicationsOverlap(
+        [entry],
+        [activeMed],
+        medicationMap,
+      );
+
+      expect(result).toBe(false);
+    });
+
     test('handles duration=0 by defaulting to 1', () => {
-      const med = makeMedication('paracetamol-500');
+      const med = makeMedication('med-paracetamol-500');
       const entry1 = makeEntry({
         medication: med,
         startDate: new Date('2025-01-01'),
@@ -489,14 +558,16 @@ describe('Medication Utilities', () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const medResource = makeMedication('albendazole-200');
+      const medResource = makeMedication('med-albendazole-200');
       const entry = makeEntry({
         medication: medResource,
         startDate: today,
         duration: 1,
       });
       const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/active-1' },
+        medicationReference: {
+          reference: 'Medication/med-albendazole-200-ref',
+        },
         dosageInstruction: [
           {
             timing: {
@@ -507,7 +578,7 @@ describe('Medication Utilities', () => {
         ],
       });
       const medicationMap: Record<string, Medication> = {
-        'active-1': medResource,
+        'med-albendazole-200-ref': medResource,
       };
 
       const result = checkMedicationsOverlap(
@@ -522,13 +593,14 @@ describe('Medication Utilities', () => {
 
   describe('isDuplicateMedication', () => {
     const makeMedication = (
-      code: string,
+      id: string,
+      code?: string,
       system = 'http://snomed.info/sct',
     ): Medication => ({
       resourceType: 'Medication',
-      id: `med-${code}`,
+      id,
       code: {
-        coding: [{ code, system }],
+        coding: [{ code: code ?? id, system }],
       },
     });
 
@@ -562,7 +634,7 @@ describe('Medication Utilities', () => {
       status: 'active',
       intent: 'order',
       subject: { reference: 'Patient/test-patient' },
-      medicationReference: { reference: 'Medication/active-1' },
+      medicationReference: { reference: 'Medication/backend-ref' },
       authoredOn: '2025-01-01',
       dosageInstruction: [
         {
@@ -576,7 +648,7 @@ describe('Medication Utilities', () => {
     });
 
     test('returns false when no matching medications exist', () => {
-      const newMed = makeMedication('paracetamol-500');
+      const newMed = makeMedication('med-paracetamol-500');
 
       const result = isDuplicateMedication(
         newMed,
@@ -591,11 +663,10 @@ describe('Medication Utilities', () => {
       expect(result).toBe(false);
     });
 
-    test('returns true when new medication matches existing active medication by code with overlapping dates', () => {
-      const newMed = makeMedication('paracetamol-500');
-      const existingMedResource = makeMedication('paracetamol-500');
+    test('returns true when same medication is active with overlapping dates', () => {
+      const medResource = makeMedication('med-paracetamol-500');
       const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/active-1' },
+        medicationReference: { reference: 'Medication/backend-ref' },
         dosageInstruction: [
           {
             timing: {
@@ -606,7 +677,138 @@ describe('Medication Utilities', () => {
         ],
       });
       const medicationMap: Record<string, Medication> = {
-        'active-1': existingMedResource,
+        'backend-ref': medResource,
+      };
+
+      const result = isDuplicateMedication(
+        medResource,
+        new Date('2025-01-03'),
+        7,
+        'd',
+        [activeMed],
+        [],
+        medicationMap,
+      );
+
+      expect(result).toBe(true);
+    });
+
+    test('returns true when same medication is already selected', () => {
+      const med = makeMedication('med-paracetamol-500');
+      const selectedEntry = makeEntry({ medication: med });
+
+      const result = isDuplicateMedication(
+        med,
+        new Date('2025-01-01'),
+        7,
+        'd',
+        [],
+        [selectedEntry],
+        {},
+      );
+
+      expect(result).toBe(true);
+    });
+
+    test('returns false for different formulation already selected', () => {
+      const newMed = makeMedication(
+        'med-paracetamol-650',
+        'paracetamol-concept',
+      );
+      const selectedMed = makeMedication(
+        'med-paracetamol-500',
+        'paracetamol-concept',
+      );
+      const selectedEntry = makeEntry({ medication: selectedMed });
+
+      const result = isDuplicateMedication(
+        newMed,
+        new Date('2025-01-01'),
+        7,
+        'd',
+        [],
+        [selectedEntry],
+        {},
+      );
+
+      expect(result).toBe(false);
+    });
+
+    test('returns true when existing active medication is STAT', () => {
+      const medResource = makeMedication('med-paracetamol-500');
+      const activeMed = makeActiveMed({
+        medicationReference: { reference: 'Medication/backend-ref' },
+        priority: 'stat',
+      });
+      const medicationMap: Record<string, Medication> = {
+        'backend-ref': medResource,
+      };
+
+      const result = isDuplicateMedication(
+        medResource,
+        new Date('2025-03-01'),
+        7,
+        'd',
+        [activeMed],
+        [],
+        medicationMap,
+      );
+
+      expect(result).toBe(true);
+    });
+
+    test('returns false when dates do not overlap', () => {
+      const medResource = makeMedication('med-paracetamol-500');
+      const activeMed = makeActiveMed({
+        medicationReference: { reference: 'Medication/backend-ref' },
+        dosageInstruction: [
+          {
+            timing: {
+              event: ['2025-01-01'],
+              repeat: { duration: 3, durationUnit: 'd' },
+            },
+          },
+        ],
+      });
+      const medicationMap: Record<string, Medication> = {
+        'backend-ref': medResource,
+      };
+
+      const result = isDuplicateMedication(
+        medResource,
+        new Date('2025-02-01'),
+        7,
+        'd',
+        [activeMed],
+        [],
+        medicationMap,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    test('returns false for different formulation active in backend with overlapping dates', () => {
+      const newMed = makeMedication(
+        'med-paracetamol-650',
+        'paracetamol-concept',
+      );
+      const existingMed = makeMedication(
+        'med-paracetamol-500',
+        'paracetamol-concept',
+      );
+      const activeMed = makeActiveMed({
+        medicationReference: { reference: 'Medication/backend-ref' },
+        dosageInstruction: [
+          {
+            timing: {
+              event: ['2025-01-01'],
+              repeat: { duration: 7, durationUnit: 'd' },
+            },
+          },
+        ],
+      });
+      const medicationMap: Record<string, Medication> = {
+        'backend-ref': existingMed,
       };
 
       const result = isDuplicateMedication(
@@ -619,88 +821,13 @@ describe('Medication Utilities', () => {
         medicationMap,
       );
 
-      expect(result).toBe(true);
-    });
-
-    test('returns true when new medication matches an already-selected medication by code', () => {
-      const newMed = makeMedication('paracetamol-500');
-      const selectedEntry = makeEntry({
-        medication: makeMedication('paracetamol-500'),
-      });
-
-      const result = isDuplicateMedication(
-        newMed,
-        new Date('2025-01-01'),
-        7,
-        'd',
-        [],
-        [selectedEntry],
-        {},
-      );
-
-      expect(result).toBe(true);
-    });
-
-    test('returns true when existing medication is STAT and codes match', () => {
-      const newMed = makeMedication('paracetamol-500');
-      const existingMedResource = makeMedication('paracetamol-500');
-      const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/active-1' },
-        priority: 'stat',
-      });
-      const medicationMap: Record<string, Medication> = {
-        'active-1': existingMedResource,
-      };
-
-      const result = isDuplicateMedication(
-        newMed,
-        new Date('2025-03-01'),
-        7,
-        'd',
-        [activeMed],
-        [],
-        medicationMap,
-      );
-
-      expect(result).toBe(true);
-    });
-
-    test('returns false when dates do not overlap even though codes match', () => {
-      const newMed = makeMedication('paracetamol-500');
-      const existingMedResource = makeMedication('paracetamol-500');
-      const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/active-1' },
-        dosageInstruction: [
-          {
-            timing: {
-              event: ['2025-01-01'],
-              repeat: { duration: 3, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'active-1': existingMedResource,
-      };
-
-      const result = isDuplicateMedication(
-        newMed,
-        new Date('2025-02-01'),
-        7,
-        'd',
-        [activeMed],
-        [],
-        medicationMap,
-      );
-
       expect(result).toBe(false);
     });
 
     test('handles duration=0 by defaulting to 1', () => {
-      const newMed = makeMedication('paracetamol-500');
-      const existingMedResource = makeMedication('paracetamol-500');
+      const medResource = makeMedication('med-paracetamol-500');
       const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/active-1' },
+        medicationReference: { reference: 'Medication/backend-ref' },
         dosageInstruction: [
           {
             timing: {
@@ -711,11 +838,11 @@ describe('Medication Utilities', () => {
         ],
       });
       const medicationMap: Record<string, Medication> = {
-        'active-1': existingMedResource,
+        'backend-ref': medResource,
       };
 
       const result = isDuplicateMedication(
-        newMed,
+        medResource,
         new Date('2025-01-01'),
         0,
         'd',
@@ -735,10 +862,9 @@ describe('Medication Utilities', () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const newMed = makeMedication('albendazole-200');
-      const existingMedResource = makeMedication('albendazole-200');
+      const medResource = makeMedication('med-albendazole-200');
       const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/active-1' },
+        medicationReference: { reference: 'Medication/backend-ref' },
         dosageInstruction: [
           {
             timing: {
@@ -749,11 +875,11 @@ describe('Medication Utilities', () => {
         ],
       });
       const medicationMap: Record<string, Medication> = {
-        'active-1': existingMedResource,
+        'backend-ref': medResource,
       };
 
       const result = isDuplicateMedication(
-        newMed,
+        medResource,
         today,
         1,
         'd',

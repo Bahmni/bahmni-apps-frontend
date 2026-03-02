@@ -29,7 +29,7 @@ import { useVaccinationStore } from '../../../stores/vaccinationsStore';
 import {
   checkMedicationsOverlap,
   isDuplicateMedication,
-  medicationsMatchByCode,
+  medicationsMatchById,
 } from '../../../utils/fhir/medicationUtilities';
 
 import SelectedVaccinationItem from './SelectedVaccinationItem';
@@ -211,7 +211,7 @@ const VaccinationForm: React.FC = React.memo(() => {
       const itemDisplayName = getMedicationDisplay(item);
 
       const isAlreadySelected = selectedVaccinations.some((selected) =>
-        medicationsMatchByCode(item, selected.medication),
+        medicationsMatchById(item, selected.medication),
       );
 
       return {
