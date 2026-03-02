@@ -68,6 +68,30 @@ const makeActiveMed = (
   ...overrides,
 });
 
+const makeActiveMedWithRef = (
+  refId: string,
+  startDate = '2025-01-01',
+  duration = 7,
+  durationUnit = 'd',
+  extraOverrides: Partial<FhirMedicationRequest> = {},
+): FhirMedicationRequest =>
+  makeActiveMed({
+    medicationReference: { reference: `Medication/${refId}` },
+    dosageInstruction: [
+      {
+        timing: {
+          event: [startDate],
+          repeat: { duration, durationUnit },
+        },
+      },
+    ],
+    ...extraOverrides,
+  });
+
+const makeMedMap = (
+  ...pairs: [string, Medication][]
+): Record<string, Medication> => Object.fromEntries(pairs);
+
 describe('Medication Utilities', () => {
   describe('extractMedicationCodes', () => {
     test('extracts codes from Medication.code field', () => {
@@ -310,22 +334,11 @@ describe('Medication Utilities', () => {
         startDate: new Date('2025-01-03'),
         duration: 7,
       });
-      const activeMed = makeActiveMed({
-        medicationReference: {
-          reference: 'Medication/med-paracetamol-500-ref',
-        },
-        dosageInstruction: [
-          {
-            timing: {
-              event: ['2025-01-01'],
-              repeat: { duration: 7, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'med-paracetamol-500-ref': medResource,
-      };
+      const activeMed = makeActiveMedWithRef('med-paracetamol-500-ref');
+      const medicationMap = makeMedMap([
+        'med-paracetamol-500-ref',
+        medResource,
+      ]);
 
       const result = checkMedicationsOverlap(
         [statEntry],
@@ -343,15 +356,17 @@ describe('Medication Utilities', () => {
         startDate: new Date('2025-01-03'),
         duration: 7,
       });
-      const statActiveMed = makeActiveMed({
-        medicationReference: {
-          reference: 'Medication/med-paracetamol-500-ref',
-        },
-        priority: 'stat',
-      });
-      const medicationMap: Record<string, Medication> = {
-        'med-paracetamol-500-ref': medResource,
-      };
+      const statActiveMed = makeActiveMedWithRef(
+        'med-paracetamol-500-ref',
+        '2025-01-01',
+        7,
+        'd',
+        { priority: 'stat' },
+      );
+      const medicationMap = makeMedMap([
+        'med-paracetamol-500-ref',
+        medResource,
+      ]);
 
       const result = checkMedicationsOverlap(
         [regularEntry],
@@ -389,22 +404,11 @@ describe('Medication Utilities', () => {
         startDate: new Date('2025-01-03'),
         duration: 7,
       });
-      const activeMed = makeActiveMed({
-        medicationReference: {
-          reference: 'Medication/med-paracetamol-500-ref',
-        },
-        dosageInstruction: [
-          {
-            timing: {
-              event: ['2025-01-01'],
-              repeat: { duration: 7, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'med-paracetamol-500-ref': medResource,
-      };
+      const activeMed = makeActiveMedWithRef('med-paracetamol-500-ref');
+      const medicationMap = makeMedMap([
+        'med-paracetamol-500-ref',
+        medResource,
+      ]);
 
       const result = checkMedicationsOverlap(
         [entry],
@@ -422,22 +426,11 @@ describe('Medication Utilities', () => {
         startDate: new Date('2025-02-01'),
         duration: 7,
       });
-      const activeMed = makeActiveMed({
-        medicationReference: {
-          reference: 'Medication/med-paracetamol-500-ref',
-        },
-        dosageInstruction: [
-          {
-            timing: {
-              event: ['2025-01-01'],
-              repeat: { duration: 7, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'med-paracetamol-500-ref': medResource,
-      };
+      const activeMed = makeActiveMedWithRef('med-paracetamol-500-ref');
+      const medicationMap = makeMedMap([
+        'med-paracetamol-500-ref',
+        medResource,
+      ]);
 
       const result = checkMedicationsOverlap(
         [entry],
@@ -506,20 +499,8 @@ describe('Medication Utilities', () => {
         startDate: new Date('2025-01-03'),
         duration: 7,
       });
-      const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/backend-ref' },
-        dosageInstruction: [
-          {
-            timing: {
-              event: ['2025-01-01'],
-              repeat: { duration: 7, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'backend-ref': paracetamol500,
-      };
+      const activeMed = makeActiveMedWithRef('backend-ref');
+      const medicationMap = makeMedMap(['backend-ref', paracetamol500]);
 
       const result = checkMedicationsOverlap(
         [entry],
@@ -552,7 +533,6 @@ describe('Medication Utilities', () => {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       yesterday.setHours(0, 0, 0, 0);
-
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -562,22 +542,15 @@ describe('Medication Utilities', () => {
         startDate: today,
         duration: 1,
       });
-      const activeMed = makeActiveMed({
-        medicationReference: {
-          reference: 'Medication/med-albendazole-200-ref',
-        },
-        dosageInstruction: [
-          {
-            timing: {
-              event: [yesterday.toISOString()],
-              repeat: { duration: 1, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'med-albendazole-200-ref': medResource,
-      };
+      const activeMed = makeActiveMedWithRef(
+        'med-albendazole-200-ref',
+        yesterday.toISOString(),
+        1,
+      );
+      const medicationMap = makeMedMap([
+        'med-albendazole-200-ref',
+        medResource,
+      ]);
 
       const result = checkMedicationsOverlap(
         [entry],
@@ -608,20 +581,8 @@ describe('Medication Utilities', () => {
 
     test('returns true when same medication is active with overlapping dates', () => {
       const medResource = makeMedication('med-paracetamol-500');
-      const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/backend-ref' },
-        dosageInstruction: [
-          {
-            timing: {
-              event: ['2025-01-01'],
-              repeat: { duration: 7, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'backend-ref': medResource,
-      };
+      const activeMed = makeActiveMedWithRef('backend-ref');
+      const medicationMap = makeMedMap(['backend-ref', medResource]);
 
       const result = isDuplicateMedication(
         medResource,
@@ -679,13 +640,16 @@ describe('Medication Utilities', () => {
 
     test('returns true when existing active medication is STAT', () => {
       const medResource = makeMedication('med-paracetamol-500');
-      const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/backend-ref' },
-        priority: 'stat',
-      });
-      const medicationMap: Record<string, Medication> = {
-        'backend-ref': medResource,
-      };
+      const activeMed = makeActiveMedWithRef(
+        'backend-ref',
+        '2025-01-01',
+        7,
+        'd',
+        {
+          priority: 'stat',
+        },
+      );
+      const medicationMap = makeMedMap(['backend-ref', medResource]);
 
       const result = isDuplicateMedication(
         medResource,
@@ -702,20 +666,8 @@ describe('Medication Utilities', () => {
 
     test('returns false when dates do not overlap', () => {
       const medResource = makeMedication('med-paracetamol-500');
-      const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/backend-ref' },
-        dosageInstruction: [
-          {
-            timing: {
-              event: ['2025-01-01'],
-              repeat: { duration: 3, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'backend-ref': medResource,
-      };
+      const activeMed = makeActiveMedWithRef('backend-ref', '2025-01-01', 3);
+      const medicationMap = makeMedMap(['backend-ref', medResource]);
 
       const result = isDuplicateMedication(
         medResource,
@@ -739,20 +691,8 @@ describe('Medication Utilities', () => {
         'med-paracetamol-500',
         'paracetamol-concept',
       );
-      const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/backend-ref' },
-        dosageInstruction: [
-          {
-            timing: {
-              event: ['2025-01-01'],
-              repeat: { duration: 7, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'backend-ref': existingMed,
-      };
+      const activeMed = makeActiveMedWithRef('backend-ref');
+      const medicationMap = makeMedMap(['backend-ref', existingMed]);
 
       const result = isDuplicateMedication(
         newMed,
@@ -769,20 +709,8 @@ describe('Medication Utilities', () => {
 
     test('handles duration=0 by defaulting to 1', () => {
       const medResource = makeMedication('med-paracetamol-500');
-      const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/backend-ref' },
-        dosageInstruction: [
-          {
-            timing: {
-              event: ['2025-01-01'],
-              repeat: { duration: 7, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'backend-ref': medResource,
-      };
+      const activeMed = makeActiveMedWithRef('backend-ref');
+      const medicationMap = makeMedMap(['backend-ref', medResource]);
 
       const result = isDuplicateMedication(
         medResource,
@@ -801,25 +729,16 @@ describe('Medication Utilities', () => {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       yesterday.setHours(0, 0, 0, 0);
-
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       const medResource = makeMedication('med-albendazole-200');
-      const activeMed = makeActiveMed({
-        medicationReference: { reference: 'Medication/backend-ref' },
-        dosageInstruction: [
-          {
-            timing: {
-              event: [yesterday.toISOString()],
-              repeat: { duration: 1, durationUnit: 'd' },
-            },
-          },
-        ],
-      });
-      const medicationMap: Record<string, Medication> = {
-        'backend-ref': medResource,
-      };
+      const activeMed = makeActiveMedWithRef(
+        'backend-ref',
+        yesterday.toISOString(),
+        1,
+      );
+      const medicationMap = makeMedMap(['backend-ref', medResource]);
 
       const result = isDuplicateMedication(
         medResource,
