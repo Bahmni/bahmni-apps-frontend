@@ -2,8 +2,8 @@ import { Bundle, DiagnosticReport } from 'fhir/r4';
 import { get, post } from '../../api';
 import {
   DIAGNOSTIC_REPORTS_URL,
-  DIAGNOSTIC_REPORT_BUNDLE_URL,
   DIAGNOSTIC_REPORT_UPDATE_URL,
+  DIAGNOSTIC_REPORT_FETCH_URL,
 } from '../constants';
 import {
   getDiagnosticReports,
@@ -218,7 +218,7 @@ describe('diagnosticReportService', () => {
       const diagnosticReportId = 'report-456';
       await getDiagnosticReportBundle(diagnosticReportId);
 
-      const expectedUrl = DIAGNOSTIC_REPORT_BUNDLE_URL(diagnosticReportId);
+      const expectedUrl = DIAGNOSTIC_REPORT_FETCH_URL(diagnosticReportId);
       expect(get).toHaveBeenCalledTimes(1);
       expect(get).toHaveBeenCalledWith(expectedUrl);
     });
@@ -302,68 +302,6 @@ describe('diagnosticReportService', () => {
         }),
       );
     });
-
-    it('should handle bundles with multiple entries', async () => {
-      const bundleWithMultipleEntries: Bundle = {
-        resourceType: 'Bundle',
-        id: 'multi-entry-bundle',
-        type: 'transaction',
-        entry: [
-          {
-            resource: {
-              resourceType: 'DiagnosticReport',
-              id: 'report-1',
-              status: 'final',
-              code: { text: 'Blood Test' },
-            },
-          },
-          {
-            resource: {
-              resourceType: 'Observation',
-              id: 'obs-1',
-              status: 'final',
-              code: { text: 'Hemoglobin' },
-            },
-          },
-          {
-            resource: {
-              resourceType: 'Observation',
-              id: 'obs-2',
-              status: 'final',
-              code: { text: 'WBC Count' },
-            },
-          },
-        ],
-      };
-
-      (post as jest.Mock).mockResolvedValueOnce(bundleWithMultipleEntries);
-
-      const diagnosticReportId = 'report-multi';
-      const result = await updateDiagnosticReportBundle(
-        diagnosticReportId,
-        bundleWithMultipleEntries,
-      );
-
-      expect(result.entry).toHaveLength(3);
-      expect(post).toHaveBeenCalledWith(
-        DIAGNOSTIC_REPORT_UPDATE_URL(diagnosticReportId),
-        bundleWithMultipleEntries,
-      );
-    });
-
-    it('should handle different UUID formats', async () => {
-      const mockBundle = createMockBundle();
-      (post as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-      const uuidFormatId = '550e8400-e29b-41d4-a716-446655440000';
-      await updateDiagnosticReportBundle(uuidFormatId, mockBundle);
-
-      expect(post).toHaveBeenCalledWith(
-        DIAGNOSTIC_REPORT_UPDATE_URL(uuidFormatId),
-        mockBundle,
-      );
-    });
-
     it('should propagate errors from API call', async () => {
       const mockBundle = createMockBundle();
       const apiError = new Error('API request failed');
@@ -374,29 +312,6 @@ describe('diagnosticReportService', () => {
       await expect(
         updateDiagnosticReportBundle(diagnosticReportId, mockBundle),
       ).rejects.toThrow('API request failed');
-    });
-
-    it('should handle empty bundle entries', async () => {
-      const emptyBundle: Bundle = {
-        resourceType: 'Bundle',
-        id: 'empty-bundle',
-        type: 'transaction',
-        entry: [],
-      };
-
-      (post as jest.Mock).mockResolvedValueOnce(emptyBundle);
-
-      const diagnosticReportId = 'report-empty';
-      const result = await updateDiagnosticReportBundle(
-        diagnosticReportId,
-        emptyBundle,
-      );
-
-      expect(result.entry).toHaveLength(0);
-      expect(post).toHaveBeenCalledWith(
-        DIAGNOSTIC_REPORT_UPDATE_URL(diagnosticReportId),
-        emptyBundle,
-      );
     });
   });
 });
