@@ -11,7 +11,7 @@
   "CREATE_PATIENT_BIRTH_TIME": "Birth time",
   "CREATE_PATIENT_BREADCRUMB_CURRENT": "Create New Patient",
   "CREATE_PATIENT_BREADCRUMB_HOME": "Home",
-  "CREATE_PATIENT_BREADCRUMB_SEARCH": "Search Patient",
+  "CREATE_PATIENT_BREADCRUMB_REGISTRATION_SEARCH": "Registration",
   "CREATE_PATIENT_BUTTON_TEXT": "Create new patient",
   "CREATE_PATIENT_CAMERA_ACCESS_ERROR": "Please allow access to web camera and wait for photo capture dialog to be launched",
   "CREATE_PATIENT_CAPTURE_PHOTO": "Capture photo",
