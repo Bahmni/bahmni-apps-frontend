@@ -97,7 +97,7 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     return displayedData;
   }, [formData, fieldsToShow]);
 
-  const getRequiredLabel = (labelKey: string, isRequired: boolean) => {
+  const getLabel = (labelKey: string, isRequired: boolean) => {
     return (
       <>
         {t(labelKey)}
@@ -133,7 +133,7 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
             t,
           );
           const isRequired = field.required ?? false;
-          const label = getRequiredLabel(translatedLabel, isRequired);
+          const label = getLabel(translatedLabel, isRequired);
           const error = errors[fieldName] || '';
 
           return (
