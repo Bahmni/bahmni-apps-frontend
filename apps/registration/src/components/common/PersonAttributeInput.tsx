@@ -24,7 +24,7 @@ export interface ValidationConfig {
 export interface PersonAttributeInputProps {
   uuid: string;
   name: string;
-  label: string;
+  label: string | React.ReactNode;
   format: string;
   value: string | number | boolean | undefined;
   answers?: AttributeAnswer[];
@@ -66,7 +66,7 @@ export const PersonAttributeInput = ({
           data-testid={`person-attribute-text-input-${name}`}
           type="text"
           labelText={label}
-          placeholder={placeholder ?? label}
+          placeholder={placeholder ?? ''}
           value={typeof value === 'string' ? value : ''}
           invalid={!!error}
           invalidText={error}
@@ -174,7 +174,7 @@ export const PersonAttributeInput = ({
           data-testid={`person-attribute-number-input-${name}`}
           type="text"
           labelText={label}
-          placeholder={placeholder ?? label}
+          placeholder={placeholder ?? ''}
           value={numericValue}
           invalid={!!displayError}
           invalidText={displayError}
@@ -191,7 +191,7 @@ export const PersonAttributeInput = ({
           data-testid={`person-attribute-default-input-${name}`}
           type="text"
           labelText={label}
-          placeholder={placeholder ?? label}
+          placeholder={placeholder ?? ''}
           value={typeof value === 'string' ? value : ''}
           invalid={!!error}
           invalidText={error}

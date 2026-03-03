@@ -1,5 +1,6 @@
 import type { PersonAttributeField } from '../../hooks/usePersonAttributeFields';
 import type { PersonAttributesData } from '../../models/patient';
+import { convertToTranslationKey } from './personAttributeHelpers';
 
 export interface ValidationConfig {
   pattern: string;
@@ -58,6 +59,20 @@ export const validateAllFields = (
   fieldsToShow.forEach((field) => {
     const fieldName = field.name;
     const value = formData[fieldName];
+    const isRequired = field.required ?? false;
+
+    if (
+      isRequired &&
+      (!value || (typeof value === 'string' && !value.trim()))
+    ) {
+      errors[fieldName] =
+        t?.(
+          `REGISTRATION_FIELD_REQUIRED_${convertToTranslationKey(fieldName)}`,
+        ) ?? 'This field is required';
+      isValid = false;
+      return;
+    }
+
     const validationConfig = getValidationConfig(
       fieldName,
       fieldValidationConfig,

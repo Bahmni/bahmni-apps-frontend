@@ -85,11 +85,11 @@ describe('PersonAttributeInput', () => {
       expect(input.placeholder).toBe('Enter text');
     });
 
-    it('should use label as placeholder when not provided', () => {
+    it('should use empty string as placeholder when not provided', () => {
       render(<PersonAttributeInput {...defaultProps} />);
 
       const input = screen.getByLabelText('Test Label') as HTMLInputElement;
-      expect(input.placeholder).toBe('Test Label');
+      expect(input.placeholder).toBe('');
     });
 
     it('should handle validation pattern', () => {

@@ -4,6 +4,7 @@ import type { PersonAttributesData } from '../../models/patient';
 export interface ConfigAttribute {
   field: string;
   translationKey: string;
+  required?: boolean;
 }
 
 export const getFieldsToShow = (
@@ -14,10 +15,19 @@ export const getFieldsToShow = (
     return [];
   }
 
-  const configFieldNames = configAttributes.map((attr) => attr.field);
-  return attributeFields.filter((attrField) =>
-    configFieldNames.includes(attrField.name),
-  );
+  return configAttributes
+    .map((configAttr) => {
+      const attrField = attributeFields.find(
+        (field) => field.name === configAttr.field,
+      );
+      if (!attrField) return undefined;
+
+      return {
+        ...attrField,
+        required: configAttr.required,
+      } as PersonAttributeField;
+    })
+    .filter((field): field is PersonAttributeField => field !== undefined);
 };
 
 export const createFieldTranslationMap = (
@@ -48,4 +58,11 @@ export const getFieldLabel = (
 ): string => {
   const translationKey = fieldTranslationMap[fieldName] || fieldName;
   return translateFn(translationKey);
+};
+
+export const convertToTranslationKey = (value: string): string => {
+  return String(value)
+    .replace(/([a-z])([A-Z])/g, '$1_$2')
+    .replace(/-/g, '_')
+    .toUpperCase();
 };
