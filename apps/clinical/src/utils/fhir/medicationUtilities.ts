@@ -4,6 +4,7 @@ import {
   MedicationRequest as FhirMedicationRequest,
 } from 'fhir/r4';
 
+import { STAT_DUPLICATE_WINDOW_MS } from '../../constants/medications';
 import { MedicationInputEntry } from '../../models/medication';
 
 import { FHIRCode, extractCodesFromConcept } from './codeUtilities';
@@ -38,6 +39,19 @@ export const isDateTodayOrPast = (
   dateAtMidnight.setHours(0, 0, 0, 0);
 
   return dateAtMidnight.getTime() <= today.getTime();
+};
+
+export const isStatMedicationWithinDuplicateWindow = (
+  med: FhirMedicationRequest,
+): boolean => {
+  const statCreationTime =
+    med.dosageInstruction?.[0]?.timing?.repeat?.boundsPeriod?.start ??
+    med.authoredOn;
+  if (!statCreationTime) return true;
+
+  const createdAt = new Date(statCreationTime).getTime();
+  const now = Date.now();
+  return now - createdAt < STAT_DUPLICATE_WINDOW_MS;
 };
 
 interface CodeableResource {
@@ -229,7 +243,21 @@ export const checkMedicationsOverlap = (
         const durationUnit =
           med.dosageInstruction?.[0]?.timing?.repeat?.durationUnit ?? 'd';
 
-        if (isImmediate || current.isSTAT) return true;
+        if (isImmediate) {
+          if (current.isSTAT) {
+            return isStatMedicationWithinDuplicateWindow(med);
+          }
+          const statDate = new Date(
+            med.dosageInstruction?.[0]?.timing?.repeat?.boundsPeriod?.start ??
+              med.authoredOn ??
+              '',
+          );
+          statDate.setHours(0, 0, 0, 0);
+          const selectedDate = new Date(current.startDate ?? '');
+          selectedDate.setHours(0, 0, 0, 0);
+          return statDate.getTime() === selectedDate.getTime();
+        }
+        if (current.isSTAT) return true;
         if (!startDate || !current.startDate) return false;
 
         if (!current.durationUnit) return false;
@@ -311,7 +339,13 @@ export const isDuplicateMedication = (
         med.dosageInstruction?.[0]?.timing?.event?.[0] ?? med.authoredOn;
 
       if (isImmediate) {
-        return true;
+        const statDate = new Date(
+          med.dosageInstruction?.[0]?.timing?.repeat?.boundsPeriod?.start ??
+            med.authoredOn ??
+            '',
+        );
+        statDate.setHours(0, 0, 0, 0);
+        return newStartDateNormalized.getTime() === statDate.getTime();
       }
 
       if (!startDate) {

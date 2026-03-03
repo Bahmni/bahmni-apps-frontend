@@ -3,6 +3,9 @@ import { DurationUnitOption } from '../models/medication';
 // Duration of the boundsPeriod validity window for STAT (immediate) orders
 export const STAT_ORDER_VALIDITY_MS = 5 * 60 * 1000; // 5 Minutes
 
+// Time window within which a STAT medication is considered a duplicate
+export const STAT_DUPLICATE_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 Hours
+
 export const DURATION_UNIT_OPTIONS: DurationUnitOption[] = [
   {
     code: 'min',

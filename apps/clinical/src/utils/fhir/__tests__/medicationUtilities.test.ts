@@ -349,19 +349,37 @@ describe('Medication Utilities', () => {
       expect(result).toBe(true);
     });
 
-    test('returns true when active backend medication is STAT and selected medication is the same drug', () => {
+    test('returns true when non-STAT selected medication is on the same day as backend STAT', () => {
       const medResource = makeMedication('med-paracetamol-500');
+      const today = new Date();
+      today.setHours(10, 0, 0, 0);
       const regularEntry = makeEntry({
         medication: medResource,
-        startDate: new Date('2025-01-03'),
+        startDate: new Date(),
         duration: 7,
       });
       const statActiveMed = makeActiveMedWithRef(
         'med-paracetamol-500-ref',
-        '2025-01-01',
+        today.toISOString(),
         7,
         'd',
-        { priority: 'stat' },
+        {
+          priority: 'stat',
+          dosageInstruction: [
+            {
+              timing: {
+                repeat: {
+                  boundsPeriod: {
+                    start: today.toISOString(),
+                    end: new Date(
+                      today.getTime() + 5 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+              },
+            },
+          ],
+        },
       );
       const medicationMap = makeMedMap([
         'med-paracetamol-500-ref',
@@ -375,6 +393,145 @@ describe('Medication Utilities', () => {
       );
 
       expect(result).toBe(true);
+    });
+
+    test('returns false when non-STAT selected medication is on a future day vs backend STAT', () => {
+      const medResource = makeMedication('med-paracetamol-500');
+      const today = new Date();
+      today.setHours(10, 0, 0, 0);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const regularEntry = makeEntry({
+        medication: medResource,
+        startDate: tomorrow,
+        duration: 7,
+      });
+      const statActiveMed = makeActiveMedWithRef(
+        'med-paracetamol-500-ref',
+        today.toISOString(),
+        7,
+        'd',
+        {
+          priority: 'stat',
+          dosageInstruction: [
+            {
+              timing: {
+                repeat: {
+                  boundsPeriod: {
+                    start: today.toISOString(),
+                    end: new Date(
+                      today.getTime() + 5 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+              },
+            },
+          ],
+        },
+      );
+      const medicationMap = makeMedMap([
+        'med-paracetamol-500-ref',
+        medResource,
+      ]);
+
+      const result = checkMedicationsOverlap(
+        [regularEntry],
+        [statActiveMed],
+        medicationMap,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    test('returns true when STAT selected medication is within 2 hours of backend STAT', () => {
+      const medResource = makeMedication('med-paracetamol-500');
+      const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
+      const statEntry = makeEntry({
+        medication: medResource,
+        isSTAT: true,
+        startDate: new Date(),
+      });
+      const statActiveMed = makeActiveMedWithRef(
+        'med-paracetamol-500-ref',
+        oneHourAgo.toISOString(),
+        7,
+        'd',
+        {
+          priority: 'stat',
+          dosageInstruction: [
+            {
+              timing: {
+                repeat: {
+                  boundsPeriod: {
+                    start: oneHourAgo.toISOString(),
+                    end: new Date(
+                      oneHourAgo.getTime() + 5 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+              },
+            },
+          ],
+        },
+      );
+      const medicationMap = makeMedMap([
+        'med-paracetamol-500-ref',
+        medResource,
+      ]);
+
+      const result = checkMedicationsOverlap(
+        [statEntry],
+        [statActiveMed],
+        medicationMap,
+      );
+
+      expect(result).toBe(true);
+    });
+
+    test('returns false when STAT selected medication is more than 2 hours after backend STAT', () => {
+      const medResource = makeMedication('med-paracetamol-500');
+      const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      const statEntry = makeEntry({
+        medication: medResource,
+        isSTAT: true,
+        startDate: new Date(),
+      });
+      const statActiveMed = makeActiveMedWithRef(
+        'med-paracetamol-500-ref',
+        threeHoursAgo.toISOString(),
+        7,
+        'd',
+        {
+          priority: 'stat',
+          dosageInstruction: [
+            {
+              timing: {
+                repeat: {
+                  boundsPeriod: {
+                    start: threeHoursAgo.toISOString(),
+                    end: new Date(
+                      threeHoursAgo.getTime() + 5 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+              },
+            },
+          ],
+        },
+      );
+      const medicationMap = makeMedMap([
+        'med-paracetamol-500-ref',
+        medResource,
+      ]);
+
+      const result = checkMedicationsOverlap(
+        [statEntry],
+        [statActiveMed],
+        medicationMap,
+      );
+
+      expect(result).toBe(false);
     });
 
     test('returns true when PRN medications with same ID have overlapping dates', () => {
@@ -638,22 +795,38 @@ describe('Medication Utilities', () => {
       expect(result).toBe(false);
     });
 
-    test('returns true when existing active medication is STAT', () => {
+    test('returns true when new medication is on the same day as existing STAT medication', () => {
       const medResource = makeMedication('med-paracetamol-500');
+      const today = new Date();
+      today.setHours(10, 0, 0, 0);
       const activeMed = makeActiveMedWithRef(
         'backend-ref',
-        '2025-01-01',
+        today.toISOString(),
         7,
         'd',
         {
           priority: 'stat',
+          dosageInstruction: [
+            {
+              timing: {
+                repeat: {
+                  boundsPeriod: {
+                    start: today.toISOString(),
+                    end: new Date(
+                      today.getTime() + 5 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+              },
+            },
+          ],
         },
       );
       const medicationMap = makeMedMap(['backend-ref', medResource]);
 
       const result = isDuplicateMedication(
         medResource,
-        new Date('2025-03-01'),
+        new Date(),
         7,
         'd',
         [activeMed],
@@ -662,6 +835,51 @@ describe('Medication Utilities', () => {
       );
 
       expect(result).toBe(true);
+    });
+
+    test('returns false when new medication is on a different day than existing STAT medication', () => {
+      const medResource = makeMedication('med-paracetamol-500');
+      const today = new Date();
+      today.setHours(10, 0, 0, 0);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const activeMed = makeActiveMedWithRef(
+        'backend-ref',
+        today.toISOString(),
+        7,
+        'd',
+        {
+          priority: 'stat',
+          dosageInstruction: [
+            {
+              timing: {
+                repeat: {
+                  boundsPeriod: {
+                    start: today.toISOString(),
+                    end: new Date(
+                      today.getTime() + 5 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+              },
+            },
+          ],
+        },
+      );
+      const medicationMap = makeMedMap(['backend-ref', medResource]);
+
+      const result = isDuplicateMedication(
+        medResource,
+        tomorrow,
+        7,
+        'd',
+        [activeMed],
+        [],
+        medicationMap,
+      );
+
+      expect(result).toBe(false);
     });
 
     test('returns false when dates do not overlap', () => {
