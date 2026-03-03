@@ -41,17 +41,34 @@ export const isDateTodayOrPast = (
   return dateAtMidnight.getTime() <= today.getTime();
 };
 
+export const getStatCreationTime = (
+  med: FhirMedicationRequest,
+): string | undefined =>
+  med.dosageInstruction?.[0]?.timing?.repeat?.boundsPeriod?.start ??
+  med.authoredOn;
+
 export const isStatMedicationWithinDuplicateWindow = (
   med: FhirMedicationRequest,
 ): boolean => {
-  const statCreationTime =
-    med.dosageInstruction?.[0]?.timing?.repeat?.boundsPeriod?.start ??
-    med.authoredOn;
+  const statCreationTime = getStatCreationTime(med);
   if (!statCreationTime) return true;
 
   const createdAt = new Date(statCreationTime).getTime();
-  const now = Date.now();
-  return now - createdAt < STAT_DUPLICATE_WINDOW_MS;
+  return Date.now() - createdAt < STAT_DUPLICATE_WINDOW_MS;
+};
+
+export const isStatMedicationOnSameDay = (
+  med: FhirMedicationRequest,
+  compareDate: Date | string,
+): boolean => {
+  const statCreationTime = getStatCreationTime(med);
+  if (!statCreationTime) return true;
+
+  const statDate = new Date(statCreationTime);
+  statDate.setHours(0, 0, 0, 0);
+  const otherDate = new Date(compareDate);
+  otherDate.setHours(0, 0, 0, 0);
+  return statDate.getTime() === otherDate.getTime();
 };
 
 interface CodeableResource {
@@ -247,15 +264,7 @@ export const checkMedicationsOverlap = (
           if (current.isSTAT) {
             return isStatMedicationWithinDuplicateWindow(med);
           }
-          const statDate = new Date(
-            med.dosageInstruction?.[0]?.timing?.repeat?.boundsPeriod?.start ??
-              med.authoredOn ??
-              '',
-          );
-          statDate.setHours(0, 0, 0, 0);
-          const selectedDate = new Date(current.startDate ?? '');
-          selectedDate.setHours(0, 0, 0, 0);
-          return statDate.getTime() === selectedDate.getTime();
+          return isStatMedicationOnSameDay(med, current.startDate ?? '');
         }
         if (current.isSTAT) return true;
         if (!startDate || !current.startDate) return false;
@@ -339,13 +348,7 @@ export const isDuplicateMedication = (
         med.dosageInstruction?.[0]?.timing?.event?.[0] ?? med.authoredOn;
 
       if (isImmediate) {
-        const statDate = new Date(
-          med.dosageInstruction?.[0]?.timing?.repeat?.boundsPeriod?.start ??
-            med.authoredOn ??
-            '',
-        );
-        statDate.setHours(0, 0, 0, 0);
-        return newStartDateNormalized.getTime() === statDate.getTime();
+        return isStatMedicationOnSameDay(med, newStartDateNormalized);
       }
 
       if (!startDate) {
