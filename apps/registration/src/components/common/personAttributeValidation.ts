@@ -1,6 +1,6 @@
+import { camelToScreamingSnakeCase } from '../../../../../packages/bahmni-services/src/utils';
 import type { PersonAttributeField } from '../../hooks/usePersonAttributeFields';
 import type { PersonAttributesData } from '../../models/patient';
-import { convertToTranslationKey } from './personAttributeHelpers';
 
 export interface ValidationConfig {
   pattern: string;
@@ -67,7 +67,7 @@ export const validateAllFields = (
     ) {
       errors[fieldName] =
         t?.(
-          `REGISTRATION_FIELD_REQUIRED_${convertToTranslationKey(fieldName)}`,
+          `REGISTRATION_FIELD_REQUIRED_${camelToScreamingSnakeCase(fieldName)}`,
         ) ?? 'This field is required';
       isValid = false;
       return;
