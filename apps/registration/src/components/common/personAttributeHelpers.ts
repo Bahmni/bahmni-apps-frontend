@@ -62,9 +62,9 @@ export const getFieldLabel = (
 
 export const convertToTranslationKey = (value: string): string => {
   return String(value)
-    .replace(/\s+/g, '_')   
+    .replace(/\s+/g, '_')
     .replace(/([a-z])([A-Z])/g, '$1_$2')
-    .replace(/[^a-zA-Z0-9_-]/g, '') 
+    .replace(/[^a-zA-Z0-9_-]/g, '')
     .replace(/-/g, '_')
     .toUpperCase();
 };
