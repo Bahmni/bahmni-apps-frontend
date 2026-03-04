@@ -19,12 +19,13 @@ const USER_LOCATION_COOKIE = 'bahmni.user.location';
 
 export const transformOrderData = (
   ordersInfo: OrderResponseItem[],
+  isCustomTab: boolean = false,
 ): PatientOrderRow[] => {
   return ordersInfo.map((order) => {
     const { orders: ordersData = '' } = order;
     let orders: OrderItem[] = [];
 
-    if (ordersData) {
+    if (!isCustomTab && ordersData) {
       try {
         orders = JSON.parse(ordersData);
       } catch {
@@ -151,9 +152,12 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
         providerUuid: currentUser.uuid ?? '',
         q: tabs[tabIndex].searchHandler,
       });
+      const isCustom = tabs[tabIndex].view
+        ? tabs[tabIndex].view.toLowerCase().includes('custom')
+        : false;
       set((state) => ({
         ...state,
-        ordersData: transformOrderData(orders),
+        ordersData: transformOrderData(orders, isCustom),
         isLoading: false,
         tabCounts: {
           ...state.tabCounts,
@@ -196,7 +200,10 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
       );
       let res: PatientOrderRow[] = [];
       if (responses[0].status === 'fulfilled') {
-        res = transformOrderData(responses[0].value);
+        const isCustom = tabs[0].view
+          ? tabs[0].view.toLowerCase().includes('custom')
+          : false;
+        res = transformOrderData(responses[0].value, isCustom);
       }
       const existingSelectedTabs = JSON.parse(
         localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',

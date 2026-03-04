@@ -79,6 +79,10 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       return rows;
     }
 
+    if (isCustomOrderTab) {
+      return rows;
+    }
+
     const selectedStatusValues = selectedStatuses.map((s) => s.value);
 
     return rows
