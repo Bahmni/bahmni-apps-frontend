@@ -295,12 +295,12 @@ export function convertToSentenceCase(str: string): string {
   if (!str) return '';
 
   return str
-    .replace(/[_-]/g, ' ')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
-    .replace(/([a-z])(\d)/gi, '$1 $2')
-    .replace(/(\d)([a-z])/gi, '$1 $2')
-    .replace(/\s+/g, ' ')
+    .replaceAll(/[_-]/g, ' ')
+    .replaceAll(/([a-z])([A-Z])/g, '$1 $2')
+    .replaceAll(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+    .replaceAll(/([a-z])(\d)/gi, '$1 $2')
+    .replaceAll(/(\d)([a-z])/gi, '$1 $2')
+    .replaceAll(/\s+/g, ' ')
     .trim()
     .toLowerCase()
     .replace(/^./, (char) => char.toUpperCase());
