@@ -43,24 +43,4 @@ describe('configService', () => {
     expect(result).toEqual(mockValidVitalSignsConfig);
     expect(mockedGet).toHaveBeenCalledWith('/test/config');
   });
-
-  it('should post-process config when postProcess option is provided', async () => {
-    mockedGet.mockResolvedValue(mockValidVitalSignsConfig);
-
-    const postProcess = jest.fn((config) => ({
-      ...config,
-      processed: true,
-    }));
-
-    const result = await getConfig('/test/config', mockVitalSignsSchema, {
-      postProcess,
-    });
-
-    expect(postProcess).toHaveBeenCalledWith(mockValidVitalSignsConfig);
-    expect(result).toEqual({
-      ...mockValidVitalSignsConfig,
-      processed: true,
-    });
-    expect(mockedGet).toHaveBeenCalledWith('/test/config');
-  });
 });

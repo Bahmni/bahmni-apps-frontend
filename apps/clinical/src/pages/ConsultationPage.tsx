@@ -104,17 +104,16 @@ const ConsultationPage: React.FC = () => {
       getConfig<DashboardConfig>(
         DASHBOARD_CONFIG_URL(dashboardURL!),
         dashboardConfigSchema,
-        {
-          postProcess: (config) => {
-            if (config?.sections?.length > 0) {
-              config.sections = config.sections.map((section) =>
-                section.id ? section : { ...section, id: generateId() },
-              );
-            }
-            return config;
-          },
-        },
       ),
+    select: (config) => {
+      if (!config?.sections?.length) return config;
+      return {
+        ...config,
+        sections: config.sections.map((section) =>
+          section.id ? section : { ...section, id: generateId() },
+        ),
+      };
+    },
     enabled: !!dashboardURL,
   });
 
