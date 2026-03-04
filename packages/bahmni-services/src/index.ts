@@ -94,6 +94,7 @@ export {
   formatUrl,
   getValueType,
   camelToScreamingSnakeCase,
+  convertToSentenceCase,
 } from './utils';
 export {
   type FormatDateResult,

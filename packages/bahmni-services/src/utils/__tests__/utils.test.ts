@@ -12,7 +12,7 @@ import {
   formatUrl,
   getValueType,
   camelToScreamingSnakeCase,
-  toSentenceCase,
+  convertToSentenceCase,
 } from '../utils';
 
 describe('common utility functions', () => {
@@ -1298,15 +1298,15 @@ describe('common utility functions', () => {
     });
   });
 
-  describe('toSentenceCase', () => {
+  describe('convertToSentenceCase', () => {
     it('should convert various formats to sentence case', () => {
-      expect(toSentenceCase('phoneNumber')).toBe('Phone number');
-      expect(toSentenceCase('firstName')).toBe('First name');
-      expect(toSentenceCase('phone_number')).toBe('Phone number');
-      expect(toSentenceCase('first-name')).toBe('First name');
-      expect(toSentenceCase('PHONE_NUMBER')).toBe('Phone number');
-      expect(toSentenceCase('address1')).toBe('Address 1');
-      expect(toSentenceCase('')).toBe('');
+      expect(convertToSentenceCase('phoneNumber')).toBe('Phone number');
+      expect(convertToSentenceCase('firstName')).toBe('First name');
+      expect(convertToSentenceCase('phone_number')).toBe('Phone number');
+      expect(convertToSentenceCase('first-name')).toBe('First name');
+      expect(convertToSentenceCase('PHONE_NUMBER')).toBe('Phone number');
+      expect(convertToSentenceCase('address1')).toBe('Address 1');
+      expect(convertToSentenceCase('')).toBe('');
     });
   });
 });

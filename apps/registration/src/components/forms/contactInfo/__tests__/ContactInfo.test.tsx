@@ -34,12 +34,16 @@ jest.mock('../../../common/PersonAttributeInput', () => ({
   ),
 }));
 
-// Mock the services
-jest.mock('@bahmni/services', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
+// Mock the services - only mock useTranslation, use real utility functions
+jest.mock('@bahmni/services', () => {
+  const actual = jest.requireActual('@bahmni/services');
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string) => key,
+    }),
+  };
+});
 
 // Mock usePersonAttributeFields hook
 const mockUsePersonAttributeFields = jest.fn(() => ({

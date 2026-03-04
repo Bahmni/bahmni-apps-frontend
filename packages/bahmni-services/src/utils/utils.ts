@@ -291,7 +291,7 @@ export function camelToScreamingSnakeCase(str: string): string {
     .toUpperCase();
 }
 
-export function toSentenceCase(str: string): string {
+export function convertToSentenceCase(str: string): string {
   if (!str) return '';
 
   return str

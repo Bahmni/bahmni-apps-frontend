@@ -1,7 +1,7 @@
 import {
   camelToScreamingSnakeCase,
-  toSentenceCase,
-} from '../../../../../packages/bahmni-services/src/utils';
+  convertToSentenceCase,
+} from '@bahmni/services';
 import type { PersonAttributeField } from '../../hooks/usePersonAttributeFields';
 import type { PersonAttributesData } from '../../models/patient';
 
@@ -73,7 +73,7 @@ export const validateAllFields = (
           `REGISTRATION_FIELD_REQUIRED_${camelToScreamingSnakeCase(fieldName)}`,
           'REGISTRATION_FIELD_REQUIRED_ERROR',
         ],
-        { field: toSentenceCase(fieldName) },
+        { field: convertToSentenceCase(fieldName) },
       );
       isValid = false;
       return;
