@@ -56,7 +56,7 @@ const MedicationsForm: React.FC = React.memo(() => {
     isLoading: medicationConfigLoading,
     error: medicationConfigError,
   } = useQuery({
-    queryKey: ['clinicConfig'],
+    queryKey: ['medicationConfig'],
     queryFn: () =>
       getConfig<MedicationConfig>(
         MEDICATIONS_CONFIG_URL,

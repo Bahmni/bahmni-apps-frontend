@@ -137,7 +137,7 @@ const mockStore = {
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 
 const defaultQueryMock = ({ queryKey }: { queryKey: readonly unknown[] }) => {
-  if (queryKey[0] === 'clinicConfig') {
+  if (queryKey[0] === 'medicationConfig') {
     return { data: mockMedicationConfig, isLoading: false, error: null };
   }
   if (queryKey[0] === 'vaccinations') {
@@ -183,7 +183,7 @@ describe('VaccinationForm', () => {
     });
     test('shows loading skeleton when medication config is loading', () => {
       mockUseQuery.mockImplementation(({ queryKey }: any) => {
-        if (queryKey[0] === 'clinicConfig') {
+        if (queryKey[0] === 'medicationConfig') {
           return { data: undefined, isLoading: true, error: null };
         }
         return defaultQueryMock({ queryKey }) as any;
@@ -194,7 +194,7 @@ describe('VaccinationForm', () => {
     test('shows error when medication config fails to load', () => {
       const error = new Error('Failed to load vaccination config');
       mockUseQuery.mockImplementation(({ queryKey }: any) => {
-        if (queryKey[0] === 'clinicConfig') {
+        if (queryKey[0] === 'medicationConfig') {
           return { data: undefined, isLoading: false, error };
         }
         return defaultQueryMock({ queryKey }) as any;
@@ -554,7 +554,7 @@ describe('VaccinationForm', () => {
   describe('Edge Cases', () => {
     test('handles missing medication config gracefully', () => {
       mockUseQuery.mockImplementation(({ queryKey }: any) => {
-        if (queryKey[0] === 'clinicConfig') {
+        if (queryKey[0] === 'medicationConfig') {
           return { data: null, isLoading: false, error: null };
         }
         return defaultQueryMock({ queryKey }) as any;

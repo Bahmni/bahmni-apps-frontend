@@ -45,6 +45,8 @@ export {
   type PersonAttributeConcept,
   type PatientSearchField,
   type AppointmentSearchField,
+  type ExpectedFieldConfig,
+  type SearchActionConfig,
   AttributeFormat,
   AttributeInputType,
   getInputTypeForFormat,
