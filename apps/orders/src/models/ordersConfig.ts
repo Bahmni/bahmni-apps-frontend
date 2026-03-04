@@ -35,6 +35,7 @@ export interface OrderItem {
   fulfillerStatus?: string;
   ownerName?: string;
   ownerUuid?: string;
+  notes?: string;
 }
 export const transformExtensionConfigToTabs = (
   config: Record<string, OrderExtension> | null,
