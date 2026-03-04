@@ -85,11 +85,11 @@ const mockUseRegistrationConfig = jest.fn(() => ({
     },
     fieldValidation: {
       phoneNumber: {
-        pattern: '^\\+?[0-9]{6,15}$',
+        pattern: String.raw`^\+?[0-9]{6,15}$`,
         errorMessage: 'Phone number should be 6 to 15 digits',
       },
       alternatePhoneNumber: {
-        pattern: '^\\+?[0-9]{6,15}$',
+        pattern: String.raw`^\+?[0-9]{6,15}$`,
         errorMessage: 'Alternate phone number should be 6 to 15 digits',
       },
     },
@@ -259,7 +259,7 @@ describe('ContactInfo', () => {
           },
           fieldValidation: {
             phoneNumber: {
-              pattern: '^\\+?[0-9]{6,15}$',
+              pattern: String.raw`^\+?[0-9]{6,15}$`,
               errorMessage: 'Phone number should be 6 to 15 digits',
             },
           },
