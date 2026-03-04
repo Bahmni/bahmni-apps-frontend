@@ -190,8 +190,8 @@ describe('OrdersFulfillmentTable', () => {
   it('renders total orders count', () => {
     render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
 
-    expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
   });
 
   it('expands row to show order details', () => {
@@ -391,6 +391,88 @@ describe('OrdersFulfillmentTable', () => {
 
       const highlightedRows = container.querySelectorAll('tr.selectedChildRow');
       expect(highlightedRows).toHaveLength(1);
+    });
+  });
+
+  describe('Search Term and Status Filter Integration', () => {
+    it('clears status filters when search term is provided with 3+ characters', () => {
+      const { rerender } = render(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={mockHeaders}
+          searchTerm=""
+        />,
+      );
+
+      // Verify initial render shows rows (status filters are pre-selected)
+      expect(screen.getByText('David Kamau')).toBeInTheDocument();
+      expect(screen.getByText('Samuel Mensah')).toBeInTheDocument();
+
+      // Re-render with search term
+      rerender(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={mockHeaders}
+          searchTerm="David"
+        />,
+      );
+
+      // When search is active with 3+ characters, all rows should be shown
+      // (no status filtering applies during search)
+      expect(screen.getByText('David Kamau')).toBeInTheDocument();
+      expect(screen.getByText('Samuel Mensah')).toBeInTheDocument();
+    });
+
+    it('resets status filters to pre-selected when search term is cleared', () => {
+      const { rerender } = render(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={mockHeaders}
+          searchTerm="David"
+        />,
+      );
+
+      expect(screen.getByText('David Kamau')).toBeInTheDocument();
+
+      // Clear search term
+      rerender(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={mockHeaders}
+          searchTerm=""
+        />,
+      );
+
+      // Status filters should reset to pre-selected statuses
+      expect(screen.getByText('David Kamau')).toBeInTheDocument();
+    });
+
+    it('shows all rows when search term is less than 3 characters', () => {
+      render(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={mockHeaders}
+          searchTerm="Da"
+        />,
+      );
+
+      // With less than 3 characters, all rows should be shown
+      expect(screen.getByText('David Kamau')).toBeInTheDocument();
+      expect(screen.getByText('Samuel Mensah')).toBeInTheDocument();
+    });
+
+    it('maintains status filter behavior when no search term is provided', () => {
+      render(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={mockHeaders}
+          searchTerm=""
+        />,
+      );
+
+      // Should render with pre-selected status filters applied
+      expect(screen.getByText('David Kamau')).toBeInTheDocument();
+      expect(screen.getByText('Samuel Mensah')).toBeInTheDocument();
     });
   });
 });

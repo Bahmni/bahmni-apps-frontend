@@ -94,7 +94,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 
       return acc;
     }, []);
-  }, [ordersData, tabLabel, searchInput]);
+  }, [ordersData, searchInput]);
 
   return (
     <div className={styles.tabContent}>
@@ -119,6 +119,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
           loading={isLoading}
           isCustomOrderTab={isCustomOrderTab}
           onOrderClick={handleOrderClick}
+          searchTerm={searchInput}
         />
       </div>
     </div>

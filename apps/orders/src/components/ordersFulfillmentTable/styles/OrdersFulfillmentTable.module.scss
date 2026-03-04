@@ -48,6 +48,9 @@ $col-owner: 13%;
   tbody tr td:nth-child(2) {
     width: $col-badge;
     min-width: 60px;
+    *{
+      justify-content: center;
+    }
   }
 
   thead tr th:nth-child(3),
@@ -136,4 +139,7 @@ $col-owner: 13%;
 .ordersTable :global(.cds--data-table) tbody tr,
 .ordersTable :global(.cds--data-table) tbody tr td {
   height: $row-height !important;
+}
+.centerAlignText{
+  text-align: center;
 }
