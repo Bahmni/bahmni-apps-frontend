@@ -93,12 +93,12 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
 
         const errorMessage =
           start > 0 && end > start
-            ? camelToScreamingSnakeCase(errorString.substring(start, end))
+            ? t(camelToScreamingSnakeCase(errorString.substring(start, end)))
             : t('PROGRAM_DETAILS_ERROR_UPDATING_STATE');
         addNotification({
           type: 'error',
           title: t('PROGRAM_DETAILS_STATE_CHANGE_ERROR_TITLE'),
-          message: t(errorMessage),
+          message: errorMessage,
         });
       })
       .finally(() => {

@@ -32,7 +32,7 @@ export const getValidationConfig = (
 export const validateField = (
   value: string | number | boolean | undefined,
   validationConfig: ValidationConfig,
-  t: (key: string) => string,
+  t: (key: string, params?: Record<string, unknown>) => string,
 ): { isValid: boolean; error: string } => {
   if (!value) {
     return { isValid: true, error: '' };
@@ -50,8 +50,8 @@ export const validateField = (
 export const validateAllFields = (
   fieldsToShow: PersonAttributeField[],
   formData: PersonAttributesData,
+  t: (key: string, params?: Record<string, unknown>) => string,
   fieldValidationConfig?: FieldValidationConfig,
-  t?: (key: string) => string,
 ): ValidationResult => {
   const errors: Record<string, string> = {};
   let isValid = true;
@@ -66,9 +66,9 @@ export const validateAllFields = (
       (!value || (typeof value === 'string' && !value.trim()))
     ) {
       errors[fieldName] =
-        t?.(
+        t(
           `REGISTRATION_FIELD_REQUIRED_${camelToScreamingSnakeCase(fieldName)}`,
-        ) ?? 'This field is required';
+        ) ?? t('REGISTRATION_FIELD_REQUIRED_ERROR', { field: fieldName });
       isValid = false;
       return;
     }

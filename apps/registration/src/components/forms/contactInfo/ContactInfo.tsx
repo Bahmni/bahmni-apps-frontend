@@ -80,8 +80,8 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     const result = validateAllFields(
       fieldsToShow,
       formData,
-      fieldValidationConfig,
       t,
+      fieldValidationConfig,
     );
     setErrors(result.errors);
     return result.isValid;
