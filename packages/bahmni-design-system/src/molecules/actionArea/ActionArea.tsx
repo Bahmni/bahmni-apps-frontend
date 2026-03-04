@@ -83,6 +83,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
           disabled={isSecondaryButtonDisabled}
           className={buttonCountClass}
           aria-label={secondaryButtonText}
+          data-testid="action-area-secondary-button"
         >
           {secondaryButtonText}
         </Button>
@@ -94,6 +95,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
             disabled={isTertiaryButtonDisabled}
             className={buttonCountClass}
             aria-label={tertiaryButtonText}
+            data-testid="action-area-tertiary-button"
           >
             {tertiaryButtonText}
           </Button>
@@ -105,6 +107,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
           disabled={isPrimaryButtonDisabled}
           className={buttonCountClass}
           aria-label={primaryButtonText}
+          data-testid="action-area-primary-button"
         >
           {primaryButtonText}
         </Button>

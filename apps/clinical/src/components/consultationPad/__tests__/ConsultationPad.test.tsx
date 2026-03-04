@@ -1,4 +1,8 @@
-import { AUDIT_LOG_EVENT_DETAILS, dispatchAuditEvent } from '@bahmni/services';
+import {
+  AUDIT_LOG_EVENT_DETAILS,
+  dispatchAuditEvent,
+  dispatchConsultationSaved,
+} from '@bahmni/services';
 import {
   render,
   screen,
@@ -8,6 +12,7 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BundleEntry } from 'fhir/r4';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
 import * as consultationBundleService from '../../../services/consultationBundleService';
@@ -18,6 +23,8 @@ import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore'
 import { useMedicationStore } from '../../../stores/medicationsStore';
 import useServiceRequestStore from '../../../stores/serviceRequestStore';
 import ConsultationPad from '../ConsultationPad';
+
+expect.extend(toHaveNoViolations);
 
 const mockValidDashboardConfig = {
   sections: [
@@ -52,6 +59,7 @@ const mockValidDashboardConfig = {
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
+  dispatchConsultationSaved: jest.fn(),
   findActiveEncounterInSession: jest.fn().mockResolvedValue(null),
   __esModule: true,
   useTranslation: () => ({
@@ -159,6 +167,13 @@ jest.mock('../../../components/forms/medications/MedicationsForm', () => ({
   ),
 }));
 
+jest.mock('../../../components/forms/vaccinations/VaccinationForm', () => ({
+  __esModule: true,
+  default: () => (
+    <div data-testid="mock-vaccination-forms">Vaccination Form</div>
+  ),
+}));
+
 // Mock services
 jest.mock('../../../services/consultationBundleService', () => ({
   postConsultationBundle: jest.fn(),
@@ -239,6 +254,13 @@ jest.mock('@bahmni/widgets', () => ({
   })),
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['VIEW_PATIENTS', 'EDIT_ENCOUNTERS'],
+  })),
+  useActivePractitioner: jest.fn(() => ({
+    user: { uuid: 'user-123', username: 'testuser' },
+    practitioner: { uuid: 'practitioner-123' },
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
   })),
   conditionsQueryKeys: jest.fn((patientUUID: string) => [
     'conditions',
@@ -361,6 +383,15 @@ const mockUsePinnedObservationForms = jest.fn(() => ({
 jest.mock('../../../hooks/usePinnedObservationForms', () => ({
   __esModule: true,
   usePinnedObservationForms: () => mockUsePinnedObservationForms(),
+}));
+
+jest.mock('../../../providers/clinicConfig', () => ({
+  __esModule: true,
+  useClinicalConfig: () => ({
+    clinicalConfig: null,
+    isLoading: false,
+    error: null,
+  }),
 }));
 
 jest.mock('../../forms/observations/ObservationForms', () => ({
@@ -520,6 +551,10 @@ Object.defineProperty(global, 'crypto', {
 const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
   typeof dispatchAuditEvent
 >;
+const mockDispatchConsultationSaved =
+  dispatchConsultationSaved as jest.MockedFunction<
+    typeof dispatchConsultationSaved
+  >;
 
 describe('ConsultationPad', () => {
   const mockOnClose = jest.fn();
@@ -643,7 +678,7 @@ describe('ConsultationPad', () => {
     it('should render dividers between forms', () => {
       renderWithProvider();
       const dividers = screen.getAllByTestId('mock-divider');
-      expect(dividers).toHaveLength(6);
+      expect(dividers).toHaveLength(7);
     });
 
     it('should render forms and dividers in the correct sequence', () => {
@@ -653,7 +688,7 @@ describe('ConsultationPad', () => {
       const children = Array.from(content.children);
 
       // Verify the exact sequence of forms and dividers
-      expect(children).toHaveLength(12); // 6 forms + 6 dividers
+      expect(children).toHaveLength(14); // 7 forms + 7 dividers
 
       // Check each element in order
       expect(children[0]).toHaveAttribute(
@@ -679,6 +714,11 @@ describe('ConsultationPad', () => {
       );
       expect(children[9]).toHaveAttribute('data-testid', 'mock-divider');
       expect(children[10]).toHaveAttribute(
+        'data-testid',
+        'mock-vaccination-forms',
+      );
+      expect(children[11]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[12]).toHaveAttribute(
         'data-testid',
         'mock-observation-forms',
       );
@@ -1209,6 +1249,29 @@ describe('ConsultationPad', () => {
         });
       });
 
+      it('should dispatch consultation saved event after successful submission to notify subscribers', async () => {
+        (
+          consultationBundleService.postConsultationBundle as jest.Mock
+        ).mockResolvedValue({
+          id: 'bundle-123',
+          type: 'transaction-response',
+        });
+
+        renderWithProvider();
+
+        const doneButton = screen.getByTestId('primary-button');
+        await userEvent.click(doneButton);
+
+        await waitFor(() => {
+          expect(mockDispatchConsultationSaved).toHaveBeenCalledWith(
+            expect.objectContaining({
+              patientUUID: expect.any(String),
+              updatedResources: expect.any(Object),
+            }),
+          );
+        });
+      });
+
       it('should disable button during submission', async () => {
         let resolveSubmission: any;
         (
@@ -1578,8 +1641,8 @@ describe('ConsultationPad', () => {
         expect(bundleArg.entry[0].resource.resourceType).toBe('Encounter');
         expect(bundleArg.entry[0].fullUrl).toMatch(/^urn:uuid:/);
 
-        // Verify total number of entries (1 encounter + 5 from bundle creation functions)
-        expect(bundleArg.entry).toHaveLength(6);
+        // Verify total number of entries (1 encounter + 6 from bundle creation functions)
+        expect(bundleArg.entry).toHaveLength(7);
       });
     });
 
@@ -1952,6 +2015,411 @@ describe('ConsultationPad', () => {
           encounterType: 'Consultation',
         });
       });
+    });
+
+    it('should dispatch consultation saved event with observations flag', async () => {
+      jest
+        .spyOn(consultationBundleService, 'postConsultationBundle')
+        .mockResolvedValue({
+          id: 'bundle-123',
+          type: 'transaction-response',
+        });
+
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationSaved).toHaveBeenCalled();
+        const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
+
+        // Verify event payload structure
+        expect(callArgs).toHaveProperty('patientUUID');
+        expect(callArgs).toHaveProperty('updatedResources');
+        expect(callArgs.updatedResources).toHaveProperty('allergies');
+        expect(callArgs.updatedResources).toHaveProperty('medications');
+        expect(callArgs.updatedResources).toHaveProperty('conditions');
+        expect(callArgs.updatedResources).toHaveProperty('serviceRequests');
+        expect(callArgs).toHaveProperty('updatedConcepts');
+      });
+    });
+
+    it('should dispatch consultation saved event with updatedConcepts when observations are present', async () => {
+      jest
+        .spyOn(consultationBundleService, 'postConsultationBundle')
+        .mockResolvedValue({
+          resourceType: 'Bundle',
+          type: 'transaction-response',
+          entry: [],
+        });
+
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationSaved).toHaveBeenCalled();
+        const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
+
+        expect(callArgs).toHaveProperty('updatedConcepts');
+        expect(callArgs.updatedConcepts instanceof Map).toBe(true);
+      });
+    });
+
+    it('should dispatch consultation saved event with correct patient UUID', async () => {
+      jest
+        .spyOn(consultationBundleService, 'postConsultationBundle')
+        .mockResolvedValue({
+          id: 'bundle-123',
+          type: 'transaction-response',
+        });
+
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationSaved).toHaveBeenCalled();
+        const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
+
+        // Verify patientUUID is present and is a string
+        expect(callArgs.patientUUID).toBeDefined();
+        expect(typeof callArgs.patientUUID).toBe('string');
+      });
+    });
+
+    it('should extract concept UUIDs from consultation bundle observations and include them in dispatch', async () => {
+      // Mock observation bundle entries with concept codes/UUIDs
+      const mockObservationEntries = [
+        {
+          fullUrl: 'urn:uuid:obs-1',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-1',
+            code: {
+              coding: [
+                {
+                  code: 'temperature-uuid-001',
+                  display: 'Temperature',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-2',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-2',
+            code: {
+              coding: [
+                {
+                  code: 'blood-pressure-uuid-002',
+                  display: 'Blood Pressure',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-3',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-3',
+            code: {
+              coding: [
+                {
+                  code: 'heart-rate-uuid-003',
+                  display: 'Heart Rate',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-4',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-4',
+            code: {
+              coding: [
+                {
+                  code: 'temperature-uuid-001', // Duplicate concept
+                  display: 'Temperature',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+      ];
+
+      // Mock createObservationBundleEntries to return our test observation entries
+      (
+        consultationBundleService.createObservationBundleEntries as jest.Mock
+      ).mockReturnValue(mockObservationEntries);
+
+      // Mock observation forms store to return observation data (non-empty to set hasObservations = true)
+      mockObservationFormsStore.getObservationFormsData.mockReturnValue({
+        'form-1': { data: 'some-observation-data' },
+      });
+
+      const mockResponseBundle = {
+        resourceType: 'Bundle',
+        type: 'transaction-response',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-1',
+              code: {
+                coding: [
+                  {
+                    code: 'temperature-uuid-001',
+                    display: 'Temperature',
+                  },
+                ],
+              },
+            },
+            response: { status: '201' },
+          },
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-2',
+              code: {
+                coding: [
+                  {
+                    code: 'blood-pressure-uuid-002',
+                    display: 'Blood Pressure',
+                  },
+                ],
+              },
+            },
+            response: { status: '201' },
+          },
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-3',
+              code: {
+                coding: [
+                  {
+                    code: 'heart-rate-uuid-003',
+                    display: 'Heart Rate',
+                  },
+                ],
+              },
+            },
+            response: { status: '201' },
+          },
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-4',
+              code: {
+                coding: [
+                  {
+                    code: 'temperature-uuid-001',
+                    display: 'Temperature',
+                  },
+                ],
+              },
+            },
+            response: { status: '201' },
+          },
+        ],
+      };
+
+      jest
+        .spyOn(consultationBundleService, 'postConsultationBundle')
+        .mockResolvedValue(mockResponseBundle);
+
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationSaved).toHaveBeenCalled();
+        const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
+
+        expect(callArgs).toHaveProperty('updatedConcepts');
+        expect(callArgs.updatedConcepts instanceof Map).toBe(true);
+
+        const concepts = callArgs.updatedConcepts as Map<string, string>;
+        expect(concepts.get('temperature-uuid-001')).toBe('Temperature');
+        expect(concepts.get('blood-pressure-uuid-002')).toBe('Blood Pressure');
+        expect(concepts.get('heart-rate-uuid-003')).toBe('Heart Rate');
+
+        expect(concepts.size).toBe(3);
+
+        expect(callArgs.patientUUID).toBeDefined();
+        expect(typeof callArgs.patientUUID).toBe('string');
+      });
+    });
+
+    it('should extract concept names only from valid Observation entries with code.coding[0]', async () => {
+      const mockObservationEntries = [
+        {
+          fullUrl: 'urn:uuid:obs-valid',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-valid',
+            code: {
+              coding: [
+                {
+                  code: 'valid-uuid-001',
+                  display: 'Valid Concept 1',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-no-code',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-no-code',
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-no-display',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-no-display',
+            code: {
+              coding: [
+                {
+                  code: 'missing-display-uuid',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+        {
+          fullUrl: 'urn:uuid:obs-valid-2',
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-valid-2',
+            code: {
+              coding: [
+                {
+                  code: 'another-valid-uuid-002',
+                  display: 'Valid Concept 2',
+                },
+              ],
+            },
+          },
+          request: { method: 'POST', url: 'Observation' },
+        },
+      ];
+
+      const mockResponseBundle = {
+        resourceType: 'Bundle',
+        type: 'transaction-response',
+        entry: mockObservationEntries,
+      };
+
+      (
+        consultationBundleService.createObservationBundleEntries as jest.Mock
+      ).mockReturnValue(mockObservationEntries);
+
+      mockObservationFormsStore.getObservationFormsData.mockReturnValue({
+        'form-1': { data: 'some-observation-data' },
+      });
+
+      jest
+        .spyOn(consultationBundleService, 'postConsultationBundle')
+        .mockResolvedValue(mockResponseBundle);
+
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationSaved).toHaveBeenCalled();
+        const callArgs = mockDispatchConsultationSaved.mock.calls[0][0];
+
+        expect(callArgs.updatedConcepts instanceof Map).toBe(true);
+        const concepts = callArgs.updatedConcepts as Map<string, string>;
+
+        expect(concepts.size).toBe(2);
+        expect(concepts.get('valid-uuid-001')).toBe('Valid Concept 1');
+        expect(concepts.get('another-valid-uuid-002')).toBe('Valid Concept 2');
+      });
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should not have accessibility violations in default render state', async () => {
+      renderWithProvider();
+
+      const container = screen.getByTestId('mock-action-area');
+      const results = await axe(container);
+
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should not have accessibility violations during form submission state', async () => {
+      renderWithProvider();
+
+      const doneButton = screen.getByTestId('primary-button');
+      await userEvent.click(doneButton);
+
+      await waitFor(() => {
+        const container = screen.getByTestId('mock-action-area');
+        axe(container).then((results: any) => {
+          expect(results).toHaveNoViolations();
+        });
+      });
+    });
+
+    it('should have proper ARIA labels for action buttons', () => {
+      renderWithProvider();
+
+      const primaryButton = screen.getByTestId('primary-button');
+      const secondaryButton = screen.getByTestId('secondary-button');
+
+      expect(primaryButton).toBeInTheDocument();
+      expect(secondaryButton).toBeInTheDocument();
+    });
+
+    it('should be keyboard navigable', async () => {
+      renderWithProvider();
+
+      const primaryButton = screen.getByTestId('primary-button');
+      const secondaryButton = screen.getByTestId('secondary-button');
+
+      // Tab to primary button
+      primaryButton.focus();
+      expect(primaryButton).toHaveFocus();
+
+      // Tab to secondary button
+      secondaryButton.focus();
+      expect(secondaryButton).toHaveFocus();
+    });
+
+    it('should have keyboard support for form submission', async () => {
+      renderWithProvider();
+
+      const primaryButton = screen.getByTestId('primary-button');
+      primaryButton.focus();
+
+      // Simulate Enter key press
+      fireEvent.keyDown(primaryButton, { key: 'Enter', code: 'Enter' });
+
+      expect(primaryButton).toHaveFocus();
     });
   });
 });

@@ -30,6 +30,7 @@ export const VisitTypeSelector = ({
     <div className={styles.opdVisitGroup}>
       <Button
         id="visit-button"
+        data-testid="start-visit-button"
         className={styles.visitButton}
         kind="tertiary"
         disabled={isLoadingVisitTypes || visitTypesArray.length === 0}
@@ -44,6 +45,7 @@ export const VisitTypeSelector = ({
       {!hasActiveVisit && (
         <Dropdown
           id="visit-dropdown"
+          data-testid="visit-type-dropdown"
           className={styles.visitDropdown}
           items={visitTypesArray.filter(
             (vt) => vt.uuid !== defaultVisitType?.uuid,

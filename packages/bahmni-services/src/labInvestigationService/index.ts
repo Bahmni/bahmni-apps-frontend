@@ -1,10 +1,2 @@
-export {
-  getPatientLabInvestigations,
-  groupLabTestsByDate,
-  formatLabTests,
-} from './labInvestigationService';
-export {
-  type FormattedLabTest,
-  type LabTestsByDate,
-  LabTestPriority,
-} from './models';
+// Service functions - returns raw FHIR bundles
+export { getLabInvestigationsBundle } from './labInvestigationService';

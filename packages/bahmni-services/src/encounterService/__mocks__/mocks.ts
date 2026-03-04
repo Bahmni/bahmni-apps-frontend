@@ -231,31 +231,33 @@ export const mockVisitBundle = {
 export const mockActiveVisit = mockVisitBundle.entry[3].resource;
 
 export const mockFormsEncounter = {
-  encounterUuid: 'e8c5eeb5-86d9-44d4-b37a-9de74a122a6e',
-  encounterDateTime: 1708249041000,
-  encounterType: 'Consultation',
-  visitUuid: 'f8c5eeb5-86d9-44d4-b37a-9de74a122a6e',
-  visitType: 'OPD',
-  providers: [
+  resourceType: 'Bundle',
+  type: 'searchset',
+  total: 1,
+  entry: [
     {
-      uuid: 'c1c26908-3f10-11e4-adec-0800271c1b75',
-      name: 'Super Man',
-      encounterRoleUuid: 'a0b03050-c99b-11e0-9572-0800200c9a66',
-    },
-  ],
-  observations: [
-    {
-      uuid: 'obs-uuid-1',
-      concept: {
-        uuid: 'concept-uuid-1',
-        name: 'Temperature',
-        dataType: 'Numeric',
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-uuid-1',
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-uuid-1',
+        code: {
+          coding: [
+            {
+              system: 'http://loinc.org',
+              code: '8310-5',
+              display: 'Body temperature',
+            },
+          ],
+        },
+        valueQuantity: {
+          value: 98.6,
+          unit: 'F',
+        },
+        effectiveDateTime: '2024-02-18T09:57:21+00:00',
+        encounter: {
+          reference: 'Encounter/e8c5eeb5-86d9-44d4-b37a-9de74a122a6e',
+        },
       },
-      value: 98.6,
-      observationDateTime: '2024-02-18T09:57:21+00:00',
-      voided: false,
     },
   ],
-  orders: [],
-  extensions: {},
 };

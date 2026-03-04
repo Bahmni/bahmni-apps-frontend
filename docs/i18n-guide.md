@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the namespace-based internationalization (i18n) system implemented in the Bahmni Clinical Frontend monorepo. The system allows each application within the monorepo to maintain its own translation resources while sharing a common translation service infrastructure.
+This document describes the namespace-based internationalization (i18n) system implemented in the Bahmni Apps Frontend monorepo. The system allows each application within the monorepo to maintain its own translation resources while sharing a common translation service infrastructure.
 
 ## Table of Contents
 
@@ -816,7 +816,7 @@ The namespace-based translation system provides:
 4. **Maintainability**: Clear structure and separation of concerns
 5. **Fallback Support**: Automatic fallback to English for missing translations
 
-By following this guide, you can successfully implement and maintain translations for any application within the Bahmni Clinical Frontend monorepo.
+By following this guide, you can successfully implement and maintain translations for any application within the Bahmni Apps Frontend monorepo.
 
 ## References
 

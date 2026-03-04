@@ -4,7 +4,7 @@ exports[`SortableDataTable Snapshots matches snapshot when empty 1`] = `
 <div>
   <p
     class="sortableDataTableBodyEmpty"
-    data-testid="sortable-table-empty"
+    data-testid="sortable-data-table-empty"
   >
     No medication history
   </p>
@@ -15,7 +15,7 @@ exports[`SortableDataTable Snapshots matches snapshot when loading 1`] = `
 <div>
   <div
     class="sortable-data-table"
-    data-testid="sortable-table-skeleton"
+    data-testid="sortable-data-table-skeleton"
   >
     <div
       class="cds--skeleton cds--data-table-container"
@@ -211,13 +211,14 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r18»"
+                id="table-sort-_r_1g_"
               >
                 Click to sort rows by Medication header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r18»"
+                aria-describedby="table-sort-_r_1g_"
                 class="cds--table-sort"
+                data-testid="table-header-name"
                 type="button"
               >
                 <span
@@ -271,13 +272,14 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r19»"
+                id="table-sort-_r_1h_"
               >
                 Click to sort rows by Dosage header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r19»"
+                aria-describedby="table-sort-_r_1h_"
                 class="cds--table-sort"
+                data-testid="table-header-dosage"
                 type="button"
               >
                 <span
@@ -331,13 +333,14 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1a»"
+                id="table-sort-_r_1i_"
               >
                 Click to sort rows by Instruction header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1a»"
+                aria-describedby="table-sort-_r_1i_"
                 class="cds--table-sort"
+                data-testid="table-header-instruction"
                 type="button"
               >
                 <span
@@ -391,13 +394,14 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1b»"
+                id="table-sort-_r_1j_"
               >
                 Click to sort rows by Start Date header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1b»"
+                aria-describedby="table-sort-_r_1j_"
                 class="cds--table-sort"
+                data-testid="table-header-startDate"
                 type="button"
               >
                 <span
@@ -451,13 +455,14 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1c»"
+                id="table-sort-_r_1k_"
               >
                 Click to sort rows by Order Date header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1c»"
+                aria-describedby="table-sort-_r_1k_"
                 class="cds--table-sort"
+                data-testid="table-header-orderDate"
                 type="button"
               >
                 <span
@@ -511,13 +516,14 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1d»"
+                id="table-sort-_r_1l_"
               >
                 Click to sort rows by Ordered By header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1d»"
+                aria-describedby="table-sort-_r_1l_"
                 class="cds--table-sort"
+                data-testid="table-header-orderedBy"
                 type="button"
               >
                 <span
@@ -571,13 +577,14 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1e»"
+                id="table-sort-_r_1m_"
               >
                 Click to sort rows by Quantity header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1e»"
+                aria-describedby="table-sort-_r_1m_"
                 class="cds--table-sort"
+                data-testid="table-header-quantity"
                 type="button"
               >
                 <span
@@ -631,13 +638,14 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1f»"
+                id="table-sort-_r_1n_"
               >
                 Click to sort rows by Status header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1f»"
+                aria-describedby="table-sort-_r_1n_"
                 class="cds--table-sort"
+                data-testid="table-header-status"
                 type="button"
               >
                 <span
@@ -689,159 +697,267 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
         <tbody
           aria-live="polite"
         >
-          <tr>
-            <td>
+          <tr
+            data-testid="table-row-2c6a89df-64a5-4a99-a078-4c3fda0b2f15"
+          >
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-name"
+            >
               Acetylsalicylic acid 150 mg
             </td>
-            <td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-dosage"
+            >
               1 Tablet | Twice a day | 2 days
             </td>
-            <td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-instruction"
+            >
               Oral
             </td>
-            <td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-startDate"
+            >
               03/04/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-orderDate"
+            >
               03/04/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-orderedBy"
+            >
               Super Man
             </td>
-            <td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-quantity"
+            >
               4 Tablet
             </td>
-            <td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-status"
+            >
               stopped
             </td>
           </tr>
-          <tr>
-            <td>
+          <tr
+            data-testid="table-row-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604"
+          >
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-name"
+            >
               Paroxetine 12.5 mg
             </td>
-            <td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-dosage"
+            >
               1 Tablet | Once a day | 5 days
             </td>
-            <td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-instruction"
+            >
               Nasal
             </td>
-            <td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-startDate"
+            >
               04/04/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-orderDate"
+            >
               04/04/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-orderedBy"
+            >
               Dr Neha Anand
             </td>
-            <td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-quantity"
+            >
               5 Tablet
             </td>
-            <td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-status"
+            >
               stopped
             </td>
           </tr>
-          <tr>
-            <td>
+          <tr
+            data-testid="table-row-1124a9bb-1891-44bb-9842-103239aa2ca3"
+          >
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-name"
+            >
               Chlorpheniramine maleate 4 mg
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-dosage"
+            >
               2 Tablet | Twice a day | 2 days
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-instruction"
+            >
               Injection
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-startDate"
+            >
               08/04/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-orderDate"
+            >
               08/04/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-orderedBy"
+            >
               Dr Franklin Richards
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-quantity"
+            >
               8 Tablet
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-status"
+            >
               scheduled
             </td>
           </tr>
-          <tr>
-            <td>
+          <tr
+            data-testid="table-row-1d2d372e-0ec3-4544-accd-aa5743d1bf70"
+          >
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-name"
+            >
               Paracetamol 650 mg
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-dosage"
+            >
               2 Tablet | Immediately | 2 days
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-instruction"
+            >
               Eye Drops
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-startDate"
+            >
               08/04/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-orderDate"
+            >
               08/04/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-orderedBy"
+            >
               Dr Sebastian Adams
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-quantity"
+            >
               4 Tablet
             </td>
-            <td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-status"
+            >
               stopped
             </td>
           </tr>
-          <tr>
-            <td>
+          <tr
+            data-testid="table-row-cb23207e-102d-480f-b4e7-6b7ee2084ae7"
+          >
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-name"
+            >
               Hydrochlorothiazide 25 mg
             </td>
-            <td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-dosage"
+            >
               2 Tablet | Thrice a day | 2 days
             </td>
-            <td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-instruction"
+            >
               Oral | Patient needs sufficient dose of clean water
             </td>
-            <td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-startDate"
+            >
               08/04/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-orderDate"
+            >
               08/04/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-orderedBy"
+            >
               Dr Monica Smith
             </td>
-            <td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-quantity"
+            >
               12 Tablet
             </td>
-            <td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-status"
+            >
               stopped
             </td>
           </tr>
-          <tr>
-            <td>
+          <tr
+            data-testid="table-row-c5396e12-dbfe-4259-9e42-92a52a2761a8"
+          >
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-name"
+            >
               Oxygen
             </td>
-            <td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-dosage"
+            >
               2 Unit | Twice a day | 2 days
             </td>
-            <td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-instruction"
+            >
               Nasogastric | Patient needs sufficient dose of clean oxygen
             </td>
-            <td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-startDate"
+            >
               24/06/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-orderDate"
+            >
               24/06/2025
             </td>
-            <td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-orderedBy"
+            >
               Dr John Doe
             </td>
-            <td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-quantity"
+            >
               8 Unit
             </td>
-            <td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-status"
+            >
               active
             </td>
           </tr>

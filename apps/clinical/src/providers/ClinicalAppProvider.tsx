@@ -1,6 +1,10 @@
 import { Loading } from '@bahmni/design-system';
-import { useTranslation, getEncountersAndVisitsForEOC } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import {
+  useTranslation,
+  getEncountersAndVisitsForEOC,
+  useSubscribeConsultationSaved,
+} from '@bahmni/services';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { ReactNode, useMemo } from 'react';
 import {
   ClinicalAppContext,
@@ -17,6 +21,7 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
   episodeUuids,
 }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const {
     data: episodeOfCareData,
     isLoading: isLoadingEncounters,
@@ -26,6 +31,14 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
     queryFn: () => getEncountersAndVisitsForEOC(episodeUuids),
     enabled: episodeUuids.length > 0,
   });
+
+  useSubscribeConsultationSaved(() => {
+    if (episodeUuids.length > 0) {
+      queryClient.invalidateQueries({
+        queryKey: ['encounters-for-eoc', episodeUuids],
+      });
+    }
+  }, [episodeUuids, queryClient]);
 
   const value = useMemo(() => {
     const episodeOfCare: EpisodeOfCare[] = [];

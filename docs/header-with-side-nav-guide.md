@@ -1,6 +1,6 @@
 # HeaderWSideNav Component Guide
 
-This guide provides comprehensive documentation for the HeaderWSideNav component implemented in the Bahmni Clinical Frontend application.
+This guide provides comprehensive documentation for the HeaderWSideNav component implemented in the Bahmni Apps Frontend application.
 
 ## Introduction
 

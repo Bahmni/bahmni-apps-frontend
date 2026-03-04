@@ -1,17 +1,17 @@
-# Bahmni Clinical Frontend
+# Bahmni Apps Frontend
 
-A React TypeScript application for the Bahmni Clinical module, built with Webpack and Carbon Design System. This application includes PWA support for offline capabilities.
+A React TypeScript monorepo application for Bahmni applications, built with Nx, Webpack, and Carbon Design System. This application includes PWA support for offline capabilities.
+
+# About Bahmni
+Bahmni is an open-source healthcare information system designed to serve healthcare providers in resource-limited settings. It combines electronic medical records (EMR), hospital information management, and clinical workflows into a unified platform. Bahmni is built on OpenMRS and focuses on making healthcare delivery more efficient and patient-centric. The platform follows FHIR (Fast Healthcare Interoperability Resources) standards to ensure interoperability with other healthcare systems.   
 
 ## Features
 
-- **TypeScript** - Type-safe JavaScript
 - **React** - UI library for building user interfaces
 - **Carbon Design System** - IBM's open-source design system
 - **Webpack** - Module bundler for modern JavaScript applications
-- **PWA Support** - Progressive Web App capabilities for offline use
 - **React Router** - Declarative routing for React applications
 - **i18n Support** - Internationalization for multiple languages
-- **Jest & Testing Library** - Comprehensive testing framework
 - **Display Controls** - Reusable clinical data visualization components
 
 ## Prerequisites
@@ -34,7 +34,7 @@ For a comprehensive setup guide including development environments, Docker confi
 
 ### Additional Documentation
 
-- [Frontend Architecture](docs/architecture.md) - A comprehensive overview of the Bahmni Clinical Frontend architecture
+- [Frontend Architecture](docs/architecture.md) - A comprehensive overview of the Bahmni Apps Frontend architecture
 - [Project Structure](docs/project-structure.md) - A high-level overview of the project structure
 - [i18n Guide](docs/i18n-guide.md) - Internationalization implementation details
 - [Sortable Data Table Guide](docs/sortable-data-table-guide.md) - Usage of the sortable data table component
@@ -44,7 +44,7 @@ For a comprehensive setup guide including development environments, Docker confi
 
 ```bash
 # Build the application
-yarn nx build distro
+yarn build 
 ```
 
 The build artifacts will be stored in the `dist/` directory.
@@ -68,68 +68,11 @@ yarn lint
 yarn lint:fix
 ```
 
-## Project Structure
-
-```text
-bahmni-clinical-frontend/
-├── docs/                    # Project documentation
-│   ├── sortable-data-table-guide.md
-│   ├── global-notification-guide.md
-│   ├── i18n-guide.md
-│   └── setup-guide.md
-├── public/                  # Static assets
-│   ├── favicon.ico          # Favicon
-│   ├── logo192.png          # Logo for PWA (192x192)
-│   ├── logo512.png          # Logo for PWA (512x512)
-│   ├── manifest.json        # PWA manifest
-│   ├── robots.txt           # Robots file
-│   ├── index.html           # HTML template
-│   └── locales/             # Translation files
-│       ├── locale_en.json   # English translations
-│       └── locale_es.json   # Spanish translations
-├── src/
-│   ├── components/          # Reusable UI components
-│   │   └── common/          # Shared components
-│   │       ├── sortableDataTable/  # Composite data table component
-│   │       └── notification/         # Notification components
-│   ├── constants/           # Application constants
-│   ├── contexts/            # React contexts
-│   ├── displayControls/     # Clinical data display components
-│   │   ├── allergies/       # Allergies display
-│   │   ├── conditions/      # Conditions display
-│   │   └── patient/         # Patient details display
-│   ├── hooks/               # Custom React hooks
-│   ├── layouts/             # Layout components
-│   │   └── clinical/        # Clinical layout
-│   ├── pages/               # Page components
-│   ├── providers/           # Context providers
-│   ├── schemas/             # JSON schemas
-│   ├── services/            # API services
-│   ├── styles/              # Global styles
-│   ├── types/               # TypeScript type definitions
-│   ├── utils/               # Utility functions
-│   ├── __mocks__/           # Test mocks
-│   ├── __tests__/           # Test files
-│   ├── App.tsx              # Main App component
-│   ├── i18n.ts              # i18n configuration
-│   └── index.tsx            # Application entry point
-├── .babelrc                 # Babel configuration
-├── .editorconfig            # Editor configuration
-├── .gitignore               # Git ignore file
-├── .prettierrc.json         # Prettier configuration
-├── eslint.config.ts         # ESLint configuration
-├── jest.config.ts           # Jest configuration
-├── package.json             # Project dependencies and scripts
-├── README.md                # Project documentation
-├── tsconfig.json            # TypeScript configuration
-└── webpack.config.js        # Webpack configuration
-```
-
-For a more detailed explanation of the project architecture, see [Architecture Documentation](docs/architecture.md).
+For a more detailed explanation of the project structure and architecture, see [Architecture Documentation](docs/architecture.md) and [Project Structure Documentation](docs/project-structure.md).
 
 ## Scripts
 
-- `yarn start` - Start the development server
+- `yarn dev` - Start the development server
 - `yarn build` - Build the application for production
 - `yarn test` - Run tests
 - `yarn test:watch` - Run tests in watch mode

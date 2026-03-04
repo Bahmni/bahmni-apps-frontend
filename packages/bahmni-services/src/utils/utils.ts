@@ -251,3 +251,42 @@ export const blobToDataUrl = (blob: Blob): Promise<string> => {
     reader.readAsDataURL(blob);
   });
 };
+
+/**
+ * Return the data type of the given value
+ * @param value - Value for which the type is to be found
+ * @returns string of what is the type of the input
+ */
+export const getValueType = (value: string | number): string => {
+  if (typeof value === 'number' && !isNaN(value)) {
+    return 'number';
+  }
+
+  if (typeof value !== 'string') {
+    return typeof value;
+  }
+
+  const val = value.toLowerCase();
+
+  if (val.endsWith('.pdf')) return 'PDF';
+
+  const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg'];
+  if (imageExtensions.some((extn) => val.endsWith(extn))) return 'Image';
+
+  const videoExtensions = ['.mp4', '.ogg', '.webm', '.mkv', '.flv'];
+  if (videoExtensions.some((extn) => val.endsWith(extn))) return 'Video';
+
+  if (typeof value === 'string') {
+    return 'string';
+  }
+
+  return 'object';
+};
+
+export function camelToScreamingSnakeCase(str: string): string {
+  return str
+    .replace(/\s+/g, '_')
+    .replace(/([a-z])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
+    .toUpperCase();
+}

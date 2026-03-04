@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { Coding } from 'fhir/r4';
@@ -581,6 +581,166 @@ describe('SelectedAllergyItem', () => {
       // Should show a tag with no text (empty string)
       const selectedTag = screen.getByTitle('1');
       expect(selectedTag).toBeInTheDocument();
+    });
+  });
+
+  // SELECTION CLEARING TESTS
+  describe('Selection Clearing Behavior', () => {
+    test('clears FilterableMultiSelect after selecting a reaction', async () => {
+      const user = userEvent.setup();
+      render(<SelectedAllergyItem {...defaultProps} />);
+
+      const multiselect = screen.getByRole('combobox', {
+        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+      });
+
+      // Open the dropdown
+      await user.click(multiselect);
+
+      // Wait for menu to appear
+      await screen.findByRole('listbox');
+
+      // Get the rash option and click it to add it as a second reaction
+      const rash = screen.getAllByLabelText('REACTION_RASH');
+      await user.click(rash[0]);
+
+      // Verify the callback was called
+      await waitFor(() => {
+        expect(defaultProps.updateReactions).toHaveBeenCalledWith(
+          'test-allergy-1',
+          [mockReactionConcepts[0], mockReactionConcepts[1]],
+        );
+      });
+
+      // The key prop change should trigger a remount, effectively clearing the input
+      // We verify this by checking that the component still renders correctly
+      expect(multiselect).toBeInTheDocument();
+    });
+
+    test('resets FilterableMultiSelect to allow immediate re-selection', async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(<SelectedAllergyItem {...defaultProps} />);
+
+      const multiselect = screen.getByRole('combobox', {
+        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+      });
+
+      // Click to open
+      await user.click(multiselect);
+      await screen.findByRole('listbox');
+
+      // Select rash
+      const rash = screen.getAllByLabelText('REACTION_RASH');
+      await user.click(rash[0]);
+
+      // Simulate parent updating the allergy with new reactions
+      const updatedAllergy = {
+        ...mockAllergy,
+        selectedReactions: [mockReactionConcepts[0], mockReactionConcepts[1]],
+      };
+
+      rerender(
+        <SelectedAllergyItem {...defaultProps} allergy={updatedAllergy} />,
+      );
+
+      // Verify component re-rendered with updated reactions
+      const updatedMultiselect = screen.getByRole('combobox', {
+        name: 'Select Reactions Total items selected: 2. To clear selection, press Delete or Backspace.',
+      });
+      expect(updatedMultiselect).toBeInTheDocument();
+    });
+  });
+
+  // KEYBOARD NAVIGATION TESTS
+  describe('Keyboard Navigation', () => {
+    test('should support keyboard navigation and selection in FilterableMultiSelect', async () => {
+      const user = userEvent.setup();
+      render(<SelectedAllergyItem {...defaultProps} />);
+
+      const multiselect = screen.getByRole('combobox', {
+        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+      });
+
+      // Type to open dropdown and filter options
+      await user.click(multiselect);
+      await user.type(multiselect, 'rash');
+
+      // Wait for filtered results to appear
+      await waitFor(() => {
+        expect(screen.getByText('REACTION_RASH')).toBeInTheDocument();
+      });
+
+      // Navigate with arrow key and select with Enter
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{Enter}');
+
+      // Verify the reaction was added
+      await waitFor(() => {
+        expect(defaultProps.updateReactions).toHaveBeenCalledWith(
+          'test-allergy-1',
+          [mockReactionConcepts[0], mockReactionConcepts[1]],
+        );
+      });
+    });
+
+    test('should navigate through multiple reactions using arrow keys', async () => {
+      const user = userEvent.setup();
+      // Start with no reactions selected
+      const allergyWithNoReactions = {
+        ...mockAllergy,
+        selectedReactions: [],
+      };
+
+      render(
+        <SelectedAllergyItem
+          {...defaultProps}
+          allergy={allergyWithNoReactions}
+        />,
+      );
+
+      const multiselect = screen.getByPlaceholderText('Select Reactions');
+
+      // Open dropdown
+      await user.click(multiselect);
+      await screen.findByRole('listbox');
+
+      // Navigate down to first item
+      await user.keyboard('{ArrowDown}');
+      // Navigate down to second item
+      await user.keyboard('{ArrowDown}');
+      // Select it with Enter
+      await user.keyboard('{Enter}');
+
+      // Verify the second reaction (rash) was added
+      await waitFor(() => {
+        expect(defaultProps.updateReactions).toHaveBeenCalledWith(
+          'test-allergy-1',
+          [mockReactionConcepts[1]],
+        );
+      });
+    });
+
+    test('should close dropdown with Escape key', async () => {
+      const user = userEvent.setup();
+      render(<SelectedAllergyItem {...defaultProps} />);
+
+      const multiselect = screen.getByRole('combobox', {
+        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+      });
+
+      // Open dropdown
+      await user.click(multiselect);
+      const listbox = await screen.findByRole('listbox');
+
+      expect(listbox).toBeInTheDocument();
+
+      // Close with Escape
+      await user.keyboard('{Escape}');
+
+      // Verify that focus returns to the input and dropdown closes (aria-expanded becomes false)
+      await waitFor(() => {
+        expect(multiselect).toHaveAttribute('aria-expanded', 'false');
+      });
     });
   });
 

@@ -8,15 +8,17 @@ import React from 'react';
 
 export type DatePickerProps = CarbonDatePickerProps & {
   testId?: string;
+  'data-testid'?: string;
 };
 
 export const DatePicker: React.FC<DatePickerProps> = ({
   testId,
+  'data-testid': dataTestId,
   children,
   ...carbonProps
 }) => {
   return (
-    <CarbonDatePicker {...carbonProps} data-testid={testId}>
+    <CarbonDatePicker {...carbonProps} data-testid={testId ?? dataTestId}>
       {children}
     </CarbonDatePicker>
   );
@@ -24,11 +26,18 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
 export type DatePickerInputProps = CarbonDatePickerInputProps & {
   testId?: string;
+  'data-testid'?: string;
 };
 
 export const DatePickerInput: React.FC<DatePickerInputProps> = ({
   testId,
+  'data-testid': dataTestId,
   ...carbonProps
 }) => {
-  return <CarbonDatePickerInput {...carbonProps} data-testid={testId} />;
+  return (
+    <CarbonDatePickerInput
+      {...carbonProps}
+      data-testid={testId ?? dataTestId}
+    />
+  );
 };

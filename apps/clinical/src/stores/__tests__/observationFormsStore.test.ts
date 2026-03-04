@@ -271,7 +271,7 @@ describe('observationFormsStore', () => {
       });
 
       const formData = result.current.formsData['form-1'];
-      expect(formData.validationState).toBe(VALIDATION_STATE_MANDATORY);
+      expect(formData.validationErrorType).toBe(VALIDATION_STATE_MANDATORY);
     });
 
     it('should update validation state to null when form is fixed', () => {
@@ -286,7 +286,7 @@ describe('observationFormsStore', () => {
         );
       });
 
-      expect(result.current.formsData['form-1'].validationState).toBe(
+      expect(result.current.formsData['form-1'].validationErrorType).toBe(
         VALIDATION_STATE_MANDATORY,
       );
 
@@ -294,7 +294,7 @@ describe('observationFormsStore', () => {
         result.current.updateFormData('form-1', mockObservations, null);
       });
 
-      expect(result.current.formsData['form-1'].validationState).toBeNull();
+      expect(result.current.formsData['form-1'].validationErrorType).toBeNull();
     });
 
     it('should update validation state from one type to another', () => {
@@ -305,7 +305,7 @@ describe('observationFormsStore', () => {
         result.current.updateFormData('form-1', [], VALIDATION_STATE_EMPTY);
       });
 
-      expect(result.current.formsData['form-1'].validationState).toBe(
+      expect(result.current.formsData['form-1'].validationErrorType).toBe(
         VALIDATION_STATE_EMPTY,
       );
 
@@ -317,7 +317,7 @@ describe('observationFormsStore', () => {
         );
       });
 
-      expect(result.current.formsData['form-1'].validationState).toBe(
+      expect(result.current.formsData['form-1'].validationErrorType).toBe(
         VALIDATION_STATE_INVALID,
       );
     });

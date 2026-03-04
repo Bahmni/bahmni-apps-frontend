@@ -14,6 +14,7 @@ export {
   ICON_PADDING,
 } from './molecules/icon';
 export { initFontAwesome } from './fontawesome';
+export { LabelValue, type LabelValueProps } from './atoms/labelValue';
 export {
   Accordion,
   AccordionItem,
@@ -37,8 +38,10 @@ export { NumberInput, type NumberInputProps } from './atoms/numberInput';
 export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
 export { TextInput, type TextInputProps } from './atoms/textInput';
 export { TextArea, type TextAreaProps } from './atoms/textArea';
+export { RowCell, type RowCellProps } from './atoms/rowCell';
 export { NotificationContainer } from './molecules/notification';
 export { SortableDataTable } from './molecules/sortableDataTable';
+export { ExpandableDataTable } from './molecules/expandableDataTable';
 export {
   SimpleDataTable,
   type SimpleDataTableProps,
@@ -50,6 +53,10 @@ export {
   DropdownSkeleton,
   type DropdownSkeletonProps,
 } from './atoms/dropdownSkeleton';
+export {
+  CodeSnippetSkeleton,
+  type CodeSnippetSkeletonProps,
+} from './atoms/codeSnippetSkeleton';
 export { Dropdown, type DropdownProps } from './atoms/dropdown';
 export { Checkbox, type CheckboxProps } from './atoms/checkbox';
 export { CheckboxGroup, type CheckboxGroupProps } from './atoms/checkboxGroup';
@@ -100,11 +107,21 @@ export {
   type TextAreaWCloseProps,
 } from './molecules/textAreaWClose';
 export { BoxWHeader, type BoxWHeaderProps } from './molecules/boxWHeader';
+export {
+  CollapsibleRowGroup,
+  type CollapsibleRowGroupProps,
+  type RowData,
+} from './molecules/collapsibleRowGroup';
+export { ImageTile, type ImageTileProps } from './molecules/imageTile';
+export { FileTile, type FileTileProps } from './molecules/fileTile';
+export { VideoTile, type VideoTileProps } from './molecules/videoTile';
 export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
+export { MenuItem, type MenuItemProps } from './atoms/menuItem';
 export {
   MenuItemDivider,
   type MenuItemDividerProps,
 } from './atoms/menuItemDivider';
+export { MenuButton, type MenuButtonProps } from './atoms/menuButton';
 export {
   FormCardContainer,
   type FormCardContainerProps,

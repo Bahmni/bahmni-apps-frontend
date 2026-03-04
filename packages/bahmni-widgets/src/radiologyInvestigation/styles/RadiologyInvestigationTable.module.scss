@@ -11,6 +11,12 @@
   gap: $spacing-02;
 }
 
+.resultsCell {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+}
+
 .radiologyInvestigationTableBody {
   td {
     width: 25%;

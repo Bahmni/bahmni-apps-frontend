@@ -157,7 +157,7 @@ describe('AllergiesTable Integration', () => {
     expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'ERROR_DEFAULT_TITLE',

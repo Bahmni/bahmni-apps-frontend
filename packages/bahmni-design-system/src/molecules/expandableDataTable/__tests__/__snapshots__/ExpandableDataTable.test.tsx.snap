@@ -1,0 +1,1962 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ExpandableDataTable Snapshots matches snapshot when empty 1`] = `
+<div>
+  <p
+    class="expandableDataTableBodyEmpty"
+    data-testid="expandable-data-table-empty"
+  >
+    No medication history
+  </p>
+</div>
+`;
+
+exports[`ExpandableDataTable Snapshots matches snapshot when loading 1`] = `
+<div>
+  <div
+    class="expandable-data-table"
+    data-testid="expandable-data-table-skeleton"
+  >
+    <div
+      class="cds--skeleton cds--data-table-container"
+    >
+      <table
+        class="expandableDataTableSkeleton cds--skeleton cds--data-table cds--data-table--compact"
+      >
+        <thead>
+          <tr>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ExpandableDataTable Snapshots matches snapshot with error state 1`] = `
+<div>
+  <p
+    class="expandableDataTableBodyEmpty"
+    data-testid="expandable-data-table-error"
+  >
+    Failed to load medications
+  </p>
+</div>
+`;
+
+exports[`ExpandableDataTable Snapshots matches snapshot with full data and expandable rows 1`] = `
+<div>
+  <div
+    class="expandable-data-table expandableDataTableBody"
+    data-testid="expandable-data-table"
+  >
+    <div
+      class="cds--data-table-content"
+    >
+      <table
+        aria-label="Snapshot Test Full"
+        class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+      >
+        <thead>
+          <tr>
+            <th
+              class="cds--table-expand"
+              id="expand"
+              scope="col"
+            />
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_2o_"
+              >
+                Click to sort rows by Medication header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_2o_"
+                class="cds--table-sort"
+                data-testid="table-header-name"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Medication
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_2p_"
+              >
+                Click to sort rows by Dosage header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_2p_"
+                class="cds--table-sort"
+                data-testid="table-header-dosage"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Dosage
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_2q_"
+              >
+                Click to sort rows by Instruction header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_2q_"
+                class="cds--table-sort"
+                data-testid="table-header-instruction"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Instruction
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_2r_"
+              >
+                Click to sort rows by Start Date header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_2r_"
+                class="cds--table-sort"
+                data-testid="table-header-startDate"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Start Date
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_2s_"
+              >
+                Click to sort rows by Order Date header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_2s_"
+                class="cds--table-sort"
+                data-testid="table-header-orderDate"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Order Date
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_2t_"
+              >
+                Click to sort rows by Ordered By header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_2t_"
+                class="cds--table-sort"
+                data-testid="table-header-orderedBy"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Ordered By
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_2u_"
+              >
+                Click to sort rows by Quantity header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_2u_"
+                class="cds--table-sort"
+                data-testid="table-header-quantity"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Quantity
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_2v_"
+              >
+                Click to sort rows by Status header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_2v_"
+                class="cds--table-sort"
+                data-testid="table-header-status"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Status
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          aria-live="polite"
+        >
+          <tr
+            class="cds--parent-row"
+            data-parent-row="true"
+            data-testid="table-row-2c6a89df-64a5-4a99-a078-4c3fda0b2f15"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-2c6a89df-64a5-4a99-a078-4c3fda0b2f15"
+                aria-expanded="false"
+                aria-label="Expand current row"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-name"
+            >
+              Acetylsalicylic acid 150 mg
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-dosage"
+            >
+              1 Tablet | Twice a day | 2 days
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-instruction"
+            >
+              Oral
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-startDate"
+            >
+              03/04/2025
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-orderDate"
+            >
+              03/04/2025
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-orderedBy"
+            >
+              Super Man
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-quantity"
+            >
+              4 Tablet
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-status"
+            >
+              stopped
+            </td>
+          </tr>
+          <tr
+            class="cds--parent-row"
+            data-parent-row="true"
+            data-testid="table-row-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604"
+                aria-expanded="false"
+                aria-label="Expand current row"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-name"
+            >
+              Paroxetine 12.5 mg
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-dosage"
+            >
+              1 Tablet | Once a day | 5 days
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-instruction"
+            >
+              Nasal
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-startDate"
+            >
+              04/04/2025
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-orderDate"
+            >
+              04/04/2025
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-orderedBy"
+            >
+              Dr Neha Anand
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-quantity"
+            >
+              5 Tablet
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-status"
+            >
+              stopped
+            </td>
+          </tr>
+          <tr
+            class="cds--parent-row"
+            data-parent-row="true"
+            data-testid="table-row-1124a9bb-1891-44bb-9842-103239aa2ca3"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-1124a9bb-1891-44bb-9842-103239aa2ca3"
+                aria-expanded="false"
+                aria-label="Expand current row"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-name"
+            >
+              Chlorpheniramine maleate 4 mg
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-dosage"
+            >
+              2 Tablet | Twice a day | 2 days
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-instruction"
+            >
+              Injection
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-startDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-orderDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-orderedBy"
+            >
+              Dr Franklin Richards
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-quantity"
+            >
+              8 Tablet
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-status"
+            >
+              scheduled
+            </td>
+          </tr>
+          <tr
+            class="cds--parent-row"
+            data-parent-row="true"
+            data-testid="table-row-1d2d372e-0ec3-4544-accd-aa5743d1bf70"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-1d2d372e-0ec3-4544-accd-aa5743d1bf70"
+                aria-expanded="false"
+                aria-label="Expand current row"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-name"
+            >
+              Paracetamol 650 mg
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-dosage"
+            >
+              2 Tablet | Immediately | 2 days
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-instruction"
+            >
+              Eye Drops
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-startDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-orderDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-orderedBy"
+            >
+              Dr Sebastian Adams
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-quantity"
+            >
+              4 Tablet
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-status"
+            >
+              stopped
+            </td>
+          </tr>
+          <tr
+            class="cds--parent-row"
+            data-parent-row="true"
+            data-testid="table-row-cb23207e-102d-480f-b4e7-6b7ee2084ae7"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-cb23207e-102d-480f-b4e7-6b7ee2084ae7"
+                aria-expanded="false"
+                aria-label="Expand current row"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-name"
+            >
+              Hydrochlorothiazide 25 mg
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-dosage"
+            >
+              2 Tablet | Thrice a day | 2 days
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-instruction"
+            >
+              Oral | Patient needs sufficient dose of clean water
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-startDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-orderDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-orderedBy"
+            >
+              Dr Monica Smith
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-quantity"
+            >
+              12 Tablet
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-status"
+            >
+              stopped
+            </td>
+          </tr>
+          <tr
+            class="cds--parent-row"
+            data-parent-row="true"
+            data-testid="table-row-c5396e12-dbfe-4259-9e42-92a52a2761a8"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-c5396e12-dbfe-4259-9e42-92a52a2761a8"
+                aria-expanded="false"
+                aria-label="Expand current row"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-name"
+            >
+              Oxygen
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-dosage"
+            >
+              2 Unit | Twice a day | 2 days
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-instruction"
+            >
+              Nasogastric | Patient needs sufficient dose of clean oxygen
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-startDate"
+            >
+              24/06/2025
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-orderDate"
+            >
+              24/06/2025
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-orderedBy"
+            >
+              Dr John Doe
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-quantity"
+            >
+              8 Unit
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-status"
+            >
+              active
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ExpandableDataTable Snapshots matches snapshot with non-expandable rows 1`] = `
+<div>
+  <div
+    class="expandable-data-table expandableDataTableBody"
+    data-testid="expandable-data-table"
+  >
+    <div
+      class="cds--data-table-content"
+    >
+      <table
+        aria-label="Snapshot Test Non-Expandable"
+        class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+      >
+        <thead>
+          <tr>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_30_"
+              >
+                Click to sort rows by Medication header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_30_"
+                class="cds--table-sort"
+                data-testid="table-header-name"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Medication
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_31_"
+              >
+                Click to sort rows by Dosage header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_31_"
+                class="cds--table-sort"
+                data-testid="table-header-dosage"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Dosage
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_32_"
+              >
+                Click to sort rows by Instruction header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_32_"
+                class="cds--table-sort"
+                data-testid="table-header-instruction"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Instruction
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_33_"
+              >
+                Click to sort rows by Start Date header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_33_"
+                class="cds--table-sort"
+                data-testid="table-header-startDate"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Start Date
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_34_"
+              >
+                Click to sort rows by Order Date header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_34_"
+                class="cds--table-sort"
+                data-testid="table-header-orderDate"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Order Date
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_35_"
+              >
+                Click to sort rows by Ordered By header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_35_"
+                class="cds--table-sort"
+                data-testid="table-header-orderedBy"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Ordered By
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_36_"
+              >
+                Click to sort rows by Quantity header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_36_"
+                class="cds--table-sort"
+                data-testid="table-header-quantity"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Quantity
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-_r_37_"
+              >
+                Click to sort rows by Status header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-_r_37_"
+                class="cds--table-sort"
+                data-testid="table-header-status"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Status
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          aria-live="polite"
+        >
+          <tr
+            data-testid="table-row-2c6a89df-64a5-4a99-a078-4c3fda0b2f15"
+          >
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-name"
+            >
+              Acetylsalicylic acid 150 mg
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-dosage"
+            >
+              1 Tablet | Twice a day | 2 days
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-instruction"
+            >
+              Oral
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-startDate"
+            >
+              03/04/2025
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-orderDate"
+            >
+              03/04/2025
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-orderedBy"
+            >
+              Super Man
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-quantity"
+            >
+              4 Tablet
+            </td>
+            <td
+              data-testid="table-cell-2c6a89df-64a5-4a99-a078-4c3fda0b2f15-status"
+            >
+              stopped
+            </td>
+          </tr>
+          <tr
+            data-testid="table-row-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604"
+          >
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-name"
+            >
+              Paroxetine 12.5 mg
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-dosage"
+            >
+              1 Tablet | Once a day | 5 days
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-instruction"
+            >
+              Nasal
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-startDate"
+            >
+              04/04/2025
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-orderDate"
+            >
+              04/04/2025
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-orderedBy"
+            >
+              Dr Neha Anand
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-quantity"
+            >
+              5 Tablet
+            </td>
+            <td
+              data-testid="table-cell-fb4bc0c6-849c-4ec3-ad63-0e18b0ee3604-status"
+            >
+              stopped
+            </td>
+          </tr>
+          <tr
+            data-testid="table-row-1124a9bb-1891-44bb-9842-103239aa2ca3"
+          >
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-name"
+            >
+              Chlorpheniramine maleate 4 mg
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-dosage"
+            >
+              2 Tablet | Twice a day | 2 days
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-instruction"
+            >
+              Injection
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-startDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-orderDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-orderedBy"
+            >
+              Dr Franklin Richards
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-quantity"
+            >
+              8 Tablet
+            </td>
+            <td
+              data-testid="table-cell-1124a9bb-1891-44bb-9842-103239aa2ca3-status"
+            >
+              scheduled
+            </td>
+          </tr>
+          <tr
+            data-testid="table-row-1d2d372e-0ec3-4544-accd-aa5743d1bf70"
+          >
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-name"
+            >
+              Paracetamol 650 mg
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-dosage"
+            >
+              2 Tablet | Immediately | 2 days
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-instruction"
+            >
+              Eye Drops
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-startDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-orderDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-orderedBy"
+            >
+              Dr Sebastian Adams
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-quantity"
+            >
+              4 Tablet
+            </td>
+            <td
+              data-testid="table-cell-1d2d372e-0ec3-4544-accd-aa5743d1bf70-status"
+            >
+              stopped
+            </td>
+          </tr>
+          <tr
+            data-testid="table-row-cb23207e-102d-480f-b4e7-6b7ee2084ae7"
+          >
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-name"
+            >
+              Hydrochlorothiazide 25 mg
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-dosage"
+            >
+              2 Tablet | Thrice a day | 2 days
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-instruction"
+            >
+              Oral | Patient needs sufficient dose of clean water
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-startDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-orderDate"
+            >
+              08/04/2025
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-orderedBy"
+            >
+              Dr Monica Smith
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-quantity"
+            >
+              12 Tablet
+            </td>
+            <td
+              data-testid="table-cell-cb23207e-102d-480f-b4e7-6b7ee2084ae7-status"
+            >
+              stopped
+            </td>
+          </tr>
+          <tr
+            data-testid="table-row-c5396e12-dbfe-4259-9e42-92a52a2761a8"
+          >
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-name"
+            >
+              Oxygen
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-dosage"
+            >
+              2 Unit | Twice a day | 2 days
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-instruction"
+            >
+              Nasogastric | Patient needs sufficient dose of clean oxygen
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-startDate"
+            >
+              24/06/2025
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-orderDate"
+            >
+              24/06/2025
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-orderedBy"
+            >
+              Dr John Doe
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-quantity"
+            >
+              8 Unit
+            </td>
+            <td
+              data-testid="table-cell-c5396e12-dbfe-4259-9e42-92a52a2761a8-status"
+            >
+              active
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+`;

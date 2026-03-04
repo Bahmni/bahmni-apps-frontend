@@ -150,14 +150,23 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
   const renderCaptureContent = () => {
     return !previewUrl ? (
       <>
-        <div className={styles.imagePreviewContainer}>
-          <video ref={videoRef} autoPlay playsInline />
+        <div
+          className={styles.imagePreviewContainer}
+          data-testid="capture-video-container"
+        >
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            data-testid="capture-video"
+          />
         </div>
-        <div className={styles.buttonGroup}>
+        <div className={styles.buttonGroup} data-testid="capture-button-group">
           <Button
             kind="primary"
             onClick={handleCaptureClick}
             className={styles.button}
+            data-testid="capture-photo-button"
           >
             {t('CREATE_PATIENT_CAPTURE_PHOTO')}
           </Button>
@@ -165,14 +174,25 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
       </>
     ) : (
       <>
-        <div className={styles.imagePreviewContainer}>
-          <img src={previewUrl} alt="Preview" />
+        <div
+          className={styles.imagePreviewContainer}
+          data-testid="capture-preview-container"
+        >
+          <img
+            src={previewUrl}
+            alt="Preview"
+            data-testid="capture-preview-image"
+          />
         </div>
-        <div className={styles.buttonGroup}>
+        <div
+          className={styles.buttonGroup}
+          data-testid="capture-confirm-button-group"
+        >
           <Button
             kind="primary"
             onClick={handleConfirm}
             className={styles.button}
+            data-testid="capture-confirm-button"
           >
             {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
           </Button>
@@ -180,6 +200,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
             kind="primary"
             onClick={handlePreview}
             className={styles.button}
+            data-testid="capture-retake-button"
           >
             {t('CREATE_PATIENT_UPLOAD_PHOTO_RETAKE')}
           </Button>
@@ -202,22 +223,41 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
           onChange={handleFileChange}
           onDelete={handleFileDelete}
           filenameStatus="edit"
+          data-testid="file-uploader"
         />
         {!fileName && (
-          <div className={styles.noFileChosen}>
+          <div
+            className={styles.noFileChosen}
+            data-testid="no-file-chosen-message"
+          >
             {t('CREATE_PATIENT_NO_FILE_CHOSEN')}
           </div>
         )}
-        <div className={styles.errorMessage}>{fileSizeError}</div>
-        <div className={styles.imagePreviewContainer}>
-          {previewUrl && <img src={previewUrl} alt="Preview" />}
+        <div
+          className={styles.errorMessage}
+          data-testid="file-size-error-message"
+        >
+          {fileSizeError}
         </div>
-        <div className={styles.buttonGroup}>
+        <div
+          className={styles.imagePreviewContainer}
+          data-testid="upload-preview-container"
+        >
+          {previewUrl && (
+            <img
+              src={previewUrl}
+              alt="Preview"
+              data-testid="upload-preview-image"
+            />
+          )}
+        </div>
+        <div className={styles.buttonGroup} data-testid="upload-button-group">
           <Button
             kind="primary"
             onClick={handleConfirm}
             disabled={!previewUrl}
             className={styles.button}
+            data-testid="upload-confirm-button"
           >
             {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
           </Button>
@@ -228,7 +268,10 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
 
   return (
     <>
-      <div className={styles.photoUploadSection}>
+      <div
+        className={styles.photoUploadSection}
+        data-testid="patient-photo-upload-section"
+      >
         {confirmedUrl ? (
           <>
             <div className={styles.removeButtonWrapper}>
@@ -237,11 +280,16 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
                 size="xs"
                 onClick={handleRemoveConfirmed}
                 label={t('CREATE_PATIENT_UPLOAD_PHOTO_REMOVE')}
+                data-testid="patient-photo-remove-button"
               >
                 <Close />
               </IconButton>
             </div>
-            <img src={confirmedUrl} alt="Patient" />
+            <img
+              src={confirmedUrl}
+              alt="Patient"
+              data-testid="patient-photo-preview"
+            />
           </>
         ) : (
           <>
@@ -250,6 +298,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
               kind="tertiary"
               size="sm"
               onClick={openUpload}
+              data-testid="patient-photo-upload-button"
             >
               {t('CREATE_PATIENT_UPLOAD_PHOTO')}
             </Button>
@@ -258,6 +307,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
               size="sm"
               className={styles.wrapButton}
               onClick={openCapture}
+              data-testid="patient-photo-capture-button"
             >
               {t('CREATE_PATIENT_CAPTURE_PHOTO')}
             </Button>
@@ -275,8 +325,9 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
             ? t('CREATE_PATIENT_UPLOAD_PHOTO_MODAL_HEADING')
             : t('CREATE_PATIENT_CAPTURE_PHOTO_MODAL_HEADING')
         }
+        data-testid="patient-photo-modal"
       >
-        <Modal.Body>
+        <Modal.Body data-testid="patient-photo-modal-body">
           {mode === 'capture' && renderCaptureContent()}
           {mode === 'upload' && renderUploadContent()}
         </Modal.Body>

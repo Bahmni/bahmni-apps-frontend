@@ -105,7 +105,7 @@ describe('ConditionsTable', () => {
     render(wrapper);
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByTestId('sortable-table-error')).toBeInTheDocument();
+      expect(screen.getByTestId('conditions-table-error')).toBeInTheDocument();
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'ERROR_DEFAULT_TITLE',

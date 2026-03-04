@@ -1,0 +1,26 @@
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.observations {
+  div[id^="encounter-"] {
+    padding-inline-start: 0 !important;
+    > ul > li > button {
+      background-color: $layer-01;
+    }
+  }
+
+  div[id^="abnormal-obs-"][id$="-value"] {
+    color: $text-error;
+    font-weight: bold;
+  }
+}
+
+.title {
+  background: $background !important;
+  min-block-size: fit-content !important;
+  border-top: 1px solid $border-subtle;
+  p {
+    @include type-style("heading-compact-02");
+    color: $text-primary;
+  }
+}

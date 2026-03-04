@@ -1,0 +1,76 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.appointmentsTable {
+  margin-top: $spacing-05;
+}
+
+.appointmentTabList {
+  border-top: 1px solid $border-subtle;
+  margin-bottom: 0;
+}
+
+.appointmentTabs {
+  padding: 0 !important;
+}
+
+.appointmentsTableBody {
+  border-collapse: collapse;
+  width: 100%;
+  border: none; // Remove table border
+
+  // Remove bottom border from last row
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.appointmentTableEmpty {
+  @include type-style("label-02");
+  background-color: $background;
+  padding: $spacing-06 $spacing-05;
+  text-align: center;
+  border-top: 1px solid $border-subtle-02;
+}
+
+// Status color styles for StatusTag dot indicator
+.scheduledStatus {
+  color: $blue-70;
+}
+
+.completedStatus {
+  color: $green-60;
+}
+
+.cancelledStatus {
+  color: $red-70;
+}
+
+.missedStatus {
+  color: $red-70;
+}
+
+.waitListStatus {
+  color: $gray-100;
+}
+
+.checkedInStatus {
+  color: $yellow-70;
+}
+
+.unknownStatus {
+  color: $gray-50;
+}
+
+// Accordion styles
+.customAccordianItem {
+  margin-bottom: $spacing-03;
+  border: 1px solid $border-subtle;
+  border-radius: 2px;
+}
+
+.columnDataBold {
+  @include type-style("heading-compact-01");
+}

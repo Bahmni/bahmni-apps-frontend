@@ -1,0 +1,194 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = `
+<div>
+  <div
+    aria-label="obs-by-encounter-aria-label"
+    data-testid="obs-by-encounter-test-id"
+    id="obs-by-encounter"
+  >
+    <div
+      aria-label="encounter-enc-1-aria-label"
+      class="_container_1ml42_1"
+      data-testid="encounter-enc-1-test-id"
+      id="encounter-enc-1"
+    >
+      <ul
+        class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+      >
+        <li
+          class="cds--accordion__item cds--accordion__item--active _accordion_1ml42_5"
+          data-testid="encounter-enc-1-test-id-accordion-item"
+        >
+          <button
+            aria-controls="accordion-item-_r_i_"
+            aria-expanded="true"
+            class="cds--accordion__heading"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="cds--accordion__arrow"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+              />
+            </svg>
+            <div
+              class="cds--accordion__title"
+              dir="auto"
+            >
+              21 Jan 2026, 10:30 AM
+            </div>
+          </button>
+          <div
+            class="cds--accordion__wrapper"
+          >
+            <div
+              class="cds--accordion__content"
+              id="accordion-item-_r_i_"
+            >
+              <div
+                aria-label="encounter-enc-1-rows-aria-label"
+                class="_rows_1ml42_35"
+                data-testid="encounter-enc-1-rows-test-id"
+                id="encounter-enc-1-rows"
+              >
+                <div
+                  aria-label="obs-Temperature-0-0"
+                  class="_rowCell_ajzol_1"
+                  data-testid="obs-Temperature-0-0"
+                  id="obs-Temperature-0-0"
+                >
+                  <div
+                    aria-label="obs-Temperature-0-0-header"
+                    class="_header_ajzol_11"
+                    data-testid="obs-Temperature-0-0-header"
+                    id="obs-Temperature-0-0-header"
+                  >
+                    Temperature
+                  </div>
+                  <div
+                    aria-label="obs-Temperature-0-0-value"
+                    class="_value_ajzol_20"
+                    data-testid="obs-Temperature-0-0-value"
+                    id="obs-Temperature-0-0-value"
+                  >
+                    120 mmHg
+                  </div>
+                  <div
+                    aria-label="obs-Temperature-0-0-info"
+                    class="_info_ajzol_29"
+                    data-testid="obs-Temperature-0-0-info"
+                    id="obs-Temperature-0-0-info"
+                  >
+                    Recorded by Dr. Smith
+                  </div>
+                </div>
+                <div
+                  aria-label="grouped-obs-Blood Pressure-0-aria-label"
+                  class="_container_1ml42_1"
+                  data-testid="grouped-obs-Blood Pressure-0-test-id"
+                  id="grouped-obs-Blood Pressure-0"
+                >
+                  <ul
+                    class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
+                  >
+                    <li
+                      class="cds--accordion__item cds--accordion__item--active _accordion_1ml42_5"
+                      data-testid="grouped-obs-Blood Pressure-0-test-id-accordion-item"
+                    >
+                      <button
+                        aria-controls="accordion-item-_r_j_"
+                        aria-expanded="true"
+                        class="cds--accordion__heading"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="cds--accordion__arrow"
+                          fill="currentColor"
+                          focusable="false"
+                          height="16"
+                          preserveAspectRatio="xMidYMid meet"
+                          viewBox="0 0 16 16"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                          />
+                        </svg>
+                        <div
+                          class="cds--accordion__title"
+                          dir="auto"
+                        >
+                          Blood Pressure
+                        </div>
+                      </button>
+                      <div
+                        class="cds--accordion__wrapper"
+                      >
+                        <div
+                          class="cds--accordion__content"
+                          id="accordion-item-_r_j_"
+                        >
+                          <div
+                            aria-label="grouped-obs-Blood Pressure-0-rows-aria-label"
+                            class="_rows_1ml42_35"
+                            data-testid="grouped-obs-Blood Pressure-0-rows-test-id"
+                            id="grouped-obs-Blood Pressure-0-rows"
+                          >
+                            <div
+                              aria-label="obs-Systolic-0-0"
+                              class="_rowCell_ajzol_1"
+                              data-testid="obs-Systolic-0-0"
+                              id="obs-Systolic-0-0"
+                            >
+                              <div
+                                aria-label="obs-Systolic-0-0-header"
+                                class="_header_ajzol_11"
+                                data-testid="obs-Systolic-0-0-header"
+                                id="obs-Systolic-0-0-header"
+                              >
+                                Systolic
+                              </div>
+                              <div
+                                aria-label="obs-Systolic-0-0-value"
+                                class="_value_ajzol_20"
+                                data-testid="obs-Systolic-0-0-value"
+                                id="obs-Systolic-0-0-value"
+                              >
+                                120 mmHg
+                              </div>
+                              <div
+                                aria-label="obs-Systolic-0-0-info"
+                                class="_info_ajzol_29"
+                                data-testid="obs-Systolic-0-0-info"
+                                id="obs-Systolic-0-0-info"
+                              >
+                                Recorded by Dr. Smith
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+`;

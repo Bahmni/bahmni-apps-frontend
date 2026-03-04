@@ -150,9 +150,17 @@ export function useAddressFields(
     (fieldName: string) => {
       const childFields = getDescendantFields(fieldName);
 
+      // Filter to only include autocomplete (strict entry) fields
+      const autoCompleteChildFields = childFields.filter((field) => {
+        const level = levelsWithStrictEntry.find(
+          (l) => l.addressField === field,
+        );
+        return level?.isStrictEntry === true;
+      });
+
       setAddress((prev) => {
         const updated = { ...prev };
-        childFields.forEach((child) => {
+        autoCompleteChildFields.forEach((child) => {
           updated[child] = null;
         });
         return updated;
@@ -160,7 +168,7 @@ export function useAddressFields(
 
       setSelectedMetadata((prev) => {
         const updated = { ...prev };
-        childFields.forEach((child) => {
+        autoCompleteChildFields.forEach((child) => {
           updated[child] = {
             uuid: undefined,
             userGeneratedId: undefined,
@@ -170,7 +178,7 @@ export function useAddressFields(
         return updated;
       });
     },
-    [getDescendantFields],
+    [getDescendantFields, levelsWithStrictEntry],
   );
 
   const handleFieldSelect = useCallback(
@@ -221,18 +229,14 @@ export function useAddressFields(
     [levelsWithStrictEntry],
   );
 
-  const handleFieldChange = useCallback(
-    (fieldName: string, value: string) => {
-      setAddress((prev) => ({ ...prev, [fieldName]: value }));
-      clearChildFields(fieldName);
+  const handleFieldChange = useCallback((fieldName: string, value: string) => {
+    setAddress((prev) => ({ ...prev, [fieldName]: value }));
 
-      setSelectedMetadata((prev) => ({
-        ...prev,
-        [fieldName]: { ...prev[fieldName], value: null },
-      }));
-    },
-    [clearChildFields],
-  );
+    setSelectedMetadata((prev) => ({
+      ...prev,
+      [fieldName]: { ...prev[fieldName], value: null },
+    }));
+  }, []);
 
   const getParentUuid = useCallback(
     (fieldName: string): string | undefined => {

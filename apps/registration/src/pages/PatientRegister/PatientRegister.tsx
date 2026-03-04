@@ -198,8 +198,8 @@ const PatientRegister = () => {
       href: BAHMNI_HOME_PATH,
     },
     {
-      id: 'search',
-      label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
+      id: 'registration',
+      label: t('CREATE_PATIENT_BREADCRUMB_REGISTRATION_SEARCH'),
       href: BAHMNI_REGISTRATION_SEARCH,
     },
     {
@@ -288,6 +288,7 @@ const PatientRegister = () => {
               <Button
                 kind="tertiary"
                 onClick={() => navigate('/registration/search')}
+                data-testid="back-to-patient-search-button"
               >
                 {t('CREATE_PATIENT_BACK_TO_SEARCH')}
               </Button>
@@ -296,6 +297,7 @@ const PatientRegister = () => {
                   kind="tertiary"
                   onClick={handleSave}
                   disabled={isSaving}
+                  data-testid="save-patient-button"
                 >
                   {t('CREATE_PATIENT_SAVE')}
                 </Button>

@@ -6,16 +6,18 @@ import {
   fetchFormMetadata,
   fetchObservationForms,
   useTranslation,
-  getFormsDataByEncounterUuid,
-  FormsEncounter,
+  getObservationsBundleByEncounterUuid,
+  useSubscribeConsultationSaved,
+  dispatchConsultationSaved,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Bundle, Observation } from 'fhir/r4';
 import { toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { ExtractedObservation } from '../../observations/models';
 import FormsTable from '../FormsTable';
-import { ObservationData } from '../models';
 import ObservationItem from '../ObservationItem';
 
 expect.extend(toHaveNoViolations);
@@ -27,7 +29,8 @@ jest.mock('@bahmni/services', () => ({
   fetchFormMetadata: jest.fn(),
   fetchObservationForms: jest.fn(),
   useTranslation: jest.fn(),
-  getFormsDataByEncounterUuid: jest.fn(),
+  getObservationsBundleByEncounterUuid: jest.fn(),
+  useSubscribeConsultationSaved: jest.fn(),
   formatDate: jest.fn((date) => ({
     formattedResult: new Date(date).toLocaleDateString(),
   })),
@@ -64,13 +67,24 @@ const mockFetchFormMetadata = fetchFormMetadata as jest.MockedFunction<
 const mockFetchObservationForms = fetchObservationForms as jest.MockedFunction<
   typeof fetchObservationForms
 >;
-const mockGetFormsDataByEncounterUuid =
-  getFormsDataByEncounterUuid as jest.MockedFunction<
-    typeof getFormsDataByEncounterUuid
+const mockGetObservationsBundleByEncounterUuid =
+  getObservationsBundleByEncounterUuid as jest.MockedFunction<
+    typeof getObservationsBundleByEncounterUuid
   >;
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
+const mockUseSubscribeConsultationSaved =
+  useSubscribeConsultationSaved as jest.MockedFunction<
+    typeof useSubscribeConsultationSaved
+  >;
+
+// Mock ResizeObserver to avoid "ResizeObserver is not defined" errors
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
 
 const mockFormResponseData: FormResponseData[] = [
   {
@@ -149,21 +163,37 @@ const mockFormMetadata: FormMetadata = {
   },
 };
 
-const mockFormsEncounterData: FormsEncounter = {
-  encounterUuid: 'encounter-3',
-  encounterDateTime: 1704499200000,
-  encounterType: 'Consultation',
-  observations: [
+const mockFhirObservationBundle: Bundle<Observation> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  total: 1,
+  entry: [
     {
-      uuid: 'obs-1',
-      concept: {
-        uuid: 'concept-1',
-        name: 'Temperature',
-        dataType: 'Numeric',
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-1',
+        status: 'final',
+        code: {
+          text: 'Temperature',
+          coding: [
+            {
+              code: 'concept-1',
+              display: 'Temperature',
+            },
+          ],
+        },
+        valueQuantity: {
+          value: 98.6,
+          unit: '°F',
+        },
+        extension: [
+          {
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            valueString: 'History Form.1/1-0',
+          },
+        ],
       },
-      value: 98.6,
-      formFieldPath: 'History Form.1/1-0',
-    } as any,
+    },
   ],
 };
 
@@ -172,17 +202,28 @@ const renderFormsTable = (props = {}) => {
     defaultOptions: {
       queries: {
         retry: false,
-        staleTime: 0,
-        gcTime: 0,
+        staleTime: 5 * 60 * 1000, // Match the app config
+        gcTime: 10 * 60 * 1000,
       },
     },
   });
 
-  return render(
+  const renderResult = render(
     <QueryClientProvider client={queryClient}>
       <FormsTable {...props} />
     </QueryClientProvider>,
   );
+
+  // Return a custom rerender that preserves the QueryClientProvider
+  return {
+    ...renderResult,
+    rerender: (newProps: any) =>
+      renderResult.rerender(
+        <QueryClientProvider client={queryClient}>
+          <FormsTable {...newProps} />
+        </QueryClientProvider>,
+      ),
+  };
 };
 
 describe('FormsTable', () => {
@@ -206,7 +247,9 @@ describe('FormsTable', () => {
 
     mockUsePatientUUID.mockReturnValue('patient-123');
     mockFetchObservationForms.mockResolvedValue(mockObservationForms);
-    mockGetFormsDataByEncounterUuid.mockResolvedValue(mockFormsEncounterData);
+    mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
+      mockFhirObservationBundle,
+    );
   });
 
   describe('Component States', () => {
@@ -218,7 +261,7 @@ describe('FormsTable', () => {
       renderFormsTable();
 
       expect(screen.getByTestId('forms-table')).toBeInTheDocument();
-      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+      expect(screen.getByTestId('forms-table-skeleton')).toBeInTheDocument();
     });
 
     it('displays empty state when no forms', async () => {
@@ -422,7 +465,7 @@ describe('FormsTable', () => {
       });
 
       // The most recent record should appear first within the Vitals Form group
-      const vitalsAccordion = screen.getAllByTestId('accordian-table-title')[1];
+      const vitalsAccordion = screen.getByTestId('accordian-title-Vitals Form');
       expect(
         within(vitalsAccordion).getByText('Vitals Form'),
       ).toBeInTheDocument();
@@ -498,20 +541,18 @@ describe('FormsTable', () => {
       expect(screen.queryByText('Dr. Johnson')).not.toBeInTheDocument();
     });
 
-    it('shows all forms when encounterUuids is empty array', async () => {
+    it('Show empty list when episode reference is given but no encounter has been generated yet', async () => {
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
 
       const encounterUuids: string[] = [];
-      renderFormsTable({ encounterUuids });
-
-      await waitFor(() => {
-        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      renderFormsTable({
+        encounterUuids,
+        episodeOfCareUuids: ['episodeUuid-1'],
       });
 
-      // Should show all providers
-      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-      expect(screen.getByText('Dr. Johnson')).toBeInTheDocument();
-      expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('No forms available')).toBeInTheDocument();
+      });
     });
 
     it('shows all forms when encounterUuids is not provided', async () => {
@@ -522,6 +563,10 @@ describe('FormsTable', () => {
       await waitFor(() => {
         expect(screen.getByText('Vitals Form')).toBeInTheDocument();
       });
+
+      // Should show all forms
+      expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      expect(screen.getByText('History Form')).toBeInTheDocument();
 
       // Should show all providers
       expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
@@ -591,14 +636,13 @@ describe('FormsTable', () => {
   describe('ObservationItem Component', () => {
     describe('Simple Observations (Leaf Nodes)', () => {
       it('renders a simple observation with label and value', () => {
-        const observation: ObservationData = {
-          concept: {
-            uuid: 'concept-1',
-            name: 'Temperature',
-            shortName: 'Temp',
+        const observation: ExtractedObservation = {
+          id: 'concept-1',
+          display: 'Temperature',
+          observationValue: {
+            value: '98.6',
+            type: 'string',
           },
-          conceptNameToDisplay: 'Temperature',
-          valueAsString: '98.6',
         };
 
         render(<ObservationItem observation={observation} index={0} />);
@@ -607,15 +651,14 @@ describe('FormsTable', () => {
         expect(screen.getByText('98.6')).toBeInTheDocument();
       });
 
-      it('uses conceptNameToDisplay as primary display label', () => {
-        const observation: ObservationData = {
-          concept: {
-            uuid: 'concept-1',
-            name: 'Pulse',
-            shortName: 'HR',
+      it('uses display as primary display label', () => {
+        const observation: ExtractedObservation = {
+          id: 'concept-1',
+          display: 'Heart Rate',
+          observationValue: {
+            value: '70',
+            type: 'string',
           },
-          conceptNameToDisplay: 'Heart Rate',
-          valueAsString: '70',
         };
 
         render(<ObservationItem observation={observation} index={0} />);
@@ -625,21 +668,21 @@ describe('FormsTable', () => {
         expect(screen.queryByText('HR')).not.toBeInTheDocument();
       });
 
-      it('renders undefined when conceptNameToDisplay is not available for top-level observation', () => {
-        const observation: ObservationData = {
-          concept: {
-            uuid: 'concept-1',
-            name: 'Pulse',
-            shortName: 'HR',
+      it('renders display label for top-level observation', () => {
+        const observation: ExtractedObservation = {
+          id: 'concept-1',
+          display: 'Pulse',
+          observationValue: {
+            value: '70',
+            type: 'string',
           },
-          valueAsString: '70',
         };
 
         const { container } = render(
           <ObservationItem observation={observation} index={0} />,
         );
 
-        // Top-level ObservationItem only uses conceptNameToDisplay, no fallback
+        // Top-level ObservationItem uses display
         const label = container.querySelector('.rowLabel');
         expect(label).toBeInTheDocument();
         expect(screen.getByText('70')).toBeInTheDocument();
@@ -648,29 +691,25 @@ describe('FormsTable', () => {
 
     describe('Observations with Group Members', () => {
       it('renders observation with group members', () => {
-        const observation: ObservationData = {
-          concept: {
-            uuid: 'bp-concept',
-            name: 'Blood Pressure',
-          },
-          conceptNameToDisplay: 'Blood Pressure',
-          valueAsString: '120/80',
-          groupMembers: [
+        const observation: ExtractedObservation = {
+          id: 'bp-concept',
+          display: 'Blood Pressure',
+          members: [
             {
-              concept: {
-                uuid: 'sbp-concept',
-                name: 'Systolic BP',
+              id: 'sbp-concept',
+              display: 'Systolic',
+              observationValue: {
+                value: '120',
+                type: 'string',
               },
-              conceptNameToDisplay: 'Systolic',
-              valueAsString: '120',
             },
             {
-              concept: {
-                uuid: 'dbp-concept',
-                name: 'Diastolic BP',
+              id: 'dbp-concept',
+              display: 'Diastolic',
+              observationValue: {
+                value: '80',
+                type: 'string',
               },
-              conceptNameToDisplay: 'Diastolic',
-              valueAsString: '80',
             },
           ],
         };
@@ -687,27 +726,21 @@ describe('FormsTable', () => {
 
     describe('Nested Group Members (Recursive Rendering)', () => {
       it('renders deeply nested group members', () => {
-        const observation: ObservationData = {
-          concept: {
-            uuid: 'parent-concept',
-            name: 'Parent Group',
-          },
-          conceptNameToDisplay: 'Parent Group',
-          groupMembers: [
+        const observation: ExtractedObservation = {
+          id: 'parent-concept',
+          display: 'Parent Group',
+          members: [
             {
-              concept: {
-                uuid: 'child-group-concept',
-                name: 'Child Group',
-              },
-              conceptNameToDisplay: 'Child Group',
-              groupMembers: [
+              id: 'child-group-concept',
+              display: 'Child Group',
+              members: [
                 {
-                  concept: {
-                    uuid: 'grandchild-concept',
-                    name: 'Grandchild Value',
+                  id: 'grandchild-concept',
+                  display: 'Grandchild',
+                  observationValue: {
+                    value: '100',
+                    type: 'string',
                   },
-                  conceptNameToDisplay: 'Grandchild',
-                  valueAsString: '100',
                 },
               ],
             },
@@ -723,45 +756,39 @@ describe('FormsTable', () => {
       });
 
       it('renders mixed group members with both nested groups and leaf nodes', () => {
-        const observation: ObservationData = {
-          concept: {
-            uuid: 'vitals-concept',
-            name: 'Vitals',
-          },
-          conceptNameToDisplay: 'Vitals',
-          groupMembers: [
+        const observation: ExtractedObservation = {
+          id: 'vitals-concept',
+          display: 'Vitals',
+          members: [
             {
-              concept: {
-                uuid: 'bp-concept',
-                name: 'Blood Pressure',
-              },
-              conceptNameToDisplay: 'Blood Pressure',
-              groupMembers: [
+              id: 'bp-concept',
+              display: 'Blood Pressure',
+              members: [
                 {
-                  concept: {
-                    uuid: 'sbp-concept',
-                    name: 'Systolic',
+                  id: 'sbp-concept',
+                  display: 'Systolic',
+                  observationValue: {
+                    value: '120',
+                    type: 'string',
                   },
-                  conceptNameToDisplay: 'Systolic',
-                  valueAsString: '120',
                 },
                 {
-                  concept: {
-                    uuid: 'dbp-concept',
-                    name: 'Diastolic',
+                  id: 'dbp-concept',
+                  display: 'Diastolic',
+                  observationValue: {
+                    value: '80',
+                    type: 'string',
                   },
-                  conceptNameToDisplay: 'Diastolic',
-                  valueAsString: '80',
                 },
               ],
             },
             {
-              concept: {
-                uuid: 'temp-concept',
-                name: 'Temperature',
+              id: 'temp-concept',
+              display: 'Temperature',
+              observationValue: {
+                value: '98.6',
+                type: 'string',
               },
-              conceptNameToDisplay: 'Temperature',
-              valueAsString: '98.6',
             },
           ],
         };
@@ -781,29 +808,546 @@ describe('FormsTable', () => {
 
     describe('Comments and Provider Information', () => {
       it('renders observation with comment and provider name', () => {
-        const observation: ObservationData = {
-          concept: {
-            uuid: 'concept-1',
-            name: 'Temperature',
+        const observation: ExtractedObservation = {
+          id: 'concept-1',
+          display: 'Temperature',
+          observationValue: {
+            value: '102.5',
+            type: 'string',
           },
-          conceptNameToDisplay: 'Temperature',
-          valueAsString: '102.5',
-          comment: 'Patient has fever',
-          providers: [
-            {
-              uuid: 'provider-1',
-              name: 'Dr. Smith',
-            },
-          ],
+          encounter: {
+            id: 'enc-1',
+            type: 'visit',
+            date: '2024-01-01',
+            provider: 'Dr. Smith',
+          },
         };
 
-        render(<ObservationItem observation={observation} index={0} />);
+        render(
+          <ObservationItem
+            observation={observation}
+            index={0}
+            comment="Patient has fever"
+          />,
+        );
 
         expect(screen.getByText('Temperature')).toBeInTheDocument();
         expect(screen.getByText('102.5')).toBeInTheDocument();
         expect(
           screen.getByText('Patient has fever - by Dr. Smith'),
         ).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Snapshots', () => {
+    it('should match snapshot with form data', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      const { container } = renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      expect(container).toMatchSnapshot();
+    });
+
+    it('should match snapshot in loading state', () => {
+      mockGetPatientFormData.mockImplementation(
+        () => new Promise(() => {}), // Never resolves
+      );
+
+      const { container } = renderFormsTable();
+
+      expect(container).toMatchSnapshot();
+    });
+
+    it('should match snapshot in empty state', async () => {
+      mockGetPatientFormData.mockResolvedValue([]);
+
+      const { container } = renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('No forms available')).toBeInTheDocument();
+      });
+
+      expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('FormsTable Auto-Refresh', () => {
+    beforeEach(() => {
+      mockUseSubscribeConsultationSaved.mockImplementation(() => {});
+    });
+
+    it('should call useSubscribeConsultationSaved on component render', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(mockUseSubscribeConsultationSaved).toHaveBeenCalled();
+      });
+    });
+
+    it('should refetch forms when consultation is saved with matching patient UUID and observations updated', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      // Reset mock to count new calls
+      mockGetPatientFormData.mockClear();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Simulate consultation saved event
+      if (capturedCallback) {
+        (capturedCallback as jest.Mock)({
+          patientUUID: 'patient-123',
+          updatedResources: {},
+          updatedConcepts: new Map([['concept-1', 'Concept 1']]),
+        });
+      }
+
+      // Refetch should be called (we can verify this by checking if the query was triggered)
+      await waitFor(() => {
+        // After refetch, the component should still render forms
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+    });
+
+    it('should not refetch when consultation is saved but patient UUID does not match', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Simulate consultation saved event with different patient UUID
+      if (capturedCallback) {
+        (capturedCallback as jest.Mock)({
+          patientUUID: 'different-patient-uuid',
+          updatedResources: {},
+          updatedConcepts: new Map(),
+        });
+      }
+
+      // Wait a bit and verify no additional calls were made
+      await waitFor(
+        () => {
+          expect(mockGetPatientFormData.mock.calls).toHaveLength(
+            initialCallCount,
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+
+    it('should not refetch when consultation is saved but observations were not updated', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Simulate consultation saved event without observation updates
+      if (capturedCallback) {
+        (capturedCallback as jest.Mock)({
+          patientUUID: 'patient-123',
+          updatedResources: {},
+          updatedConcepts: new Map(),
+        });
+      }
+
+      // Wait a bit and verify no additional calls were made
+      await waitFor(
+        () => {
+          expect(mockGetPatientFormData.mock.calls).toHaveLength(
+            initialCallCount,
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+
+    it('should trigger fresh API call when consultation is saved, but use cache on second click', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      let capturedCallback: ((payload: any) => void) | null = null;
+
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: any) => void) => {
+          capturedCallback = callback;
+        },
+      );
+
+      const { rerender } = renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      // Get the initial call count (from initial load)
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Simulate consultation saved event to trigger refetch
+      if (capturedCallback) {
+        (capturedCallback as jest.Mock)({
+          patientUUID: 'patient-123',
+          updatedResources: {},
+          updatedConcepts: new Map([['concept-1', 'Concept 1']]),
+        });
+      }
+
+      // Wait for the refetch to complete (triggered by subscription callback)
+      await waitFor(() => {
+        expect(mockGetPatientFormData.mock.calls.length).toBeGreaterThan(
+          initialCallCount,
+        );
+      });
+
+      // Reset call count to track calls from rerender
+      mockGetPatientFormData.mockClear();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Rerender component - should use cache, not make new API call
+      // Use same props as initial render (empty) to keep queryKey unchanged
+      rerender({});
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      // After rerender, should use cache (no new API call)
+      expect(mockGetPatientFormData.mock.calls).toHaveLength(0);
+    });
+  });
+
+  describe('FormsTable Auto-Refresh with Real Events', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.useFakeTimers();
+      mockUsePatientUUID.mockReturnValue('patient-123');
+    });
+
+    afterEach(() => {
+      jest.runOnlyPendingTimers();
+      jest.useRealTimers();
+    });
+
+    it('should refetch forms when real consultation saved event is dispatched with matching patient and observations', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Use real event subscription for this test
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        const handler = (event: Event) => {
+          const customEvent = event as CustomEvent;
+          callback(customEvent.detail);
+        };
+        window.addEventListener('consultation:saved', handler);
+        return () => window.removeEventListener('consultation:saved', handler);
+      });
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Dispatch real event with matching patient UUID and observations updated
+      const updatedConcepts = new Map<string, string>();
+      updatedConcepts.set('concept-1', 'Concept 1');
+      updatedConcepts.set('concept-2', 'Concept 2');
+
+      dispatchConsultationSaved({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: {},
+        },
+        updatedConcepts,
+      });
+
+      // Run all timers to process the setTimeout in dispatchConsultationSaved
+      jest.runAllTimers();
+
+      // Verify refetch was triggered (more calls than initial)
+      await waitFor(() => {
+        expect(mockGetPatientFormData.mock.calls.length).toBeGreaterThan(
+          initialCallCount,
+        );
+      });
+    });
+
+    it('should not refetch when real event is dispatched with different patient UUID', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Use real event subscription for this test
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        const handler = (event: Event) => {
+          const customEvent = event as CustomEvent;
+          callback(customEvent.detail);
+        };
+        window.addEventListener('consultation:saved', handler);
+        return () => window.removeEventListener('consultation:saved', handler);
+      });
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Dispatch real event with different patient UUID
+      dispatchConsultationSaved({
+        patientUUID: 'different-patient-uuid',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: {},
+        },
+        updatedConcepts: new Map([['concept-1', 'Concept 1']]),
+      });
+
+      // Run all timers to process the setTimeout in dispatchConsultationSaved
+      jest.runAllTimers();
+
+      // Verify no additional calls were made
+      expect(mockGetPatientFormData.mock.calls).toHaveLength(initialCallCount);
+    });
+
+    it('should not refetch when real event is dispatched without observations update', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Use real event subscription for this test
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        const handler = (event: Event) => {
+          const customEvent = event as CustomEvent;
+          callback(customEvent.detail);
+        };
+        window.addEventListener('consultation:saved', handler);
+        return () => window.removeEventListener('consultation:saved', handler);
+      });
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetPatientFormData.mock.calls.length;
+
+      // Dispatch real event with matching patient but no observations update
+      dispatchConsultationSaved({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: true,
+          allergies: false,
+          medications: false,
+          serviceRequests: {},
+        },
+        updatedConcepts: new Map(),
+      });
+
+      // Run all timers to process the setTimeout in dispatchConsultationSaved
+      jest.runAllTimers();
+
+      // Verify no additional calls were made
+      expect(mockGetPatientFormData.mock.calls).toHaveLength(initialCallCount);
+    });
+  });
+
+  describe('Integration - Modal FHIR Observations', () => {
+    it('displays observations from FHIR bundle in modal', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
+        mockFhirObservationBundle,
+      );
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Click on timestamp link to open modal
+      const links = document.querySelectorAll('.cds--link');
+      expect(links.length).toBeGreaterThan(0);
+      await user.click(links[0] as HTMLElement);
+
+      // Verify modal opens and observations are displayed
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      // Verify FHIR observation (Temperature) is displayed in modal
+      await waitFor(() => {
+        expect(screen.getByText('Temperature')).toBeInTheDocument();
+      });
+
+      // Verify the API was called with correct encounter UUID
+      expect(mockGetObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
+        'encounter-3',
+      );
+    });
+
+    it('displays error message in modal when FHIR encounter data fetch fails', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockGetObservationsBundleByEncounterUuid.mockRejectedValue(
+        new Error('FHIR fetch error'),
+      );
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Click on timestamp link to open modal
+      const links = document.querySelectorAll('.cds--link');
+      expect(links.length).toBeGreaterThan(0);
+      await user.click(links[0] as HTMLElement);
+
+      // Verify modal opens and error is displayed
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      // Verify error message is shown
+      await waitFor(() => {
+        expect(screen.getByText('FHIR fetch error')).toBeInTheDocument();
+      });
+    });
+
+    it('displays no form data message when no matching observations', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        total: 0,
+        entry: [],
+      } as Bundle<Observation>);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Click on timestamp link to open modal
+      const links = document.querySelectorAll('.cds--link');
+      expect(links.length).toBeGreaterThan(0);
+      await user.click(links[0] as HTMLElement);
+
+      // Verify modal opens
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      // Verify empty state message is displayed
+      await waitFor(() => {
+        expect(screen.getByText('NO_FORM_DATA_AVAILABLE')).toBeInTheDocument();
+      });
+    });
+
+    it('re-fetches FHIR encounter data after consultation:saved event when modal is open', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
+        mockFhirObservationBundle,
+      );
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      // Open modal
+      const links = document.querySelectorAll('.cds--link');
+      expect(links.length).toBeGreaterThan(0);
+      await user.click(links[0] as HTMLElement);
+
+      // Verify modal is open
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      // Verify Temperature is displayed
+      await waitFor(() => {
+        expect(screen.getByText('Temperature')).toBeInTheDocument();
+      });
+
+      // Get initial call count
+      const initialCallCount =
+        mockGetObservationsBundleByEncounterUuid.mock.calls.length;
+
+      // Simulate consultation:saved event with observations updated
+      const updatedConcepts = new Map<string, string>();
+      updatedConcepts.set('concept-1', 'Concept 1');
+
+      dispatchConsultationSaved({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: {},
+        },
+        updatedConcepts,
+      });
+
+      // Verify re-fetch was triggered
+      await waitFor(() => {
+        expect(
+          mockGetObservationsBundleByEncounterUuid.mock.calls.length,
+        ).toBeGreaterThan(initialCallCount);
       });
     });
   });

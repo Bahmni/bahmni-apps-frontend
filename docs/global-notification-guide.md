@@ -1,6 +1,6 @@
 # Global Notification System Guide
 
-This guide provides comprehensive documentation for the Global Notification system implemented in the Bahmni Clinical Frontend application.
+This guide provides comprehensive documentation for the Global Notification system implemented in the Bahmni Apps Frontend application.
 
 ## Introduction
 

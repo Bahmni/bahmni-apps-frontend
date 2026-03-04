@@ -1,7 +1,7 @@
 > [!NOTE]
 > Thank you for your contribution. Please find the details of this pull request below.
 
-**JIRA** → [BN-#](https://bahmni.atlassian.net/browse/BN-#)
+**JIRA** → [BAH-#](https://bahmni.atlassian.net/browse/BAH-#)
 
 ### **Description**
 

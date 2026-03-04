@@ -31,6 +31,8 @@ const AllergiesForm: React.FC = React.memo(() => {
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const [searchAllergenTerm, setSearchAllergenTerm] = useState('');
+  const [selectedAllergenItem, setSelectedAllergenItem] =
+    useState<AllergenConcept | null>(null);
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
   const [duplicateAllergyId, setDuplicateAllergyId] = useState<string | null>(
@@ -144,6 +146,8 @@ const AllergiesForm: React.FC = React.memo(() => {
     setShowDuplicateNotification(false);
     setDuplicateAllergyId(null);
     addAllergy(selectedItem as AllergenConcept);
+    setSearchAllergenTerm('');
+    setSelectedAllergenItem(selectedItem);
   };
 
   const filteredSearchResults = useMemo(() => {
@@ -207,12 +211,19 @@ const AllergiesForm: React.FC = React.memo(() => {
   ]);
 
   return (
-    <Tile className={styles.allergiesFormTile}>
-      <div className={styles.allergiesFormTitle}>
+    <Tile
+      className={styles.allergiesFormTile}
+      data-testid="allergies-form-tile"
+    >
+      <div
+        className={styles.allergiesFormTitle}
+        data-testid="allergies-form-title"
+      >
         {t('ALLERGIES_FORM_TITLE')}
       </div>
       <ComboBox
         id="allergies-search"
+        data-testid="allergies-search-combobox"
         placeholder={t('ALLERGIES_SEARCH_PLACEHOLDER')}
         items={filteredSearchResults}
         itemToString={(item) => {
@@ -227,7 +238,10 @@ const AllergiesForm: React.FC = React.memo(() => {
           handleOnChange(data.selectedItem as AllergenConcept | null)
         }
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+        selectedItem={selectedAllergenItem}
+        clearSelectedOnChange
         size="md"
+        allowCustomValue
         autoAlign
         aria-label={t('ALLERGIES_SEARCH_ARIA_LABEL')}
       />

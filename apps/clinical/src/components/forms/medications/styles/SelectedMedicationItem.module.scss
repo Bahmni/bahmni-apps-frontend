@@ -12,6 +12,15 @@
   @include type-style("heading-compact-02");
   margin-bottom: $spacing-04;
   margin-left: 0;
+  .medicineDetails {
+    @include type-style("body-compact-02");
+  }
+  .doseForm {
+    @include type-style("body-compact-02");
+    color: $text-secondary;
+    display: block;
+    margin-top: $spacing-02;
+  }
 }
 
 .medicationActions {
@@ -55,8 +64,10 @@
   width: 50%;
 }
 
-.totalQuantity {
-  justify-self: end;
+.footerRow {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
 }
 
 .statControl {

@@ -15,6 +15,7 @@ import {
   groupByDate,
   shouldEnableEncounterFilter,
   useTranslation,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo } from 'react';
@@ -22,9 +23,17 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
-import { ServiceRequestViewModel } from './models';
+import {
+  ServiceRequestViewModel,
+  ServiceRequestStatus,
+  STATUS_TRANSLATION_MAP,
+} from './models';
 import styles from './styles/GenericServiceRequestTable.module.scss';
-import { mapServiceRequest, sortServiceRequestsByPriority } from './utils';
+import {
+  filterServiceRequestReplacementEntries,
+  mapServiceRequest,
+  sortServiceRequestsByPriority,
+} from './utils';
 
 export const genericServiceRequestQueryKeys = (
   categoryUuid: string,
@@ -82,6 +91,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     isLoading: isLoadingServiceRequests,
     isError: isServiceRequestsError,
     error: serviceRequestsError,
+    refetch,
   } = useQuery({
     queryKey: genericServiceRequestQueryKeys(
       categoryUuid,
@@ -92,6 +102,19 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     queryFn: () =>
       fetchServiceRequests(categoryUuid, patientUUID!, encounterUuids),
   });
+
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (
+        payload.patientUUID === patientUUID &&
+        categoryName &&
+        payload.updatedResources.serviceRequests?.[categoryName.toLowerCase()]
+      ) {
+        refetch();
+      }
+    },
+    [patientUUID, categoryName],
+  );
 
   useEffect(() => {
     if (isOrderTypesError) {
@@ -143,12 +166,11 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
   );
 
   const processedServiceRequests = useMemo(() => {
-    //TODO : Need to check this filteration;
-    // const filteredRequests =
-    //   filterServiceRequestReplacementEntries(serviceRequests);
+    const filteredRequests =
+      filterServiceRequestReplacementEntries(serviceRequests);
 
     const grouped = groupByDate(
-      serviceRequests,
+      filteredRequests,
       (request: ServiceRequestViewModel) => {
         const result = formatDate(request.orderedDate, t, ISO_DATE_FORMAT);
         return result.formattedResult;
@@ -195,20 +217,11 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
           return request.orderedBy;
         case 'status':
           return (
-            <>
-              {request.status === 'active' && (
-                <Tag type="outline">{t('IN_PROGRESS_STATUS')}</Tag>
+            <Tag type="outline">
+              {t(
+                STATUS_TRANSLATION_MAP[request.status as ServiceRequestStatus],
               )}
-              {request.status === 'completed' && (
-                <Tag type="outline">{t('COMPLETED_STATUS')}</Tag>
-              )}
-              {request.status === 'revoked' && (
-                <Tag type="outline">{t('REVOKED_STATUS')}</Tag>
-              )}
-              {request.status === 'unknown' && (
-                <Tag type="outline">{t('UNKNOWN_STATUS')}</Tag>
-              )}
-            </>
+            </Tag>
           );
 
         default:
@@ -233,7 +246,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
           emptyStateMessage={t('NO_SERVICE_REQUESTS')}
           renderCell={renderCell}
           className={styles.serviceRequestTableBody}
-          data-testid="sortable-data-table"
+          dataTestId="generic-service-request-table"
         />
       ) : (
         <Accordion align="start">
@@ -263,7 +276,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                   emptyStateMessage={t('NO_SERVICE_REQUESTS')}
                   renderCell={renderCell}
                   className={styles.serviceRequestTableBody}
-                  data-testid="sortable-data-table"
+                  dataTestId={`generic-service-request-table-${formattedDate}`}
                 />
               </AccordionItem>
             );

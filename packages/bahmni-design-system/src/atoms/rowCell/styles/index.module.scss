@@ -1,0 +1,31 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.rowCell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  min-block-size: $spacing-08;
+}
+
+.header {
+  @include type-style("body-compact-01");
+  flex: 0 0 30%;
+  max-width: 30%;
+}
+
+.value {
+  @include type-style("body-compact-01");
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+
+.info {
+  @include type-style("body-compact-01");
+  flex: 0 0 20%;
+  max-width: 20%;
+}

@@ -7,6 +7,7 @@ export interface AllergyConceptMap {
 
 export interface ConsultationPad {
   allergyConceptMap: AllergyConceptMap;
+  statDurationInMilliseconds?: number;
 }
 
 export interface Dashboard {
@@ -17,8 +18,17 @@ export interface Dashboard {
   default?: boolean;
 }
 
+export interface ProgramConfig {
+  fields: string[];
+}
+
+export interface ContextInformation {
+  program?: ProgramConfig;
+}
+
 export interface ClinicalConfig {
   patientInformation: Record<string, unknown>;
+  contextInformation?: ContextInformation;
   actions: Array<unknown>;
   dashboards: Array<Dashboard>;
   consultationPad: ConsultationPad;

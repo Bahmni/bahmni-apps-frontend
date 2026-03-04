@@ -10,15 +10,17 @@ import React from 'react';
 
 export type GridProps = CarbonGridProps<'div'> & {
   testId?: string;
+  'data-testid'?: string;
 };
 
 export const Grid: React.FC<GridProps> = ({
   testId,
+  'data-testid': dataTestId,
   children,
   ...carbonProps
 }) => {
   return (
-    <CarbonGrid {...carbonProps} data-testid={testId}>
+    <CarbonGrid {...carbonProps} data-testid={testId ?? dataTestId}>
       {children}
     </CarbonGrid>
   );
@@ -26,15 +28,17 @@ export const Grid: React.FC<GridProps> = ({
 
 export type RowProps = CarbonRowProps<'div'> & {
   testId?: string;
+  'data-testid'?: string;
 };
 
 export const Row: React.FC<RowProps> = ({
   testId,
+  'data-testid': dataTestId,
   children,
   ...carbonProps
 }) => {
   return (
-    <CarbonRow {...carbonProps} data-testid={testId}>
+    <CarbonRow {...carbonProps} data-testid={testId ?? dataTestId}>
       {children}
     </CarbonRow>
   );
@@ -42,15 +46,17 @@ export const Row: React.FC<RowProps> = ({
 
 export type ColumnProps = CarbonColumnProps<'div'> & {
   testId?: string;
+  'data-testid'?: string;
 };
 
 export const Column: React.FC<ColumnProps> = ({
   testId,
+  'data-testid': dataTestId,
   children,
   ...carbonProps
 }) => {
   return (
-    <CarbonColumn {...carbonProps} data-testid={testId}>
+    <CarbonColumn {...carbonProps} data-testid={testId ?? dataTestId}>
       {children}
     </CarbonColumn>
   );

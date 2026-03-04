@@ -71,6 +71,8 @@ export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
   getAppointmentById,
+  getUpcomingAppointments,
+  getPastAppointments,
 } from './AppointmentService/appointmmetService';
 export {
   type Appointment,
@@ -92,6 +94,8 @@ export {
   refreshQueries,
   parseQueryParams,
   formatUrl,
+  getValueType,
+  camelToScreamingSnakeCase,
 } from './utils';
 export {
   type FormatDateResult,
@@ -110,6 +114,9 @@ export {
   getTodayDate,
   calculateAgeinYearsAndMonths,
   formatDateAndTime,
+  DURATION_UNIT_TO_DAYS,
+  calculateEndDate,
+  doDateRangesOverlap,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {
@@ -134,33 +141,44 @@ export {
   searchFHIRConcepts,
   searchFHIRConceptsByName,
   getConceptById,
+  searchConceptByName,
   type ConceptSearch,
   type ConceptClass,
+  type ConceptData,
 } from './conceptService';
 export {
   getPatientMedications,
   getPatientMedicationBundle,
+  fetchMedicationOrdersMetadata,
+  searchMedications,
+  getVaccinations,
   type FormattedMedicationRequest,
   type MedicationRequest,
   MedicationStatus,
+  type MedicationOrdersMetadataResponse,
+  type Frequency as MedicationFrequency,
+  type OrderAttribute,
 } from './medicationRequestService';
 export {
   getPatientRadiologyInvestigations,
   getPatientRadiologyInvestigationBundle,
   getPatientRadiologyInvestigationBundleWithImagingStudy,
 } from './radiologyInvestigationService';
+export { getLabInvestigationsBundle } from './labInvestigationService';
 export {
-  getPatientLabInvestigations,
-  groupLabTestsByDate,
-  formatLabTests,
-  type FormattedLabTest,
-  LabTestPriority,
-  type LabTestsByDate,
-} from './labInvestigationService';
+  getDiagnosticReports,
+  getDiagnosticReportBundle,
+  PROCESSED_REPORT_STATUSES,
+  PENDING_REPORT_STATUSES,
+  updateDiagnosticReportBundle,
+} from './diagnosticReportService';
 export {
   getFlattenedInvestigations,
   getOrderTypes,
   getCategoryUuidFromOrderTypes,
+  getOrderTypeNames,
+  getExistingServiceRequestsForAllCategories,
+  type ExistingServiceRequest,
   type FlattenedInvestigations,
   type OrderType,
   type OrderTypeResponse,
@@ -172,6 +190,11 @@ export { getConfig } from './configService';
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
+  getPatientObservationsBundle,
+  getPatientObservationsWithEncounterBundle,
+  getPatientObservations,
+} from './observationService';
+export {
   getCurrentProvider,
   type Provider,
   type Person,
@@ -181,7 +204,7 @@ export { findActiveEncounterInSession } from './encounterSessionService';
 export {
   getActiveVisit,
   shouldEnableEncounterFilter,
-  getFormsDataByEncounterUuid,
+  getObservationsBundleByEncounterUuid,
   type FormsEncounter,
 } from './encounterService';
 
@@ -207,7 +230,7 @@ export {
   FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
   FHIR_OBSERVATION_INTERPRETATION_SYSTEM,
   FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
-  FHIR_OBSERVATION_COMPLEX_DATA_URL,
+  FHIR_OBSERVATION_VALUE_ATTACHMENT_URL,
   CONCEPT_DATATYPE_NUMERIC,
   CONCEPT_DATATYPE_COMPLEX,
   FHIR_OBSERVATION_STATUS_FINAL,
@@ -215,6 +238,7 @@ export {
   DATE_REGEX_PATTERN,
   DATETIME_REGEX_PATTERN,
   INTERPRETATION_TO_CODE,
+  FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL,
 } from './constants/fhir';
 
 export {
@@ -232,6 +256,9 @@ export {
   fetchFormMetadata,
   transformFormDataToObservations,
   transformObservationsToFormData,
+  transformContainerObservationsToForm2Observations,
+  convertImmutableToPlainObject,
+  extractNotesFromFormData,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
@@ -256,13 +283,17 @@ export {
 export { getServiceRequests } from './orderRequestService';
 export {
   getPatientPrograms,
+  getProgramByUUID,
+  getCurrentStateName,
+  extractAttributes,
+  updateProgramState,
   type ProgramEnrollment,
   type PatientProgramsResponse,
 } from './programService';
 
 export {
   dispatchConsultationSaved,
-  useConsultationSaved,
+  useSubscribeConsultationSaved,
   CONSULTATION_SAVED_EVENT,
   type ConsultationSavedEventPayload,
 } from './events/consultationEvents';

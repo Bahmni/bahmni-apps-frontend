@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `SortableDataTable` is a reusable and configurable React component used across the Bahmni Clinical Frontend. It is based on the Carbon Design System's DataTable and provides consistent, accessible, and sortable tabular views for various clinical data types (e.g., medications, allergies, encounters).
+The `SortableDataTable` is a reusable and configurable React component used across the Bahmni Apps Frontend. It is based on the Carbon Design System's DataTable and provides consistent, accessible, and sortable tabular views for various clinical data types (e.g., medications, allergies, encounters).
 
 ---
 

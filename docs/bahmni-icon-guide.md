@@ -1,6 +1,6 @@
 # BahmniIcon Guide
 
-This guide explains how to use FontAwesome icons in the Bahmni Clinical Frontend application.
+This guide explains how to use FontAwesome icons in the Bahmni Apps Frontend application.
 
 ## Overview
 

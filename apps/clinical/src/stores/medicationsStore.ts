@@ -3,9 +3,14 @@ import { create } from 'zustand';
 import { Concept } from '../models/encounterConcepts';
 import { DurationUnitOption, MedicationInputEntry } from '../models/medication';
 import { Frequency } from '../models/medicationConfig';
+import {
+  extractDoseForm,
+  checkMedicationsOverlap,
+} from '../utils/fhir/medicationUtilities';
 
 export interface MedicationState {
   selectedMedications: MedicationInputEntry[];
+  hasOverlapDuplicates: boolean;
 
   addMedication: (medication: Medication, displayName: string) => void;
   removeMedication: (medicationId: string) => void;
@@ -24,15 +29,24 @@ export interface MedicationState {
   updateStartDate: (medicationId: string, date: Date) => void;
   updateDispenseQuantity: (medicationId: string, quantity: number) => void;
   updateDispenseUnit: (medicationId: string, unit: Concept) => void;
+  updateNote: (medicationId: string, note: string) => void;
   validateAllMedications: () => boolean;
+  validateMedicationsForOverlaps: (
+    activeMedications: import('fhir/r4').MedicationRequest[],
+    medicationMap: Record<string, import('fhir/r4').Medication>,
+  ) => boolean;
+  setOverlapDuplicates: (hasOverlaps: boolean) => void;
 
   reset: () => void;
   getState: () => MedicationState;
 }
 export const useMedicationStore = create<MedicationState>((set, get) => ({
   selectedMedications: [],
+  hasOverlapDuplicates: false,
 
   addMedication: (medication: Medication, displayName: string) => {
+    const doseForm = extractDoseForm(medication, displayName);
+
     const newMedication: MedicationInputEntry = {
       id: medication.id!,
       display: displayName,
@@ -51,6 +65,8 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
       hasBeenValidated: false,
       dispenseQuantity: 0,
       dispenseUnit: null,
+      doseForm: doseForm,
+      note: '',
     };
 
     set((state) => ({
@@ -288,6 +304,19 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     }));
   },
 
+  updateNote(medicationId: string, note: string) {
+    set((state) => ({
+      selectedMedications: state.selectedMedications.map((medication) => {
+        if (medication.id !== medicationId) return medication;
+
+        return {
+          ...medication,
+          note: note,
+        };
+      }),
+    }));
+  },
+
   validateAllMedications: () => {
     let isValid = true;
 
@@ -352,8 +381,23 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     return isValid;
   },
 
+  validateMedicationsForOverlaps: (activeMedications, medicationMap) => {
+    const currentMedications = get().selectedMedications;
+
+    // Returns true if no overlaps (valid), false if overlaps exist (invalid)
+    return !checkMedicationsOverlap(
+      currentMedications,
+      activeMedications,
+      medicationMap,
+    );
+  },
+
+  setOverlapDuplicates: (hasOverlaps: boolean) => {
+    set({ hasOverlapDuplicates: hasOverlaps });
+  },
+
   reset: () => {
-    set({ selectedMedications: [] });
+    set({ selectedMedications: [], hasOverlapDuplicates: false });
   },
 
   getState: () => get(),

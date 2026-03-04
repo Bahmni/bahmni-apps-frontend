@@ -3,29 +3,10 @@
 exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
 <DocumentFragment>
   <div
-    class="cds--loading-overlay"
+    data-testid="carbon-loading"
+    role="status"
   >
-    <div
-      aria-atomic="true"
-      aria-live="assertive"
-      class="cds--loading"
-      role="status"
-    >
-      <svg
-        class="cds--loading__svg"
-        viewBox="0 0 100 100"
-      >
-        <title>
-          LOADING_CLINICAL_DATA
-        </title>
-        <circle
-          class="cds--loading__stroke"
-          cx="50%"
-          cy="50%"
-          r="44"
-        />
-      </svg>
-    </div>
+    LOADING_CLINICAL_DATA
   </div>
 </DocumentFragment>
 `;

@@ -2,7 +2,7 @@ export {
   getActiveVisit,
   getPatientVisits,
   getVisits,
-  getFormsDataByEncounterUuid,
+  getObservationsBundleByEncounterUuid,
 } from './encounterService';
 
 export { shouldEnableEncounterFilter } from './encounterFilterUtils';

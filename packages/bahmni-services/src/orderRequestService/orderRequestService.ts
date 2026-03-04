@@ -1,6 +1,7 @@
 import type { Bundle, ServiceRequest, Resource } from 'fhir/r4';
 import { get } from '../api';
 import { SERVICE_REQUESTS_URL } from './constants';
+import { getUniqueServiceRequests } from './serviceRequestUtils';
 
 /**
  * Fetches service requests from the FHIR R4 endpoint
@@ -24,7 +25,7 @@ export async function getServiceRequests<T extends Resource = ServiceRequest>(
     encounterUuidsString = encounterUuids.join(',');
   }
 
-  return await get<Bundle<T>>(
+  const bundle = await get<Bundle<T>>(
     SERVICE_REQUESTS_URL(
       category,
       patientUuid,
@@ -33,4 +34,11 @@ export async function getServiceRequests<T extends Resource = ServiceRequest>(
       revinclude,
     ),
   );
+
+  if (bundle.entry) {
+    bundle.entry = getUniqueServiceRequests(bundle.entry);
+    bundle.total = bundle.entry.length;
+  }
+
+  return bundle;
 }

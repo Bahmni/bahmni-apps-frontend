@@ -107,9 +107,14 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
   }
 
   return (
-    <div className={styles.formSection}>
-      <span className={styles.formSectionTitle}>{t(sectionTitle)}</span>
-      <div className={styles.row}>
+    <div className={styles.formSection} data-testid="contact-info-section">
+      <span
+        className={styles.formSectionTitle}
+        data-testid="contact-info-title"
+      >
+        {t(sectionTitle)}
+      </span>
+      <div className={styles.row} data-testid="contact-info-fields-row">
         {fieldsToShow.map((field) => {
           const fieldName = field.name;
           const value = formData[fieldName] ?? '';
@@ -117,9 +122,14 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
           const error = errors[fieldName] || '';
 
           return (
-            <div key={field.uuid} className={styles.phoneNumberField}>
+            <div
+              key={field.uuid}
+              className={styles.phoneNumberField}
+              data-testid="contact-info-field"
+            >
               <PersonAttributeInput
                 uuid={field.uuid}
+                name={fieldName}
                 label={label}
                 format={field.format}
                 value={value}

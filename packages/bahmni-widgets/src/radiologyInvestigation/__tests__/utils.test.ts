@@ -126,6 +126,7 @@ describe('radiologyInvestigation utilities', () => {
           priority: 'stat',
           orderedBy: 'Dr. Smith',
           orderedDate: '2023-10-15T10:30:00.000Z',
+          status: 'active',
         },
       ]);
     });

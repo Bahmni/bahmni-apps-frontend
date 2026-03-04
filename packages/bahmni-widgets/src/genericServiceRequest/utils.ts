@@ -85,7 +85,7 @@ export function mapServiceRequest(
       priority: order.priority!,
       orderedBy: order.requester!.display!,
       orderedDate: orderedDate,
-      status: order.status!,
+      status: order.status!.toLowerCase(),
       ...(replaces && replaces.length > 0 && { replaces }),
       ...(note && { note }),
     };

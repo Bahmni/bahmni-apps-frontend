@@ -7,6 +7,7 @@ import {
   getFormattedError,
   getCategoryUuidFromOrderTypes,
   getServiceRequests,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -17,7 +18,11 @@ import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
 import GenericServiceRequestTable from '../GenericServiceRequestTable';
 import { ServiceRequestViewModel } from '../models';
-import { mapServiceRequest, sortServiceRequestsByPriority } from '../utils';
+import {
+  filterServiceRequestReplacementEntries,
+  mapServiceRequest,
+  sortServiceRequestsByPriority,
+} from '../utils';
 
 expect.extend(toHaveNoViolations);
 
@@ -29,9 +34,11 @@ jest.mock('@bahmni/services', () => ({
   getFormattedError: jest.fn(),
   getCategoryUuidFromOrderTypes: jest.fn(),
   getServiceRequests: jest.fn(),
+  useSubscribeConsultationSaved: jest.fn(),
 }));
 
 jest.mock('../utils', () => ({
+  filterServiceRequestReplacementEntries: jest.fn(),
   mapServiceRequest: jest.fn(),
   sortServiceRequestsByPriority: jest.fn(),
 }));
@@ -59,6 +66,10 @@ const mockGetCategoryUuidFromOrderTypes =
 const mockGetServiceRequests = getServiceRequests as jest.MockedFunction<
   typeof getServiceRequests
 >;
+const mockFilterServiceRequestReplacementEntries =
+  filterServiceRequestReplacementEntries as jest.MockedFunction<
+    typeof filterServiceRequestReplacementEntries
+  >;
 const mockMapServiceRequest = mapServiceRequest as jest.MockedFunction<
   typeof mapServiceRequest
 >;
@@ -72,6 +83,10 @@ const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
 const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
 >;
+const mockUseSubscribeConsultationSaved =
+  useSubscribeConsultationSaved as jest.MockedFunction<
+    typeof useSubscribeConsultationSaved
+  >;
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -227,11 +242,15 @@ describe('GenericServiceRequestTable', () => {
       message: 'Network error',
       title: '',
     });
+    mockFilterServiceRequestReplacementEntries.mockImplementation(
+      (data) => data,
+    );
     mockSortServiceRequestsByPriority.mockImplementation((data) => data);
     mockGroupByDate.mockReturnValue([]);
     mockGetCategoryUuidFromOrderTypes.mockResolvedValue('lab-uuid');
     mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
     mockMapServiceRequest.mockReturnValue(mockServiceRequests);
+    mockUseSubscribeConsultationSaved.mockImplementation(() => {});
   });
 
   describe('Loading state', () => {
@@ -247,7 +266,9 @@ describe('GenericServiceRequestTable', () => {
         },
       );
 
-      expect(screen.getByTestId('sortable-table-skeleton')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('generic-service-request-table-skeleton'),
+      ).toBeInTheDocument();
     });
 
     it('renders loading state while fetching service requests', async () => {
@@ -264,7 +285,7 @@ describe('GenericServiceRequestTable', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId('sortable-table-skeleton'),
+          screen.getByTestId('generic-service-request-table-skeleton'),
         ).toBeInTheDocument();
       });
     });
@@ -400,6 +421,30 @@ describe('GenericServiceRequestTable', () => {
         }
         // For display formatting - return display format
         return { formattedResult: '01/12/2023' };
+      });
+    });
+
+    it('filters replacement entries before grouping', async () => {
+      const filteredRequests = [mockServiceRequests[0], mockServiceRequests[2]];
+      mockFilterServiceRequestReplacementEntries.mockReturnValue(
+        filteredRequests,
+      );
+
+      render(
+        <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(mockFilterServiceRequestReplacementEntries).toHaveBeenCalledWith(
+          mockServiceRequests,
+        );
+        expect(mockGroupByDate).toHaveBeenCalledWith(
+          filteredRequests,
+          expect.any(Function),
+        );
       });
     });
 
@@ -546,7 +591,11 @@ describe('GenericServiceRequestTable', () => {
 
       await waitFor(() => {
         expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(2);
-        expect(screen.getAllByTestId('sortable-data-table')).toHaveLength(2);
+        // Each accordion item has a unique table with date suffix
+        const tables = document.querySelectorAll(
+          '[data-testid^="generic-service-request-table-"]',
+        );
+        expect(tables).toHaveLength(2);
       });
     });
 
@@ -1332,6 +1381,202 @@ describe('GenericServiceRequestTable', () => {
           );
         });
       });
+    });
+  });
+
+  describe('consultation saved event subscription', () => {
+    it('registers consultation saved event listener', async () => {
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [mockServiceRequests[0]] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable
+          config={{ orderType: 'Procedure Order' }}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(mockUseSubscribeConsultationSaved).toHaveBeenCalled();
+      });
+    });
+
+    it('refetches data when consultation saved event is triggered with matching category', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [mockServiceRequests[0]] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable
+          config={{ orderType: 'Procedure Order' }}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(1);
+      });
+
+      // Clear the mock to track new calls
+      mockGetServiceRequests.mockClear();
+
+      // Trigger the event with matching category
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'procedure order': true },
+        },
+      });
+
+      // Verify refetch was triggered
+      await waitFor(() => {
+        expect(mockGetServiceRequests).toHaveBeenCalled();
+      });
+    });
+
+    it('does not refetch when event is for different patient', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [mockServiceRequests[0]] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable
+          config={{ orderType: 'Procedure Order' }}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(1);
+      });
+
+      // Clear the mock to track new calls
+      mockGetServiceRequests.mockClear();
+
+      // Trigger event for different patient
+      eventCallback({
+        patientUUID: 'different-patient',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'procedure order': true },
+        },
+      });
+
+      // Give some time to ensure no refetch happens
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify refetch was NOT triggered
+      expect(mockGetServiceRequests).not.toHaveBeenCalled();
+    });
+
+    it('does not refetch when different category was updated', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [mockServiceRequests[0]] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable
+          config={{ orderType: 'Procedure Order' }}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(1);
+      });
+
+      // Clear the mock to track new calls
+      mockGetServiceRequests.mockClear();
+
+      // Trigger event with different category
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'lab order': true },
+        },
+      });
+
+      // Give some time to ensure no refetch happens
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify refetch was NOT triggered
+      expect(mockGetServiceRequests).not.toHaveBeenCalled();
+    });
+
+    it('does not refetch when serviceRequests is empty', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+
+      mockGroupByDate.mockReturnValue([
+        { date: '2023-12-01', items: [mockServiceRequests[0]] },
+      ]);
+
+      render(
+        <GenericServiceRequestTable
+          config={{ orderType: 'Procedure Order' }}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('accordian-table-title')).toHaveLength(1);
+      });
+
+      // Clear the mock to track new calls
+      mockGetServiceRequests.mockClear();
+
+      // Trigger event with empty serviceRequests
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: true,
+          allergies: false,
+          medications: false,
+          serviceRequests: {},
+        },
+      });
+
+      // Give some time to ensure no refetch happens
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify refetch was NOT triggered
+      expect(mockGetServiceRequests).not.toHaveBeenCalled();
     });
   });
 });

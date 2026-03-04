@@ -87,6 +87,7 @@ export const mockRadiologyInvestigations: RadiologyInvestigationViewModel[] = [
     priority: 'stat',
     orderedBy: 'Dr. Smith',
     orderedDate: '2023-12-01T10:30:00.000Z',
+    status: 'active',
     note: 'Patient should be fasting',
   },
   {
@@ -95,6 +96,7 @@ export const mockRadiologyInvestigations: RadiologyInvestigationViewModel[] = [
     priority: 'routine',
     orderedBy: 'Dr. Johnson',
     orderedDate: '2023-12-01T14:15:00.000Z',
+    status: 'active',
   },
 ];
 
@@ -109,6 +111,7 @@ export const createMockRadiologyInvestigation = (
   priority,
   orderedBy: 'Dr. Test',
   orderedDate: '2023-01-01',
+  status: 'active',
   ...(replaces && replaces.length > 0 && { replaces }),
 });
 
@@ -120,6 +123,7 @@ export const mockRadiologyInvestigationsForFiltering: RadiologyInvestigationView
       priority: 'routine',
       orderedBy: 'Dr. Test',
       orderedDate: '2023-01-01',
+      status: 'active',
       replaces: ['271f2b4f-a239-418b-ba9e-f23014093df3'],
     },
     {
@@ -128,6 +132,7 @@ export const mockRadiologyInvestigationsForFiltering: RadiologyInvestigationView
       priority: 'completed',
       orderedBy: 'Dr. Test',
       orderedDate: '2023-01-01',
+      status: 'completed',
     },
     {
       id: '9c847638-295b-4e3e-933d-47d5cad34faf',
@@ -135,6 +140,7 @@ export const mockRadiologyInvestigationsForFiltering: RadiologyInvestigationView
       priority: 'routine',
       orderedBy: 'Dr. Test',
       orderedDate: '2023-01-01',
+      status: 'active',
     },
   ];
 
@@ -146,6 +152,7 @@ export const mockRadiologyChainReplacement: RadiologyInvestigationViewModel[] =
       priority: 'stat',
       orderedBy: 'Dr. Test',
       orderedDate: '2023-01-01',
+      status: 'active',
       replaces: ['chain-2'],
     },
     {
@@ -154,6 +161,7 @@ export const mockRadiologyChainReplacement: RadiologyInvestigationViewModel[] =
       priority: 'routine',
       orderedBy: 'Dr. Test',
       orderedDate: '2023-01-01',
+      status: 'active',
       replaces: ['chain-1'],
     },
     {
@@ -162,6 +170,7 @@ export const mockRadiologyChainReplacement: RadiologyInvestigationViewModel[] =
       priority: 'routine',
       orderedBy: 'Dr. Test',
       orderedDate: '2023-01-01',
+      status: 'active',
     },
     {
       id: 'standalone',
@@ -169,6 +178,7 @@ export const mockRadiologyChainReplacement: RadiologyInvestigationViewModel[] =
       priority: 'routine',
       orderedBy: 'Dr. Test',
       orderedDate: '2023-01-01',
+      status: 'active',
     },
   ];
 
@@ -277,6 +287,7 @@ export const mockRadiologyInvestigationWithAvailableImagingStudies: RadiologyInv
       priority: 'stat',
       orderedBy: 'Dr. Smith',
       orderedDate: '2023-12-01T10:30:00.000Z',
+      status: 'active',
       imagingStudies: [
         {
           id: 'study-1',

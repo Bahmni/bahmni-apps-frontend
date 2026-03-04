@@ -6,13 +6,15 @@ import {
   Checkbox,
   DatePicker,
   DatePickerInput,
+  Link,
+  TextAreaWClose,
 } from '@bahmni/design-system';
 import {
   useTranslation,
   getTodayDate,
   DATE_PICKER_INPUT_FORMAT,
 } from '@bahmni/services';
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { DURATION_UNIT_OPTIONS } from '../../../constants/medications';
 import { Concept } from '../../../models/encounterConcepts';
 import {
@@ -46,6 +48,7 @@ export interface SelectedMedicationItemProps {
   updateStartDate: (medicationId: string, date: Date) => void;
   updateDispenseQuantity: (medicationId: string, quantity: number) => void;
   updateDispenseUnit: (medicationId: string, unit: Concept) => void;
+  updateNote: (medicationId: string, note: string) => void;
 }
 
 const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
@@ -65,6 +68,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
       updateStartDate,
       updateDispenseQuantity,
       updateDispenseUnit,
+      updateNote,
     }) => {
       const { t } = useTranslation();
 
@@ -84,8 +88,12 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         dispenseQuantity,
         dispenseUnit,
         startDate,
+        doseForm,
+        note,
         errors,
       } = medicationInputEntry;
+
+      const [hasNote, setHasNote] = useState(!!note);
 
       const setDefaultInstruction = useCallback(() => {
         if (
@@ -186,8 +194,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
           if (immediateFrequency) {
             updateFrequency(id, immediateFrequency);
           }
-          updateDuration(id, 0);
-          updateDurationUnit(id, null);
         }
         if (isSTAT) {
           updateStartDate(id, getTodayDate());
@@ -208,216 +214,285 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         setDefaultDurationUnit();
       }, [setDefaultInstruction, setDefaultDurationUnit]);
 
+      const medicineName = display.split('(')[0];
+      const medicineDetails = display.includes('(')
+        ? '(' + display.split('(').slice(1).join('(')
+        : '';
+
       return (
-        <Grid condensed={false} narrow={false}>
-          <Column sm={2} md={4} lg={8} className={styles.medicationTitle}>
-            {display}
-          </Column>
-          <Column sm={2} md={4} lg={8} className={styles.medicationActions}>
-            <Checkbox
-              id={`stat-${id}`}
-              labelText={t('MEDICATION_STAT')}
-              aria-label="STAT"
-              checked={isSTAT}
-              onChange={(e) => updateisSTAT(id, e.target.checked)}
-              className={styles.statControl}
-            />
-            <Checkbox
-              id={`prn-${id}`}
-              labelText={t('MEDICATION_PRN')}
-              aria-label="PRN"
-              checked={isPRN}
-              onChange={(e) => updateisPRN(id, e.target.checked)}
-            />
-          </Column>
+        <>
+          <Grid
+            condensed={false}
+            narrow={false}
+            data-testid={`selected-medication-item-grid-${id}`}
+          >
+            <Column sm={2} md={4} lg={8} className={styles.medicationTitle}>
+              <span data-testid={`medication-name-${id}`}>{medicineName}</span>
+              {medicineDetails && (
+                <span
+                  className={styles.medicineDetails}
+                  data-testid={`medication-details-${id}`}
+                >
+                  {medicineDetails}
+                </span>
+              )}
+              {doseForm && (
+                <span
+                  className={styles.doseForm}
+                  data-testid={`medication-dose-form-${id}`}
+                >
+                  {doseForm}
+                </span>
+              )}
+            </Column>
+            <Column sm={2} md={4} lg={8} className={styles.medicationActions}>
+              <Checkbox
+                id={`stat-${id}`}
+                data-testid={`medication-stat-checkbox-${id}`}
+                labelText={t('MEDICATION_STAT')}
+                aria-label="STAT"
+                checked={isSTAT}
+                onChange={(e) => updateisSTAT(id, e.target.checked)}
+                className={styles.statControl}
+              />
+              <Checkbox
+                id={`prn-${id}`}
+                data-testid={`medication-prn-checkbox-${id}`}
+                labelText={t('MEDICATION_PRN')}
+                aria-label="PRN"
+                checked={isPRN}
+                onChange={(e) => updateisPRN(id, e.target.checked)}
+              />
+            </Column>
 
-          <Column sm={2} md={3} lg={6} className={styles.dosageControls}>
-            <NumberInput
-              id={`dosage-unit-${id}`}
-              min={0}
-              size="sm"
-              step={1}
-              value={dosage}
-              label={t('MEDICATION_DOSAGE_INPUT_LABEL')}
-              aria-label="Dosage"
-              className={styles.dosageInput}
-              hideLabel
-              onChange={(_, { value }) => {
-                const numericValue = parseFloat(value.toString());
-                if (!isNaN(numericValue)) {
-                  updateDosage(id, numericValue);
-                }
-              }}
-              invalid={errors.dosage ? true : false}
-              invalidText={t(errors.dosage ?? '')}
-            />
+            <Column sm={2} md={3} lg={6} className={styles.dosageControls}>
+              <NumberInput
+                id={`dosage-unit-${id}`}
+                data-testid={`medication-dosage-input-${id}`}
+                min={0}
+                size="sm"
+                step={1}
+                value={dosage}
+                label={t('MEDICATION_DOSAGE_INPUT_LABEL')}
+                aria-label="Dosage"
+                className={styles.dosageInput}
+                hideLabel
+                onChange={(_, { value }) => {
+                  const numericValue = parseFloat(value.toString());
+                  if (!isNaN(numericValue)) {
+                    updateDosage(id, numericValue);
+                  }
+                }}
+                invalid={errors.dosage ? true : false}
+                invalidText={t(errors.dosage ?? '')}
+              />
 
-            <Dropdown
-              id={`dosage-unit-${id}`}
-              titleText={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
-              label={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
-              aria-label="Dosage Unit"
-              className={styles.dosageUnit}
-              hideLabel
-              size="sm"
-              items={medicationConfig.doseUnits ?? []}
-              itemToString={(item) => (item ? item.name : '')}
-              selectedItem={dosageUnit}
-              onChange={(e) => {
-                if (e.selectedItem) {
-                  updateDosageUnit(id, e.selectedItem);
-                  updateDispenseUnit(id, e.selectedItem);
-                }
-              }}
-              autoAlign
-              invalid={errors.dosageUnit ? true : false}
-              invalidText={t(errors.dosageUnit ?? '')}
-            />
-          </Column>
-          <Column sm={1} md={2} lg={4} className={styles.column}>
-            <Dropdown
-              id={`frequency-${id}`}
-              titleText={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
-              label={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
-              aria-label="Frequency"
-              hideLabel
-              size="sm"
-              items={
-                medicationConfig.frequencies.filter(
-                  (item) => !isImmediateFrequency(item),
-                ) ?? []
-              }
-              itemToString={(item) => (item ? item.name : '')}
-              selectedItem={frequency}
-              onChange={(e) => {
-                if (e.selectedItem) {
-                  updateFrequency(id, e.selectedItem);
-                }
-              }}
-              autoAlign
-              invalid={errors.frequency ? true : false}
-              invalidText={t(errors.frequency ?? '')}
-              disabled={isSTAT && !isPRN}
-            />
-          </Column>
-          <Column sm={2} md={3} lg={6} className={styles.durationControls}>
-            <NumberInput
-              id={`duration-${id}`}
-              label={t('MEDICATION_DURATION_INPUT_LABEL')}
-              aria-label="Duration"
-              className={styles.durationInput}
-              hideLabel
-              min={0}
-              size="sm"
-              step={1}
-              value={duration}
-              onChange={(_, { value }) => {
-                const numericValue = parseFloat(value.toString());
-                if (!isNaN(numericValue)) {
-                  updateDuration(id, numericValue);
-                }
-              }}
-              invalid={errors.duration ? true : false}
-              invalidText={t(errors.duration ?? '')}
-              disabled={isSTAT && !isPRN}
-            />
-            <Dropdown
-              id={`duration-unit-${id}`}
-              titleText={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
-              label={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
-              aria-label="Duration Unit"
-              className={styles.durationUnit}
-              hideLabel
-              size="sm"
-              items={DURATION_UNIT_OPTIONS}
-              itemToString={(item) =>
-                item ? t(item.display, { defaultValue: item.code }) : ''
-              }
-              selectedItem={durationUnit}
-              onChange={(e) => {
-                if (e.selectedItem) {
-                  updateDurationUnit(id, e.selectedItem);
-                }
-              }}
-              autoAlign
-              invalid={errors.durationUnit ? true : false}
-              invalidText={t(errors.durationUnit ?? '')}
-              disabled={isSTAT && !isPRN}
-            />
-          </Column>
-
-          <Column sm={1} md={2} lg={4} className={styles.column}>
-            <Dropdown
-              id={`med-instructions-${id}`}
-              titleText={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
-              label={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
-              aria-label="Medication Instructions"
-              hideLabel
-              size="sm"
-              items={medicationConfig.dosingInstructions ?? []}
-              itemToString={(item) => (item ? item.name : '')}
-              selectedItem={instruction}
-              onChange={(e) => {
-                if (e.selectedItem) {
-                  updateInstruction(id, e.selectedItem);
-                }
-              }}
-              autoAlign
-            />
-          </Column>
-
-          <Column sm={1} md={2} lg={4} className={styles.column}>
-            <Dropdown
-              id={`route-${id}`}
-              titleText={t('MEDICATION_ROUTE_INPUT_LABEL')}
-              label={t('MEDICATION_ROUTE_INPUT_LABEL')}
-              aria-label="Route"
-              hideLabel
-              size="sm"
-              items={medicationConfig.routes ?? []}
-              itemToString={(item) => (item ? item.name : '')}
-              selectedItem={route}
-              onChange={(e) => {
-                if (e.selectedItem) {
-                  updateRoute(id, e.selectedItem);
-                }
-              }}
-              autoAlign
-              invalid={errors.route ? true : false}
-              invalidText={t(errors.route ?? '')}
-            />
-          </Column>
-
-          <Column sm={2} md={4} lg={8} className={styles.column}>
-            <DatePicker
-              datePickerType="single"
-              dateFormat={DATE_PICKER_INPUT_FORMAT}
-              value={startDate}
-              minDate={getTodayDate()}
-              onChange={(date) => {
-                if (date?.[0] && date[0] > getTodayDate()) {
-                  updateStartDate(id, date[0]);
-                }
-              }}
-            >
-              <DatePickerInput
-                id={`start-date-${id}`}
-                placeholder={DATE_PICKER_INPUT_FORMAT}
-                labelText={t('MEDICATION_START_DATE_INPUT_LABEL')}
-                aria-label="Start Date"
+              <Dropdown
+                id={`dosage-unit-${id}`}
+                data-testid={`medication-dosage-unit-dropdown-${id}`}
+                titleText={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
+                label={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
+                aria-label="Dosage Unit"
+                className={styles.dosageUnit}
                 hideLabel
                 size="sm"
-                disabled={isSTAT}
+                items={medicationConfig.doseUnits ?? []}
+                itemToString={(item) => (item ? item.name : '')}
+                selectedItem={dosageUnit}
+                onChange={(e) => {
+                  if (e.selectedItem) {
+                    updateDosageUnit(id, e.selectedItem);
+                    updateDispenseUnit(id, e.selectedItem);
+                  }
+                }}
+                autoAlign
+                invalid={errors.dosageUnit ? true : false}
+                invalidText={t(errors.dosageUnit ?? '')}
               />
-            </DatePicker>
-          </Column>
-          <Column sm={4} md={8} lg={16} className={styles.totalQuantity}>
-            <span>
-              {t('MEDICATION_TOTAL_QUANTITY')} : {dispenseQuantity}{' '}
-              {dispenseUnit?.name ?? ''}
-            </span>
-          </Column>
-        </Grid>
+            </Column>
+            <Column sm={1} md={2} lg={4} className={styles.column}>
+              <Dropdown
+                id={`frequency-${id}`}
+                data-testid={`medication-frequency-dropdown-${id}`}
+                titleText={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
+                label={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
+                aria-label="Frequency"
+                hideLabel
+                size="sm"
+                items={
+                  medicationConfig.frequencies.filter(
+                    (item) => !isImmediateFrequency(item),
+                  ) ?? []
+                }
+                itemToString={(item) => (item ? item.name : '')}
+                selectedItem={frequency}
+                onChange={(e) => {
+                  if (e.selectedItem) {
+                    updateFrequency(id, e.selectedItem);
+                  }
+                }}
+                autoAlign
+                invalid={errors.frequency ? true : false}
+                invalidText={t(errors.frequency ?? '')}
+                disabled={isSTAT && !isPRN}
+              />
+            </Column>
+            <Column sm={2} md={3} lg={6} className={styles.durationControls}>
+              <NumberInput
+                id={`duration-${id}`}
+                data-testid={`medication-duration-input-${id}`}
+                label={t('MEDICATION_DURATION_INPUT_LABEL')}
+                aria-label="Duration"
+                className={styles.durationInput}
+                hideLabel
+                min={0}
+                size="sm"
+                step={1}
+                value={duration}
+                onChange={(_, { value }) => {
+                  const numericValue = parseFloat(value.toString());
+                  if (!isNaN(numericValue)) {
+                    updateDuration(id, numericValue);
+                  }
+                }}
+                invalid={errors.duration ? true : false}
+                invalidText={t(errors.duration ?? '')}
+                disabled={isSTAT && !isPRN}
+              />
+              <Dropdown
+                id={`duration-unit-${id}`}
+                data-testid={`medication-duration-unit-dropdown-${id}`}
+                titleText={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
+                label={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
+                aria-label="Duration Unit"
+                className={styles.durationUnit}
+                hideLabel
+                size="sm"
+                items={DURATION_UNIT_OPTIONS}
+                itemToString={(item) =>
+                  item ? t(item.display, { defaultValue: item.code }) : ''
+                }
+                selectedItem={durationUnit}
+                onChange={(e) => {
+                  if (e.selectedItem) {
+                    updateDurationUnit(id, e.selectedItem);
+                  }
+                }}
+                autoAlign
+                invalid={errors.durationUnit ? true : false}
+                invalidText={t(errors.durationUnit ?? '')}
+                disabled={isSTAT && !isPRN}
+              />
+            </Column>
+
+            <Column sm={1} md={2} lg={4} className={styles.column}>
+              <Dropdown
+                id={`med-instructions-${id}`}
+                data-testid={`medication-instructions-dropdown-${id}`}
+                titleText={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
+                label={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
+                aria-label="Medication Instructions"
+                hideLabel
+                size="sm"
+                items={medicationConfig.dosingInstructions ?? []}
+                itemToString={(item) => (item ? item.name : '')}
+                selectedItem={instruction}
+                onChange={(e) => {
+                  if (e.selectedItem) {
+                    updateInstruction(id, e.selectedItem);
+                  }
+                }}
+                autoAlign
+              />
+            </Column>
+
+            <Column sm={1} md={2} lg={4} className={styles.column}>
+              <Dropdown
+                id={`route-${id}`}
+                data-testid={`medication-route-dropdown-${id}`}
+                titleText={t('MEDICATION_ROUTE_INPUT_LABEL')}
+                label={t('MEDICATION_ROUTE_INPUT_LABEL')}
+                aria-label="Route"
+                hideLabel
+                size="sm"
+                items={medicationConfig.routes ?? []}
+                itemToString={(item) => (item ? item.name : '')}
+                selectedItem={route}
+                onChange={(e) => {
+                  if (e.selectedItem) {
+                    updateRoute(id, e.selectedItem);
+                  }
+                }}
+                autoAlign
+                invalid={errors.route ? true : false}
+                invalidText={t(errors.route ?? '')}
+              />
+            </Column>
+
+            <Column sm={2} md={4} lg={8} className={styles.column}>
+              <DatePicker
+                datePickerType="single"
+                dateFormat={DATE_PICKER_INPUT_FORMAT}
+                data-testid={`medication-start-date-picker-${id}`}
+                value={startDate}
+                minDate={getTodayDate()}
+                onChange={(date) => {
+                  if (date?.[0] && date[0] >= getTodayDate()) {
+                    updateStartDate(id, date[0]);
+                  }
+                }}
+              >
+                <DatePickerInput
+                  id={`start-date-${id}`}
+                  data-testid={`medication-start-date-input-${id}`}
+                  placeholder={DATE_PICKER_INPUT_FORMAT}
+                  labelText={t('MEDICATION_START_DATE_INPUT_LABEL')}
+                  aria-label="Start Date"
+                  hideLabel
+                  size="sm"
+                  disabled={isSTAT}
+                />
+              </DatePicker>
+            </Column>
+            <Column sm={4} md={8} lg={16} className={styles.footerRow}>
+              {!hasNote && (
+                <Link
+                  href="#"
+                  data-testid={`medication-add-note-link-${id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setHasNote(true);
+                  }}
+                >
+                  {t('MEDICATION_ADD_NOTE')}
+                </Link>
+              )}
+              <span data-testid={`medication-total-quantity-${id}`}>
+                {t('MEDICATION_TOTAL_QUANTITY')} : {dispenseQuantity}{' '}
+                {dispenseUnit?.name ?? ''}
+              </span>
+            </Column>
+          </Grid>
+          {hasNote && (
+            <TextAreaWClose
+              id={`medication-note-${id}`}
+              data-testid={`medication-note-${id}`}
+              labelText={t('MEDICATION_ADD_NOTE')}
+              placeholder={t('MEDICATION_ADD_NOTE_PLACEHOLDER')}
+              value={note ?? ''}
+              onChange={(event) => {
+                const target = event.target;
+                updateNote(id, target.value);
+              }}
+              onClose={() => {
+                setHasNote(false);
+                updateNote(id, '');
+              }}
+              enableCounter
+              maxCount={1024}
+            />
+          )}
+        </>
       );
     },
   );

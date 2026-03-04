@@ -3,14 +3,14 @@ import {
   getPatientVisits,
   getVisits,
   getActiveVisit,
-  getFormsDataByEncounterUuid,
+  getObservationsBundleByEncounterUuid,
 } from '../../encounterService';
 import {
   mockVisitBundle,
   mockActiveVisit,
   mockFormsEncounter,
 } from '../__mocks__/mocks';
-import { PATIENT_VISITS_URL, BAHMNI_ENCOUNTER_URL } from '../constants';
+import { PATIENT_VISITS_URL } from '../constants';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -92,35 +92,34 @@ describe('encounterService', () => {
     });
   });
 
-  describe('getFormsDataByEncounterUuid', () => {
+  describe('getObservationsBundleByEncounterUuid', () => {
     const encounterUUID = 'e8c5eeb5-86d9-44d4-b37a-9de74a122a6e';
 
-    it('should fetch forms encounter from the correct endpoint with includeAll=false', async () => {
+    it('should fetch forms encounter from the FHIR API endpoint', async () => {
       mockedGet.mockResolvedValueOnce(mockFormsEncounter);
 
-      await getFormsDataByEncounterUuid(encounterUUID);
+      await getObservationsBundleByEncounterUuid(encounterUUID);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        BAHMNI_ENCOUNTER_URL(encounterUUID, false),
-      );
-    });
-
-    it('should fetch forms encounter from the correct endpoint with includeAll=true', async () => {
-      mockedGet.mockResolvedValueOnce(mockFormsEncounter);
-
-      await getFormsDataByEncounterUuid(encounterUUID, true);
-
-      expect(mockedGet).toHaveBeenCalledWith(
-        BAHMNI_ENCOUNTER_URL(encounterUUID, true),
+        expect.stringContaining(`/Observation?encounter=${encounterUUID}`),
       );
     });
 
     it('should return the forms encounter data', async () => {
       mockedGet.mockResolvedValueOnce(mockFormsEncounter);
 
-      const result = await getFormsDataByEncounterUuid(encounterUUID);
+      const result = await getObservationsBundleByEncounterUuid(encounterUUID);
 
-      expect(result).toEqual(mockFormsEncounter);
+      expect(result.resourceType).toBe('Bundle');
+      expect(result.entry).toBeDefined();
+    });
+
+    it('should propagate errors when the FHIR API call fails', async () => {
+      mockedGet.mockRejectedValueOnce(new Error('Network failure'));
+
+      await expect(
+        getObservationsBundleByEncounterUuid(encounterUUID),
+      ).rejects.toThrow('Network failure');
     });
   });
 });

@@ -47,6 +47,7 @@ interface FormControlRecord {
   value?: {
     value?: unknown;
     interpretation?: string;
+    comment?: string;
   };
   children?: FormControlRecord[];
   voided?: boolean;
@@ -184,6 +185,10 @@ export function useObservationFormData(
 
         if (controlRecord.value?.interpretation) {
           control.interpretation = controlRecord.value.interpretation;
+        }
+
+        if (controlRecord.value?.comment) {
+          control.comment = controlRecord.value.comment;
         }
 
         controls.push(control);

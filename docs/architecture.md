@@ -1,6 +1,6 @@
-# Bahmni Clinical Frontend Architecture
+# Bahmni Apps Frontend Architecture
 
-This document provides a comprehensive overview of the Bahmni Clinical Frontend architecture, explaining the project structure, key concepts, and design patterns used throughout the application.
+This document provides a comprehensive overview of the Bahmni Apps Frontend architecture, explaining the project structure, key concepts, and design patterns used throughout the application.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ This document provides a comprehensive overview of the Bahmni Clinical Frontend 
 
 ## Overview
 
-The Bahmni Clinical Frontend is a React TypeScript application built to provide a modern, responsive user interface for the Bahmni Clinical module. The application follows a component-based architecture with clear separation of concerns between UI components, business logic, and data access.
+The Bahmni Apps Frontend is a React TypeScript monorepo application built to provide a modern, responsive user interface for Bahmni's applications (Clinical, Registration, and extensible custom apps). The application follows a component-based architecture with clear separation of concerns between UI components, business logic, and data access.
 
 ### Key Design Patterns
 

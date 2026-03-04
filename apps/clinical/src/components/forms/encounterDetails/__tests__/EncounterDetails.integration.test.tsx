@@ -208,8 +208,15 @@ describe('BasicForm Integration Tests', () => {
     useEncounterDetailsStore.getState().reset();
   });
 
-  const renderBasicForm = () => {
-    return render(<BasicForm />);
+  const renderBasicForm = (customPractitionerState?: any) => {
+    const practitionerState = customPractitionerState ?? {
+      practitioner: mockProvider,
+      user: mockUser,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    };
+    return render(<BasicForm practitionerState={practitionerState} />);
   };
 
   test('successfully initializes form with all data loaded', async () => {
@@ -240,7 +247,6 @@ describe('BasicForm Integration Tests', () => {
 
     // Verify hooks were called
     expect(useEncounterConcepts).toHaveBeenCalled();
-    expect(useActivePractitioner).toHaveBeenCalled();
     expect(useActiveVisit).toHaveBeenCalled();
     expect(useLocations).toHaveBeenCalled();
 
@@ -322,7 +328,13 @@ describe('BasicForm Integration Tests', () => {
       error: new Error('User API error'),
     });
 
-    renderBasicForm();
+    renderBasicForm({
+      practitioner: null,
+      user: null,
+      loading: false,
+      error: new Error('User API error'),
+      refetch: jest.fn(),
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Location')).toBeInTheDocument();
@@ -452,7 +464,13 @@ describe('BasicForm Integration Tests', () => {
       error: new Error('API Error'),
     });
 
-    renderBasicForm();
+    renderBasicForm({
+      practitioner: null,
+      user: null,
+      loading: false,
+      error: new Error('API Error'),
+      refetch: jest.fn(),
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Location')).toBeInTheDocument();

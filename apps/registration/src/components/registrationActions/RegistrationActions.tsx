@@ -86,6 +86,7 @@ export const RegistrationActions = ({
               onVisitTypeSelect={(visitType) =>
                 handleVisitTypeSelect(visitType, extension)
               }
+              data-testid="visit-type-selector"
             />
           );
         }
@@ -95,6 +96,7 @@ export const RegistrationActions = ({
             key={extension.id}
             kind={extension.kind ?? 'primary'}
             onClick={() => handleClick(extension)}
+            data-testid="registration-action-button"
             renderIcon={
               extension.icon
                 ? () => (

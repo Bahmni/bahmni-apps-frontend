@@ -7,8 +7,8 @@ export const builtInWidgets: WidgetConfig[] = [
     component: lazy(() => import('../allergies/AllergiesTable')),
   },
   {
-    type: 'programs',
-    component: lazy(() => import('../patientPrograms/PatientProgramsTable')),
+    type: 'appointments',
+    component: lazy(() => import('../appointments/AppointmentsTable')),
   },
   {
     type: 'conditions',
@@ -19,22 +19,20 @@ export const builtInWidgets: WidgetConfig[] = [
     component: lazy(() => import('../diagnoses/DiagnosesTable')),
   },
   {
+    type: 'flowSheet',
+    component: lazy(() => import('../vitalFlowSheet/VitalFlowSheet')),
+  },
+  {
+    type: 'forms',
+    component: lazy(() => import('../forms/FormsTable')),
+  },
+  {
     type: 'labOrders',
     component: lazy(() => import('../labinvestigation/LabInvestigation')),
   },
   {
-    type: 'pacsOrders',
-    component: lazy(
-      () => import('../radiologyInvestigation/RadiologyInvestigationTable'),
-    ),
-  },
-  {
-    type: 'treatment',
-    component: lazy(() => import('../medications/MedicationsTable')),
-  },
-  {
-    type: 'flowSheet',
-    component: lazy(() => import('../vitalFlowSheet/VitalFlowSheet')),
+    type: 'observations',
+    component: lazy(() => import('../observations/Observations')),
   },
   {
     type: 'ordersControl',
@@ -43,7 +41,17 @@ export const builtInWidgets: WidgetConfig[] = [
     ),
   },
   {
-    type: 'forms',
-    component: lazy(() => import('../forms/FormsTable')),
+    type: 'pacsOrders',
+    component: lazy(
+      () => import('../radiologyInvestigation/RadiologyInvestigationTable'),
+    ),
+  },
+  {
+    type: 'programs',
+    component: lazy(() => import('../patientPrograms/PatientProgramsTable')),
+  },
+  {
+    type: 'treatment',
+    component: lazy(() => import('../medications/MedicationsTable')),
   },
 ];

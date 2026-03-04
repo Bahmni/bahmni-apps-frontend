@@ -24,7 +24,7 @@ exports[`Snapshot should match snapshot 1`] = `
         >
           <button
             aria-label="Close Selected Item"
-            aria-labelledby="tooltip-«rd»"
+            aria-labelledby="tooltip-_r_d_"
             class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
             data-testid="selected-item-close-button"
             id="close-selected-item"
@@ -49,7 +49,7 @@ exports[`Snapshot should match snapshot 1`] = `
         <span
           aria-hidden="true"
           class="cds--popover"
-          id="tooltip-«rd»"
+          id="tooltip-_r_d_"
           role="tooltip"
         >
           <span

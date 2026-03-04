@@ -715,4 +715,242 @@ describe('useServiceRequestStore', () => {
       expect(categoryRequests![0].display).toBe(unicodeDisplayName);
     });
   });
+
+  // IS SELECTED IN CATEGORY TESTS
+  describe('isSelectedInCategory', () => {
+    test('should return true when service request is selected in category', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptCode = 'GLU';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
+      });
+
+      const isSelected = result.current.isSelectedInCategory(
+        category,
+        conceptCode,
+      );
+      expect(isSelected).toBe(true);
+    });
+
+    test('should return false when service request is not selected in category', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptCode1 = 'GLU';
+      const conceptCode2 = 'CREAT';
+
+      act(() => {
+        result.current.addServiceRequest(
+          category,
+          conceptCode1,
+          'Glucose Test',
+        );
+      });
+
+      const isSelected = result.current.isSelectedInCategory(
+        category,
+        conceptCode2,
+      );
+      expect(isSelected).toBe(false);
+    });
+
+    test('should return false when category does not exist', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'non-existent';
+      const conceptCode = 'GLU';
+
+      const isSelected = result.current.isSelectedInCategory(
+        category,
+        conceptCode,
+      );
+      expect(isSelected).toBe(false);
+    });
+
+    test('should be case-insensitive for category matching', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'Lab';
+      const conceptCode = 'GLU';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
+      });
+
+      const isSelectedLowercase = result.current.isSelectedInCategory(
+        'lab',
+        conceptCode,
+      );
+      const isSelectedUppercase = result.current.isSelectedInCategory(
+        'LAB',
+        conceptCode,
+      );
+      const isSelectedMixedCase = result.current.isSelectedInCategory(
+        'LaB',
+        conceptCode,
+      );
+
+      expect(isSelectedLowercase).toBe(true);
+      expect(isSelectedUppercase).toBe(true);
+      expect(isSelectedMixedCase).toBe(true);
+    });
+
+    test('should be case-insensitive for concept code matching', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptCode = 'GLU';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
+      });
+
+      const isSelectedLowercase = result.current.isSelectedInCategory(
+        category,
+        'glu',
+      );
+      const isSelectedUppercase = result.current.isSelectedInCategory(
+        category,
+        'GLU',
+      );
+      const isSelectedMixedCase = result.current.isSelectedInCategory(
+        category,
+        'GlU',
+      );
+
+      expect(isSelectedLowercase).toBe(true);
+      expect(isSelectedUppercase).toBe(true);
+      expect(isSelectedMixedCase).toBe(true);
+    });
+
+    test('should be case-insensitive for both category and concept code', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'Lab';
+      const conceptCode = 'GLU';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
+      });
+
+      const isSelected = result.current.isSelectedInCategory('lab', 'glu');
+      expect(isSelected).toBe(true);
+    });
+
+    test('should handle multiple service requests in same category', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptCode1 = 'GLU';
+      const conceptCode2 = 'CREAT';
+      const conceptCode3 = 'CBC';
+
+      act(() => {
+        result.current.addServiceRequest(
+          category,
+          conceptCode1,
+          'Glucose Test',
+        );
+        result.current.addServiceRequest(
+          category,
+          conceptCode2,
+          'Creatinine Test',
+        );
+        result.current.addServiceRequest(
+          category,
+          conceptCode3,
+          'Complete Blood Count',
+        );
+      });
+
+      expect(result.current.isSelectedInCategory(category, conceptCode1)).toBe(
+        true,
+      );
+      expect(result.current.isSelectedInCategory(category, conceptCode2)).toBe(
+        true,
+      );
+      expect(result.current.isSelectedInCategory(category, conceptCode3)).toBe(
+        true,
+      );
+      expect(result.current.isSelectedInCategory(category, 'UNKNOWN')).toBe(
+        false,
+      );
+    });
+
+    test('should return false after removing service request', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptCode = 'GLU';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
+      });
+
+      expect(result.current.isSelectedInCategory(category, conceptCode)).toBe(
+        true,
+      );
+
+      act(() => {
+        result.current.removeServiceRequest(category, conceptCode);
+      });
+
+      expect(result.current.isSelectedInCategory(category, conceptCode)).toBe(
+        false,
+      );
+    });
+
+    test('should work independently for different categories', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const labCategory = 'lab';
+      const radiologyCategory = 'radiology';
+      const labCode = 'GLU';
+      const radiologyCode = 'CXR';
+
+      act(() => {
+        result.current.addServiceRequest(labCategory, labCode, 'Glucose Test');
+        result.current.addServiceRequest(
+          radiologyCategory,
+          radiologyCode,
+          'Chest X-Ray',
+        );
+      });
+
+      expect(result.current.isSelectedInCategory(labCategory, labCode)).toBe(
+        true,
+      );
+      expect(
+        result.current.isSelectedInCategory(radiologyCategory, radiologyCode),
+      ).toBe(true);
+      expect(
+        result.current.isSelectedInCategory(labCategory, radiologyCode),
+      ).toBe(false);
+      expect(
+        result.current.isSelectedInCategory(radiologyCategory, labCode),
+      ).toBe(false);
+    });
+
+    test('should handle empty concept code string', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+
+      const isSelected = result.current.isSelectedInCategory(category, '');
+      expect(isSelected).toBe(false);
+    });
+
+    test('should handle whitespace in concept codes', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptCode = 'GLU TEST';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
+      });
+
+      const isSelectedExact = result.current.isSelectedInCategory(
+        category,
+        'GLU TEST',
+      );
+      const isSelectedWithDifferentWhitespace =
+        result.current.isSelectedInCategory(category, 'GLU  TEST');
+
+      expect(isSelectedExact).toBe(true);
+      expect(isSelectedWithDifferentWhitespace).toBe(false); // Different whitespace is different string
+    });
+  });
 });

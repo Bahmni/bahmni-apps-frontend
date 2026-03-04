@@ -49,6 +49,12 @@ jest.mock('@bahmni/form2-controls', () => ({
 // Mock the form2-controls CSS
 jest.mock('@bahmni/form2-controls/dist/bundle.css', () => ({}));
 
+jest.mock('../../forms/medications/MedicationsForm', () => {
+  return function MockMedicationsForm() {
+    return <div data-testid="medications-form">Medications Form</div>;
+  };
+});
+
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedError: jest.fn(),
@@ -63,6 +69,9 @@ jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useActivePractitioner: jest.fn(),
   usePatientUUID: jest.fn(() => 'patient-1'),
+  useEncounterSession: jest.fn(() => ({
+    activeEncounter: { id: 'encounter-123' },
+  })),
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['Get Patients', 'Add Patients'],
   })),

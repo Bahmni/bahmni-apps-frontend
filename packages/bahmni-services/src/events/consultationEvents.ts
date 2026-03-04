@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
  * Alternative approach to EventEmitter class for comparison
  *
  * MEMORY LEAK PREVENTION:
- * - useConsultationSaved hook ensures proper cleanup via useEffect return
+ * - useSubscribeConsultationSaved hook ensures proper cleanup via useEffect return
  * - Event listeners are removed on component unmount
  * - Callback is memoized to prevent unnecessary re-subscriptions
  */
@@ -14,12 +14,29 @@ import { useEffect, useRef } from 'react';
 export const CONSULTATION_SAVED_EVENT = 'consultation:saved';
 
 // Event payload interface
+/**
+ * ConsultationSavedEventPayload - Event data published when consultation is saved
+ *
+ * NOTE ON CONCEPT MATCHING STRATEGIES:
+ * Different subscribers use updatedConcepts differently based on their configuration:
+ * - Observations widget: Matches by concept UUID (keys) since config specifies UUIDs
+ * - VitalFlowSheet widget: Matches by concept NAME (values) since config specifies names
+ *
+ * The Map structure supports both strategies:
+ * - Keys: Concept UUIDs (for UUID-based matching)
+ * - Values: Concept names (for name-based matching)
+ *
+ * Subscribers should choose the matching strategy that aligns with their concept configuration.
+ */
 export interface ConsultationSavedEventPayload {
   patientUUID: string;
   updatedResources: {
     conditions: boolean;
     allergies: boolean;
+    medications: boolean;
+    serviceRequests: Record<string, boolean>;
   };
+  updatedConcepts: Map<string, string>;
 }
 
 /**
@@ -36,13 +53,10 @@ export interface ConsultationSavedEventPayload {
 export const dispatchConsultationSaved = (
   payload: ConsultationSavedEventPayload,
 ): void => {
-  // Defer to next event loop tick to make it non-blocking
-  setTimeout(() => {
-    const event = new CustomEvent(CONSULTATION_SAVED_EVENT, {
-      detail: payload,
-    });
-    window.dispatchEvent(event);
-  }, 0);
+  const event = new CustomEvent(CONSULTATION_SAVED_EVENT, {
+    detail: payload,
+  });
+  window.dispatchEvent(event);
 };
 
 /**
@@ -55,7 +69,7 @@ export const dispatchConsultationSaved = (
  *
  * USAGE:
  * ```typescript
- * useConsultationSaved((payload) => {
+ * useSubscribeConsultationSaved((payload) => {
  *   if (payload.patientUUID === currentPatient && payload.updatedResources.conditions) {
  *     refetch();
  *   }
@@ -65,7 +79,7 @@ export const dispatchConsultationSaved = (
  * @param callback - Function to call when event is published
  * @param deps - Dependencies array (should include values used in callback)
  */
-export const useConsultationSaved = (
+export const useSubscribeConsultationSaved = (
   callback: (payload: ConsultationSavedEventPayload) => void,
   deps: React.DependencyList = [],
 ) => {

@@ -16,6 +16,28 @@
       "description": "Patient information configuration",
       "additionalProperties": false
     },
+    "contextInformation": {
+      "type": "object",
+      "description": "Context information configuration for displaying additional patient context",
+      "additionalProperties": false,
+      "properties": {
+        "program": {
+          "type": "object",
+          "description": "Program details configuration",
+          "required": ["fields"],
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "type": "array",
+              "description": "List of fields to display in program details",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
     "actions": {
       "type": "array",
       "description": "List of available actions"
@@ -58,7 +80,7 @@
       "type": "object",
       "description": "Configuration for consultation pad forms",
       "required": ["allergyConceptMap"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "allergyConceptMap": {
           "type": "object",
@@ -69,7 +91,7 @@
             "environmentalAllergenUuid",
             "allergyReactionUuid"
           ],
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "medicationAllergenUuid": {
               "type": "string",
@@ -88,6 +110,10 @@
               "description": "UUID for allergy reaction concept"
             }
           }
+        },
+        "statDurationInHours": {
+          "type": "number",
+          "description": "Duration in hours for which a STAT order is valid"
         }
       }
     }

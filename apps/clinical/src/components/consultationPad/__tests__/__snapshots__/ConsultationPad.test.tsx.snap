@@ -55,6 +55,14 @@ exports[`ConsultationPad Snapshot Tests should match snapshot during submission 
         data-testid="mock-divider"
       />
       <div
+        data-testid="mock-vaccination-forms"
+      >
+        Vaccination Form
+      </div>
+      <hr
+        data-testid="mock-divider"
+      />
+      <div
         data-testid="mock-observation-forms"
       >
         <div
@@ -194,6 +202,14 @@ exports[`ConsultationPad Snapshot Tests should match snapshot for form order and
         data-testid="mock-divider"
       />
       <div
+        data-testid="mock-vaccination-forms"
+      >
+        Vaccination Form
+      </div>
+      <hr
+        data-testid="mock-divider"
+      />
+      <div
         data-testid="mock-observation-forms"
       >
         <div
@@ -291,6 +307,14 @@ exports[`ConsultationPad Snapshot Tests should match snapshot with disabled Done
         data-testid="mock-divider"
       />
       <div
+        data-testid="mock-vaccination-forms"
+      >
+        Vaccination Form
+      </div>
+      <hr
+        data-testid="mock-divider"
+      />
+      <div
         data-testid="mock-observation-forms"
       >
         <div
@@ -374,6 +398,14 @@ exports[`ConsultationPad Snapshot Tests should verify correct order of forms and
     data-testid="mock-medications-form"
   >
     Medications Form
+  </div>
+  <hr
+    data-testid="mock-divider"
+  />
+  <div
+    data-testid="mock-vaccination-forms"
+  >
+    Vaccination Form
   </div>
   <hr
     data-testid="mock-divider"

@@ -20,11 +20,16 @@ import {
   FormResponseData,
 } from './models';
 
-/**
- * Fetches and normalizes raw observation forms data from the API
- */
-const fetchAndNormalizeFormsData = async (): Promise<FormApiResponse[]> => {
-  const response = await fetch(OBSERVATION_FORMS_URL);
+const fetchAndNormalizeFormsData = async (
+  episodeUuids?: string[],
+): Promise<FormApiResponse[]> => {
+  let episodeUuidString: string | undefined;
+
+  if (episodeUuids && episodeUuids.length > 0) {
+    episodeUuidString = episodeUuids.join(',');
+  }
+
+  const response = await fetch(OBSERVATION_FORMS_URL(episodeUuidString));
 
   if (!response.ok) {
     throw new Error(
@@ -37,9 +42,6 @@ const fetchAndNormalizeFormsData = async (): Promise<FormApiResponse[]> => {
   return Array.isArray(data) ? data : [];
 };
 
-/**
- * Gets translated name for a form based on current locale
- */
 const getTranslatedFormName = (
   form: FormApiResponse,
   currentLocale: string,
@@ -59,9 +61,6 @@ const getTranslatedFormName = (
   return form.name;
 };
 
-/**
- * Transforms API form data to application domain model
- */
 const transformToObservationForm = (
   form: FormApiResponse,
   currentLocale: string,
@@ -79,11 +78,10 @@ const transformToObservationForm = (
   };
 };
 
-/**
- * Function to fetch and process observation forms
- */
-export const fetchObservationForms = async (): Promise<ObservationForm[]> => {
-  const formsArray = await fetchAndNormalizeFormsData();
+export const fetchObservationForms = async (
+  episodeUuids?: string[],
+): Promise<ObservationForm[]> => {
+  const formsArray = await fetchAndNormalizeFormsData(episodeUuids);
   const currentLocale = getUserPreferredLocale();
 
   return formsArray.map((form) =>
@@ -116,7 +114,11 @@ export const fetchFormMetadata = async (
   const formSchema = JSON.parse(data.resources[0].value);
   const currentLocale = getUserPreferredLocale();
 
-  // Fetch translations from API endpoint if translationsUrl is present
+  const formName = data.name ?? formSchema.name;
+  const formUuidValue = data.uuid ?? formSchema.uuid;
+  const formVersion = data.version ?? formSchema.version ?? '1';
+  const formPublished = data.published ?? false;
+
   let translations: ObservationFormTranslations = { labels: {}, concepts: {} };
 
   if (
@@ -125,36 +127,28 @@ export const fetchFormMetadata = async (
     'translationsUrl' in formSchema &&
     typeof formSchema.translationsUrl === 'string'
   ) {
-    try {
-      const formName = formSchema.name ?? data.name;
-      const formUuid = data.uuid ?? formSchema.uuid;
-      const formVersion = formSchema.version ?? data.version ?? '1';
+    const translationsUrl = FORM_TRANSLATIONS_URL(
+      formName,
+      formUuidValue,
+      formVersion,
+      currentLocale,
+    );
 
-      const translationsUrl = FORM_TRANSLATIONS_URL(
-        formName,
-        formUuid,
-        formVersion,
+    const translationsResponse = await fetch(translationsUrl);
+    if (translationsResponse.ok) {
+      const translationsData = await translationsResponse.json();
+      translations = extractObservationFormTranslations(
+        translationsData,
         currentLocale,
       );
-
-      const translationsResponse = await fetch(translationsUrl);
-      if (translationsResponse.ok) {
-        const translationsData = await translationsResponse.json();
-        translations = extractObservationFormTranslations(
-          translationsData,
-          currentLocale,
-        );
-      }
-    } catch (error) {
-      // Silently fail with empty translations
     }
   }
 
   return {
-    uuid: data.uuid,
-    name: data.name,
-    version: data.version,
-    published: data.published,
+    uuid: formUuidValue,
+    name: formName,
+    version: formVersion,
+    published: formPublished,
     schema: formSchema,
     translations,
   };
@@ -177,14 +171,9 @@ export const getPatientFormData = async (
   if (episodeUuids && episodeUuids.length > 0) {
     episodeUuidString = episodeUuids.join(',');
   }
-  try {
-    const url = FORM_DATA_URL(patientUuid, numberOfVisits, episodeUuidString);
-    const data = await get<FormResponseData[]>(url);
 
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch form data for patient ${patientUuid}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
+  const url = FORM_DATA_URL(patientUuid, numberOfVisits, episodeUuidString);
+  const data = await get<FormResponseData[]>(url);
+
+  return Array.isArray(data) ? data : [];
 };

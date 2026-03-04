@@ -131,7 +131,7 @@ export const mockValidVitalSignsConfig = {
     {
       name: 'Temperature',
       conceptUuid: '7e3b4c5d-2c5f-6d8b-a9f0-3e4f5a6b7c8d',
-      unit: '�C',
+      unit: '°C',
       dataType: 'numeric',
       normalRange: {
         min: 36.5,

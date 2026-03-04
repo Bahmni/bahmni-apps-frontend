@@ -1,11 +1,65 @@
-# Bahmni Clinical Frontend Project Structure
+# Bahmni Apps Frontend Project Structure
 
 This document provides a high-level overview of the project structure, explaining the purpose of each main directory.
 
 ## Directory Structure Overview
 
-``` text
-bahmni-clinical-frontend/
+```text
+bahmni-apps-frontend/
+├── apps/                    # Micro-frontend applications
+│   ├── clinical/            # Clinical consultation module
+│   │   ├── src/             # Source code
+│   │   │   ├── components/  # UI components
+│   │   │   ├── hooks/       # Custom hooks
+│   │   │   ├── pages/       # Page components
+│   │   │   ├── providers/   # Context providers
+│   │   │   ├── stores/      # Zustand stores
+│   │   │   └── ClinicalApp.tsx
+│   │   ├── public/          # Static assets
+│   │   │   └── locales/     # Translation files
+│   │   └── project.json     # Nx project configuration
+│   ├── registration/        # Patient registration module
+│   │   ├── src/             # Source code
+│   │   │   ├── components/  # UI components
+│   │   │   ├── hooks/       # Custom hooks
+│   │   │   ├── pages/       # Page components
+│   │   │   └── RegistrationApp.tsx
+│   │   ├── public/          # Static assets
+│   │   │   └── locales/     # Translation files
+│   │   └── project.json     # Nx project configuration
+│   └── sample-app-module/   # Example extensible app
+├── packages/                # Shared libraries
+│   ├── bahmni-design-system/ # Reusable UI components (Carbon-based)
+│   │   ├── src/
+│   │   │   ├── atoms/       # Basic UI components
+│   │   │   ├── molecules/   # Composite components
+│   │   │   └── organisms/   # Complex components
+│   │   └── project.json
+│   ├── bahmni-services/     # API integration & business logic
+│   │   ├── src/
+│   │   │   ├── api/         # HTTP client & interceptors
+│   │   │   ├── patientService/
+│   │   │   ├── medicationService/
+│   │   │   ├── allergyService/
+│   │   │   ├── observationService/
+│   │   │   ├── i18n/        # Translation utilities
+│   │   │   ├── date/        # Date utilities
+│   │   │   └── utils/       # Common utilities
+│   │   └── project.json
+│   └── bahmni-widgets/      # Domain-specific display controls
+│       ├── src/
+│       │   ├── AllergiesTable/
+│       │   ├── MedicationsTable/
+│       │   ├── PatientDetails/
+│       │   └── providers/   # Context providers
+│       └── project.json
+├── distro/                  # Shell application (entry point)
+│   ├── src/
+│   │   ├── app/             # Root routing
+│   │   ├── main.tsx         # Application entry
+│   │   └── index.html       # HTML template
+│   ├── webpack.config.js    # Webpack configuration
+│   └── project.json
 ├── docs/                    # Project documentation
 ├── public/                  # Static assets
 │   └── locales/             # Translation files

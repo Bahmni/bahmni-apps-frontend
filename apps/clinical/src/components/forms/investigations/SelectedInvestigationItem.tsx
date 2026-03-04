@@ -32,7 +32,7 @@ const SelectedInvestigationItem: React.FC<SelectedInvestigationItemProps> =
 
     return (
       <>
-        <Grid>
+        <Grid data-testid={`selected-investigation-item-grid-${id}`}>
           <Column
             sm={4}
             md={7}
@@ -40,10 +40,13 @@ const SelectedInvestigationItem: React.FC<SelectedInvestigationItemProps> =
             xlg={11}
             className={styles.selectedInvestigationTitle}
           >
-            {display}
+            <span data-testid={`investigation-display-name-${id}`}>
+              {display}
+            </span>
             {!hasNote && (
               <Link
                 href="#"
+                data-testid={`investigation-add-note-link-${id}`}
                 onClick={(e) => {
                   e.preventDefault();
                   setHasNote(true);
@@ -63,6 +66,7 @@ const SelectedInvestigationItem: React.FC<SelectedInvestigationItemProps> =
           >
             <Checkbox
               id={`investigation-priority-checkbox-${id}`}
+              data-testid={`investigation-priority-checkbox-${id}`}
               labelText={t('INVESTIGATION_PRIORITY_URGENT')}
               onChange={(_, { checked }) => handleUrgentChange(checked)}
             />

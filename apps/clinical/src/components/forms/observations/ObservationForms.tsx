@@ -13,8 +13,8 @@ import {
   VALIDATION_STATE_EMPTY,
   VALIDATION_STATE_MANDATORY,
   VALIDATION_STATE_INVALID,
+  VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
-import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import styles from './styles/ObservationForms.module.scss';
 
@@ -26,6 +26,10 @@ interface ObservationFormsProps {
   pinnedForms: ObservationForm[];
   updatePinnedForms: (newPinnedForms: ObservationForm[]) => Promise<void>;
   isPinnedFormsLoading: boolean;
+  // Forms data passed from parent to avoid redundant API calls
+  allForms: ObservationForm[];
+  isAllFormsLoading: boolean;
+  observationFormsError: Error | null;
 }
 
 /**
@@ -50,19 +54,38 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     pinnedForms,
     updatePinnedForms,
     isPinnedFormsLoading,
+    allForms,
+    isAllFormsLoading,
+    observationFormsError,
   }) => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedItem, setSelectedItem] = useState<{
+      id: string;
+      label: string;
+      disabled?: boolean;
+    } | null>(null);
     const { getFormData } = useObservationFormsStore();
 
-    const { forms: allForms, isLoading: isAllFormsLoading } =
-      useObservationFormsSearch();
+    // Client-side filtering based on search term
+    // Uses OR logic: searching "Vitals History" matches forms containing either "vitals" OR "history"
+    // This provides more flexible and user-friendly search results
+    const availableForms = useMemo(() => {
+      if (!searchTerm.trim()) return allForms;
 
-    const {
-      forms: availableForms,
-      isLoading: isSearchLoading,
-      error: searchError,
-    } = useObservationFormsSearch(searchTerm);
+      const searchTermLower = searchTerm.toLowerCase().trim();
+      const searchWords = searchTermLower.split(/\s+/);
+
+      return allForms.filter((form) => {
+        const nameLower = form.name.toLowerCase();
+        // OR logic: match if ANY search word is found in the form name
+        return searchWords.some((word) => nameLower.includes(word));
+      });
+    }, [allForms, searchTerm]);
+
+    // Use same loading and error state for search
+    const isSearchLoading = isAllFormsLoading;
+    const searchError = observationFormsError;
 
     // Validate and filter available forms - handle malformed data
     const validatedAvailableForms = useMemo(() => {
@@ -113,15 +136,17 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       (data: {
         selectedItem?: { id: string; label: string; disabled?: boolean } | null;
       }) => {
-        const selectedItem = data.selectedItem;
-        if (!selectedItem?.id || selectedItem.disabled) {
+        const selected = data.selectedItem;
+        if (!selected?.id || selected.disabled) {
           return;
         }
         const form = availableForms.find(
-          (f: ObservationForm) => f.uuid === selectedItem.id,
+          (f: ObservationForm) => f.uuid === selected.id,
         );
         if (form) {
           onFormSelect?.(form);
+          setSearchTerm('');
+          setSelectedItem(selected);
         }
       },
       [availableForms, onFormSelect],
@@ -211,8 +236,11 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
             placeholder={t('OBSERVATION_FORMS_SEARCH_PLACEHOLDER')}
             items={searchResults}
             itemToString={(item) => item?.label ?? ''}
+            selectedItem={selectedItem}
             onChange={handleOnChange}
             onInputChange={handleSearch}
+            clearSelectedOnChange
+            allowCustomValue
             size="md"
             autoAlign
             disabled={isSearchLoading}
@@ -229,16 +257,17 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
             >
               {selectedForms.map((form: ObservationForm) => {
                 const savedFormData = getFormData(form.uuid);
-                const validationState = savedFormData?.validationState;
+                const validationErrorType = savedFormData?.validationErrorType;
 
                 // Show error indicator for all validation error types
                 const showError =
-                  validationState === VALIDATION_STATE_MANDATORY ||
-                  validationState === VALIDATION_STATE_INVALID ||
-                  validationState === VALIDATION_STATE_EMPTY;
+                  validationErrorType === VALIDATION_STATE_MANDATORY ||
+                  validationErrorType === VALIDATION_STATE_INVALID ||
+                  validationErrorType === VALIDATION_STATE_EMPTY ||
+                  validationErrorType === VALIDATION_STATE_SCRIPT_ERROR;
                 const errorMessage = showError
                   ? t(
-                      `OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_${validationState.toUpperCase()}`,
+                      `OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_${validationErrorType.toUpperCase()}`,
                     )
                   : undefined;
 
@@ -250,7 +279,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
                     actionIcon="fa-times"
                     onOpen={() => onFormSelect?.(form)}
                     onActionClick={() => onRemoveForm?.(form.uuid)}
-                    dataTestId={`selected-form-${form.uuid}`}
+                    dataTestId={`selected-form-${form.name}`}
                     ariaLabel={`Open ${form.name} form`}
                     errorMessage={errorMessage}
                   />
@@ -295,7 +324,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
                     );
                     updatePinnedForms(newPinnedForms);
                   }}
-                  dataTestId={`pinned-form-${form.uuid}`}
+                  dataTestId={`pinned-form-${form.name}`}
                   ariaLabel={`Open ${form.name} form`}
                 />
               ))

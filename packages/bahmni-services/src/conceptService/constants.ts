@@ -14,3 +14,9 @@ export const CONCEPT_SEARCH_URL = (
 
 export const CONCEPT_GET_URL = (uuid: string) =>
   OPENMRS_REST_V1 + `/concept/${uuid}`;
+
+export const CONCEPT_BY_FULLY_SPECIFIED_NAME_URL = (conceptName: string) =>
+  `${OPENMRS_REST_V1}/concept?s=byFullySpecifiedName&name=${encodeURIComponent(conceptName)}`;
+
+export const CONCEPT_NAME_TYPE_SHORT = 'SHORT';
+export const CONCEPT_NAME_TYPE_FULLY_SPECIFIED = 'FULLY_SPECIFIED';

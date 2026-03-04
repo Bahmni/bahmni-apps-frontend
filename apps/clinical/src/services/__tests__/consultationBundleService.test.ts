@@ -1,4 +1,4 @@
-import { DiagnosisInputEntry, post } from '@bahmni/services';
+import { DiagnosisInputEntry, post, Form2Observation } from '@bahmni/services';
 import {
   Reference,
   Condition,
@@ -6,6 +6,7 @@ import {
   ServiceRequest,
   MedicationRequest,
   Coding,
+  Observation,
 } from 'fhir/r4';
 import { CONSULTATION_ERROR_MESSAGES } from '../../constants/errors';
 import { AllergyInputEntry } from '../../models/allergy';
@@ -22,6 +23,7 @@ import {
   postConsultationBundle,
   createEncounterBundleEntry,
   getEncounterReference,
+  createObservationBundleEntries,
 } from '../consultationBundleService';
 
 // Mock crypto.randomUUID
@@ -30,6 +32,57 @@ global.crypto.randomUUID = jest.fn().mockReturnValue(mockUUID);
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   post: jest.fn(),
+}));
+jest.mock('@bahmni/form2-controls', () => ({
+  getFhirObservations: jest.fn().mockImplementation((observations: any[]) => {
+    let idCounter = 0;
+
+    const processObservations = (obs: any[]): any[] => {
+      const localResults: any[] = [];
+
+      obs.forEach((o) => {
+        const currentId = `mock-id-${idCounter++}`;
+        const currentFullUrl = `urn:uuid:${currentId}`;
+
+        if (o.groupMembers && o.groupMembers.length > 0) {
+          const memberResults = processObservations(o.groupMembers);
+          localResults.push(...memberResults);
+
+          const parentObservation: Observation = {
+            resourceType: 'Observation',
+            id: currentId,
+            status: 'final',
+            code: { coding: [{ code: o.concept?.uuid }] },
+            hasMember: memberResults.map((m) => ({
+              reference: m.fullUrl,
+              type: 'Observation',
+            })) as any[],
+          };
+
+          localResults.push({
+            resource: parentObservation,
+            fullUrl: currentFullUrl,
+          });
+        } else {
+          const childObservation: Observation = {
+            resourceType: 'Observation',
+            id: currentId,
+            status: 'final',
+            code: { coding: [{ code: o.concept?.uuid }] },
+          };
+
+          localResults.push({
+            resource: childObservation,
+            fullUrl: currentFullUrl,
+          });
+        }
+      });
+
+      return localResults;
+    };
+
+    return processObservations(observations);
+  }),
 }));
 
 describe('consultationBundleService', () => {
@@ -1559,6 +1612,189 @@ describe('consultationBundleService', () => {
 
         // Reset mock
         (global.crypto.randomUUID as jest.Mock).mockReturnValue(mockUUID);
+      });
+    });
+  });
+
+  describe('createObservationBundleEntries', () => {
+    const mockObservations: Form2Observation[] = [
+      {
+        concept: { uuid: 'concept-uuid-1', datatype: 'Numeric' },
+        value: 72,
+        obsDatetime: '2025-01-15T10:30:00Z',
+        formNamespace: 'Bahmni',
+        formFieldPath: 'Vitals.1/1-0',
+      },
+    ];
+
+    it('should create observation bundle entries using FhirObservationTransformer', () => {
+      const result = createObservationBundleEntries({
+        observationFormsData: { 'form-uuid-1': mockObservations },
+        encounterSubject: mockEncounterSubject,
+        encounterReference: mockEncounterReference,
+        practitionerUUID: mockPractitionerUUID,
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].resource?.resourceType).toBe('Observation');
+      expect(result[0].request?.method).toBe('POST');
+      expect(result[0].fullUrl).toMatch(/^urn:uuid:/);
+    });
+
+    it('should handle observations with group members', () => {
+      const groupedObservations: Form2Observation[] = [
+        {
+          concept: { uuid: 'group-uuid' },
+          value: null,
+          groupMembers: [
+            {
+              concept: { uuid: 'member-1-uuid', datatype: 'Numeric' },
+              value: 100,
+            },
+            {
+              concept: { uuid: 'member-2-uuid', datatype: 'Text' },
+              value: 'test',
+            },
+          ],
+        },
+      ];
+
+      const result = createObservationBundleEntries({
+        observationFormsData: { 'form-uuid-1': groupedObservations },
+        encounterSubject: mockEncounterSubject,
+        encounterReference: mockEncounterReference,
+        practitionerUUID: mockPractitionerUUID,
+      });
+
+      expect(result).toHaveLength(3);
+      const parentEntry = result.find(
+        (entry) => (entry.resource as Observation)?.hasMember?.length,
+      );
+      expect(parentEntry).toBeDefined();
+    });
+
+    it('should throw error for invalid parameters', () => {
+      expect(() =>
+        createObservationBundleEntries({
+          observationFormsData: null as any,
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        }),
+      ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+    });
+
+    it('should handle empty observations array', () => {
+      const result = createObservationBundleEntries({
+        observationFormsData: { 'form-uuid-1': [] },
+        encounterSubject: mockEncounterSubject,
+        encounterReference: mockEncounterReference,
+        practitionerUUID: mockPractitionerUUID,
+      });
+
+      expect(result).toHaveLength(0);
+    });
+
+    describe('Parameter Validation - All 4 Paths', () => {
+      it('should throw error when observationFormsData is null', () => {
+        expect(() =>
+          createObservationBundleEntries({
+            observationFormsData: null as any,
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+      });
+
+      it('should throw error when encounterSubject is null', () => {
+        expect(() =>
+          createObservationBundleEntries({
+            observationFormsData: { 'form-uuid-1': mockObservations },
+            encounterSubject: null as any,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
+      });
+
+      it('should throw error when encounterReference is empty', () => {
+        expect(() =>
+          createObservationBundleEntries({
+            observationFormsData: { 'form-uuid-1': mockObservations },
+            encounterSubject: mockEncounterSubject,
+            encounterReference: '',
+            practitionerUUID: mockPractitionerUUID,
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
+      });
+
+      it('should throw error when practitionerUUID is empty', () => {
+        expect(() =>
+          createObservationBundleEntries({
+            observationFormsData: { 'form-uuid-1': mockObservations },
+            encounterSubject: mockEncounterSubject,
+            encounterReference: mockEncounterReference,
+            practitionerUUID: '',
+          }),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
+      });
+    });
+
+    describe('Multiple Forms Handling', () => {
+      it('should handle multiple forms with observations', () => {
+        const obs2: Form2Observation[] = [
+          {
+            concept: { uuid: 'concept-uuid-2', datatype: 'Numeric' },
+            value: 98.6,
+          },
+        ];
+
+        const result = createObservationBundleEntries({
+          observationFormsData: {
+            'form-uuid-1': mockObservations,
+            'form-uuid-2': obs2,
+          },
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+        expect(
+          result.every((r) => r.resource?.resourceType === 'Observation'),
+        ).toBe(true);
+      });
+
+      it('should skip null form data in multiple forms', () => {
+        const result = createObservationBundleEntries({
+          observationFormsData: {
+            'form-uuid-1': mockObservations,
+            'form-uuid-2': null as any,
+            'form-uuid-3': mockObservations,
+          },
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+      });
+
+      it('should create valid bundle structure for all entries', () => {
+        const result = createObservationBundleEntries({
+          observationFormsData: { 'form-uuid-1': mockObservations },
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        result.forEach((entry) => {
+          expect(entry.fullUrl).toBeDefined();
+          expect(entry.resource?.resourceType).toBe('Observation');
+          expect(entry.request?.method).toBe('POST');
+          expect(entry.request?.url).toBe('Observation');
+        });
       });
     });
   });

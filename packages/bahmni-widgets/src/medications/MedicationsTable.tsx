@@ -9,6 +9,7 @@ import {
   Tabs,
   Tag,
   StatusTag,
+  TooltipIcon,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -19,11 +20,18 @@ import {
   ISO_DATE_FORMAT,
   FormattedMedicationRequest,
   MedicationRequest,
+  shouldEnableEncounterFilter,
+  useSubscribeConsultationSaved,
+  ConsultationSavedEventPayload,
+  getPatientMedications,
 } from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import classNames from 'classnames';
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { usePatientUUID } from '../hooks/usePatientUUID';
+import { useNotification } from '../notification';
+import { WidgetProps } from '../registry/model';
 import styles from './styles/MedicationsTable.module.scss';
-import { useMedicationRequest } from './useMedicationRequest';
 import {
   formatMedicationRequest,
   sortMedicationsByStatus,
@@ -72,10 +80,60 @@ const getMedicationStatusKey = (status: string): string => {
   }
 };
 
-const MedicationsTable: React.FC = () => {
+const MedicationsTable: React.FC<WidgetProps> = ({
+  config,
+  episodeOfCareUuids,
+  encounterUuids,
+}) => {
   const { t } = useTranslation();
-  const { medications, loading, error } = useMedicationRequest();
+  const patientUUID = usePatientUUID();
+  const { addNotification } = useNotification();
+  const code = (config?.code as string[]) || [];
+
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
+
+  // Use TanStack Query for data fetching and caching
+  // includeRelated=true fetches related Medication resources with form information
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['medications', patientUUID!, code, encounterUuids],
+    enabled: !!patientUUID,
+    queryFn: () =>
+      getPatientMedications(patientUUID!, code, encounterUuids!, true),
+  });
+
+  // Handle errors with notifications
+  useEffect(() => {
+    if (isError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: error.message,
+        type: 'error',
+      });
+    }
+  }, [isError, error, addNotification, t]);
+
+  // Listen to consultation saved events and refetch if medications were updated
+  useSubscribeConsultationSaved(
+    (payload: ConsultationSavedEventPayload) => {
+      // Only refetch if:
+      // 1. Event is for the same patient
+      // 2. Medications were modified during consultation
+      if (
+        payload.patientUUID === patientUUID &&
+        payload.updatedResources.medications
+      ) {
+        refetch();
+      }
+    },
+    [patientUUID, refetch],
+  );
+
+  const medications = data ?? [];
 
   const handleTabChange = (selectedIndex: number) => {
     setSelectedIndex(selectedIndex);
@@ -110,7 +168,7 @@ const MedicationsTable: React.FC = () => {
         medications: group.items,
       }));
     },
-    [],
+    [t],
   );
 
   const headers = useMemo(
@@ -175,14 +233,48 @@ const MedicationsTable: React.FC = () => {
       case 'name':
         return (
           <>
-            <p className={styles.columnDataBold}>{row.name}</p>
-            <p className={styles.medicineDetails}>{row.quantity}</p>
+            <div className={styles.medicationName}>
+              <span>{row.name}</span>
+              {row.note && (
+                <TooltipIcon
+                  iconName="fa-file-lines"
+                  content={row.note}
+                  ariaLabel={row.note}
+                />
+              )}
+            </div>
+            <p className={styles.medicineDetails}>
+              {row.doseForm
+                ? `${row.doseForm} | ${row.quantity}`
+                : row.quantity}
+            </p>
             {row.isImmediate && <Tag className={styles.STAT}>STAT</Tag>}
             {row.asNeeded && <Tag className={styles.PRN}>PRN</Tag>}
           </>
         );
-      case 'dosage':
-        return <p className={styles.columnDataBold}>{row.dosage}</p>;
+      case 'dosage': {
+        if (typeof row.dosage === 'string') {
+          return <p className={styles.columnDataBold}>{row.dosage}</p>;
+        }
+        if (
+          row.dosage &&
+          typeof row.dosage === 'object' &&
+          'value' in row.dosage &&
+          'unit' in row.dosage
+        ) {
+          const dosage = row.dosage as { value: number; unit: string };
+          return (
+            <p className={styles.columnDataBold}>
+              {dosage.value} {dosage.unit}
+            </p>
+          );
+        }
+        return (
+          <p className={styles.columnDataBold}>
+            {t('MEDICATIONS_TABLE_NOT_AVAILABLE')}
+          </p>
+        );
+      }
       case 'instruction':
         return row.instruction;
       case 'startDate':
@@ -232,27 +324,32 @@ const MedicationsTable: React.FC = () => {
             <SortableDataTable
               headers={headers}
               ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}
-              rows={activeAndScheduledMedications}
-              loading={loading}
+              rows={emptyEncounterFilter ? [] : activeAndScheduledMedications}
+              loading={isLoading}
               errorStateMessage={error}
               sortable={sortable}
               emptyStateMessage={t('NO_ACTIVE_MEDICATIONS')}
               renderCell={renderCell}
               className={styles.medicationsTableBody}
+              dataTestId="medications-active-scheduled-table"
             />
           </TabPanel>
           <TabPanel className={styles.medicationTabs}>
-            {loading || !!error || processedAllMedications.length === 0 ? (
+            {isLoading ||
+            !!error ||
+            processedAllMedications.length === 0 ||
+            emptyEncounterFilter ? (
               <SortableDataTable
                 headers={headers}
                 ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}
                 rows={[]}
-                loading={loading}
+                loading={isLoading}
                 errorStateMessage={error}
                 sortable={sortable}
                 emptyStateMessage={t('NO_MEDICATION_HISTORY')}
                 renderCell={renderCell}
                 className={styles.medicationsTableBody}
+                dataTestId="medications-all-table"
               />
             ) : (
               <Accordion align="start">
@@ -274,7 +371,7 @@ const MedicationsTable: React.FC = () => {
                         headers={headers}
                         ariaLabel={t('MEDICATIONS_DISPLAY_CONTROL_HEADING')}
                         rows={medications}
-                        loading={loading}
+                        loading={isLoading}
                         errorStateMessage={error}
                         sortable={sortable}
                         emptyStateMessage={t('NO_MEDICATION_HISTORY')}
@@ -283,6 +380,7 @@ const MedicationsTable: React.FC = () => {
                           styles.medicationsTableBody,
                           styles.rowSeperator,
                         )}
+                        dataTestId={`medications-table-${formattedDate}`}
                       />
                     </AccordionItem>
                   );

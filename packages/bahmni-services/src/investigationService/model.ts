@@ -20,3 +20,10 @@ export interface OrderType {
 export interface OrderTypeResponse {
   results: OrderType[];
 }
+
+export interface ExistingServiceRequest {
+  conceptCode: string;
+  categoryUuid: string;
+  display: string;
+  requesterUuid: string;
+}

@@ -17,21 +17,20 @@ import {
   getFormattedError,
   fetchObservationForms,
   ObservationForm,
-  FormsEncounter,
-  getFormsDataByEncounterUuid,
+  getObservationsBundleByEncounterUuid,
+  shouldEnableEncounterFilter,
+  useSubscribeConsultationSaved,
+  ConsultationSavedEventPayload,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Bundle, Observation } from 'fhir/r4';
 import React, { useCallback, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
-import {
-  ObservationData,
-  FormRecordViewModel,
-  GroupedFormRecords,
-} from './models';
+import { FormRecordViewModel, GroupedFormRecords } from './models';
 import ObservationItem from './ObservationItem';
 import styles from './styles/FormsTable.module.scss';
+import { filterObservationsByFormName } from './utils';
 
 /**
  * Component to display patient forms grouped by form name in accordion format
@@ -49,15 +48,23 @@ const FormsTable: React.FC<WidgetProps> = ({
     useState<FormRecordViewModel | null>(null);
   const numberOfVisits = config?.numberOfVisits as number;
 
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
+
+  const queryClient = useQueryClient();
+
   const {
     data: formsData = [],
     isLoading: loading,
     isError,
     error,
+    refetch: refetchForms,
   } = useQuery<FormResponseData[], Error>({
     queryKey: ['forms', patientUuid, episodeOfCareUuids],
     queryFn: () => getPatientFormData(patientUuid!, undefined, numberOfVisits),
-    enabled: !!patientUuid,
+    enabled: !!patientUuid && !emptyEncounterFilter,
   });
 
   // Filter forms data by encounterUuids if provided
@@ -73,7 +80,7 @@ const FormsTable: React.FC<WidgetProps> = ({
   // Fetch published forms to get form UUIDs
   const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
     queryKey: ['observationForms'],
-    queryFn: fetchObservationForms,
+    queryFn: () => fetchObservationForms(),
   });
 
   // Get form UUID by matching form name
@@ -92,43 +99,49 @@ const FormsTable: React.FC<WidgetProps> = ({
   }, [selectedRecord, getFormUuidByName]);
 
   // Fetch form metadata when a record is selected
-  const {
-    data: formMetadata,
-    isLoading: isLoadingMetadata,
-    error: metadataError,
-  } = useQuery<FormMetadata>({
-    queryKey: ['formMetadata', selectedFormUuid],
-    queryFn: () => fetchFormMetadata(selectedFormUuid!),
-    enabled: !!selectedFormUuid && isModalOpen,
-  });
+  const { isLoading: isLoadingMetadata, error: metadataError } =
+    useQuery<FormMetadata>({
+      queryKey: ['formMetadata', selectedFormUuid],
+      queryFn: () => fetchFormMetadata(selectedFormUuid!),
+      enabled: !!selectedFormUuid && isModalOpen,
+    });
 
   const {
-    data: formsEncounterData,
+    data: fhirObservationBundle,
     isLoading: isLoadingEncounterData,
     error: formDataError,
-  } = useQuery<FormsEncounter>({
-    queryKey: ['formsEncounter', selectedRecord?.encounterUuid],
+  } = useQuery<Bundle<Observation>>({
+    queryKey: ['formsEncounterFHIR', selectedRecord?.encounterUuid],
     queryFn: () =>
-      getFormsDataByEncounterUuid(selectedRecord!.encounterUuid, true),
+      getObservationsBundleByEncounterUuid(selectedRecord!.encounterUuid),
     enabled: !!selectedRecord?.encounterUuid && isModalOpen,
   });
 
-  // Filter observations to only include those belonging to the selected form
+  // Listen to consultation saved events and refetch cached data if observations were updated
+  useSubscribeConsultationSaved(
+    (payload: ConsultationSavedEventPayload) => {
+      if (
+        payload.patientUUID === patientUuid &&
+        payload.updatedConcepts.size > 0
+      ) {
+        refetchForms();
+        queryClient.invalidateQueries({ queryKey: ['formsEncounterFHIR'] });
+      }
+    },
+    [patientUuid],
+  );
+
+  // Extract observations from FHIR bundle and filter by form name
   const filteredObservations = useMemo(() => {
-    if (!formsEncounterData?.observations || !selectedRecord?.formName) {
+    if (!fhirObservationBundle || !selectedRecord?.formName) {
       return [];
     }
 
-    // Filter observations by formFieldPath that includes the form name
-    const filtered = formsEncounterData.observations.filter(
-      (obs) =>
-        'formFieldPath' in obs &&
-        typeof obs.formFieldPath === 'string' &&
-        obs.formFieldPath.includes(selectedRecord.formName),
+    return filterObservationsByFormName(
+      fhirObservationBundle,
+      selectedRecord.formName,
     );
-
-    return filtered;
-  }, [formsEncounterData?.observations, selectedRecord?.formName]);
+  }, [fhirObservationBundle, selectedRecord?.formName]);
 
   const headers = useMemo(
     () => [
@@ -218,7 +231,10 @@ const FormsTable: React.FC<WidgetProps> = ({
   return (
     <>
       <div data-testid="forms-table">
-        {loading || !!isError || processedForms.length === 0 ? (
+        {loading ||
+        !!isError ||
+        processedForms.length === 0 ||
+        emptyEncounterFilter ? (
           <SortableDataTable
             headers={headers}
             ariaLabel={t('FORMS_HEADING')}
@@ -228,7 +244,7 @@ const FormsTable: React.FC<WidgetProps> = ({
             emptyStateMessage={t('FORMS_UNAVAILABLE')}
             renderCell={renderCell}
             className={styles.formsTableBody}
-            data-testid="sortable-data-table"
+            dataTestId="forms-table"
           />
         ) : (
           <Accordion align="start">
@@ -240,7 +256,7 @@ const FormsTable: React.FC<WidgetProps> = ({
                   title={formName}
                   key={formName}
                   className={styles.customAccordianItem}
-                  testId="accordian-table-title"
+                  testId={`accordian-title-${formName}`}
                   open={index === 0}
                 >
                   <SortableDataTable
@@ -253,7 +269,7 @@ const FormsTable: React.FC<WidgetProps> = ({
                     emptyStateMessage={t('FORMS_UNAVAILABLE')}
                     renderCell={renderCell}
                     className={styles.formsTableBody}
-                    data-testid="sortable-data-table"
+                    dataTestId={`forms-table-${formName}`}
                   />
                 </AccordionItem>
               );
@@ -262,48 +278,48 @@ const FormsTable: React.FC<WidgetProps> = ({
         )}
       </div>
 
-      {isModalOpen &&
-        selectedRecord &&
-        createPortal(
-          <Modal
-            open={isModalOpen}
-            onRequestClose={handleCloseModal}
-            modalHeading={selectedRecord.formName}
-            modalLabel={`${selectedRecord.recordedOn} | ${selectedRecord.recordedBy}`}
-            passiveModal
-            size="md"
-            testId="form-details-modal"
-          >
-            <div className={styles.formContent}>
-              {isLoadingMetadata || isLoadingEncounterData ? (
-                <SkeletonText width="100%" lineCount={3} />
-              ) : metadataError ? (
-                <div>
-                  {getFormattedError(metadataError).message ??
-                    t('ERROR_FETCHING_FORM_METADATA')}
-                </div>
-              ) : formDataError ? (
-                <div>
-                  {getFormattedError(formDataError).message ??
-                    t('ERROR_FETCHING_FORM_DATA')}
-                </div>
-              ) : filteredObservations.length > 0 ? (
-                <div className={styles.formDetailsContainer}>
-                  {filteredObservations.map((obs, index) => (
-                    <ObservationItem
-                      key={`${obs.concept.uuid}`}
-                      observation={obs as unknown as ObservationData}
-                      index={index}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div>{t('NO_FORM_DATA_AVAILABLE')}</div>
-              )}
-            </div>
-          </Modal>,
-          document.getElementById('actionAreaLayout') ?? document.body,
-        )}
+      {isModalOpen && selectedRecord && (
+        <Modal
+          id="modalIdForActionAreaLayout"
+          open={isModalOpen}
+          onRequestClose={handleCloseModal}
+          modalHeading={selectedRecord.formName}
+          modalLabel={`${selectedRecord.recordedOn} | ${selectedRecord.recordedBy}`}
+          passiveModal
+          size="md"
+          testId="form-details-modal"
+        >
+          <div className={styles.formContent}>
+            {isLoadingMetadata || isLoadingEncounterData ? (
+              <SkeletonText width="100%" lineCount={3} />
+            ) : metadataError ? (
+              <div>
+                {getFormattedError(metadataError).message ??
+                  t('ERROR_FETCHING_FORM_METADATA')}
+              </div>
+            ) : formDataError ? (
+              <div>
+                {getFormattedError(formDataError).message ??
+                  t('ERROR_FETCHING_FORM_DATA')}
+              </div>
+            ) : filteredObservations.length > 0 ? (
+              <div className={styles.formDetailsContainer}>
+                {filteredObservations.map(({ obs, comment }, index) => (
+                  <ObservationItem
+                    key={`${obs.id}`}
+                    observation={obs}
+                    index={index}
+                    formName={selectedRecord.formName}
+                    comment={comment}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div>{t('NO_FORM_DATA_AVAILABLE')}</div>
+            )}
+          </div>
+        </Modal>
+      )}
     </>
   );
 };

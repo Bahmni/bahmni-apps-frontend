@@ -209,6 +209,7 @@ const PatientSearchPage: React.FC = () => {
                 className={styles.actionButton}
                 kind="tertiary"
                 size="sm"
+                data-testid={`patient-action-button-${action.translationKey}`}
                 disabled={
                   !isActionButtonEnabled(
                     action.enabledRule,
@@ -283,8 +284,8 @@ const PatientSearchPage: React.FC = () => {
       href: BAHMNI_HOME_PATH,
     },
     {
-      id: 'search',
-      label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
+      id: 'registration',
+      label: t('CREATE_PATIENT_BREADCRUMB_REGISTRATION_SEARCH'),
       isCurrentPage: true,
     },
   ];
@@ -313,6 +314,7 @@ const PatientSearchPage: React.FC = () => {
             onClick={handleCreateNewPatient}
             size="md"
             className={styles.headerButton}
+            data-testid="create-new-patient-button"
           >
             {t('CREATE_PATIENT_BUTTON_TEXT')}
           </Button>

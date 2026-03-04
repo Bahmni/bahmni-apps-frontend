@@ -3,6 +3,7 @@ import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { useClinicalConfig } from '../../providers/clinicConfig';
 import ConsultationPage from '../ConsultationPage';
@@ -12,6 +13,74 @@ expect.extend(toHaveNoViolations);
 jest.mock('../../providers/clinicConfig', () => ({
   ...jest.requireActual('../../providers/clinicConfig'),
   useClinicalConfig: jest.fn(),
+}));
+
+jest.mock('../../stores/observationFormsStore', () => ({
+  useObservationFormsStore: jest.fn((selector) =>
+    selector({ viewingForm: null }),
+  ),
+}));
+
+jest.mock('@bahmni/design-system', () => ({
+  ...jest.requireActual('@bahmni/design-system'),
+  Loading: jest.fn(({ description, role }) => (
+    <div data-testid="carbon-loading" role={role}>
+      {description}
+    </div>
+  )),
+  Button: jest.fn(({ children, onClick, style }) => (
+    <button
+      data-testid="carbon-button"
+      onClick={onClick}
+      data-style={JSON.stringify(style)}
+    >
+      {children}
+    </button>
+  )),
+  ActionAreaLayout: jest.fn(
+    ({
+      headerWSideNav,
+      patientHeader,
+      sidebar,
+      mainDisplay,
+      isActionAreaVisible,
+      actionArea,
+      layoutVariant,
+    }) => (
+      <div
+        data-testid="mocked-clinical-layout"
+        data-layout-variant={layoutVariant}
+      >
+        <div data-testid="mocked-header">{headerWSideNav}</div>
+        <div data-testid="mocked-patient-section">{patientHeader}</div>
+        <div data-testid="mocked-sidebar">{sidebar}</div>
+        <div data-testid="mocked-main-display">{mainDisplay}</div>
+        {isActionAreaVisible && (
+          <div data-testid="mocked-action-area">{actionArea}</div>
+        )}
+      </div>
+    ),
+  ),
+  Header: jest.fn(({ sideNavItems, activeSideNavItemId }) => (
+    <div data-testid="mocked-header-component">
+      {sideNavItems.map(
+        (item: {
+          id: string;
+          icon: string;
+          label: string;
+          href?: string;
+          renderIcon?: ReactNode;
+        }) => (
+          <div key={item.id} data-testid={`sidenav-item-${item.id}`}>
+            {item.label}
+          </div>
+        ),
+      )}
+      <div data-testid="active-sidenav-item">
+        {activeSideNavItemId ?? 'none'}
+      </div>
+    </div>
+  )),
 }));
 
 jest.mock('@bahmni/widgets', () => ({

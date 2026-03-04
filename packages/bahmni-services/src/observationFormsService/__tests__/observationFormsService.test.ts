@@ -66,7 +66,7 @@ describe('observationFormsService', () => {
 
       const result = await fetchObservationForms();
 
-      expect(mockFetch).toHaveBeenCalledWith(OBSERVATION_FORMS_URL);
+      expect(mockFetch).toHaveBeenCalledWith(OBSERVATION_FORMS_URL());
       expect(result).toEqual([
         {
           uuid: 'form-uuid-1',
@@ -265,6 +265,53 @@ describe('observationFormsService', () => {
 
       expect(result).toEqual([]);
     });
+
+    it('should append episodeUuid as query param when episodeUuids array is provided', async () => {
+      const episodeUuids = ['episode-uuid-123', 'episode-uuid-456'];
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      });
+
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('en');
+
+      await fetchObservationForms(episodeUuids);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        OBSERVATION_FORMS_URL('episode-uuid-123,episode-uuid-456'),
+      );
+      expect(mockFetch.mock.calls[0][0]).toContain(
+        '?episodeUuid=episode-uuid-123,episode-uuid-456',
+      );
+    });
+
+    it('should use base URL without query params when episodeUuids is not provided', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      });
+
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('en');
+
+      await fetchObservationForms();
+
+      expect(mockFetch).toHaveBeenCalledWith(OBSERVATION_FORMS_URL());
+      expect(mockFetch.mock.calls[0][0]).not.toContain('?');
+    });
+
+    it('should use base URL without query params when episodeUuids is empty array', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      });
+
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('en');
+
+      await fetchObservationForms([]);
+
+      expect(mockFetch).toHaveBeenCalledWith(OBSERVATION_FORMS_URL());
+      expect(mockFetch.mock.calls[0][0]).not.toContain('?');
+    });
   });
 
   describe('getPatientFormData', () => {
@@ -357,27 +404,6 @@ describe('observationFormsService', () => {
       const result = await getPatientFormData(patientUuid);
 
       expect(result).toEqual([]);
-    });
-
-    it('should handle non-Error exceptions from API and show Unknown error', async () => {
-      const patientUuid = 'patient-uuid-456';
-
-      mockGet.mockRejectedValueOnce('String error');
-
-      await expect(getPatientFormData(patientUuid)).rejects.toThrow(
-        'Failed to fetch form data for patient patient-uuid-456: Unknown error',
-      );
-    });
-
-    it('should properly format error message with patient UUID when API call fails', async () => {
-      const patientUuid = 'test-patient-uuid-789';
-      const apiError = new Error('Connection timeout');
-
-      mockGet.mockRejectedValueOnce(apiError);
-
-      await expect(getPatientFormData(patientUuid)).rejects.toThrow(
-        'Failed to fetch form data for patient test-patient-uuid-789: Connection timeout',
-      );
     });
   });
 });

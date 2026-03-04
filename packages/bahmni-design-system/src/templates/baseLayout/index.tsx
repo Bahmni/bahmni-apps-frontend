@@ -17,9 +17,21 @@ interface BaseLayoutProps {
  */
 const BaseLayout: React.FC<BaseLayoutProps> = ({ header, main }) => {
   return (
-    <div className={styles.layout}>
+    <div
+      id="base-layout"
+      data-testid="base-layout-test-id"
+      aria-label="base-layout-aria-label"
+      className={styles.layout}
+    >
       {header}
-      <div className={styles.main}>{main}</div>
+      <div
+        id="main-display-area"
+        data-testid="main-display-area-test-id"
+        aria-label="main-display-area-aria-label"
+        className={styles.main}
+      >
+        {main}
+      </div>
     </div>
   );
 };

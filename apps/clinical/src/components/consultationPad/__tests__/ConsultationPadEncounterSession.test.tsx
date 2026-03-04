@@ -12,6 +12,15 @@ const mockUseEncounterSession = jest.fn();
 jest.mock('../../../hooks/useEncounterSession', () => ({
   useEncounterSession: () => mockUseEncounterSession(),
 }));
+
+jest.mock('../../../providers/clinicConfig', () => ({
+  __esModule: true,
+  useClinicalConfig: () => ({
+    clinicalConfig: null,
+    isLoading: false,
+    error: null,
+  }),
+}));
 // Mock TanStack Query
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
@@ -33,11 +42,21 @@ jest.mock('@tanstack/react-query', () => ({
     .QueryClientProvider,
 }));
 
-// Mock useUserPrivilege hook
+// Mock useUserPrivilege hook and ActivePractitioner
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: ['Get Patients', 'Add Patients'],
+  })),
+  useActivePractitioner: jest.fn(() => ({
+    practitioner: { uuid: 'practitioner-123', display: 'Dr. Test' },
+    user: { uuid: 'user-123', username: 'testuser' },
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
+  })),
+  useEncounterSession: jest.fn(() => ({
+    activeEncounter: { id: 'encounter-123' },
   })),
   useNotification: jest.fn(() => ({
     addNotification: jest.fn(),
@@ -47,6 +66,9 @@ jest.mock('@bahmni/widgets', () => ({
     patientUUID,
   ]),
   UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  ActivePractitionerProvider: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
 }));

@@ -1,7 +1,6 @@
 import { Section } from '@bahmni/design-system';
 import {
   useTranslation,
-  DashboardSectionConfig,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
@@ -9,6 +8,7 @@ import {
 import { usePatientUUID } from '@bahmni/widgets';
 import React, { useEffect, useRef } from 'react';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
+import { DashboardSectionConfig } from '../../pages/models';
 import DashboardSection from '../dashboardSection/DashboardSection';
 import styles from './styles/DashboardContainer.module.scss';
 
@@ -68,9 +68,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   // Initialize refs for each section
   useEffect(() => {
     sections.forEach((section) => {
-      if (!sectionRefs.current[section.id]) {
-        sectionRefs.current[section.id] = React.createRef<HTMLDivElement>();
-      }
+      sectionRefs.current[section.id] ??= React.createRef<HTMLDivElement>();
     });
   }, [sections]);
 
@@ -106,6 +104,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
           key={section.id}
           className={styles.displayControlSection}
           ref={sectionRefs.current[section.id]}
+          data-testid={`dashboard-section-article-${section.name}`}
         >
           <DashboardSection
             section={section}

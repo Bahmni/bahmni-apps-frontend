@@ -145,6 +145,7 @@ export function createRadiologyInvestigationViewModels(
       priority: order.priority!,
       orderedBy: order.requester!.display!,
       orderedDate: orderedDate,
+      status: order.status!.toLowerCase(),
       ...(replaces && replaces.length > 0 && { replaces }),
       ...(note && { note }),
       ...(imagingStudiesViewModels.length > 0 && {

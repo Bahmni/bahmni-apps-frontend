@@ -1,7 +1,6 @@
-import { Encounter, Bundle } from 'fhir/r4';
+import { Observation, Encounter, Bundle } from 'fhir/r4';
 import { get } from '../api';
 import { PATIENT_VISITS_URL, BAHMNI_ENCOUNTER_URL } from './constants';
-import { FormsEncounter } from './models';
 
 /**
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
@@ -41,16 +40,12 @@ export async function getActiveVisit(
 }
 
 /**
- * Fetches Bahmni encounter details by encounter UUID
- * @param encounterUUID - The UUID of the encounter
- * @param includeAll - Whether to include all details (default: false)
- * @returns Promise resolving to FormsEncounter
+ * Fetch observations by encounter UUID from FHIR API
+ * @param encounterUUID - Encounter UUID
+ * @returns Promise resolving to FHIR observation bundle
  */
-export async function getFormsDataByEncounterUuid(
+export async function getObservationsBundleByEncounterUuid(
   encounterUUID: string,
-  includeAll: boolean = false,
-): Promise<FormsEncounter> {
-  return await get<FormsEncounter>(
-    BAHMNI_ENCOUNTER_URL(encounterUUID, includeAll),
-  );
+): Promise<Bundle<Observation>> {
+  return await get<Bundle<Observation>>(BAHMNI_ENCOUNTER_URL(encounterUUID));
 }

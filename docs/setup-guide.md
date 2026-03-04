@@ -1,10 +1,10 @@
-# Bahmni Clinical Frontend Setup Guide
+# Bahmni Apps Frontend Setup Guide
 
-This guide provides comprehensive instructions for setting up the Bahmni Clinical Frontend application for both development and production environments.
+This guide provides comprehensive instructions for setting up the Bahmni Apps Frontend application for both development and production environments.
 
 ## Introduction
 
-Bahmni Clinical Frontend is a React TypeScript application for the Bahmni Clinical module, built with Webpack and Carbon Design System. It includes Progressive Web App (PWA) support for offline capabilities.
+Bahmni Apps Frontend is a React TypeScript monorepo application for Bahmni's modules, built with Nx, Webpack, and Carbon Design System. It includes Progressive Web App (PWA) support for offline capabilities.
 
 ## Prerequisites
 
@@ -55,9 +55,8 @@ git clone git@github.com:bahnew/bahmni-docker.git
 # git clone https://github.com/bahnew/bahmni-docker.git
 cd bahmni-docker
 
-# Clone the Bahmni Clinical Frontend repository (in a separate terminal)
-# Clone from Bahnew(https://github.com/bahnew/bahmni-clinical-frontend/tree/main)
-git clone https://github.com/bahnew/bahmni-clinical-frontend.git
+# Clone the Bahmni Apps Frontend repository (in a separate terminal)
+git clone https://github.com/Bahmni/bahmni-apps-frontend.git
 ```
 
 ### 2. Authenticate with GitHub Container Registry
@@ -98,35 +97,33 @@ There are two methods for local development. Choose the one that best fits your 
 
 This method allows you to build the application locally and mount it into the Docker container:
 
-1. **Update Environment Variables**:
+1. **Configure Docker Compose and .env**:
 
-   In the `bahmni-docker` directory, edit the `.env.dev` file to point to your local bahmni-clinical-frontend repository:
+   - In the .env.dev, the `BAHMNI_APPS_FRONTEND_PATH` must point to the **root directory** of your bahmni-apps-frontend repository (not to the distro subdirectory). The volume mount in docker-compose.yml will automatically append `/distro/dist/` to this path.
+   - If you're using a custom Bahmni configuration, update `CONFIG_VOLUME` to point to your config directory (e.g., `../bahmni-config/standard-config`).
+   - The volume mount for bahmni-apps-frontend is **already active** in `docker-compose.yml` and does not need to be uncommented:
+     ```yaml
+     bahmni-apps-frontend:
+       volumes:
+         - "${BAHMNI_APPS_FRONTEND_PATH:?}/distro/dist/:/usr/local/apache2/htdocs/bahmni-new"
+     ```
 
-   ```bash
-   # Open the .env.dev file
-   nano .env.dev
+2. **Build the Application**:
 
-   # Update the BAHMNI_CLINICAL_FRONTEND_PATH variable
-   BAHMNI_CLINICAL_FRONTEND_PATH=/path/to/your/bahmni-clinical-frontend
-   ```
-
-2. **Uncomment Volumes in Docker Compose**:
-
-   Edit the Docker Compose file to uncomment the volumes section for the clinical-frontend service.
-
-3. **Build the Application**:
-
-   In your bahmni-clinical-frontend directory:
+   In your bahmni-apps-frontend directory:
 
    ```bash
    # Install dependencies
    yarn
 
-   # Build the application
+   # Build the application for production (uses the workspace build script)
+   yarn build
+
+   # Alternatively build only the `distro` app via nx
    yarn nx build distro
    ```
 
-4. **Start the Docker Services**:
+3. **Start the Docker Services**:
 
    In the bahmni-docker/bahmni-standard directory:
 
@@ -134,17 +131,17 @@ This method allows you to build the application locally and mount it into the Do
    # Start all EMR components with the latest images
    docker compose --env-file .env.dev up -d
 
-   # Or, to update only the clinical-frontend service
-   docker compose --env-file .env.dev up -d clinical-frontend
+   # Or, to update only the bahmni-apps-frontend service
+   docker compose --env-file .env.dev up -d bahmni-apps-frontend
    ```
 
-5. **Access the Application**:
+4. **Access the Application**:
 
    Open your browser and navigate to the Bahmni EMR URL and open any Active patient (typically start from <http://localhost/bahmni/home>).
 
-6. **Development Workflow**:
+5. **Development Workflow**:
 
-   With this setup, every time you rebuild the application, the changes will be automatically available in the browser without restarting the Docker container.
+   With this setup, every time you rebuild the application using `yarn build`, the changes will be automatically available in the browser without restarting the Docker container. Simply refresh your browser after the build completes.
 
 ### Method 2: Using Hot Reload (Local Development Server)
 
@@ -152,7 +149,7 @@ This method provides a faster development experience with hot reloading:
 
 1. **Start the Development Server**:
 
-   In your bahmni-clinical-frontend directory:
+   In your bahmni-apps-frontend directory:
 
    ```bash
    # Install dependencies (if not already done)
@@ -183,7 +180,7 @@ This method provides a faster development experience with hot reloading:
 
 3. **Development Workflow**:
 
-   With this setup, any changes you make to the source code will be immediately reflected in the browser.
+   With this setup, any changes you make to the source code will be immediately reflected in the browser with hot module reloading.
 
 ## Additional Commands
 
@@ -302,7 +299,7 @@ The Storybook development server will run on [http://localhost:6006](http://loca
 
 If you encounter issues not covered in this guide:
 
-- Check the [GitHub repository issues](https://github.com/bahnew/bahmni-clinical-frontend/issues)
+- Check the [GitHub repository issues](https://github.com/Bahmni/bahmni-apps-frontend/issues)
 - Consult the [Bahmni community forums](https://talk.openmrs.org/c/software/bahmni/35)
 
 ## Additional Resources

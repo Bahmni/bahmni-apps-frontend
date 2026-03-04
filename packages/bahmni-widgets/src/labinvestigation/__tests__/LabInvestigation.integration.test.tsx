@@ -1,12 +1,12 @@
 import {
-  LabTestPriority,
-  FormattedLabTest,
   useTranslation,
   getCategoryUuidFromOrderTypes,
-  getPatientLabInvestigations,
+  getLabInvestigationsBundle,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import { Bundle, ServiceRequest } from 'fhir/r4';
+
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
 import LabInvestigation from '../LabInvestigation';
@@ -15,7 +15,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
   getCategoryUuidFromOrderTypes: jest.fn(),
-  getPatientLabInvestigations: jest.fn(),
+  getLabInvestigationsBundle: jest.fn(),
 }));
 
 jest.mock('react-router-dom', () => ({
@@ -38,10 +38,9 @@ const mockGetCategoryUuidFromOrderTypes =
   getCategoryUuidFromOrderTypes as jest.MockedFunction<
     typeof getCategoryUuidFromOrderTypes
   >;
-const mockGetPatientLabInvestigations =
-  getPatientLabInvestigations as jest.MockedFunction<
-    typeof getPatientLabInvestigations
-  >;
+const mockGetLabTestBundle = getLabInvestigationsBundle as jest.MockedFunction<
+  typeof getLabInvestigationsBundle
+>;
 const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
 >;
@@ -49,37 +48,62 @@ const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
 
-// Mock formatted lab tests that match the component's expected data structure
-const mockFormattedLabTests: FormattedLabTest[] = [
+const createMockBundle = (
+  serviceRequests: ServiceRequest[],
+): Bundle<ServiceRequest> => ({
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: serviceRequests.map((resource) => ({
+    resource,
+  })),
+});
+
+// Mock FHIR ServiceRequest data
+const mockServiceRequests: ServiceRequest[] = [
   {
+    resourceType: 'ServiceRequest',
     id: 'lab-test-1',
-    testName: 'Complete Blood Count',
-    priority: LabTestPriority.routine,
-    orderedBy: 'Dr. John Doe',
-    orderedDate: '2025-03-25T06:48:32.000+00:00',
-    formattedDate: 'Mar 25, 2025',
-    result: undefined,
-    testType: 'Panel',
+    status: 'active',
+    intent: 'order',
+    subject: { reference: 'Patient/test-patient-uuid' },
+    code: { text: 'Complete Blood Count' },
+    priority: 'routine',
+    requester: { display: 'Dr. John Doe' },
+    occurrencePeriod: { start: '2025-03-25T06:48:32.000+00:00' },
+    extension: [
+      {
+        url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
+        valueString: 'Panel',
+      },
+    ],
   },
   {
+    resourceType: 'ServiceRequest',
     id: 'lab-test-2',
-    testName: 'Lipid Panel',
-    priority: LabTestPriority.stat,
-    orderedBy: 'Dr. Jane Smith',
-    orderedDate: '2025-03-25T06:48:32.000+00:00',
-    formattedDate: 'Mar 25, 2025',
-    result: undefined,
-    testType: 'Panel',
+    status: 'active',
+    intent: 'order',
+    subject: { reference: 'Patient/test-patient-uuid' },
+    code: { text: 'Lipid Panel' },
+    priority: 'stat',
+    requester: { display: 'Dr. Jane Smith' },
+    occurrencePeriod: { start: '2025-03-25T06:48:32.000+00:00' },
+    extension: [
+      {
+        url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
+        valueString: 'Panel',
+      },
+    ],
   },
   {
+    resourceType: 'ServiceRequest',
     id: 'lab-test-3',
-    testName: 'Glucose Test',
-    priority: LabTestPriority.routine,
-    orderedBy: 'Dr. John Doe',
-    orderedDate: '2025-03-24T06:48:32.000+00:00',
-    formattedDate: 'Mar 24, 2025',
-    result: undefined,
-    testType: 'Individual',
+    status: 'active',
+    intent: 'order',
+    subject: { reference: 'Patient/test-patient-uuid' },
+    code: { text: 'Glucose Test' },
+    priority: 'routine',
+    requester: { display: 'Dr. John Doe' },
+    occurrencePeriod: { start: '2025-03-24T06:48:32.000+00:00' },
   },
 ];
 
@@ -131,6 +155,9 @@ describe('LabInvestigation Integration Tests', () => {
     } as any);
 
     mockGetCategoryUuidFromOrderTypes.mockResolvedValue('lab-order-type-uuid');
+    mockGetLabTestBundle.mockResolvedValue(
+      createMockBundle(mockServiceRequests),
+    );
   });
 
   afterEach(() => {
@@ -138,13 +165,11 @@ describe('LabInvestigation Integration Tests', () => {
   });
 
   it('displays lab results after successful API call', async () => {
-    mockGetPatientLabInvestigations.mockResolvedValue(mockFormattedLabTests);
-
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
-      expect(screen.getByText('Mar 24, 2025')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
+      expect(screen.getByText(/March 24, 2025/i)).toBeInTheDocument();
     });
 
     expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
@@ -156,19 +181,17 @@ describe('LabInvestigation Integration Tests', () => {
   });
 
   it('shows loading state during API call', async () => {
-    mockGetPatientLabInvestigations.mockImplementation(
+    mockGetLabTestBundle.mockImplementation(
       () => new Promise(() => {}), // Never resolves
     );
 
     renderLabInvestigations();
 
-    expect(screen.getByText('Loading lab tests...')).toBeInTheDocument();
+    expect(screen.getByTestId('lab-skeleton')).toBeInTheDocument();
   });
 
   it('displays error message when API call fails', async () => {
-    mockGetPatientLabInvestigations.mockRejectedValue(
-      new Error('Failed to fetch'),
-    );
+    mockGetLabTestBundle.mockRejectedValue(new Error('Failed to fetch'));
 
     renderLabInvestigations();
 
@@ -179,7 +202,7 @@ describe('LabInvestigation Integration Tests', () => {
   });
 
   it('shows empty state when no lab tests are returned', async () => {
-    mockGetPatientLabInvestigations.mockResolvedValue([]);
+    mockGetLabTestBundle.mockResolvedValue(createMockBundle([]));
 
     renderLabInvestigations();
 
@@ -192,19 +215,17 @@ describe('LabInvestigation Integration Tests', () => {
   });
 
   it('handles accordion interaction correctly', async () => {
-    mockGetPatientLabInvestigations.mockResolvedValue(mockFormattedLabTests);
-
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
     });
 
     const firstAccordionButton = screen.getByRole('button', {
-      name: /Mar 25, 2025/,
+      name: /March 25, 2025/i,
     });
     const secondAccordionButton = screen.getByRole('button', {
-      name: /Mar 24, 2025/,
+      name: /March 24, 2025/i,
     });
 
     // First accordion should be open by default
@@ -213,12 +234,10 @@ describe('LabInvestigation Integration Tests', () => {
   });
 
   it('displays priority information correctly', async () => {
-    mockGetPatientLabInvestigations.mockResolvedValue(mockFormattedLabTests);
-
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
     });
 
     // Check for STAT priority (urgent) test
@@ -231,16 +250,13 @@ describe('LabInvestigation Integration Tests', () => {
   });
 
   it('renders tests in correct priority order within date groups', async () => {
-    mockGetPatientLabInvestigations.mockResolvedValue(mockFormattedLabTests);
-
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
     });
 
     // The component should render urgent tests before routine tests within each date group
-    // This is implementation-specific but important for user experience
     const testElements = screen.getAllByText(
       /Complete Blood Count|Lipid Panel/,
     );
@@ -248,23 +264,19 @@ describe('LabInvestigation Integration Tests', () => {
   });
 
   it('displays pending results message for tests without results', async () => {
-    mockGetPatientLabInvestigations.mockResolvedValue(mockFormattedLabTests);
-
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
     });
 
-    // All tests should show pending results
+    // Only tests in the open accordion should show pending results
     const pendingMessages = screen.getAllByText('Results Pending .... ....');
-    expect(pendingMessages).toHaveLength(3); // Three tests total
+    expect(pendingMessages).toHaveLength(2); // Two tests in first accordion
   });
 
   it('handles API errors gracefully', async () => {
-    mockGetPatientLabInvestigations.mockRejectedValue(
-      new Error('Failed to fetch'),
-    );
+    mockGetLabTestBundle.mockRejectedValue(new Error('Failed to fetch'));
 
     renderLabInvestigations();
 
@@ -274,22 +286,22 @@ describe('LabInvestigation Integration Tests', () => {
   });
 
   it('responds to patient UUID changes', async () => {
-    mockGetPatientLabInvestigations.mockResolvedValue(mockFormattedLabTests);
-
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Mar 25, 2025')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
     });
 
-    mockGetPatientLabInvestigations.mockResolvedValue([]);
+    mockGetLabTestBundle.mockResolvedValue(createMockBundle([]));
 
-    // Change patient UUID
     mockUsePatientUUID.mockReturnValue('different-patient-uuid');
 
     renderLabInvestigations();
 
-    // Should show loading state for new patient
-    expect(screen.getByText('Loading lab tests...')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText('No lab investigations recorded'),
+      ).toBeInTheDocument();
+    });
   });
 });
