@@ -28,6 +28,7 @@ export interface Order {
   ownerUuid?: string;
   providerComments?: string;
   patient?: PatientDetails;
+  note?: string;
 }
 
 export interface PatientOrderRow {

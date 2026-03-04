@@ -60,7 +60,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           : (order?.status ?? '');
       setStatus(initialStatus);
       setOwner(order?.ownerUuid ?? '');
-      setNotes('');
+      setNotes(order?.note ?? '');
     } else {
       setNotes('');
       setStatus('');
@@ -238,12 +238,11 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           <TextArea
             id="order-notes"
             data-testid="order-notes"
-            labelText=""
+            labelText={t('NOTES')}
             rows={4}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder={t('NOTES')}
-            className={styles.notesField}
           />
         </section>
       </div>
