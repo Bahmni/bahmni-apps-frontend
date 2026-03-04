@@ -1,12 +1,20 @@
 import { ExpandableSortableDataTable } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
-import React, { useMemo, useState, useRef, useCallback, Fragment } from 'react';
+import React, {
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+  Fragment,
+  useEffect,
+} from 'react';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import {
   PatientOrderRow,
   OrderStatusConfig,
 } from '../../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../../models/ordersConfig';
 import useOrdersStore from '../../stores/ordersStore';
 import { ExpandedOrderRow } from '../expandedOrderRow';
 import LinkButton from '../linkButton/LinkButton';
@@ -22,6 +30,7 @@ interface OrdersFulfillmentTableProps {
   loading?: boolean;
   isCustomOrderTab?: boolean;
   onOrderClick?: (orderId: string) => void;
+  searchTerm?: string;
 }
 
 export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
@@ -30,6 +39,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   loading = false,
   isCustomOrderTab = false,
   onOrderClick,
+  searchTerm = '',
 }) => {
   const { t } = useTranslation();
   const { ordersTableConfig, tabs } = useOrdersConfig();
@@ -42,6 +52,20 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ?? [],
   );
 
+  const isSearchActive = searchTerm && searchTerm.trim().length >= 3;
+
+  useEffect(() => {
+    if (isSearchActive) {
+      setSelectedStatuses([]);
+    } else {
+      setSelectedStatuses(
+        (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ??
+          [],
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSearchActive]);
+
   const handleStatusFilterApply = (statuses: OrderStatusConfig[]) => {
     setSelectedStatuses(statuses);
   };
@@ -49,6 +73,39 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   const toggleStatusFilter = useCallback(() => {
     setIsStatusFilterOpen(!isStatusFilterOpen);
   }, [isStatusFilterOpen]);
+
+  const getFilteredRows = () => {
+    if (selectedStatuses.length === 0) {
+      return rows;
+    }
+
+    const selectedStatusValues = selectedStatuses.map((s) => s.value);
+
+    return rows
+      .map((row) => {
+        const filteredOrders = row.orders.filter((order) =>
+          selectedStatusValues.includes(order.status),
+        );
+
+        if (filteredOrders.length === 0) {
+          return null;
+        }
+
+        const urgentCount = filteredOrders.filter(
+          (order) => order.priority === ORDER_PRIORITY.STAT,
+        ).length;
+
+        return {
+          ...row,
+          orders: filteredOrders,
+          totalOrdersCount: filteredOrders.length,
+          urgentCount,
+        };
+      })
+      .filter((row): row is PatientOrderRow => row !== null);
+  };
+
+  const displayRows = getFilteredRows();
 
   const totalNewOrdersCount = useMemo(
     () => rows.reduce((sum, row) => sum + row.recentOrdersCount, 0),
@@ -63,7 +120,11 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       if (h.key === 'badge' && totalNewOrdersCount > 0) {
         return {
           ...h,
-          header: <NewBadge count={totalNewOrdersCount} />,
+          header: (
+            <div className={styles.centerAlignText}>
+              <NewBadge count={totalNewOrdersCount} />
+            </div>
+          ),
         };
       }
       if (h.key === 'status') {
@@ -117,7 +178,9 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     switch (cellId) {
       case 'badge':
         return row.recentOrdersCount > 0 ? (
-          <NewBadge count={row.recentOrdersCount} />
+          <div className={styles.centerAlignText}>
+            <NewBadge count={row.recentOrdersCount} />
+          </div>
         ) : null;
       case 'identifier':
         return (
@@ -185,7 +248,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     return (
       <ExpandableSortableDataTable
         headers={customHeaders}
-        rows={rows.map((row) => ({ ...row, isExpandable: false }))}
+        rows={displayRows.map((row) => ({ ...row, isExpandable: false }))}
         ariaLabel={t('ORDERS_FULFILLMENT_TABLE')}
         renderCell={renderCell}
         renderExpandedContent={renderExpandedContent}
@@ -199,7 +262,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   return (
     <ExpandableSortableDataTable
       headers={customHeaders}
-      rows={rows}
+      rows={displayRows}
       ariaLabel={t('ORDERS_FULFILLMENT_TABLE')}
       renderCell={renderCell}
       renderExpandedContent={renderExpandedContent}

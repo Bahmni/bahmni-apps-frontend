@@ -50,24 +50,23 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     ordersTableConfig?.manageOrdersPanelPatientDetails ?? [];
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && order) {
       if (tabLabel) {
         fetchProviders(tabLabel);
       }
       const initialStatus =
-        order?.status === 'New'
+        order.status === 'New'
           ? DEFAULT_STATUS_FOR_NEW_ORDER
-          : (order?.status ?? '');
+          : (order.status ?? '');
       setStatus(initialStatus);
-      setOwner(order?.ownerUuid ?? '');
+      setOwner(order.ownerUuid ?? '');
       setNotes(order?.note ?? '');
-    } else {
+    } else if (!isOpen) {
       setNotes('');
       setStatus('');
       setOwner('');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, tabLabel, fetchProviders]);
+  }, [isOpen, order, tabLabel, fetchProviders]);
 
   useEffect(() => {
     if (tabLabel && providers[tabLabel] && providers[tabLabel].length > 0) {

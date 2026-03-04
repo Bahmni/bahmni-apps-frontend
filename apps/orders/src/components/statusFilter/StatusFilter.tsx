@@ -12,7 +12,7 @@ interface StatusFilterProps {
   onApply: (selectedStatuses: OrderStatusConfig[]) => void;
   isOpen: boolean;
   onToggle: () => void;
-  anchorRef: React.RefObject<HTMLElement>;
+  anchorRef: React.RefObject<HTMLElement | null>;
 }
 
 export const StatusFilter: React.FC<StatusFilterProps> = ({
@@ -124,6 +124,7 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
           kind="secondary"
           onClick={handleApply}
           className={styles.applyButton}
+          disabled={tempSelection.length === 0}
         >
           <span>{t('APPLY')}</span>
         </Button>
