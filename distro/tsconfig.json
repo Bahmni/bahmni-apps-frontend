@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../apps/appointments"
+    },
+    {
       "path": "../apps/registration"
     },
     {
