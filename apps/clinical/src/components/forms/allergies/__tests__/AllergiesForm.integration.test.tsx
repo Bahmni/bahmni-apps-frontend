@@ -17,8 +17,8 @@ jest.mock('@bahmni/services', () => ({
   getFormattedAllergies: jest.fn(() => Promise.resolve([])),
 }));
 
-// Mock @bahmni/widgets
 jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(() => ({
     addNotification: jest.fn(),
   })),
@@ -108,11 +108,8 @@ describe('AllergiesForm Integration Tests', () => {
     // Setup default mock implementation for useClinicalConfig
     mockUseClinicalConfig.mockReturnValue({
       clinicalConfig: mockClinicalConfig,
-      setClinicalConfig: jest.fn(),
       isLoading: false,
-      setIsLoading: jest.fn(),
       error: null,
-      setError: jest.fn(),
     });
 
     // Mock scrollIntoView which is not available in jsdom

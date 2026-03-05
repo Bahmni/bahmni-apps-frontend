@@ -38,6 +38,9 @@ export {
   type ActivePractitionerContextType,
 } from './activePractitioner';
 
+// Config Provider Factories
+export { createConfigProvider, createConfigHook } from './configProvider';
+
 // Widget Registry
 export {
   registerWidget,

@@ -25,8 +25,8 @@ jest.mock('../styles/AllergiesForm.module.scss', () => ({
   duplicateNotification: 'duplicateNotification',
 }));
 
-// Mock @bahmni/widgets
 jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(() => ({
     addNotification: jest.fn(),
   })),

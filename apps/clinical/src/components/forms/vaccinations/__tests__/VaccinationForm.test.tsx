@@ -163,6 +163,21 @@ const defaultQueryMock = ({ queryKey }: { queryKey: readonly unknown[] }) => {
   return { data: undefined, isLoading: false, error: null };
 };
 
+const mockTwoVaccinesQuery = ({ queryKey }: any) => {
+  if (queryKey[0] === 'vaccinations') {
+    return {
+      data: {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [{ resource: mockVaccination }, { resource: hepatitisBVaccine }],
+      },
+      isLoading: false,
+      error: null,
+    };
+  }
+  return defaultQueryMock({ queryKey }) as any;
+};
+
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -178,6 +193,11 @@ const createWrapper = () => {
   return Wrapper;
 };
 
+const renderVaccinationForm = () => {
+  render(<VaccinationForm />, { wrapper: createWrapper() });
+  return screen.getByRole('combobox', { name: /search to add vaccination/i });
+};
+
 describe('VaccinationForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -189,11 +209,9 @@ describe('VaccinationForm', () => {
 
   describe('Rendering', () => {
     test('renders form title and search box', () => {
-      render(<VaccinationForm />, { wrapper: createWrapper() });
+      const searchBox = renderVaccinationForm();
       expect(screen.getByText(/vaccinations/i)).toBeInTheDocument();
-      expect(
-        screen.getByRole('combobox', { name: /search to add vaccination/i }),
-      ).toBeInTheDocument();
+      expect(searchBox).toBeInTheDocument();
     });
     test('shows loading skeleton when medication config is loading', () => {
       mockUseQuery.mockImplementation(({ queryKey }: any) => {
@@ -223,10 +241,7 @@ describe('VaccinationForm', () => {
   describe('Vaccination Search', () => {
     test('displays search results when typing', async () => {
       const user = userEvent.setup();
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
+      const searchBox = renderVaccinationForm();
       await user.type(searchBox, 'covid');
       await waitFor(() => {
         expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
@@ -264,10 +279,7 @@ describe('VaccinationForm', () => {
         }
         return defaultQueryMock({ queryKey }) as any;
       });
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
+      const searchBox = renderVaccinationForm();
       await user.type(searchBox, 'test');
       await waitFor(() => {
         expect(screen.getByText(expectedText)).toBeInTheDocument();
@@ -306,10 +318,7 @@ describe('VaccinationForm', () => {
         }
         return defaultQueryMock({ queryKey }) as any;
       });
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
+      const searchBox = renderVaccinationForm();
       await user.type(searchBox, 'covid');
       await waitFor(() => {
         expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
@@ -323,10 +332,7 @@ describe('VaccinationForm', () => {
   describe('Adding and Removing Vaccinations', () => {
     test('adds vaccination when selected from search', async () => {
       const user = userEvent.setup();
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
+      const searchBox = renderVaccinationForm();
       await user.type(searchBox, 'covid');
       await waitFor(() => {
         expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
@@ -341,27 +347,8 @@ describe('VaccinationForm', () => {
     });
     test('resets ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
       const user = userEvent.setup();
-      mockUseQuery.mockImplementation(({ queryKey }: any) => {
-        if (queryKey[0] === 'vaccinations') {
-          return {
-            data: {
-              resourceType: 'Bundle',
-              type: 'searchset',
-              entry: [
-                { resource: mockVaccination },
-                { resource: hepatitisBVaccine },
-              ],
-            },
-            isLoading: false,
-            error: null,
-          };
-        }
-        return defaultQueryMock({ queryKey }) as any;
-      });
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
+      mockUseQuery.mockImplementation(mockTwoVaccinesQuery);
+      const searchBox = renderVaccinationForm();
 
       await user.type(searchBox, 'covid');
       await waitFor(() => {
@@ -419,31 +406,12 @@ describe('VaccinationForm', () => {
     });
     test('marks already selected vaccinations as disabled', async () => {
       const user = userEvent.setup();
-      mockUseQuery.mockImplementation(({ queryKey }: any) => {
-        if (queryKey[0] === 'vaccinations') {
-          return {
-            data: {
-              resourceType: 'Bundle',
-              type: 'searchset',
-              entry: [
-                { resource: mockVaccination },
-                { resource: hepatitisBVaccine },
-              ],
-            },
-            isLoading: false,
-            error: null,
-          };
-        }
-        return defaultQueryMock({ queryKey }) as any;
-      });
+      mockUseQuery.mockImplementation(mockTwoVaccinesQuery);
       (useVaccinationStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedVaccinations: [mockSelectedVaccination],
       });
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
+      const searchBox = renderVaccinationForm();
       await user.type(searchBox, 'vaccine');
       await waitFor(() => {
         expect(screen.getByText('Hepatitis B Vaccine')).toBeInTheDocument();
@@ -457,13 +425,7 @@ describe('VaccinationForm', () => {
   describe('Keyboard Navigation', () => {
     test('should support keyboard navigation and selection in ComboBox', async () => {
       const user = userEvent.setup();
-
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
-
+      const searchBox = renderVaccinationForm();
       await user.type(searchBox, 'covid');
 
       await waitFor(() => {
@@ -518,10 +480,7 @@ describe('VaccinationForm', () => {
         }
         return defaultQueryMock({ queryKey }) as any;
       });
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
+      const searchBox = renderVaccinationForm();
       await user.type(searchBox, 'test');
       await waitFor(() => {
         expect(

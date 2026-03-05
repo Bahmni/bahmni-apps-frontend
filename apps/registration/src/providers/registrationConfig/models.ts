@@ -1,9 +1,4 @@
-export type {
-  ExpectedFieldConfig,
-  SearchActionConfig,
-  PatientSearchField,
-  AppointmentSearchField,
-} from '@bahmni/services';
+import { AppointmentSearchField, PatientSearchField } from '@bahmni/services';
 
 export interface PatientSearchConfig {
   customAttributes: PatientSearchField[];

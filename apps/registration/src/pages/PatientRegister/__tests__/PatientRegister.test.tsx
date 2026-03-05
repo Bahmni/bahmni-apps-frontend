@@ -38,6 +38,7 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(),
 }));
 

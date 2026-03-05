@@ -62,11 +62,8 @@ describe('useAllergenSearch', () => {
     // Setup default mock implementation for useClinicalConfig
     mockUseClinicalConfig.mockReturnValue({
       clinicalConfig: mockClinicalConfig,
-      setClinicalConfig: jest.fn(),
       isLoading: false,
-      setIsLoading: jest.fn(),
       error: null,
-      setError: jest.fn(),
     });
 
     // Mock API responses
@@ -132,11 +129,8 @@ describe('useAllergenSearch', () => {
     it('should wait for clinical config to load', async () => {
       mockUseClinicalConfig.mockReturnValue({
         clinicalConfig: null,
-        setClinicalConfig: jest.fn(),
         isLoading: true,
-        setIsLoading: jest.fn(),
         error: null,
-        setError: jest.fn(),
       });
 
       const { result } = renderHook(() => useAllergenSearch(), { wrapper });
@@ -151,11 +145,8 @@ describe('useAllergenSearch', () => {
     it('should handle missing clinical config', async () => {
       mockUseClinicalConfig.mockReturnValue({
         clinicalConfig: null,
-        setClinicalConfig: jest.fn(),
         isLoading: false,
-        setIsLoading: jest.fn(),
         error: null,
-        setError: jest.fn(),
       });
 
       const { result } = renderHook(() => useAllergenSearch(), { wrapper });
@@ -175,11 +166,8 @@ describe('useAllergenSearch', () => {
           actions: [],
           dashboards: [],
         } as any,
-        setClinicalConfig: jest.fn(),
         isLoading: false,
-        setIsLoading: jest.fn(),
         error: null,
-        setError: jest.fn(),
       });
 
       const { result } = renderHook(() => useAllergenSearch(), { wrapper });
@@ -200,11 +188,8 @@ describe('useAllergenSearch', () => {
           dashboards: [],
           consultationPad: {},
         } as any,
-        setClinicalConfig: jest.fn(),
         isLoading: false,
-        setIsLoading: jest.fn(),
         error: null,
-        setError: jest.fn(),
       });
 
       const { result } = renderHook(() => useAllergenSearch(), { wrapper });
