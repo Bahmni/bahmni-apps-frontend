@@ -23,6 +23,9 @@
     },
     {
       "path": "./apps/registration"
+    },
+    {
+      "path": "./apps/appointments"
     }
   ]
 }
