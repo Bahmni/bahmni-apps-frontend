@@ -125,7 +125,7 @@ const ConsultationPage: React.FC = () => {
     queryKey: ['dashboardConfig', dashboardURL],
     queryFn: () =>
       getConfig<DashboardConfig>(
-        DASHBOARD_CONFIG_URL(dashboardURL!),
+        DASHBOARD_CONFIG_URL(dashboardURL),
         dashboardConfigSchema,
       ),
     select: (config) => {
