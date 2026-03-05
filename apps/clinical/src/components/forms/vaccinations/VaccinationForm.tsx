@@ -13,6 +13,7 @@ import {
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
   getConfig,
+  fetchMedicationOrdersMetadata,
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -20,7 +21,10 @@ import { Bundle } from 'fhir/r4';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 
 import { MedicationFilterResult } from '../../../models/medication';
-import { MedicationConfig } from '../../../models/medicationConfig';
+import {
+  MedicationConfig,
+  MedicationJSONConfig,
+} from '../../../models/medicationConfig';
 import {
   getMedicationDisplay,
   getMedicationsFromBundle,
@@ -59,11 +63,16 @@ const VaccinationForm: React.FC = React.memo(() => {
     error: medicationConfigError,
   } = useQuery({
     queryKey: ['medicationConfig'],
-    queryFn: () =>
-      getConfig<MedicationConfig>(
-        MEDICATIONS_CONFIG_URL,
-        medicationConfigSchema,
-      ),
+    queryFn: async () => {
+      const [jsonConfig, metadata] = await Promise.all([
+        getConfig<MedicationJSONConfig>(
+          MEDICATIONS_CONFIG_URL,
+          medicationConfigSchema,
+        ),
+        fetchMedicationOrdersMetadata(),
+      ]);
+      return { ...metadata, ...jsonConfig } as MedicationConfig;
+    },
   });
 
   const {

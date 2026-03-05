@@ -8,6 +8,7 @@ import {
 } from '@bahmni/design-system';
 import {
   getConfig,
+  fetchMedicationOrdersMetadata,
   useTranslation,
   getPatientMedicationBundle,
   useSubscribeConsultationSaved,
@@ -19,7 +20,10 @@ import { Bundle } from 'fhir/r4';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
-import { MedicationConfig } from '../../../models/medicationConfig';
+import {
+  MedicationConfig,
+  MedicationJSONConfig,
+} from '../../../models/medicationConfig';
 import {
   getMedicationDisplay,
   getActiveMedicationsFromBundle,
@@ -57,11 +61,16 @@ const MedicationsForm: React.FC = React.memo(() => {
     error: medicationConfigError,
   } = useQuery({
     queryKey: ['medicationConfig'],
-    queryFn: () =>
-      getConfig<MedicationConfig>(
-        MEDICATIONS_CONFIG_URL,
-        medicationConfigSchema,
-      ),
+    queryFn: async () => {
+      const [jsonConfig, metadata] = await Promise.all([
+        getConfig<MedicationJSONConfig>(
+          MEDICATIONS_CONFIG_URL,
+          medicationConfigSchema,
+        ),
+        fetchMedicationOrdersMetadata(),
+      ]);
+      return { ...metadata, ...jsonConfig } as MedicationConfig;
+    },
   });
 
   const { searchResults, loading, error } =
