@@ -21,6 +21,7 @@ export interface PersonAttributeField {
   sortWeight: number;
   description: string | null;
   answers?: AttributeAnswer[];
+  required?: boolean;
 }
 
 /**

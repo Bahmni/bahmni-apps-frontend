@@ -1,7 +1,6 @@
 import {
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
-  useTranslation,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -22,15 +21,11 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   searchPatientByNameOrId: jest.fn(),
   searchPatientByCustomAttribute: jest.fn(),
-  useTranslation: jest.fn(),
 }));
 jest.mock('../../notification');
 const mockOnSearch = jest.fn();
 
 const mockAddNotification = jest.fn();
-const mockUseTranslation = useTranslation as jest.MockedFunction<
-  typeof useTranslation
->;
 
 describe('SearchPatient', () => {
   let queryClient: QueryClient;
@@ -62,22 +57,6 @@ describe('SearchPatient', () => {
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
-    mockUseTranslation.mockReturnValue({
-      t: ((key: string) => {
-        const translations: Record<string, string> = {
-          ERROR_DEFAULT_TITLE: 'Error',
-          PHONE_NUMBER_VALIDATION_ERROR:
-            'Special characters and alphabets should not be allowed',
-          SEARCH_BY_CUSTOM_ATTRIBUTE: 'Search by phone number',
-          REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER: 'Phone Number',
-          REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL: 'Email',
-          SEARCH_TYPE: 'Search Type',
-          OR: 'OR',
-          PATIENT_SEARCH_ATTRIBUTE_SELECTOR: 'Select search attribute',
-        };
-        return translations[key] || key;
-      }) as any,
-    } as any);
   });
 
   afterEach(() => {
@@ -407,7 +386,7 @@ describe('SearchPatient', () => {
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
-        title: 'Error',
+        title: 'ERROR_DEFAULT_TITLE',
         message: 'Login location is missing or invalid. Please reauthenticate.',
       });
     });
@@ -437,7 +416,7 @@ describe('SearchPatient', () => {
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
-        title: 'Error',
+        title: 'ERROR_DEFAULT_TITLE',
         message: 'Login location is missing or invalid. Please reauthenticate.',
       });
     });
@@ -483,7 +462,7 @@ describe('SearchPatient', () => {
       );
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
-        title: 'Error',
+        title: 'ERROR_DEFAULT_TITLE',
         message: 'Login location is missing or invalid. Please reauthenticate.',
       });
     });
@@ -522,7 +501,7 @@ describe('SearchPatient', () => {
     await waitFor(() => {
       expect(screen.getByTestId('field-validation-error')).toBeInTheDocument();
       expect(screen.getByTestId('field-validation-error')).toHaveTextContent(
-        'Special characters and alphabets should not be allowed',
+        'PHONE_NUMBER_VALIDATION_ERROR',
       );
     });
     expect(searchPatientByCustomAttribute).not.toHaveBeenCalled();
@@ -588,12 +567,14 @@ describe('SearchPatient', () => {
     renderSearchPatient(validPatientSearchConfig);
 
     const dropdownButton = screen.getByRole('combobox', {
-      name: /select search attribute/i,
+      name: /PATIENT_SEARCH_ATTRIBUTE_SELECTOR/,
     });
 
     await userEvent.click(dropdownButton);
 
-    const emailOption = await screen.findByText('Email');
+    const emailOption = await screen.findByText(
+      'REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL',
+    );
     await userEvent.click(emailOption);
 
     const customSearchInput = screen.getByTestId('advance-search-input');
@@ -616,6 +597,81 @@ describe('SearchPatient', () => {
       expect.any(Array),
       expect.any(Function),
     );
+  });
+
+  it('should preserve order of search fields from config', async () => {
+    const orderedConfig = {
+      patientSearch: {
+        customAttributes: [
+          {
+            translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',
+            fields: ['phoneNumber', 'alternatePhoneNumber'],
+            columnTranslationKeys: [
+              'REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER',
+              'REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER',
+            ],
+            type: 'person',
+          },
+          {
+            translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL',
+            fields: ['email'],
+            columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_EMAIL'],
+            type: 'person',
+          },
+          {
+            translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_VILLAGE',
+            fields: ['village'],
+            columnTranslationKeys: [
+              'REGISTRATION_PATIENT_SEARCH_HEADER_VILLAGE',
+            ],
+            type: 'address',
+          },
+        ],
+        appointment: [],
+      },
+    };
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+          patientSearch={orderedConfig.patientSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      const dropdownButton = screen.getByRole('combobox', {
+        name: /PATIENT_SEARCH_ATTRIBUTE_SELECTOR/,
+      });
+      expect(dropdownButton).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER'),
+      ).toBeInTheDocument();
+    });
+
+    const dropdownButton = screen.getByRole('combobox', {
+      name: /PATIENT_SEARCH_ATTRIBUTE_SELECTOR/,
+    });
+    await userEvent.click(dropdownButton);
+
+    await waitFor(() => {
+      const options = screen.getAllByRole('option');
+      expect(options[0]).toHaveTextContent(
+        'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',
+      );
+      expect(options[1]).toHaveTextContent(
+        'REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL',
+      );
+      expect(options[2]).toHaveTextContent(
+        'REGISTRATION_PATIENT_SEARCH_DROPDOWN_VILLAGE',
+      );
+    });
   });
 
   it('should have no accessibility violations', async () => {

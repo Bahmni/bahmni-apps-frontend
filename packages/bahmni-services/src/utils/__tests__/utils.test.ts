@@ -12,6 +12,7 @@ import {
   formatUrl,
   getValueType,
   camelToScreamingSnakeCase,
+  convertToSentenceCase,
 } from '../utils';
 
 describe('common utility functions', () => {
@@ -1294,6 +1295,18 @@ describe('common utility functions', () => {
       expect(camelToScreamingSnakeCase('myVariableName')).toBe(
         'MY_VARIABLE_NAME',
       );
+    });
+  });
+
+  describe('convertToSentenceCase', () => {
+    it('should convert various formats to sentence case', () => {
+      expect(convertToSentenceCase('phoneNumber')).toBe('Phone number');
+      expect(convertToSentenceCase('firstName')).toBe('First name');
+      expect(convertToSentenceCase('phone_number')).toBe('Phone number');
+      expect(convertToSentenceCase('first-name')).toBe('First name');
+      expect(convertToSentenceCase('PHONE_NUMBER')).toBe('Phone number');
+      expect(convertToSentenceCase('address1')).toBe('Address 1');
+      expect(convertToSentenceCase('')).toBe('');
     });
   });
 });

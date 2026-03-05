@@ -34,12 +34,16 @@ jest.mock('../../../common/PersonAttributeInput', () => ({
   ),
 }));
 
-// Mock the services
-jest.mock('@bahmni/services', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
+// Mock the services - only mock useTranslation, use real utility functions
+jest.mock('@bahmni/services', () => {
+  const actual = jest.requireActual('@bahmni/services');
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string) => key,
+    }),
+  };
+});
 
 // Mock usePersonAttributeFields hook
 const mockUsePersonAttributeFields = jest.fn(() => ({
@@ -85,11 +89,11 @@ const mockUseRegistrationConfig = jest.fn(() => ({
     },
     fieldValidation: {
       phoneNumber: {
-        pattern: '^\\+?[0-9]{6,15}$',
+        pattern: String.raw`^\+?[0-9]{6,15}$`,
         errorMessage: 'Phone number should be 6 to 15 digits',
       },
       alternatePhoneNumber: {
-        pattern: '^\\+?[0-9]{6,15}$',
+        pattern: String.raw`^\+?[0-9]{6,15}$`,
         errorMessage: 'Alternate phone number should be 6 to 15 digits',
       },
     },
@@ -167,6 +171,74 @@ describe('ContactInfo', () => {
       // Should NOT render nonExistentField (doesn't exist in API)
       expect(screen.queryByLabelText('SOME_FIELD')).not.toBeInTheDocument();
     });
+
+    it('should render fields in the order specified by config attributes', () => {
+      mockUsePersonAttributeFields.mockReturnValue({
+        attributeFields: [
+          {
+            uuid: 'phone-uuid',
+            name: 'phoneNumber',
+            format: 'java.lang.String',
+            sortWeight: 1,
+          },
+          {
+            uuid: 'alt-phone-uuid',
+            name: 'alternatePhoneNumber',
+            format: 'java.lang.String',
+            sortWeight: 2,
+          },
+          {
+            uuid: 'email-uuid',
+            name: 'email',
+            format: 'java.lang.String',
+            sortWeight: 3,
+          },
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            contactInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_CONTACT_INFO',
+              attributes: [
+                {
+                  field: 'email',
+                  translationKey: 'CREATE_PATIENT_EMAIL',
+                },
+                {
+                  field: 'phoneNumber',
+                  translationKey: 'CREATE_PATIENT_PHONE_NUMBER',
+                },
+                {
+                  field: 'alternatePhoneNumber',
+                  translationKey: 'CREATE_PATIENT_ALT_PHONE_NUMBER',
+                },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<ContactInfo ref={ref} />);
+
+      const fields = screen.getAllByTestId(/^person-attribute-input-/);
+
+      expect(fields[0]).toHaveAttribute(
+        'data-testid',
+        'person-attribute-input-email',
+      );
+      expect(fields[1]).toHaveAttribute(
+        'data-testid',
+        'person-attribute-input-phoneNumber',
+      );
+      expect(fields[2]).toHaveAttribute(
+        'data-testid',
+        'person-attribute-input-alternatePhoneNumber',
+      );
+    });
   });
 
   describe('Input Handling', () => {
@@ -216,6 +288,120 @@ describe('ContactInfo', () => {
 
       const isValid = ref.current?.validate();
       expect(isValid).toBe(true);
+    });
+
+    it('should fail validation when required field is empty', () => {
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            contactInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_CONTACT_INFO',
+              attributes: [
+                {
+                  field: 'phoneNumber',
+                  translationKey: 'CREATE_PATIENT_PHONE_NUMBER',
+                  required: true,
+                },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<ContactInfo ref={ref} />);
+
+      const isValid = ref.current?.validate();
+      expect(isValid).toBe(false);
+    });
+
+    it('should pass validation when required field is filled', () => {
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            contactInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_CONTACT_INFO',
+              attributes: [
+                {
+                  field: 'phoneNumber',
+                  translationKey: 'CREATE_PATIENT_PHONE_NUMBER',
+                  required: true,
+                },
+              ],
+            },
+          },
+          fieldValidation: {
+            phoneNumber: {
+              pattern: String.raw`^\+?[0-9]{6,15}$`,
+              errorMessage: 'Phone number should be 6 to 15 digits',
+            },
+          },
+        },
+      } as any);
+
+      render(<ContactInfo ref={ref} />);
+
+      const phoneInput = screen.getByLabelText(/CREATE_PATIENT_PHONE_NUMBER/);
+      fireEvent.change(phoneInput, { target: { value: '1234567890' } });
+
+      const isValid = ref.current?.validate();
+      expect(isValid).toBe(true);
+    });
+  });
+  describe('Required Fields', () => {
+    it('should render asterisk for required fields', () => {
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            contactInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_CONTACT_INFO',
+              attributes: [
+                {
+                  field: 'phoneNumber',
+                  translationKey: 'CREATE_PATIENT_PHONE_NUMBER',
+                  required: true,
+                },
+                {
+                  field: 'alternatePhoneNumber',
+                  translationKey: 'CREATE_PATIENT_ALT_PHONE_NUMBER',
+                  required: false,
+                },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<ContactInfo ref={ref} />);
+
+      const phoneLabel = screen.getByTestId(
+        'person-attribute-input-phoneNumber',
+      );
+      expect(phoneLabel.innerHTML).toContain('*');
+    });
+
+    it('should not render asterisk for optional fields', () => {
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            contactInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_CONTACT_INFO',
+              attributes: [
+                {
+                  field: 'phoneNumber',
+                  translationKey: 'CREATE_PATIENT_PHONE_NUMBER',
+                },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<ContactInfo ref={ref} />);
+
+      const phoneInput = screen.getByTestId(
+        'person-attribute-input-phoneNumber',
+      );
+      expect(phoneInput.innerHTML).not.toContain('*');
     });
   });
 

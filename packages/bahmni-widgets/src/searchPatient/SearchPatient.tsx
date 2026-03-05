@@ -195,11 +195,10 @@ const SearchPatient = ({
   };
 
   useEffect(() => {
-    if (patientSearch?.customAttributes) {
-      const combinedFields = [
-        ...(patientSearch.customAttributes || []),
-        ...(patientSearch.appointment || []),
-      ];
+    if (patientSearch?.customAttributes || patientSearch?.appointment) {
+      const combinedFields = Object.values(patientSearch)
+        .filter(Array.isArray)
+        .flat();
       setSearchFields(combinedFields);
 
       const labels = combinedFields.map((field: PatientSearchField) =>
