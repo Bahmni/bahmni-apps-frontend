@@ -64,6 +64,20 @@ const mockVaccination: Medication = {
     ],
   },
 };
+const hepatitisBVaccine: Medication = {
+  id: 'test-vaccination-2',
+  resourceType: 'Medication',
+  code: {
+    text: 'Hepatitis B Vaccine',
+    coding: [
+      {
+        code: 'hep-b-vaccine',
+        display: 'Hepatitis B Vaccine',
+        system: 'http://snomed.info/sct',
+      },
+    ],
+  },
+};
 const mockVaccinationBundle = {
   resourceType: 'Bundle',
   type: 'searchset',
@@ -218,11 +232,35 @@ describe('VaccinationForm', () => {
         expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
       });
     });
-    test('shows loading state while fetching vaccinations', async () => {
+    it.each([
+      [
+        'loading state while fetching vaccinations',
+        { data: undefined, isLoading: true, error: null },
+        /Loading vaccinations\.\.\./,
+      ],
+      [
+        'error when vaccination search fails',
+        {
+          data: undefined,
+          isLoading: false,
+          error: new Error('Search failed'),
+        },
+        /error searching vaccinations/i,
+      ],
+      [
+        'no results message when no vaccinations found',
+        {
+          data: { resourceType: 'Bundle', type: 'searchset', entry: [] },
+          isLoading: false,
+          error: null,
+        },
+        /no matching vaccinations found/i,
+      ],
+    ])('shows %s', async (_, mockQueryData, expectedText) => {
       const user = userEvent.setup();
       mockUseQuery.mockImplementation(({ queryKey }: any) => {
         if (queryKey[0] === 'vaccinations') {
-          return { data: undefined, isLoading: true, error: null };
+          return mockQueryData;
         }
         return defaultQueryMock({ queryKey }) as any;
       });
@@ -232,55 +270,12 @@ describe('VaccinationForm', () => {
       });
       await user.type(searchBox, 'test');
       await waitFor(() => {
-        expect(screen.getByText('Loading vaccinations...')).toBeInTheDocument();
-      });
-    });
-    test('shows error when vaccination search fails', async () => {
-      const user = userEvent.setup();
-      const error = new Error('Search failed');
-      mockUseQuery.mockImplementation(({ queryKey }: any) => {
-        if (queryKey[0] === 'vaccinations') {
-          return { data: undefined, isLoading: false, error };
-        }
-        return defaultQueryMock({ queryKey }) as any;
-      });
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
-      await user.type(searchBox, 'test');
-      await waitFor(() => {
-        expect(
-          screen.getByText(/error searching vaccinations/i),
-        ).toBeInTheDocument();
-      });
-    });
-    test('shows no results message when no vaccinations found', async () => {
-      const user = userEvent.setup();
-      mockUseQuery.mockImplementation(({ queryKey }: any) => {
-        if (queryKey[0] === 'vaccinations') {
-          return {
-            data: { resourceType: 'Bundle', type: 'searchset', entry: [] },
-            isLoading: false,
-            error: null,
-          };
-        }
-        return defaultQueryMock({ queryKey }) as any;
-      });
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
-      await user.type(searchBox, 'nonexistent');
-      await waitFor(() => {
-        expect(
-          screen.getByText(/no matching vaccinations found/i),
-        ).toBeInTheDocument();
+        expect(screen.getByText(expectedText)).toBeInTheDocument();
       });
     });
     test('filters vaccinations based on search term', async () => {
       const user = userEvent.setup();
-      const hepatitisVaccine: Medication = {
+      const hepatitisAVaccine: Medication = {
         id: 'test-vaccination-2',
         resourceType: 'Medication',
         code: {
@@ -302,7 +297,7 @@ describe('VaccinationForm', () => {
               type: 'searchset',
               entry: [
                 { resource: mockVaccination },
-                { resource: hepatitisVaccine },
+                { resource: hepatitisAVaccine },
               ],
             },
             isLoading: false,
@@ -344,40 +339,8 @@ describe('VaccinationForm', () => {
         );
       });
     });
-    test('clears search term after selecting vaccination', async () => {
-      const user = userEvent.setup();
-      render(<VaccinationForm />, { wrapper: createWrapper() });
-      const searchBox = screen.getByRole('combobox', {
-        name: /search to add vaccination/i,
-      });
-      await user.type(searchBox, 'covid');
-      await waitFor(() => {
-        expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
-      });
-      await user.click(screen.getByText('COVID-19 Vaccine'));
-      await waitFor(() => {
-        expect(mockStore.addVaccination).toHaveBeenCalledWith(
-          mockVaccination,
-          'COVID-19 Vaccine',
-        );
-      });
-    });
     test('resets ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
       const user = userEvent.setup();
-      const hepatitisVaccine: Medication = {
-        id: 'test-vaccination-2',
-        resourceType: 'Medication',
-        code: {
-          text: 'Hepatitis B Vaccine',
-          coding: [
-            {
-              code: 'hep-b-vaccine',
-              display: 'Hepatitis B Vaccine',
-              system: 'http://snomed.info/sct',
-            },
-          ],
-        },
-      };
       mockUseQuery.mockImplementation(({ queryKey }: any) => {
         if (queryKey[0] === 'vaccinations') {
           return {
@@ -386,7 +349,7 @@ describe('VaccinationForm', () => {
               type: 'searchset',
               entry: [
                 { resource: mockVaccination },
-                { resource: hepatitisVaccine },
+                { resource: hepatitisBVaccine },
               ],
             },
             isLoading: false,
@@ -400,7 +363,6 @@ describe('VaccinationForm', () => {
         name: /search to add vaccination/i,
       });
 
-      // First selection
       await user.type(searchBox, 'covid');
       await waitFor(() => {
         expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
@@ -410,12 +372,10 @@ describe('VaccinationForm', () => {
         expect(mockStore.addVaccination).toHaveBeenCalledTimes(1);
       });
 
-      // Wait for isSelectingRef to reset (setTimeout 100ms in handleOnChange)
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 150));
       });
 
-      // Search for another item
       await user.clear(searchBox);
       await user.type(searchBox, 'hepatitis');
       await waitFor(() => {
@@ -459,20 +419,6 @@ describe('VaccinationForm', () => {
     });
     test('marks already selected vaccinations as disabled', async () => {
       const user = userEvent.setup();
-      const secondVaccination: Medication = {
-        id: 'test-vaccination-2',
-        resourceType: 'Medication',
-        code: {
-          text: 'Hepatitis B Vaccine',
-          coding: [
-            {
-              code: 'hep-b-vaccine',
-              display: 'Hepatitis B Vaccine',
-              system: 'http://snomed.info/sct',
-            },
-          ],
-        },
-      };
       mockUseQuery.mockImplementation(({ queryKey }: any) => {
         if (queryKey[0] === 'vaccinations') {
           return {
@@ -481,7 +427,7 @@ describe('VaccinationForm', () => {
               type: 'searchset',
               entry: [
                 { resource: mockVaccination },
-                { resource: secondVaccination },
+                { resource: hepatitisBVaccine },
               ],
             },
             isLoading: false,
@@ -518,14 +464,12 @@ describe('VaccinationForm', () => {
         name: /search to add vaccination/i,
       });
 
-      // Type to open dropdown
       await user.type(searchBox, 'covid');
 
       await waitFor(() => {
         expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
       });
 
-      // Navigate with arrow key and select with Enter
       await user.keyboard('{ArrowDown}');
       await user.keyboard('{Enter}');
 

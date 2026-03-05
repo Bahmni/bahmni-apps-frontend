@@ -1,5 +1,4 @@
 import {
-  PatientSearchResult,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
   useTranslation,
@@ -9,6 +8,12 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useNotification } from '../../notification';
+import {
+  buttonTitle,
+  searchBarPlaceholder,
+  validPatientSearchConfig,
+  mockSearchPatientData,
+} from '../__mocks__/mocks';
 import SearchPatient from '../SearchPatient';
 
 expect.extend(toHaveNoViolations);
@@ -26,120 +31,23 @@ const mockAddNotification = jest.fn();
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
-const validPatientSearchConfig = {
-  customAttributes: [
-    {
-      translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',
-      fields: ['phoneNumber', 'alternatePhoneNumber'],
-      columnTranslationKeys: [
-        'REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER',
-        'REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER',
-      ],
-      type: 'person' as const,
-    },
-    {
-      translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL',
-      fields: ['email'],
-      columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_EMAIL'],
-      type: 'person' as const,
-    },
-    {
-      translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_VILLAGE',
-      fields: ['village'],
-      columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_VILLAGE'],
-      type: 'address' as const,
-    },
-    {
-      translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_LOCALITY',
-      fields: ['locality'],
-      columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_LOCALITY'],
-      type: 'address' as const,
-    },
-    {
-      translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PROGRAM_NAME',
-      fields: ['programName'],
-      columnTranslationKeys: [
-        'REGISTRATION_PATIENT_SEARCH_HEADER_PROGRAM_NAME',
-      ],
-      type: 'program' as const,
-    },
-  ],
-  appointment: [],
-};
 
-const mockSearchPatientData: PatientSearchResult[] = [
-  {
-    uuid: '02f47490-d657-48ee-98e7-4c9133ea168b',
-    birthDate: new Date(-17366400000),
-    extraIdentifiers: null,
-    personId: 9,
-    deathDate: null,
-    identifier: 'ABC200000',
-    addressFieldValue: null,
-    givenName: 'Steffi',
-    middleName: 'Maria',
-    familyName: 'Graf',
-    gender: 'F',
-    dateCreated: new Date(1739872641000),
-    activeVisitUuid: 'de947029-15f6-4318-afff-a1cbce3593d2',
-    customAttribute: JSON.stringify({
-      phoneNumber: '864579392',
-      alternatePhoneNumber: '4596781239',
-    }),
-    hasBeenAdmitted: true,
-    age: '56',
-    patientProgramAttributeValue: null,
-  },
-  {
-    uuid: '02f47490-d657-48ee-98e7-4c9133ea168b',
-    birthDate: new Date(-17366400000),
-    extraIdentifiers: null,
-    personId: 9,
-    deathDate: null,
-    identifier: 'ABC200000',
-    addressFieldValue: null,
-    givenName: 'Steffi',
-    middleName: 'Maria',
-    familyName: 'Graf',
-    gender: 'F',
-    dateCreated: new Date(1739872641000),
-    activeVisitUuid: 'de947029-15f6-4318-afff-a1cbce3593d2',
-    customAttribute: JSON.stringify({
-      phoneNumber: '864579392',
-      alternatePhoneNumber: '4596781239',
-    }),
-    hasBeenAdmitted: true,
-    age: '56',
-    patientProgramAttributeValue: null,
-  },
-  {
-    uuid: '02f47490-d657-48ee-98e7-4c9133ea168b',
-    birthDate: new Date(-17366400000),
-    extraIdentifiers: null,
-    personId: 9,
-    deathDate: null,
-    identifier: 'ABC200000',
-    addressFieldValue: null,
-    givenName: 'Steffi',
-    middleName: 'Maria',
-    familyName: 'Graf',
-    gender: 'F',
-    dateCreated: new Date(1739872641000),
-    activeVisitUuid: 'de947029-15f6-4318-afff-a1cbce3593d2',
-    customAttribute: JSON.stringify({
-      phoneNumber: '864579392',
-      alternatePhoneNumber: '4596781239',
-    }),
-    hasBeenAdmitted: true,
-    age: '56',
-    patientProgramAttributeValue: null,
-  },
-];
-
-const buttonTitle = 'Search';
-const searchBarPlaceholder = 'Search by name or patient ID';
 describe('SearchPatient', () => {
   let queryClient: QueryClient;
+
+  const renderSearchPatient = (
+    patientSearch?: typeof validPatientSearchConfig,
+  ) =>
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          patientSearch={patientSearch}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -177,16 +85,7 @@ describe('SearchPatient', () => {
   });
 
   it('should render the searchbar and the search button', () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
+    renderSearchPatient(validPatientSearchConfig);
     expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
@@ -207,105 +106,54 @@ describe('SearchPatient', () => {
     );
   });
 
-  it('should search for patient when search input has a valid text', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
+  it.each([
+    {
+      description: 'clicking the search button',
+      trigger: () =>
+        fireEvent.click(screen.getByTestId('search-patient-search-button')),
+    },
+    {
+      description: 'pressing enter',
+      trigger: (searchInput: Element) => {
+        searchInput.focus();
+        userEvent.keyboard('{enter}');
+      },
+    },
+  ])(
+    'should search for patient when name input has valid text by $description',
+    async ({ trigger }) => {
+      renderSearchPatient(validPatientSearchConfig);
+      const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
 
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
-      'placeholder',
-      searchBarPlaceholder,
-    );
+      (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
+        pageOfResults: [],
+        totalCount: 0,
+      });
+      await waitFor(() => {
+        fireEvent.input(searchInput, { target: { value: 'new value' } });
+        trigger(searchInput);
+      });
 
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
-
-    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
-      pageOfResults: [],
-      totalCount: 0,
-    });
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'new value' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
-
-    expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
-    expect(mockOnSearch).toHaveBeenCalled();
-    expect(searchPatientByNameOrId).toHaveBeenCalledWith(
-      'new value',
-      expect.any(Array),
-    );
-    await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        expect.anything(),
-        'new value',
-        expect.any(Boolean),
-        expect.any(Boolean),
-        false,
-        expect.anything(),
-      );
-    });
-  });
-
-  it('should search for patient when search input has a valid text and hits enter', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
-      'placeholder',
-      searchBarPlaceholder,
-    );
-
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
-
-    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
-      pageOfResults: [],
-      totalCount: 0,
-    });
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'new value' } });
-      searchInput.focus();
-      userEvent.keyboard('{enter}');
-    });
-
-    await waitFor(() => {
       expect(searchPatientByNameOrId).toHaveBeenCalledWith(
         'new value',
         expect.any(Array),
       );
       expect(mockOnSearch).toHaveBeenCalled();
-    });
-  });
+      await waitFor(() => {
+        expect(mockOnSearch).toHaveBeenCalledWith(
+          expect.anything(),
+          'new value',
+          expect.any(Boolean),
+          expect.any(Boolean),
+          false,
+          expect.anything(),
+        );
+      });
+    },
+  );
 
   it('should return matching patient when searching with complete name', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
+    renderSearchPatient();
     const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
 
     (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
@@ -346,16 +194,7 @@ describe('SearchPatient', () => {
   });
 
   it('should return empty results when searching for non-existent patient', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
+    renderSearchPatient();
     const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
 
     (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
@@ -385,125 +224,64 @@ describe('SearchPatient', () => {
       );
     });
   });
-  it('should search for patient when phone search input has a valid text', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
-    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
-    const phoneSearchInput = screen.getByTestId('advance-search-input');
 
-    (searchPatientByCustomAttribute as jest.Mock).mockResolvedValue({
-      pageOfResults: [],
-      totalCount: 0,
-    });
-    await waitFor(() => {
-      fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-      fireEvent.click(screen.getByTestId('advance-search-button'));
-    });
-    expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
-    expect(mockOnSearch).toHaveBeenCalled();
-    await waitFor(() => {
-      expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
-        '1234567890',
-        expect.any(String),
-        expect.any(Array),
-        expect.any(Array),
-        expect.any(Function),
-      );
-    });
+  it.each([
+    {
+      description: 'clicking the search button',
+      trigger: () =>
+        fireEvent.click(screen.getByTestId('advance-search-button')),
+    },
+    {
+      description: 'pressing enter',
+      trigger: (phoneSearchInput: Element) => {
+        phoneSearchInput.focus();
+        userEvent.keyboard('{enter}');
+      },
+    },
+  ])(
+    'should search for patient when phone input has valid text by $description',
+    async ({ trigger }) => {
+      renderSearchPatient(validPatientSearchConfig);
+      const phoneSearchInput = screen.getByTestId('advance-search-input');
 
-    await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          pageOfResults: expect.any(Array),
-          totalCount: expect.any(Number),
-        }),
-        '1234567890',
-        false,
-        false,
-        true,
-        expect.any(String),
-      );
-    });
-  });
-  it('should search for patient when phone search input has a valid text and hits enter', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
-    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
-    const phoneSearchInput = screen.getByTestId('advance-search-input');
+      (searchPatientByCustomAttribute as jest.Mock).mockResolvedValue({
+        pageOfResults: [],
+        totalCount: 0,
+      });
+      await waitFor(() => {
+        fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
+        trigger(phoneSearchInput);
+      });
 
-    (searchPatientByCustomAttribute as jest.Mock).mockResolvedValue({
-      pageOfResults: [],
-      totalCount: 0,
-    });
-
-    await waitFor(() => {
-      fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-      phoneSearchInput.focus();
-      userEvent.keyboard('{enter}');
-    });
-
-    await waitFor(() => {
-      expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
-        '1234567890',
-        expect.any(String),
-        expect.any(Array),
-        expect.any(Array),
-        expect.any(Function),
-      );
-    });
-
-    await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          pageOfResults: expect.any(Array),
-          totalCount: expect.any(Number),
-        }),
-        '1234567890',
-        false,
-        false,
-        true,
-        expect.any(String),
-      );
-    });
-  });
+      expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
+      expect(mockOnSearch).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
+          '1234567890',
+          expect.any(String),
+          expect.any(Array),
+          expect.any(Array),
+          expect.any(Function),
+        );
+      });
+      await waitFor(() => {
+        expect(mockOnSearch).toHaveBeenCalledWith(
+          expect.objectContaining({
+            pageOfResults: expect.any(Array),
+            totalCount: expect.any(Number),
+          }),
+          '1234567890',
+          false,
+          false,
+          true,
+          expect.any(String),
+        );
+      });
+    },
+  );
 
   it('should return patient search data back to parent component when search is successfull', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
-      'placeholder',
-      searchBarPlaceholder,
-    );
+    renderSearchPatient(validPatientSearchConfig);
     const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
     (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
       pageOfResults: mockSearchPatientData,
@@ -530,7 +308,6 @@ describe('SearchPatient', () => {
         expect.anything(),
       );
     });
-
     await waitFor(() => {
       expect(mockOnSearch).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -551,142 +328,64 @@ describe('SearchPatient', () => {
     });
   });
 
-  it('should not search for patient when search input is empty', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
+  it.each([
+    {
+      description: 'name',
+      buttonTestId: 'search-patient-search-button',
+      mockFn: searchPatientByNameOrId,
+    },
+    {
+      description: 'phone',
+      buttonTestId: 'advance-search-button',
+      mockFn: searchPatientByCustomAttribute,
+    },
+  ])(
+    'should not search for patient when $description search input is empty',
+    async ({ buttonTestId, mockFn }) => {
+      renderSearchPatient(validPatientSearchConfig);
+      await waitFor(() => {
+        fireEvent.click(screen.getByTestId(buttonTestId));
+      });
+      expect(mockFn).not.toHaveBeenCalled();
+    },
+  );
 
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
-      'placeholder',
-      searchBarPlaceholder,
-    );
+  it.each([
+    {
+      description: 'name',
+      inputTestId: 'search-patient-searchbar',
+      buttonTestId: 'search-patient-search-button',
+      inputValue: 'new value',
+      mockFn: searchPatientByNameOrId,
+    },
+    {
+      description: 'phone',
+      inputTestId: 'advance-search-input',
+      buttonTestId: 'advance-search-button',
+      inputValue: '1234567890',
+      mockFn: searchPatientByCustomAttribute,
+    },
+  ])(
+    'should disable $description search button when search call is happening',
+    async ({ inputTestId, buttonTestId, inputValue, mockFn }) => {
+      renderSearchPatient(validPatientSearchConfig);
+      const input = screen.getByTestId(inputTestId);
+      (mockFn as jest.Mock).mockReturnValue([]);
 
-    await waitFor(() => {
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
-
-    expect(searchPatientByNameOrId).not.toHaveBeenCalled();
-  });
-
-  it('should not search for patient when phone search input is empty', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
-    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
-
-    await waitFor(() => {
-      fireEvent.click(screen.getByTestId('advance-search-button'));
-    });
-
-    expect(searchPatientByCustomAttribute).not.toHaveBeenCalled();
-  });
-
-  it('should disable search button when search call is happening', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    expect(
-      screen.getByTestId('search-patient-search-button'),
-    ).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
-      'placeholder',
-      searchBarPlaceholder,
-    );
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
-
-    (searchPatientByNameOrId as jest.Mock).mockReturnValue([]);
-
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'new value' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-      expect(screen.getByTestId('search-patient-search-button')).toBeDisabled();
-    });
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId('search-patient-search-button'),
-      ).not.toBeDisabled();
-    });
-  });
-
-  it('should disable phone search button when search call is happening', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
-    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
-    const phoneSearchInput = screen.getByTestId('advance-search-input');
-
-    (searchPatientByCustomAttribute as jest.Mock).mockReturnValue([]);
-
-    await waitFor(() => {
-      fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-      fireEvent.click(screen.getByTestId('advance-search-button'));
-      expect(screen.getByTestId('advance-search-button')).toBeDisabled();
-    });
-
-    await waitFor(() => {
-      expect(screen.getByTestId('advance-search-button')).not.toBeDisabled();
-    });
-  });
+      await waitFor(() => {
+        fireEvent.input(input, { target: { value: inputValue } });
+        fireEvent.click(screen.getByTestId(buttonTestId));
+        expect(screen.getByTestId(buttonTestId)).toBeDisabled();
+      });
+      await waitFor(() => {
+        expect(screen.getByTestId(buttonTestId)).not.toBeDisabled();
+      });
+    },
+  );
 
   it('should update parent when there is an error', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
-      'placeholder',
-      searchBarPlaceholder,
-    );
-
+    renderSearchPatient(validPatientSearchConfig);
     const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
-
     const error = new Error(
       'Login location is missing or invalid. Please reauthenticate.',
     );
@@ -715,27 +414,8 @@ describe('SearchPatient', () => {
   });
 
   it('should remove error message when search term is cleared', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
-      'placeholder',
-      searchBarPlaceholder,
-    );
-
+    renderSearchPatient(validPatientSearchConfig);
     const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
-
     const error = new Error(
       'Login location is missing or invalid. Please reauthenticate.',
     );
@@ -780,23 +460,8 @@ describe('SearchPatient', () => {
   });
 
   it('should remove error message when phone search term is cleared', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
-    expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
-    expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
-
+    renderSearchPatient(validPatientSearchConfig);
     const phoneSearchInput = screen.getByTestId('advance-search-input');
-
     const error = new Error(
       'Login location is missing or invalid. Please reauthenticate.',
     );
@@ -841,17 +506,7 @@ describe('SearchPatient', () => {
   });
 
   it('should render phone validation error message when invalid characters are entered', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
+    renderSearchPatient(validPatientSearchConfig);
     const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     expect(
@@ -873,113 +528,64 @@ describe('SearchPatient', () => {
     expect(searchPatientByCustomAttribute).not.toHaveBeenCalled();
   });
 
-  it('should not render phone validation error message when only numeric characters are entered', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
+  it.each([
+    { description: 'only numeric characters', value: '1234567890' },
+    { description: 'country code prefix', value: '+911234567890' },
+  ])(
+    'should not render phone validation error message when entered with $description',
+    async ({ value }) => {
+      renderSearchPatient(validPatientSearchConfig);
+      const phoneSearchInput = screen.getByTestId('advance-search-input');
 
-    const phoneSearchInput = screen.getByTestId('advance-search-input');
+      await waitFor(() => {
+        fireEvent.input(phoneSearchInput, { target: { value } });
+      });
 
-    await waitFor(() => {
-      fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-    });
+      expect(
+        screen.queryByTestId('field-validation-error'),
+      ).not.toBeInTheDocument();
+      expect(phoneSearchInput).toHaveValue(value);
+    },
+  );
 
-    expect(
-      screen.queryByTestId('field-validation-error'),
-    ).not.toBeInTheDocument();
+  it.each([
+    {
+      description: 'name input when typing in phone field',
+      firstInputTestId: 'search-patient-searchbar',
+      firstInputValue: 'John Doe',
+      secondInputTestId: 'advance-search-input',
+      secondInputValue: '1234567890',
+    },
+    {
+      description: 'phone input when typing in name field',
+      firstInputTestId: 'advance-search-input',
+      firstInputValue: '123a',
+      secondInputTestId: 'search-patient-searchbar',
+      secondInputValue: 'John Doe',
+    },
+  ])(
+    'should clear $description',
+    async ({
+      firstInputTestId,
+      firstInputValue,
+      secondInputTestId,
+      secondInputValue,
+    }) => {
+      renderSearchPatient(validPatientSearchConfig);
+      const firstInput = screen.getByTestId(firstInputTestId);
+      const secondInput = screen.getByTestId(secondInputTestId);
 
-    expect(phoneSearchInput).toHaveValue('1234567890');
-  });
+      fireEvent.input(firstInput, { target: { value: firstInputValue } });
+      expect(firstInput).toHaveValue(firstInputValue);
 
-  it('should not render phone validation error message when entered with country code', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    const phoneSearchInput = screen.getByTestId('advance-search-input');
-
-    await waitFor(() => {
-      fireEvent.input(phoneSearchInput, { target: { value: '+911234567890' } });
-    });
-
-    expect(
-      screen.queryByTestId('field-validation-error'),
-    ).not.toBeInTheDocument();
-
-    expect(phoneSearchInput).toHaveValue('+911234567890');
-  });
-
-  it('should clear name input when typing in phone field', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    const phoneSearchInput = screen.getByTestId('advance-search-input');
-    const nameSearchInput = screen.getByTestId('search-patient-searchbar');
-
-    fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
-    expect(nameSearchInput).toHaveValue('John Doe');
-
-    fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-    expect(nameSearchInput).toHaveValue('');
-    expect(phoneSearchInput).toHaveValue('1234567890');
-  });
-
-  it('should clear phone input when typing in name field', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
-
-    const phoneSearchInput = screen.getByTestId('advance-search-input');
-    const nameSearchInput = screen.getByTestId('search-patient-searchbar');
-
-    fireEvent.input(phoneSearchInput, { target: { value: '123a' } });
-    expect(phoneSearchInput).toHaveValue('123a');
-
-    fireEvent.input(nameSearchInput, { target: { value: 'John Doe' } });
-    expect(phoneSearchInput).toHaveValue('');
-    expect(nameSearchInput).toHaveValue('John Doe');
-  });
+      fireEvent.input(secondInput, { target: { value: secondInputValue } });
+      expect(firstInput).toHaveValue('');
+      expect(secondInput).toHaveValue(secondInputValue);
+    },
+  );
 
   it('should search by email when email is selected from dropdown', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
+    renderSearchPatient(validPatientSearchConfig);
 
     const dropdownButton = screen.getByRole('combobox', {
       name: /select search attribute/i,
@@ -1013,16 +619,7 @@ describe('SearchPatient', () => {
   });
 
   it('should have no accessibility violations', async () => {
-    const { container } = render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={validPatientSearchConfig}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
-    );
+    const { container } = renderSearchPatient(validPatientSearchConfig);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });

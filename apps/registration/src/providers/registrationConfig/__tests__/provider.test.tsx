@@ -57,64 +57,61 @@ describe('RegistrationConfigProvider', () => {
     await queryClient.cancelQueries();
   });
 
-  it('should render children when registration config is loaded', async () => {
-    mockGetConfig.mockResolvedValueOnce(mockRegistrationConfig);
-
-    render(
-      <TestWrapper>
-        <TestComponent />
-      </TestWrapper>,
-    );
-
-    await waitFor(() => {
-      expect(screen.getByTestId('test-child')).toBeInTheDocument();
-    });
-
-    expect(mockGetConfig).toHaveBeenCalled();
-  });
-
-  it('should show loading state when registration config is being fetched', async () => {
-    mockGetConfig.mockImplementation(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(() => resolve(mockRegistrationConfig), 100),
+  it.each([
+    {
+      description: 'renders children when registration config is loaded',
+      setup: () => mockGetConfig.mockResolvedValueOnce(mockRegistrationConfig),
+      syncVisibleIds: [] as string[],
+      expectedVisibleId: 'test-child',
+      expectedHiddenIds: [] as string[],
+    },
+    {
+      description:
+        'shows loading state when registration config is being fetched',
+      setup: () =>
+        mockGetConfig.mockImplementation(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve(mockRegistrationConfig), 100),
+            ),
         ),
-    );
+      syncVisibleIds: ['registration-config-loader-test-id'],
+      expectedVisibleId: 'test-child',
+      expectedHiddenIds: [] as string[],
+    },
+    {
+      description:
+        'shows error notification and empty screen when there is an error fetching registration config',
+      setup: () =>
+        mockGetConfig.mockRejectedValueOnce(
+          new Error('Failed to fetch registration config'),
+        ),
+      syncVisibleIds: [] as string[],
+      expectedVisibleId: 'registration-config-error-test-id',
+      expectedHiddenIds: ['test-child'],
+    },
+  ])(
+    'should $description',
+    async ({ setup, syncVisibleIds, expectedVisibleId, expectedHiddenIds }) => {
+      setup();
 
-    render(
-      <TestWrapper>
-        <TestComponent />
-      </TestWrapper>,
-    );
+      render(
+        <TestWrapper>
+          <TestComponent />
+        </TestWrapper>,
+      );
 
-    expect(
-      screen.getByTestId('registration-config-loader-test-id'),
-    ).toBeInTheDocument();
+      for (const id of syncVisibleIds) {
+        expect(screen.getByTestId(id)).toBeInTheDocument();
+      }
 
-    await waitFor(() => {
-      expect(screen.getByTestId('test-child')).toBeInTheDocument();
-    });
-  });
+      await waitFor(() => {
+        expect(screen.getByTestId(expectedVisibleId)).toBeInTheDocument();
+      });
 
-  it('should show error notification and empty screen when there is an error fetching registration config', async () => {
-    const mockError = new Error('Failed to fetch registration config');
-    mockGetConfig.mockRejectedValueOnce(mockError);
-
-    render(
-      <TestWrapper>
-        <TestComponent />
-      </TestWrapper>,
-    );
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId('registration-config-error-test-id'),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByTestId('Failed to fetch registration config'),
-      ).not.toBeInTheDocument();
-    });
-
-    expect(screen.queryByTestId('test-child')).not.toBeInTheDocument();
-  });
+      for (const id of expectedHiddenIds) {
+        expect(screen.queryByTestId(id)).not.toBeInTheDocument();
+      }
+    },
+  );
 });

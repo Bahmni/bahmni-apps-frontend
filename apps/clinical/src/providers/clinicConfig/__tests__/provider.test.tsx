@@ -63,64 +63,60 @@ describe('ClinicalConfigProvider', () => {
     await queryClient.cancelQueries();
   });
 
-  it('should render children when clinical config is loaded', async () => {
-    mockGetConfig.mockResolvedValueOnce(mockClinicalConfig);
-
-    render(
-      <TestWrapper>
-        <TestComponent />
-      </TestWrapper>,
-    );
-
-    await waitFor(() => {
-      expect(screen.getByTestId('test-child')).toBeInTheDocument();
-    });
-
-    expect(mockGetConfig).toHaveBeenCalled();
-  });
-
-  it('should show loading state when clinical config is being fetched', async () => {
-    mockGetConfig.mockImplementation(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(() => resolve(mockClinicalConfig), 100),
+  it.each([
+    {
+      description: 'renders children when clinical config is loaded',
+      setup: () => mockGetConfig.mockResolvedValueOnce(mockClinicalConfig),
+      syncVisibleIds: [] as string[],
+      expectedVisibleId: 'test-child',
+      expectedHiddenIds: [] as string[],
+    },
+    {
+      description: 'shows loading state when clinical config is being fetched',
+      setup: () =>
+        mockGetConfig.mockImplementation(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve(mockClinicalConfig), 100),
+            ),
         ),
-    );
+      syncVisibleIds: ['clinical-config-loader-test-id'],
+      expectedVisibleId: 'test-child',
+      expectedHiddenIds: [] as string[],
+    },
+    {
+      description:
+        'shows error notification and empty screen when there is an error fetching clinical config',
+      setup: () =>
+        mockGetConfig.mockRejectedValueOnce(
+          new Error('Failed to fetch clinical config'),
+        ),
+      syncVisibleIds: [] as string[],
+      expectedVisibleId: 'clinical-config-error-test-id',
+      expectedHiddenIds: ['test-child'],
+    },
+  ])(
+    'should $description',
+    async ({ setup, syncVisibleIds, expectedVisibleId, expectedHiddenIds }) => {
+      setup();
 
-    render(
-      <TestWrapper>
-        <TestComponent />
-      </TestWrapper>,
-    );
+      render(
+        <TestWrapper>
+          <TestComponent />
+        </TestWrapper>,
+      );
 
-    expect(
-      screen.getByTestId('clinical-config-loader-test-id'),
-    ).toBeInTheDocument();
+      for (const id of syncVisibleIds) {
+        expect(screen.getByTestId(id)).toBeInTheDocument();
+      }
 
-    await waitFor(() => {
-      expect(screen.getByTestId('test-child')).toBeInTheDocument();
-    });
-  });
+      await waitFor(() => {
+        expect(screen.getByTestId(expectedVisibleId)).toBeInTheDocument();
+      });
 
-  it('should show error notification and empty screen when there is an error fetching clinical config', async () => {
-    const mockError = new Error('Failed to fetch clinical config');
-    mockGetConfig.mockRejectedValueOnce(mockError);
-
-    render(
-      <TestWrapper>
-        <TestComponent />
-      </TestWrapper>,
-    );
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId('clinical-config-error-test-id'),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByTestId('Failed to fetch clinical config'),
-      ).not.toBeInTheDocument();
-    });
-
-    expect(screen.queryByTestId('test-child')).not.toBeInTheDocument();
-  });
+      for (const id of expectedHiddenIds) {
+        expect(screen.queryByTestId(id)).not.toBeInTheDocument();
+      }
+    },
+  );
 });
