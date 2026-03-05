@@ -49,6 +49,12 @@ jest.mock('@bahmni/form2-controls', () => ({
 // Mock the form2-controls CSS
 jest.mock('@bahmni/form2-controls/dist/bundle.css', () => ({}));
 
+jest.mock('../../forms/medications/MedicationsForm', () => {
+  return function MockMedicationsForm() {
+    return <div data-testid="medications-form">Medications Form</div>;
+  };
+});
+
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedError: jest.fn(),

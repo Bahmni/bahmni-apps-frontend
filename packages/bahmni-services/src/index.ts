@@ -169,6 +169,7 @@ export {
   getDiagnosticReportBundle,
   PROCESSED_REPORT_STATUSES,
   PENDING_REPORT_STATUSES,
+  updateDiagnosticReportBundle,
 } from './diagnosticReportService';
 export {
   getFlattenedInvestigations,

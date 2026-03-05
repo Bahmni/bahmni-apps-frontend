@@ -212,11 +212,10 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       });
       setDropdownItems([]);
       setSelectedDropdownItem('');
-    } else if (configData?.patientSearch?.customAttributes) {
-      const combinedFields = [
-        ...(configData.patientSearch.customAttributes || []),
-        ...(configData.patientSearch.appointment || []),
-      ];
+    } else if (configData?.patientSearch) {
+      const combinedFields = Object.values(configData.patientSearch)
+        .filter(Array.isArray)
+        .flat();
       setSearchFields(combinedFields);
 
       const labels = combinedFields.map((field: PatientSearchField) =>

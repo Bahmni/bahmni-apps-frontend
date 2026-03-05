@@ -1,8 +1,9 @@
 import { Bundle, DiagnosticReport } from 'fhir/r4';
-import { get } from '../api';
+import { get, post } from '../api';
 import {
   DIAGNOSTIC_REPORTS_URL,
-  DIAGNOSTIC_REPORT_BUNDLE_URL,
+  DIAGNOSTIC_REPORT_UPDATE_URL,
+  DIAGNOSTIC_REPORT_FETCH_URL,
 } from './constants';
 
 export async function getDiagnosticReports(
@@ -18,6 +19,14 @@ export async function getDiagnosticReports(
 export async function getDiagnosticReportBundle(
   diagnosticReportId: string,
 ): Promise<Bundle> {
-  const url = DIAGNOSTIC_REPORT_BUNDLE_URL(diagnosticReportId);
+  const url = DIAGNOSTIC_REPORT_FETCH_URL(diagnosticReportId);
   return await get<Bundle>(url);
+}
+
+export async function updateDiagnosticReportBundle(
+  diagnosticReportId: string,
+  bundle: Bundle,
+): Promise<Bundle> {
+  const url = DIAGNOSTIC_REPORT_UPDATE_URL(diagnosticReportId);
+  return await post<Bundle>(url, bundle);
 }

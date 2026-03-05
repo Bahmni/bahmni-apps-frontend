@@ -294,8 +294,8 @@ const PatientSearchPage: React.FC = () => {
       href: BAHMNI_HOME_PATH,
     },
     {
-      id: 'search',
-      label: t('CREATE_PATIENT_BREADCRUMB_SEARCH'),
+      id: 'registration',
+      label: t('CREATE_PATIENT_BREADCRUMB_REGISTRATION_SEARCH'),
       isCurrentPage: true,
     },
   ];

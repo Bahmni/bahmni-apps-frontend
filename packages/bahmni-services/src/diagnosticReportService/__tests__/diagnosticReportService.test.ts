@@ -1,12 +1,14 @@
 import { Bundle, DiagnosticReport } from 'fhir/r4';
-import { get } from '../../api';
+import { get, post } from '../../api';
 import {
   DIAGNOSTIC_REPORTS_URL,
-  DIAGNOSTIC_REPORT_BUNDLE_URL,
+  DIAGNOSTIC_REPORT_UPDATE_URL,
+  DIAGNOSTIC_REPORT_FETCH_URL,
 } from '../constants';
 import {
   getDiagnosticReports,
   getDiagnosticReportBundle,
+  updateDiagnosticReportBundle,
 } from '../diagnosticReportService';
 
 jest.mock('../../api');
@@ -216,9 +218,100 @@ describe('diagnosticReportService', () => {
       const diagnosticReportId = 'report-456';
       await getDiagnosticReportBundle(diagnosticReportId);
 
-      const expectedUrl = DIAGNOSTIC_REPORT_BUNDLE_URL(diagnosticReportId);
+      const expectedUrl = DIAGNOSTIC_REPORT_FETCH_URL(diagnosticReportId);
       expect(get).toHaveBeenCalledTimes(1);
       expect(get).toHaveBeenCalledWith(expectedUrl);
+    });
+  });
+
+  describe('updateDiagnosticReportBundle', () => {
+    const createMockBundle = (): Bundle => ({
+      resourceType: 'Bundle',
+      id: 'bundle-id',
+      type: 'transaction',
+      entry: [
+        {
+          resource: {
+            resourceType: 'DiagnosticReport',
+            id: 'report-1',
+            status: 'final',
+            code: { text: 'Blood Test' },
+          },
+        },
+        {
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-1',
+            status: 'final',
+            code: { text: 'Hemoglobin' },
+          },
+        },
+      ],
+    });
+
+    it('should return updated bundle for valid inputs', async () => {
+      const mockBundle = createMockBundle();
+      const updatedBundle: Bundle = {
+        ...mockBundle,
+        id: 'updated-bundle-id',
+      };
+
+      (post as jest.Mock).mockResolvedValueOnce(updatedBundle);
+
+      const diagnosticReportId = 'report-123';
+      const result = await updateDiagnosticReportBundle(
+        diagnosticReportId,
+        mockBundle,
+      );
+
+      expect(result).toEqual(updatedBundle);
+      expect(result.resourceType).toBe('Bundle');
+    });
+
+    it('should call API with correct URL', async () => {
+      const mockBundle = createMockBundle();
+      (post as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const diagnosticReportId = 'report-456';
+      await updateDiagnosticReportBundle(diagnosticReportId, mockBundle);
+
+      const expectedUrl = DIAGNOSTIC_REPORT_UPDATE_URL(diagnosticReportId);
+      expect(post).toHaveBeenCalledTimes(1);
+      expect(post).toHaveBeenCalledWith(expectedUrl, mockBundle);
+    });
+
+    it('should pass bundle payload correctly to POST request', async () => {
+      const mockBundle = createMockBundle();
+      (post as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const diagnosticReportId = 'report-789';
+      await updateDiagnosticReportBundle(diagnosticReportId, mockBundle);
+
+      expect(post).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          resourceType: 'Bundle',
+          type: 'transaction',
+          entry: expect.arrayContaining([
+            expect.objectContaining({
+              resource: expect.objectContaining({
+                resourceType: 'DiagnosticReport',
+              }),
+            }),
+          ]),
+        }),
+      );
+    });
+    it('should propagate errors from API call', async () => {
+      const mockBundle = createMockBundle();
+      const apiError = new Error('API request failed');
+      (post as jest.Mock).mockRejectedValueOnce(apiError);
+
+      const diagnosticReportId = 'report-error';
+
+      await expect(
+        updateDiagnosticReportBundle(diagnosticReportId, mockBundle),
+      ).rejects.toThrow('API request failed');
     });
   });
 });
