@@ -383,7 +383,7 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  Selected Item Close
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"

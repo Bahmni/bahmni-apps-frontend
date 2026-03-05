@@ -884,7 +884,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  Selected Item Close
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"

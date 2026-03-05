@@ -58,53 +58,44 @@ const createMockBundle = (
   })),
 });
 
+const createMockServiceRequest = (
+  overrides: Partial<ServiceRequest> = {},
+): ServiceRequest => ({
+  resourceType: 'ServiceRequest',
+  id: 'lab-test-1',
+  status: 'active',
+  intent: 'order',
+  subject: { reference: 'Patient/test-patient-uuid' },
+  code: { text: 'Complete Blood Count' },
+  priority: 'routine',
+  requester: { display: 'Dr. John Doe' },
+  occurrencePeriod: { start: '2025-03-25T06:48:32.000+00:00' },
+  extension: [
+    {
+      url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
+      valueString: 'Panel',
+    },
+  ],
+  ...overrides,
+});
+
 // Mock FHIR ServiceRequest data
 const mockServiceRequests: ServiceRequest[] = [
-  {
-    resourceType: 'ServiceRequest',
+  createMockServiceRequest({
     id: 'lab-test-1',
-    status: 'active',
-    intent: 'order',
-    subject: { reference: 'Patient/test-patient-uuid' },
     code: { text: 'Complete Blood Count' },
-    priority: 'routine',
-    requester: { display: 'Dr. John Doe' },
-    occurrencePeriod: { start: '2025-03-25T06:48:32.000+00:00' },
-    extension: [
-      {
-        url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
-        valueString: 'Panel',
-      },
-    ],
-  },
-  {
-    resourceType: 'ServiceRequest',
+  }),
+  createMockServiceRequest({
     id: 'lab-test-2',
-    status: 'active',
-    intent: 'order',
-    subject: { reference: 'Patient/test-patient-uuid' },
     code: { text: 'Lipid Panel' },
     priority: 'stat',
     requester: { display: 'Dr. Jane Smith' },
-    occurrencePeriod: { start: '2025-03-25T06:48:32.000+00:00' },
-    extension: [
-      {
-        url: 'http://fhir.bahmni.org/ext/lab-order-concept-type',
-        valueString: 'Panel',
-      },
-    ],
-  },
-  {
-    resourceType: 'ServiceRequest',
+  }),
+  createMockServiceRequest({
     id: 'lab-test-3',
-    status: 'active',
-    intent: 'order',
-    subject: { reference: 'Patient/test-patient-uuid' },
     code: { text: 'Glucose Test' },
-    priority: 'routine',
-    requester: { display: 'Dr. John Doe' },
     occurrencePeriod: { start: '2025-03-24T06:48:32.000+00:00' },
-  },
+  }),
 ];
 
 const renderLabInvestigations = (config = { orderType: 'Lab Order' }) => {
@@ -125,38 +116,45 @@ const renderLabInvestigations = (config = { orderType: 'Lab Order' }) => {
   );
 };
 
+const setupDefaultMocks = (
+  bundle: Bundle<ServiceRequest> = createMockBundle(mockServiceRequests),
+  mockAddNotification = jest.fn(),
+) => {
+  mockUsePatientUUID.mockReturnValue('test-patient-uuid');
+
+  mockUseNotification.mockReturnValue({
+    addNotification: mockAddNotification,
+    notifications: [],
+    removeNotification: jest.fn(),
+    clearAllNotifications: jest.fn(),
+  });
+
+  mockUseTranslation.mockReturnValue({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        LAB_TEST_ERROR_LOADING: 'Error loading lab tests',
+        LAB_TEST_LOADING: 'Loading lab tests...',
+        LAB_TEST_UNAVAILABLE: 'No lab investigations recorded',
+        LAB_TEST_ORDERED_BY: 'Ordered by',
+        LAB_TEST_RESULTS_PENDING: 'Results Pending ....',
+        ERROR_DEFAULT_TITLE: 'Error',
+      };
+      return translations[key] || key;
+    },
+  } as any);
+
+  mockGetCategoryUuidFromOrderTypes.mockResolvedValue('lab-order-type-uuid');
+  mockGetLabTestBundle.mockResolvedValue(bundle);
+};
+
 describe('LabInvestigation Integration Tests', () => {
   const mockAddNotification = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    mockUsePatientUUID.mockReturnValue('test-patient-uuid');
-
-    mockUseNotification.mockReturnValue({
-      addNotification: mockAddNotification,
-      notifications: [],
-      removeNotification: jest.fn(),
-      clearAllNotifications: jest.fn(),
-    });
-
-    mockUseTranslation.mockReturnValue({
-      t: (key: string) => {
-        const translations: Record<string, string> = {
-          LAB_TEST_ERROR_LOADING: 'Error loading lab tests',
-          LAB_TEST_LOADING: 'Loading lab tests...',
-          LAB_TEST_UNAVAILABLE: 'No lab investigations recorded',
-          LAB_TEST_ORDERED_BY: 'Ordered by',
-          LAB_TEST_RESULTS_PENDING: 'Results Pending ....',
-          ERROR_DEFAULT_TITLE: 'Error',
-        };
-        return translations[key] || key;
-      },
-    } as any);
-
-    mockGetCategoryUuidFromOrderTypes.mockResolvedValue('lab-order-type-uuid');
-    mockGetLabTestBundle.mockResolvedValue(
+    setupDefaultMocks(
       createMockBundle(mockServiceRequests),
+      mockAddNotification,
     );
   });
 

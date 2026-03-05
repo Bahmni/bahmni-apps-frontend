@@ -441,7 +441,7 @@ describe('ConditionsAndDiagnoses', () => {
       renderComponent(mockDiagnosisEntries);
 
       const removeButton = screen.getByRole('button', {
-        name: 'Selected Item Close',
+        name: 'Close',
       });
       await user.click(removeButton);
 
@@ -559,7 +559,7 @@ describe('ConditionsAndDiagnoses', () => {
       renderComponent([], [mockConditionEntries[0]]);
 
       const removeButtons = screen.getAllByRole('button', {
-        name: 'Selected Item Close',
+        name: 'Close',
       });
       await user.click(removeButtons[0]);
 
