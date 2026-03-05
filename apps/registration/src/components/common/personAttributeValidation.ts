@@ -1,3 +1,7 @@
+import {
+  camelToScreamingSnakeCase,
+  convertToSentenceCase,
+} from '@bahmni/services';
 import type { PersonAttributeField } from '../../hooks/usePersonAttributeFields';
 import type { PersonAttributesData } from '../../models/patient';
 
@@ -31,7 +35,7 @@ export const getValidationConfig = (
 export const validateField = (
   value: string | number | boolean | undefined,
   validationConfig: ValidationConfig,
-  t: (key: string) => string,
+  t: (key: string | string[], params?: Record<string, unknown>) => string,
 ): { isValid: boolean; error: string } => {
   if (!value) {
     return { isValid: true, error: '' };
@@ -49,8 +53,8 @@ export const validateField = (
 export const validateAllFields = (
   fieldsToShow: PersonAttributeField[],
   formData: PersonAttributesData,
+  t: (key: string | string[], params?: Record<string, unknown>) => string,
   fieldValidationConfig?: FieldValidationConfig,
-  t?: (key: string) => string,
 ): ValidationResult => {
   const errors: Record<string, string> = {};
   let isValid = true;
@@ -58,6 +62,23 @@ export const validateAllFields = (
   fieldsToShow.forEach((field) => {
     const fieldName = field.name;
     const value = formData[fieldName];
+    const isRequired = field.required ?? false;
+
+    if (
+      isRequired &&
+      (!value || (typeof value === 'string' && !value.trim()))
+    ) {
+      errors[fieldName] = t(
+        [
+          `REGISTRATION_FIELD_REQUIRED_${camelToScreamingSnakeCase(fieldName)}`,
+          'REGISTRATION_FIELD_REQUIRED_ERROR',
+        ],
+        { field: convertToSentenceCase(fieldName) },
+      );
+      isValid = false;
+      return;
+    }
+
     const validationConfig = getValidationConfig(
       fieldName,
       fieldValidationConfig,

@@ -80,8 +80,8 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     const result = validateAllFields(
       fieldsToShow,
       formData,
-      fieldValidationConfig,
       t,
+      fieldValidationConfig,
     );
     setErrors(result.errors);
     return result.isValid;
@@ -96,6 +96,15 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     });
     return displayedData;
   }, [formData, fieldsToShow]);
+
+  const getLabel = (labelKey: string, isRequired: boolean) => {
+    return (
+      <>
+        {t(labelKey)}
+        {isRequired && <span className={styles.requiredAsterisk}>*</span>}
+      </>
+    );
+  };
 
   useImperativeHandle(ref, () => ({
     validate,
@@ -118,7 +127,13 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
         {fieldsToShow.map((field) => {
           const fieldName = field.name;
           const value = formData[fieldName] ?? '';
-          const label = getFieldLabel(fieldName, fieldTranslationMap, t);
+          const translatedLabel = getFieldLabel(
+            fieldName,
+            fieldTranslationMap,
+            t,
+          );
+          const isRequired = field.required ?? false;
+          const label = getLabel(translatedLabel, isRequired);
           const error = errors[fieldName] || '';
 
           return (
@@ -135,7 +150,7 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
                 value={value}
                 answers={field.answers}
                 error={error}
-                placeholder={label}
+                placeholder={translatedLabel}
                 validation={getValidationConfig(
                   fieldName,
                   fieldValidationConfig,

@@ -290,3 +290,18 @@ export function camelToScreamingSnakeCase(str: string): string {
     .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
     .toUpperCase();
 }
+
+export function convertToSentenceCase(str: string): string {
+  if (!str) return '';
+
+  return str
+    .replaceAll(/[_-]/g, ' ')
+    .replaceAll(/([a-z])([A-Z])/g, '$1 $2')
+    .replaceAll(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+    .replaceAll(/([a-z])(\d)/gi, '$1 $2')
+    .replaceAll(/(\d)([a-z])/gi, '$1 $2')
+    .replaceAll(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+    .replace(/^./, (char) => char.toUpperCase());
+}

@@ -4,6 +4,7 @@ import type { PersonAttributesData } from '../../models/patient';
 export interface ConfigAttribute {
   field: string;
   translationKey: string;
+  required?: boolean;
 }
 
 export const getFieldsToShow = (
@@ -15,9 +16,17 @@ export const getFieldsToShow = (
   }
 
   return configAttributes
-    .map((configAttr) =>
-      attributeFields.find((attrField) => attrField.name === configAttr.field),
-    )
+    .map((configAttr) => {
+      const attrField = attributeFields.find(
+        (field) => field.name === configAttr.field,
+      );
+      if (!attrField) return undefined;
+
+      return {
+        ...attrField,
+        required: configAttr.required,
+      } as PersonAttributeField;
+    })
     .filter((field): field is PersonAttributeField => field !== undefined);
 };
 
