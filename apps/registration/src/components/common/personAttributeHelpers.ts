@@ -14,10 +14,11 @@ export const getFieldsToShow = (
     return [];
   }
 
-  const configFieldNames = configAttributes.map((attr) => attr.field);
-  return attributeFields.filter((attrField) =>
-    configFieldNames.includes(attrField.name),
-  );
+  return configAttributes
+    .map((configAttr) =>
+      attributeFields.find((attrField) => attrField.name === configAttr.field),
+    )
+    .filter((field): field is PersonAttributeField => field !== undefined);
 };
 
 export const createFieldTranslationMap = (

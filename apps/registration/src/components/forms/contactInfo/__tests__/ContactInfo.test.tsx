@@ -167,6 +167,74 @@ describe('ContactInfo', () => {
       // Should NOT render nonExistentField (doesn't exist in API)
       expect(screen.queryByLabelText('SOME_FIELD')).not.toBeInTheDocument();
     });
+
+    it('should render fields in the order specified by config attributes', () => {
+      mockUsePersonAttributeFields.mockReturnValue({
+        attributeFields: [
+          {
+            uuid: 'phone-uuid',
+            name: 'phoneNumber',
+            format: 'java.lang.String',
+            sortWeight: 1,
+          },
+          {
+            uuid: 'alt-phone-uuid',
+            name: 'alternatePhoneNumber',
+            format: 'java.lang.String',
+            sortWeight: 2,
+          },
+          {
+            uuid: 'email-uuid',
+            name: 'email',
+            format: 'java.lang.String',
+            sortWeight: 3,
+          },
+        ],
+        isLoading: false,
+        error: null,
+      });
+
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          patientInformation: {
+            contactInformation: {
+              translationKey: 'CREATE_PATIENT_SECTION_CONTACT_INFO',
+              attributes: [
+                {
+                  field: 'email',
+                  translationKey: 'CREATE_PATIENT_EMAIL',
+                },
+                {
+                  field: 'phoneNumber',
+                  translationKey: 'CREATE_PATIENT_PHONE_NUMBER',
+                },
+                {
+                  field: 'alternatePhoneNumber',
+                  translationKey: 'CREATE_PATIENT_ALT_PHONE_NUMBER',
+                },
+              ],
+            },
+          },
+        },
+      } as any);
+
+      render(<ContactInfo ref={ref} />);
+
+      const fields = screen.getAllByTestId(/^person-attribute-input-/);
+
+      expect(fields[0]).toHaveAttribute(
+        'data-testid',
+        'person-attribute-input-email',
+      );
+      expect(fields[1]).toHaveAttribute(
+        'data-testid',
+        'person-attribute-input-phoneNumber',
+      );
+      expect(fields[2]).toHaveAttribute(
+        'data-testid',
+        'person-attribute-input-alternatePhoneNumber',
+      );
+    });
   });
 
   describe('Input Handling', () => {
