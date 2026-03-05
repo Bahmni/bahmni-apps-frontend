@@ -128,6 +128,7 @@ describe('SearchPatient', () => {
           SEARCH_BY_CUSTOM_ATTRIBUTE: 'Search by phone number',
           REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER: 'Phone Number',
           REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL: 'Email',
+          REGISTRATION_PATIENT_SEARCH_DROPDOWN_VILLAGE: 'Village',
           SEARCH_TYPE: 'Search Type',
           OR: 'OR',
           PATIENT_SEARCH_ATTRIBUTE_SELECTOR: 'Select search attribute',
@@ -1020,5 +1021,72 @@ describe('SearchPatient', () => {
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  it('should preserve order of search fields from config', async () => {
+    const orderedConfig = {
+      patientSearch: {
+        customAttributes: [
+          {
+            translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',
+            fields: ['phoneNumber', 'alternatePhoneNumber'],
+            columnTranslationKeys: [
+              'REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER',
+              'REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER',
+            ],
+            type: 'person',
+          },
+          {
+            translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL',
+            fields: ['email'],
+            columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_EMAIL'],
+            type: 'person',
+          },
+          {
+            translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_VILLAGE',
+            fields: ['village'],
+            columnTranslationKeys: [
+              'REGISTRATION_PATIENT_SEARCH_HEADER_VILLAGE',
+            ],
+            type: 'address',
+          },
+        ],
+      },
+    };
+
+    mockGetRegistrationConfig.mockResolvedValue(orderedConfig as any);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SearchPatient
+          buttonTitle={buttonTitle}
+          searchBarPlaceholder={searchBarPlaceholder}
+          onSearch={mockOnSearch}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      const dropdownButton = screen.getByRole('combobox', {
+        name: /select search attribute/i,
+      });
+      expect(dropdownButton).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Phone Number')).toBeInTheDocument();
+    });
+
+    const dropdownButton = screen.getByRole('combobox', {
+      name: /select search attribute/i,
+    });
+    await userEvent.click(dropdownButton);
+
+    await waitFor(() => {
+      const options = screen.getAllByRole('option');
+      expect(options[0]).toHaveTextContent('Phone Number');
+      expect(options[1]).toHaveTextContent('Email');
+      expect(options[2]).toHaveTextContent('Village');
+    });
   });
 });
