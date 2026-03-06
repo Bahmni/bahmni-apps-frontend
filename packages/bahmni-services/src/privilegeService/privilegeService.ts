@@ -1,31 +1,14 @@
 import { get } from '../api';
-import { USER_PRIVILEGES_URL, SESSION_URL } from '../constants/app';
+import { SESSION_URL } from '../constants/app';
 import { getFormattedError } from '../errorHandling';
 import { UserPrivilege } from './models';
-
-/**
- * Fetches current user privileges from whoami API
- * @returns Promise that resolves to array of user privileges or null if failed
- * @throws Error if fetch fails
- */
-export const getCurrentUserPrivileges = async (): Promise<
-  UserPrivilege[] | null
-> => {
-  try {
-    const privileges = await get<UserPrivilege[]>(USER_PRIVILEGES_URL);
-    return privileges;
-  } catch (error) {
-    const { message } = getFormattedError(error);
-    throw new Error(message);
-  }
-};
 
 /**
  * Fetches current user privileges from OpenMRS session API
  * @returns Promise that resolves to array of user privileges or null if failed
  * @throws Error if fetch fails
  */
-export const getCurrentUserPrivilegesFromSession = async (): Promise<
+export const getCurrentUserPrivileges = async (): Promise<
   UserPrivilege[] | null
 > => {
   try {

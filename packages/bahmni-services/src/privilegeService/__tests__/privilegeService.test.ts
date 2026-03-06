@@ -4,7 +4,6 @@ import { getFormattedError } from '../../errorHandling';
 import { UserPrivilege } from '../models';
 import {
   getCurrentUserPrivileges,
-  getCurrentUserPrivilegesFromSession,
   hasPrivilege,
 } from '../privilegeService';
 
@@ -22,16 +21,16 @@ describe('privilegeService', () => {
   });
 
   describe('getCurrentUserPrivileges', () => {
-    it('should return user privileges when API call succeeds with multiple privileges', async () => {
+    it('should return user privileges from session API', async () => {
       // Arrange
       const mockPrivileges = [
-        { name: 'app:clinical:observationForms' },
-        { name: 'view:forms' },
-        { name: 'edit:forms' },
-        { name: 'delete:forms' },
+        { name: 'Add Encounters' },
+        { name: 'Add Allergies' },
+        { name: 'Add Orders' },
+        { name: 'Add Medications' },
       ];
 
-      mockedGet.mockResolvedValue(mockPrivileges);
+      mockedGet.mockResolvedValue({ user: { privileges: mockPrivileges } });
 
       // Act
       const result = await getCurrentUserPrivileges();
@@ -39,17 +38,15 @@ describe('privilegeService', () => {
       // Assert
       expect(result).toEqual(mockPrivileges);
       expect(result).toHaveLength(4);
-      expect(mockedGet).toHaveBeenCalledWith(
-        '/openmrs/ws/rest/v1/bahmnicore/whoami',
-      );
+      expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
       expect(mockedGet).toHaveBeenCalledTimes(1);
     });
 
     it('should return single privilege when user has only one privilege', async () => {
       // Arrange
-      const mockPrivileges = [{ name: 'app:clinical:observationForms' }];
+      const mockPrivileges = [{ name: 'Add Encounters' }];
 
-      mockedGet.mockResolvedValue(mockPrivileges);
+      mockedGet.mockResolvedValue({ user: { privileges: mockPrivileges } });
 
       // Act
       const result = await getCurrentUserPrivileges();
@@ -57,10 +54,8 @@ describe('privilegeService', () => {
       // Assert
       expect(result).toEqual(mockPrivileges);
       expect(result).toHaveLength(1);
-      expect(result![0].name).toBe('app:clinical:observationForms');
-      expect(mockedGet).toHaveBeenCalledWith(
-        '/openmrs/ws/rest/v1/bahmnicore/whoami',
-      );
+      expect(result![0].name).toBe('Add Encounters');
+      expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
     });
 
     it('should return privileges with complex privilege names', async () => {
@@ -72,7 +67,7 @@ describe('privilegeService', () => {
         { name: 'app:clinical:consultationPad:access' },
       ];
 
-      mockedGet.mockResolvedValue(mockPrivileges);
+      mockedGet.mockResolvedValue({ user: { privileges: mockPrivileges } });
 
       // Act
       const result = await getCurrentUserPrivileges();
@@ -83,24 +78,19 @@ describe('privilegeService', () => {
       expect(
         result!.every((privilege) => privilege.name.includes('app:clinical')),
       ).toBe(true);
-      expect(mockedGet).toHaveBeenCalledWith(
-        '/openmrs/ws/rest/v1/bahmnicore/whoami',
-      );
+      expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
     });
 
-    it('should return empty array when user has no privileges', async () => {
+    it('should return null when session has no user', async () => {
       // Arrange
-      mockedGet.mockResolvedValue([]);
+      mockedGet.mockResolvedValue({ user: null });
 
       // Act
       const result = await getCurrentUserPrivileges();
 
       // Assert
-      expect(result).toEqual([]);
-      expect(result).toHaveLength(0);
-      expect(mockedGet).toHaveBeenCalledWith(
-        '/openmrs/ws/rest/v1/bahmnicore/whoami',
-      );
+      expect(result).toBeNull();
+      expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
     });
 
     it('should handle server errors (500)', async () => {
@@ -122,93 +112,28 @@ describe('privilegeService', () => {
       expect(mockedGetFormattedError).toHaveBeenCalledWith(serverError);
     });
 
-    it('should handle undefined response', async () => {
+    it('should handle response with no privileges array', async () => {
       // Arrange
-      mockedGet.mockResolvedValue(undefined);
+      mockedGet.mockResolvedValue({ user: { privileges: [] } });
 
       // Act
       const result = await getCurrentUserPrivileges();
 
       // Assert
-      expect(result).toBeUndefined();
-      expect(mockedGet).toHaveBeenCalledWith(
-        '/openmrs/ws/rest/v1/bahmnicore/whoami',
-      );
-    });
-
-    it('should handle response with empty privilege names', async () => {
-      // Arrange
-      const mockPrivileges = [
-        { name: '' },
-        { name: 'valid:privilege' },
-        { name: '   ' },
-      ];
-
-      mockedGet.mockResolvedValue(mockPrivileges);
-
-      // Act
-      const result = await getCurrentUserPrivileges();
-
-      // Assert
-      expect(result).toEqual(mockPrivileges);
-      expect(result).toHaveLength(3);
-      expect(mockedGet).toHaveBeenCalledWith(
-        '/openmrs/ws/rest/v1/bahmnicore/whoami',
-      );
-    });
-
-    it('should handle response with null privilege objects', async () => {
-      // Arrange
-      const mockPrivileges = [null, { name: 'valid:privilege' }, undefined];
-
-      mockedGet.mockResolvedValue(mockPrivileges);
-
-      // Act
-      const result = await getCurrentUserPrivileges();
-
-      // Assert
-      expect(result).toEqual(mockPrivileges);
-      expect(result).toHaveLength(3);
-      expect(mockedGet).toHaveBeenCalledWith(
-        '/openmrs/ws/rest/v1/bahmnicore/whoami',
-      );
-    });
-  });
-
-  describe('getCurrentUserPrivilegesFromSession', () => {
-    it('should return user privileges from session API', async () => {
-      const mockPrivileges = [
-        { name: 'Add Encounters' },
-        { name: 'Add Allergies' },
-      ];
-      mockedGet.mockResolvedValue({ user: { privileges: mockPrivileges } });
-
-      const result = await getCurrentUserPrivilegesFromSession();
-
-      expect(result).toEqual(mockPrivileges);
+      expect(result).toEqual([]);
       expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
     });
 
-    it('should return null when session has no user', async () => {
-      mockedGet.mockResolvedValue({ user: null });
+    it('should handle response with null privileges', async () => {
+      // Arrange
+      mockedGet.mockResolvedValue({ user: { privileges: null } });
 
-      const result = await getCurrentUserPrivilegesFromSession();
+      // Act
+      const result = await getCurrentUserPrivileges();
 
+      // Assert
       expect(result).toBeNull();
-    });
-
-    it('should throw formatted error on failure', async () => {
-      const serverError = new Error('Unauthorized');
-      mockedGet.mockRejectedValue(serverError);
-      mockedGetFormattedError.mockReturnValue({
-        title: 'Error',
-        message: 'Unauthorized',
-      });
-
-      await expect(getCurrentUserPrivilegesFromSession()).rejects.toThrow(
-        'Unauthorized',
-      );
-      expect(mockedGetFormattedError).toHaveBeenCalledWith(serverError);
+      expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
     });
   });
 

@@ -1,5 +1,5 @@
 import {
-  getCurrentUserPrivilegesFromSession,
+  getCurrentUserPrivileges,
   UserPrivilege,
   getFormattedError,
 } from '@bahmni/services';
@@ -12,7 +12,7 @@ import { useUserPrivilege } from '../useUserPrivilege';
 
 // Mock the privilegeService
 jest.mock('@bahmni/services', () => ({
-  getCurrentUserPrivilegesFromSession: jest.fn(),
+  getCurrentUserPrivileges: jest.fn(),
   getFormattedError: jest.fn(),
   notificationService: {
     showError: jest.fn(),
@@ -20,8 +20,8 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 const mockGetCurrentUserPrivileges =
-  getCurrentUserPrivilegesFromSession as jest.MockedFunction<
-    typeof getCurrentUserPrivilegesFromSession
+  getCurrentUserPrivileges as jest.MockedFunction<
+    typeof getCurrentUserPrivileges
   >;
 
 const mockGetFormattedError = getFormattedError as jest.MockedFunction<
