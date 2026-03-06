@@ -7,7 +7,10 @@ import '@testing-library/jest-dom';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('@bahmni/services');
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  useTranslation: jest.fn(),
+}));
 // Mock the PatientDetails component
 jest.mock('@bahmni/widgets', () => {
   return {
@@ -20,6 +23,9 @@ jest.mock('@bahmni/widgets', () => {
       practitioner: { uuid: 'active-practitioner-uuid' },
     })),
     usePatientUUID: jest.fn(() => 'patient-uuid'),
+    useUserPrivilege: jest.fn(() => ({
+      userPrivileges: [{ name: 'Add Encounters' }],
+    })),
   };
 });
 

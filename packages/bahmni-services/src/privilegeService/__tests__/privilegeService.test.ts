@@ -2,7 +2,11 @@ import { get } from '../../api';
 import { getFormattedError } from '../../errorHandling';
 
 import { UserPrivilege } from '../models';
-import { getCurrentUserPrivileges, hasPrivilege } from '../privilegeService';
+import {
+  getCurrentUserPrivileges,
+  getCurrentUserPrivilegesFromSession,
+  hasPrivilege,
+} from '../privilegeService';
 
 jest.mock('../../api');
 jest.mock('../../errorHandling');
@@ -171,6 +175,41 @@ describe('privilegeService', () => {
     });
   });
 
+  describe('getCurrentUserPrivilegesFromSession', () => {
+    it('should return user privileges from session API', async () => {
+      const mockPrivileges = [
+        { name: 'Add Encounters' },
+        { name: 'Add Allergies' },
+      ];
+      mockedGet.mockResolvedValue({ user: { privileges: mockPrivileges } });
+
+      const result = await getCurrentUserPrivilegesFromSession();
+
+      expect(result).toEqual(mockPrivileges);
+      expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
+    });
+
+    it('should return null when session has no user', async () => {
+      mockedGet.mockResolvedValue({ user: null });
+
+      const result = await getCurrentUserPrivilegesFromSession();
+
+      expect(result).toBeNull();
+    });
+
+    it('should throw formatted error on failure', async () => {
+      const serverError = new Error('Unauthorized');
+      mockedGet.mockRejectedValue(serverError);
+      mockedGetFormattedError.mockReturnValue({
+        title: 'Error',
+        message: 'Unauthorized',
+      });
+
+      await expect(getCurrentUserPrivilegesFromSession()).rejects.toThrow('Unauthorized');
+      expect(mockedGetFormattedError).toHaveBeenCalledWith(serverError);
+    });
+  });
+
   describe('hasPrivilege', () => {
     const mockUserPrivileges: UserPrivilege[] = [
       { uuid: '1', name: 'app:clinical:observationForms' },
@@ -206,19 +245,26 @@ describe('privilegeService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false when user privileges is null', () => {
-      // Act
-      const result = hasPrivilege(null, 'app:clinical:observationForms');
-
-      // Assert
-      expect(result).toBe(false);
+    it('should return false when user privileges is null or empty', () => {
+      expect(hasPrivilege(null, 'app:clinical:observationForms')).toBe(false);
+      expect(hasPrivilege([], 'app:clinical:observationForms')).toBe(false);
     });
 
-    it('should return false when user privileges is empty array', () => {
-      // Act
-      const result = hasPrivilege([], 'app:clinical:observationForms');
+    it('should return true when privilege is passed as array and any matches', () => {
+      const result = hasPrivilege(mockUserPrivileges, [
+        'nonexistent:privilege',
+        'view:forms',
+      ]);
 
-      // Assert
+      expect(result).toBe(true);
+    });
+
+    it('should return false when privilege is passed as array and none match', () => {
+      const result = hasPrivilege(mockUserPrivileges, [
+        'nonexistent:privilege',
+        'another:missing',
+      ]);
+
       expect(result).toBe(false);
     });
 

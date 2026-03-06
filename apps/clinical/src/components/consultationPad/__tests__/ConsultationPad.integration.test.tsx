@@ -62,10 +62,7 @@ jest.mock('@bahmni/services', () => ({
   logAuditEvent: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   getConditions: jest.fn(),
-  hasPrivilege: jest.fn((privileges: string[] | null, privilege: string) => {
-    if (!privileges) return false;
-    return privileges.includes(privilege);
-  }),
+  hasPrivilege: jest.requireActual('@bahmni/services').hasPrivilege,
 }));
 
 // Mock useUserPrivilege hook
@@ -77,7 +74,15 @@ jest.mock('@bahmni/widgets', () => ({
     activeEncounter: { id: 'encounter-123' },
   })),
   useUserPrivilege: jest.fn(() => ({
-    userPrivileges: ['Get Patients', 'Add Patients'],
+    userPrivileges: [
+      { name: 'Add Encounters' },
+      { name: 'Add Allergies' },
+      { name: 'Add Diagnoses' },
+      { name: 'Add Orders' },
+      { name: 'Add Medications' },
+      { name: 'Add Observations' },
+      { name: 'Add Vaccinations' },
+    ],
   })),
   conditionsQueryKeys: jest.fn((patientUUID: string) => [
     'conditions',

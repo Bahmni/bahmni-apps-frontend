@@ -254,7 +254,15 @@ jest.mock('@bahmni/widgets', () => ({
     addNotification: mockAddNotification,
   })),
   useUserPrivilege: jest.fn(() => ({
-    userPrivileges: ['VIEW_PATIENTS', 'EDIT_ENCOUNTERS'],
+    userPrivileges: [
+      { name: 'Add Encounters' },
+      { name: 'Add Allergies' },
+      { name: 'Add Diagnoses' },
+      { name: 'Add Orders' },
+      { name: 'Add Medications' },
+      { name: 'Add Observations' },
+      { name: 'Add Vaccinations' },
+    ],
   })),
   useActivePractitioner: jest.fn(() => ({
     user: { uuid: 'user-123', username: 'testuser' },
