@@ -10,7 +10,7 @@ export const ClinicalConfigProvider = createConfigProvider<
   ClinicalConfigContextType
 >({
   context: ClinicalConfigContext,
-  queryKey: ['clinicConfig'],
+  queryKey: ['clinicalConfig'],
   queryFn: () =>
     getConfig<ClinicalConfig>(CLINICAL_CONFIG_URL, clinicalConfigSchema),
   valueMapper: (clinicalConfig, isLoading, error) => ({

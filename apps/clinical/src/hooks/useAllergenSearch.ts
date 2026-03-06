@@ -7,7 +7,7 @@ import {
 import { Coding } from 'fhir/r4';
 import { useEffect, useState, useMemo } from 'react';
 import { AllergenConcept } from '../models/allergy';
-import { useClinicalConfig } from '../providers/clinicConfig';
+import { useClinicalConfig } from '../providers/clinicalConfig';
 import useDebounce from './useDebounce';
 
 interface UseAllergenSearchResult {

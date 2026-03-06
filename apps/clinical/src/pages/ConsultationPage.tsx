@@ -25,7 +25,7 @@ import DashboardContainer from '../components/dashboardContainer/DashboardContai
 import PatientHeader from '../components/patientHeader/PatientHeader';
 import { BAHMNI_CLINICAL_PATH } from '../constants/app';
 import { ClinicalAppProvider } from '../providers/ClinicalAppProvider';
-import { useClinicalConfig } from '../providers/clinicConfig';
+import { useClinicalConfig } from '../providers/clinicalConfig';
 import { useObservationFormsStore } from '../stores/observationFormsStore';
 import {
   DASHBOARD_CONFIG_URL,

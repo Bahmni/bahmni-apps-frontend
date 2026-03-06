@@ -2,7 +2,7 @@ import {
   validFullClinicalConfig,
   validDashboardConfig,
 } from '../../__mocks__/configMocks';
-import { Dashboard } from '../../providers/clinicConfig/models';
+import { Dashboard } from '../../providers/clinicalConfig/models';
 import { DashboardConfig } from '../models';
 import { getDefaultDashboard, getSidebarItems } from '../util';
 

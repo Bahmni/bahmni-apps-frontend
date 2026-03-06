@@ -3,13 +3,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
 import i18n from '../../../../../setupTests.i18n';
-import { useClinicalConfig } from '../../../../providers/clinicConfig';
+import { useClinicalConfig } from '../../../../providers/clinicalConfig';
 import { useAllergyStore } from '../../../../stores/allergyStore';
 import AllergiesForm from '../AllergiesForm';
 
 // Mock hooks and services
 jest.mock('../../../../stores/allergyStore');
-jest.mock('../../../../providers/clinicConfig');
+jest.mock('../../../../providers/clinicalConfig');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   fetchAndFormatAllergenConcepts: jest.fn(),

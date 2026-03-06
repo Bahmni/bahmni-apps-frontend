@@ -5,13 +5,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { useClinicalConfig } from '../../providers/clinicConfig';
+import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationPage from '../ConsultationPage';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('../../providers/clinicConfig', () => ({
-  ...jest.requireActual('../../providers/clinicConfig'),
+jest.mock('../../providers/clinicalConfig', () => ({
+  ...jest.requireActual('../../providers/clinicalConfig'),
   useClinicalConfig: jest.fn(),
 }));
 

@@ -13,7 +13,7 @@ import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
 import { CLINICAL_NAMESPACE } from './constants/app';
 import ConsultationPage from './pages/ConsultationPage';
-import { ClinicalConfigProvider } from './providers/clinicConfig';
+import { ClinicalConfigProvider } from './providers/clinicalConfig';
 
 const queryClient = new QueryClient(queryClientConfig);
 

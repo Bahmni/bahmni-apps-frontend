@@ -385,7 +385,7 @@ jest.mock('../../../hooks/usePinnedObservationForms', () => ({
   usePinnedObservationForms: () => mockUsePinnedObservationForms(),
 }));
 
-jest.mock('../../../providers/clinicConfig', () => ({
+jest.mock('../../../providers/clinicalConfig', () => ({
   __esModule: true,
   useClinicalConfig: () => ({
     clinicalConfig: null,

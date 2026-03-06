@@ -34,7 +34,7 @@ import {
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../hooks/usePinnedObservationForms';
-import { useClinicalConfig } from '../../providers/clinicConfig';
+import { useClinicalConfig } from '../../providers/clinicalConfig';
 import {
   postConsultationBundle,
   createDiagnosisBundleEntries,

@@ -23,7 +23,7 @@ import {
 } from '../../../__mocks__/consultationPadMocks';
 import { FhirEncounter, FhirEncounterType } from '../../../models/encounter';
 import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
-import { ClinicalConfigProvider } from '../../../providers/clinicConfig';
+import { ClinicalConfigProvider } from '../../../providers/clinicalConfig';
 import * as consultationBundleService from '../../../services/consultationBundleService';
 import { getEncounterConcepts } from '../../../services/encounterConceptsService';
 import { getLocations } from '../../../services/locationService';

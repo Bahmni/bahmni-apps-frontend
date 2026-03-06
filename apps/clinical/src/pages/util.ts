@@ -1,5 +1,5 @@
 import { HeaderSideNavItem } from '@bahmni/design-system';
-import { Dashboard } from '../providers/clinicConfig/models';
+import { Dashboard } from '../providers/clinicalConfig/models';
 import { DashboardConfig } from './models';
 
 /**
