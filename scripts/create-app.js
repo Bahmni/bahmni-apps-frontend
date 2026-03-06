@@ -85,7 +85,6 @@ function getPackageJsonTemplate(appNameKebab) {
       exports: {
         './package.json': './package.json',
         '.': {
-          '@bahmni/source': './src/index.ts',
           types: './dist/index.d.ts',
           import: './dist/index.js',
           default: './dist/index.js',
@@ -98,6 +97,13 @@ function getPackageJsonTemplate(appNameKebab) {
         'react-dom': '^19.0.0',
         'react-router-dom': '^7.5.3',
       },
+      "author": "Thoughtworks Inc.",
+      "license": "MPLv2",
+      "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+      ]
     },
     null,
     2,

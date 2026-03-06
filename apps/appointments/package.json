@@ -8,7 +8,6 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "@bahmni/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
@@ -20,5 +19,13 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.5.3"
-  }
+  },
+  "author": "Thoughtworks Inc.",
+  "license": "MPLv2",
+  "description": "A comprehensive appointments module for Bahmni, built with React and Bahmni Design System. Provides a complete EMR interface to view, create and manage appointments.",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }
