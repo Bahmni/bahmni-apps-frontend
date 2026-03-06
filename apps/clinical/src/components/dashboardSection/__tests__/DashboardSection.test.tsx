@@ -1,7 +1,7 @@
-import { DashboardSectionConfig } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import React, { Suspense } from 'react';
+import { DashboardSectionConfig } from '../../../pages/models';
 import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
 import DashboardSection from '../DashboardSection';
 

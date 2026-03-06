@@ -1,12 +1,9 @@
-import {
-  DashboardSectionConfig as DashboardSectionType,
-  AUDIT_LOG_EVENT_DETAILS,
-  dispatchAuditEvent,
-} from '@bahmni/services';
+import { AUDIT_LOG_EVENT_DETAILS, dispatchAuditEvent } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
+import { DashboardSectionConfig as DashboardSectionType } from '../../../pages/models';
 import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
 import DashboardContainer from '../DashboardContainer';
 

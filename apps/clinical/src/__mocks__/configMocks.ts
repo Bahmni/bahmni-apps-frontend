@@ -1,4 +1,4 @@
-import { DashboardConfig } from '@bahmni/services';
+import { DashboardConfig } from '../pages/models';
 
 export const validFullClinicalConfig = {
   patientInformation: {
@@ -67,6 +67,7 @@ export const validDashboardConfig: DashboardConfig = {
       controls: [
         {
           type: 'flowSheet',
+          name: 'Vitals Flow Sheet',
           config: {},
         },
       ],
@@ -78,6 +79,7 @@ export const validDashboardConfig: DashboardConfig = {
       controls: [
         {
           type: 'treatment',
+          name: 'Treatment',
           config: {},
         },
       ],

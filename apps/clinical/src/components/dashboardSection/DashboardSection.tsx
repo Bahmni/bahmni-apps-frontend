@@ -1,11 +1,8 @@
 import { Tile } from '@bahmni/design-system';
-import {
-  useTranslation,
-  DashboardSectionConfig,
-  ControlConfig,
-} from '@bahmni/services';
+import { useTranslation } from '@bahmni/services';
 import { getWidget } from '@bahmni/widgets';
 import React, { Suspense } from 'react';
+import { ControlConfig, DashboardSectionConfig } from '../../pages/models';
 import styles from './styles/DashboardSection.module.scss';
 
 export interface DashboardSectionProps {
