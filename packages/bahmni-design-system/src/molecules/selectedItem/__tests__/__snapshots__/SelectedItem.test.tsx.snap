@@ -55,7 +55,7 @@ exports[`Snapshot should match snapshot 1`] = `
           <span
             class="cds--popover-content cds--tooltip-content"
           >
-            Selected Item Close
+            Close
           </span>
           <span
             class="cds--popover-caret"

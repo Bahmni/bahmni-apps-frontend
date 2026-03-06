@@ -223,7 +223,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  Selected Item Close
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"
@@ -539,7 +539,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  Selected Item Close
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"
@@ -730,7 +730,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  Selected Item Close
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"
@@ -905,7 +905,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  Selected Item Close
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"
@@ -1252,7 +1252,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  Selected Item Close
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"
@@ -1427,7 +1427,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  Selected Item Close
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"
@@ -1665,7 +1665,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
                 <span
                   class="cds--popover-content cds--tooltip-content"
                 >
-                  Selected Item Close
+                  Close
                 </span>
                 <span
                   class="cds--popover-caret"

@@ -28,8 +28,8 @@ describe('Lab Investigation Utils', () => {
     jest.clearAllMocks();
     (formatDate as jest.Mock).mockImplementation((date) => ({
       formattedResult: date.includes('2025-05-08')
-        ? 'May 8, 2025'
-        : 'April 9, 2025',
+        ? 'May 08, 2025'
+        : 'April 09, 2025',
     }));
   });
 
@@ -70,6 +70,20 @@ describe('Lab Investigation Utils', () => {
   });
 
   const mockTranslate = (key: string) => key;
+
+  const createMockFormattedTest = (
+    overrides: Partial<FormattedLabInvestigations> = {},
+  ): FormattedLabInvestigations => ({
+    id: 'test-1',
+    testName: 'Test 1',
+    priority: LabInvestigationPriority.routine,
+    orderedBy: 'Dr. Smith',
+    orderedDate: '2025-05-08T12:44:24+00:00',
+    formattedDate: 'May 08, 2025',
+    result: undefined,
+    testType: 'Single Test',
+    ...overrides,
+  });
 
   describe('mapLabInvestigationPriority', () => {
     it('should map routine priority correctly', () => {
@@ -244,7 +258,7 @@ describe('Lab Investigation Utils', () => {
         priority: LabInvestigationPriority.routine,
         orderedBy: 'Dr. Smith',
         orderedDate: '2025-05-08T12:44:24+00:00',
-        formattedDate: 'May 8, 2025',
+        formattedDate: 'May 08, 2025',
         result: undefined,
         testType: 'Single Test',
         note: undefined,
@@ -286,57 +300,35 @@ describe('Lab Investigation Utils', () => {
   describe('groupLabInvestigationsByDate', () => {
     it('should group tests by date', () => {
       const mockFormattedTests: FormattedLabInvestigations[] = [
-        {
-          id: 'test-1',
-          testName: 'Test 1',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
-          orderedDate: '2025-05-08T12:44:24+00:00',
-          formattedDate: 'May 8, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
-        {
+        createMockFormattedTest({ id: 'test-1' }),
+        createMockFormattedTest({
           id: 'test-2',
-          testName: 'Test 2',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
           orderedDate: '2025-05-08T14:30:00+00:00',
-          formattedDate: 'May 8, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
+          testName: 'Test 2',
+        }),
       ];
 
       const result = groupLabInvestigationsByDate(mockFormattedTests);
 
       expect(result).toHaveLength(1);
-      expect(result[0].date).toBe('May 8, 2025');
+      expect(result[0].date).toBe('May 08, 2025');
       expect(result[0].tests).toHaveLength(2);
     });
 
     it('should sort dates newest first', () => {
       const mockFormattedTests: FormattedLabInvestigations[] = [
-        {
+        createMockFormattedTest({
           id: 'test-1',
           testName: 'Old Test',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
           orderedDate: '2025-01-01T00:00:00+00:00',
           formattedDate: 'Jan 1, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
-        {
+        }),
+        createMockFormattedTest({
           id: 'test-2',
           testName: 'New Test',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
           orderedDate: '2025-12-31T00:00:00+00:00',
           formattedDate: 'Dec 31, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
+        }),
       ];
 
       const result = groupLabInvestigationsByDate(mockFormattedTests);
@@ -606,16 +598,7 @@ describe('Lab Investigation Utils', () => {
   describe('updateTestsWithResults', () => {
     it('should update tests with results from map', () => {
       const tests: FormattedLabInvestigations[] = [
-        {
-          id: 'test-1',
-          testName: 'Blood Test',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
-          orderedDate: '2025-05-08T12:44:24+00:00',
-          formattedDate: 'May 8, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
+        createMockFormattedTest({ id: 'test-1', testName: 'Blood Test' }),
       ];
 
       const resultsMap = new Map();
@@ -625,7 +608,7 @@ describe('Lab Investigation Utils', () => {
           TestName: 'Hemoglobin',
           Result: '14.5 g/dL',
           referenceRange: '12-16 g/dL',
-          reportedOn: 'May 8, 2025',
+          reportedOn: 'May 08, 2025',
           actions: '',
         },
       ]);
@@ -638,20 +621,10 @@ describe('Lab Investigation Utils', () => {
 
     it('should not modify tests without results', () => {
       const tests: FormattedLabInvestigations[] = [
-        {
-          id: 'test-1',
-          testName: 'Blood Test',
-          priority: LabInvestigationPriority.routine,
-          orderedBy: 'Dr. Smith',
-          orderedDate: '2025-05-08T12:44:24+00:00',
-          formattedDate: 'May 8, 2025',
-          result: undefined,
-          testType: 'Single Test',
-        },
+        createMockFormattedTest({ id: 'test-1', testName: 'Blood Test' }),
       ];
 
       const resultsMap = new Map();
-
       const result = updateTestsWithResults(tests, resultsMap);
 
       expect(result[0].result).toBeUndefined();
