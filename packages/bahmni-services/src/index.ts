@@ -315,3 +315,10 @@ export {
   CONSULTATION_SAVED_EVENT,
   type ConsultationSavedEventPayload,
 } from './events/consultationEvents';
+
+export {
+  getDocumentReferences,
+  getFormattedDocumentReferences,
+  type DocumentViewModel,
+  type DocumentReference,
+} from './documentReferenceService';

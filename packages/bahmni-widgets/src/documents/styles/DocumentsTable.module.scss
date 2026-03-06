@@ -1,0 +1,78 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.documentsTableBody {
+  td {
+    width: 25%;
+  }
+
+  td:nth-child(1) {
+    width: 30%;
+  }
+}
+
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+}
+
+.fileIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: $spacing-05;
+    height: $spacing-05;
+  }
+}
+
+.pdfIcon {
+  color: $red-50;
+}
+
+.imageIcon {
+  color: $blue-50;
+}
+
+.documentIcon {
+  color: $gray-50;
+}
+
+.fileIconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:focus {
+    outline: $spacing-01 solid $focus;
+    outline-offset: $spacing-01;
+  }
+}
+
+.documentViewerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: $spacing-04;
+}
+
+.documentIframe {
+  width: 100%;
+  height: $spacing-06 * 25;
+  border: none;
+}
+
+.documentImage {
+  max-width: 100%;
+  max-height: $spacing-06 * 25;
+}

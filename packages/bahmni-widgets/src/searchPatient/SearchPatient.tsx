@@ -232,7 +232,14 @@ const SearchPatient: React.FC<SearchPatientProps> = ({
       setDropdownItems([]);
       setSelectedDropdownItem('');
     }
-  }, [configData, configIsError, configError, addNotification, t]);
+  }, [
+    configData,
+    configIsError,
+    configError,
+    addNotification,
+    t,
+    dropdownItems.length,
+  ]);
 
   useEffect(() => {
     if (isError && searchTerm) {
