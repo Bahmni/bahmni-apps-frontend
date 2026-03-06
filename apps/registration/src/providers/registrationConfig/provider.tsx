@@ -21,6 +21,7 @@ export const RegistrationConfigProvider = createConfigProvider<
     isLoading,
     error,
   }),
-  namePrefix: 'registration-config',
+  id: 'registration-config',
+  name: 'Registration Config',
   displayName: 'RegistrationConfigProvider',
 });

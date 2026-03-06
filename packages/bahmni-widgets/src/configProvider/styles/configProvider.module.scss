@@ -1,0 +1,18 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.emptyState {
+  padding: $spacing-07;
+  background-color: $layer-01;
+}
+
+.emptyStateTitle {
+  @include type-style("heading-compact-02");
+  margin-bottom: $spacing-03;
+}
+
+.emptyStateBody {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+}

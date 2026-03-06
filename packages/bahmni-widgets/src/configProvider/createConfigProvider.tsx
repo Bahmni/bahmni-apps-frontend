@@ -1,8 +1,9 @@
-import { Loading } from '@bahmni/design-system';
+import { Column, Grid, Loading } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { Context, ReactNode, useMemo, useEffect } from 'react';
 import { useNotification } from '../notification/useNotification';
+import styles from './styles/configProvider.module.scss';
 
 interface CreateConfigProviderOptions<
   TConfig,
@@ -16,7 +17,8 @@ interface CreateConfigProviderOptions<
     isLoading: boolean,
     error: Error | null,
   ) => TContextValue;
-  namePrefix: string;
+  id: string;
+  name: string;
   displayName: string;
 }
 
@@ -31,7 +33,8 @@ export function createConfigProvider<
     queryKey,
     queryFn,
     valueMapper,
-    namePrefix,
+    id,
+    name,
     displayName,
   } = options;
 
@@ -50,7 +53,7 @@ export function createConfigProvider<
       if (error) {
         addNotification({
           type: 'error',
-          title: t('ERROR_CONFIG_TITLE'),
+          title: t('ERROR_CONFIG_TITLE', { config: name }),
           message: error.message,
         });
       }
@@ -58,18 +61,40 @@ export function createConfigProvider<
 
     if (error) {
       return (
-        <div
-          id={`${namePrefix}-error`}
-          data-testid={`${namePrefix}-error-test-id`}
-        />
+        <Grid
+          id={`${id}-error`}
+          data-testid={`${id}-error-test-id`}
+          aria-label={t('ERROR_CONFIG_TITLE', { config: name })}
+          className={styles.emptyState}
+        >
+          <Column
+            sm={4}
+            md={8}
+            lg={16}
+            xlg={16}
+            className={styles.emptyStateTitle}
+          >
+            {t('ERROR_CONFIG_TITLE', { config: name })}
+          </Column>
+          <Column
+            sm={4}
+            md={8}
+            lg={16}
+            xlg={16}
+            className={styles.emptyStateBody}
+          >
+            {t('ERROR_CONFIG_GENERIC_MESSAGE', { config: name })}
+          </Column>
+        </Grid>
       );
     }
 
     if (isLoading) {
       return (
         <Loading
-          id={`${namePrefix}-loader`}
-          testId={`${namePrefix}-loader-test-id`}
+          id={`${id}-loader`}
+          testId={`${id}-loader-test-id`}
+          aria-label={`${id}-loader-aria-label`}
           role="status"
         />
       );

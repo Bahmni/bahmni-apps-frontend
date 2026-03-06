@@ -18,6 +18,7 @@ export const ClinicalConfigProvider = createConfigProvider<
     isLoading,
     error,
   }),
-  namePrefix: 'clinical-config',
+  id: 'clinical-config',
+  name: 'Clinical Config',
   displayName: 'ClinicalConfigProvider',
 });

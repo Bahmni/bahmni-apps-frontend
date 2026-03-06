@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import React, { createContext } from 'react';
-import { NotificationProvider } from '../../notification';
+import { useNotification } from '../../notification/useNotification';
 import { createConfigProvider } from '../createConfigProvider';
+
+jest.mock('../../notification/useNotification');
 
 interface TestConfig {
   value: string;
@@ -27,21 +29,22 @@ const TestProvider = createConfigProvider<TestConfig, TestContextValue>({
     isLoading,
     error,
   }),
-  namePrefix: 'test-config',
+  id: 'test-config',
+  name: 'Test Config',
   displayName: 'TestConfigProvider',
 });
 
 const TestChild = () => <div data-testid="test-child">Child</div>;
 
+const mockAddNotification = jest.fn();
+
 describe('createConfigProvider', () => {
   let queryClient: QueryClient;
 
   const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-    <NotificationProvider>
-      <QueryClientProvider client={queryClient}>
-        <TestProvider>{children}</TestProvider>
-      </QueryClientProvider>
-    </NotificationProvider>
+    <QueryClientProvider client={queryClient}>
+      <TestProvider>{children}</TestProvider>
+    </QueryClientProvider>
   );
 
   beforeEach(() => {
@@ -49,6 +52,9 @@ describe('createConfigProvider', () => {
       defaultOptions: { queries: { retry: false } },
     });
     jest.clearAllMocks();
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: mockAddNotification,
+    });
   });
 
   afterEach(async () => {
@@ -77,14 +83,6 @@ describe('createConfigProvider', () => {
       expectedVisibleId: 'test-child',
       expectedHiddenIds: [] as string[],
     },
-    {
-      description: 'shows error element and hides children when fetch fails',
-      setup: () =>
-        mockQueryFn.mockRejectedValueOnce(new Error('Failed to fetch config')),
-      syncVisibleIds: [] as string[],
-      expectedVisibleId: 'test-config-error-test-id',
-      expectedHiddenIds: ['test-child'],
-    },
   ])(
     'should $description',
     async ({ setup, syncVisibleIds, expectedVisibleId, expectedHiddenIds }) => {
@@ -109,4 +107,47 @@ describe('createConfigProvider', () => {
       }
     },
   );
+
+  it('should show error UI and hide children when fetch fails', async () => {
+    mockQueryFn.mockRejectedValueOnce(new Error('Failed to fetch config'));
+
+    render(
+      <TestWrapper>
+        <TestChild />
+      </TestWrapper>,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('test-config-error-test-id'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('ERROR_CONFIG_TITLE')).toBeInTheDocument();
+      expect(
+        screen.getByText('ERROR_CONFIG_GENERIC_MESSAGE'),
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('test-child')).not.toBeInTheDocument();
+    expect(screen.getByTestId('test-config-error-test-id')).toHaveAttribute(
+      'aria-label',
+      'ERROR_CONFIG_TITLE',
+    );
+  });
+
+  it('should trigger error notification with config name when fetch fails', async () => {
+    mockQueryFn.mockRejectedValueOnce(new Error('Failed to fetch config'));
+
+    render(
+      <TestWrapper>
+        <TestChild />
+      </TestWrapper>,
+    );
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'ERROR_CONFIG_TITLE',
+        message: 'Failed to fetch config',
+      });
+    });
+  });
 });

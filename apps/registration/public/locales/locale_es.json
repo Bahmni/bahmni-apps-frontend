@@ -83,6 +83,8 @@
   "DATE_ERROR_NULL_OR_UNDEFINED": "La fecha es nula o no está definida",
   "DATE_ERROR_PARSE": "Error al analizar la fecha",
   "ENTER_VISIT_DETAILS": "Ingrese los detalles de la visita",
+  "ERROR_CONFIG_GENERIC_MESSAGE": "No se pudo cargar {{config}}. Por favor, intente actualizar la página.",
+  "ERROR_CONFIG_TITLE": "Error de {{config}}",
   "ERROR_DEFAULT_TITLE": "Error",
   "ERROR_LOADING_PATIENT_DETAILS": "Error al cargar los detalles del paciente",
   "ERROR_LOADING_PATIENT_PHOTO": "Error al cargar la foto del paciente",

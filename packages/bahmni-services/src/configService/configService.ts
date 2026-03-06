@@ -15,7 +15,7 @@ import { ERROR_MESSAGES } from './constants';
 export const getConfig = async <T>(
   configPath: string,
   configSchema: Record<string, unknown>,
-): Promise<T | null> => {
+): Promise<T> => {
   const config = await fetchConfig<T>(configPath);
   if (!config) {
     throw new Error(ERROR_MESSAGES.CONFIG_NOT_FOUND);
