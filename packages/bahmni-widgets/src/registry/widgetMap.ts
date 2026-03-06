@@ -19,6 +19,10 @@ export const builtInWidgets: WidgetConfig[] = [
     component: lazy(() => import('../diagnoses/DiagnosesTable')),
   },
   {
+    type: 'patientDocuments',
+    component: lazy(() => import('../documents/DocumentsTable')),
+  },
+  {
     type: 'flowSheet',
     component: lazy(() => import('../vitalFlowSheet/VitalFlowSheet')),
   },

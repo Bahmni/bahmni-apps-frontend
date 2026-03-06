@@ -265,6 +265,7 @@ describe('Widget Registry', () => {
         'observations',
         'ordersControl',
         'pacsOrders',
+        'patientDocuments',
         'programs',
         'treatment',
       ];
@@ -396,7 +397,7 @@ describe('Widget Registry', () => {
       resetWidgetRegistry();
       const countAfterReset = getAllWidgetTypes().length;
 
-      expect(countAfterReset).toBe(12); // Only built-in widgets
+      expect(countAfterReset).toBe(13); // Only built-in widgets
       expect(countWithCustom).toBeGreaterThan(countAfterReset);
     });
   });
