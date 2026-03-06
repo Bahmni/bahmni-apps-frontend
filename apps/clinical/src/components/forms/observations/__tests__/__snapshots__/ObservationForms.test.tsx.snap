@@ -57,5 +57,9 @@ exports[`ObservationForms Rendering and Structure should match the snapshot 1`] 
       </div>
     </div>
   </div>
+  <li
+    class="cds--menu-item-divider"
+    role="separator"
+  />
 </div>
 `;

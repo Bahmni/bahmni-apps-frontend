@@ -1,4 +1,8 @@
-import { useNotification, usePatientUUID } from '@bahmni/widgets';
+import {
+  useNotification,
+  usePatientUUID,
+  useUserPrivilege,
+} from '@bahmni/widgets';
 import {
   QueryClient,
   QueryClientProvider,
@@ -44,6 +48,7 @@ jest.mock('@bahmni/widgets', () => {
     ...widgets,
     useNotification: jest.fn(),
     usePatientUUID: jest.fn(),
+    useUserPrivilege: jest.fn(),
   };
 });
 
@@ -72,6 +77,15 @@ const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockUseQueryClient = useQueryClient as jest.MockedFunction<
   typeof useQueryClient
 >;
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
+const mockUserPrivilegesWithMedications = {
+  userPrivileges: [{ name: 'Add Medications' }],
+} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesEmpty = {
+  userPrivileges: null,
+} as ReturnType<typeof useUserPrivilege>;
 
 // Mock data
 const mockMedication: Medication = {
@@ -210,6 +224,8 @@ describe('MedicationsForm', () => {
     mockUseQueryClient.mockReturnValue({
       invalidateQueries: jest.fn(),
     } as unknown as ReturnType<typeof useQueryClient>);
+
+    mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithMedications);
   });
 
   // HAPPY PATH TESTS
@@ -877,6 +893,18 @@ describe('MedicationsForm', () => {
 
       const { container } = renderWithQueryClient(<MedicationsForm />);
       expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('Privilege Guard', () => {
+    test('renders null when user lacks Add Medications privilege', () => {
+      mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      const { container } = render(<MedicationsForm />);
+      expect(container).toBeEmptyDOMElement();
+    });
+    test('renders form when user has Add Medications privilege', () => {
+      render(<MedicationsForm />);
+      expect(screen.getByTestId('medications-form-tile')).toBeInTheDocument();
     });
   });
 });

@@ -7,6 +7,7 @@ import {
   useNotification,
   usePatientUUID,
   conditionsQueryKeys,
+  useUserPrivilege,
 } from '@bahmni/widgets';
 import {
   QueryClient,
@@ -44,6 +45,7 @@ jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn(),
   conditionsQueryKeys: jest.fn(),
   diagnosesQueryKeys: jest.fn(),
+  useUserPrivilege: jest.fn(),
 }));
 
 jest.mock('@tanstack/react-query', () => ({
@@ -74,6 +76,17 @@ const mockedUseConditionsAndDiagnosesStore =
     typeof useConditionsAndDiagnosesStore
   >;
 const mockedUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
+const mockedUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
+
+const mockUserPrivilegesWithDiagnoses = {
+  userPrivileges: [{ name: 'Add Diagnoses' }],
+} as ReturnType<typeof useUserPrivilege>;
+
+const mockUserPrivilegesEmpty = {
+  userPrivileges: null,
+} as ReturnType<typeof useUserPrivilege>;
 
 const createMockConcept = (
   overrides?: Partial<ConceptSearch>,
@@ -280,6 +293,7 @@ describe('ConditionsAndDiagnoses', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithDiagnoses);
     jest.spyOn(console, 'error').mockImplementation(() => {});
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
   });
@@ -934,6 +948,21 @@ describe('ConditionsAndDiagnoses', () => {
         mockConditionEntries,
       );
       expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('Privilege Guard', () => {
+    it('renders null when user lacks Add Diagnoses privilege', () => {
+      mockedUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      const { container } = renderComponent();
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it('renders form when user has Add Diagnoses privilege', () => {
+      renderComponent();
+      expect(
+        screen.getByTestId('conditions-and-diagnoses-tile'),
+      ).toBeInTheDocument();
     });
   });
 });

@@ -23,6 +23,9 @@ jest.mock('@bahmni/widgets', () => ({
     addNotification: jest.fn(),
   })),
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: [{ name: 'Add Allergies' }],
+  })),
 }));
 
 // Mock @tanstack/react-query

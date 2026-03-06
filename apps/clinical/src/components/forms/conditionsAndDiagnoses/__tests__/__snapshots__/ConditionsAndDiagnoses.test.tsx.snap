@@ -235,6 +235,10 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
       </div>
     </div>
   </div>
+  <li
+    class="cds--menu-item-divider"
+    role="separator"
+  />
 </div>
 `;
 
@@ -313,6 +317,10 @@ exports[`ConditionsAndDiagnoses Snapshot Tests empty form matches snapshot 1`] =
       </div>
     </div>
   </div>
+  <li
+    class="cds--menu-item-divider"
+    role="separator"
+  />
 </div>
 `;
 
@@ -917,6 +925,10 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
       </div>
     </div>
   </div>
+  <li
+    class="cds--menu-item-divider"
+    role="separator"
+  />
 </div>
 `;
 
@@ -995,6 +1007,10 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with search results matches 
       </div>
     </div>
   </div>
+  <li
+    class="cds--menu-item-divider"
+    role="separator"
+  />
 </div>
 `;
 
@@ -1439,6 +1455,10 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
       </div>
     </div>
   </div>
+  <li
+    class="cds--menu-item-divider"
+    role="separator"
+  />
 </div>
 `;
 
@@ -1677,5 +1697,9 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
       </div>
     </div>
   </div>
+  <li
+    class="cds--menu-item-divider"
+    role="separator"
+  />
 </div>
 `;

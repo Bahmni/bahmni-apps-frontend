@@ -2,10 +2,7 @@ import { get } from '../../api';
 import { getFormattedError } from '../../errorHandling';
 
 import { UserPrivilege } from '../models';
-import {
-  getCurrentUserPrivileges,
-  hasPrivilege,
-} from '../privilegeService';
+import { getCurrentUserPrivileges, hasPrivilege } from '../privilegeService';
 
 jest.mock('../../api');
 jest.mock('../../errorHandling');

@@ -1,9 +1,15 @@
 import { ObservationForm } from '@bahmni/services';
+import { useUserPrivilege } from '@bahmni/widgets';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import ObservationForms from '../ObservationForms';
 
 expect.extend(toHaveNoViolations);
+
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
+  useUserPrivilege: jest.fn(),
+}));
 
 // Mock the translation hook
 jest.mock('react-i18next', () => ({
@@ -170,6 +176,16 @@ jest.mock('@bahmni/design-system', () => ({
 
 // BahmniIcon is already mocked as part of the design system mock above
 
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
+const mockUserPrivilegesWithObservations = {
+  userPrivileges: [{ name: 'Add Observations' }],
+} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesEmpty = {
+  userPrivileges: null,
+} as ReturnType<typeof useUserPrivilege>;
+
 describe('ObservationForms', () => {
   // Test data factories
   const createForm = (
@@ -233,6 +249,7 @@ describe('ObservationForms', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithObservations);
   });
 
   describe('Rendering and Structure', () => {
@@ -834,6 +851,18 @@ describe('ObservationForms', () => {
 
       // This covers the onActionClick callback (line 208) - should call updatePinnedForms with filtered array
       expect(mockUpdatePinnedForms).toHaveBeenCalledWith([]);
+    });
+  });
+
+  describe('Privilege Guard', () => {
+    it('renders null when user lacks Add Observations privilege', () => {
+      mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      const { container } = render(<ObservationForms {...defaultProps} />);
+      expect(container).toBeEmptyDOMElement();
+    });
+    it('renders form when user has Add Observations privilege', () => {
+      render(<ObservationForms {...defaultProps} />);
+      expect(screen.getByTestId('tile')).toBeInTheDocument();
     });
   });
 });

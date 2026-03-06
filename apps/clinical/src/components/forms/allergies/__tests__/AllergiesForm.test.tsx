@@ -1,3 +1,4 @@
+import { useUserPrivilege } from '@bahmni/widgets';
 import {
   QueryClient,
   QueryClientProvider,
@@ -31,10 +32,12 @@ jest.mock('@bahmni/widgets', () => ({
     addNotification: jest.fn(),
   })),
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+  useUserPrivilege: jest.fn(),
 }));
 
 // Mock @bahmni/services
 jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(() => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
@@ -112,6 +115,18 @@ const mockSelectedAllergy = {
   hasBeenValidated: false,
 };
 
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
+
+const mockUserPrivilegesWithAllergies = {
+  userPrivileges: [{ name: 'Add Allergies' }],
+} as ReturnType<typeof useUserPrivilege>;
+
+const mockUserPrivilegesEmpty = {
+  userPrivileges: null,
+} as ReturnType<typeof useUserPrivilege>;
+
 const mockAllergyStore = {
   selectedAllergies: [],
   addAllergy: jest.fn(),
@@ -177,6 +192,7 @@ describe('AllergiesForm', () => {
     mockAllergyStore.selectedAllergies = [];
 
     // Set default mocks
+    mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithAllergies);
     (
       useAllergyStore as jest.MockedFunction<typeof useAllergyStore>
     ).mockReturnValue(mockAllergyStore);
@@ -799,6 +815,19 @@ describe('AllergiesForm', () => {
         selectedAllergies: [mockSelectedAllergy],
       });
       expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('Privilege Guard', () => {
+    it('renders null when user lacks Add Allergies privilege', () => {
+      mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      const { container } = renderAllergiesForm();
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it('renders form when user has Add Allergies privilege', () => {
+      renderAllergiesForm();
+      expect(screen.getByTestId('allergies-form-tile')).toBeInTheDocument();
     });
   });
 });

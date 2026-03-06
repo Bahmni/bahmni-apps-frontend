@@ -62,7 +62,6 @@ jest.mock('@bahmni/services', () => ({
   logAuditEvent: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   getConditions: jest.fn(),
-  hasPrivilege: jest.requireActual('@bahmni/services').hasPrivilege,
 }));
 
 // Mock useUserPrivilege hook

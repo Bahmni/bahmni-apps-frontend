@@ -3,6 +3,9 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
+import { getVaccinations } from '@bahmni/services';
+import { useUserPrivilege } from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Medication } from 'fhir/r4';
@@ -15,6 +18,10 @@ import VaccinationForm from '../VaccinationForm';
 expect.extend(toHaveNoViolations);
 
 jest.mock('../../../../stores/vaccinationsStore');
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
+  useUserPrivilege: jest.fn(),
+}));
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getVaccinations: jest.fn(),
@@ -49,6 +56,16 @@ jest.mock('../styles/VaccinationForm.module.scss', () => ({
   selectedVaccinationItem: 'selectedVaccinationItem',
   duplicateNotification: 'duplicateNotification',
 }));
+
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
+const mockUserPrivilegesWithVaccinations = {
+  userPrivileges: [{ name: 'Add Vaccinations' }],
+} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesEmpty = {
+  userPrivileges: null,
+} as ReturnType<typeof useUserPrivilege>;
 
 const mockVaccination: Medication = {
   id: 'test-vaccination-1',
@@ -205,6 +222,7 @@ describe('VaccinationForm', () => {
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
     (useVaccinationStore as unknown as jest.Mock).mockReturnValue(mockStore);
     mockUseQuery.mockImplementation(defaultQueryMock as any);
+    mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithVaccinations);
   });
 
   describe('Rendering', () => {
@@ -487,6 +505,20 @@ describe('VaccinationForm', () => {
           screen.getByText(/no matching vaccinations found/i),
         ).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Privilege Guard', () => {
+    test('renders null when user lacks Add Vaccinations privilege', () => {
+      mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      const { container } = render(<VaccinationForm />, {
+        wrapper: createWrapper(),
+      });
+      expect(container).toBeEmptyDOMElement();
+    });
+    test('renders form when user has Add Vaccinations privilege', () => {
+      render(<VaccinationForm />, { wrapper: createWrapper() });
+      expect(screen.getByTestId('vaccination-form-tile')).toBeInTheDocument();
     });
   });
 });

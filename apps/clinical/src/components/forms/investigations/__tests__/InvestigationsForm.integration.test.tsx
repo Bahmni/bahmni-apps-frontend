@@ -32,6 +32,9 @@ jest.mock('@bahmni/widgets', () => ({
   useActivePractitioner: jest.fn().mockReturnValue({
     practitioner: { uuid: 'mock-practitioner-uuid' },
   }),
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: [{ name: 'Add Orders' }],
+  })),
 }));
 
 jest.mock('../../../../hooks/useEncounterSession', () => ({

@@ -4,6 +4,7 @@ import {
   BoxWHeader,
   SelectedItem,
   InlineNotification,
+  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -12,8 +13,13 @@ import {
   ORDER_TYPE_QUERY_KEY,
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
+  hasPrivilege,
 } from '@bahmni/services';
-import { usePatientUUID, useActivePractitioner } from '@bahmni/widgets';
+import {
+  usePatientUUID,
+  useActivePractitioner,
+  useUserPrivilege,
+} from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, {
   useMemo,
@@ -22,6 +28,7 @@ import React, {
   useEffect,
   useRef,
 } from 'react';
+import { CONSULTATION_PAD_PRIVILEGES } from '../../../constants/consultationPadPrivileges';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
@@ -33,6 +40,7 @@ import styles from './styles/InvestigationsForm.module.scss';
 const InvestigationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
+  const { userPrivileges } = useUserPrivilege();
   const queryClient = useQueryClient();
   const { practitioner } = useActivePractitioner();
   const { activeEncounter } = useEncounterSession({ practitioner });
@@ -351,87 +359,96 @@ const InvestigationsForm: React.FC = React.memo(() => {
     setSelectedInvestigationItem(selectedItem);
   };
 
+  if (
+    !hasPrivilege(userPrivileges, CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS)
+  ) {
+    return null;
+  }
+
   return (
-    <Tile
-      className={styles.investigationsFormTile}
-      data-testid="investigations-form-tile"
-    >
-      <div
-        className={styles.investigationsFormTitle}
-        data-testid="investigations-form-title"
+    <>
+      <Tile
+        className={styles.investigationsFormTile}
+        data-testid="investigations-form-tile"
       >
-        {t('INVESTIGATIONS_FORM_TITLE')}
-      </div>
-      <ComboBox
-        id="investigations-procedures-search"
-        data-testid="investigations-search-combobox"
-        placeholder={t('INVESTIGATIONS_SEARCH_PLACEHOLDER')}
-        items={filteredInvestigations}
-        itemToString={(item) => item?.display ?? ''}
-        onChange={({ selectedItem }) => handleChange(selectedItem)}
-        onInputChange={(input) => setSearchTerm(input)}
-        selectedItem={selectedInvestigationItem}
-        clearSelectedOnChange
-        allowCustomValue
-        autoAlign
-        aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}
-        size="md"
-      />
-
-      {showDuplicateNotification && (
-        <InlineNotification
-          kind="error"
-          lowContrast
-          subtitle={
-            duplicateCategory?.toLowerCase().includes('procedure')
-              ? t('PROCEDURE_ALREADY_ADDED')
-              : t('INVESTIGATION_ALREADY_ADDED')
-          }
-          onClose={() => {
-            setShowDuplicateNotification(false);
-            setDuplicateInvestigationId(null);
-            setDuplicateCategory(null);
-            setDuplicateCategoryCode(null);
-            notificationDismissedRef.current = true;
-          }}
-          hideCloseButton={false}
-          className={styles.duplicateNotification}
+        <div
+          className={styles.investigationsFormTitle}
+          data-testid="investigations-form-title"
+        >
+          {t('INVESTIGATIONS_FORM_TITLE')}
+        </div>
+        <ComboBox
+          id="investigations-procedures-search"
+          data-testid="investigations-search-combobox"
+          placeholder={t('INVESTIGATIONS_SEARCH_PLACEHOLDER')}
+          items={filteredInvestigations}
+          itemToString={(item) => item?.display ?? ''}
+          onChange={({ selectedItem }) => handleChange(selectedItem)}
+          onInputChange={(input) => setSearchTerm(input)}
+          selectedItem={selectedInvestigationItem}
+          clearSelectedOnChange
+          allowCustomValue
+          autoAlign
+          aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}
+          size="md"
         />
-      )}
 
-      {selectedServiceRequests &&
-        selectedServiceRequests.size > 0 &&
-        Array.from(selectedServiceRequests.keys()).map((category) => (
-          <BoxWHeader
-            key={category}
-            title={t('INVESTIGATIONS_ADDED', {
-              investigationType: translateOrderType(category),
-            })}
-            className={styles.addedInvestigationsBox}
-          >
-            {selectedServiceRequests.get(category)?.map((serviceRequest) => (
-              <SelectedItem
-                key={serviceRequest.id}
-                onClose={() =>
-                  removeServiceRequest(category, serviceRequest.id)
-                }
-                className={styles.selectedInvestigationItem}
-              >
-                <SelectedInvestigationItem
+        {showDuplicateNotification && (
+          <InlineNotification
+            kind="error"
+            lowContrast
+            subtitle={
+              duplicateCategory?.toLowerCase().includes('procedure')
+                ? t('PROCEDURE_ALREADY_ADDED')
+                : t('INVESTIGATION_ALREADY_ADDED')
+            }
+            onClose={() => {
+              setShowDuplicateNotification(false);
+              setDuplicateInvestigationId(null);
+              setDuplicateCategory(null);
+              setDuplicateCategoryCode(null);
+              notificationDismissedRef.current = true;
+            }}
+            hideCloseButton={false}
+            className={styles.duplicateNotification}
+          />
+        )}
+
+        {selectedServiceRequests &&
+          selectedServiceRequests.size > 0 &&
+          Array.from(selectedServiceRequests.keys()).map((category) => (
+            <BoxWHeader
+              key={category}
+              title={t('INVESTIGATIONS_ADDED', {
+                investigationType: translateOrderType(category),
+              })}
+              className={styles.addedInvestigationsBox}
+            >
+              {selectedServiceRequests.get(category)?.map((serviceRequest) => (
+                <SelectedItem
                   key={serviceRequest.id}
-                  investigation={serviceRequest}
-                  onPriorityChange={(priority) =>
-                    updatePriority(category, serviceRequest.id, priority)
+                  onClose={() =>
+                    removeServiceRequest(category, serviceRequest.id)
                   }
-                  onNoteChange={(note) =>
-                    updateNote(category, serviceRequest.id, note)
-                  }
-                />
-              </SelectedItem>
-            ))}
-          </BoxWHeader>
-        ))}
-    </Tile>
+                  className={styles.selectedInvestigationItem}
+                >
+                  <SelectedInvestigationItem
+                    key={serviceRequest.id}
+                    investigation={serviceRequest}
+                    onPriorityChange={(priority) =>
+                      updatePriority(category, serviceRequest.id, priority)
+                    }
+                    onNoteChange={(note) =>
+                      updateNote(category, serviceRequest.id, note)
+                    }
+                  />
+                </SelectedItem>
+              ))}
+            </BoxWHeader>
+          ))}
+      </Tile>
+      <MenuItemDivider />
+    </>
   );
 });
 

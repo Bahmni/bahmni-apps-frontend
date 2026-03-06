@@ -27,6 +27,13 @@ const mockedSavePinnedForms =
     typeof pinnedFormsService.savePinnedForms
   >;
 
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: [{ name: 'Add Observations' }],
+  })),
+}));
+
 // Mock hooks
 const mockUseObservationFormsSearch = jest.fn();
 const mockUsePinnedObservationForms = jest.fn();

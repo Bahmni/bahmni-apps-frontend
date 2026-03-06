@@ -253,17 +253,6 @@ jest.mock('@bahmni/widgets', () => ({
   useNotification: jest.fn(() => ({
     addNotification: mockAddNotification,
   })),
-  useUserPrivilege: jest.fn(() => ({
-    userPrivileges: [
-      { name: 'Add Encounters' },
-      { name: 'Add Allergies' },
-      { name: 'Add Diagnoses' },
-      { name: 'Add Orders' },
-      { name: 'Add Medications' },
-      { name: 'Add Observations' },
-      { name: 'Add Vaccinations' },
-    ],
-  })),
   useActivePractitioner: jest.fn(() => ({
     user: { uuid: 'user-123', username: 'testuser' },
     practitioner: { uuid: 'practitioner-123' },
@@ -689,23 +678,23 @@ describe('ConsultationPad', () => {
       const forms = content.querySelectorAll('[data-testid]');
 
       expect(forms[0]).toHaveAttribute('data-testid', 'mock-encounter-details');
-
+      expect(forms[1]).toHaveAttribute('data-testid', 'mock-divider');
       expect(forms[2]).toHaveAttribute('data-testid', 'mock-allergies-form');
-      expect(forms[4]).toHaveAttribute(
+      expect(forms[3]).toHaveAttribute(
         'data-testid',
         'mock-investigations-form',
       );
-      expect(forms[6]).toHaveAttribute(
+      expect(forms[4]).toHaveAttribute(
         'data-testid',
         'mock-conditions-diagnoses',
       );
-      expect(forms[8]).toHaveAttribute('data-testid', 'mock-medications-form');
+      expect(forms[5]).toHaveAttribute('data-testid', 'mock-medications-form');
     });
 
     it('should render dividers between forms', () => {
       renderWithProvider();
       const dividers = screen.getAllByTestId('mock-divider');
-      expect(dividers).toHaveLength(7);
+      expect(dividers).toHaveLength(1);
     });
 
     it('should render forms and dividers in the correct sequence', () => {
@@ -714,42 +703,38 @@ describe('ConsultationPad', () => {
       const content = screen.getByTestId('action-area-content');
       const children = Array.from(content.children);
 
-      // Verify the exact sequence of forms and dividers
-      expect(children).toHaveLength(14); // 7 forms + 7 dividers
+      // Each form now owns its own divider (rendered inside the component).
+      // ConsultationPad renders one divider between BasicForm and the rest.
+      // In tests the form components are mocked without dividers, so only
+      // the ConsultationPad-level divider is visible.
+      expect(children).toHaveLength(8); // 1 encounter-details + 1 divider + 6 forms
 
-      // Check each element in order
       expect(children[0]).toHaveAttribute(
         'data-testid',
         'mock-encounter-details',
       );
       expect(children[1]).toHaveAttribute('data-testid', 'mock-divider');
       expect(children[2]).toHaveAttribute('data-testid', 'mock-allergies-form');
-      expect(children[3]).toHaveAttribute('data-testid', 'mock-divider');
-      expect(children[4]).toHaveAttribute(
+      expect(children[3]).toHaveAttribute(
         'data-testid',
         'mock-investigations-form',
       );
-      expect(children[5]).toHaveAttribute('data-testid', 'mock-divider');
-      expect(children[6]).toHaveAttribute(
+      expect(children[4]).toHaveAttribute(
         'data-testid',
         'mock-conditions-diagnoses',
       );
-      expect(children[7]).toHaveAttribute('data-testid', 'mock-divider');
-      expect(children[8]).toHaveAttribute(
+      expect(children[5]).toHaveAttribute(
         'data-testid',
         'mock-medications-form',
       );
-      expect(children[9]).toHaveAttribute('data-testid', 'mock-divider');
-      expect(children[10]).toHaveAttribute(
+      expect(children[6]).toHaveAttribute(
         'data-testid',
         'mock-vaccination-forms',
       );
-      expect(children[11]).toHaveAttribute('data-testid', 'mock-divider');
-      expect(children[12]).toHaveAttribute(
+      expect(children[7]).toHaveAttribute(
         'data-testid',
         'mock-observation-forms',
       );
-      expect(children[11]).toHaveAttribute('data-testid', 'mock-divider');
     });
 
     it('should render action buttons with correct text', () => {

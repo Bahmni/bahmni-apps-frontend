@@ -1,3 +1,4 @@
+import { useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -41,6 +42,7 @@ jest.mock('@bahmni/widgets', () => ({
   useActivePractitioner: jest.fn().mockReturnValue({
     practitioner: { uuid: 'mock-practitioner-uuid' },
   }),
+  useUserPrivilege: jest.fn(),
 }));
 
 jest.mock('../../../../hooks/useEncounterSession', () => ({
@@ -120,6 +122,18 @@ const mockInvestigations: FlattenedInvestigations[] = [
     categoryCode: 'rad',
   },
 ];
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
+
+const mockUserPrivilegesWithInvestigations = {
+  userPrivileges: [{ name: 'Add Orders' }],
+} as ReturnType<typeof useUserPrivilege>;
+
+const mockUserPrivilegesEmpty = {
+  userPrivileges: null,
+} as ReturnType<typeof useUserPrivilege>;
+
 const mockStore = {
   selectedServiceRequests: new Map(),
   addServiceRequest: jest.fn(),
@@ -151,6 +165,7 @@ const createWrapper = () => {
 describe('InvestigationsForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithInvestigations);
     // Setup default mocks
     (useInvestigationsSearch as jest.Mock).mockReturnValue({
       investigations: [],
@@ -1695,6 +1710,23 @@ describe('InvestigationsForm', () => {
       // Run axe check - this will check for violations in the basic form structure
       const results = await axe(container!);
       expect(results).toHaveNoViolations();
+    });
+  });
+
+  describe('Privilege Guard', () => {
+    it('renders null when user lacks Add Orders privilege', () => {
+      mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      const { container } = render(<InvestigationsForm />, {
+        wrapper: createWrapper(),
+      });
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it('renders form when user has Add Orders privilege', () => {
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+      expect(
+        screen.getByTestId('investigations-form-tile'),
+      ).toBeInTheDocument();
     });
   });
 });

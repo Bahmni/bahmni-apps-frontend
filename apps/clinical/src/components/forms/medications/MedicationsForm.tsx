@@ -5,6 +5,7 @@ import {
   DropdownSkeleton,
   Tile,
   InlineNotification,
+  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   getConfig,
@@ -13,11 +14,19 @@ import {
   getPatientMedicationBundle,
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
+  hasPrivilege,
 } from '@bahmni/services';
-import { useNotification, usePatientUUID } from '@bahmni/widgets';
+import {
+  useNotification,
+  usePatientUUID,
+  useUserPrivilege,
+} from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { Bundle } from 'fhir/r4';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+
+import { CONSULTATION_PAD_PRIVILEGES } from '../../../constants/consultationPadPrivileges';
+import useMedicationConfig from '../../../hooks/useMedicationConfig';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
 import {
@@ -49,6 +58,7 @@ const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
+  const { userPrivileges } = useUserPrivilege();
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
@@ -229,88 +239,95 @@ const MedicationsForm: React.FC = React.memo(() => {
     t,
   ]);
 
+  if (!hasPrivilege(userPrivileges, CONSULTATION_PAD_PRIVILEGES.MEDICATIONS)) {
+    return null;
+  }
+
   return (
-    <Tile
-      className={styles.medicationsFormTile}
-      data-testid="medications-form-tile"
-    >
-      <div
-        className={styles.medicationsFormTitle}
-        data-testid="medications-form-title"
+    <>
+      <Tile
+        className={styles.medicationsFormTile}
+        data-testid="medications-form-tile"
       >
-        {t('MEDICATIONS_FORM_TITLE')}
-      </div>
-      {medicationConfigLoading && <DropdownSkeleton />}
-      {medicationConfigError && (
-        <div>
-          {t('ERROR_FETCHING_MEDICATION_CONFIG', {
-            error: medicationConfigError.message,
-          })}
+        <div
+          className={styles.medicationsFormTitle}
+          data-testid="medications-form-title"
+        >
+          {t('MEDICATIONS_FORM_TITLE')}
         </div>
-      )}
-      {!medicationConfigLoading && !medicationConfigError && (
-        <ComboBox
-          id="medications-search"
-          data-testid="medications-search-combobox"
-          placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
-          items={filteredSearchResults}
-          itemToString={(item) => (item ? item.displayName : '')}
-          onChange={(data) => handleOnChange(data.selectedItem!)}
-          onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-          selectedItem={selectedMedicationItem}
-          clearSelectedOnChange
-          allowCustomValue
-          size="md"
-          autoAlign
-          disabled={existingMedicationsLoading}
-          aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
-        />
-      )}
-      {showDuplicateNotification && (
-        <InlineNotification
-          kind="error"
-          lowContrast
-          subtitle={t('ERROR_DUPLICATE_ACTIVE_MEDICATION')}
-          onClose={() => setShowDuplicateNotification(false)}
-          hideCloseButton={false}
-          className={styles.duplicateNotification}
-        />
-      )}
-      {medicationConfig &&
-        selectedMedications &&
-        selectedMedications.length > 0 && (
-          <BoxWHeader
-            title={t('MEDICATIONS_ADDED_MEDICATIONS')}
-            className={styles.medicationsBox}
-          >
-            {selectedMedications.map((medication) => (
-              <SelectedItem
-                onClose={() => removeMedication(medication.id)}
-                className={styles.selectedMedicationItem}
-                key={medication.id}
-              >
-                <SelectedMedicationItem
-                  medicationInputEntry={medication}
-                  medicationConfig={medicationConfig!}
-                  updateDosage={updateDosage}
-                  updateDosageUnit={updateDosageUnit}
-                  updateFrequency={updateFrequency}
-                  updateRoute={updateRoute}
-                  updateDuration={updateDuration}
-                  updateDurationUnit={updateDurationUnit}
-                  updateInstruction={updateInstruction}
-                  updateisPRN={updateisPRN}
-                  updateisSTAT={updateisSTAT}
-                  updateDispenseQuantity={updateDispenseQuantity}
-                  updateDispenseUnit={updateDispenseUnit}
-                  updateNote={updateNote}
-                  updateStartDate={updateStartDate}
-                />
-              </SelectedItem>
-            ))}
-          </BoxWHeader>
+        {medicationConfigLoading && <DropdownSkeleton />}
+        {medicationConfigError && (
+          <div>
+            {t('ERROR_FETCHING_MEDICATION_CONFIG', {
+              error: medicationConfigError.message,
+            })}
+          </div>
         )}
-    </Tile>
+        {!medicationConfigLoading && !medicationConfigError && (
+          <ComboBox
+            id="medications-search"
+            data-testid="medications-search-combobox"
+            placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
+            items={filteredSearchResults}
+            itemToString={(item) => (item ? item.displayName : '')}
+            onChange={(data) => handleOnChange(data.selectedItem!)}
+            onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+            selectedItem={selectedMedicationItem}
+            clearSelectedOnChange
+            allowCustomValue
+            size="md"
+            autoAlign
+            disabled={existingMedicationsLoading}
+            aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
+          />
+        )}
+        {showDuplicateNotification && (
+          <InlineNotification
+            kind="error"
+            lowContrast
+            subtitle={t('ERROR_DUPLICATE_ACTIVE_MEDICATION')}
+            onClose={() => setShowDuplicateNotification(false)}
+            hideCloseButton={false}
+            className={styles.duplicateNotification}
+          />
+        )}
+        {medicationConfig &&
+          selectedMedications &&
+          selectedMedications.length > 0 && (
+            <BoxWHeader
+              title={t('MEDICATIONS_ADDED_MEDICATIONS')}
+              className={styles.medicationsBox}
+            >
+              {selectedMedications.map((medication) => (
+                <SelectedItem
+                  onClose={() => removeMedication(medication.id)}
+                  className={styles.selectedMedicationItem}
+                  key={medication.id}
+                >
+                  <SelectedMedicationItem
+                    medicationInputEntry={medication}
+                    medicationConfig={medicationConfig!}
+                    updateDosage={updateDosage}
+                    updateDosageUnit={updateDosageUnit}
+                    updateFrequency={updateFrequency}
+                    updateRoute={updateRoute}
+                    updateDuration={updateDuration}
+                    updateDurationUnit={updateDurationUnit}
+                    updateInstruction={updateInstruction}
+                    updateisPRN={updateisPRN}
+                    updateisSTAT={updateisSTAT}
+                    updateDispenseQuantity={updateDispenseQuantity}
+                    updateDispenseUnit={updateDispenseUnit}
+                    updateNote={updateNote}
+                    updateStartDate={updateStartDate}
+                  />
+                </SelectedItem>
+              ))}
+            </BoxWHeader>
+          )}
+      </Tile>
+      <MenuItemDivider />
+    </>
   );
 });
 

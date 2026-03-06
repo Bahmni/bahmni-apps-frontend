@@ -27,41 +27,26 @@ exports[`ConsultationPad Snapshot Tests should match snapshot during submission 
       >
         Allergies Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-investigations-form"
       >
         Investigations Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-conditions-diagnoses"
       >
         Conditions and Diagnoses Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-medications-form"
       >
         Medications Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-vaccination-forms"
       >
         Vaccination Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-observation-forms"
       >
@@ -87,9 +72,6 @@ exports[`ConsultationPad Snapshot Tests should match snapshot during submission 
           Pinned: 0
         </div>
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
     </div>
     <button
       data-testid="primary-button"
@@ -174,41 +156,26 @@ exports[`ConsultationPad Snapshot Tests should match snapshot for form order and
       >
         Allergies Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-investigations-form"
       >
         Investigations Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-conditions-diagnoses"
       >
         Conditions and Diagnoses Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-medications-form"
       >
         Medications Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-vaccination-forms"
       >
         Vaccination Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-observation-forms"
       >
@@ -234,9 +201,6 @@ exports[`ConsultationPad Snapshot Tests should match snapshot for form order and
           Pinned: 0
         </div>
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
     </div>
     <button
       data-testid="primary-button"
@@ -279,41 +243,26 @@ exports[`ConsultationPad Snapshot Tests should match snapshot with disabled Done
       >
         Allergies Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-investigations-form"
       >
         Investigations Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-conditions-diagnoses"
       >
         Conditions and Diagnoses Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-medications-form"
       >
         Medications Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-vaccination-forms"
       >
         Vaccination Form
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
       <div
         data-testid="mock-observation-forms"
       >
@@ -339,9 +288,6 @@ exports[`ConsultationPad Snapshot Tests should match snapshot with disabled Done
           Pinned: 0
         </div>
       </div>
-      <hr
-        data-testid="mock-divider"
-      />
     </div>
     <button
       data-testid="primary-button"
@@ -375,41 +321,26 @@ exports[`ConsultationPad Snapshot Tests should verify correct order of forms and
   >
     Allergies Form
   </div>
-  <hr
-    data-testid="mock-divider"
-  />
   <div
     data-testid="mock-investigations-form"
   >
     Investigations Form
   </div>
-  <hr
-    data-testid="mock-divider"
-  />
   <div
     data-testid="mock-conditions-diagnoses"
   >
     Conditions and Diagnoses Form
   </div>
-  <hr
-    data-testid="mock-divider"
-  />
   <div
     data-testid="mock-medications-form"
   >
     Medications Form
   </div>
-  <hr
-    data-testid="mock-divider"
-  />
   <div
     data-testid="mock-vaccination-forms"
   >
     Vaccination Form
   </div>
-  <hr
-    data-testid="mock-divider"
-  />
   <div
     data-testid="mock-observation-forms"
   >
@@ -435,8 +366,5 @@ exports[`ConsultationPad Snapshot Tests should verify correct order of forms and
       Pinned: 0
     </div>
   </div>
-  <hr
-    data-testid="mock-divider"
-  />
 </div>
 `;

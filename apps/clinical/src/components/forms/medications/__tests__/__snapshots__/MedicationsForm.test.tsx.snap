@@ -75,6 +75,10 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with no medications 1`]
       </div>
     </div>
   </div>
+  <li
+    class="cds--menu-item-divider"
+    role="separator"
+  />
 </div>
 `;
 
@@ -896,5 +900,9 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
       </div>
     </div>
   </div>
+  <li
+    class="cds--menu-item-divider"
+    role="separator"
+  />
 </div>
 `;

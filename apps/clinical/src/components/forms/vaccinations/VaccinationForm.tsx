@@ -5,6 +5,7 @@ import {
   DropdownSkeleton,
   Tile,
   InlineNotification,
+  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -14,12 +15,14 @@ import {
   ConsultationSavedEventPayload,
   getConfig,
   fetchMedicationOrdersMetadata,
+  hasPrivilege,
 } from '@bahmni/services';
-import { usePatientUUID } from '@bahmni/widgets';
+import { usePatientUUID, useUserPrivilege } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { Bundle } from 'fhir/r4';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 
+import { CONSULTATION_PAD_PRIVILEGES } from '../../../constants/consultationPadPrivileges';
 import { MedicationFilterResult } from '../../../models/medication';
 import {
   MedicationConfig,
@@ -50,6 +53,7 @@ import styles from './styles/VaccinationForm.module.scss';
 const VaccinationForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
+  const { userPrivileges } = useUserPrivilege();
   const [searchVaccinationTerm, setSearchVaccinationTerm] = useState('');
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
@@ -251,87 +255,94 @@ const VaccinationForm: React.FC = React.memo(() => {
     t,
   ]);
 
+  if (!hasPrivilege(userPrivileges, CONSULTATION_PAD_PRIVILEGES.VACCINATIONS)) {
+    return null;
+  }
+
   return (
-    <Tile
-      className={styles.vaccinationFormTile}
-      data-testid="vaccination-form-tile"
-    >
-      <div
-        className={styles.vaccinationFormTitle}
-        data-testid="vaccination-form-title"
+    <>
+      <Tile
+        className={styles.vaccinationFormTile}
+        data-testid="vaccination-form-tile"
       >
-        {t('VACCINATION_FORM_TITLE')}
-      </div>
-      {medicationConfigLoading && <DropdownSkeleton />}
-      {medicationConfigError && (
-        <div>
-          {t('ERROR_FETCHING_VACCINATION_CONFIG', {
-            error: medicationConfigError.message,
-          })}
+        <div
+          className={styles.vaccinationFormTitle}
+          data-testid="vaccination-form-title"
+        >
+          {t('VACCINATION_FORM_TITLE')}
         </div>
-      )}
-      {!medicationConfigLoading && !medicationConfigError && (
-        <ComboBox
-          id="vaccinations-search"
-          data-testid="vaccinations-search-combobox"
-          placeholder={t('VACCINATION_SEARCH_PLACEHOLDER')}
-          items={filteredSearchResults}
-          itemToString={(item) => (item ? item.displayName : '')}
-          onChange={(data) => handleOnChange(data.selectedItem!)}
-          onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-          selectedItem={selectedVaccinationItem}
-          clearSelectedOnChange
-          allowCustomValue
-          size="md"
-          autoAlign
-          disabled={existingVaccinationsLoading}
-          aria-label={t('VACCINATION_SEARCH_PLACEHOLDER')}
-        />
-      )}
-      {showDuplicateNotification && (
-        <InlineNotification
-          kind="error"
-          lowContrast
-          subtitle={t('ERROR_DUPLICATE_ACTIVE_VACCINATION')}
-          onClose={() => setShowDuplicateNotification(false)}
-          hideCloseButton={false}
-          className={styles.duplicateNotification}
-        />
-      )}
-      {medicationConfig &&
-        selectedVaccinations &&
-        selectedVaccinations.length > 0 && (
-          <BoxWHeader
-            title={t('VACCINATION_ADDED_VACCINATIONS')}
-            className={styles.vaccinationBox}
-          >
-            {selectedVaccinations.map((vaccination) => (
-              <SelectedItem
-                onClose={() => removeVaccination(vaccination.id)}
-                className={styles.selectedVaccinationItem}
-                key={vaccination.id}
-              >
-                <SelectedVaccinationItem
-                  vaccinationInputEntry={vaccination}
-                  medicationConfig={medicationConfig!}
-                  updateDosage={updateDosage}
-                  updateDosageUnit={updateDosageUnit}
-                  updateFrequency={updateFrequency}
-                  updateRoute={updateRoute}
-                  updateDuration={updateDuration}
-                  updateDurationUnit={updateDurationUnit}
-                  updateInstruction={updateInstruction}
-                  updateisSTAT={updateisSTAT}
-                  updateDispenseQuantity={updateDispenseQuantity}
-                  updateDispenseUnit={updateDispenseUnit}
-                  updateStartDate={updateStartDate}
-                  updateNote={updateNote}
-                />
-              </SelectedItem>
-            ))}
-          </BoxWHeader>
+        {medicationConfigLoading && <DropdownSkeleton />}
+        {medicationConfigError && (
+          <div>
+            {t('ERROR_FETCHING_VACCINATION_CONFIG', {
+              error: medicationConfigError.message,
+            })}
+          </div>
         )}
-    </Tile>
+        {!medicationConfigLoading && !medicationConfigError && (
+          <ComboBox
+            id="vaccinations-search"
+            data-testid="vaccinations-search-combobox"
+            placeholder={t('VACCINATION_SEARCH_PLACEHOLDER')}
+            items={filteredSearchResults}
+            itemToString={(item) => (item ? item.displayName : '')}
+            onChange={(data) => handleOnChange(data.selectedItem!)}
+            onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+            selectedItem={selectedVaccinationItem}
+            clearSelectedOnChange
+            allowCustomValue
+            size="md"
+            autoAlign
+            disabled={existingVaccinationsLoading}
+            aria-label={t('VACCINATION_SEARCH_PLACEHOLDER')}
+          />
+        )}
+        {showDuplicateNotification && (
+          <InlineNotification
+            kind="error"
+            lowContrast
+            subtitle={t('ERROR_DUPLICATE_ACTIVE_VACCINATION')}
+            onClose={() => setShowDuplicateNotification(false)}
+            hideCloseButton={false}
+            className={styles.duplicateNotification}
+          />
+        )}
+        {medicationConfig &&
+          selectedVaccinations &&
+          selectedVaccinations.length > 0 && (
+            <BoxWHeader
+              title={t('VACCINATION_ADDED_VACCINATIONS')}
+              className={styles.vaccinationBox}
+            >
+              {selectedVaccinations.map((vaccination) => (
+                <SelectedItem
+                  onClose={() => removeVaccination(vaccination.id)}
+                  className={styles.selectedVaccinationItem}
+                  key={vaccination.id}
+                >
+                  <SelectedVaccinationItem
+                    vaccinationInputEntry={vaccination}
+                    medicationConfig={medicationConfig!}
+                    updateDosage={updateDosage}
+                    updateDosageUnit={updateDosageUnit}
+                    updateFrequency={updateFrequency}
+                    updateRoute={updateRoute}
+                    updateDuration={updateDuration}
+                    updateDurationUnit={updateDurationUnit}
+                    updateInstruction={updateInstruction}
+                    updateisSTAT={updateisSTAT}
+                    updateDispenseQuantity={updateDispenseQuantity}
+                    updateDispenseUnit={updateDispenseUnit}
+                    updateStartDate={updateStartDate}
+                    updateNote={updateNote}
+                  />
+                </SelectedItem>
+              ))}
+            </BoxWHeader>
+          )}
+      </Tile>
+      <MenuItemDivider />
+    </>
   );
 });
 
