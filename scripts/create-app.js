@@ -583,7 +583,7 @@ async function main() {
   const appNamePascal = toPascalCase(appNameInput.trim());
   const appNameCamel = toCamelCase(appNameInput.trim());
   const appConstantName = `BAHMNI_${toConstantCase(appNameInput.trim())}_NAMESPACE`;
-  const appNamespace = `${appNameKebab}-extn`;
+  const appNamespace = `${appNameKebab}`;
 
   console.log('\nConfiguration:');
   console.log(`  Name: ${appNameKebab}`);

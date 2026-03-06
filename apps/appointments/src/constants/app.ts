@@ -1,1 +1,1 @@
-export const BAHMNI_APPOINTMENTS_NAMESPACE = 'appointments-extn';
+export const BAHMNI_APPOINTMENTS_NAMESPACE = 'appointments';
