@@ -1,13 +1,10 @@
 import { Button, Icon, ICON_SIZE } from '@bahmni/design-system';
-import {
-  AppExtensionConfig,
-  useTranslation,
-  type VisitType,
-} from '@bahmni/services';
+import { useTranslation, type VisitType } from '@bahmni/services';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFilteredExtensions } from '../../hooks/useFilteredExtensions';
 import { useCreateVisit } from '../../hooks/useVisit';
 import { VisitTypeSelector } from '../../pages/PatientRegister/visitTypeSelector';
+import { AppExtensionConfig } from '../../providers/registrationConfig';
 import { handleExtensionNavigation } from '../../utils/extensionNavigation';
 
 export interface RegistrationActionsProps {

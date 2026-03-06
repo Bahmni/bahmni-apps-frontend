@@ -1,4 +1,4 @@
-import { AppExtensionConfig, type VisitType } from '@bahmni/services';
+import { type VisitType } from '@bahmni/services';
 import { NotificationProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -6,6 +6,7 @@ import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { useFilteredExtensions } from '../../../hooks/useFilteredExtensions';
 import { useCreateVisit } from '../../../hooks/useVisit';
+import { AppExtensionConfig } from '../../../providers/registrationConfig';
 import * as extensionNavigation from '../../../utils/extensionNavigation';
 import { RegistrationActions } from '../RegistrationActions';
 

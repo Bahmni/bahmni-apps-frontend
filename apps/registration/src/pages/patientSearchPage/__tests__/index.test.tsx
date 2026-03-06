@@ -3,7 +3,6 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-  getRegistrationConfig,
 } from '@bahmni/services';
 import { NotificationProvider, UserPrivilegeProvider } from '@bahmni/widgets';
 import {
@@ -99,7 +98,6 @@ jest.mock('@bahmni/services', () => ({
     username: 'testuser',
     uuid: 'test-uuid',
   }),
-  getRegistrationConfig: jest.fn(),
   updateAppointmentStatus: jest.fn(),
   notificationService: {
     register: jest.fn(),
@@ -244,10 +242,6 @@ describe('PatientSearchPage', () => {
     (useRegistrationConfig as jest.Mock).mockReturnValue({
       registrationConfig: mockRegistrationConfig,
     });
-
-    (getRegistrationConfig as jest.Mock).mockResolvedValue(
-      mockRegistrationConfig,
-    );
 
     (useQuery as jest.Mock).mockReturnValue({
       data: undefined,
@@ -770,8 +764,6 @@ describe('PatientSearchPage', () => {
       (useRegistrationConfig as jest.Mock).mockReturnValue({
         registrationConfig: appointmentConfig,
       });
-
-      (getRegistrationConfig as jest.Mock).mockResolvedValue(appointmentConfig);
     });
 
     afterEach(() => {
@@ -1081,7 +1073,6 @@ describe('PatientSearchPage', () => {
         registrationConfig: hashNavConfig,
       });
 
-      (getRegistrationConfig as jest.Mock).mockResolvedValue(hashNavConfig);
       (useQuery as jest.Mock).mockReturnValue({
         data: {
           totalCount: 1,

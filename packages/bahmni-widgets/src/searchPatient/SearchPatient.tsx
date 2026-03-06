@@ -1,9 +1,9 @@
-import { Search, Button, Dropdown, Tag } from '@bahmni/design-system';
+import { Button, Dropdown, Search, Tag } from '@bahmni/design-system';
 import {
+  AppointmentSearchField,
+  PatientSearchField,
   PatientSearchResultBundle,
   useTranslation,
-  PatientSearchField,
-  AppointmentSearchField,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
