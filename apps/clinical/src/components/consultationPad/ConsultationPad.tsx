@@ -8,12 +8,17 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
+  hasPrivilege,
   useTranslation,
   ObservationForm,
   Form2Observation,
   dispatchConsultationSaved,
 } from '@bahmni/services';
-import { useNotification, useActivePractitioner } from '@bahmni/widgets';
+import {
+  useNotification,
+  useActivePractitioner,
+  useUserPrivilege,
+} from '@bahmni/widgets';
 import { Bundle } from 'fhir/r4';
 import React, { useEffect } from 'react';
 import { useEncounterSession } from '../../../src/hooks/useEncounterSession';
@@ -24,6 +29,7 @@ import { useMedicationStore } from '../../../src/stores/medicationsStore';
 import { useObservationFormsStore } from '../../../src/stores/observationFormsStore';
 import useServiceRequestStore from '../../../src/stores/serviceRequestStore';
 import { useVaccinationStore } from '../../../src/stores/vaccinationsStore';
+import { CONSULTATION_PAD_PRIVILEGES } from '../../constants/consultationPadPrivileges';
 import { ERROR_TITLES } from '../../constants/errors';
 import {
   VALIDATION_STATE_EMPTY,
@@ -155,6 +161,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const { activeEncounter } = useEncounterSession({
     practitioner: practitionerState.practitioner,
   });
+
+  const { userPrivileges } = useUserPrivilege();
 
   // Clean up on unmount
   useEffect(() => {
@@ -444,32 +452,81 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
     resetObservationForms();
     onClose();
   };
+  const canShowAllergies = hasPrivilege(
+    userPrivileges,
+    CONSULTATION_PAD_PRIVILEGES.ALLERGIES,
+  );
+  const canShowInvestigations = hasPrivilege(
+    userPrivileges,
+    CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS,
+  );
+  const canShowConditionsAndDiagnoses = hasPrivilege(
+    userPrivileges,
+    CONSULTATION_PAD_PRIVILEGES.CONDITIONS_AND_DIAGNOSES,
+  );
+  const canShowMedications = hasPrivilege(
+    userPrivileges,
+    CONSULTATION_PAD_PRIVILEGES.MEDICATIONS,
+  );
+  const canShowVaccinations = hasPrivilege(
+    userPrivileges,
+    CONSULTATION_PAD_PRIVILEGES.VACCINATIONS,
+  );
+  const canShowObservations = hasPrivilege(
+    userPrivileges,
+    CONSULTATION_PAD_PRIVILEGES.OBSERVATIONS,
+  );
+
   const consultationContent = (
     <>
       <BasicForm practitionerState={practitionerState} />
       <MenuItemDivider />
-      <AllergiesForm />
-      <MenuItemDivider />
-      <InvestigationsForm />
-      <MenuItemDivider />
-      <ConditionsAndDiagnoses />
-      <MenuItemDivider />
-      <MedicationsForm />
-      <MenuItemDivider />
-      <VaccinationForm />
-      <MenuItemDivider />
-      <ObservationForms
-        onFormSelect={handleFormSelection}
-        selectedForms={selectedForms}
-        onRemoveForm={removeForm}
-        pinnedForms={pinnedForms}
-        updatePinnedForms={updatePinnedForms}
-        isPinnedFormsLoading={isPinnedFormsLoading}
-        allForms={allObservationForms}
-        isAllFormsLoading={isObservationFormsLoading}
-        observationFormsError={observationFormsError}
-      />
-      <MenuItemDivider />
+      {canShowAllergies && (
+        <>
+          <AllergiesForm />
+          <MenuItemDivider />
+        </>
+      )}
+      {canShowInvestigations && (
+        <>
+          <InvestigationsForm />
+          <MenuItemDivider />
+        </>
+      )}
+      {canShowConditionsAndDiagnoses && (
+        <>
+          <ConditionsAndDiagnoses />
+          <MenuItemDivider />
+        </>
+      )}
+      {canShowMedications && (
+        <>
+          <MedicationsForm />
+          <MenuItemDivider />
+        </>
+      )}
+      {canShowVaccinations && (
+        <>
+          <VaccinationForm />
+          <MenuItemDivider />
+        </>
+      )}
+      {canShowObservations && (
+        <>
+          <ObservationForms
+            onFormSelect={handleFormSelection}
+            selectedForms={selectedForms}
+            onRemoveForm={removeForm}
+            pinnedForms={pinnedForms}
+            updatePinnedForms={updatePinnedForms}
+            isPinnedFormsLoading={isPinnedFormsLoading}
+            allForms={allObservationForms}
+            isAllFormsLoading={isObservationFormsLoading}
+            observationFormsError={observationFormsError}
+          />
+          <MenuItemDivider />
+        </>
+      )}
     </>
   );
 

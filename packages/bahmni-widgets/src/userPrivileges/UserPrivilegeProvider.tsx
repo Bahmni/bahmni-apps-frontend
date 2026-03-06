@@ -1,7 +1,7 @@
 import {
   notificationService,
   getFormattedError,
-  getCurrentUserPrivileges,
+  getCurrentUserPrivilegesFromSession,
   type UserPrivilege,
 } from '@bahmni/services';
 import React, { ReactNode, useState, useMemo, useEffect } from 'react';
@@ -24,7 +24,7 @@ export const UserPrivilegeProvider: React.FC<UserPrivilegeProviderProps> = ({
     const fetchUserPrivileges = async () => {
       setIsLoading(true);
       try {
-        const privileges = await getCurrentUserPrivileges();
+        const privileges = await getCurrentUserPrivilegesFromSession();
         setUserPrivileges(privileges);
       } catch (error) {
         const { title, message } = getFormattedError(error);

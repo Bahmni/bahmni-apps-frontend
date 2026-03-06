@@ -5,6 +5,7 @@ export const OPENMRS_REST_V2 = '/openmrs/ws/rest/v2';
 export const BAHMNI_USER_COOKIE_NAME = 'bahmni.user';
 export const BAHMNI_HOME_PATH = '/bahmni/home/index.html';
 export const USER_PRIVILEGES_URL = OPENMRS_REST_V1 + '/bahmnicore/whoami';
+export const SESSION_URL = OPENMRS_REST_V1 + '/session';
 export const VISIT_LOCATION_UUID =
   OPENMRS_REST_V1 + '/bahmnicore/visitLocation/';
 export const BAHMNI_SQL_URL = OPENMRS_REST_V1 + '/bahmnicore/sql';
