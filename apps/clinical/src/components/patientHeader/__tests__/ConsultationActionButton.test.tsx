@@ -1,7 +1,7 @@
 import { useTranslation } from '@bahmni/services';
 import { useActivePractitioner, useUserPrivilege } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
-import React from 'react';
+import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import ConsultationActionButton from '../ConsultationActionButton';
 import '@testing-library/jest-dom';
 
@@ -21,8 +21,9 @@ const mockUseActivePractitioner = useActivePractitioner as jest.MockedFunction<
 const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
   typeof useUserPrivilege
 >;
-const mockUseEncounterSession = require('../../../hooks/useEncounterSession')
-  .useEncounterSession as jest.Mock;
+const mockUseEncounterSession = useEncounterSession as jest.MockedFunction<
+  typeof useEncounterSession
+>;
 
 describe('ConsultationActionButton', () => {
   const mockSetIsActionAreaVisible = jest.fn();
@@ -42,7 +43,7 @@ describe('ConsultationActionButton', () => {
     mockUseEncounterSession.mockReturnValue({
       editActiveEncounter: false,
       isLoading: false,
-    });
+    } as any);
   });
 
   describe('when user has Add Encounters privilege', () => {
@@ -53,26 +54,28 @@ describe('ConsultationActionButton', () => {
     });
 
     it('renders button, shows correct text, and handles disabled states', () => {
-      const { rerender } = render(<ConsultationActionButton {...defaultProps} />);
+      const { rerender } = render(
+        <ConsultationActionButton {...defaultProps} />,
+      );
 
       // Default: New Consultation
-      expect(screen.getByTestId('consultation-action-button')).toHaveTextContent(
-        'CONSULTATION_ACTION_NEW',
-      );
+      expect(
+        screen.getByTestId('consultation-action-button'),
+      ).toHaveTextContent('CONSULTATION_ACTION_NEW');
 
       // Edit state when active encounter exists
       mockUseEncounterSession.mockReturnValue({
         editActiveEncounter: true,
         isLoading: false,
-      });
+      } as any);
       rerender(<ConsultationActionButton {...defaultProps} />);
-      expect(screen.getByTestId('consultation-action-button')).toHaveTextContent(
-        'CONSULTATION_ACTION_EDIT',
-      );
+      expect(
+        screen.getByTestId('consultation-action-button'),
+      ).toHaveTextContent('CONSULTATION_ACTION_EDIT');
 
       // Disabled when action area is visible
       rerender(
-        <ConsultationActionButton {...defaultProps} isActionAreaVisible={true} />,
+        <ConsultationActionButton {...defaultProps} isActionAreaVisible />,
       );
       expect(screen.getByTestId('consultation-action-button')).toBeDisabled();
 
@@ -80,7 +83,7 @@ describe('ConsultationActionButton', () => {
       mockUseEncounterSession.mockReturnValue({
         editActiveEncounter: false,
         isLoading: true,
-      });
+      } as any);
       rerender(<ConsultationActionButton {...defaultProps} />);
       expect(screen.getByTestId('consultation-action-button')).toBeDisabled();
     });

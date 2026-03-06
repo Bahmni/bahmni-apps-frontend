@@ -60,6 +60,6 @@ export const hasPrivilege = (
     : [privilegeName];
 
   return userPrivileges.some((privilege) =>
-    privilegeNames.includes(privilege.name)
+    privilegeNames.includes(privilege.name),
   );
 };

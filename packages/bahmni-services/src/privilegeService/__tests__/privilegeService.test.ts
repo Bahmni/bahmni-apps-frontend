@@ -205,7 +205,9 @@ describe('privilegeService', () => {
         message: 'Unauthorized',
       });
 
-      await expect(getCurrentUserPrivilegesFromSession()).rejects.toThrow('Unauthorized');
+      await expect(getCurrentUserPrivilegesFromSession()).rejects.toThrow(
+        'Unauthorized',
+      );
       expect(mockedGetFormattedError).toHaveBeenCalledWith(serverError);
     });
   });
