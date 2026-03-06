@@ -16,6 +16,7 @@ interface ActionAreaLayoutProps {
   mainDisplay: ReactNode;
   actionArea: ReactNode;
   isActionAreaVisible: boolean;
+  hasSideNav?: boolean;
   layoutVariant?: LayoutVariant;
 }
 
@@ -36,6 +37,7 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
   mainDisplay,
   actionArea,
   isActionAreaVisible,
+  hasSideNav = true,
   layoutVariant = 'default',
 }) => {
   return (
@@ -61,7 +63,8 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
             className={classNames(styles.mainDisplay, {
               [styles.expand]: !isActionAreaVisible,
               [styles.collapsedModal]: isActionAreaVisible,
-              [styles.collapse]: isActionAreaVisible,
+              [styles.collapse]: isActionAreaVisible && hasSideNav,
+              [styles.collapseNoSideNav]: isActionAreaVisible && !hasSideNav,
             })}
           >
             {mainDisplay}

@@ -87,4 +87,41 @@ describe('ActionAreaLayout', () => {
     });
     expect(results).toHaveNoViolations();
   });
+
+  test('applies collapse class when action area is visible and hasSideNav is true', () => {
+    const { container } = render(
+      <ActionAreaLayout {...defaultProps} isActionAreaVisible hasSideNav />,
+    );
+
+    const mainDisplay = container.querySelector('#main-display-area');
+    expect(mainDisplay?.className).toMatch(/collapse/);
+    expect(mainDisplay?.className).not.toMatch(/collapseNoSideNav/);
+  });
+
+  test('applies collapseNoSideNav class when action area is visible and hasSideNav is false', () => {
+    const { container } = render(
+      <ActionAreaLayout
+        {...defaultProps}
+        isActionAreaVisible
+        hasSideNav={false}
+      />,
+    );
+
+    const mainDisplay = container.querySelector('#main-display-area');
+    expect(mainDisplay?.className).toMatch(/collapseNoSideNav/);
+  });
+
+  test('does not apply collapse or collapseNoSideNav class when action area is not visible', () => {
+    const { container } = render(
+      <ActionAreaLayout
+        {...defaultProps}
+        isActionAreaVisible={false}
+        hasSideNav={false}
+      />,
+    );
+
+    const mainDisplay = container.querySelector('#main-display-area');
+    expect(mainDisplay?.className).not.toMatch(/collapse/);
+    expect(mainDisplay?.className).not.toMatch(/collapseNoSideNav/);
+  });
 });
