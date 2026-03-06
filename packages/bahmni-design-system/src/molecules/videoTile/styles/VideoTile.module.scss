@@ -15,6 +15,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  padding: $spacing-02;
 
   &:hover {
     border-color: $border-interactive;
@@ -31,6 +32,11 @@
   &:active {
     transform: scale(0.98);
   }
+}
+
+.hideThumbnail {
+  background-color: $background-brand;
+  color: $background;
 }
 
 .thumbnailVideo {

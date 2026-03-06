@@ -1,13 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ImageTile } from '../ImageTile';
 
-jest.mock('../styles/ImageTile.module.scss', () => ({
-  thumbnailButton: 'thumbnailButton-class',
-  thumbnailImage: 'thumbnailImage-class',
-  modalImageContainer: 'modalImageContainer-class',
-  modalImage: 'modalImage-class',
-}));
-
 describe('ImageTile', () => {
   const defaultProps = {
     imageSrc: '100/9-Consultation-27627c65-5f95-4118-b8e5-89f0aa8cc3b8.png',
@@ -73,5 +66,46 @@ describe('ImageTile', () => {
     fireEvent.click(closeButton);
 
     expect(onModalClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render icon when hideThumbnail is true', () => {
+    render(<ImageTile {...defaultProps} hideThumbnail />);
+
+    const icon = screen.getByTestId('test-image-hidden-thumbnail-test-id');
+    expect(icon).toBeInTheDocument();
+
+    const thumbnailImage = screen.queryByTestId('test-image-thumbnail-test-id');
+    expect(thumbnailImage).not.toBeInTheDocument();
+  });
+
+  it('should apply custom className to thumbnail button', () => {
+    render(<ImageTile {...defaultProps} className="custom-class" />);
+
+    const button = screen.getByTestId('test-image-test-id');
+    expect(button).toHaveClass('custom-class');
+  });
+
+  it('should not render modal initially', () => {
+    render(<ImageTile {...defaultProps} modalTitle="Image Preview" />);
+
+    const modalImage = screen.queryByTestId('test-image-modal-image-test-id');
+    expect(modalImage).not.toBeInTheDocument();
+  });
+
+  it('should render modal image with correct attributes when modal is open', async () => {
+    render(<ImageTile {...defaultProps} modalTitle="Image Preview" />);
+
+    const button = screen.getByTestId('test-image-test-id');
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      const modalImage = screen.getByTestId('test-image-modal-image-test-id');
+      expect(modalImage).toBeInTheDocument();
+      expect(modalImage).toHaveAttribute(
+        'src',
+        '/openmrs/auth?requested_document=/document_images/100/9-Consultation-27627c65-5f95-4118-b8e5-89f0aa8cc3b8.png',
+      );
+      expect(modalImage).toHaveAttribute('alt', 'Test image');
+    });
   });
 });

@@ -315,3 +315,12 @@ export {
   CONSULTATION_SAVED_EVENT,
   type ConsultationSavedEventPayload,
 } from './events/consultationEvents';
+
+export {
+  getDocumentReferenceBundleByPatient,
+  getDocumentReferencesByPatient,
+  createDocumentReference,
+  updateDocumentReference,
+} from './documentReferenceService';
+
+export { uploadDocument } from './documentUploadService';

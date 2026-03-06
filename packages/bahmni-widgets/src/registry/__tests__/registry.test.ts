@@ -259,6 +259,7 @@ describe('Widget Registry', () => {
         'appointments',
         'conditions',
         'diagnoses',
+        'documentReference',
         'flowSheet',
         'forms',
         'labOrders',
@@ -396,7 +397,7 @@ describe('Widget Registry', () => {
       resetWidgetRegistry();
       const countAfterReset = getAllWidgetTypes().length;
 
-      expect(countAfterReset).toBe(12); // Only built-in widgets
+      expect(countAfterReset).toBe(13);
       expect(countWithCustom).toBeGreaterThan(countAfterReset);
     });
   });

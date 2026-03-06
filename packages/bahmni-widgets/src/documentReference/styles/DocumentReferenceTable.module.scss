@@ -1,0 +1,16 @@
+@use "@carbon/react/scss/spacing" as *;
+
+.table {
+  td[data-testid$="-attachment"] {
+    max-width: $spacing-11;
+    padding-top: 0;
+  }
+
+  th[data-testid$="-attachment"] {
+    width: $spacing-11;
+    div {
+      visibility: hidden;
+      width: 0;
+    }
+  }
+}
