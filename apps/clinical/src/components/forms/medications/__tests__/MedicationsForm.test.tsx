@@ -9,7 +9,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Medication } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -568,24 +568,19 @@ describe('MedicationsForm', () => {
     });
 
     test('does not add medication when selected item is invalid', async () => {
+      const user = userEvent.setup();
       renderWithQueryClient(<MedicationsForm />);
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
       });
 
-      // Test with undefined selectedItem
-      fireEvent.change(searchBox, {
-        target: { value: 'test' },
-        selectedItem: undefined,
-      });
-      expect(mockStore.addMedication).not.toHaveBeenCalled();
+      // Test by typing without selecting an item
+      await user.type(searchBox, 'test');
 
-      // Test with null selectedItem
-      fireEvent.change(searchBox, {
-        target: { value: 'test' },
-        selectedItem: null,
-      });
+      // Don't select anything - just clear the search
+      await user.clear(searchBox);
+
       expect(mockStore.addMedication).not.toHaveBeenCalled();
     });
 

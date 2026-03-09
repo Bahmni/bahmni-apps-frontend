@@ -53,39 +53,56 @@ describe('ConsultationActionButton', () => {
       } as any);
     });
 
-    it('renders button, shows correct text, and handles disabled states', () => {
-      const { rerender } = render(
-        <ConsultationActionButton {...defaultProps} />,
-      );
+    it('renders button with default "New Consultation" text', () => {
+      render(<ConsultationActionButton {...defaultProps} />);
 
-      // Default: New Consultation
       expect(
-        screen.getByTestId('consultation-action-button'),
-      ).toHaveTextContent('CONSULTATION_ACTION_NEW');
+        screen.getByRole('button', { name: /CONSULTATION_ACTION_NEW/i }),
+      ).toBeInTheDocument();
+    });
 
-      // Edit state when active encounter exists
+    it('shows "Edit Consultation" text when active encounter exists', () => {
       mockUseEncounterSession.mockReturnValue({
         editActiveEncounter: true,
         isLoading: false,
       } as any);
-      rerender(<ConsultationActionButton {...defaultProps} />);
-      expect(
-        screen.getByTestId('consultation-action-button'),
-      ).toHaveTextContent('CONSULTATION_ACTION_EDIT');
+      render(<ConsultationActionButton {...defaultProps} />);
 
-      // Disabled when action area is visible
+      expect(
+        screen.getByRole('button', { name: /CONSULTATION_ACTION_EDIT/i }),
+      ).toBeInTheDocument();
+    });
+
+    it('disables button when action area is visible', () => {
+      const { rerender } = render(
+        <ConsultationActionButton {...defaultProps} />,
+      );
+
+      expect(
+        screen.getByRole('button', { name: /CONSULTATION_ACTION_NEW/i }),
+      ).not.toBeDisabled();
+
       rerender(
         <ConsultationActionButton {...defaultProps} isActionAreaVisible />,
       );
-      expect(screen.getByTestId('consultation-action-button')).toBeDisabled();
 
-      // Disabled when loading
+      expect(
+        screen.getByRole('button', {
+          name: /CONSULTATION_ACTION_IN_PROGRESS/i,
+        }),
+      ).toBeDisabled();
+    });
+
+    it('disables button when loading', () => {
       mockUseEncounterSession.mockReturnValue({
         editActiveEncounter: false,
         isLoading: true,
       } as any);
-      rerender(<ConsultationActionButton {...defaultProps} />);
-      expect(screen.getByTestId('consultation-action-button')).toBeDisabled();
+      render(<ConsultationActionButton {...defaultProps} />);
+
+      expect(
+        screen.getByRole('button', { name: /CONSULTATION_ACTION_NEW/i }),
+      ).toBeDisabled();
     });
   });
 
@@ -97,7 +114,7 @@ describe('ConsultationActionButton', () => {
     render(<ConsultationActionButton {...defaultProps} />);
 
     expect(
-      screen.queryByTestId('consultation-action-button'),
+      screen.queryByRole('button', { name: /CONSULTATION_ACTION_(NEW|EDIT)/i }),
     ).not.toBeInTheDocument();
   });
 });

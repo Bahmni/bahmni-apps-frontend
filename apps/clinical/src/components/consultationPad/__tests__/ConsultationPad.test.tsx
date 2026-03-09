@@ -7,7 +7,6 @@ import {
   render,
   screen,
   waitFor,
-  fireEvent,
   act,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -1183,7 +1182,8 @@ describe('ConsultationPad', () => {
       const { container } = renderWithProvider();
 
       const doneButton = screen.getByTestId('primary-button');
-      fireEvent.click(doneButton);
+      const user = userEvent.setup();
+      await user.click(doneButton);
 
       await waitFor(() => {
         expect(doneButton).toBeDisabled();
@@ -1374,7 +1374,8 @@ describe('ConsultationPad', () => {
         const doneButton = screen.getByTestId('primary-button');
         expect(doneButton).not.toBeDisabled();
 
-        fireEvent.click(doneButton);
+        const user = userEvent.setup();
+        await user.click(doneButton);
 
         await waitFor(() => {
           expect(doneButton).toBeDisabled();
@@ -1421,7 +1422,8 @@ describe('ConsultationPad', () => {
       expect(doneButton).not.toBeDisabled();
 
       // Start submission
-      fireEvent.click(doneButton);
+      const user = userEvent.setup();
+      await user.click(doneButton);
 
       // During submission
       await waitFor(() => {
@@ -1909,12 +1911,14 @@ describe('ConsultationPad', () => {
         expect(doneButton).not.toBeDisabled();
       });
 
+      const user = userEvent.setup();
+
       // First click
-      fireEvent.click(doneButton);
+      await user.click(doneButton);
 
       // Try clicking again while first submission is in progress
-      fireEvent.click(doneButton);
-      fireEvent.click(doneButton);
+      await user.click(doneButton);
+      await user.click(doneButton);
 
       // Resolve first submission
       if (resolveFirst) {
@@ -2500,10 +2504,11 @@ describe('ConsultationPad', () => {
       renderWithProvider();
 
       const primaryButton = screen.getByTestId('primary-button');
+      const user = userEvent.setup();
       primaryButton.focus();
 
       // Simulate Enter key press
-      fireEvent.keyDown(primaryButton, { key: 'Enter', code: 'Enter' });
+      await user.keyboard('{Enter}');
 
       expect(primaryButton).toHaveFocus();
     });
