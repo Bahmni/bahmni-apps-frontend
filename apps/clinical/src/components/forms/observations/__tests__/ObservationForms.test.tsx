@@ -874,7 +874,7 @@ describe('ObservationForms', () => {
         '[data-testid="action-icon-fa-thumbtack"]',
       );
       expect(thumbtackIcon).not.toBeNull();
-      await user.click(thumbtackIcon!);
+      await user.click(thumbtackIcon as Element);
 
       // This covers the onActionClick callback (line 208) - should call updatePinnedForms with filtered array
       expect(mockUpdatePinnedForms).toHaveBeenCalledWith([]);

@@ -5,7 +5,6 @@ import {
 } from '@tanstack/react-query';
 import { getVaccinations } from '@bahmni/services';
 import { useUserPrivilege } from '@bahmni/widgets';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Medication } from 'fhir/r4';
@@ -76,7 +75,7 @@ const mockVaccination: Medication = {
       {
         code: 'covid-19-vaccine',
         display: 'COVID-19 Vaccine',
-        system: 'http://snomed.info/sct',
+        system: 'https://snomed.info/sct',
       },
     ],
   },
@@ -314,7 +313,7 @@ describe('VaccinationForm', () => {
             {
               code: 'hep-a-vaccine',
               display: 'Hepatitis A Vaccine',
-              system: 'http://snomed.info/sct',
+              system: 'https://snomed.info/sct',
             },
           ],
         },
@@ -365,9 +364,31 @@ describe('VaccinationForm', () => {
     });
     test('resets ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
       const user = userEvent.setup();
-      mockUseQuery.mockImplementation(mockTwoVaccinesQuery);
-      const searchBox = renderVaccinationForm();
+      const hepatitisVaccine: Medication = {
+        id: 'test-vaccination-2',
+        resourceType: 'Medication',
+        code: {
+          text: 'Hepatitis B Vaccine',
+          coding: [
+            {
+              code: 'hep-b-vaccine',
+              display: 'Hepatitis B Vaccine',
+              system: 'https://snomed.info/sct',
+            },
+          ],
+        },
+      };
+      (getVaccinations as jest.Mock).mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [{ resource: mockVaccination }, { resource: hepatitisVaccine }],
+      });
+      render(<VaccinationForm />, { wrapper: createWrapper() });
+      const searchBox = screen.getByRole('combobox', {
+        name: /search to add vaccination/i,
+      });
 
+      // First selection
       await user.type(searchBox, 'covid');
       await waitFor(() => {
         expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
@@ -425,6 +446,25 @@ describe('VaccinationForm', () => {
     test('marks already selected vaccinations as disabled', async () => {
       const user = userEvent.setup();
       mockUseQuery.mockImplementation(mockTwoVaccinesQuery);
+      const secondVaccination: Medication = {
+        id: 'test-vaccination-2',
+        resourceType: 'Medication',
+        code: {
+          text: 'Hepatitis B Vaccine',
+          coding: [
+            {
+              code: 'hep-b-vaccine',
+              display: 'Hepatitis B Vaccine',
+              system: 'https://snomed.info/sct',
+            },
+          ],
+        },
+      };
+      (getVaccinations as jest.Mock).mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [{ resource: mockVaccination }, { resource: secondVaccination }],
+      });
       (useVaccinationStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedVaccinations: [mockSelectedVaccination],

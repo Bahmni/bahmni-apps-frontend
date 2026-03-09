@@ -322,7 +322,7 @@ const VaccinationForm: React.FC = React.memo(() => {
                 >
                   <SelectedVaccinationItem
                     vaccinationInputEntry={vaccination}
-                    medicationConfig={medicationConfig!}
+                    medicationConfig={medicationConfig}
                     updateDosage={updateDosage}
                     updateDosageUnit={updateDosageUnit}
                     updateFrequency={updateFrequency}

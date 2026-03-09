@@ -3,12 +3,7 @@ import {
   dispatchAuditEvent,
   dispatchConsultationSaved,
 } from '@bahmni/services';
-import {
-  render,
-  screen,
-  waitFor,
-  act,
-} from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BundleEntry } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';

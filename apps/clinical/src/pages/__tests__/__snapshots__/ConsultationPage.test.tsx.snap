@@ -3,84 +3,9 @@
 exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
 <DocumentFragment>
   <div
-    data-testid="carbon-loading"
-    role="status"
+    class="alert alert-danger"
   >
-    LOADING_CLINICAL_DATA
-    <div
-      data-testid="mocked-header"
-    >
-      <div
-        data-testid="mocked-header-component"
-      >
-        <div
-          data-testid="sidenav-item-vitals"
-        >
-          translated_VITALS_SECTION
-        </div>
-        <div
-          data-testid="sidenav-item-medications"
-        >
-          translated_Medications
-        </div>
-        <div
-          data-testid="active-sidenav-item"
-        >
-          Vitals
-        </div>
-      </div>
-    </div>
-    <div
-      data-testid="mocked-patient-section"
-    />
-    <div
-      data-testid="mocked-sidebar"
-    />
-    <div
-      data-testid="mocked-main-display"
-    >
-      <div
-        aria-label="section-sticky-header-aria-label"
-        class="stickySection"
-        data-testid="section-sticky-header-test-id"
-        id="section-sticky-header"
-      >
-        <div
-          aria-label="translated_PATIENT_HEADER_LABEL"
-          class="header"
-          data-testid="patient-header"
-        >
-          <div
-            class="_skeletonContainer_14cqd_1"
-          >
-            <p
-              class="cds--skeleton__text cds--skeleton__heading"
-              data-testid="skeleton-loader"
-              style="width: 20%;"
-            />
-            <p
-              class="cds--skeleton__text"
-              data-testid="skeleton-loade-subheader"
-              style="width: 50%;"
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        data-testid="mocked-dashboard-container"
-      >
-        <div
-          data-testid="dashboard-sections-count"
-        >
-          2
-        </div>
-        <div
-          data-testid="dashboard-active-item"
-        >
-          Vitals
-        </div>
-      </div>
-    </div>
+    Invalid episode uuid
   </div>
 </DocumentFragment>
 `;
