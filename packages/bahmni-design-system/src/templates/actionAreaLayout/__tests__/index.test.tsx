@@ -98,7 +98,7 @@ describe('ActionAreaLayout', () => {
     expect(mainDisplay?.className).not.toMatch(/collapseNoSideNav/);
   });
 
-  test('applies collapseNoSideNav class when action area is visible and hasSideNav is false', () => {
+  test('does not apply collapse class when action area is visible and hasSideNav is false', () => {
     const { container } = render(
       <ActionAreaLayout
         {...defaultProps}
@@ -108,7 +108,8 @@ describe('ActionAreaLayout', () => {
     );
 
     const mainDisplay = container.querySelector('#main-display-area');
-    expect(mainDisplay?.className).toMatch(/collapseNoSideNav/);
+    // Using word boundary to match 'collapse' but not 'collapsedModal'
+    expect(mainDisplay?.className).not.toMatch(/\bcollapse\b/);
   });
 
   test('does not apply collapse or collapseNoSideNav class when action area is not visible', () => {

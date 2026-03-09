@@ -64,7 +64,6 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
               [styles.expand]: !isActionAreaVisible,
               [styles.collapsedModal]: isActionAreaVisible,
               [styles.collapse]: isActionAreaVisible && hasSideNav,
-              [styles.collapseNoSideNav]: isActionAreaVisible && !hasSideNav,
             })}
           >
             {mainDisplay}
