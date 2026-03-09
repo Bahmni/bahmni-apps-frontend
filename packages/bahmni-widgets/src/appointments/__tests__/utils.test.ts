@@ -1,186 +1,160 @@
-import { Appointment } from '@bahmni/services';
+import type { Appointment as FhirAppointment } from 'fhir/r4';
 import {
-  formatAppointment,
   sortAppointmentsByDate,
+  transformFhirAppointmentToFormatted,
   FormattedAppointment,
 } from '../utils';
 
-describe('formatAppointment', () => {
-  const mockAppointment: Appointment & {
-    appointmentSlot?: string;
-    appointmentNumber?: string;
-  } = {
-    uuid: 'appt-uuid-123',
-    appointmentNumber: 'APT-12345',
-    startDateTime: [2025, 2, 15, 10, 30],
-    appointmentSlot: '10:30 AM - 10:46 AM',
-    service: { name: 'Consultation' },
-    serviceType: { name: 'General' },
-    provider: { name: 'Dr. Smith' },
-    location: { name: 'OPD-1' },
-    status: 'Scheduled',
-    dateCreated: 0,
-    dateAppointmentScheduled: 0,
-    endDateTime: 0,
-    appointmentKind: '',
-    comments: null,
-    reasons: [{ conceptUuid: 'uuid-1', name: 'Follow-up' }],
-    patient: {
-      uuid: '',
-      identifier: '',
-      name: '',
-      gender: '',
-      birthDate: 0,
-      age: 0,
-      PatientIdentifier: '',
-      customAttributes: [],
-    },
+describe('transformFhirAppointmentToFormatted', () => {
+  const mockFhirAppointment: FhirAppointment = {
+    resourceType: 'Appointment',
+    id: 'appt-uuid-123',
+    identifier: [
+      {
+        system: 'http://fhir.bahmni.org/code-system/appointments',
+        value: 'APT-12345',
+      },
+    ],
+    status: 'booked',
+    serviceType: [
+      {
+        text: 'Consultation',
+      },
+    ],
+    start: '2025-02-15T10:30:00Z',
+    end: '2025-02-15T11:00:00Z',
+    participant: [
+      {
+        actor: {
+          reference: 'Practitioner/prac-uuid-123',
+          display: 'Dr. Smith',
+        },
+        status: 'accepted',
+      },
+    ],
+    reasonCode: [
+      {
+        text: 'Follow-up',
+      },
+    ],
   };
 
-  it('should format appointment with array startDateTime', () => {
-    const result = formatAppointment(mockAppointment);
+  it('should format FHIR appointment with ISO startDateTime', () => {
+    const result = transformFhirAppointmentToFormatted(mockFhirAppointment);
 
     expect(result.appointmentDate).toMatch(/15\/02\/2025/);
-    expect(result.appointmentTime).toBeTruthy();
+    expect(result.appointmentSlot).toBeTruthy();
   });
 
-  it('should use appointmentSlot if available', () => {
-    const result = formatAppointment(mockAppointment);
+  it('should extract appointment slot from start and end times', () => {
+    const result = transformFhirAppointmentToFormatted(mockFhirAppointment);
 
-    // Should format time as HH:MM AM/PM (exact time depends on system timezone)
-    expect(result.appointmentTime).toMatch(
+    expect(result.appointmentSlot).toMatch(
       /\d{2}:\d{2}\s(AM|PM|am|pm)\s-\s\d{2}:\d{2}\s(AM|PM|am|pm)/,
     );
-    expect(result.appointmentTime).toBeTruthy();
+    expect(result.appointmentSlot).toBeTruthy();
   });
 
-  it('should format time without appointmentSlot', () => {
-    const appointmentWithoutSlot = {
-      ...mockAppointment,
-      appointmentSlot: undefined,
-      startDateTime: [2025, 2, 15, 14, 45],
+  it('should handle appointment without end time', () => {
+    const appointmentWithoutEnd = {
+      ...mockFhirAppointment,
+      end: undefined,
     };
 
-    const result = formatAppointment(appointmentWithoutSlot);
+    const result = transformFhirAppointmentToFormatted(appointmentWithoutEnd);
 
-    // Should format time as HH:MM AM/PM (exact time depends on system timezone)
-    expect(result.appointmentTime).toMatch(
-      /\d{2}:\d{2}\s(AM|PM|am|pm)\s-\s\d{2}:\d{2}\s(AM|PM|am|pm)/,
-    );
-    expect(result.appointmentTime).toBeTruthy();
+    expect(result.appointmentSlot).toBeTruthy();
   });
 
-  it('should handle timestamp startDateTime', () => {
-    const appointmentWithTimestamp = {
-      ...mockAppointment,
-      startDateTime: new Date('2025-02-15T10:30:00Z').getTime(),
+  it('should handle appointment without start time', () => {
+    const appointmentWithoutStart = {
+      ...mockFhirAppointment,
+      start: undefined,
     };
 
-    const result = formatAppointment(appointmentWithTimestamp);
-
-    expect(result.appointmentDate).toBeTruthy();
-    expect(result.appointmentTime).toBeTruthy();
-  });
-
-  it('should handle ISO date string startDateTime', () => {
-    const appointmentWithISO = {
-      ...mockAppointment,
-      startDateTime: '2025-02-15T10:30:00Z',
-    };
-
-    const result = formatAppointment(appointmentWithISO);
-
-    expect(result.appointmentDate).toBeTruthy();
-  });
-
-  it('should set date to "-" when startDateTime is null', () => {
-    const appointmentWithNull = {
-      ...mockAppointment,
-      startDateTime: null,
-    };
-
-    const result = formatAppointment(appointmentWithNull);
+    const result = transformFhirAppointmentToFormatted(appointmentWithoutStart);
 
     expect(result.appointmentDate).toBe('-');
-    expect(result.appointmentTime).toBe('-');
+    expect(result.appointmentSlot).toBe('-');
   });
 
-  it('should set date to "-" when startDateTime is undefined', () => {
-    const appointmentWithUndefined = {
-      ...mockAppointment,
-      startDateTime: undefined,
-    };
+  it('should extract appointment number from identifier', () => {
+    const result = transformFhirAppointmentToFormatted(mockFhirAppointment);
 
-    const result = formatAppointment(appointmentWithUndefined);
-
-    expect(result.appointmentDate).toBe('-');
-    expect(result.appointmentTime).toBe('-');
-  });
-
-  it('should handle invalid date gracefully', () => {
-    const appointmentWithInvalidDate = {
-      ...mockAppointment,
-      startDateTime: 'invalid-date',
-    };
-
-    const result = formatAppointment(appointmentWithInvalidDate);
-
-    expect(result.appointmentDate).toBe('-');
-    expect(result.appointmentTime).toBe('-');
-  });
-
-  it('should preserve other appointment properties', () => {
-    const result = formatAppointment(mockAppointment);
-
-    expect(result.uuid).toBe('appt-uuid-123');
     expect(result.appointmentNumber).toBe('APT-12345');
-    expect(result.reason).toBe('Follow-up');
-    expect(result.reasons).toEqual([
-      { conceptUuid: 'uuid-1', name: 'Follow-up' },
-    ]);
+  });
+
+  it('should extract service type', () => {
+    const result = transformFhirAppointmentToFormatted(mockFhirAppointment);
+
     expect(result.service).toBe('Consultation');
-    expect(result.status).toBe('Scheduled');
   });
 
-  it('should set id to uuid', () => {
-    const result = formatAppointment(mockAppointment);
+  it('should extract provider from practitioner participant', () => {
+    const result = transformFhirAppointmentToFormatted(mockFhirAppointment);
 
-    expect(result.id).toBe('appt-uuid-123');
+    expect(result.provider).toBe('Dr. Smith');
   });
 
-  it('should return FormattedAppointment with required fields', () => {
-    const result = formatAppointment(mockAppointment);
+  it('should handle missing provider', () => {
+    const appointmentWithoutProvider = {
+      ...mockFhirAppointment,
+      participant: [],
+    };
 
-    expect(result).toHaveProperty('appointmentDate');
-    expect(result).toHaveProperty('appointmentTime');
+    const result = transformFhirAppointmentToFormatted(
+      appointmentWithoutProvider,
+    );
+
+    expect(result.provider).toBe('-');
+  });
+
+  it('should map reason codes to reason string', () => {
+    const result = transformFhirAppointmentToFormatted(mockFhirAppointment);
+
+    expect(result.reason).toBe('Follow-up');
+  });
+
+  it('should handle multiple reason codes', () => {
+    const appointmentWithMultipleReasons = {
+      ...mockFhirAppointment,
+      reasonCode: [{ text: 'Follow-up' }, { text: 'Check-up' }],
+    };
+
+    const result = transformFhirAppointmentToFormatted(
+      appointmentWithMultipleReasons,
+    );
+
+    expect(result.reason).toBe('Follow-up, Check-up');
+  });
+
+  it('should preserve all formatted appointment properties', () => {
+    const result = transformFhirAppointmentToFormatted(mockFhirAppointment);
+
     expect(result).toHaveProperty('id');
     expect(result).toHaveProperty('uuid');
+    expect(result).toHaveProperty('appointmentNumber');
+    expect(result).toHaveProperty('appointmentDate');
+    expect(result).toHaveProperty('appointmentSlot');
+    expect(result).toHaveProperty('service');
+    expect(result).toHaveProperty('reason');
     expect(result).toHaveProperty('status');
+    expect(result).toHaveProperty('provider');
   });
 
-  it('should handle array startDateTime with different values', () => {
-    const appointmentWithDifferentTime = {
-      ...mockAppointment,
-      startDateTime: [2025, 12, 31, 23, 59],
-    };
+  it('should return FormattedAppointment with all required fields', () => {
+    const result = transformFhirAppointmentToFormatted(mockFhirAppointment);
 
-    const result = formatAppointment(appointmentWithDifferentTime);
-
-    // Date format should be DD/MM/YYYY (timezone offset may change the date)
-    expect(result.appointmentDate).toMatch(/\d{2}\/\d{2}\/\d{4}/);
-    expect(result.appointmentDate).toBeTruthy();
-  });
-
-  it('should catch formatting errors and return fallback values', () => {
-    const appointmentWithErrorProneData = {
-      ...mockAppointment,
-      startDateTime: { invalid: 'structure' } as any,
-    };
-
-    const result = formatAppointment(appointmentWithErrorProneData);
-
-    expect(result.appointmentDate).toBe('-');
-    expect(result.appointmentTime).toBe('-');
+    // Verify all fields exist and are properly typed
+    expect(typeof result.id).toBe('string');
+    expect(typeof result.uuid).toBe('string');
+    expect(typeof result.appointmentNumber).toBe('string');
+    expect(typeof result.appointmentDate).toBe('string');
+    expect(typeof result.appointmentSlot).toBe('string');
+    expect(typeof result.service).toBe('string');
+    expect(typeof result.reason).toBe('string');
+    expect(typeof result.status).toBe('string');
+    expect(typeof result.provider).toBe('string');
   });
 });
 
@@ -192,27 +166,12 @@ describe('sortAppointmentsByDate', () => {
     uuid,
     id: uuid,
     appointmentDate: date,
-    appointmentTime: '10:00 AM',
-    service: { name: 'Test' },
+    appointmentSlot: '10:00 AM',
+    appointmentNumber: `APT-${uuid}`,
+    service: 'Test Service',
     status: 'Scheduled',
-    dateCreated: 0,
-    dateAppointmentScheduled: 0,
-    endDateTime: 0,
-    appointmentKind: '',
-    comments: null,
-    reasons: [],
-    patient: {
-      uuid: '',
-      identifier: '',
-      name: '',
-      gender: '',
-      birthDate: 0,
-      age: 0,
-      PatientIdentifier: '',
-      customAttributes: [],
-    },
-    startDateTime: '',
-    location: { name: '' },
+    reason: 'Test Reason',
+    provider: 'Dr. Test',
   });
 
   it('should sort appointments in ascending order by date', () => {
@@ -294,6 +253,6 @@ describe('sortAppointmentsByDate', () => {
     const sorted = sortAppointmentsByDate(appointments);
 
     expect(sorted[0].status).toBe('Scheduled');
-    expect(sorted[0].appointmentTime).toBe('10:00 AM');
+    expect(sorted[0].appointmentSlot).toBe('10:00 AM');
   });
 });

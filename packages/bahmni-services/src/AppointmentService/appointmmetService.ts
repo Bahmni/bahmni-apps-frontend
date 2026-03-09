@@ -1,124 +1,83 @@
-import { post, get } from '../api';
+import type { Appointment, Bundle } from 'fhir/r4';
+import { get, post } from '../api';
 import {
   APPOINTMENTS_SEARCH_URL,
   getAppointmentByIdUrl,
-  getUpcomingAppointmentsUrl,
-  getPastAppointmentsUrl,
   updateAppointmentStatusUrl,
+  UPCOMING_APPOINTMENTS_URL,
+  PAST_APPOINTMENTS_URL,
 } from './constants';
-import { Appointment } from './models';
 
+/**
+ * Search for appointments by specified attributes.
+ *
+ * @param searchParam - Search parameters for appointments
+ * @returns Raw FHIR Bundle containing appointments matching search criteria. Consumer is responsible for transformation to view model
+ * @throws Error if the API request fails
+ */
 export const searchAppointmentsByAttribute = async (
   searchParam: Record<string, string>,
-): Promise<Appointment[]> => {
-  const appointments = await post<Appointment[]>(
-    APPOINTMENTS_SEARCH_URL,
-    searchParam,
-  );
-  return appointments;
+): Promise<Bundle<Appointment>> => {
+  return await post<Bundle<Appointment>>(APPOINTMENTS_SEARCH_URL, searchParam);
 };
 
-const transformSqlAppointmentResponse = (
-  sqlResponse: Record<string, unknown>,
-): Appointment => {
-  const reasonString = sqlResponse.DASHBOARD_APPOINTMENTS_REASON_KEY ?? '';
-  const reasons = reasonString
-    ? [{ conceptUuid: '', name: reasonString as string }]
-    : [];
-
-  return {
-    uuid: sqlResponse.uuid as string,
-    startDateTime:
-      sqlResponse.DASHBOARD_APPOINTMENTS_START_DATE_IN_UTC_KEY as number,
-    endDateTime:
-      sqlResponse.DASHBOARD_APPOINTMENTS_END_DATE_IN_UTC_KEY as number,
-    appointmentNumber:
-      (sqlResponse.DASHBOARD_APPOINTMENTS_APPOINTMENT_NUMBER_KEY ??
-        '-') as string,
-    appointmentSlot: (sqlResponse.DASHBOARD_APPOINTMENTS_SLOT_KEY ??
-      '-') as string,
-    dateCreated: 0,
-    dateAppointmentScheduled: 0,
-    appointmentKind: '',
-    service: {
-      appointmentServiceId: 0,
-      name: (sqlResponse.DASHBOARD_APPOINTMENTS_SERVICE_KEY ?? '-') as string,
-      description: null,
-      speciality: null,
-      startTime: '',
-      endTime: '',
-      location: {
-        name: (sqlResponse.DASHBOARD_APPOINTMENTS_LOCATION_KEY ??
-          '-') as string,
-        uuid: '',
-      },
-      uuid: '',
-      color: '',
-      initialAppointmentStatus: null,
-    },
-    serviceType: {
-      id: undefined,
-      name: (sqlResponse.DASHBOARD_APPOINTMENTS_SERVICE_TYPE_KEY ??
-        '-') as string,
-      description: undefined,
-      uuid: '',
-    },
-    provider: {
-      id: undefined,
-      name: (sqlResponse.DASHBOARD_APPOINTMENTS_PROVIDER_KEY ?? '-') as string,
-      uuid: '',
-    },
-    location: {
-      name: (sqlResponse.DASHBOARD_APPOINTMENTS_LOCATION_KEY ?? '-') as string,
-      uuid: '',
-    },
-    status: (sqlResponse.DASHBOARD_APPOINTMENTS_STATUS_KEY ??
-      'Unknown') as string,
-    comments: null,
-    reasons,
-    patient: {
-      uuid: '',
-      identifier: '',
-      name: '',
-      gender: '',
-      birthDate: 0,
-      age: 0,
-      PatientIdentifier: '',
-      customAttributes: [],
-    },
-  };
-};
-
-export const getUpcomingAppointments = async (
+/**
+ * Fetch upcoming appointments for a patient.
+ *
+ * @param patientUuid - Patient UUID to fetch appointments for
+ * @returns Raw FHIR Bundle containing upcoming appointments. Consumer is responsible for transformation to view model
+ * @throws Error if the API request fails
+ */
+export async function getUpcomingAppointments(
   patientUuid: string,
-): Promise<Appointment[]> => {
-  const sqlResults = await get<Record<string, unknown>[]>(
-    getUpcomingAppointmentsUrl(patientUuid),
-  );
-  return (sqlResults || []).map(transformSqlAppointmentResponse);
-};
+): Promise<Bundle<Appointment>> {
+  return await get<Bundle<Appointment>>(UPCOMING_APPOINTMENTS_URL(patientUuid));
+}
 
-export const getPastAppointments = async (
+/**
+ * Fetch past appointments for a patient.
+ *
+ * @param patientUuid - Patient UUID to fetch appointments for
+ * @param count - Optional limit on number of past appointments to fetch (from config)
+ * @returns Raw FHIR Bundle containing past appointments sorted by date (most recent first). Consumer is responsible for transformation to view model
+ * @throws Error if the API request fails
+ */
+export async function getPastAppointments(
   patientUuid: string,
-): Promise<Appointment[]> => {
-  const sqlResults = await get<Record<string, unknown>[]>(
-    getPastAppointmentsUrl(patientUuid),
+  count?: number,
+): Promise<Bundle<Appointment>> {
+  return await get<Bundle<Appointment>>(
+    PAST_APPOINTMENTS_URL(patientUuid, count),
   );
-  return (sqlResults || []).map(transformSqlAppointmentResponse);
-};
+}
 
+/**
+ * Update the status of an appointment.
+ *
+ * @param appointmentUuid - Appointment UUID to update
+ * @param toStatus - New status value
+ * @param onDate - Optional date for the status update
+ * @returns Raw FHIR Appointment resource with updated status. Consumer is responsible for transformation to view model
+ * @throws Error if the API request fails
+ */
 export const updateAppointmentStatus = async (
   appointmentUuid: string,
   toStatus: string,
   onDate?: Date,
-): Promise<Appointment> => {
-  const updatedAppointment = await post<Appointment>(
-    updateAppointmentStatusUrl(appointmentUuid),
-    { toStatus, onDate },
-  );
-  return updatedAppointment;
+) => {
+  return await post(updateAppointmentStatusUrl(appointmentUuid), {
+    toStatus,
+    onDate,
+  });
 };
 
-export async function getAppointmentById(uuid: string): Promise<Appointment> {
-  return await get<Appointment>(getAppointmentByIdUrl(uuid));
+/**
+ * Fetch a specific appointment by ID.
+ *
+ * @param uuid - Appointment UUID
+ * @returns Raw FHIR Appointment resource. Consumer is responsible for transformation to view model
+ * @throws Error if the API request fails
+ */
+export async function getAppointmentById(uuid: string) {
+  return await get(getAppointmentByIdUrl(uuid));
 }

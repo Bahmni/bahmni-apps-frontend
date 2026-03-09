@@ -25,6 +25,14 @@
   tbody tr:last-child td {
     border-bottom: none;
   }
+
+  table {
+    table-layout: fixed;
+  }
+
+  td {
+    overflow-wrap: anywhere;
+  }
 }
 
 .appointmentTableEmpty {
@@ -36,11 +44,23 @@
 }
 
 // Status color styles for StatusTag dot indicator
-.scheduledStatus {
+.proposedStatus {
+  color: $gray-50;
+}
+
+.pendingStatus {
+  color: $gray-50;
+}
+
+.bookedStatus {
   color: $blue-70;
 }
 
-.completedStatus {
+.arrivedStatus {
+  color: $gray-50;
+}
+
+.fulfilledStatus {
   color: $green-60;
 }
 
@@ -48,16 +68,20 @@
   color: $red-70;
 }
 
-.missedStatus {
+.noshowStatus {
   color: $red-70;
 }
 
-.waitListStatus {
+.waitlistStatus {
   color: $gray-100;
 }
 
 .checkedInStatus {
   color: $yellow-70;
+}
+
+.enteredInErrorStatus {
+  color: $gray-50;
 }
 
 .unknownStatus {

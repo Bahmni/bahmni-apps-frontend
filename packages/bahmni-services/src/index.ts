@@ -77,13 +77,9 @@ export {
   getPastAppointments,
 } from './AppointmentService/appointmmetService';
 export {
-  type Appointment,
-  type AppointmentSearchResult,
-  type Patient,
-  type AppointmentService,
-  type Location,
-  type Reason,
-} from './AppointmentService/models';
+  APPOINTMENT_STATUSES,
+  APPOINTMENT_IDENTIFIER_SYSTEM,
+} from './AppointmentService/constants';
 export { getFormattedError } from './errorHandling';
 export {
   capitalize,

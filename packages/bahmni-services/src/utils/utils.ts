@@ -283,9 +283,23 @@ export const getValueType = (value: string | number): string => {
   return 'object';
 };
 
+/**
+ * Converts a string to SCREAMING_SNAKE_CASE.
+ *
+ * Handles:
+ * - camelCase (e.g., "helloWorld" → "HELLO_WORLD")
+ * - PascalCase (e.g., "TestCase" → "TEST_CASE")
+ * - Acronyms (e.g., "XMLParser" → "XML_PARSER")
+ * - Spaces and hyphens (e.g., "Checked - in" → "CHECKED_IN")
+ *
+ * Multiple spaces or hyphens are normalized to a single underscore.
+ *
+ * @param str - The input string to convert.
+ * @returns The transformed string in SCREAMING_SNAKE_CASE format.
+ */
 export function camelToScreamingSnakeCase(str: string): string {
   return str
-    .replace(/\s+/g, '_')
+    .replace(/[\s-]+/g, '_')
     .replace(/([a-z])([A-Z])/g, '$1_$2')
     .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
     .toUpperCase();

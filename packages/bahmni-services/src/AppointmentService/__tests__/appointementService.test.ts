@@ -1,296 +1,203 @@
-import { post, get } from '../../api';
-import { BAHMNI_SQL_URL } from '../../constants/app';
+import { get } from '../../api';
 import {
-  searchAppointmentsByAttribute,
-  getAppointmentById,
+  createMockFhirAppointment,
+  createEmptyBundle,
+  createBundleWithAppointments,
+} from '../_mocks_/mockData';
+import {
   getUpcomingAppointments,
   getPastAppointments,
 } from '../appointmmetService';
-import {
-  APPOINTMENTS_SEARCH_URL,
-  getAppointmentByIdUrl,
-  getUpcomingAppointmentsUrl,
-  getPastAppointmentsUrl,
-} from '../constants';
-import { Appointment } from '../models';
+import { UPCOMING_APPOINTMENTS_URL, PAST_APPOINTMENTS_URL } from '../constants';
 
 jest.mock('../../api');
-const mockedPost = post as jest.MockedFunction<typeof post>;
 const mockedGet = get as jest.MockedFunction<typeof get>;
 
+const FIXED_NOW = new Date('2026-02-18T06:02:28.000Z');
+
+jest.useFakeTimers().setSystemTime(FIXED_NOW);
+
+const setupMockBundle = (appointments: any[]) => {
+  const mockBundle = createBundleWithAppointments(appointments);
+  mockedGet.mockResolvedValue(mockBundle);
+  return mockBundle;
+};
+
+const setupEmptyBundle = () => {
+  const mockBundle = createEmptyBundle();
+  mockedGet.mockResolvedValue(mockBundle);
+  return mockBundle;
+};
+
+const SINGLE_APPOINTMENT = {
+  upcoming: createMockFhirAppointment(
+    'appt-uuid-1',
+    'APT-001',
+    '2025-02-15T10:30:00Z',
+    'Dr. Smith',
+    'booked',
+  ),
+  past: createMockFhirAppointment(
+    'appt-uuid-past-1',
+    'APT-OLD-001',
+    '2025-01-10T10:30:00Z',
+    'Dr. Johnson',
+    'fulfilled',
+  ),
+};
+
 describe('Appointment Service', () => {
-  const mockAppointment: Appointment = {
-    uuid: 'appt-uuid-1',
-    appointmentNumber: 'APT-12345',
-    patient: {
-      uuid: 'patient-uuid-1',
-      identifier: 'ABC200001',
-      name: 'John Doe',
-      gender: 'M',
-      birthDate: 631152000000,
-      age: 0,
-      PatientIdentifier: '',
-      customAttributes: [],
-    },
-    service: {
-      uuid: 'service-uuid',
-      name: 'Consultation',
-      appointmentServiceId: 0,
-      description: null,
-      speciality: null,
-      startTime: '',
-      endTime: '',
-      location: {
-        name: '',
-        uuid: '',
-      },
-      color: '',
-      initialAppointmentStatus: null,
-    },
-    serviceType: {
-      uuid: 'service-type-uuid',
-      name: 'General',
-    },
-    provider: {
-      uuid: 'provider-uuid',
-      name: 'Dr. Smith',
-    },
-    location: {
-      uuid: 'location-uuid',
-      name: 'OPD',
-    },
-    startDateTime: 1737024600000,
-    endDateTime: 1737026400000,
-    appointmentKind: 'Scheduled',
-    status: 'Scheduled',
-    comments: 'Follow-up visit',
-    reasons: [
-      {
-        conceptUuid: 'reason-uuid',
-        name: 'Consultation',
-      },
-    ],
-    dateCreated: 1737024000000,
-    length: 0,
-    dateAppointmentScheduled: 0,
-  };
+  afterAll(() => {
+    jest.useRealTimers();
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('searchAppointmentsByAttribute', () => {
-    it('should call post with the correct URL and search term', async () => {
-      const searchParam = { appointmentNumber: 'APT-12345' };
-      const mockAppointments: Appointment[] = [mockAppointment];
-
-      mockedPost.mockResolvedValue(mockAppointments);
-
-      const result = await searchAppointmentsByAttribute(searchParam);
-
-      expect(mockedPost).toHaveBeenCalledWith(
-        APPOINTMENTS_SEARCH_URL,
-        searchParam,
-      );
-      expect(result).toEqual(mockAppointments);
-    });
-
-    it('should return empty array when no appointments found', async () => {
-      const searchParam = { appointmentNumber: 'NON-EXISTENT' };
-      const mockAppointments: Appointment[] = [];
-
-      mockedPost.mockResolvedValue(mockAppointments);
-
-      const result = await searchAppointmentsByAttribute(searchParam);
-
-      expect(result).toEqual([]);
-      expect(result).toHaveLength(0);
-    });
-
-    it('should return multiple appointments when found', async () => {
-      const searchParam = { startDate: '2025-01-15T00:00:00.000Z' };
-      const mockAppointment2: Appointment = {
-        ...mockAppointment,
-        uuid: 'appt-uuid-2',
-        appointmentNumber: 'APT-67890',
-        patient: {
-          ...mockAppointment.patient,
-          uuid: 'patient-uuid-2',
-          identifier: 'ABC200002',
-          name: 'Jane Smith',
-          gender: 'F',
-        },
-        startDateTime: 1737028200000,
-        endDateTime: 1737030000000,
-      };
-      const mockAppointments: Appointment[] = [
-        mockAppointment,
-        mockAppointment2,
-      ];
-
-      mockedPost.mockResolvedValue(mockAppointments);
-
-      const result = await searchAppointmentsByAttribute(searchParam);
-
-      expect(result).toEqual(mockAppointments);
-      expect(result).toHaveLength(2);
-    });
-  });
-
-  describe('getAppointmentById', () => {
-    const mockUUID = 'appt-uuid-1';
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-      mockedGet.mockResolvedValue(mockAppointment);
-    });
-
-    it('should call API with correct appointment URL', async () => {
-      await getAppointmentById(mockUUID);
-
-      expect(mockedGet).toHaveBeenCalledWith(getAppointmentByIdUrl(mockUUID));
-    });
-
-    it('should return Appointment from API response', async () => {
-      const result = await getAppointmentById(mockUUID);
-
-      expect(result).toEqual(mockAppointment);
-      expect(result.uuid).toBe(mockUUID);
-      expect(result.appointmentNumber).toBe('APT-12345');
-      expect(result.patient.name).toBe('John Doe');
-    });
-
-    it('should handle 404 not found errors', async () => {
-      const notFoundError = new Error('Appointment not found');
-      notFoundError.name = 'NotFoundError';
-      mockedGet.mockRejectedValue(notFoundError);
-
-      await expect(getAppointmentById('invalid-uuid')).rejects.toThrow(
-        notFoundError,
-      );
-    });
-  });
-
   describe('getUpcomingAppointments', () => {
     const patientUUID = 'patient-uuid-123';
-    const mockSqlResponse = {
-      uuid: 'appt-uuid-1',
-      DASHBOARD_APPOINTMENTS_START_DATE_IN_UTC_KEY: [2025, 2, 15, 10, 30],
-      DASHBOARD_APPOINTMENTS_SLOT_KEY: '10:30 AM - 10:46 AM',
-      DASHBOARD_APPOINTMENTS_APPOINTMENT_NUMBER_KEY: 'APT-001',
-      DASHBOARD_APPOINTMENTS_REASON_KEY: 'Follow-up',
-      DASHBOARD_APPOINTMENTS_SERVICE_KEY: 'Consultation',
-      DASHBOARD_APPOINTMENTS_SERVICE_TYPE_KEY: 'General',
-      DASHBOARD_APPOINTMENTS_PROVIDER_KEY: 'Dr. Smith',
-      DASHBOARD_APPOINTMENTS_LOCATION_KEY: 'OPD-1',
-      DASHBOARD_APPOINTMENTS_STATUS_KEY: 'Scheduled',
-    };
 
-    it('should call GET with correct SQL endpoint for upcoming appointments', async () => {
-      const mockAppointments = [mockSqlResponse];
-      mockedGet.mockResolvedValue(mockAppointments);
+    it('should call GET with correct endpoint for upcoming appointments', async () => {
+      setupMockBundle([SINGLE_APPOINTMENT.upcoming]);
 
       await getUpcomingAppointments(patientUUID);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        getUpcomingAppointmentsUrl(patientUUID),
+        UPCOMING_APPOINTMENTS_URL(patientUUID),
       );
       expect(mockedGet).toHaveBeenCalledTimes(1);
     });
 
-    it('should return transformed appointments from SQL response', async () => {
-      const mockAppointment2 = {
-        ...mockSqlResponse,
-        uuid: 'appt-uuid-2',
-        DASHBOARD_APPOINTMENTS_APPOINTMENT_NUMBER_KEY: 'APT-002',
-        DASHBOARD_APPOINTMENTS_START_DATE_IN_UTC_KEY: [2025, 2, 20, 14, 0],
-      };
-      const mockAppointments = [mockSqlResponse, mockAppointment2];
-      mockedGet.mockResolvedValue(mockAppointments);
+    it('should return FHIR Bundle with appointments and participant information', async () => {
+      const mockBundle = setupMockBundle([
+        createMockFhirAppointment(
+          'appt-uuid-1',
+          'APT-001',
+          '2025-02-15T10:30:00Z',
+          'Dr. Smith',
+          'booked',
+        ),
+        createMockFhirAppointment(
+          'appt-uuid-2',
+          'APT-002',
+          '2025-02-20T14:00:00Z',
+          'Dr. Johnson',
+          'booked',
+        ),
+      ]);
 
       const result = await getUpcomingAppointments(patientUUID);
 
-      expect(result).toHaveLength(2);
-      expect(result[0].uuid).toBe('appt-uuid-1');
-      expect(result[0].status).toBe('Scheduled');
-      expect(result[0].provider?.name).toBe('Dr. Smith');
-      expect(result[1].uuid).toBe('appt-uuid-2');
+      expect(result).toEqual(mockBundle);
+      expect(result.entry).toHaveLength(2);
+      expect(result.entry?.[0]?.resource?.id).toBe('appt-uuid-1');
+      expect(result.entry?.[0]?.resource?.identifier?.[0]?.value).toBe(
+        'APT-001',
+      );
+      expect(result.entry?.[0]?.resource?.status).toBe('booked');
+      expect(result.entry?.[1]?.resource?.id).toBe('appt-uuid-2');
+
+      // Verify participant information
+      expect(result.entry?.[0]?.resource?.participant).toBeDefined();
+      const patientParticipant = result.entry?.[0]?.resource?.participant?.find(
+        (p) => p.actor?.reference?.startsWith('Patient/'),
+      );
+      expect(patientParticipant?.actor?.reference).toContain(
+        'patient-uuid-123',
+      );
+      expect(patientParticipant?.actor?.display).toContain('John Doe');
+      expect(patientParticipant?.actor?.display).toContain('ABC200001');
     });
 
-    it('should return empty array when no upcoming appointments', async () => {
-      mockedGet.mockResolvedValue([]);
+    it('should return empty Bundle when no upcoming appointments', async () => {
+      setupEmptyBundle();
 
       const result = await getUpcomingAppointments(patientUUID);
 
-      expect(result).toEqual([]);
-      expect(result).toHaveLength(0);
+      expect(result.entry).toHaveLength(0);
     });
   });
 
   describe('getPastAppointments', () => {
     const patientUUID = 'patient-uuid-123';
-    const mockSqlResponse = {
-      uuid: 'appt-uuid-past-1',
-      DASHBOARD_APPOINTMENTS_START_DATE_IN_UTC_KEY: [2025, 1, 10, 10, 30],
-      DASHBOARD_APPOINTMENTS_SLOT_KEY: '10:30 AM - 10:46 AM',
-      DASHBOARD_APPOINTMENTS_APPOINTMENT_NUMBER_KEY: 'APT-OLD-001',
-      DASHBOARD_APPOINTMENTS_REASON_KEY: 'Consultation',
-      DASHBOARD_APPOINTMENTS_SERVICE_KEY: 'Consultation',
-      DASHBOARD_APPOINTMENTS_SERVICE_TYPE_KEY: 'General',
-      DASHBOARD_APPOINTMENTS_PROVIDER_KEY: 'Dr. Johnson',
-      DASHBOARD_APPOINTMENTS_LOCATION_KEY: 'OPD-2',
-      DASHBOARD_APPOINTMENTS_STATUS_KEY: 'Completed',
-    };
 
-    it('should call GET with correct SQL endpoint for past appointments', async () => {
-      const mockAppointments = [mockSqlResponse];
-      mockedGet.mockResolvedValue(mockAppointments);
+    it('should call GET with correct endpoint for past appointments', async () => {
+      setupMockBundle([SINGLE_APPOINTMENT.past]);
 
       await getPastAppointments(patientUUID);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        getPastAppointmentsUrl(patientUUID),
+        PAST_APPOINTMENTS_URL(patientUUID),
       );
       expect(mockedGet).toHaveBeenCalledTimes(1);
     });
 
-    it('should return transformed appointments from SQL response', async () => {
-      const mockAppointment2 = {
-        ...mockSqlResponse,
-        uuid: 'appt-uuid-past-2',
-        DASHBOARD_APPOINTMENTS_APPOINTMENT_NUMBER_KEY: 'APT-OLD-002',
-        DASHBOARD_APPOINTMENTS_START_DATE_IN_UTC_KEY: [2025, 1, 5, 11, 0],
-      };
-      const mockAppointments = [mockSqlResponse, mockAppointment2];
-      mockedGet.mockResolvedValue(mockAppointments);
+    it('should return FHIR Bundle with past appointments and location information in participant', async () => {
+      const mockBundle = setupMockBundle([
+        createMockFhirAppointment(
+          'appt-uuid-past-1',
+          'APT-OLD-001',
+          '2025-01-10T10:30:00Z',
+          'Dr. Johnson',
+          'fulfilled',
+        ),
+        createMockFhirAppointment(
+          'appt-uuid-past-2',
+          'APT-OLD-002',
+          '2025-01-05T11:00:00Z',
+          'Dr. Smith',
+          'fulfilled',
+        ),
+      ]);
 
       const result = await getPastAppointments(patientUUID);
 
-      expect(result).toHaveLength(2);
-      expect(result[0].uuid).toBe('appt-uuid-past-1');
-      expect(result[0].status).toBe('Completed');
-      expect(result[0].provider?.name).toBe('Dr. Johnson');
-      expect(result[1].uuid).toBe('appt-uuid-past-2');
+      expect(result).toEqual(mockBundle);
+      expect(result.entry).toHaveLength(2);
+      expect(result.entry?.[0]?.resource?.id).toBe('appt-uuid-past-1');
+      expect(result.entry?.[0]?.resource?.identifier?.[0]?.value).toBe(
+        'APT-OLD-001',
+      );
+      expect(result.entry?.[0]?.resource?.status).toBe('fulfilled');
+      expect(result.entry?.[1]?.resource?.id).toBe('appt-uuid-past-2');
+
+      // Verify location information in participant
+      expect(result.entry?.[0]?.resource?.participant).toBeDefined();
+      const locationParticipant =
+        result.entry?.[0]?.resource?.participant?.find((p) =>
+          p.actor?.reference?.startsWith('Location/'),
+        );
+      expect(locationParticipant?.actor?.reference).toContain('location-uuid');
+      expect(locationParticipant?.actor?.display).toContain('OPD-1');
     });
 
-    it('should return empty array when no past appointments', async () => {
-      mockedGet.mockResolvedValue([]);
+    it('should return empty Bundle when no past appointments', async () => {
+      setupEmptyBundle();
 
       const result = await getPastAppointments(patientUUID);
 
-      expect(result).toEqual([]);
-      expect(result).toHaveLength(0);
+      expect(result.entry).toHaveLength(0);
+    });
+
+    it('should handle optional count parameter', async () => {
+      const mockBundle = setupMockBundle([SINGLE_APPOINTMENT.past]);
+
+      const result = await getPastAppointments(patientUUID, 5);
+
+      expect(result).toEqual(mockBundle);
+      expect(result.entry).toHaveLength(1);
+      expect(mockedGet).toHaveBeenCalledWith(
+        PAST_APPOINTMENTS_URL(patientUUID, 5),
+      );
     });
 
     it('should propagate API errors', async () => {
-      const mockError = new Error('SQL Query Error');
+      const mockError = new Error('API Error');
       mockedGet.mockRejectedValue(mockError);
 
       await expect(getPastAppointments(patientUUID)).rejects.toThrow(
-        'SQL Query Error',
-      );
-      expect(mockedGet).toHaveBeenCalledWith(
-        expect.stringContaining('pastAppointments'),
+        'API Error',
       );
     });
   });
