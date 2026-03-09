@@ -20,6 +20,7 @@ jest.mock('../../../../stores/vaccinationsStore');
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(),
+  usePatientUUID: jest.fn(),
 }));
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -39,10 +40,6 @@ jest.mock('../../../../services/medicationService', () => ({
     activeMedications: [],
     medicationMap: {},
   })),
-}));
-jest.mock('@bahmni/widgets', () => ({
-  ...jest.requireActual('@bahmni/widgets'),
-  usePatientUUID: jest.fn(),
 }));
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
@@ -220,7 +217,7 @@ describe('VaccinationForm', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
     (useVaccinationStore as unknown as jest.Mock).mockReturnValue(mockStore);
-    mockUseQuery.mockImplementation(defaultQueryMock as any);
+    (getVaccinations as jest.Mock).mockResolvedValue(mockVaccinationBundle);
     mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithVaccinations);
   });
 

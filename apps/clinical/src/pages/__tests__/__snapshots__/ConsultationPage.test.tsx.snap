@@ -3,9 +3,10 @@
 exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
 <DocumentFragment>
   <div
-    class="alert alert-danger"
+    data-testid="carbon-loading"
+    role="status"
   >
-    Invalid episode uuid
+    LOADING_CLINICAL_DATA
   </div>
 </DocumentFragment>
 `;

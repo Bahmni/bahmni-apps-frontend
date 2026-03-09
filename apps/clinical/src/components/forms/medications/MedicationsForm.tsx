@@ -26,7 +26,6 @@ import { Bundle } from 'fhir/r4';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 
 import { CONSULTATION_PAD_PRIVILEGES } from '../../../constants/consultationPadPrivileges';
-import useMedicationConfig from '../../../hooks/useMedicationConfig';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
 import {

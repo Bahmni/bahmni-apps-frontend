@@ -664,7 +664,9 @@ describe('ObservationForms', () => {
       render(<ObservationForms {...defaultProps} />);
 
       const longSearchTerm = 'a'.repeat(1000);
-      const input = await simulateSearch(user, longSearchTerm);
+      const input = getSearchInput();
+      await user.click(input);
+      await user.paste(longSearchTerm);
 
       expect(input).toHaveValue(longSearchTerm);
     });
