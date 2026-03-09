@@ -605,6 +605,79 @@ describe('FormsTable', () => {
         expect(screen.getByText('No forms available')).toBeInTheDocument();
       });
     });
+
+    it('shows only forms listed in formGroup when formGroup is provided', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      renderFormsTable({ config: { formGroup: ['Vitals Form'] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      expect(screen.queryByText('History Form')).not.toBeInTheDocument();
+
+      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      expect(screen.getByText('Dr. Johnson')).toBeInTheDocument();
+      expect(screen.queryByText('Dr. Williams')).not.toBeInTheDocument();
+    });
+
+    it('shows all forms when formGroup is not provided', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      renderFormsTable({ config: {} });
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      expect(screen.getByText('History Form')).toBeInTheDocument();
+    });
+
+    it('shows all forms when formGroup is an empty array', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      renderFormsTable({ config: { formGroup: [] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      expect(screen.getByText('History Form')).toBeInTheDocument();
+    });
+
+    it('shows empty state when formGroup contains names not matching any patient data', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      renderFormsTable({ config: { formGroup: ['Non-Existent Form'] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('No forms available')).toBeInTheDocument();
+      });
+    });
+
+    it('filters by both formGroup and encounterUuids when both are provided', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // formGroup: only Vitals Form; encounterUuids: only encounter-1
+      renderFormsTable({
+        config: { formGroup: ['Vitals Form'] },
+        encounterUuids: ['encounter-1'],
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      // encounter-2 (Dr. Johnson) filtered out by encounterUuids
+      expect(screen.queryByText('Dr. Johnson')).not.toBeInTheDocument();
+      // History Form filtered out by formGroup
+      expect(screen.queryByText('History Form')).not.toBeInTheDocument();
+    });
   });
 
   describe('Config Props - forms filter', () => {

@@ -41,6 +41,7 @@ interface FormsTableConfig {
   numberOfVisits?: number;
   hideThumbnail?: boolean;
   forms?: string[];
+  formGroup?: string[];
 }
 
 /** Displays patient forms grouped by form name in accordion format. */
@@ -60,6 +61,7 @@ const FormsTable: React.FC<WidgetProps> = ({
     numberOfVisits,
     hideThumbnail = false,
     forms,
+    formGroup,
   } = (config ?? {}) as FormsTableConfig;
 
   const canEditObservations = useHasPrivilege(
@@ -83,12 +85,12 @@ const FormsTable: React.FC<WidgetProps> = ({
     error,
     refetch: refetchForms,
   } = useQuery<FormResponseData[], Error>({
-    queryKey: ['forms', patientUuid, episodeOfCareUuids],
+    queryKey: ['forms', patientUuid, episodeOfCareUuids, formGroup],
     queryFn: () => getPatientFormData(patientUuid!, undefined, numberOfVisits),
     enabled: !!patientUuid && !emptyEncounterFilter,
   });
 
-  // Filter forms data by encounterUuids if provided
+  // Filter forms data by encounterUuids and/or formGroup if provided
   const filteredFormsData = useMemo(() => {
     let result = formsData;
     if (encounterUuids && encounterUuids.length > 0) {
@@ -101,8 +103,11 @@ const FormsTable: React.FC<WidgetProps> = ({
         forms.some((f) => f.toLowerCase() === entry.formName.toLowerCase()),
       );
     }
+    if (formGroup && formGroup.length > 0) {
+      result = result.filter((form) => formGroup.includes(form.formName));
+    }
     return result;
-  }, [formsData, encounterUuids, forms]);
+  }, [formsData, encounterUuids, forms, formGroup]);
 
   // Fetch published forms to get form UUIDs
   const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
