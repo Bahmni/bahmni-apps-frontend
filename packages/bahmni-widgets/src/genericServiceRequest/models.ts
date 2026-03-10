@@ -1,4 +1,5 @@
 export enum ServiceRequestStatus {
+  Draft = 'draft',
   Active = 'active',
   Completed = 'completed',
   Revoked = 'revoked',
@@ -6,10 +7,11 @@ export enum ServiceRequestStatus {
 }
 
 export const STATUS_TRANSLATION_MAP: Record<ServiceRequestStatus, string> = {
-  [ServiceRequestStatus.Active]: 'IN_PROGRESS_STATUS',
-  [ServiceRequestStatus.Completed]: 'COMPLETED_STATUS',
-  [ServiceRequestStatus.Revoked]: 'REVOKED_STATUS',
-  [ServiceRequestStatus.Unknown]: 'UNKNOWN_STATUS',
+  [ServiceRequestStatus.Draft]: 'SERVICE_REQUEST_STATUS_DRAFT',
+  [ServiceRequestStatus.Active]: 'SERVICE_REQUEST_STATUS_ACTIVE',
+  [ServiceRequestStatus.Completed]: 'SERVICE_REQUEST_STATUS_COMPLETED',
+  [ServiceRequestStatus.Revoked]: 'SERVICE_REQUEST_STATUS_REVOKED',
+  [ServiceRequestStatus.Unknown]: 'SERVICE_REQUEST_STATUS_UNKNOWN',
 };
 
 export interface ServiceRequestViewModel {

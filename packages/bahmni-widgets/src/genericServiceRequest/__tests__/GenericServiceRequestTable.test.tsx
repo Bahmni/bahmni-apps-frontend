@@ -219,9 +219,11 @@ describe('GenericServiceRequestTable', () => {
           NO_SERVICE_REQUESTS: 'No service requests recorded',
           SERVICE_REQUEST_PRIORITY_URGENT: 'Urgent',
           ERROR_DEFAULT_TITLE: 'Error',
-          IN_PROGRESS_STATUS: 'In Progress',
-          COMPLETED_STATUS: 'Completed',
-          REVOKED_STATUS: 'Revoked',
+          SERVICE_REQUEST_STATUS_ACTIVE: 'Active',
+          SERVICE_REQUEST_STATUS_COMPLETED: 'Completed',
+          SERVICE_REQUEST_STATUS_DRAFT: 'Draft',
+          SERVICE_REQUEST_STATUS_REVOKED: 'Revoked',
+          SERVICE_REQUEST_STATUS_UNKNOWN: 'Unknown',
         };
         return translations[key] || key;
       },
@@ -780,7 +782,7 @@ describe('GenericServiceRequestTable', () => {
       });
     });
 
-    it('renders status cell with "In Progress" tag for active status', async () => {
+    it('renders status cell with "Active" tag for active status', async () => {
       render(
         <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
         {
@@ -789,7 +791,7 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('In Progress')).toBeInTheDocument();
+        expect(screen.getByText('Active')).toBeInTheDocument();
       });
     });
 
@@ -837,7 +839,7 @@ describe('GenericServiceRequestTable', () => {
       });
     });
 
-    it('renders status cell with "UNKNOWN_STATUS" tag for unknown status', async () => {
+    it('renders status cell with "SERVICE_REQUEST_STATUS_UNKNOWN" tag for unknown status', async () => {
       const unknownServiceRequest = {
         ...testServiceRequest,
         status: 'unknown',
@@ -857,10 +859,11 @@ describe('GenericServiceRequestTable', () => {
             NO_SERVICE_REQUESTS: 'No service requests recorded',
             SERVICE_REQUEST_PRIORITY_URGENT: 'Urgent',
             ERROR_DEFAULT_TITLE: 'Error',
-            IN_PROGRESS_STATUS: 'In Progress',
-            COMPLETED_STATUS: 'Completed',
-            REVOKED_STATUS: 'Revoked',
-            UNKNOWN_STATUS: 'Unknown',
+            SERVICE_REQUEST_STATUS_ACTIVE: 'Active',
+            SERVICE_REQUEST_STATUS_COMPLETED: 'Completed',
+            SERVICE_REQUEST_STATUS_DRAFT: 'Draft',
+            SERVICE_REQUEST_STATUS_REVOKED: 'Revoked',
+            SERVICE_REQUEST_STATUS_UNKNOWN: 'Unknown',
           };
           return translations[key] || key;
         },

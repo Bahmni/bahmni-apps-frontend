@@ -150,10 +150,11 @@ describe('RadiologyInvestigationTable', () => {
           RADIOLOGY_PRIORITY_URGENT: 'Urgent',
           RADIOLOGY_VIEW_IMAGES: 'View Images',
           RADIOLOGY_VIEW_REPORT: 'View Report',
-          IN_PROGRESS_STATUS: 'In Progress',
-          COMPLETED_STATUS: 'Completed',
-          REVOKED_STATUS: 'Revoked',
-          UNKNOWN_STATUS: 'Unknown',
+          SERVICE_REQUEST_STATUS_ACTIVE: 'Active',
+          SERVICE_REQUEST_STATUS_COMPLETED: 'Completed',
+          SERVICE_REQUEST_STATUS_DRAFT: 'Draft',
+          SERVICE_REQUEST_STATUS_REVOKED: 'Revoked',
+          SERVICE_REQUEST_STATUS_UNKNOWN: 'Unknown',
         };
         return translations[key] || key;
       },
