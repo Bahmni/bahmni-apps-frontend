@@ -8,6 +8,7 @@ import {
   usePatientUUID,
   conditionsQueryKeys,
   useUserPrivilege,
+  UserPrivilegeProvider,
 } from '@bahmni/widgets';
 import {
   QueryClient,
@@ -286,7 +287,9 @@ describe('ConditionsAndDiagnoses', () => {
 
     return render(
       <QueryClientProvider client={queryClient}>
-        <ConditionsAndDiagnoses />
+        <UserPrivilegeProvider>
+          <ConditionsAndDiagnoses />
+        </UserPrivilegeProvider>
       </QueryClientProvider>,
     );
   };

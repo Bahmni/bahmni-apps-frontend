@@ -1,6 +1,6 @@
 import { useSidebarNavigation } from '@bahmni/design-system';
 import { getConfig } from '@bahmni/services';
-import { useNotification, useUserPrivilege } from '@bahmni/widgets';
+import { useNotification, useUserPrivilege, UserPrivilegeProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -112,16 +112,34 @@ jest.mock('@bahmni/design-system', () => ({
   )),
 }));
 
+
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
+  useNotification: jest.fn(() => ({
+    addNotification: jest.fn(),
+  })),
   useUserPrivilege: jest.fn(),
-  useNotification: jest.fn(),
+  useHasPrivilege: jest.fn(() => true),
+  useActivePractitioner: jest.fn(() => ({
+    practitioner: {
+      uuid: 'mock-practitioner-uuid',
+      person: { display: 'Mock Practitioner' },
+    },
+    isLoading: false,
+    error: null,
+  })),
+  usePatientUUID: jest.fn(() => 'mock-patient-uuid'),
 }));
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getConfig: jest.fn(),
+  getCurrentUserPrivileges: jest.fn(() => Promise.resolve([])),
 }));
+
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
 
 const mockClinicalConfig = {
   patientInformation: {},

@@ -1,4 +1,4 @@
-import { useUserPrivilege } from '@bahmni/widgets';
+import { useUserPrivilege, UserPrivilegeProvider } from '@bahmni/widgets';
 import {
   QueryClient,
   QueryClientProvider,
@@ -175,7 +175,9 @@ const createWrapper = () => {
     },
   });
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <UserPrivilegeProvider>{children}</UserPrivilegeProvider>
+    </QueryClientProvider>
   );
   Wrapper.displayName = 'QueryClientWrapper';
   return Wrapper;

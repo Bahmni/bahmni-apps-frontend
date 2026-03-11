@@ -1,4 +1,5 @@
 import { ObservationForm } from '@bahmni/services';
+import { useUserPrivilege } from '@bahmni/widgets';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -16,6 +17,12 @@ jest.mock('react-i18next', () => ({
   })),
 }));
 
+// Mock @bahmni/services
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  getCurrentUserPrivileges: jest.fn(() => Promise.resolve([])),
+}));
+
 // Mock the pinnedFormsService
 jest.mock('../../../../services/pinnedFormsService');
 const mockedLoadPinnedForms =
@@ -27,11 +34,11 @@ const mockedSavePinnedForms =
     typeof pinnedFormsService.savePinnedForms
   >;
 
+
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
-  useUserPrivilege: jest.fn(() => ({
-    userPrivileges: [{ name: 'Add Observations' }],
-  })),
+  useUserPrivilege: jest.fn(),
+  useHasPrivilege: jest.fn(() => true),
 }));
 
 // Mock hooks
@@ -47,6 +54,10 @@ jest.mock('../../../../hooks/usePinnedObservationForms', () => ({
   __esModule: true,
   usePinnedObservationForms: () => mockUsePinnedObservationForms(),
 }));
+
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
 
 describe('ObservationForms Integration Tests', () => {
   const mockAvailableForms: ObservationForm[] = [

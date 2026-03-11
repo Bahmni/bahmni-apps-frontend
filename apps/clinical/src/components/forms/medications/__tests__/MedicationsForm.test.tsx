@@ -2,6 +2,7 @@ import {
   useNotification,
   usePatientUUID,
   useUserPrivilege,
+  UserPrivilegeProvider,
 } from '@bahmni/widgets';
 import {
   QueryClient,
@@ -192,7 +193,9 @@ const createQueryClient = () =>
 const renderWithQueryClient = (ui: ReactNode) => {
   const queryClient = createQueryClient();
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+    <QueryClientProvider client={queryClient}>
+      <UserPrivilegeProvider>{ui}</UserPrivilegeProvider>
+    </QueryClientProvider>,
   );
 };
 
@@ -283,7 +286,11 @@ describe('MedicationsForm', () => {
         searchResults: [mockMedication],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -311,7 +318,11 @@ describe('MedicationsForm', () => {
         ...mockMedicationSearchHook,
         searchResults: [mockMedication],
       });
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
       });
@@ -661,7 +672,11 @@ describe('MedicationsForm', () => {
         searchResults: [mockMedication],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -732,7 +747,11 @@ describe('MedicationsForm', () => {
         selectedMedications: [med1, med2],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       await waitFor(() => {
         expect(
@@ -775,7 +794,11 @@ describe('MedicationsForm', () => {
         selectedMedications: [med1, med2],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       await waitFor(() => {
         expect(
@@ -817,7 +840,11 @@ describe('MedicationsForm', () => {
         selectedMedications: [statMed, regularMed],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       await waitFor(() => {
         expect(
@@ -863,7 +890,11 @@ describe('MedicationsForm', () => {
         selectedMedications: [prnMed, scheduledMed],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       await waitFor(() => {
         expect(
@@ -898,7 +929,11 @@ describe('MedicationsForm', () => {
       expect(container).toBeEmptyDOMElement();
     });
     test('renders form when user has Add Medications privilege', () => {
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
       expect(screen.getByTestId('medications-form-tile')).toBeInTheDocument();
     });
   });

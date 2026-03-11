@@ -9,8 +9,14 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
 }));
-jest.mock('@bahmni/widgets');
-jest.mock('../../../hooks/useEncounterSession');
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
+  useActivePractitioner: jest.fn(),
+  useUserPrivilege: jest.fn(),
+}));
+jest.mock('../../../hooks/useEncounterSession', () => ({
+  useEncounterSession: jest.fn(),
+}));
 
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation

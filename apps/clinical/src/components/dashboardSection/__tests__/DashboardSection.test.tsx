@@ -71,6 +71,12 @@ jest.mock('@bahmni/widgets', () => {
     ...actual,
     getWidget: jest.fn(),
     registerWidget: jest.fn(),
+    useUserPrivilege: jest.fn(() => ({
+      userPrivileges: [
+        { name: 'View Observations' },
+        { name: 'Get Observations' },
+      ],
+    })),
   };
 });
 

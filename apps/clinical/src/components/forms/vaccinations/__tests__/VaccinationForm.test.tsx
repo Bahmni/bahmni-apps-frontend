@@ -1,10 +1,10 @@
+import { getVaccinations } from '@bahmni/services';
+import { useUserPrivilege, UserPrivilegeProvider } from '@bahmni/widgets';
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { getVaccinations } from '@bahmni/services';
-import { useUserPrivilege } from '@bahmni/widgets';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Medication } from 'fhir/r4';
@@ -200,7 +200,9 @@ const createWrapper = () => {
     },
   });
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <UserPrivilegeProvider>{children}</UserPrivilegeProvider>
+    </QueryClientProvider>
   );
   Wrapper.displayName = 'QueryClientWrapper';
   return Wrapper;

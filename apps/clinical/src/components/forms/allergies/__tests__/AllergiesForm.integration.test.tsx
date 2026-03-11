@@ -15,6 +15,7 @@ jest.mock('@bahmni/services', () => ({
   fetchAndFormatAllergenConcepts: jest.fn(),
   fetchReactionConcepts: jest.fn(),
   getFormattedAllergies: jest.fn(() => Promise.resolve([])),
+  getCurrentUserPrivileges: jest.fn(() => Promise.resolve([])),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -26,6 +27,7 @@ jest.mock('@bahmni/widgets', () => ({
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: [{ name: 'Add Allergies' }],
   })),
+  useHasPrivilege: jest.fn(() => true),
 }));
 
 // Mock @tanstack/react-query
@@ -150,7 +152,9 @@ describe('AllergiesForm Integration Tests', () => {
   });
 
   test('loads and displays allergens from API', async () => {
-    render(<AllergiesForm />);
+    render(
+        <AllergiesForm />,
+    );
 
     const searchBox = screen.getByRole('combobox', {
       name: /search for allergies/i,
@@ -164,7 +168,9 @@ describe('AllergiesForm Integration Tests', () => {
   });
 
   test('adds allergy to store when selected', async () => {
-    render(<AllergiesForm />);
+    render(
+        <AllergiesForm />,
+    );
 
     const searchBox = screen.getByRole('combobox', {
       name: /search for allergies/i,
@@ -191,7 +197,9 @@ describe('AllergiesForm Integration Tests', () => {
       bahmniServices.fetchAndFormatAllergenConcepts as jest.Mock
     ).mockRejectedValue(new Error('API Error'));
 
-    render(<AllergiesForm />);
+    render(
+        <AllergiesForm />,
+    );
 
     const searchBox = screen.getByRole('combobox', {
       name: /search for allergies/i,

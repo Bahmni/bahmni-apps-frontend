@@ -2,6 +2,7 @@ import {
   getFlattenedInvestigations,
   getFormattedError,
 } from '@bahmni/services';
+import { useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -24,7 +25,9 @@ jest.mock('@bahmni/services', () => ({
     ],
   }),
   getExistingServiceRequestsForAllCategories: jest.fn().mockResolvedValue([]),
+  getCurrentUserPrivileges: jest.fn(() => Promise.resolve([])),
 }));
+
 
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
@@ -32,9 +35,8 @@ jest.mock('@bahmni/widgets', () => ({
   useActivePractitioner: jest.fn().mockReturnValue({
     practitioner: { uuid: 'mock-practitioner-uuid' },
   }),
-  useUserPrivilege: jest.fn(() => ({
-    userPrivileges: [{ name: 'Add Orders' }],
-  })),
+  useUserPrivilege: jest.fn(),
+  useHasPrivilege: jest.fn(() => true),
 }));
 
 jest.mock('../../../../hooks/useEncounterSession', () => ({
@@ -54,6 +56,10 @@ jest.mock('../../../../hooks/useClinicalAppData', () => ({
 }));
 
 jest.mock('../../../../stores/serviceRequestStore');
+
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
