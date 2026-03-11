@@ -253,6 +253,27 @@ describe('OrdersFulfillmentTable', () => {
     expect(onOrderClick).toHaveBeenCalledWith('order-1-1');
   });
 
+  it('calls onOrderClick when order link is clicked in expanded row', () => {
+    const onOrderClick = jest.fn();
+    render(
+      <OrdersFulfillmentTable
+        rows={mockRows}
+        headers={mockHeaders}
+        onOrderClick={onOrderClick}
+      />,
+    );
+
+    const expandButtons = screen.getAllByRole('button', {
+      name: /expand row/i,
+    });
+    fireEvent.click(expandButtons[0]);
+
+    const orderLink = screen.getByRole('link', { name: 'New Cast - Plaster' });
+    fireEvent.click(orderLink);
+
+    expect(onOrderClick).toHaveBeenCalledWith('order-1-1');
+  });
+
   it('renders loading state', () => {
     render(<OrdersFulfillmentTable rows={[]} headers={mockHeaders} loading />);
 
@@ -391,6 +412,40 @@ describe('OrdersFulfillmentTable', () => {
 
       const highlightedRows = container.querySelectorAll('tr.selectedChildRow');
       expect(highlightedRows).toHaveLength(1);
+    });
+
+    it('clears highlighted row when slider is closed', () => {
+      const { container, rerender } = render(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={mockHeaders}
+          isSliderOpen
+        />,
+      );
+
+      const expandButtons = screen.getAllByRole('button', {
+        name: /expand row/i,
+      });
+      fireEvent.click(expandButtons[0]);
+
+      const orderLink = screen.getByRole('link', {
+        name: 'New Cast - Plaster',
+      });
+      fireEvent.click(orderLink);
+
+      let highlightedRows = container.querySelectorAll('tr.selectedChildRow');
+      expect(highlightedRows).toHaveLength(1);
+
+      rerender(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={mockHeaders}
+          isSliderOpen={false}
+        />,
+      );
+
+      highlightedRows = container.querySelectorAll('tr.selectedChildRow');
+      expect(highlightedRows).toHaveLength(0);
     });
   });
 

@@ -29,6 +29,7 @@ export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
         isSelected ? styles.selectedChildRow : ''
       }`}
       data-testid="expanded-order-row"
+      data-order-id={order.id}
     >
       <TableCell />
       <TableCell />

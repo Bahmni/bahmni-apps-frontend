@@ -8,7 +8,7 @@ import {
   Search,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { OrderFulfillmentSlider } from '../components/orderFulfillmentSlider';
 import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
 import { OrdersHeader } from '../components/ordersHeader/OrdersHeader';
@@ -22,6 +22,8 @@ import styles from './styles/OrdersPage.module.scss';
 interface OrdersTabContentProps {
   tabLabel: string;
   view?: string;
+  contentScrollRef: React.RefObject<HTMLDivElement | null>;
+  isSliderOpen: boolean;
   onOrderClick: (
     orderId: string,
     rows: PatientOrderRow[],
@@ -32,6 +34,8 @@ interface OrdersTabContentProps {
 const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
   tabLabel,
   view,
+  contentScrollRef,
+  isSliderOpen,
   onOrderClick,
 }) => {
   const { t } = useTranslation();
@@ -118,6 +122,8 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
           headers={headers}
           loading={isLoading}
           isCustomOrderTab={isCustomOrderTab}
+          isSliderOpen={isSliderOpen}
+          contentScrollRef={contentScrollRef}
           onOrderClick={handleOrderClick}
           searchTerm={searchInput}
         />
@@ -141,6 +147,7 @@ export const OrdersPage: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [selectedTabLabel, setSelectedTabLabel] = useState<string>('');
+  const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const handleOrderClick = (
     orderId: string,
@@ -196,6 +203,7 @@ export const OrdersPage: React.FC = () => {
       {loading && <Loading withOverlay />}
       <div className={styles.mainContentWrapper}>
         <div
+          ref={contentScrollRef}
           className={`${styles.contentContainer} ${isSliderOpen ? styles.contentContainerWithSlider : ''}`}
         >
           <div className={styles.ordersContainer}>
@@ -218,6 +226,8 @@ export const OrdersPage: React.FC = () => {
                       <OrdersTabContent
                         tabLabel={tab.label}
                         view={tab.view}
+                        contentScrollRef={contentScrollRef}
+                        isSliderOpen={isSliderOpen}
                         onOrderClick={handleOrderClick}
                       />
                     )}
