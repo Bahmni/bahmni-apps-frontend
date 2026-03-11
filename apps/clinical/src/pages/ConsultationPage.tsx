@@ -38,6 +38,16 @@ import dashboardConfigSchema from './schema.json';
 import styles from './styles/ConsultationPage.module.scss';
 import { getDefaultDashboard, getSidebarItems } from './util';
 
+const addSectionIds = (config: DashboardConfig): DashboardConfig => {
+  if (!config?.sections?.length) return config;
+  return {
+    ...config,
+    sections: config.sections.map((section) =>
+      section.id ? section : { ...section, id: generateId() },
+    ),
+  };
+};
+
 const breadcrumbItems = [
   { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
   {
@@ -128,15 +138,7 @@ const ConsultationPage: React.FC = () => {
         DASHBOARD_CONFIG_URL(dashboardURL),
         dashboardConfigSchema,
       ),
-    select: (config) => {
-      if (!config?.sections?.length) return config;
-      return {
-        ...config,
-        sections: config.sections.map((section) =>
-          section.id ? section : { ...section, id: generateId() },
-        ),
-      };
-    },
+    select: addSectionIds,
     enabled: !!dashboardURL,
   });
 
