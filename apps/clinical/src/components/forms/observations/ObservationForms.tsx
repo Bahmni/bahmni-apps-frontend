@@ -61,7 +61,9 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     observationFormsError,
   }) => {
     const { t } = useTranslation();
-    const canAddObservations = useHasPrivilege(CONSULTATION_PAD_PRIVILEGES.OBSERVATIONS);
+    const canAddObservations = useHasPrivilege(
+      CONSULTATION_PAD_PRIVILEGES.OBSERVATIONS,
+    );
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState<{
       id: string;

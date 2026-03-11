@@ -39,7 +39,9 @@ import styles from './styles/InvestigationsForm.module.scss';
 const InvestigationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
-  const canAddInvestigations = useHasPrivilege(CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS);
+  const canAddInvestigations = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS,
+  );
   const queryClient = useQueryClient();
   const { practitioner } = useActivePractitioner();
   const { activeEncounter } = useEncounterSession({ practitioner });

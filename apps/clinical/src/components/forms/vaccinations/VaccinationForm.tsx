@@ -52,7 +52,9 @@ import styles from './styles/VaccinationForm.module.scss';
 const VaccinationForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
-  const canAddVaccinations = useHasPrivilege(CONSULTATION_PAD_PRIVILEGES.VACCINATIONS);
+  const canAddVaccinations = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.VACCINATIONS,
+  );
   const [searchVaccinationTerm, setSearchVaccinationTerm] = useState('');
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
@@ -100,7 +102,8 @@ const VaccinationForm: React.FC = React.memo(() => {
     refetch: refetchVaccinations,
   } = useQuery<Bundle>({
     queryKey: ['patientVaccinations', patientUUID],
-    enabled: !!patientUUID && patientUUID.trim().length > 0 && canAddVaccinations,
+    enabled:
+      !!patientUUID && patientUUID.trim().length > 0 && canAddVaccinations,
     queryFn: () =>
       getPatientMedicationBundle(patientUUID!, [], undefined, true),
     refetchOnMount: 'always',

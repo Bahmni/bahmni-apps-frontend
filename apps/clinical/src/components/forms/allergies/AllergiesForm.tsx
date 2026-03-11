@@ -39,7 +39,9 @@ const AllergiesForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
-  const canAddAllergies = useHasPrivilege(CONSULTATION_PAD_PRIVILEGES.ALLERGIES);
+  const canAddAllergies = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.ALLERGIES,
+  );
   const [searchAllergenTerm, setSearchAllergenTerm] = useState('');
   const [selectedAllergenItem, setSelectedAllergenItem] =
     useState<AllergenConcept | null>(null);

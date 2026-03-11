@@ -56,7 +56,9 @@ const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
-  const canAddMedications = useHasPrivilege(CONSULTATION_PAD_PRIVILEGES.MEDICATIONS);
+  const canAddMedications = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.MEDICATIONS,
+  );
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
@@ -111,7 +113,8 @@ const MedicationsForm: React.FC = React.memo(() => {
     refetch: refetchMedications,
   } = useQuery<Bundle>({
     queryKey: ['medications', patientUUID!],
-    enabled: !!patientUUID && patientUUID.trim().length > 0 && canAddMedications,
+    enabled:
+      !!patientUUID && patientUUID.trim().length > 0 && canAddMedications,
     queryFn: () =>
       getPatientMedicationBundle(patientUUID!, [], undefined, true),
     refetchOnMount: 'always',
