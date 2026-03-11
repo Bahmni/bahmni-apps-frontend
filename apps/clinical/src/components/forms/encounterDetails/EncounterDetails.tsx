@@ -5,6 +5,7 @@ import {
   Grid,
   Column,
   SkeletonText,
+  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -248,103 +249,110 @@ const EncounterDetails: React.FC<{
   ]);
 
   return (
-    <Grid condensed={false} narrow={false} data-testid="encounter-details-grid">
-      <Column sm={4} md={8} lg={5} xl={12} className={styles.column}>
-        <FormField
-          isLoading={!selectedLocation && !locationsError}
-          placeholder={<DropdownPlaceholder />}
-        >
-          <Dropdown
-            id="location-dropdown"
-            data-testid="location-dropdown"
-            titleText={t('LOCATION')}
-            label={t('SELECT_LOCATION')}
-            items={locations}
-            itemToString={(item: OpenMRSLocation) => item?.display || ''}
-            initialSelectedItem={selectedLocation}
-            disabled
-            size="md"
-          />
-        </FormField>
-      </Column>
+    <>
+      <Grid
+        condensed={false}
+        narrow={false}
+        data-testid="encounter-details-grid"
+      >
+        <Column sm={4} md={8} lg={5} xl={12} className={styles.column}>
+          <FormField
+            isLoading={!selectedLocation && !locationsError}
+            placeholder={<DropdownPlaceholder />}
+          >
+            <Dropdown
+              id="location-dropdown"
+              data-testid="location-dropdown"
+              titleText={t('LOCATION')}
+              label={t('SELECT_LOCATION')}
+              items={locations}
+              itemToString={(item: OpenMRSLocation) => item?.display || ''}
+              initialSelectedItem={selectedLocation}
+              disabled
+              size="md"
+            />
+          </FormField>
+        </Column>
 
-      <Column sm={4} md={8} lg={5} xl={12} className={styles.column}>
-        <FormField
-          isLoading={!selectedEncounterType && !encounterConceptsError}
-          placeholder={<DropdownPlaceholder />}
-        >
-          <Dropdown
-            id="encounter-type-dropdown"
-            data-testid="encounter-type-dropdown"
-            titleText={t('ENCOUNTER_TYPE')}
-            label={t('SELECT_ENCOUNTER_TYPE')}
-            items={encounterConcepts?.encounterTypes ?? []}
-            itemToString={(item: Concept) => item?.name ?? ''}
-            initialSelectedItem={selectedEncounterType}
-            disabled
-            size="md"
-          />
-        </FormField>
-      </Column>
+        <Column sm={4} md={8} lg={5} xl={12} className={styles.column}>
+          <FormField
+            isLoading={!selectedEncounterType && !encounterConceptsError}
+            placeholder={<DropdownPlaceholder />}
+          >
+            <Dropdown
+              id="encounter-type-dropdown"
+              data-testid="encounter-type-dropdown"
+              titleText={t('ENCOUNTER_TYPE')}
+              label={t('SELECT_ENCOUNTER_TYPE')}
+              items={encounterConcepts?.encounterTypes ?? []}
+              itemToString={(item: Concept) => item?.name ?? ''}
+              initialSelectedItem={selectedEncounterType}
+              disabled
+              size="md"
+            />
+          </FormField>
+        </Column>
 
-      <Column sm={4} md={8} lg={5} xl={12} className={styles.column}>
-        <FormField
-          isLoading={!selectedVisitType && !encounterConceptsError}
-          placeholder={<DropdownPlaceholder />}
-        >
-          <Dropdown
-            id="visit-type-dropdown"
-            data-testid="visit-type-dropdown"
-            titleText={t('VISIT_TYPE')}
-            label={t('SELECT_VISIT_TYPE')}
-            items={encounterConcepts?.visitTypes ?? []}
-            itemToString={(item: Concept) => item?.name ?? ''}
-            initialSelectedItem={selectedVisitType}
-            disabled
-            size="md"
-          />
-        </FormField>
-      </Column>
+        <Column sm={4} md={8} lg={5} xl={12} className={styles.column}>
+          <FormField
+            isLoading={!selectedVisitType && !encounterConceptsError}
+            placeholder={<DropdownPlaceholder />}
+          >
+            <Dropdown
+              id="visit-type-dropdown"
+              data-testid="visit-type-dropdown"
+              titleText={t('VISIT_TYPE')}
+              label={t('SELECT_VISIT_TYPE')}
+              items={encounterConcepts?.visitTypes ?? []}
+              itemToString={(item: Concept) => item?.name ?? ''}
+              initialSelectedItem={selectedVisitType}
+              disabled
+              size="md"
+            />
+          </FormField>
+        </Column>
 
-      <Column sm={4} md={8} lg={5} className={styles.column}>
-        <FormField
-          isLoading={!practitioner && !practitionerError}
-          placeholder={<DropdownPlaceholder />}
-        >
-          <Dropdown
-            id="practitioner-dropdown"
-            data-testid="practitioner-dropdown"
-            titleText={t('PARTICIPANT')}
-            label={t('SELECT_PRACTITIONER')}
-            items={availablePractitioners}
-            itemToString={(item: Provider) =>
-              item?.person?.preferredName?.display ?? ''
-            }
-            initialSelectedItem={practitioner}
-            disabled
-            size="md"
-          />
-        </FormField>
-      </Column>
+        <Column sm={4} md={8} lg={5} className={styles.column}>
+          <FormField
+            isLoading={!practitioner && !practitionerError}
+            placeholder={<DropdownPlaceholder />}
+          >
+            <Dropdown
+              id="practitioner-dropdown"
+              data-testid="practitioner-dropdown"
+              titleText={t('PARTICIPANT')}
+              label={t('SELECT_PRACTITIONER')}
+              items={availablePractitioners}
+              itemToString={(item: Provider) =>
+                item?.person?.preferredName?.display ?? ''
+              }
+              initialSelectedItem={practitioner}
+              disabled
+              size="md"
+            />
+          </FormField>
+        </Column>
 
-      <Column sm={4} md={8} lg={5} className={styles.column}>
-        <DatePicker
-          datePickerType="single"
-          dateFormat={DATE_FORMAT}
-          data-testid="encounter-date-picker"
-        >
-          <DatePickerInput
-            id="encounter-date-picker-input"
-            data-testid="encounter-date-picker-input"
-            placeholder={formattedDate.formattedResult}
-            title={t('ENCOUNTER_DATE')}
-            labelText={t('ENCOUNTER_DATE')}
-            defaultValue={formattedDate.formattedResult}
-            disabled
-          />
-        </DatePicker>
-      </Column>
-    </Grid>
+        <Column sm={4} md={8} lg={5} className={styles.column}>
+          <DatePicker
+            datePickerType="single"
+            dateFormat={DATE_FORMAT}
+            data-testid="encounter-date-picker"
+          >
+            <DatePickerInput
+              id="encounter-date-picker-input"
+              data-testid="encounter-date-picker-input"
+              placeholder={formattedDate.formattedResult}
+              title={t('ENCOUNTER_DATE')}
+              labelText={t('ENCOUNTER_DATE')}
+              defaultValue={formattedDate.formattedResult}
+              disabled
+            />
+          </DatePicker>
+        </Column>
+      </Grid>
+      <MenuItemDivider />
+    </>
   );
 };
 

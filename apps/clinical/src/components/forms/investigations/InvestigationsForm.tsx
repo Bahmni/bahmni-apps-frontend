@@ -13,12 +13,12 @@ import {
   ORDER_TYPE_QUERY_KEY,
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
-  hasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/services';
 import {
   usePatientUUID,
   useActivePractitioner,
-  useUserPrivilege,
+  useHasPrivilege,
 } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, {
@@ -28,7 +28,6 @@ import React, {
   useEffect,
   useRef,
 } from 'react';
-import { CONSULTATION_PAD_PRIVILEGES } from '../../../constants/consultationPadPrivileges';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
@@ -40,7 +39,7 @@ import styles from './styles/InvestigationsForm.module.scss';
 const InvestigationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
-  const { userPrivileges } = useUserPrivilege();
+  const canAddInvestigations = useHasPrivilege(CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS);
   const queryClient = useQueryClient();
   const { practitioner } = useActivePractitioner();
   const { activeEncounter } = useEncounterSession({ practitioner });
@@ -116,7 +115,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
     enabled:
       !!patientUUID &&
       (!!currentEncounterId || hasEpisodeContext) &&
-      !!orderTypesData,
+      !!orderTypesData &&
+      canAddInvestigations,
     refetchOnMount: 'always',
   });
 
@@ -359,11 +359,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
     setSelectedInvestigationItem(selectedItem);
   };
 
-  if (
-    !hasPrivilege(userPrivileges, CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS)
-  ) {
-    return null;
-  }
+  if (!canAddInvestigations) return null;
 
   return (
     <>

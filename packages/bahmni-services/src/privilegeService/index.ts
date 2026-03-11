@@ -1,2 +1,3 @@
 export { getCurrentUserPrivileges, hasPrivilege } from './privilegeService';
-export { type UserPrivilege } from './models';
+export { type UserPrivilege, type SessionResponse } from './models';
+export { CONSULTATION_PAD_PRIVILEGES } from './consultationPadPrivileges';

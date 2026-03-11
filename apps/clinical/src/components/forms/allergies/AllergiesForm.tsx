@@ -9,16 +9,15 @@ import {
 import {
   useTranslation,
   getFormattedAllergies,
-  hasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/services';
 import {
   useNotification,
   usePatientUUID,
-  useUserPrivilege,
+  useHasPrivilege,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CONSULTATION_PAD_PRIVILEGES } from '../../../constants/consultationPadPrivileges';
 import useAllergenSearch from '../../../hooks/useAllergenSearch';
 import { AllergenConcept } from '../../../models/allergy';
 import { useAllergyStore } from '../../../stores/allergyStore';
@@ -40,7 +39,7 @@ const AllergiesForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
-  const { userPrivileges } = useUserPrivilege();
+  const canAddAllergies = useHasPrivilege(CONSULTATION_PAD_PRIVILEGES.ALLERGIES);
   const [searchAllergenTerm, setSearchAllergenTerm] = useState('');
   const [selectedAllergenItem, setSelectedAllergenItem] =
     useState<AllergenConcept | null>(null);
@@ -75,7 +74,7 @@ const AllergiesForm: React.FC = React.memo(() => {
     error: existingAllergiesError,
   } = useQuery({
     queryKey: allergiesQueryKeys(patientUUID!),
-    enabled: !!patientUUID,
+    enabled: !!patientUUID && canAddAllergies,
     queryFn: () => getFormattedAllergies(patientUUID!),
   });
 
@@ -221,9 +220,7 @@ const AllergiesForm: React.FC = React.memo(() => {
     t,
   ]);
 
-  if (!hasPrivilege(userPrivileges, CONSULTATION_PAD_PRIVILEGES.ALLERGIES)) {
-    return null;
-  }
+  if (!canAddAllergies) return null;
 
   return (
     <>

@@ -1,8 +1,7 @@
 import { Button } from '@bahmni/design-system';
-import { hasPrivilege, useTranslation } from '@bahmni/services';
-import { useActivePractitioner, useUserPrivilege } from '@bahmni/widgets';
+import { useTranslation, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/services';
+import { useActivePractitioner, useHasPrivilege } from '@bahmni/widgets';
 import React from 'react';
-import { CONSULTATION_PAD_PRIVILEGES } from '../../constants/consultationPadPrivileges';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
 import styles from './styles/PatientHeader.module.scss';
 
@@ -27,11 +26,7 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
   const { editActiveEncounter, isLoading } = useEncounterSession({
     practitioner,
   });
-  const { userPrivileges } = useUserPrivilege();
-
-  // Check if user has permission to add encounters
-  const canAddEncounter = hasPrivilege(
-    userPrivileges,
+  const canAddEncounter = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.ENCOUNTER,
   );
 

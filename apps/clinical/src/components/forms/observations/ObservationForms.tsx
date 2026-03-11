@@ -6,11 +6,10 @@ import {
   SkeletonText,
   MenuItemDivider,
 } from '@bahmni/design-system';
-import { ObservationForm, hasPrivilege } from '@bahmni/services';
-import { useUserPrivilege } from '@bahmni/widgets';
+import { ObservationForm, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/services';
+import { useHasPrivilege } from '@bahmni/widgets';
 import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CONSULTATION_PAD_PRIVILEGES } from '../../../constants/consultationPadPrivileges';
 import {
   DEFAULT_FORM_API_NAMES,
   VALIDATION_STATE_EMPTY,
@@ -62,7 +61,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     observationFormsError,
   }) => {
     const { t } = useTranslation();
-    const { userPrivileges } = useUserPrivilege();
+    const canAddObservations = useHasPrivilege(CONSULTATION_PAD_PRIVILEGES.OBSERVATIONS);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState<{
       id: string;
@@ -222,11 +221,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       t,
     ]);
 
-    if (
-      !hasPrivilege(userPrivileges, CONSULTATION_PAD_PRIVILEGES.OBSERVATIONS)
-    ) {
-      return null;
-    }
+    if (!canAddObservations) return null;
 
     return (
       <>

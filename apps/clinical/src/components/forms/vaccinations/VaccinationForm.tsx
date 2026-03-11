@@ -15,14 +15,13 @@ import {
   ConsultationSavedEventPayload,
   getConfig,
   fetchMedicationOrdersMetadata,
-  hasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/services';
-import { usePatientUUID, useUserPrivilege } from '@bahmni/widgets';
+import { usePatientUUID, useHasPrivilege } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { Bundle } from 'fhir/r4';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 
-import { CONSULTATION_PAD_PRIVILEGES } from '../../../constants/consultationPadPrivileges';
 import { MedicationFilterResult } from '../../../models/medication';
 import {
   MedicationConfig,
@@ -53,7 +52,7 @@ import styles from './styles/VaccinationForm.module.scss';
 const VaccinationForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
-  const { userPrivileges } = useUserPrivilege();
+  const canAddVaccinations = useHasPrivilege(CONSULTATION_PAD_PRIVILEGES.VACCINATIONS);
   const [searchVaccinationTerm, setSearchVaccinationTerm] = useState('');
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
@@ -86,6 +85,7 @@ const VaccinationForm: React.FC = React.memo(() => {
   } = useQuery({
     queryKey: ['vaccinations'],
     queryFn: getVaccinations,
+    enabled: canAddVaccinations,
   });
 
   const searchResults = useMemo(
@@ -100,7 +100,7 @@ const VaccinationForm: React.FC = React.memo(() => {
     refetch: refetchVaccinations,
   } = useQuery<Bundle>({
     queryKey: ['patientVaccinations', patientUUID],
-    enabled: !!patientUUID && patientUUID.trim().length > 0,
+    enabled: !!patientUUID && patientUUID.trim().length > 0 && canAddVaccinations,
     queryFn: () =>
       getPatientMedicationBundle(patientUUID!, [], undefined, true),
     refetchOnMount: 'always',
@@ -255,9 +255,7 @@ const VaccinationForm: React.FC = React.memo(() => {
     t,
   ]);
 
-  if (!hasPrivilege(userPrivileges, CONSULTATION_PAD_PRIVILEGES.VACCINATIONS)) {
-    return null;
-  }
+  if (!canAddVaccinations) return null;
 
   return (
     <>

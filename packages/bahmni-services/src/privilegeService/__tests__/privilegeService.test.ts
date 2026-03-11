@@ -78,18 +78,6 @@ describe('privilegeService', () => {
       expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
     });
 
-    it('should return null when session has no user', async () => {
-      // Arrange
-      mockedGet.mockResolvedValue({ user: null });
-
-      // Act
-      const result = await getCurrentUserPrivileges();
-
-      // Assert
-      expect(result).toBeNull();
-      expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
-    });
-
     it('should handle server errors (500)', async () => {
       // Arrange
       const serverError = new Error('Internal server error');

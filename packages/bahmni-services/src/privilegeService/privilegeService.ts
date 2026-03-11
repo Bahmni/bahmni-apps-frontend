@@ -1,7 +1,7 @@
 import { get } from '../api';
 import { SESSION_URL } from '../constants/app';
 import { getFormattedError } from '../errorHandling';
-import { UserPrivilege } from './models';
+import { UserPrivilege, SessionResponse } from './models';
 
 /**
  * Fetches current user privileges from OpenMRS session API
@@ -12,12 +12,8 @@ export const getCurrentUserPrivileges = async (): Promise<
   UserPrivilege[] | null
 > => {
   try {
-    const session = await get<{
-      user: {
-        privileges: UserPrivilege[];
-      };
-    }>(SESSION_URL);
-    return session?.user?.privileges ?? null;
+    const session = await get<SessionResponse>(SESSION_URL);
+    return session.user.privileges;
   } catch (error) {
     const { message } = getFormattedError(error);
     throw new Error(message);
@@ -26,7 +22,7 @@ export const getCurrentUserPrivileges = async (): Promise<
 
 /**
  * Check if user has a specific privilege by name
- * @param userPrivileges - Array of user privileges from whoami or session API
+ * @param userPrivileges - Array of user privileges from the OpenMRS session API
  * @param privilegeName - Name or array of privilege names to check
  * @returns true if user has the privilege(s), false otherwise
  */
