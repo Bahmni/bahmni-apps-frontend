@@ -29,6 +29,8 @@ interface OrdersFulfillmentTableProps {
   headers: DataTableHeader[];
   loading?: boolean;
   isCustomOrderTab?: boolean;
+  isSliderOpen?: boolean;
+  contentScrollRef?: React.RefObject<HTMLDivElement | null>;
   onOrderClick?: (orderId: string) => void;
   searchTerm?: string;
 }
@@ -38,12 +40,18 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   headers,
   loading = false,
   isCustomOrderTab = false,
+  isSliderOpen = false,
+  contentScrollRef,
   onOrderClick,
   searchTerm = '',
 }) => {
   const { t } = useTranslation();
   const { ordersTableConfig, tabs } = useOrdersConfig();
   const statusHeaderRef = useRef<HTMLSpanElement>(null);
+  const rowAnchorRef = useRef<{
+    orderId: string;
+    rowTop: number;
+  } | null>(null);
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { selectedIndex } = useOrdersStore();
@@ -73,6 +81,84 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   const toggleStatusFilter = useCallback(() => {
     setIsStatusFilterOpen(!isStatusFilterOpen);
   }, [isStatusFilterOpen]);
+
+  const getOrderRowElement = useCallback((orderId: string) => {
+    const escapedOrderId =
+      typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+        ? CSS.escape(orderId)
+        : orderId;
+
+    return document.querySelector(
+      `[data-order-id="${escapedOrderId}"]`,
+    ) as HTMLElement | null;
+  }, []);
+
+  const captureSelectedOrderRowPosition = useCallback(
+    (orderId: string) => {
+      const orderRow = getOrderRowElement(orderId);
+
+      if (!orderRow) {
+        rowAnchorRef.current = null;
+        return;
+      }
+
+      rowAnchorRef.current = {
+        orderId,
+        rowTop: orderRow.getBoundingClientRect().top,
+      };
+    },
+    [getOrderRowElement],
+  );
+
+  const restoreSelectedOrderRowPosition = useCallback(
+    (orderId: string) => {
+      const anchor = rowAnchorRef.current;
+
+      if (anchor?.orderId !== orderId) {
+        return;
+      }
+
+      const orderRow = getOrderRowElement(orderId);
+
+      if (!orderRow) {
+        return;
+      }
+
+      const currentRowTop = orderRow.getBoundingClientRect().top;
+      const deltaTop = currentRowTop - anchor.rowTop;
+
+      if (Math.abs(deltaTop) < 1) {
+        return;
+      }
+
+      const scrollContainer = contentScrollRef?.current;
+
+      if (!scrollContainer) {
+        return;
+      }
+
+      scrollContainer.scrollTop += deltaTop;
+      anchor.rowTop = orderRow.getBoundingClientRect().top;
+    },
+    [contentScrollRef, getOrderRowElement],
+  );
+
+  useEffect(() => {
+    if (!selectedOrderId) {
+      return;
+    }
+
+    restoreSelectedOrderRowPosition(selectedOrderId);
+  }, [selectedOrderId, isSliderOpen, restoreSelectedOrderRowPosition]);
+
+  useEffect(() => {
+    if (isSliderOpen) {
+      return;
+    }
+
+    setSelectedOrderId(null);
+    rowAnchorRef.current = null;
+  }, [isSliderOpen]);
 
   const getFilteredRows = () => {
     if (selectedStatuses.length === 0) {
@@ -240,6 +326,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
           order={order}
           isSelected={selectedOrderId === order.id}
           onOrderClick={(orderId) => {
+            captureSelectedOrderRowPosition(orderId);
             setSelectedOrderId(orderId);
             onOrderClick?.(orderId);
           }}
