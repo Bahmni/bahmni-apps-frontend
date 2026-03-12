@@ -1,6 +1,7 @@
 import { HeaderSideNavItem } from '@bahmni/design-system';
+import { UserPrivilege } from '@bahmni/services';
 import { Dashboard } from '../providers/clinicalConfig/models';
-import { DashboardConfig } from './models';
+import { DashboardConfig, DashboardSectionConfig, ControlConfig } from './models';
 
 /**
  * Gets the default dashboard from an array of dashboards
@@ -26,15 +27,100 @@ export const getDefaultDashboard = (
 };
 
 /**
- * Converts dashboard sections to sidebar items
+ * Checks if user has all required privileges for a control
+ * @param userPrivileges Array of user privilege names
+ * @param requiredPrivileges Array of required privilege names
+ * @returns true if user has all required privileges or if no privileges are required
+ */
+export const hasRequiredPrivileges = (
+  userPrivileges: UserPrivilege[] | null | undefined,
+  requiredPrivileges: string[] | undefined,
+): boolean => {
+  if (!requiredPrivileges || requiredPrivileges.length === 0) {
+    return true;
+  }
+  if (!userPrivileges) {
+    return false;
+  }
+  const privilegeNames = userPrivileges.map((p) => p.name);
+  return requiredPrivileges.every((privilege) =>
+    privilegeNames.includes(privilege),
+  );
+};
+
+/**
+ * Filters controls based on user privileges
+ * @param userPrivileges Array of user privileges
+ * @param controls Array of controls to filter
+ * @returns Filtered array of controls that user has access to
+ */
+export const filterControlsByPrivileges = (
+  userPrivileges: UserPrivilege[] | null | undefined,
+  controls: ControlConfig[],
+): ControlConfig[] => {
+  return controls.filter((control) =>
+    hasRequiredPrivileges(userPrivileges, control.requiredPrivileges),
+  );
+};
+
+/**
+ * Checks if user can access a section (has access to at least one control)
+ * @param userPrivileges Array of user privileges
+ * @param section Dashboard section to check
+ * @returns true if user has access to at least one control in the section
+ */
+export const canUserAccessSection = (
+  userPrivileges: UserPrivilege[] | null | undefined,
+  section: DashboardSectionConfig,
+): boolean => {
+  if (!section.controls || section.controls.length === 0) {
+    return true;
+  }
+  const visibleControls = filterControlsByPrivileges(
+    userPrivileges,
+    section.controls,
+  );
+  return visibleControls.length > 0;
+};
+
+/**
+ * Filters sections based on visible controls after privilege filtering
+ * @param userPrivileges Array of user privileges
+ * @param sections Array of sections to filter
+ * @returns Filtered array of sections that have at least one visible control
+ */
+export const filterSectionsByPrivileges = (
+  userPrivileges: UserPrivilege[] | null | undefined,
+  sections: DashboardSectionConfig[],
+): DashboardSectionConfig[] => {
+  return sections
+    .map((section) => ({
+      ...section,
+      controls: filterControlsByPrivileges(userPrivileges, section.controls),
+    }))
+    .filter((section) => section.controls.length > 0);
+};
+
+/**
+ * Converts dashboard sections to sidebar items, filtering by user privileges
  * @param dashboardConfig The dashboard configuration containing sections
- * @returns Array of sidebar items
+ * @param t Translation function
+ * @param userPrivileges User privileges for filtering
+ * @returns Array of sidebar items that user has access to
  */
 export const getSidebarItems = (
   dashboardConfig: DashboardConfig,
   t: (key: string) => string,
+  userPrivileges?: UserPrivilege[] | null,
 ): HeaderSideNavItem[] => {
-  return dashboardConfig.sections.map((section) => ({
+  // Filter sections based on user privileges
+  const accessibleSections = userPrivileges
+    ? dashboardConfig.sections.filter((section) =>
+        canUserAccessSection(userPrivileges, section),
+      )
+    : dashboardConfig.sections;
+
+  return accessibleSections.map((section) => ({
     id: section.id!,
     icon: section.icon,
     label: t(section.translationKey ?? section.name),

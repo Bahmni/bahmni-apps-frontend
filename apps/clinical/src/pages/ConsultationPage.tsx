@@ -36,7 +36,8 @@ import {
 import { DashboardConfig } from './models';
 import dashboardConfigSchema from './schema.json';
 import styles from './styles/ConsultationPage.module.scss';
-import { getDefaultDashboard, getSidebarItems } from './util';
+import { getDefaultDashboard, getSidebarItems, filterSectionsByPrivileges } from './util';
+import { DashboardConfig as DashboardConfigType } from './models';
 
 const addSectionIds = (config: DashboardConfig): DashboardConfig => {
   if (!config?.sections?.length) return config;
@@ -152,10 +153,19 @@ const ConsultationPage: React.FC = () => {
     }
   }, [dashboardConfigError]);
 
+  // Filter dashboard config sections and controls based on user privileges
+  const filteredDashboardConfig = useMemo(() => {
+    if (!dashboardConfig || !userPrivileges) return dashboardConfig;
+    return {
+      ...dashboardConfig,
+      sections: filterSectionsByPrivileges(userPrivileges, dashboardConfig.sections),
+    };
+  }, [dashboardConfig, userPrivileges]);
+
   const sidebarItems = useMemo(() => {
-    if (!dashboardConfig) return [];
-    return getSidebarItems(dashboardConfig, t);
-  }, [dashboardConfig, t]);
+    if (!filteredDashboardConfig) return [];
+    return getSidebarItems(filteredDashboardConfig, t);
+  }, [filteredDashboardConfig, t]);
 
   const { activeItemId, handleItemClick } = useSidebarNavigation(sidebarItems);
 
@@ -254,7 +264,7 @@ const ConsultationPage: React.FC = () => {
               {renderContextInformation()}
             </div>
             <DashboardContainer
-              sections={dashboardConfig!.sections}
+              sections={filteredDashboardConfig!.sections}
               activeItemId={activeItemId}
             />
           </Suspense>
