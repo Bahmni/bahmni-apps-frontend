@@ -3,9 +3,46 @@
 exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
 <DocumentFragment>
   <div
-    class="alert alert-danger"
+    data-layout-variant="default"
+    data-testid="mocked-clinical-layout"
   >
-    Invalid episode uuid
+    <div
+      data-testid="mocked-header"
+    >
+      <div
+        data-testid="mocked-header-component"
+      >
+        <div
+          data-testid="active-sidenav-item"
+        >
+          none
+        </div>
+      </div>
+    </div>
+    <div
+      data-testid="mocked-patient-section"
+    />
+    <div
+      data-testid="mocked-sidebar"
+    />
+    <div
+      data-testid="mocked-main-display"
+    >
+      <div
+        aria-label="section-sticky-header-aria-label"
+        class="stickySection"
+        data-testid="section-sticky-header-test-id"
+        id="section-sticky-header"
+        role="region"
+      >
+        <div
+          data-testid="mocked-patient-header"
+        />
+      </div>
+      <div
+        data-testid="dashboard-container"
+      />
+    </div>
   </div>
 </DocumentFragment>
 `;

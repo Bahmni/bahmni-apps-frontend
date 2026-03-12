@@ -3,7 +3,7 @@ import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationPage from '../ConsultationPage';
@@ -13,6 +13,12 @@ expect.extend(toHaveNoViolations);
 jest.mock('../../providers/clinicalConfig', () => ({
   ...jest.requireActual('../../providers/clinicalConfig'),
   useClinicalConfig: jest.fn(),
+}));
+
+jest.mock('../../providers/ClinicalAppProvider', () => ({
+  ClinicalAppProvider: jest.fn(
+    ({ children }: { children: ReactNode }) => children as React.ReactElement,
+  ),
 }));
 
 // Mock React.Suspense to render children immediately in tests
@@ -34,6 +40,29 @@ jest.mock('react', () => ({
 jest.mock('../../stores/observationFormsStore', () => ({
   useObservationFormsStore: jest.fn((selector) =>
     selector({ viewingForm: null }),
+  ),
+}));
+
+jest.mock('../../components/patientHeader/PatientHeader', () => ({
+  __esModule: true,
+  default: jest.fn(() => <div data-testid="mocked-patient-header" />),
+}));
+
+jest.mock('../../components/dashboardContainer/DashboardContainer', () => ({
+  __esModule: true,
+  default: jest.fn(
+    ({ sections }: { sections: Array<{ id: string; name: string }> }) => (
+      <div data-testid="dashboard-container">
+        {sections.map((section) => (
+          <article
+            key={section.id}
+            data-testid={`dashboard-section-article-${section.name}`}
+          >
+            {section.name}
+          </article>
+        ))}
+      </div>
+    ),
   ),
 }));
 
@@ -272,6 +301,184 @@ describe('ConsultationPage', () => {
       });
 
       expect(asFragment()).toMatchSnapshot();
+    });
+  });
+
+  describe('Privilege-based section filtering', () => {
+    const privilegedDashboardConfig = {
+      sections: [
+        {
+          id: 'allergies',
+          name: 'Allergies',
+          icon: 'fa-allergies',
+          translationKey: 'ALLERGIES_SECTION',
+          controls: [
+            {
+              type: 'widget',
+              name: 'allergies-widget',
+              requiredPrivileges: ['Edit Allergies'],
+            },
+          ],
+        },
+        {
+          id: 'vitals',
+          name: 'Vitals',
+          icon: 'fa-heartbeat',
+          translationKey: 'VITALS_SECTION',
+          controls: [{ type: 'widget', name: 'vitals-widget' }],
+        },
+        {
+          id: 'medications',
+          name: 'Medications',
+          icon: 'fa-pills',
+          translationKey: 'MEDICATIONS_SECTION',
+          controls: [
+            {
+              type: 'widget',
+              name: 'medications-widget',
+              requiredPrivileges: ['Edit Medications'],
+            },
+          ],
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      (getConfig as jest.Mock).mockResolvedValue(privilegedDashboardConfig);
+    });
+
+    it('shows only sections user has privileges for in sidebar and main display', async () => {
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: [{ uuid: '1', name: 'Edit Allergies' }],
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('sidenav-item-allergies')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('dashboard-section-article-Allergies'),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.queryByTestId('sidenav-item-medications'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('dashboard-section-article-Medications'),
+      ).not.toBeInTheDocument();
+
+      // section with no requiredPrivileges always visible
+      expect(screen.getByTestId('sidenav-item-vitals')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('dashboard-section-article-Vitals'),
+      ).toBeInTheDocument();
+    });
+
+    it('hides all privileged sections when user has no matching privileges', async () => {
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: [],
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByTestId('sidenav-item-allergies'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('dashboard-section-article-Allergies'),
+      ).not.toBeInTheDocument();
+
+      expect(
+        screen.queryByTestId('sidenav-item-medications'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('dashboard-section-article-Medications'),
+      ).not.toBeInTheDocument();
+
+      // section with no requiredPrivileges always visible
+      expect(screen.getByTestId('sidenav-item-vitals')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('dashboard-section-article-Vitals'),
+      ).toBeInTheDocument();
+    });
+
+    it('shows all sections when user has all required privileges', async () => {
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: [
+          { uuid: '1', name: 'Edit Allergies' },
+          { uuid: '2', name: 'Edit Medications' },
+        ],
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('sidenav-item-allergies')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('sidenav-item-medications'),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('sidenav-item-vitals')).toBeInTheDocument();
+    });
+
+    it('leaves no section containers when all sections are filtered out', async () => {
+      (getConfig as jest.Mock).mockResolvedValue({
+        sections: [
+          {
+            id: 'allergies',
+            name: 'Allergies',
+            icon: 'fa-allergies',
+            controls: [
+              {
+                type: 'widget',
+                name: 'allergies-widget',
+                requiredPrivileges: ['Edit Allergies'],
+              },
+            ],
+          },
+        ],
+      });
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: [],
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByTestId('sidenav-item-allergies'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('dashboard-section-article-Allergies'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not render sections before user privileges are loaded', () => {
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: null,
+      });
+
+      renderWithProvider();
+
+      expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('sidenav-item-allergies'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('sidenav-item-vitals'),
+      ).not.toBeInTheDocument();
     });
   });
 });

@@ -60,6 +60,21 @@ describe('ConsultationPageService', () => {
     it('returns false when user privileges are null', () => {
       expect(hasRequiredPrivileges(null, ['Add Allergies'])).toBe(false);
     });
+
+    it('returns true only when user has ALL required privileges', () => {
+      expect(
+        hasRequiredPrivileges(userPrivileges, ['Add Allergies', 'Add Orders']),
+      ).toBe(true);
+    });
+
+    it('returns false when user has some but not all required privileges', () => {
+      expect(
+        hasRequiredPrivileges(userPrivileges, [
+          'Add Allergies',
+          'Add Medications',
+        ]),
+      ).toBe(false);
+    });
   });
 
   describe('filterControlsByPrivileges', () => {

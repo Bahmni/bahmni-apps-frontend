@@ -260,6 +260,7 @@ const ConsultationPage: React.FC = () => {
             <div
               id="section-sticky-header"
               data-testid="section-sticky-header-test-id"
+              role="region"
               aria-label="section-sticky-header-aria-label"
               className={styles.stickySection}
             >
