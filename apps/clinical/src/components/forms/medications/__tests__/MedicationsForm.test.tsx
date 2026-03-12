@@ -1,7 +1,7 @@
 import {
   useNotification,
   usePatientUUID,
-  useUserPrivilege,
+  useHasPrivilege,
   UserPrivilegeProvider,
 } from '@bahmni/widgets';
 import {
@@ -49,7 +49,8 @@ jest.mock('@bahmni/widgets', () => {
     ...widgets,
     useNotification: jest.fn(),
     usePatientUUID: jest.fn(),
-    useUserPrivilege: jest.fn(),
+    useHasPrivilege: jest.fn(),
+    UserPrivilegeProvider: ({ children }: { children: ReactNode }) => children,
   };
 });
 
@@ -78,15 +79,11 @@ const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockUseQueryClient = useQueryClient as jest.MockedFunction<
   typeof useQueryClient
 >;
-const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
-  typeof useUserPrivilege
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
 >;
-const mockUserPrivilegesWithMedications = {
-  userPrivileges: [{ name: 'Add Medications' }],
-} as ReturnType<typeof useUserPrivilege>;
-const mockUserPrivilegesEmpty = {
-  userPrivileges: null,
-} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesWithMedications = true;
+const mockUserPrivilegesEmpty = false;
 
 // Mock data
 const mockMedication: Medication = {
@@ -228,7 +225,7 @@ describe('MedicationsForm', () => {
       invalidateQueries: jest.fn(),
     } as unknown as ReturnType<typeof useQueryClient>);
 
-    mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithMedications);
+    mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithMedications);
   });
 
   // HAPPY PATH TESTS
@@ -924,7 +921,7 @@ describe('MedicationsForm', () => {
 
   describe('Privilege Guard', () => {
     test('renders null when user lacks Add Medications privilege', () => {
-      mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
       const { container } = render(<MedicationsForm />);
       expect(container).toBeEmptyDOMElement();
     });

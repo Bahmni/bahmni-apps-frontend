@@ -6,7 +6,11 @@ import {
   notificationService,
   getConditions,
 } from '@bahmni/services';
-import { NotificationProvider, useActivePractitioner, useUserPrivilege } from '@bahmni/widgets';
+import {
+  NotificationProvider,
+  useActivePractitioner,
+  useUserPrivilege,
+} from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

@@ -1,5 +1,4 @@
 import { ObservationForm } from '@bahmni/services';
-import { useUserPrivilege } from '@bahmni/widgets';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -34,7 +33,6 @@ const mockedSavePinnedForms =
     typeof pinnedFormsService.savePinnedForms
   >;
 
-
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(),
@@ -54,10 +52,6 @@ jest.mock('../../../../hooks/usePinnedObservationForms', () => ({
   __esModule: true,
   usePinnedObservationForms: () => mockUsePinnedObservationForms(),
 }));
-
-const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
-  typeof useUserPrivilege
->;
 
 describe('ObservationForms Integration Tests', () => {
   const mockAvailableForms: ObservationForm[] = [

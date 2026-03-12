@@ -1,5 +1,5 @@
 import { useTranslation } from '@bahmni/services';
-import { useActivePractitioner, useUserPrivilege } from '@bahmni/widgets';
+import { useActivePractitioner, useHasPrivilege } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import ConsultationActionButton from '../ConsultationActionButton';
@@ -12,7 +12,7 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useActivePractitioner: jest.fn(),
-  useUserPrivilege: jest.fn(),
+  useHasPrivilege: jest.fn(),
 }));
 jest.mock('../../../hooks/useEncounterSession', () => ({
   useEncounterSession: jest.fn(),
@@ -24,8 +24,8 @@ const mockUseTranslation = useTranslation as jest.MockedFunction<
 const mockUseActivePractitioner = useActivePractitioner as jest.MockedFunction<
   typeof useActivePractitioner
 >;
-const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
-  typeof useUserPrivilege
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
 >;
 const mockUseEncounterSession = useEncounterSession as jest.MockedFunction<
   typeof useEncounterSession
@@ -54,9 +54,7 @@ describe('ConsultationActionButton', () => {
 
   describe('when user has Add Encounters privilege', () => {
     beforeEach(() => {
-      mockUseUserPrivilege.mockReturnValue({
-        userPrivileges: [{ name: 'Add Encounters' }],
-      } as any);
+      mockUseHasPrivilege.mockReturnValue(true);
     });
 
     it('renders button with default "New Consultation" text', () => {
@@ -113,9 +111,7 @@ describe('ConsultationActionButton', () => {
   });
 
   it('hides button when user lacks Add Encounters privilege', () => {
-    mockUseUserPrivilege.mockReturnValue({
-      userPrivileges: null,
-    } as any);
+    mockUseHasPrivilege.mockReturnValue(false);
 
     render(<ConsultationActionButton {...defaultProps} />);
 

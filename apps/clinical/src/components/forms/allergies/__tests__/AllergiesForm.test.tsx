@@ -1,4 +1,4 @@
-import { useUserPrivilege, UserPrivilegeProvider } from '@bahmni/widgets';
+import { useHasPrivilege } from '@bahmni/widgets';
 import {
   QueryClient,
   QueryClientProvider,
@@ -32,7 +32,7 @@ jest.mock('@bahmni/widgets', () => ({
     addNotification: jest.fn(),
   })),
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
-  useUserPrivilege: jest.fn(),
+  useHasPrivilege: jest.fn(),
 }));
 
 // Mock @bahmni/services
@@ -115,17 +115,13 @@ const mockSelectedAllergy = {
   hasBeenValidated: false,
 };
 
-const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
-  typeof useUserPrivilege
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
 >;
 
-const mockUserPrivilegesWithAllergies = {
-  userPrivileges: [{ name: 'Add Allergies' }],
-} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesWithAllergies = true;
 
-const mockUserPrivilegesEmpty = {
-  userPrivileges: null,
-} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesEmpty = false;
 
 const mockAllergyStore = {
   selectedAllergies: [],
@@ -175,9 +171,7 @@ const createWrapper = () => {
     },
   });
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      <UserPrivilegeProvider>{children}</UserPrivilegeProvider>
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
   Wrapper.displayName = 'QueryClientWrapper';
   return Wrapper;
@@ -194,7 +188,7 @@ describe('AllergiesForm', () => {
     mockAllergyStore.selectedAllergies = [];
 
     // Set default mocks
-    mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithAllergies);
+    mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithAllergies);
     (
       useAllergyStore as jest.MockedFunction<typeof useAllergyStore>
     ).mockReturnValue(mockAllergyStore);
@@ -822,7 +816,7 @@ describe('AllergiesForm', () => {
 
   describe('Privilege Guard', () => {
     it('renders null when user lacks Add Allergies privilege', () => {
-      mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
       const { container } = renderAllergiesForm();
       expect(container).toBeEmptyDOMElement();
     });

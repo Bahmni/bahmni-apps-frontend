@@ -23,9 +23,7 @@ jest.mock('@bahmni/widgets', () => {
       practitioner: { uuid: 'active-practitioner-uuid' },
     })),
     usePatientUUID: jest.fn(() => 'patient-uuid'),
-    useUserPrivilege: jest.fn(() => ({
-      userPrivileges: [{ name: 'Add Encounters' }],
-    })),
+    useHasPrivilege: jest.fn(() => true),
   };
 });
 

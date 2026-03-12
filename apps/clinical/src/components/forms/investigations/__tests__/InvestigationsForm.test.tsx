@@ -1,4 +1,4 @@
-import { useUserPrivilege, UserPrivilegeProvider } from '@bahmni/widgets';
+import { useHasPrivilege, UserPrivilegeProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -42,7 +42,9 @@ jest.mock('@bahmni/widgets', () => ({
   useActivePractitioner: jest.fn().mockReturnValue({
     practitioner: { uuid: 'mock-practitioner-uuid' },
   }),
-  useUserPrivilege: jest.fn(),
+  useHasPrivilege: jest.fn(),
+  UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 jest.mock('../../../../hooks/useEncounterSession', () => ({
@@ -122,17 +124,13 @@ const mockInvestigations: FlattenedInvestigations[] = [
     categoryCode: 'rad',
   },
 ];
-const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
-  typeof useUserPrivilege
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
 >;
 
-const mockUserPrivilegesWithInvestigations = {
-  userPrivileges: [{ name: 'Add Orders' }],
-} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesWithInvestigations = true;
 
-const mockUserPrivilegesEmpty = {
-  userPrivileges: null,
-} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesEmpty = false;
 
 const mockStore = {
   selectedServiceRequests: new Map(),
@@ -167,7 +165,7 @@ const createWrapper = () => {
 describe('InvestigationsForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithInvestigations);
+    mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithInvestigations);
     // Setup default mocks
     (useInvestigationsSearch as jest.Mock).mockReturnValue({
       investigations: [],
@@ -1717,7 +1715,7 @@ describe('InvestigationsForm', () => {
 
   describe('Privilege Guard', () => {
     it('renders null when user lacks Add Orders privilege', () => {
-      mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
       const { container } = render(<InvestigationsForm />, {
         wrapper: createWrapper(),
       });

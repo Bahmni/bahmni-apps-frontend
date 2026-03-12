@@ -672,23 +672,22 @@ describe('ConsultationPad', () => {
       const forms = content.querySelectorAll('[data-testid]');
 
       expect(forms[0]).toHaveAttribute('data-testid', 'mock-encounter-details');
-      expect(forms[1]).toHaveAttribute('data-testid', 'mock-divider');
-      expect(forms[2]).toHaveAttribute('data-testid', 'mock-allergies-form');
-      expect(forms[3]).toHaveAttribute(
+      expect(forms[1]).toHaveAttribute('data-testid', 'mock-allergies-form');
+      expect(forms[2]).toHaveAttribute(
         'data-testid',
         'mock-investigations-form',
       );
-      expect(forms[4]).toHaveAttribute(
+      expect(forms[3]).toHaveAttribute(
         'data-testid',
         'mock-conditions-diagnoses',
       );
-      expect(forms[5]).toHaveAttribute('data-testid', 'mock-medications-form');
+      expect(forms[4]).toHaveAttribute('data-testid', 'mock-medications-form');
     });
 
     it('should render dividers between forms', () => {
       renderWithProvider();
-      const dividers = screen.getAllByTestId('mock-divider');
-      expect(dividers).toHaveLength(1);
+      const dividers = screen.queryAllByTestId('mock-divider');
+      expect(dividers).toHaveLength(0);
     });
 
     it('should render forms and dividers in the correct sequence', () => {
@@ -697,35 +696,32 @@ describe('ConsultationPad', () => {
       const content = screen.getByTestId('action-area-content');
       const children = Array.from(content.children);
 
-      // Each form now owns its own divider (rendered inside the component).
-      // ConsultationPad renders one divider between BasicForm and the rest.
-      // In tests the form components are mocked without dividers, so only
-      // the ConsultationPad-level divider is visible.
-      expect(children).toHaveLength(8); // 1 encounter-details + 1 divider + 6 forms
+      // Each form owns its own divider (rendered inside the component).
+      // In tests the form components are mocked without dividers.
+      expect(children).toHaveLength(7); // 7 forms, no dividers
 
       expect(children[0]).toHaveAttribute(
         'data-testid',
         'mock-encounter-details',
       );
-      expect(children[1]).toHaveAttribute('data-testid', 'mock-divider');
-      expect(children[2]).toHaveAttribute('data-testid', 'mock-allergies-form');
-      expect(children[3]).toHaveAttribute(
+      expect(children[1]).toHaveAttribute('data-testid', 'mock-allergies-form');
+      expect(children[2]).toHaveAttribute(
         'data-testid',
         'mock-investigations-form',
       );
-      expect(children[4]).toHaveAttribute(
+      expect(children[3]).toHaveAttribute(
         'data-testid',
         'mock-conditions-diagnoses',
       );
-      expect(children[5]).toHaveAttribute(
+      expect(children[4]).toHaveAttribute(
         'data-testid',
         'mock-medications-form',
       );
-      expect(children[6]).toHaveAttribute(
+      expect(children[5]).toHaveAttribute(
         'data-testid',
         'mock-vaccination-forms',
       );
-      expect(children[7]).toHaveAttribute(
+      expect(children[6]).toHaveAttribute(
         'data-testid',
         'mock-observation-forms',
       );

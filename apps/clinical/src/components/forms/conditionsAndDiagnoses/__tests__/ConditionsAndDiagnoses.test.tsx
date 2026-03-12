@@ -7,7 +7,7 @@ import {
   useNotification,
   usePatientUUID,
   conditionsQueryKeys,
-  useUserPrivilege,
+  useHasPrivilege,
   UserPrivilegeProvider,
 } from '@bahmni/widgets';
 import {
@@ -46,7 +46,8 @@ jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn(),
   conditionsQueryKeys: jest.fn(),
   diagnosesQueryKeys: jest.fn(),
-  useUserPrivilege: jest.fn(),
+  useHasPrivilege: jest.fn(),
+  UserPrivilegeProvider: ({ children }: any) => children,
 }));
 
 jest.mock('@tanstack/react-query', () => ({
@@ -77,17 +78,13 @@ const mockedUseConditionsAndDiagnosesStore =
     typeof useConditionsAndDiagnosesStore
   >;
 const mockedUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
-const mockedUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
-  typeof useUserPrivilege
+const mockedUseUserPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
 >;
 
-const mockUserPrivilegesWithDiagnoses = {
-  userPrivileges: [{ name: 'Add Diagnoses' }],
-} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesWithDiagnoses = true;
 
-const mockUserPrivilegesEmpty = {
-  userPrivileges: null,
-} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesEmpty = false;
 
 const createMockConcept = (
   overrides?: Partial<ConceptSearch>,

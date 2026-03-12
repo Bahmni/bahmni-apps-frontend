@@ -1,5 +1,5 @@
 import { ObservationForm } from '@bahmni/services';
-import { useUserPrivilege } from '@bahmni/widgets';
+import { useHasPrivilege } from '@bahmni/widgets';
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -9,7 +9,7 @@ expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
-  useUserPrivilege: jest.fn(),
+  useHasPrivilege: jest.fn(),
 }));
 
 // Mock the translation hook
@@ -177,15 +177,11 @@ jest.mock('@bahmni/design-system', () => ({
 
 // BahmniIcon is already mocked as part of the design system mock above
 
-const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
-  typeof useUserPrivilege
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
 >;
-const mockUserPrivilegesWithObservations = {
-  userPrivileges: [{ name: 'Add Observations' }],
-} as ReturnType<typeof useUserPrivilege>;
-const mockUserPrivilegesEmpty = {
-  userPrivileges: null,
-} as ReturnType<typeof useUserPrivilege>;
+const mockUserPrivilegesWithObservations = true;
+const mockUserPrivilegesEmpty = false;
 
 describe('ObservationForms', () => {
   // Test data factories
@@ -259,7 +255,7 @@ describe('ObservationForms', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithObservations);
+    mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithObservations);
   });
 
   describe('Rendering and Structure', () => {
@@ -885,7 +881,7 @@ describe('ObservationForms', () => {
 
   describe('Privilege Guard', () => {
     it('renders null when user lacks Add Observations privilege', () => {
-      mockUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
       const { container } = render(<ObservationForms {...defaultProps} />);
       expect(container).toBeEmptyDOMElement();
     });
