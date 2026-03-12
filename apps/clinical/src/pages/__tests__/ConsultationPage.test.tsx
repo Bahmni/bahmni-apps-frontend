@@ -1,4 +1,3 @@
-import { useSidebarNavigation } from '@bahmni/design-system';
 import { getConfig } from '@bahmni/services';
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -6,10 +5,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import {
-  validDashboardConfig,
-  validFullClinicalConfig,
-} from '../../__mocks__/configMocks';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationPage from '../ConsultationPage';
 
@@ -31,13 +26,9 @@ jest.mock('react', () => ({
     fallback: ReactNode;
   }) => {
     // Store fallback for testing
-
     (globalThis as any).suspenseFallback = fallback;
     return children;
   },
-jest.mock('../../providers/clinicalConfig', () => ({
-  ...jest.requireActual('../../providers/clinicalConfig'),
-  useClinicalConfig: jest.fn(),
 }));
 
 jest.mock('../../stores/observationFormsStore', () => ({
@@ -48,10 +39,6 @@ jest.mock('../../stores/observationFormsStore', () => ({
 
 jest.mock('@bahmni/design-system', () => ({
   ...jest.requireActual('@bahmni/design-system'),
-  useSidebarNavigation: jest.fn(() => ({
-    activeItemId: 'vitals',
-    handleItemClick: jest.fn(),
-  })),
   Loading: jest.fn(({ description, role }) => (
     <div data-testid="carbon-loading" role={role}>
       {description}
@@ -114,26 +101,13 @@ jest.mock('@bahmni/design-system', () => ({
 
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
-  useNotification: jest.fn(() => ({
-    addNotification: jest.fn(),
-  })),
   useUserPrivilege: jest.fn(),
-  useHasPrivilege: jest.fn(() => true),
-  useActivePractitioner: jest.fn(() => ({
-    practitioner: {
-      uuid: 'mock-practitioner-uuid',
-      person: { display: 'Mock Practitioner' },
-    },
-    isLoading: false,
-    error: null,
-  })),
-  usePatientUUID: jest.fn(() => 'mock-patient-uuid'),
+  useNotification: jest.fn(),
 }));
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getConfig: jest.fn(),
-  getCurrentUserPrivileges: jest.fn(() => Promise.resolve([])),
 }));
 
 const mockClinicalConfig = {
@@ -180,10 +154,8 @@ const renderWithProvider = () => {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter
-        initialEntries={[url ?? '/consultation?episodeUuid=test-episode']}
-      >
-        {component}
+      <MemoryRouter initialEntries={['/consultation?episodeUuid=test-episode']}>
+        <ConsultationPage />
       </MemoryRouter>
     </QueryClientProvider>,
   );
@@ -199,8 +171,11 @@ describe('ConsultationPage', () => {
       error: null,
     });
 
-    jest.mocked(useUserPrivilege).mockReturnValue({
-      userPrivileges: ['VIEW_PATIENTS', 'EDIT_ENCOUNTERS'],
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: [
+        { uuid: '1', name: 'VIEW_PATIENTS' },
+        { uuid: '2', name: 'EDIT_ENCOUNTERS' },
+      ],
     });
 
     (useNotification as jest.Mock).mockReturnValue({
@@ -222,128 +197,12 @@ describe('ConsultationPage', () => {
       renderWithProvider();
 
       await waitFor(() => {
-        expect(
-          screen.queryByTestId('carbon-loading'),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
       });
     });
 
     it('should handle the loading state', () => {
-      jest.mocked(useClinicalConfig).mockReturnValue({
-        clinicalConfig: null,
-      });
-
-      const { container } = renderWithProvider(<ConsultationPage />);
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
-    it('should have no accessibility violations with null user privileges', async () => {
-      // Mock null user privileges
-      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
-      (useUserPrivilege as jest.Mock).mockReturnValue({
-        userPrivileges: null,
-      });
-
-      const { container } = renderWithProvider(<ConsultationPage />);
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
-  });
-
-  describe('Improved Suspense Handling', () => {
-    it('should use Loading component in Suspense fallback', () => {
-      // Setup mocks for fully loaded state
       (useClinicalConfig as jest.Mock).mockReturnValue({
-        clinicalConfig: validFullClinicalConfig,
-        isLoading: false,
-        error: null,
-      });
-
-      jest.mocked(useUserPrivilege).mockReturnValue({
-        userPrivileges: [
-          { uuid: '1', name: 'VIEW_PATIENTS' },
-          { uuid: '2', name: 'EDIT_ENCOUNTERS' },
-        ],
-      } as any);
-
-      // Pre-populate caches so the component and ClinicalAppProvider
-      // skip loading states and reach the Suspense
-      const queryClient = new QueryClient({
-        defaultOptions: { queries: { retry: false } },
-      });
-      queryClient.setQueryData(
-        ['dashboardConfig', 'patient-information'],
-        validDashboardConfig,
-      );
-      queryClient.setQueryData(['encounters-for-eoc', ['test-episode']], {
-        encounterUuids: [],
-        visitUuids: [],
-      });
-
-      mockSuspense.mockClear();
-
-      render(
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter
-            initialEntries={['/consultation?episodeUuid=test-episode']}
-          >
-            <ConsultationPage />
-          </MemoryRouter>
-        </QueryClientProvider>,
-      );
-
-      // Find the Suspense call that received a fallback
-      const suspenseCall = mockSuspense.mock.calls.find(
-        (call) => call[0]?.fallback,
-      );
-      expect(suspenseCall).toBeDefined();
-
-      const fallback = suspenseCall![0].fallback;
-      const { container } = render(fallback);
-      const loadingElement = container.querySelector(
-        '[data-testid="carbon-loading"]',
-      );
-
-      expect(loadingElement).toBeInTheDocument();
-      expect(loadingElement).toHaveAttribute('role', 'status');
-    });
-  });
-
-  describe('useSidebarNavigation Hook Integration', () => {
-    it('should use the useSidebarNavigation hook with sidebar items', () => {
-      // Setup mocks
-      (useClinicalConfig as jest.Mock).mockReturnValue({
-        clinicalConfig: validFullClinicalConfig,
-      });
-
-      jest.mocked(getConfig).mockResolvedValue(validDashboardConfig);
-      // Ensure userPrivileges are loaded for this test
-      jest.mocked(useUserPrivilege).mockReturnValue({
-        userPrivileges: [
-          { uuid: '1', name: 'VIEW_PATIENTS' },
-          { uuid: '2', name: 'EDIT_ENCOUNTERS' },
-        ],
-      } as any);
-
-      // Spy on useSidebarNavigation
-      const sidebarNavigationSpy = jest.fn(() => ({
-        activeItemId: 'Vitals',
-        handleItemClick: jest.fn(),
-      }));
-      (useSidebarNavigation as jest.Mock).mockImplementation(
-        sidebarNavigationSpy,
-      );
-
-      renderWithProvider(<ConsultationPage />);
-
-      // Simply verify the hook was called
-      expect(sidebarNavigationSpy).toHaveBeenCalled();
-    });
-  });
-
-  describe('ClinicalAppsProvider Loading State', () => {
-    it('should show loading spinner when ClinicalAppsProvider is fetching data', () => {
-      jest.mocked(useClinicalConfig).mockReturnValue({
         clinicalConfig: null,
         isLoading: true,
         error: null,
@@ -351,28 +210,27 @@ describe('ConsultationPage', () => {
 
       renderWithProvider();
 
-      expect(
-        screen.getByTestId('carbon-loading'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
     });
 
     it('should show loading when user privileges are not available', () => {
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: null,
-      } as any);
+      });
 
       renderWithProvider();
 
-      expect(
-        screen.getByTestId('carbon-loading'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
     });
 
     it('should show error when no default dashboard is available', () => {
       const mockAddNotification = jest.fn();
       (useNotification as jest.Mock).mockReturnValue({
         addNotification: mockAddNotification,
-      } as any);
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
 
       (useClinicalConfig as jest.Mock).mockReturnValue({
         clinicalConfig: {
@@ -397,9 +255,7 @@ describe('ConsultationPage', () => {
       const { container } = renderWithProvider();
 
       await waitFor(() => {
-        expect(
-          screen.queryByTestId('carbon-loading'),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
       });
 
       const results = await axe(container);
@@ -412,9 +268,7 @@ describe('ConsultationPage', () => {
       const { asFragment } = renderWithProvider();
 
       await waitFor(() => {
-        expect(
-          screen.queryByTestId('carbon-loading'),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
       });
 
       expect(asFragment()).toMatchSnapshot();

@@ -358,25 +358,7 @@ describe('VaccinationForm', () => {
     });
     test('resets ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
       const user = userEvent.setup();
-      const hepatitisVaccine: Medication = {
-        id: 'test-vaccination-2',
-        resourceType: 'Medication',
-        code: {
-          text: 'Hepatitis B Vaccine',
-          coding: [
-            {
-              code: 'hep-b-vaccine',
-              display: 'Hepatitis B Vaccine',
-              system: 'https://snomed.info/sct',
-            },
-          ],
-        },
-      };
-      (getVaccinations as jest.Mock).mockResolvedValue({
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [{ resource: mockVaccination }, { resource: hepatitisVaccine }],
-      });
+      mockUseQuery.mockImplementation(mockTwoVaccinesQuery as any);
       render(<VaccinationForm />, { wrapper: createWrapper() });
       const searchBox = screen.getByRole('combobox', {
         name: /search to add vaccination/i,
