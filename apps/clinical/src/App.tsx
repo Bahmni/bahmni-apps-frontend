@@ -38,7 +38,7 @@ const ClinicalApp: React.FC = () => {
   }, []);
 
   if (!isInitialized) {
-    return <Loading/>;
+    return <Loading />;
   }
 
   return (
