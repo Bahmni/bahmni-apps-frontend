@@ -1,4 +1,4 @@
-import { Content, initFontAwesome } from '@bahmni/design-system';
+import { Content, initFontAwesome, Loading } from '@bahmni/design-system';
 import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
   NotificationProvider,
@@ -39,7 +39,7 @@ const RegistrationApp: React.FC = () => {
   }, []);
 
   if (!isInitialized) {
-    return <div>Loading...</div>;
+    return <Loading/>;
   }
 
   return (
