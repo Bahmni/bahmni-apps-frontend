@@ -46,10 +46,8 @@ export const hasRequiredPrivileges = (
   if (!userPrivileges) {
     return false;
   }
-  const privilegeNames = userPrivileges.map((p) => p.name);
-  return requiredPrivileges.every((privilege) =>
-    privilegeNames.includes(privilege),
-  );
+  const privilegeNames = new Set(userPrivileges.map((p) => p.name));
+  return requiredPrivileges.every((privilege) => privilegeNames.has(privilege));
 };
 
 /**
