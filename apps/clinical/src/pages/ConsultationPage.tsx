@@ -36,8 +36,11 @@ import {
 import { DashboardConfig } from './models';
 import dashboardConfigSchema from './schema.json';
 import styles from './styles/ConsultationPage.module.scss';
-import { getDefaultDashboard, getSidebarItems, filterSectionsByPrivileges } from './util';
-import { DashboardConfig as DashboardConfigType } from './models';
+import {
+  getDefaultDashboard,
+  getSidebarItems,
+  filterSectionsByPrivileges,
+} from './util';
 
 const addSectionIds = (config: DashboardConfig): DashboardConfig => {
   if (!config?.sections?.length) return config;
@@ -158,7 +161,10 @@ const ConsultationPage: React.FC = () => {
     if (!dashboardConfig || !userPrivileges) return dashboardConfig;
     return {
       ...dashboardConfig,
-      sections: filterSectionsByPrivileges(userPrivileges, dashboardConfig.sections),
+      sections: filterSectionsByPrivileges(
+        userPrivileges,
+        dashboardConfig.sections,
+      ),
     };
   }, [dashboardConfig, userPrivileges]);
 
