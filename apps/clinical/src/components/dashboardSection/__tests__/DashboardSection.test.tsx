@@ -1,3 +1,4 @@
+import { Loading } from '@bahmni/design-system';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import React, { Suspense } from 'react';
@@ -26,6 +27,10 @@ jest.mock('@bahmni/design-system', () => ({
   Tile: jest.fn(({ children, ref, ...rest }) => (
     <div className="cds--tile" data-testid="carbon-tile" ref={ref} {...rest}>
       {children}
+    </div>
+  )),
+  Loading: jest.fn(() => (
+    <div data-testid="loading">
     </div>
   )),
 }));
@@ -299,7 +304,7 @@ describe('DashboardSection Component', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<Loading />}>
               <DashboardSection
                 section={section}
                 ref={mockRef}
@@ -355,7 +360,7 @@ describe('DashboardSection Component', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<Loading />}>
               <DashboardSection
                 section={section}
                 ref={mockRef}
@@ -416,7 +421,7 @@ describe('DashboardSection Component', () => {
       const { container } = render(
         <QueryClientProvider client={queryClient}>
           <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<Loading />}>
               <DashboardSection
                 section={section}
                 ref={mockRef}
@@ -559,7 +564,7 @@ describe('DashboardSection Component', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<Loading />}>
               <DashboardSection
                 section={section}
                 ref={mockRef}
