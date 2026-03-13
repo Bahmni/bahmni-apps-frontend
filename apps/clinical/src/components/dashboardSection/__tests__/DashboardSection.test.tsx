@@ -29,10 +29,7 @@ jest.mock('@bahmni/design-system', () => ({
       {children}
     </div>
   )),
-  Loading: jest.fn(() => (
-    <div data-testid="loading">
-    </div>
-  )),
+  Loading: jest.fn(() => <div data-testid="loading" />),
 }));
 
 // Mock the translation hook from @bahmni/services
