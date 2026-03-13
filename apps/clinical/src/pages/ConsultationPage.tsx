@@ -48,16 +48,6 @@ const addSectionIds = (config: DashboardConfig): DashboardConfig => {
   };
 };
 
-const breadcrumbItems = [
-  { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
-  {
-    id: 'clinical',
-    label: 'Clinical',
-    href: BAHMNI_CLINICAL_PATH,
-  },
-  { id: 'current', label: 'Current Patient', isCurrentPage: true },
-];
-
 const globalActions = [
   {
     id: 'search',
@@ -99,6 +89,16 @@ const ConsultationPage: React.FC = () => {
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
   const [searchParams] = useSearchParams();
   const viewingForm = useObservationFormsStore((state) => state.viewingForm);
+
+  const breadcrumbItems = [
+    { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
+    {
+      id: 'clinical',
+      label: 'Clinical',
+      href: BAHMNI_CLINICAL_PATH,
+    },
+    { id: 'current', label: t('CURRENT_PATIENT'), isCurrentPage: true },
+  ];
 
   const episodeUuids = useMemo(() => {
     const episodeUuid = searchParams.get(EPISODE_UUID_SEARCH_PARAMS_KEY);

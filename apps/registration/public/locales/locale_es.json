@@ -129,7 +129,6 @@
   "START_VISIT_TYPE": "Empezar Visita {{visitType}}",
   "REGISTRATION_RELATIONSHIP_TYPE": "Relación",
   "REGISTRATION_PATIENT_NAME_OR_ID": "Nombre o ID del Paciente",
-  "REGISTRATION_PATIENT_ID": "ID del Paciente",
   "REGISTRATION_TILL_DATE": "Válido Hasta",
   "REGISTRATION_ACTION": "Acción",
   "REGISTRATION_ACTIONS": "Acciones",

@@ -17,6 +17,11 @@
   display: flex;
   align-items: center;
   gap: $spacing-02;
+
+  span {
+    min-width: 0;
+    word-break: break-word;
+  }
 }
 
 .fileIcon {

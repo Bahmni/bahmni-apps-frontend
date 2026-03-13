@@ -103,6 +103,7 @@
   "CONSULTATION_SUBMITTED_SUCCESS_MESSAGE": "Consultation saved successfully",
   "CONSULTATION_SUBMITTED_SUCCESS_TITLE": "Success",
   "CONTROL_NOT_FOUND": "No controls registered for type: {{type}}",
+  "CURRENT_PATIENT": "Current Patient",
   "DASHBOARD_TITLE_EPISODE_OF_CARE_KEY": "Episode of Care",
   "DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND": "No default or pinned Forms",
   "DEFAULT_AND_PINNED_FORMS_TITLE": "Default and pinned Forms",

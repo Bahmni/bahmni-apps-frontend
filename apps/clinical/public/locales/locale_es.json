@@ -103,6 +103,7 @@
   "CONSULTATION_SUBMITTED_SUCCESS_MESSAGE": "Consulta salvado correctamente",
   "CONSULTATION_SUBMITTED_SUCCESS_TITLE": "Éxito",
   "CONTROL_NOT_FOUND": "No se encontraron controles registrados para el tipo: {{type}}",
+  "CURRENT_PATIENT": "Paciente Actual",
   "DASHBOARD_TITLE_EPISODE_OF_CARE_KEY": "Episodio de Atención",
   "DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND": "No hay formularios predeterminados o fijados",
   "DEFAULT_AND_PINNED_FORMS_TITLE": "Formularios predeterminados y anclados",

@@ -205,6 +205,21 @@ describe('DocumentsTable', () => {
       ).toBeInTheDocument();
     });
 
+    it('renders long document identifier name inside a span to support word wrapping', () => {
+      const longName =
+        'VeryLongDocumentIdentifierNameThatShouldBreakAndWrapAcrossMultipleLinesInTheTableCell';
+      const docWithLongName = {
+        ...mockPdfDocument,
+        documentIdentifier: longName,
+      };
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([docWithLongName]));
+      renderComponent({ config: defaultConfig });
+
+      const identifierSpan = screen.getByText(longName);
+      expect(identifierSpan.tagName).toBe('SPAN');
+      expect(identifierSpan.closest('div')).toBeInTheDocument();
+    });
+
     it('displays multiple documents', () => {
       (useQuery as jest.Mock).mockReturnValue(
         mockQueryData([mockPdfDocument, mockImageDocument]),
