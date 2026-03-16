@@ -8,6 +8,7 @@ import {
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Bundle, ServiceRequest, DiagnosticReport } from 'fhir/r4';
 
 import { usePatientUUID } from '../../hooks/usePatientUUID';
@@ -50,18 +51,35 @@ jest.mock('../LabInvestigationItem', () => ({
   ),
 }));
 
-const mockUseTranslation = jest.mocked(useTranslation);
-const mockGetCategoryUuidFromOrderTypes = jest.mocked(
-  getCategoryUuidFromOrderTypes,
-);
-const mockGetLabInvestigationsBundle = jest.mocked(getLabInvestigationsBundle);
-const mockGetDiagnosticReports = jest.mocked(getDiagnosticReports);
-const mockGetDiagnosticReportBundle = jest.mocked(getDiagnosticReportBundle);
-const mockUseNotification = jest.mocked(useNotification);
-const mockUsePatientUUID = jest.mocked(usePatientUUID);
-const mockUseSubscribeConsultationSaved = jest.mocked(
-  useSubscribeConsultationSaved,
-);
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
+
+const mockGetCategoryUuidFromOrderTypes =
+  getCategoryUuidFromOrderTypes as jest.MockedFunction<
+    typeof getCategoryUuidFromOrderTypes
+  >;
+const mockGetLabInvestigationsBundle =
+  getLabInvestigationsBundle as jest.MockedFunction<
+    typeof getLabInvestigationsBundle
+  >;
+const mockGetDiagnosticReports = getDiagnosticReports as jest.MockedFunction<
+  typeof getDiagnosticReports
+>;
+const mockGetDiagnosticReportBundle =
+  getDiagnosticReportBundle as jest.MockedFunction<
+    typeof getDiagnosticReportBundle
+  >;
+const mockUseNotification = useNotification as jest.MockedFunction<
+  typeof useNotification
+>;
+const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
+>;
+const mockUseSubscribeConsultationSaved =
+  useSubscribeConsultationSaved as jest.MockedFunction<
+    typeof useSubscribeConsultationSaved
+  >;
 
 const createQueryClient = () =>
   new QueryClient({
@@ -199,15 +217,12 @@ describe('LabInvestigation', () => {
     expect(screen.getByTestId('lab-skeleton')).toBeInTheDocument();
   });
 
-  it('renders all lab tests as a flat list', async () => {
+  it('renders lab tests grouped by date', async () => {
     render(renderLabInvestigations());
+    await waitForDate();
 
-    await waitFor(() => {
-      expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
-    });
-
-    const labItems = screen.getAllByTestId('lab-investigation-item');
-    expect(labItems).toHaveLength(3);
+    expect(screen.getByText(/April 09, 2025/i)).toBeInTheDocument();
+    expect(screen.getAllByTestId('lab-investigation-item')).toHaveLength(3);
   });
 
   it('renders empty state message when no lab tests', async () => {
@@ -233,7 +248,7 @@ describe('LabInvestigation', () => {
     });
   });
 
-  it('renders tests sorted by date descending with urgent tests first for same date', async () => {
+  it('renders urgent tests before non-urgent tests within each date group', async () => {
     render(renderLabInvestigations());
     await waitFor(() => {
       expect(screen.getAllByTestId('test-name')).toHaveLength(3);
@@ -242,19 +257,31 @@ describe('LabInvestigation', () => {
     const testNames = screen.getAllByTestId('test-name');
     const testPriorities = screen.getAllByTestId('test-priority');
 
-    // test-1 (May 8, newest) comes first
     expect(testNames[0]).toHaveTextContent('Complete Blood Count');
     expect(testPriorities[0]).toHaveTextContent(
       LabInvestigationPriority.routine,
     );
-
-    // test-2 (April 9, stat=Urgent) comes before test-3 (same date, routine)
     expect(testNames[1]).toHaveTextContent('Lipid Panel');
     expect(testPriorities[1]).toHaveTextContent(LabInvestigationPriority.stat);
     expect(testNames[2]).toHaveTextContent('Liver Function');
     expect(testPriorities[2]).toHaveTextContent(
       LabInvestigationPriority.routine,
     );
+  });
+
+  it('opens first accordion item by default', async () => {
+    render(renderLabInvestigations());
+    await waitForDate();
+
+    const firstAccordionButton = screen.getByRole('button', {
+      name: /May 08, 2025/i,
+    });
+    const secondAccordionButton = screen.getByRole('button', {
+      name: /April 09, 2025/i,
+    });
+
+    expect(firstAccordionButton).toHaveAttribute('aria-expanded', 'true');
+    expect(secondAccordionButton).toHaveAttribute('aria-expanded', 'false');
   });
 
   describe('emptyEncounterFilter condition', () => {
@@ -279,7 +306,7 @@ describe('LabInvestigation', () => {
           [],
         ),
       );
-      await waitForData();
+      await waitForDate();
       expect(mockGetLabInvestigationsBundle).toHaveBeenCalled();
     });
 
@@ -291,14 +318,51 @@ describe('LabInvestigation', () => {
           ['episode-1'],
         ),
       );
-      await waitForData();
+      await waitForDate();
       expect(mockGetLabInvestigationsBundle).toHaveBeenCalled();
     });
 
     it('should fetch lab investigations when emptyEncounterFilter is false (no episode provided)', async () => {
       render(renderLabInvestigations({ orderType: 'Lab Order' }));
-      await waitForData();
+      await waitForDate();
       expect(mockGetLabInvestigationsBundle).toHaveBeenCalled();
+    });
+  });
+
+  describe('Accordion interactions', () => {
+    it('should allow multiple accordions to be open at the same time', async () => {
+      const user = userEvent.setup();
+      render(renderLabInvestigations());
+      await waitForDate();
+
+      const secondAccordionButton = screen.getByRole('button', {
+        name: /April 09, 2025/i,
+      });
+      await user.click(secondAccordionButton);
+      await waitFor(() => {
+        expect(secondAccordionButton).toHaveAttribute('aria-expanded', 'true');
+      });
+
+      const firstAccordionButton = screen.getByRole('button', {
+        name: /May 08, 2025/i,
+      });
+      expect(firstAccordionButton).toHaveAttribute('aria-expanded', 'true');
+      expect(secondAccordionButton).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('should close accordion when clicking on open accordion', async () => {
+      const user = userEvent.setup();
+      render(renderLabInvestigations());
+      await waitForDate();
+
+      const firstAccordionButton = screen.getByRole('button', {
+        name: /May 08, 2025/i,
+      });
+      expect(firstAccordionButton).toHaveAttribute('aria-expanded', 'true');
+      await user.click(firstAccordionButton);
+      await waitFor(() => {
+        expect(firstAccordionButton).toHaveAttribute('aria-expanded', 'false');
+      });
     });
   });
 
@@ -322,39 +386,31 @@ describe('LabInvestigation', () => {
     ],
   });
 
-  const waitForData = async () => {
+  const waitForDate = async () => {
     await waitFor(() => {
-      expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
+      expect(screen.getByText(/May 08, 2025/i)).toBeInTheDocument();
     });
   };
 
   describe('Diagnostic reports fetching', () => {
-    it('should fetch diagnostic reports for all investigations in a single query', async () => {
+    it('should fetch diagnostic reports when accordion is opened', async () => {
       mockGetDiagnosticReports.mockResolvedValue(createMockDiagnosticReports());
       render(renderLabInvestigations());
-      await waitForData();
+      await waitForDate();
 
-      await waitFor(() => {
-        expect(mockGetDiagnosticReports).toHaveBeenCalledWith('patient-123', [
-          'test-1',
-          'test-2',
-          'test-3',
-        ]);
-      });
+      expect(mockGetDiagnosticReports).toHaveBeenCalledWith('patient-123', [
+        'test-1',
+      ]);
     });
 
     it('should pass reportId to child component for processed reports', async () => {
       mockGetDiagnosticReports.mockResolvedValue(createMockDiagnosticReports());
       render(renderLabInvestigations());
-      await waitForData();
+      await waitForDate();
 
-      await waitFor(() => {
-        expect(mockGetDiagnosticReports).toHaveBeenCalledWith('patient-123', [
-          'test-1',
-          'test-2',
-          'test-3',
-        ]);
-      });
+      expect(mockGetDiagnosticReports).toHaveBeenCalledWith('patient-123', [
+        'test-1',
+      ]);
     });
   });
 
@@ -366,79 +422,97 @@ describe('LabInvestigation', () => {
       });
     });
 
-    describe('event-driven refetch behavior', () => {
-      let eventCallback: (payload: any) => void;
+    it('refetches data when consultation saved event is triggered with matching category', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+      render(renderLabInvestigations({ orderType: 'Lab Order' }));
+      await waitForDate();
 
-      beforeEach(async () => {
-        eventCallback = () => {};
-        mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
-          eventCallback = callback;
-        });
-        render(renderLabInvestigations({ orderType: 'Lab Order' }));
-        await waitForData();
-        mockGetLabInvestigationsBundle.mockClear();
+      mockGetLabInvestigationsBundle.mockClear();
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'lab order': true },
+        },
       });
 
-      it('refetches data when consultation saved event is triggered with matching category', async () => {
-        eventCallback({
-          patientUUID: 'patient-123',
-          updatedResources: {
-            conditions: false,
-            allergies: false,
-            medications: false,
-            serviceRequests: { 'lab order': true },
-          },
-        });
+      await waitFor(() => {
+        expect(mockGetLabInvestigationsBundle).toHaveBeenCalled();
+      });
+    });
 
-        await waitFor(() => {
-          expect(mockGetLabInvestigationsBundle).toHaveBeenCalled();
-        });
+    it('does not refetch when event is for different patient', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+      render(renderLabInvestigations({ orderType: 'Lab Order' }));
+      await waitForDate();
+
+      mockGetLabInvestigationsBundle.mockClear();
+      eventCallback({
+        patientUUID: 'different-patient',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'lab order': true },
+        },
       });
 
-      it('does not refetch when event is for different patient', async () => {
-        eventCallback({
-          patientUUID: 'different-patient',
-          updatedResources: {
-            conditions: false,
-            allergies: false,
-            medications: false,
-            serviceRequests: { 'lab order': true },
-          },
-        });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(mockGetLabInvestigationsBundle).not.toHaveBeenCalled();
+    });
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        expect(mockGetLabInvestigationsBundle).not.toHaveBeenCalled();
+    it('does not refetch when different category was updated', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+      render(renderLabInvestigations({ orderType: 'Lab Order' }));
+      await waitForDate();
+
+      mockGetLabInvestigationsBundle.mockClear();
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: false,
+          allergies: false,
+          medications: false,
+          serviceRequests: { 'radiology order': true },
+        },
       });
 
-      it('does not refetch when different category was updated', async () => {
-        eventCallback({
-          patientUUID: 'patient-123',
-          updatedResources: {
-            conditions: false,
-            allergies: false,
-            medications: false,
-            serviceRequests: { 'radiology order': true },
-          },
-        });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(mockGetLabInvestigationsBundle).not.toHaveBeenCalled();
+    });
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        expect(mockGetLabInvestigationsBundle).not.toHaveBeenCalled();
+    it('does not refetch when serviceRequests is empty', async () => {
+      let eventCallback: (payload: any) => void = () => {};
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        eventCallback = callback;
+      });
+      render(renderLabInvestigations({ orderType: 'Lab Order' }));
+      await waitForDate();
+
+      mockGetLabInvestigationsBundle.mockClear();
+      eventCallback({
+        patientUUID: 'patient-123',
+        updatedResources: {
+          conditions: true,
+          allergies: false,
+          medications: false,
+          serviceRequests: {},
+        },
       });
 
-      it('does not refetch when serviceRequests is empty', async () => {
-        eventCallback({
-          patientUUID: 'patient-123',
-          updatedResources: {
-            conditions: true,
-            allergies: false,
-            medications: false,
-            serviceRequests: {},
-          },
-        });
-
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        expect(mockGetLabInvestigationsBundle).not.toHaveBeenCalled();
-      });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(mockGetLabInvestigationsBundle).not.toHaveBeenCalled();
     });
   });
 });

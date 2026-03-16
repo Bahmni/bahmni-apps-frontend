@@ -2,8 +2,6 @@ import {
   useTranslation,
   getCategoryUuidFromOrderTypes,
   getLabInvestigationsBundle,
-  getDiagnosticReports,
-  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -18,8 +16,6 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: jest.fn(),
   getCategoryUuidFromOrderTypes: jest.fn(),
   getLabInvestigationsBundle: jest.fn(),
-  getDiagnosticReports: jest.fn(),
-  useSubscribeConsultationSaved: jest.fn(),
 }));
 
 jest.mock('react-router-dom', () => ({
@@ -34,17 +30,23 @@ jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(),
 }));
 
-const mockUseTranslation = jest.mocked(useTranslation);
-const mockGetCategoryUuidFromOrderTypes = jest.mocked(
-  getCategoryUuidFromOrderTypes,
-);
-const mockGetLabTestBundle = jest.mocked(getLabInvestigationsBundle);
-const mockGetDiagnosticReports = jest.mocked(getDiagnosticReports);
-const mockUseNotification = jest.mocked(useNotification);
-const mockUsePatientUUID = jest.mocked(usePatientUUID);
-const mockUseSubscribeConsultationSaved = jest.mocked(
-  useSubscribeConsultationSaved,
-);
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
+>;
+
+const mockGetCategoryUuidFromOrderTypes =
+  getCategoryUuidFromOrderTypes as jest.MockedFunction<
+    typeof getCategoryUuidFromOrderTypes
+  >;
+const mockGetLabTestBundle = getLabInvestigationsBundle as jest.MockedFunction<
+  typeof getLabInvestigationsBundle
+>;
+const mockUseNotification = useNotification as jest.MockedFunction<
+  typeof useNotification
+>;
+const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
+  typeof usePatientUUID
+>;
 
 const createMockBundle = (
   serviceRequests: ServiceRequest[],
@@ -154,12 +156,6 @@ describe('LabInvestigation Integration Tests', () => {
       createMockBundle(mockServiceRequests),
       mockAddNotification,
     );
-    mockGetDiagnosticReports.mockResolvedValue({
-      resourceType: 'Bundle',
-      type: 'searchset',
-      entry: [],
-    });
-    mockUseSubscribeConsultationSaved.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -170,10 +166,13 @@ describe('LabInvestigation Integration Tests', () => {
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
-      expect(screen.getByText('Lipid Panel')).toBeInTheDocument();
-      expect(screen.getByText('Glucose Test')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
+      expect(screen.getByText(/March 24, 2025/i)).toBeInTheDocument();
     });
+
+    expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
+    expect(screen.getByText('Lipid Panel')).toBeInTheDocument();
+    expect(screen.getByText('Glucose Test')).toBeInTheDocument();
 
     expect(screen.getAllByText('Ordered by: Dr. John Doe')).toHaveLength(2);
     expect(screen.getByText('Ordered by: Dr. Jane Smith')).toBeInTheDocument();
@@ -213,24 +212,30 @@ describe('LabInvestigation Integration Tests', () => {
     expect(screen.queryByText('Complete Blood Count')).not.toBeInTheDocument();
   });
 
-  it('displays all tests in a flat list sorted by date descending', async () => {
+  it('handles accordion interaction correctly', async () => {
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
     });
 
-    // All three tests should be visible
-    expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
-    expect(screen.getByText('Lipid Panel')).toBeInTheDocument();
-    expect(screen.getByText('Glucose Test')).toBeInTheDocument();
+    const firstAccordionButton = screen.getByRole('button', {
+      name: /March 25, 2025/i,
+    });
+    const secondAccordionButton = screen.getByRole('button', {
+      name: /March 24, 2025/i,
+    });
+
+    // First accordion should be open by default
+    expect(firstAccordionButton).toHaveAttribute('aria-expanded', 'true');
+    expect(secondAccordionButton).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('displays priority information correctly', async () => {
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Lipid Panel')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
     });
 
     // Check for STAT priority (urgent) test
@@ -242,14 +247,14 @@ describe('LabInvestigation Integration Tests', () => {
     expect(screen.getByText('Glucose Test')).toBeInTheDocument();
   });
 
-  it('renders tests in correct order: newest date first, urgent before routine for same date', async () => {
+  it('renders tests in correct priority order within date groups', async () => {
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
     });
 
-    // The component should render all tests
+    // The component should render urgent tests before routine tests within each date group
     const testElements = screen.getAllByText(
       /Complete Blood Count|Lipid Panel/,
     );
@@ -260,12 +265,12 @@ describe('LabInvestigation Integration Tests', () => {
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
     });
 
-    // All tests show pending results since no diagnostic reports are returned
+    // Only tests in the open accordion should show pending results
     const pendingMessages = screen.getAllByText('Results Pending .... ....');
-    expect(pendingMessages).toHaveLength(3);
+    expect(pendingMessages).toHaveLength(2); // Two tests in first accordion
   });
 
   it('handles API errors gracefully', async () => {
@@ -282,7 +287,7 @@ describe('LabInvestigation Integration Tests', () => {
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
+      expect(screen.getByText(/March 25, 2025/i)).toBeInTheDocument();
     });
 
     mockGetLabTestBundle.mockResolvedValue(createMockBundle([]));
