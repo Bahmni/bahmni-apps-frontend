@@ -1,5 +1,6 @@
 import { HeaderSideNavItem } from '@bahmni/design-system';
-import { hasRequiredPrivileges, type UserPrivilege } from '@bahmni/services';
+import { UserPrivilege } from '@bahmni/services';
+import { useHasPrivilege } from '@bahmni/widgets';
 import { Dashboard } from '../providers/clinicalConfig/models';
 import {
   DashboardConfig,
@@ -30,7 +31,7 @@ export const filterControlsByPrivileges = (
   controls: ControlConfig[],
 ): ControlConfig[] => {
   return controls.filter((control) =>
-    hasRequiredPrivileges(userPrivileges, control.requiredPrivileges),
+    useHasPrivilege(control.requiredPrivileges),
   );
 };
 
