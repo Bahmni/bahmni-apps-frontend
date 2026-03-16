@@ -1,3 +1,4 @@
+import { hasRequiredPrivileges } from '@bahmni/services';
 import {
   validFullClinicalConfig,
   validDashboardConfig,
@@ -7,7 +8,6 @@ import { DashboardConfig, DashboardSectionConfig } from '../models';
 import {
   getDefaultDashboard,
   getSidebarItems,
-  hasRequiredPrivileges,
   filterControlsByPrivileges,
   filterSectionsByPrivileges,
 } from '../util';
@@ -171,6 +171,27 @@ describe('ConsultationPageService', () => {
         sections[1],
       ]);
       expect(result).toHaveLength(0);
+    });
+
+    it('removes sections that originally had empty controls array', () => {
+      const sectionsWithEmpty: DashboardSectionConfig[] = [
+        {
+          id: 'section-empty',
+          name: 'Empty Section',
+          icon: 'star',
+          controls: [],
+        },
+        {
+          id: 'section-with-controls',
+          name: 'Has Controls',
+          icon: 'heart',
+          controls: [{ type: 'widget', name: 'widget1' }],
+        },
+      ];
+      const result = filterSectionsByPrivileges(userPrivileges, sectionsWithEmpty);
+      const ids = result.map((s) => s.id);
+      expect(ids).toContain('section-with-controls');
+      expect(ids).not.toContain('section-empty');
     });
   });
 

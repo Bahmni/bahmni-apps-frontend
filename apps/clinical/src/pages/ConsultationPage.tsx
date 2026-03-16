@@ -158,7 +158,7 @@ const ConsultationPage: React.FC = () => {
 
   // Filter dashboard config sections and controls based on user privileges
   const filteredDashboardConfig = useMemo(() => {
-    if (!dashboardConfig || !userPrivileges) return dashboardConfig;
+    if (!dashboardConfig || !userPrivileges) return null;
     return {
       ...dashboardConfig,
       sections: filterSectionsByPrivileges(
@@ -261,7 +261,7 @@ const ConsultationPage: React.FC = () => {
               id="section-sticky-header"
               data-testid="section-sticky-header-test-id"
               role="region"
-              aria-label="section-sticky-header-aria-label"
+              aria-label={t('PATIENT_HEADER_SECTION')}
               className={styles.stickySection}
             >
               <PatientHeader

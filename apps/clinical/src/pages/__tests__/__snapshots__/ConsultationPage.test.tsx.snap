@@ -29,7 +29,7 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
       data-testid="mocked-main-display"
     >
       <div
-        aria-label="section-sticky-header-aria-label"
+        aria-label="Patient Information Section"
         class="stickySection"
         data-testid="section-sticky-header-test-id"
         id="section-sticky-header"

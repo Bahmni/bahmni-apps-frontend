@@ -1,5 +1,5 @@
 import { HeaderSideNavItem } from '@bahmni/design-system';
-import { UserPrivilege } from '@bahmni/services';
+import { hasRequiredPrivileges, type UserPrivilege } from '@bahmni/services';
 import { Dashboard } from '../providers/clinicalConfig/models';
 import {
   DashboardConfig,
@@ -7,11 +7,6 @@ import {
   ControlConfig,
 } from './models';
 
-/**
- * Gets the default dashboard from an array of dashboards
- * @param dashboards Array of dashboard configurations
- * @returns The default dashboard or null if none is found
- */
 export const getDefaultDashboard = (
   dashboards: Dashboard[],
 ): Dashboard | null => {
@@ -30,32 +25,6 @@ export const getDefaultDashboard = (
   return dashboards[0];
 };
 
-/**
- * Checks if user has all required privileges for a control
- * @param userPrivileges Array of user privilege names
- * @param requiredPrivileges Array of required privilege names
- * @returns true if user has all required privileges or if no privileges are required
- */
-export const hasRequiredPrivileges = (
-  userPrivileges: UserPrivilege[] | null | undefined,
-  requiredPrivileges: string[] | undefined,
-): boolean => {
-  if (!requiredPrivileges || requiredPrivileges.length === 0) {
-    return true;
-  }
-  if (!userPrivileges) {
-    return false;
-  }
-  const privilegeNames = new Set(userPrivileges.map((p) => p.name));
-  return requiredPrivileges.every((privilege) => privilegeNames.has(privilege));
-};
-
-/**
- * Filters controls based on user privileges
- * @param userPrivileges Array of user privileges
- * @param controls Array of controls to filter
- * @returns Filtered array of controls that user has access to
- */
 export const filterControlsByPrivileges = (
   userPrivileges: UserPrivilege[] | null | undefined,
   controls: ControlConfig[],
@@ -65,16 +34,12 @@ export const filterControlsByPrivileges = (
   );
 };
 
-/**
- * Filters sections based on visible controls after privilege filtering
- * @param userPrivileges Array of user privileges
- * @param sections Array of sections to filter
- * @returns Filtered array of sections that have at least one visible control
- */
 export const filterSectionsByPrivileges = (
   userPrivileges: UserPrivilege[] | null | undefined,
   sections: DashboardSectionConfig[],
 ): DashboardSectionConfig[] => {
+  // TODO (AC #4): Currently sections with no visible controls are removed entirely (binary show/hide).
+  // Future enhancement should support read-only mode for view-without-edit privileges.
   return sections
     .map((section) => ({
       ...section,

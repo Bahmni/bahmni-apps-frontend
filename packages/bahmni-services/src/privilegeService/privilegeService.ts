@@ -29,17 +29,17 @@ export const getCurrentUserPrivileges = async (): Promise<
  */
 export const hasPrivilege = (
   userPrivileges: UserPrivilege[] | null,
-  requiredPrivilege: string | string[],
+  privilegeName: string | string[],
 ): boolean => {
   if (!userPrivileges || userPrivileges.length === 0) {
     return false;
   }
 
-  const requiredPrivileges = Array.isArray(requiredPrivilege)
-    ? requiredPrivilege
-    : [requiredPrivilege];
+  const privilegeNames = Array.isArray(privilegeName)
+    ? privilegeName
+    : [privilegeName];
 
-  return userPrivileges.some((userPrivilege) =>
-    requiredPrivileges.includes(userPrivilege.name),
+  return userPrivileges.some((privilege) =>
+    privilegeNames.includes(privilege.name),
   );
 };

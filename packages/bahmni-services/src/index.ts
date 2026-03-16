@@ -248,6 +248,7 @@ export {
 export {
   getCurrentUserPrivileges,
   hasPrivilege,
+  hasRequiredPrivileges,
   type UserPrivilege,
   type SessionResponse,
 } from './privilegeService';
