@@ -13,9 +13,14 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
         data-testid="mocked-header-component"
       >
         <div
+          data-testid="sidenav-item-vitals"
+        >
+          VITALS_SECTION
+        </div>
+        <div
           data-testid="active-sidenav-item"
         >
-          none
+          vitals
         </div>
       </div>
     </div>
