@@ -37,7 +37,7 @@ jobs:
         run: yarn test:coverage
 
       - name: Upload coverage report as artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: test-output/jest/coverage/
@@ -50,6 +50,27 @@ jobs:
           format: "table"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
+
+  sonar:
+    name: SonarCloud Analysis
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: test-output/jest/coverage
+          merge-multiple: true
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
 
   deploy-coverage:
     needs: lint-and-test
