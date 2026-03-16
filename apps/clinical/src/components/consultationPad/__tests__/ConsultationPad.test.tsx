@@ -3,6 +3,7 @@ import {
   dispatchAuditEvent,
   dispatchConsultationSaved,
 } from '@bahmni/services';
+import { useHasPrivilege } from '@bahmni/widgets';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BundleEntry } from 'fhir/r4';
@@ -244,6 +245,7 @@ const mockUseObservationFormsSearch =
 const mockAddNotification = jest.fn();
 
 jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(() => ({
     addNotification: mockAddNotification,
   })),
@@ -254,6 +256,7 @@ jest.mock('@bahmni/widgets', () => ({
     error: null,
     refetch: jest.fn(),
   })),
+  useHasPrivilege: jest.fn(() => true),
   conditionsQueryKeys: jest.fn((patientUUID: string) => [
     'conditions',
     patientUUID,
@@ -691,7 +694,7 @@ describe('ConsultationPad', () => {
       renderWithProvider();
       // Dividers are rendered as hr elements (role="separator") between forms
       const dividers = screen.queryAllByRole('separator');
-      expect(dividers.length).toBeGreaterThanOrEqual(6); // At least 6 dividers for 7 forms
+      expect(dividers.length).toBeGreaterThanOrEqual(7); // At least 7 dividers for 7 forms
     });
 
     it('should render forms and dividers in the correct sequence', () => {
@@ -700,12 +703,10 @@ describe('ConsultationPad', () => {
       const content = screen.getByTestId('action-area-content');
       const children = Array.from(content.children);
 
-      // Dividers are now managed by ConsultationPad (container), not by individual forms.
-      // Expected sequence: Form → Divider → Form → Divider → ... → Form
-      // Total: 7 forms + 6 dividers = 13 children
-      expect(children).toHaveLength(13);
+      // Expected sequence: BasicForm → Divider → Form → Divider → ... → ObservationForms → Divider
+      // Total: 7 forms + 7 dividers = 14 children
+      expect(children).toHaveLength(14);
 
-      // Check that forms are at correct positions (every other element starting at 0)
       expect(children[0]).toHaveAttribute(
         'data-testid',
         'mock-encounter-details',
@@ -737,6 +738,28 @@ describe('ConsultationPad', () => {
         'data-testid',
         'mock-observation-forms',
       );
+      expect(children[13].tagName).toBe('HR'); // Divider
+    });
+
+    describe('Privilege Guard - Dividers', () => {
+      const mockUseHasPrivilege = jest.mocked(useHasPrivilege);
+
+      it('should hide divider after AllergiesForm when user lacks allergies privilege', () => {
+        mockUseHasPrivilege.mockImplementation((privilege: string[]) =>
+          privilege.includes('Add Allergies') ? false : true,
+        );
+        renderWithProvider();
+        const dividers = screen.queryAllByRole('separator');
+        expect(dividers).toHaveLength(6);
+      });
+
+      it('should hide all conditional dividers when user has no privileges', () => {
+        mockUseHasPrivilege.mockReturnValue(false);
+        renderWithProvider();
+        // Only the first unconditional divider (after BasicForm) remains
+        const dividers = screen.queryAllByRole('separator');
+        expect(dividers).toHaveLength(1);
+      });
     });
 
     it('should render action buttons with correct text', () => {

@@ -204,12 +204,12 @@ const ConsultationPage: React.FC = () => {
 
   const renderContextInformation = () => {
     const programUUID = searchParams.get(PROGRAM_UUID_SEARCH_PARAMS_KEY);
-    if (programUUID && clinicalConfig?.contextInformation?.program)
+    if (programUUID && clinicalConfig.contextInformation?.program)
       return (
         <ProgramDetails
           programUUID={programUUID}
           config={{
-            fields: clinicalConfig?.contextInformation?.program?.fields ?? [],
+            fields: clinicalConfig.contextInformation?.program?.fields ?? [],
           }}
         />
       );
