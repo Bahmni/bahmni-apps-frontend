@@ -4,10 +4,9 @@ import {
   FormCard,
   FormCardContainer,
   SkeletonText,
-  MenuItemDivider,
 } from '@bahmni/design-system';
-import { ObservationForm, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/services';
-import { useHasPrivilege } from '@bahmni/widgets';
+import { ObservationForm } from '@bahmni/services';
+import { useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
 import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -341,7 +340,6 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
             </FormCardContainer>
           </div>
         </Tile>
-        <MenuItemDivider />
       </>
     );
   },

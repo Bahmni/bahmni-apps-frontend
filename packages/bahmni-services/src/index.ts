@@ -250,7 +250,6 @@ export {
   hasPrivilege,
   type UserPrivilege,
   type SessionResponse,
-  CONSULTATION_PAD_PRIVILEGES,
 } from './privilegeService';
 export {
   fetchObservationForms,

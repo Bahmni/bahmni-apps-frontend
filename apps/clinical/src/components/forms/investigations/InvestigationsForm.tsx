@@ -4,7 +4,6 @@ import {
   BoxWHeader,
   SelectedItem,
   InlineNotification,
-  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -13,12 +12,12 @@ import {
   ORDER_TYPE_QUERY_KEY,
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
-  CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/services';
 import {
   usePatientUUID,
   useActivePractitioner,
   useHasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, {
@@ -445,7 +444,6 @@ const InvestigationsForm: React.FC = React.memo(() => {
             </BoxWHeader>
           ))}
       </Tile>
-      <MenuItemDivider />
     </>
   );
 });

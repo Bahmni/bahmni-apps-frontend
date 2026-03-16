@@ -669,7 +669,10 @@ describe('ConsultationPad', () => {
       renderWithProvider();
 
       const content = screen.getByTestId('action-area-content');
-      const forms = content.querySelectorAll('[data-testid]');
+      // Filter to forms only (skip dividers which are rendered as hr elements)
+      const forms = Array.from(content.querySelectorAll('[data-testid]')).filter(
+        (el) => el.tagName !== 'HR'
+      );
 
       expect(forms[0]).toHaveAttribute('data-testid', 'mock-encounter-details');
       expect(forms[1]).toHaveAttribute('data-testid', 'mock-allergies-form');
@@ -686,8 +689,9 @@ describe('ConsultationPad', () => {
 
     it('should render dividers between forms', () => {
       renderWithProvider();
-      const dividers = screen.queryAllByTestId('mock-divider');
-      expect(dividers).toHaveLength(0);
+      // Dividers are rendered as hr elements (role="separator") between forms
+      const dividers = screen.queryAllByRole('separator');
+      expect(dividers.length).toBeGreaterThanOrEqual(6); // At least 6 dividers for 7 forms
     });
 
     it('should render forms and dividers in the correct sequence', () => {
@@ -696,32 +700,40 @@ describe('ConsultationPad', () => {
       const content = screen.getByTestId('action-area-content');
       const children = Array.from(content.children);
 
-      // Each form owns its own divider (rendered inside the component).
-      // In tests the form components are mocked without dividers.
-      expect(children).toHaveLength(7); // 7 forms, no dividers
+      // Dividers are now managed by ConsultationPad (container), not by individual forms.
+      // Expected sequence: Form → Divider → Form → Divider → ... → Form
+      // Total: 7 forms + 6 dividers = 13 children
+      expect(children).toHaveLength(13);
 
+      // Check that forms are at correct positions (every other element starting at 0)
       expect(children[0]).toHaveAttribute(
         'data-testid',
         'mock-encounter-details',
       );
-      expect(children[1]).toHaveAttribute('data-testid', 'mock-allergies-form');
-      expect(children[2]).toHaveAttribute(
+      expect(children[1].tagName).toBe('HR'); // Divider
+      expect(children[2]).toHaveAttribute('data-testid', 'mock-allergies-form');
+      expect(children[3].tagName).toBe('HR'); // Divider
+      expect(children[4]).toHaveAttribute(
         'data-testid',
         'mock-investigations-form',
       );
-      expect(children[3]).toHaveAttribute(
+      expect(children[5].tagName).toBe('HR'); // Divider
+      expect(children[6]).toHaveAttribute(
         'data-testid',
         'mock-conditions-diagnoses',
       );
-      expect(children[4]).toHaveAttribute(
+      expect(children[7].tagName).toBe('HR'); // Divider
+      expect(children[8]).toHaveAttribute(
         'data-testid',
         'mock-medications-form',
       );
-      expect(children[5]).toHaveAttribute(
+      expect(children[9].tagName).toBe('HR'); // Divider
+      expect(children[10]).toHaveAttribute(
         'data-testid',
         'mock-vaccination-forms',
       );
-      expect(children[6]).toHaveAttribute(
+      expect(children[11].tagName).toBe('HR'); // Divider
+      expect(children[12]).toHaveAttribute(
         'data-testid',
         'mock-observation-forms',
       );

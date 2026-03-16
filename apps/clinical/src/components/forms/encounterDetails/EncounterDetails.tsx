@@ -5,7 +5,6 @@ import {
   Grid,
   Column,
   SkeletonText,
-  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -351,7 +350,6 @@ const EncounterDetails: React.FC<{
           </DatePicker>
         </Column>
       </Grid>
-      <MenuItemDivider />
     </>
   );
 };

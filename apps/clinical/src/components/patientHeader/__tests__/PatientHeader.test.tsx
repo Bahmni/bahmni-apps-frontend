@@ -12,20 +12,18 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: jest.fn(),
 }));
 // Mock the PatientDetails component
-jest.mock('@bahmni/widgets', () => {
-  return {
-    __esModule: true,
-    PatientDetails: () => (
-      <div data-testid="patient-details-mock">PatientDetails Mock</div>
-    ),
-    useActivePractitioner: jest.fn(() => ({
-      uuid: 'active-practitioner-uuid',
-      practitioner: { uuid: 'active-practitioner-uuid' },
-    })),
-    usePatientUUID: jest.fn(() => 'patient-uuid'),
-    useHasPrivilege: jest.fn(() => true),
-  };
-});
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
+  PatientDetails: () => (
+    <div data-testid="patient-details-mock">PatientDetails Mock</div>
+  ),
+  useActivePractitioner: jest.fn(() => ({
+    uuid: 'active-practitioner-uuid',
+    practitioner: { uuid: 'active-practitioner-uuid' },
+  })),
+  usePatientUUID: jest.fn(() => 'patient-uuid'),
+  useHasPrivilege: jest.fn(() => true),
+}));
 
 jest.mock('../../../hooks/useEncounterSession', () => ({
   useEncounterSession: jest.fn(() => ({

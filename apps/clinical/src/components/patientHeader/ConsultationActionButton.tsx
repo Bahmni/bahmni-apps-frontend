@@ -1,6 +1,6 @@
 import { Button } from '@bahmni/design-system';
-import { useTranslation, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/services';
-import { useActivePractitioner, useHasPrivilege } from '@bahmni/widgets';
+import { useTranslation } from '@bahmni/services';
+import { useActivePractitioner, useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
 import React from 'react';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
 import styles from './styles/PatientHeader.module.scss';

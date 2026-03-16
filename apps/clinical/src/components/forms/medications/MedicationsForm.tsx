@@ -5,7 +5,6 @@ import {
   DropdownSkeleton,
   Tile,
   InlineNotification,
-  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   getConfig,
@@ -14,12 +13,12 @@ import {
   getPatientMedicationBundle,
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
-  CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/services';
 import {
   useNotification,
   usePatientUUID,
   useHasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { Bundle } from 'fhir/r4';
@@ -325,7 +324,6 @@ const MedicationsForm: React.FC = React.memo(() => {
             </BoxWHeader>
           )}
       </Tile>
-      <MenuItemDivider />
     </>
   );
 });

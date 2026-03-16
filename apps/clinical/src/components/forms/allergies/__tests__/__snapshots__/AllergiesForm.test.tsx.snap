@@ -75,10 +75,6 @@ exports[`AllergiesForm Snapshots should match snapshot with no allergies 1`] = `
       </div>
     </div>
   </div>
-  <li
-    class="cds--menu-item-divider"
-    role="separator"
-  />
 </div>
 `;
 
@@ -399,9 +395,5 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
       </div>
     </div>
   </div>
-  <li
-    class="cds--menu-item-divider"
-    role="separator"
-  />
 </div>
 `;

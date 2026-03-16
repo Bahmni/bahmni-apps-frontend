@@ -1,4 +1,4 @@
-import { Column, Grid, ActionArea } from '@bahmni/design-system';
+import { Column, Grid, ActionArea, MenuItemDivider } from '@bahmni/design-system';
 import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
@@ -442,11 +442,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({ onClose }) => {
   const consultationContent = (
     <>
       <BasicForm practitionerState={practitionerState} />
+      <MenuItemDivider />
       <AllergiesForm />
+      <MenuItemDivider />
       <InvestigationsForm />
+      <MenuItemDivider />
       <ConditionsAndDiagnoses />
+      <MenuItemDivider />
       <MedicationsForm />
+      <MenuItemDivider />
       <VaccinationForm />
+      <MenuItemDivider />
       <ObservationForms
         onFormSelect={handleFormSelection}
         selectedForms={selectedForms}

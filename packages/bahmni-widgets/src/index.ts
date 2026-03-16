@@ -30,6 +30,7 @@ export { useHasPrivilege } from './userPrivileges/useHasPrivilege';
 
 // User Privileges
 export { UserPrivilegeProvider } from './userPrivileges/UserPrivilegeProvider';
+export { CONSULTATION_PAD_PRIVILEGES } from './userPrivileges/consultationPadPrivileges';
 
 // Active Practitioner
 export {

@@ -4,19 +4,18 @@ import {
   BoxWHeader,
   SelectedItem,
   InlineNotification,
-  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   useTranslation,
   type ConceptSearch,
   getConditions,
   getPatientDiagnoses,
-  CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/services';
 import {
   useNotification,
   usePatientUUID,
   useHasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -305,7 +304,6 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
           </BoxWHeader>
         )}
       </Tile>
-      <MenuItemDivider />
     </>
   );
 });

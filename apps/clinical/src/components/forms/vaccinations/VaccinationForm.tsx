@@ -5,7 +5,6 @@ import {
   DropdownSkeleton,
   Tile,
   InlineNotification,
-  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -15,9 +14,8 @@ import {
   ConsultationSavedEventPayload,
   getConfig,
   fetchMedicationOrdersMetadata,
-  CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/services';
-import { usePatientUUID, useHasPrivilege } from '@bahmni/widgets';
+import { usePatientUUID, useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { Bundle } from 'fhir/r4';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
@@ -342,7 +340,6 @@ const VaccinationForm: React.FC = React.memo(() => {
             </BoxWHeader>
           )}
       </Tile>
-      <MenuItemDivider />
     </>
   );
 });
