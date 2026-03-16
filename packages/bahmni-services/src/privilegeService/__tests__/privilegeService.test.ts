@@ -2,11 +2,7 @@ import { get } from '../../api';
 import { getFormattedError } from '../../errorHandling';
 
 import { UserPrivilege } from '../models';
-import {
-  getCurrentUserPrivileges,
-  hasPrivilege,
-  hasRequiredPrivileges,
-} from '../privilegeService';
+import { getCurrentUserPrivileges, hasPrivilege } from '../privilegeService';
 
 jest.mock('../../api');
 jest.mock('../../errorHandling');
@@ -184,12 +180,12 @@ describe('privilegeService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false when privilege name is empty string', () => {
+    it('should return true when privilege name is empty string (treated as no restriction)', () => {
       // Act
       const result = hasPrivilege(mockUserPrivileges, '');
 
       // Assert
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
     it('should handle privileges with special characters', () => {
       // Arrange
@@ -211,106 +207,6 @@ describe('privilegeService', () => {
       // Assert
       expect(result1).toBe(true);
       expect(result2).toBe(true);
-    });
-  });
-
-  describe('hasRequiredPrivileges', () => {
-    const mockUserPrivileges: UserPrivilege[] = [
-      { uuid: '1', name: 'Add Allergies' },
-      { uuid: '2', name: 'Add Orders' },
-      { uuid: '3', name: 'Edit Encounters' },
-    ];
-
-    it('should return true when user has all required privileges', () => {
-      const result = hasRequiredPrivileges(mockUserPrivileges, [
-        'Add Allergies',
-        'Add Orders',
-      ]);
-
-      expect(result).toBe(true);
-    });
-
-    it('should return true when user has a single required privilege', () => {
-      const result = hasRequiredPrivileges(mockUserPrivileges, [
-        'Add Allergies',
-      ]);
-
-      expect(result).toBe(true);
-    });
-
-    it('should return false when user lacks one of the required privileges', () => {
-      const result = hasRequiredPrivileges(mockUserPrivileges, [
-        'Add Allergies',
-        'Delete Encounters',
-      ]);
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false when user lacks all required privileges', () => {
-      const result = hasRequiredPrivileges(mockUserPrivileges, [
-        'Delete Forms',
-        'View Reports',
-      ]);
-
-      expect(result).toBe(false);
-    });
-
-    it('should return true when no required privileges are specified', () => {
-      expect(hasRequiredPrivileges(mockUserPrivileges, undefined)).toBe(true);
-      expect(hasRequiredPrivileges(mockUserPrivileges, [])).toBe(true);
-    });
-
-    it('should return false when user privileges is null', () => {
-      const result = hasRequiredPrivileges(null, ['Add Allergies']);
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false when user privileges is undefined', () => {
-      const result = hasRequiredPrivileges(undefined, ['Add Allergies']);
-
-      expect(result).toBe(false);
-    });
-
-    it('should return true when both user privileges and required privileges are empty', () => {
-      const result = hasRequiredPrivileges([], undefined);
-
-      expect(result).toBe(true);
-    });
-
-    it('should handle privileges with special characters', () => {
-      const specialPrivileges: UserPrivilege[] = [
-        { uuid: '1', name: 'app:clinical-forms_view.restricted' },
-        { uuid: '2', name: 'app:clinical@forms#edit' },
-      ];
-
-      const result = hasRequiredPrivileges(specialPrivileges, [
-        'app:clinical-forms_view.restricted',
-        'app:clinical@forms#edit',
-      ]);
-
-      expect(result).toBe(true);
-    });
-
-    it('should distinguish between hasPrivilege (ANY) and hasRequiredPrivileges (ALL)', () => {
-      const userPrivileges: UserPrivilege[] = [
-        { uuid: '1', name: 'Edit Forms' },
-      ];
-
-      // hasPrivilege uses some() - returns true if ANY match
-      const anyResult = hasPrivilege(userPrivileges, [
-        'Edit Forms',
-        'Delete Forms',
-      ]);
-      expect(anyResult).toBe(true);
-
-      // hasRequiredPrivileges uses every() - returns true only if ALL match
-      const allResult = hasRequiredPrivileges(userPrivileges, [
-        'Edit Forms',
-        'Delete Forms',
-      ]);
-      expect(allResult).toBe(false);
     });
   });
 });

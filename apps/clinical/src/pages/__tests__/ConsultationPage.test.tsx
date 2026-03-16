@@ -1,5 +1,9 @@
 import { getConfig } from '@bahmni/services';
-import { useNotification, useUserPrivilege } from '@bahmni/widgets';
+import {
+  useHasPrivilege,
+  useNotification,
+  useUserPrivilege,
+} from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -131,6 +135,7 @@ jest.mock('@bahmni/design-system', () => ({
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(),
+  useHasPrivilege: jest.fn(),
   useNotification: jest.fn(),
 }));
 
@@ -206,6 +211,8 @@ describe('ConsultationPage', () => {
         { uuid: '2', name: 'EDIT_ENCOUNTERS' },
       ],
     });
+
+    (useHasPrivilege as jest.Mock).mockReturnValue(true);
 
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: jest.fn(),
@@ -351,6 +358,13 @@ describe('ConsultationPage', () => {
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: [{ uuid: '1', name: 'Edit Allergies' }],
       });
+      (useHasPrivilege as jest.Mock).mockImplementation(
+        (privilege: string | string[] | undefined) => {
+          if (!privilege || privilege.length === 0) return true;
+          const names = Array.isArray(privilege) ? privilege : [privilege];
+          return names.includes('Edit Allergies');
+        },
+      );
 
       renderWithProvider();
 
@@ -381,6 +395,12 @@ describe('ConsultationPage', () => {
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: [],
       });
+      (useHasPrivilege as jest.Mock).mockImplementation(
+        (privilege: string | string[] | undefined) => {
+          if (!privilege || privilege.length === 0) return true;
+          return false;
+        },
+      );
 
       renderWithProvider();
 
@@ -416,6 +436,7 @@ describe('ConsultationPage', () => {
           { uuid: '2', name: 'Edit Medications' },
         ],
       });
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
 
       renderWithProvider();
 
@@ -450,6 +471,7 @@ describe('ConsultationPage', () => {
       (useUserPrivilege as jest.Mock).mockReturnValue({
         userPrivileges: [],
       });
+      (useHasPrivilege as jest.Mock).mockReturnValue(false);
 
       renderWithProvider();
 

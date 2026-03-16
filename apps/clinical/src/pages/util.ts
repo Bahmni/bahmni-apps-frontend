@@ -1,5 +1,4 @@
 import { HeaderSideNavItem } from '@bahmni/design-system';
-import { UserPrivilege } from '@bahmni/services';
 import { useHasPrivilege } from '@bahmni/widgets';
 import { Dashboard } from '../providers/clinicalConfig/models';
 import {
@@ -27,7 +26,6 @@ export const getDefaultDashboard = (
 };
 
 export const filterControlsByPrivileges = (
-  userPrivileges: UserPrivilege[] | null | undefined,
   controls: ControlConfig[],
 ): ControlConfig[] => {
   return controls.filter((control) =>
@@ -36,26 +34,16 @@ export const filterControlsByPrivileges = (
 };
 
 export const filterSectionsByPrivileges = (
-  userPrivileges: UserPrivilege[] | null | undefined,
   sections: DashboardSectionConfig[],
 ): DashboardSectionConfig[] => {
-  // TODO (AC #4): Currently sections with no visible controls are removed entirely (binary show/hide).
-  // Future enhancement should support read-only mode for view-without-edit privileges.
   return sections
     .map((section) => ({
       ...section,
-      controls: filterControlsByPrivileges(userPrivileges, section.controls),
+      controls: filterControlsByPrivileges(section.controls),
     }))
     .filter((section) => section.controls.length > 0);
 };
 
-/**
- * Converts dashboard sections to sidebar items, filtering by user privileges
- * @param dashboardConfig The dashboard configuration containing sections
- * @param t Translation function
- * @param userPrivileges User privileges for filtering
- * @returns Array of sidebar items that user has access to
- */
 export const getSidebarItems = (
   dashboardConfig: DashboardConfig,
   t: (key: string) => string,

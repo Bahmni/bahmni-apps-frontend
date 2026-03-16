@@ -295,6 +295,7 @@
   "OBSERVATIONS_RECORDED_BY": "Grabado Por {{provider}} ",
   "PARTICIPANT": "Partícipe(es)",
   "PATIENT_HEADER_LABEL": "Cabecera del Paciente",
+  "PATIENT_HEADER_SECTION": "Sección de Información del Paciente",
   "PINNED_FORMS_INVALID_DATA": "Datos de formularios anclados no válidos",
   "PINNED_FORMS_USER_NOT_FOUND": "Usuario no encontrado",
   "PROGRAM_DETAILS_STATE_CHANGE_ERROR_TITLE": "Error",

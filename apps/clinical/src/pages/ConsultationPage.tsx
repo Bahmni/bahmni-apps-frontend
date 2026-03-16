@@ -156,15 +156,11 @@ const ConsultationPage: React.FC = () => {
     }
   }, [dashboardConfigError]);
 
-  // Filter dashboard config sections and controls based on user privileges
   const filteredDashboardConfig = useMemo(() => {
     if (!dashboardConfig || !userPrivileges) return null;
     return {
       ...dashboardConfig,
-      sections: filterSectionsByPrivileges(
-        userPrivileges,
-        dashboardConfig.sections,
-      ),
+      sections: filterSectionsByPrivileges(dashboardConfig.sections),
     };
   }, [dashboardConfig, userPrivileges]);
 
