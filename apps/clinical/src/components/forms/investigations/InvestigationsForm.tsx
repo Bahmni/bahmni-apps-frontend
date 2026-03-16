@@ -363,88 +363,86 @@ const InvestigationsForm: React.FC = React.memo(() => {
   if (!canAddInvestigations) return null;
 
   return (
-    <>
-      <Tile
-        className={styles.investigationsFormTile}
-        data-testid="investigations-form-tile"
+    <Tile
+      className={styles.investigationsFormTile}
+      data-testid="investigations-form-tile"
+    >
+      <div
+        className={styles.investigationsFormTitle}
+        data-testid="investigations-form-title"
       >
-        <div
-          className={styles.investigationsFormTitle}
-          data-testid="investigations-form-title"
-        >
-          {t('INVESTIGATIONS_FORM_TITLE')}
-        </div>
-        <ComboBox
-          id="investigations-procedures-search"
-          data-testid="investigations-search-combobox"
-          placeholder={t('INVESTIGATIONS_SEARCH_PLACEHOLDER')}
-          items={filteredInvestigations}
-          itemToString={(item) => item?.display ?? ''}
-          onChange={({ selectedItem }) => handleChange(selectedItem)}
-          onInputChange={(input) => setSearchTerm(input)}
-          selectedItem={selectedInvestigationItem}
-          clearSelectedOnChange
-          allowCustomValue
-          autoAlign
-          aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}
-          size="md"
+        {t('INVESTIGATIONS_FORM_TITLE')}
+      </div>
+      <ComboBox
+        id="investigations-procedures-search"
+        data-testid="investigations-search-combobox"
+        placeholder={t('INVESTIGATIONS_SEARCH_PLACEHOLDER')}
+        items={filteredInvestigations}
+        itemToString={(item) => item?.display ?? ''}
+        onChange={({ selectedItem }) => handleChange(selectedItem)}
+        onInputChange={(input) => setSearchTerm(input)}
+        selectedItem={selectedInvestigationItem}
+        clearSelectedOnChange
+        allowCustomValue
+        autoAlign
+        aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}
+        size="md"
+      />
+
+      {showDuplicateNotification && (
+        <InlineNotification
+          kind="error"
+          lowContrast
+          subtitle={
+            duplicateCategory?.toLowerCase().includes('procedure')
+              ? t('PROCEDURE_ALREADY_ADDED')
+              : t('INVESTIGATION_ALREADY_ADDED')
+          }
+          onClose={() => {
+            setShowDuplicateNotification(false);
+            setDuplicateInvestigationId(null);
+            setDuplicateCategory(null);
+            setDuplicateCategoryCode(null);
+            notificationDismissedRef.current = true;
+          }}
+          hideCloseButton={false}
+          className={styles.duplicateNotification}
         />
+      )}
 
-        {showDuplicateNotification && (
-          <InlineNotification
-            kind="error"
-            lowContrast
-            subtitle={
-              duplicateCategory?.toLowerCase().includes('procedure')
-                ? t('PROCEDURE_ALREADY_ADDED')
-                : t('INVESTIGATION_ALREADY_ADDED')
-            }
-            onClose={() => {
-              setShowDuplicateNotification(false);
-              setDuplicateInvestigationId(null);
-              setDuplicateCategory(null);
-              setDuplicateCategoryCode(null);
-              notificationDismissedRef.current = true;
-            }}
-            hideCloseButton={false}
-            className={styles.duplicateNotification}
-          />
-        )}
-
-        {selectedServiceRequests &&
-          selectedServiceRequests.size > 0 &&
-          Array.from(selectedServiceRequests.keys()).map((category) => (
-            <BoxWHeader
-              key={category}
-              title={t('INVESTIGATIONS_ADDED', {
-                investigationType: translateOrderType(category),
-              })}
-              className={styles.addedInvestigationsBox}
-            >
-              {selectedServiceRequests.get(category)?.map((serviceRequest) => (
-                <SelectedItem
+      {selectedServiceRequests &&
+        selectedServiceRequests.size > 0 &&
+        Array.from(selectedServiceRequests.keys()).map((category) => (
+          <BoxWHeader
+            key={category}
+            title={t('INVESTIGATIONS_ADDED', {
+              investigationType: translateOrderType(category),
+            })}
+            className={styles.addedInvestigationsBox}
+          >
+            {selectedServiceRequests.get(category)?.map((serviceRequest) => (
+              <SelectedItem
+                key={serviceRequest.id}
+                onClose={() =>
+                  removeServiceRequest(category, serviceRequest.id)
+                }
+                className={styles.selectedInvestigationItem}
+              >
+                <SelectedInvestigationItem
                   key={serviceRequest.id}
-                  onClose={() =>
-                    removeServiceRequest(category, serviceRequest.id)
+                  investigation={serviceRequest}
+                  onPriorityChange={(priority) =>
+                    updatePriority(category, serviceRequest.id, priority)
                   }
-                  className={styles.selectedInvestigationItem}
-                >
-                  <SelectedInvestigationItem
-                    key={serviceRequest.id}
-                    investigation={serviceRequest}
-                    onPriorityChange={(priority) =>
-                      updatePriority(category, serviceRequest.id, priority)
-                    }
-                    onNoteChange={(note) =>
-                      updateNote(category, serviceRequest.id, note)
-                    }
-                  />
-                </SelectedItem>
-              ))}
-            </BoxWHeader>
-          ))}
-      </Tile>
-    </>
+                  onNoteChange={(note) =>
+                    updateNote(category, serviceRequest.id, note)
+                  }
+                />
+              </SelectedItem>
+            ))}
+          </BoxWHeader>
+        ))}
+    </Tile>
   );
 });
 

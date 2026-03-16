@@ -227,84 +227,82 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   if (!canAddDiagnoses) return null;
 
   return (
-    <>
-      <Tile
-        className={styles.conditionsAndDiagnosesTile}
-        data-testid="conditions-and-diagnoses-tile"
+    <Tile
+      className={styles.conditionsAndDiagnosesTile}
+      data-testid="conditions-and-diagnoses-tile"
+    >
+      <div
+        className={styles.conditionsAndDiagnosesTitle}
+        data-testid="conditions-and-diagnoses-title"
       >
-        <div
-          className={styles.conditionsAndDiagnosesTitle}
-          data-testid="conditions-and-diagnoses-title"
-        >
-          {t('CONDITIONS_AND_DIAGNOSES_FORM_TITLE')}
-        </div>
-        <ComboBox
-          id="diagnoses-search"
-          data-testid="diagnoses-search-combobox"
-          placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
-          items={filteredSearchResults}
-          itemToString={(item) => item?.conceptName ?? ''}
-          onChange={(data) => handleOnChange(data.selectedItem ?? null)}
-          onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-          selectedItem={selectedDiagnosisItem}
-          clearSelectedOnChange
-          allowCustomValue
-          size="md"
-          autoAlign
-          aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
+        {t('CONDITIONS_AND_DIAGNOSES_FORM_TITLE')}
+      </div>
+      <ComboBox
+        id="diagnoses-search"
+        data-testid="diagnoses-search-combobox"
+        placeholder={t('DIAGNOSES_SEARCH_PLACEHOLDER')}
+        items={filteredSearchResults}
+        itemToString={(item) => item?.conceptName ?? ''}
+        onChange={(data) => handleOnChange(data.selectedItem ?? null)}
+        onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+        selectedItem={selectedDiagnosisItem}
+        clearSelectedOnChange
+        allowCustomValue
+        size="md"
+        autoAlign
+        aria-label={t('DIAGNOSES_SEARCH_ARIA_LABEL')}
+      />
+      {showDuplicateNotification && (
+        <InlineNotification
+          kind="error"
+          lowContrast
+          subtitle={t('DIAGNOSIS_ALREADY_ADDED')}
+          onClose={() => setShowDuplicateNotification(false)}
+          hideCloseButton={false}
+          className={styles.duplicateNotification}
         />
-        {showDuplicateNotification && (
-          <InlineNotification
-            kind="error"
-            lowContrast
-            subtitle={t('DIAGNOSIS_ALREADY_ADDED')}
-            onClose={() => setShowDuplicateNotification(false)}
-            hideCloseButton={false}
-            className={styles.duplicateNotification}
-          />
-        )}
-        {selectedDiagnoses && selectedDiagnoses.length > 0 && (
-          <BoxWHeader
-            title={t('DIAGNOSES_ADDED_DIAGNOSES')}
-            className={styles.conditionsAndDiagnosesBox}
-          >
-            {selectedDiagnoses.map((diagnosis) => (
-              <SelectedItem
-                key={diagnosis.id}
-                className={styles.selectedDiagnosisItem}
-                onClose={() => removeDiagnosis(diagnosis.id)}
-              >
-                <SelectedDiagnosisItem
-                  diagnosis={diagnosis}
-                  updateCertainty={updateCertainty}
-                  onMarkAsCondition={() => markAsCondition(diagnosis.id)}
-                  doesConditionExist={isConditionDuplicate(diagnosis.id)}
-                />
-              </SelectedItem>
-            ))}
-          </BoxWHeader>
-        )}
-        {selectedConditions && selectedConditions.length > 0 && (
-          <BoxWHeader
-            title={t('CONDITIONS_SECTION_TITLE')}
-            className={styles.conditionsAndDiagnosesBox}
-          >
-            {selectedConditions.map((condition) => (
-              <SelectedItem
-                key={condition.id}
-                className={styles.selectedConditionItem}
-                onClose={() => removeCondition(condition.id)}
-              >
-                <SelectedConditionItem
-                  condition={condition}
-                  updateConditionDuration={updateConditionDuration}
-                />
-              </SelectedItem>
-            ))}
-          </BoxWHeader>
-        )}
-      </Tile>
-    </>
+      )}
+      {selectedDiagnoses && selectedDiagnoses.length > 0 && (
+        <BoxWHeader
+          title={t('DIAGNOSES_ADDED_DIAGNOSES')}
+          className={styles.conditionsAndDiagnosesBox}
+        >
+          {selectedDiagnoses.map((diagnosis) => (
+            <SelectedItem
+              key={diagnosis.id}
+              className={styles.selectedDiagnosisItem}
+              onClose={() => removeDiagnosis(diagnosis.id)}
+            >
+              <SelectedDiagnosisItem
+                diagnosis={diagnosis}
+                updateCertainty={updateCertainty}
+                onMarkAsCondition={() => markAsCondition(diagnosis.id)}
+                doesConditionExist={isConditionDuplicate(diagnosis.id)}
+              />
+            </SelectedItem>
+          ))}
+        </BoxWHeader>
+      )}
+      {selectedConditions && selectedConditions.length > 0 && (
+        <BoxWHeader
+          title={t('CONDITIONS_SECTION_TITLE')}
+          className={styles.conditionsAndDiagnosesBox}
+        >
+          {selectedConditions.map((condition) => (
+            <SelectedItem
+              key={condition.id}
+              className={styles.selectedConditionItem}
+              onClose={() => removeCondition(condition.id)}
+            >
+              <SelectedConditionItem
+                condition={condition}
+                updateConditionDuration={updateConditionDuration}
+              />
+            </SelectedItem>
+          ))}
+        </BoxWHeader>
+      )}
+    </Tile>
   );
 });
 

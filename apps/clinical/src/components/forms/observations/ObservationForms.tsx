@@ -225,122 +225,119 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     if (!canAddObservations) return null;
 
     return (
-      <>
-        <Tile
-          className={styles.observationFormsTile}
-          data-testid="observation-forms-tile"
+      <Tile
+        className={styles.observationFormsTile}
+        data-testid="observation-forms-tile"
+      >
+        <div
+          className={styles.observationFormsTitle}
+          data-testid="observation-forms-title"
         >
-          <div
-            className={styles.observationFormsTitle}
-            data-testid="observation-forms-title"
-          >
-            {t('OBSERVATION_FORMS_SECTION_TITLE')}
-          </div>
+          {t('OBSERVATION_FORMS_SECTION_TITLE')}
+        </div>
 
-          <div data-testid="observation-forms-search-section">
-            <ComboBox
-              id="observation-forms-search"
-              placeholder={t('OBSERVATION_FORMS_SEARCH_PLACEHOLDER')}
-              items={searchResults}
-              itemToString={(item) => item?.label ?? ''}
-              selectedItem={selectedItem}
-              onChange={handleOnChange}
-              onInputChange={handleSearch}
-              clearSelectedOnChange
-              allowCustomValue
-              size="md"
-              autoAlign
-              disabled={isSearchLoading}
-              aria-label={t('OBSERVATION_FORMS_SEARCH_ARIA_LABEL')}
-              data-testid="observation-forms-search-combobox"
-            />
-          </div>
+        <div data-testid="observation-forms-search-section">
+          <ComboBox
+            id="observation-forms-search"
+            placeholder={t('OBSERVATION_FORMS_SEARCH_PLACEHOLDER')}
+            items={searchResults}
+            itemToString={(item) => item?.label ?? ''}
+            selectedItem={selectedItem}
+            onChange={handleOnChange}
+            onInputChange={handleSearch}
+            clearSelectedOnChange
+            allowCustomValue
+            size="md"
+            autoAlign
+            disabled={isSearchLoading}
+            aria-label={t('OBSERVATION_FORMS_SEARCH_ARIA_LABEL')}
+            data-testid="observation-forms-search-combobox"
+          />
+        </div>
 
-          {selectedForms && selectedForms.length > 0 && (
-            <div data-testid="added-forms-section">
-              <FormCardContainer
-                title={t('OBSERVATION_FORMS_ADDED_FORMS')}
-                dataTestId="added-forms-container"
-              >
-                {selectedForms.map((form: ObservationForm) => {
-                  const savedFormData = getFormData(form.uuid);
-                  const validationErrorType =
-                    savedFormData?.validationErrorType;
-
-                  // Show error indicator for all validation error types
-                  const showError =
-                    validationErrorType === VALIDATION_STATE_MANDATORY ||
-                    validationErrorType === VALIDATION_STATE_INVALID ||
-                    validationErrorType === VALIDATION_STATE_EMPTY ||
-                    validationErrorType === VALIDATION_STATE_SCRIPT_ERROR;
-                  const errorMessage = showError
-                    ? t(
-                        `OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_${validationErrorType.toUpperCase()}`,
-                      )
-                    : undefined;
-
-                  return (
-                    <FormCard
-                      key={form.uuid}
-                      title={form.name}
-                      icon="fa-file-lines"
-                      actionIcon="fa-times"
-                      onOpen={() => onFormSelect?.(form)}
-                      onActionClick={() => onRemoveForm?.(form.uuid)}
-                      dataTestId={`selected-form-${form.name}`}
-                      ariaLabel={`Open ${form.name} form`}
-                      errorMessage={errorMessage}
-                    />
-                  );
-                })}
-              </FormCardContainer>
-            </div>
-          )}
-
-          <div data-testid="pinned-forms-section">
+        {selectedForms && selectedForms.length > 0 && (
+          <div data-testid="added-forms-section">
             <FormCardContainer
-              title={t('DEFAULT_AND_PINNED_FORMS_TITLE')}
-              showNoFormsMessage={
-                !isAllFormsLoading &&
-                allPinnedForms.length === 0 &&
-                defaultPinnedForms.length === 0
-              }
-              noFormsMessage={t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
-              dataTestId="pinned-forms-container"
+              title={t('OBSERVATION_FORMS_ADDED_FORMS')}
+              dataTestId="added-forms-container"
             >
-              {isAllFormsLoading || isPinnedFormsLoading ? (
-                <SkeletonText
-                  width="100%"
-                  lineCount={3}
-                  testId="pinned-forms-skeleton"
-                />
-              ) : (
-                allPinnedForms.map((form: ObservationForm) => (
+              {selectedForms.map((form: ObservationForm) => {
+                const savedFormData = getFormData(form.uuid);
+                const validationErrorType = savedFormData?.validationErrorType;
+
+                // Show error indicator for all validation error types
+                const showError =
+                  validationErrorType === VALIDATION_STATE_MANDATORY ||
+                  validationErrorType === VALIDATION_STATE_INVALID ||
+                  validationErrorType === VALIDATION_STATE_EMPTY ||
+                  validationErrorType === VALIDATION_STATE_SCRIPT_ERROR;
+                const errorMessage = showError
+                  ? t(
+                      `OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_${validationErrorType.toUpperCase()}`,
+                    )
+                  : undefined;
+
+                return (
                   <FormCard
                     key={form.uuid}
                     title={form.name}
                     icon="fa-file-lines"
-                    actionIcon={
-                      !DEFAULT_FORM_API_NAMES.includes(form.name)
-                        ? 'fa-thumbtack'
-                        : undefined
-                    }
+                    actionIcon="fa-times"
                     onOpen={() => onFormSelect?.(form)}
-                    onActionClick={() => {
-                      const newPinnedForms = pinnedForms.filter(
-                        (f) => f.uuid !== form.uuid,
-                      );
-                      updatePinnedForms(newPinnedForms);
-                    }}
-                    dataTestId={`pinned-form-${form.name}`}
+                    onActionClick={() => onRemoveForm?.(form.uuid)}
+                    dataTestId={`selected-form-${form.name}`}
                     ariaLabel={`Open ${form.name} form`}
+                    errorMessage={errorMessage}
                   />
-                ))
-              )}
+                );
+              })}
             </FormCardContainer>
           </div>
-        </Tile>
-      </>
+        )}
+
+        <div data-testid="pinned-forms-section">
+          <FormCardContainer
+            title={t('DEFAULT_AND_PINNED_FORMS_TITLE')}
+            showNoFormsMessage={
+              !isAllFormsLoading &&
+              allPinnedForms.length === 0 &&
+              defaultPinnedForms.length === 0
+            }
+            noFormsMessage={t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
+            dataTestId="pinned-forms-container"
+          >
+            {isAllFormsLoading || isPinnedFormsLoading ? (
+              <SkeletonText
+                width="100%"
+                lineCount={3}
+                testId="pinned-forms-skeleton"
+              />
+            ) : (
+              allPinnedForms.map((form: ObservationForm) => (
+                <FormCard
+                  key={form.uuid}
+                  title={form.name}
+                  icon="fa-file-lines"
+                  actionIcon={
+                    !DEFAULT_FORM_API_NAMES.includes(form.name)
+                      ? 'fa-thumbtack'
+                      : undefined
+                  }
+                  onOpen={() => onFormSelect?.(form)}
+                  onActionClick={() => {
+                    const newPinnedForms = pinnedForms.filter(
+                      (f) => f.uuid !== form.uuid,
+                    );
+                    updatePinnedForms(newPinnedForms);
+                  }}
+                  dataTestId={`pinned-form-${form.name}`}
+                  ariaLabel={`Open ${form.name} form`}
+                />
+              ))
+            )}
+          </FormCardContainer>
+        </div>
+      </Tile>
     );
   },
 );

@@ -242,89 +242,87 @@ const MedicationsForm: React.FC = React.memo(() => {
   if (!canAddMedications) return null;
 
   return (
-    <>
-      <Tile
-        className={styles.medicationsFormTile}
-        data-testid="medications-form-tile"
+    <Tile
+      className={styles.medicationsFormTile}
+      data-testid="medications-form-tile"
+    >
+      <div
+        className={styles.medicationsFormTitle}
+        data-testid="medications-form-title"
       >
-        <div
-          className={styles.medicationsFormTitle}
-          data-testid="medications-form-title"
-        >
-          {t('MEDICATIONS_FORM_TITLE')}
+        {t('MEDICATIONS_FORM_TITLE')}
+      </div>
+      {medicationConfigLoading && <DropdownSkeleton />}
+      {medicationConfigError && (
+        <div>
+          {t('ERROR_FETCHING_MEDICATION_CONFIG', {
+            error: medicationConfigError.message,
+          })}
         </div>
-        {medicationConfigLoading && <DropdownSkeleton />}
-        {medicationConfigError && (
-          <div>
-            {t('ERROR_FETCHING_MEDICATION_CONFIG', {
-              error: medicationConfigError.message,
-            })}
-          </div>
+      )}
+      {!medicationConfigLoading && !medicationConfigError && (
+        <ComboBox
+          id="medications-search"
+          data-testid="medications-search-combobox"
+          placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
+          items={filteredSearchResults}
+          itemToString={(item) => (item ? item.displayName : '')}
+          onChange={(data) => handleOnChange(data.selectedItem!)}
+          onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+          selectedItem={selectedMedicationItem}
+          clearSelectedOnChange
+          allowCustomValue
+          size="md"
+          autoAlign
+          disabled={existingMedicationsLoading}
+          aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
+        />
+      )}
+      {showDuplicateNotification && (
+        <InlineNotification
+          kind="error"
+          lowContrast
+          subtitle={t('ERROR_DUPLICATE_ACTIVE_MEDICATION')}
+          onClose={() => setShowDuplicateNotification(false)}
+          hideCloseButton={false}
+          className={styles.duplicateNotification}
+        />
+      )}
+      {medicationConfig &&
+        selectedMedications &&
+        selectedMedications.length > 0 && (
+          <BoxWHeader
+            title={t('MEDICATIONS_ADDED_MEDICATIONS')}
+            className={styles.medicationsBox}
+          >
+            {selectedMedications.map((medication) => (
+              <SelectedItem
+                onClose={() => removeMedication(medication.id)}
+                className={styles.selectedMedicationItem}
+                key={medication.id}
+              >
+                <SelectedMedicationItem
+                  medicationInputEntry={medication}
+                  medicationConfig={medicationConfig}
+                  updateDosage={updateDosage}
+                  updateDosageUnit={updateDosageUnit}
+                  updateFrequency={updateFrequency}
+                  updateRoute={updateRoute}
+                  updateDuration={updateDuration}
+                  updateDurationUnit={updateDurationUnit}
+                  updateInstruction={updateInstruction}
+                  updateisPRN={updateisPRN}
+                  updateisSTAT={updateisSTAT}
+                  updateDispenseQuantity={updateDispenseQuantity}
+                  updateDispenseUnit={updateDispenseUnit}
+                  updateNote={updateNote}
+                  updateStartDate={updateStartDate}
+                />
+              </SelectedItem>
+            ))}
+          </BoxWHeader>
         )}
-        {!medicationConfigLoading && !medicationConfigError && (
-          <ComboBox
-            id="medications-search"
-            data-testid="medications-search-combobox"
-            placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
-            items={filteredSearchResults}
-            itemToString={(item) => (item ? item.displayName : '')}
-            onChange={(data) => handleOnChange(data.selectedItem!)}
-            onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-            selectedItem={selectedMedicationItem}
-            clearSelectedOnChange
-            allowCustomValue
-            size="md"
-            autoAlign
-            disabled={existingMedicationsLoading}
-            aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
-          />
-        )}
-        {showDuplicateNotification && (
-          <InlineNotification
-            kind="error"
-            lowContrast
-            subtitle={t('ERROR_DUPLICATE_ACTIVE_MEDICATION')}
-            onClose={() => setShowDuplicateNotification(false)}
-            hideCloseButton={false}
-            className={styles.duplicateNotification}
-          />
-        )}
-        {medicationConfig &&
-          selectedMedications &&
-          selectedMedications.length > 0 && (
-            <BoxWHeader
-              title={t('MEDICATIONS_ADDED_MEDICATIONS')}
-              className={styles.medicationsBox}
-            >
-              {selectedMedications.map((medication) => (
-                <SelectedItem
-                  onClose={() => removeMedication(medication.id)}
-                  className={styles.selectedMedicationItem}
-                  key={medication.id}
-                >
-                  <SelectedMedicationItem
-                    medicationInputEntry={medication}
-                    medicationConfig={medicationConfig}
-                    updateDosage={updateDosage}
-                    updateDosageUnit={updateDosageUnit}
-                    updateFrequency={updateFrequency}
-                    updateRoute={updateRoute}
-                    updateDuration={updateDuration}
-                    updateDurationUnit={updateDurationUnit}
-                    updateInstruction={updateInstruction}
-                    updateisPRN={updateisPRN}
-                    updateisSTAT={updateisSTAT}
-                    updateDispenseQuantity={updateDispenseQuantity}
-                    updateDispenseUnit={updateDispenseUnit}
-                    updateNote={updateNote}
-                    updateStartDate={updateStartDate}
-                  />
-                </SelectedItem>
-              ))}
-            </BoxWHeader>
-          )}
-      </Tile>
-    </>
+    </Tile>
   );
 });
 

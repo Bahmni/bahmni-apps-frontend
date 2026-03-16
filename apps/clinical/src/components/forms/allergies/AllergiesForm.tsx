@@ -5,10 +5,7 @@ import {
   SelectedItem,
   InlineNotification,
 } from '@bahmni/design-system';
-import {
-  useTranslation,
-  getFormattedAllergies,
-} from '@bahmni/services';
+import { useTranslation, getFormattedAllergies } from '@bahmni/services';
 import {
   useNotification,
   usePatientUUID,
@@ -224,75 +221,73 @@ const AllergiesForm: React.FC = React.memo(() => {
   if (!canAddAllergies) return null;
 
   return (
-    <>
-      <Tile
-        className={styles.allergiesFormTile}
-        data-testid="allergies-form-tile"
+    <Tile
+      className={styles.allergiesFormTile}
+      data-testid="allergies-form-tile"
+    >
+      <div
+        className={styles.allergiesFormTitle}
+        data-testid="allergies-form-title"
       >
-        <div
-          className={styles.allergiesFormTitle}
-          data-testid="allergies-form-title"
-        >
-          {t('ALLERGIES_FORM_TITLE')}
-        </div>
-        <ComboBox
-          id="allergies-search"
-          data-testid="allergies-search-combobox"
-          placeholder={t('ALLERGIES_SEARCH_PLACEHOLDER')}
-          items={filteredSearchResults}
-          itemToString={(item) => {
-            const allergenItem = item as AllergenConcept;
-            return allergenItem?.type
-              ? `${allergenItem.display} [${t(getCategoryDisplayName(allergenItem.type))}]`
-              : allergenItem
-                ? `${allergenItem.display}`
-                : '';
-          }}
-          onChange={(data) =>
-            handleOnChange(data.selectedItem as AllergenConcept | null)
-          }
-          onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-          selectedItem={selectedAllergenItem}
-          clearSelectedOnChange
-          size="md"
-          allowCustomValue
-          autoAlign
-          aria-label={t('ALLERGIES_SEARCH_ARIA_LABEL')}
+        {t('ALLERGIES_FORM_TITLE')}
+      </div>
+      <ComboBox
+        id="allergies-search"
+        data-testid="allergies-search-combobox"
+        placeholder={t('ALLERGIES_SEARCH_PLACEHOLDER')}
+        items={filteredSearchResults}
+        itemToString={(item) => {
+          const allergenItem = item as AllergenConcept;
+          return allergenItem?.type
+            ? `${allergenItem.display} [${t(getCategoryDisplayName(allergenItem.type))}]`
+            : allergenItem
+              ? `${allergenItem.display}`
+              : '';
+        }}
+        onChange={(data) =>
+          handleOnChange(data.selectedItem as AllergenConcept | null)
+        }
+        onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+        selectedItem={selectedAllergenItem}
+        clearSelectedOnChange
+        size="md"
+        allowCustomValue
+        autoAlign
+        aria-label={t('ALLERGIES_SEARCH_ARIA_LABEL')}
+      />
+      {showDuplicateNotification && (
+        <InlineNotification
+          kind="error"
+          lowContrast
+          subtitle={t('ALLERGY_ALREADY_ADDED')}
+          onClose={() => setShowDuplicateNotification(false)}
+          hideCloseButton={false}
+          className={styles.duplicateNotification}
         />
-        {showDuplicateNotification && (
-          <InlineNotification
-            kind="error"
-            lowContrast
-            subtitle={t('ALLERGY_ALREADY_ADDED')}
-            onClose={() => setShowDuplicateNotification(false)}
-            hideCloseButton={false}
-            className={styles.duplicateNotification}
-          />
-        )}
-        {selectedAllergies && selectedAllergies.length > 0 && (
-          <BoxWHeader
-            title={t('ALLERGIES_ADDED_ALLERGIES')}
-            className={styles.allergiesBox}
-          >
-            {selectedAllergies.map((allergy) => (
-              <SelectedItem
-                key={allergy.id}
-                className={styles.selectedAllergyItem}
-                onClose={() => removeAllergy(allergy.id)}
-              >
-                <SelectedAllergyItem
-                  allergy={allergy}
-                  reactionConcepts={reactionConcepts}
-                  updateSeverity={updateSeverity}
-                  updateReactions={updateReactions}
-                  updateNote={updateNote}
-                />
-              </SelectedItem>
-            ))}
-          </BoxWHeader>
-        )}
-      </Tile>
-    </>
+      )}
+      {selectedAllergies && selectedAllergies.length > 0 && (
+        <BoxWHeader
+          title={t('ALLERGIES_ADDED_ALLERGIES')}
+          className={styles.allergiesBox}
+        >
+          {selectedAllergies.map((allergy) => (
+            <SelectedItem
+              key={allergy.id}
+              className={styles.selectedAllergyItem}
+              onClose={() => removeAllergy(allergy.id)}
+            >
+              <SelectedAllergyItem
+                allergy={allergy}
+                reactionConcepts={reactionConcepts}
+                updateSeverity={updateSeverity}
+                updateReactions={updateReactions}
+                updateNote={updateNote}
+              />
+            </SelectedItem>
+          ))}
+        </BoxWHeader>
+      )}
+    </Tile>
   );
 });
 

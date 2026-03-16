@@ -1,4 +1,9 @@
-import { Column, Grid, ActionArea, MenuItemDivider } from '@bahmni/design-system';
+import {
+  Column,
+  Grid,
+  ActionArea,
+  MenuItemDivider,
+} from '@bahmni/design-system';
 import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,

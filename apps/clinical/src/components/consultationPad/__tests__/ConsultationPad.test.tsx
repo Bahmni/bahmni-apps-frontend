@@ -670,9 +670,9 @@ describe('ConsultationPad', () => {
 
       const content = screen.getByTestId('action-area-content');
       // Filter to forms only (skip dividers which are rendered as hr elements)
-      const forms = Array.from(content.querySelectorAll('[data-testid]')).filter(
-        (el) => el.tagName !== 'HR'
-      );
+      const forms = Array.from(
+        content.querySelectorAll('[data-testid]'),
+      ).filter((el) => el.tagName !== 'HR');
 
       expect(forms[0]).toHaveAttribute('data-testid', 'mock-encounter-details');
       expect(forms[1]).toHaveAttribute('data-testid', 'mock-allergies-form');
