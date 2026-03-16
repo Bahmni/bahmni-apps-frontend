@@ -81,6 +81,35 @@ describe('ConsultationPageService', () => {
       const result = filterControlsByPrivileges(controls);
       expect(result).toHaveLength(1);
     });
+
+    it('calls useHasPrivilege with the correct requiredPrivileges value', () => {
+      mockedUseHasPrivilege.mockReturnValue(true);
+      const controls = [
+        {
+          type: 'widget',
+          name: 'allergies',
+          requiredPrivileges: ['Add Allergies'],
+        },
+      ];
+      filterControlsByPrivileges(controls);
+      expect(mockedUseHasPrivilege).toHaveBeenCalledWith(['Add Allergies']);
+    });
+
+    it('passes multiple requiredPrivileges to useHasPrivilege (OR semantics)', () => {
+      mockedUseHasPrivilege.mockReturnValue(true);
+      const controls = [
+        {
+          type: 'widget',
+          name: 'multi-priv',
+          requiredPrivileges: ['Add Allergies', 'View Allergies'],
+        },
+      ];
+      filterControlsByPrivileges(controls);
+      expect(mockedUseHasPrivilege).toHaveBeenCalledWith([
+        'Add Allergies',
+        'View Allergies',
+      ]);
+    });
   });
 
   describe('filterSectionsByPrivileges', () => {

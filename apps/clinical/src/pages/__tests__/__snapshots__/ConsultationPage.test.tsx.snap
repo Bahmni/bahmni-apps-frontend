@@ -41,7 +41,13 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
       </div>
       <div
         data-testid="dashboard-container"
-      />
+      >
+        <article
+          data-testid="dashboard-section-article-Vitals"
+        >
+          Vitals
+        </article>
+      </div>
     </div>
   </div>
 </DocumentFragment>

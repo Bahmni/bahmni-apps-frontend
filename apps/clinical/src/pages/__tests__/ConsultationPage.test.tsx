@@ -172,7 +172,7 @@ const mockDashboardConfig = {
       name: 'Vitals',
       icon: 'fa-heartbeat',
       translationKey: 'VITALS_SECTION',
-      controls: [],
+      controls: [{ type: 'widget', name: 'vitals-widget' }],
     },
   ],
 };
