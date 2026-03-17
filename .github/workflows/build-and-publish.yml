@@ -37,7 +37,7 @@ jobs:
         run: yarn test:coverage
 
       - name: Upload coverage report as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-report
           path: test-output/jest/coverage/
