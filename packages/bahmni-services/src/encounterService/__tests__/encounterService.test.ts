@@ -101,7 +101,9 @@ describe('encounterService', () => {
       await getObservationsBundleByEncounterUuid(encounterUUID);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        expect.stringContaining(`/Observation?encounter=${encounterUUID}`),
+        expect.stringContaining(
+          `/Observation/$everything-by-encounter?encounter=${encounterUUID}`,
+        ),
       );
     });
 
