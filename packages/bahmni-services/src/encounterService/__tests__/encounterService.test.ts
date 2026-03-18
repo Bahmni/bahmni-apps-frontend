@@ -10,10 +10,7 @@ import {
   mockActiveVisit,
   mockFormsEncounter,
 } from '../__mocks__/mocks';
-import {
-  PATIENT_VISITS_URL,
-  FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
-} from '../constants';
+import { PATIENT_VISITS_URL } from '../constants';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -104,7 +101,9 @@ describe('encounterService', () => {
       await getObservationsBundleByEncounterUuid(encounterUUID);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
+        expect.stringContaining(
+          `/Observation/$everything-by-encounter?encounter=${encounterUUID}`,
+        ),
       );
     });
 
