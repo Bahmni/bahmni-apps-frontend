@@ -303,7 +303,10 @@ export {
   updateFhirEncounter,
   buildEncounterResource,
   type BuildEncounterResourceParams,
+  getFormsDataByEncounterUuid,
+  createOrderFulfillmentEncounter,
   type FormsEncounter,
+  type OrderFulfillmentEncounterParams,
 } from './encounterService';
 
 export {
@@ -501,4 +504,8 @@ export {
 } from './extensions';
 
 export * from './orders';
-export { createTask, type CreateTaskPayload } from './taskService';
+export {
+  createTask,
+  type CreateTaskPayload,
+  type CreateTaskOptions,
+} from './taskService';

@@ -52,6 +52,7 @@ export const transformOrderData = (
       }
       return {
         id: item.orderUuid,
+        patientUuid: order.uuid,
         orderName: item.orderName,
         priority: item.priority,
         provider: item.providerName,

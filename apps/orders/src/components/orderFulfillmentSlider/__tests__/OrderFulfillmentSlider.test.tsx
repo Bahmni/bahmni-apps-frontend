@@ -8,12 +8,14 @@ import useOrdersStore from '../../../stores/ordersStore';
 import { OrderFulfillmentSlider } from '../OrderFulfillmentSlider';
 
 const mockCreateTask = jest.fn();
+const mockGetCurrentProvider = jest.fn();
 
 jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
   createTask: (...args: unknown[]) => mockCreateTask(...args),
+  getCurrentProvider: (...args: unknown[]) => mockGetCurrentProvider(...args),
 }));
 
 const mockAddNotification = jest.fn();
@@ -26,6 +28,10 @@ jest.mock('@bahmni/widgets', () => ({
 
 jest.mock('../../../hooks/useOrdersConfig', () => ({
   useOrdersConfig: jest.fn(),
+}));
+
+jest.mock('../../../hooks/useEnsureEncounterForVisit', () => ({
+  ensureEncounterForActiveVisit: jest.fn().mockResolvedValue(null),
 }));
 
 jest.mock('../../../stores/ordersStore', () => ({
@@ -57,6 +63,7 @@ const renderWithIntl = (component: React.ReactElement) => {
 
 const mockOrder: Order = {
   id: 'order-1',
+  patientUuid: 'patient-uuid-1',
   orderName: 'New Cast - Plaster',
   orderType: 'Rehab Order',
   priority: ORDER_PRIORITY.STAT,
@@ -88,9 +95,12 @@ describe('OrderFulfillmentSlider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetCurrentProvider.mockResolvedValue({ uuid: 'provider-uuid-1' });
     (useOrdersStore as unknown as jest.Mock).mockReturnValue({
       fetchProviders: mockFetchProviders,
       providers: mockProviders,
+      currentUser: { uuid: 'user-uuid-1' },
+      currentLocation: { uuid: 'location-uuid-1', name: 'Test Location' },
     });
   });
 
@@ -570,6 +580,8 @@ describe('OrderFulfillmentSlider', () => {
         providers: {
           'Radiology Order': [],
         },
+        currentUser: { uuid: 'user-uuid-1' },
+        currentLocation: { uuid: 'location-uuid-1', name: 'Test Location' },
       });
 
       useOrdersConfig.mockReturnValue(mockConfig);
@@ -1105,12 +1117,12 @@ describe('OrderFulfillmentSlider', () => {
       );
       fireEvent.click(screen.getByText('SAVE'));
       await waitFor(() => {
-        expect(mockCreateTask).toHaveBeenCalledWith(
-          'order-1',
-          'requested',
-          undefined,
-          undefined,
-        );
+        expect(mockCreateTask).toHaveBeenCalledWith('order-1', 'requested', {
+          notes: undefined,
+          ownerUuid: undefined,
+          encounterUuid: undefined,
+          patientUuid: 'patient-uuid-1',
+        });
         expect(mockAddNotification).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'success' }),
         );

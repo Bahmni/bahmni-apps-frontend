@@ -18,6 +18,7 @@ export interface PatientDetails {
 
 export interface Order {
   id: string;
+  patientUuid: string;
   orderName: string;
   orderType: string;
   priority: ORDER_PRIORITY;

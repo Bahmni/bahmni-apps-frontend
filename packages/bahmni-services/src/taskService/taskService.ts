@@ -1,7 +1,7 @@
 import { Bundle, Task } from 'fhir/r4';
 import { get, post } from '../api';
 import { FHIR_TASK_URL, TASKS_URL } from './constants';
-import { CreateTaskPayload } from './models';
+import { CreateTaskOptions, CreateTaskPayload } from './models';
 
 /**
  * Fetches tasks for a given patient with optional filters
@@ -26,15 +26,15 @@ export async function getTasks(
  *
  * @param orderUuid - The UUID of the order (ServiceRequest) being acted upon
  * @param fhirStatus - FHIR Task status string (e.g. 'requested', 'accepted', 'completed')
- * @param notes - Optional fulfiller comment text
- * @param ownerUuid - Optional provider UUID to set as the task owner
+ * @param options - Optional fields: notes, ownerUuid, encounterUuid, patientUuid
  */
 export async function createTask(
   orderUuid: string,
   fhirStatus: string,
-  notes?: string,
-  ownerUuid?: string,
+  options: CreateTaskOptions = {},
 ): Promise<void> {
+  const { notes, ownerUuid, encounterUuid, patientUuid } = options;
+
   const payload: CreateTaskPayload = {
     resourceType: 'Task',
     intent: 'order',
@@ -42,12 +42,20 @@ export async function createTask(
     basedOn: [{ reference: `ServiceRequest/${orderUuid}` }],
   };
 
+  if (patientUuid) {
+    payload.for = { reference: `Patient/${patientUuid}` };
+  }
+
   if (notes) {
     payload.note = [{ text: notes }];
   }
 
   if (ownerUuid) {
     payload.owner = { reference: `Practitioner/${ownerUuid}` };
+  }
+
+  if (encounterUuid) {
+    payload.encounter = { reference: `Encounter/${encounterUuid}` };
   }
 
   await post(FHIR_TASK_URL, payload);

@@ -1,5 +1,10 @@
 import { SaveAndCancelButtons } from '@bahmni/design-system';
-import { useTranslation, Provider, createTask } from '@bahmni/services';
+import {
+  useTranslation,
+  Provider,
+  createTask,
+  getCurrentProvider,
+} from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { Close } from '@carbon/icons-react';
 import { ComboBox, TextArea } from '@carbon/react';
@@ -8,6 +13,7 @@ import {
   UI_STATUS_TO_FHIR_TASK_STATUS,
   DEFAULT_STATUS_FOR_NEW_ORDER,
 } from '../../constants/orderStatusMappings';
+import { ensureEncounterForActiveVisit } from '../../hooks/useEnsureEncounterForVisit';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import {
   Order,
@@ -35,7 +41,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { ordersTableConfig } = useOrdersConfig();
-  const { fetchProviders, providers } = useOrdersStore();
+  const { fetchProviders, providers, currentUser, currentLocation } =
+    useOrdersStore();
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState<OrderStatus | ''>('');
   const [owner, setOwner] = useState('');
@@ -99,12 +106,29 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     }
     try {
       setIsSaving(true);
-      await createTask(
-        order.id,
-        fhirStatus,
-        notes.trim() || undefined,
-        owner || undefined,
-      );
+
+      const encounterTypeUuid =
+        ordersTableConfig?.fulfillmentEncounterTypeUuid ?? '';
+
+      let encounterUuid: string | null = null;
+      if (encounterTypeUuid && currentUser?.uuid && currentLocation?.uuid) {
+        const provider = await getCurrentProvider(currentUser.uuid);
+        if (provider?.uuid) {
+          encounterUuid = await ensureEncounterForActiveVisit({
+            patientUuid: order.patientUuid,
+            practitionerUuid: provider.uuid,
+            locationUuid: currentLocation.uuid,
+            encounterTypeUuid,
+          });
+        }
+      }
+
+      await createTask(order.id, fhirStatus, {
+        notes: notes.trim() || undefined,
+        ownerUuid: owner || undefined,
+        encounterUuid: encounterUuid ?? undefined,
+        patientUuid: order.patientUuid,
+      });
       addNotification({
         title: t('ORDER_SAVE_SUCCESS'),
         message: '',
