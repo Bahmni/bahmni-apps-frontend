@@ -61,7 +61,7 @@ export const transformOrderData = (
         status: item.fulfillerStatus
           ? (DB_FULFILLER_STATUS_TO_UI_STATUS[item.fulfillerStatus] ?? 'New')
           : 'New',
-        note: item.notes,
+        note: item.notes ? item.notes.replaceAll(' | ', '\n') : '',
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         owner: item.ownerName ? item.ownerName : null,
         ownerUuid: item.ownerUuid ?? '',
