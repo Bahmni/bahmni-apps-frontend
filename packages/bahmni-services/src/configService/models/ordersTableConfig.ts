@@ -28,4 +28,5 @@ export interface OrdersTableConfig {
   manageOrdersPanelPatientDetails?: PatientDetailField[];
   orderStatusesAvailable?: string[];
   orderStatusesPreSelected?: string[];
+  fulfillmentEncounterTypeUuid?: string;
 }
