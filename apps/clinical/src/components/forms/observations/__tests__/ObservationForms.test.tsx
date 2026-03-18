@@ -889,5 +889,23 @@ describe('ObservationForms', () => {
       render(<ObservationForms {...defaultProps} />);
       expect(screen.getByTestId('tile')).toBeInTheDocument();
     });
+    it('renders tile and search box but no forms when user has Add Observations privilege but no forms are available', () => {
+      render(
+        <ObservationForms
+          {...defaultProps}
+          allForms={[]}
+          pinnedForms={[]}
+          selectedForms={[]}
+        />,
+      );
+      expect(screen.getByTestId('tile')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('observation-forms-search-section'),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('added-forms-section'),
+      ).not.toBeInTheDocument();
+      expect(screen.getByText('No forms available')).toBeInTheDocument();
+    });
   });
 });

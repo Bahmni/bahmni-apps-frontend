@@ -27,7 +27,7 @@ export const hasPrivilege = (
     ? requiredPrivilege
     : [requiredPrivilege];
 
-  return userPrivileges.some((privilege) =>
-    requiredPrivileges.includes(privilege.name),
+  return userPrivileges.some((userPrivilege) =>
+    requiredPrivileges.includes(userPrivilege.name),
   );
 };
