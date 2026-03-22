@@ -44,7 +44,7 @@ jobs:
           retention-days: 30
 
       - name: Scan for package vulnerabilities
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: "fs"
           format: "table"
@@ -139,7 +139,7 @@ jobs:
 
       # Scan the pushed image
       - name: Scan Docker image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: "${{ env.IMAGE_NAME }}:scan-${{ github.sha }}"
           format: "table"
