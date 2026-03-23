@@ -34,12 +34,9 @@ import { useRelationshipValidation } from '../../hooks/useRelationshipValidation
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { RegistrationFormSection } from '../../providers/registrationConfig/models';
+import { FormControlRefs, FormControlData, FormControlGuards } from './models';
 import { validateAllSections, collectFormData } from './patientFormService';
-import PatientRegisterSection, {
-  FormControlRefs,
-  FormControlData,
-  FormControlGuards,
-} from './PatientRegisterSection';
+import PatientRegisterSection from './PatientRegisterSection';
 import styles from './styles/index.module.scss';
 
 const PatientRegister = () => {

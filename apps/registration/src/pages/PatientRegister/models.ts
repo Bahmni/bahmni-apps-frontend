@@ -1,0 +1,51 @@
+import { ComponentType } from 'react';
+import type { AdditionalIdentifiersRef } from '../components/forms/additionalIdentifiers/AdditionalIdentifiers';
+import type { AdditionalInfoRef } from '../components/forms/additionalInfo/AdditionalInfo';
+import type { AddressInfoRef } from '../components/forms/addressInfo/AddressInfo';
+import type { ContactInfoRef } from '../components/forms/contactInfo/ContactInfo';
+import type {
+  PatientRelationshipsRef,
+  RelationshipData,
+} from '../components/forms/patientRelationships/PatientRelationships';
+import type { ProfileRef } from '../components/forms/profile/Profile';
+import type {
+  BasicInfoData,
+  AddressData,
+  PersonAttributesData,
+  AdditionalIdentifiersData,
+} from '../models/patient';
+
+export interface FormControlRefs {
+  profileRef: React.RefObject<ProfileRef | null>;
+  addressRef: React.RefObject<AddressInfoRef | null>;
+  contactRef: React.RefObject<ContactInfoRef | null>;
+  additionalRef: React.RefObject<AdditionalInfoRef | null>;
+  identifiersRef: React.RefObject<AdditionalIdentifiersRef | null>;
+  relationshipsRef: React.RefObject<PatientRelationshipsRef | null>;
+}
+
+export interface FormControlData {
+  profileInitialData: BasicInfoData | undefined;
+  addressInitialData: AddressData | undefined;
+  personAttributesInitialData: PersonAttributesData | undefined;
+  additionalIdentifiersInitialData: AdditionalIdentifiersData | undefined;
+  relationshipsInitialData: RelationshipData[] | undefined;
+  initialDobEstimated: boolean;
+  patientPhoto: string | undefined;
+}
+
+export interface FormControlGuards {
+  shouldShowAdditionalIdentifiers: boolean;
+  relationshipTypes: Array<{ uuid: string; displayString: string }>;
+}
+
+export interface FormSectionConfig {
+  type: string;
+  component: ComponentType<Record<string, unknown>>;
+  render: (
+    component: ComponentType<Record<string, unknown>>,
+    refs: FormControlRefs,
+    data: FormControlData,
+    guards: FormControlGuards,
+  ) => React.ReactNode;
+}

@@ -1088,5 +1088,60 @@ describe('PatientRegister', () => {
         screen.queryByTestId('patient-relationships'),
       ).not.toBeInTheDocument();
     });
+
+    it('should skip unknown control types while rendering valid ones', () => {
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: {
+            sections: [
+              {
+                name: 'Mixed Section',
+                translationKey: 'REGISTRATION_SECTION_MIXED',
+                controls: [
+                  { type: 'profile' },
+                  { type: 'unknownCustomType' },
+                  { type: 'address' },
+                ],
+              },
+            ],
+          },
+        },
+      });
+
+      renderComponent();
+
+      // Valid controls should render, unknown types should be skipped
+      expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
+      expect(screen.getByTestId('patient-address')).toBeInTheDocument();
+
+      // Unknown type should not cause errors
+      expect(screen.queryByTestId('patient-unknown')).not.toBeInTheDocument();
+    });
+
+    it('should handle empty sections array in config', () => {
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: {
+            sections: [],
+          },
+        },
+      });
+
+      renderComponent();
+
+      // No form sections should be rendered
+      expect(screen.queryByTestId('patient-profile')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('patient-address')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('patient-contact')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('patient-additional'),
+      ).not.toBeInTheDocument();
+    });
   });
 });

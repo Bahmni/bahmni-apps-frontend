@@ -1,51 +1,13 @@
 import { Tile } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React from 'react';
-import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
-import { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
-import { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
-import { ContactInfoRef } from '../../components/forms/contactInfo/ContactInfo';
-import {
-  PatientRelationshipsRef,
-  RelationshipData,
-} from '../../components/forms/patientRelationships/PatientRelationships';
-import { ProfileRef } from '../../components/forms/profile/Profile';
-import { AddressData } from '../../hooks/useAddressFields';
-import {
-  AdditionalIdentifiersData,
-  BasicInfoData,
-  PersonAttributesData,
-} from '../../models/patient';
 import {
   RegistrationFormControl,
   RegistrationFormSection,
 } from '../../providers/registrationConfig/models';
 import { builtInFormSections } from './formSectionMap';
+import { FormControlRefs, FormControlData, FormControlGuards } from './models';
 import styles from './styles/index.module.scss';
-
-export interface FormControlRefs {
-  profileRef: React.RefObject<ProfileRef | null>;
-  addressRef: React.RefObject<AddressInfoRef | null>;
-  contactRef: React.RefObject<ContactInfoRef | null>;
-  additionalRef: React.RefObject<AdditionalInfoRef | null>;
-  identifiersRef: React.RefObject<AdditionalIdentifiersRef | null>;
-  relationshipsRef: React.RefObject<PatientRelationshipsRef | null>;
-}
-
-export interface FormControlData {
-  profileInitialData: BasicInfoData | undefined;
-  addressInitialData: AddressData | undefined;
-  personAttributesInitialData: PersonAttributesData | undefined;
-  additionalIdentifiersInitialData: AdditionalIdentifiersData | undefined;
-  relationshipsInitialData: RelationshipData[] | undefined;
-  initialDobEstimated: boolean;
-  patientPhoto: string | undefined;
-}
-
-export interface FormControlGuards {
-  shouldShowAdditionalIdentifiers: boolean;
-  relationshipTypes: unknown[];
-}
 
 interface PatientRegisterSectionProps {
   section: RegistrationFormSection;
@@ -65,63 +27,7 @@ const PatientRegisterSection: React.FC<PatientRegisterSectionProps> = ({
   const renderComponent = (type: string): React.ReactNode => {
     const sectionConfig = builtInFormSections.find((s) => s.type === type);
     if (!sectionConfig) return null;
-
-    const Component = sectionConfig.component;
-
-    switch (type) {
-      case 'profile':
-        return (
-          <Component
-            ref={refs.profileRef}
-            initialData={data.profileInitialData}
-            initialDobEstimated={data.initialDobEstimated}
-            initialPhoto={data.patientPhoto}
-          />
-        );
-      case 'address':
-        return (
-          <Component
-            ref={refs.addressRef}
-            initialData={data.addressInitialData}
-          />
-        );
-      case 'contactInfo':
-        return (
-          <Component
-            ref={refs.contactRef}
-            initialData={data.personAttributesInitialData}
-          />
-        );
-      case 'additionalInfo':
-        return (
-          <Component
-            ref={refs.additionalRef}
-            initialData={data.personAttributesInitialData}
-          />
-        );
-      case 'additionalIdentifiers':
-        if (!guards.shouldShowAdditionalIdentifiers) return null;
-        return (
-          <Component
-            ref={refs.identifiersRef}
-            initialData={data.additionalIdentifiersInitialData}
-          />
-        );
-      case 'relationships':
-        if (
-          !Array.isArray(guards.relationshipTypes) ||
-          guards.relationshipTypes.length === 0
-        )
-          return null;
-        return (
-          <Component
-            ref={refs.relationshipsRef}
-            initialData={data.relationshipsInitialData}
-          />
-        );
-      default:
-        return null;
-    }
+    return sectionConfig.render(sectionConfig.component, refs, data, guards);
   };
 
   const renderControl = (control: RegistrationFormControl): React.ReactNode => {
