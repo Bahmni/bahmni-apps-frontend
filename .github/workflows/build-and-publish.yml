@@ -39,7 +39,7 @@ jobs:
       - name: Merge lcov reports
         run: |
           mkdir -p test-output/jest/coverage
-          find . -path "*/test-output/jest/coverage/lcov.info" -not -path "./test-output/*" | xargs cat > test-output/jest/coverage/lcov.info
+          find . -path "*/test-output/jest/coverage/lcov.info" -not -path "./test-output/*" -print0 | xargs -0 cat > test-output/jest/coverage/lcov.info
 
       - name: Upload coverage report as artifact
         uses: actions/upload-artifact@v6
