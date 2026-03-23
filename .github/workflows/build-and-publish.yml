@@ -65,6 +65,8 @@ jobs:
           name: coverage-report
           path: test-output/jest/coverage
           merge-multiple: true
+      - name: List coverage files
+        run: find test-output -name "lcov.info" -type f
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6
         env:
