@@ -34,7 +34,6 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
     CONSULTATION_PAD_PRIVILEGES.ENCOUNTER,
   );
 
-  // Hide button if user lacks privilege
   if (!canAddEncounter) {
     return null;
   }

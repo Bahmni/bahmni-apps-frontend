@@ -1,4 +1,5 @@
 import * as bahmniServices from '@bahmni/services';
+import { useHasPrivilege } from '@bahmni/widgets';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
@@ -7,7 +8,6 @@ import { useClinicalConfig } from '../../../../providers/clinicalConfig';
 import { useAllergyStore } from '../../../../stores/allergyStore';
 import AllergiesForm from '../AllergiesForm';
 
-// Mock hooks and services
 jest.mock('../../../../stores/allergyStore');
 jest.mock('../../../../providers/clinicalConfig');
 jest.mock('@bahmni/services', () => ({
@@ -30,7 +30,6 @@ jest.mock('@bahmni/widgets', () => ({
   useHasPrivilege: jest.fn(() => true),
 }));
 
-// Mock @tanstack/react-query
 jest.mock('@tanstack/react-query', () => ({
   useQuery: jest.fn(() => ({
     data: [],
@@ -39,7 +38,6 @@ jest.mock('@tanstack/react-query', () => ({
   })),
 }));
 
-// Mock utils/allergy
 jest.mock('../../../../utils/allergy', () => ({
   getCategoryDisplayName: jest.fn((type: string) => {
     const categories: Record<string, string> = {
@@ -70,7 +68,6 @@ const mockClinicalConfig = {
   },
 };
 
-// Mock CSS modules
 jest.mock('../styles/AllergiesForm.module.scss', () => ({
   allergiesFormTile: 'allergiesFormTile',
   allergiesFormTitle: 'allergiesFormTitle',
@@ -110,43 +107,27 @@ describe('AllergiesForm Integration Tests', () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
     jest.clearAllMocks();
 
-    // Setup default mock implementation for useClinicalConfig
     mockUseClinicalConfig.mockReturnValue({
       clinicalConfig: mockClinicalConfig,
       isLoading: false,
       error: null,
     });
 
-    // Mock scrollIntoView which is not available in jsdom
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
-    // Mock the fetchAndFormatAllergenConcepts function
     (
       bahmniServices.fetchAndFormatAllergenConcepts as jest.Mock
     ).mockResolvedValue([
-      {
-        uuid: '123',
-        display: 'Penicillin',
-        type: 'medication',
-      },
-      {
-        uuid: '456',
-        display: 'Peanuts',
-        type: 'food',
-      },
-      {
-        uuid: '789',
-        display: 'Dust',
-        type: 'environment',
-      },
+      { uuid: '123', display: 'Penicillin', type: 'medication' },
+      { uuid: '456', display: 'Peanuts', type: 'food' },
+      { uuid: '789', display: 'Dust', type: 'environment' },
     ]);
 
-    // Mock the fetchReactionConcepts function
     (bahmniServices.fetchReactionConcepts as jest.Mock).mockResolvedValue(
       mockReactionConcepts,
     );
 
-    // Mock the store
+    jest.mocked(useHasPrivilege).mockReturnValue(true);
     (useAllergyStore as unknown as jest.Mock).mockReturnValue(mockStore);
     i18n.changeLanguage('en');
   });
@@ -186,6 +167,15 @@ describe('AllergiesForm Integration Tests', () => {
         type: 'medication',
       }),
     );
+  });
+
+  test('does not render and makes no API calls when user lacks Add Allergies privilege', () => {
+    jest.mocked(useHasPrivilege).mockReturnValue(false);
+
+    const { container } = render(<AllergiesForm />);
+
+    expect(container).toBeEmptyDOMElement();
+    expect(bahmniServices.getFormattedAllergies).not.toHaveBeenCalled();
   });
 
   test('handles API error gracefully', async () => {

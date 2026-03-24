@@ -1,4 +1,4 @@
-import { UserPrivilegeProvider, useUserPrivilege } from '@bahmni/widgets';
+import { UserPrivilegeProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
@@ -42,12 +42,8 @@ jest.mock('@tanstack/react-query', () => ({
     .QueryClientProvider,
 }));
 
-// Mock useUserPrivilege hook and ActivePractitioner
-
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
-  useUserPrivilege: jest.fn(),
-  useHasPrivilege: jest.fn(() => true),
   useActivePractitioner: jest.fn(() => ({
     practitioner: { uuid: 'practitioner-123', display: 'Dr. Test' },
     user: { uuid: 'user-123', username: 'testuser' },
@@ -65,9 +61,6 @@ jest.mock('@bahmni/widgets', () => ({
     'conditions',
     patientUUID,
   ]),
-  UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
   ActivePractitionerProvider: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
@@ -273,10 +266,6 @@ Object.defineProperty(global, 'crypto', {
   },
 });
 
-const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
-  typeof useUserPrivilege
->;
-
 const renderWithProviders = (ui: React.ReactElement) => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -307,16 +296,16 @@ describe('ConsultationPad - Encounter Session Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock privilege service
     const { getCurrentUserPrivileges } = jest.requireMock('@bahmni/services');
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
-      { name: 'app:clinical:observationForms' },
-      { name: 'app:clinical:locationpicker' },
+      { uuid: '1', name: 'Add Allergies' },
+      { uuid: '2', name: 'Add Diagnoses' },
+      { uuid: '3', name: 'Add Orders' },
+      { uuid: '4', name: 'Add Medications' },
+      { uuid: '5', name: 'Add Observations' },
+      { uuid: '6', name: 'Add Vaccinations' },
+      { uuid: '7', name: 'Add Encounters' },
     ]);
-    // Set up the default mock return value for useUserPrivilege
-    mockUseUserPrivilege.mockReturnValue({
-      userPrivileges: ['Get Patients', 'Add Patients'],
-    });
     // Reset stores to initial state
     mockEncounterDetailsStore = createMockEncounterDetailsStore();
     mockDiagnosesStore = createMockDiagnosesStore();
