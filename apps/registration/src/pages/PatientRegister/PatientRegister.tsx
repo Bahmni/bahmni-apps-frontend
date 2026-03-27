@@ -15,7 +15,7 @@ import {
   PatientProfileResponse,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
 import { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
@@ -184,29 +184,46 @@ const PatientRegister = () => {
   const sections: RegistrationFormSection[] =
     registrationConfig?.registrationForm?.sections ?? [];
 
-  const refs: FormControlRefs = {
-    profileRef: patientProfileRef,
-    addressRef: patientAddressRef,
-    contactRef: patientContactRef,
-    additionalRef: patientAdditionalRef,
-    identifiersRef: patientAdditionalIdentifiersRef,
-    relationshipsRef: patientRelationshipsRef,
-  };
+  const refs = useMemo<FormControlRefs>(
+    () => ({
+      profileRef: patientProfileRef,
+      addressRef: patientAddressRef,
+      contactRef: patientContactRef,
+      additionalRef: patientAdditionalRef,
+      additionalIdentifiersRef: patientAdditionalIdentifiersRef,
+      relationshipsRef: patientRelationshipsRef,
+    }),
+    [],
+  );
 
-  const data: FormControlData = {
-    profileInitialData,
-    addressInitialData,
-    personAttributesInitialData,
-    additionalIdentifiersInitialData,
-    relationshipsInitialData,
-    initialDobEstimated,
-    patientPhoto: patientPhoto ?? undefined,
-  };
+  const data = useMemo<FormControlData>(
+    () => ({
+      profileInitialData,
+      addressInitialData,
+      personAttributesInitialData,
+      additionalIdentifiersInitialData,
+      relationshipsInitialData,
+      initialDobEstimated,
+      patientPhoto: patientPhoto ?? undefined,
+    }),
+    [
+      profileInitialData,
+      addressInitialData,
+      personAttributesInitialData,
+      additionalIdentifiersInitialData,
+      relationshipsInitialData,
+      initialDobEstimated,
+      patientPhoto,
+    ],
+  );
 
-  const guards: FormControlGuards = {
-    shouldShowAdditionalIdentifiers,
-    relationshipTypes,
-  };
+  const guards = useMemo<FormControlGuards>(
+    () => ({
+      shouldShowAdditionalIdentifiers,
+      relationshipTypes,
+    }),
+    [shouldShowAdditionalIdentifiers, relationshipTypes],
+  );
 
   const breadcrumbs = [
     {

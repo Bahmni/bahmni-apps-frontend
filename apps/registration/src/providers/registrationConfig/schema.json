@@ -330,6 +330,7 @@
         "sections": {
           "type": "array",
           "description": "Array of form sections to display",
+          "uniqueItems": true,
           "items": {
             "type": "object",
             "required": ["name", "controls"],

@@ -54,7 +54,7 @@ export const builtInFormSections: FormSectionConfig[] = [
       if (!guards.shouldShowAdditionalIdentifiers) return null;
       return (
         <Component
-          ref={refs.identifiersRef}
+          ref={refs.additionalIdentifiersRef}
           initialData={data.additionalIdentifiersInitialData}
         />
       );
