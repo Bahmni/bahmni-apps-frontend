@@ -55,7 +55,7 @@ const createMockMedication = (overrides = {}): Medication => ({
       {
         code: 'covid-19-vaccine',
         display: 'COVID-19 Vaccine',
-        system: 'http://snomed.info/sct',
+        system: 'https://snomed.info/sct',
       },
     ],
   },

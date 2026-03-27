@@ -9,4 +9,5 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: 'test-output/jest/coverage',
+  coverageReporters: ['html', 'text', 'lcov'],
 };

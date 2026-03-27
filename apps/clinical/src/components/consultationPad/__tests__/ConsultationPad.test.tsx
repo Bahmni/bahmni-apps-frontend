@@ -3,13 +3,8 @@ import {
   dispatchAuditEvent,
   dispatchConsultationSaved,
 } from '@bahmni/services';
-import {
-  render,
-  screen,
-  waitFor,
-  fireEvent,
-  act,
-} from '@testing-library/react';
+import { useHasPrivilege } from '@bahmni/widgets';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BundleEntry } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -250,11 +245,9 @@ const mockUseObservationFormsSearch =
 const mockAddNotification = jest.fn();
 
 jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(() => ({
     addNotification: mockAddNotification,
-  })),
-  useUserPrivilege: jest.fn(() => ({
-    userPrivileges: ['VIEW_PATIENTS', 'EDIT_ENCOUNTERS'],
   })),
   useActivePractitioner: jest.fn(() => ({
     user: { uuid: 'user-123', username: 'testuser' },
@@ -263,6 +256,7 @@ jest.mock('@bahmni/widgets', () => ({
     error: null,
     refetch: jest.fn(),
   })),
+  useHasPrivilege: jest.fn(() => true),
   conditionsQueryKeys: jest.fn((patientUUID: string) => [
     'conditions',
     patientUUID,
@@ -678,26 +672,29 @@ describe('ConsultationPad', () => {
       renderWithProvider();
 
       const content = screen.getByTestId('action-area-content');
-      const forms = content.querySelectorAll('[data-testid]');
+      // Filter to forms only (skip dividers which are rendered as hr elements)
+      const forms = Array.from(
+        content.querySelectorAll('[data-testid]'),
+      ).filter((el) => el.tagName !== 'HR');
 
       expect(forms[0]).toHaveAttribute('data-testid', 'mock-encounter-details');
-
-      expect(forms[2]).toHaveAttribute('data-testid', 'mock-allergies-form');
-      expect(forms[4]).toHaveAttribute(
+      expect(forms[1]).toHaveAttribute('data-testid', 'mock-allergies-form');
+      expect(forms[2]).toHaveAttribute(
         'data-testid',
         'mock-investigations-form',
       );
-      expect(forms[6]).toHaveAttribute(
+      expect(forms[3]).toHaveAttribute(
         'data-testid',
         'mock-conditions-diagnoses',
       );
-      expect(forms[8]).toHaveAttribute('data-testid', 'mock-medications-form');
+      expect(forms[4]).toHaveAttribute('data-testid', 'mock-medications-form');
     });
 
     it('should render dividers between forms', () => {
       renderWithProvider();
-      const dividers = screen.getAllByTestId('mock-divider');
-      expect(dividers).toHaveLength(7);
+      // Dividers are rendered as hr elements (role="separator") between forms
+      const dividers = screen.queryAllByRole('separator');
+      expect(dividers.length).toBeGreaterThanOrEqual(7); // At least 7 dividers for 7 forms
     });
 
     it('should render forms and dividers in the correct sequence', () => {
@@ -706,42 +703,63 @@ describe('ConsultationPad', () => {
       const content = screen.getByTestId('action-area-content');
       const children = Array.from(content.children);
 
-      // Verify the exact sequence of forms and dividers
-      expect(children).toHaveLength(14); // 7 forms + 7 dividers
+      // Expected sequence: BasicForm → Divider → Form → Divider → ... → ObservationForms → Divider
+      // Total: 7 forms + 7 dividers = 14 children
+      expect(children).toHaveLength(14);
 
-      // Check each element in order
       expect(children[0]).toHaveAttribute(
         'data-testid',
         'mock-encounter-details',
       );
-      expect(children[1]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[1].tagName).toBe('HR'); // Divider
       expect(children[2]).toHaveAttribute('data-testid', 'mock-allergies-form');
-      expect(children[3]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[3].tagName).toBe('HR'); // Divider
       expect(children[4]).toHaveAttribute(
         'data-testid',
         'mock-investigations-form',
       );
-      expect(children[5]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[5].tagName).toBe('HR'); // Divider
       expect(children[6]).toHaveAttribute(
         'data-testid',
         'mock-conditions-diagnoses',
       );
-      expect(children[7]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[7].tagName).toBe('HR'); // Divider
       expect(children[8]).toHaveAttribute(
         'data-testid',
         'mock-medications-form',
       );
-      expect(children[9]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[9].tagName).toBe('HR'); // Divider
       expect(children[10]).toHaveAttribute(
         'data-testid',
         'mock-vaccination-forms',
       );
-      expect(children[11]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[11].tagName).toBe('HR'); // Divider
       expect(children[12]).toHaveAttribute(
         'data-testid',
         'mock-observation-forms',
       );
-      expect(children[11]).toHaveAttribute('data-testid', 'mock-divider');
+      expect(children[13].tagName).toBe('HR'); // Divider
+    });
+
+    describe('Privilege Guard - Dividers', () => {
+      const mockUseHasPrivilege = jest.mocked(useHasPrivilege);
+
+      it('should hide divider after AllergiesForm when user lacks allergies privilege', () => {
+        mockUseHasPrivilege.mockImplementation((privilege: string[]) =>
+          privilege.includes('Add Allergies') ? false : true,
+        );
+        renderWithProvider();
+        const dividers = screen.queryAllByRole('separator');
+        expect(dividers).toHaveLength(6);
+      });
+
+      it('should hide all conditional dividers when user has no privileges', () => {
+        mockUseHasPrivilege.mockReturnValue(false);
+        renderWithProvider();
+        // Only the first unconditional divider (after BasicForm) remains
+        const dividers = screen.queryAllByRole('separator');
+        expect(dividers).toHaveLength(1);
+      });
     });
 
     it('should render action buttons with correct text', () => {
@@ -1190,7 +1208,8 @@ describe('ConsultationPad', () => {
       const { container } = renderWithProvider();
 
       const doneButton = screen.getByTestId('primary-button');
-      fireEvent.click(doneButton);
+      const user = userEvent.setup();
+      await user.click(doneButton);
 
       await waitFor(() => {
         expect(doneButton).toBeDisabled();
@@ -1381,7 +1400,8 @@ describe('ConsultationPad', () => {
         const doneButton = screen.getByTestId('primary-button');
         expect(doneButton).not.toBeDisabled();
 
-        fireEvent.click(doneButton);
+        const user = userEvent.setup();
+        await user.click(doneButton);
 
         await waitFor(() => {
           expect(doneButton).toBeDisabled();
@@ -1428,7 +1448,8 @@ describe('ConsultationPad', () => {
       expect(doneButton).not.toBeDisabled();
 
       // Start submission
-      fireEvent.click(doneButton);
+      const user = userEvent.setup();
+      await user.click(doneButton);
 
       // During submission
       await waitFor(() => {
@@ -1916,12 +1937,14 @@ describe('ConsultationPad', () => {
         expect(doneButton).not.toBeDisabled();
       });
 
+      const user = userEvent.setup();
+
       // First click
-      fireEvent.click(doneButton);
+      await user.click(doneButton);
 
       // Try clicking again while first submission is in progress
-      fireEvent.click(doneButton);
-      fireEvent.click(doneButton);
+      await user.click(doneButton);
+      await user.click(doneButton);
 
       // Resolve first submission
       if (resolveFirst) {
@@ -2507,10 +2530,11 @@ describe('ConsultationPad', () => {
       renderWithProvider();
 
       const primaryButton = screen.getByTestId('primary-button');
+      const user = userEvent.setup();
       primaryButton.focus();
 
       // Simulate Enter key press
-      fireEvent.keyDown(primaryButton, { key: 'Enter', code: 'Enter' });
+      await user.keyboard('{Enter}');
 
       expect(primaryButton).toHaveFocus();
     });

@@ -7,6 +7,8 @@ import {
   useNotification,
   usePatientUUID,
   conditionsQueryKeys,
+  useHasPrivilege,
+  UserPrivilegeProvider,
 } from '@bahmni/widgets';
 import {
   QueryClient,
@@ -44,6 +46,8 @@ jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn(),
   conditionsQueryKeys: jest.fn(),
   diagnosesQueryKeys: jest.fn(),
+  useHasPrivilege: jest.fn(),
+  UserPrivilegeProvider: ({ children }: any) => children,
 }));
 
 jest.mock('@tanstack/react-query', () => ({
@@ -74,6 +78,13 @@ const mockedUseConditionsAndDiagnosesStore =
     typeof useConditionsAndDiagnosesStore
   >;
 const mockedUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
+const mockedUseUserPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
+>;
+
+const mockUserPrivilegesWithDiagnoses = true;
+
+const mockUserPrivilegesEmpty = false;
 
 const createMockConcept = (
   overrides?: Partial<ConceptSearch>,
@@ -273,13 +284,16 @@ describe('ConditionsAndDiagnoses', () => {
 
     return render(
       <QueryClientProvider client={queryClient}>
-        <ConditionsAndDiagnoses />
+        <UserPrivilegeProvider>
+          <ConditionsAndDiagnoses />
+        </UserPrivilegeProvider>
       </QueryClientProvider>,
     );
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedUseUserPrivilege.mockReturnValue(mockUserPrivilegesWithDiagnoses);
     jest.spyOn(console, 'error').mockImplementation(() => {});
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
   });
@@ -934,6 +948,21 @@ describe('ConditionsAndDiagnoses', () => {
         mockConditionEntries,
       );
       expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('Privilege Guard', () => {
+    it('renders null when user lacks Add Diagnoses privilege', () => {
+      mockedUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      const { container } = renderComponent();
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it('renders form when user has Add Diagnoses privilege', () => {
+      renderComponent();
+      expect(
+        screen.getByTestId('conditions-and-diagnoses-tile'),
+      ).toBeInTheDocument();
     });
   });
 });

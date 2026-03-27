@@ -30,12 +30,9 @@ export const sortServiceRequestsByPriority = (
   requests: ServiceRequestViewModel[],
 ): ServiceRequestViewModel[] => {
   return [...requests].sort((a, b) => {
-    const priorityDiff =
-      getServiceRequestPriority(a.priority) -
-      getServiceRequestPriority(b.priority);
-    if (priorityDiff !== 0) return priorityDiff;
     return (
-      new Date(b.orderedDate).getTime() - new Date(a.orderedDate).getTime()
+      getServiceRequestPriority(a.priority) -
+      getServiceRequestPriority(b.priority)
     );
   });
 };

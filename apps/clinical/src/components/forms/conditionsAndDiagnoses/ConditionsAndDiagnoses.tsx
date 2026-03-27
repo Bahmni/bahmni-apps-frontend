@@ -11,7 +11,12 @@ import {
   getConditions,
   getPatientDiagnoses,
 } from '@bahmni/services';
-import { useNotification, usePatientUUID } from '@bahmni/widgets';
+import {
+  useNotification,
+  usePatientUUID,
+  useHasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
+} from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useConceptSearch } from '../../../hooks/useConceptSearch';
@@ -30,6 +35,9 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
+  const canAddDiagnoses = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.CONDITIONS_AND_DIAGNOSES,
+  );
   const [searchDiagnosesTerm, setSearchDiagnosesTerm] = useState('');
   const [selectedDiagnosisItem, setSelectedDiagnosisItem] =
     useState<ConceptSearch | null>(null);
@@ -61,7 +69,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     error: existingConditionsError,
   } = useQuery({
     queryKey: ['conditions', patientUUID!],
-    enabled: !!patientUUID,
+    enabled: !!patientUUID && canAddDiagnoses,
     queryFn: () => getConditions(patientUUID!),
   });
 
@@ -72,7 +80,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     error: existingDiagnosesError,
   } = useQuery({
     queryKey: ['diagnoses', patientUUID!],
-    enabled: !!patientUUID,
+    enabled: !!patientUUID && canAddDiagnoses,
     queryFn: () => getPatientDiagnoses(patientUUID!),
   });
 
@@ -215,6 +223,8 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     selectedDiagnoses,
     t,
   ]);
+
+  if (!canAddDiagnoses) return null;
 
   return (
     <Tile

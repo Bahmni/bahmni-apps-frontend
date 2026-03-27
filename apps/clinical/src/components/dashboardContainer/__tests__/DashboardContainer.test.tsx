@@ -17,10 +17,12 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: jest.fn(() => ({
     t: (key: string) => key, // Mock translation function
   })),
+  getCurrentUserPrivileges: jest.fn(() => Promise.resolve([])),
 }));
 
 // Mock the usePatientUUID hook
 jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
   usePatientUUID: jest.fn(),
 }));
 

@@ -39,6 +39,13 @@
                     "type": "string",
                     "description": "Type of the control"
                   },
+                  "requiredPrivileges": {
+                    "type": "array",
+                    "description": "List of required privileges for the control",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
                   "config": {
                     "type": "object",
                     "description": "Configuration for the control"

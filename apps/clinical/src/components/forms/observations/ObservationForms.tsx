@@ -6,6 +6,7 @@ import {
   SkeletonText,
 } from '@bahmni/design-system';
 import { ObservationForm } from '@bahmni/services';
+import { useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
 import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -59,6 +60,9 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     observationFormsError,
   }) => {
     const { t } = useTranslation();
+    const canAddObservations = useHasPrivilege(
+      CONSULTATION_PAD_PRIVILEGES.OBSERVATIONS,
+    );
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState<{
       id: string;
@@ -217,6 +221,8 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       selectedForms,
       t,
     ]);
+
+    if (!canAddObservations) return null;
 
     return (
       <Tile

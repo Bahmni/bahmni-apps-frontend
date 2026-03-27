@@ -1,9 +1,16 @@
 import { ObservationForm } from '@bahmni/services';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { useHasPrivilege } from '@bahmni/widgets';
+import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import ObservationForms from '../ObservationForms';
 
 expect.extend(toHaveNoViolations);
+
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
+  useHasPrivilege: jest.fn(),
+}));
 
 // Mock the translation hook
 jest.mock('react-i18next', () => ({
@@ -170,6 +177,12 @@ jest.mock('@bahmni/design-system', () => ({
 
 // BahmniIcon is already mocked as part of the design system mock above
 
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
+>;
+const mockUserPrivilegesWithObservations = true;
+const mockUserPrivilegesEmpty = false;
+
 describe('ObservationForms', () => {
   // Test data factories
   const createForm = (
@@ -203,9 +216,18 @@ describe('ObservationForms', () => {
   // Test helpers
   const getSearchInput = () => screen.getByTestId('combobox-input');
 
-  const simulateSearch = (searchTerm: string) => {
+  const simulateSearch = async (
+    user: ReturnType<typeof userEvent.setup>,
+    searchTerm: string,
+  ) => {
     const input = getSearchInput();
-    fireEvent.change(input, { target: { value: searchTerm } });
+    // Clear existing value by selecting all and typing new value
+    if ((input as HTMLInputElement).value) {
+      await user.tripleClick(input);
+    }
+    if (searchTerm) {
+      await user.type(input, searchTerm);
+    }
     return input;
   };
 
@@ -233,6 +255,7 @@ describe('ObservationForms', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithObservations);
   });
 
   describe('Rendering and Structure', () => {
@@ -272,66 +295,71 @@ describe('ObservationForms', () => {
       expect(screen.getByText('Death Note')).toBeInTheDocument();
     });
 
-    it('should call onFormSelect when a form is selected from dropdown', () => {
+    it('should call onFormSelect when a form is selected from dropdown', async () => {
+      const user = userEvent.setup();
       const mockOnFormSelect = jest.fn();
       render(
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
       const formButton = screen.getByTestId('combobox-item-form-1');
-      fireEvent.click(formButton);
+      await user.click(formButton);
 
       expect(mockOnFormSelect).toHaveBeenCalledWith(mockForms[0]);
     });
 
-    it('should clear search term after selecting form', () => {
+    it('should clear search term after selecting form', async () => {
+      const user = userEvent.setup();
       const mockOnFormSelect = jest.fn();
       render(
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
-      simulateSearch('Admission');
+      await simulateSearch(user, 'Admission');
       const formButton = screen.getByTestId('combobox-item-form-1');
-      fireEvent.click(formButton);
+      await user.click(formButton);
 
       const input = getSearchInput();
       expect(input).toHaveValue('');
     });
 
-    it('should handle search input changes', () => {
+    it('should handle search input changes', async () => {
+      const user = userEvent.setup();
       render(<ObservationForms {...defaultProps} />);
 
-      const input = simulateSearch('History');
+      const input = await simulateSearch(user, 'History');
 
       // The search is now handled client-side, so just verify the input value changed
       expect(input).toHaveValue('History');
     });
 
-    it('should reset ComboBox selectedItem to null after selection to allow immediate re-search', () => {
+    it('should reset ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
+      const user = userEvent.setup();
       const mockOnFormSelect = jest.fn();
       render(
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
       );
 
       // First selection
-      simulateSearch('Admission');
-      fireEvent.click(screen.getByTestId('combobox-item-form-1'));
+      await simulateSearch(user, 'Admission');
+      await user.click(screen.getByTestId('combobox-item-form-1'));
 
       // Verify combobox is reset (selectedItem is null, allowing new searches)
       const input = getSearchInput();
       expect(input).toHaveValue('');
 
       // Verify we can immediately search for another item (proves selectedItem was reset to null)
-      simulateSearch('Death');
+      await simulateSearch(user, 'Death');
       expect(screen.getByTestId('combobox-item-form-2')).toBeInTheDocument();
 
       // Verify the new search works correctly - this proves selectedItem is null
       // because the ComboBox wouldn't accept new input if selectedItem was still set
-      fireEvent.click(screen.getByTestId('combobox-item-form-2'));
+      await user.click(screen.getByTestId('combobox-item-form-2'));
       expect(mockOnFormSelect).toHaveBeenCalledTimes(2);
     });
 
-    it('should not call onFormSelect for disabled items', () => {
+    it('should not call onFormSelect for disabled items', async () => {
+      const user = userEvent.setup();
       const mockOnFormSelect = jest.fn();
       const selectedForms = [mockForms[0]]; // First form is already selected
 
@@ -346,7 +374,7 @@ describe('ObservationForms', () => {
       const disabledButton = screen.getByTestId('combobox-item-form-1');
       expect(disabledButton).toBeDisabled();
 
-      fireEvent.click(disabledButton);
+      await user.click(disabledButton);
       expect(mockOnFormSelect).not.toHaveBeenCalled();
     });
   });
@@ -385,7 +413,8 @@ describe('ObservationForms', () => {
       expect(screen.getByTestId('card-icon-fa-file-lines')).toBeInTheDocument();
     });
 
-    it('should call onFormSelect when clicking on selected form', () => {
+    it('should call onFormSelect when clicking on selected form', async () => {
+      const user = userEvent.setup();
       const mockOnFormSelect = jest.fn();
       const selectedForms = [mockForms[0]];
 
@@ -398,12 +427,13 @@ describe('ObservationForms', () => {
       );
 
       const formCard = screen.getByTestId('selected-form-Admission Letter');
-      fireEvent.click(formCard);
+      await user.click(formCard);
 
       expect(mockOnFormSelect).toHaveBeenCalledWith(mockForms[0]);
     });
 
-    it('should call onRemoveForm when clicking close button', () => {
+    it('should call onRemoveForm when clicking close button', async () => {
+      const user = userEvent.setup();
       const mockOnRemoveForm = jest.fn();
       const selectedForms = [mockForms[0]];
 
@@ -416,7 +446,7 @@ describe('ObservationForms', () => {
       );
 
       const actionIcons = screen.getAllByTestId('action-icon-fa-times');
-      fireEvent.click(actionIcons[0]);
+      await user.click(actionIcons[0]);
 
       expect(mockOnRemoveForm).toHaveBeenCalledWith('form-1');
     });
@@ -489,7 +519,8 @@ describe('ObservationForms', () => {
       ).toBeInTheDocument();
     });
 
-    it('should show no forms found message when search returns empty results', () => {
+    it('should show no forms found message when search returns empty results', async () => {
+      const user = userEvent.setup();
       render(
         <ObservationForms
           {...defaultProps}
@@ -499,7 +530,7 @@ describe('ObservationForms', () => {
         />,
       );
 
-      simulateSearch('nonexistent form');
+      await simulateSearch(user, 'nonexistent form');
 
       expect(
         screen.getByText('translated_OBSERVATION_FORMS_NO_FORMS_FOUND'),
@@ -573,57 +604,65 @@ describe('ObservationForms', () => {
       expect(itemToString({})).toBe('');
     });
 
-    it('should handle optional callbacks gracefully', () => {
+    it('should handle optional callbacks gracefully', async () => {
+      const user = userEvent.setup();
       render(<ObservationForms {...defaultProps} />);
 
       // Should not throw when callbacks are not provided
       const formButton = screen.getByTestId('combobox-item-form-1');
-      expect(() => fireEvent.click(formButton)).not.toThrow();
+      expect(async () => await user.click(formButton)).not.toThrow();
     });
 
-    it('should handle onFormSelect being undefined', () => {
+    it('should handle onFormSelect being undefined', async () => {
+      const user = userEvent.setup();
       // Test the branch where onFormSelect is undefined (line 59)
       render(<ObservationForms {...defaultProps} onFormSelect={undefined} />);
 
       const formButton = screen.getByTestId('combobox-item-form-1');
-      expect(() => fireEvent.click(formButton)).not.toThrow();
+      expect(async () => await user.click(formButton)).not.toThrow();
     });
   });
 
   describe('Search Functionality Edge Cases', () => {
-    it('should handle empty search term correctly', () => {
+    it('should handle empty search term correctly', async () => {
+      const user = userEvent.setup();
       render(<ObservationForms {...defaultProps} />);
 
-      simulateSearch('');
+      await simulateSearch(user, '');
 
       // Should show all available forms when search is empty
       expect(screen.getByTestId('combobox-item-form-1')).toBeInTheDocument();
       expect(screen.getByTestId('combobox-item-form-2')).toBeInTheDocument();
     });
 
-    it('should handle whitespace-only search terms', () => {
+    it('should handle whitespace-only search terms', async () => {
+      const user = userEvent.setup();
       render(<ObservationForms {...defaultProps} />);
 
-      simulateSearch('   ');
+      await simulateSearch(user, '   ');
 
       // Should treat whitespace-only as empty search
       expect(screen.getByTestId('combobox-item-form-1')).toBeInTheDocument();
     });
 
-    it('should handle special characters in search', () => {
+    it('should handle special characters in search', async () => {
+      const user = userEvent.setup();
       render(<ObservationForms {...defaultProps} />);
 
-      const input = simulateSearch('@#$%');
+      const input = await simulateSearch(user, '@#$%');
 
       // Should not crash with special characters
       expect(input).toHaveValue('@#$%');
     });
 
-    it('should handle very long search terms', () => {
+    it('should handle very long search terms', async () => {
+      const user = userEvent.setup();
       render(<ObservationForms {...defaultProps} />);
 
       const longSearchTerm = 'a'.repeat(1000);
-      const input = simulateSearch(longSearchTerm);
+      const input = getSearchInput();
+      await user.click(input);
+      await user.paste(longSearchTerm);
 
       expect(input).toHaveValue(longSearchTerm);
     });
@@ -676,7 +715,8 @@ describe('ObservationForms', () => {
   });
 
   describe('Keyboard Navigation', () => {
-    it('should support keyboard navigation via ComboBox', () => {
+    it('should support keyboard navigation via ComboBox', async () => {
+      const user = userEvent.setup();
       const mockOnFormSelect = jest.fn();
       render(
         <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
@@ -687,14 +727,14 @@ describe('ObservationForms', () => {
       expect(input).toBeInTheDocument();
 
       // Simulate search
-      simulateSearch('Admission');
+      await simulateSearch(user, 'Admission');
 
       // Verify form items are displayed and can be selected
       const formButton = screen.getByTestId('combobox-item-form-1');
       expect(formButton).toBeInTheDocument();
 
       // Simulate selection via keyboard (Enter key on the form button)
-      fireEvent.click(formButton);
+      await user.click(formButton);
 
       expect(mockOnFormSelect).toHaveBeenCalledWith(mockForms[0]);
     });
@@ -788,7 +828,8 @@ describe('ObservationForms', () => {
       expect(screen.getByTestId('pinned-form-Z Form')).toBeInTheDocument();
     });
 
-    it('should call onFormSelect when clicking pinned form', () => {
+    it('should call onFormSelect when clicking pinned form', async () => {
+      const user = userEvent.setup();
       const mockOnFormSelect = jest.fn();
       const allForms = [createForm('Custom Form', 'user-1', 2)];
 
@@ -804,13 +845,14 @@ describe('ObservationForms', () => {
       );
 
       const pinnedForm = screen.getByTestId('pinned-form-Custom Form');
-      fireEvent.click(pinnedForm);
+      await user.click(pinnedForm);
 
       // This covers the onOpen callback (line 207)
       expect(mockOnFormSelect).toHaveBeenCalledWith(pinnedForms[0]);
     });
 
-    it('should call updatePinnedForms when clicking thumbtack on pinned form', () => {
+    it('should call updatePinnedForms when clicking thumbtack on pinned form', async () => {
+      const user = userEvent.setup();
       const mockUpdatePinnedForms = jest.fn();
       const allForms = [createForm('Custom Form', 'user-1', 2)];
 
@@ -830,10 +872,40 @@ describe('ObservationForms', () => {
         '[data-testid="action-icon-fa-thumbtack"]',
       );
       expect(thumbtackIcon).not.toBeNull();
-      fireEvent.click(thumbtackIcon!);
+      await user.click(thumbtackIcon as Element);
 
       // This covers the onActionClick callback (line 208) - should call updatePinnedForms with filtered array
       expect(mockUpdatePinnedForms).toHaveBeenCalledWith([]);
+    });
+  });
+
+  describe('Privilege Guard', () => {
+    it('renders null when user lacks Add Observations privilege', () => {
+      mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      const { container } = render(<ObservationForms {...defaultProps} />);
+      expect(container).toBeEmptyDOMElement();
+    });
+    it('renders form when user has Add Observations privilege', () => {
+      render(<ObservationForms {...defaultProps} />);
+      expect(screen.getByTestId('tile')).toBeInTheDocument();
+    });
+    it('renders tile and search box but no forms when user has Add Observations privilege but no forms are available', () => {
+      render(
+        <ObservationForms
+          {...defaultProps}
+          allForms={[]}
+          pinnedForms={[]}
+          selectedForms={[]}
+        />,
+      );
+      expect(screen.getByTestId('tile')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('observation-forms-search-section'),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('added-forms-section'),
+      ).not.toBeInTheDocument();
+      expect(screen.getByText('No forms available')).toBeInTheDocument();
     });
   });
 });

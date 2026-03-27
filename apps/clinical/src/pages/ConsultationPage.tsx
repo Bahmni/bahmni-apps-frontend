@@ -36,7 +36,11 @@ import {
 import { DashboardConfig } from './models';
 import dashboardConfigSchema from './schema.json';
 import styles from './styles/ConsultationPage.module.scss';
-import { getDefaultDashboard, getSidebarItems } from './util';
+import {
+  getDefaultDashboard,
+  getSidebarItems,
+  filterSectionsByPrivileges,
+} from './util';
 
 const addSectionIds = (config: DashboardConfig): DashboardConfig => {
   if (!config?.sections?.length) return config;
@@ -152,10 +156,18 @@ const ConsultationPage: React.FC = () => {
     }
   }, [dashboardConfigError]);
 
+  const filteredDashboardConfig = useMemo(() => {
+    if (!dashboardConfig || !userPrivileges) return null;
+    return {
+      ...dashboardConfig,
+      sections: filterSectionsByPrivileges(dashboardConfig.sections),
+    };
+  }, [dashboardConfig, userPrivileges]);
+
   const sidebarItems = useMemo(() => {
-    if (!dashboardConfig) return [];
-    return getSidebarItems(dashboardConfig, t);
-  }, [dashboardConfig, t]);
+    if (!filteredDashboardConfig) return [];
+    return getSidebarItems(filteredDashboardConfig, t);
+  }, [filteredDashboardConfig, t]);
 
   const { activeItemId, handleItemClick } = useSidebarNavigation(sidebarItems);
 
@@ -244,7 +256,8 @@ const ConsultationPage: React.FC = () => {
             <div
               id="section-sticky-header"
               data-testid="section-sticky-header-test-id"
-              aria-label="section-sticky-header-aria-label"
+              role="region"
+              aria-label={t('PATIENT_HEADER_SECTION')}
               className={styles.stickySection}
             >
               <PatientHeader
@@ -254,7 +267,7 @@ const ConsultationPage: React.FC = () => {
               {renderContextInformation()}
             </div>
             <DashboardContainer
-              sections={dashboardConfig!.sections}
+              sections={filteredDashboardConfig!.sections}
               activeItemId={activeItemId}
             />
           </Suspense>

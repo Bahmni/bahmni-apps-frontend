@@ -295,6 +295,7 @@
   "OBSERVATIONS_RECORDED_BY": "Recorded By {{provider}}",
   "PARTICIPANT": "Participant(s)",
   "PATIENT_HEADER_LABEL": "Patient Header",
+  "PATIENT_HEADER_SECTION": "Patient Information Section",
   "PINNED_FORMS_INVALID_DATA": "Invalid pinned Forms data",
   "PINNED_FORMS_USER_NOT_FOUND": "User not found",
   "PROGRAM_DETAILS_ERROR_UPDATING_STATE": "Error updating Program state",

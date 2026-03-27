@@ -1,3 +1,5 @@
+import { getVaccinations } from '@bahmni/services';
+import { useHasPrivilege } from '@bahmni/widgets';
 import {
   QueryClient,
   QueryClientProvider,
@@ -15,6 +17,11 @@ import VaccinationForm from '../VaccinationForm';
 expect.extend(toHaveNoViolations);
 
 jest.mock('../../../../stores/vaccinationsStore');
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
+  useHasPrivilege: jest.fn(),
+  usePatientUUID: jest.fn(),
+}));
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getVaccinations: jest.fn(),
@@ -34,10 +41,6 @@ jest.mock('../../../../services/medicationService', () => ({
     medicationMap: {},
   })),
 }));
-jest.mock('@bahmni/widgets', () => ({
-  ...jest.requireActual('@bahmni/widgets'),
-  usePatientUUID: jest.fn(),
-}));
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
   useQuery: jest.fn(),
@@ -50,6 +53,12 @@ jest.mock('../styles/VaccinationForm.module.scss', () => ({
   duplicateNotification: 'duplicateNotification',
 }));
 
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
+>;
+const mockUserPrivilegesWithVaccinations = true;
+const mockUserPrivilegesEmpty = false;
+
 const mockVaccination: Medication = {
   id: 'test-vaccination-1',
   resourceType: 'Medication',
@@ -59,7 +68,7 @@ const mockVaccination: Medication = {
       {
         code: 'covid-19-vaccine',
         display: 'COVID-19 Vaccine',
-        system: 'http://snomed.info/sct',
+        system: 'https://snomed.info/sct',
       },
     ],
   },
@@ -204,6 +213,8 @@ describe('VaccinationForm', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
     (useVaccinationStore as unknown as jest.Mock).mockReturnValue(mockStore);
+    (getVaccinations as jest.Mock).mockResolvedValue(mockVaccinationBundle);
+    mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithVaccinations);
     mockUseQuery.mockImplementation(defaultQueryMock as any);
   });
 
@@ -296,7 +307,7 @@ describe('VaccinationForm', () => {
             {
               code: 'hep-a-vaccine',
               display: 'Hepatitis A Vaccine',
-              system: 'http://snomed.info/sct',
+              system: 'https://snomed.info/sct',
             },
           ],
         },
@@ -347,9 +358,13 @@ describe('VaccinationForm', () => {
     });
     test('resets ComboBox selectedItem to null after selection to allow immediate re-search', async () => {
       const user = userEvent.setup();
-      mockUseQuery.mockImplementation(mockTwoVaccinesQuery);
-      const searchBox = renderVaccinationForm();
+      mockUseQuery.mockImplementation(mockTwoVaccinesQuery as any);
+      render(<VaccinationForm />, { wrapper: createWrapper() });
+      const searchBox = screen.getByRole('combobox', {
+        name: /search to add vaccination/i,
+      });
 
+      // First selection
       await user.type(searchBox, 'covid');
       await waitFor(() => {
         expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
@@ -407,6 +422,25 @@ describe('VaccinationForm', () => {
     test('marks already selected vaccinations as disabled', async () => {
       const user = userEvent.setup();
       mockUseQuery.mockImplementation(mockTwoVaccinesQuery);
+      const secondVaccination: Medication = {
+        id: 'test-vaccination-2',
+        resourceType: 'Medication',
+        code: {
+          text: 'Hepatitis B Vaccine',
+          coding: [
+            {
+              code: 'hep-b-vaccine',
+              display: 'Hepatitis B Vaccine',
+              system: 'https://snomed.info/sct',
+            },
+          ],
+        },
+      };
+      (getVaccinations as jest.Mock).mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [{ resource: mockVaccination }, { resource: secondVaccination }],
+      });
       (useVaccinationStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         selectedVaccinations: [mockSelectedVaccination],
@@ -487,6 +521,20 @@ describe('VaccinationForm', () => {
           screen.getByText(/no matching vaccinations found/i),
         ).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Privilege Guard', () => {
+    test('renders null when user lacks Add Vaccinations privilege', () => {
+      mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      const { container } = render(<VaccinationForm />, {
+        wrapper: createWrapper(),
+      });
+      expect(container).toBeEmptyDOMElement();
+    });
+    test('renders form when user has Add Vaccinations privilege', () => {
+      render(<VaccinationForm />, { wrapper: createWrapper() });
+      expect(screen.getByTestId('vaccination-form-tile')).toBeInTheDocument();
     });
   });
 });

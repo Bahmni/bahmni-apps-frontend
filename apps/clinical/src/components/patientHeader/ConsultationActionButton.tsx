@@ -1,6 +1,10 @@
 import { Button } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import { useActivePractitioner } from '@bahmni/widgets';
+import {
+  useActivePractitioner,
+  useHasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
+} from '@bahmni/widgets';
 import React from 'react';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
 import styles from './styles/PatientHeader.module.scss';
@@ -26,7 +30,13 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
   const { editActiveEncounter, isLoading } = useEncounterSession({
     practitioner,
   });
+  const canAddEncounter = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.ENCOUNTER,
+  );
 
+  if (!canAddEncounter) {
+    return null;
+  }
   return (
     <Button
       className={styles.newConsultationButton}

@@ -14,10 +14,16 @@ import {
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
 } from '@bahmni/services';
-import { useNotification, usePatientUUID } from '@bahmni/widgets';
+import {
+  useNotification,
+  usePatientUUID,
+  useHasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
+} from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { Bundle } from 'fhir/r4';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
 import {
@@ -49,6 +55,9 @@ const MedicationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
+  const canAddMedications = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.MEDICATIONS,
+  );
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
@@ -103,7 +112,8 @@ const MedicationsForm: React.FC = React.memo(() => {
     refetch: refetchMedications,
   } = useQuery<Bundle>({
     queryKey: ['medications', patientUUID!],
-    enabled: !!patientUUID && patientUUID.trim().length > 0,
+    enabled:
+      !!patientUUID && patientUUID.trim().length > 0 && canAddMedications,
     queryFn: () =>
       getPatientMedicationBundle(patientUUID!, [], undefined, true),
     refetchOnMount: 'always',
@@ -229,6 +239,8 @@ const MedicationsForm: React.FC = React.memo(() => {
     t,
   ]);
 
+  if (!canAddMedications) return null;
+
   return (
     <Tile
       className={styles.medicationsFormTile}
@@ -291,7 +303,7 @@ const MedicationsForm: React.FC = React.memo(() => {
               >
                 <SelectedMedicationItem
                   medicationInputEntry={medication}
-                  medicationConfig={medicationConfig!}
+                  medicationConfig={medicationConfig}
                   updateDosage={updateDosage}
                   updateDosageUnit={updateDosageUnit}
                   updateFrequency={updateFrequency}

@@ -13,7 +13,12 @@ import {
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
 } from '@bahmni/services';
-import { usePatientUUID, useActivePractitioner } from '@bahmni/widgets';
+import {
+  usePatientUUID,
+  useActivePractitioner,
+  useHasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
+} from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, {
   useMemo,
@@ -33,6 +38,9 @@ import styles from './styles/InvestigationsForm.module.scss';
 const InvestigationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
+  const canAddInvestigations = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS,
+  );
   const queryClient = useQueryClient();
   const { practitioner } = useActivePractitioner();
   const { activeEncounter } = useEncounterSession({ practitioner });
@@ -108,7 +116,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
     enabled:
       !!patientUUID &&
       (!!currentEncounterId || hasEpisodeContext) &&
-      !!orderTypesData,
+      !!orderTypesData &&
+      canAddInvestigations,
     refetchOnMount: 'always',
   });
 
@@ -350,6 +359,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
     setSearchTerm('');
     setSelectedInvestigationItem(selectedItem);
   };
+
+  if (!canAddInvestigations) return null;
 
   return (
     <Tile

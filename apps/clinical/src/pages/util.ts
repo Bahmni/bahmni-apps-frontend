@@ -1,12 +1,12 @@
 import { HeaderSideNavItem } from '@bahmni/design-system';
+import { useHasPrivilege } from '@bahmni/widgets';
 import { Dashboard } from '../providers/clinicalConfig/models';
-import { DashboardConfig } from './models';
+import {
+  DashboardConfig,
+  DashboardSectionConfig,
+  ControlConfig,
+} from './models';
 
-/**
- * Gets the default dashboard from an array of dashboards
- * @param dashboards Array of dashboard configurations
- * @returns The default dashboard or null if none is found
- */
 export const getDefaultDashboard = (
   dashboards: Dashboard[],
 ): Dashboard | null => {
@@ -25,11 +25,25 @@ export const getDefaultDashboard = (
   return dashboards[0];
 };
 
-/**
- * Converts dashboard sections to sidebar items
- * @param dashboardConfig The dashboard configuration containing sections
- * @returns Array of sidebar items
- */
+export const filterControlsByPrivileges = (
+  controls: ControlConfig[],
+): ControlConfig[] => {
+  return controls.filter((control) =>
+    useHasPrivilege(control.requiredPrivileges),
+  );
+};
+
+export const filterSectionsByPrivileges = (
+  sections: DashboardSectionConfig[],
+): DashboardSectionConfig[] => {
+  return sections
+    .map((section) => ({
+      ...section,
+      controls: filterControlsByPrivileges(section.controls),
+    }))
+    .filter((section) => section.controls.length > 0);
+};
+
 export const getSidebarItems = (
   dashboardConfig: DashboardConfig,
   t: (key: string) => string,

@@ -24,6 +24,7 @@ jest.mock('@bahmni/services', () => ({
     ],
   }),
   getExistingServiceRequestsForAllCategories: jest.fn().mockResolvedValue([]),
+  getCurrentUserPrivileges: jest.fn(() => Promise.resolve([])),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -32,6 +33,8 @@ jest.mock('@bahmni/widgets', () => ({
   useActivePractitioner: jest.fn().mockReturnValue({
     practitioner: { uuid: 'mock-practitioner-uuid' },
   }),
+  useUserPrivilege: jest.fn(),
+  useHasPrivilege: jest.fn(() => true),
 }));
 
 jest.mock('../../../../hooks/useEncounterSession', () => ({

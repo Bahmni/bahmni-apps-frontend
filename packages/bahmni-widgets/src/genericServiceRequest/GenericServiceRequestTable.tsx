@@ -1,8 +1,18 @@
-import { SortableDataTable, TooltipIcon, Tag } from '@bahmni/design-system';
 import {
+  SortableDataTable,
+  TooltipIcon,
+  Accordion,
+  AccordionItem,
+  Tag,
+} from '@bahmni/design-system';
+import {
+  FULL_MONTH_DATE_FORMAT,
+  ISO_DATE_FORMAT,
+  formatDate,
   getFormattedError,
   getCategoryUuidFromOrderTypes,
   getServiceRequests,
+  groupByDate,
   shouldEnableEncounterFilter,
   useTranslation,
   useSubscribeConsultationSaved,
@@ -21,8 +31,8 @@ import {
 import styles from './styles/GenericServiceRequestTable.module.scss';
 import {
   filterServiceRequestReplacementEntries,
-  getServiceRequestPriority,
   mapServiceRequest,
+  sortServiceRequestsByPriority,
 } from './utils';
 
 export const genericServiceRequestQueryKeys = (
@@ -46,9 +56,8 @@ const fetchServiceRequests = async (
 };
 
 /**
- * Component to display patient service requests in a flat sorted table.
- * Items are sorted by orderedDate descending (newest first), with priority
- * (stat before routine) as a tiebreaker for items with the same orderedDate.
+ * Component to display patient service requests grouped by date in accordion format
+ * Each accordion item contains a SortableDataTable with service requests for that date
  */
 const GenericServiceRequestTable: React.FC<WidgetProps> = ({
   config,
@@ -157,17 +166,31 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
   );
 
   const processedServiceRequests = useMemo(() => {
-    const filtered = filterServiceRequestReplacementEntries(serviceRequests);
-    return [...filtered].sort((a, b) => {
-      const dateDiff =
-        new Date(b.orderedDate).getTime() - new Date(a.orderedDate).getTime();
-      if (dateDiff !== 0) return dateDiff;
-      return (
-        getServiceRequestPriority(a.priority) -
-        getServiceRequestPriority(b.priority)
-      );
-    });
-  }, [serviceRequests]);
+    const filteredRequests =
+      filterServiceRequestReplacementEntries(serviceRequests);
+
+    const grouped = groupByDate(
+      filteredRequests,
+      (request: ServiceRequestViewModel) => {
+        const result = formatDate(request.orderedDate, t, ISO_DATE_FORMAT);
+        return result.formattedResult;
+      },
+    );
+
+    const sortedGroups = grouped.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+
+    const groupedData = sortedGroups.map((group) => ({
+      date: group.date,
+      requests: group.items,
+    }));
+
+    return groupedData.map((requestsByDate) => ({
+      ...requestsByDate,
+      requests: sortServiceRequestsByPriority(requestsByDate.requests),
+    }));
+  }, [serviceRequests, t]);
 
   const renderCell = useCallback(
     (request: ServiceRequestViewModel, cellId: string) => {
@@ -210,19 +233,56 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
 
   return (
     <div data-testid="generic-service-request-table">
-      <SortableDataTable
-        headers={headers}
-        ariaLabel={t('SERVICE_REQUEST_HEADING')}
-        rows={emptyEncounterFilter ? [] : processedServiceRequests}
-        loading={isLoading}
-        errorStateMessage={isError ? error?.message : undefined}
-        emptyStateMessage={t('NO_SERVICE_REQUESTS')}
-        renderCell={renderCell}
-        sortable={sortable}
-        className={styles.serviceRequestTableBody}
-        dataTestId="generic-service-request-table"
-        pageSize={10}
-      />
+      {isLoading ||
+      !!isError ||
+      processedServiceRequests.length === 0 ||
+      emptyEncounterFilter ? (
+        <SortableDataTable
+          headers={headers}
+          ariaLabel={t('SERVICE_REQUEST_HEADING')}
+          rows={[]}
+          loading={isLoading}
+          errorStateMessage={isError ? error?.message : undefined}
+          emptyStateMessage={t('NO_SERVICE_REQUESTS')}
+          renderCell={renderCell}
+          className={styles.serviceRequestTableBody}
+          dataTestId="generic-service-request-table"
+        />
+      ) : (
+        <Accordion align="start">
+          {processedServiceRequests.map((requestsByDate, index) => {
+            const { date, requests } = requestsByDate;
+            const formattedDate = formatDate(
+              date,
+              t,
+              FULL_MONTH_DATE_FORMAT,
+            ).formattedResult;
+
+            return (
+              <AccordionItem
+                title={formattedDate}
+                key={date}
+                className={styles.customAccordianItem}
+                testId={'accordian-table-title'}
+                open={index === 0}
+              >
+                <SortableDataTable
+                  headers={headers}
+                  ariaLabel={t('SERVICE_REQUEST_HEADING')}
+                  rows={requests}
+                  loading={isLoading}
+                  errorStateMessage={''}
+                  sortable={sortable}
+                  emptyStateMessage={t('NO_SERVICE_REQUESTS')}
+                  renderCell={renderCell}
+                  className={styles.serviceRequestTableBody}
+                  dataTestId={`generic-service-request-table-${formattedDate}`}
+                />
+              </AccordionItem>
+            );
+          })}
+        </Accordion>
+      )}
     </div>
   );
 };

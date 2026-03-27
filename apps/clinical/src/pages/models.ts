@@ -11,6 +11,7 @@ export interface ControlConfig {
   name: string;
   translationKey?: string;
   conceptNames?: string[];
+  requiredPrivileges?: string[];
   config?: Record<string, unknown>;
 }
 

@@ -7,10 +7,7 @@ export const SERVICE_REQUESTS_URL = (
   numberOfVisits?: number,
   revinclude?: string,
 ) => {
-  // _count=100: Practical upper limit to avoid unbounded queries.
-  // Patients with >100 service requests of the same category will be silently truncated.
-  const baseUrl =
-    OPENMRS_FHIR_R4 + '/ServiceRequest?_count=100&_sort=-_lastUpdated';
+  const baseUrl = OPENMRS_FHIR_R4 + '/ServiceRequest?_sort=-_lastUpdated';
   let url = `${baseUrl}&category=${category}&patient=${patientUuid}`;
 
   if (revinclude) {

@@ -15,7 +15,11 @@ import {
   getConfig,
   fetchMedicationOrdersMetadata,
 } from '@bahmni/services';
-import { usePatientUUID } from '@bahmni/widgets';
+import {
+  usePatientUUID,
+  useHasPrivilege,
+  CONSULTATION_PAD_PRIVILEGES,
+} from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { Bundle } from 'fhir/r4';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
@@ -50,6 +54,9 @@ import styles from './styles/VaccinationForm.module.scss';
 const VaccinationForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
+  const canAddVaccinations = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.VACCINATIONS,
+  );
   const [searchVaccinationTerm, setSearchVaccinationTerm] = useState('');
   const [showDuplicateNotification, setShowDuplicateNotification] =
     useState(false);
@@ -82,6 +89,7 @@ const VaccinationForm: React.FC = React.memo(() => {
   } = useQuery({
     queryKey: ['vaccinations'],
     queryFn: getVaccinations,
+    enabled: canAddVaccinations,
   });
 
   const searchResults = useMemo(
@@ -96,7 +104,8 @@ const VaccinationForm: React.FC = React.memo(() => {
     refetch: refetchVaccinations,
   } = useQuery<Bundle>({
     queryKey: ['patientVaccinations', patientUUID],
-    enabled: !!patientUUID && patientUUID.trim().length > 0,
+    enabled:
+      !!patientUUID && patientUUID.trim().length > 0 && canAddVaccinations,
     queryFn: () =>
       getPatientMedicationBundle(patientUUID!, [], undefined, true),
     refetchOnMount: 'always',
@@ -251,6 +260,8 @@ const VaccinationForm: React.FC = React.memo(() => {
     t,
   ]);
 
+  if (!canAddVaccinations) return null;
+
   return (
     <Tile
       className={styles.vaccinationFormTile}
@@ -313,7 +324,7 @@ const VaccinationForm: React.FC = React.memo(() => {
               >
                 <SelectedVaccinationItem
                   vaccinationInputEntry={vaccination}
-                  medicationConfig={medicationConfig!}
+                  medicationConfig={medicationConfig}
                   updateDosage={updateDosage}
                   updateDosageUnit={updateDosageUnit}
                   updateFrequency={updateFrequency}

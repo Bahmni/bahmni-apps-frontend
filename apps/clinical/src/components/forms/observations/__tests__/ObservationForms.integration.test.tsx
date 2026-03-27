@@ -16,6 +16,12 @@ jest.mock('react-i18next', () => ({
   })),
 }));
 
+// Mock @bahmni/services
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  getCurrentUserPrivileges: jest.fn(() => Promise.resolve([])),
+}));
+
 // Mock the pinnedFormsService
 jest.mock('../../../../services/pinnedFormsService');
 const mockedLoadPinnedForms =
@@ -26,6 +32,12 @@ const mockedSavePinnedForms =
   pinnedFormsService.savePinnedForms as jest.MockedFunction<
     typeof pinnedFormsService.savePinnedForms
   >;
+
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
+  useUserPrivilege: jest.fn(),
+  useHasPrivilege: jest.fn(() => true),
+}));
 
 // Mock hooks
 const mockUseObservationFormsSearch = jest.fn();

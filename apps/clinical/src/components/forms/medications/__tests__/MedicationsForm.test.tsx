@@ -1,11 +1,16 @@
-import { useNotification, usePatientUUID } from '@bahmni/widgets';
+import {
+  useNotification,
+  usePatientUUID,
+  useHasPrivilege,
+  UserPrivilegeProvider,
+} from '@bahmni/widgets';
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Medication } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -44,6 +49,8 @@ jest.mock('@bahmni/widgets', () => {
     ...widgets,
     useNotification: jest.fn(),
     usePatientUUID: jest.fn(),
+    useHasPrivilege: jest.fn(),
+    UserPrivilegeProvider: ({ children }: { children: ReactNode }) => children,
   };
 });
 
@@ -72,6 +79,11 @@ const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockUseQueryClient = useQueryClient as jest.MockedFunction<
   typeof useQueryClient
 >;
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
+>;
+const mockUserPrivilegesWithMedications = true;
+const mockUserPrivilegesEmpty = false;
 
 // Mock data
 const mockMedication: Medication = {
@@ -178,7 +190,9 @@ const createQueryClient = () =>
 const renderWithQueryClient = (ui: ReactNode) => {
   const queryClient = createQueryClient();
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+    <QueryClientProvider client={queryClient}>
+      <UserPrivilegeProvider>{ui}</UserPrivilegeProvider>
+    </QueryClientProvider>,
   );
 };
 
@@ -210,6 +224,8 @@ describe('MedicationsForm', () => {
     mockUseQueryClient.mockReturnValue({
       invalidateQueries: jest.fn(),
     } as unknown as ReturnType<typeof useQueryClient>);
+
+    mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithMedications);
   });
 
   // HAPPY PATH TESTS
@@ -267,7 +283,11 @@ describe('MedicationsForm', () => {
         searchResults: [mockMedication],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -295,7 +315,11 @@ describe('MedicationsForm', () => {
         ...mockMedicationSearchHook,
         searchResults: [mockMedication],
       });
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
       });
@@ -552,24 +576,19 @@ describe('MedicationsForm', () => {
     });
 
     test('does not add medication when selected item is invalid', async () => {
+      const user = userEvent.setup();
       renderWithQueryClient(<MedicationsForm />);
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
       });
 
-      // Test with undefined selectedItem
-      fireEvent.change(searchBox, {
-        target: { value: 'test' },
-        selectedItem: undefined,
-      });
-      expect(mockStore.addMedication).not.toHaveBeenCalled();
+      // Test by typing without selecting an item
+      await user.type(searchBox, 'test');
 
-      // Test with null selectedItem
-      fireEvent.change(searchBox, {
-        target: { value: 'test' },
-        selectedItem: null,
-      });
+      // Don't select anything - just clear the search
+      await user.clear(searchBox);
+
       expect(mockStore.addMedication).not.toHaveBeenCalled();
     });
 
@@ -650,7 +669,11 @@ describe('MedicationsForm', () => {
         searchResults: [mockMedication],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       const searchBox = screen.getByRole('combobox', {
         name: /search to add medication/i,
@@ -721,7 +744,11 @@ describe('MedicationsForm', () => {
         selectedMedications: [med1, med2],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       await waitFor(() => {
         expect(
@@ -764,7 +791,11 @@ describe('MedicationsForm', () => {
         selectedMedications: [med1, med2],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       await waitFor(() => {
         expect(
@@ -806,7 +837,11 @@ describe('MedicationsForm', () => {
         selectedMedications: [statMed, regularMed],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       await waitFor(() => {
         expect(
@@ -852,7 +887,11 @@ describe('MedicationsForm', () => {
         selectedMedications: [prnMed, scheduledMed],
       });
 
-      render(<MedicationsForm />);
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
 
       await waitFor(() => {
         expect(
@@ -877,6 +916,22 @@ describe('MedicationsForm', () => {
 
       const { container } = renderWithQueryClient(<MedicationsForm />);
       expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('Privilege Guard', () => {
+    test('renders null when user lacks Add Medications privilege', () => {
+      mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
+      const { container } = render(<MedicationsForm />);
+      expect(container).toBeEmptyDOMElement();
+    });
+    test('renders form when user has Add Medications privilege', () => {
+      render(
+        <UserPrivilegeProvider>
+          <MedicationsForm />
+        </UserPrivilegeProvider>,
+      );
+      expect(screen.getByTestId('medications-form-tile')).toBeInTheDocument();
     });
   });
 });

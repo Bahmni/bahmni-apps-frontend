@@ -1,10 +1,10 @@
 import { get } from '../api';
-import { USER_PRIVILEGES_URL } from '../constants/app';
+import { SESSION_URL } from '../constants/app';
 import { getFormattedError } from '../errorHandling';
-import { UserPrivilege } from './models';
+import { UserPrivilege, SessionResponse } from './models';
 
 /**
- * Fetches current user privileges from whoami API
+ * Fetches current user privileges from session API
  * @returns Promise that resolves to array of user privileges or null if failed
  * @throws Error if fetch fails
  */
@@ -12,8 +12,9 @@ export const getCurrentUserPrivileges = async (): Promise<
   UserPrivilege[] | null
 > => {
   try {
-    const privileges = await get<UserPrivilege[]>(USER_PRIVILEGES_URL);
-    return privileges;
+    const session = await get<SessionResponse>(SESSION_URL);
+
+    return session.user.privileges;
   } catch (error) {
     const { message } = getFormattedError(error);
     throw new Error(message);
@@ -21,19 +22,28 @@ export const getCurrentUserPrivileges = async (): Promise<
 };
 
 /**
- * Check if user has a specific privilege by name
- * @param userPrivileges - Array of user privileges from whoami API
- * @param privilegeName - Name of the privilege to check
- * @returns true if user has the privilege, false otherwise
+ * Check if user has a specific privilege or any of the given privileges
+ * @param userPrivileges - Array of user privileges from session API
+ * @param requiredPrivilege - Name of the privilege or array of privilege names to check
+ * @returns true if user has any of the required privileges, false otherwise
  */
-// to privilege service
 export const hasPrivilege = (
   userPrivileges: UserPrivilege[] | null,
-  privilegeName: string,
+  requiredPrivilege: string | string[] | undefined,
 ): boolean => {
   if (!userPrivileges || userPrivileges.length === 0) {
     return false;
   }
 
-  return userPrivileges.some((privilege) => privilege.name === privilegeName);
+  if (!requiredPrivilege || requiredPrivilege.length === 0) {
+    return true;
+  }
+
+  const requiredPrivileges = Array.isArray(requiredPrivilege)
+    ? requiredPrivilege
+    : [requiredPrivilege];
+
+  return userPrivileges.some((userPrivilege) =>
+    requiredPrivileges.includes(userPrivilege.name),
+  );
 };
