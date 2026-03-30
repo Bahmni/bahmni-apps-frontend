@@ -86,6 +86,7 @@ export interface RegistrationFormSection {
 }
 
 export interface RegistrationFormConfig {
+  basicInformation: RegistrationFormSection;
   sections: RegistrationFormSection[];
 }
 

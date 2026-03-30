@@ -294,18 +294,29 @@ describe('PatientRegister', () => {
     useRegistrationConfig.mockReturnValue({
       registrationConfig: {
         registrationForm: {
+          basicInformation: {
+            name: 'Basic Information',
+            translationKey: 'REGISTRATION_BASIC_INFORMATION',
+            controls: [
+              {
+                type: 'profile',
+                titleTranslationKey: 'REGISTRATION_SECTION_BASIC_INFO',
+              },
+            ],
+          },
           sections: [
             {
-              name: 'Basic Details',
+              name: 'Address Details',
               controls: [
-                {
-                  type: 'profile',
-                  titleTranslationKey: 'REGISTRATION_SECTION_BASIC_INFO',
-                },
                 {
                   type: 'address',
                   titleTranslationKey: 'REGISTRATION_SECTION_ADDRESS_DETAILS',
                 },
+              ],
+            },
+            {
+              name: 'Contact Information',
+              controls: [
                 {
                   type: 'contactInfo',
                   titleTranslationKey: 'REGISTRATION_SECTION_CONTACT_DETAILS',
@@ -934,15 +945,19 @@ describe('PatientRegister', () => {
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
+            basicInformation: {
+              name: 'Basic Information',
+              translationKey: 'REGISTRATION_BASIC_INFORMATION',
+              controls: [{ type: 'profile' }],
+            },
             sections: [
               {
-                name: 'Basic Details',
-                translationKey: 'REGISTRATION_SECTION_BASIC_DETAILS',
-                controls: [
-                  { type: 'profile' },
-                  { type: 'address' },
-                  { type: 'contactInfo' },
-                ],
+                name: 'Address Details',
+                controls: [{ type: 'address' }],
+              },
+              {
+                name: 'Contact Information',
+                controls: [{ type: 'contactInfo' }],
               },
               {
                 name: 'Additional Information',
@@ -964,7 +979,7 @@ describe('PatientRegister', () => {
       ).toBeInTheDocument();
     });
 
-    it('should render no form sections when config is absent', () => {
+    it('should render default Basic Information even when config is absent', () => {
       const { useRegistrationConfig } = jest.requireMock(
         '../../../providers/registrationConfig',
       );
@@ -974,8 +989,9 @@ describe('PatientRegister', () => {
 
       renderComponent();
 
-      // No sections are rendered when config is absent
-      expect(screen.queryByTestId('patient-profile')).not.toBeInTheDocument();
+      // Basic Information should always be rendered (from fallback default)
+      expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
+      // Optional sections should not be rendered
       expect(screen.queryByTestId('patient-address')).not.toBeInTheDocument();
       expect(screen.queryByTestId('patient-contact')).not.toBeInTheDocument();
       expect(
@@ -991,6 +1007,11 @@ describe('PatientRegister', () => {
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
+            basicInformation: {
+              name: 'Basic Information',
+              translationKey: 'REGISTRATION_BASIC_INFORMATION',
+              controls: [{ type: 'profile' }],
+            },
             sections: [
               {
                 name: 'Additional Information',
@@ -998,13 +1019,12 @@ describe('PatientRegister', () => {
                 controls: [{ type: 'additionalInfo' }],
               },
               {
-                name: 'Basic Details',
-                translationKey: 'REGISTRATION_SECTION_BASIC_DETAILS',
-                controls: [
-                  { type: 'profile' },
-                  { type: 'address' },
-                  { type: 'contactInfo' },
-                ],
+                name: 'Address Details',
+                controls: [{ type: 'address' }],
+              },
+              {
+                name: 'Contact Information',
+                controls: [{ type: 'contactInfo' }],
               },
             ],
           },
@@ -1038,6 +1058,11 @@ describe('PatientRegister', () => {
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
+            basicInformation: {
+              name: 'Basic Information',
+              translationKey: 'REGISTRATION_BASIC_INFORMATION',
+              controls: [{ type: 'profile' }],
+            },
             sections: [
               {
                 name: 'Identifiers',
@@ -1070,6 +1095,11 @@ describe('PatientRegister', () => {
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
+            basicInformation: {
+              name: 'Basic Information',
+              translationKey: 'REGISTRATION_BASIC_INFORMATION',
+              controls: [{ type: 'profile' }],
+            },
             sections: [
               {
                 name: 'Relationships',
@@ -1096,13 +1126,15 @@ describe('PatientRegister', () => {
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
+            basicInformation: {
+              name: 'Basic Information',
+              translationKey: 'REGISTRATION_BASIC_INFORMATION',
+              controls: [{ type: 'profile' }],
+            },
             sections: [
               {
-                name: 'Mixed Section',
-                translationKey: 'REGISTRATION_SECTION_MIXED',
+                name: 'Address Details',
                 controls: [
-                  { type: 'profile' },
-                  { type: 'unknownCustomType' },
                   { type: 'address' },
                 ],
               },
@@ -1121,13 +1153,18 @@ describe('PatientRegister', () => {
       expect(screen.queryByTestId('patient-unknown')).not.toBeInTheDocument();
     });
 
-    it('should handle empty sections array in config', () => {
+    it('should handle empty sections array in config but still render basicInformation', () => {
       const { useRegistrationConfig } = jest.requireMock(
         '../../../providers/registrationConfig',
       );
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
+            basicInformation: {
+              name: 'Basic Information',
+              translationKey: 'REGISTRATION_BASIC_INFORMATION',
+              controls: [{ type: 'profile' }],
+            },
             sections: [],
           },
         },
@@ -1135,8 +1172,9 @@ describe('PatientRegister', () => {
 
       renderComponent();
 
-      // No form sections should be rendered
-      expect(screen.queryByTestId('patient-profile')).not.toBeInTheDocument();
+      // Basic Information should always be rendered
+      expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
+      // Optional sections should not be rendered
       expect(screen.queryByTestId('patient-address')).not.toBeInTheDocument();
       expect(screen.queryByTestId('patient-contact')).not.toBeInTheDocument();
       expect(

@@ -326,10 +326,50 @@
       "type": "object",
       "description": "Configuration for registration form sections and controls",
       "additionalProperties": false,
+      "required": ["sections"],
       "properties": {
+        "basicInformation": {
+          "type": "object",
+          "description": "Mandatory Basic Information section (always rendered first, non-configurable)",
+          "additionalProperties": false,
+          "required": ["name", "controls"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": ["Basic Information"],
+              "description": "Section name must be 'Basic Information' (non-configurable)"
+            },
+            "translationKey": {
+              "type": "string",
+              "description": "Translation key for the section title"
+            },
+            "controls": {
+              "type": "array",
+              "description": "Form controls for Basic Information (must include profile control only)",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["type"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["profile"],
+                    "description": "Only 'profile' control type is allowed in Basic Information"
+                  },
+                  "titleTranslationKey": {
+                    "type": "string",
+                    "description": "Optional translation key for the control's sub-heading. If absent, no heading is rendered."
+                  }
+                }
+              }
+            }
+          }
+        },
         "sections": {
           "type": "array",
-          "description": "Array of form sections to display",
+          "description": "Array of optional configurable form sections to display (does not include Basic Information)",
           "uniqueItems": true,
           "items": {
             "type": "object",
