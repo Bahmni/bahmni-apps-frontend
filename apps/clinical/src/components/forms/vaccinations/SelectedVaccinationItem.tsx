@@ -9,11 +9,7 @@ import {
   Link,
   TextAreaWClose,
 } from '@bahmni/design-system';
-import {
-  useTranslation,
-  getTodayDate,
-  DATE_PICKER_INPUT_FORMAT,
-} from '@bahmni/services';
+import { useTranslation, getTodayDate } from '@bahmni/services';
 import React, { useEffect, useCallback, useState } from 'react';
 import { DURATION_UNIT_OPTIONS } from '../../../constants/medications';
 import { Concept } from '../../../models/encounterConcepts';
@@ -417,7 +413,6 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
             <Column sm={2} md={4} lg={8} className={styles.column}>
               <DatePicker
                 datePickerType="single"
-                dateFormat={DATE_PICKER_INPUT_FORMAT}
                 data-testid={`vaccination-start-date-picker-${id}`}
                 value={startDate}
                 minDate={getTodayDate()}
@@ -430,7 +425,6 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                 <DatePickerInput
                   id={`start-date-${id}`}
                   data-testid={`vaccination-start-date-input-${id}`}
-                  placeholder={DATE_PICKER_INPUT_FORMAT}
                   labelText={t('MEDICATION_START_DATE_INPUT_LABEL')}
                   aria-label="Start Date"
                   hideLabel

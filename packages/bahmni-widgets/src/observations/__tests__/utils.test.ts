@@ -289,7 +289,9 @@ describe('observationUtils', () => {
       };
 
       const result = extractObservationsFromBundle(bundle);
-      expect(result.observations[0].observationValue?.value).toBe('2024-06-15');
+      expect(result.observations[0].observationValue?.value).toBe(
+        '2024-06-15T10:30:00+00:00',
+      );
       expect(result.observations[0].observationValue?.type).toBe('dateTime');
       expect(result.observations[0].observationValue?.isAbnormal).toBe(false);
     });
@@ -368,7 +370,9 @@ describe('observationUtils', () => {
       };
 
       const result = extractObservationsFromBundle(bundle);
-      expect(result.observations[0].observationValue?.value).toBe('2024-06-15');
+      expect(result.observations[0].observationValue?.value).toBe(
+        '2024-06-15T10:30:00+00:00',
+      );
       expect(result.observations[0].observationValue?.type).toBe('dateTime');
       expect(result.observations[0].observationValue?.isAbnormal).toBe(true);
     });
@@ -557,6 +561,33 @@ describe('observationUtils', () => {
       };
 
       expect(formatObservationValue(observation)).toBe('');
+    });
+
+    it('should format dateTime value using formatDateTime', () => {
+      const mockFormatDateTime = services.formatDateTime as jest.MockedFunction<
+        typeof services.formatDateTime
+      >;
+      mockFormatDateTime.mockReturnValue({
+        formattedResult: '15/06/2024',
+      });
+
+      const mockT = (key: string) => key;
+      const observation: ExtractedObservation = {
+        id: 'obs-4',
+        display: 'Date of Onset',
+        observationValue: {
+          value: '2024-06-15T10:30:00+00:00',
+          type: 'dateTime',
+        },
+      };
+
+      expect(formatObservationValue(observation, mockT)).toBe('15/06/2024');
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        '2024-06-15T10:30:00+00:00',
+        mockT,
+      );
+
+      mockFormatDateTime.mockClear();
     });
   });
 

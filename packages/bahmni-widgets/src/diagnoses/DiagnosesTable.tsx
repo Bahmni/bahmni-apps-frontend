@@ -1,9 +1,8 @@
 import { SortableDataTable, Tag, Tile } from '@bahmni/design-system';
 import {
-  formatDate,
+  formatDateTime,
   sortByDate,
   Diagnosis,
-  DATE_FORMAT,
   useTranslation,
   getPatientDiagnoses,
   useSubscribeConsultationSaved,
@@ -92,8 +91,7 @@ const DiagnosesTable: React.FC = () => {
             </div>
           );
         case 'recordedDate':
-          return formatDate(diagnosis.recordedDate, t, DATE_FORMAT)
-            .formattedResult;
+          return formatDateTime(diagnosis.recordedDate, t).formattedResult;
         case 'recorder':
           return diagnosis.recorder || t('DIAGNOSIS_TABLE_NOT_AVAILABLE');
         default:

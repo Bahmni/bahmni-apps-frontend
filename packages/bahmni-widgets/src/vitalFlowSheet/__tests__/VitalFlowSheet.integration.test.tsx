@@ -4,6 +4,7 @@ import {
   getFormattedError,
   useTranslation,
   VitalFlowSheetData,
+  DEFAULT_DATE_FORMAT_STORAGE_KEY,
 } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import { useParams } from 'react-router-dom';
@@ -16,7 +17,6 @@ jest.mock('@bahmni/services', () => ({
   getVitalFlowSheetData: jest.fn(),
   getFormattedError: jest.fn(),
   useTranslation: jest.fn(),
-  formatDate: jest.fn(() => ({ formattedResult: '01 Jan, 2024' })),
 }));
 
 jest.mock('../../hooks/usePatientUUID');
@@ -107,6 +107,7 @@ describe('VitalFlowSheet Integration Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.setItem(DEFAULT_DATE_FORMAT_STORAGE_KEY, 'dd/MM/yyyy');
 
     mockUseParams.mockReturnValue({
       patientUUID: 'test-patient-uuid',

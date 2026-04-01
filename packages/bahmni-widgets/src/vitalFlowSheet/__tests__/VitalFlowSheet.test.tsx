@@ -69,7 +69,10 @@ jest.mock('@bahmni/services', () => ({
       return translations[key] || key;
     },
   }),
-  formatDate: jest.fn(() => ({ formattedResult: '01 Jan, 2024' })),
+  formatDateTime: jest.fn(() => ({
+    formattedResult: '01/01/2024 12:00 PM',
+    isValid: true,
+  })),
   useSubscribeConsultationSaved: jest.fn(),
 }));
 

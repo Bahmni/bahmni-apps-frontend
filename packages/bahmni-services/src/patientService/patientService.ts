@@ -1,7 +1,6 @@
 import { Patient } from 'fhir/r4';
 import { get, post } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
-import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
 import {
@@ -165,8 +164,6 @@ export const formatPatientData = (patient: Patient): FormattedPatientData => {
     });
   }
 
-  const age = patient.birthDate ? calculateAge(patient.birthDate) : null;
-
   return {
     id: patient.id ?? '',
     fullName: formatPatientName(patient),
@@ -175,7 +172,6 @@ export const formatPatientData = (patient: Patient): FormattedPatientData => {
     formattedAddress: address,
     formattedContact: contact,
     identifiers: identifierMap,
-    age,
   };
 };
 

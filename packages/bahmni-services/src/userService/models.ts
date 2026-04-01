@@ -17,3 +17,13 @@ export interface UserLocation {
 export interface UserResponse {
   results: User[];
 }
+
+/**
+ * Interface representing App Settings response from Bahmni API
+ */
+export interface AppSetting {
+  property: string;
+  value: string;
+}
+
+export type AppSettingsResponse = AppSetting[];

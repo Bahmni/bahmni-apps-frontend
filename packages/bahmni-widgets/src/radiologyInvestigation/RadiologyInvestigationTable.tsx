@@ -10,16 +10,13 @@ import {
 import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
-  DATE_TIME_FORMAT,
   dispatchAuditEvent,
-  formatDate,
-  FULL_MONTH_DATE_FORMAT,
+  formatDateTime,
   getCategoryUuidFromOrderTypes,
   getDiagnosticReports,
   getFormattedError,
   getPatientRadiologyInvestigationBundleWithImagingStudy,
   groupByDate,
-  ISO_DATE_FORMAT,
   shouldEnableEncounterFilter,
   useSubscribeConsultationSaved,
   useTranslation,
@@ -172,7 +169,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     );
 
     const grouped = groupByDate(filteredInvestigations, (investigation) => {
-      const result = formatDate(investigation.orderedDate, t, ISO_DATE_FORMAT);
+      const result = formatDateTime(investigation.orderedDate, t);
       return result.formattedResult;
     });
 
@@ -394,8 +391,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
 
   const reportedOn =
     selectedInvestigation?.reportedDate &&
-    formatDate(selectedInvestigation.reportedDate, t, DATE_TIME_FORMAT)
-      .formattedResult;
+    formatDateTime(selectedInvestigation.reportedDate, t, true).formattedResult;
 
   return (
     <div
@@ -403,21 +399,17 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
       data-testid="radiology-investigations-table-test-id"
       aria-label="radiology-investigations-table-aria-label"
     >
-      <Accordion align="start">
+      <Accordion align="start" aria-label={'accordion-radiology-investigation'}>
         {updatedRadiologyInvestigations.map((investigationsByDate, index) => {
           const { date, investigations } = investigationsByDate;
-          const formattedDate = formatDate(
-            date,
-            t,
-            FULL_MONTH_DATE_FORMAT,
-          ).formattedResult;
 
           return (
             <AccordionItem
-              title={formattedDate}
+              title={date}
               key={date}
               className={styles.customAccordianItem}
               testId={'accordian-table-title'}
+              aria-label={`accordian-title-${date}`}
               open={openAccordionIndices.has(index)}
               onHeadingClick={() => {
                 setOpenAccordionIndices((prev) => {
@@ -441,7 +433,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
                 emptyStateMessage={t('NO_RADIOLOGY_INVESTIGATIONS')}
                 renderCell={renderCell}
                 className={styles.radiologyInvestigationTableBody}
-                dataTestId={`radiology-investigations-table-${formattedDate}`}
+                dataTestId={`radiology-investigations-table-${date}`}
               />
             </AccordionItem>
           );

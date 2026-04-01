@@ -1,4 +1,5 @@
 import { Bundle, ServiceRequest, ImagingStudy } from 'fhir/r4';
+import { SERVICE_REQUEST_COUNT } from '../../orderRequestService/constants';
 
 // Mock patient UUID
 export const mockPatientUUID = 'c81876c3-b464-486a-9ebf-20eea9431fb1';
@@ -213,7 +214,7 @@ export const mockRadiologyInvestigationBundle: Bundle = {
   link: [
     {
       relation: 'self',
-      url: `http://localhost/openmrs/ws/fhir2/R4/ServiceRequest?_count=100&_sort=-_lastUpdated&category=d3561dc0-5e07-11ef-8f7c-0242ac120002&numberOfVisits=5&patient=${mockPatientUUID}`,
+      url: `http://localhost/openmrs/ws/fhir2/R4/ServiceRequest?_count=${SERVICE_REQUEST_COUNT}&_sort=-_lastUpdated&category=d3561dc0-5e07-11ef-8f7c-0242ac120002&numberOfVisits=5&patient=${mockPatientUUID}`,
     },
   ],
   entry: mockRadiologyInvestigations.map((resource) => ({

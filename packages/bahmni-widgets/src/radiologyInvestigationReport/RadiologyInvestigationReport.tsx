@@ -1,11 +1,14 @@
 import { SortableDataTable } from '@bahmni/design-system';
-import { getDiagnosticReportBundle } from '@bahmni/services';
+import { getDiagnosticReportBundle, useTranslation } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import classNames from 'classnames';
 import type { Bundle, Observation, Encounter } from 'fhir/r4';
 import React, { useMemo } from 'react';
 import { ExtractedObservation } from '../observations/models';
-import { extractObservationsFromBundle } from '../observations/utils';
+import {
+  extractObservationsFromBundle,
+  formatObservationValue,
+} from '../observations/utils';
 import styles from './styles/RadiologyInvestigationReport.module.scss';
 
 export interface RadiologyInvestigationReportProps {
@@ -24,29 +27,25 @@ const getObservationDisplayInfo = (observation: ExtractedObservation) => {
     return { rangeString: '', isAbnormal: false };
   }
 
-  const { value, unit, referenceRange } = observationValue;
+  const { referenceRange } = observationValue;
   const lowNormal = referenceRange?.low?.value;
   const hiNormal = referenceRange?.high?.value;
 
   const hasLow = lowNormal != null;
   const hasHigh = hiNormal != null;
 
-  const rangeString =
-    hasLow && hasHigh
-      ? ` (${lowNormal} - ${hiNormal})`
-      : hasLow
-        ? ` (>${lowNormal})`
-        : hasHigh
-          ? ` (<${hiNormal})`
-          : '';
+  let rangeString = '';
+  if (hasLow && hasHigh) {
+    rangeString = ` (${lowNormal} - ${hiNormal})`;
+  } else if (hasLow) {
+    rangeString = ` (>${lowNormal})`;
+  } else if (hasHigh) {
+    rangeString = ` (<${hiNormal})`;
+  }
 
   const isAbnormal = observationValue.isAbnormal ?? false;
 
-  return {
-    rangeString,
-    isAbnormal,
-    value: unit ? `${value} ${unit}` : String(value),
-  };
+  return { rangeString, isAbnormal };
 };
 
 const ObservationMember: React.FC<ObservationMemberProps> = ({
@@ -54,6 +53,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
   depth = 0,
   memberIndex = 0,
 }) => {
+  const { t } = useTranslation();
   const hasMembers = member.members && member.members.length > 0;
   const displayLabel = member.display;
 
@@ -88,7 +88,8 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
     );
   }
 
-  const { rangeString, isAbnormal, value } = getObservationDisplayInfo(member);
+  const { rangeString, isAbnormal } = getObservationDisplayInfo(member);
+  const formattedValue = formatObservationValue(member, t);
 
   return (
     <div
@@ -114,7 +115,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
         )}
         data-testid={`obs-member-value-${displayLabel}-${memberIndex}`}
       >
-        {value}
+        {formattedValue}
       </p>
     </div>
   );
@@ -123,10 +124,11 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
 const renderObservation = (
   observation: ExtractedObservation,
   index: number,
+  t: (key: string) => string,
 ) => {
   const hasMembers = observation.members && observation.members.length > 0;
-  const { rangeString, isAbnormal, value } =
-    getObservationDisplayInfo(observation);
+  const { rangeString, isAbnormal } = getObservationDisplayInfo(observation);
+  const formattedValue = formatObservationValue(observation, t);
 
   return (
     <div
@@ -172,7 +174,7 @@ const renderObservation = (
             )}
             data-testid={`observation-value-${observation.display}-${index}`}
           >
-            {value}
+            {formattedValue}
           </p>
         )}
       </div>
@@ -183,6 +185,7 @@ const renderObservation = (
 export const RadiologyInvestigationReport: React.FC<
   RadiologyInvestigationReportProps
 > = ({ reportId }) => {
+  const { t } = useTranslation();
   const { data: diagnosticReportBundle, isLoading: isLoadingReportBundle } =
     useQuery({
       queryKey: ['diagnosticReportBundle', reportId],
@@ -257,7 +260,7 @@ export const RadiologyInvestigationReport: React.FC<
       className={styles.resultsContainer}
     >
       {multiSelectGroupedObservations.map((obs, index) =>
-        renderObservation(obs, index),
+        renderObservation(obs, index, t),
       )}
     </div>
   );

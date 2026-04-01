@@ -12,11 +12,12 @@ import {
   subDays,
   format,
 } from 'date-fns';
-import type { Locale } from 'date-fns';
-import { enUS, enGB, es, fr, de } from 'date-fns/locale';
-import { getUserPreferredLocale } from '../i18n/translationService';
 import { Age } from '../patientService/models';
-import { DATE_FORMAT, DATE_TIME_FORMAT } from './constants';
+import {
+  DEFAULT_BROWSER_DATE_FORMAT,
+  DEFAULT_DATE_FORMAT,
+  DEFAULT_DATE_FORMAT_STORAGE_KEY,
+} from './constants';
 import { DATE_ERROR_MESSAGES } from './errors';
 
 export interface FormatDateResult {
@@ -25,31 +26,6 @@ export interface FormatDateResult {
     title: string;
     message: string;
   };
-}
-
-/**
- * Mapping of user locale codes to date-fns locale objects
- */
-const LOCALE_MAP: Record<string, Locale> = {
-  en: enGB,
-  'en-US': enUS,
-  'en-GB': enGB,
-  es: es,
-  'es-ES': es,
-  fr: fr,
-  'fr-FR': fr,
-  de: de,
-  'de-DE': de,
-};
-
-/**
- * Gets the appropriate date-fns locale object based on user's preferred locale.
- * Falls back to English (GB) if the locale is not supported or if an error occurs.
- * @returns The date-fns locale object to use for formatting
- */
-function getDateFnsLocale(): Locale {
-  const userLocale = getUserPreferredLocale();
-  return LOCALE_MAP[userLocale] || LOCALE_MAP['en'];
 }
 
 /**
@@ -175,34 +151,54 @@ function formatDateGeneric(
     };
   }
 
-  const locale = getDateFnsLocale();
-  return { formattedResult: format(dateToFormat, dateFormat, { locale }) };
+  return { formattedResult: format(dateToFormat, dateFormat) };
 }
 
 /**
- * Formats a date string or Date object into the specified date time format.
- * @param date - The date string or Date object to format.
- * @returns A FormatDateResult object containing either a formatted date string or an error.
+ * Universal date/time formatting method that retrieves the date format with intelligent fallback.
+ *
+ * Fallback priority:
+ * 1. localStorage (user-configured format)
+ * 2. In date-fns, the token P represents the localized date. It automatically adjusts based on the user's locale.
+ * 3. DATE_FORMAT constant (final fallback)
+ *
+ * @param date - The date to format (string, Date object, or timestamp in milliseconds)
+ * @param t - Translation function for error messages (default: identity function)
+ * @param includeTime - Whether to append time to the format (default: false)
+ *                      When true, always adds 12-hour time format (h:mm a)
+ * @returns FormatDateResult with formatted string or error
+ *
+ * @example
+ * // Date only (uses localStorage or browser locale)
+ * formatDateTime(date) // "28/03/2024" (UK) or "03/28/2024" (US)
+ *
+ * @example
+ * // Date with time (always 12-hour format)
+ * formatDateTime(date, t, true) // "28/03/2024 2:30 PM"
  */
 export function formatDateTime(
   date: string | Date | number,
-  t: (key: string, options?: { count?: number }) => string,
+  t?: (key: string, options?: { count?: number }) => string,
+  includeTime: boolean = false,
+  dateFormat?: string,
 ): FormatDateResult {
-  return formatDateGeneric(date, DATE_TIME_FORMAT, t);
-}
+  const translationFn = t ?? ((key: string) => key);
 
-/**
- * Formats a date string or Date object into the specified date format.
- * @param date - The date string or Date object to format.
- * @param format - The date format to use (default is 'dd/MM/yyyy').
- * @returns A FormatDateResult object containing either a formatted date string or an error.
- */
-export function formatDate(
-  date: string | Date | number,
-  t: (key: string, options?: { count?: number }) => string,
-  format: string = DATE_FORMAT,
-): FormatDateResult {
-  return formatDateGeneric(date, format, t);
+  let finalFormat: string;
+  try {
+    finalFormat =
+      dateFormat ??
+      localStorage.getItem(DEFAULT_DATE_FORMAT_STORAGE_KEY) ??
+      DEFAULT_BROWSER_DATE_FORMAT;
+  } catch {
+    finalFormat = DEFAULT_DATE_FORMAT;
+  }
+
+  if (includeTime && !dateFormat) {
+    finalFormat = `${finalFormat} h:mm a`;
+  }
+
+  return formatDateGeneric(date, finalFormat, translationFn);
 }
 
 /**
@@ -295,42 +291,43 @@ export function formatDateDistance(
   if (diffInYears >= 5) {
     const monthInFraction = diffInMonths % 12;
     const yearValue = monthInFraction > 6 ? diffInYears + 1 : diffInYears;
-    const yearUnit = t('CLINICAL_YEARS_TRANSLATION_KEY', {
+    const yearUnit = t('YEARS', {
       count: yearValue,
     });
-    formattedResult = `${yearValue} ${yearUnit}`;
+    formattedResult = `${yearValue}${yearUnit}`;
   } else if (diffInYears >= 1) {
     // Use years for periods >= 1 year
     const monthInFraction = diffInMonths % 12;
-    const yearUnit = t('CLINICAL_YEARS_TRANSLATION_KEY', {
+    const yearUnit = t('YEARS', {
       count: diffInYears + monthInFraction,
     });
+    const newLocal = diffInYears + 1;
     formattedResult =
       monthInFraction === 0
-        ? `${diffInYears} ${yearUnit}`
+        ? `${diffInYears}${yearUnit}`
         : monthInFraction > 6
-          ? `${diffInYears + 1} ${yearUnit}`
-          : `${diffInYears}.5 ${yearUnit}`;
+          ? `${newLocal}${yearUnit}`
+          : `${diffInYears}.5${yearUnit}`;
   } else if (diffInMonths >= 11) {
-    const yearUnit = t('CLINICAL_YEARS_TRANSLATION_KEY', {
+    const yearUnit = t('YEARS', {
       count: 1,
     });
-    formattedResult = `1 ${yearUnit}`;
+    formattedResult = `1${yearUnit}`;
   } else if (diffInMonths >= 1) {
     // Use months for periods >= 1 month but < 1 year
     const daysInFraction = diffInDays % 30;
     const monthValue = daysInFraction > 15 ? diffInMonths + 1 : diffInMonths;
-    const monthUnit = t('CLINICAL_MONTHS_TRANSLATION_KEY', {
+    const monthUnit = t('MONTHS', {
       count: monthValue,
     });
-    formattedResult = `${monthValue} ${monthUnit}`;
+    formattedResult = `${monthValue}${monthUnit}`;
   } else {
     // Use days for everything else (including hours, minutes - round up to at least 1 day)
     const days = Math.max(1, diffInDays);
-    const dayUnit = t('CLINICAL_DAYS_TRANSLATION_KEY', {
+    const dayUnit = t('DAYS', {
       count: days,
     });
-    formattedResult = `${days} ${dayUnit}`;
+    formattedResult = `${days}${dayUnit}`;
   }
 
   return { formattedResult };
@@ -342,76 +339,71 @@ export const getTodayDate = (): Date => {
   return today;
 };
 
-export function formatDateAndTime(date: number, includeTime: boolean): string {
-  const d = new Date(date);
-
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-  const parts = formatter.formatToParts(d);
-  const day = parts.find((p) => p.type === 'day')?.value;
-  const month = parts.find((p) => p.type === 'month')?.value;
-  const year = parts.find((p) => p.type === 'year')?.value;
-  let formattedDate = `${day} ${month} ${year}`;
-
-  if (includeTime) {
-    let hours = d.getHours();
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12;
-    const formattedTime = `${hours}:${minutes} ${ampm}`;
-    formattedDate += ` ${formattedTime}`;
-  }
-
-  return formattedDate;
-}
 /**
- * Calculate and format age for display in patient search results.
- * For infants under 3 months, displays age in total days only.
- * For all others, displays age in years, months, and days format.
+ * Calculate and format age for display with age-appropriate formatting.
  *
- * @param birthDateMillis - Birth date in milliseconds
+ * Display rules:
+ * - ≤ 90 days: Shows days only (e.g., "45 Days")
+ * - 91 days to < 1 year: Shows months + days only (e.g., "3 Months 15 Days")
+ * - ≥ 1 year: Shows years + months + days (e.g., "2 Years 3 Months 15 Days")
+ *
+ * @param birthDate - Birth date in milliseconds (timestamp) or ISO date string (yyyy-mm-dd)
  * @param t - Optional translation function for Y/M/D labels
- * @returns Formatted age string (e.g., "45d" for infants, "25y 6m 15d" for others)
+ * @returns Formatted age string
  */
-export function calculateAgeinYearsAndMonths(
-  birthDateMillis: number,
+export function getFormattedAge(
+  birthDate: number | string,
   t?: (key: string, options?: { count?: number }) => string,
 ): string {
-  const birthDate = new Date(birthDateMillis);
+  const birthDateObj =
+    typeof birthDate === 'string' ? parseISO(birthDate) : new Date(birthDate);
   const today = new Date();
 
-  const years = differenceInYears(today, birthDate);
-  const lastBirthday = addYears(birthDate, years);
+  const years = differenceInYears(today, birthDateObj);
+  const lastBirthday = addYears(birthDateObj, years);
   const months = differenceInMonths(today, lastBirthday);
   const lastMonthAnniversary = addMonths(lastBirthday, months);
   const days = differenceInDays(today, lastMonthAnniversary);
 
-  if (years === 0 && months < 3) {
-    const totalDays = differenceInDays(today, birthDate);
-    if (!t) {
-      return `${totalDays} days`;
-    }
-    const dayUnit = t('REGISTRATION_DAYS_SHORT', { count: totalDays });
+  const translationKeys = {
+    years: 'YEARS',
+    months: 'MONTHS',
+    days: 'DAYS',
+  };
+
+  const fallbackUnits = {
+    years: ' years',
+    months: ' months',
+    days: ' days',
+  };
+
+  const totalDays = differenceInDays(today, birthDateObj);
+
+  if (totalDays <= 90) {
+    const dayUnit = t
+      ? t(translationKeys.days, { count: totalDays })
+      : fallbackUnits.days;
     return `${totalDays}${dayUnit}`;
   }
-  if (!t) {
-    return `${years} years ${months} months ${days} days`;
-  }
 
-  const ageComponents: Array<[number, string]> = [
-    [years, 'REGISTRATION_YEARS_SHORT'],
-    [months, 'REGISTRATION_MONTHS_SHORT'],
-    [days, 'REGISTRATION_DAYS_SHORT'],
-  ];
+  const ageComponents: Array<[number, string, string]> =
+    years >= 1
+      ? [
+          [years, translationKeys.years, fallbackUnits.years],
+          [months, translationKeys.months, fallbackUnits.months],
+          [days, translationKeys.days, fallbackUnits.days],
+        ]
+      : [
+          [months, translationKeys.months, fallbackUnits.months],
+          [days, translationKeys.days, fallbackUnits.days],
+        ];
 
-  const parts = ageComponents
-    .filter(([value]) => value > 0)
-    .map(([value, key]) => `${value}${t(key, { count: value })}`);
+  const parts = ageComponents.map(([value, key, fallback]) => {
+    const unit = t ? t(key, { count: value }) : fallback;
+    return `${value}${unit}`;
+  });
 
-  return parts.join(' ') || '0d';
+  return parts.join(' ');
 }
 /**
  * Sorts an array of objects by a date field

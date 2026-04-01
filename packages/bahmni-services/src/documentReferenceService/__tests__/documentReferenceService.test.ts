@@ -33,6 +33,33 @@ const mockBundle: Bundle<DocumentReference> = {
   entry: [{ resource: mockDocumentReference }],
 };
 
+const mockMultiContentDoc: DocumentReference = {
+  resourceType: 'DocumentReference',
+  id: 'doc-multi',
+  status: 'current',
+  masterIdentifier: { value: 'MultiPage_2024' },
+  content: [
+    {
+      attachment: {
+        contentType: 'application/pdf',
+        url: '100/page1.pdf',
+      },
+    },
+    {
+      attachment: {
+        contentType: 'application/pdf',
+        url: '100/page2.pdf',
+      },
+    },
+  ],
+};
+
+const mockMultiBundle: Bundle<DocumentReference> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [{ resource: mockMultiContentDoc }],
+};
+
 describe('documentReferenceService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -130,6 +157,66 @@ describe('documentReferenceService', () => {
           documentUrl: '100/doc-uuid__prescription.pdf',
         }),
       );
+    });
+
+    it('maps content entries to attachments array', async () => {
+      mockedGet.mockResolvedValueOnce(mockBundle);
+
+      const result = await getFormattedDocumentReferences(PATIENT_UUID);
+
+      expect(result[0].attachments).toEqual([
+        {
+          url: '100/doc-uuid__prescription.pdf',
+          contentType: 'application/pdf',
+        },
+      ]);
+    });
+
+    it('maps multiple content entries to attachments array', async () => {
+      mockedGet.mockResolvedValueOnce(mockMultiBundle);
+
+      const result = await getFormattedDocumentReferences(PATIENT_UUID);
+
+      expect(result[0].attachments).toHaveLength(2);
+      expect(result[0].attachments[0]).toEqual({
+        url: '100/page1.pdf',
+        contentType: 'application/pdf',
+      });
+      expect(result[0].attachments[1]).toEqual({
+        url: '100/page2.pdf',
+        contentType: 'application/pdf',
+      });
+    });
+
+    it('populates backward-compat documentUrl from first attachment', async () => {
+      mockedGet.mockResolvedValueOnce(mockMultiBundle);
+
+      const result = await getFormattedDocumentReferences(PATIENT_UUID);
+
+      // documentUrl (backward compat) should be first attachment's url
+      expect(result[0].documentUrl).toBe('100/page1.pdf');
+      expect(result[0].contentType).toBe('application/pdf');
+    });
+
+    it('returns empty attachments array when content is absent', async () => {
+      const docWithNoContent: DocumentReference = {
+        resourceType: 'DocumentReference',
+        id: 'doc-no-content',
+        status: 'current',
+        masterIdentifier: { value: 'NoContent_2024' },
+        content: [],
+      };
+      const bundle: Bundle<DocumentReference> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [{ resource: docWithNoContent }],
+      };
+      mockedGet.mockResolvedValueOnce(bundle);
+
+      const result = await getFormattedDocumentReferences(PATIENT_UUID);
+
+      expect(result[0].attachments).toEqual([]);
+      expect(result[0].documentUrl).toBe('');
     });
 
     it('handles missing masterIdentifier by using resource id', async () => {
@@ -263,6 +350,8 @@ describe('documentReferenceService', () => {
       const result = await getFormattedDocumentReferences(PATIENT_UUID);
 
       expect(result[0].documentUrl).toBe('');
+      // Attachment should have empty string url
+      expect(result[0].attachments[0].url).toBe('');
     });
 
     it('handles empty bundle entries', async () => {

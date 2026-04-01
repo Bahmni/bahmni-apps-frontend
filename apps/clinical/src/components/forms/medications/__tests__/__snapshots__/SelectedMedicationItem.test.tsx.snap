@@ -613,7 +613,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
               dir="auto"
               for="start-date-entry-1"
             >
-              Start date
+              Start Date
             </label>
             <div
               class="cds--date-picker-input__wrapper"
@@ -625,7 +625,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
                   data-testid="medication-start-date-input-entry-1"
                   id="start-date-entry-1"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                  placeholder="d/m/Y"
+                  placeholder="dd/MM/yyyy"
                   type="text"
                 />
                 <svg
@@ -658,7 +658,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         data-testid="medication-add-note-link-entry-1"
         href="#"
       >
-        MEDICATION_ADD_NOTE
+        Add Note
       </a>
       <span
         data-testid="medication-total-quantity-entry-1"
@@ -1450,7 +1450,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
               dir="auto"
               for="start-date-entry-1"
             >
-              Start date
+              Start Date
             </label>
             <div
               class="cds--date-picker-input__wrapper"
@@ -1462,7 +1462,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
                   data-testid="medication-start-date-input-entry-1"
                   id="start-date-entry-1"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                  placeholder="d/m/Y"
+                  placeholder="dd/MM/yyyy"
                   type="text"
                 />
                 <svg
@@ -1495,7 +1495,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         data-testid="medication-add-note-link-entry-1"
         href="#"
       >
-        MEDICATION_ADD_NOTE
+        Add Note
       </a>
       <span
         data-testid="medication-total-quantity-entry-1"

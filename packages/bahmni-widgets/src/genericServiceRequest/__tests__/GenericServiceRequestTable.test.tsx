@@ -1,13 +1,11 @@
 import {
   groupByDate,
-  formatDate,
-  FULL_MONTH_DATE_FORMAT,
-  ISO_DATE_FORMAT,
   useTranslation,
   getFormattedError,
   getCategoryUuidFromOrderTypes,
   getServiceRequests,
   useSubscribeConsultationSaved,
+  formatDateTime,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -30,7 +28,10 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
   groupByDate: jest.fn(),
-  formatDate: jest.fn(),
+  formatDateTime: jest.fn(() => ({
+    formattedResult: '01/12/2023',
+    isValid: true,
+  })),
   getFormattedError: jest.fn(),
   getCategoryUuidFromOrderTypes: jest.fn(),
   getServiceRequests: jest.fn(),
@@ -55,7 +56,9 @@ const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
 const mockGroupByDate = groupByDate as jest.MockedFunction<typeof groupByDate>;
-const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
+const mockFormatDate = formatDateTime as jest.MockedFunction<
+  typeof formatDateTime
+>;
 const mockGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
@@ -406,22 +409,6 @@ describe('GenericServiceRequestTable', () => {
           items: groupedItems,
         }));
       });
-
-      mockFormatDate.mockImplementation((dateStr, t, format) => {
-        if (format === ISO_DATE_FORMAT) {
-          if (dateStr === '2023-12-01T10:30:00.000Z') {
-            return { formattedResult: '2023-12-01' };
-          }
-          if (dateStr === '2023-12-01T14:15:00.000Z') {
-            return { formattedResult: '2023-12-01' };
-          }
-          if (dateStr === '2023-11-30T09:00:00.000Z') {
-            return { formattedResult: '2023-11-30' };
-          }
-        }
-        // For display formatting - return display format
-        return { formattedResult: '01/12/2023' };
-      });
     });
 
     it('filters replacement entries before grouping', async () => {
@@ -485,7 +472,6 @@ describe('GenericServiceRequestTable', () => {
         expect(mockFormatDate).toHaveBeenCalledWith(
           mockServiceRequests[0].orderedDate,
           expect.any(Function),
-          ISO_DATE_FORMAT,
         );
       });
     });
@@ -522,9 +508,8 @@ describe('GenericServiceRequestTable', () => {
 
       await waitFor(() => {
         expect(mockFormatDate).toHaveBeenCalledWith(
-          '2023-12-01',
-          mockUseTranslation().t,
-          FULL_MONTH_DATE_FORMAT,
+          mockServiceRequests[0].orderedDate,
+          expect.any(Function),
         );
       });
     });

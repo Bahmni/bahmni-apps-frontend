@@ -162,7 +162,6 @@ export const RelationshipRow = ({
     ),
     tillDate: (
       <DatePicker
-        dateFormat="d/m/Y"
         datePickerType="single"
         value={relationship.tillDate}
         minDate={new Date()}
@@ -180,7 +179,6 @@ export const RelationshipRow = ({
         <DatePickerInput
           id={`till-date-${relationship.id}`}
           data-testid="new-relationship-till-date-input"
-          placeholder={t('REGISTRATION_SELECT_DATE')}
           labelText=""
         />
       </DatePicker>

@@ -4,13 +4,6 @@ import type { PatientSuggestion } from '../../../../hooks/usePatientSearch';
 import type { RelationshipData } from '../PatientRelationships';
 import { RelationshipRow } from '../RelationshipRow';
 
-// Mock translations
-jest.mock('@bahmni/services', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
-
 describe('RelationshipRow', () => {
   const mockRelationshipTypes = [
     { uuid: 'type1', aIsToB: 'Parent', bIsToA: 'Child' },
@@ -109,7 +102,7 @@ describe('RelationshipRow', () => {
 
     render(<div>{row.tillDate}</div>);
 
-    const datePicker = screen.getByPlaceholderText('REGISTRATION_SELECT_DATE');
+    const datePicker = screen.getByTestId('new-relationship-till-date-input');
     expect(datePicker).toBeInTheDocument();
     expect(datePicker).toHaveAttribute('id', 'till-date-rel-1');
   });

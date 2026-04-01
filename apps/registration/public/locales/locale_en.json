@@ -81,6 +81,8 @@
   "DATE_ERROR_INVALID_FORMAT": "Invalid date format",
   "DATE_ERROR_NULL_OR_UNDEFINED": "Date is null or undefined",
   "DATE_ERROR_PARSE": "Date Parse Error",
+  "DAYS_one": " day",
+  "DAYS_other": " days",
   "ENTER_VISIT_DETAILS": "Enter Visit Details",
   "ERROR_CONFIG_GENERIC_MESSAGE": "Unable to load {{config}}. Please try refreshing the page.",
   "ERROR_CONFIG_TITLE": "{{config}} Error",
@@ -90,6 +92,8 @@
   "ERROR_SAVING_PATIENT": "Error saving patient",
   "ERROR_UPDATING_PATIENT": "Error updating patient",
   "LOADING_PATIENT_DETAILS": "Navigating to patient details...",
+  "MONTHS_one": " month",
+  "MONTHS_other": " months",
   "PATIENT_SAVED_SUCCESSFULLY": "Patient saved successfully",
   "PATIENT_UPDATED_SUCCESSFULLY": "Patient updated successfully",
   "PHONE_NUMBER": "Phone Number",
@@ -152,10 +156,9 @@
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "Unable to get patient address data",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "Unable to get patient contact data",
   "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "Unable to get patient additional data",
-  "REGISTRATION_DAYS_SHORT": "d",
-  "REGISTRATION_MONTHS_SHORT": "m",
   "REGISTRATION_PATIENT_SEARCH_APPOINTMENT": "Search by Appointment",
-  "REGISTRATION_YEARS_SHORT": "y",
   "SUCCESS": "Success",
-  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app"
+  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app",
+  "YEARS_one": " year",
+  "YEARS_other": " years"
 }

@@ -2,7 +2,7 @@ import { SortableDataTable } from '@bahmni/design-system';
 import {
   useTranslation,
   VitalFlowSheetConceptDetail,
-  formatDate,
+  formatDateTime,
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
 } from '@bahmni/services';
@@ -133,8 +133,8 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
         header: t('VITAL_SIGN'),
       },
       ...obsTimeKeys.map((obsTime, index) => {
-        const dateResult = formatDate(obsTime, t, 'dd MMMM, yyyy');
-        const timeResult = formatDate(obsTime, t, 'h:mmaaaa');
+        const dateResult = formatDateTime(obsTime, t);
+        const timeResult = formatDateTime(obsTime, t, true);
         return {
           key: `obs_${index}`,
           header: `${dateResult.formattedResult}\n${timeResult.formattedResult}`,

@@ -9,11 +9,7 @@ import {
   Link,
   TextAreaWClose,
 } from '@bahmni/design-system';
-import {
-  useTranslation,
-  getTodayDate,
-  DATE_PICKER_INPUT_FORMAT,
-} from '@bahmni/services';
+import { useTranslation, getTodayDate } from '@bahmni/services';
 import React, { useEffect, useCallback, useState } from 'react';
 import { DURATION_UNIT_OPTIONS } from '../../../constants/medications';
 import { Concept } from '../../../models/encounterConcepts';
@@ -432,7 +428,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <Column sm={2} md={4} lg={8} className={styles.column}>
               <DatePicker
                 datePickerType="single"
-                dateFormat={DATE_PICKER_INPUT_FORMAT}
                 data-testid={`medication-start-date-picker-${id}`}
                 value={startDate}
                 minDate={getTodayDate()}
@@ -445,7 +440,6 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 <DatePickerInput
                   id={`start-date-${id}`}
                   data-testid={`medication-start-date-input-${id}`}
-                  placeholder={DATE_PICKER_INPUT_FORMAT}
                   labelText={t('MEDICATION_START_DATE_INPUT_LABEL')}
                   aria-label="Start Date"
                   hideLabel

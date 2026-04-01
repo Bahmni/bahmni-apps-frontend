@@ -13,8 +13,7 @@ import {
   useTranslation,
   getProgramByUUID,
   updateProgramState,
-  DATE_FORMAT,
-  formatDate,
+  formatDateTime,
   camelToScreamingSnakeCase,
   hasPrivilege,
 } from '@bahmni/services';
@@ -199,10 +198,10 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
       case 'programName':
         return data.programName;
       case 'startDate':
-        return formatDate(data.dateEnrolled, t, DATE_FORMAT).formattedResult;
+        return formatDateTime(data.dateEnrolled, t).formattedResult;
       case 'endDate':
         return data.dateCompleted
-          ? formatDate(data.dateCompleted, t, DATE_FORMAT).formattedResult
+          ? formatDateTime(data.dateCompleted, t).formattedResult
           : '-';
       case 'outcome':
         return data.outcomeName ?? '-';

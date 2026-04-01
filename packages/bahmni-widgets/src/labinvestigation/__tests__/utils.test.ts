@@ -1,4 +1,4 @@
-import { formatDate } from '@bahmni/services';
+import { formatDateTime } from '@bahmni/services';
 import { ServiceRequest, Bundle } from 'fhir/r4';
 
 import {
@@ -20,13 +20,13 @@ import {
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  formatDate: jest.fn(),
+  formatDateTime: jest.fn(),
 }));
 
 describe('Lab Investigation Utils', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (formatDate as jest.Mock).mockImplementation((date) => ({
+    (formatDateTime as jest.Mock).mockImplementation((date) => ({
       formattedResult: date.includes('2025-05-08')
         ? 'May 08, 2025'
         : 'April 09, 2025',
@@ -592,6 +592,56 @@ describe('Lab Investigation Utils', () => {
 
       expect(result[0].value).toBe('Abnormal');
       expect(result[0].unit).toBe('');
+    });
+
+    it('should handle CodeableConcept coding display when text is absent', () => {
+      const mockObservations = [
+        {
+          resourceType: 'Observation' as const,
+          id: 'obs-1',
+          status: 'final' as const,
+          code: { text: 'Test Result' },
+          valueCodeableConcept: {
+            coding: [{ display: 'Reactive' }],
+          },
+        },
+      ];
+
+      const result = formatObservationsAsLabTestResults(
+        mockObservations,
+        mockTranslate,
+      );
+
+      expect(result[0].value).toBe('Reactive');
+      expect(result[0].unit).toBe('');
+    });
+
+    it('should handle valueDateTime using formatDateTime', () => {
+      (formatDateTime as jest.Mock).mockReturnValue({
+        formattedResult: '15/06/2024 10:30',
+      });
+
+      const mockObservations = [
+        {
+          resourceType: 'Observation' as const,
+          id: 'obs-1',
+          status: 'final' as const,
+          code: { text: 'Date of Onset' },
+          valueDateTime: '2024-06-15T10:30:00+00:00',
+        },
+      ];
+
+      const result = formatObservationsAsLabTestResults(
+        mockObservations,
+        mockTranslate,
+      );
+
+      expect(result[0].value).toBe('15/06/2024 10:30');
+      expect(result[0].unit).toBe('');
+      expect(formatDateTime).toHaveBeenCalledWith(
+        '2024-06-15T10:30:00+00:00',
+        mockTranslate,
+      );
     });
   });
 

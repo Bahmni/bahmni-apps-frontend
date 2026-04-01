@@ -599,7 +599,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
                   data-testid="vaccination-start-date-input-entry-1"
                   id="start-date-entry-1"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                  placeholder="d/m/Y"
+                  placeholder="dd/MM/yyyy"
                   type="text"
                 />
                 <svg
@@ -1410,7 +1410,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
                   data-testid="vaccination-start-date-input-entry-1"
                   id="start-date-entry-1"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                  placeholder="d/m/Y"
+                  placeholder="dd/MM/yyyy"
                   type="text"
                 />
                 <svg
@@ -2057,7 +2057,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
                   data-testid="vaccination-start-date-input-entry-1"
                   id="start-date-entry-1"
                   pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                  placeholder="d/m/Y"
+                  placeholder="dd/MM/yyyy"
                   type="text"
                 />
                 <svg

@@ -15,8 +15,14 @@ function mapDocumentReferencesToViewModels(
     .filter((entry) => entry.resource?.resourceType === 'DocumentReference')
     .map((entry) => {
       const doc = entry.resource;
-      const attachment = doc.content?.[0]?.attachment;
       const masterIdentifier = doc.masterIdentifier?.value ?? doc.id ?? '';
+
+      const attachments = (doc.content ?? [])
+        .map((c) => c.attachment)
+        .filter((a): a is NonNullable<typeof a> => !!a)
+        .map((a) => ({ url: a.url ?? '', contentType: a.contentType }));
+
+      const firstAttachment = attachments[0];
 
       return {
         id: doc.id ?? masterIdentifier,
@@ -26,8 +32,9 @@ function mapDocumentReferencesToViewModels(
           doc.category?.[0]?.coding?.[0]?.display,
         uploadedOn: doc.date ?? '',
         uploadedBy: doc.author?.[0]?.display,
-        contentType: attachment?.contentType,
-        documentUrl: attachment?.url ?? '',
+        contentType: firstAttachment?.contentType,
+        documentUrl: firstAttachment?.url ?? '',
+        attachments,
       };
     });
 }

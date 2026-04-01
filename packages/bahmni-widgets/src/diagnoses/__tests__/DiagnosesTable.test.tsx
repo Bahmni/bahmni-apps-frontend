@@ -1,8 +1,7 @@
 import {
   Diagnosis,
-  formatDate,
+  formatDateTime,
   sortByDate,
-  DATE_FORMAT,
   useTranslation,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
@@ -19,7 +18,7 @@ jest.mock('@tanstack/react-query');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
-  formatDate: jest.fn(),
+  formatDateTime: jest.fn(),
   sortByDate: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
@@ -37,7 +36,9 @@ const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
 const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
 >;
-const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
+const mockFormatDateTime = formatDateTime as jest.MockedFunction<
+  typeof formatDateTime
+>;
 const mockSortByDate = sortByDate as jest.MockedFunction<typeof sortByDate>;
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
@@ -99,7 +100,7 @@ describe('DiagnosesTable', () => {
       },
     } as any);
 
-    mockFormatDate.mockReturnValue({ formattedResult: '15/01/2024' });
+    mockFormatDateTime.mockReturnValue({ formattedResult: '15/01/2024' });
     mockSortByDate.mockImplementation((data) => data);
     mockuseSubscribeConsultationSaved.mockImplementation(() => {});
   });
@@ -200,10 +201,9 @@ describe('DiagnosesTable', () => {
     } as any);
 
     render(<DiagnosesTable />);
-    expect(mockFormatDate).toHaveBeenCalledWith(
+    expect(mockFormatDateTime).toHaveBeenCalledWith(
       '2024-01-15T10:30:00Z',
       mockUseTranslation().t,
-      DATE_FORMAT,
     );
     expect(screen.getByText('15/01/2024')).toBeInTheDocument();
   });

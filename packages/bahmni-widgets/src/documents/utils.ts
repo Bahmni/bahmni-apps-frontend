@@ -3,6 +3,7 @@ const DOCUMENT_FIELD_I18N_KEYS: Record<string, string> = {
   documentType: 'DOCUMENTS_TYPE',
   uploadedOn: 'DOCUMENTS_UPLOADED_ON',
   uploadedBy: 'DOCUMENTS_UPLOADED_BY',
+  action: 'DOCUMENTS_ACTION',
 };
 
 export function getFileTypeCategory(

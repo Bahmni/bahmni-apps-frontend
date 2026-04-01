@@ -139,7 +139,6 @@ export const PersonAttributeInput = ({
             id={uuid}
             data-testid={`person-attribute-date-input-${name}`}
             labelText={label}
-            placeholder={placeholder ?? 'mm/dd/yyyy'}
             invalid={!!error}
             invalidText={error}
           />

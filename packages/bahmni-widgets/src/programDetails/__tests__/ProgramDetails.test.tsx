@@ -1,4 +1,4 @@
-import { updateProgramState } from '@bahmni/services';
+import { updateProgramState, formatDateTime } from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
@@ -21,11 +21,16 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   updateProgramState: jest.fn(),
+  formatDateTime: jest.fn(),
 }));
 jest.mock('../../notification');
 jest.mock('../../userPrivileges/useUserPrivilege');
 
 const mockAddNotification = jest.fn();
+const mockFormatDateTime = formatDateTime as jest.MockedFunction<
+  typeof formatDateTime
+>;
+
 describe('ProgramDetails', () => {
   const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
@@ -45,6 +50,7 @@ describe('ProgramDetails', () => {
         { uuid: 'privilege-uuid-1', name: 'Edit Patient Programs' },
       ],
     });
+    mockFormatDateTime.mockReturnValue({ formattedResult: '15/01/2023' });
   });
 
   afterEach(() => {
@@ -144,7 +150,7 @@ describe('ProgramDetails', () => {
     ).toHaveTextContent('TB Program');
     expect(
       screen.getByTestId('program-details-endDate-value-test-id'),
-    ).toHaveTextContent('14/01/2023');
+    ).toHaveTextContent('15/01/2023');
     expect(
       screen.getByTestId('program-details-state-value-test-id'),
     ).toHaveTextContent('-');

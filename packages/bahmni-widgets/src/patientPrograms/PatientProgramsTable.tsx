@@ -1,8 +1,7 @@
 import { SortableDataTable, Tag } from '@bahmni/design-system';
 import {
   useTranslation,
-  formatDate,
-  DATE_FORMAT,
+  formatDateTime,
   getPatientPrograms,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
@@ -77,7 +76,7 @@ const PatientProgramsTable: React.FC<PatientProgramsTableProps> = ({
             id={`${program.uuid}-start-date`}
             data-testid={`${program.uuid}-start-date-test-id`}
           >
-            {formatDate(program.dateEnrolled, t, DATE_FORMAT).formattedResult}
+            {formatDateTime(program.dateEnrolled, t).formattedResult}
           </span>
         );
       case 'endDate':
@@ -86,7 +85,7 @@ const PatientProgramsTable: React.FC<PatientProgramsTableProps> = ({
             id={`${program.uuid}-end-date`}
             data-testid={`${program.uuid}-end-date-test-id`}
           >
-            {formatDate(program.dateCompleted, t, DATE_FORMAT).formattedResult}
+            {formatDateTime(program.dateCompleted, t).formattedResult}
           </span>
         ) : (
           '-'

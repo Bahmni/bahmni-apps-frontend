@@ -1,7 +1,6 @@
 import {
   FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL,
-  FULL_MONTH_DATE_FORMAT,
-  formatDate,
+  formatDateTime,
 } from '@bahmni/services';
 import { Bundle, ServiceRequest, DiagnosticReport, Observation } from 'fhir/r4';
 import { extractAttachmentsFromDiagnosticReport } from '../utils/Investigations';
@@ -90,11 +89,7 @@ export function formatLabInvestigations(
     const orderedDate = labTest.occurrencePeriod?.start;
     let formattedDate;
     if (orderedDate) {
-      const dateFormatResult = formatDate(
-        orderedDate,
-        t,
-        FULL_MONTH_DATE_FORMAT,
-      );
+      const dateFormatResult = formatDateTime(orderedDate, t);
       formattedDate =
         dateFormatResult.formattedResult || orderedDate.split('T')[0];
     }
@@ -185,6 +180,8 @@ export function formatObservationsAsLabTestResults(
       // Quantitative result with optional unit (e.g., "5.8 mmol/L")
       value = obs.valueQuantity.value.toString();
       unit = obs.valueQuantity.unit ?? '';
+    } else if (obs.valueDateTime) {
+      value = formatDateTime(obs.valueDateTime, t).formattedResult;
     } else if (obs.valueBoolean !== undefined) {
       value = obs.valueBoolean ? 'Positive' : 'Negative';
     } else if (obs.valueInteger !== undefined) {
@@ -220,8 +217,7 @@ export function formatObservationsAsLabTestResults(
         .join(', ') ?? '';
 
     const reportedOn = obs.issued
-      ? formatDate(obs.issued, t, FULL_MONTH_DATE_FORMAT).formattedResult ||
-        obs.issued
+      ? formatDateTime(obs.issued, t).formattedResult || obs.issued
       : '';
 
     // Extract interpretation code (e.g., "A" for abnormal, "N" for normal, "H" for high, "L" for low)

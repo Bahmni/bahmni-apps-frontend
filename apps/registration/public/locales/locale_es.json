@@ -81,6 +81,8 @@
   "DATE_ERROR_INVALID_FORMAT": "Formato de fecha no válido",
   "DATE_ERROR_NULL_OR_UNDEFINED": "La fecha es nula o no está definida",
   "DATE_ERROR_PARSE": "Error al analizar la fecha",
+  "DAYS_one": " día",
+  "DAYS_other": " días",
   "ENTER_VISIT_DETAILS": "Ingrese los Detalles de la Visita",
   "ERROR_CONFIG_GENERIC_MESSAGE": "No se pudo cargar {{config}}. Por favor, intente actualizar la página.",
   "ERROR_CONFIG_TITLE": "Error de {{config}}",
@@ -89,6 +91,8 @@
   "ERROR_LOADING_PATIENT_PHOTO": "Error al cargar la foto del paciente",
   "ERROR_SAVING_PATIENT": "Error al guardar el paciente",
   "ERROR_UPDATING_PATIENT": "Error al actualizar el paciente",
+  "MONTHS_one": " mes",
+  "MONTHS_other": " meses",
   "LOADING_PATIENT_DETAILS": "Navegando a los detalles del paciente...",
   "PATIENT_SAVED_SUCCESSFULLY": "Paciente guardado exitosamente",
   "PATIENT_UPDATED_SUCCESSFULLY": "Paciente actualizado exitosamente",
@@ -152,10 +156,9 @@
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "No se pueden obtener los datos de dirección del paciente",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "No se pueden obtener los datos de contacto del paciente",
   "NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA": "No se pueden obtener los datos adicionales del paciente",
-  "REGISTRATION_DAYS_SHORT": "d",
-  "REGISTRATION_MONTHS_SHORT": "m",
-  "REGISTRATION_PATIENT_SEARCH_APPOINTMENT": "Buscar por Cita",
-  "REGISTRATION_YEARS_SHORT": "a",
+  "REGISTRATION_PATIENT_SEARCH_APPOINTMENT": "Búsqueda por cita",
   "SUCCESS": "Éxito",
-  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro"
+  "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "El usuario {{username}} accedió a la pantalla de búsqueda de pacientes en la aplicación de registro",
+  "YEARS_one": " año",
+  "YEARS_other": " años"
 }

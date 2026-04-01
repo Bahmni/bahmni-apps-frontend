@@ -14,10 +14,7 @@ import {
 import {
   useTranslation,
   groupByDate,
-  formatDate,
-  DATE_FORMAT,
-  FULL_MONTH_DATE_FORMAT,
-  ISO_DATE_FORMAT,
+  formatDateTime,
   FormattedMedicationRequest,
   MedicationRequest,
   shouldEnableEncounterFilter,
@@ -145,8 +142,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
       if (!medications || medications.length === 0) return [];
 
       const grouped = groupByDate(medications, (medication) => {
-        return formatDate(medication.orderDate, t, ISO_DATE_FORMAT)
-          .formattedResult;
+        return formatDateTime(medication.orderDate, t).formattedResult;
       });
 
       // Sort by date descending (most recent first)
@@ -278,11 +274,11 @@ const MedicationsTable: React.FC<WidgetProps> = ({
       case 'instruction':
         return row.instruction;
       case 'startDate':
-        return formatDate(row.startDate, t, DATE_FORMAT).formattedResult;
+        return formatDateTime(row.startDate, t).formattedResult;
       case 'orderedBy':
         return row.orderedBy;
       case 'orderDate':
-        return formatDate(row.orderDate, t, DATE_FORMAT).formattedResult;
+        return formatDateTime(row.orderDate, t).formattedResult;
       case 'status':
         return (
           <StatusTag
@@ -355,11 +351,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
               <Accordion align="start">
                 {processedAllMedications.map((medicationsByDate) => {
                   const { date, medications } = medicationsByDate;
-                  const formattedDate = formatDate(
-                    date,
-                    t,
-                    FULL_MONTH_DATE_FORMAT,
-                  ).formattedResult;
+                  const formattedDate = formatDateTime(date, t).formattedResult;
 
                   return (
                     <AccordionItem

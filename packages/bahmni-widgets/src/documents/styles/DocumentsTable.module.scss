@@ -5,63 +5,20 @@
 
 .documentsTableBody {
   td {
-    width: 25%;
+    width: 20%;
   }
 
   td:nth-child(1) {
-    width: 30%;
+    width: 25%;
+  }
+
+  td:last-child {
+    width: 15%;
   }
 }
 
-.nameCell {
-  display: flex;
-  align-items: center;
-  gap: $spacing-02;
-
-  span {
-    min-width: 0;
-    word-break: break-word;
-  }
-}
-
-.fileIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  svg {
-    width: $spacing-05;
-    height: $spacing-05;
-  }
-}
-
-.pdfIcon {
-  color: $red-50;
-}
-
-.imageIcon {
-  color: $blue-50;
-}
-
-.documentIcon {
-  color: $gray-50;
-}
-
-.fileIconButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 0;
+.viewAttachmentsLink {
   cursor: pointer;
-  flex-shrink: 0;
-
-  &:focus {
-    outline: $spacing-01 solid $focus;
-    outline-offset: $spacing-01;
-  }
 }
 
 .documentViewerContainer {
@@ -69,6 +26,22 @@
   flex-direction: column;
   align-items: flex-start;
   padding: $spacing-04;
+  gap: $spacing-05;
+}
+
+.attachmentItem {
+  width: 100%;
+}
+
+.attachmentCounter {
+  @include type-style('label-01');
+  color: $text-secondary;
+  margin-bottom: $spacing-02;
+}
+
+.attachmentError {
+  color: $support-error;
+  @include type-style('body-short-01');
 }
 
 .documentIframe {

@@ -129,7 +129,7 @@ exports[`BasicForm Snapshot Tests should match snapshot when fully loaded 1`] = 
         data-testid="date-picker-input"
         disabled=""
         id="encounter-date-picker-input"
-        placeholder="16/05/2025"
+        placeholder="DD/MM/YYYY"
       />
     </div>
   </div>
@@ -199,7 +199,7 @@ exports[`BasicForm Snapshot Tests should match snapshot when loading 1`] = `
         data-testid="date-picker-input"
         disabled=""
         id="encounter-date-picker-input"
-        placeholder="16/05/2025"
+        placeholder="DD/MM/YYYY"
       />
     </div>
   </div>
@@ -335,7 +335,7 @@ exports[`BasicForm Snapshot Tests should match snapshot with error states 1`] = 
         data-testid="date-picker-input"
         disabled=""
         id="encounter-date-picker-input"
-        placeholder="16/05/2025"
+        placeholder="DD/MM/YYYY"
       />
     </div>
   </div>

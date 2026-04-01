@@ -1,5 +1,5 @@
 import {
-  formatDate,
+  formatDateTime,
   groupByDate,
   MedicationRequest,
   MedicationStatus,
@@ -26,7 +26,7 @@ jest.mock('../../notification');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
-  formatDate: jest.fn(),
+  formatDateTime: jest.fn(),
   groupByDate: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
@@ -57,7 +57,9 @@ const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
 
-const mockFormatDate = formatDate as jest.MockedFunction<typeof formatDate>;
+const mockFormatDateTime = formatDateTime as jest.MockedFunction<
+  typeof formatDateTime
+>;
 const mockFormatMedicationRequest =
   formatMedicationRequest as jest.MockedFunction<
     typeof formatMedicationRequest
@@ -179,7 +181,7 @@ describe('MedicationsTable', () => {
       ready: true,
     } as any);
 
-    mockFormatDate.mockReturnValue({ formattedResult: '15/01/2024' });
+    mockFormatDateTime.mockReturnValue({ formattedResult: '15/01/2024' });
 
     mockFormatMedicationRequest.mockImplementation(
       (med: MedicationRequest) => ({
@@ -202,6 +204,7 @@ describe('MedicationsTable', () => {
     mockSortMedicationsByPriority.mockImplementation((meds: any[]) => meds);
     mockSortMedicationsByDateDistance.mockImplementation((meds: any[]) => meds);
     mockGroupByDate.mockReturnValue([]);
+    mockFormatDateTime.mockReturnValue({ formattedResult: '15/01/2024' });
   });
 
   it('renders error state', () => {
@@ -395,12 +398,7 @@ describe('MedicationsTable', () => {
     ];
 
     mockGroupByDate.mockReturnValue(medicationsByDate);
-    mockFormatDate.mockImplementation((date: any, t: any, format: any) => {
-      if (format === 'FULL_MONTH_DATE_FORMAT') {
-        return { formattedResult: 'January 15, 2024' };
-      }
-      return { formattedResult: '15/01/2024' };
-    });
+    mockFormatDateTime.mockReturnValue({ formattedResult: '15/01/2024' });
 
     mockUseQuery.mockReturnValue({
       data: mockMedications,

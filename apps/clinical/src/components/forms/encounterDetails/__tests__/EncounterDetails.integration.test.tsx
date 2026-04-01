@@ -23,28 +23,6 @@ jest.mock('@bahmni/services', () => ({
   getCurrentUser: jest.fn(),
   getCurrentProvider: jest.fn(),
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
-  formatDate: jest.fn(() => ({
-    formattedResult: '16/05/2025',
-    error: null,
-  })),
-  useTranslation: () => ({
-    t: (key: string) => {
-      switch (key) {
-        case 'LOCATION':
-          return 'Location';
-        case 'ENCOUNTER_TYPE':
-          return 'Encounter Type';
-        case 'VISIT_TYPE':
-          return 'Visit Type';
-        case 'PARTICIPANT':
-          return 'Participant(s)';
-        case 'ENCOUNTER_DATE':
-          return 'Encounter Date';
-        default:
-          return key;
-      }
-    },
-  }),
 }));
 
 // Mock encounter concepts service
@@ -153,6 +131,17 @@ describe('BasicForm Integration Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: {
+        getItem: jest.fn().mockReturnValue('MM/dd/yyyy h:mm a'),
+        setItem: jest.fn(),
+        removeItem: jest.fn(),
+        clear: jest.fn(),
+      },
+      writable: true,
+      configurable: true,
+    });
 
     (getCookieByName as jest.Mock).mockImplementation((cookieName) => {
       if (cookieName === 'bahmni.user.location') {

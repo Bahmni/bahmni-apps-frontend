@@ -11,9 +11,7 @@ import { Profile } from '../Profile';
 import type { ProfileRef } from '../Profile';
 
 jest.mock('@bahmni/services', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
+  ...jest.requireActual('@bahmni/services'),
   useCamera: jest.fn(() => ({
     videoRef: { current: null },
     start: jest.fn(),
@@ -47,7 +45,6 @@ jest.mock('../../../../utils/identifierGenderUtils', () => ({
 
 jest.mock('../dateAgeUtils', () => ({
   createDateAgeHandlers: jest.fn(() => ({
-    handleDateInputChange: jest.fn(),
     handleDateOfBirthChange: jest.fn(),
     handleAgeChange: jest.fn(),
   })),
@@ -131,14 +128,10 @@ describe('Profile', () => {
       });
 
       await waitFor(() => {
-        expect(
-          screen.getByLabelText(/CREATE_PATIENT_FIRST_NAME/),
-        ).toBeInTheDocument();
+        expect(screen.getByLabelText(/First Name/)).toBeInTheDocument();
       });
-      expect(
-        screen.getByLabelText(/CREATE_PATIENT_LAST_NAME/),
-      ).toBeInTheDocument();
-      expect(screen.getByText('CREATE_PATIENT_GENDER')).toBeInTheDocument();
+      expect(screen.getByLabelText(/Last Name/)).toBeInTheDocument();
+      expect(screen.getByText('Gender')).toBeInTheDocument();
     });
   });
 
@@ -148,7 +141,7 @@ describe('Profile', () => {
         render(<Profile ref={ref} />);
       });
       const firstNameInput = screen.getByLabelText(
-        /CREATE_PATIENT_FIRST_NAME/,
+        /First Name/,
       ) as HTMLInputElement;
 
       fireEvent.change(firstNameInput, { target: { value: 'John' } });
@@ -160,7 +153,7 @@ describe('Profile', () => {
         render(<Profile ref={ref} />);
       });
       const firstNameInput = screen.getByLabelText(
-        /CREATE_PATIENT_FIRST_NAME/,
+        /First Name/,
       ) as HTMLInputElement;
 
       fireEvent.change(firstNameInput, { target: { value: 'John Doe' } });
@@ -172,7 +165,7 @@ describe('Profile', () => {
         render(<Profile ref={ref} />);
       });
       const firstNameInput = screen.getByLabelText(
-        /CREATE_PATIENT_FIRST_NAME/,
+        /First Name/,
       ) as HTMLInputElement;
 
       fireEvent.change(firstNameInput, { target: { value: 'John123' } });
@@ -184,7 +177,7 @@ describe('Profile', () => {
         render(<Profile ref={ref} />);
       });
       const lastNameInput = screen.getByLabelText(
-        /CREATE_PATIENT_LAST_NAME/,
+        /Last Name/,
       ) as HTMLInputElement;
 
       fireEvent.change(lastNameInput, { target: { value: 'Doe@#$' } });
@@ -228,7 +221,7 @@ describe('Profile', () => {
         ref.current?.validate();
       });
 
-      const firstNameInput = screen.getByLabelText(/CREATE_PATIENT_FIRST_NAME/);
+      const firstNameInput = screen.getByLabelText(/First Name/);
       fireEvent.change(firstNameInput, { target: { value: 'John' } });
 
       let isValid: boolean | undefined;
@@ -257,8 +250,8 @@ describe('Profile', () => {
         render(<Profile ref={ref} />);
       });
 
-      const firstNameInput = screen.getByLabelText(/CREATE_PATIENT_FIRST_NAME/);
-      const lastNameInput = screen.getByLabelText(/CREATE_PATIENT_LAST_NAME/);
+      const firstNameInput = screen.getByLabelText(/First Name/);
+      const lastNameInput = screen.getByLabelText(/Last Name/);
 
       fireEvent.change(firstNameInput, { target: { value: 'John' } });
       fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
@@ -389,7 +382,7 @@ describe('Profile', () => {
       });
 
       const checkbox = screen.getByLabelText(
-        'CREATE_PATIENT_ENTER_MANUALLY',
+        'Enter Manually',
       ) as HTMLInputElement;
 
       expect(checkbox.checked).toBe(false);
@@ -407,9 +400,7 @@ describe('Profile', () => {
         render(<Profile ref={ref} />);
       });
 
-      const checkbox = screen.getByLabelText(
-        'CREATE_PATIENT_ESTIMATED',
-      ) as HTMLInputElement;
+      const checkbox = screen.getByLabelText('Estimated') as HTMLInputElement;
 
       expect(checkbox.checked).toBe(false);
 
@@ -424,9 +415,7 @@ describe('Profile', () => {
         render(<Profile ref={ref} initialDobEstimated />);
       });
 
-      const checkbox = screen.getByLabelText(
-        'CREATE_PATIENT_ESTIMATED',
-      ) as HTMLInputElement;
+      const checkbox = screen.getByLabelText('Estimated') as HTMLInputElement;
 
       expect(checkbox.checked).toBe(true);
     });
@@ -451,7 +440,7 @@ describe('Profile', () => {
       });
 
       const birthTimeInput = screen.getByLabelText(
-        'CREATE_PATIENT_BIRTH_TIME',
+        'Birth Time',
       ) as HTMLInputElement;
 
       fireEvent.change(birthTimeInput, { target: { value: '14:30' } });
@@ -466,7 +455,7 @@ describe('Profile', () => {
       });
 
       const birthTimeInput = screen.getByLabelText(
-        'CREATE_PATIENT_BIRTH_TIME',
+        'Birth Time',
       ) as HTMLInputElement;
 
       fireEvent.change(birthTimeInput, { target: { value: '09:45' } });
@@ -494,7 +483,7 @@ describe('Profile', () => {
       });
 
       const birthTimeInput = screen.getByLabelText(
-        'CREATE_PATIENT_BIRTH_TIME',
+        'Birth Time',
       ) as HTMLInputElement;
 
       fireEvent.change(birthTimeInput, { target: { value: '00:00' } });
@@ -509,7 +498,7 @@ describe('Profile', () => {
       });
 
       const birthTimeInput = screen.getByLabelText(
-        'CREATE_PATIENT_BIRTH_TIME',
+        'Birth Time',
       ) as HTMLInputElement;
 
       fireEvent.change(birthTimeInput, { target: { value: '23:59' } });
@@ -543,15 +532,9 @@ describe('Profile', () => {
         render(<Profile ref={ref} />);
       });
 
-      expect(
-        screen.getByLabelText(/CREATE_PATIENT_FIRST_NAME/),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByLabelText(/CREATE_PATIENT_MIDDLE_NAME/),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByLabelText(/CREATE_PATIENT_LAST_NAME/),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/First Name/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Middle Name/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Last Name/)).toBeInTheDocument();
     });
 
     it('should mark last name as required when isLastNameMandatory is true', async () => {
@@ -560,7 +543,7 @@ describe('Profile', () => {
       });
 
       // Check that the required asterisk is present in the label
-      const lastNameLabel = screen.getByText(/CREATE_PATIENT_LAST_NAME/);
+      const lastNameLabel = screen.getByText(/Last Name/);
       expect(lastNameLabel).toBeInTheDocument();
     });
 
@@ -570,10 +553,10 @@ describe('Profile', () => {
       });
 
       const firstNameInput = screen.getByLabelText(
-        /CREATE_PATIENT_FIRST_NAME/,
+        /First Name/,
       ) as HTMLInputElement;
-      const genderDropdown = screen.getByText('CREATE_PATIENT_SELECT');
-      const dateInput = screen.getByLabelText(/CREATE_PATIENT_DATE_OF_BIRTH/);
+      const genderDropdown = screen.getByText('Select');
+      const dateInput = screen.getByLabelText(/Date of Birth/);
 
       // Fill required fields except last name
       fireEvent.change(firstNameInput, { target: { value: 'John' } });
@@ -708,9 +691,7 @@ describe('Profile', () => {
         render(<Profile ref={ref} />);
       });
 
-      expect(
-        screen.queryByLabelText(/CREATE_PATIENT_MIDDLE_NAME/),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/Middle Name/)).not.toBeInTheDocument();
     });
 
     it('should hide last name field when showLastName is false', async () => {
@@ -741,9 +722,7 @@ describe('Profile', () => {
         render(<Profile ref={ref} />);
       });
 
-      expect(
-        screen.queryByLabelText(/CREATE_PATIENT_LAST_NAME/),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/Last Name/)).not.toBeInTheDocument();
     });
 
     it('should skip middle name validation when showMiddleName is undefined (missing) even if isMiddleNameMandatory=true', async () => {
@@ -898,27 +877,12 @@ describe('Profile', () => {
       expect(isValid).toBe(true);
 
       // Verify both fields are not rendered
-      expect(
-        screen.queryByLabelText(/CREATE_PATIENT_MIDDLE_NAME/),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByLabelText(/CREATE_PATIENT_LAST_NAME/),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/Middle Name/)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/Last Name/)).not.toBeInTheDocument();
     });
   });
 
   describe('Age Validation - 120 Years Maximum', () => {
-    it('should set DatePicker minDate to exactly 120 years ago (not 119)', () => {
-      render(<Profile ref={ref} />);
-
-      // Verify the minDate calculation is correct
-      const today = new Date();
-      const expectedMinYear = today.getFullYear() - 120;
-
-      // The fix ensures minDate = today - 120 years (not today - 120 + 1)
-      expect(expectedMinYear).toBe(today.getFullYear() - 120);
-    });
-
     it('should accept a patient born exactly 120 years ago', () => {
       const today = new Date();
       const exactDate = new Date(
@@ -962,7 +926,7 @@ describe('Profile', () => {
       );
 
       const ageYearsInput = screen.getByLabelText(
-        /CREATE_PATIENT_AGE_YEARS/,
+        /Years\(Age\)/,
       ) as HTMLInputElement;
       expect(ageYearsInput.value).toBe('120');
     });

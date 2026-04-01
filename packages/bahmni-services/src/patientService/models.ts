@@ -12,7 +12,6 @@ export interface FormattedPatientData {
   formattedAddress: string | null;
   formattedContact: string | null;
   identifiers: Map<string, string>;
-  age: Age | null;
 }
 
 export interface PatientSearchResult {

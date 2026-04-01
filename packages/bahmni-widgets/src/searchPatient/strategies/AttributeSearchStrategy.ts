@@ -1,8 +1,8 @@
 import {
   searchPatientByCustomAttribute,
   PatientSearchResultBundle,
-  formatDateAndTime,
-  calculateAgeinYearsAndMonths,
+  formatDateTime,
+  getFormattedAge,
 } from '@bahmni/services';
 import {
   SearchStrategy,
@@ -80,10 +80,13 @@ export class AttributeSearchStrategy implements SearchStrategy {
       pageOfResults: results.pageOfResults.map((patient) => ({
         ...patient,
         birthDate: patient.birthDate
-          ? formatDateAndTime(new Date(patient.birthDate).getTime(), false)
+          ? formatDateTime(
+              new Date(patient.birthDate).getTime(),
+              context.translator,
+            ).formattedResult
           : patient.birthDate,
         age: patient.birthDate
-          ? calculateAgeinYearsAndMonths(
+          ? getFormattedAge(
               new Date(patient.birthDate).getTime(),
               context.translator,
             )

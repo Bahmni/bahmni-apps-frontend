@@ -1,6 +1,7 @@
 import {
   getFormattedDocumentReferences,
   useSubscribeConsultationSaved,
+  DEFAULT_DATE_FORMAT_STORAGE_KEY,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, waitFor } from '@testing-library/react';
@@ -17,23 +18,17 @@ jest.mock('../../hooks/usePatientUUID', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: () => ({ t: (key: string) => key }),
-  formatDate: () => ({ formattedResult: '2024-01-15 10:30 AM' }),
   getFormattedDocumentReferences: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
 
-const PdfIcon = () => <div data-testid="pdf-icon">PDF</div>;
-PdfIcon.displayName = 'DocumentPdf';
-const ImageIcon = () => <div data-testid="image-icon">IMG</div>;
-ImageIcon.displayName = 'Image';
-const DocIcon = () => <div data-testid="document-icon">DOC</div>;
-DocIcon.displayName = 'Document';
-
-jest.mock('@carbon/icons-react', () => ({
-  DocumentPdf: PdfIcon,
-  Image: ImageIcon,
-  Document: DocIcon,
-}));
+// Mock fetch to simulate successful document loads
+globalThis.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    status: 200,
+  } as Response),
+);
 
 const mockedGetFormattedDocumentReferences =
   getFormattedDocumentReferences as jest.MockedFunction<
@@ -49,6 +44,12 @@ const prescriptionDoc = {
   uploadedBy: 'Dr. Smith',
   contentType: 'application/pdf',
   documentUrl: '100/doc-uuid__prescription.pdf',
+  attachments: [
+    {
+      url: '100/doc-uuid__prescription.pdf',
+      contentType: 'application/pdf',
+    },
+  ],
 };
 
 const xrayDoc = {
@@ -59,6 +60,7 @@ const xrayDoc = {
   uploadedBy: 'Dr. Williams',
   contentType: 'image/jpeg',
   documentUrl: '100/doc-uuid__xray.jpg',
+  attachments: [{ url: '100/doc-uuid__xray.jpg', contentType: 'image/jpeg' }],
 };
 
 const labDoc = {
@@ -69,13 +71,36 @@ const labDoc = {
   uploadedBy: 'Dr. Martinez',
   contentType: 'application/pdf',
   documentUrl: '100/doc-uuid__lab.pdf',
+  attachments: [
+    { url: '100/doc-uuid__lab.pdf', contentType: 'application/pdf' },
+  ],
+};
+
+const multiAttachmentDoc = {
+  id: 'doc-4',
+  documentIdentifier: 'MultiPage_Report_2024',
+  documentType: 'Lab Result',
+  uploadedOn: '2024-01-07T08:00:00Z',
+  uploadedBy: 'Dr. Patel',
+  contentType: 'application/pdf',
+  documentUrl: '100/doc-uuid__multi-p1.pdf',
+  attachments: [
+    { url: '100/doc-uuid__multi-p1.pdf', contentType: 'application/pdf' },
+    { url: '100/doc-uuid__multi-p2.pdf', contentType: 'application/pdf' },
+  ],
 };
 
 describe('DocumentsTable Integration', () => {
   let queryClient: QueryClient;
 
   const defaultConfig = {
-    fields: ['documentIdentifier', 'documentType', 'uploadedOn', 'uploadedBy'],
+    fields: [
+      'documentIdentifier',
+      'documentType',
+      'uploadedOn',
+      'uploadedBy',
+      'action',
+    ],
   };
 
   const renderComponent = (props = {}) =>
@@ -98,6 +123,7 @@ describe('DocumentsTable Integration', () => {
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
+    localStorage.setItem(DEFAULT_DATE_FORMAT_STORAGE_KEY, 'dd/MM/yyyy');
   });
 
   afterEach(() => {
@@ -119,7 +145,7 @@ describe('DocumentsTable Integration', () => {
 
     expect(screen.getByText('Prescription')).toBeInTheDocument();
     expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-    expect(screen.getByTestId('pdf-icon')).toBeInTheDocument();
+    expect(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS')).toBeInTheDocument();
   });
 
   it('shows empty state when patient has no recorded documents', async () => {
@@ -151,7 +177,7 @@ describe('DocumentsTable Integration', () => {
     });
   });
 
-  it('displays multiple documents with correct icons', async () => {
+  it('displays multiple documents with "View attachment/s" links (no icons)', async () => {
     mockedGetFormattedDocumentReferences.mockResolvedValueOnce([
       prescriptionDoc,
       xrayDoc,
@@ -168,11 +194,16 @@ describe('DocumentsTable Integration', () => {
     expect(screen.getByText('Lab_Result_2024')).toBeInTheDocument();
     expect(screen.getByText('Radiology Report')).toBeInTheDocument();
     expect(screen.getByText('Lab Result')).toBeInTheDocument();
-    expect(screen.getAllByTestId('pdf-icon')).toHaveLength(2);
-    expect(screen.getByTestId('image-icon')).toBeInTheDocument();
+
+    // Three "View attachment/s" links, one per document
+    expect(screen.getAllByText('DOCUMENTS_VIEW_ATTACHMENTS')).toHaveLength(3);
+
+    // No file type icons
+    expect(screen.queryByTestId('pdf-icon')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('image-icon')).not.toBeInTheDocument();
   });
 
-  it('opens modal with PDF iframe when icon button is clicked', async () => {
+  it('opens modal with PDF iframe when "View attachment/s" is clicked', async () => {
     const user = userEvent.setup();
     mockedGetFormattedDocumentReferences.mockResolvedValueOnce([
       prescriptionDoc,
@@ -184,9 +215,7 @@ describe('DocumentsTable Integration', () => {
       expect(screen.getByText('Prescription_2024')).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole('button', { name: 'View Prescription_2024' }),
-    );
+    await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     const iframe = screen.getByTitle('Prescription_2024');
@@ -199,7 +228,7 @@ describe('DocumentsTable Integration', () => {
     );
   });
 
-  it('opens modal with img element when image icon button is clicked', async () => {
+  it('opens modal with img element when image document link is clicked', async () => {
     const user = userEvent.setup();
     mockedGetFormattedDocumentReferences.mockResolvedValueOnce([xrayDoc]);
 
@@ -209,13 +238,34 @@ describe('DocumentsTable Integration', () => {
       expect(screen.getByText('XRay_Report_2024')).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole('button', { name: 'View XRay_Report_2024' }),
-    );
+    await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     const image = screen.getByRole('img', { name: 'XRay_Report_2024' });
     expect(image).toBeInTheDocument();
+  });
+
+  it('shows all attachments in modal for a document with multiple content entries', async () => {
+    const user = userEvent.setup();
+    mockedGetFormattedDocumentReferences.mockResolvedValueOnce([
+      multiAttachmentDoc,
+    ]);
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('MultiPage_Report_2024')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    // Both attachments rendered as iframes
+    const iframes = screen.getAllByTitle('MultiPage_Report_2024');
+    expect(iframes).toHaveLength(2);
+    // Counter labels visible
+    expect(screen.getByText('1/2')).toBeInTheDocument();
+    expect(screen.getByText('2/2')).toBeInTheDocument();
   });
 
   it('closes modal after clicking close button', async () => {
@@ -230,9 +280,7 @@ describe('DocumentsTable Integration', () => {
       expect(screen.getByText('Prescription_2024')).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole('button', { name: 'View Prescription_2024' }),
-    );
+    await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Close' }));
@@ -275,7 +323,7 @@ describe('DocumentsTable Integration', () => {
 
   it('renders documents in the order returned by the service (latest first)', async () => {
     // API returns sorted by _sort=-date (latest first):
-    // fhirPrescriptionDoc: Jan 15, fhirXrayDoc: Jan 10
+    // prescriptionDoc: Jan 15, xrayDoc: Jan 10
     mockedGetFormattedDocumentReferences.mockResolvedValueOnce([
       prescriptionDoc,
       xrayDoc,
@@ -291,6 +339,64 @@ describe('DocumentsTable Integration', () => {
     // rows[0] is the header row; data rows start at index 1
     expect(rows[1]).toHaveTextContent('Prescription_2024');
     expect(rows[2]).toHaveTextContent('XRay_Report_2024');
+  });
+
+  it('accepts and passes pageSize configuration to SortableDataTable', async () => {
+    mockedGetFormattedDocumentReferences.mockResolvedValueOnce([
+      prescriptionDoc,
+      xrayDoc,
+      labDoc,
+    ]);
+
+    // Render with pageSize configuration
+    renderComponent({ config: { ...defaultConfig, pageSize: 2 } });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('documents-table')).toBeInTheDocument();
+    });
+
+    // Component should render successfully with pageSize config
+    const table = screen.getByTestId('documents-table');
+    expect(table).toBeInTheDocument();
+  });
+
+  it('documents are fetched correctly when pageSize is configured', async () => {
+    mockedGetFormattedDocumentReferences.mockResolvedValueOnce([
+      prescriptionDoc,
+      xrayDoc,
+      labDoc,
+    ]);
+
+    // Render with pageSize=2
+    renderComponent({ config: { ...defaultConfig, pageSize: 2 } });
+
+    await waitFor(() => {
+      expect(mockedGetFormattedDocumentReferences).toHaveBeenCalled();
+    });
+
+    // All documents should be fetched by the service
+    expect(mockedGetFormattedDocumentReferences).toHaveBeenCalledWith(
+      'test-patient-uuid',
+      undefined,
+    );
+  });
+
+  it('renders documents correctly without pageSize configuration', async () => {
+    mockedGetFormattedDocumentReferences.mockResolvedValueOnce([
+      prescriptionDoc,
+      xrayDoc,
+      labDoc,
+    ]);
+
+    // Render with default config (no pageSize)
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('documents-table')).toBeInTheDocument();
+    });
+
+    // All 3 documents should be fetchable from service
+    expect(mockedGetFormattedDocumentReferences).toHaveBeenCalled();
   });
 
   it('does not refetch documents when consultation saved for a different patient', async () => {

@@ -1,15 +1,12 @@
-import { addDays, format, parseISO } from 'date-fns';
+import { addDays } from 'date-fns';
 import { getUserPreferredLocale } from '../../i18n/translationService';
-import { DATE_TIME_FORMAT } from '../constants';
 import {
   calculateAge,
-  formatDate,
   formatDateTime,
   calculateOnsetDate,
   formatDateDistance,
   sortByDate,
-  formatDateAndTime,
-  calculateAgeinYearsAndMonths,
+  getFormattedAge,
   DURATION_UNIT_TO_DAYS,
   calculateEndDate,
   doDateRangesOverlap,
@@ -19,12 +16,12 @@ const mockT = (key: string, options?: { count?: number }) => {
   const { count = 1 } = options ?? {};
 
   switch (key) {
-    case 'CLINICAL_DAYS_TRANSLATION_KEY':
-      return count === 1 ? 'day' : 'days';
-    case 'CLINICAL_MONTHS_TRANSLATION_KEY':
-      return count === 1 ? 'month' : 'months';
-    case 'CLINICAL_YEARS_TRANSLATION_KEY':
-      return count === 1 ? 'year' : 'years';
+    case 'DAYS':
+      return count === 1 ? ' day' : ' days';
+    case 'MONTHS':
+      return count === 1 ? ' month' : ' months';
+    case 'YEARS':
+      return count === 1 ? ' year' : ' years';
     case 'DATE_ERROR_PARSE':
       return 'Parse Error';
     case 'DATE_ERROR_FORMAT':
@@ -43,6 +40,12 @@ const mockT = (key: string, options?: { count?: number }) => {
 jest.mock('../../i18n/translationService', () => ({
   getUserPreferredLocale: jest.fn(),
 }));
+
+Object.defineProperty(globalThis.navigator, 'language', {
+  value: 'en-GB',
+  writable: true,
+  configurable: true,
+});
 
 describe('calculateAge', () => {
   const mockDate = new Date(2025, 2, 24);
@@ -286,121 +289,166 @@ describe('calculateOnsetDate', () => {
   });
 });
 
-describe('formatDate', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should format valid dates correctly', () => {
-    const date = new Date(2024, 2, 28);
-    const result = formatDate(date, mockT);
-    expect(result.formattedResult).toBe('28/03/2024');
-    expect(result.error).toBeUndefined();
-  });
-
-  it('should format date strings correctly', () => {
-    const result = formatDate('2024-03-28', mockT);
-    expect(result.formattedResult).toBe('28/03/2024');
-    expect(result.error).toBeUndefined();
-  });
-
-  it('should format timestamps correctly', () => {
-    const timestamp = new Date(2024, 2, 28).getTime();
-    const result = formatDate(timestamp, mockT);
-    expect(result.formattedResult).toBe('28/03/2024');
-    expect(result.error).toBeUndefined();
-  });
-
-  it('should accept custom format parameter', () => {
-    const date = new Date(2024, 2, 28);
-    const result = formatDate(date, mockT, 'MMMM d, yyyy');
-    expect(result.formattedResult).toBe('March 28, 2024');
-    expect(result.error).toBeUndefined();
-  });
-
-  it('should return errors for invalid inputs', () => {
-    const invalidResult = formatDate('invalid-date', mockT);
-    expect(invalidResult.formattedResult).toBe('');
-    expect(invalidResult.error).toBeDefined();
-
-    const emptyResult = formatDate('', mockT);
-    expect(emptyResult.formattedResult).toBe('');
-    expect(emptyResult.error).toBeDefined();
-
-    const nullResult = formatDate(null as unknown as Date, mockT);
-    expect(nullResult.formattedResult).toBe('');
-    expect(nullResult.error).toBeDefined();
-  });
-});
-
 describe('formatDateTime', () => {
-  it('should format valid date-time correctly', () => {
-    const date = new Date(2024, 2, 28, 12, 30);
-    const result = formatDateTime(date, mockT);
-    expect(result.formattedResult).toBe(format(date, DATE_TIME_FORMAT));
-    expect(result.error).toBeUndefined();
-  });
-
-  it('should format date strings with time correctly', () => {
-    const dateString = '2024-03-28T12:30:00Z';
-    const result = formatDateTime(dateString, mockT);
-    expect(result.formattedResult).toBe(
-      format(parseISO(dateString), DATE_TIME_FORMAT),
-    );
-    expect(result.error).toBeUndefined();
-  });
-
-  it('should format timestamps correctly', () => {
-    const timestamp = new Date(2024, 2, 28, 12, 30).getTime();
-    const result = formatDateTime(timestamp, mockT);
-    expect(result.formattedResult).toBe('28/03/2024 12:30');
-    expect(result.error).toBeUndefined();
-  });
-
-  it('should return errors for invalid inputs', () => {
-    expect(formatDateTime('invalid-date', mockT).error).toBeDefined();
-    expect(formatDateTime('', mockT).error).toBeDefined();
-    expect(formatDateTime(null as unknown as Date, mockT).error).toBeDefined();
-    expect(formatDateTime({} as unknown as Date, mockT).error).toBeDefined();
-  });
-});
-
-describe('formatDate locale support', () => {
-  const mockedGetUserPreferredLocale = jest.mocked(getUserPreferredLocale);
+  const originalLocalStorage = globalThis.localStorage;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: {
+        getItem: jest.fn().mockReturnValue('dd/MM/yyyy'),
+        setItem: jest.fn(),
+        removeItem: jest.fn(),
+        clear: jest.fn(),
+      },
+      writable: true,
+    });
   });
 
-  it('should format with different locales', () => {
-    mockedGetUserPreferredLocale.mockReturnValue('en');
-    expect(
-      formatDate('2024-03-28', mockT, 'MMMM dd, yyyy').formattedResult,
-    ).toBe('March 28, 2024');
-
-    mockedGetUserPreferredLocale.mockReturnValue('es');
-    expect(
-      formatDate('2024-03-28', mockT, 'MMMM dd, yyyy').formattedResult,
-    ).toBe('marzo 28, 2024');
-
-    mockedGetUserPreferredLocale.mockReturnValue('fr');
-    expect(
-      formatDate('2024-03-28', mockT, 'MMMM dd, yyyy').formattedResult,
-    ).toBe('mars 28, 2024');
+  afterEach(() => {
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: originalLocalStorage,
+      writable: true,
+    });
   });
 
-  it('should fallback to English for unsupported locales', () => {
-    mockedGetUserPreferredLocale.mockReturnValue('unsupported-locale');
-    const result = formatDate('2024-03-28', mockT, 'MMMM dd, yyyy');
+  describe('date only (includeTime=false)', () => {
+    it('should format valid dates correctly', () => {
+      const date = new Date(2024, 2, 28);
+      const result = formatDateTime(date, mockT);
+      expect(result.formattedResult).toBe('28/03/2024');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should format date strings correctly', () => {
+      const result = formatDateTime('2024-03-28', mockT);
+      expect(result.formattedResult).toBe('28/03/2024');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should format timestamps correctly', () => {
+      const timestamp = new Date(2024, 2, 28).getTime();
+      const result = formatDateTime(timestamp, mockT);
+      expect(result.formattedResult).toBe('28/03/2024');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should return errors for invalid inputs', () => {
+      const invalidResult = formatDateTime('invalid-date', mockT);
+      expect(invalidResult.formattedResult).toBe('');
+      expect(invalidResult.error).toBeDefined();
+
+      const emptyResult = formatDateTime('', mockT);
+      expect(emptyResult.formattedResult).toBe('');
+      expect(emptyResult.error).toBeDefined();
+
+      const nullResult = formatDateTime(null as unknown as Date, mockT);
+      expect(nullResult.formattedResult).toBe('');
+      expect(nullResult.error).toBeDefined();
+    });
+  });
+
+  describe('with time (includeTime=true)', () => {
+    it('should format valid date-time correctly', () => {
+      const date = new Date(2024, 2, 28, 12, 30);
+      const result = formatDateTime(date, mockT, true);
+      expect(result.formattedResult).toBe('28/03/2024 12:30 PM');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should format date strings with time correctly', () => {
+      const dateString = '2024-03-28T12:30:00Z';
+      const result = formatDateTime(dateString, mockT, true);
+      expect(result.formattedResult).toMatch(
+        /^\d{2}\/\d{2}\/\d{4} \d{1,2}:\d{2} (AM|PM)$/,
+      );
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should format timestamps correctly', () => {
+      const timestamp = new Date(2024, 2, 28, 12, 30).getTime();
+      const result = formatDateTime(timestamp, mockT, true);
+      expect(result.formattedResult).toBe('28/03/2024 12:30 PM');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should return errors for invalid inputs', () => {
+      expect(formatDateTime('invalid-date', mockT, true).error).toBeDefined();
+      expect(formatDateTime('', mockT, true).error).toBeDefined();
+      expect(
+        formatDateTime(null as unknown as Date, mockT, true).error,
+      ).toBeDefined();
+      expect(
+        formatDateTime({} as unknown as Date, mockT, true).error,
+      ).toBeDefined();
+    });
+  });
+});
+
+describe('formatDateTime locale support', () => {
+  const originalLocalStorage = globalThis.localStorage;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: {
+        getItem: jest.fn(),
+        setItem: jest.fn(),
+        removeItem: jest.fn(),
+        clear: jest.fn(),
+      },
+      writable: true,
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: originalLocalStorage,
+      writable: true,
+    });
+  });
+
+  it('should use localStorage format when available', () => {
+    (globalThis.localStorage.getItem as jest.Mock).mockReturnValue(
+      'MMMM dd, yyyy',
+    );
+
+    const result = formatDateTime('2024-03-28', mockT);
     expect(result.formattedResult).toBe('March 28, 2024');
   });
 
-  it('should use numeric format regardless of locale for default format', () => {
-    ['en', 'es', 'fr'].forEach((locale) => {
-      mockedGetUserPreferredLocale.mockReturnValue(locale);
-      const result = formatDate('2024-03-28', mockT);
-      expect(result.formattedResult).toBe('28/03/2024');
+  it('should use locale-aware P token when localStorage is empty', () => {
+    (globalThis.localStorage.getItem as jest.Mock).mockReturnValue(null);
+
+    const result = formatDateTime('2024-03-28', mockT);
+    expect(result.formattedResult).toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
+    expect(result.error).toBeUndefined();
+  });
+
+  it('should fallback to DEFAULT_DATE_FORMAT when localStorage throws error', () => {
+    (globalThis.localStorage.getItem as jest.Mock).mockImplementation(() => {
+      throw new Error('localStorage error');
     });
+
+    const result = formatDateTime('2024-03-28', mockT);
+    expect(result.formattedResult).toBe('28/03/2024');
+  });
+
+  it('should use custom dateFormat parameter when provided', () => {
+    (globalThis.localStorage.getItem as jest.Mock).mockReturnValue(
+      'dd/MM/yyyy',
+    );
+
+    const result = formatDateTime('2024-03-28', mockT, false, 'yyyy-MM-dd');
+    expect(result.formattedResult).toBe('2024-03-28');
+    expect(result.error).toBeUndefined();
+  });
+
+  it('should NOT append time format when dateFormat is provided even if includeTime is true', () => {
+    const date = new Date(2024, 2, 28, 14, 30);
+    const result = formatDateTime(date, mockT, true, 'yyyy-MM-dd');
+    expect(result.formattedResult).toBe('2024-03-28');
+    expect(result.error).toBeUndefined();
   });
 });
 
@@ -557,34 +605,7 @@ describe('sortByDate', () => {
   });
 });
 
-describe('formatDateAndTime', () => {
-  describe('Date formatting without time', () => {
-    it('should format date correctly without time', () => {
-      const date = new Date(2024, 2, 28, 14, 30);
-      const timestamp = date.getTime();
-      const result = formatDateAndTime(timestamp, false);
-      expect(result).toBe('28 Mar 2024');
-    });
-
-    it('should format leap year date correctly', () => {
-      const date = new Date(2024, 1, 29);
-      const timestamp = date.getTime();
-      const result = formatDateAndTime(timestamp, false);
-      expect(result).toBe('29 Feb 2024');
-    });
-  });
-
-  describe('Date and time formatting', () => {
-    it('should format date with time correctly', () => {
-      const date = new Date(2024, 2, 28, 14, 30);
-      const timestamp = date.getTime();
-      const result = formatDateAndTime(timestamp, true);
-      expect(result).toBe('28 Mar 2024 2:30 PM');
-    });
-  });
-});
-
-describe('calculateAgeinYearsAndMonths', () => {
+describe('getFormattedAge', () => {
   const mockDate = new Date(2024, 2, 28);
 
   beforeEach(() => {
@@ -596,18 +617,67 @@ describe('calculateAgeinYearsAndMonths', () => {
     jest.useRealTimers();
   });
 
-  it('should calculate age correctly', () => {
-    const birthDate = new Date(2000, 2, 28);
-    const birthDateMillis = birthDate.getTime();
-    const result = calculateAgeinYearsAndMonths(birthDateMillis);
-    expect(result).toBe('24 years 0 months 0 days');
+  const mockTFunction = jest.fn((key: string, options?: { count?: number }) => {
+    if (key === 'YEARS') return options?.count === 1 ? ' Year' : ' Years';
+    if (key === 'MONTHS') return options?.count === 1 ? ' Month' : ' Months';
+    if (key === 'DAYS') return options?.count === 1 ? ' Day' : ' Days';
+    return key;
   });
 
-  it('should calculate age correctly for someone born 5 years and 3 months ago', () => {
-    const birthDate = new Date(2018, 11, 28);
-    const birthDateMillis = birthDate.getTime();
-    const result = calculateAgeinYearsAndMonths(birthDateMillis);
-    expect(result).toBe('5 years 3 months 0 days');
+  it.each([
+    {
+      description: 'should calculate age correctly with timestamp input',
+      birthDate: new Date(2000, 2, 28).getTime(),
+      translateFn: mockTFunction,
+      expected: '24 Years 0 Months 0 Days',
+    },
+    {
+      description: 'should calculate age correctly with string input',
+      birthDate: '2000-03-28',
+      translateFn: mockTFunction,
+      expected: '24 Years 0 Months 0 Days',
+    },
+    {
+      description:
+        'should show years and months and days including zeros for >= 1 year',
+      birthDate: new Date(2018, 11, 28).getTime(),
+      translateFn: mockTFunction,
+      expected: '5 Years 3 Months 0 Days',
+    },
+    {
+      description: 'should show months and days for >= 3 months but < 1 year',
+      birthDate: new Date(2023, 8, 28).getTime(),
+      translateFn: mockTFunction,
+      expected: '6 Months 0 Days',
+    },
+    {
+      description: 'should handle infants under 3 months showing only days',
+      birthDate: new Date(2024, 1, 29).getTime(),
+      translateFn: mockTFunction,
+      expected: '28 Days',
+    },
+    {
+      description: 'should return 0 Days for newborn (same day)',
+      birthDate: new Date(2024, 2, 28).getTime(),
+      translateFn: mockTFunction,
+      expected: '0 Days',
+    },
+    {
+      description: 'should use singular forms for values of 1',
+      birthDate: new Date(2023, 1, 27).getTime(),
+      translateFn: mockTFunction,
+      expected: '1 Year 1 Month 1 Day',
+    },
+    {
+      description:
+        'should format age with fallback units when no translation function is passed',
+      birthDate: new Date(2000, 2, 28).getTime(),
+      translateFn: undefined,
+      expected: '24 years 0 months 0 days',
+    },
+  ])('$description', ({ birthDate, translateFn, expected }) => {
+    const result = getFormattedAge(birthDate, translateFn);
+    expect(result).toBe(expected);
   });
 });
 

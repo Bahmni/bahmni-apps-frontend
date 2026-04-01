@@ -1,8 +1,9 @@
 import { ImageTile, VideoTile, FileTile } from '@bahmni/design-system';
-import { getValueType } from '@bahmni/services';
+import { getValueType, useTranslation } from '@bahmni/services';
 import classNames from 'classnames';
 import React from 'react';
 import { ExtractedObservation } from '../observations/models';
+import { formatObservationValue } from '../observations/utils';
 import styles from './styles/FormsTable.module.scss';
 
 interface ObservationItemProps {
@@ -19,8 +20,6 @@ interface ObservationMemberProps {
   formName?: string;
   comment?: string;
 }
-
-const INTERPRETATION_ABNORMAL = 'ABNORMAL';
 
 /**
  * Helper function to render value with media support (images/videos)
@@ -49,29 +48,25 @@ const renderValueWithMedia = (valueAsString: string): React.ReactNode => {
   return valueAsString;
 };
 
-/**
- * Utility function to get range string and abnormal status for an observation
- */
 const getObservationDisplayInfo = (observation: ExtractedObservation) => {
-  const units = observation.observationValue?.unit;
   const lowNormal = observation.observationValue?.referenceRange?.low?.value;
   const hiNormal = observation.observationValue?.referenceRange?.high?.value;
 
   const hasLow = lowNormal != null;
   const hasHigh = hiNormal != null;
 
-  const rangeString =
-    hasLow && hasHigh
-      ? ` (${lowNormal} - ${hiNormal})`
-      : hasLow
-        ? ` (>${lowNormal})`
-        : hasHigh
-          ? ` (<${hiNormal})`
-          : '';
+  let rangeString = '';
+  if (hasLow && hasHigh) {
+    rangeString = ` (${lowNormal} - ${hiNormal})`;
+  } else if (hasLow) {
+    rangeString = ` (>${lowNormal})`;
+  } else if (hasHigh) {
+    rangeString = ` (<${hiNormal})`;
+  }
 
   const isAbnormal = observation.observationValue?.isAbnormal === true;
 
-  return { units, rangeString, isAbnormal };
+  return { rangeString, isAbnormal };
 };
 
 /**
@@ -84,6 +79,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
   formName = '',
   comment,
 }) => {
+  const { t } = useTranslation();
   const hasGroupMembers = member.members && member.members.length > 0;
   const displayLabel = member.display;
   const testIdPrefix = formName ? `${formName}-` : '';
@@ -122,10 +118,10 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
   }
 
   // Render as a leaf node (value) at current depth
-  const { units, rangeString, isAbnormal } = getObservationDisplayInfo(member);
-  const valueAsString = member.observationValue?.value?.toString();
-  const valueToDisplay = valueAsString
-    ? renderValueWithMedia(valueAsString)
+  const { rangeString, isAbnormal } = getObservationDisplayInfo(member);
+  const formattedValue = formatObservationValue(member, t);
+  const valueToDisplay = formattedValue
+    ? renderValueWithMedia(formattedValue)
     : null;
 
   return (
@@ -154,7 +150,6 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
           data-testid={`${testIdPrefix}obs-member-value-${displayLabel}-${memberIndex}`}
         >
           {valueToDisplay}
-          {units && ` ${units}`}
         </div>
       </div>
       {comment && (
@@ -180,15 +175,15 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
   formName = '',
   comment,
 }) => {
+  const { t } = useTranslation();
   const hasGroupMembers = observation.members && observation.members.length > 0;
 
-  const { units, rangeString, isAbnormal } =
-    getObservationDisplayInfo(observation);
+  const { rangeString, isAbnormal } = getObservationDisplayInfo(observation);
 
   const testIdPrefix = formName ? `${formName}-` : '';
-  const valueAsString = observation.observationValue?.value?.toString();
-  const valueToDisplay = valueAsString
-    ? renderValueWithMedia(valueAsString)
+  const formattedValue = formatObservationValue(observation, t);
+  const valueToDisplay = formattedValue
+    ? renderValueWithMedia(formattedValue)
     : null;
 
   return (
@@ -239,7 +234,6 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
             data-testid={`${testIdPrefix}observation-value-${observation.display}-${index}`}
           >
             {valueToDisplay}
-            {units && ` ${units}`}
           </div>
         )}
       </div>

@@ -7,20 +7,6 @@ jest.mock('../usePatient', () => ({
   usePatient: jest.fn(),
 }));
 
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: jest.fn((key: string, options?: { count?: number }) => {
-      const translations: Record<string, string> = {
-        CLINICAL_YEARS_TRANSLATION_KEY: options?.count === 1 ? 'year' : 'years',
-        CLINICAL_MONTHS_TRANSLATION_KEY:
-          options?.count === 1 ? 'month' : 'months',
-        CLINICAL_DAYS_TRANSLATION_KEY: options?.count === 1 ? 'day' : 'days',
-      };
-      return translations[key] || key;
-    }),
-  }),
-}));
-
 jest.mock('@bahmni/design-system', () => ({
   Icon: ({
     id,
@@ -54,6 +40,12 @@ const mockedUsePatient = usePatient as jest.MockedFunction<
 describe('PatientDetails Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2025-03-16'));
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('integrates usePatient hook with loading to success state', async () => {
@@ -65,7 +57,6 @@ describe('PatientDetails Integration', () => {
       formattedAddress: null,
       formattedContact: null,
       identifiers: new Map([['MRN', 'MRN123456']]),
-      age: { years: 35, months: 2, days: 15 },
     };
 
     mockedUsePatient.mockReturnValue({
@@ -80,7 +71,7 @@ describe('PatientDetails Integration', () => {
     expect(screen.getByTestId('patient-name')).toHaveTextContent('John Doe');
     expect(screen.getByText('MRN123456')).toBeInTheDocument();
     expect(screen.getByText('male')).toBeInTheDocument();
-    expect(screen.getByText(/35 years, 2 months, 15 days/)).toBeInTheDocument();
+    expect(screen.getByText(/35YEARS 2MONTHS 15DAYS/)).toBeInTheDocument();
   });
 
   it('integrates usePatient hook with error state', () => {
@@ -114,11 +105,10 @@ describe('PatientDetails Integration', () => {
       id: 'test-uuid',
       fullName: 'Jane Doe',
       gender: 'female',
-      birthDate: '2023-01-01',
+      birthDate: '2024-02-15',
       formattedAddress: null,
       formattedContact: null,
       identifiers: new Map([['ID', 'ID123']]),
-      age: { years: 1, months: 1, days: 1 },
     };
 
     mockedUsePatient.mockReturnValue({
@@ -130,6 +120,6 @@ describe('PatientDetails Integration', () => {
 
     render(<PatientDetails />);
 
-    expect(screen.getByText(/1 year, 1 month, 1 day/)).toBeInTheDocument();
+    expect(screen.getByText(/1YEARS 1MONTHS 1DAYS/)).toBeInTheDocument();
   });
 });

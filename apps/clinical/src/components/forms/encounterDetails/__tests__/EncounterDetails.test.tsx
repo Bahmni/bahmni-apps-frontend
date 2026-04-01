@@ -18,28 +18,11 @@ jest.mock('@bahmni/widgets');
 
 // Mock the utils
 jest.mock('@bahmni/services', () => ({
-  formatDate: jest.fn(() => ({
-    formattedResult: '16/05/2025',
-    error: null,
+  ...jest.requireActual('@bahmni/services'),
+  formatDateTime: jest.fn(() => ({
+    formattedResult: '01/01/2024 12:00 PM',
+    isValid: true,
   })),
-  useTranslation: () => ({
-    t: (key: string) => {
-      switch (key) {
-        case 'LOCATION':
-          return 'Location';
-        case 'ENCOUNTER_TYPE':
-          return 'Encounter Type';
-        case 'VISIT_TYPE':
-          return 'Visit Type';
-        case 'PARTICIPANT':
-          return 'Participant(s)';
-        case 'ENCOUNTER_DATE':
-          return 'Encounter Date';
-        default:
-          return key;
-      }
-    },
-  }),
 }));
 
 // Mock the Carbon components
@@ -136,13 +119,13 @@ jest.mock('@bahmni/design-system', () => {
       disabled,
     }: {
       id: string;
-      placeholder: string;
+      placeholder?: string;
       labelText: string;
       disabled: boolean;
     }) => (
       <input
         id={id}
-        placeholder={placeholder}
+        placeholder={placeholder ?? 'DD/MM/YYYY'}
         aria-label={labelText}
         disabled={disabled}
         data-testid="date-picker-input"
@@ -870,15 +853,6 @@ describe('BasicForm', () => {
       expect(encounterSelect).toHaveValue('selected');
       expect(visitSelect).toHaveValue('selected');
       expect(practitionerSelect).toHaveValue('selected');
-    });
-
-    it('should render date picker with formatted date', () => {
-      // Act
-      renderBasicForm();
-
-      // Assert
-      const dateInput = screen.getByTestId('date-picker-input');
-      expect(dateInput).toHaveAttribute('placeholder', '16/05/2025');
     });
   });
 

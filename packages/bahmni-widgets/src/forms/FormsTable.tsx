@@ -7,8 +7,7 @@ import {
   SkeletonText,
 } from '@bahmni/design-system';
 import {
-  DATE_TIME_FORMAT,
-  formatDate,
+  formatDateTime,
   getPatientFormData,
   FormResponseData,
   useTranslation,
@@ -174,7 +173,7 @@ const FormsTable: React.FC<WidgetProps> = ({
         acc[formName].push({
           id: form.encounterUuid,
           formName: form.formName,
-          recordedOn: formatDate(form.encounterDateTime, t, DATE_TIME_FORMAT)
+          recordedOn: formatDateTime(form.encounterDateTime, t, true)
             .formattedResult,
           recordedBy: providerNames ?? '--',
           encounterDateTime: form.encounterDateTime,

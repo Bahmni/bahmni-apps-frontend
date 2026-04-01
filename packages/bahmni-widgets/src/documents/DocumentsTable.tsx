@@ -1,47 +1,34 @@
-import { SortableDataTable, Modal } from '@bahmni/design-system';
+import { SortableDataTable, Modal, Link } from '@bahmni/design-system';
 import {
   useTranslation,
-  formatDate,
-  DATE_TIME_FORMAT,
+  formatDateTime,
   getFormattedDocumentReferences,
   DocumentViewModel,
 } from '@bahmni/services';
-import { DocumentPdf, Image, Document } from '@carbon/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
-import { DOCUMENT_ICON_SIZE } from './constants';
 import styles from './styles/DocumentsTable.module.scss';
-import {
-  getFileTypeCategory,
-  buildDocumentUrl,
-  createDocumentHeaders,
-} from './utils';
+import { buildDocumentUrl, createDocumentHeaders } from './utils';
 
 const DEFAULT_DOCUMENT_FIELDS = [
   'documentIdentifier',
   'documentType',
   'uploadedOn',
   'uploadedBy',
+  'action',
 ];
 
-const renderFileIcon = (contentType?: string) => {
-  const fileType = getFileTypeCategory(contentType);
-  switch (fileType) {
-    case 'pdf':
-      return (
-        <DocumentPdf size={DOCUMENT_ICON_SIZE} className={styles.pdfIcon} />
-      );
-    case 'image':
-      return <Image size={DOCUMENT_ICON_SIZE} className={styles.imageIcon} />;
-    case 'document':
-    default:
-      return (
-        <Document size={DOCUMENT_ICON_SIZE} className={styles.documentIcon} />
-      );
+const getNormalizedAttachments = (doc: DocumentViewModel) => {
+  if (doc.attachments.length > 0) {
+    return doc.attachments;
   }
+  if (doc.documentUrl) {
+    return [{ url: doc.documentUrl, contentType: doc.contentType }];
+  }
+  return [];
 };
 
 const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
@@ -49,11 +36,14 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
   const [selectedDoc, setSelectedDoc] = useState<DocumentViewModel | null>(
     null,
   );
+  const [failedAttachments, setFailedAttachments] = useState<Set<number>>(
+    new Set(),
+  );
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
-  const handleIconClick = useCallback((doc: DocumentViewModel) => {
+  const handleViewAttachments = useCallback((doc: DocumentViewModel) => {
     setSelectedDoc(doc);
     setIsModalOpen(true);
   }, []);
@@ -61,6 +51,11 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedDoc(null);
+    setFailedAttachments(new Set());
+  }, []);
+
+  const handleAttachmentLoadError = useCallback((index: number) => {
+    setFailedAttachments((prev) => new Set(prev).add(index));
   }, []);
 
   const { data, isLoading, isError, error } = useQuery({
@@ -79,6 +74,42 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     }
   }, [isError, error, addNotification, t]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const validateAttachments = async () => {
+      if (!isModalOpen || !selectedDoc) return;
+
+      const failed = new Set<number>();
+      const attachments = getNormalizedAttachments(selectedDoc);
+
+      for (let i = 0; i < attachments.length; i++) {
+        const url = buildDocumentUrl(attachments[i].url);
+        try {
+          const response = await fetch(url, {
+            method: 'HEAD',
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            failed.add(i);
+          }
+        } catch (error) {
+          if (error instanceof Error && error.name !== 'AbortError') {
+            failed.add(i);
+          }
+        }
+      }
+
+      if (!controller.signal.aborted) {
+        setFailedAttachments(failed);
+      }
+    };
+
+    validateAttachments();
+
+    return () => controller.abort();
+  }, [isModalOpen, selectedDoc]);
+
   const fields = useMemo(
     () => (config?.fields as string[]) ?? DEFAULT_DOCUMENT_FIELDS,
     [config?.fields],
@@ -90,50 +121,53 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     () =>
       fields.map((field) => ({
         key: field,
-        sortable: true,
+        sortable: field !== 'action',
       })),
     [fields],
+  );
+
+  const normalizedAttachments = useMemo(
+    () => (selectedDoc ? getNormalizedAttachments(selectedDoc) : []),
+    [selectedDoc],
   );
 
   const renderCell = useCallback(
     (doc: DocumentViewModel, cellId: string) => {
       switch (cellId) {
         case 'documentIdentifier':
-          return (
-            <div className={styles.nameCell}>
-              <button
-                className={styles.fileIconButton}
-                onClick={() => handleIconClick(doc)}
-                aria-label={`View ${doc.documentIdentifier}`}
-                disabled={!doc.documentUrl}
-              >
-                {renderFileIcon(doc.contentType)}
-              </button>
-              <span>{doc.documentIdentifier}</span>
-            </div>
-          );
+          return <span>{doc.documentIdentifier}</span>;
         case 'documentType':
           return doc.documentType ?? t('DOCUMENTS_NOT_AVAILABLE');
         case 'uploadedOn': {
-          const formattedDate = formatDate(
+          const formattedDate = formatDateTime(
             doc.uploadedOn,
             t,
-            DATE_TIME_FORMAT,
+            true,
           ).formattedResult;
           return formattedDate || t('DOCUMENTS_NOT_AVAILABLE');
         }
         case 'uploadedBy':
           return doc.uploadedBy ?? t('DOCUMENTS_NOT_AVAILABLE');
+        case 'action': {
+          const hasAttachments =
+            doc.attachments.length > 0 || !!doc.documentUrl;
+          if (!hasAttachments) return '--';
+          return (
+            <Link
+              onClick={() => handleViewAttachments(doc)}
+              className={styles.viewAttachmentsLink}
+              data-testid={`view-attachments-${doc.id}`}
+            >
+              {t('DOCUMENTS_VIEW_ATTACHMENTS')}
+            </Link>
+          );
+        }
         default:
           return null;
       }
     },
-    [handleIconClick, t],
+    [handleViewAttachments, t],
   );
-
-  const docUrl = selectedDoc ? buildDocumentUrl(selectedDoc.documentUrl) : '';
-  const isPDF = selectedDoc?.contentType?.toLowerCase().includes('pdf');
-  const isImage = selectedDoc?.contentType?.toLowerCase().includes('image');
 
   return (
     <>
@@ -164,19 +198,61 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
           testId="document-view-modal"
         >
           <div className={styles.documentViewerContainer}>
-            {isImage ? (
-              <img
-                src={docUrl}
-                alt={selectedDoc.documentIdentifier}
-                className={styles.documentImage}
-              />
-            ) : (
-              <iframe
-                src={isPDF ? `${docUrl}#toolbar=0` : docUrl}
-                className={styles.documentIframe}
-                title={selectedDoc.documentIdentifier}
-              />
-            )}
+            {normalizedAttachments.map((attachment, index) => {
+              const url = buildDocumentUrl(attachment.url);
+              const isPdf = attachment.contentType
+                ?.toLowerCase()
+                .includes('pdf');
+              const isImg = attachment.contentType
+                ?.toLowerCase()
+                .includes('image');
+              const hasFailed = failedAttachments.has(index);
+
+              if (url === '#' || hasFailed) {
+                return (
+                  <div
+                    key={`${selectedDoc.id}-${attachment.url}`}
+                    className={styles.attachmentError}
+                    data-testid={`attachment-error-${index}`}
+                  >
+                    {normalizedAttachments.length > 1 && (
+                      <p className={styles.attachmentCounter}>
+                        {index + 1}/{normalizedAttachments.length}
+                      </p>
+                    )}
+                    <p>{t('DOCUMENTS_ERROR_LOADING_ATTACHMENT')}</p>
+                  </div>
+                );
+              }
+              return (
+                <div
+                  key={`${selectedDoc.id}-${attachment.url}`}
+                  className={styles.attachmentItem}
+                  data-testid={`attachment-item-${index}`}
+                >
+                  {normalizedAttachments.length > 1 && (
+                    <p className={styles.attachmentCounter}>
+                      {index + 1}/{normalizedAttachments.length}
+                    </p>
+                  )}
+                  {isImg ? (
+                    <img
+                      src={url}
+                      alt={selectedDoc.documentIdentifier}
+                      className={styles.documentImage}
+                      onError={() => handleAttachmentLoadError(index)}
+                    />
+                  ) : (
+                    <iframe
+                      src={isPdf ? `${url}#toolbar=0` : url}
+                      className={styles.documentIframe}
+                      title={selectedDoc.documentIdentifier}
+                      onError={() => handleAttachmentLoadError(index)}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </Modal>
       )}

@@ -285,7 +285,7 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
                         <a
                           class="cds--link"
                         >
-                          1/6/2024
+                          01/01/2024 12:00 PM
                         </a>
                       </td>
                       <td
@@ -489,7 +489,7 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
                         <a
                           class="cds--link"
                         >
-                          1/8/2024
+                          01/01/2024 12:00 PM
                         </a>
                       </td>
                       <td
@@ -507,7 +507,7 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
                         <a
                           class="cds--link"
                         >
-                          1/7/2024
+                          01/01/2024 12:00 PM
                         </a>
                       </td>
                       <td

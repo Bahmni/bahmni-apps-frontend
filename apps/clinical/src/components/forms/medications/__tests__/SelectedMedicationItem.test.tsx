@@ -14,43 +14,11 @@ import SelectedMedicationItem, {
   SelectedMedicationItemProps,
 } from '../SelectedMedicationItem';
 
-// Extend Jest matchers
 expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   getTodayDate: jest.fn().mockReturnValue(new Date('2025-01-01')),
-  DATE_PICKER_INPUT_FORMAT: 'd/m/Y',
-  useTranslation: () => ({
-    t: (key: string, options?: any) => {
-      const translations: Record<string, string> = {
-        MEDICATION_STAT: 'STAT',
-        MEDICATION_PRN: 'PRN',
-        MEDICATION_DOSAGE_INPUT_LABEL: 'Dosage',
-        MEDICATION_DOSAGE_UNIT_INPUT_LABEL: 'Dosage unit',
-        MEDICATION_FREQUENCY_INPUT_LABEL: 'Frequency',
-        MEDICATION_DURATION_INPUT_LABEL: 'Duration',
-        MEDICATION_DURATION_UNIT_INPUT_LABEL: 'Duration unit',
-        MEDICATION_INSTRUCTIONS_INPUT_LABEL: 'Instructions',
-        MEDICATION_ROUTE_INPUT_LABEL: 'Route',
-        MEDICATION_START_DATE_INPUT_LABEL: 'Start date',
-        MEDICATION_TOTAL_QUANTITY: 'Total quantity',
-        INPUT_VALUE_REQUIRED: 'Please enter a value',
-        DROPDOWN_VALUE_REQUIRED: 'Please select a value',
-        DURATION_UNIT_DAYS: 'Days',
-        DURATION_UNIT_WEEKS: 'Weeks',
-        DURATION_UNIT_MONTHS: 'Months',
-        DURATION_UNIT_YEARS: 'Years',
-        DURATION_UNIT_HOURS: 'Hours',
-        DURATION_UNIT_MINUTES: 'Minutes',
-      };
-
-      if (options?.defaultValue && !translations[key]) {
-        return options.defaultValue;
-      }
-
-      return translations[key] || key;
-    },
-  }),
 }));
 
 // Mock the services
@@ -170,32 +138,30 @@ const createDefaultProps = (overrides = {}): SelectedMedicationItemProps => ({
 describe('SelectedMedicationItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.setItem('default_dateFormat', 'dd/MM/yyyy');
+
     // Mock scrollIntoView which is not available in jsdom
-    window.HTMLElement.prototype.scrollIntoView = jest.fn();
+    globalThis.HTMLElement.prototype.scrollIntoView = jest.fn();
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    localStorage.clear();
   });
 
   describe('Component Rendering', () => {
     test('renders medication display name correctly', () => {
-      // Arrange
       const props = createDefaultProps();
 
-      // Act
       render(<SelectedMedicationItem {...props} />);
 
-      // Assert
       expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument();
     });
 
     test('renders all form controls', () => {
-      // Arrange
       const props = createDefaultProps();
 
-      // Act
       render(<SelectedMedicationItem {...props} />);
 
       expect(
@@ -229,7 +195,6 @@ describe('SelectedMedicationItem', () => {
     });
 
     test('displays total quantity calculation', () => {
-      // Arrange
       const props = createDefaultProps({
         medicationInputEntry: createMockMedicationInputEntry({
           dispenseQuantity: 30,
@@ -237,39 +202,32 @@ describe('SelectedMedicationItem', () => {
         }),
       });
 
-      // Act
       render(<SelectedMedicationItem {...props} />);
 
-      // Assert
       expect(screen.getByText(/Total Quantity : 30 mg/i)).toBeInTheDocument();
     });
   });
   describe('User Interactions', () => {
     describe('Dosage Controls', () => {
       test('updates dosage when number input changes', async () => {
-        // Arrange
         const updateDosage = jest.fn();
         const props = createDefaultProps({ updateDosage });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
         const dosageInput = screen.getByRole('spinbutton', { name: /Dosage/i });
 
         await user.clear(dosageInput);
         await user.type(dosageInput, '2');
 
-        // Assert
         expect(updateDosage).toHaveBeenCalledWith('entry-1', 2);
       });
 
       test('handles invalid dosage input (non-numeric values)', async () => {
-        // Arrange
         const updateDosage = jest.fn();
         const props = createDefaultProps({ updateDosage });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
         const dosageInput = screen.getByRole('spinbutton', { name: /Dosage/i });
 
@@ -278,27 +236,22 @@ describe('SelectedMedicationItem', () => {
         // Carbon NumberInput will not allow typing non-numeric characters
         await user.type(dosageInput, 'abc');
 
-        // Assert - updateDosage should not be called with NaN
         expect(updateDosage).not.toHaveBeenCalledWith('entry-1', NaN);
       });
 
       test('prevents negative dosage values', async () => {
-        // Arrange
         const updateDosage = jest.fn();
         const props = createDefaultProps({ updateDosage });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
         const dosageInput = screen.getByRole('spinbutton', { name: /Dosage/i });
 
-        // Assert - the input should have min=0, preventing negative values
         expect(dosageInput).toHaveAttribute('min', '0');
       });
     });
 
     describe('Dropdown Selections', () => {
       test('updates dosage unit and dispense unit when unit dropdown changes', async () => {
-        // Arrange
         const updateDosageUnit = jest.fn();
         const updateDispenseUnit = jest.fn();
         const props = createDefaultProps({
@@ -307,7 +260,6 @@ describe('SelectedMedicationItem', () => {
         });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
         // Click on the dosage unit dropdown
@@ -320,7 +272,6 @@ describe('SelectedMedicationItem', () => {
         const mlOption = await screen.findByRole('option', { name: 'ml' });
         await user.click(mlOption);
 
-        // Assert
         expect(updateDosageUnit).toHaveBeenCalledWith('entry-1', {
           uuid: 'ml-uuid',
           name: 'ml',
@@ -332,12 +283,10 @@ describe('SelectedMedicationItem', () => {
       });
 
       test('updates frequency when frequency dropdown changes', async () => {
-        // Arrange
         const updateFrequency = jest.fn();
         const props = createDefaultProps({ updateFrequency });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
         // Click on the frequency dropdown
@@ -350,7 +299,6 @@ describe('SelectedMedicationItem', () => {
         const bdOption = await screen.findByRole('option', { name: 'BD' });
         await user.click(bdOption);
 
-        // Assert
         expect(updateFrequency).toHaveBeenCalledWith('entry-1', {
           uuid: 'bd-uuid',
           name: 'BD',
@@ -359,12 +307,10 @@ describe('SelectedMedicationItem', () => {
       });
 
       test('updates route when route dropdown changes', async () => {
-        // Arrange
         const updateRoute = jest.fn();
         const props = createDefaultProps({ updateRoute });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
         // Click on the route dropdown
@@ -375,7 +321,6 @@ describe('SelectedMedicationItem', () => {
         const ivOption = await screen.findByRole('option', { name: 'IV' });
         await user.click(ivOption);
 
-        // Assert
         expect(updateRoute).toHaveBeenCalledWith('entry-1', {
           uuid: 'iv-uuid',
           name: 'IV',
@@ -383,12 +328,10 @@ describe('SelectedMedicationItem', () => {
       });
 
       test('updates duration unit when duration unit dropdown changes', async () => {
-        // Arrange
         const updateDurationUnit = jest.fn();
         const props = createDefaultProps({ updateDurationUnit });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
         const durationUnitDropdown = screen.getByRole('combobox', {
@@ -399,7 +342,6 @@ describe('SelectedMedicationItem', () => {
         const daysOption = await screen.findByRole('option', { name: 'Days' });
         await user.click(daysOption);
 
-        // Assert - DURATION_UNIT_OPTIONS[2] is the days option
         expect(updateDurationUnit).toHaveBeenCalledWith(
           'entry-1',
           DURATION_UNIT_OPTIONS[2],
@@ -407,12 +349,10 @@ describe('SelectedMedicationItem', () => {
       });
 
       test('updates instruction when instruction dropdown changes', async () => {
-        // Arrange
         const updateInstruction = jest.fn();
         const props = createDefaultProps({ updateInstruction });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
         // Wait for component to mount and useEffect hooks to complete
@@ -436,7 +376,6 @@ describe('SelectedMedicationItem', () => {
           await user.click(beforeFoodOption);
         });
 
-        // Assert
         await waitFor(() => {
           expect(updateInstruction).toHaveBeenCalledWith('entry-1', {
             uuid: 'before-food',
@@ -448,44 +387,36 @@ describe('SelectedMedicationItem', () => {
 
     describe('Checkbox Interactions', () => {
       test('toggles STAT checkbox', async () => {
-        // Arrange
         const updateisSTAT = jest.fn();
         const props = createDefaultProps({ updateisSTAT });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
         const statCheckbox = screen.getByRole('checkbox', { name: /STAT/i });
         await user.click(statCheckbox);
 
-        // Assert
         expect(updateisSTAT).toHaveBeenCalledWith('entry-1', true);
       });
 
       test('toggles PRN checkbox', async () => {
-        // Arrange
         const updateisPRN = jest.fn();
         const props = createDefaultProps({ updateisPRN });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
         const prnCheckbox = screen.getByRole('checkbox', { name: /PRN/i });
         await user.click(prnCheckbox);
 
-        // Assert
         expect(updateisPRN).toHaveBeenCalledWith('entry-1', true);
       });
     });
 
     describe('Other Controls', () => {
       test('updates duration when number input changes', async () => {
-        // Arrange
         const updateDuration = jest.fn();
         const props = createDefaultProps({ updateDuration });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
         const durationInput = screen.getByRole('spinbutton', {
           name: /Duration/i,
@@ -493,19 +424,18 @@ describe('SelectedMedicationItem', () => {
         await user.clear(durationInput);
         await user.type(durationInput, '10');
 
-        // Assert
         expect(updateDuration).toHaveBeenCalledWith('entry-1', 10);
       });
 
       test('updates start date when date picker changes', async () => {
-        // Arrange
         const updateStartDate = jest.fn();
         const props = createDefaultProps({ updateStartDate });
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
-        const dateInput = screen.getByPlaceholderText('d/m/Y');
+        const dateInput = screen.getByTestId(
+          'medication-start-date-input-entry-1',
+        );
 
         // Click on the date input to open the calendar
         await user.click(dateInput);
@@ -517,7 +447,6 @@ describe('SelectedMedicationItem', () => {
         // Press Enter to confirm the date selection
         await user.keyboard('{Enter}');
 
-        // Assert
         await waitFor(() => {
           expect(updateStartDate).toHaveBeenCalledWith(
             'entry-1',
@@ -531,7 +460,6 @@ describe('SelectedMedicationItem', () => {
       });
 
       test('disables date picker when STAT is selected', async () => {
-        // Arrange
         const props = createDefaultProps({
           medicationInputEntry: createMockMedicationInputEntry({
             isSTAT: true,
@@ -539,11 +467,11 @@ describe('SelectedMedicationItem', () => {
           }),
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
-        const dateInput = screen.getByPlaceholderText('d/m/Y');
+        const dateInput = screen.getByTestId(
+          'medication-start-date-input-entry-1',
+        );
 
-        // Assert
         expect(dateInput).toBeDisabled();
       });
     });
@@ -553,7 +481,6 @@ describe('SelectedMedicationItem', () => {
     describe('Default Values', () => {
       describe('Default Instruction', () => {
         test('sets default instruction from config when instruction is not set', () => {
-          // Arrange
           const updateInstruction = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultInstructions: 'Before Food',
@@ -570,10 +497,8 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateInstruction).toHaveBeenCalledWith('entry-1', {
             uuid: 'before-food',
             name: 'Before Food',
@@ -581,7 +506,6 @@ describe('SelectedMedicationItem', () => {
         });
 
         test('does not set default instruction when instruction already exists', () => {
-          // Arrange
           const updateInstruction = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultInstructions: 'Before Food',
@@ -598,15 +522,12 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateInstruction).not.toHaveBeenCalled();
         });
 
         test('does not set default instruction when config is missing', () => {
-          // Arrange
           const updateInstruction = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultInstructions: undefined,
@@ -620,15 +541,12 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateInstruction).not.toHaveBeenCalled();
         });
 
         test('does not set default instruction when dosingInstructions is empty', () => {
-          // Arrange
           const updateInstruction = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultInstructions: 'Before Food',
@@ -642,15 +560,12 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateInstruction).not.toHaveBeenCalled();
         });
 
         test('does not set default instruction when default instruction not found in list', () => {
-          // Arrange
           const updateInstruction = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultInstructions: 'Non-existent Instruction',
@@ -667,17 +582,14 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateInstruction).not.toHaveBeenCalled();
         });
       });
 
       describe('Default Duration Unit', () => {
         test('sets default duration unit from config when duration unit is not set', () => {
-          // Arrange
           const updateDurationUnit = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultDurationUnit: 'd',
@@ -694,10 +606,8 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateDurationUnit).toHaveBeenCalledWith(
             'entry-1',
             DURATION_UNIT_OPTIONS[2],
@@ -705,7 +615,6 @@ describe('SelectedMedicationItem', () => {
         });
 
         test('does not set default duration unit when duration unit already exists', () => {
-          // Arrange
           const updateDurationUnit = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultDurationUnit: 'd',
@@ -722,15 +631,12 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateDurationUnit).not.toHaveBeenCalled();
         });
 
         test('does not set default duration unit when config is missing', () => {
-          // Arrange
           const updateDurationUnit = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultDurationUnit: undefined,
@@ -744,15 +650,12 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateDurationUnit).not.toHaveBeenCalled();
         });
 
         test('does not set default duration unit when durationUnits is empty', () => {
-          // Arrange
           const updateDurationUnit = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultDurationUnit: 'd', // Using code instead of display
@@ -766,15 +669,12 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateDurationUnit).not.toHaveBeenCalled();
         });
 
         test('does not set default duration unit when default unit not found in DURATION_UNIT_OPTIONS', () => {
-          // Arrange
           const updateDurationUnit = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultDurationUnit: 'Non-existent Unit',
@@ -788,15 +688,12 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateDurationUnit).not.toHaveBeenCalled();
         });
 
         test('handles different duration unit codes correctly', () => {
-          // Arrange
           const updateDurationUnit = jest.fn();
           const medicationConfig = createMockMedicationConfig({
             defaultDurationUnit: 'wk',
@@ -813,10 +710,8 @@ describe('SelectedMedicationItem', () => {
             }),
           });
 
-          // Act
           render(<SelectedMedicationItem {...props} />);
 
-          // Assert
           expect(updateDurationUnit).toHaveBeenCalledWith(
             'entry-1',
             DURATION_UNIT_OPTIONS[3],
@@ -826,7 +721,6 @@ describe('SelectedMedicationItem', () => {
 
       describe('Default Values on Config Change', () => {
         test('sets both default instruction and duration unit when config changes', async () => {
-          // Arrange
           const updateInstruction = jest.fn();
           const updateDurationUnit = jest.fn();
           const initialConfig = createMockMedicationConfig({
@@ -853,7 +747,6 @@ describe('SelectedMedicationItem', () => {
             durationUnits: [{ uuid: 'days-uuid', name: 'Days' }],
           });
 
-          // Act
           await act(async () => {
             rerender(
               <SelectedMedicationItem
@@ -863,7 +756,6 @@ describe('SelectedMedicationItem', () => {
             );
           });
 
-          // Assert
           await waitFor(() => {
             expect(updateInstruction).toHaveBeenCalledWith('entry-1', {
               uuid: 'before-food',
@@ -877,7 +769,6 @@ describe('SelectedMedicationItem', () => {
         });
 
         test('does not override existing values when config changes', async () => {
-          // Arrange
           const updateInstruction = jest.fn();
           const updateDurationUnit = jest.fn();
           const initialConfig = createMockMedicationConfig();
@@ -899,7 +790,6 @@ describe('SelectedMedicationItem', () => {
             defaultDurationUnit: 'Days',
           });
 
-          // Act
           await act(async () => {
             rerender(
               <SelectedMedicationItem
@@ -909,7 +799,6 @@ describe('SelectedMedicationItem', () => {
             );
           });
 
-          // Assert
           await waitFor(() => {
             expect(updateInstruction).not.toHaveBeenCalled();
             expect(updateDurationUnit).not.toHaveBeenCalled();
@@ -918,7 +807,6 @@ describe('SelectedMedicationItem', () => {
       });
 
       test('sets default route based on medication form', () => {
-        // Arrange
         const updateRoute = jest.fn();
         const updateDosageUnit = jest.fn();
         const updateDispenseUnit = jest.fn();
@@ -942,10 +830,8 @@ describe('SelectedMedicationItem', () => {
           name: 'mg',
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         expect(updateRoute).toHaveBeenCalledWith('entry-1', {
           uuid: 'oral-uuid',
           name: 'Oral',
@@ -961,7 +847,6 @@ describe('SelectedMedicationItem', () => {
       });
 
       test('does not set defaults when medication has no form', () => {
-        // Arrange
         const updateRoute = jest.fn();
         const updateDosageUnit = jest.fn();
         const medication = createMockMedication({ form: undefined });
@@ -976,16 +861,14 @@ describe('SelectedMedicationItem', () => {
         });
         (getDefaultRoute as jest.Mock).mockReturnValue(undefined);
         (getDefaultDosingUnit as jest.Mock).mockReturnValue(undefined);
-        // Act
+
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         expect(updateRoute).not.toHaveBeenCalled();
         expect(updateDosageUnit).not.toHaveBeenCalled();
       });
 
       test('does not override existing values with defaults', () => {
-        // Arrange
         const updateRoute = jest.fn();
         const updateDosageUnit = jest.fn();
         const existingRoute = { uuid: 'iv-uuid', name: 'IV' };
@@ -999,10 +882,8 @@ describe('SelectedMedicationItem', () => {
           updateDosageUnit,
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         expect(updateRoute).not.toHaveBeenCalled();
         expect(updateDosageUnit).not.toHaveBeenCalled();
       });
@@ -1010,7 +891,6 @@ describe('SelectedMedicationItem', () => {
 
     describe('Total Quantity Calculation', () => {
       test('updates dispense quantity when dosage, frequency, duration change', () => {
-        // Arrange
         const updateDispenseQuantity = jest.fn();
         (calculateTotalQuantity as jest.Mock).mockReturnValue(20);
 
@@ -1024,16 +904,13 @@ describe('SelectedMedicationItem', () => {
           updateDispenseQuantity,
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         expect(calculateTotalQuantity).toHaveBeenCalled();
         expect(updateDispenseQuantity).toHaveBeenCalledWith('entry-1', 20);
       });
 
       test('updates dispense quantity when calculation returns 0', () => {
-        // Arrange
         const updateDispenseQuantity = jest.fn();
         (calculateTotalQuantity as jest.Mock).mockReturnValue(0);
 
@@ -1047,16 +924,13 @@ describe('SelectedMedicationItem', () => {
           updateDispenseQuantity,
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         expect(calculateTotalQuantity).toHaveBeenCalled();
         expect(updateDispenseQuantity).toHaveBeenCalledWith('entry-1', 0);
       });
 
       test('updates dispense quantity for immediate frequency', () => {
-        // Arrange
         const updateDispenseQuantity = jest.fn();
         (calculateTotalQuantity as jest.Mock).mockReturnValue(5);
 
@@ -1070,10 +944,8 @@ describe('SelectedMedicationItem', () => {
           updateDispenseQuantity,
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         expect(calculateTotalQuantity).toHaveBeenCalled();
         expect(updateDispenseQuantity).toHaveBeenCalledWith('entry-1', 5);
       });
@@ -1108,7 +980,6 @@ describe('SelectedMedicationItem', () => {
 
     describe('STAT/PRN Logic', () => {
       test('when STAT is selected without PRN', () => {
-        // Arrange
         const updateFrequency = jest.fn();
         const updateStartDate = jest.fn();
         const updateDuration = jest.fn();
@@ -1124,10 +995,8 @@ describe('SelectedMedicationItem', () => {
           updateDurationUnit,
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         expect(updateFrequency).toHaveBeenCalledWith('entry-1', {
           uuid: '0',
           name: 'Immediately',
@@ -1142,7 +1011,6 @@ describe('SelectedMedicationItem', () => {
       });
 
       test('disables controls when STAT is selected without PRN', () => {
-        // Arrange
         const props = createDefaultProps({
           medicationInputEntry: createMockMedicationInputEntry({
             isSTAT: true,
@@ -1150,10 +1018,8 @@ describe('SelectedMedicationItem', () => {
           }),
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         expect(
           screen.getByRole('combobox', { name: /Frequency/i }),
         ).toBeDisabled();
@@ -1163,26 +1029,24 @@ describe('SelectedMedicationItem', () => {
         expect(
           screen.getByRole('combobox', { name: /Duration Unit/i }),
         ).toBeDisabled();
-        expect(screen.getByPlaceholderText('d/m/Y')).toBeDisabled();
+        expect(
+          screen.getByTestId('medication-start-date-input-entry-1'),
+        ).toBeDisabled();
       });
 
       test('clears frequency when PRN is selected', () => {
-        // Arrange
         const updateFrequency = jest.fn();
         const props = createDefaultProps({
           medicationInputEntry: createMockMedicationInputEntry({ isPRN: true }),
           updateFrequency,
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         expect(updateFrequency).toHaveBeenCalledWith('entry-1', null);
       });
 
       test('does not set immediate frequency when both STAT and PRN are selected', () => {
-        // Arrange
         const updateFrequency = jest.fn();
         const props = createDefaultProps({
           medicationInputEntry: createMockMedicationInputEntry({
@@ -1192,14 +1056,11 @@ describe('SelectedMedicationItem', () => {
           updateFrequency,
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         expect(updateFrequency).toHaveBeenCalledWith('entry-1', null);
       });
       test('sets immediate frequency, start date, and preserves duration when STAT is true and PRN is false', () => {
-        // Arrange
         const updateFrequency = jest.fn();
         const updateStartDate = jest.fn();
         const updateDuration = jest.fn();
@@ -1233,7 +1094,6 @@ describe('SelectedMedicationItem', () => {
           }),
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
         expect(updateFrequency).toHaveBeenCalledWith(
@@ -1250,7 +1110,6 @@ describe('SelectedMedicationItem', () => {
       });
 
       test('does not update frequency if immediate frequency is not found in config', () => {
-        // Arrange
         const updateFrequency = jest.fn();
         const updateStartDate = jest.fn();
         const updateDuration = jest.fn();
@@ -1276,10 +1135,8 @@ describe('SelectedMedicationItem', () => {
           }),
         });
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
 
-        // Assert
         // Should not call updateFrequency since immediate frequency is not found
         expect(updateFrequency).not.toHaveBeenCalled();
 
@@ -1367,7 +1224,6 @@ describe('SelectedMedicationItem', () => {
         expect(updateDuration).not.toHaveBeenCalled();
         expect(updateDurationUnit).not.toHaveBeenCalled();
 
-        // Assert: after STAT is turned off, total quantity is recalculated using
         // the preserved duration (not 0 or undefined)
         await waitFor(() => {
           expect(calculateTotalQuantity).toHaveBeenCalledWith(
@@ -1383,18 +1239,15 @@ describe('SelectedMedicationItem', () => {
 
     describe('Frequency Filtering', () => {
       test('filters out immediate frequency from dropdown', async () => {
-        // Arrange
         const props = createDefaultProps();
         const user = userEvent.setup();
 
-        // Act
         render(<SelectedMedicationItem {...props} />);
         const frequencyDropdown = screen.getByRole('combobox', {
           name: /Frequency/i,
         });
         await user.click(frequencyDropdown);
 
-        // Assert
         expect(
           screen.queryByRole('option', { name: 'Immediately' }),
         ).not.toBeInTheDocument();
@@ -1406,7 +1259,6 @@ describe('SelectedMedicationItem', () => {
 
   describe('Validation & Error Handling', () => {
     test('shows invalid state for inputs with errors', () => {
-      // Arrange
       const props = createDefaultProps({
         medicationInputEntry: createMockMedicationInputEntry({
           errors: {
@@ -1420,10 +1272,8 @@ describe('SelectedMedicationItem', () => {
         }),
       });
 
-      // Act
       render(<SelectedMedicationItem {...props} />);
 
-      // Assert
       // Check that error messages are displayed
       expect(screen.getAllByText('Please enter a value')).toHaveLength(2);
       expect(screen.getAllByText('Please select a value')).toHaveLength(4); // For dosage unit, duration unit, and frequency
@@ -1447,7 +1297,6 @@ describe('SelectedMedicationItem', () => {
 
   describe('Edge Cases', () => {
     test('handles missing medication config gracefully', () => {
-      // Arrange
       const props = createDefaultProps({
         medicationConfig: {
           ...createMockMedicationConfig(),
@@ -1457,12 +1306,10 @@ describe('SelectedMedicationItem', () => {
         },
       });
 
-      // Act & Assert (should not throw)
       expect(() => render(<SelectedMedicationItem {...props} />)).not.toThrow();
     });
 
     test('handles medication without form information', () => {
-      // Arrange
       const updateRoute = jest.fn();
       const medication = createMockMedication({ form: undefined });
       const props = createDefaultProps({
@@ -1470,15 +1317,12 @@ describe('SelectedMedicationItem', () => {
         updateRoute,
       });
 
-      // Act
       render(<SelectedMedicationItem {...props} />);
 
-      // Assert
       expect(updateRoute).not.toHaveBeenCalled();
     });
 
     test('handles null values gracefully', () => {
-      // Arrange
       const props = createDefaultProps({
         medicationInputEntry: createMockMedicationInputEntry({
           dosageUnit: null,
@@ -1489,32 +1333,25 @@ describe('SelectedMedicationItem', () => {
         }),
       });
 
-      // Act & Assert (should not throw)
       expect(() => render(<SelectedMedicationItem {...props} />)).not.toThrow();
     });
   });
 
   describe('Accessibility', () => {
     test('has no accessibility violations', async () => {
-      // Arrange
       const props = createDefaultProps();
 
-      // Act
       const { container } = render(<SelectedMedicationItem {...props} />);
 
-      // Assert
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
     test('all form controls have proper labels', () => {
-      // Arrange
       const props = createDefaultProps();
 
-      // Act
       render(<SelectedMedicationItem {...props} />);
 
-      // Assert
       expect(
         screen.getByRole('spinbutton', { name: /Dosage/i }),
       ).toBeInTheDocument();
@@ -1535,18 +1372,14 @@ describe('SelectedMedicationItem', () => {
 
   describe('Snapshot Tests', () => {
     test('matches snapshot with default props', () => {
-      // Arrange
       const props = createDefaultProps();
 
-      // Act
       const { container } = render(<SelectedMedicationItem {...props} />);
 
-      // Assert
       expect(container).toMatchSnapshot();
     });
 
     test('matches snapshot with errors', () => {
-      // Arrange
       const props = createDefaultProps({
         medicationInputEntry: createMockMedicationInputEntry({
           errors: {
@@ -1560,24 +1393,22 @@ describe('SelectedMedicationItem', () => {
         }),
       });
 
-      // Act
       const { container } = render(<SelectedMedicationItem {...props} />);
 
-      // Assert
       expect(container).toMatchSnapshot();
     });
   });
 
   describe('Date Picker Validation', () => {
     test('prevents selection of past dates in date picker', async () => {
-      // Arrange
       const updateStartDate = jest.fn();
       const props = createDefaultProps({ updateStartDate });
       const user = userEvent.setup();
 
-      // Act
       render(<SelectedMedicationItem {...props} />);
-      const dateInput = screen.getByPlaceholderText('d/m/Y');
+      const dateInput = screen.getByTestId(
+        'medication-start-date-input-entry-1',
+      );
 
       // Try to enter a past date
       await user.click(dateInput);
@@ -1585,19 +1416,17 @@ describe('SelectedMedicationItem', () => {
       await user.type(dateInput, '1/1/2020');
       await user.keyboard('{Enter}');
 
-      // Assert - the updateStartDate should not be called with a past date
       await waitFor(() => {
         expect(updateStartDate).not.toHaveBeenCalled();
       });
     });
 
     test('allows selection of today and future dates', async () => {
-      // Arrange
       const updateStartDate = jest.fn();
       const props = createDefaultProps({ updateStartDate });
       const user = userEvent.setup();
 
-      // Get tomorrow's date in d/m/Y format
+      // Get tomorrow's date in d/m/Y format (matching dd/MM/yyyy locale)
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const day = tomorrow.getDate();
@@ -1605,16 +1434,16 @@ describe('SelectedMedicationItem', () => {
       const year = tomorrow.getFullYear();
       const tomorrowString = `${day}/${month}/${year}`;
 
-      // Act
       render(<SelectedMedicationItem {...props} />);
-      const dateInput = screen.getByPlaceholderText('d/m/Y');
+      const dateInput = screen.getByTestId(
+        'medication-start-date-input-entry-1',
+      );
 
       await user.click(dateInput);
       await user.clear(dateInput);
       await user.type(dateInput, tomorrowString);
       await user.keyboard('{Enter}');
 
-      // Assert
       await waitFor(() => {
         expect(updateStartDate).toHaveBeenCalledWith(
           'entry-1',

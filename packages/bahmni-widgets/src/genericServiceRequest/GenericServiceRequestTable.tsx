@@ -6,9 +6,6 @@ import {
   Tag,
 } from '@bahmni/design-system';
 import {
-  FULL_MONTH_DATE_FORMAT,
-  ISO_DATE_FORMAT,
-  formatDate,
   getFormattedError,
   getCategoryUuidFromOrderTypes,
   getServiceRequests,
@@ -16,6 +13,7 @@ import {
   shouldEnableEncounterFilter,
   useTranslation,
   useSubscribeConsultationSaved,
+  formatDateTime,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo } from 'react';
@@ -172,7 +170,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     const grouped = groupByDate(
       filteredRequests,
       (request: ServiceRequestViewModel) => {
-        const result = formatDate(request.orderedDate, t, ISO_DATE_FORMAT);
+        const result = formatDateTime(request.orderedDate, t);
         return result.formattedResult;
       },
     );
@@ -252,15 +250,10 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
         <Accordion align="start">
           {processedServiceRequests.map((requestsByDate, index) => {
             const { date, requests } = requestsByDate;
-            const formattedDate = formatDate(
-              date,
-              t,
-              FULL_MONTH_DATE_FORMAT,
-            ).formattedResult;
 
             return (
               <AccordionItem
-                title={formattedDate}
+                title={date}
                 key={date}
                 className={styles.customAccordianItem}
                 testId={'accordian-table-title'}
@@ -276,7 +269,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                   emptyStateMessage={t('NO_SERVICE_REQUESTS')}
                   renderCell={renderCell}
                   className={styles.serviceRequestTableBody}
-                  dataTestId={`generic-service-request-table-${formattedDate}`}
+                  dataTestId={`generic-service-request-table-${date}`}
                 />
               </AccordionItem>
             );

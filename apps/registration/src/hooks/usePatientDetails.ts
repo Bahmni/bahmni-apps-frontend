@@ -1,7 +1,6 @@
 import {
   getPatientProfile,
-  formatDate,
-  REGISTRATION_DATE_FORMAT,
+  formatDateTime,
   useTranslation,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
@@ -96,7 +95,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
       let formattedDate = '';
 
       if (dateCreated) {
-        const result = formatDate(dateCreated, t, REGISTRATION_DATE_FORMAT);
+        const result = formatDateTime(dateCreated, t);
         if (!result.error) {
           formattedDate = result.formattedResult;
         }

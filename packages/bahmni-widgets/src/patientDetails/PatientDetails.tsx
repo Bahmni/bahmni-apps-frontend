@@ -1,11 +1,11 @@
 import { Icon, ICON_SIZE } from '@bahmni/design-system';
+import { getFormattedAge, formatDateTime } from '@bahmni/services';
 import { SkeletonText } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './__styles__/PatientDetails.module.scss';
 import { usePatient } from './usePatient';
 
-// TODO: Extract this as a PatientDetails Display Control Component
 const PatientDetails: React.FC = () => {
   const { t } = useTranslation();
   const { patient, loading, error } = usePatient();
@@ -40,12 +40,15 @@ const PatientDetails: React.FC = () => {
 
   const formattedGender = formatField(patient.gender);
 
-  const formattedAge =
-    patient.age?.years !== undefined
-      ? `${patient.age.years} ${t('CLINICAL_YEARS_TRANSLATION_KEY', { count: patient.age.years })}, ${patient.age.months} ${t('CLINICAL_MONTHS_TRANSLATION_KEY', { count: patient.age.months })}, ${patient.age.days} ${t('CLINICAL_DAYS_TRANSLATION_KEY', { count: patient.age.days })}`
-      : null;
+  const formattedAge = patient.birthDate
+    ? getFormattedAge(patient.birthDate, t)
+    : null;
 
-  const details = [formattedAge, formatField(patient.birthDate)]
+  const formattedBirthDate = patient.birthDate
+    ? formatDateTime(patient.birthDate, t).formattedResult
+    : null;
+
+  const details = [formattedAge, formattedBirthDate]
     .filter(Boolean)
     .join(' | ');
 

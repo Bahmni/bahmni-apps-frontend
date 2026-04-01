@@ -28,11 +28,17 @@ export const formatEncounterTitle = (
 
 export const formatObservationValue = (
   observation: ExtractedObservation,
+  t?: (key: string) => string,
 ): string => {
   if (!observation.observationValue?.value) {
     return '';
   }
-  const { value, unit } = observation.observationValue;
+  const { value, unit, type } = observation.observationValue;
+
+  if (type === 'dateTime') {
+    return formatDateTime(String(value), t).formattedResult;
+  }
+
   const baseValue = unit ? `${value} ${unit}` : String(value);
   return baseValue;
 };
@@ -90,11 +96,12 @@ const formatObservationHeader = (observation: ExtractedObservation): string => {
 export const transformObservationToRowCell = (
   observation: ExtractedObservation,
   index: number,
+  t?: (key: string) => string,
 ) => {
   return {
     index,
     header: formatObservationHeader(observation),
-    value: formatObservationValue(observation),
+    value: formatObservationValue(observation, t),
     provider: observation.encounter?.provider,
   };
 };
@@ -190,10 +197,8 @@ function extractObservationValue(
   }
 
   if (valueDateTime) {
-    const parts = valueDateTime.split('T');
-    const dateOnly = parts[0];
     return {
-      value: dateOnly || valueDateTime,
+      value: valueDateTime,
       type: 'dateTime',
       isAbnormal,
     };

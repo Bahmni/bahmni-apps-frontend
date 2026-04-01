@@ -22,7 +22,7 @@ const renderObservation = (
   title: string,
   t: (key: string, options?: { provider?: string }) => string,
 ) => {
-  const rowData = transformObservationToRowCell(observation, index);
+  const rowData = transformObservationToRowCell(observation, index, t);
 
   const value = rowData.value;
   const valueType = getValueType(value);

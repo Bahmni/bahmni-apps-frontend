@@ -10,9 +10,6 @@ import {
 // Mock the services
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
   getInputTypeForFormat: jest.fn(),
   MAX_PHONE_NUMBER_LENGTH: 10,
 }));
@@ -292,28 +289,6 @@ describe('PersonAttributeInput', () => {
       );
 
       const input = screen.getByLabelText('Test Label');
-      expect(input).toBeInTheDocument();
-    });
-
-    it('should use custom placeholder when provided', () => {
-      render(
-        <PersonAttributeInput
-          {...defaultProps}
-          format="org.openmrs.Date"
-          placeholder="dd/mm/yyyy"
-        />,
-      );
-
-      const input = screen.getByPlaceholderText('dd/mm/yyyy');
-      expect(input).toBeInTheDocument();
-    });
-
-    it('should use default placeholder when not provided', () => {
-      render(
-        <PersonAttributeInput {...defaultProps} format="org.openmrs.Date" />,
-      );
-
-      const input = screen.getByPlaceholderText('mm/dd/yyyy');
       expect(input).toBeInTheDocument();
     });
 

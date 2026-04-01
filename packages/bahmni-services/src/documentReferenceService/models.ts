@@ -1,4 +1,12 @@
 /**
+ * Interface representing a single attachment within a document
+ */
+export interface Attachment {
+  readonly url: string;
+  readonly contentType?: string;
+}
+
+/**
  * Interface representing a formatted document for easier consumption by components
  */
 export interface DocumentViewModel {
@@ -9,4 +17,5 @@ export interface DocumentViewModel {
   readonly uploadedBy?: string;
   readonly contentType?: string;
   readonly documentUrl: string;
+  readonly attachments: Attachment[];
 }

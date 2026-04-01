@@ -6,7 +6,7 @@ import {
   TabPanels,
   Tabs,
 } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { formatDateTime, useTranslation } from '@bahmni/services';
 import React, { useCallback, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
@@ -84,7 +84,11 @@ const AppointmentsTable: React.FC<WidgetProps> = ({ config }) => {
           return reasonVal ?? '-';
         }
         case 'appointmentDate': {
-          const dateVal = row.appointmentDate?.trim();
+          const dateVal = formatDateTime(
+            row.appointmentDate?.trim(),
+            t,
+            true,
+          ).formattedResult;
           return dateVal ?? '-';
         }
         case 'appointmentSlot': {

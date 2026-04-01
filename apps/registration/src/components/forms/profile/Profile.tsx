@@ -28,7 +28,7 @@ import {
   useIdentifierData,
 } from '../../../utils/identifierGenderUtils';
 import { PatientPhotoUpload } from '../../patientPhotoUpload/PatientPhotoUpload';
-import { createDateAgeHandlers, formatToDisplay } from './dateAgeUtils';
+import { createDateAgeHandlers } from './dateAgeUtils';
 
 export interface ProfileRef {
   getData: () => BasicInfoData & {
@@ -252,15 +252,14 @@ export const Profile = ({
     }
   };
 
-  const { handleDateInputChange, handleDateOfBirthChange, handleAgeChange } =
-    createDateAgeHandlers({
-      setDateErrors,
-      setValidationErrors,
-      setAgeErrors,
-      setFormData,
-      setDobEstimated,
-      t,
-    });
+  const { handleDateOfBirthChange, handleAgeChange } = createDateAgeHandlers({
+    setDateErrors,
+    setValidationErrors,
+    setAgeErrors,
+    setFormData,
+    setDobEstimated,
+    t,
+  });
 
   // Handler to prevent invalid characters in age number inputs
   const handleAgeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -659,27 +658,17 @@ export const Profile = ({
           >
             <div data-testid="date-of-birth-field">
               <DatePicker
-                dateFormat="d/m/Y"
                 datePickerType="single"
                 data-testid="date-of-birth-picker"
-                minDate={(() => {
-                  const date = new Date();
-                  date.setFullYear(date.getFullYear() - MAX_PATIENT_AGE_YEARS);
-                  date.setHours(0, 0, 0, 0);
-                  return date;
-                })()}
                 maxDate={new Date()}
                 value={
-                  formData.dateOfBirth
-                    ? formatToDisplay(formData.dateOfBirth)
-                    : ''
+                  formData.dateOfBirth ? new Date(formData.dateOfBirth) : ''
                 }
                 onChange={handleDateOfBirthChange}
               >
                 <DatePickerInput
                   id="date-of-birth"
                   data-testid="date-of-birth-input"
-                  placeholder={t('CREATE_PATIENT_DATE_OF_BIRTH_PLACEHOLDER')}
                   labelText={getRequiredLabel(
                     'CREATE_PATIENT_DATE_OF_BIRTH',
                     patientInfoConfig?.isDateOfBirthMandatory ?? true,
@@ -690,7 +679,6 @@ export const Profile = ({
                   invalidText={
                     dateErrors.dateOfBirth || validationErrors.dateOfBirth
                   }
-                  onInput={handleDateInputChange}
                 />
               </DatePicker>
             </div>

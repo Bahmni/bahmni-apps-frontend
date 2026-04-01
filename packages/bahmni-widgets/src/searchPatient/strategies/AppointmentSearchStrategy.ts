@@ -2,8 +2,8 @@ import {
   searchAppointmentsByAttribute,
   Appointment,
   Reason,
-  formatDateAndTime,
-  calculateAgeinYearsAndMonths,
+  formatDateTime,
+  getFormattedAge,
   AppointmentSearchResult,
   PatientSearchResultBundle,
 } from '@bahmni/services';
@@ -32,7 +32,7 @@ export class AppointmentSearchStrategy implements SearchStrategy {
     const requestBody = this.buildSearchRequest(searchTerm, fieldsToSearch);
     const appointments = await searchAppointmentsByAttribute(requestBody);
 
-    return this.transformAppointmentsToPatientBundle(appointments);
+    return this.transformAppointmentsToPatientBundle(appointments, context);
   }
 
   /**
@@ -80,10 +80,13 @@ export class AppointmentSearchStrategy implements SearchStrategy {
    */
   private transformAppointmentsToPatientBundle(
     appointments: Appointment[],
+    context: SearchContext,
   ): PatientSearchResultBundle {
     return {
       totalCount: appointments.length,
-      pageOfResults: appointments.map(this.transformAppointmentToSearchResult),
+      pageOfResults: appointments.map((appt) =>
+        this.transformAppointmentToSearchResult(appt, context.translator),
+      ),
     };
   }
 
@@ -92,6 +95,7 @@ export class AppointmentSearchStrategy implements SearchStrategy {
    */
   private transformAppointmentToSearchResult = (
     appt: Appointment,
+    translator?: (key: string, options?: { count?: number }) => string,
   ): AppointmentSearchResult => ({
     // Patient fields
     uuid: appt.patient.uuid,
@@ -100,8 +104,9 @@ export class AppointmentSearchStrategy implements SearchStrategy {
     middleName: '',
     familyName: '',
     gender: appt.patient.gender,
-    birthDate: formatDateAndTime(appt.patient.birthDate, false),
-    age: calculateAgeinYearsAndMonths(appt.patient.birthDate),
+    birthDate: formatDateTime(appt.patient.birthDate, translator)
+      .formattedResult,
+    age: getFormattedAge(appt.patient.birthDate, translator),
     extraIdentifiers: null,
     personId: 0,
     deathDate: null,
@@ -115,7 +120,8 @@ export class AppointmentSearchStrategy implements SearchStrategy {
     // Appointment-specific fields
     appointmentUuid: appt.uuid,
     appointmentNumber: appt.appointmentNumber,
-    appointmentDate: formatDateAndTime(appt.startDateTime, true),
+    appointmentDate: formatDateTime(appt.startDateTime, translator, true)
+      .formattedResult,
     appointmentReason: this.getAppointmentReasons(appt),
     appointmentStatus: appt.status,
   });

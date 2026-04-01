@@ -291,8 +291,8 @@ Translation file:
 
 ```json
 {
-  "CLINICAL_DAYS_TRANSLATION_KEY_one": "day",
-  "CLINICAL_DAYS_TRANSLATION_KEY_other": "days"
+  "DAYS_FULL_FORMAT_one": "day",
+  "DAYS_FULL_FORMAT_other": "days"
 }
 ```
 
@@ -304,7 +304,7 @@ const MyComponent: React.FC = () => {
   const days = 3;
 
   return (
-    <p>{days} {t('CLINICAL_DAYS_TRANSLATION_KEY', { count: days })}</p>
+    <p>{days} {t('DAYS_FULL_FORMAT', { count: days })}</p>
   );
 };
 ```

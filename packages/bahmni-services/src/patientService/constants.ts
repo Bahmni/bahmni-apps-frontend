@@ -114,6 +114,8 @@ export const APP_SETTINGS_URL = (module: string) =>
 
 export const PRIMARY_IDENTIFIER_TYPE_PROPERTY = 'bahmni.primaryIdentifierType';
 
+export const DEFAULT_DATE_FORMAT_PROPERTY = 'default_dateFormat';
+
 export const CREATE_PATIENT_URL =
   OPENMRS_REST_V1 + '/bahmnicore/patientprofile';
 

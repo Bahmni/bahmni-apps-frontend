@@ -1,5 +1,5 @@
 // utils/ageUtils.ts
-import { intervalToDuration, sub, format, parse } from 'date-fns';
+import { sub, format, parse } from 'date-fns';
 
 export interface Age {
   years: number;
@@ -8,28 +8,6 @@ export interface Age {
 }
 
 export const AgeUtils = {
-  /**
-   * Calculate difference in years, months, days between two dates using date-fns
-   * Handles leap years, negative values, and timezones correctly
-   */
-  diffInYearsMonthsDays(dateFrom: Date, dateTo: Date = new Date()): Age {
-    const duration = intervalToDuration({ start: dateFrom, end: dateTo });
-    return {
-      years: duration.years ?? 0,
-      months: duration.months ?? 0,
-      days: duration.days ?? 0,
-    };
-  },
-
-  /**
-   * Calculate age based on birth date string (yyyy-mm-dd)
-   * Uses date-fns parse for proper timezone handling
-   */
-  fromBirthDate(dob: string): Age {
-    const birthDate = parse(dob, 'yyyy-MM-dd', new Date());
-    return this.diffInYearsMonthsDays(birthDate, new Date());
-  },
-
   /**
    * Calculate DOB from age using date-fns sub function
    * Handles month/day overflow correctly

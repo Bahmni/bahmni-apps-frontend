@@ -32,6 +32,9 @@ export { useHasPrivilege } from './userPrivileges/useHasPrivilege';
 export { UserPrivilegeProvider } from './userPrivileges/UserPrivilegeProvider';
 export { CONSULTATION_PAD_PRIVILEGES } from './userPrivileges/consultationPadPrivileges';
 
+// App Context
+export { AppContextProvider } from './appContext';
+
 // Active Practitioner
 export {
   ActivePractitionerProvider,
