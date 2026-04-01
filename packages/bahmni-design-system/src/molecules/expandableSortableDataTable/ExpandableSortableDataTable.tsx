@@ -12,7 +12,7 @@ import {
   DataTableSkeleton,
 } from '@carbon/react';
 import classnames from 'classnames';
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './styles/ExpandableSortableDataTable.module.scss';
 
 interface ExpandableSortableDataTableProps<
@@ -29,6 +29,7 @@ interface ExpandableSortableDataTableProps<
   renderExpandedContent: (row: T) => React.ReactNode;
   expandedRowClassName?: string;
   className?: string;
+  showExpandAll?: boolean;
 }
 
 export const ExpandableSortableDataTable = <
@@ -50,21 +51,8 @@ export const ExpandableSortableDataTable = <
   renderExpandedContent,
   expandedRowClassName = '',
   className = 'expandable-sortable-data-table',
+  showExpandAll = true,
 }: ExpandableSortableDataTableProps<T>) => {
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-
-  const toggleExpand = (rowId: string) => {
-    setExpandedRows((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(rowId)) {
-        newSet.delete(rowId);
-      } else {
-        newSet.add(rowId);
-      }
-      return newSet;
-    });
-  };
-
   if (errorStateMessage) {
     return (
       <p
@@ -124,12 +112,17 @@ export const ExpandableSortableDataTable = <
           headers: tableHeaders,
           getHeaderProps,
           getRowProps,
+          getExpandHeaderProps,
           getTableProps,
         }) => (
           <Table {...getTableProps()} aria-label={ariaLabel} size="md">
             <TableHead>
               <TableRow>
-                <TableExpandHeader aria-label="Expand row" />
+                {showExpandAll ? (
+                  <TableExpandHeader enableToggle {...getExpandHeaderProps()} />
+                ) : (
+                  <TableExpandHeader aria-label="Expand row" />
+                )}
                 {tableHeaders.map((header) => {
                   const isSortable =
                     sortable.find((s) => s.key === header.key)?.sortable ??
@@ -162,7 +155,6 @@ export const ExpandableSortableDataTable = <
                   return null;
                 }
 
-                const isExpanded = expandedRows.has(row.id);
                 const isRowExpandable = originalRow.isExpandable !== false;
                 const { key: _key, ...rowProps } = getRowProps({ row });
 
@@ -171,8 +163,8 @@ export const ExpandableSortableDataTable = <
                     <TableExpandRow
                       {...rowProps}
                       key={row.id}
-                      isExpanded={isExpanded}
-                      onExpand={() => isRowExpandable && toggleExpand(row.id)}
+                      isExpanded={isRowExpandable ? rowProps.isExpanded : false}
+                      onExpand={isRowExpandable ? rowProps.onExpand : undefined}
                       aria-label={`Expand row ${row.id}`}
                       className={classnames({
                         [styles.hideExpandButton]: !isRowExpandable,
@@ -184,7 +176,7 @@ export const ExpandableSortableDataTable = <
                         </TableCell>
                       ))}
                     </TableExpandRow>
-                    {isExpanded &&
+                    {rowProps.isExpanded &&
                       isRowExpandable &&
                       renderExpandedContent(originalRow)}
                   </React.Fragment>

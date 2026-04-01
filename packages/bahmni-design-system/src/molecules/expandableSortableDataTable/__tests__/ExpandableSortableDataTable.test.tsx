@@ -1,5 +1,5 @@
 import { DataTableHeader } from '@carbon/react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ExpandableSortableDataTable } from '../ExpandableSortableDataTable';
 import '@testing-library/jest-dom';
@@ -361,6 +361,196 @@ describe('ExpandableSortableDataTable', () => {
 
     expect(screen.getByTestId('expanded-row-1')).toBeInTheDocument();
     expect(screen.getByTestId('expanded-row-2')).toBeInTheDocument();
+  });
+
+  describe('Expand All / Collapse All', () => {
+    it('defaults to collapsed state on initial render', () => {
+      render(
+        <ExpandableSortableDataTable
+          headers={mockHeaders}
+          rows={mockRows}
+          ariaLabel="Default Collapsed Table"
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      expect(screen.queryByTestId('expanded-row-1')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('expanded-row-2')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('expanded-row-3')).not.toBeInTheDocument();
+    });
+
+    it('expands all expandable rows when expand-all header is clicked', () => {
+      render(
+        <ExpandableSortableDataTable
+          headers={mockHeaders}
+          rows={mockRows}
+          ariaLabel="Expand All Table"
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      const expandAllButton = screen.getByRole('button', {
+        name: /expand all rows/i,
+      });
+      fireEvent.click(expandAllButton);
+
+      expect(screen.getByTestId('expanded-row-1')).toBeInTheDocument();
+      expect(screen.getByTestId('expanded-row-2')).toBeInTheDocument();
+      // row-3 has isExpandable: false, should not be expanded
+      expect(screen.queryByTestId('expanded-row-3')).not.toBeInTheDocument();
+    });
+
+    it('collapses all rows when collapse-all header is clicked after expand all', () => {
+      render(
+        <ExpandableSortableDataTable
+          headers={mockHeaders}
+          rows={mockRows}
+          ariaLabel="Collapse All Table"
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      const expandAllButton = screen.getByRole('button', {
+        name: /expand all rows/i,
+      });
+      fireEvent.click(expandAllButton);
+
+      expect(screen.getByTestId('expanded-row-1')).toBeInTheDocument();
+      expect(screen.getByTestId('expanded-row-2')).toBeInTheDocument();
+
+      const collapseAllButton = screen.getByRole('button', {
+        name: /collapse all rows/i,
+      });
+      fireEvent.click(collapseAllButton);
+
+      expect(screen.queryByTestId('expanded-row-1')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('expanded-row-2')).not.toBeInTheDocument();
+    });
+
+    it('individual row toggles work independently after expand all', () => {
+      render(
+        <ExpandableSortableDataTable
+          headers={mockHeaders}
+          rows={mockRows}
+          ariaLabel="Individual Toggle Table"
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      const expandAllButton = screen.getByRole('button', {
+        name: /expand all rows/i,
+      });
+      fireEvent.click(expandAllButton);
+
+      expect(screen.getByTestId('expanded-row-1')).toBeInTheDocument();
+      expect(screen.getByTestId('expanded-row-2')).toBeInTheDocument();
+
+      // Collapse just row-1 individually
+      const rowExpandButtons = screen.getAllByRole('button', {
+        name: /expand row row-1/i,
+      });
+      fireEvent.click(rowExpandButtons[0]);
+
+      expect(screen.queryByTestId('expanded-row-1')).not.toBeInTheDocument();
+      expect(screen.getByTestId('expanded-row-2')).toBeInTheDocument();
+    });
+
+    it('resets expanded rows when rows change', () => {
+      const { rerender } = render(
+        <ExpandableSortableDataTable
+          headers={mockHeaders}
+          rows={mockRows}
+          ariaLabel="Reset On Change Table"
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      const expandAllButton = screen.getByRole('button', {
+        name: /expand all rows/i,
+      });
+      fireEvent.click(expandAllButton);
+      expect(screen.getByTestId('expanded-row-1')).toBeInTheDocument();
+
+      const newRows: MockRow[] = [
+        {
+          id: 'row-4',
+          name: 'Patient D',
+          status: 'Active',
+          count: 1,
+          details: 'Details for Patient D',
+          isExpandable: true,
+        },
+      ];
+
+      act(() => {
+        rerender(
+          <ExpandableSortableDataTable
+            headers={mockHeaders}
+            rows={newRows}
+            ariaLabel="Reset On Change Table"
+            renderCell={renderCell}
+            renderExpandedContent={renderExpandedContent}
+          />,
+        );
+      });
+
+      expect(screen.queryByTestId('expanded-row-1')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('expanded-row-4')).not.toBeInTheDocument();
+    });
+
+    it('expand all only affects expandable rows, not non-expandable ones', () => {
+      render(
+        <ExpandableSortableDataTable
+          headers={mockHeaders}
+          rows={mockRows}
+          ariaLabel="Expandable Only Table"
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+        />,
+      );
+
+      const expandAllButton = screen.getByRole('button', {
+        name: /expand all rows/i,
+      });
+      fireEvent.click(expandAllButton);
+
+      // row-1 and row-2 are expandable, should be expanded
+      expect(screen.getByTestId('expanded-row-1')).toBeInTheDocument();
+      expect(screen.getByTestId('expanded-row-2')).toBeInTheDocument();
+
+      // row-3 has isExpandable: false, should not be expanded
+      expect(screen.queryByTestId('expanded-row-3')).not.toBeInTheDocument();
+      // row-3's expand button should remain in collapsed visual state (aria-expanded=false)
+      const row3Button = screen.getAllByRole('button', {
+        name: /expand row row-3/i,
+      })[0];
+      expect(row3Button).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('does not render expand-all button when showExpandAll is false', () => {
+      render(
+        <ExpandableSortableDataTable
+          headers={mockHeaders}
+          rows={mockRows}
+          ariaLabel="No Expand All Table"
+          renderCell={renderCell}
+          renderExpandedContent={renderExpandedContent}
+          showExpandAll={false}
+        />,
+      );
+
+      expect(
+        screen.queryByRole('button', { name: /expand all rows/i }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /collapse all rows/i }),
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Snapshots', () => {
