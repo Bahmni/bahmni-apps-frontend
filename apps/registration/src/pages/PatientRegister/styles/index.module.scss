@@ -58,7 +58,7 @@
   height: $spacing-08 + $spacing-05;
   display: flex;
   align-content: center;
-  padding: $spacing-06;
+  padding-left: $spacing-06;
 }
 
 // Form Container
@@ -98,6 +98,7 @@
 
   .formSectionTitle {
     @include type-style("body-compact-02");
+    padding-top: $spacing-06;
   }
 
   .patientUuid {

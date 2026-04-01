@@ -17,13 +17,12 @@ import {
 import { useNotification } from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { RegistrationFormSection } from '../../providers/registrationConfig/models';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
 import { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
 import { ContactInfoRef } from '../../components/forms/contactInfo/ContactInfo';
 import { PatientRelationshipsRef } from '../../components/forms/patientRelationships/PatientRelationships';
-import { ProfileRef } from '../../components/forms/profile/Profile';
+import Profile, { ProfileRef } from '../../components/forms/profile/Profile';
 import { RegistrationActions } from '../../components/registrationActions/RegistrationActions';
 import { BAHMNI_REGISTRATION_SEARCH, getPatientUrl } from '../../constants/app';
 
@@ -34,6 +33,7 @@ import { usePatientPhoto } from '../../hooks/usePatientPhoto';
 import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
+import { RegistrationFormSection } from '../../providers/registrationConfig/models';
 import { FormControlRefs, FormControlData, FormControlGuards } from './models';
 import { validateAllSections, collectFormData } from './patientFormService';
 import PatientRegisterSection from './PatientRegisterSection';
@@ -180,66 +180,8 @@ const PatientRegister = () => {
   };
 
   const shouldShowActions = metadata?.patientUuid || patientUuidFromUrl == null;
-
-  // Layer 3: Runtime Fallback - Hardcoded default if not in config
-  const defaultBasicInformation: RegistrationFormSection = {
-    name: 'Basic Information',
-    translationKey: 'REGISTRATION_SECTION_BASIC_INFO',
-    controls: [{ type: 'profile' }],
-  };
-
-  // Get all configured sections
-  const configuredSections: RegistrationFormSection[] =
+  const sections: RegistrationFormSection[] =
     registrationConfig?.registrationForm?.sections ?? [];
-
-  // Check if "Basic Details" section exists in config
-  const basicDetailsIndex = configuredSections.findIndex(
-    (section) => section.name === 'Basic Details',
-  );
-
-  // If "Basic Details" exists, use it as basicInformationSection and remove from optionalSections
-  // Otherwise, use hardcoded default or config's basicInformation
-  let basicInformationSection: RegistrationFormSection;
-  let optionalSections: RegistrationFormSection[];
-
-  if (basicDetailsIndex !== -1) {
-    // Use "Basic Details" as the primary section
-    const basicDetailsSection = configuredSections[basicDetailsIndex];
-
-    // Ensure profile control is always present in Basic Details
-    const hasProfileControl = basicDetailsSection.controls.some(
-      (control) => control.type === 'profile',
-    );
-
-    if (!hasProfileControl) {
-      // Add profile control at the beginning if missing
-      basicInformationSection = {
-        ...basicDetailsSection,
-        controls: [
-          { type: 'profile', titleTranslationKey: 'REGISTRATION_SECTION_BASIC_INFO' },
-          ...basicDetailsSection.controls,
-        ],
-      };
-    } else {
-      basicInformationSection = basicDetailsSection;
-    }
-
-    // Filter out "Basic Details" from optional sections
-    optionalSections = configuredSections.filter((_, index) => index !== basicDetailsIndex);
-  } else {
-    // Fall back to hardcoded or config's basicInformation
-    basicInformationSection =
-      registrationConfig?.registrationForm?.basicInformation ||
-      defaultBasicInformation;
-    optionalSections = configuredSections;
-  }
-
-  // Combine sections: basic information first (ALWAYS mandatory), then optional sections
-  const allSections: RegistrationFormSection[] = [
-    basicInformationSection,
-    ...optionalSections,
-  ];
-
   const refs = useMemo<FormControlRefs>(
     () => ({
       profileRef: patientProfileRef,
@@ -335,8 +277,15 @@ const PatientRegister = () => {
               </span>
             </Tile>
           </div>
-
-          {allSections.map((section) => (
+          <div className={styles.formContainer}>
+            <Profile
+              ref={patientProfileRef}
+              initialData={profileInitialData}
+              initialDobEstimated={initialDobEstimated}
+              initialPhoto={patientPhoto}
+            />
+          </div>
+          {sections.map((section) => (
             <PatientRegisterSection
               key={section.name}
               section={section}

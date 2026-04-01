@@ -8,7 +8,6 @@ import {
 import { builtInFormSections } from './formSectionMap';
 import { FormControlRefs, FormControlData, FormControlGuards } from './models';
 import styles from './styles/index.module.scss';
-import { FileTile } from '../../../../../packages/bahmni-design-system/src/molecules/fileTile';
 
 interface PatientRegisterSectionProps {
   section: RegistrationFormSection;

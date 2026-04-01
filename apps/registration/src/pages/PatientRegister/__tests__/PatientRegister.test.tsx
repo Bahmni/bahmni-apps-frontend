@@ -58,7 +58,8 @@ jest.mock('../patientFormService');
 
 // Mock child components
 jest.mock('../../../components/forms/profile/Profile', () => ({
-  Profile: ({ ref }: { ref?: React.Ref<unknown> }) => {
+  __esModule: true,
+  default: ({ ref }: { ref?: React.Ref<unknown> }) => {
     // Expose imperative methods via ref
     if (ref && typeof ref === 'object' && 'current' in ref) {
       ref.current = {
@@ -1134,9 +1135,7 @@ describe('PatientRegister', () => {
             sections: [
               {
                 name: 'Address Details',
-                controls: [
-                  { type: 'address' },
-                ],
+                controls: [{ type: 'address' }],
               },
             ],
           },

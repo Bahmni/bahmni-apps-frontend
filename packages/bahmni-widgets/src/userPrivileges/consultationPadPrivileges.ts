@@ -1,4 +1,3 @@
-
 /**
  * Privilege configuration for consultation pad controls
  * Each privilege key maps to an array of required OpenMRS privilege names
