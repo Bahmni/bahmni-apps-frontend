@@ -136,7 +136,31 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
               class="cds--table-expand"
               id="expand"
               scope="col"
-            />
+            >
+              <button
+                aria-controls="expanded-row-row-1 expanded-row-row-2 expanded-row-row-3"
+                aria-expanded="false"
+                aria-label="Expand all rows"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </th>
             <th
               aria-sort="none"
               class="nonSortableHeader cds--table-sort__header"
@@ -144,12 +168,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r10»"
+                id="table-sort-«r1o»"
               >
                 Click to sort rows by Name header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r10»"
+                aria-describedby="table-sort-«r1o»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
@@ -204,12 +228,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r11»"
+                id="table-sort-«r1p»"
               >
                 Click to sort rows by Status header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r11»"
+                aria-describedby="table-sort-«r1p»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
@@ -264,12 +288,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r12»"
+                id="table-sort-«r1q»"
               >
                 Click to sort rows by Count header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r12»"
+                aria-describedby="table-sort-«r1q»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
@@ -480,7 +504,31 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
               class="cds--table-expand"
               id="expand"
               scope="col"
-            />
+            >
+              <button
+                aria-controls="expanded-row-row-1 expanded-row-row-2 expanded-row-row-3"
+                aria-expanded="false"
+                aria-label="Expand all rows"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </th>
             <th
               aria-sort="none"
               class="nonSortableHeader cds--table-sort__header"
@@ -488,12 +536,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«rt»"
+                id="table-sort-«r1l»"
               >
                 Click to sort rows by Name header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«rt»"
+                aria-describedby="table-sort-«r1l»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
@@ -548,12 +596,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«ru»"
+                id="table-sort-«r1m»"
               >
                 Click to sort rows by Status header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«ru»"
+                aria-describedby="table-sort-«r1m»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
@@ -608,12 +656,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«rv»"
+                id="table-sort-«r1n»"
               >
                 Click to sort rows by Count header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«rv»"
+                aria-describedby="table-sort-«r1n»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
