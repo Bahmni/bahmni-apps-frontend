@@ -355,7 +355,6 @@
                     "type": {
                       "type": "string",
                       "enum": [
-                        "profile",
                         "address",
                         "contactInfo",
                         "additionalInfo",

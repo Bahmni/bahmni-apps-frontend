@@ -4,22 +4,9 @@ import { AdditionalInfo } from '../../components/forms/additionalInfo/Additional
 import { AddressInfo } from '../../components/forms/addressInfo/AddressInfo';
 import { ContactInfo } from '../../components/forms/contactInfo/ContactInfo';
 import { PatientRelationships } from '../../components/forms/patientRelationships/PatientRelationships';
-import { Profile } from '../../components/forms/profile/Profile';
 import { FormSectionConfig } from './models';
 
 export const builtInFormSections: FormSectionConfig[] = [
-  {
-    type: 'profile',
-    component: Profile,
-    render: (Component, refs, data) => (
-      <Component
-        ref={refs.profileRef}
-        initialData={data.profileInitialData}
-        initialDobEstimated={data.initialDobEstimated}
-        initialPhoto={data.patientPhoto}
-      />
-    ),
-  },
   {
     type: 'address',
     component: AddressInfo,

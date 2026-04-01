@@ -4,27 +4,20 @@ import { AdditionalInfo } from '../../../components/forms/additionalInfo/Additio
 import { AddressInfo } from '../../../components/forms/addressInfo/AddressInfo';
 import { ContactInfo } from '../../../components/forms/contactInfo/ContactInfo';
 import { PatientRelationships } from '../../../components/forms/patientRelationships/PatientRelationships';
-import { Profile } from '../../../components/forms/profile/Profile';
 import { builtInFormSections } from '../formSectionMap';
 import { FormControlRefs, FormControlData, FormControlGuards } from '../models';
 
 describe('formSectionMap', () => {
   describe('builtInFormSections array', () => {
-    it('should have all 6 control types', () => {
+    it('should have all 5 control types', () => {
       const types = builtInFormSections.map((section) => section.type);
       expect(types).toEqual([
-        'profile',
         'address',
         'contactInfo',
         'additionalInfo',
         'additionalIdentifiers',
         'relationships',
       ]);
-    });
-
-    it('should map profile type correctly', () => {
-      const profile = builtInFormSections.find((s) => s.type === 'profile');
-      expect(profile?.component).toBe(Profile);
     });
 
     it('should map address type correctly', () => {
@@ -184,20 +177,6 @@ describe('formSectionMap', () => {
         mockData,
         guards,
       );
-
-      expect(result).not.toBeNull();
-      expect(React.isValidElement(result)).toBe(true);
-    });
-
-    it('profile render returns component with correct props', () => {
-      const profile = builtInFormSections.find((s) => s.type === 'profile');
-
-      const guards: FormControlGuards = {
-        shouldShowAdditionalIdentifiers: true,
-        relationshipTypes: [],
-      };
-
-      const result = profile?.render(mockComponent, mockRefs, mockData, guards);
 
       expect(result).not.toBeNull();
       expect(React.isValidElement(result)).toBe(true);

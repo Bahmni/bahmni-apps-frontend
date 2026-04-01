@@ -295,16 +295,6 @@ describe('PatientRegister', () => {
     useRegistrationConfig.mockReturnValue({
       registrationConfig: {
         registrationForm: {
-          basicInformation: {
-            name: 'Basic Information',
-            translationKey: 'REGISTRATION_BASIC_INFORMATION',
-            controls: [
-              {
-                type: 'profile',
-                titleTranslationKey: 'REGISTRATION_SECTION_BASIC_INFO',
-              },
-            ],
-          },
           sections: [
             {
               name: 'Address Details',
@@ -946,11 +936,6 @@ describe('PatientRegister', () => {
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
-            basicInformation: {
-              name: 'Basic Information',
-              translationKey: 'REGISTRATION_BASIC_INFORMATION',
-              controls: [{ type: 'profile' }],
-            },
             sections: [
               {
                 name: 'Address Details',
@@ -1008,11 +993,6 @@ describe('PatientRegister', () => {
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
-            basicInformation: {
-              name: 'Basic Information',
-              translationKey: 'REGISTRATION_BASIC_INFORMATION',
-              controls: [{ type: 'profile' }],
-            },
             sections: [
               {
                 name: 'Additional Information',
@@ -1059,11 +1039,6 @@ describe('PatientRegister', () => {
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
-            basicInformation: {
-              name: 'Basic Information',
-              translationKey: 'REGISTRATION_BASIC_INFORMATION',
-              controls: [{ type: 'profile' }],
-            },
             sections: [
               {
                 name: 'Identifiers',
@@ -1096,11 +1071,6 @@ describe('PatientRegister', () => {
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
-            basicInformation: {
-              name: 'Basic Information',
-              translationKey: 'REGISTRATION_BASIC_INFORMATION',
-              controls: [{ type: 'profile' }],
-            },
             sections: [
               {
                 name: 'Relationships',
@@ -1127,11 +1097,6 @@ describe('PatientRegister', () => {
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
-            basicInformation: {
-              name: 'Basic Information',
-              translationKey: 'REGISTRATION_BASIC_INFORMATION',
-              controls: [{ type: 'profile' }],
-            },
             sections: [
               {
                 name: 'Address Details',
@@ -1152,18 +1117,13 @@ describe('PatientRegister', () => {
       expect(screen.queryByTestId('patient-unknown')).not.toBeInTheDocument();
     });
 
-    it('should handle empty sections array in config but still render basicInformation', () => {
+    it('should always render Basic Information even when sections array is empty', () => {
       const { useRegistrationConfig } = jest.requireMock(
         '../../../providers/registrationConfig',
       );
       useRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationForm: {
-            basicInformation: {
-              name: 'Basic Information',
-              translationKey: 'REGISTRATION_BASIC_INFORMATION',
-              controls: [{ type: 'profile' }],
-            },
             sections: [],
           },
         },
