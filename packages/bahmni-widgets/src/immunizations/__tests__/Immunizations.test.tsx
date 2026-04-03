@@ -6,9 +6,12 @@ import { useQuery } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Bundle, Immunization } from 'fhir/r4';
+import { toHaveNoViolations } from 'jest-axe';
 import React from 'react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import Immunizations from '../Immunizations';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('../../hooks/usePatientUUID');
 jest.mock('@bahmni/services', () => ({
@@ -70,6 +73,15 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+it('shows no patient reference message when patientUUID is null', () => {
+  mockUsePatientUUID.mockReturnValue(null);
+  render(<Immunizations config={{}} />);
+  expect(screen.getByTestId('immunization-history-widget')).toHaveTextContent(
+    'IMMUNIZATION_WIDGET_NO_PATIENT_REFERENCE',
+  );
+  expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+});
+
 it('renders Administered tab first and active by default', () => {
   render(<Immunizations config={{}} />);
   const tabs = screen.getAllByRole('tab');
@@ -108,4 +120,16 @@ it('shows only Not Administered table when config.status is not-done', () => {
   expect(
     screen.queryByTestId('administered-immunizations-table-empty'),
   ).not.toBeInTheDocument();
+});
+
+it('matches snapshot with tabs (default config)', () => {
+  const { asFragment } = render(<Immunizations config={{}} />);
+  expect(asFragment()).toMatchSnapshot();
+});
+
+it('matches snapshot without tabs (status filter applied)', () => {
+  const { asFragment } = render(
+    <Immunizations config={{ status: 'completed' }} />,
+  );
+  expect(asFragment()).toMatchSnapshot();
 });

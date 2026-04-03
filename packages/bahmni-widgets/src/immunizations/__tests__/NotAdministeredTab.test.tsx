@@ -7,8 +7,11 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { Bundle, Immunization } from 'fhir/r4';
+import { toHaveNoViolations } from 'jest-axe';
 import React from 'react';
 import NotAdministeredTab from '../NotAdministeredTab';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),

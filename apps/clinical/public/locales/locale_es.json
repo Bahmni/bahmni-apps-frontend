@@ -195,6 +195,7 @@
   "IMMUNIZATION_WIDGET_ERROR_FETCHING_DATA": "Error al obtener datos",
   "IMMUNIZATION_WIDGET_NOT_ADMINISTERED_TABLE_ARIA": "Tabla de inmunizaciones no administradas",
   "IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED": "No hay inmunizaciones registradas",
+  "IMMUNIZATION_WIDGET_NO_PATIENT_REFERENCE": "No se proporcionó referencia de paciente",
   "IMMUNIZATION_WIDGET_STATUS_DONE": "Completado",
   "IMMUNIZATION_WIDGET_TAB_ADMINISTERED": "Administradas",
   "IMMUNIZATION_WIDGET_TAB_LIST_ARIA": "Pestañas del historial de vacunación",

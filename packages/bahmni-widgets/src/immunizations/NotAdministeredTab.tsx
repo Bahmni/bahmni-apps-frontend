@@ -13,7 +13,7 @@ import React, { useMemo } from 'react';
 import { NotAdministeredRow, toNotAdministeredRow } from './utils';
 
 interface NotAdministeredTabProps {
-  patientUUID: string | null;
+  patientUUID: string;
 }
 
 const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
@@ -24,7 +24,7 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['immunizations', patientUUID, 'not-done'],
     queryFn: () =>
-      getPatientImmunizations(patientUUID!, ImmunizationStatus.NotDone),
+      getPatientImmunizations(patientUUID, ImmunizationStatus.NotDone),
     enabled: !!patientUUID,
   });
 

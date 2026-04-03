@@ -18,7 +18,7 @@ import {
 } from './utils';
 
 interface AdministeredTabProps {
-  patientUUID: string | null;
+  patientUUID: string;
 }
 
 const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
@@ -27,7 +27,7 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['immunizations', patientUUID, 'completed'],
     queryFn: () =>
-      getPatientImmunizations(patientUUID!, ImmunizationStatus.Completed),
+      getPatientImmunizations(patientUUID, ImmunizationStatus.Completed),
     enabled: !!patientUUID,
   });
 
