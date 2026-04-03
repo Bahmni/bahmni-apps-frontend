@@ -52,7 +52,10 @@ describe('getPatientImmunizations', () => {
   it('fetches entered-in-error immunizations', async () => {
     (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
-    await getPatientImmunizations(PATIENT_UUID, ImmunizationStatus.EnteredInError);
+    await getPatientImmunizations(
+      PATIENT_UUID,
+      ImmunizationStatus.EnteredInError,
+    );
 
     expect(get).toHaveBeenCalledWith(
       `${BASE_URL}?patient=${PATIENT_UUID}&_sort=-_lastUpdated&_count=100&status=entered-in-error`,
@@ -70,6 +73,8 @@ describe('getPatientImmunizations', () => {
   it('propagates errors from the API', async () => {
     (get as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
-    await expect(getPatientImmunizations(PATIENT_UUID)).rejects.toThrow('Network error');
+    await expect(getPatientImmunizations(PATIENT_UUID)).rejects.toThrow(
+      'Network error',
+    );
   });
 });

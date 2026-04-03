@@ -11,7 +11,11 @@ import { useQuery } from '@tanstack/react-query';
 import { Immunization } from 'fhir/r4';
 import React, { useMemo } from 'react';
 import ImmunizationExpandedRow from './ImmunizationExpandedRow';
-import { AdministeredRow, hasAdministeredRowDetails, toAdministeredRow } from './utils';
+import {
+  AdministeredRow,
+  hasAdministeredRowDetails,
+  toAdministeredRow,
+} from './utils';
 
 interface AdministeredTabProps {
   patientUUID: string | null;
@@ -111,7 +115,9 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
       emptyStateMessage={t('IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED')}
       renderCell={renderCell}
       renderExpandedContent={(row) =>
-        hasAdministeredRowDetails(row) ? <ImmunizationExpandedRow row={row} /> : null
+        hasAdministeredRowDetails(row) ? (
+          <ImmunizationExpandedRow row={row} />
+        ) : null
       }
       dataTestId="administered-immunizations-table"
     />

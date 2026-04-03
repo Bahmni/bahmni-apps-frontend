@@ -76,12 +76,12 @@ export function toAdministeredRow(immunization: Immunization): AdministeredRow {
 
 export function hasAdministeredRowDetails(row: AdministeredRow): boolean {
   return !!(
-    row.route ||
-    row.site ||
-    row.manufacturer ||
-    row.batchNumber ||
-    row.recordedBy ||
-    row.orderedBy ||
+    row.route ??
+    row.site ??
+    row.manufacturer ??
+    row.batchNumber ??
+    row.recordedBy ??
+    row.orderedBy ??
     row.notes
   );
 }

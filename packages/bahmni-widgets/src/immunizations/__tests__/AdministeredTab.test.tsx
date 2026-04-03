@@ -227,7 +227,11 @@ it('does not show expand button when row has no additional details', () => {
     protocolApplied: [{ doseNumberPositiveInt: 1 }],
   };
   mockUseQuery.mockReturnValue({
-    data: { resourceType: 'Bundle', type: 'searchset', entry: [{ resource: minimalImmunization }] },
+    data: {
+      resourceType: 'Bundle',
+      type: 'searchset',
+      entry: [{ resource: minimalImmunization }],
+    },
     isLoading: false,
     isError: false,
     refetch: jest.fn(),
