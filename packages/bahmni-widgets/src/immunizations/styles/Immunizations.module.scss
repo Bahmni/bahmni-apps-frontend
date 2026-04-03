@@ -1,0 +1,8 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.expandedRowContent {
+    color: $text-primary;
+    @include type-style("body-compact-01");
+}

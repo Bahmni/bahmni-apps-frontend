@@ -303,3 +303,8 @@ export {
   type DocumentViewModel,
   type DocumentReference,
 } from './documentReferenceService';
+
+export { 
+  getPatientImmunizations,
+  ImmunizationStatus
+} from './immunizationService';

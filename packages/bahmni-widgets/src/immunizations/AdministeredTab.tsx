@@ -1,0 +1,121 @@
+import { ExpandableDataTable } from '@bahmni/design-system';
+import {
+  ConsultationSavedEventPayload,
+  formatDateTime,
+  getPatientImmunizations,
+  ImmunizationStatus,
+  useSubscribeConsultationSaved,
+  useTranslation,
+} from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
+import { Immunization } from 'fhir/r4';
+import React, { useMemo } from 'react';
+import ImmunizationExpandedRow from './ImmunizationExpandedRow';
+import { AdministeredRow, hasAdministeredRowDetails, toAdministeredRow } from './utils';
+
+interface AdministeredTabProps {
+  patientUUID: string | null;
+}
+
+const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
+  const { t } = useTranslation();
+
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['immunizations', patientUUID, 'completed'],
+    queryFn: () =>
+      getPatientImmunizations(patientUUID!, ImmunizationStatus.Completed),
+    enabled: !!patientUUID,
+  });
+
+  useSubscribeConsultationSaved(
+    (payload: ConsultationSavedEventPayload) => {
+      if (
+        payload.patientUUID === patientUUID &&
+        payload.updatedResources.immunizations
+      ) {
+        refetch();
+      }
+    },
+    [patientUUID, refetch],
+  );
+
+  const headers = useMemo(
+    () => [
+      { key: 'code', header: t('IMMUNIZATION_WIDGET_COL_CODE') },
+      {
+        key: 'doseSequence',
+        header: t('IMMUNIZATION_WIDGET_COL_DOSE_SEQUENCE'),
+      },
+      { key: 'drugName', header: t('IMMUNIZATION_WIDGET_COL_DRUG_NAME') },
+      {
+        key: 'administeredOn',
+        header: t('IMMUNIZATION_WIDGET_COL_ADMINISTERED_ON'),
+      },
+      {
+        key: 'administeredLocation',
+        header: t('IMMUNIZATION_WIDGET_COL_ADMINISTERED_LOCATION'),
+      },
+    ],
+    [t],
+  );
+
+  const sortable = useMemo(
+    () => [
+      { key: 'code', sortable: true },
+      { key: 'doseSequence', sortable: false },
+      { key: 'drugName', sortable: false },
+      { key: 'administeredOn', sortable: true },
+      { key: 'administeredLocation', sortable: true },
+    ],
+    [],
+  );
+
+  const rows = useMemo(
+    () =>
+      (data?.entry ?? [])
+        .map((entry) => entry.resource as Immunization)
+        .filter(Boolean)
+        .map(toAdministeredRow),
+    [data],
+  );
+
+  const renderCell = (row: AdministeredRow, key: string) => {
+    switch (key) {
+      case 'administeredOn':
+        return row.administeredOn
+          ? formatDateTime(row.administeredOn, t).formattedResult
+          : '';
+      case 'administeredLocation':
+        return row.administeredLocation ?? '';
+      case 'doseSequence':
+        return row.doseSequence ?? '';
+      case 'drugName':
+        return row.drugName ?? '';
+      case 'code':
+        return row.code ?? '';
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <ExpandableDataTable
+      headers={headers}
+      rows={rows}
+      sortable={sortable}
+      ariaLabel={t('IMMUNIZATION_WIDGET_ADMINISTERED_TABLE_ARIA')}
+      loading={isLoading}
+      errorStateMessage={
+        isError ? t('IMMUNIZATION_WIDGET_ERROR_FETCHING_DATA') : null
+      }
+      emptyStateMessage={t('IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED')}
+      renderCell={renderCell}
+      renderExpandedContent={(row) =>
+        hasAdministeredRowDetails(row) ? <ImmunizationExpandedRow row={row} /> : null
+      }
+      dataTestId="administered-immunizations-table"
+    />
+  );
+};
+
+export default AdministeredTab;
