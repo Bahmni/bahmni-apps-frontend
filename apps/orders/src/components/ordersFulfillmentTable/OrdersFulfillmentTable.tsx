@@ -346,6 +346,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
         loading={loading}
         emptyStateMessage={t('NO_ORDERS_FOUND')}
         className={`${styles.ordersTable} ${customOrderTableStyles.customOrderTable}`}
+        showExpandAll={false}
       />
     );
   }
