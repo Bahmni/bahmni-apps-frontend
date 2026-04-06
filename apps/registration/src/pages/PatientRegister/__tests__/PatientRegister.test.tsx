@@ -388,10 +388,7 @@ describe('PatientRegister', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      // Component renders AdditionalInfo twice, so use getAllByTestId
-      expect(
-        screen.getAllByTestId('patient-additional')[0],
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
     });
 
     it('should render the page title', () => {
@@ -711,10 +708,7 @@ describe('PatientRegister', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      // Component renders AdditionalInfo twice due to duplicate
-      expect(
-        screen.getAllByTestId('patient-additional')[0],
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
     });
 
     it('should pass refs to form section components', () => {
@@ -724,10 +718,7 @@ describe('PatientRegister', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      // Component renders AdditionalInfo twice due to duplicate
-      expect(
-        screen.getAllByTestId('patient-additional')[0],
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
     });
   });
 
@@ -874,7 +865,6 @@ describe('PatientRegister', () => {
       (useAdditionalIdentifiers as jest.Mock).mockReturnValue({
         shouldShowAdditionalIdentifiers: false,
         hasAdditionalIdentifiers: false,
-        isConfigEnabled: true,
         identifierTypes: [
           { uuid: 'primary-id', name: 'Primary ID', primary: true },
         ],
@@ -895,7 +885,6 @@ describe('PatientRegister', () => {
       (useAdditionalIdentifiers as jest.Mock).mockReturnValue({
         shouldShowAdditionalIdentifiers: false,
         hasAdditionalIdentifiers: true,
-        isConfigEnabled: false,
         identifierTypes: [
           { uuid: 'primary-id', name: 'Primary ID', primary: true },
           { uuid: 'national-id', name: 'National ID', primary: false },
@@ -960,9 +949,7 @@ describe('PatientRegister', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      expect(
-        screen.getAllByTestId('patient-additional')[0],
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
     });
 
     it('should render default Basic Information even when config is absent', () => {
@@ -1018,9 +1005,7 @@ describe('PatientRegister', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      expect(
-        screen.getAllByTestId('patient-additional')[0],
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
     });
 
     it('should hide additionalIdentifiers even if in config when hasAdditionalIdentifiers is false', () => {

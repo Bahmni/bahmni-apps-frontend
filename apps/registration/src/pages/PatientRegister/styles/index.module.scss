@@ -68,7 +68,7 @@
   width: calc(100% - ($spacing-13 + $spacing-05));
   max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
   box-shadow: 0 $spacing-01 $spacing-03 $shadow;
-  background: #fff;
+  background: $background;
   display: flex;
   flex-direction: column;
   gap: 0;
