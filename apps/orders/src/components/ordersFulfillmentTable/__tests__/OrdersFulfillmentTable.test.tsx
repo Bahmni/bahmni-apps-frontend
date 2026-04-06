@@ -301,6 +301,20 @@ describe('OrdersFulfillmentTable', () => {
       expect(screen.getByText('CRK262350')).toBeInTheDocument();
     });
 
+    it('does not render expand/collapse all button for custom view tab', () => {
+      render(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={drugOrderHeaders}
+          isCustomOrderTab
+        />,
+      );
+
+      expect(
+        screen.queryByRole('button', { name: /expand all rows/i }),
+      ).not.toBeInTheDocument();
+    });
+
     it('disables expansion for custom view tab rows', () => {
       const customRows = mockRows.map((row) => ({
         ...row,
