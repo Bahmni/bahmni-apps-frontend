@@ -76,9 +76,9 @@ afterEach(() => {
 it('shows no patient reference message when patientUUID is null', () => {
   mockUsePatientUUID.mockReturnValue(null);
   render(<Immunizations config={{}} />);
-  expect(screen.getByTestId('immunization-history-widget')).toHaveTextContent(
-    'IMMUNIZATION_WIDGET_NO_PATIENT_REFERENCE',
-  );
+  expect(
+    screen.getByTestId('immunization-history-widget-test-id'),
+  ).toHaveTextContent('IMMUNIZATION_WIDGET_NO_PATIENT_REFERENCE');
   expect(screen.queryByRole('tab')).not.toBeInTheDocument();
 });
 
