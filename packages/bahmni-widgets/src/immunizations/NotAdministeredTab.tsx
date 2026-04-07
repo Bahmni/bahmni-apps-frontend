@@ -16,6 +16,13 @@ interface NotAdministeredTabProps {
   patientUUID: string;
 }
 
+const COLUMN_SORT_CONFIG = [
+  { key: 'code', sortable: true },
+  { key: 'reason', sortable: false },
+  { key: 'date', sortable: true },
+  { key: 'recordedBy', sortable: true },
+];
+
 const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
   patientUUID,
 }) => {
@@ -50,16 +57,6 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
     [t],
   );
 
-  const sortable = useMemo(
-    () => [
-      { key: 'code', sortable: true },
-      { key: 'reason', sortable: false },
-      { key: 'date', sortable: true },
-      { key: 'recordedBy', sortable: true },
-    ],
-    [],
-  );
-
   const rows = useMemo(
     () =>
       (data?.entry ?? [])
@@ -88,7 +85,7 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
     <ExpandableDataTable
       headers={headers}
       rows={rows}
-      sortable={sortable}
+      sortable={COLUMN_SORT_CONFIG}
       ariaLabel={t('IMMUNIZATION_WIDGET_NOT_ADMINISTERED_TABLE_ARIA')}
       loading={isLoading}
       errorStateMessage={

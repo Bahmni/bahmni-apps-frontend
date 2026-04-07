@@ -21,6 +21,14 @@ interface AdministeredTabProps {
   patientUUID: string;
 }
 
+const COLUMN_SORT_CONFIG = [
+  { key: 'code', sortable: true },
+  { key: 'doseSequence', sortable: false },
+  { key: 'drugName', sortable: false },
+  { key: 'administeredOn', sortable: true },
+  { key: 'administeredLocation', sortable: true },
+];
+
 const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
   const { t } = useTranslation();
 
@@ -63,17 +71,6 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
     [t],
   );
 
-  const sortable = useMemo(
-    () => [
-      { key: 'code', sortable: true },
-      { key: 'doseSequence', sortable: false },
-      { key: 'drugName', sortable: false },
-      { key: 'administeredOn', sortable: true },
-      { key: 'administeredLocation', sortable: true },
-    ],
-    [],
-  );
-
   const rows = useMemo(
     () =>
       (data?.entry ?? [])
@@ -106,7 +103,7 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
     <ExpandableDataTable
       headers={headers}
       rows={rows}
-      sortable={sortable}
+      sortable={COLUMN_SORT_CONFIG}
       ariaLabel={t('IMMUNIZATION_WIDGET_ADMINISTERED_TABLE_ARIA')}
       loading={isLoading}
       errorStateMessage={
