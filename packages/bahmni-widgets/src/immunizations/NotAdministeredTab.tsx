@@ -1,14 +1,8 @@
 import { SortableDataTable } from '@bahmni/design-system';
-import {
-  ConsultationSavedEventPayload,
-  formatDateTime,
-  getPatientImmunizations,
-  useSubscribeConsultationSaved,
-  useTranslation,
-} from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { formatDateTime, useTranslation } from '@bahmni/services';
 import { Immunization } from 'fhir/r4';
 import React, { useMemo } from 'react';
+import { usePatientImmunizationQuery } from './hooks/usePatientImmunizationQuery';
 import { NotAdministeredRow, toNotAdministeredRow } from './utils';
 
 interface NotAdministeredTabProps {
@@ -26,23 +20,9 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
   patientUUID,
 }) => {
   const { t } = useTranslation();
-
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['immunizations', patientUUID, 'not-done'],
-    queryFn: () => getPatientImmunizations(patientUUID, 'not-done'),
-    enabled: !!patientUUID,
-  });
-
-  useSubscribeConsultationSaved(
-    (payload: ConsultationSavedEventPayload) => {
-      if (
-        payload.patientUUID === patientUUID &&
-        payload.updatedResources.immunizations
-      ) {
-        refetch();
-      }
-    },
-    [patientUUID, refetch],
+  const { data, isLoading, isError } = usePatientImmunizationQuery(
+    patientUUID,
+    'not-done',
   );
 
   const headers = useMemo(

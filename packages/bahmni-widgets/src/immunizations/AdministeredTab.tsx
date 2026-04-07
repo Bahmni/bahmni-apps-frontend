@@ -1,14 +1,8 @@
 import { ExpandableDataTable } from '@bahmni/design-system';
-import {
-  ConsultationSavedEventPayload,
-  formatDateTime,
-  getPatientImmunizations,
-  useSubscribeConsultationSaved,
-  useTranslation,
-} from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { formatDateTime, useTranslation } from '@bahmni/services';
 import { Immunization } from 'fhir/r4';
 import React, { useMemo } from 'react';
+import { usePatientImmunizationQuery } from './hooks/usePatientImmunizationQuery';
 import ImmunizationExpandedRow from './ImmunizationExpandedRow';
 import {
   AdministeredRow,
@@ -30,23 +24,9 @@ const COLUMN_SORT_CONFIG = [
 
 const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
   const { t } = useTranslation();
-
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['immunizations', patientUUID, 'completed'],
-    queryFn: () => getPatientImmunizations(patientUUID, 'completed'),
-    enabled: !!patientUUID,
-  });
-
-  useSubscribeConsultationSaved(
-    (payload: ConsultationSavedEventPayload) => {
-      if (
-        payload.patientUUID === patientUUID &&
-        payload.updatedResources.immunizations
-      ) {
-        refetch();
-      }
-    },
-    [patientUUID, refetch],
+  const { data, isLoading, isError } = usePatientImmunizationQuery(
+    patientUUID,
+    'completed',
   );
 
   const headers = useMemo(
