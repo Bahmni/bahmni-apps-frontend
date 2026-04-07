@@ -3,7 +3,7 @@
 exports[`matches snapshot with tabs (default config) 1`] = `
 <DocumentFragment>
   <div
-    data-testid="immunization-history-widget"
+    data-testid="immunization-history-widget-test-id"
   >
     <div
       class="cds--tabs"
@@ -191,7 +191,7 @@ exports[`matches snapshot with tabs (default config) 1`] = `
 exports[`matches snapshot without tabs (status filter applied) 1`] = `
 <DocumentFragment>
   <div
-    data-testid="immunization-history-widget"
+    data-testid="immunization-history-widget-test-id"
   >
     <p
       class="_expandableDataTableBodyEmpty_15ny8_30"

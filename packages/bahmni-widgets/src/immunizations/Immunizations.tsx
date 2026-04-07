@@ -15,7 +15,7 @@ const Immunizations: React.FC<WidgetProps> = ({ config }) => {
 
   if (!patientUUID) {
     return (
-      <div data-testid="immunization-history-widget">
+      <div data-testid="immunization-history-widget-test-id">
         {t('IMMUNIZATION_WIDGET_NO_PATIENT_REFERENCE')}
       </div>
     );
@@ -23,7 +23,7 @@ const Immunizations: React.FC<WidgetProps> = ({ config }) => {
 
   if (statusFilter === ImmunizationStatus.Completed) {
     return (
-      <div data-testid="immunization-history-widget">
+      <div data-testid="immunization-history-widget-test-id">
         <AdministeredTab patientUUID={patientUUID} />
       </div>
     );
@@ -31,14 +31,14 @@ const Immunizations: React.FC<WidgetProps> = ({ config }) => {
 
   if (statusFilter === ImmunizationStatus.NotDone) {
     return (
-      <div data-testid="immunization-history-widget">
+      <div data-testid="immunization-history-widget-test-id">
         <NotAdministeredTab patientUUID={patientUUID} />
       </div>
     );
   }
 
   return (
-    <div data-testid="immunization-history-widget">
+    <div data-testid="immunization-history-widget-test-id">
       <Tabs
         selectedIndex={selectedIndex}
         onChange={(state) => setSelectedIndex(state.selectedIndex)}
