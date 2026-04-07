@@ -1,2 +1,2 @@
 export { getPatientImmunizations } from './immunizationService';
-export { ImmunizationStatus } from './models';
+export type { ImmunizationStatus } from './models';

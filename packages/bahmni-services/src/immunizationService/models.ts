@@ -1,5 +1,3 @@
-export enum ImmunizationStatus {
-  Completed = 'completed',
-  NotDone = 'not-done',
-  EnteredInError = 'entered-in-error',
-}
+import { Immunization } from 'fhir/r4';
+
+export type ImmunizationStatus = Immunization['status'];

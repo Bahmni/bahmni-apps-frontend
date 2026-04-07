@@ -3,7 +3,6 @@ import {
   ConsultationSavedEventPayload,
   formatDateTime,
   getPatientImmunizations,
-  ImmunizationStatus,
   useSubscribeConsultationSaved,
   useTranslation,
 } from '@bahmni/services';
@@ -30,8 +29,7 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['immunizations', patientUUID, 'not-done'],
-    queryFn: () =>
-      getPatientImmunizations(patientUUID, ImmunizationStatus.NotDone),
+    queryFn: () => getPatientImmunizations(patientUUID, 'not-done'),
     enabled: !!patientUUID,
   });
 
@@ -61,7 +59,6 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
     () =>
       (data?.entry ?? [])
         .map((entry) => entry.resource as Immunization)
-        .filter(Boolean)
         .map(toNotAdministeredRow),
     [data],
   );

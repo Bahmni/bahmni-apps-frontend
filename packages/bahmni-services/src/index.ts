@@ -304,7 +304,5 @@ export {
   type DocumentReference,
 } from './documentReferenceService';
 
-export {
-  getPatientImmunizations,
-  ImmunizationStatus,
-} from './immunizationService';
+export { getPatientImmunizations } from './immunizationService';
+export type { ImmunizationStatus } from './immunizationService';
