@@ -7,7 +7,6 @@ import {
   TableBody,
   TableCell,
   TableExpandRow,
-  TableExpandedRow,
   TableExpandHeader,
   DataTableHeader,
   DataTableSkeleton,
@@ -165,11 +164,7 @@ export const ExpandableDataTable = <T extends { id: string }>({
                             </TableCell>
                           ))}
                         </TableExpandRow>
-                        {isExpanded && (
-                          <TableExpandedRow colSpan={tableHeaders.length + 1}>
-                            {renderExpandedContent?.(originalRow)}
-                          </TableExpandedRow>
-                        )}
+                        {isExpanded && renderExpandedContent?.(originalRow)}
                       </>
                     ) : (
                       <TableRow

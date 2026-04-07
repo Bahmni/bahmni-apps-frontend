@@ -52,5 +52,5 @@
 
 .documentImage {
   max-width: 100%;
-  max-height: $spacing-06 * 25;
+  object-fit: contain;
 }

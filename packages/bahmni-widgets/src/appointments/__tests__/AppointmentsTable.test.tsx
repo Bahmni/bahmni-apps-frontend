@@ -14,6 +14,7 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: jest.fn(() => ({
     t: (key: string) => key,
   })),
+  formatDateTime: jest.fn(() => ({ formattedResult: '10:30 AM' })),
 }));
 jest.mock('../components/UpcomingAppointments');
 jest.mock('../components/PastAppointments');
@@ -130,6 +131,50 @@ describe('AppointmentsTable', () => {
       );
 
       expect(screen.getByTestId('appointments-table')).toBeInTheDocument();
+    });
+  });
+
+  describe('renderCell', () => {
+    let renderCellFunction: (row: any, key: string) => React.ReactNode;
+
+    const mockRow = {
+      uuid: 'test-uuid',
+      id: 'test-id',
+      appointmentDate: '2025-02-15T10:30:00Z',
+      appointmentStartTime: '2025-02-15T10:30:00Z',
+      appointmentEndTime: '2025-02-15T11:00:00Z',
+      appointmentNumber: 'APT-123',
+      service: 'Consultation',
+      reason: 'Follow-up',
+      status: 'booked',
+      provider: 'Dr. Smith',
+    };
+
+    beforeEach(() => {
+      render(<AppointmentsTable config={{}} episodeOfCareUuids={[]} />);
+      const upcomingCalls = mockUpcomingAppointments.mock.calls;
+      if (upcomingCalls.length > 0) {
+        renderCellFunction = upcomingCalls[0][0].renderCell;
+      }
+    });
+
+    it.each([
+      ['appointmentSlot', '10:30 AM - 10:30 AM'],
+      ['appointmentDate', '10:30 AM'],
+      ['appointmentNumber', 'APT-123'],
+    ])('should return "%s" as "%s"', (field, expected) => {
+      const result = renderCellFunction(mockRow, field);
+      expect(result).toBe(expected);
+    });
+
+    it('should return service as React element with correct value', () => {
+      const result: any = renderCellFunction(mockRow, 'service');
+      expect(result.props.children).toBe('Consultation');
+    });
+
+    it('should return null for unknown field', () => {
+      const result = renderCellFunction(mockRow, 'unknownField');
+      expect(result).toBeNull();
     });
   });
 

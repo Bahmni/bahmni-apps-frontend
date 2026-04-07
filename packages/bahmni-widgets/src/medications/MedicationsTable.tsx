@@ -351,11 +351,10 @@ const MedicationsTable: React.FC<WidgetProps> = ({
               <Accordion align="start">
                 {processedAllMedications.map((medicationsByDate) => {
                   const { date, medications } = medicationsByDate;
-                  const formattedDate = formatDateTime(date, t).formattedResult;
 
                   return (
                     <AccordionItem
-                      title={formattedDate}
+                      title={date}
                       key={date}
                       className={styles.customAccordianItem}
                     >
@@ -372,7 +371,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                           styles.medicationsTableBody,
                           styles.rowSeperator,
                         )}
-                        dataTestId={`medications-table-${formattedDate}`}
+                        dataTestId={`medications-table-${date}`}
                       />
                     </AccordionItem>
                   );

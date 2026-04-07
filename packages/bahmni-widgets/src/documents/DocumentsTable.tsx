@@ -21,6 +21,8 @@ const DEFAULT_DOCUMENT_FIELDS = [
   'action',
 ];
 
+const IMAGE_EXTENSIONS_RE = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i;
+
 const getNormalizedAttachments = (doc: DocumentViewModel) => {
   if (doc.attachments.length > 0) {
     return doc.attachments;
@@ -203,9 +205,10 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
               const isPdf = attachment.contentType
                 ?.toLowerCase()
                 .includes('pdf');
-              const isImg = attachment.contentType
-                ?.toLowerCase()
-                .includes('image');
+              const isImg =
+                (attachment.contentType?.toLowerCase().includes('image') ??
+                  false) ||
+                IMAGE_EXTENSIONS_RE.test(attachment.url ?? '');
               const hasFailed = failedAttachments.has(index);
 
               if (url === '#' || hasFailed) {

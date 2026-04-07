@@ -39,20 +39,18 @@ describe('transformFhirAppointmentToFormatted', () => {
     ],
   };
 
-  it('should format FHIR appointment with ISO startDateTime', () => {
+  it('should store raw ISO date string', () => {
     const result = transformFhirAppointmentToFormatted(mockFhirAppointment);
 
-    expect(result.appointmentDate).toMatch(/15\/02\/2025/);
-    expect(result.appointmentSlot).toBeTruthy();
+    expect(result.appointmentDate).toBe('2025-02-15T10:30:00Z');
+    expect(result.appointmentStartTime).toBe('2025-02-15T10:30:00Z');
   });
 
-  it('should extract appointment slot from start and end times', () => {
+  it('should store start and end times as raw ISO strings', () => {
     const result = transformFhirAppointmentToFormatted(mockFhirAppointment);
 
-    expect(result.appointmentSlot).toMatch(
-      /\d{2}:\d{2}\s(AM|PM|am|pm)\s-\s\d{2}:\d{2}\s(AM|PM|am|pm)/,
-    );
-    expect(result.appointmentSlot).toBeTruthy();
+    expect(result.appointmentStartTime).toBe('2025-02-15T10:30:00Z');
+    expect(result.appointmentEndTime).toBe('2025-02-15T11:00:00Z');
   });
 
   it('should handle appointment without end time', () => {
@@ -63,7 +61,8 @@ describe('transformFhirAppointmentToFormatted', () => {
 
     const result = transformFhirAppointmentToFormatted(appointmentWithoutEnd);
 
-    expect(result.appointmentSlot).toBeTruthy();
+    expect(result.appointmentStartTime).toBe('2025-02-15T10:30:00Z');
+    expect(result.appointmentEndTime).toBeUndefined();
   });
 
   it('should handle appointment without start time', () => {
@@ -75,7 +74,7 @@ describe('transformFhirAppointmentToFormatted', () => {
     const result = transformFhirAppointmentToFormatted(appointmentWithoutStart);
 
     expect(result.appointmentDate).toBe('-');
-    expect(result.appointmentSlot).toBe('-');
+    expect(result.appointmentStartTime).toBe('-');
   });
 
   it('should extract appointment number from identifier', () => {
@@ -135,7 +134,8 @@ describe('transformFhirAppointmentToFormatted', () => {
     expect(result).toHaveProperty('uuid');
     expect(result).toHaveProperty('appointmentNumber');
     expect(result).toHaveProperty('appointmentDate');
-    expect(result).toHaveProperty('appointmentSlot');
+    expect(result).toHaveProperty('appointmentStartTime');
+    expect(result).toHaveProperty('appointmentEndTime');
     expect(result).toHaveProperty('service');
     expect(result).toHaveProperty('reason');
     expect(result).toHaveProperty('status');
@@ -150,7 +150,8 @@ describe('transformFhirAppointmentToFormatted', () => {
     expect(typeof result.uuid).toBe('string');
     expect(typeof result.appointmentNumber).toBe('string');
     expect(typeof result.appointmentDate).toBe('string');
-    expect(typeof result.appointmentSlot).toBe('string');
+    expect(typeof result.appointmentStartTime).toBe('string');
+    expect(result.appointmentEndTime).toBeDefined();
     expect(typeof result.service).toBe('string');
     expect(typeof result.reason).toBe('string');
     expect(typeof result.status).toBe('string');
@@ -166,7 +167,8 @@ describe('sortAppointmentsByDate', () => {
     uuid,
     id: uuid,
     appointmentDate: date,
-    appointmentSlot: '10:00 AM',
+    appointmentStartTime: date,
+    appointmentEndTime: date,
     appointmentNumber: `APT-${uuid}`,
     service: 'Test Service',
     status: 'Scheduled',
@@ -174,11 +176,11 @@ describe('sortAppointmentsByDate', () => {
     provider: 'Dr. Test',
   });
 
-  it('should sort appointments in ascending order by date', () => {
+  it('should sort appointments in ascending order by ISO date', () => {
     const appointments = [
-      createFormattedAppointment('15/03/2025', 'appt-1'),
-      createFormattedAppointment('10/03/2025', 'appt-2'),
-      createFormattedAppointment('20/03/2025', 'appt-3'),
+      createFormattedAppointment('2025-03-15T10:00:00Z', 'appt-1'),
+      createFormattedAppointment('2025-03-10T10:00:00Z', 'appt-2'),
+      createFormattedAppointment('2025-03-20T10:00:00Z', 'appt-3'),
     ];
 
     const sorted = sortAppointmentsByDate(appointments);
@@ -190,8 +192,8 @@ describe('sortAppointmentsByDate', () => {
 
   it('should return new array without mutating original', () => {
     const appointments = [
-      createFormattedAppointment('15/03/2025', 'appt-1'),
-      createFormattedAppointment('10/03/2025', 'appt-2'),
+      createFormattedAppointment('2025-03-15T10:00:00Z', 'appt-1'),
+      createFormattedAppointment('2025-03-10T10:00:00Z', 'appt-2'),
     ];
     const original = [...appointments];
 
@@ -201,7 +203,9 @@ describe('sortAppointmentsByDate', () => {
   });
 
   it('should handle single appointment', () => {
-    const appointments = [createFormattedAppointment('15/03/2025', 'appt-1')];
+    const appointments = [
+      createFormattedAppointment('2025-03-15T10:00:00Z', 'appt-1'),
+    ];
 
     const sorted = sortAppointmentsByDate(appointments);
 
@@ -219,22 +223,21 @@ describe('sortAppointmentsByDate', () => {
 
   it('should handle appointments with same date', () => {
     const appointments = [
-      createFormattedAppointment('15/03/2025', 'appt-1'),
-      createFormattedAppointment('15/03/2025', 'appt-2'),
-      createFormattedAppointment('15/03/2025', 'appt-3'),
+      createFormattedAppointment('2025-03-15T10:00:00Z', 'appt-1'),
+      createFormattedAppointment('2025-03-15T11:00:00Z', 'appt-2'),
+      createFormattedAppointment('2025-03-15T12:00:00Z', 'appt-3'),
     ];
 
     const sorted = sortAppointmentsByDate(appointments);
 
     expect(sorted).toHaveLength(3);
-    expect(sorted[0].appointmentDate).toBe('15/03/2025');
   });
 
-  it('should sort dates in DD/MM/YYYY format correctly', () => {
+  it('should sort ISO date strings correctly', () => {
     const appointments = [
-      createFormattedAppointment('31/01/2025', 'appt-1'),
-      createFormattedAppointment('01/01/2025', 'appt-2'),
-      createFormattedAppointment('15/01/2025', 'appt-3'),
+      createFormattedAppointment('2025-01-31T10:00:00Z', 'appt-1'),
+      createFormattedAppointment('2025-01-01T10:00:00Z', 'appt-2'),
+      createFormattedAppointment('2025-01-15T10:00:00Z', 'appt-3'),
     ];
 
     const sorted = sortAppointmentsByDate(appointments);
@@ -246,13 +249,13 @@ describe('sortAppointmentsByDate', () => {
 
   it('should maintain appointment properties after sorting', () => {
     const appointments = [
-      createFormattedAppointment('15/03/2025', 'appt-1'),
-      createFormattedAppointment('10/03/2025', 'appt-2'),
+      createFormattedAppointment('2025-03-15T10:00:00Z', 'appt-1'),
+      createFormattedAppointment('2025-03-10T10:00:00Z', 'appt-2'),
     ];
 
     const sorted = sortAppointmentsByDate(appointments);
 
     expect(sorted[0].status).toBe('Scheduled');
-    expect(sorted[0].appointmentSlot).toBe('10:00 AM');
+    expect(sorted[0].appointmentStartTime).toBe('2025-03-10T10:00:00Z');
   });
 });
