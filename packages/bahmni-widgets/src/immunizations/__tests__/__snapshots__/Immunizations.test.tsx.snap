@@ -178,7 +178,7 @@ exports[`matches snapshot with tabs (default config) 1`] = `
       tabindex="-1"
     >
       <p
-        class="_expandableDataTableBodyEmpty_15ny8_30"
+        class="_sortableDataTableBodyEmpty_1xyik_26"
         data-testid="not-administered-immunizations-table-empty"
       >
         IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED

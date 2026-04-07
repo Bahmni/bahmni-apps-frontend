@@ -1,4 +1,4 @@
-import { ExpandableDataTable } from '@bahmni/design-system';
+import { SortableDataTable } from '@bahmni/design-system';
 import {
   ConsultationSavedEventPayload,
   formatDateTime,
@@ -71,7 +71,7 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
   };
 
   return (
-    <ExpandableDataTable
+    <SortableDataTable
       headers={headers}
       rows={rows}
       sortable={COLUMN_SORT_CONFIG}
