@@ -309,7 +309,7 @@ describe('providerService', () => {
         await fetchProvidersByTab('P&O Order');
 
         const expectedUrl =
-          '/openmrs/ws/rest/v1//provider?v=custom:(id,name,uuid)&attrName=practitioner_type&attrValue=PandO%20Technician';
+          '/openmrs/ws/rest/v1//provider?v=custom:(id,name,uuid)&attrName=practitioner_type&attrValue=P%26O%20Technician';
         expect(mockGet).toHaveBeenCalledWith(expectedUrl);
       });
     });
