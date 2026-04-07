@@ -82,15 +82,15 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
       case 'administeredOn':
         return row.administeredOn
           ? formatDateTime(row.administeredOn, t).formattedResult
-          : '';
+          : '-';
       case 'administeredLocation':
-        return row.administeredLocation ?? '';
+        return row.administeredLocation ?? '-';
       case 'doseSequence':
-        return row.doseSequence ?? '';
+        return row.doseSequence ?? '-';
       case 'drugName':
-        return row.drugName ?? '';
+        return row.drugName ?? '-';
       case 'code':
-        return row.code ?? '';
+        return row.code ?? '-';
       default:
         return null;
     }
