@@ -18,7 +18,6 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
   formatDateTime: jest.fn(),
-  getPatientImmunizations: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
 jest.mock('@tanstack/react-query', () => ({
