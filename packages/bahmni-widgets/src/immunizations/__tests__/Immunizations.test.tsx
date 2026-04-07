@@ -16,7 +16,6 @@ expect.extend(toHaveNoViolations);
 jest.mock('../../hooks/usePatientUUID');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  useTranslation: jest.fn(),
   getPatientImmunizations: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
@@ -26,9 +25,6 @@ jest.mock('@tanstack/react-query', () => ({
 
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
->;
-const mockUseTranslation = useTranslation as jest.MockedFunction<
-  typeof useTranslation
 >;
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockUseSubscribeConsultationSaved =
@@ -44,9 +40,6 @@ const emptyBundle: Bundle<Immunization> = {
 
 beforeEach(() => {
   mockUsePatientUUID.mockReturnValue('patient-uuid-123');
-  mockUseTranslation.mockReturnValue({ t: (key: string) => key } as ReturnType<
-    typeof useTranslation
-  >);
   mockUseSubscribeConsultationSaved.mockImplementation(() => {});
   mockUseQuery.mockReturnValue({
     data: emptyBundle,

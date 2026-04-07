@@ -16,7 +16,6 @@ expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  useTranslation: jest.fn(),
   formatDateTime: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
@@ -24,9 +23,6 @@ jest.mock('@tanstack/react-query', () => ({
   useQuery: jest.fn(),
 }));
 
-const mockUseTranslation = useTranslation as jest.MockedFunction<
-  typeof useTranslation
->;
 const mockFormatDateTime = formatDateTime as jest.MockedFunction<
   typeof formatDateTime
 >;
@@ -81,9 +77,6 @@ const emptyBundle: Bundle<Immunization> = {
 };
 
 beforeEach(() => {
-  mockUseTranslation.mockReturnValue({ t: (key: string) => key } as ReturnType<
-    typeof useTranslation
-  >);
   mockFormatDateTime.mockReturnValue({
     formattedResult: '24-3-2026',
   } as ReturnType<typeof formatDateTime>);
