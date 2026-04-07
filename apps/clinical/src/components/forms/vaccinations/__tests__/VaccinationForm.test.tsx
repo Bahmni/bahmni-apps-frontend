@@ -525,14 +525,14 @@ describe('VaccinationForm', () => {
   });
 
   describe('Privilege Guard', () => {
-    test('renders null when user lacks Add Vaccinations privilege', () => {
+    test('renders null when user lacks Add Orders privilege', () => {
       mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
       const { container } = render(<VaccinationForm />, {
         wrapper: createWrapper(),
       });
       expect(container).toBeEmptyDOMElement();
     });
-    test('renders form when user has Add Vaccinations privilege', () => {
+    test('renders form when user has Add Orders privilege', () => {
       render(<VaccinationForm />, { wrapper: createWrapper() });
       expect(screen.getByTestId('vaccination-form-tile')).toBeInTheDocument();
     });

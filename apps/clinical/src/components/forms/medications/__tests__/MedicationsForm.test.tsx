@@ -920,12 +920,12 @@ describe('MedicationsForm', () => {
   });
 
   describe('Privilege Guard', () => {
-    test('renders null when user lacks Add Medications privilege', () => {
+    test('renders null when user lacks Add Orders privilege', () => {
       mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
       const { container } = render(<MedicationsForm />);
       expect(container).toBeEmptyDOMElement();
     });
-    test('renders form when user has Add Medications privilege', () => {
+    test('renders form when user has Add Orders privilege', () => {
       render(
         <UserPrivilegeProvider>
           <MedicationsForm />
