@@ -64,18 +64,10 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
   );
 
   const renderCell = (row: NotAdministeredRow, key: string) => {
-    switch (key) {
-      case 'code':
-        return row.code ?? '-';
-      case 'reason':
-        return row.reason ?? '-';
-      case 'date':
-        return row.date ? formatDateTime(row.date, t).formattedResult : '-';
-      case 'recordedBy':
-        return row.recordedBy ?? '-';
-      default:
-        return null;
+    if (key === 'date') {
+      return row.date ? formatDateTime(row.date, t).formattedResult : '-';
     }
+    return row[key as keyof NotAdministeredRow] ?? '-';
   };
 
   return (

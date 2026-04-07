@@ -78,22 +78,12 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
   );
 
   const renderCell = (row: AdministeredRow, key: string) => {
-    switch (key) {
-      case 'administeredOn':
-        return row.administeredOn
-          ? formatDateTime(row.administeredOn, t).formattedResult
-          : '-';
-      case 'administeredLocation':
-        return row.administeredLocation ?? '-';
-      case 'doseSequence':
-        return row.doseSequence ?? '-';
-      case 'drugName':
-        return row.drugName ?? '-';
-      case 'code':
-        return row.code ?? '-';
-      default:
-        return null;
+    if (key === 'administeredOn') {
+      return row.administeredOn
+        ? formatDateTime(row.administeredOn, t).formattedResult
+        : '-';
     }
+    return row[key as keyof AdministeredRow] ?? '-';
   };
 
   return (
