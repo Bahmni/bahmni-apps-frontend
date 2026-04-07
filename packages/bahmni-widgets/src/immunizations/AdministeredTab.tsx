@@ -1,4 +1,4 @@
-import { ExpandableDataTable } from '@bahmni/design-system';
+import { ExpandableDataTable, TableExpandedRow } from '@bahmni/design-system';
 import { formatDateTime, useTranslation } from '@bahmni/services';
 import { Immunization } from 'fhir/r4';
 import React, { useMemo } from 'react';
@@ -80,7 +80,9 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
       renderCell={renderCell}
       renderExpandedContent={(row) =>
         hasAdministeredRowDetails(row) ? (
-          <ImmunizationExpandedRow row={row} />
+          <TableExpandedRow colSpan={headers.length + 1}>
+            <ImmunizationExpandedRow row={row} />
+          </TableExpandedRow>
         ) : null
       }
       dataTestId="administered-immunizations-table"
