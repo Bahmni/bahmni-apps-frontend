@@ -17,6 +17,7 @@ import {
   DEFAULT_BROWSER_DATE_FORMAT,
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
+  DEFAULT_TIME_FORMAT,
 } from './constants';
 import { DATE_ERROR_MESSAGES } from './errors';
 
@@ -195,7 +196,7 @@ export function formatDateTime(
   }
 
   if (includeTime && !dateFormat) {
-    finalFormat = `${finalFormat} h:mm a`;
+    finalFormat = `${finalFormat} ${DEFAULT_TIME_FORMAT}`;
   }
 
   return formatDateGeneric(date, finalFormat, translationFn);
