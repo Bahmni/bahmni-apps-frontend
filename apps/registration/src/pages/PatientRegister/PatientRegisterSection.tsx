@@ -27,7 +27,7 @@ const PatientRegisterSection: React.FC<PatientRegisterSectionProps> = ({
   const renderComponent = (type: string): React.ReactNode => {
     const sectionConfig = builtInFormSections.find((s) => s.type === type);
     if (!sectionConfig) return null;
-    return sectionConfig.render(sectionConfig.component, refs, data, guards);
+    return sectionConfig.render(refs, data, guards);
   };
 
   const renderControl = (control: RegistrationFormControl): React.ReactNode => {

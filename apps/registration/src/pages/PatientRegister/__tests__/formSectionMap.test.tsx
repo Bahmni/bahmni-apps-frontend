@@ -1,9 +1,4 @@
 import React from 'react';
-import { AdditionalIdentifiers } from '../../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
-import { AdditionalInfo } from '../../../components/forms/additionalInfo/AdditionalInfo';
-import { AddressInfo } from '../../../components/forms/addressInfo/AddressInfo';
-import { ContactInfo } from '../../../components/forms/contactInfo/ContactInfo';
-import { PatientRelationships } from '../../../components/forms/patientRelationships/PatientRelationships';
 import { builtInFormSections } from '../formSectionMap';
 import { FormControlRefs, FormControlData, FormControlGuards } from '../models';
 
@@ -18,39 +13,6 @@ describe('formSectionMap', () => {
         'additionalIdentifiers',
         'relationships',
       ]);
-    });
-
-    it('should map address type correctly', () => {
-      const address = builtInFormSections.find((s) => s.type === 'address');
-      expect(address?.component).toBe(AddressInfo);
-    });
-
-    it('should map contactInfo type correctly', () => {
-      const contactInfo = builtInFormSections.find(
-        (s) => s.type === 'contactInfo',
-      );
-      expect(contactInfo?.component).toBe(ContactInfo);
-    });
-
-    it('should map additionalInfo type correctly', () => {
-      const additionalInfo = builtInFormSections.find(
-        (s) => s.type === 'additionalInfo',
-      );
-      expect(additionalInfo?.component).toBe(AdditionalInfo);
-    });
-
-    it('should map additionalIdentifiers type correctly', () => {
-      const additionalIdentifiers = builtInFormSections.find(
-        (s) => s.type === 'additionalIdentifiers',
-      );
-      expect(additionalIdentifiers?.component).toBe(AdditionalIdentifiers);
-    });
-
-    it('should map relationships type correctly', () => {
-      const relationships = builtInFormSections.find(
-        (s) => s.type === 'relationships',
-      );
-      expect(relationships?.component).toBe(PatientRelationships);
     });
   });
 
@@ -74,9 +36,6 @@ describe('formSectionMap', () => {
       patientPhoto: undefined,
     };
 
-    const mockComponent = () =>
-      React.createElement('div', {}, 'Test Component');
-
     it('additionalIdentifiers render returns null when shouldShowAdditionalIdentifiers is false', () => {
       const additionalIdentifiers = builtInFormSections.find(
         (s) => s.type === 'additionalIdentifiers',
@@ -87,12 +46,7 @@ describe('formSectionMap', () => {
         relationshipTypes: [],
       };
 
-      const result = additionalIdentifiers?.render(
-        mockComponent,
-        mockRefs,
-        mockData,
-        guards,
-      );
+      const result = additionalIdentifiers?.render(mockRefs, mockData, guards);
 
       expect(result).toBeNull();
     });
@@ -107,12 +61,7 @@ describe('formSectionMap', () => {
         relationshipTypes: [],
       };
 
-      const result = additionalIdentifiers?.render(
-        mockComponent,
-        mockRefs,
-        mockData,
-        guards,
-      );
+      const result = additionalIdentifiers?.render(mockRefs, mockData, guards);
 
       expect(result).not.toBeNull();
       expect(React.isValidElement(result)).toBe(true);
@@ -128,12 +77,7 @@ describe('formSectionMap', () => {
         relationshipTypes: [],
       };
 
-      const result = relationships?.render(
-        mockComponent,
-        mockRefs,
-        mockData,
-        guards,
-      );
+      const result = relationships?.render(mockRefs, mockData, guards);
 
       expect(result).toBeNull();
     });
@@ -148,12 +92,7 @@ describe('formSectionMap', () => {
         relationshipTypes: undefined as any,
       };
 
-      const result = relationships?.render(
-        mockComponent,
-        mockRefs,
-        mockData,
-        guards,
-      );
+      const result = relationships?.render(mockRefs, mockData, guards);
 
       expect(result).toBeNull();
     });
@@ -171,12 +110,7 @@ describe('formSectionMap', () => {
         ],
       };
 
-      const result = relationships?.render(
-        mockComponent,
-        mockRefs,
-        mockData,
-        guards,
-      );
+      const result = relationships?.render(mockRefs, mockData, guards);
 
       expect(result).not.toBeNull();
       expect(React.isValidElement(result)).toBe(true);

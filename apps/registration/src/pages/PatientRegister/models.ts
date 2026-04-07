@@ -1,4 +1,3 @@
-import { ComponentType } from 'react';
 import type { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
 import type { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import type { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
@@ -9,9 +8,9 @@ import type {
 } from '../../components/forms/patientRelationships/PatientRelationships';
 import type { RelationshipType } from '../../components/forms/patientRelationships/RelationshipRow';
 import type { ProfileRef } from '../../components/forms/profile/Profile';
+import type { AddressData } from '../../hooks/useAddressFields';
 import type {
   BasicInfoData,
-  AddressData,
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../../models/patient';
@@ -42,9 +41,7 @@ export interface FormControlGuards {
 
 export interface FormSectionConfig {
   type: string;
-  component: ComponentType<Record<string, unknown>>;
   render: (
-    component: ComponentType<Record<string, unknown>>,
     refs: FormControlRefs,
     data: FormControlData,
     guards: FormControlGuards,

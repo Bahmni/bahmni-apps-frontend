@@ -1,4 +1,3 @@
-import React from 'react';
 import { AdditionalIdentifiers } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
 import { AdditionalInfo } from '../../components/forms/additionalInfo/AdditionalInfo';
 import { AddressInfo } from '../../components/forms/addressInfo/AddressInfo';
@@ -9,16 +8,17 @@ import { FormSectionConfig } from './models';
 export const builtInFormSections: FormSectionConfig[] = [
   {
     type: 'address',
-    component: AddressInfo,
-    render: (Component, refs, data) => (
-      <Component ref={refs.addressRef} initialData={data.addressInitialData} />
+    render: (refs, data) => (
+      <AddressInfo
+        ref={refs.addressRef}
+        initialData={data.addressInitialData}
+      />
     ),
   },
   {
     type: 'contactInfo',
-    component: ContactInfo,
-    render: (Component, refs, data) => (
-      <Component
+    render: (refs, data) => (
+      <ContactInfo
         ref={refs.contactRef}
         initialData={data.personAttributesInitialData}
       />
@@ -26,9 +26,8 @@ export const builtInFormSections: FormSectionConfig[] = [
   },
   {
     type: 'additionalInfo',
-    component: AdditionalInfo,
-    render: (Component, refs, data) => (
-      <Component
+    render: (refs, data) => (
+      <AdditionalInfo
         ref={refs.additionalRef}
         initialData={data.personAttributesInitialData}
       />
@@ -36,11 +35,10 @@ export const builtInFormSections: FormSectionConfig[] = [
   },
   {
     type: 'additionalIdentifiers',
-    component: AdditionalIdentifiers,
-    render: (Component, refs, data, guards) => {
+    render: (refs, data, guards) => {
       if (!guards.shouldShowAdditionalIdentifiers) return null;
       return (
-        <Component
+        <AdditionalIdentifiers
           ref={refs.additionalIdentifiersRef}
           initialData={data.additionalIdentifiersInitialData}
         />
@@ -49,8 +47,7 @@ export const builtInFormSections: FormSectionConfig[] = [
   },
   {
     type: 'relationships',
-    component: PatientRelationships,
-    render: (Component, refs, data, guards) => {
+    render: (refs, data, guards) => {
       if (
         !Array.isArray(guards.relationshipTypes) ||
         guards.relationshipTypes.length === 0
@@ -58,7 +55,7 @@ export const builtInFormSections: FormSectionConfig[] = [
         return null;
       }
       return (
-        <Component
+        <PatientRelationships
           ref={refs.relationshipsRef}
           initialData={data.relationshipsInitialData}
         />
