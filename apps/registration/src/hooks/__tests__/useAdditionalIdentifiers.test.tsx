@@ -1,14 +1,12 @@
 import { getIdentifierTypes } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { useAdditionalIdentifiers } from '../useAdditionalIdentifiers';
 
 // Mock dependencies
 jest.mock('@bahmni/services', () => ({
   getIdentifierTypes: jest.fn(),
 }));
-jest.mock('../../providers/registrationConfig');
 
 const mockIdentifierTypes = [
   {
@@ -55,15 +53,7 @@ describe('useAdditionalIdentifiers', () => {
     );
   };
 
-  it('should return shouldShowAdditionalIdentifiers as true when config is enabled and identifiers exist', async () => {
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: {
-        patientInformation: {
-          showExtraPatientIdentifiersSection: true,
-        },
-      },
-    });
-
+  it('should return shouldShowAdditionalIdentifiers as true when identifiers exist', async () => {
     (getIdentifierTypes as jest.Mock).mockResolvedValue(mockIdentifierTypes);
 
     const { result } = renderHook(() => useAdditionalIdentifiers(), {
@@ -76,42 +66,9 @@ describe('useAdditionalIdentifiers', () => {
 
     expect(result.current.shouldShowAdditionalIdentifiers).toBe(true);
     expect(result.current.hasAdditionalIdentifiers).toBe(true);
-    expect(result.current.isConfigEnabled).toBe(true);
-  });
-
-  it('should return shouldShowAdditionalIdentifiers as false when config is disabled', async () => {
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: {
-        patientInformation: {
-          showExtraPatientIdentifiersSection: false,
-        },
-      },
-    });
-
-    (getIdentifierTypes as jest.Mock).mockResolvedValue(mockIdentifierTypes);
-
-    const { result } = renderHook(() => useAdditionalIdentifiers(), {
-      wrapper,
-    });
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    expect(result.current.shouldShowAdditionalIdentifiers).toBe(false);
-    expect(result.current.hasAdditionalIdentifiers).toBe(true);
-    expect(result.current.isConfigEnabled).toBe(false);
   });
 
   it('should return shouldShowAdditionalIdentifiers as false when no additional identifiers exist', async () => {
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: {
-        patientInformation: {
-          showExtraPatientIdentifiersSection: true,
-        },
-      },
-    });
-
     const onlyPrimaryIdentifiers = [
       {
         uuid: 'id-type-1',
@@ -133,58 +90,9 @@ describe('useAdditionalIdentifiers', () => {
 
     expect(result.current.shouldShowAdditionalIdentifiers).toBe(false);
     expect(result.current.hasAdditionalIdentifiers).toBe(false);
-    expect(result.current.isConfigEnabled).toBe(true);
-  });
-
-  it('should default isConfigEnabled to true when config is not provided', async () => {
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: {
-        patientInformation: {},
-      },
-    });
-
-    (getIdentifierTypes as jest.Mock).mockResolvedValue(mockIdentifierTypes);
-
-    const { result } = renderHook(() => useAdditionalIdentifiers(), {
-      wrapper,
-    });
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    expect(result.current.shouldShowAdditionalIdentifiers).toBe(true);
-    expect(result.current.isConfigEnabled).toBe(true);
-  });
-
-  it('should default isConfigEnabled to true when patientInformation is not provided', async () => {
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: {},
-    });
-
-    (getIdentifierTypes as jest.Mock).mockResolvedValue(mockIdentifierTypes);
-
-    const { result } = renderHook(() => useAdditionalIdentifiers(), {
-      wrapper,
-    });
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    expect(result.current.shouldShowAdditionalIdentifiers).toBe(true);
-    expect(result.current.isConfigEnabled).toBe(true);
   });
 
   it('should return hasAdditionalIdentifiers as false when identifierTypes data is empty', async () => {
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: {
-        patientInformation: {
-          showExtraPatientIdentifiersSection: true,
-        },
-      },
-    });
-
     (getIdentifierTypes as jest.Mock).mockResolvedValue([]);
 
     const { result } = renderHook(() => useAdditionalIdentifiers(), {
@@ -200,14 +108,6 @@ describe('useAdditionalIdentifiers', () => {
   });
 
   it('should return isLoading status during data fetch', () => {
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: {
-        patientInformation: {
-          showExtraPatientIdentifiersSection: true,
-        },
-      },
-    });
-
     (getIdentifierTypes as jest.Mock).mockImplementation(
       () => new Promise(() => {}),
     ); // Never resolves
@@ -220,14 +120,6 @@ describe('useAdditionalIdentifiers', () => {
   });
 
   it('should handle all identifiers being primary', async () => {
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: {
-        patientInformation: {
-          showExtraPatientIdentifiersSection: true,
-        },
-      },
-    });
-
     const allPrimaryIdentifiers = [
       {
         uuid: '1',
@@ -279,14 +171,6 @@ describe('useAdditionalIdentifiers', () => {
       },
     ];
 
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: {
-        patientInformation: {
-          showExtraPatientIdentifiersSection: true,
-        },
-      },
-    });
-
     (getIdentifierTypes as jest.Mock).mockResolvedValue(mockIdentifiers);
 
     const { result } = renderHook(() => useAdditionalIdentifiers(), {
@@ -301,14 +185,6 @@ describe('useAdditionalIdentifiers', () => {
   });
 
   it('should handle multiple non-primary identifiers', async () => {
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: {
-        patientInformation: {
-          showExtraPatientIdentifiersSection: true,
-        },
-      },
-    });
-
     const mixedIdentifiers = [
       {
         uuid: '1',

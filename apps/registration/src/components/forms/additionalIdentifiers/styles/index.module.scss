@@ -5,23 +5,10 @@
 // Form Container
 
 .formSection {
-  margin: 0 auto;
-  width: calc(100% - ($spacing-13 + $spacing-05));
-  max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
-  box-shadow: 0 $spacing-01 $spacing-03 0 $shadow;
   display: flex;
   flex-direction: column;
-  margin-top: $spacing-08;
 }
 
-
-.headerTile {
-  align-content: center;
-}
-
-.headerTitle {
-  @include type-style("heading-compact-02");
-}
 
 
 .identifierField {

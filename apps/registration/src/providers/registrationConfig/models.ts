@@ -45,7 +45,6 @@ export interface PatientInformationConfig {
       translationKey: string;
     }>;
   };
-  showExtraPatientIdentifiersSection?: boolean;
 }
 
 export interface FieldValidationRule {
@@ -75,11 +74,27 @@ export interface ExtensionPoint {
   description?: string;
 }
 
+export interface RegistrationFormControl {
+  type: string;
+  titleTranslationKey?: string;
+}
+
+export interface RegistrationFormSection {
+  name: string;
+  translationKey?: string;
+  controls: RegistrationFormControl[];
+}
+
+export interface RegistrationFormConfig {
+  sections: RegistrationFormSection[];
+}
+
 export interface RegistrationConfig {
   patientSearch: PatientSearchConfig;
   defaultVisitType?: string;
   patientInformation?: PatientInformationConfig;
   fieldValidation?: FieldValidationConfig;
+  registrationForm?: RegistrationFormConfig;
   extensionPoints?: ExtensionPoint[];
   registrationAppExtensions?: AppExtensionConfig[];
 }

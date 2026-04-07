@@ -41,9 +41,6 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
   const contactInfoConfig =
     registrationConfig?.patientInformation?.contactInformation;
   const configAttributes = contactInfoConfig?.attributes ?? [];
-  const sectionTitle =
-    contactInfoConfig?.translationKey ?? 'CREATE_PATIENT_SECTION_CONTACT_INFO';
-
   const fieldValidationConfig = registrationConfig?.fieldValidation;
 
   const fieldsToShow = useMemo(
@@ -116,13 +113,7 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
   }
 
   return (
-    <div className={styles.formSection} data-testid="contact-info-section">
-      <span
-        className={styles.formSectionTitle}
-        data-testid="contact-info-title"
-      >
-        {t(sectionTitle)}
-      </span>
+    <div className={styles.formSection} data-testid="patient-contact">
       <div className={styles.row} data-testid="contact-info-fields-row">
         {fieldsToShow.map((field) => {
           const fieldName = field.name;
