@@ -2,10 +2,18 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
 
-.tableContainer {
+.page, .noPrivilegeContainer {
   margin-block: $spacing-10;
-  margin-inline: calc($spacing-12 + $spacing-07);
+  margin-inline: calc($spacing-12 + $spacing-05);
   box-shadow: 0px 2px 6px 0px $shadow;
+}
+
+.noPrivilegeContainer {
+  padding: $spacing-10;
+  @include type-style("body-compact-01");
+  color: $support-error;
+  font-style: italic;
+  text-align: center;
 }
 
 .table {

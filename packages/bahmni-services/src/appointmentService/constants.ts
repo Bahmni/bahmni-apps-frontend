@@ -59,3 +59,6 @@ export const updateAppointmentStatusUrl = (appointmentUuid: string): string =>
 
 export const ALL_APPOINTMENT_SERVICES_URL =
   OPENMRS_REST_V1 + '/appointmentService/all/full';
+
+export const getDeleteAppointmentServiceUrl = (uuid: string): string =>
+  `${OPENMRS_REST_V1}/appointmentService?uuid=${uuid}`;

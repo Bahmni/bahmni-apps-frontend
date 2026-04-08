@@ -398,9 +398,6 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
         className={styles.formSection}
         data-testid="address-info-section-loading"
       >
-        <span className={styles.sectionTitle}>
-          {t('CREATE_PATIENT_SECTION_ADDRESS_INFO')}
-        </span>
         <div className={styles.row}>
           <div className={styles.col}>Loading address fields...</div>
         </div>
@@ -409,11 +406,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
   }
 
   return (
-    <div className={styles.formSection} data-testid="address-info-section">
-      <span className={styles.sectionTitle} data-testid="address-info-title">
-        {t('CREATE_PATIENT_SECTION_ADDRESS_INFO')}
-      </span>
-
+    <div className={styles.formSection} data-testid="patient-address">
       <div className={styles.row} data-testid="address-info-fields-row">
         {displayLevels.map((level) => {
           const fieldName = level.addressField;

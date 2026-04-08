@@ -1,9 +1,10 @@
 import type { Appointment, Bundle } from 'fhir/r4';
-import { get, post } from '../api';
+import { del, get, post } from '../api';
 import {
   ALL_APPOINTMENT_SERVICES_URL,
   APPOINTMENTS_SEARCH_URL,
   getAppointmentByIdUrl,
+  getDeleteAppointmentServiceUrl,
   updateAppointmentStatusUrl,
   UPCOMING_APPOINTMENTS_URL,
   PAST_APPOINTMENTS_URL,
@@ -92,4 +93,14 @@ export const getAllAppointmentServices = async (): Promise<
   AppointmentService[]
 > => {
   return await get<AppointmentService[]>(ALL_APPOINTMENT_SERVICES_URL);
+};
+
+/**
+ * Deletes an appointment service definition by UUID.
+ *
+ * @param uuid - UUID of the appointment service to delete
+ * @throws Error if the API request fails
+ */
+export const deleteAppointmentService = async (uuid: string): Promise<void> => {
+  await del(getDeleteAppointmentServiceUrl(uuid));
 };

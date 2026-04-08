@@ -15,29 +15,14 @@ import {
   PatientProfileResponse,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  AdditionalIdentifiers,
-  AdditionalIdentifiersRef,
-} from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
-import {
-  AdditionalInfo,
-  AdditionalInfoRef,
-} from '../../components/forms/additionalInfo/AdditionalInfo';
-import {
-  AddressInfo,
-  AddressInfoRef,
-} from '../../components/forms/addressInfo/AddressInfo';
-import {
-  ContactInfo,
-  ContactInfoRef,
-} from '../../components/forms/contactInfo/ContactInfo';
-import {
-  PatientRelationships,
-  PatientRelationshipsRef,
-} from '../../components/forms/patientRelationships/PatientRelationships';
-import { Profile, ProfileRef } from '../../components/forms/profile/Profile';
+import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
+import { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
+import { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
+import { ContactInfoRef } from '../../components/forms/contactInfo/ContactInfo';
+import { PatientRelationshipsRef } from '../../components/forms/patientRelationships/PatientRelationships';
+import Profile, { ProfileRef } from '../../components/forms/profile/Profile';
 import { RegistrationActions } from '../../components/registrationActions/RegistrationActions';
 import { BAHMNI_REGISTRATION_SEARCH, getPatientUrl } from '../../constants/app';
 
@@ -47,7 +32,11 @@ import { usePatientDetails } from '../../hooks/usePatientDetails';
 import { usePatientPhoto } from '../../hooks/usePatientPhoto';
 import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
+import { useRegistrationConfig } from '../../providers/registrationConfig';
+import { RegistrationFormSection } from '../../providers/registrationConfig/models';
+import { FormControlRefs, FormControlData, FormControlGuards } from './models';
 import { validateAllSections, collectFormData } from './patientFormService';
+import PatientRegisterSection from './PatientRegisterSection';
 import styles from './styles/index.module.scss';
 
 const PatientRegister = () => {
@@ -64,6 +53,7 @@ const PatientRegister = () => {
 
   const { shouldShowAdditionalIdentifiers } = useAdditionalIdentifiers();
   const { relationshipTypes } = useRelationshipValidation();
+  const { registrationConfig } = useRegistrationConfig();
 
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);
@@ -190,6 +180,48 @@ const PatientRegister = () => {
   };
 
   const shouldShowActions = metadata?.patientUuid || patientUuidFromUrl == null;
+  const sections: RegistrationFormSection[] =
+    registrationConfig?.registrationForm?.sections ?? [];
+  const refs = useMemo<FormControlRefs>(
+    () => ({
+      profileRef: patientProfileRef,
+      addressRef: patientAddressRef,
+      contactRef: patientContactRef,
+      additionalRef: patientAdditionalRef,
+      additionalIdentifiersRef: patientAdditionalIdentifiersRef,
+      relationshipsRef: patientRelationshipsRef,
+    }),
+    [],
+  );
+
+  const data = useMemo<FormControlData>(
+    () => ({
+      profileInitialData,
+      addressInitialData,
+      personAttributesInitialData,
+      additionalIdentifiersInitialData,
+      relationshipsInitialData,
+      initialDobEstimated,
+      patientPhoto: patientPhoto ?? undefined,
+    }),
+    [
+      profileInitialData,
+      addressInitialData,
+      personAttributesInitialData,
+      additionalIdentifiersInitialData,
+      relationshipsInitialData,
+      initialDobEstimated,
+      patientPhoto,
+    ],
+  );
+
+  const guards = useMemo<FormControlGuards>(
+    () => ({
+      shouldShowAdditionalIdentifiers,
+      relationshipTypes,
+    }),
+    [shouldShowAdditionalIdentifiers, relationshipTypes],
+  );
 
   const breadcrumbs = [
     {
@@ -244,43 +276,24 @@ const PatientRegister = () => {
                 )}
               </span>
             </Tile>
-
-            <div className={styles.formContainer}>
-              <Profile
-                ref={patientProfileRef}
-                initialData={profileInitialData}
-                initialDobEstimated={initialDobEstimated}
-                initialPhoto={patientPhoto}
-              />
-              <AddressInfo
-                ref={patientAddressRef}
-                initialData={addressInitialData}
-              />
-              <ContactInfo
-                ref={patientContactRef}
-                initialData={personAttributesInitialData}
-              />
-            </div>
           </div>
-
-          <AdditionalInfo
-            ref={patientAdditionalRef}
-            initialData={personAttributesInitialData}
-          />
-
-          {shouldShowAdditionalIdentifiers && (
-            <AdditionalIdentifiers
-              ref={patientAdditionalIdentifiersRef}
-              initialData={additionalIdentifiersInitialData}
+          <div className={styles.formContainer}>
+            <Profile
+              ref={patientProfileRef}
+              initialData={profileInitialData}
+              initialDobEstimated={initialDobEstimated}
+              initialPhoto={patientPhoto}
             />
-          )}
-
-          {Array.isArray(relationshipTypes) && relationshipTypes.length > 0 && (
-            <PatientRelationships
-              ref={patientRelationshipsRef}
-              initialData={relationshipsInitialData}
+          </div>
+          {sections.map((section) => (
+            <PatientRegisterSection
+              key={section.name}
+              section={section}
+              refs={refs}
+              data={data}
+              guards={guards}
             />
-          )}
+          ))}
 
           {/* Footer Actions */}
           {shouldShowActions && (

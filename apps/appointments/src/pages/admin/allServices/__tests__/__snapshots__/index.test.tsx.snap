@@ -52,7 +52,10 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
       id="main-display-area"
     >
       <div
-        class="tableContainer"
+        aria-label="all-appointment-service-page-aria-label"
+        class="page"
+        data-testid="all-appointment-service-page-test-id"
+        id="all-appointment-service-page"
       >
         <section
           aria-label="all-services-action-data-table-aria-label"
@@ -65,7 +68,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
           >
             <h2
               class="cds--data-table-header__title"
-              id="tc-_r_s_-title"
+              id="tc-_r_4b_-title"
             >
               Services
             </h2>
@@ -79,7 +82,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
             >
               <table
                 aria-label="all-services-table"
-                aria-labelledby="tc-_r_s_-title"
+                aria-labelledby="tc-_r_4b_-title"
                 class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
               >
                 <thead>
@@ -91,12 +94,12 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                     >
                       <div
                         class="cds--table-sort__description"
-                        id="table-sort-_r_t_"
+                        id="table-sort-_r_4c_"
                       >
                         Click to sort rows by Service Name header in ascending order
                       </div>
                       <button
-                        aria-describedby="table-sort-_r_t_"
+                        aria-describedby="table-sort-_r_4c_"
                         class="cds--table-sort"
                         data-testid="table-header-name"
                         type="button"
@@ -152,12 +155,12 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                     >
                       <div
                         class="cds--table-sort__description"
-                        id="table-sort-_r_u_"
+                        id="table-sort-_r_4d_"
                       >
                         Click to sort rows by ADMIN_ALL_SERVICES_COLUMN_SERVICE_TYPE header in ascending order
                       </div>
                       <button
-                        aria-describedby="table-sort-_r_u_"
+                        aria-describedby="table-sort-_r_4d_"
                         class="cds--table-sort"
                         data-testid="table-header-serviceType"
                         type="button"
@@ -213,12 +216,12 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                     >
                       <div
                         class="cds--table-sort__description"
-                        id="table-sort-_r_v_"
+                        id="table-sort-_r_4e_"
                       >
                         Click to sort rows by Actions header in ascending order
                       </div>
                       <button
-                        aria-describedby="table-sort-_r_v_"
+                        aria-describedby="table-sort-_r_4e_"
                         class="cds--table-sort"
                         data-testid="table-header-actions"
                         type="button"
@@ -287,7 +290,58 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                     </td>
                     <td
                       data-testid="table-cell-service-uuid-1-actions"
-                    />
+                    >
+                      <span
+                        class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip cds--icon-tooltip--disabled"
+                      >
+                        <div
+                          class="cds--tooltip-trigger__wrapper"
+                        >
+                          <button
+                            aria-label="delete-service-service-uuid-1-btn-aria-label"
+                            aria-labelledby="tooltip-_r_4g_"
+                            class="cds--btn cds--btn--ghost cds--btn--disabled cds--btn--icon-only"
+                            data-testid="delete-service-service-uuid-1-btn-test-id"
+                            disabled=""
+                            id="delete-service-service-uuid-1-btn"
+                            type="button"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              fill="currentColor"
+                              focusable="false"
+                              height="16"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M12 12H14V24H12zM18 12H20V24H18z"
+                              />
+                              <path
+                                d="M4 6V8H6V28a2 2 0 002 2H24a2 2 0 002-2V8h2V6zM8 28V8H24V28zM12 2H20V4H12z"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <span
+                          aria-hidden="true"
+                          class="cds--popover"
+                          id="tooltip-_r_4g_"
+                          role="tooltip"
+                        >
+                          <span
+                            class="cds--popover-content cds--tooltip-content"
+                          >
+                            Delete service
+                          </span>
+                          <span
+                            class="cds--popover-caret"
+                          />
+                        </span>
+                      </span>
+                    </td>
                   </tr>
                   <tr
                     data-testid="table-row-service-uuid-2"
@@ -304,7 +358,58 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                     </td>
                     <td
                       data-testid="table-cell-service-uuid-2-actions"
-                    />
+                    >
+                      <span
+                        class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip cds--icon-tooltip--disabled"
+                      >
+                        <div
+                          class="cds--tooltip-trigger__wrapper"
+                        >
+                          <button
+                            aria-label="delete-service-service-uuid-2-btn-aria-label"
+                            aria-labelledby="tooltip-_r_4k_"
+                            class="cds--btn cds--btn--ghost cds--btn--disabled cds--btn--icon-only"
+                            data-testid="delete-service-service-uuid-2-btn-test-id"
+                            disabled=""
+                            id="delete-service-service-uuid-2-btn"
+                            type="button"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              fill="currentColor"
+                              focusable="false"
+                              height="16"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M12 12H14V24H12zM18 12H20V24H18z"
+                              />
+                              <path
+                                d="M4 6V8H6V28a2 2 0 002 2H24a2 2 0 002-2V8h2V6zM8 28V8H24V28zM12 2H20V4H12z"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <span
+                          aria-hidden="true"
+                          class="cds--popover"
+                          id="tooltip-_r_4k_"
+                          role="tooltip"
+                        >
+                          <span
+                            class="cds--popover-content cds--tooltip-content"
+                          >
+                            Delete service
+                          </span>
+                          <span
+                            class="cds--popover-caret"
+                          />
+                        </span>
+                      </span>
+                    </td>
                   </tr>
                   <tr
                     data-testid="table-row-service-uuid-3"
@@ -321,7 +426,58 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                     </td>
                     <td
                       data-testid="table-cell-service-uuid-3-actions"
-                    />
+                    >
+                      <span
+                        class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip cds--icon-tooltip--disabled"
+                      >
+                        <div
+                          class="cds--tooltip-trigger__wrapper"
+                        >
+                          <button
+                            aria-label="delete-service-service-uuid-3-btn-aria-label"
+                            aria-labelledby="tooltip-_r_4o_"
+                            class="cds--btn cds--btn--ghost cds--btn--disabled cds--btn--icon-only"
+                            data-testid="delete-service-service-uuid-3-btn-test-id"
+                            disabled=""
+                            id="delete-service-service-uuid-3-btn"
+                            type="button"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              fill="currentColor"
+                              focusable="false"
+                              height="16"
+                              preserveAspectRatio="xMidYMid meet"
+                              viewBox="0 0 32 32"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M12 12H14V24H12zM18 12H20V24H18z"
+                              />
+                              <path
+                                d="M4 6V8H6V28a2 2 0 002 2H24a2 2 0 002-2V8h2V6zM8 28V8H24V28zM12 2H20V4H12z"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <span
+                          aria-hidden="true"
+                          class="cds--popover"
+                          id="tooltip-_r_4o_"
+                          role="tooltip"
+                        >
+                          <span
+                            class="cds--popover-content cds--tooltip-content"
+                          >
+                            Delete service
+                          </span>
+                          <span
+                            class="cds--popover-caret"
+                          />
+                        </span>
+                      </span>
+                    </td>
                   </tr>
                 </tbody>
               </table>

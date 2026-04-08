@@ -166,9 +166,11 @@ describe('AddressInfo', () => {
       ).toBeInTheDocument();
     });
 
-    it('should render section title', async () => {
+    it('should render address fields after loading', async () => {
       await renderWithQueryClient(<AddressInfo />);
-      expect(mockT).toHaveBeenCalledWith('CREATE_PATIENT_SECTION_ADDRESS_INFO');
+      expect(
+        screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/),
+      ).toBeInTheDocument();
     });
 
     it('should show loading state while fetching address levels', () => {

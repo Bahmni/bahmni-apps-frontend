@@ -1,7 +1,6 @@
 import { getIdentifierTypes, IdentifierTypesResponse } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { useRegistrationConfig } from '../providers/registrationConfig';
 
 export const IDENTIFIER_TYPES_QUERY_KEY = ['identifierTypes'];
 
@@ -16,28 +15,18 @@ export const useIdentifierTypes = () => {
 };
 
 export const useAdditionalIdentifiers = () => {
-  const { registrationConfig } = useRegistrationConfig();
   const { data: identifierTypes, isLoading } = useIdentifierTypes();
-
-  const isConfigEnabled = useMemo(
-    () =>
-      registrationConfig?.patientInformation
-        ?.showExtraPatientIdentifiersSection ?? true,
-    [registrationConfig],
-  );
 
   const hasAdditionalIdentifiers = useMemo(() => {
     if (!identifierTypes) return false;
     return identifierTypes.some((type) => type.primary === false);
   }, [identifierTypes]);
 
-  const shouldShowAdditionalIdentifiers =
-    isConfigEnabled && hasAdditionalIdentifiers;
+  const shouldShowAdditionalIdentifiers = hasAdditionalIdentifiers;
 
   return {
     shouldShowAdditionalIdentifiers,
     hasAdditionalIdentifiers,
-    isConfigEnabled,
     identifierTypes,
     isLoading,
   };

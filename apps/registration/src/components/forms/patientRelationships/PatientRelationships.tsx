@@ -1,4 +1,4 @@
-import { Button, SimpleDataTable, Tile } from '@bahmni/design-system';
+import { Button, SimpleDataTable } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useImperativeHandle } from 'react';
 import { RelationshipRow } from './RelationshipRow';
@@ -112,15 +112,6 @@ export const PatientRelationships = ({
       className={styles.relationshipSection}
       data-testid="patient-relationships-section"
     >
-      <Tile
-        className={styles.headerTile}
-        data-testid="patient-relationships-header"
-      >
-        <span className={styles.headerTitle}>
-          {t('CREATE_PATIENT_SECTION_RELATIONSHIPS_INFO')}
-        </span>
-      </Tile>
-
       <div
         className={styles.tableContainer}
         data-testid="patient-relationships-table-container"
