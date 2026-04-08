@@ -4,9 +4,14 @@ import {
   useQuery,
 } from '@tanstack/react-query';
 import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useAppointmentsConfig } from '../../../../providers/appointmentsConfig';
 import { mockAppointmentServices } from '../__mocks__/mocks';
+import {
+  ADMIN_TAB_PRIVILEGE,
+  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
+} from '../constants';
 import AllServicesPage from '../index';
 
 expect.extend(toHaveNoViolations);
@@ -32,6 +37,15 @@ jest.mock('../../../../providers/appointmentsConfig', () => ({
   })),
 }));
 
+jest.mock('@bahmni/widgets', () => ({
+  ...jest.requireActual('@bahmni/widgets'),
+  useNotification: jest.fn(() => ({ addNotification: jest.fn() })),
+  useUserPrivilege: jest.fn(),
+}));
+
+const mockUseUserPrivilege =
+  jest.requireMock('@bahmni/widgets').useUserPrivilege;
+
 describe('AllServicesPage', () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -45,6 +59,9 @@ describe('AllServicesPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [{ name: ADMIN_TAB_PRIVILEGE }],
+    });
   });
 
   afterEach(() => {
@@ -163,6 +180,99 @@ describe('AllServicesPage', () => {
     expect(
       screen.getByTestId(`table-cell-${rowId}-serviceType`),
     ).toHaveTextContent('OPD');
+  });
+
+  it('should close the delete modal when cancel is clicked', async () => {
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [
+        { name: ADMIN_TAB_PRIVILEGE },
+        { name: MANAGE_APPOINTMENT_SERVICES_PRIVILEGE },
+      ],
+    });
+    (useQuery as jest.Mock).mockReturnValue({
+      data: mockAppointmentServices,
+      isError: false,
+      isLoading: false,
+    });
+    render(wrapper);
+
+    await userEvent.click(
+      screen.getByTestId(
+        `delete-service-${mockAppointmentServices[0].uuid}-btn-test-id`,
+      ),
+    );
+    expect(
+      screen.getByTestId('delete-service-modal-test-id'),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Cancel'));
+
+    expect(
+      screen.queryByTestId('delete-service-modal-test-id'),
+    ).not.toBeInTheDocument();
+  });
+
+  describe('Delete button privilege', () => {
+    it.each([
+      {
+        scenario: 'disabled when user lacks manage privilege',
+        userPrivileges: [{ name: ADMIN_TAB_PRIVILEGE }],
+        assertButton: (btn: HTMLElement) => expect(btn).toBeDisabled(),
+      },
+      {
+        scenario: 'enabled when user has the manage privilege',
+        userPrivileges: [
+          { name: ADMIN_TAB_PRIVILEGE },
+          { name: MANAGE_APPOINTMENT_SERVICES_PRIVILEGE },
+        ],
+        assertButton: (btn: HTMLElement) => expect(btn).not.toBeDisabled(),
+      },
+    ])(
+      'should render delete button $scenario',
+      ({ userPrivileges, assertButton }) => {
+        mockUseUserPrivilege.mockReturnValue({ userPrivileges });
+        (useQuery as jest.Mock).mockReturnValue({
+          data: mockAppointmentServices,
+          isError: false,
+          isLoading: false,
+        });
+        render(wrapper);
+        const deleteButtons = screen.getAllByTestId(/^delete-service-/);
+        expect(deleteButtons).toHaveLength(mockAppointmentServices.length);
+        deleteButtons.forEach(assertButton);
+      },
+    );
+  });
+
+  describe('View privilege', () => {
+    it.each([
+      {
+        scenario: 'no-privilege message when user lacks ADMIN_TAB_PRIVILEGE',
+        userPrivileges: [],
+        queryReturnValue: { data: undefined, isError: false, isLoading: false },
+        visibleTestId: 'all-appointment-service-no-view-privilege-test-id',
+        hiddenTestId: 'all-appointment-service-page-test-id',
+      },
+      {
+        scenario: 'services table when user has ADMIN_TAB_PRIVILEGE',
+        userPrivileges: [{ name: ADMIN_TAB_PRIVILEGE }],
+        queryReturnValue: {
+          data: mockAppointmentServices,
+          isError: false,
+          isLoading: false,
+        },
+        visibleTestId: 'all-appointment-service-page-test-id',
+        hiddenTestId: 'all-appointment-service-no-view-privilege-test-id',
+      },
+    ])(
+      'should show $scenario',
+      ({ userPrivileges, queryReturnValue, visibleTestId, hiddenTestId }) => {
+        mockUseUserPrivilege.mockReturnValue({ userPrivileges });
+        (useQuery as jest.Mock).mockReturnValue(queryReturnValue);
+        render(wrapper);
+        expect(screen.getByTestId(visibleTestId)).toBeInTheDocument();
+        expect(screen.queryByTestId(hiddenTestId)).not.toBeInTheDocument();
+      },
+    );
   });
 
   describe('Snapshot', () => {

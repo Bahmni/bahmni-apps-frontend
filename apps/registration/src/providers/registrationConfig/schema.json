@@ -299,10 +299,6 @@
               }
             }
           }
-        },
-        "showExtraPatientIdentifiersSection": {
-          "type": "boolean",
-          "description": "Whether to show extra patient identifiers section"
         }
       }
     },
@@ -321,6 +317,59 @@
             "errorMessage": {
               "type": "string",
               "description": "Error message to display when validation fails"
+            }
+          }
+        }
+      }
+    },
+    "registrationForm": {
+      "type": "object",
+      "description": "Configuration for registration form sections and controls",
+      "additionalProperties": false,
+      "properties": {
+        "sections": {
+          "type": "array",
+          "description": "Array of form sections to display",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": ["name", "controls"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Display name of the section"
+              },
+              "translationKey": {
+                "type": "string",
+                "description": "Translation key for the section title"
+              },
+              "controls": {
+                "type": "array",
+                "description": "Array of form controls in this section",
+                "items": {
+                  "type": "object",
+                  "required": ["type"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "address",
+                        "contactInfo",
+                        "additionalInfo",
+                        "additionalIdentifiers",
+                        "relationships"
+                      ],
+                      "description": "Type of form control to render"
+                    },
+                    "titleTranslationKey": {
+                      "type": "string",
+                      "description": "Optional translation key for the control's sub-heading. If absent, no heading is rendered."
+                    }
+                  }
+                }
+              }
             }
           }
         }

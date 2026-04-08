@@ -49,6 +49,7 @@ jest.mock('react-router-dom', () => ({
 
 jest.mock('../../../hooks/useCreatePatient');
 jest.mock('../../../hooks/useUpdatePatient');
+jest.mock('../../../hooks/useRelationshipValidation');
 jest.mock('../../../providers/registrationConfig');
 jest.mock('../../../hooks/useAdditionalIdentifiers');
 jest.mock('../../../hooks/usePatientDetails');
@@ -57,7 +58,8 @@ jest.mock('../patientFormService');
 
 // Mock child components
 jest.mock('../../../components/forms/profile/Profile', () => ({
-  Profile: ({ ref }: { ref?: React.Ref<unknown> }) => {
+  __esModule: true,
+  default: ({ ref }: { ref?: React.Ref<unknown> }) => {
     // Expose imperative methods via ref
     if (ref && typeof ref === 'object' && 'current' in ref) {
       ref.current = {
@@ -136,6 +138,24 @@ jest.mock(
           </div>
           Patient Additional Identifiers
         </div>
+      );
+    },
+  }),
+);
+
+jest.mock(
+  '../../../components/forms/patientRelationships/PatientRelationships',
+  () => ({
+    PatientRelationships: ({ ref }: { ref?: React.Ref<unknown> }) => {
+      if (ref && typeof ref === 'object' && 'current' in ref) {
+        ref.current = {
+          validate: jest.fn(() => true),
+          getData: jest.fn(() => []),
+          removeDeletedRelationships: jest.fn(),
+        };
+      }
+      return (
+        <div data-testid="patient-relationships">Patient Relationships</div>
       );
     },
   }),
@@ -264,15 +284,71 @@ describe('PatientRegister', () => {
     });
 
     (usePatientPhoto as jest.Mock).mockReturnValue({
-      photo: undefined,
+      patientPhoto: undefined,
       isLoading: false,
+    });
+
+    // Mock useRegistrationConfig to return default config
+    const { useRegistrationConfig } = jest.requireMock(
+      '../../../providers/registrationConfig',
+    );
+    useRegistrationConfig.mockReturnValue({
+      registrationConfig: {
+        registrationForm: {
+          sections: [
+            {
+              name: 'Address Details',
+              controls: [
+                {
+                  type: 'address',
+                  titleTranslationKey: 'REGISTRATION_SECTION_ADDRESS_DETAILS',
+                },
+              ],
+            },
+            {
+              name: 'Contact Information',
+              controls: [
+                {
+                  type: 'contactInfo',
+                  titleTranslationKey: 'REGISTRATION_SECTION_CONTACT_DETAILS',
+                },
+              ],
+            },
+            {
+              name: 'Additional Information',
+              translationKey: 'REGISTRATION_SECTION_ADDITIONAL_INFO',
+              controls: [{ type: 'additionalInfo' }],
+            },
+            {
+              name: 'Identifiers',
+              translationKey: 'REGISTRATION_SECTION_IDENTIFIERS',
+              controls: [{ type: 'additionalIdentifiers' }],
+            },
+            {
+              name: 'Relationships',
+              translationKey: 'REGISTRATION_SECTION_RELATIONSHIPS',
+              controls: [{ type: 'relationships' }],
+            },
+          ],
+        },
+      },
+    });
+
+    // Mock useRelationshipValidation
+    const { useRelationshipValidation } = jest.requireMock(
+      '../../../hooks/useRelationshipValidation',
+    );
+    useRelationshipValidation.mockReturnValue({
+      relationshipTypes: [
+        { uuid: 'spouse', name: 'Spouse', aIsToB: 'is spouse of' },
+        { uuid: 'child', name: 'Child', aIsToB: 'is child of' },
+      ],
     });
 
     // Mock useAdditionalIdentifiers to show additional identifiers by default
     (useAdditionalIdentifiers as jest.Mock).mockReturnValue({
       shouldShowAdditionalIdentifiers: true,
       hasAdditionalIdentifiers: true,
-      isConfigEnabled: true,
       identifierTypes: [
         { uuid: 'primary-id', name: 'Primary ID', primary: true },
         { uuid: 'national-id', name: 'National ID', primary: false },
@@ -312,10 +388,7 @@ describe('PatientRegister', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      // Component renders AdditionalInfo twice, so use getAllByTestId
-      expect(
-        screen.getAllByTestId('patient-additional')[0],
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
     });
 
     it('should render the page title', () => {
@@ -635,10 +708,7 @@ describe('PatientRegister', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      // Component renders AdditionalInfo twice due to duplicate
-      expect(
-        screen.getAllByTestId('patient-additional')[0],
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
     });
 
     it('should pass refs to form section components', () => {
@@ -648,10 +718,7 @@ describe('PatientRegister', () => {
       expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       expect(screen.getByTestId('patient-address')).toBeInTheDocument();
       expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
-      // Component renders AdditionalInfo twice due to duplicate
-      expect(
-        screen.getAllByTestId('patient-additional')[0],
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
     });
   });
 
@@ -798,7 +865,6 @@ describe('PatientRegister', () => {
       (useAdditionalIdentifiers as jest.Mock).mockReturnValue({
         shouldShowAdditionalIdentifiers: false,
         hasAdditionalIdentifiers: false,
-        isConfigEnabled: true,
         identifierTypes: [
           { uuid: 'primary-id', name: 'Primary ID', primary: true },
         ],
@@ -819,7 +885,6 @@ describe('PatientRegister', () => {
       (useAdditionalIdentifiers as jest.Mock).mockReturnValue({
         shouldShowAdditionalIdentifiers: false,
         hasAdditionalIdentifiers: true,
-        isConfigEnabled: false,
         identifierTypes: [
           { uuid: 'primary-id', name: 'Primary ID', primary: true },
           { uuid: 'national-id', name: 'National ID', primary: false },
@@ -838,7 +903,6 @@ describe('PatientRegister', () => {
       (useAdditionalIdentifiers as jest.Mock).mockReturnValue({
         shouldShowAdditionalIdentifiers: false,
         hasAdditionalIdentifiers: false,
-        isConfigEnabled: true,
         identifierTypes: [
           { uuid: 'primary-id', name: 'Primary ID', primary: true },
         ],
@@ -849,6 +913,216 @@ describe('PatientRegister', () => {
 
       expect(
         screen.queryByTestId('patient-additional-identifiers'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Config-driven Form Sections', () => {
+    it('should render sections from config when provided', () => {
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: {
+            sections: [
+              {
+                name: 'Address Details',
+                controls: [{ type: 'address' }],
+              },
+              {
+                name: 'Contact Information',
+                controls: [{ type: 'contactInfo' }],
+              },
+              {
+                name: 'Additional Information',
+                translationKey: 'REGISTRATION_SECTION_ADDITIONAL_INFO',
+                controls: [{ type: 'additionalInfo' }],
+              },
+            ],
+          },
+        },
+      });
+
+      renderComponent();
+
+      expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
+      expect(screen.getByTestId('patient-address')).toBeInTheDocument();
+      expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
+      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
+    });
+
+    it('should render default Basic Information even when config is absent', () => {
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: null,
+      });
+
+      renderComponent();
+
+      // Basic Information should always be rendered (from fallback default)
+      expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
+      // Optional sections should not be rendered
+      expect(screen.queryByTestId('patient-address')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('patient-contact')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('patient-additional'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should render custom section order from config', () => {
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      // Reverse the typical order: additionalInfo first, then basic details
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: {
+            sections: [
+              {
+                name: 'Additional Information',
+                translationKey: 'REGISTRATION_SECTION_ADDITIONAL_INFO',
+                controls: [{ type: 'additionalInfo' }],
+              },
+              {
+                name: 'Address Details',
+                controls: [{ type: 'address' }],
+              },
+              {
+                name: 'Contact Information',
+                controls: [{ type: 'contactInfo' }],
+              },
+            ],
+          },
+        },
+      });
+
+      renderComponent();
+
+      // All components should still be rendered (order determined by config)
+      expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
+      expect(screen.getByTestId('patient-address')).toBeInTheDocument();
+      expect(screen.getByTestId('patient-contact')).toBeInTheDocument();
+      expect(screen.getByTestId('patient-additional')).toBeInTheDocument();
+    });
+
+    it('should hide additionalIdentifiers even if in config when hasAdditionalIdentifiers is false', () => {
+      (useAdditionalIdentifiers as jest.Mock).mockReturnValue({
+        shouldShowAdditionalIdentifiers: false,
+        hasAdditionalIdentifiers: false,
+        identifierTypes: [
+          { uuid: 'primary-id', name: 'Primary ID', primary: true },
+        ],
+        isLoading: false,
+      });
+
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: {
+            sections: [
+              {
+                name: 'Identifiers',
+                translationKey: 'REGISTRATION_SECTION_IDENTIFIERS',
+                controls: [{ type: 'additionalIdentifiers' }],
+              },
+            ],
+          },
+        },
+      });
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('patient-additional-identifiers'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should hide relationships even if in config when relationshipTypes is empty', () => {
+      const { useRelationshipValidation } = jest.requireMock(
+        '../../../hooks/useRelationshipValidation',
+      );
+      useRelationshipValidation.mockReturnValue({
+        relationshipTypes: [],
+      });
+
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: {
+            sections: [
+              {
+                name: 'Relationships',
+                translationKey: 'REGISTRATION_SECTION_RELATIONSHIPS',
+                controls: [{ type: 'relationships' }],
+              },
+            ],
+          },
+        },
+      });
+
+      renderComponent();
+
+      // PatientRelationships component should not render when no relationship types
+      expect(
+        screen.queryByTestId('patient-relationships'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should skip unknown control types while rendering valid ones', () => {
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: {
+            sections: [
+              {
+                name: 'Address Details',
+                controls: [{ type: 'address' }],
+              },
+            ],
+          },
+        },
+      });
+
+      renderComponent();
+
+      // Valid controls should render, unknown types should be skipped
+      expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
+      expect(screen.getByTestId('patient-address')).toBeInTheDocument();
+
+      // Unknown type should not cause errors
+      expect(screen.queryByTestId('patient-unknown')).not.toBeInTheDocument();
+    });
+
+    it('should always render Basic Information even when sections array is empty', () => {
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: {
+            sections: [],
+          },
+        },
+      });
+
+      renderComponent();
+
+      // Basic Information should always be rendered
+      expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
+      // Optional sections should not be rendered
+      expect(screen.queryByTestId('patient-address')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('patient-contact')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('patient-additional'),
       ).not.toBeInTheDocument();
     });
   });

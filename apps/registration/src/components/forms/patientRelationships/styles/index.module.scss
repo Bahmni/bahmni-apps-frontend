@@ -4,27 +4,11 @@
 @use "@carbon/react/scss/theme" as *;
 
 .relationshipSection {
-  margin: 0 auto;
-  margin-top: $spacing-08;
-  width: calc(100% - ($spacing-13 + $spacing-05));
-  max-width: $spacing-13 * 9 + $spacing-05 + $spacing-02;
-  box-shadow: 0 $spacing-01 $spacing-03 $shadow;
   display: flex;
   flex-direction: column;
   overflow: visible;
 }
 
-.headerTile {
-  height: $spacing-08 + $spacing-05;
-  display: flex;
-  align-content: center;
-  padding: $spacing-05;
-}
-
-.headerTitle {
-  @include type-style("heading-compact-02");
-  font-weight: 600;
-}
 
 .tableContainer {
   width: 100%;
@@ -34,7 +18,7 @@
   margin-bottom: -250px;
   -webkit-overflow-scrolling: touch;
 
-  
+
   :global(.cds--list-box__menu),
   :global(.cds--date-picker__calendar) {
     z-index: 9999 !important;
@@ -45,12 +29,12 @@
     overflow: visible !important;
   }
 
-  
+
   :global(.cds--combo-box) {
     width: $spacing-13 + $spacing-12 + $spacing-02 + $spacing-01;
-    
+
     :global(.cds--text-input) {
-      background-color: $field-01 !important;  
+      background-color: $field-01 !important;
     }
 
     :global(.cds--list-box__menu-item) {
@@ -67,7 +51,7 @@
   :global(.cds--dropdown) {
     width: $spacing-13 + $spacing-12 + $spacing-02 + $spacing-01;
     background-color: $field-01 !important;
-    
+
     :global(.cds--list-box__menu-item) {
       height: auto;
     }
@@ -121,11 +105,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  
+
   &:hover {
     color: $link-primary-hover;
   }
-  
+
   &:visited {
     color: $link-visited;
   }

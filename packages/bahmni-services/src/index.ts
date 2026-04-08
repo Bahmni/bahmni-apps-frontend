@@ -76,6 +76,7 @@ export {
   getUpcomingAppointments,
   getPastAppointments,
   getAllAppointmentServices,
+  deleteAppointmentService,
   APPOINTMENT_STATUSES,
   APPOINTMENT_IDENTIFIER_SYSTEM,
   type AppointmentService,

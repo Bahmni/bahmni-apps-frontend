@@ -47,9 +47,6 @@ describe('PatientRelationships', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('CREATE_PATIENT_SECTION_RELATIONSHIPS_INFO'),
-        ).toBeInTheDocument();
-        expect(
           screen.getByText('REGISTRATION_RELATIONSHIP_TYPE'),
         ).toBeInTheDocument();
         expect(

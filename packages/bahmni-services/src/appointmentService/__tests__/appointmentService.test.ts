@@ -1,4 +1,4 @@
-import { get, post } from '../../api';
+import { del, get, post } from '../../api';
 import {
   createMockAppointment,
   createEmptyBundle,
@@ -11,6 +11,7 @@ import {
   updateAppointmentStatus,
   getAppointmentById,
   getAllAppointmentServices,
+  deleteAppointmentService,
 } from '../appointmentService';
 import {
   UPCOMING_APPOINTMENTS_URL,
@@ -19,11 +20,13 @@ import {
   getAppointmentByIdUrl,
   updateAppointmentStatusUrl,
   ALL_APPOINTMENT_SERVICES_URL,
+  getDeleteAppointmentServiceUrl,
 } from '../constants';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
 const mockedPost = post as jest.MockedFunction<typeof post>;
+const mockedDel = del as jest.MockedFunction<typeof del>;
 
 const FIXED_NOW = new Date('2026-02-18T06:02:28.000Z');
 
@@ -127,6 +130,17 @@ describe('Appointment Service', () => {
     expect(result).toEqual(mockBundle);
   });
 
+  it('deleteAppointmentService should call DELETE with correct endpoint', async () => {
+    const serviceUuid = 'service-uuid-1';
+    mockedDel.mockResolvedValue(undefined);
+
+    await deleteAppointmentService(serviceUuid);
+
+    expect(mockedDel).toHaveBeenCalledWith(
+      getDeleteAppointmentServiceUrl(serviceUuid),
+    );
+  });
+
   it('updateAppointmentStatus should call POST with correct endpoint and body', async () => {
     const appointmentUUID = 'appt-uuid-1';
     const onDate = new Date('2026-02-18');
@@ -161,6 +175,11 @@ describe('Appointment Service', () => {
       'updateAppointmentStatus',
       () => updateAppointmentStatus('appt-uuid-1', 'fulfilled'),
       mockedPost,
+    ],
+    [
+      'deleteAppointmentService',
+      () => deleteAppointmentService('service-uuid-1'),
+      mockedDel,
     ],
   ])('%s should propagate API errors', async (_, fn, mockedFn) => {
     mockedFn.mockRejectedValue(new Error('API Error'));
