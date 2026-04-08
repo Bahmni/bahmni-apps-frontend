@@ -31,7 +31,9 @@ export const createMedicationRequestResource = (
     resourceType: 'MedicationRequest',
     status: 'active',
     intent: 'order',
-    medicationReference: createMedicationReference(medicationEntry.id),
+    medicationReference: createMedicationReference(
+      medicationEntry.medication.id!,
+    ),
     subject: subjectReference,
     encounter: encounterReference,
     requester: requesterReference,

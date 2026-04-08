@@ -37,6 +37,44 @@ export const refreshQueries = async (
 export const generateId = () => Math.random().toString(36).substring(2, 9);
 
 /**
+ * Generates a UUID v4
+ * Uses globalThis.crypto.randomUUID() when available (browser, modern Node.js)
+ * Falls back to crypto.getRandomValues() for cryptographically secure randomness
+ * @returns {string} A UUID v4 string
+ */
+export const generateUUID = (): string => {
+  if (typeof globalThis !== 'undefined' && globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+  // Fallback using crypto.getRandomValues for cryptographically secure random generation
+  const crypto =
+    globalThis.crypto || (globalThis as Record<string, unknown>).msCrypto;
+  if (crypto && typeof crypto.getRandomValues === 'function') {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+
+    // Set version to 4 (random)
+    array[6] = (array[6] & 0x0f) | 0x40;
+    // Set variant to RFC 4122
+    array[8] = (array[8] & 0x3f) | 0x80;
+
+    return Array.from(array)
+      .map((byte, index) => {
+        if (index === 4 || index === 6 || index === 8 || index === 10) {
+          return '-' + byte.toString(16).padStart(2, '0');
+        }
+        return byte.toString(16).padStart(2, '0');
+      })
+      .join('');
+  }
+  // Crypto API is required for secure UUID generation
+  throw new Error(
+    'Crypto API (crypto.randomUUID or crypto.getRandomValues) is not available. ' +
+      'UUID generation requires cryptographically secure random number generation.',
+  );
+};
+
+/**
  * Converts a string to capital case (e.g., 'foo bar' -> 'Foo Bar')
  * @param input - The string to convert
  * @param delimiters - Optional string of delimiter characters (default: " -", space and hyphen)

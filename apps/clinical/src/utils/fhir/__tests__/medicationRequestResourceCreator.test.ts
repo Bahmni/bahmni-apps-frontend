@@ -427,11 +427,19 @@ describe('medicationRequestResourceCreator', () => {
         {
           ...mockMedicationEntry,
           id: 'med-456',
+          medication: {
+            ...mockMedicationEntry.medication,
+            id: 'med-456',
+          },
           display: 'Ibuprofen 200mg',
         },
         {
           ...mockMedicationEntry,
           id: 'med-789',
+          medication: {
+            ...mockMedicationEntry.medication,
+            id: 'med-789',
+          },
           display: 'Paracetamol 500mg',
           isSTAT: true,
         },

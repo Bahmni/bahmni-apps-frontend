@@ -1,16 +1,13 @@
+import { generateUUID } from '@bahmni/services';
 import { Medication } from 'fhir/r4';
 import { create } from 'zustand';
 import { Concept } from '../models/encounterConcepts';
 import { DurationUnitOption, MedicationInputEntry } from '../models/medication';
 import { Frequency } from '../models/medicationConfig';
-import {
-  extractDoseForm,
-  checkMedicationsOverlap,
-} from '../utils/fhir/medicationUtilities';
+import { extractDoseForm } from '../utils/fhir/medicationUtilities';
 
 export interface MedicationState {
   selectedMedications: MedicationInputEntry[];
-  hasOverlapDuplicates: boolean;
 
   addMedication: (medication: Medication, displayName: string) => void;
   removeMedication: (medicationId: string) => void;
@@ -31,24 +28,20 @@ export interface MedicationState {
   updateDispenseUnit: (medicationId: string, unit: Concept) => void;
   updateNote: (medicationId: string, note: string) => void;
   validateAllMedications: () => boolean;
-  validateMedicationsForOverlaps: (
-    activeMedications: import('fhir/r4').MedicationRequest[],
-    medicationMap: Record<string, import('fhir/r4').Medication>,
-  ) => boolean;
-  setOverlapDuplicates: (hasOverlaps: boolean) => void;
 
   reset: () => void;
   getState: () => MedicationState;
 }
 export const useMedicationStore = create<MedicationState>((set, get) => ({
   selectedMedications: [],
-  hasOverlapDuplicates: false,
 
   addMedication: (medication: Medication, displayName: string) => {
     const doseForm = extractDoseForm(medication, displayName);
 
+    // Use a unique ID combining medication ID and UUID to ensure each entry is distinct
+    // This allows adding the same medication multiple times without state conflicts
     const newMedication: MedicationInputEntry = {
-      id: medication.id!,
+      id: `${medication.id!}-${generateUUID()}`,
       display: displayName,
       medication: medication,
       dosage: 0,
@@ -381,23 +374,8 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     return isValid;
   },
 
-  validateMedicationsForOverlaps: (activeMedications, medicationMap) => {
-    const currentMedications = get().selectedMedications;
-
-    // Returns true if no overlaps (valid), false if overlaps exist (invalid)
-    return !checkMedicationsOverlap(
-      currentMedications,
-      activeMedications,
-      medicationMap,
-    );
-  },
-
-  setOverlapDuplicates: (hasOverlaps: boolean) => {
-    set({ hasOverlapDuplicates: hasOverlaps });
-  },
-
   reset: () => {
-    set({ selectedMedications: [], hasOverlapDuplicates: false });
+    set({ selectedMedications: [] });
   },
 
   getState: () => get(),

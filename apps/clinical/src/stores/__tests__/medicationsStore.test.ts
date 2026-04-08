@@ -57,7 +57,6 @@ describe('useMedicationStore', () => {
       const addedMedication = result.current.selectedMedications[0];
 
       expect(addedMedication).toMatchObject({
-        id: 'med-123',
         display: 'Test Medication',
         medication: mockMedication,
         dosage: 0,
@@ -74,6 +73,8 @@ describe('useMedicationStore', () => {
         dispenseQuantity: 0,
         dispenseUnit: null,
       });
+      // ID should start with the medication ID (format: medId-uuid)
+      expect(addedMedication.id).toMatch(/^med-123-[0-9a-f]{8}-[0-9a-f]{4}-/);
       expect(addedMedication.startDate).toBeInstanceOf(Date);
     });
 
@@ -87,8 +88,271 @@ describe('useMedicationStore', () => {
       });
 
       expect(result.current.selectedMedications).toHaveLength(2);
-      expect(result.current.selectedMedications[0].id).toBe('med-456');
-      expect(result.current.selectedMedications[1].id).toBe('med-123');
+      expect(result.current.selectedMedications[0].id).toMatch(
+        /^med-456-[0-9a-f]{8}-[0-9a-f]{4}-/,
+      );
+      expect(result.current.selectedMedications[1].id).toMatch(
+        /^med-123-[0-9a-f]{8}-[0-9a-f]{4}-/,
+      );
+    });
+
+    describe('Duplicate medications (same medication with different parameters)', () => {
+      it('should allow adding the same medication multiple times with unique IDs', () => {
+        const { result } = renderHook(() => useMedicationStore());
+
+        act(() => {
+          result.current.addMedication(mockMedication, 'Amoxicillin');
+          result.current.addMedication(mockMedication, 'Amoxicillin');
+          result.current.addMedication(mockMedication, 'Amoxicillin');
+        });
+
+        expect(result.current.selectedMedications).toHaveLength(3);
+        // All should be the same medication but with different IDs
+        expect(result.current.selectedMedications[0].medication.id).toBe(
+          'med-123',
+        );
+        expect(result.current.selectedMedications[1].medication.id).toBe(
+          'med-123',
+        );
+        expect(result.current.selectedMedications[2].medication.id).toBe(
+          'med-123',
+        );
+
+        // But each should have a unique ID due to UUID
+        const ids = result.current.selectedMedications.map((m) => m.id);
+        expect(new Set(ids).size).toBe(3);
+      });
+
+      it('should generate unique IDs using UUID even for identical medications', () => {
+        const { result } = renderHook(() => useMedicationStore());
+
+        act(() => {
+          result.current.addMedication(mockMedication, 'Aspirin');
+          result.current.addMedication(mockMedication, 'Aspirin');
+        });
+
+        const [med1, med2] = result.current.selectedMedications;
+        // IDs should have different UUID parts
+        expect(med1.id).not.toBe(med2.id);
+        expect(med1.id.startsWith('med-123-')).toBe(true);
+        expect(med2.id.startsWith('med-123-')).toBe(true);
+      });
+
+      it('should allow different start dates for duplicate medications', () => {
+        const { result } = renderHook(() => useMedicationStore());
+        const date1 = new Date('2026-01-01');
+        const date2 = new Date('2026-02-01');
+
+        act(() => {
+          result.current.addMedication(mockMedication, 'Ibuprofen');
+          result.current.addMedication(mockMedication, 'Ibuprofen');
+        });
+
+        const [med1Id, med2Id] = result.current.selectedMedications.map(
+          (m) => m.id,
+        );
+
+        act(() => {
+          result.current.updateStartDate(med1Id, date1);
+          result.current.updateStartDate(med2Id, date2);
+        });
+
+        expect(
+          result.current.selectedMedications.find((m) => m.id === med1Id)
+            ?.startDate,
+        ).toEqual(date1);
+        expect(
+          result.current.selectedMedications.find((m) => m.id === med2Id)
+            ?.startDate,
+        ).toEqual(date2);
+      });
+
+      it('should allow independent dosage updates for duplicate medications', () => {
+        const { result } = renderHook(() => useMedicationStore());
+
+        act(() => {
+          result.current.addMedication(mockMedication, 'Paracetamol');
+          result.current.addMedication(mockMedication, 'Paracetamol');
+        });
+
+        const [med1Id, med2Id] = result.current.selectedMedications.map(
+          (m) => m.id,
+        );
+
+        act(() => {
+          result.current.updateDosage(med1Id, 500);
+          result.current.updateDosage(med2Id, 1000);
+        });
+
+        expect(
+          result.current.selectedMedications.find((m) => m.id === med1Id)
+            ?.dosage,
+        ).toBe(500);
+        expect(
+          result.current.selectedMedications.find((m) => m.id === med2Id)
+            ?.dosage,
+        ).toBe(1000);
+      });
+
+      it('should allow independent frequency updates for duplicate medications', () => {
+        const { result } = renderHook(() => useMedicationStore());
+        const freq1: Frequency = {
+          name: 'Once daily',
+          uuid: 'freq-1',
+          frequencyPerDay: 1,
+        };
+        const freq2: Frequency = {
+          name: 'Twice daily',
+          uuid: 'freq-2',
+          frequencyPerDay: 2,
+        };
+
+        act(() => {
+          result.current.addMedication(mockMedication, 'Vitamin D');
+          result.current.addMedication(mockMedication, 'Vitamin D');
+        });
+
+        const [med1Id, med2Id] = result.current.selectedMedications.map(
+          (m) => m.id,
+        );
+
+        act(() => {
+          result.current.updateFrequency(med1Id, freq1);
+          result.current.updateFrequency(med2Id, freq2);
+        });
+
+        expect(
+          result.current.selectedMedications.find((m) => m.id === med1Id)
+            ?.frequency,
+        ).toEqual(freq1);
+        expect(
+          result.current.selectedMedications.find((m) => m.id === med2Id)
+            ?.frequency,
+        ).toEqual(freq2);
+      });
+
+      it('should remove only the specified duplicate medication, not all duplicates', () => {
+        const { result } = renderHook(() => useMedicationStore());
+
+        act(() => {
+          result.current.addMedication(mockMedication, 'Metformin');
+          result.current.addMedication(mockMedication, 'Metformin');
+          result.current.addMedication(mockMedication, 'Metformin');
+        });
+
+        expect(result.current.selectedMedications).toHaveLength(3);
+        const medToRemove = result.current.selectedMedications[1].id;
+
+        act(() => {
+          result.current.removeMedication(medToRemove);
+        });
+
+        expect(result.current.selectedMedications).toHaveLength(2);
+        expect(
+          result.current.selectedMedications.find((m) => m.id === medToRemove),
+        ).toBeUndefined();
+        // Other two should still exist
+        expect(
+          result.current.selectedMedications.filter((m) =>
+            m.id.startsWith('med-123-'),
+          ),
+        ).toHaveLength(2);
+      });
+
+      it('should update only the specific instance when multiple duplicates exist', () => {
+        const { result } = renderHook(() => useMedicationStore());
+
+        act(() => {
+          result.current.addMedication(mockMedication, 'Lisinopril');
+          result.current.addMedication(mockMedication, 'Lisinopril');
+        });
+
+        const [med1Id, med2Id] = result.current.selectedMedications.map(
+          (m) => m.id,
+        );
+
+        act(() => {
+          result.current.updateRoute(med1Id, mockConcept);
+        });
+
+        const med1Route = result.current.selectedMedications.find(
+          (m) => m.id === med1Id,
+        )?.route;
+        const med2Route = result.current.selectedMedications.find(
+          (m) => m.id === med2Id,
+        )?.route;
+
+        expect(med1Route).toEqual(mockConcept);
+        expect(med2Route).toBeNull();
+      });
+
+      it('should validate each duplicate medication independently', () => {
+        const { result } = renderHook(() => useMedicationStore());
+
+        act(() => {
+          result.current.addMedication(mockMedication, 'Atorvastatin');
+          result.current.addMedication(mockMedication, 'Atorvastatin');
+        });
+
+        const [med1Id, med2Id] = result.current.selectedMedications.map(
+          (m) => m.id,
+        );
+
+        act(() => {
+          // Set up first medication completely (with all required fields including duration)
+          result.current.updateDosage(med1Id, 10);
+          result.current.updateDosageUnit(med1Id, mockConcept);
+          result.current.updateFrequency(med1Id, mockFrequency);
+          result.current.updateRoute(med1Id, mockConcept);
+          result.current.updateDuration(med1Id, 30);
+          result.current.updateDurationUnit(med1Id, mockDurationUnit);
+
+          // Second medication left incomplete
+          result.current.validateAllMedications();
+        });
+
+        const med1Errors = result.current.selectedMedications.find(
+          (m) => m.id === med1Id,
+        )?.errors;
+        const med2Errors = result.current.selectedMedications.find(
+          (m) => m.id === med2Id,
+        )?.errors;
+
+        // med1 should be valid with no errors
+        expect(Object.keys(med1Errors ?? {})).toHaveLength(0);
+
+        // med2 should have errors for required fields
+        expect(med2Errors?.dosage).toBeDefined();
+        expect(med2Errors?.dosageUnit).toBeDefined();
+        expect(med2Errors?.frequency).toBeDefined();
+        expect(med2Errors?.route).toBeDefined();
+        expect(med2Errors?.duration).toBeDefined();
+        expect(med2Errors?.durationUnit).toBeDefined();
+      });
+
+      it('should handle multiple duplicates with different configurations in state', () => {
+        const { result } = renderHook(() => useMedicationStore());
+        const medA = { ...mockMedication, id: 'med-A' };
+        const medB = { ...mockMedication, id: 'med-B' };
+
+        act(() => {
+          result.current.addMedication(medA, 'Med A');
+          result.current.addMedication(medA, 'Med A');
+          result.current.addMedication(medB, 'Med B');
+          result.current.addMedication(medB, 'Med B');
+        });
+
+        expect(result.current.selectedMedications).toHaveLength(4);
+        const medACount = result.current.selectedMedications.filter((m) =>
+          m.id.startsWith('med-A-'),
+        ).length;
+        const medBCount = result.current.selectedMedications.filter((m) =>
+          m.id.startsWith('med-B-'),
+        ).length;
+
+        expect(medACount).toBe(2);
+        expect(medBCount).toBe(2);
+      });
     });
   });
 
@@ -98,7 +362,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.removeMedication('med-123');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.removeMedication(medId);
       });
 
       expect(result.current.selectedMedications).toHaveLength(0);
@@ -110,12 +377,17 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Medication 1');
+      });
+      const med1Id = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.addMedication(medication2, 'Medication 2');
-        result.current.removeMedication('med-123');
+        result.current.removeMedication(med1Id);
       });
 
       expect(result.current.selectedMedications).toHaveLength(1);
-      expect(result.current.selectedMedications[0].id).toBe('med-456');
+      expect(result.current.selectedMedications[0].id).toMatch(
+        /^med-456-[0-9a-f]{8}-[0-9a-f]{4}-/,
+      );
     });
 
     it('should handle removing non-existent medication gracefully', () => {
@@ -136,7 +408,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDosage('med-123', 100);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDosage(medId, 100);
       });
 
       expect(result.current.selectedMedications[0].dosage).toBe(100);
@@ -147,8 +422,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateDosage('med-123', 50);
+        result.current.updateDosage(medId, 50);
       });
 
       expect(
@@ -161,8 +439,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateDosage('med-123', 0);
+        result.current.updateDosage(medId, 0);
       });
 
       expect(result.current.selectedMedications[0].errors.dosage).toBe(
@@ -175,7 +456,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDosage('med-123', -10);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDosage(medId, -10);
       });
 
       expect(result.current.selectedMedications[0].dosage).toBe(-10);
@@ -188,7 +472,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDosageUnit('med-123', mockConcept);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDosageUnit(medId, mockConcept);
       });
 
       expect(result.current.selectedMedications[0].dosageUnit).toEqual(
@@ -201,8 +488,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateDosageUnit('med-123', mockConcept);
+        result.current.updateDosageUnit(medId, mockConcept);
       });
 
       expect(
@@ -217,7 +507,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateFrequency('med-123', mockFrequency);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateFrequency(medId, mockFrequency);
       });
 
       expect(result.current.selectedMedications[0].frequency).toEqual(
@@ -230,8 +523,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateFrequency('med-123', mockFrequency);
-        result.current.updateFrequency('med-123', null);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateFrequency(medId, mockFrequency);
+        result.current.updateFrequency(medId, null);
       });
 
       expect(result.current.selectedMedications[0].frequency).toBeNull();
@@ -242,8 +538,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateFrequency('med-123', mockFrequency);
+        result.current.updateFrequency(medId, mockFrequency);
       });
 
       expect(
@@ -258,7 +557,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateRoute('med-123', mockConcept);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateRoute(medId, mockConcept);
       });
 
       expect(result.current.selectedMedications[0].route).toEqual(mockConcept);
@@ -269,8 +571,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateRoute('med-123', mockConcept);
+        result.current.updateRoute(medId, mockConcept);
       });
 
       expect(
@@ -285,7 +590,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDuration('med-123', 7);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDuration(medId, 7);
       });
 
       expect(result.current.selectedMedications[0].duration).toBe(7);
@@ -296,8 +604,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateDuration('med-123', 5);
+        result.current.updateDuration(medId, 5);
       });
 
       expect(
@@ -310,8 +621,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateDuration('med-123', 0);
+        result.current.updateDuration(medId, 0);
       });
 
       expect(result.current.selectedMedications[0].errors.duration).toBe(
@@ -326,7 +640,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDurationUnit('med-123', mockDurationUnit);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDurationUnit(medId, mockDurationUnit);
       });
 
       expect(result.current.selectedMedications[0].durationUnit).toEqual(
@@ -339,8 +656,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDurationUnit('med-123', mockDurationUnit);
-        result.current.updateDurationUnit('med-123', null);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDurationUnit(medId, mockDurationUnit);
+        result.current.updateDurationUnit(medId, null);
       });
 
       expect(result.current.selectedMedications[0].durationUnit).toBeNull();
@@ -351,8 +671,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateDurationUnit('med-123', mockDurationUnit);
+        result.current.updateDurationUnit(medId, mockDurationUnit);
       });
 
       expect(
@@ -367,7 +690,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateInstruction('med-123', mockConcept);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateInstruction(medId, mockConcept);
       });
 
       expect(result.current.selectedMedications[0].instruction).toEqual(
@@ -382,7 +708,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateisPRN('med-123', true);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateisPRN(medId, true);
       });
 
       expect(result.current.selectedMedications[0].isPRN).toBe(true);
@@ -393,8 +722,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateisPRN('med-123', true);
-        result.current.updateisPRN('med-123', false);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateisPRN(medId, true);
+        result.current.updateisPRN(medId, false);
       });
 
       expect(result.current.selectedMedications[0].isPRN).toBe(false);
@@ -407,7 +739,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateisSTAT('med-123', true);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateisSTAT(medId, true);
       });
 
       expect(result.current.selectedMedications[0].isSTAT).toBe(true);
@@ -418,8 +753,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateisSTAT('med-123', true);
+        result.current.updateisSTAT(medId, true);
       });
 
       expect(
@@ -435,8 +773,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateisSTAT('med-123', false);
+        result.current.updateisSTAT(medId, false);
       });
 
       expect(result.current.selectedMedications[0].errors.duration).toBe(
@@ -452,7 +793,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateStartDate('med-123', newDate);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateStartDate(medId, newDate);
       });
 
       expect(result.current.selectedMedications[0].startDate).toEqual(newDate);
@@ -465,7 +809,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDispenseQuantity('med-123', 30);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDispenseQuantity(medId, 30);
       });
 
       expect(result.current.selectedMedications[0].dispenseQuantity).toBe(30);
@@ -476,8 +823,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateDispenseQuantity('med-123', 10);
+        result.current.updateDispenseQuantity(medId, 10);
       });
 
       expect(
@@ -490,8 +840,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateDispenseQuantity('med-123', 0);
+        result.current.updateDispenseQuantity(medId, 0);
       });
 
       expect(
@@ -504,7 +857,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDispenseQuantity('med-123', -5);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDispenseQuantity(medId, -5);
       });
 
       expect(result.current.selectedMedications[0].dispenseQuantity).toBe(-5);
@@ -517,7 +873,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDispenseUnit('med-123', mockConcept);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDispenseUnit(medId, mockConcept);
       });
 
       expect(result.current.selectedMedications[0].dispenseUnit).toEqual(
@@ -530,8 +889,11 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         result.current.validateAllMedications();
-        result.current.updateDispenseUnit('med-123', mockConcept);
+        result.current.updateDispenseUnit(medId, mockConcept);
       });
 
       expect(
@@ -569,12 +931,15 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDosage('med-123', 100);
-        result.current.updateDosageUnit('med-123', mockConcept);
-        result.current.updateFrequency('med-123', mockFrequency);
-        result.current.updateRoute('med-123', mockConcept);
-        result.current.updateDuration('med-123', 7);
-        result.current.updateDurationUnit('med-123', mockDurationUnit);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDosage(medId, 100);
+        result.current.updateDosageUnit(medId, mockConcept);
+        result.current.updateFrequency(medId, mockFrequency);
+        result.current.updateRoute(medId, mockConcept);
+        result.current.updateDuration(medId, 7);
+        result.current.updateDurationUnit(medId, mockDurationUnit);
       });
 
       let isValid: boolean;
@@ -591,11 +956,14 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDosage('med-123', 100);
-        result.current.updateDosageUnit('med-123', mockConcept);
-        result.current.updateFrequency('med-123', mockFrequency);
-        result.current.updateRoute('med-123', mockConcept);
-        result.current.updateisSTAT('med-123', true);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDosage(medId, 100);
+        result.current.updateDosageUnit(medId, mockConcept);
+        result.current.updateFrequency(medId, mockFrequency);
+        result.current.updateRoute(medId, mockConcept);
+        result.current.updateisSTAT(medId, true);
       });
 
       let isValid: boolean;
@@ -614,12 +982,15 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDosage('med-123', 100);
-        result.current.updateDosageUnit('med-123', mockConcept);
-        result.current.updateFrequency('med-123', mockFrequency);
-        result.current.updateRoute('med-123', mockConcept);
-        result.current.updateisPRN('med-123', true);
-        result.current.updateisSTAT('med-123', false);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDosage(medId, 100);
+        result.current.updateDosageUnit(medId, mockConcept);
+        result.current.updateFrequency(medId, mockFrequency);
+        result.current.updateRoute(medId, mockConcept);
+        result.current.updateisPRN(medId, true);
+        result.current.updateisSTAT(medId, false);
       });
 
       let isValid: boolean;
@@ -638,12 +1009,15 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDosage('med-123', 100);
-        result.current.updateDosageUnit('med-123', mockConcept);
-        result.current.updateFrequency('med-123', mockFrequency);
-        result.current.updateRoute('med-123', mockConcept);
-        result.current.updateisPRN('med-123', true);
-        result.current.updateisSTAT('med-123', true);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDosage(medId, 100);
+        result.current.updateDosageUnit(medId, mockConcept);
+        result.current.updateFrequency(medId, mockFrequency);
+        result.current.updateRoute(medId, mockConcept);
+        result.current.updateisPRN(medId, true);
+        result.current.updateisSTAT(medId, true);
       });
 
       let isValid: boolean;
@@ -664,15 +1038,18 @@ describe('useMedicationStore', () => {
       act(() => {
         // First medication - invalid
         result.current.addMedication(mockMedication, 'Medication 1');
-
-        // Second medication - valid
+        // Second medication - valid (newest first, so index 0)
         result.current.addMedication(medication2, 'Medication 2');
-        result.current.updateDosage('med-456', 50);
-        result.current.updateDosageUnit('med-456', mockConcept);
-        result.current.updateFrequency('med-456', mockFrequency);
-        result.current.updateRoute('med-456', mockConcept);
-        result.current.updateDuration('med-456', 5);
-        result.current.updateDurationUnit('med-456', mockDurationUnit);
+      });
+      // After both adds: index 0 = med-456 (newest), index 1 = med-123
+      const med2Id = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDosage(med2Id, 50);
+        result.current.updateDosageUnit(med2Id, mockConcept);
+        result.current.updateFrequency(med2Id, mockFrequency);
+        result.current.updateRoute(med2Id, mockConcept);
+        result.current.updateDuration(med2Id, 5);
+        result.current.updateDurationUnit(med2Id, mockDurationUnit);
       });
 
       let isValid: boolean;
@@ -692,11 +1069,14 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
         // First validation
         result.current.validateAllMedications();
         // Update some fields
-        result.current.updateDosage('med-123', 100);
-        result.current.updateDosageUnit('med-123', mockConcept);
+        result.current.updateDosage(medId, 100);
+        result.current.updateDosageUnit(medId, mockConcept);
         // Second validation
         result.current.validateAllMedications();
       });
@@ -713,7 +1093,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDosage('med-123', 0);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDosage(medId, 0);
       });
 
       let isValid: boolean;
@@ -732,7 +1115,10 @@ describe('useMedicationStore', () => {
 
       act(() => {
         result.current.addMedication(mockMedication, 'Test Medication');
-        result.current.updateDuration('med-123', -5);
+      });
+      const medId = result.current.selectedMedications[0].id;
+      act(() => {
+        result.current.updateDuration(medId, -5);
       });
 
       let isValid: boolean;
@@ -774,7 +1160,9 @@ describe('useMedicationStore', () => {
 
       const state = result.current.getState();
       expect(state.selectedMedications).toHaveLength(1);
-      expect(state.selectedMedications[0].id).toBe('med-123');
+      expect(state.selectedMedications[0].id).toMatch(
+        /^med-123-[0-9a-f]{8}-[0-9a-f]{4}-/,
+      );
       expect(typeof state.addMedication).toBe('function');
       expect(typeof state.removeMedication).toBe('function');
     });

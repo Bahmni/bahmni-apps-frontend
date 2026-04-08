@@ -4,7 +4,6 @@ import {
   ComboBox,
   DropdownSkeleton,
   Tile,
-  InlineNotification,
 } from '@bahmni/design-system';
 import {
   getConfig,
@@ -30,15 +29,8 @@ import {
   MedicationConfig,
   MedicationJSONConfig,
 } from '../../../models/medicationConfig';
-import {
-  getMedicationDisplay,
-  getActiveMedicationsFromBundle,
-} from '../../../services/medicationService';
+import { getMedicationDisplay } from '../../../services/medicationService';
 import { useMedicationStore } from '../../../stores/medicationsStore';
-import {
-  checkMedicationsOverlap,
-  medicationsMatchByCode,
-} from '../../../utils/fhir/medicationUtilities';
 import { MEDICATIONS_CONFIG_URL } from './constants';
 import medicationConfigSchema from './schema.json';
 import SelectedMedicationItem from './SelectedMedicationItem';
@@ -59,8 +51,6 @@ const MedicationsForm: React.FC = React.memo(() => {
     CONSULTATION_PAD_PRIVILEGES.MEDICATIONS,
   );
   const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
-  const [showDuplicateNotification, setShowDuplicateNotification] =
-    useState(false);
   const isSelectingRef = useRef(false);
   const [selectedMedicationItem, setSelectedMedicationItem] =
     useState<MedicationFilterResult | null>(null);
@@ -102,11 +92,9 @@ const MedicationsForm: React.FC = React.memo(() => {
     updateDispenseUnit,
     updateNote,
     updateStartDate,
-    setOverlapDuplicates,
   } = useMedicationStore();
 
   const {
-    data: medicationBundle,
     isLoading: existingMedicationsLoading,
     error: existingMedicationsError,
     refetch: refetchMedications,
@@ -131,11 +119,6 @@ const MedicationsForm: React.FC = React.memo(() => {
     [patientUUID, refetchMedications],
   );
 
-  const { activeMedications, medicationMap } = useMemo(
-    () => getActiveMedicationsFromBundle(medicationBundle),
-    [medicationBundle],
-  );
-
   useEffect(() => {
     if (existingMedicationsError) {
       addNotification({
@@ -145,22 +128,6 @@ const MedicationsForm: React.FC = React.memo(() => {
       });
     }
   }, [existingMedicationsError, addNotification, t]);
-
-  // Monitor selected medications and update notification based on current overlap status
-  useEffect(() => {
-    const hasOverlaps = checkMedicationsOverlap(
-      selectedMedications,
-      activeMedications,
-      medicationMap,
-    );
-    setShowDuplicateNotification(hasOverlaps);
-    setOverlapDuplicates(hasOverlaps);
-  }, [
-    selectedMedications,
-    activeMedications,
-    medicationMap,
-    setOverlapDuplicates,
-  ]);
 
   const handleSearch = (searchTerm: string) => {
     if (!isSelectingRef.current) {
@@ -217,16 +184,11 @@ const MedicationsForm: React.FC = React.memo(() => {
 
     return searchResults.map((item) => {
       const itemDisplayName = getMedicationDisplay(item);
-      const isAlreadySelected = selectedMedications.some((selected) =>
-        medicationsMatchByCode(item, selected.medication),
-      );
 
       return {
         medication: item,
-        displayName: isAlreadySelected
-          ? `${itemDisplayName} (${t('MEDICATIONS_ALREADY_ADDED')})`
-          : itemDisplayName,
-        disabled: isAlreadySelected,
+        displayName: itemDisplayName,
+        disabled: false,
       };
     });
   }, [
@@ -235,7 +197,6 @@ const MedicationsForm: React.FC = React.memo(() => {
     existingMedicationsLoading,
     error,
     searchResults,
-    selectedMedications,
     t,
   ]);
 
@@ -276,16 +237,6 @@ const MedicationsForm: React.FC = React.memo(() => {
           autoAlign
           disabled={existingMedicationsLoading}
           aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
-        />
-      )}
-      {showDuplicateNotification && (
-        <InlineNotification
-          kind="error"
-          lowContrast
-          subtitle={t('ERROR_DUPLICATE_ACTIVE_MEDICATION')}
-          onClose={() => setShowDuplicateNotification(false)}
-          hideCloseButton={false}
-          className={styles.duplicateNotification}
         />
       )}
       {medicationConfig &&
