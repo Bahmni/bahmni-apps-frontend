@@ -36,17 +36,22 @@
 
 .identifierTable {
   :global(thead) {
-    visibility: collapse;
+    display: none;
+  }
+
+  :global(.cds--data-table-container) {
+    padding-top: 0 !important;
   }
 
   :global(tbody) {
-    tr:first-child td {
+    tr td {
       border-top: none !important;
+      border-bottom: none !important;
     }
-    
+
     tr:hover td {
       cursor: default;
-      border-bottom: 1px solid $border-subtle-01 !important;
+      border-bottom: none !important;
     }
 
     td:first-child {

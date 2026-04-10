@@ -82,6 +82,7 @@ export interface RegistrationFormControl {
 export interface RegistrationFormSection {
   name: string;
   translationKey?: string;
+  collapsible?: boolean;
   controls: RegistrationFormControl[];
 }
 

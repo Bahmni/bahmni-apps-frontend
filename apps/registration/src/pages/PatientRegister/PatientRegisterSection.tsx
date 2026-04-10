@@ -1,4 +1,4 @@
-import { Tile } from '@bahmni/design-system';
+import { Accordion, AccordionItem, Tile } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React from 'react';
 import {
@@ -14,6 +14,9 @@ interface PatientRegisterSectionProps {
   refs: FormControlRefs;
   data: FormControlData;
   guards: FormControlGuards;
+  isCollapsible: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
 }
 
 const PatientRegisterSection: React.FC<PatientRegisterSectionProps> = ({
@@ -21,6 +24,9 @@ const PatientRegisterSection: React.FC<PatientRegisterSectionProps> = ({
   refs,
   data,
   guards,
+  isCollapsible,
+  isExpanded,
+  onToggle,
 }) => {
   const { t } = useTranslation();
 
@@ -59,16 +65,44 @@ const PatientRegisterSection: React.FC<PatientRegisterSectionProps> = ({
     return null;
   }
 
+  // For non-collapsible sections, render content without Accordion
+  if (!isCollapsible) {
+    return (
+      <div className={styles.formContainer}>
+        {section.translationKey && (
+          <Tile className={styles.headerTile} data-testid="section-header-tile">
+            <span className={styles.sectionTitle}>
+              {t(section.translationKey)}
+            </span>
+          </Tile>
+        )}
+        <div className={styles.sectionContent} data-testid="section-content">
+          {renderedControls}
+        </div>
+      </div>
+    );
+  }
+
+  // For collapsible sections, use Accordion with externally-controlled state
   return (
     <div className={styles.formContainer}>
-      {section.translationKey && (
-        <Tile className={styles.headerTile} data-testid="section-header-tile">
-          <span className={styles.sectionTitle}>
-            {t(section.translationKey)}
-          </span>
-        </Tile>
-      )}
-      {renderedControls}
+      <div className={styles.accordionWrapper}>
+        <Accordion>
+          <AccordionItem
+            title={section.translationKey ? t(section.translationKey) : ''}
+            open={isExpanded}
+            onHeadingClick={onToggle}
+            data-testid="collapsible-accordion-item"
+          >
+            <div
+              className={styles.sectionContent}
+              data-testid="section-content"
+            >
+              {renderedControls}
+            </div>
+          </AccordionItem>
+        </Accordion>
+      </div>
     </div>
   );
 };

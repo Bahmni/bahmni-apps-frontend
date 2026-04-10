@@ -267,3 +267,52 @@
   color: #da1e28;
   margin-left: $spacing-01;
 }
+
+.sectionContent {
+  padding-bottom: $spacing-05;
+}
+
+.profileSectionContainer {
+  padding-bottom: $spacing-05;
+}
+
+// Accordion styling to match headerTile appearance
+// Carbon renders: <button class="cds--accordion__heading"> containing arrow + title
+.accordionWrapper {
+  :global(.cds--accordion__heading) {
+    background-color: $layer;
+    min-block-size: 4rem;
+    padding-block: $spacing-05;
+    padding-inline: $spacing-06;
+    border: none;
+
+    &:hover {
+      background-color: $layer-hover;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--cds-focus, #0f62fe);
+      outline-offset: -2px;
+    }
+  }
+
+  // Match font size, weight and color of the first section's .sectionTitle
+  :global(.cds--accordion__title) {
+    @include type-style("heading-compact-02");
+    padding-inline-start: 0;
+    color: $text-primary;
+  }
+
+  // Remove Carbon's wrapper padding — sectionContent handles spacing
+  :global(.cds--accordion__item--active > .cds--accordion__wrapper) {
+    padding-block: 0;
+    padding-block-end: 0;
+  }
+
+  // Remove Carbon's default horizontal padding from content area
+  :global(.cds--accordion__content) {
+    padding-inline: 0;
+    padding-inline-end: 0;
+  }
+}
+
