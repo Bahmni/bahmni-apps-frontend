@@ -68,6 +68,7 @@ describe('dateFormatUtils', () => {
 
     afterEach(() => {
       localStorage.clear();
+      jest.restoreAllMocks();
     });
 
     it('returns both dateFnsFormat and flatpickrFormat', () => {
@@ -97,11 +98,18 @@ describe('dateFormatUtils', () => {
     );
 
     it('falls back to browser locale when localStorage is empty', () => {
-      Object.defineProperty(global, 'navigator', {
-        value: { language: 'en-US' },
-        configurable: true,
-        writable: true,
-      });
+      jest.spyOn(Intl, 'DateTimeFormat').mockImplementation(
+        () =>
+          ({
+            formatToParts: () => [
+              { type: 'month', value: '3' },
+              { type: 'literal', value: '/' },
+              { type: 'day', value: '24' },
+              { type: 'literal', value: '/' },
+              { type: 'year', value: '2026' },
+            ],
+          }) as any,
+      );
 
       const formats = getDateFormats();
 
