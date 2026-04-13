@@ -201,29 +201,19 @@ describe('NotAdministeredTab', () => {
     },
   );
 
-  it('renders - for a null field value', () => {
+  it.each([
+    { field: 'reason', override: { reason: null } },
+    { field: 'date', override: { date: null } },
+  ])('renders - for $field when value is null', ({ field, override }) => {
     mockUseQuery.mockReturnValue({
-      data: [{ ...mockRow, reason: null }],
+      data: [{ ...mockRow, ...override }],
       isLoading: false,
       isError: false,
       refetch: jest.fn(),
     } as any);
     render(<NotAdministeredTab patientUUID="patient-uuid" />);
     expect(
-      screen.getByTestId(`table-cell-${mockRow.id}-reason`),
-    ).toHaveTextContent('-');
-  });
-
-  it('renders - for date when value is null', () => {
-    mockUseQuery.mockReturnValue({
-      data: [{ ...mockRow, date: null }],
-      isLoading: false,
-      isError: false,
-      refetch: jest.fn(),
-    } as any);
-    render(<NotAdministeredTab patientUUID="patient-uuid" />);
-    expect(
-      screen.getByTestId(`table-cell-${mockRow.id}-date`),
+      screen.getByTestId(`table-cell-${mockRow.id}-${field}`),
     ).toHaveTextContent('-');
   });
 

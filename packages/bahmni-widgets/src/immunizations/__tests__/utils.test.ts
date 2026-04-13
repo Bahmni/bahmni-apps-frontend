@@ -144,14 +144,9 @@ describe('createNotAdministeredImmunizationViewModel', () => {
   });
 
   it('returns null for missing reason and recordedBy', () => {
-    const result = createNotAdministeredImmunizationViewModel({
-      resourceType: 'Immunization',
-      id: 'waiver-minimal-1',
-      status: 'not-done',
-      vaccineCode: { coding: [{ display: 'Polio' }] },
-      patient: { reference: 'Patient/patient-uuid' },
-      occurrenceDateTime: '2026-01-01',
-    });
+    const result = createNotAdministeredImmunizationViewModel(
+      mockMinimalNotAdministeredImmunization,
+    );
 
     expect(result.reason).toBeNull();
     expect(result.recordedBy).toBeNull();
