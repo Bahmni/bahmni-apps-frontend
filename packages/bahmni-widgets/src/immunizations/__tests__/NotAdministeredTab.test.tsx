@@ -1,21 +1,23 @@
 import {
   ConsultationSavedEventPayload,
   formatDateTime,
+  getPatientImmunizations,
   useSubscribeConsultationSaved,
-  useTranslation,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
-import { Bundle, Immunization } from 'fhir/r4';
-import { toHaveNoViolations } from 'jest-axe';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import NotAdministeredTab from '../NotAdministeredTab';
+import NotAdministeredTab from '../components/NotAdministeredTab';
+import { createNotAdministeredImmunizationViewModel } from '../utils';
+import { mockNotAdministeredImmunization } from './__mocks__/immunizationMocks';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   formatDateTime: jest.fn(),
+  getPatientImmunizations: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
 jest.mock('@tanstack/react-query', () => ({
@@ -25,144 +27,217 @@ jest.mock('@tanstack/react-query', () => ({
 const mockFormatDateTime = formatDateTime as jest.MockedFunction<
   typeof formatDateTime
 >;
+const mockGetPatientImmunizations =
+  getPatientImmunizations as jest.MockedFunction<
+    typeof getPatientImmunizations
+  >;
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockUseSubscribeConsultationSaved =
   useSubscribeConsultationSaved as jest.MockedFunction<
     typeof useSubscribeConsultationSaved
   >;
 
-const mockWaiverImmunization: Immunization = {
-  resourceType: 'Immunization',
-  id: 'waiver-uuid-1',
-  status: 'not-done',
-  vaccineCode: { coding: [{ display: 'Hepatitis B' }] },
-  patient: { reference: 'Patient/patient-uuid' },
-  occurrenceDateTime: '2026-03-19',
-  statusReason: { coding: [{ display: 'Patient refused' }] },
-  performer: [
+const mockRow = createNotAdministeredImmunizationViewModel(
+  mockNotAdministeredImmunization,
+);
+
+describe('NotAdministeredTab', () => {
+  beforeEach(() => {
+    mockFormatDateTime.mockReturnValue({
+      formattedResult: '19-3-2026',
+    } as ReturnType<typeof formatDateTime>);
+    mockUseSubscribeConsultationSaved.mockImplementation(() => {});
+    mockUseQuery.mockReturnValue({
+      data: [mockRow],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('renders column headers', () => {
+    render(<NotAdministeredTab patientUUID="patient-uuid" />);
+    expect(
+      screen.getByText('IMMUNIZATION_WIDGET_COL_CODE'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('IMMUNIZATION_WIDGET_COL_REASON'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('IMMUNIZATION_WIDGET_COL_DATE'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('IMMUNIZATION_WIDGET_COL_RECORDED_BY'),
+    ).toBeInTheDocument();
+  });
+
+  it('renders row data', () => {
+    render(<NotAdministeredTab patientUUID="patient-uuid" />);
+    expect(screen.getByText('Hepatitis B')).toBeInTheDocument();
+    expect(screen.getByText('Patient refused')).toBeInTheDocument();
+    expect(screen.getByText('19-3-2026')).toBeInTheDocument();
+    expect(screen.getByText('John Davis')).toBeInTheDocument();
+  });
+
+  it.each([
     {
-      function: { coding: [{ code: 'AP' }] },
-      actor: { display: 'John Davis' },
+      description: 'no data',
+      queryResult: { data: [], isLoading: false, isError: false },
+      expectedText: 'IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED',
     },
-  ],
-};
-
-const mockBundle: Bundle<Immunization> = {
-  resourceType: 'Bundle',
-  type: 'searchset',
-  entry: [{ resource: mockWaiverImmunization }],
-};
-
-const emptyBundle: Bundle<Immunization> = {
-  resourceType: 'Bundle',
-  type: 'searchset',
-  entry: [],
-};
-
-beforeEach(() => {
-  mockFormatDateTime.mockReturnValue({
-    formattedResult: '19-3-2026',
-  } as ReturnType<typeof formatDateTime>);
-  mockUseSubscribeConsultationSaved.mockImplementation(() => {});
-  mockUseQuery.mockReturnValue({
-    data: mockBundle,
-    isLoading: false,
-    isError: false,
-    refetch: jest.fn(),
-  } as any);
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
-});
-
-it('renders column headers', () => {
-  render(<NotAdministeredTab patientUUID="patient-uuid" />);
-  expect(screen.getByText('IMMUNIZATION_WIDGET_COL_CODE')).toBeInTheDocument();
-  expect(
-    screen.getByText('IMMUNIZATION_WIDGET_COL_REASON'),
-  ).toBeInTheDocument();
-  expect(screen.getByText('IMMUNIZATION_WIDGET_COL_DATE')).toBeInTheDocument();
-  expect(
-    screen.getByText('IMMUNIZATION_WIDGET_COL_RECORDED_BY'),
-  ).toBeInTheDocument();
-});
-
-it('renders waiver row data', () => {
-  render(<NotAdministeredTab patientUUID="patient-uuid" />);
-  expect(screen.getByText('Hepatitis B')).toBeInTheDocument();
-  expect(screen.getByText('Patient refused')).toBeInTheDocument();
-  expect(screen.getByText('19-3-2026')).toBeInTheDocument();
-  expect(screen.getByText('John Davis')).toBeInTheDocument();
-});
-
-it('shows empty state when no data', () => {
-  mockUseQuery.mockReturnValue({
-    data: emptyBundle,
-    isLoading: false,
-    isError: false,
-    refetch: jest.fn(),
-  } as any);
-  render(<NotAdministeredTab patientUUID="patient-uuid" />);
-  expect(
-    screen.getByText('IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED'),
-  ).toBeInTheDocument();
-});
-
-it('shows error state when fetch fails', () => {
-  mockUseQuery.mockReturnValue({
-    data: undefined,
-    isLoading: false,
-    isError: true,
-    refetch: jest.fn(),
-  } as any);
-  render(<NotAdministeredTab patientUUID="patient-uuid" />);
-  expect(
-    screen.getByText('IMMUNIZATION_WIDGET_ERROR_FETCHING_DATA'),
-  ).toBeInTheDocument();
-});
-
-it('shows skeleton while loading', () => {
-  mockUseQuery.mockReturnValue({
-    data: undefined,
-    isLoading: true,
-    isError: false,
-    refetch: jest.fn(),
-  } as any);
-  render(<NotAdministeredTab patientUUID="patient-uuid" />);
-  expect(
-    screen.getByTestId('not-administered-immunizations-table-skeleton'),
-  ).toBeInTheDocument();
-});
-
-it('fetches not-done immunizations with correct query key', () => {
-  render(<NotAdministeredTab patientUUID="patient-uuid-123" />);
-  expect(mockUseQuery).toHaveBeenCalledWith(
-    expect.objectContaining({
-      queryKey: ['immunizations', 'patient-uuid-123', 'not-done'],
-      enabled: true,
-    }),
+    {
+      description: 'fetch error',
+      queryResult: { data: undefined, isLoading: false, isError: true },
+      expectedText: 'IMMUNIZATION_WIDGET_ERROR_FETCHING_DATA',
+    },
+  ])(
+    'shows correct message on $description',
+    ({
+      queryResult,
+      expectedText,
+    }: {
+      description: string;
+      queryResult: { data: unknown; isLoading: boolean; isError: boolean };
+      expectedText: string;
+    }) => {
+      mockUseQuery.mockReturnValue({
+        ...queryResult,
+        refetch: jest.fn(),
+      } as any);
+      render(<NotAdministeredTab patientUUID="patient-uuid" />);
+      expect(screen.getByText(expectedText)).toBeInTheDocument();
+    },
   );
-});
 
-it('refetches on ConsultationSaved event for same patient', () => {
-  const refetch = jest.fn();
-  mockUseQuery.mockReturnValue({
-    data: emptyBundle,
-    isLoading: false,
-    isError: false,
-    refetch,
-  } as any);
+  it('shows skeleton while loading', () => {
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+    render(<NotAdministeredTab patientUUID="patient-uuid" />);
+    expect(
+      screen.getByTestId('not-administered-immunizations-table-skeleton'),
+    ).toBeInTheDocument();
+  });
 
-  mockUseSubscribeConsultationSaved.mockImplementation(
-    (callback: (payload: ConsultationSavedEventPayload) => void) => {
-      callback({
+  it('fetches not-done immunizations with correct query key', () => {
+    render(<NotAdministeredTab patientUUID="patient-uuid-123" />);
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: ['immunizations', 'patient-uuid-123', 'not-done'],
+        enabled: true,
+      }),
+    );
+  });
+
+  it('queryFn fetches and maps immunizations', async () => {
+    mockGetPatientImmunizations.mockResolvedValue([
+      mockNotAdministeredImmunization,
+    ]);
+    render(<NotAdministeredTab patientUUID="patient-uuid-123" />);
+
+    const { queryFn } = mockUseQuery.mock.calls[0][0] as any;
+    const result = await queryFn();
+
+    expect(mockGetPatientImmunizations).toHaveBeenCalledWith(
+      'patient-uuid-123',
+      'not-done',
+    );
+    expect(result).toEqual([
+      createNotAdministeredImmunizationViewModel(
+        mockNotAdministeredImmunization,
+      ),
+    ]);
+  });
+
+  it.each([
+    {
+      description: 'same patient with immunization update',
+      payload: {
         patientUUID: 'patient-uuid-123',
         updatedResources: { immunizations: true },
-      } as ConsultationSavedEventPayload);
+      } as ConsultationSavedEventPayload,
+      expectedCallCount: 1,
+    },
+    {
+      description: 'different patient',
+      payload: {
+        patientUUID: 'other-uuid',
+        updatedResources: { immunizations: true },
+      } as ConsultationSavedEventPayload,
+      expectedCallCount: 0,
+    },
+    {
+      description: 'same patient without immunization update',
+      payload: {
+        patientUUID: 'patient-uuid-123',
+        updatedResources: { immunizations: false },
+      } as ConsultationSavedEventPayload,
+      expectedCallCount: 0,
+    },
+  ])(
+    'ConsultationSaved — $description: refetch called $expectedCallCount time(s)',
+    ({ payload, expectedCallCount }) => {
+      const refetch = jest.fn();
+      mockUseQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: false,
+        refetch,
+      } as any);
+      mockUseSubscribeConsultationSaved.mockImplementation(
+        (callback: (payload: ConsultationSavedEventPayload) => void) => {
+          callback(payload);
+        },
+      );
+      render(<NotAdministeredTab patientUUID="patient-uuid-123" />);
+      expect(refetch).toHaveBeenCalledTimes(expectedCallCount);
     },
   );
 
-  render(<NotAdministeredTab patientUUID="patient-uuid-123" />);
-  expect(refetch).toHaveBeenCalled();
+  it('renders - for a null field value', () => {
+    mockUseQuery.mockReturnValue({
+      data: [{ ...mockRow, reason: null }],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+    render(<NotAdministeredTab patientUUID="patient-uuid" />);
+    expect(
+      screen.getByTestId(`table-cell-${mockRow.id}-reason`),
+    ).toHaveTextContent('-');
+  });
+
+  it('renders - for date when value is null', () => {
+    mockUseQuery.mockReturnValue({
+      data: [{ ...mockRow, date: null }],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+    render(<NotAdministeredTab patientUUID="patient-uuid" />);
+    expect(
+      screen.getByTestId(`table-cell-${mockRow.id}-date`),
+    ).toHaveTextContent('-');
+  });
+
+  it('passes accessibility tests', async () => {
+    const { container } = render(
+      <NotAdministeredTab patientUUID="patient-uuid" />,
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('matches snapshot', () => {
+    const { asFragment } = render(
+      <NotAdministeredTab patientUUID="patient-uuid" />,
+    );
+    expect(asFragment()).toMatchSnapshot();
+  });
 });

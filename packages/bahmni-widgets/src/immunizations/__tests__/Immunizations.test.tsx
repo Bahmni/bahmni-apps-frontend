@@ -1,13 +1,8 @@
-import {
-  useSubscribeConsultationSaved,
-  useTranslation,
-} from '@bahmni/services';
+import { useSubscribeConsultationSaved } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Bundle, Immunization } from 'fhir/r4';
-import { toHaveNoViolations } from 'jest-axe';
-import React from 'react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import Immunizations from '../Immunizations';
 
@@ -32,97 +27,83 @@ const mockUseSubscribeConsultationSaved =
     typeof useSubscribeConsultationSaved
   >;
 
-const emptyBundle: Bundle<Immunization> = {
-  resourceType: 'Bundle',
-  type: 'searchset',
-  entry: [],
-};
-
-beforeEach(() => {
-  mockUsePatientUUID.mockReturnValue('patient-uuid-123');
-  mockUseSubscribeConsultationSaved.mockImplementation(() => {});
-  mockUseQuery.mockReturnValue({
-    data: emptyBundle,
-    isLoading: false,
-    isError: false,
-    refetch: jest.fn(),
-  } as any);
-  Object.defineProperty(globalThis, 'matchMedia', {
-    writable: true,
-    value: jest.fn().mockImplementation((query: string) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    })),
+describe('Immunizations', () => {
+  beforeEach(() => {
+    mockUsePatientUUID.mockReturnValue('patient-uuid-123');
+    mockUseSubscribeConsultationSaved.mockImplementation(() => {});
+    mockUseQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
   });
-});
 
-afterEach(() => {
-  jest.clearAllMocks();
-});
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-it('shows no patient reference message when patientUUID is null', () => {
-  mockUsePatientUUID.mockReturnValue(null);
-  render(<Immunizations config={{}} />);
-  expect(
-    screen.getByTestId('immunization-history-widget-test-id'),
-  ).toHaveTextContent('IMMUNIZATION_WIDGET_NO_PATIENT_REFERENCE');
-  expect(screen.queryByRole('tab')).not.toBeInTheDocument();
-});
+  it('renders both tabs with correct labels', () => {
+    render(<Immunizations config={{}} />);
+    expect(
+      screen.getByRole('tab', { name: 'IMMUNIZATION_WIDGET_TAB_ADMINISTERED' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('tab', {
+        name: 'IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED',
+      }),
+    ).toBeInTheDocument();
+  });
 
-it('renders Administered tab first and active by default', () => {
-  render(<Immunizations config={{}} />);
-  const tabs = screen.getAllByRole('tab');
-  expect(tabs[0]).toHaveTextContent('IMMUNIZATION_WIDGET_TAB_ADMINISTERED');
-  expect(tabs[1]).toHaveTextContent('IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED');
-});
+  it('switches to Not Administered tab on click', async () => {
+    render(<Immunizations config={{}} />);
+    await userEvent.click(
+      screen.getByRole('tab', {
+        name: 'IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED',
+      }),
+    );
+    expect(
+      screen.getByTestId('immunization-not-administered-tab-test-id'),
+    ).toBeVisible();
+  });
 
-it('switches to Not Administered tab on click', async () => {
-  render(<Immunizations config={{}} />);
-  const notAdministeredTab = screen.getByText(
-    'IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED',
+  it.each([
+    {
+      status: 'completed',
+      visibleTestId: 'immunization-administered-tab-test-id',
+      hiddenTestId: 'immunization-not-administered-tab-test-id',
+    },
+    {
+      status: 'not-done',
+      visibleTestId: 'immunization-not-administered-tab-test-id',
+      hiddenTestId: 'immunization-administered-tab-test-id',
+    },
+  ])(
+    'shows only $status table and hides tabs when config.status is $status',
+    ({ status, visibleTestId, hiddenTestId }) => {
+      render(<Immunizations config={{ status }} />);
+      expect(screen.getByTestId(visibleTestId)).toBeInTheDocument();
+      expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+      expect(screen.queryByTestId(hiddenTestId)).not.toBeInTheDocument();
+    },
   );
-  await userEvent.click(notAdministeredTab);
-  expect(
-    screen.getByTestId('not-administered-immunizations-table-empty'),
-  ).toBeInTheDocument();
-});
 
-it('shows only Administered table when config.status is completed', () => {
-  render(<Immunizations config={{ status: 'completed' }} />);
-  expect(
-    screen.getByTestId('administered-immunizations-table-empty'),
-  ).toBeInTheDocument();
-  expect(screen.queryByRole('tab')).not.toBeInTheDocument();
-  expect(
-    screen.queryByTestId('not-administered-immunizations-table-empty'),
-  ).not.toBeInTheDocument();
-});
+  it('passes accessibility tests', async () => {
+    const { container } = render(<Immunizations config={{}} />);
+    await act(async () => {
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+  });
 
-it('shows only Not Administered table when config.status is not-done', () => {
-  render(<Immunizations config={{ status: 'not-done' }} />);
-  expect(
-    screen.getByTestId('not-administered-immunizations-table-empty'),
-  ).toBeInTheDocument();
-  expect(screen.queryByRole('tab')).not.toBeInTheDocument();
-  expect(
-    screen.queryByTestId('administered-immunizations-table-empty'),
-  ).not.toBeInTheDocument();
-});
-
-it('matches snapshot with tabs (default config)', () => {
-  const { asFragment } = render(<Immunizations config={{}} />);
-  expect(asFragment()).toMatchSnapshot();
-});
-
-it('matches snapshot without tabs (status filter applied)', () => {
-  const { asFragment } = render(
-    <Immunizations config={{ status: 'completed' }} />,
-  );
-  expect(asFragment()).toMatchSnapshot();
+  it.each([
+    { label: 'with tabs (default config)', config: {} },
+    {
+      label: 'without tabs (status filter applied)',
+      config: { status: 'completed' },
+    },
+  ])('matches snapshot $label', ({ config }) => {
+    const { asFragment } = render(<Immunizations config={config} />);
+    expect(asFragment()).toMatchSnapshot();
+  });
 });

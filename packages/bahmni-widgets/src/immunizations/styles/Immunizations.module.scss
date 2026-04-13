@@ -2,7 +2,17 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
+.widget {
+    [role='tabpanel'] {
+        padding: 0;
+    }
+}
+
 .expandedRowContent {
     color: $text-primary;
     @include type-style("body-compact-01");
+
+    span + span::before {
+        content: ' | ';
+    }
 }

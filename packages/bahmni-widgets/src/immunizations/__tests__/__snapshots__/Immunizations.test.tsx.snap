@@ -1,9 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`matches snapshot with tabs (default config) 1`] = `
+exports[`Immunizations matches snapshot with tabs (default config) 1`] = `
 <DocumentFragment>
   <div
+    class="widget"
     data-testid="immunization-history-widget-test-id"
+    id="immunization-history-widget"
   >
     <div
       class="cds--tabs"
@@ -36,10 +38,10 @@ exports[`matches snapshot with tabs (default config) 1`] = `
         role="tablist"
       >
         <button
-          aria-controls="ccs-_r_2_-tabpanel-0"
+          aria-controls="ccs-_r_3_-tabpanel-0"
           aria-selected="true"
           class="cds--tabs__nav-item cds--tabs__nav-link cds--tabs__nav-item--selected"
-          id="ccs-_r_2_-tab-0"
+          id="ccs-_r_3_-tab-0"
           role="tab"
           tabindex="0"
           type="button"
@@ -84,10 +86,10 @@ exports[`matches snapshot with tabs (default config) 1`] = `
           </button>
         </div>
         <button
-          aria-controls="ccs-_r_2_-tabpanel-1"
+          aria-controls="ccs-_r_3_-tabpanel-1"
           aria-selected="false"
           class="cds--tabs__nav-item cds--tabs__nav-link"
-          id="ccs-_r_2_-tab-1"
+          id="ccs-_r_3_-tab-1"
           role="tab"
           tabindex="-1"
           type="button"
@@ -156,11 +158,58 @@ exports[`matches snapshot with tabs (default config) 1`] = `
       </button>
     </div>
     <div
-      aria-labelledby="ccs-_r_2_-tab-0"
+      aria-labelledby="ccs-_r_3_-tab-0"
       class="cds--tab-content cds--tab-content--interactive"
-      id="ccs-_r_2_-tabpanel-0"
+      id="ccs-_r_3_-tabpanel-0"
       role="tabpanel"
       tabindex="-1"
+    >
+      <div
+        data-testid="immunization-administered-tab-test-id"
+        id="immunization-administered-tab"
+      >
+        <p
+          class="_expandableDataTableBodyEmpty_15ny8_30"
+          data-testid="administered-immunizations-table-empty"
+        >
+          IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED
+        </p>
+      </div>
+    </div>
+    <div
+      aria-labelledby="ccs-_r_3_-tab-1"
+      class="cds--tab-content cds--tab-content--interactive"
+      hidden=""
+      id="ccs-_r_3_-tabpanel-1"
+      role="tabpanel"
+      tabindex="-1"
+    >
+      <div
+        data-testid="immunization-not-administered-tab-test-id"
+        id="immunization-not-administered-tab"
+      >
+        <p
+          class="_sortableDataTableBodyEmpty_1xyik_26"
+          data-testid="not-administered-immunizations-table-empty"
+        >
+          IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED
+        </p>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Immunizations matches snapshot without tabs (status filter applied) 1`] = `
+<DocumentFragment>
+  <div
+    class="widget"
+    data-testid="immunization-history-widget-test-id"
+    id="immunization-history-widget"
+  >
+    <div
+      data-testid="immunization-administered-tab-test-id"
+      id="immunization-administered-tab"
     >
       <p
         class="_expandableDataTableBodyEmpty_15ny8_30"
@@ -169,36 +218,6 @@ exports[`matches snapshot with tabs (default config) 1`] = `
         IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED
       </p>
     </div>
-    <div
-      aria-labelledby="ccs-_r_2_-tab-1"
-      class="cds--tab-content cds--tab-content--interactive"
-      hidden=""
-      id="ccs-_r_2_-tabpanel-1"
-      role="tabpanel"
-      tabindex="-1"
-    >
-      <p
-        class="_sortableDataTableBodyEmpty_1xyik_26"
-        data-testid="not-administered-immunizations-table-empty"
-      >
-        IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED
-      </p>
-    </div>
-  </div>
-</DocumentFragment>
-`;
-
-exports[`matches snapshot without tabs (status filter applied) 1`] = `
-<DocumentFragment>
-  <div
-    data-testid="immunization-history-widget-test-id"
-  >
-    <p
-      class="_expandableDataTableBodyEmpty_15ny8_30"
-      data-testid="administered-immunizations-table-empty"
-    >
-      IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED
-    </p>
   </div>
 </DocumentFragment>
 `;
