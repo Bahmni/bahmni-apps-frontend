@@ -26,7 +26,7 @@ export const mockAdministeredImmunization: Immunization = {
   note: [{ text: 'Third dose completed successfully.' }],
   extension: [
     {
-      url: 'http://fhir.bahmni.org/ext/immunization/administeredProduct',
+      url: 'https://fhir.bahmni.org/ext/immunization/administeredProduct',
       valueReference: { display: 'MisoPrime' },
     },
   ],
