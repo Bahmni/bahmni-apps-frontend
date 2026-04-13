@@ -1,6 +1,7 @@
 import { getPatientPrograms, PatientProgramsResponse } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { useNotification } from '../../notification';
 import PatientProgramsTable from '../PatientProgramsTable';
 
@@ -8,9 +9,6 @@ jest.mock('../../notification');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientPrograms: jest.fn(),
-}));
-jest.mock('../../hooks/usePatientUUID', () => ({
-  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
 
 const mockAddNotification = jest.fn();
@@ -438,13 +436,28 @@ describe('PatientProgramsTable Integration', () => {
     );
 
     render(
-      <QueryClientProvider client={queryClient}>
-        <PatientProgramsTable
-          config={{
-            fields: ['programName', 'startDate', 'endDate', 'state', 'outcome'],
-          }}
-        />
-      </QueryClientProvider>,
+      <MemoryRouter initialEntries={['/patient/test-patient-uuid']}>
+        <Routes>
+          <Route
+            path="/patient/:patientUuid"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <PatientProgramsTable
+                  config={{
+                    fields: [
+                      'programName',
+                      'startDate',
+                      'endDate',
+                      'state',
+                      'outcome',
+                    ],
+                  }}
+                />
+              </QueryClientProvider>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
     );
 
     expect(
@@ -487,13 +500,22 @@ describe('PatientProgramsTable Integration', () => {
     );
 
     render(
-      <QueryClientProvider client={queryClient}>
-        <PatientProgramsTable
-          config={{
-            fields: ['programName', 'startDate', 'endDate', 'state'],
-          }}
-        />
-      </QueryClientProvider>,
+      <MemoryRouter initialEntries={['/patient/test-patient-uuid']}>
+        <Routes>
+          <Route
+            path="/patient/:patientUuid"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <PatientProgramsTable
+                  config={{
+                    fields: ['programName', 'startDate', 'endDate', 'state'],
+                  }}
+                />
+              </QueryClientProvider>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
     );
 
     expect(
@@ -513,19 +535,28 @@ describe('PatientProgramsTable Integration', () => {
     );
 
     render(
-      <QueryClientProvider client={queryClient}>
-        <PatientProgramsTable
-          config={{
-            fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
-            ],
-          }}
-        />
-      </QueryClientProvider>,
+      <MemoryRouter initialEntries={['/patient/test-patient-uuid']}>
+        <Routes>
+          <Route
+            path="/patient/:patientUuid"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <PatientProgramsTable
+                  config={{
+                    fields: [
+                      'programName',
+                      'Registration Number',
+                      'Treatment Category',
+                      'startDate',
+                      'state',
+                    ],
+                  }}
+                />
+              </QueryClientProvider>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
     );
 
     expect(
@@ -547,13 +578,22 @@ describe('PatientProgramsTable Integration', () => {
     (getPatientPrograms as jest.Mock).mockResolvedValue({ results: [] });
 
     render(
-      <QueryClientProvider client={queryClient}>
-        <PatientProgramsTable
-          config={{
-            fields: ['programName', 'startDate', 'state'],
-          }}
-        />
-      </QueryClientProvider>,
+      <MemoryRouter initialEntries={['/patient/test-patient-uuid']}>
+        <Routes>
+          <Route
+            path="/patient/:patientUuid"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <PatientProgramsTable
+                  config={{
+                    fields: ['programName', 'startDate', 'state'],
+                  }}
+                />
+              </QueryClientProvider>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
     );
 
     expect(

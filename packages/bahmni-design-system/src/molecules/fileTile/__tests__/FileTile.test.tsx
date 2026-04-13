@@ -1,12 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { FileTile } from '../FileTile';
 
-jest.mock('../styles/FileTile.module.scss', () => ({
-  fileTileButton: 'fileTileButton-class',
-  modalIframeContainer: 'modalIframeContainer-class',
-  modalIframe: 'modalIframe-class',
-}));
-
 describe('FileTile', () => {
   const defaultProps = {
     src: '100/9-Consultation-27627c65-5f95-4118-b8e5-89f0aa8cc3b8.pdf',
@@ -89,7 +83,7 @@ describe('FileTile', () => {
       <FileTile {...defaultProps} className="custom-class" />,
     );
 
-    const button = container.querySelector('.fileTileButton-class');
+    const button = container.querySelector('.fileTileButton');
     expect(button).toHaveClass('custom-class');
   });
 });

@@ -30,21 +30,6 @@ jest.mock('../../../../services/medicationsValueCalculator', () => ({
     .mockImplementation((frequency) => frequency.uuid === '0'),
 }));
 
-jest.mock('../styles/SelectedVaccinationItem.module.scss', () => ({
-  vaccinationTitle: 'vaccinationTitle',
-  vaccineDetails: 'vaccineDetails',
-  vaccinationActions: 'vaccinationActions',
-  statControl: 'statControl',
-  dosageControls: 'dosageControls',
-  dosageInput: 'dosageInput',
-  dosageUnit: 'dosageUnit',
-  column: 'column',
-  durationControls: 'durationControls',
-  durationInput: 'durationInput',
-  durationUnit: 'durationUnit',
-  footerRow: 'footerRow',
-}));
-
 const createMockMedication = (overrides = {}): Medication => ({
   id: 'test-vac-1',
   resourceType: 'Medication',

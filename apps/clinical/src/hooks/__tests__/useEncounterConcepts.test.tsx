@@ -42,13 +42,10 @@ describe('useEncounterConcepts', () => {
   // Happy Path Tests
   describe('Happy Paths', () => {
     it('should fetch encounter concepts successfully', async () => {
-      // Arrange
       mockedGetEncounterConcepts.mockResolvedValueOnce(mockEncounterConcepts);
 
-      // Act
       const { result } = renderHook(() => useEncounterConcepts());
 
-      // Assert initial loading state
       expect(result.current.loading).toBe(true);
       expect(result.current.encounterConcepts).toBeNull();
       expect(result.current.error).toBeNull();
@@ -58,14 +55,12 @@ describe('useEncounterConcepts', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert final state
       expect(result.current.encounterConcepts).toEqual(mockEncounterConcepts);
       expect(result.current.error).toBeNull();
       expect(mockedGetEncounterConcepts).toHaveBeenCalled();
     });
 
     it('should refetch encounter concepts when refetch function is called', async () => {
-      // Arrange
       const updatedConcepts: EncounterConcepts = {
         ...mockEncounterConcepts,
         visitTypes: [
@@ -78,7 +73,6 @@ describe('useEncounterConcepts', () => {
         .mockResolvedValueOnce(mockEncounterConcepts)
         .mockResolvedValueOnce(updatedConcepts);
 
-      // Act - Initial render
       const { result } = renderHook(() => useEncounterConcepts());
 
       // Wait for initial fetch
@@ -88,12 +82,10 @@ describe('useEncounterConcepts', () => {
 
       expect(result.current.encounterConcepts).toEqual(mockEncounterConcepts);
 
-      // Act - Call refetch
       act(() => {
         result.current.refetch();
       });
 
-      // Assert loading state during refetch
       expect(result.current.loading).toBe(true);
 
       // Wait for refetch to complete
@@ -101,7 +93,6 @@ describe('useEncounterConcepts', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert final state
       expect(result.current.encounterConcepts).toEqual(updatedConcepts);
       expect(result.current.error).toBeNull();
       expect(mockedGetEncounterConcepts).toHaveBeenCalledTimes(2);
@@ -111,7 +102,6 @@ describe('useEncounterConcepts', () => {
   // Sad Path Tests
   describe('Sad Paths', () => {
     it('should handle API call failure with Error object', async () => {
-      // Arrange
       const error = new Error('Network error');
       mockedGetEncounterConcepts.mockRejectedValueOnce(error);
       mockedGetFormattedError.mockReturnValueOnce({
@@ -119,7 +109,6 @@ describe('useEncounterConcepts', () => {
         message: 'Network error',
       });
 
-      // Act
       const { result } = renderHook(() => useEncounterConcepts());
 
       // Wait for async operations
@@ -127,14 +116,12 @@ describe('useEncounterConcepts', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert
       expect(result.current.error).toBe(error);
       expect(result.current.encounterConcepts).toBeNull();
       expect(mockedGetEncounterConcepts).toHaveBeenCalled();
     });
 
     it('should handle API call failure with non-Error object', async () => {
-      // Arrange
       const nonErrorObject = { message: 'Some API error' };
       mockedGetEncounterConcepts.mockRejectedValueOnce(nonErrorObject);
       mockedGetFormattedError.mockReturnValueOnce({
@@ -142,7 +129,6 @@ describe('useEncounterConcepts', () => {
         message: 'Some API error',
       });
 
-      // Act
       const { result } = renderHook(() => useEncounterConcepts());
 
       // Wait for async operations
@@ -150,7 +136,6 @@ describe('useEncounterConcepts', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert
       expect(result.current.error?.message).toBe('Some API error');
       expect(result.current.encounterConcepts).toBeNull();
       expect(mockedGetEncounterConcepts).toHaveBeenCalled();
@@ -160,7 +145,6 @@ describe('useEncounterConcepts', () => {
   // Edge Case Tests
   describe('Edge Cases', () => {
     it('should handle empty encounter concepts from API', async () => {
-      // Arrange
       const emptyConcepts: EncounterConcepts = {
         visitTypes: [],
         encounterTypes: [],

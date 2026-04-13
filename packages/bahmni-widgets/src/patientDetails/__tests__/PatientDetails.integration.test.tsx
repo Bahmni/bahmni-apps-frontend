@@ -1,10 +1,14 @@
-import { FormattedPatientData } from '@bahmni/services';
-import { render, screen } from '@testing-library/react';
+import {
+  FormattedPatientData,
+  getFormattedPatientById,
+} from '@bahmni/services';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import PatientDetails from '../PatientDetails';
-import { usePatient } from '../usePatient';
 
-jest.mock('../usePatient', () => ({
-  usePatient: jest.fn(),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  getFormattedPatientById: jest.fn(),
 }));
 
 jest.mock('@bahmni/design-system', () => ({
@@ -28,14 +32,19 @@ jest.mock('@bahmni/design-system', () => ({
   },
 }));
 
-const mockedUsePatient = usePatient as jest.MockedFunction<
-  () => {
-    patient: FormattedPatientData | null;
-    loading: boolean;
-    error: Error | null;
-    refetch: () => void;
-  }
->;
+const mockedGetFormattedPatientById =
+  getFormattedPatientById as jest.MockedFunction<
+    typeof getFormattedPatientById
+  >;
+
+const renderPatientDetails = () =>
+  render(
+    <MemoryRouter initialEntries={['/patient/test-uuid']}>
+      <Routes>
+        <Route path="/patient/:patientUuid" element={<PatientDetails />} />
+      </Routes>
+    </MemoryRouter>,
+  );
 
 describe('PatientDetails Integration', () => {
   beforeEach(() => {
@@ -59,48 +68,40 @@ describe('PatientDetails Integration', () => {
       identifiers: new Map([['MRN', 'MRN123456']]),
     };
 
-    mockedUsePatient.mockReturnValue({
-      patient: mockPatient,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
+    mockedGetFormattedPatientById.mockResolvedValue(mockPatient);
+
+    renderPatientDetails();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('patient-name')).toHaveTextContent('John Doe');
     });
 
-    render(<PatientDetails />);
-
-    expect(screen.getByTestId('patient-name')).toHaveTextContent('John Doe');
     expect(screen.getByText('MRN123456')).toBeInTheDocument();
     expect(screen.getByText('male')).toBeInTheDocument();
     expect(screen.getByText(/35YEARS 2MONTHS 15DAYS/)).toBeInTheDocument();
   });
 
-  it('integrates usePatient hook with error state', () => {
-    mockedUsePatient.mockReturnValue({
-      patient: null,
-      loading: false,
-      error: new Error('Network error'),
-      refetch: jest.fn(),
+  it('integrates usePatient hook with error state', async () => {
+    mockedGetFormattedPatientById.mockRejectedValue(new Error('Network error'));
+
+    renderPatientDetails();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
     });
-
-    render(<PatientDetails />);
-
-    expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
   });
 
   it('integrates usePatient hook with loading state', () => {
-    mockedUsePatient.mockReturnValue({
-      patient: null,
-      loading: true,
-      error: null,
-      refetch: jest.fn(),
-    });
+    mockedGetFormattedPatientById.mockImplementation(
+      () => new Promise(() => {}),
+    );
 
-    render(<PatientDetails />);
+    renderPatientDetails();
 
     expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
   });
 
-  it('integrates translation system with singular age formatting', () => {
+  it('integrates translation system with singular age formatting', async () => {
     const mockPatient: FormattedPatientData = {
       id: 'test-uuid',
       fullName: 'Jane Doe',
@@ -111,15 +112,12 @@ describe('PatientDetails Integration', () => {
       identifiers: new Map([['ID', 'ID123']]),
     };
 
-    mockedUsePatient.mockReturnValue({
-      patient: mockPatient,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
+    mockedGetFormattedPatientById.mockResolvedValue(mockPatient);
+
+    renderPatientDetails();
+
+    await waitFor(() => {
+      expect(screen.getByText(/1YEARS 1MONTHS 1DAYS/)).toBeInTheDocument();
     });
-
-    render(<PatientDetails />);
-
-    expect(screen.getByText(/1YEARS 1MONTHS 1DAYS/)).toBeInTheDocument();
   });
 });

@@ -51,7 +51,6 @@ describe('encounterResourceCreator utility functions', () => {
 
   describe('createEncounterResource', () => {
     it('should create an Encounter resource with the provided parameters', () => {
-      // Arrange
       const encounterTypeUUID = 'encounter-type-uuid';
       const encounterTypeDisplayText = 'Consultation';
       const patientUUID = 'patient-uuid';
@@ -61,7 +60,6 @@ describe('encounterResourceCreator utility functions', () => {
       const encounterLocationUUID = 'location-uuid';
       const encounterStartTimestamp = new Date('2023-01-01T12:00:00Z');
 
-      // Act
       const result = createEncounterResource(
         encounterTypeUUID,
         encounterTypeDisplayText,
@@ -73,7 +71,6 @@ describe('encounterResourceCreator utility functions', () => {
         encounterStartTimestamp,
       );
 
-      // Assert
       expect(result).toEqual({
         resourceType: 'Encounter',
         class: {
@@ -130,7 +127,6 @@ describe('encounterResourceCreator utility functions', () => {
     });
 
     it('should handle empty participant UUIDs array', () => {
-      // Arrange
       const encounterTypeUUID = 'encounter-type-uuid';
       const encounterTypeDisplayText = 'Consultation';
       const patientUUID = 'patient-uuid';
@@ -140,7 +136,6 @@ describe('encounterResourceCreator utility functions', () => {
       const encounterLocationUUID = 'location-uuid';
       const encounterStartTimestamp = new Date('2023-01-01T12:00:00Z');
 
-      // Act
       const result = createEncounterResource(
         encounterTypeUUID,
         encounterTypeDisplayText,
@@ -152,7 +147,6 @@ describe('encounterResourceCreator utility functions', () => {
         encounterStartTimestamp,
       );
 
-      // Assert
       expect(result.participant).toEqual([]);
       expect(createEncounterParticipantReference).not.toHaveBeenCalled();
     });

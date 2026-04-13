@@ -7,13 +7,9 @@ import { usePatient } from '../usePatient';
 expect.extend(toHaveNoViolations);
 
 jest.mock('../usePatient');
-jest.mock('../../hooks/usePatientUUID');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   formatDateTime: jest.fn(),
-}));
-jest.mock('react-router-dom', () => ({
-  useParams: jest.fn(),
 }));
 
 jest.mock('@bahmni/design-system', () => ({

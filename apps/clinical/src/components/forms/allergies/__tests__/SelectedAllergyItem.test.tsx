@@ -10,13 +10,6 @@ import SelectedAllergyItem from '../SelectedAllergyItem';
 
 expect.extend(toHaveNoViolations);
 
-// Mock the CSS modules
-jest.mock('../styles/SelectedAllergyItem.module.scss', () => ({
-  selectedAllergyTitle: 'selectedAllergyTitle',
-  selectedAllergySeverity: 'selectedAllergySeverity',
-  selectedAllergyReactions: 'selectedAllergyReactions',
-}));
-
 const mockReactionConcepts: Coding[] = [
   {
     code: 'hives',

@@ -6,14 +6,11 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { useNotification } from '../../notification';
 import DocumentsTable from '../DocumentsTable';
 
 jest.mock('../../notification');
-jest.mock('../../hooks/usePatientUUID', () => ({
-  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
-}));
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -103,11 +100,20 @@ describe('DocumentsTable Integration', () => {
     ],
   };
 
-  const renderComponent = (props = {}) =>
+  const renderComponent = (props = {}, patientUuid = 'test-patient-uuid') =>
     render(
-      <QueryClientProvider client={queryClient}>
-        <DocumentsTable {...{ config: defaultConfig, ...props }} />
-      </QueryClientProvider>,
+      <MemoryRouter initialEntries={[`/patient/${patientUuid}`]}>
+        <Routes>
+          <Route
+            path="/patient/:patientUuid"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <DocumentsTable {...{ config: defaultConfig, ...props }} />
+              </QueryClientProvider>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
     );
 
   beforeEach(() => {
@@ -427,10 +433,22 @@ describe('DocumentsTable Integration', () => {
   });
 
   it('does not call the API when patientUUID is null', async () => {
-    (usePatientUUID as jest.Mock).mockReturnValue(null);
     mockedGetFormattedDocumentReferences.mockResolvedValueOnce([]);
 
-    renderComponent();
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <DocumentsTable config={defaultConfig} />
+              </QueryClientProvider>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
 
     // Wait a render cycle to ensure no query fires
     await act(async () => {});

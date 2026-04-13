@@ -31,19 +31,6 @@ jest.mock('../../../../services/medicationsValueCalculator', () => ({
     .mockImplementation((frequency) => frequency.uuid === '0'),
 }));
 
-// Mock CSS modules
-jest.mock('../styles/SelectedMedicationItem.module.scss', () => ({
-  selectedMedicationItem: 'selectedMedicationItem',
-  medicationTitle: 'medicationTitle',
-  medicationActions: 'medicationActions',
-  dosageControls: 'dosageControls',
-  frequencyControl: 'frequencyControl',
-  durationControls: 'durationControls',
-  timingControl: 'timingControl',
-  routeControl: 'routeControl',
-  dateControl: 'dateControl',
-}));
-
 // Test data factories
 const createMockMedication = (overrides = {}): Medication => ({
   id: 'test-med-1',

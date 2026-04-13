@@ -8,12 +8,20 @@
   </head>
   <body>
     <script>
-      // Suppress ResizeObserver loop warning (caused by Carbon's ComboBox autoAlign)
-      window.addEventListener('error', function(e) {
-        if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
-          e.stopImmediatePropagation();
-        }
-      });
+      // Patch ResizeObserver to run callbacks asynchronously via requestAnimationFrame.
+      // This breaks the synchronous loop that causes "ResizeObserver loop completed
+      // with undelivered notifications" from Carbon's floating-ui autoAlign.
+      (function () {
+        var OriginalResizeObserver = globalThis.ResizeObserver;
+        globalThis.ResizeObserver = function ResizeObserver(callback) {
+          return new OriginalResizeObserver(function (entries, observer) {
+            requestAnimationFrame(function () {
+              callback(entries, observer);
+            });
+          });
+        };
+        globalThis.ResizeObserver.prototype = OriginalResizeObserver.prototype;
+      })();
     </script>
     <div id="root"></div>
   </body>

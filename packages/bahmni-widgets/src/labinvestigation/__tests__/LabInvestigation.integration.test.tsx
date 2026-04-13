@@ -1,5 +1,4 @@
 import {
-  useTranslation,
   getCategoryUuidFromOrderTypes,
   getLabInvestigationsBundle,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
@@ -7,33 +6,20 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { Bundle, ServiceRequest } from 'fhir/r4';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
 import LabInvestigation from '../LabInvestigation';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  useTranslation: jest.fn(),
   getCategoryUuidFromOrderTypes: jest.fn(),
   getLabInvestigationsBundle: jest.fn(),
-}));
-
-jest.mock('react-router-dom', () => ({
-  useParams: jest.fn(),
 }));
 
 jest.mock('../../notification', () => ({
   useNotification: jest.fn(),
 }));
-
-jest.mock('../../hooks/usePatientUUID', () => ({
-  usePatientUUID: jest.fn(),
-}));
-
-const mockUseTranslation = useTranslation as jest.MockedFunction<
-  typeof useTranslation
->;
 
 const mockGetCategoryUuidFromOrderTypes =
   getCategoryUuidFromOrderTypes as jest.MockedFunction<
@@ -44,9 +30,6 @@ const mockGetLabTestBundle = getLabInvestigationsBundle as jest.MockedFunction<
 >;
 const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
->;
-const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
-  typeof usePatientUUID
 >;
 
 const createMockBundle = (
@@ -99,7 +82,10 @@ const mockServiceRequests: ServiceRequest[] = [
   }),
 ];
 
-const renderLabInvestigations = (config = { orderType: 'Lab Order' }) => {
+const renderLabInvestigations = (
+  config = { orderType: 'Lab Order' },
+  patientUuid = 'test-patient-uuid',
+) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -111,9 +97,18 @@ const renderLabInvestigations = (config = { orderType: 'Lab Order' }) => {
   });
 
   return render(
-    <QueryClientProvider client={queryClient}>
-      <LabInvestigation config={config} />
-    </QueryClientProvider>,
+    <MemoryRouter initialEntries={[`/patient/${patientUuid}`]}>
+      <Routes>
+        <Route
+          path="/patient/:patientUuid"
+          element={
+            <QueryClientProvider client={queryClient}>
+              <LabInvestigation config={config} />
+            </QueryClientProvider>
+          }
+        />
+      </Routes>
+    </MemoryRouter>,
   );
 };
 
@@ -121,28 +116,12 @@ const setupDefaultMocks = (
   bundle: Bundle<ServiceRequest> = createMockBundle(mockServiceRequests),
   mockAddNotification = jest.fn(),
 ) => {
-  mockUsePatientUUID.mockReturnValue('test-patient-uuid');
-
   mockUseNotification.mockReturnValue({
     addNotification: mockAddNotification,
     notifications: [],
     removeNotification: jest.fn(),
     clearAllNotifications: jest.fn(),
   });
-
-  mockUseTranslation.mockReturnValue({
-    t: (key: string) => {
-      const translations: Record<string, string> = {
-        LAB_TEST_ERROR_LOADING: 'Error loading lab tests',
-        LAB_TEST_LOADING: 'Loading lab tests...',
-        LAB_TEST_UNAVAILABLE: 'No lab investigations recorded',
-        LAB_TEST_ORDERED_BY: 'Ordered by',
-        LAB_TEST_RESULTS_PENDING: 'Results Pending ....',
-        ERROR_DEFAULT_TITLE: 'Error',
-      };
-      return translations[key] || key;
-    },
-  } as any);
 
   mockGetCategoryUuidFromOrderTypes.mockResolvedValue('lab-order-type-uuid');
   mockGetLabTestBundle.mockResolvedValue(bundle);
@@ -176,8 +155,12 @@ describe('LabInvestigation Integration Tests', () => {
     expect(screen.getByText('Lipid Panel')).toBeInTheDocument();
     expect(screen.getByText('Glucose Test')).toBeInTheDocument();
 
-    expect(screen.getAllByText('Ordered by: Dr. John Doe')).toHaveLength(2);
-    expect(screen.getByText('Ordered by: Dr. Jane Smith')).toBeInTheDocument();
+    expect(
+      screen.getAllByText('LAB_TEST_ORDERED_BY: Dr. John Doe'),
+    ).toHaveLength(2);
+    expect(
+      screen.getByText('LAB_TEST_ORDERED_BY: Dr. Jane Smith'),
+    ).toBeInTheDocument();
   });
 
   it('shows loading state during API call', async () => {
@@ -196,7 +179,7 @@ describe('LabInvestigation Integration Tests', () => {
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Error loading lab tests')).toBeInTheDocument();
+      expect(screen.getByText('LAB_TEST_ERROR_LOADING')).toBeInTheDocument();
     });
     expect(screen.queryByText('Complete Blood Count')).not.toBeInTheDocument();
   });
@@ -207,9 +190,7 @@ describe('LabInvestigation Integration Tests', () => {
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(
-        screen.getByText('No lab investigations recorded'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('LAB_TEST_UNAVAILABLE')).toBeInTheDocument();
     });
     expect(screen.queryByText('Complete Blood Count')).not.toBeInTheDocument();
   });
@@ -271,7 +252,9 @@ describe('LabInvestigation Integration Tests', () => {
     });
 
     // Only tests in the open accordion should show pending results
-    const pendingMessages = screen.getAllByText('Results Pending .... ....');
+    const pendingMessages = screen.getAllByText(
+      'LAB_TEST_RESULTS_PENDING ....',
+    );
     expect(pendingMessages).toHaveLength(2); // Two tests in first accordion
   });
 
@@ -281,7 +264,7 @@ describe('LabInvestigation Integration Tests', () => {
     renderLabInvestigations();
 
     await waitFor(() => {
-      expect(screen.getByText('Error loading lab tests')).toBeInTheDocument();
+      expect(screen.getByText('LAB_TEST_ERROR_LOADING')).toBeInTheDocument();
     });
   });
 
@@ -294,14 +277,13 @@ describe('LabInvestigation Integration Tests', () => {
 
     mockGetLabTestBundle.mockResolvedValue(createMockBundle([]));
 
-    mockUsePatientUUID.mockReturnValue('different-patient-uuid');
-
-    renderLabInvestigations();
+    renderLabInvestigations(
+      { orderType: 'Lab Order' },
+      'different-patient-uuid',
+    );
 
     await waitFor(() => {
-      expect(
-        screen.getByText('No lab investigations recorded'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('LAB_TEST_UNAVAILABLE')).toBeInTheDocument();
     });
   });
 });

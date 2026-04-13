@@ -50,7 +50,6 @@ describe('conditionResourceCreator', () => {
     const recordedDate = new Date('2024-01-15T10:30:00Z');
 
     it('should create a Condition resource with provisional diagnosis', () => {
-      // Arrange
       const diagnosisCertainty = 'provisional' as const;
       const mockDiagnosisCodeableConcept = {
         coding: [{ code: diagnosisConceptUUID }],
@@ -77,7 +76,6 @@ describe('conditionResourceCreator', () => {
         })
         .mockReturnValueOnce(mockVerificationStatusCodeableConcept);
 
-      // Act
       const result = createEncounterDiagnosisResource(
         diagnosisConceptUUID,
         diagnosisCertainty,
@@ -87,7 +85,6 @@ describe('conditionResourceCreator', () => {
         recordedDate,
       );
 
-      // Assert
       expect(result).toEqual({
         resourceType: 'Condition',
         subject: subjectReference,
@@ -145,7 +142,6 @@ describe('conditionResourceCreator', () => {
     });
 
     it('should create a Condition resource with confirmed diagnosis', () => {
-      // Arrange
       const diagnosisCertainty = 'confirmed' as const;
       const mockDiagnosisCodeableConcept = {
         coding: [{ code: diagnosisConceptUUID }],
@@ -163,7 +159,6 @@ describe('conditionResourceCreator', () => {
         .mockReturnValueOnce(mockDiagnosisCodeableConcept)
         .mockReturnValueOnce(mockVerificationStatusCodeableConcept);
 
-      // Act
       const result = createEncounterDiagnosisResource(
         diagnosisConceptUUID,
         diagnosisCertainty,
@@ -173,7 +168,6 @@ describe('conditionResourceCreator', () => {
         recordedDate,
       );
 
-      // Assert
       expect(result.verificationStatus).toEqual(
         mockVerificationStatusCodeableConcept,
       );
@@ -190,12 +184,10 @@ describe('conditionResourceCreator', () => {
     });
 
     it('should handle minimal Reference objects without type property', () => {
-      // Arrange
       const minimalSubjectRef: Reference = { reference: 'Patient/123' };
       const minimalEncounterRef: Reference = { reference: 'Encounter/456' };
       const minimalRecorderRef: Reference = { reference: 'Practitioner/789' };
 
-      // Act
       const result = createEncounterDiagnosisResource(
         diagnosisConceptUUID,
         'provisional',
@@ -205,14 +197,12 @@ describe('conditionResourceCreator', () => {
         recordedDate,
       );
 
-      // Assert
       expect(result.subject).toEqual(minimalSubjectRef);
       expect(result.encounter).toEqual(minimalEncounterRef);
       expect(result.recorder).toEqual(minimalRecorderRef);
     });
 
     it('should handle different date objects and convert to ISO string', () => {
-      // Arrange
       const differentDates = [
         new Date('2023-12-25T00:00:00Z'),
         new Date('2024-06-15T23:59:59.999Z'),
@@ -220,7 +210,6 @@ describe('conditionResourceCreator', () => {
       ];
 
       differentDates.forEach((date) => {
-        // Act
         const result = createEncounterDiagnosisResource(
           diagnosisConceptUUID,
           'confirmed',
@@ -230,7 +219,6 @@ describe('conditionResourceCreator', () => {
           date,
         );
 
-        // Assert
         expect(result.recordedDate).toBe(date.toISOString());
         expect(typeof result.recordedDate).toBe('string');
         expect(result.recordedDate).toMatch(
@@ -240,7 +228,6 @@ describe('conditionResourceCreator', () => {
     });
 
     it('should always set resourceType to "Condition"', () => {
-      // Act
       const result = createEncounterDiagnosisResource(
         diagnosisConceptUUID,
         'provisional',
@@ -250,12 +237,10 @@ describe('conditionResourceCreator', () => {
         recordedDate,
       );
 
-      // Assert
       expect(result.resourceType).toBe('Condition');
     });
 
     it('should always include encounter-diagnosis category', () => {
-      // Act
       const result = createEncounterDiagnosisResource(
         diagnosisConceptUUID,
         'confirmed',
@@ -265,7 +250,6 @@ describe('conditionResourceCreator', () => {
         recordedDate,
       );
 
-      // Assert
       expect(result.category).toBeDefined();
       expect(result.category).toHaveLength(1);
       expect(result.category![0].coding).toBeDefined();
@@ -277,10 +261,8 @@ describe('conditionResourceCreator', () => {
     });
 
     it('should handle empty UUID string', () => {
-      // Arrange
       const emptyUUID = '';
 
-      // Act
       const result = createEncounterDiagnosisResource(
         emptyUUID,
         'provisional',
@@ -290,13 +272,11 @@ describe('conditionResourceCreator', () => {
         recordedDate,
       );
 
-      // Assert
       expect(mockCreateCoding).toHaveBeenCalledWith(emptyUUID);
       expect(result).toBeDefined();
     });
 
     it('should handle Reference objects with additional properties', () => {
-      // Arrange
       const extendedSubjectRef: Reference = {
         reference: 'Patient/123',
         type: 'Patient',
@@ -311,7 +291,6 @@ describe('conditionResourceCreator', () => {
         },
       };
 
-      // Act
       const result = createEncounterDiagnosisResource(
         diagnosisConceptUUID,
         'confirmed',
@@ -321,13 +300,11 @@ describe('conditionResourceCreator', () => {
         recordedDate,
       );
 
-      // Assert
       expect(result.subject).toEqual(extendedSubjectRef);
       expect(result.encounter).toEqual(extendedEncounterRef);
     });
 
     it('should create proper structure for FHIR Condition resource', () => {
-      // Act
       const result = createEncounterDiagnosisResource(
         diagnosisConceptUUID,
         'provisional',
@@ -337,7 +314,6 @@ describe('conditionResourceCreator', () => {
         recordedDate,
       );
 
-      // Assert - Verify all required FHIR Condition properties are present
       expect(result).toHaveProperty('resourceType');
       expect(result).toHaveProperty('subject');
       expect(result).toHaveProperty('category');
@@ -383,7 +359,6 @@ describe('conditionResourceCreator', () => {
 
     describe('Happy Path Tests', () => {
       it('should create a Condition resource with active clinical status', () => {
-        // Arrange
         const clinicalStatus = 'active' as const;
         const mockConditionCodeableConcept = {
           coding: [{ code: conditionConceptUUID }],
@@ -402,7 +377,6 @@ describe('conditionResourceCreator', () => {
           .mockReturnValueOnce(mockConditionCodeableConcept)
           .mockReturnValueOnce(mockClinicalStatusCodeableConcept);
 
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -413,7 +387,6 @@ describe('conditionResourceCreator', () => {
           clinicalStatus,
         );
 
-        // Assert
         expect(result).toEqual({
           resourceType: 'Condition',
           subject: subjectReference,
@@ -458,7 +431,6 @@ describe('conditionResourceCreator', () => {
       });
 
       it('should create a Condition resource with inactive clinical status', () => {
-        // Arrange
         const clinicalStatus = 'inactive' as const;
         const mockConditionCodeableConcept = {
           coding: [{ code: conditionConceptUUID }],
@@ -477,7 +449,6 @@ describe('conditionResourceCreator', () => {
           .mockReturnValueOnce(mockConditionCodeableConcept)
           .mockReturnValueOnce(mockClinicalStatusCodeableConcept);
 
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -488,7 +459,6 @@ describe('conditionResourceCreator', () => {
           clinicalStatus,
         );
 
-        // Assert
         expect(result.clinicalStatus).toEqual(
           mockClinicalStatusCodeableConcept,
         );
@@ -500,7 +470,6 @@ describe('conditionResourceCreator', () => {
       });
 
       it('should default to active clinical status when not specified', () => {
-        // Arrange
         const mockConditionCodeableConcept = {
           coding: [{ code: conditionConceptUUID }],
         };
@@ -518,7 +487,6 @@ describe('conditionResourceCreator', () => {
           .mockReturnValueOnce(mockConditionCodeableConcept)
           .mockReturnValueOnce(mockClinicalStatusCodeableConcept);
 
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -528,7 +496,6 @@ describe('conditionResourceCreator', () => {
           onsetDate,
         );
 
-        // Assert
         expect(result.clinicalStatus).toEqual(
           mockClinicalStatusCodeableConcept,
         );
@@ -540,7 +507,6 @@ describe('conditionResourceCreator', () => {
       });
 
       it('should include onset date when provided', () => {
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -551,7 +517,6 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(result.onsetDateTime).toBe(onsetDate.toISOString());
         expect(result.onsetDateTime).toBe('2024-01-10T08:00:00.000Z');
       });
@@ -559,7 +524,6 @@ describe('conditionResourceCreator', () => {
 
     describe('FHIR Compliance Tests', () => {
       it('should always set resourceType to "Condition"', () => {
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -570,12 +534,10 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(result.resourceType).toBe('Condition');
       });
 
       it('should always include problem-list-item category', () => {
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -586,7 +548,6 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(result.category).toBeDefined();
         expect(result.category).toHaveLength(1);
         expect(result.category![0].coding).toBeDefined();
@@ -598,7 +559,6 @@ describe('conditionResourceCreator', () => {
       });
 
       it('should create proper structure for FHIR Condition resource', () => {
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -609,7 +569,6 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert - Verify all required FHIR Condition properties are present
         expect(result).toHaveProperty('resourceType');
         expect(result).toHaveProperty('subject');
         expect(result).toHaveProperty('category');
@@ -636,7 +595,6 @@ describe('conditionResourceCreator', () => {
       });
 
       it('should handle Reference objects with additional properties', () => {
-        // Arrange
         const extendedSubjectRef: Reference = {
           reference: 'Patient/123',
           type: 'Patient',
@@ -651,7 +609,6 @@ describe('conditionResourceCreator', () => {
           },
         };
 
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           extendedSubjectRef,
@@ -662,7 +619,6 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(result.subject).toEqual(extendedSubjectRef);
         expect(result.encounter).toEqual(extendedEncounterRef);
       });
@@ -670,10 +626,8 @@ describe('conditionResourceCreator', () => {
 
     describe('Date Handling Tests', () => {
       it('should convert recordedDate to ISO string', () => {
-        // Arrange
         const testDate = new Date('2024-03-20T14:25:30.123Z');
 
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -684,7 +638,6 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(result.recordedDate).toBe(testDate.toISOString());
         expect(typeof result.recordedDate).toBe('string');
         expect(result.recordedDate).toMatch(
@@ -693,10 +646,8 @@ describe('conditionResourceCreator', () => {
       });
 
       it('should convert onsetDate to ISO string', () => {
-        // Arrange
         const testOnsetDate = new Date('2024-01-05T06:15:45.789Z');
 
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -707,7 +658,6 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(result.onsetDateTime).toBe(testOnsetDate.toISOString());
         expect(typeof result.onsetDateTime).toBe('string');
         expect(result.onsetDateTime).toMatch(
@@ -716,7 +666,6 @@ describe('conditionResourceCreator', () => {
       });
 
       it('should handle different date formats correctly', () => {
-        // Arrange
         const differentDates = [
           new Date('2023-12-25T00:00:00Z'),
           new Date('2024-06-15T23:59:59.999Z'),
@@ -724,7 +673,6 @@ describe('conditionResourceCreator', () => {
         ];
 
         differentDates.forEach((date) => {
-          // Act
           const result = createEncounterConditionResource(
             conditionConceptUUID,
             subjectReference,
@@ -735,7 +683,6 @@ describe('conditionResourceCreator', () => {
             'active',
           );
 
-          // Assert
           expect(result.recordedDate).toBe(date.toISOString());
           expect(result.onsetDateTime).toBe(onsetDate.toISOString());
         });
@@ -744,12 +691,10 @@ describe('conditionResourceCreator', () => {
 
     describe('Edge Cases', () => {
       it('should handle minimal Reference objects without type property', () => {
-        // Arrange
         const minimalSubjectRef: Reference = { reference: 'Patient/123' };
         const minimalEncounterRef: Reference = { reference: 'Encounter/456' };
         const minimalRecorderRef: Reference = { reference: 'Practitioner/789' };
 
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           minimalSubjectRef,
@@ -760,17 +705,14 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(result.subject).toEqual(minimalSubjectRef);
         expect(result.encounter).toEqual(minimalEncounterRef);
         expect(result.recorder).toEqual(minimalRecorderRef);
       });
 
       it('should handle empty UUID string', () => {
-        // Arrange
         const emptyUUID = '';
 
-        // Act
         const result = createEncounterConditionResource(
           emptyUUID,
           subjectReference,
@@ -781,16 +723,13 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(mockCreateCoding).toHaveBeenCalledWith(emptyUUID);
         expect(result).toBeDefined();
       });
 
       it('should handle onset date same as recorded date', () => {
-        // Arrange
         const sameDate = new Date('2024-01-15T10:30:00Z');
 
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -801,16 +740,13 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(result.recordedDate).toBe(result.onsetDateTime);
         expect(result.recordedDate).toBe('2024-01-15T10:30:00.000Z');
       });
 
       it('should handle onset date after recorded date', () => {
-        // Arrange
         const laterOnsetDate = new Date('2024-01-20T12:00:00Z');
 
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -821,7 +757,6 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(result.onsetDateTime).toBe('2024-01-20T12:00:00.000Z');
         expect(result.recordedDate).toBe('2024-01-15T10:30:00.000Z');
       });
@@ -829,7 +764,6 @@ describe('conditionResourceCreator', () => {
 
     describe('Integration Tests', () => {
       it('should work with createCodeableConcept and createCoding utilities', () => {
-        // Arrange
         const expectedConditionCoding = { code: conditionConceptUUID };
         const expectedStatusCoding = {
           code: 'active',
@@ -840,7 +774,6 @@ describe('conditionResourceCreator', () => {
           .mockReturnValueOnce(expectedConditionCoding)
           .mockReturnValueOnce(expectedStatusCoding);
 
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -851,7 +784,6 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert
         expect(mockCreateCoding).toHaveBeenCalledWith(conditionConceptUUID);
         expect(mockCreateCoding).toHaveBeenCalledWith(
           'active',
@@ -867,7 +799,6 @@ describe('conditionResourceCreator', () => {
       });
 
       it('should create valid FHIR R4 Condition resource', () => {
-        // Act
         const result = createEncounterConditionResource(
           conditionConceptUUID,
           subjectReference,
@@ -878,7 +809,6 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        // Assert - Validate FHIR R4 structure
         expect(result.resourceType).toBe('Condition');
         expect(result.subject).toBeDefined();
         expect(result.code).toBeDefined();

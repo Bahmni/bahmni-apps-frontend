@@ -15,14 +15,15 @@ export const ComboBox = <T,>({
   'data-testid': dataTestId,
   selectedItem: externalSelectedItem,
   clearSelectedOnChange = false,
+  onChange,
   ...carbonProps
 }: ComboBoxProps<T>) => {
   const [displayItem, setDisplayItem] = useState<T | null>(
-    (externalSelectedItem as T) || null,
+    (externalSelectedItem as T) ?? null,
   );
 
   useEffect(() => {
-    setDisplayItem((externalSelectedItem as T) || null);
+    setDisplayItem((externalSelectedItem as T) ?? null);
 
     if (clearSelectedOnChange && externalSelectedItem) {
       queueMicrotask(() => {
@@ -31,9 +32,16 @@ export const ComboBox = <T,>({
     }
   }, [externalSelectedItem, clearSelectedOnChange]);
 
+  const handleChange = (
+    event: Parameters<NonNullable<CarbonComboBoxProps<T>['onChange']>>[0],
+  ) => {
+    onChange?.(event);
+  };
+
   return (
     <CarbonComboBox<T>
       {...carbonProps}
+      onChange={handleChange}
       selectedItem={displayItem}
       data-testid={testId ?? dataTestId}
     />

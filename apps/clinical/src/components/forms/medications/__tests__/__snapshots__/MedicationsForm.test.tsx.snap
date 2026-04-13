@@ -167,7 +167,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
         <div
-          class="_grid_i0b21_1 cds--subgrid cds--subgrid--narrow"
+          class="_grid_i0b21_1 selectedMedicationItem cds--subgrid cds--subgrid--narrow"
           data-testid="selected-item"
         >
           <div
@@ -178,7 +178,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
               data-testid="selected-medication-item-grid-test-medication-1"
             >
               <div
-                class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+                class="medicationTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
               >
                 <span
                   data-testid="medication-name-test-medication-1"
@@ -187,10 +187,10 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </span>
               </div>
               <div
-                class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+                class="medicationActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
               >
                 <div
-                  class="cds--form-item cds--checkbox-wrapper"
+                  class="cds--form-item cds--checkbox-wrapper statControl"
                 >
                   <input
                     aria-label="STAT"
@@ -243,10 +243,10 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
               </div>
               <div
-                class="cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
+                class="dosageControls cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
               >
                 <div
-                  class="cds--form-item"
+                  class="cds--form-item dosageInput"
                 >
                   <div
                     class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
@@ -333,7 +333,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   </div>
                 </div>
                 <div
-                  class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  class="cds--dropdown__wrapper cds--list-box__wrapper dosageUnit"
                   data-testid="medication-dosage-unit-dropdown-test-medication-1"
                 >
                   <label
@@ -400,7 +400,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
               </div>
               <div
-                class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+                class="column cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -470,10 +470,10 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
               </div>
               <div
-                class="cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
+                class="durationControls cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
               >
                 <div
-                  class="cds--form-item"
+                  class="cds--form-item durationInput"
                 >
                   <div
                     class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
@@ -560,7 +560,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   </div>
                 </div>
                 <div
-                  class="cds--dropdown__wrapper cds--list-box__wrapper"
+                  class="cds--dropdown__wrapper cds--list-box__wrapper durationUnit"
                   data-testid="medication-duration-unit-dropdown-test-medication-1"
                 >
                   <label
@@ -627,7 +627,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
               </div>
               <div
-                class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+                class="column cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -697,7 +697,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
               </div>
               <div
-                class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+                class="column cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
               >
                 <div
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -767,7 +767,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
               </div>
               <div
-                class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+                class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
               >
                 <div
                   class="cds--form-item"
@@ -822,7 +822,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                 </div>
               </div>
               <div
-                class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+                class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
               >
                 <a
                   class="cds--link"
