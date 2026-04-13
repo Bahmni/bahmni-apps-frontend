@@ -102,7 +102,7 @@ const ConsultationPage: React.FC = () => {
 
   useSubscribeConsultationStart(
     useCallback(({ encounterType: type }) => {
-      setEncounterType(type!);
+      setEncounterType(type);
       setIsActionAreaVisible(true);
     }, []),
   );

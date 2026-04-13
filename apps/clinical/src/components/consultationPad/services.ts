@@ -39,7 +39,7 @@ export async function submitConsultation(
   const encounterResource = createEncounterResource(
     selectedEncounterType!.uuid,
     selectedEncounterType!.name,
-    patientUUID!,
+    patientUUID,
     encounterParticipants.map((p) => p.uuid),
     activeVisit!.id,
     deps.episodeOfCareUuids,
@@ -56,7 +56,7 @@ export async function submitConsultation(
 
   const encounterReference = getEncounterReference(
     deps.activeEncounter,
-    placeholderReference!,
+    placeholderReference,
   );
 
   const ctx: BundleContext = {
