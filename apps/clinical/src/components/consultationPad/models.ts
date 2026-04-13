@@ -6,7 +6,8 @@ export type FormKey =
   | 'investigations'
   | 'conditionsAndDiagnoses'
   | 'medications'
-  | 'vaccinations';
+  | 'vaccinations'
+  | 'observationForms';
 
 export interface BundleContext {
   encounterSubject: Reference;

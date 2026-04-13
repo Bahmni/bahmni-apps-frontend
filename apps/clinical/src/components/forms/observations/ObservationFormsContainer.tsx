@@ -20,7 +20,7 @@ import {
   convertImmutableToPlainObject,
   extractNotesFromFormData,
 } from '@bahmni/services';
-import { usePatientUUID } from '@bahmni/widgets';
+import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -30,7 +30,10 @@ import {
   VALIDATION_STATE_INVALID,
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
+import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
+import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
+import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import styles from './styles/ObservationFormsContainer.module.scss';
 import { executeOnFormSaveEvent } from './utils/formEventExecutor';
 
@@ -38,8 +41,6 @@ interface ObservationFormsContainerProps {
   onViewingFormChange: (viewingForm: ObservationForm | null) => void;
   viewingForm?: ObservationForm | null;
   onRemoveForm?: (formUuid: string) => void;
-  pinnedForms: ObservationForm[];
-  updatePinnedForms: (newPinnedForms: ObservationForm[]) => Promise<void>;
   onFormObservationsChange?: (
     formUuid: string,
     observations: Form2Observation[],
@@ -57,13 +58,20 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onViewingFormChange,
   viewingForm,
   onRemoveForm,
-  pinnedForms,
-  updatePinnedForms,
   onFormObservationsChange,
   existingObservations,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
+  const { user } = useActivePractitioner();
+  const { episodeOfCare } = useClinicalAppData();
+  const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
+  const { forms: allForms, isLoading: isAllFormsLoading } =
+    useObservationFormsSearch('', episodeOfCareUuids);
+  const { pinnedForms, updatePinnedForms } = usePinnedObservationForms(
+    allForms,
+    { userUuid: user?.uuid, isFormsLoading: isAllFormsLoading },
+  );
   const [validationErrorType, setValidationErrorType] = useState<
     | null
     | typeof VALIDATION_STATE_EMPTY

@@ -16,6 +16,8 @@ const mockValidateAllAllergies = jest.fn().mockReturnValue(true);
 const mockValidateAllMedications = jest.fn().mockReturnValue(true);
 const mockValidateAllVaccinations = jest.fn().mockReturnValue(true);
 const mockValidateConditions = jest.fn().mockReturnValue(true);
+const mockObsFormsValidate = jest.fn().mockReturnValue(true);
+const mockGetObservationFormsData = jest.fn().mockReturnValue({});
 
 jest.mock('@bahmni/widgets', () => ({
   CONSULTATION_PAD_PRIVILEGES: {
@@ -25,6 +27,7 @@ jest.mock('@bahmni/widgets', () => ({
     CONDITIONS_AND_DIAGNOSES: ['ConditionsAndDiagnoses'],
     MEDICATIONS: ['Medications'],
     VACCINATIONS: ['Vaccinations'],
+    OBSERVATIONS: ['Observations'],
   },
 }));
 
@@ -72,11 +75,24 @@ jest.mock('../../../stores', () => ({
   }),
 }));
 
+jest.mock('../../../stores/observationFormsStore', () => ({
+  useObservationFormsStore: Object.assign(jest.fn(), {
+    getState: () => ({
+      reset: mockReset,
+      validate: mockObsFormsValidate,
+      selectedForms: [],
+      getObservationFormsData: mockGetObservationFormsData,
+    }),
+    subscribe: (cb: () => void) => mockSubscribe(cb),
+  }),
+}));
+
 jest.mock('../../../services/consultationBundleService', () => ({
   createAllergiesBundleEntries: jest.fn().mockReturnValue([]),
   createConditionsBundleEntries: jest.fn().mockReturnValue([]),
   createDiagnosisBundleEntries: jest.fn().mockReturnValue([]),
   createMedicationRequestEntries: jest.fn().mockReturnValue([]),
+  createObservationBundleEntries: jest.fn().mockReturnValue([]),
   createServiceRequestBundleEntries: jest.fn().mockReturnValue([]),
 }));
 
@@ -89,6 +105,11 @@ jest.mock('../../forms', () => ({
   VaccinationForm: () => null,
 }));
 
+jest.mock('../components/ObservationFormsPanel', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 describe('FORM_REGISTRY', () => {
   const EXPECTED_KEYS = [
     'encounterDetails',
@@ -97,10 +118,11 @@ describe('FORM_REGISTRY', () => {
     'conditionsAndDiagnoses',
     'medications',
     'vaccinations',
+    'observationForms',
   ] as const;
 
-  it('contains 6 entries with the correct keys in order', () => {
-    expect(FORM_REGISTRY).toHaveLength(6);
+  it('contains 7 entries with the correct keys in order', () => {
+    expect(FORM_REGISTRY).toHaveLength(7);
     expect(FORM_REGISTRY.map((e) => e.key)).toEqual(EXPECTED_KEYS);
   });
 
@@ -127,6 +149,7 @@ describe('FORM_REGISTRY', () => {
     'conditionsAndDiagnoses',
     'medications',
     'vaccinations',
+    'observationForms',
   ] as const)('%s is restricted to Consultation encounter type', (key) => {
     const entry = FORM_REGISTRY.find((e) => e.key === key)!;
     expect(entry.encounterTypes).toEqual(['Consultation']);
@@ -143,6 +166,7 @@ describe('FORM_REGISTRY', () => {
     'conditionsAndDiagnoses',
     'medications',
     'vaccinations',
+    'observationForms',
   ] as const)('%s has createBundleEntries', (key) => {
     const entry = FORM_REGISTRY.find((e) => e.key === key)!;
     expect(typeof entry.createBundleEntries).toBe('function');
@@ -158,6 +182,7 @@ describe('FORM_REGISTRY', () => {
     ],
     ['medications', CONSULTATION_PAD_PRIVILEGES.MEDICATIONS],
     ['vaccinations', CONSULTATION_PAD_PRIVILEGES.VACCINATIONS],
+    ['observationForms', CONSULTATION_PAD_PRIVILEGES.OBSERVATIONS],
   ] as const)('%s has the correct privilege', (key, expectedPrivilege) => {
     const entry = FORM_REGISTRY.find((e) => e.key === key)!;
     expect(entry.privilege).toEqual(expectedPrivilege);
@@ -185,6 +210,7 @@ describe('FORM_REGISTRY', () => {
       'conditionsAndDiagnoses',
       'medications',
       'vaccinations',
+      'observationForms',
     ] as const)('%s.reset delegates to store reset', (key) => {
       FORM_REGISTRY.find((e) => e.key === key)!.reset();
       expect(mockReset).toHaveBeenCalledTimes(1);
@@ -206,12 +232,18 @@ describe('FORM_REGISTRY', () => {
       expect(mockFn).toHaveBeenCalledTimes(1);
     });
 
+    it('observationForms.validate delegates to observationFormsStore.validate', () => {
+      FORM_REGISTRY.find((e) => e.key === 'observationForms')!.validate();
+      expect(mockObsFormsValidate).toHaveBeenCalledTimes(1);
+    });
+
     it.each([
       'allergies',
       'medications',
       'vaccinations',
       'investigations',
       'conditionsAndDiagnoses',
+      'observationForms',
     ] as const)('%s.hasData returns false when store has no data', (key) => {
       expect(FORM_REGISTRY.find((e) => e.key === key)!.hasData()).toBe(false);
     });
@@ -256,6 +288,18 @@ describe('FORM_REGISTRY', () => {
       expect(
         jest.mocked(consultationBundleService.createConditionsBundleEntries),
       ).toHaveBeenCalled();
+    });
+
+    it('observationForms delegates to createObservationBundleEntries', () => {
+      FORM_REGISTRY.find((e) => e.key === 'observationForms')!
+        .createBundleEntries!(mockBundleContext);
+      expect(
+        jest.mocked(consultationBundleService.createObservationBundleEntries),
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          encounterSubject: mockBundleContext.encounterSubject,
+        }),
+      );
     });
   });
 });

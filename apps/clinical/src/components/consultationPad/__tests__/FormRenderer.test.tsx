@@ -1,7 +1,10 @@
 import { useHasPrivilege } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import FormRenderer from '../components/FormRenderer';
 import type { FormRegistry } from '../models';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/widgets', () => ({
   useHasPrivilege: jest.fn(),
@@ -63,4 +66,20 @@ describe('FormRenderer', () => {
       expect(screen.queryByTestId('mock-form')).not.toBeInTheDocument();
     },
   );
+
+  it('matches snapshot when rendered with privilege', () => {
+    jest.mocked(useHasPrivilege).mockReturnValue(true);
+    const { container } = render(
+      <FormRenderer entry={baseEntry} encounterType="OPD" />,
+    );
+    expect(container).toMatchSnapshot();
+  });
+
+  it('has no accessibility violations when rendered with privilege', async () => {
+    jest.mocked(useHasPrivilege).mockReturnValue(true);
+    const { container } = render(
+      <FormRenderer entry={baseEntry} encounterType="OPD" />,
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
 });

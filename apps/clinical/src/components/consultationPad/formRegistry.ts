@@ -4,6 +4,7 @@ import {
   createConditionsBundleEntries,
   createDiagnosisBundleEntries,
   createMedicationRequestEntries,
+  createObservationBundleEntries,
   createServiceRequestBundleEntries,
 } from '../../services/consultationBundleService';
 import {
@@ -14,6 +15,7 @@ import {
   useServiceRequestStore,
   useVaccinationStore,
 } from '../../stores';
+import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import {
   AllergiesForm,
   ConditionsAndDiagnoses,
@@ -22,6 +24,7 @@ import {
   MedicationsForm,
   VaccinationForm,
 } from '../forms';
+import ObservationFormsPanel from './components/ObservationFormsPanel';
 import type { BundleContext, FormRegistry } from './models';
 
 export const FORM_REGISTRY: FormRegistry[] = [
@@ -141,6 +144,25 @@ export const FORM_REGISTRY: FormRegistry[] = [
         encounterReference: ctx.encounterReference,
         practitionerUUID: ctx.practitionerUUID,
         statDurationInMilliseconds: ctx.statDurationInMilliseconds,
+      }),
+  },
+  {
+    key: 'observationForms',
+    component: ObservationFormsPanel,
+    encounterTypes: ['Consultation'],
+    privilege: CONSULTATION_PAD_PRIVILEGES.OBSERVATIONS,
+    reset: () => useObservationFormsStore.getState().reset(),
+    validate: () => useObservationFormsStore.getState().validate(),
+    hasData: () => useObservationFormsStore.getState().selectedForms.length > 0,
+    subscribe: (cb) => useObservationFormsStore.subscribe(cb),
+    createBundleEntries: (ctx: BundleContext) =>
+      createObservationBundleEntries({
+        observationFormsData: useObservationFormsStore
+          .getState()
+          .getObservationFormsData(),
+        encounterSubject: ctx.encounterSubject,
+        encounterReference: ctx.encounterReference,
+        practitionerUUID: ctx.practitionerUUID,
       }),
   },
 ];
