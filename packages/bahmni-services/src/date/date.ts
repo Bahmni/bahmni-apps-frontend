@@ -154,6 +154,7 @@ function formatDateGeneric(
   return { formattedResult: format(dateToFormat, dateFormat) };
 }
 
+// NOSONAR_BEGIN- Intentional duplication for package independence
 /**
  * Detects the browser's locale date format using Intl.DateTimeFormat API
  * and converts it to a date-fns compatible format string.
@@ -182,6 +183,7 @@ export function getBrowserLocaleDateFormat(): string {
     return DEFAULT_DATE_FORMAT;
   }
 }
+// NOSONAR_END
 
 /**
  * Universal date/time formatting method that retrieves the date format with intelligent fallback.

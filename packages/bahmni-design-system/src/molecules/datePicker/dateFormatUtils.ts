@@ -45,7 +45,6 @@ const DATE_FORMAT_MAP: Record<string, string> = {
   'do MMM, yyyy': 'jS M, Y',
 };
 
-// NOSONAR_BEGIN- Intentional duplication for package independence
 /**
  * Detects the browser's locale date format using Intl.DateTimeFormat API
  * and converts it to a date-fns compatible format string.
@@ -74,7 +73,6 @@ export function getBrowserLocaleDateFormat(): string {
     return DEFAULT_DATE_FORMAT;
   }
 }
-// NOSONAR_END
 
 /**
  * Converts date-fns format to flatpickr/Carbon DatePicker format.
