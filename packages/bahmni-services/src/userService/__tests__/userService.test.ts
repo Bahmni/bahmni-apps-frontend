@@ -282,14 +282,15 @@ describe('getUserLocation', () => {
     );
   });
 
-  it('should throw errors when login location name is missing', async () => {
+  it('should fetch user log in location successfully when only login location name is missing', async () => {
+    const userLocation = { uuid: 'b5da9afd-b29a-4cbf-91c9-ccf2aa5f799e' };
     const mockEncodedUserLocationCookie =
-      '%7B%22uuid%22%3A%225e232c47-8ff5-4c5c-8057-7e39a64fefa5%22%7D';
+      '%7B%22uuid%22%3A%22b5da9afd-b29a-4cbf-91c9-ccf2aa5f799e%22%7D';
     (getCookieByName as jest.Mock).mockReturnValue(
       mockEncodedUserLocationCookie,
     );
-    await expect(() => getUserLoginLocation()).toThrow(
-      'ERROR_FETCHING_USER_LOCATION_DETAILS',
-    );
+    const result = await getUserLoginLocation();
+    expect(getCookieByName).toHaveBeenCalledWith(BAHMNI_USER_LOCATION_COOKIE);
+    expect(result).toEqual(userLocation);
   });
 });

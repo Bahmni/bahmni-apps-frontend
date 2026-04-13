@@ -54,7 +54,7 @@ export const getUserLoginLocation = (): UserLocation => {
   const userLocation: UserLocation = JSON.parse(
     decodeURIComponent(encodedUserLocation).replace(/^"(.*)"$/, '$1'),
   );
-  if (!userLocation.name || !userLocation.uuid)
+  if (!userLocation.uuid)
     throw new Error(i18next.t('ERROR_FETCHING_USER_LOCATION_DETAILS'));
   return userLocation;
 };
