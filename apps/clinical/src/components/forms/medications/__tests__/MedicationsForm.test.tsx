@@ -186,6 +186,7 @@ describe('MedicationsForm', () => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation(() => {});
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
+    localStorage.setItem('default_dateFormat', 'dd/MM/yyyy');
 
     (useMedicationStore as unknown as jest.Mock).mockReturnValue(mockStore);
     (useMedicationSearch as jest.Mock).mockReturnValue(
@@ -214,6 +215,10 @@ describe('MedicationsForm', () => {
     } as unknown as ReturnType<typeof useQueryClient>);
 
     mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithMedications);
+  });
+
+  afterEach(() => {
+    localStorage.clear();
   });
 
   // HAPPY PATH TESTS
