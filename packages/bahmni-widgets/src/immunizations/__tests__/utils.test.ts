@@ -94,6 +94,40 @@ describe('createAdministeredImmunizationViewModel', () => {
   );
 
   it.each([
+    { field: 'id', override: { id: undefined }, key: 'id', expected: '' },
+    {
+      field: 'code',
+      override: { vaccineCode: undefined },
+      key: 'code',
+      expected: null,
+    },
+    {
+      field: 'administeredOn',
+      override: { occurrenceDateTime: undefined },
+      key: 'administeredOn',
+      expected: null,
+    },
+  ])(
+    'falls back $field to $expected when absent',
+    ({
+      override,
+      key,
+      expected,
+    }: {
+      field: string;
+      override: Partial<Immunization>;
+      key: string;
+      expected: string | null;
+    }) => {
+      const result = createAdministeredImmunizationViewModel({
+        ...mockMinimalAdministeredImmunization,
+        ...override,
+      });
+      expect(result[key as keyof typeof result]).toBe(expected);
+    },
+  );
+
+  it.each([
     {
       description: 'doseNumberPositiveInt',
       protocolApplied: [{ doseNumberPositiveInt: 3 }],
@@ -151,4 +185,38 @@ describe('createNotAdministeredImmunizationViewModel', () => {
     expect(result.reason).toBeNull();
     expect(result.recordedBy).toBeNull();
   });
+
+  it.each([
+    { field: 'id', override: { id: undefined }, key: 'id', expected: '' },
+    {
+      field: 'code',
+      override: { vaccineCode: undefined },
+      key: 'code',
+      expected: null,
+    },
+    {
+      field: 'date',
+      override: { occurrenceDateTime: undefined },
+      key: 'date',
+      expected: null,
+    },
+  ])(
+    'falls back $field to $expected when absent',
+    ({
+      override,
+      key,
+      expected,
+    }: {
+      field: string;
+      override: Partial<Immunization>;
+      key: string;
+      expected: string | null;
+    }) => {
+      const result = createNotAdministeredImmunizationViewModel({
+        ...mockMinimalNotAdministeredImmunization,
+        ...override,
+      });
+      expect(result[key as keyof typeof result]).toBe(expected);
+    },
+  );
 });

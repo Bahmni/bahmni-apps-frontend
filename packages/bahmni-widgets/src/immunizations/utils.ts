@@ -1,13 +1,13 @@
 import { Immunization } from 'fhir/r4';
 import {
+  ADMINISTERING_PROVIDER_CODE,
+  FHIR_EXT_IMMUNIZATION_DRUG,
+  ORDERING_PROVIDER_CODE,
+} from './constants';
+import {
   AdministeredImmunizationViewModel,
   NotAdministeredImmunizationViewModel,
 } from './model';
-
-const FHIR_EXT_IMMUNIZATION_DRUG =
-  'http://fhir.bahmni.org/ext/immunization/administeredProduct';
-const ADMINISTERING_PROVIDER_CODE = 'AP';
-const ORDERING_PROVIDER_CODE = 'OP';
 
 function getPerformerDisplay(
   immunization: Immunization,

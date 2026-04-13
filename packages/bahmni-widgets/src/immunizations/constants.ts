@@ -1,0 +1,4 @@
+export const FHIR_EXT_IMMUNIZATION_DRUG =
+  'http://fhir.bahmni.org/ext/immunization/administeredProduct'; // NOSONAR
+export const ADMINISTERING_PROVIDER_CODE = 'AP';
+export const ORDERING_PROVIDER_CODE = 'OP';
