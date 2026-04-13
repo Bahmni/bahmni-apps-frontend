@@ -100,6 +100,10 @@ const PatientRegister = () => {
   const isSaving =
     createPatientMutation.isPending || updatePatientMutation.isPending;
 
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(),
+  );
+
   // Dispatch audit event when page is viewed
   useEffect(() => {
     dispatchAuditEvent({
@@ -108,6 +112,28 @@ const PatientRegister = () => {
       module: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.module,
     });
   }, []);
+
+  const sections: RegistrationFormSection[] =
+    registrationConfig?.registrationForm?.sections ?? [];
+
+  const isSectionCollapsible = (section: RegistrationFormSection): boolean => {
+    // Default: all config sections are collapsible unless explicitly set to false.
+    // The Profile section (always visible, hardcoded above) serves as the
+    // non-collapsible "first section" per the AC.
+    return section.collapsible !== false;
+  };
+
+  const toggleSection = (sectionName: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionName)) {
+        next.delete(sectionName);
+      } else {
+        next.add(sectionName);
+      }
+      return next;
+    });
+  };
 
   const handleSave = async (): Promise<string | null> => {
     const isValid = validateAllSections(
@@ -127,6 +153,35 @@ const PatientRegister = () => {
     );
 
     if (!isValid) {
+      // Re-check validity per control to identify which sections to auto-expand
+      const controlValidators: Record<string, () => boolean> = {
+        address: () => patientAddressRef.current?.validate() ?? true,
+        contactInfo: () => patientContactRef.current?.validate() ?? true,
+        additionalInfo: () => patientAdditionalRef.current?.validate() ?? true,
+        additionalIdentifiers: () =>
+          shouldShowAdditionalIdentifiers
+            ? (patientAdditionalIdentifiersRef.current?.validate() ?? true)
+            : true,
+        relationships: () =>
+          patientRelationshipsRef.current?.validate() ?? true,
+      };
+
+      const sectionsWithErrors = new Set<string>();
+      sections.forEach((section) => {
+        if (!isSectionCollapsible(section)) return;
+        const hasErrors = section.controls.some(
+          (control) => !(controlValidators[control.type]?.() ?? true),
+        );
+        if (hasErrors) {
+          sectionsWithErrors.add(section.name);
+        }
+      });
+
+      const sectionsToExpand = new Set(expandedSections);
+      sectionsWithErrors.forEach((sectionName) => {
+        sectionsToExpand.add(sectionName);
+      });
+      setExpandedSections(sectionsToExpand);
       return null;
     }
 
@@ -180,8 +235,6 @@ const PatientRegister = () => {
   };
 
   const shouldShowActions = metadata?.patientUuid || patientUuidFromUrl == null;
-  const sections: RegistrationFormSection[] =
-    registrationConfig?.registrationForm?.sections ?? [];
   const refs = useMemo<FormControlRefs>(
     () => ({
       profileRef: patientProfileRef,
@@ -277,7 +330,9 @@ const PatientRegister = () => {
               </span>
             </Tile>
           </div>
-          <div className={styles.formContainer}>
+          <div
+            className={`${styles.formContainer} ${styles.profileSectionContainer}`}
+          >
             <Profile
               ref={patientProfileRef}
               initialData={profileInitialData}
@@ -292,6 +347,12 @@ const PatientRegister = () => {
               refs={refs}
               data={data}
               guards={guards}
+              isCollapsible={isSectionCollapsible(section)}
+              isExpanded={
+                !isSectionCollapsible(section) ||
+                expandedSections.has(section.name)
+              }
+              onToggle={() => toggleSection(section.name)}
             />
           ))}
 

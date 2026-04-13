@@ -29,6 +29,22 @@
     overflow: visible !important;
   }
 
+  :global(.cds--data-table) {
+    thead tr th {
+      border-top: none !important;
+      border-bottom: none !important;
+    }
+
+    tbody tr td {
+      border-top: none !important;
+      border-bottom: none !important;
+    }
+
+    tr:hover td {
+      border-bottom: none !important;
+    }
+  }
+
 
   :global(.cds--combo-box) {
     width: $spacing-13 + $spacing-12 + $spacing-02 + $spacing-01;

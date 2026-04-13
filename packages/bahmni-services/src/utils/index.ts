@@ -1,6 +1,7 @@
 export {
   capitalize,
   generateId,
+  generateUUID,
   getCookieByName,
   isStringEmpty,
   getPriorityByOrder,

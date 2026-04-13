@@ -24,7 +24,6 @@ describe('privilegeService', () => {
         { name: 'Add Encounters' },
         { name: 'Add Allergies' },
         { name: 'Add Orders' },
-        { name: 'Add Medications' },
       ];
 
       mockedGet.mockResolvedValue({ user: { privileges: mockPrivileges } });
@@ -34,7 +33,7 @@ describe('privilegeService', () => {
 
       // Assert
       expect(result).toEqual(mockPrivileges);
-      expect(result).toHaveLength(4);
+      expect(result).toHaveLength(3);
       expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
       expect(mockedGet).toHaveBeenCalledTimes(1);
     });

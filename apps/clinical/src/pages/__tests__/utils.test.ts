@@ -68,7 +68,7 @@ describe('ConsultationPageService', () => {
         {
           type: 'widget',
           name: 'medications',
-          requiredPrivileges: ['Add Medications'],
+          requiredPrivileges: ['Add Orders'],
         },
       ];
       const result = filterControlsByPrivileges(controls);
@@ -134,7 +134,7 @@ describe('ConsultationPageService', () => {
           {
             type: 'widget',
             name: 'medications',
-            requiredPrivileges: ['Add Medications'],
+            requiredPrivileges: ['Add Orders'],
           },
         ],
       },

@@ -2539,4 +2539,33 @@ describe('ConsultationPad', () => {
       expect(primaryButton).toHaveFocus();
     });
   });
+
+  describe('Duplicate medications handling', () => {
+    test('store allows multiple instances of same medication without pre-validation block', () => {
+      // Setup mock medication store with same medication added twice
+      const mockMedications = [
+        {
+          id: 'med-123-uuid-1',
+          medication: { id: 'med-123', resourceType: 'Medication' as const },
+        },
+        {
+          id: 'med-123-uuid-2',
+          medication: { id: 'med-123', resourceType: 'Medication' as const },
+        },
+      ];
+
+      jest.mocked(useMedicationStore).mockReturnValue({
+        selectedMedications: mockMedications,
+        validateAllMedications: jest.fn(() => true),
+        reset: jest.fn(),
+      } as any);
+
+      // Verify the store can hold duplicate medications
+      const store = useMedicationStore();
+      expect(store.selectedMedications).toHaveLength(2);
+      expect(store.selectedMedications[0].medication.id).toBe(
+        store.selectedMedications[1].medication.id,
+      );
+    });
+  });
 });

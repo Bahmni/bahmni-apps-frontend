@@ -301,9 +301,7 @@ describe('ConsultationPad - Encounter Session Integration', () => {
       { uuid: '1', name: 'Add Allergies' },
       { uuid: '2', name: 'Add Diagnoses' },
       { uuid: '3', name: 'Add Orders' },
-      { uuid: '4', name: 'Add Medications' },
-      { uuid: '5', name: 'Add Observations' },
-      { uuid: '6', name: 'Add Vaccinations' },
+      { uuid: '4', name: 'Add Observations' },
       { uuid: '7', name: 'Add Encounters' },
     ]);
     // Reset stores to initial state

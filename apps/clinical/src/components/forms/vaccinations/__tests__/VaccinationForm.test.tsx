@@ -36,10 +36,6 @@ jest.mock('../../../../services/medicationService', () => ({
   getMedicationsFromBundle: jest.fn(
     (bundle) => bundle?.entry?.map((e: any) => e.resource) ?? [],
   ),
-  getActiveMedicationsFromBundle: jest.fn(() => ({
-    activeMedications: [],
-    medicationMap: {},
-  })),
 }));
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
@@ -50,7 +46,6 @@ jest.mock('../styles/VaccinationForm.module.scss', () => ({
   vaccinationFormTitle: 'vaccinationFormTitle',
   vaccinationBox: 'vaccinationBox',
   selectedVaccinationItem: 'selectedVaccinationItem',
-  duplicateNotification: 'duplicateNotification',
 }));
 
 const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
@@ -419,7 +414,7 @@ describe('VaccinationForm', () => {
       render(<VaccinationForm />, { wrapper: createWrapper() });
       expect(screen.queryByText(/added vaccinations/i)).not.toBeInTheDocument();
     });
-    test('marks already selected vaccinations as disabled', async () => {
+    test('all vaccinations in search results are selectable (not disabled)', async () => {
       const user = userEvent.setup();
       mockUseQuery.mockImplementation(mockTwoVaccinesQuery);
       const secondVaccination: Medication = {
@@ -448,10 +443,16 @@ describe('VaccinationForm', () => {
       const searchBox = renderVaccinationForm();
       await user.type(searchBox, 'vaccine');
       await waitFor(() => {
-        expect(screen.getByText('Hepatitis B Vaccine')).toBeInTheDocument();
         expect(
-          screen.getByText('COVID-19 Vaccine (Already added)'),
-        ).toBeInTheDocument();
+          screen.getAllByText('Hepatitis B Vaccine').length,
+        ).toBeGreaterThan(0);
+        expect(screen.getAllByText('COVID-19 Vaccine').length).toBeGreaterThan(
+          0,
+        );
+      });
+      const options = screen.getAllByRole('option');
+      options.forEach((option) => {
+        expect(option).not.toHaveAttribute('disabled');
       });
     });
   });
@@ -525,14 +526,14 @@ describe('VaccinationForm', () => {
   });
 
   describe('Privilege Guard', () => {
-    test('renders null when user lacks Add Vaccinations privilege', () => {
+    test('renders null when user lacks Add Orders privilege', () => {
       mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesEmpty);
       const { container } = render(<VaccinationForm />, {
         wrapper: createWrapper(),
       });
       expect(container).toBeEmptyDOMElement();
     });
-    test('renders form when user has Add Vaccinations privilege', () => {
+    test('renders form when user has Add Orders privilege', () => {
       render(<VaccinationForm />, { wrapper: createWrapper() });
       expect(screen.getByTestId('vaccination-form-tile')).toBeInTheDocument();
     });

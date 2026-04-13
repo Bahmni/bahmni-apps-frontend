@@ -344,6 +344,10 @@
                 "type": "string",
                 "description": "Translation key for the section title"
               },
+              "collapsible": {
+                "type": "boolean",
+                "description": "Whether the section can be collapsed by the user. Defaults to true (collapsible). Set to false to always show the section expanded without a toggle button."
+              },
               "controls": {
                 "type": "array",
                 "description": "Array of form controls in this section",
