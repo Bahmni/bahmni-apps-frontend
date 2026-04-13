@@ -8,6 +8,63 @@ exports[`Immunizations matches snapshot with tabs (default config) 1`] = `
     id="immunization-history-widget"
   >
     <div
+      class="cds--tile header"
+      data-testid="immunization-widget-tile-test-id"
+      id="immunization-widget-tile"
+    >
+      <p
+        data-testid="immunization-widget-title-test-id"
+        id="immunization-widget-title"
+      >
+        IMMUNIZATION_HISTORY_WIDGET_TITLE
+      </p>
+      <span
+        class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+      >
+        <div
+          class="cds--tooltip-trigger__wrapper"
+        >
+          <button
+            aria-labelledby="tooltip-_r_18_"
+            class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--ghost cds--btn--icon-only"
+            data-testid="immunization-widget-add-button-test-id"
+            id="immunization-widget-add-button"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 32 32"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
+              />
+            </svg>
+          </button>
+        </div>
+        <span
+          aria-hidden="true"
+          class="cds--popover"
+          id="tooltip-_r_18_"
+          role="tooltip"
+        >
+          <span
+            class="cds--popover-content cds--tooltip-content"
+          >
+            IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON
+          </span>
+          <span
+            class="cds--popover-caret"
+          />
+        </span>
+      </span>
+    </div>
+    <div
       class="cds--tabs"
     >
       <button
@@ -38,10 +95,10 @@ exports[`Immunizations matches snapshot with tabs (default config) 1`] = `
         role="tablist"
       >
         <button
-          aria-controls="ccs-_r_3_-tabpanel-0"
+          aria-controls="ccs-_r_1b_-tabpanel-0"
           aria-selected="true"
           class="cds--tabs__nav-item cds--tabs__nav-link cds--tabs__nav-item--selected"
-          id="ccs-_r_3_-tab-0"
+          id="ccs-_r_1b_-tab-0"
           role="tab"
           tabindex="0"
           type="button"
@@ -86,10 +143,10 @@ exports[`Immunizations matches snapshot with tabs (default config) 1`] = `
           </button>
         </div>
         <button
-          aria-controls="ccs-_r_3_-tabpanel-1"
+          aria-controls="ccs-_r_1b_-tabpanel-1"
           aria-selected="false"
           class="cds--tabs__nav-item cds--tabs__nav-link"
-          id="ccs-_r_3_-tab-1"
+          id="ccs-_r_1b_-tab-1"
           role="tab"
           tabindex="-1"
           type="button"
@@ -158,9 +215,9 @@ exports[`Immunizations matches snapshot with tabs (default config) 1`] = `
       </button>
     </div>
     <div
-      aria-labelledby="ccs-_r_3_-tab-0"
+      aria-labelledby="ccs-_r_1b_-tab-0"
       class="cds--tab-content cds--tab-content--interactive"
-      id="ccs-_r_3_-tabpanel-0"
+      id="ccs-_r_1b_-tabpanel-0"
       role="tabpanel"
       tabindex="-1"
     >
@@ -177,10 +234,10 @@ exports[`Immunizations matches snapshot with tabs (default config) 1`] = `
       </div>
     </div>
     <div
-      aria-labelledby="ccs-_r_3_-tab-1"
+      aria-labelledby="ccs-_r_1b_-tab-1"
       class="cds--tab-content cds--tab-content--interactive"
       hidden=""
-      id="ccs-_r_3_-tabpanel-1"
+      id="ccs-_r_1b_-tabpanel-1"
       role="tabpanel"
       tabindex="-1"
     >
@@ -207,6 +264,63 @@ exports[`Immunizations matches snapshot without tabs (status filter applied) 1`]
     data-testid="immunization-history-widget-test-id"
     id="immunization-history-widget"
   >
+    <div
+      class="cds--tile header"
+      data-testid="immunization-widget-tile-test-id"
+      id="immunization-widget-tile"
+    >
+      <p
+        data-testid="immunization-widget-title-test-id"
+        id="immunization-widget-title"
+      >
+        IMMUNIZATION_HISTORY_WIDGET_TITLE
+      </p>
+      <span
+        class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+      >
+        <div
+          class="cds--tooltip-trigger__wrapper"
+        >
+          <button
+            aria-labelledby="tooltip-_r_1d_"
+            class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--ghost cds--btn--icon-only"
+            data-testid="immunization-widget-add-button-test-id"
+            id="immunization-widget-add-button"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 32 32"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
+              />
+            </svg>
+          </button>
+        </div>
+        <span
+          aria-hidden="true"
+          class="cds--popover"
+          id="tooltip-_r_1d_"
+          role="tooltip"
+        >
+          <span
+            class="cds--popover-content cds--tooltip-content"
+          >
+            IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON
+          </span>
+          <span
+            class="cds--popover-caret"
+          />
+        </span>
+      </span>
+    </div>
     <div
       data-testid="immunization-administered-tab-test-id"
       id="immunization-administered-tab"

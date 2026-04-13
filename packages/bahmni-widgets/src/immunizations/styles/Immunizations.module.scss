@@ -8,6 +8,22 @@
     }
 }
 
+.header {
+    background: $background;
+    min-block-size: fit-content;
+    border-top: 1px solid $border-subtle;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    border-bottom: 1px solid $border-subtle-02;
+    p {
+        @include type-style("heading-compact-02");
+        color: $text-primary;
+        padding-inline: $spacing-05;
+    }
+}
+
 .expandedRowContent {
     color: $text-primary;
     @include type-style("body-compact-01");

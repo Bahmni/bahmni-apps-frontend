@@ -175,6 +175,8 @@
   "FORM_RECORDED_ON": "Recorded On",
   "FORM_RECORDED_BY": "Recorded By",
   "FORMS_UNAVAILABLE": "No Forms data recorded",
+  "IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON": "Add Immunization History",
+  "IMMUNIZATION_HISTORY_WIDGET_TITLE": "Vaccination History",
   "IMMUNIZATION_WIDGET_ADMINISTERED_TABLE_ARIA": "Administered immunizations table",
   "IMMUNIZATION_WIDGET_COL_ADMINISTERED_LOCATION": "Administered location",
   "IMMUNIZATION_WIDGET_COL_ADMINISTERED_ON": "Administered on",

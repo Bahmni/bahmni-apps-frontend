@@ -175,6 +175,8 @@
   "FORM_RECORDED_ON": "Grabado el",
   "FORM_RECORDED_BY": "Grabado Por",
   "FORMS_UNAVAILABLE": "No hay datos de formularios registrados",
+  "IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON": "Agregar inmunización",
+  "IMMUNIZATION_HISTORY_WIDGET_TITLE": "Historial de vacunación",
   "IMMUNIZATION_WIDGET_ADMINISTERED_TABLE_ARIA": "Tabla de inmunizaciones administradas",
   "IMMUNIZATION_WIDGET_COL_ADMINISTERED_LOCATION": "Lugar de administración",
   "IMMUNIZATION_WIDGET_COL_ADMINISTERED_ON": "Administrado el",

@@ -4,11 +4,13 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import Immunizations from '../Immunizations';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('../../hooks/usePatientUUID');
+jest.mock('../../userPrivileges/useHasPrivilege');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientImmunizations: jest.fn(),
@@ -21,6 +23,9 @@ jest.mock('@tanstack/react-query', () => ({
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
+>;
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockUseSubscribeConsultationSaved =
   useSubscribeConsultationSaved as jest.MockedFunction<
@@ -30,6 +35,7 @@ const mockUseSubscribeConsultationSaved =
 describe('Immunizations', () => {
   beforeEach(() => {
     mockUsePatientUUID.mockReturnValue('patient-uuid-123');
+    mockUseHasPrivilege.mockReturnValue(true);
     mockUseSubscribeConsultationSaved.mockImplementation(() => {});
     mockUseQuery.mockReturnValue({
       data: [],
@@ -41,6 +47,41 @@ describe('Immunizations', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('renders the widget tile with title', () => {
+    render(<Immunizations config={{}} />);
+    expect(
+      screen.getByTestId('immunization-widget-tile-test-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_TITLE'),
+    ).toBeInTheDocument();
+  });
+
+  it.each([{ hasPrivilege: true }, { hasPrivilege: false }])(
+    'add button visibility matches privilege ($hasPrivilege)',
+    ({ hasPrivilege }) => {
+      mockUseHasPrivilege.mockReturnValue(hasPrivilege);
+      render(<Immunizations config={{}} />);
+      expect(
+        Boolean(screen.queryByTestId('immunization-widget-add-button-test-id')),
+      ).toBe(hasPrivilege);
+    },
+  );
+
+  it('dispatches startConsultation event on add button click', async () => {
+    const dispatchEventSpy = jest.spyOn(window, 'dispatchEvent');
+    render(<Immunizations config={{}} />);
+    await userEvent.click(
+      screen.getByTestId('immunization-widget-add-button-test-id'),
+    );
+    expect(dispatchEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'startConsultation',
+        detail: { encounterType: 'Immunization' },
+      }),
+    );
   });
 
   it('renders both tabs with correct labels', () => {
