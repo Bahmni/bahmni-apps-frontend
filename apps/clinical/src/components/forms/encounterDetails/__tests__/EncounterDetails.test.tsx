@@ -285,18 +285,7 @@ describe('BasicForm', () => {
     );
   });
 
-  const renderBasicForm = () => {
-    // Get the current mock return value
-    const mockReturnValue = (useActivePractitioner as jest.Mock)();
-    const practitionerState = {
-      practitioner: mockReturnValue.practitioner,
-      user: mockReturnValue.user,
-      loading: mockReturnValue.loading,
-      error: mockReturnValue.error,
-      refetch: jest.fn(),
-    };
-    return render(<BasicForm practitionerState={practitionerState} />);
-  };
+  const renderBasicForm = () => render(<BasicForm />);
 
   describe('usePatientUUID Hook Integration', () => {
     it('should call useActiveVisit with patient UUID from hook', () => {

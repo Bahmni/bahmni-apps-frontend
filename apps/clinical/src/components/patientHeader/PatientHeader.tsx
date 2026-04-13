@@ -6,7 +6,6 @@ import styles from './styles/PatientHeader.module.scss';
 
 interface PatientHeaderProps {
   isActionAreaVisible: boolean;
-  setIsActionAreaVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
@@ -14,12 +13,10 @@ interface PatientHeaderProps {
  * Displays patient details with consultation action button
  *
  * @param {boolean} isActionAreaVisible - Whether the action area is currently visible
- * @param {function} setIsActionAreaVisible - Function to toggle action area visibility
  * @returns {React.ReactElement} The Header component
  */
 const PatientHeader: React.FC<PatientHeaderProps> = ({
   isActionAreaVisible,
-  setIsActionAreaVisible,
 }) => {
   const { t } = useTranslation();
 
@@ -30,10 +27,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
       data-testid="patient-header"
     >
       <PatientDetails />
-      <ConsultationActionButton
-        isActionAreaVisible={isActionAreaVisible}
-        setIsActionAreaVisible={setIsActionAreaVisible}
-      />
+      <ConsultationActionButton isActionAreaVisible={isActionAreaVisible} />
     </div>
   );
 };

@@ -11,27 +11,22 @@ import {
   formatDateTime,
   type Provider,
 } from '@bahmni/services';
-import {
-  usePatientUUID,
-  type ActivePractitionerContextType,
-} from '@bahmni/widgets';
+import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import React, { useEffect, useMemo } from 'react';
 import { useActiveVisit } from '../../../hooks/useActiveVisit';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useLocations } from '../../../hooks/useLocations';
 import { Concept } from '../../../models/encounterConcepts';
 import { OpenMRSLocation } from '../../../models/location';
-import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
+import { useEncounterDetailsStore } from '../../../stores';
 import styles from './styles/EncounterDetails.module.scss';
 
 // Constants
 const CONSULTATION_ENCOUNTER_NAME = 'Consultation';
 
-const EncounterDetails: React.FC<{
-  /** Pre-fetched practitioner state to avoid redundant API calls */
-  practitionerState: ActivePractitionerContextType;
-}> = ({ practitionerState }) => {
+const EncounterDetails: React.FC = () => {
   const { t } = useTranslation();
+  const practitionerState = useActivePractitioner();
 
   // Get patient UUID from hook
   const patientUUID = usePatientUUID();
@@ -368,4 +363,4 @@ const DropdownPlaceholder: React.FC = React.memo(() => {
 });
 
 DropdownPlaceholder.displayName = 'DropdownPlaceholder';
-export default React.memo(EncounterDetails);
+export default EncounterDetails;

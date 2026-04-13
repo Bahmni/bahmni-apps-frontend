@@ -796,7 +796,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                             data-testid="medication-start-date-input-test-medication-1"
                             id="start-date-test-medication-1"
                             pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                            placeholder="MM/dd/yyyy"
+                            placeholder="dd/MM/yyyy"
                             type="text"
                           />
                           <svg

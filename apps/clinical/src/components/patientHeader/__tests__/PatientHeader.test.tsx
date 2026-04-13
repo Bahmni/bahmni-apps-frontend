@@ -1,7 +1,7 @@
 import { useTranslation } from '@bahmni/services';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
+import { dispatchConsultationStart } from '../../../events/startConsultation';
 import PatientHeader from '../PatientHeader';
 import '@testing-library/jest-dom';
 
@@ -10,6 +10,10 @@ expect.extend(toHaveNoViolations);
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
+}));
+
+jest.mock('../../../events/startConsultation', () => ({
+  dispatchConsultationStart: jest.fn(),
 }));
 // Mock the PatientDetails component
 jest.mock('@bahmni/widgets', () => ({
@@ -41,14 +45,14 @@ const mockedUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
 
-describe('PatientHeader Component', () => {
-  // Test props
-  const mockSetIsActionAreaVisible = jest.fn();
+const mockDispatchConsultationStart =
+  dispatchConsultationStart as jest.MockedFunction<
+    typeof dispatchConsultationStart
+  >;
 
-  // Default props
+describe('PatientHeader Component', () => {
   const defaultProps = {
     isActionAreaVisible: false,
-    setIsActionAreaVisible: mockSetIsActionAreaVisible,
   };
 
   // Helper function to render with props
@@ -92,40 +96,29 @@ describe('PatientHeader Component', () => {
 
   // Button tests
   describe('Button functionality', () => {
-    test('renders button with correct text when isActionAreaVisible is false', () => {
+    test('renders button with "New Consultation" text and dispatches event on click', () => {
       renderComponent({ isActionAreaVisible: false });
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
-      expect(mockSetIsActionAreaVisible).toHaveBeenCalledTimes(1);
-      expect(mockSetIsActionAreaVisible).toHaveBeenCalledWith(true);
+      expect(mockDispatchConsultationStart).toHaveBeenCalled();
       expect(button).toHaveTextContent('New Consultation');
     });
 
-    test('renders button with correct text when isActionAreaVisible is true', () => {
+    test('renders disabled button with "in progress" text when action area is visible', () => {
       renderComponent({ isActionAreaVisible: true });
       const button = screen.getByRole('button');
       expect(button).toHaveAttribute('disabled');
       expect(button).toHaveTextContent('Consultation in progress');
     });
 
-    test('calls setIsActionAreaVisible with toggled value when button is clicked', () => {
-      renderComponent({ isActionAreaVisible: false });
-      const button = screen.getByRole('button');
-
-      fireEvent.click(button);
-
-      expect(mockSetIsActionAreaVisible).toHaveBeenCalledTimes(1);
-      expect(mockSetIsActionAreaVisible).toHaveBeenCalledWith(true);
-    });
-
-    test('setIsActionAreaVisible is not called when action area is already visible', () => {
+    test('does not dispatch event when button is disabled', () => {
       renderComponent({ isActionAreaVisible: true });
       const button = screen.getByRole('button');
 
       fireEvent.click(button);
 
-      expect(mockSetIsActionAreaVisible).toHaveBeenCalledTimes(0);
+      expect(mockDispatchConsultationStart).not.toHaveBeenCalled();
     });
   });
 

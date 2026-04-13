@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConsultationPad matches snapshot 1`] = `
+<div>
+  <div
+    data-hidden="false"
+    data-testid="action-area"
+  >
+    <span
+      data-testid="action-area-title"
+    >
+      New Consultation
+    </span>
+    <div
+      data-testid="action-area-content"
+    >
+      <div
+        class="formList"
+      >
+        <div>
+          <li
+            class="cds--menu-item-divider"
+            role="separator"
+          />
+        </div>
+        <div>
+          <li
+            class="cds--menu-item-divider"
+            role="separator"
+          />
+        </div>
+        <div>
+          <li
+            class="cds--menu-item-divider"
+            role="separator"
+          />
+        </div>
+      </div>
+    </div>
+    <button
+      data-testid="primary-button"
+      disabled=""
+    >
+      Done
+    </button>
+    <button
+      data-testid="secondary-button"
+    >
+      Cancel
+    </button>
+  </div>
+</div>
+`;

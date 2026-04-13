@@ -1,6 +1,7 @@
 import { useTranslation } from '@bahmni/services';
 import { useActivePractitioner, useHasPrivilege } from '@bahmni/widgets';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { dispatchConsultationStart } from '../../../events/startConsultation';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import ConsultationActionButton from '../ConsultationActionButton';
 import '@testing-library/jest-dom';
@@ -8,6 +9,10 @@ import '@testing-library/jest-dom';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
+}));
+
+jest.mock('../../../events/startConsultation', () => ({
+  dispatchConsultationStart: jest.fn(),
 }));
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
@@ -31,12 +36,14 @@ const mockUseEncounterSession = useEncounterSession as jest.MockedFunction<
   typeof useEncounterSession
 >;
 
-describe('ConsultationActionButton', () => {
-  const mockSetIsActionAreaVisible = jest.fn();
+const mockDispatchConsultationStart =
+  dispatchConsultationStart as jest.MockedFunction<
+    typeof dispatchConsultationStart
+  >;
 
+describe('ConsultationActionButton', () => {
   const defaultProps = {
     isActionAreaVisible: false,
-    setIsActionAreaVisible: mockSetIsActionAreaVisible,
   };
 
   beforeEach(() => {
@@ -95,6 +102,14 @@ describe('ConsultationActionButton', () => {
           name: /CONSULTATION_ACTION_IN_PROGRESS/i,
         }),
       ).toBeDisabled();
+    });
+
+    it('dispatches consultationStart event on click', () => {
+      render(<ConsultationActionButton {...defaultProps} />);
+
+      fireEvent.click(screen.getByTestId('consultation-action-button'));
+
+      expect(mockDispatchConsultationStart).toHaveBeenCalled();
     });
 
     it('disables button when loading', () => {

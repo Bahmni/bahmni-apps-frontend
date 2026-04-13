@@ -18,12 +18,19 @@ import {
   useUserPrivilege,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useSearchParams } from 'react-router-dom';
-import ConsultationPad from '../components/consultationPad/ConsultationPad';
+import ConsultationPad from '../components/consultationPad/';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';
 import { BAHMNI_CLINICAL_PATH } from '../constants/app';
+import { useSubscribeConsultationStart } from '../events/startConsultation';
 import { ClinicalAppProvider } from '../providers/ClinicalAppProvider';
 import { useClinicalConfig } from '../providers/clinicalConfig';
 import { useObservationFormsStore } from '../stores/observationFormsStore';
@@ -91,6 +98,14 @@ const ConsultationPage: React.FC = () => {
   const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
+  const [encounterType, setEncounterType] = useState('');
+
+  useSubscribeConsultationStart(
+    useCallback(({ encounterType: type }) => {
+      setEncounterType(type!);
+      setIsActionAreaVisible(true);
+    }, []),
+  );
   const [searchParams] = useSearchParams();
   const viewingForm = useObservationFormsStore((state) => state.viewingForm);
 
@@ -260,10 +275,7 @@ const ConsultationPage: React.FC = () => {
               aria-label={t('PATIENT_HEADER_SECTION')}
               className={styles.stickySection}
             >
-              <PatientHeader
-                isActionAreaVisible={isActionAreaVisible}
-                setIsActionAreaVisible={setIsActionAreaVisible}
-              />
+              <PatientHeader isActionAreaVisible={isActionAreaVisible} />
               {renderContextInformation()}
             </div>
             <DashboardContainer
@@ -276,6 +288,7 @@ const ConsultationPage: React.FC = () => {
         layoutVariant={viewingForm ? 'extended' : 'default'}
         actionArea={
           <ConsultationPad
+            encounterType={encounterType}
             onClose={() => setIsActionAreaVisible((prev) => !prev)}
           />
         }
