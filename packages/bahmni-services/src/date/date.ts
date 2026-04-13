@@ -161,7 +161,6 @@ function formatDateGeneric(
  * @returns Date format string in date-fns format (e.g., 'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd')
  *          Falls back to DEFAULT_DATE_FORMAT (dd/MM/yyyy) if parsing fails
  */
-// NOSONAR
 export function getBrowserLocaleDateFormat(): string {
   try {
     const parts = new Intl.DateTimeFormat().formatToParts(new Date());
