@@ -18,7 +18,7 @@ export const mockEncounterResource: Encounter = {
   subject: { reference: 'Patient/patient-uuid' },
   status: 'finished',
   class: {
-    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    system: 'https://terminology.hl7.org/CodeSystem/v3-ActCode',
     code: 'AMB',
   },
 };
