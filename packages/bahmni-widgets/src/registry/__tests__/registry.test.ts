@@ -268,7 +268,7 @@ describe('Widget Registry', () => {
         'patientDocuments',
         'programs',
         'treatment',
-        'immunizations',
+        'immunizationHistory',
       ];
 
       expect(types).toHaveLength(expectedTypes.length);
