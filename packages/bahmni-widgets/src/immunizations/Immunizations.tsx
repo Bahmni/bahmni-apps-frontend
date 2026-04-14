@@ -18,6 +18,17 @@ import NotAdministeredTab from './components/NotAdministeredTab';
 import { ADD_IMMUNIZATIONS_PRIVILEGE } from './constants';
 import styles from './styles/Immunizations.module.scss';
 
+const immunizationTitleByStatus = (status: ImmunizationStatus) => {
+  switch (status) {
+    case 'completed':
+      return 'IMMUNIZATION_WIDGET_ADMINISTERED_TAB_TITLE';
+    case 'not-done':
+      return 'IMMUNIZATION_WIDGET_NOT_ADMINISTERED_TAB_TITLE';
+    default:
+      return 'IMMUNIZATION_HISTORY_WIDGET_TITLE';
+  }
+};
+
 const Immunizations: React.FC<WidgetProps> = ({ config }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
@@ -80,7 +91,7 @@ const Immunizations: React.FC<WidgetProps> = ({ config }) => {
           id="immunization-widget-title"
           data-testid="immunization-widget-title-test-id"
         >
-          {t('IMMUNIZATION_HISTORY_WIDGET_TITLE')}
+          {t(immunizationTitleByStatus(status))}
         </p>
         {hasAddImmunizationsPrivilege && (
           <IconButton

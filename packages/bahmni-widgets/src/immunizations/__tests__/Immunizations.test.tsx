@@ -59,6 +59,25 @@ describe('Immunizations', () => {
     ).toBeInTheDocument();
   });
 
+  it.each([
+    {
+      status: 'completed',
+      expectedTitle: 'IMMUNIZATION_WIDGET_ADMINISTERED_TAB_TITLE',
+    },
+    {
+      status: 'not-done',
+      expectedTitle: 'IMMUNIZATION_WIDGET_NOT_ADMINISTERED_TAB_TITLE',
+    },
+  ])(
+    'shows title $expectedTitle when status is $status',
+    ({ status, expectedTitle }) => {
+      render(<Immunizations config={{ status }} />);
+      expect(
+        screen.getByTestId('immunization-widget-title-test-id'),
+      ).toHaveTextContent(expectedTitle);
+    },
+  );
+
   it.each([{ hasPrivilege: true }, { hasPrivilege: false }])(
     'add button visibility matches privilege ($hasPrivilege)',
     ({ hasPrivilege }) => {
