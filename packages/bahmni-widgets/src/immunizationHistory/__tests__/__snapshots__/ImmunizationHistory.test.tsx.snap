@@ -19,7 +19,7 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
         IMMUNIZATION_HISTORY_WIDGET_TITLE
       </p>
       <span
-        class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+        class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--auto-align cds--autoalign cds--popover--top cds--tooltip cds--icon-tooltip"
       >
         <div
           class="cds--tooltip-trigger__wrapper"
@@ -31,20 +31,28 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
             id="immunization-history-widget-add-button"
             type="button"
           >
-            <svg
-              aria-hidden="true"
-              fill="currentColor"
-              focusable="false"
-              height="16"
-              preserveAspectRatio="xMidYMid meet"
-              viewBox="0 0 32 32"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              aria-label="immunization-history-widget-add-icon"
+              class="_bahmniIcon_1cg5e_1 _paddingXxsmall_1cg5e_4"
+              id="immunization-history-widget-add-icon"
             >
-              <path
-                d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
-              />
-            </svg>
+              <svg
+                aria-hidden="true"
+                class="svg-inline--fa fa-plus fa-lg "
+                data-icon="plus"
+                data-prefix="fas"
+                data-testid="immunization-history-widget-add-icon"
+                focusable="false"
+                role="img"
+                viewBox="0 0 448 512"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
           </button>
         </div>
         <span
@@ -55,12 +63,13 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
         >
           <span
             class="cds--popover-content cds--tooltip-content"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           >
             IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON
+            <span
+              class="cds--popover-caret cds--popover--auto-align"
+            />
           </span>
-          <span
-            class="cds--popover-caret"
-          />
         </span>
       </span>
     </div>
@@ -276,7 +285,7 @@ exports[`ImmunizationHistory matches snapshot without tabs (status filter applie
         IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TAB_TITLE
       </p>
       <span
-        class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+        class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--auto-align cds--autoalign cds--popover--top cds--tooltip cds--icon-tooltip"
       >
         <div
           class="cds--tooltip-trigger__wrapper"
@@ -288,20 +297,28 @@ exports[`ImmunizationHistory matches snapshot without tabs (status filter applie
             id="immunization-history-widget-add-button"
             type="button"
           >
-            <svg
-              aria-hidden="true"
-              fill="currentColor"
-              focusable="false"
-              height="16"
-              preserveAspectRatio="xMidYMid meet"
-              viewBox="0 0 32 32"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              aria-label="immunization-history-widget-add-icon"
+              class="_bahmniIcon_1cg5e_1 _paddingXxsmall_1cg5e_4"
+              id="immunization-history-widget-add-icon"
             >
-              <path
-                d="M17 15L17 8 15 8 15 15 8 15 8 17 15 17 15 24 17 24 17 17 24 17 24 15z"
-              />
-            </svg>
+              <svg
+                aria-hidden="true"
+                class="svg-inline--fa fa-plus fa-lg "
+                data-icon="plus"
+                data-prefix="fas"
+                data-testid="immunization-history-widget-add-icon"
+                focusable="false"
+                role="img"
+                viewBox="0 0 448 512"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
           </button>
         </div>
         <span
@@ -312,12 +329,13 @@ exports[`ImmunizationHistory matches snapshot without tabs (status filter applie
         >
           <span
             class="cds--popover-content cds--tooltip-content"
+            style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           >
             IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON
+            <span
+              class="cds--popover-caret cds--popover--auto-align"
+            />
           </span>
-          <span
-            class="cds--popover-caret"
-          />
         </span>
       </span>
     </div>

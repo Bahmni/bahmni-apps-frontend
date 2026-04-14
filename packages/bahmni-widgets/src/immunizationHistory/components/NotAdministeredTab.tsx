@@ -9,6 +9,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
 import { NotAdministeredImmunizationViewModel } from '../model';
+import styles from '../styles/Immunizations.module.scss';
 import { createNotAdministeredImmunizationViewModel } from '../utils';
 
 interface NotAdministeredTabProps {
@@ -68,6 +69,9 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
     row: NotAdministeredImmunizationViewModel,
     key: string,
   ) => {
+    if (key === 'code') {
+      return <span className={styles.code}>{row.code ?? '-'}</span>;
+    }
     if (key === 'date') {
       return row.date ? formatDateTime(row.date, t).formattedResult : '-';
     }

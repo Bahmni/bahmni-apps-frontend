@@ -1,4 +1,6 @@
 import {
+  Icon,
+  ICON_SIZE,
   IconButton,
   Tab,
   TabList,
@@ -8,7 +10,6 @@ import {
   Tile,
 } from '@bahmni/design-system';
 import { ImmunizationStatus, useTranslation } from '@bahmni/services';
-import { Add } from '@carbon/icons-react';
 import React, { useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
@@ -99,12 +100,18 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
           <IconButton
             id="immunization-history-widget-add-button"
             testId="immunization-history-widget-add-button-test-id"
+            autoAlign
             size="lg"
             kind="ghost"
             label={t('IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON')}
             onClick={handleAddImmunization}
           >
-            <Add />
+            <Icon
+              id="immunization-history-widget-add-icon"
+              data-testid="immunization-history-widget-add-icon-test-id"
+              name="fa-plus"
+              size={ICON_SIZE.LG}
+            />
           </IconButton>
         )}
       </Tile>

@@ -226,7 +226,11 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
               <td
                 data-testid="table-cell-waiver-uuid-1-code"
               >
-                Hepatitis B
+                <span
+                  class="code"
+                >
+                  Hepatitis B
+                </span>
               </td>
               <td
                 data-testid="table-cell-waiver-uuid-1-reason"
