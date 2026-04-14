@@ -21,9 +21,9 @@ import styles from './styles/Immunizations.module.scss';
 const getTitleByStatus = (status: ImmunizationStatus) => {
   switch (status) {
     case 'completed':
-      return 'IMMUNIZATION_WIDGET_ADMINISTERED_TAB_TITLE';
+      return 'IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TAB_TITLE';
     case 'not-done':
-      return 'IMMUNIZATION_WIDGET_NOT_ADMINISTERED_TAB_TITLE';
+      return 'IMMUNIZATION_HISTORY_WIDGET_NOT_ADMINISTERED_TAB_TITLE';
     default:
       return 'IMMUNIZATION_HISTORY_WIDGET_TITLE';
   }
@@ -59,9 +59,11 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
             selectedIndex={selectedIndex}
             onChange={({ selectedIndex }) => setSelectedIndex(selectedIndex)}
           >
-            <TabList aria-label={t('IMMUNIZATION_WIDGET_TAB_LIST_ARIA')}>
-              <Tab>{t('IMMUNIZATION_WIDGET_TAB_ADMINISTERED')}</Tab>
-              <Tab>{t('IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED')}</Tab>
+            <TabList
+              aria-label={t('IMMUNIZATION_HISTORY_WIDGET_TAB_LIST_ARIA')}
+            >
+              <Tab>{t('IMMUNIZATION_HISTORY_WIDGET_TAB_ADMINISTERED')}</Tab>
+              <Tab>{t('IMMUNIZATION_HISTORY_WIDGET_TAB_NOT_ADMINISTERED')}</Tab>
             </TabList>
             <TabPanels>
               <TabPanel>

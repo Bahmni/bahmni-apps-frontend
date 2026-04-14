@@ -53,10 +53,13 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
 
   const headers = useMemo(
     () => [
-      { key: 'code', header: t('IMMUNIZATION_WIDGET_COL_CODE') },
-      { key: 'reason', header: t('IMMUNIZATION_WIDGET_COL_REASON') },
-      { key: 'date', header: t('IMMUNIZATION_WIDGET_COL_DATE') },
-      { key: 'recordedBy', header: t('IMMUNIZATION_WIDGET_COL_RECORDED_BY') },
+      { key: 'code', header: t('IMMUNIZATION_HISTORY_WIDGET_COL_CODE') },
+      { key: 'reason', header: t('IMMUNIZATION_HISTORY_WIDGET_COL_REASON') },
+      { key: 'date', header: t('IMMUNIZATION_HISTORY_WIDGET_COL_DATE') },
+      {
+        key: 'recordedBy',
+        header: t('IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY'),
+      },
     ],
     [t],
   );
@@ -80,12 +83,14 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
         headers={headers}
         rows={data}
         sortable={COLUMN_SORT_CONFIG}
-        ariaLabel={t('IMMUNIZATION_WIDGET_NOT_ADMINISTERED_TABLE_ARIA')}
+        ariaLabel={t('IMMUNIZATION_HISTORY_WIDGET_NOT_ADMINISTERED_TABLE_ARIA')}
         loading={isLoading}
         errorStateMessage={
-          isError ? t('IMMUNIZATION_WIDGET_ERROR_FETCHING_DATA') : null
+          isError ? t('IMMUNIZATION_HISTORY_WIDGET_ERROR_FETCHING_DATA') : null
         }
-        emptyStateMessage={t('IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED')}
+        emptyStateMessage={t(
+          'IMMUNIZATION_HISTORY_WIDGET_NO_IMMUNIZATIONS_RECORDED',
+        )}
         renderCell={renderCell}
         dataTestId="not-administered-immunizations-table"
       />

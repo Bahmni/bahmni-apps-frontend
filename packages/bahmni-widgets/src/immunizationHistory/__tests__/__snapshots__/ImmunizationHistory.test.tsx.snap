@@ -90,7 +90,7 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
         </svg>
       </button>
       <div
-        aria-label="IMMUNIZATION_WIDGET_TAB_LIST_ARIA"
+        aria-label="IMMUNIZATION_HISTORY_WIDGET_TAB_LIST_ARIA"
         class="cds--tab--list"
         role="tablist"
       >
@@ -110,7 +110,7 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
               class="cds--tabs__nav-item-label"
               dir="auto"
             >
-              IMMUNIZATION_WIDGET_TAB_ADMINISTERED
+              IMMUNIZATION_HISTORY_WIDGET_TAB_ADMINISTERED
             </span>
           </div>
         </button>
@@ -121,12 +121,12 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
             aria-hidden="true"
             class="cds--visually-hidden cds--tabs__nav-item--close-icon--selected"
             tabindex="-1"
-            title="Remove IMMUNIZATION_WIDGET_TAB_ADMINISTERED tab"
+            title="Remove IMMUNIZATION_HISTORY_WIDGET_TAB_ADMINISTERED tab"
             type="button"
           >
             <svg
               aria-hidden="true"
-              aria-label="Press delete to remove IMMUNIZATION_WIDGET_TAB_ADMINISTERED tab"
+              aria-label="Press delete to remove IMMUNIZATION_HISTORY_WIDGET_TAB_ADMINISTERED tab"
               fill="currentColor"
               focusable="false"
               height="16"
@@ -158,7 +158,7 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
               class="cds--tabs__nav-item-label"
               dir="auto"
             >
-              IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED
+              IMMUNIZATION_HISTORY_WIDGET_TAB_NOT_ADMINISTERED
             </span>
           </div>
         </button>
@@ -169,12 +169,12 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
             aria-hidden="true"
             class="cds--visually-hidden"
             tabindex="-1"
-            title="Remove IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED tab"
+            title="Remove IMMUNIZATION_HISTORY_WIDGET_TAB_NOT_ADMINISTERED tab"
             type="button"
           >
             <svg
               aria-hidden="true"
-              aria-label="Press delete to remove IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED tab"
+              aria-label="Press delete to remove IMMUNIZATION_HISTORY_WIDGET_TAB_NOT_ADMINISTERED tab"
               fill="currentColor"
               focusable="false"
               height="16"
@@ -229,7 +229,7 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
           class="_expandableDataTableBodyEmpty_15ny8_30"
           data-testid="administered-immunizations-table-empty"
         >
-          IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED
+          IMMUNIZATION_HISTORY_WIDGET_NO_IMMUNIZATIONS_RECORDED
         </p>
       </div>
     </div>
@@ -249,7 +249,7 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
           class="_sortableDataTableBodyEmpty_1xyik_26"
           data-testid="not-administered-immunizations-table-empty"
         >
-          IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED
+          IMMUNIZATION_HISTORY_WIDGET_NO_IMMUNIZATIONS_RECORDED
         </p>
       </div>
     </div>
@@ -273,7 +273,7 @@ exports[`ImmunizationHistory matches snapshot without tabs (status filter applie
         data-testid="immunization-history-widget-title-test-id"
         id="immunization-history-widget-title"
       >
-        IMMUNIZATION_WIDGET_ADMINISTERED_TAB_TITLE
+        IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TAB_TITLE
       </p>
       <span
         class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
@@ -329,7 +329,7 @@ exports[`ImmunizationHistory matches snapshot without tabs (status filter applie
         class="_expandableDataTableBodyEmpty_15ny8_30"
         data-testid="administered-immunizations-table-empty"
       >
-        IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED
+        IMMUNIZATION_HISTORY_WIDGET_NO_IMMUNIZATIONS_RECORDED
       </p>
     </div>
   </div>

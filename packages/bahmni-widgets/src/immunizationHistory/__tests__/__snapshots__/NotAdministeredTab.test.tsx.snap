@@ -14,7 +14,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
         class="cds--data-table-content"
       >
         <table
-          aria-label="IMMUNIZATION_WIDGET_NOT_ADMINISTERED_TABLE_ARIA"
+          aria-label="IMMUNIZATION_HISTORY_WIDGET_NOT_ADMINISTERED_TABLE_ARIA"
           class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
         >
           <thead>
@@ -28,7 +28,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
                   class="cds--table-sort__description"
                   id="table-sort-_r_s_"
                 >
-                  Click to sort rows by IMMUNIZATION_WIDGET_COL_CODE header in ascending order
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_CODE header in ascending order
                 </div>
                 <button
                   aria-describedby="table-sort-_r_s_"
@@ -42,7 +42,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
                     <div
                       class="cds--table-header-label"
                     >
-                      IMMUNIZATION_WIDGET_COL_CODE
+                      IMMUNIZATION_HISTORY_WIDGET_COL_CODE
                     </div>
                     <svg
                       aria-hidden="true"
@@ -87,7 +87,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
                 <div
                   class="cds--table-header-label"
                 >
-                  IMMUNIZATION_WIDGET_COL_REASON
+                  IMMUNIZATION_HISTORY_WIDGET_COL_REASON
                   <div
                     class="cds--table-header-label--decorator-inner"
                   />
@@ -102,7 +102,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
                   class="cds--table-sort__description"
                   id="table-sort-_r_u_"
                 >
-                  Click to sort rows by IMMUNIZATION_WIDGET_COL_DATE header in ascending order
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_DATE header in ascending order
                 </div>
                 <button
                   aria-describedby="table-sort-_r_u_"
@@ -116,7 +116,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
                     <div
                       class="cds--table-header-label"
                     >
-                      IMMUNIZATION_WIDGET_COL_DATE
+                      IMMUNIZATION_HISTORY_WIDGET_COL_DATE
                     </div>
                     <svg
                       aria-hidden="true"
@@ -163,7 +163,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
                   class="cds--table-sort__description"
                   id="table-sort-_r_v_"
                 >
-                  Click to sort rows by IMMUNIZATION_WIDGET_COL_RECORDED_BY header in ascending order
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY header in ascending order
                 </div>
                 <button
                   aria-describedby="table-sort-_r_v_"
@@ -177,7 +177,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
                     <div
                       class="cds--table-header-label"
                     >
-                      IMMUNIZATION_WIDGET_COL_RECORDED_BY
+                      IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY
                     </div>
                     <svg
                       aria-hidden="true"

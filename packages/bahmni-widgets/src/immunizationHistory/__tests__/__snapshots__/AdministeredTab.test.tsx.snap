@@ -14,7 +14,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
         class="cds--data-table-content"
       >
         <table
-          aria-label="IMMUNIZATION_WIDGET_ADMINISTERED_TABLE_ARIA"
+          aria-label="IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TABLE_ARIA"
           class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
         >
           <thead>
@@ -33,7 +33,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
                   class="cds--table-sort__description"
                   id="table-sort-_r_18_"
                 >
-                  Click to sort rows by IMMUNIZATION_WIDGET_COL_CODE header in ascending order
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_CODE header in ascending order
                 </div>
                 <button
                   aria-describedby="table-sort-_r_18_"
@@ -47,7 +47,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
                     <div
                       class="cds--table-header-label"
                     >
-                      IMMUNIZATION_WIDGET_COL_CODE
+                      IMMUNIZATION_HISTORY_WIDGET_COL_CODE
                     </div>
                     <svg
                       aria-hidden="true"
@@ -92,7 +92,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
                 <div
                   class="cds--table-header-label"
                 >
-                  IMMUNIZATION_WIDGET_COL_DOSE_SEQUENCE
+                  IMMUNIZATION_HISTORY_WIDGET_COL_DOSE_SEQUENCE
                   <div
                     class="cds--table-header-label--decorator-inner"
                   />
@@ -105,7 +105,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
                 <div
                   class="cds--table-header-label"
                 >
-                  IMMUNIZATION_WIDGET_COL_DRUG_NAME
+                  IMMUNIZATION_HISTORY_WIDGET_COL_DRUG_NAME
                   <div
                     class="cds--table-header-label--decorator-inner"
                   />
@@ -120,7 +120,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
                   class="cds--table-sort__description"
                   id="table-sort-_r_1b_"
                 >
-                  Click to sort rows by IMMUNIZATION_WIDGET_COL_ADMINISTERED_ON header in ascending order
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_ON header in ascending order
                 </div>
                 <button
                   aria-describedby="table-sort-_r_1b_"
@@ -134,7 +134,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
                     <div
                       class="cds--table-header-label"
                     >
-                      IMMUNIZATION_WIDGET_COL_ADMINISTERED_ON
+                      IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_ON
                     </div>
                     <svg
                       aria-hidden="true"
@@ -181,7 +181,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
                   class="cds--table-sort__description"
                   id="table-sort-_r_1c_"
                 >
-                  Click to sort rows by IMMUNIZATION_WIDGET_COL_ADMINISTERED_LOCATION header in ascending order
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_LOCATION header in ascending order
                 </div>
                 <button
                   aria-describedby="table-sort-_r_1c_"
@@ -195,7 +195,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
                     <div
                       class="cds--table-header-label"
                     >
-                      IMMUNIZATION_WIDGET_COL_ADMINISTERED_LOCATION
+                      IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_LOCATION
                     </div>
                     <svg
                       aria-hidden="true"

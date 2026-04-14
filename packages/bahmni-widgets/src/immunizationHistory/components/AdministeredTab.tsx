@@ -53,19 +53,22 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
 
   const headers = useMemo(
     () => [
-      { key: 'code', header: t('IMMUNIZATION_WIDGET_COL_CODE') },
+      { key: 'code', header: t('IMMUNIZATION_HISTORY_WIDGET_COL_CODE') },
       {
         key: 'doseSequence',
-        header: t('IMMUNIZATION_WIDGET_COL_DOSE_SEQUENCE'),
+        header: t('IMMUNIZATION_HISTORY_WIDGET_COL_DOSE_SEQUENCE'),
       },
-      { key: 'drugName', header: t('IMMUNIZATION_WIDGET_COL_DRUG_NAME') },
+      {
+        key: 'drugName',
+        header: t('IMMUNIZATION_HISTORY_WIDGET_COL_DRUG_NAME'),
+      },
       {
         key: 'administeredOn',
-        header: t('IMMUNIZATION_WIDGET_COL_ADMINISTERED_ON'),
+        header: t('IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_ON'),
       },
       {
         key: 'administeredLocation',
-        header: t('IMMUNIZATION_WIDGET_COL_ADMINISTERED_LOCATION'),
+        header: t('IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_LOCATION'),
       },
     ],
     [t],
@@ -85,27 +88,27 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
 
     const details: { label: string; value: string }[] = [
       row.route && {
-        label: t('IMMUNIZATION_WIDGET_DETAIL_ROUTE'),
+        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_ROUTE'),
         value: row.route,
       },
       row.site && {
-        label: t('IMMUNIZATION_WIDGET_DETAIL_SITE'),
+        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_SITE'),
         value: row.site,
       },
       row.manufacturer && {
-        label: t('IMMUNIZATION_WIDGET_DETAIL_MANUFACTURER'),
+        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_MANUFACTURER'),
         value: row.manufacturer,
       },
       row.batchNumber && {
-        label: t('IMMUNIZATION_WIDGET_DETAIL_BATCH_NUMBER'),
+        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_BATCH_NUMBER'),
         value: row.batchNumber,
       },
       row.recordedBy && {
-        label: t('IMMUNIZATION_WIDGET_DETAIL_RECORDED_BY'),
+        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_RECORDED_BY'),
         value: row.recordedBy,
       },
       row.orderedBy && {
-        label: t('IMMUNIZATION_WIDGET_DETAIL_ORDERED_BY'),
+        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_ORDERED_BY'),
         value: row.orderedBy,
       },
     ].filter((detail): detail is { label: string; value: string } =>
@@ -139,7 +142,7 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
               data-testid={`immunization-expanded-row-notes-${row.id}-test-id`}
               className={styles.expandedRowContent}
             >
-              <strong>{t('IMMUNIZATION_WIDGET_DETAIL_NOTES')}</strong>
+              <strong>{t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_NOTES')}</strong>
               <span> : {row.notes}</span>
             </p>
           )}
@@ -158,12 +161,14 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
         rows={data}
         dataTestId="administered-immunizations-table"
         sortable={COLUMN_SORT_CONFIG}
-        ariaLabel={t('IMMUNIZATION_WIDGET_ADMINISTERED_TABLE_ARIA')}
+        ariaLabel={t('IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TABLE_ARIA')}
         loading={isLoading}
         errorStateMessage={
-          isError ? t('IMMUNIZATION_WIDGET_ERROR_FETCHING_DATA') : null
+          isError ? t('IMMUNIZATION_HISTORY_WIDGET_ERROR_FETCHING_DATA') : null
         }
-        emptyStateMessage={t('IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED')}
+        emptyStateMessage={t(
+          'IMMUNIZATION_HISTORY_WIDGET_NO_IMMUNIZATIONS_RECORDED',
+        )}
         renderCell={renderCell}
         renderExpandedContent={renderExpandedContent}
       />

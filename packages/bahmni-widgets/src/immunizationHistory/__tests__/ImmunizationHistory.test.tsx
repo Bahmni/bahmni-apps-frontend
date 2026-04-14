@@ -62,11 +62,11 @@ describe('ImmunizationHistory', () => {
   it.each([
     {
       status: 'completed',
-      expectedTitle: 'IMMUNIZATION_WIDGET_ADMINISTERED_TAB_TITLE',
+      expectedTitle: 'IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TAB_TITLE',
     },
     {
       status: 'not-done',
-      expectedTitle: 'IMMUNIZATION_WIDGET_NOT_ADMINISTERED_TAB_TITLE',
+      expectedTitle: 'IMMUNIZATION_HISTORY_WIDGET_NOT_ADMINISTERED_TAB_TITLE',
     },
   ])(
     'shows title $expectedTitle when status is $status',
@@ -110,11 +110,13 @@ describe('ImmunizationHistory', () => {
   it('renders both tabs with correct labels', () => {
     render(<ImmunizationHistory config={{}} />);
     expect(
-      screen.getByRole('tab', { name: 'IMMUNIZATION_WIDGET_TAB_ADMINISTERED' }),
+      screen.getByRole('tab', {
+        name: 'IMMUNIZATION_HISTORY_WIDGET_TAB_ADMINISTERED',
+      }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('tab', {
-        name: 'IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED',
+        name: 'IMMUNIZATION_HISTORY_WIDGET_TAB_NOT_ADMINISTERED',
       }),
     ).toBeInTheDocument();
   });
@@ -123,7 +125,7 @@ describe('ImmunizationHistory', () => {
     render(<ImmunizationHistory config={{}} />);
     await userEvent.click(
       screen.getByRole('tab', {
-        name: 'IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED',
+        name: 'IMMUNIZATION_HISTORY_WIDGET_TAB_NOT_ADMINISTERED',
       }),
     );
     expect(

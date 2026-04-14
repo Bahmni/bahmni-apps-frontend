@@ -67,19 +67,19 @@ describe('AdministeredTab', () => {
   it('renders column headers', () => {
     render(<AdministeredTab patientUUID="patient-uuid" />);
     expect(
-      screen.getByText('IMMUNIZATION_WIDGET_COL_CODE'),
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_CODE'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('IMMUNIZATION_WIDGET_COL_DOSE_SEQUENCE'),
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_DOSE_SEQUENCE'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('IMMUNIZATION_WIDGET_COL_DRUG_NAME'),
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_DRUG_NAME'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('IMMUNIZATION_WIDGET_COL_ADMINISTERED_ON'),
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_ON'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('IMMUNIZATION_WIDGET_COL_ADMINISTERED_LOCATION'),
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_LOCATION'),
     ).toBeInTheDocument();
   });
 
@@ -96,12 +96,12 @@ describe('AdministeredTab', () => {
     {
       description: 'no data',
       queryResult: { data: [], isLoading: false, isError: false },
-      expectedText: 'IMMUNIZATION_WIDGET_NO_IMMUNIZATIONS_RECORDED',
+      expectedText: 'IMMUNIZATION_HISTORY_WIDGET_NO_IMMUNIZATIONS_RECORDED',
     },
     {
       description: 'fetch error',
       queryResult: { data: undefined, isLoading: false, isError: true },
-      expectedText: 'IMMUNIZATION_WIDGET_ERROR_FETCHING_DATA',
+      expectedText: 'IMMUNIZATION_HISTORY_WIDGET_ERROR_FETCHING_DATA',
     },
   ])(
     'shows correct message on $description',
