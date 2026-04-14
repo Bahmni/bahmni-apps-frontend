@@ -251,17 +251,26 @@ describe('AdministeredTab', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('renders - for administeredOn when value is null', () => {
+  it.each([
+    {
+      description: 'administeredOn is null',
+      rowOverride: { administeredOn: null },
+      testId: `table-cell-${mockRow.id}-administeredOn`,
+    },
+    {
+      description: 'code is null',
+      rowOverride: { code: null },
+      testId: `table-cell-${mockRow.id}-code`,
+    },
+  ])('renders - when $description', ({ rowOverride, testId }) => {
     mockUseQuery.mockReturnValue({
-      data: [{ ...mockRow, administeredOn: null }],
+      data: [{ ...mockRow, ...rowOverride }],
       isLoading: false,
       isError: false,
       refetch: jest.fn(),
     } as any);
     render(<AdministeredTab patientUUID="patient-uuid" />);
-    expect(
-      screen.getByTestId(`table-cell-${mockRow.id}-administeredOn`),
-    ).toHaveTextContent('-');
+    expect(screen.getByTestId(testId)).toHaveTextContent('-');
   });
 
   it('passes accessibility tests', async () => {
