@@ -60,6 +60,6 @@ export const builtInWidgets: WidgetConfig[] = [
   },
   {
     type: 'immunizationHistory',
-    component: lazy(() => import('../immunizationHistory/Immunizations')),
+    component: lazy(() => import('../immunizationHistory/ImmunizationHistory')),
   },
 ];

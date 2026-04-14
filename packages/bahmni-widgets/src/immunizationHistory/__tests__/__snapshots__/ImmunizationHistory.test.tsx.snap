@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Immunizations matches snapshot with tabs (default config) 1`] = `
+exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
 <DocumentFragment>
   <div
     class="widget"
@@ -9,12 +9,12 @@ exports[`Immunizations matches snapshot with tabs (default config) 1`] = `
   >
     <div
       class="cds--tile header"
-      data-testid="immunization-widget-tile-test-id"
-      id="immunization-widget-tile"
+      data-testid="immunization-history-widget-tile-test-id"
+      id="immunization-history-widget-tile"
     >
       <p
-        data-testid="immunization-widget-title-test-id"
-        id="immunization-widget-title"
+        data-testid="immunization-history-widget-title-test-id"
+        id="immunization-history-widget-title"
       >
         IMMUNIZATION_HISTORY_WIDGET_TITLE
       </p>
@@ -27,8 +27,8 @@ exports[`Immunizations matches snapshot with tabs (default config) 1`] = `
           <button
             aria-labelledby="tooltip-_r_1g_"
             class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--ghost cds--btn--icon-only"
-            data-testid="immunization-widget-add-button-test-id"
-            id="immunization-widget-add-button"
+            data-testid="immunization-history-widget-add-button-test-id"
+            id="immunization-history-widget-add-button"
             type="button"
           >
             <svg
@@ -257,7 +257,7 @@ exports[`Immunizations matches snapshot with tabs (default config) 1`] = `
 </DocumentFragment>
 `;
 
-exports[`Immunizations matches snapshot without tabs (status filter applied) 1`] = `
+exports[`ImmunizationHistory matches snapshot without tabs (status filter applied) 1`] = `
 <DocumentFragment>
   <div
     class="widget"
@@ -266,12 +266,12 @@ exports[`Immunizations matches snapshot without tabs (status filter applied) 1`]
   >
     <div
       class="cds--tile header"
-      data-testid="immunization-widget-tile-test-id"
-      id="immunization-widget-tile"
+      data-testid="immunization-history-widget-tile-test-id"
+      id="immunization-history-widget-tile"
     >
       <p
-        data-testid="immunization-widget-title-test-id"
-        id="immunization-widget-title"
+        data-testid="immunization-history-widget-title-test-id"
+        id="immunization-history-widget-title"
       >
         IMMUNIZATION_WIDGET_ADMINISTERED_TAB_TITLE
       </p>
@@ -284,8 +284,8 @@ exports[`Immunizations matches snapshot without tabs (status filter applied) 1`]
           <button
             aria-labelledby="tooltip-_r_1l_"
             class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--ghost cds--btn--icon-only"
-            data-testid="immunization-widget-add-button-test-id"
-            id="immunization-widget-add-button"
+            data-testid="immunization-history-widget-add-button-test-id"
+            id="immunization-history-widget-add-button"
             type="button"
           >
             <svg

@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
-import Immunizations from '../Immunizations';
+import ImmunizationHistory from '../ImmunizationHistory';
 
 expect.extend(toHaveNoViolations);
 
@@ -32,7 +32,7 @@ const mockUseSubscribeConsultationSaved =
     typeof useSubscribeConsultationSaved
   >;
 
-describe('Immunizations', () => {
+describe('ImmunizationHistory', () => {
   beforeEach(() => {
     mockUsePatientUUID.mockReturnValue('patient-uuid-123');
     mockUseHasPrivilege.mockReturnValue(true);
@@ -50,9 +50,9 @@ describe('Immunizations', () => {
   });
 
   it('renders the widget tile with title', () => {
-    render(<Immunizations config={{}} />);
+    render(<ImmunizationHistory config={{}} />);
     expect(
-      screen.getByTestId('immunization-widget-tile-test-id'),
+      screen.getByTestId('immunization-history-widget-tile-test-id'),
     ).toBeInTheDocument();
     expect(
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_TITLE'),
@@ -71,9 +71,9 @@ describe('Immunizations', () => {
   ])(
     'shows title $expectedTitle when status is $status',
     ({ status, expectedTitle }) => {
-      render(<Immunizations config={{ status }} />);
+      render(<ImmunizationHistory config={{ status }} />);
       expect(
-        screen.getByTestId('immunization-widget-title-test-id'),
+        screen.getByTestId('immunization-history-widget-title-test-id'),
       ).toHaveTextContent(expectedTitle);
     },
   );
@@ -82,18 +82,22 @@ describe('Immunizations', () => {
     'add button visibility matches privilege ($hasPrivilege)',
     ({ hasPrivilege }) => {
       mockUseHasPrivilege.mockReturnValue(hasPrivilege);
-      render(<Immunizations config={{}} />);
+      render(<ImmunizationHistory config={{}} />);
       expect(
-        Boolean(screen.queryByTestId('immunization-widget-add-button-test-id')),
+        Boolean(
+          screen.queryByTestId(
+            'immunization-history-widget-add-button-test-id',
+          ),
+        ),
       ).toBe(hasPrivilege);
     },
   );
 
   it('dispatches startConsultation event on add button click', async () => {
     const dispatchEventSpy = jest.spyOn(window, 'dispatchEvent');
-    render(<Immunizations config={{}} />);
+    render(<ImmunizationHistory config={{}} />);
     await userEvent.click(
-      screen.getByTestId('immunization-widget-add-button-test-id'),
+      screen.getByTestId('immunization-history-widget-add-button-test-id'),
     );
     expect(dispatchEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -104,7 +108,7 @@ describe('Immunizations', () => {
   });
 
   it('renders both tabs with correct labels', () => {
-    render(<Immunizations config={{}} />);
+    render(<ImmunizationHistory config={{}} />);
     expect(
       screen.getByRole('tab', { name: 'IMMUNIZATION_WIDGET_TAB_ADMINISTERED' }),
     ).toBeInTheDocument();
@@ -116,7 +120,7 @@ describe('Immunizations', () => {
   });
 
   it('switches to Not Administered tab on click', async () => {
-    render(<Immunizations config={{}} />);
+    render(<ImmunizationHistory config={{}} />);
     await userEvent.click(
       screen.getByRole('tab', {
         name: 'IMMUNIZATION_WIDGET_TAB_NOT_ADMINISTERED',
@@ -141,7 +145,7 @@ describe('Immunizations', () => {
   ])(
     'shows only $status table and hides tabs when config.status is $status',
     ({ status, visibleTestId, hiddenTestId }) => {
-      render(<Immunizations config={{ status }} />);
+      render(<ImmunizationHistory config={{ status }} />);
       expect(screen.getByTestId(visibleTestId)).toBeInTheDocument();
       expect(screen.queryByRole('tab')).not.toBeInTheDocument();
       expect(screen.queryByTestId(hiddenTestId)).not.toBeInTheDocument();
@@ -149,7 +153,7 @@ describe('Immunizations', () => {
   );
 
   it('passes accessibility tests', async () => {
-    const { container } = render(<Immunizations config={{}} />);
+    const { container } = render(<ImmunizationHistory config={{}} />);
     await act(async () => {
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -163,7 +167,7 @@ describe('Immunizations', () => {
       config: { status: 'completed' },
     },
   ])('matches snapshot $label', ({ config }) => {
-    const { asFragment } = render(<Immunizations config={config} />);
+    const { asFragment } = render(<ImmunizationHistory config={config} />);
     expect(asFragment()).toMatchSnapshot();
   });
 });

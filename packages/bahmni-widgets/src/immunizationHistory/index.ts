@@ -1,1 +1,1 @@
-export { default as Immunizations } from './Immunizations';
+export { default as ImmunizationHistory } from './ImmunizationHistory';

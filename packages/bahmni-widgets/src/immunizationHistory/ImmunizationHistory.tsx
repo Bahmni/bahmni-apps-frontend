@@ -18,7 +18,7 @@ import NotAdministeredTab from './components/NotAdministeredTab';
 import { ADD_IMMUNIZATIONS_PRIVILEGE } from './constants';
 import styles from './styles/Immunizations.module.scss';
 
-const immunizationTitleByStatus = (status: ImmunizationStatus) => {
+const getTitleByStatus = (status: ImmunizationStatus) => {
   switch (status) {
     case 'completed':
       return 'IMMUNIZATION_WIDGET_ADMINISTERED_TAB_TITLE';
@@ -29,7 +29,7 @@ const immunizationTitleByStatus = (status: ImmunizationStatus) => {
   }
 };
 
-const Immunizations: React.FC<WidgetProps> = ({ config }) => {
+const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -47,7 +47,7 @@ const Immunizations: React.FC<WidgetProps> = ({ config }) => {
     );
   };
 
-  const renderImmunizationTabByStatus = (status: ImmunizationStatus) => {
+  const renderTabByStatus = (status: ImmunizationStatus) => {
     switch (status) {
       case 'completed':
         return <AdministeredTab patientUUID={patientUUID!} />;
@@ -83,20 +83,20 @@ const Immunizations: React.FC<WidgetProps> = ({ config }) => {
       className={styles.widget}
     >
       <Tile
-        id="immunization-widget-tile"
-        data-testid="immunization-widget-tile-test-id"
+        id="immunization-history-widget-tile"
+        data-testid="immunization-history-widget-tile-test-id"
         className={styles.header}
       >
         <p
-          id="immunization-widget-title"
-          data-testid="immunization-widget-title-test-id"
+          id="immunization-history-widget-title"
+          data-testid="immunization-history-widget-title-test-id"
         >
-          {t(immunizationTitleByStatus(status))}
+          {t(getTitleByStatus(status))}
         </p>
         {hasAddImmunizationsPrivilege && (
           <IconButton
-            id="immunization-widget-add-button"
-            testId="immunization-widget-add-button-test-id"
+            id="immunization-history-widget-add-button"
+            testId="immunization-history-widget-add-button-test-id"
             size="lg"
             kind="ghost"
             label={t('IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON')}
@@ -106,9 +106,9 @@ const Immunizations: React.FC<WidgetProps> = ({ config }) => {
           </IconButton>
         )}
       </Tile>
-      {renderImmunizationTabByStatus(status)}
+      {renderTabByStatus(status)}
     </div>
   );
 };
 
-export default Immunizations;
+export default ImmunizationHistory;
