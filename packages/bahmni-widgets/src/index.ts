@@ -14,7 +14,7 @@ export { SearchPatient } from './searchPatient';
 export { VitalFlowSheet } from './vitalFlowSheet';
 export { GenericServiceRequestTable } from './genericServiceRequest';
 export { PatientProgramsTable } from './patientPrograms';
-export { Immunizations } from './immunizations';
+export { Immunizations } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
 
 // Notification System
