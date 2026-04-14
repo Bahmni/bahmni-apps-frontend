@@ -1,4 +1,8 @@
-import { ExpandableDataTable, TableExpandedRow } from '@bahmni/design-system';
+import {
+  ExpandableDataTable,
+  TableExpandedRow,
+  TooltipIcon,
+} from '@bahmni/design-system';
 import {
   ConsultationSavedEventPayload,
   formatDateTime,
@@ -75,6 +79,20 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
   );
 
   const renderCell = (row: AdministeredImmunizationViewModel, key: string) => {
+    if (key === 'code') {
+      return (
+        <div className={styles.code}>
+          <span>{row.code ?? '-'}</span>
+          {row.notes && (
+            <TooltipIcon
+              iconName="fa-file-lines"
+              content={row.notes}
+              ariaLabel={row.notes}
+            />
+          )}
+        </div>
+      );
+    }
     if (key === 'administeredOn') {
       return row.administeredOn
         ? formatDateTime(row.administeredOn, t).formattedResult
@@ -134,16 +152,6 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
                   {detail.value}
                 </span>
               ))}
-            </p>
-          )}
-          {row.notes && (
-            <p
-              id={`immunization-expanded-row-notes-${row.id}`}
-              data-testid={`immunization-expanded-row-notes-${row.id}-test-id`}
-              className={styles.expandedRowContent}
-            >
-              <strong>{t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_NOTES')}</strong>
-              <span> : {row.notes}</span>
             </p>
           )}
         </div>

@@ -68,8 +68,7 @@ export function createAdministeredImmunizationViewModel(
       manufacturer ??
       batchNumber ??
       recordedBy ??
-      orderedBy ??
-      notes
+      orderedBy
     ),
   };
 }

@@ -24,6 +24,12 @@
     }
 }
 
+.code {
+    display: flex;
+    gap: $spacing-02;
+    align-items: center;
+}
+
 .expandedRowContent {
     color: $text-primary;
     @include type-style("body-compact-01");

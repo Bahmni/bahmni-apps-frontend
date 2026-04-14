@@ -208,6 +208,26 @@ describe('AdministeredTab', () => {
     },
   );
 
+  it('displays tooltip icon when immunization has notes', () => {
+    render(<AdministeredTab patientUUID="patient-uuid" />);
+    expect(
+      screen.getByLabelText('Third dose completed successfully.'),
+    ).toBeInTheDocument();
+  });
+
+  it('does not display tooltip icon when immunization has no notes', () => {
+    mockUseQuery.mockReturnValue({
+      data: [mockMinimalRow],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+    render(<AdministeredTab patientUUID="patient-uuid" />);
+    expect(
+      screen.queryByLabelText('Third dose completed successfully.'),
+    ).not.toBeInTheDocument();
+  });
+
   it('renders expanded row content for a row with details', () => {
     render(<AdministeredTab patientUUID="patient-uuid" />);
     fireEvent.click(screen.getByRole('button', { name: 'Expand current row' }));

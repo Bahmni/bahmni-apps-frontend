@@ -59,7 +59,6 @@ describe('createAdministeredImmunizationViewModel', () => {
       override: { manufacturer: { display: 'ABC Corp' } },
     },
     { field: 'batchNumber', override: { lotNumber: 'LOT-001' } },
-    { field: 'notes', override: { note: [{ text: 'Note' }] } },
     {
       field: 'recordedBy',
       override: {
