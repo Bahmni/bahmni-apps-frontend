@@ -306,3 +306,9 @@ export {
   type DocumentViewModel,
   type DocumentReference,
 } from './documentReferenceService';
+
+export {
+  getLocationByTag,
+  type Location,
+  type ChildLocation,
+} from './locationService';
