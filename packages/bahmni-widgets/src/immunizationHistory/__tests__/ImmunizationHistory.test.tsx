@@ -78,33 +78,81 @@ describe('ImmunizationHistory', () => {
     },
   );
 
-  it.each([{ hasPrivilege: true }, { hasPrivilege: false }])(
-    'add button visibility matches privilege ($hasPrivilege)',
-    ({ hasPrivilege }) => {
+  it.each([
+    {
+      label: 'encounterType not configured',
+      config: {},
+      hasPrivilege: true,
+      visible: false,
+    },
+    {
+      label: 'privilege absent',
+      config: { encounterType: 'Immunization' },
+      hasPrivilege: false,
+      visible: false,
+    },
+    {
+      label: 'privilege present and encounterType configured',
+      config: { encounterType: 'Immunization' },
+      hasPrivilege: true,
+      visible: true,
+    },
+  ])(
+    'add button visible=$visible when $label',
+    ({ config, hasPrivilege, visible }) => {
       mockUseHasPrivilege.mockReturnValue(hasPrivilege);
-      render(<ImmunizationHistory config={{}} />);
+      render(<ImmunizationHistory config={config} />);
       expect(
         Boolean(
           screen.queryByTestId(
             'immunization-history-widget-add-button-test-id',
           ),
         ),
-      ).toBe(hasPrivilege);
+      ).toBe(visible);
     },
   );
 
-  it('dispatches startConsultation event on add button click', async () => {
-    const dispatchEventSpy = jest.spyOn(window, 'dispatchEvent');
-    render(<ImmunizationHistory config={{}} />);
+  it.each([
+    {
+      addImmunizationsPrivilege: 'Custom Privilege',
+      expectedPrivilege: 'Custom Privilege',
+    },
+    {
+      addImmunizationsPrivilege: undefined,
+      expectedPrivilege: 'Add Immunizations',
+    },
+  ])(
+    'calls useHasPrivilege with $expectedPrivilege',
+    ({ addImmunizationsPrivilege, expectedPrivilege }) => {
+      render(<ImmunizationHistory config={{ addImmunizationsPrivilege }} />);
+      expect(mockUseHasPrivilege).toHaveBeenCalledWith(expectedPrivilege);
+    },
+  );
+
+  it('dispatches startConsultation with encounterType from config', async () => {
+    const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+    render(
+      <ImmunizationHistory config={{ encounterType: 'TestEncounterType' }} />,
+    );
     await userEvent.click(
       screen.getByTestId('immunization-history-widget-add-button-test-id'),
     );
     expect(dispatchEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'startConsultation',
-        detail: { encounterType: 'Immunization' },
+        detail: { encounterType: 'TestEncounterType' },
       }),
     );
+  });
+
+  it('renders Font Awesome plus icon inside add button', () => {
+    render(<ImmunizationHistory config={{ encounterType: 'Immunization' }} />);
+    const addButton = screen.getByTestId(
+      'immunization-history-widget-add-button-test-id',
+    );
+    expect(
+      addButton.querySelector('svg[data-icon="plus"]'),
+    ).toBeInTheDocument();
   });
 
   it('renders both tabs with correct labels', () => {
@@ -163,10 +211,13 @@ describe('ImmunizationHistory', () => {
   });
 
   it.each([
-    { label: 'with tabs (default config)', config: {} },
+    {
+      label: 'with tabs (default config)',
+      config: { encounterType: 'Immunization' },
+    },
     {
       label: 'without tabs (status filter applied)',
-      config: { status: 'completed' },
+      config: { status: 'completed', encounterType: 'Immunization' },
     },
   ])('matches snapshot $label', ({ config }) => {
     const { asFragment } = render(<ImmunizationHistory config={config} />);

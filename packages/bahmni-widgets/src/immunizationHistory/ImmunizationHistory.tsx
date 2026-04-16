@@ -34,16 +34,19 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const hasAddImmunizationsPrivilege = useHasPrivilege(
-    ADD_IMMUNIZATIONS_PRIVILEGE,
-  );
 
   const status = config?.status as ImmunizationStatus;
+  const encounterType = config?.encounterType as string;
+  const addImmunizationsPrivilege = config?.addImmunizationsPrivilege as string;
+
+  const hasAddImmunizationsPrivilege = useHasPrivilege(
+    addImmunizationsPrivilege ?? ADD_IMMUNIZATIONS_PRIVILEGE,
+  );
 
   const handleAddImmunization = () => {
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
-        detail: { encounterType: 'Immunization' },
+        detail: { encounterType },
       }),
     );
   };
@@ -96,7 +99,7 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
         >
           {t(getTitleByStatus(status))}
         </p>
-        {hasAddImmunizationsPrivilege && (
+        {hasAddImmunizationsPrivilege && encounterType && (
           <IconButton
             id="immunization-history-widget-add-button"
             testId="immunization-history-widget-add-button-test-id"

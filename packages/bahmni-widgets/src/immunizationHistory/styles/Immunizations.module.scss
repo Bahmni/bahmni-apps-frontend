@@ -20,7 +20,7 @@
     p {
         @include type-style("heading-compact-02");
         color: $text-primary;
-        padding-inline: $spacing-05;
+        padding: $spacing-05;
     }
 }
 
