@@ -42,10 +42,8 @@ const ImmunizationHistoryForm = () => {
   const { route, site, administeredLocation } = formFields;
 
   useEffect(() => {
-    if (formFields !== undefined) {
-      setFormFields(formFields);
-    }
-  }, [formFields, setFormFields]);
+    setFormFields(formFields);
+  }, [formFields]);
 
   const {
     data: vaccineCodeConceptSet,
