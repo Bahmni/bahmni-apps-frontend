@@ -37,10 +37,10 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
 
   const status = config?.status as ImmunizationStatus;
   const encounterType = config?.encounterType as string;
-  const addImmunizationsPrivilege = config?.addImmunizationsPrivilege as string;
+  const startEncounterPrivilege = config?.startEncounterPrivilege as string;
 
   const hasAddImmunizationsPrivilege = useHasPrivilege(
-    addImmunizationsPrivilege ?? ADD_IMMUNIZATIONS_PRIVILEGE,
+    startEncounterPrivilege ?? ADD_IMMUNIZATIONS_PRIVILEGE,
   );
 
   const handleAddImmunization = () => {

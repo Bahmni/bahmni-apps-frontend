@@ -114,17 +114,17 @@ describe('ImmunizationHistory', () => {
 
   it.each([
     {
-      addImmunizationsPrivilege: 'Custom Privilege',
+      startEncounterPrivilege: 'Custom Privilege',
       expectedPrivilege: 'Custom Privilege',
     },
     {
-      addImmunizationsPrivilege: undefined,
+      startEncounterPrivilege: undefined,
       expectedPrivilege: 'Add Immunizations',
     },
   ])(
     'calls useHasPrivilege with $expectedPrivilege',
-    ({ addImmunizationsPrivilege, expectedPrivilege }) => {
-      render(<ImmunizationHistory config={{ addImmunizationsPrivilege }} />);
+    ({ startEncounterPrivilege, expectedPrivilege }) => {
+      render(<ImmunizationHistory config={{ startEncounterPrivilege }} />);
       expect(mockUseHasPrivilege).toHaveBeenCalledWith(expectedPrivilege);
     },
   );
