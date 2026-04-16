@@ -52,18 +52,6 @@ jest.mock('@bahmni/services', () => {
   };
 });
 
-// Mock CSS modules
-jest.mock('../styles/DashboardSection.module.scss', () => ({
-  sectionTitle: 'sectionTitle',
-  sectionTile: 'sectionTile',
-  sectionName: 'sectionName',
-  sectionWrapper: 'sectionWrapper',
-  divider: 'divider',
-  widgetError: 'widgetError',
-  widgetLoading: 'widgetLoading',
-  noContent: 'noContent',
-}));
-
 // Mock widget registry
 jest.mock('@bahmni/widgets', () => {
   const actual = jest.requireActual('@bahmni/widgets');
@@ -136,6 +124,7 @@ const renderDashboardSectionWithProvider = (
           ref={ref}
           encounterUuids={[]}
           visitUuids={[]}
+          episodeOfCareUuids={[]}
         />
       </ClinicalAppProvider>
     </QueryClientProvider>,
@@ -251,6 +240,7 @@ describe('DashboardSection Component', () => {
         controls: [
           {
             type: 'allergies',
+            name: '',
             config: {},
           },
         ],
@@ -287,10 +277,12 @@ describe('DashboardSection Component', () => {
         controls: [
           {
             type: 'conditions',
+            name: '',
             config: {},
           },
           {
             type: 'diagnosis',
+            name: '',
             config: {},
           },
         ],
@@ -313,6 +305,7 @@ describe('DashboardSection Component', () => {
                 ref={mockRef}
                 encounterUuids={[]}
                 visitUuids={[]}
+                episodeOfCareUuids={[]}
               />
             </Suspense>
           </ClinicalAppProvider>
@@ -345,6 +338,7 @@ describe('DashboardSection Component', () => {
         controls: [
           {
             type: 'allergies',
+            name: '',
             config: {
               testProp: 'custom-value',
             },
@@ -369,6 +363,7 @@ describe('DashboardSection Component', () => {
                 ref={mockRef}
                 encounterUuids={[]}
                 visitUuids={[]}
+                episodeOfCareUuids={[]}
               />
             </Suspense>
           </ClinicalAppProvider>
@@ -407,9 +402,9 @@ describe('DashboardSection Component', () => {
         name: 'Multiple Widgets',
         icon: 'test-icon',
         controls: [
-          { type: 'conditions', config: {} },
-          { type: 'diagnosis', config: {} },
-          { type: 'treatment', config: {} },
+          { type: 'conditions', name: '', config: {} },
+          { type: 'diagnosis', name: '', config: {} },
+          { type: 'treatment', name: '', config: {} },
         ],
       };
 
@@ -430,6 +425,7 @@ describe('DashboardSection Component', () => {
                 ref={mockRef}
                 encounterUuids={[]}
                 visitUuids={[]}
+                episodeOfCareUuids={[]}
               />
             </Suspense>
           </ClinicalAppProvider>
@@ -459,7 +455,7 @@ describe('DashboardSection Component', () => {
         id: 'single-widget-section',
         name: 'Single Widget',
         icon: 'test-icon',
-        controls: [{ type: 'allergies', config: {} }],
+        controls: [{ type: 'allergies', name: '', config: {} }],
       };
 
       renderDashboardSectionWithProvider(section, mockRef);
@@ -477,6 +473,7 @@ describe('DashboardSection Component', () => {
               ref={mockRef}
               encounterUuids={[]}
               visitUuids={[]}
+              episodeOfCareUuids={[]}
             />
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -497,6 +494,7 @@ describe('DashboardSection Component', () => {
         controls: [
           {
             type: 'unknown-widget',
+            name: '',
             config: {},
           },
         ],
@@ -518,8 +516,8 @@ describe('DashboardSection Component', () => {
         name: 'Multiple Unknown Widgets',
         icon: 'test-icon',
         controls: [
-          { type: 'unknown-widget-1', config: {} },
-          { type: 'unknown-widget-2', config: {} },
+          { type: 'unknown-widget-1', name: '', config: {} },
+          { type: 'unknown-widget-2', name: '', config: {} },
         ],
       };
 
@@ -550,9 +548,9 @@ describe('DashboardSection Component', () => {
         name: 'Mixed Valid and Invalid',
         icon: 'test-icon',
         controls: [
-          { type: 'allergies', config: {} },
-          { type: 'unknown-widget', config: {} },
-          { type: 'diagnosis', config: {} },
+          { type: 'allergies', name: '', config: {} },
+          { type: 'unknown-widget', name: '', config: {} },
+          { type: 'diagnosis', name: '', config: {} },
         ],
       };
 
@@ -573,6 +571,7 @@ describe('DashboardSection Component', () => {
                 ref={mockRef}
                 encounterUuids={[]}
                 visitUuids={[]}
+                episodeOfCareUuids={[]}
               />
             </Suspense>
           </ClinicalAppProvider>
@@ -637,7 +636,7 @@ describe('DashboardSection Component', () => {
         id: 'loading-section',
         name: 'Loading Widget',
         icon: 'test-icon',
-        controls: [{ type: 'allergies', config: {} }],
+        controls: [{ type: 'allergies', name: '', config: {} }],
       };
 
       renderDashboardSectionWithProvider(section, mockRef);

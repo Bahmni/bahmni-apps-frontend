@@ -16,10 +16,6 @@ const mockedGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
 
-jest.mock('react-router-dom', () => ({
-  useParams: jest.fn(),
-}));
-
 jest.mock('../../hooks/usePatientUUID');
 const mockedUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID

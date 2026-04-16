@@ -13,14 +13,6 @@ expect.extend(toHaveNoViolations);
 
 Element.prototype.scrollIntoView = jest.fn();
 
-jest.mock('../styles/InvestigationsForm.module.scss', () => ({
-  investigationsFormTile: 'investigationsFormTile',
-  investigationsFormTitle: 'investigationsFormTitle',
-  addedInvestigationsBox: 'addedInvestigationsBox',
-  selectedInvestigationItem: 'selectedInvestigationItem',
-  duplicateNotification: 'duplicateNotification',
-}));
-
 jest.mock('../../../../hooks/useInvestigationsSearch');
 jest.mock('../../../../stores/serviceRequestStore');
 

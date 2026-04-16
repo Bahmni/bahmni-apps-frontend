@@ -1,15 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { VideoTile } from '../VideoTile';
 
-jest.mock('../styles/VideoTile.module.scss', () => ({
-  thumbnailButton: 'thumbnailButton-class',
-  thumbnailVideo: 'thumbnailVideo-class',
-  playIconOverlay: 'playIconOverlay-class',
-  playIcon: 'playIcon-class',
-  modalVideoContainer: 'modalVideoContainer-class',
-  modalVideo: 'modalVideo-class',
-}));
-
 describe('VideoTile', () => {
   const defaultProps = {
     videoSrc: '100/9-Consultation-27627c65-5f95-4118-b8e5-89f0aa8cc3b8.mp4',

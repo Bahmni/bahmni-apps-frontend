@@ -4,6 +4,7 @@ import {
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { useNotification } from '../../notification';
 import { mockCategoryUuid, mockValidBundle } from '../__mocks__/mocks';
 import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
@@ -14,12 +15,10 @@ jest.mock('@bahmni/services', () => ({
   getPatientRadiologyInvestigationBundleWithImagingStudy: jest.fn(),
   getCategoryUuidFromOrderTypes: jest.fn(),
 }));
-jest.mock('../../hooks/usePatientUUID', () => ({
-  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
-}));
+
 const mockAddNotification = jest.fn();
 
-describe('RadiologyInvestigationTable', () => {
+describe('RadiologyInvestigationTable Integration', () => {
   const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -28,64 +27,127 @@ describe('RadiologyInvestigationTable', () => {
       },
     },
   });
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
   });
+
   afterEach(() => {
     queryClient.clear();
   });
 
   const wrapper = (
-    <QueryClientProvider client={queryClient}>
-      <RadiologyInvestigationTable config={{ orderType: 'Radiology Order' }} />
-    </QueryClientProvider>
+    <MemoryRouter initialEntries={['/patient/test-patient-uuid']}>
+      <Routes>
+        <Route
+          path="/patient/:patientUuid"
+          element={
+            <QueryClientProvider client={queryClient}>
+              <RadiologyInvestigationTable
+                config={{ orderType: 'Radiology Order' }}
+              />
+            </QueryClientProvider>
+          }
+        />
+      </Routes>
+    </MemoryRouter>
   );
 
-  it('should show radiology investigations table when patient has investigations', async () => {
-    (getCategoryUuidFromOrderTypes as jest.Mock).mockResolvedValue(
-      mockCategoryUuid,
-    );
-    (
-      getPatientRadiologyInvestigationBundleWithImagingStudy as jest.Mock
-    ).mockReturnValue(mockValidBundle);
-    render(wrapper);
-    expect(
-      screen.getByTestId('radiology-investigations-table-test-id'),
-    ).toBeInTheDocument();
-    await waitFor(() => {
-      expect(screen.getByText('Chest X-Ray')).toBeInTheDocument();
+  describe('Component States', () => {
+    it('shows loading state during service call', () => {
+      (getCategoryUuidFromOrderTypes as jest.Mock).mockResolvedValue(
+        mockCategoryUuid,
+      );
+      (
+        getPatientRadiologyInvestigationBundleWithImagingStudy as jest.Mock
+      ).mockImplementation(() => new Promise(() => {}));
+
+      render(wrapper);
+
+      expect(
+        screen.getByTestId('radiology-investigations-table-test-id'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('radiology-investigations-table-skeleton'),
+      ).toBeInTheDocument();
     });
-    expect(screen.getByText('Chest X-Ray')).toBeInTheDocument();
-    expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-    expect(
-      getPatientRadiologyInvestigationBundleWithImagingStudy,
-    ).toHaveBeenCalledTimes(1);
+
+    it('shows empty state when patient has no recorded radiology investigations', async () => {
+      (getCategoryUuidFromOrderTypes as jest.Mock).mockResolvedValue(
+        mockCategoryUuid,
+      );
+      (
+        getPatientRadiologyInvestigationBundleWithImagingStudy as jest.Mock
+      ).mockResolvedValue([]);
+
+      render(wrapper);
+
+      expect(
+        screen.getByTestId('radiology-investigations-table-test-id'),
+      ).toBeInTheDocument();
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('radiology-investigations-table-empty'),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('shows error state when radiology investigation data cannot be fetched', async () => {
+      (getCategoryUuidFromOrderTypes as jest.Mock).mockResolvedValue(
+        mockCategoryUuid,
+      );
+      const errorMessage =
+        'Failed to fetch radiology investigations from server';
+      (
+        getPatientRadiologyInvestigationBundleWithImagingStudy as jest.Mock
+      ).mockRejectedValue(new Error(errorMessage));
+
+      render(wrapper);
+
+      expect(
+        screen.getByTestId('radiology-investigations-table-test-id'),
+      ).toBeInTheDocument();
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('radiology-investigations-table-error'),
+        ).toBeInTheDocument();
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          type: 'error',
+          title: 'ERROR_DEFAULT_TITLE',
+          message: 'Failed to fetch radiology investigations from server',
+        });
+      });
+    });
   });
 
-  it('should show error state when an error occurs', async () => {
-    (getCategoryUuidFromOrderTypes as jest.Mock).mockResolvedValue(
-      mockCategoryUuid,
-    );
-    const errorMessage = 'Failed to fetch radiology investigations from server';
-    (
-      getPatientRadiologyInvestigationBundleWithImagingStudy as jest.Mock
-    ).mockRejectedValue(new Error(errorMessage));
-    render(wrapper);
-    expect(
-      screen.getByTestId('radiology-investigations-table-test-id'),
-    ).toBeInTheDocument();
-    await waitFor(() => {
+  describe('Data Display', () => {
+    it('displays patient radiology investigations with all critical information for clinical review', async () => {
+      (getCategoryUuidFromOrderTypes as jest.Mock).mockResolvedValue(
+        mockCategoryUuid,
+      );
+      (
+        getPatientRadiologyInvestigationBundleWithImagingStudy as jest.Mock
+      ).mockReturnValue(mockValidBundle);
+
+      render(wrapper);
+
       expect(
-        screen.getByTestId('radiology-investigations-table-error'),
+        screen.getByTestId('radiology-investigations-table-test-id'),
       ).toBeInTheDocument();
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        type: 'error',
-        title: 'ERROR_DEFAULT_TITLE',
-        message: 'Failed to fetch radiology investigations from server',
+
+      await waitFor(() => {
+        expect(screen.getByText('Chest X-Ray')).toBeInTheDocument();
       });
+
+      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      expect(
+        getPatientRadiologyInvestigationBundleWithImagingStudy,
+      ).toHaveBeenCalledTimes(1);
     });
   });
 });

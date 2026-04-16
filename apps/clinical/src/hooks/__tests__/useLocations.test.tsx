@@ -33,14 +33,11 @@ describe('useLocations', () => {
   // Happy Path Tests
   describe('Happy Paths', () => {
     it('should fetch locations successfully', async () => {
-      // Arrange
       const mockLocations = [mockLocation];
       mockedGetLocations.mockResolvedValueOnce(mockLocations);
 
-      // Act
       const { result } = renderHook(() => useLocations());
 
-      // Assert initial loading state
       expect(result.current.loading).toBe(true);
       expect(result.current.locations).toEqual([]);
       expect(result.current.error).toBeNull();
@@ -50,14 +47,12 @@ describe('useLocations', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert final state
       expect(result.current.locations).toEqual(mockLocations);
       expect(result.current.error).toBeNull();
       expect(mockedGetLocations).toHaveBeenCalled();
     });
 
     it('should refetch locations when refetch function is called', async () => {
-      // Arrange
       const initialLocations = [mockLocation];
       const updatedLocations = [
         mockLocation,
@@ -72,7 +67,6 @@ describe('useLocations', () => {
         .mockResolvedValueOnce(initialLocations)
         .mockResolvedValueOnce(updatedLocations);
 
-      // Act - Initial render
       const { result } = renderHook(() => useLocations());
 
       // Wait for initial fetch
@@ -82,12 +76,10 @@ describe('useLocations', () => {
 
       expect(result.current.locations).toEqual(initialLocations);
 
-      // Act - Call refetch
       act(() => {
         result.current.refetch();
       });
 
-      // Assert loading state during refetch
       expect(result.current.loading).toBe(true);
 
       // Wait for refetch to complete
@@ -95,7 +87,6 @@ describe('useLocations', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert final state
       expect(result.current.locations).toEqual(updatedLocations);
       expect(result.current.error).toBeNull();
       expect(mockedGetLocations).toHaveBeenCalledTimes(2);
@@ -105,11 +96,9 @@ describe('useLocations', () => {
   // Sad Path Tests
   describe('Sad Paths', () => {
     it('should handle API call failure with Error object', async () => {
-      // Arrange
       const error = new Error('Network error');
       mockedGetLocations.mockRejectedValueOnce(error);
 
-      // Act
       const { result } = renderHook(() => useLocations());
 
       // Wait for async operations
@@ -117,18 +106,15 @@ describe('useLocations', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert
       expect(result.current.error).toBe(error);
       expect(result.current.locations).toEqual([]);
       expect(mockedGetLocations).toHaveBeenCalled();
     });
 
     it('should handle API call failure with non-Error object', async () => {
-      // Arrange
       const nonErrorObject = { message: 'Some API error' };
       mockedGetLocations.mockRejectedValueOnce(nonErrorObject);
 
-      // Act
       const { result } = renderHook(() => useLocations());
 
       // Wait for async operations
@@ -136,7 +122,6 @@ describe('useLocations', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert
       expect(result.current.error?.message).toBe(
         'Error fetching locations details',
       );
@@ -145,10 +130,8 @@ describe('useLocations', () => {
     });
 
     it('should handle empty locations array from API', async () => {
-      // Arrange
       mockedGetLocations.mockResolvedValueOnce([]);
 
-      // Act
       const { result } = renderHook(() => useLocations());
 
       // Wait for async operations
@@ -156,7 +139,6 @@ describe('useLocations', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert
       expect(result.current.error?.message).toBe(
         'Error fetching locations details',
       );
@@ -165,12 +147,10 @@ describe('useLocations', () => {
     });
 
     it('should handle null response from API', async () => {
-      // Arrange
       mockedGetLocations.mockResolvedValueOnce(
         null as unknown as OpenMRSLocation[],
       );
 
-      // Act
       const { result } = renderHook(() => useLocations());
 
       // Wait for async operations
@@ -178,7 +158,6 @@ describe('useLocations', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert
       expect(result.current.error?.message).toBe(
         'Error fetching locations details',
       );
@@ -190,10 +169,8 @@ describe('useLocations', () => {
   // Edge Case Tests
   describe('Edge Cases', () => {
     it('should handle malformed location data gracefully', async () => {
-      // Arrange
       mockedGetLocations.mockResolvedValueOnce([{} as OpenMRSLocation]);
 
-      // Act
       const { result } = renderHook(() => useLocations());
 
       // Wait for async operations
@@ -201,7 +178,6 @@ describe('useLocations', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Assert
       expect(result.current.locations).toEqual([{}]);
       expect(result.current.error).toBeNull();
       expect(mockedGetLocations).toHaveBeenCalled();

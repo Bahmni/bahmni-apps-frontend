@@ -1,13 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ImageTile } from '../ImageTile';
 
-jest.mock('../styles/ImageTile.module.scss', () => ({
-  thumbnailButton: 'thumbnailButton-class',
-  thumbnailImage: 'thumbnailImage-class',
-  modalImageContainer: 'modalImageContainer-class',
-  modalImage: 'modalImage-class',
-}));
-
 describe('ImageTile', () => {
   const defaultProps = {
     imageSrc: '100/9-Consultation-27627c65-5f95-4118-b8e5-89f0aa8cc3b8.png',

@@ -2,13 +2,11 @@ import '@testing-library/jest-dom';
 import {
   getVitalFlowSheetData,
   getFormattedError,
-  useTranslation,
   VitalFlowSheetData,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
 } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
-import { useParams } from 'react-router-dom';
-import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import VitalFlowSheet from '../VitalFlowSheet';
 
 // Mock the service directly for integration testing
@@ -16,18 +14,12 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getVitalFlowSheetData: jest.fn(),
   getFormattedError: jest.fn(),
-  useTranslation: jest.fn(),
 }));
 
-jest.mock('../../hooks/usePatientUUID');
 jest.mock('../../notification', () => ({
   useNotification: () => ({
     addNotification: jest.fn(),
   }),
-}));
-
-jest.mock('react-router-dom', () => ({
-  useParams: jest.fn(),
 }));
 
 const mockGetVitalFlowSheetData = getVitalFlowSheetData as jest.MockedFunction<
@@ -36,13 +28,6 @@ const mockGetVitalFlowSheetData = getVitalFlowSheetData as jest.MockedFunction<
 const mockGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
-const mockUseTranslation = useTranslation as jest.MockedFunction<
-  typeof useTranslation
->;
-const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
-  typeof usePatientUUID
->;
-const mockUseParams = useParams as jest.MockedFunction<typeof useParams>;
 
 // Mock vital flow sheet data that matches the component's expected data structure
 const mockVitalFlowSheetData: VitalFlowSheetData = {
@@ -105,27 +90,24 @@ describe('VitalFlowSheet Integration Tests', () => {
     },
   };
 
+  const renderVitalFlowSheet = (
+    props = defaultProps,
+    patientUuid = 'test-patient-uuid',
+  ) =>
+    render(
+      <MemoryRouter initialEntries={[`/patient/${patientUuid}`]}>
+        <Routes>
+          <Route
+            path="/patient/:patientUuid"
+            element={<VitalFlowSheet {...props} />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.setItem(DEFAULT_DATE_FORMAT_STORAGE_KEY, 'dd/MM/yyyy');
-
-    mockUseParams.mockReturnValue({
-      patientUUID: 'test-patient-uuid',
-    });
-
-    mockUsePatientUUID.mockReturnValue('test-patient-uuid');
-
-    mockUseTranslation.mockReturnValue({
-      t: (key: string) => {
-        const translations: Record<string, string> = {
-          NO_VITAL_SIGNS_DATA: 'No vital signs data available',
-          VITAL_SIGN: 'Vital Sign',
-          VITAL_FLOW_SHEET_TABLE: 'Vital Flow Sheet Table',
-          ERROR_LOADING_VITAL_SIGNS: 'Error loading vital signs',
-        };
-        return translations[key] || key;
-      },
-    } as any);
 
     mockGetFormattedError.mockImplementation((error) => ({
       title: 'Error',
@@ -140,7 +122,7 @@ describe('VitalFlowSheet Integration Tests', () => {
   it('displays vital signs data after successful API call', async () => {
     mockGetVitalFlowSheetData.mockResolvedValue(mockVitalFlowSheetData);
 
-    render(<VitalFlowSheet {...defaultProps} />);
+    renderVitalFlowSheet();
 
     await waitFor(() => {
       expect(screen.getByTestId('vital-flow-sheet-table')).toBeInTheDocument();
@@ -154,7 +136,7 @@ describe('VitalFlowSheet Integration Tests', () => {
     );
 
     // Check that the table shows the expected data
-    expect(screen.getByText('Vital Sign')).toBeInTheDocument();
+    expect(screen.getByText('VITAL_SIGN')).toBeInTheDocument();
     expect(screen.getByText('Temperature (C)')).toBeInTheDocument();
     expect(screen.getByText('Blood Pressure (mmHg)')).toBeInTheDocument();
     expect(screen.getByText('Heart Rate (bpm)')).toBeInTheDocument();
@@ -172,7 +154,7 @@ describe('VitalFlowSheet Integration Tests', () => {
     });
     mockGetVitalFlowSheetData.mockReturnValue(servicePromise);
 
-    render(<VitalFlowSheet {...defaultProps} />);
+    renderVitalFlowSheet();
 
     expect(
       screen.getByTestId('vital-flow-sheet-table-skeleton'),
@@ -188,7 +170,7 @@ describe('VitalFlowSheet Integration Tests', () => {
     const serviceError = new Error('Network timeout');
     mockGetVitalFlowSheetData.mockRejectedValue(serviceError);
 
-    render(<VitalFlowSheet {...defaultProps} />);
+    renderVitalFlowSheet();
 
     await waitFor(() => {
       expect(
@@ -206,7 +188,7 @@ describe('VitalFlowSheet Integration Tests', () => {
   it('shows empty state when no vital signs data is returned', async () => {
     mockGetVitalFlowSheetData.mockResolvedValue(emptyVitalFlowSheetData);
 
-    render(<VitalFlowSheet {...defaultProps} />);
+    renderVitalFlowSheet();
 
     await waitFor(() => {
       expect(
@@ -214,9 +196,7 @@ describe('VitalFlowSheet Integration Tests', () => {
       ).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText('No vital signs data available'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('NO_VITAL_SIGNS_DATA')).toBeInTheDocument();
     expect(
       screen.queryByTestId('vital-flow-sheet-table'),
     ).not.toBeInTheDocument();
@@ -242,7 +222,7 @@ describe('VitalFlowSheet Integration Tests', () => {
 
     mockGetVitalFlowSheetData.mockResolvedValue(dataWithEmptyObservations);
 
-    render(<VitalFlowSheet {...defaultProps} />);
+    renderVitalFlowSheet();
 
     await waitFor(() => {
       expect(
@@ -250,9 +230,7 @@ describe('VitalFlowSheet Integration Tests', () => {
       ).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText('No vital signs data available'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('NO_VITAL_SIGNS_DATA')).toBeInTheDocument();
     expect(
       screen.queryByTestId('vital-flow-sheet-table'),
     ).not.toBeInTheDocument();
@@ -270,7 +248,7 @@ describe('VitalFlowSheet Integration Tests', () => {
 
     mockGetVitalFlowSheetData.mockResolvedValue(dataWithEmptyConceptDetails);
 
-    render(<VitalFlowSheet {...defaultProps} />);
+    renderVitalFlowSheet();
 
     await waitFor(() => {
       expect(
@@ -278,19 +256,20 @@ describe('VitalFlowSheet Integration Tests', () => {
       ).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText('No vital signs data available'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('NO_VITAL_SIGNS_DATA')).toBeInTheDocument();
     expect(
       screen.queryByTestId('vital-flow-sheet-table'),
     ).not.toBeInTheDocument();
   });
 
-  it('shows empty state when patient UUID is missing', async () => {
-    // Mock empty patient UUID - hook will not fetch data
-    mockUsePatientUUID.mockReturnValue('');
-
-    render(<VitalFlowSheet {...defaultProps} />);
+  it('shows empty state when patient UUID is not provided', async () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<VitalFlowSheet {...defaultProps} />} />
+        </Routes>
+      </MemoryRouter>,
+    );
 
     // Should show empty state since no data will be fetched
     await waitFor(() => {
@@ -299,33 +278,29 @@ describe('VitalFlowSheet Integration Tests', () => {
       ).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText('No vital signs data available'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('NO_VITAL_SIGNS_DATA')).toBeInTheDocument();
     expect(mockGetVitalFlowSheetData).not.toHaveBeenCalled();
   });
 
   it('responds to patient UUID changes', async () => {
-    // First render with initial data
     mockGetVitalFlowSheetData.mockResolvedValue(mockVitalFlowSheetData);
 
-    const { rerender } = render(<VitalFlowSheet {...defaultProps} />);
+    const { unmount } = renderVitalFlowSheet();
 
     await waitFor(() => {
       expect(screen.getByTestId('vital-flow-sheet-table')).toBeInTheDocument();
     });
 
-    // Simulate patient change - component would show loading state
+    unmount();
+
+    // Simulate patient change - render component for a different patient
     let resolvePromise: (value: VitalFlowSheetData) => void;
     const servicePromise = new Promise<VitalFlowSheetData>((resolve) => {
       resolvePromise = resolve;
     });
     mockGetVitalFlowSheetData.mockReturnValue(servicePromise);
 
-    // Change patient UUID
-    mockUsePatientUUID.mockReturnValue('different-patient-uuid');
-
-    rerender(<VitalFlowSheet {...defaultProps} />);
+    renderVitalFlowSheet(defaultProps, 'different-patient-uuid');
 
     // Should show loading state for new patient
     expect(
@@ -367,7 +342,7 @@ describe('VitalFlowSheet Integration Tests', () => {
   it('responds to parameter changes', async () => {
     mockGetVitalFlowSheetData.mockResolvedValue(mockVitalFlowSheetData);
 
-    const { rerender } = render(<VitalFlowSheet {...defaultProps} />);
+    const { rerender } = renderVitalFlowSheet();
 
     await waitFor(() => {
       expect(screen.getByTestId('vital-flow-sheet-table')).toBeInTheDocument();
@@ -411,7 +386,16 @@ describe('VitalFlowSheet Integration Tests', () => {
 
     mockGetVitalFlowSheetData.mockResolvedValue(newData);
 
-    rerender(<VitalFlowSheet {...newProps} />);
+    rerender(
+      <MemoryRouter initialEntries={['/patient/test-patient-uuid']}>
+        <Routes>
+          <Route
+            path="/patient/:patientUuid"
+            element={<VitalFlowSheet {...newProps} />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
 
     await waitFor(() => {
       expect(mockGetVitalFlowSheetData).toHaveBeenCalledWith(
@@ -423,7 +407,7 @@ describe('VitalFlowSheet Integration Tests', () => {
     });
 
     // Check that the table shows the expected data for new parameters
-    expect(screen.getByText('Vital Sign')).toBeInTheDocument();
+    expect(screen.getByText('VITAL_SIGN')).toBeInTheDocument();
     expect(screen.getByText('Temperature (C)')).toBeInTheDocument();
     expect(screen.getByText('Heart Rate (bpm)')).toBeInTheDocument();
 
@@ -436,7 +420,7 @@ describe('VitalFlowSheet Integration Tests', () => {
     const networkError = new Error('Failed to fetch vital signs');
     mockGetVitalFlowSheetData.mockRejectedValue(networkError);
 
-    render(<VitalFlowSheet {...defaultProps} />);
+    renderVitalFlowSheet();
 
     await waitFor(() => {
       expect(
@@ -455,7 +439,7 @@ describe('VitalFlowSheet Integration Tests', () => {
     });
     mockGetVitalFlowSheetData.mockReturnValue(servicePromise);
 
-    render(<VitalFlowSheet {...defaultProps} />);
+    renderVitalFlowSheet();
 
     // Initially should show loading
     expect(
@@ -481,24 +465,5 @@ describe('VitalFlowSheet Integration Tests', () => {
     expect(
       screen.queryByTestId('vital-flow-sheet-table-empty'),
     ).not.toBeInTheDocument();
-  });
-
-  it('shows empty state when patient UUID is null', async () => {
-    // Mock null patient UUID - hook will not fetch data
-    mockUsePatientUUID.mockReturnValue(null);
-
-    render(<VitalFlowSheet {...defaultProps} />);
-
-    // Should show empty state since no data will be fetched
-    await waitFor(() => {
-      expect(
-        screen.getByTestId('vital-flow-sheet-table-empty'),
-      ).toBeInTheDocument();
-    });
-
-    expect(
-      screen.getByText('No vital signs data available'),
-    ).toBeInTheDocument();
-    expect(mockGetVitalFlowSheetData).not.toHaveBeenCalled();
   });
 });

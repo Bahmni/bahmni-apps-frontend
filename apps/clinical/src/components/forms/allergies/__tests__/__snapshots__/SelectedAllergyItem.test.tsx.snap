@@ -18,7 +18,7 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
         ]
       </span>
       <a
-        class="cds--link"
+        class="cds--link addAllergyNote"
         data-testid="allergy-add-note-link-test-allergy-1"
         href="#"
       >
@@ -222,7 +222,7 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
         ]
       </span>
       <a
-        class="cds--link"
+        class="cds--link addAllergyNote"
         data-testid="allergy-add-note-link-test-allergy-1"
         href="#"
       >

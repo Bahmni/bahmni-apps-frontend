@@ -805,20 +805,7 @@ describe('ConditionsAndDiagnoses', () => {
   });
 
   describe('Selection Edge Cases', () => {
-    test('should not call addDiagnosis when selectedItem is null', async () => {
-      renderComponent();
-      const comboBox = screen.getByRole('combobox');
-
-      // Simulate onChange with null selectedItem
-      fireEvent.change(comboBox, {
-        target: { value: '' },
-        selectedItem: null,
-      });
-
-      expect(addDiagnosisMock).not.toHaveBeenCalled();
-    });
-
-    test('should not call addDiagnosis when selectedItem is undefined', async () => {
+    test('should not call addDiagnosis when selectedItem is falsy', async () => {
       renderComponent();
       const comboBox = screen.getByRole('combobox');
 

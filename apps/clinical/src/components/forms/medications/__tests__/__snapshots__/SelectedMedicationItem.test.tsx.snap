@@ -19,7 +19,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       class="medicationActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
     >
       <div
-        class="cds--form-item cds--checkbox-wrapper"
+        class="cds--form-item cds--checkbox-wrapper statControl"
       >
         <input
           aria-label="STAT"
@@ -75,7 +75,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       class="dosageControls cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
     >
       <div
-        class="cds--form-item"
+        class="cds--form-item dosageInput"
       >
         <div
           class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
@@ -162,7 +162,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         </div>
       </div>
       <div
-        class="cds--dropdown__wrapper cds--list-box__wrapper"
+        class="cds--dropdown__wrapper cds--list-box__wrapper dosageUnit"
         data-testid="medication-dosage-unit-dropdown-entry-1"
       >
         <label
@@ -229,7 +229,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       </div>
     </div>
     <div
-      class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+      class="column cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -302,7 +302,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       class="durationControls cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
     >
       <div
-        class="cds--form-item"
+        class="cds--form-item durationInput"
       >
         <div
           class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
@@ -389,7 +389,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         </div>
       </div>
       <div
-        class="cds--dropdown__wrapper cds--list-box__wrapper"
+        class="cds--dropdown__wrapper cds--list-box__wrapper durationUnit"
         data-testid="medication-duration-unit-dropdown-entry-1"
       >
         <label
@@ -456,7 +456,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       </div>
     </div>
     <div
-      class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+      class="column cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -526,7 +526,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       </div>
     </div>
     <div
-      class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+      class="column cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -596,7 +596,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       </div>
     </div>
     <div
-      class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+      class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
     >
       <div
         class="cds--form-item"
@@ -651,7 +651,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
       </div>
     </div>
     <div
-      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+      class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
     >
       <a
         class="cds--link"
@@ -692,7 +692,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       class="medicationActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
     >
       <div
-        class="cds--form-item cds--checkbox-wrapper"
+        class="cds--form-item cds--checkbox-wrapper statControl"
       >
         <input
           aria-label="STAT"
@@ -748,7 +748,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       class="dosageControls cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
     >
       <div
-        class="cds--form-item"
+        class="cds--form-item dosageInput"
       >
         <div
           class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
@@ -865,7 +865,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         </div>
       </div>
       <div
-        class="cds--dropdown__wrapper cds--list-box__wrapper"
+        class="cds--dropdown__wrapper cds--list-box__wrapper dosageUnit"
         data-testid="medication-dosage-unit-dropdown-entry-1"
       >
         <label
@@ -958,7 +958,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       </div>
     </div>
     <div
-      class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+      class="column cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -1057,7 +1057,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       class="durationControls cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
     >
       <div
-        class="cds--form-item"
+        class="cds--form-item durationInput"
       >
         <div
           class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
@@ -1174,7 +1174,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         </div>
       </div>
       <div
-        class="cds--dropdown__wrapper cds--list-box__wrapper"
+        class="cds--dropdown__wrapper cds--list-box__wrapper durationUnit"
         data-testid="medication-duration-unit-dropdown-entry-1"
       >
         <label
@@ -1267,7 +1267,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       </div>
     </div>
     <div
-      class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+      class="column cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -1337,7 +1337,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       </div>
     </div>
     <div
-      class="cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
+      class="column cds--sm:col-span-1 cds--md:col-span-2 cds--lg:col-span-4 cds--css-grid-column"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -1433,7 +1433,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       </div>
     </div>
     <div
-      class="cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+      class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
     >
       <div
         class="cds--form-item"
@@ -1488,7 +1488,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
       </div>
     </div>
     <div
-      class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+      class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
     >
       <a
         class="cds--link"

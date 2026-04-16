@@ -57,13 +57,6 @@ jest.mock('@tanstack/react-query', () => ({
   useQueryClient: jest.fn(),
 }));
 
-// Mock CSS modules
-jest.mock('../styles/MedicationsForm.module.scss', () => ({
-  medicationsFormTile: 'medicationsFormTile',
-  medicationsFormTitle: 'medicationsFormTitle',
-  medicationsBox: 'medicationsBox',
-}));
-
 const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
 >;
@@ -202,6 +195,9 @@ describe('MedicationsForm', () => {
     // Mock @bahmni/widgets hooks
     mockUseNotification.mockReturnValue({
       addNotification: jest.fn(),
+      notifications: [],
+      removeNotification: jest.fn(),
+      clearAllNotifications: jest.fn(),
     } as ReturnType<typeof useNotification>);
     mockUsePatientUUID.mockReturnValue('patient-uuid-123');
 

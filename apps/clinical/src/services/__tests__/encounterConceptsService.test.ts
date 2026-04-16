@@ -22,7 +22,6 @@ describe('encounterConceptsService', () => {
   // Happy Path Tests
   describe('Happy Paths', () => {
     it('should transform and return encounter concepts when API call succeeds', async () => {
-      // Arrange
       const mockResponse: EncounterConceptsResponse = {
         visitTypes: {
           EMERGENCY: '493ebb53-b2bd-4ced-b444-e0965804d771',
@@ -57,10 +56,8 @@ describe('encounterConceptsService', () => {
 
       mockedGet.mockResolvedValueOnce(mockResponse);
 
-      // Act
       const result = await getEncounterConcepts();
 
-      // Assert
       expect(mockedGet).toHaveBeenCalledWith(ENCOUNTER_CONCEPTS_URL);
       expect(result).toEqual(expectedResult);
     });
@@ -69,11 +66,9 @@ describe('encounterConceptsService', () => {
   // Sad Path Tests
   describe('Sad Paths', () => {
     it('should translate generic errors to encounter details error', async () => {
-      // Arrange
       const mockError = new Error('Network error');
       mockedGet.mockRejectedValueOnce(mockError);
 
-      // Act & Assert
       await expect(getEncounterConcepts()).rejects.toThrow(
         i18n.t('ERROR_FETCHING_ENCOUNTER_DETAILS'),
       );
@@ -81,13 +76,11 @@ describe('encounterConceptsService', () => {
     });
 
     it('should not translate invalid response errors', async () => {
-      // Arrange
       const invalidResponseError = new Error(
         i18n.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE),
       );
       mockedGet.mockRejectedValueOnce(invalidResponseError);
 
-      // Act & Assert
       await expect(getEncounterConcepts()).rejects.toThrow(
         i18n.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE),
       );
@@ -98,7 +91,6 @@ describe('encounterConceptsService', () => {
   // Edge Case Tests
   describe('Edge Cases', () => {
     it('should handle missing visitTypes in response', async () => {
-      // Arrange
       const mockResponse = {
         encounterTypes: {},
         orderTypes: {},
@@ -106,15 +98,12 @@ describe('encounterConceptsService', () => {
       };
       mockedGet.mockResolvedValueOnce(mockResponse);
 
-      // Act
       const result = await getEncounterConcepts();
 
-      // Assert
       expect(result.visitTypes).toEqual([]);
     });
 
     it('should handle missing encounterTypes in response', async () => {
-      // Arrange
       const mockResponse = {
         visitTypes: {},
         orderTypes: {},
@@ -122,15 +111,12 @@ describe('encounterConceptsService', () => {
       };
       mockedGet.mockResolvedValueOnce(mockResponse);
 
-      // Act
       const result = await getEncounterConcepts();
 
-      // Assert
       expect(result.encounterTypes).toEqual([]);
     });
 
     it('should handle missing orderTypes in response', async () => {
-      // Arrange
       const mockResponse = {
         visitTypes: {},
         encounterTypes: {},
@@ -138,15 +124,12 @@ describe('encounterConceptsService', () => {
       };
       mockedGet.mockResolvedValueOnce(mockResponse);
 
-      // Act
       const result = await getEncounterConcepts();
 
-      // Assert
       expect(result.orderTypes).toEqual([]);
     });
 
     it('should handle missing conceptData in response', async () => {
-      // Arrange
       const mockResponse = {
         visitTypes: {},
         encounterTypes: {},
@@ -154,36 +137,28 @@ describe('encounterConceptsService', () => {
       };
       mockedGet.mockResolvedValueOnce(mockResponse);
 
-      // Act
       const result = await getEncounterConcepts();
 
-      // Assert
       expect(result.conceptData).toEqual([]);
     });
 
     it('should handle unexpected response structure', async () => {
-      // Arrange - Response without the expected structure
-
       mockedGet.mockResolvedValueOnce('invalid response' as any);
 
-      // Act & Assert
       await expect(getEncounterConcepts()).rejects.toThrow(
         i18n.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE),
       );
     });
 
     it('should throw an error when response is null', async () => {
-      // Arrange
       mockedGet.mockResolvedValueOnce(null);
 
-      // Act & Assert
       await expect(getEncounterConcepts()).rejects.toThrow(
         i18n.t(COMMON_ERROR_MESSAGES.INVALID_RESPONSE),
       );
     });
 
     it('should convert non-string values to strings', async () => {
-      // Arrange
       const mockResponse = {
         visitTypes: {
           NUMBER_ID: 12345,
@@ -208,15 +183,12 @@ describe('encounterConceptsService', () => {
 
       mockedGet.mockResolvedValueOnce(mockResponse);
 
-      // Act
       const result = await getEncounterConcepts();
 
-      // Assert
       expect(result).toEqual(expectedResult);
     });
 
     it('should handle complex objects in conceptData', async () => {
-      // Arrange
       const complexObject = { id: 'abc', type: 'test' };
       const mockResponse = {
         visitTypes: {},
@@ -229,10 +201,8 @@ describe('encounterConceptsService', () => {
 
       mockedGet.mockResolvedValueOnce(mockResponse);
 
-      // Act
       const result = await getEncounterConcepts();
 
-      // Assert
       expect(result.conceptData).toHaveLength(1);
       expect(result.conceptData[0].name).toBe('COMPLEX');
       expect(result.conceptData[0].uuid).toBe(String(complexObject));

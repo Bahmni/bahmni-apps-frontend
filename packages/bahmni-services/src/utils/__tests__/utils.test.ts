@@ -92,11 +92,8 @@ describe('common utility functions', () => {
   });
 
   describe('isStringEmpty', () => {
-    it('should return true for undefined input', () => {
+    it('should return true for null or undefined input', () => {
       expect(isStringEmpty(undefined)).toBe(true);
-    });
-
-    it('should return true for null input', () => {
       // @ts-expect-error - Testing null case even though type is string | undefined
       expect(isStringEmpty(null)).toBe(true);
     });

@@ -287,26 +287,12 @@ describe('ExpandableDataTable', () => {
     expect(screen.getByText('active')).toBeInTheDocument();
   });
 
-  it('handles undefined rows gracefully', () => {
+  it.each([undefined, null])('handles %s rows gracefully', (rows) => {
     render(
       <ExpandableDataTable
         headers={mockHeaders}
-        rows={undefined as any}
-        ariaLabel="Undefined Rows"
-      />,
-    );
-
-    expect(
-      screen.getByTestId('expandable-data-table-empty'),
-    ).toBeInTheDocument();
-  });
-
-  it('handles null rows gracefully', () => {
-    render(
-      <ExpandableDataTable
-        headers={mockHeaders}
-        rows={null as any}
-        ariaLabel="Null Rows"
+        rows={rows as any}
+        ariaLabel="Empty Rows"
       />,
     );
 

@@ -6,13 +6,6 @@ import SelectedInvestigationItem from '../SelectedInvestigationItem';
 
 expect.extend(toHaveNoViolations);
 
-// Mock the CSS modules
-jest.mock('../styles/SelectedInvestigationItem.module.scss', () => ({
-  selectedInvestigationTitle: 'selectedInvestigationTitle',
-  selectedInvestigationUrgentPriority: 'selectedInvestigationUrgentPriority',
-  addInvestigationNote: 'addInvestigationNote',
-}));
-
 const mockInvestigation: ServiceRequestInputEntry = {
   id: 'test-investigation-1',
   display: 'Complete Blood Count (CBC)',
