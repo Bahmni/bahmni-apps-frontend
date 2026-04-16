@@ -18,13 +18,16 @@
 }
 
 .loading {
+  margin-block: $spacing-05;
   max-inline-size: 100% !important;
 }
 
 .error {
   @include type-style("body-compact-02");
   color: $text-error;
-  padding: $spacing-05;
+  padding: $spacing-07;
+  justify-self: center;
+  font-style: italic;
 }
 
 .selectedItem {
