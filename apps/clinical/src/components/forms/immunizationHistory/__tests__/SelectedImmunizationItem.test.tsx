@@ -4,6 +4,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import SelectedImmunizationItem from '../components/SelectedImmunizationItem';
 import { useImmunizationHistoryStore } from '../stores';
 import {
+  mockCovid19VaccineDrugs,
   mockFullFormFields,
   mockImmunizationEntry,
   mockImmunizationEntryWithDate,
@@ -12,7 +13,6 @@ import {
   mockRoutesValueSet,
   mockSitesValueSet,
   mockStore,
-  mockVaccineDrugs,
 } from './__mocks__/immunizationHistoryMocks';
 
 jest.mock('../stores');
@@ -29,7 +29,7 @@ const defaultProps = {
   sites: mockSitesValueSet,
   administeredLocationTag: mockLocations,
   formFields: mockFullFormFields,
-  vaccineDrugs: mockVaccineDrugs,
+  vaccineDrugs: mockCovid19VaccineDrugs,
 };
 
 describe('SelectedImmunizationItem', () => {
@@ -163,12 +163,12 @@ describe('SelectedImmunizationItem', () => {
     it('calls updateVaccineDrug when a drug is selected from the drug combobox', async () => {
       const user = userEvent.setup();
       render(<SelectedImmunizationItem {...defaultProps} />);
-      await user.type(screen.getByPlaceholderText('Search drug name'), 'BCG');
-      await user.click(screen.getByText('BCG Vaccine'));
+      await user.type(screen.getByPlaceholderText('Search drug name'), 'COVID');
+      await user.click(screen.getByText('COVID-19 Drug'));
       await waitFor(() => {
         expect(mockStore.updateVaccineDrug).toHaveBeenCalledWith(
           id,
-          'bcg-code',
+          'covid-19',
         );
       });
     });
@@ -208,6 +208,44 @@ describe('SelectedImmunizationItem', () => {
         expect(mockStore.updateSite).toHaveBeenCalledWith(id, 'arm');
       });
     });
+
+    it.each([
+      [
+        'updateVaccineDrug',
+        'Search drug name',
+        'COVID',
+        'COVID-19 Drug',
+        mockStore.updateVaccineDrug,
+      ],
+      [
+        'updateAdministeredLocation',
+        'Select administered location',
+        'Main',
+        'Main Clinic',
+        mockStore.updateAdministeredLocation,
+      ],
+      [
+        'updateRoute',
+        'Select route',
+        'Intra',
+        'Intramuscular',
+        mockStore.updateRoute,
+      ],
+      ['updateSite', 'Select site', 'Left', 'Left Arm', mockStore.updateSite],
+    ])(
+      'does not call %s when selection is cleared',
+      async (_, placeholder, searchTerm, itemText, storeMethod) => {
+        const user = userEvent.setup();
+        render(<SelectedImmunizationItem {...defaultProps} />);
+        await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
+        await user.click(screen.getByText(itemText));
+        storeMethod.mockClear();
+        await user.click(
+          screen.getByRole('button', { name: 'Clear selected item' }),
+        );
+        expect(storeMethod).not.toHaveBeenCalled();
+      },
+    );
 
     it('calls updateManufacturer when manufacturer input changes', async () => {
       const user = userEvent.setup();

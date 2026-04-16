@@ -282,6 +282,7 @@
   "NO_DIAGNOSES": "No Diagnoses recorded",
   "NO_MATCHING_ALLERGEN_FOUND": "No matching Allergen recorded",
   "NO_MATCHING_DIAGNOSIS_FOUND": "No matching Diagnosis recorded",
+  "NO_MATCHING_DRUG_NAME_FOUND": "No matching drug name found",
   "NO_MATCHING_IMMUNIZATIONS_FOUND": "No matching immunizations found",
   "NO_MATCHING_INVESTIGATIONS_FOUND": "No matching Investigations found",
   "NO_MATCHING_MEDICATIONS_FOUND": "No matching Medications found",

@@ -1,4 +1,4 @@
-import { Immunization } from 'fhir/r4';
+import { Immunization, Medication } from 'fhir/r4';
 import { getMedicationDisplay } from '../../../../services/medicationService';
 import {
   getValueSetComboBoxItems,
@@ -82,24 +82,64 @@ describe('getMedicationComboBoxItems', () => {
     expect(getMedicationComboBoxItems('bcg', undefined)).toEqual([]);
   });
 
-  it('filters medications by display name case-insensitively', () => {
+  it('filters medications by display name and vaccineCode', () => {
     (getMedicationDisplay as jest.Mock).mockReturnValue('BCG Vaccine');
-    expect(getMedicationComboBoxItems('BCG', mockVaccineDrugs)).toEqual([
-      { code: 'bcg-code', display: 'BCG Vaccine' },
-    ]);
+    expect(
+      getMedicationComboBoxItems('BCG', mockVaccineDrugs, 'bcg-code'),
+    ).toEqual([{ code: 'bcg-code', display: 'BCG Vaccine' }]);
   });
 
-  it('returns empty array when no medications match', () => {
+  it.each([
+    ['no matching search term', 'flu', 'bcg-code', undefined],
+    ['no matching vaccineCode', 'BCG', 'covid-19', undefined],
+    [
+      'medications exist but no search match with emptyMessage',
+      'flu',
+      'bcg-code',
+      'No results',
+    ],
+  ])(
+    'returns empty array when %s',
+    (_, searchTerm, vaccineCode, emptyMessage) => {
+      (getMedicationDisplay as jest.Mock).mockReturnValue('BCG Vaccine');
+      expect(
+        getMedicationComboBoxItems(
+          searchTerm,
+          mockVaccineDrugs,
+          vaccineCode,
+          emptyMessage,
+        ),
+      ).toEqual([]);
+    },
+  );
+
+  it('falls back to empty string when first coding entry has no code', () => {
     (getMedicationDisplay as jest.Mock).mockReturnValue('BCG Vaccine');
-    expect(getMedicationComboBoxItems('flu', mockVaccineDrugs)).toEqual([]);
+    const medicationWithPartialCoding: Medication[] = [
+      {
+        resourceType: 'Medication',
+        code: { coding: [{ system: 'some-system' }, { code: 'bcg-code' }] },
+      },
+    ];
+    expect(
+      getMedicationComboBoxItems(
+        'BCG',
+        medicationWithPartialCoding,
+        'bcg-code',
+      ),
+    ).toEqual([{ code: '', display: 'BCG Vaccine' }]);
   });
 
-  it('falls back to empty string when medication has no code', () => {
+  it('returns disabled sentinel when no medications match the vaccineCode and emptyMessage is provided', () => {
     (getMedicationDisplay as jest.Mock).mockReturnValue('BCG Vaccine');
-    const medicationWithoutCode = [{ resourceType: 'Medication' as const }];
-    expect(getMedicationComboBoxItems('bcg', medicationWithoutCode)).toEqual([
-      { code: '', display: 'BCG Vaccine' },
-    ]);
+    expect(
+      getMedicationComboBoxItems(
+        'BCG',
+        mockVaccineDrugs,
+        'covid-19',
+        'No results',
+      ),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
   });
 });
 

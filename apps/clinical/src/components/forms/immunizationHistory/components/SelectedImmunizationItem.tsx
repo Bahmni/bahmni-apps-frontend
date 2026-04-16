@@ -57,8 +57,14 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   ] = useState('');
 
   const vaccineDrugComboBoxItems = useMemo(
-    () => getMedicationComboBoxItems(drugSearchTerm, vaccineDrugs),
-    [drugSearchTerm, vaccineDrugs],
+    () =>
+      getMedicationComboBoxItems(
+        drugSearchTerm,
+        vaccineDrugs,
+        immunization.vaccineCode.code,
+        t('NO_MATCHING_DRUG_NAME_FOUND'),
+      ),
+    [drugSearchTerm, vaccineDrugs, immunization.vaccineCode.code, t],
   );
 
   const administeredLocationTagComboBoxItems = useMemo(
@@ -112,10 +118,13 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
             placeholder={t('IMMUNIZATION_HISTORY_SEARCH_DRUG_NAME_PLACEHOLDER')}
             autoAlign
             items={vaccineDrugComboBoxItems}
-            itemToString={(item) => item!.display!}
-            onChange={({ selectedItem }) =>
-              updateVaccineDrug(id, selectedItem!.code!)
-            }
+            itemToString={(item) => item?.display ?? ''}
+            onChange={({ selectedItem }) => {
+              if (selectedItem?.code) {
+                updateVaccineDrug(id, selectedItem.code);
+              }
+            }}
+            allowCustomValue
             onInputChange={(value: string) => setDrugSearchTerm(value)}
             size="md"
             invalid={!!immunization.errors.drugCode}
@@ -163,11 +172,14 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                 'IMMUNIZATION_HISTORY_ADMINISTERED_LOCATION_PLACEHOLDER',
               )}
               autoAlign
+              allowCustomValue
               items={administeredLocationTagComboBoxItems}
-              itemToString={(item) => item!.display}
-              onChange={({ selectedItem }) =>
-                updateAdministeredLocation(id, selectedItem!.uuid)
-              }
+              itemToString={(item) => item?.display ?? ''}
+              onChange={({ selectedItem }) => {
+                if (selectedItem?.uuid) {
+                  updateAdministeredLocation(id, selectedItem.uuid);
+                }
+              }}
               onInputChange={(searchQuery: string) =>
                 handleAdministeredLocationTagInputChange(searchQuery)
               }
@@ -190,10 +202,12 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               placeholder={t('IMMUNIZATION_HISTORY_ROUTE_PLACEHOLDER')}
               autoAlign
               items={routeComboBoxItems}
-              itemToString={(item) => item!.display}
-              onChange={({ selectedItem }) =>
-                updateRoute(id, selectedItem!.code)
-              }
+              itemToString={(item) => item?.display ?? ''}
+              onChange={({ selectedItem }) => {
+                if (selectedItem?.code) {
+                  updateRoute(id, selectedItem.code);
+                }
+              }}
               onInputChange={(searchQuery: string) =>
                 handleRouteInputChange(searchQuery)
               }
@@ -214,10 +228,12 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               placeholder={t('IMMUNIZATION_HISTORY_SITE_PLACEHOLDER')}
               autoAlign
               items={siteComboBoxItems}
-              itemToString={(item) => item!.display}
-              onChange={({ selectedItem }) =>
-                updateSite(id, selectedItem!.code)
-              }
+              itemToString={(item) => item?.display ?? ''}
+              onChange={({ selectedItem }) => {
+                if (selectedItem?.code) {
+                  updateSite(id, selectedItem.code);
+                }
+              }}
               onInputChange={(searchQuery: string) =>
                 handleSiteInputChange(searchQuery)
               }

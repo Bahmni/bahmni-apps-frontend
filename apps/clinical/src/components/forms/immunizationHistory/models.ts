@@ -31,6 +31,7 @@ export interface ImmunizationInputEntry {
 export interface ValueSetComboBoxItem {
   code: string;
   display: string;
+  disabled?: boolean;
 }
 
 export interface LocationComboBoxItem {

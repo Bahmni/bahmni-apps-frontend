@@ -199,6 +199,24 @@ describe('ImmunizationHistoryForm', () => {
         });
       });
     });
+
+    it('does not call addImmunization when selection is cleared', async () => {
+      const user = userEvent.setup();
+      render(<ImmunizationHistoryForm />);
+      await user.type(
+        screen.getByRole('combobox', { name: /search to add immunization/i }),
+        'covid',
+      );
+      await waitFor(() => {
+        expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument();
+      });
+      await user.click(screen.getByText('COVID-19 Vaccine'));
+      mockStore.addImmunization.mockClear();
+      await user.click(
+        screen.getByRole('button', { name: 'Clear selected item' }),
+      );
+      expect(mockStore.addImmunization).not.toHaveBeenCalled();
+    });
   });
 
   describe('BoxWHeader and selected immunizations', () => {

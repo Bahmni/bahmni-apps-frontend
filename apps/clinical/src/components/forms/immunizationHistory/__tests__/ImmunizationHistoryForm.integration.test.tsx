@@ -14,11 +14,11 @@ import { useImmunizationHistoryStore } from '../stores';
 import { createImmunizationBundleEntries } from '../utils';
 import {
   mockClinicalConfigContext,
+  mockCovid19VaccineDrug,
   mockEncounterSubject,
   mockLocations,
   mockRoutesValueSet,
   mockSitesValueSet,
-  mockVaccineDrugs,
   mockVaccineValueSet,
 } from './__mocks__/immunizationHistoryMocks';
 
@@ -38,7 +38,7 @@ Element.prototype.scrollIntoView = jest.fn();
 const mockVaccinationBundle = {
   resourceType: 'Bundle',
   type: 'searchset',
-  entry: [{ resource: mockVaccineDrugs[0] }],
+  entry: [{ resource: mockCovid19VaccineDrug }],
 };
 
 const createWrapper = () => {
@@ -101,11 +101,11 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
     const { id } =
       useImmunizationHistoryStore.getState().selectedImmunizations[0];
 
-    await user.type(screen.getByPlaceholderText('Search drug name'), 'BCG');
+    await user.type(screen.getByPlaceholderText('Search drug name'), 'COVID');
     await waitFor(() => {
-      expect(screen.getByText('BCG Vaccine')).toBeInTheDocument();
+      expect(screen.getByText('COVID-19 Drug')).toBeInTheDocument();
     });
-    await user.click(screen.getByText('BCG Vaccine'));
+    await user.click(screen.getByText('COVID-19 Drug'));
 
     await act(async () => {
       useImmunizationHistoryStore

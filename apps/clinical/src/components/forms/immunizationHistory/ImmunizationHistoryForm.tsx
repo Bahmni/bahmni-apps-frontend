@@ -201,12 +201,14 @@ const ImmunizationHistoryForm = () => {
         data-testid="immunization-history-search-combobox"
         placeholder={t('IMMUNIZATION_HISTORY_SEARCH_PLACEHOLDER')}
         items={vaccineCodeComboBoxItems}
-        itemToString={(item) => item!.display!}
+        itemToString={(item) => item?.display ?? ''}
         onChange={({ selectedItem }) => {
-          addImmunization({
-            code: selectedItem!.code!,
-            display: selectedItem!.display!,
-          });
+          if (selectedItem?.code && selectedItem?.display) {
+            addImmunization({
+              code: selectedItem.code,
+              display: selectedItem.display,
+            });
+          }
         }}
         onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
         clearSelectedOnChange

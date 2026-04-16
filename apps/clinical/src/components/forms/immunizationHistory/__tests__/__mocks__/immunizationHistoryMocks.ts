@@ -10,6 +10,7 @@ const MEDICINE_DRUG_NAME_EXTENSION_URL =
 const buildMedicationEntry = (
   drugName: string,
   resourceType = 'Medication',
+  vaccineCode?: string,
 ) => ({
   resource: {
     resourceType,
@@ -21,6 +22,7 @@ const buildMedicationEntry = (
         ],
       },
     ],
+    ...(vaccineCode ? { code: { coding: [{ code: vaccineCode }] } } : {}),
   } as Medication,
 });
 
@@ -98,7 +100,7 @@ export const mockMixedVaccinationBundle = {
   resourceType: 'Bundle',
   type: 'searchset',
   entry: [
-    buildMedicationEntry('Paracetamol'),
+    buildMedicationEntry('Paracetamol', 'Medication', 'covid-19'),
     buildMedicationEntry('ShouldBeExcluded', 'Observation'),
   ],
 };
@@ -192,6 +194,21 @@ export const mockVaccineDrugs: Medication[] = [
     code: { coding: [{ code: 'bcg-code' }] },
   },
 ];
+
+export const mockCovid19VaccineDrug: Medication = {
+  resourceType: 'Medication',
+  extension: [
+    {
+      url: MEDICINE_EXTENSION_URL,
+      extension: [
+        { url: MEDICINE_DRUG_NAME_EXTENSION_URL, valueString: 'COVID-19 Drug' },
+      ],
+    },
+  ],
+  code: { coding: [{ code: 'covid-19' }] },
+};
+
+export const mockCovid19VaccineDrugs: Medication[] = [mockCovid19VaccineDrug];
 
 export const mockEncounterSubject: Reference = {
   reference: 'Patient/patient-uuid',

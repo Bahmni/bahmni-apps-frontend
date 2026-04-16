@@ -33,9 +33,17 @@ export function getValueSetComboBoxItems(
 export function getMedicationComboBoxItems(
   searchTerm: string,
   medications: Medication[] | undefined,
+  vaccineCode: string,
+  emptyMessage: string,
 ): ValueSetComboBoxItem[] {
   if (!searchTerm.trim()) return [];
-  return (medications ?? [])
+  const byVaccineCode = (medications ?? []).filter((med) =>
+    med.code?.coding?.some((c) => c.code === vaccineCode),
+  );
+  if (!byVaccineCode.length && emptyMessage) {
+    return [{ code: '', display: emptyMessage, disabled: true }];
+  }
+  return byVaccineCode
     .filter((med) =>
       getMedicationDisplay(med)
         .toLowerCase()

@@ -282,6 +282,7 @@
   "NO_DIAGNOSES": "No hay diagnósticos registrados",
   "NO_MATCHING_ALLERGEN_FOUND": "No se encontró ningún alérgeno coincidente",
   "NO_MATCHING_DIAGNOSIS_FOUND": "No se encontraron diagnósticos coincidentes",
+  "NO_MATCHING_DRUG_NAME_FOUND": "No se encontró ningún nombre de medicamento coincidente",
   "NO_MATCHING_IMMUNIZATIONS_FOUND": "No se encontraron inmunizaciones coincidentes",
   "NO_MATCHING_INVESTIGATIONS_FOUND": "No se encontraron investigaciones coincidentes",
   "NO_MATCHING_MEDICATIONS_FOUND": "No se encontraron medicamentos coincidentes",
