@@ -141,7 +141,7 @@
       "type": "object",
       "description": "Configuration for consultation pad forms",
       "required": ["allergyConceptMap", "encounterDetails"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "allergyConceptMap": {
           "type": "object",
@@ -207,6 +207,10 @@
         "conditionsAndDiagnoses": {
           "$ref": "#/definitions/inputControl",
           "description": "Configuration for the conditions and diagnoses form"
+        },
+        "immunizationHistory": {
+          "$ref": "#/definitions/inputControl",
+          "description": "Configuration for the immunization history form"
         }
       }
     }
