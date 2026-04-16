@@ -19,34 +19,17 @@ export interface InputControl<
   attributes: InputControlAttributes[];
 }
 
-export interface ImmunizationHistoryConfig {
-  administeredLocationTag: string;
-  routeConceptUuid: string;
-  siteConceptUuid: string;
-  vaccineConceptSetUuid: string;
-}
-
-export interface EncounterDetailsMetadata {
-  defaultEncounterType?: string;
-}
-
-export interface EncounterDetailsControl
-  extends InputControl<EncounterDetailsMetadata> {}
-
-export interface ImmunizationHistoryControl
-  extends InputControl<ImmunizationHistoryConfig> {}
-
 export interface ConsultationPad {
   allergyConceptMap: AllergyConceptMap;
   statDurationInMilliseconds?: number;
-  encounterDetails: EncounterDetailsControl;
+  encounterDetails: InputControl;
   allergies?: InputControl;
   investigations?: InputControl;
   medications?: InputControl;
   observationForms?: InputControl;
   vaccinations?: InputControl;
   conditionsAndDiagnoses?: InputControl;
-  immunizationConfig?: ImmunizationHistoryControl;
+  immunizationHistory?: InputControl;
 }
 
 export interface Dashboard {

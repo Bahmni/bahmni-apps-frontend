@@ -68,5 +68,6 @@ export const mockUpdatedResources = {
   conditions: false,
   allergies: false,
   medications: false,
+  immunizationHistory: false,
   serviceRequests: {} as Record<string, boolean>,
 };

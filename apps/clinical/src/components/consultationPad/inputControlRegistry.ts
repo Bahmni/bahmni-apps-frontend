@@ -20,10 +20,15 @@ import {
   AllergiesForm,
   ConditionsAndDiagnoses,
   EncounterDetails,
+  ImmunizationHistoryForm,
   InvestigationsForm,
   MedicationsForm,
   VaccinationForm,
 } from '../forms';
+import {
+  createImmunizationBundleEntries,
+  useImmunizationHistoryStore,
+} from '../forms/immunizationHistory';
 import ObservationFormsPanel from './components/ObservationFormsPanel';
 import type { EncounterContext, EncounterInputControl } from './models';
 
@@ -133,6 +138,24 @@ const BASE_REGISTRY: EncounterInputControl[] = [
         encounterReference: ctx.encounterReference,
         practitionerUUID: ctx.practitionerUUID,
         statDurationInMilliseconds: ctx.statDurationInMilliseconds,
+      }),
+  },
+  {
+    key: 'immunizationHistory',
+    component: ImmunizationHistoryForm,
+    encounterTypes: ['Immunization'],
+    reset: () => useImmunizationHistoryStore.getState().reset(),
+    validate: () => useImmunizationHistoryStore.getState().validateAll(),
+    hasData: () =>
+      useImmunizationHistoryStore.getState().selectedImmunizations.length > 0,
+    subscribe: (cb) => useImmunizationHistoryStore.subscribe(cb),
+    createBundleEntries: (ctx: EncounterContext) =>
+      createImmunizationBundleEntries({
+        selectedImmunizations:
+          useImmunizationHistoryStore.getState().selectedImmunizations,
+        encounterSubject: ctx.encounterSubject,
+        encounterReference: ctx.encounterReference,
+        practitionerUUID: ctx.practitionerUUID,
       }),
   },
   {

@@ -7,6 +7,7 @@ export type InputControlKey =
   | 'conditionsAndDiagnoses'
   | 'medications'
   | 'vaccinations'
+  | 'immunizationHistory'
   | 'observationForms';
 
 export interface EncounterContext {

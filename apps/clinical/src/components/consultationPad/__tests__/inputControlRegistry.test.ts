@@ -19,6 +19,8 @@ const mockValidateAllVaccinations = jest.fn().mockReturnValue(true);
 const mockValidateConditions = jest.fn().mockReturnValue(true);
 const mockObsFormsValidate = jest.fn().mockReturnValue(true);
 const mockGetObservationFormsData = jest.fn().mockReturnValue({});
+const mockValidateAllImmunizations = jest.fn().mockReturnValue(true);
+const mockCreateImmunizationBundleEntries = jest.fn().mockReturnValue([]);
 
 jest.mock('../../../stores', () => ({
   useEncounterDetailsStore: Object.assign(jest.fn(), {
@@ -89,9 +91,24 @@ jest.mock('../../forms', () => ({
   AllergiesForm: () => null,
   ConditionsAndDiagnoses: () => null,
   EncounterDetails: () => null,
+  ImmunizationHistoryForm: () => null,
   InvestigationsForm: () => null,
   MedicationsForm: () => null,
   VaccinationForm: () => null,
+}));
+
+jest.mock('../../forms/immunizationHistory', () => ({
+  useImmunizationHistoryStore: Object.assign(jest.fn(), {
+    getState: () => ({
+      reset: mockReset,
+      validateAll: mockValidateAllImmunizations,
+      selectedImmunizations: [],
+    }),
+    subscribe: (cb: () => void) => mockSubscribe(cb),
+  }),
+  createImmunizationBundleEntries: (
+    ...args: Parameters<typeof mockCreateImmunizationBundleEntries>
+  ) => mockCreateImmunizationBundleEntries(...args),
 }));
 
 jest.mock('../components/ObservationFormsPanel', () => ({
@@ -107,6 +124,7 @@ describe('loadEncounterInputControls', () => {
     'conditionsAndDiagnoses',
     'medications',
     'vaccinations',
+    'immunizationHistory',
     'observationForms',
   ] as const;
 
@@ -117,8 +135,8 @@ describe('loadEncounterInputControls', () => {
     registry = loadEncounterInputControls(mockConsultationPadConfig);
   });
 
-  it('contains 7 entries with the correct keys in order', () => {
-    expect(registry).toHaveLength(7);
+  it('contains 8 entries with the correct keys in order', () => {
+    expect(registry).toHaveLength(8);
     expect(registry.map((e) => e.key)).toEqual(EXPECTED_KEYS);
   });
 
@@ -176,6 +194,7 @@ describe('loadEncounterInputControls', () => {
     'conditionsAndDiagnoses',
     'medications',
     'vaccinations',
+    'immunizationHistory',
     'observationForms',
   ] as const)('%s has createBundleEntries', (key) => {
     const entry = registry.find((e) => e.key === key)!;
@@ -244,6 +263,7 @@ describe('loadEncounterInputControls', () => {
       'conditionsAndDiagnoses',
       'medications',
       'vaccinations',
+      'immunizationHistory',
       'observationForms',
     ] as const)('%s.reset delegates to store reset', (key) => {
       registry.find((e) => e.key === key)!.reset();
@@ -261,6 +281,7 @@ describe('loadEncounterInputControls', () => {
       ['medications', mockValidateAllMedications],
       ['vaccinations', mockValidateAllVaccinations],
       ['conditionsAndDiagnoses', mockValidateConditions],
+      ['immunizationHistory', mockValidateAllImmunizations],
     ] as const)('%s.validate delegates to store', (key, mockFn) => {
       registry.find((e) => e.key === key)!.validate();
       expect(mockFn).toHaveBeenCalledTimes(1);
@@ -277,6 +298,7 @@ describe('loadEncounterInputControls', () => {
       'vaccinations',
       'investigations',
       'conditionsAndDiagnoses',
+      'immunizationHistory',
       'observationForms',
     ] as const)('%s.hasData returns false when store has no data', (key) => {
       expect(registry.find((e) => e.key === key)!.hasData()).toBe(false);
@@ -322,6 +344,16 @@ describe('loadEncounterInputControls', () => {
       expect(
         jest.mocked(consultationBundleService.createConditionsBundleEntries),
       ).toHaveBeenCalled();
+    });
+
+    it('immunizationHistory delegates to createImmunizationBundleEntries', () => {
+      registry.find((e) => e.key === 'immunizationHistory')!
+        .createBundleEntries!(mockBundleContext);
+      expect(mockCreateImmunizationBundleEntries).toHaveBeenCalledWith(
+        expect.objectContaining({
+          encounterSubject: mockBundleContext.encounterSubject,
+        }),
+      );
     });
 
     it('observationForms delegates to createObservationBundleEntries', () => {

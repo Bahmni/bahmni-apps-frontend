@@ -24,7 +24,11 @@ describe('getActiveEntries', () => {
   it('includes all entries for Consultation encounter type', () => {
     const result = getActiveEntries(registry, 'Consultation');
 
-    expect(result).toHaveLength(registry.length);
+    const expected = registry.filter(
+      (e) => !e.encounterTypes || e.encounterTypes.includes('Consultation'),
+    );
+    expect(result).toHaveLength(expected.length);
+    expect(result.find((e) => e.key === 'immunizationHistory')).toBeUndefined();
   });
 
   it('excludes entries restricted to specific encounter types for non-matching type', () => {
@@ -44,6 +48,11 @@ describe('captureUpdatedResources', () => {
       'conditions',
     ],
     ['allergies', 'allergies', 'allergies'],
+    [
+      'immunizations from immunizationHistory',
+      'immunizationHistory',
+      'immunizationHistory',
+    ],
   ])('returns true for %s when hasData is true', (_label, key, resultKey) => {
     const entries = [
       makeMockEntry(key as EncounterInputControl['key'], {
@@ -100,6 +109,7 @@ describe('captureUpdatedResources', () => {
       conditions: false,
       allergies: false,
       medications: false,
+      immunizationHistory: false,
       serviceRequests: {},
     });
   });

@@ -26,6 +26,7 @@ export function captureUpdatedResources(entries: EncounterInputControl[]) {
     conditions: hasData('conditionsAndDiagnoses'),
     allergies: hasData('allergies'),
     medications: hasData('medications') || hasData('vaccinations'),
+    immunizationHistory: hasData('immunizationHistory'),
     serviceRequests,
   };
 }

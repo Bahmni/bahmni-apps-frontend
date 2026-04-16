@@ -43,6 +43,17 @@ export const mockConsultationPadConfig: ConsultationPad = {
     attributes: [],
     metadata: {},
   },
+  immunizationHistory: {
+    encounterTypes: ['Immunization'],
+    privileges: ['ImmunizationHistory'],
+    attributes: [],
+    metadata: {
+      administeredLocationTag: '',
+      routeConceptUuid: '',
+      siteConceptUuid: '',
+      vaccineConceptSetUuid: '',
+    },
+  },
   observationForms: {
     encounterTypes: ['Consultation'],
     privileges: ['Observations'],
