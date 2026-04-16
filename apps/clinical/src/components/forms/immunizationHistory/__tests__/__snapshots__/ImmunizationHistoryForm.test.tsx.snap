@@ -1,0 +1,568 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ImmunizationHistoryForm Snapshots matches snapshot with no immunizations 1`] = `
+<div>
+  <div
+    class="cds--tile tile"
+    data-testid="immunization-history-form-tile-test-id"
+    id="immunization-history-form"
+  >
+    <div
+      class="title"
+      data-testid="immunization-history-form-title-test-id"
+      id="immunization-history-form-title"
+    >
+      Immunization History
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-_r_3b_-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search to add immunization"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            data-testid="immunization-history-search-combobox"
+            id="immunization-history-search"
+            placeholder="Search to add immunization"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-_r_3b_-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-_r_3b_-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-_r_3b_-label"
+          class="cds--list-box__menu"
+          id="downshift-_r_3b_-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ImmunizationHistoryForm Snapshots matches snapshot with selected immunizations 1`] = `
+<div>
+  <div
+    class="cds--tile tile"
+    data-testid="immunization-history-form-tile-test-id"
+    id="immunization-history-form"
+  >
+    <div
+      class="title"
+      data-testid="immunization-history-form-title-test-id"
+      id="immunization-history-form-title"
+    >
+      Immunization History
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-_r_3e_-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search to add immunization"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            data-testid="immunization-history-search-combobox"
+            id="immunization-history-search"
+            placeholder="Search to add immunization"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-_r_3e_-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-_r_3e_-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-_r_3e_-label"
+          class="cds--list-box__menu"
+          id="downshift-_r_3e_-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+    <div
+      aria-label="Added Immunization"
+      class="_box_1jr6a_1 box cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
+      data-testid="box-w-title"
+      role="region"
+    >
+      <div
+        class="_header_1jr6a_8 cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+      >
+        Added Immunization
+      </div>
+      <div
+        class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+      >
+        <div
+          class="_grid_i0b21_1 selectedItem cds--subgrid cds--subgrid--narrow"
+          data-testid="selected-item"
+        >
+          <div
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+          >
+            <div>
+              <span
+                class="selectedItemTitle"
+                data-testid="immunization-drug-name-test-id-1-test-id"
+                id="immunization-drug-name-test-id-1-test-id"
+              >
+                COVID-19 Vaccine
+              </span>
+              <div
+                class="cds--subgrid cds--subgrid--wide"
+                data-testid="selected-immunization-item-grid-test-id-1-test-id"
+                id="selected-immunization-item-grid-test-id-1"
+              >
+                <div
+                  class="column cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+                >
+                  <div
+                    class="cds--list-box__wrapper"
+                  >
+                    <div
+                      class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
+                    >
+                      <div
+                        class="cds--list-box__field"
+                      >
+                        <input
+                          aria-activedescendant=""
+                          aria-autocomplete="list"
+                          aria-controls="downshift-_r_3h_-menu"
+                          aria-expanded="false"
+                          aria-haspopup="listbox"
+                          aria-label="Choose an item"
+                          autocomplete="off"
+                          class="cds--text-input cds--text-input--empty"
+                          data-testid="immunization-drug-name-combobox-test-id-1-test-id"
+                          id="immunization-drug-name-combobox-test-id-1"
+                          placeholder="Search drug name"
+                          role="combobox"
+                          tabindex="0"
+                          title=""
+                          type="text"
+                          value=""
+                        />
+                        <button
+                          aria-controls="downshift-_r_3h_-menu"
+                          aria-expanded="false"
+                          aria-label="Open"
+                          class="cds--list-box__menu-icon"
+                          id="downshift-_r_3h_-toggle-button"
+                          tabindex="-1"
+                          title="Open"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            fill="currentColor"
+                            focusable="false"
+                            height="16"
+                            preserveAspectRatio="xMidYMid meet"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <ul
+                        aria-labelledby="downshift-_r_3h_-label"
+                        class="cds--list-box__menu"
+                        id="downshift-_r_3h_-menu"
+                        role="listbox"
+                        style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
+                >
+                  <div
+                    class="cds--form-item datePicker"
+                  >
+                    <div
+                      class="cds--date-picker cds--date-picker--single"
+                    >
+                      <div
+                        class="cds--date-picker-container"
+                      >
+                        <label
+                          class="cds--label cds--visually-hidden"
+                          dir="auto"
+                          for="immunization-administered-on-test-id-1"
+                        >
+                          Administered On
+                        </label>
+                        <div
+                          class="cds--date-picker-input__wrapper"
+                        >
+                          <span>
+                            <input
+                              class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
+                              data-testid="immunization-administered-on-input-test-id-1-test-id"
+                              id="immunization-administered-on-test-id-1"
+                              pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
+                              placeholder="Administered On"
+                              type="text"
+                            />
+                            <svg
+                              aria-hidden="true"
+                              class="cds--date-picker__icon"
+                              fill="currentColor"
+                              focusable="false"
+                              height="16"
+                              preserveAspectRatio="xMidYMid meet"
+                              role="img"
+                              viewBox="0 0 32 32"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
+                >
+                  <div
+                    class="cds--list-box__wrapper"
+                  >
+                    <div
+                      class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
+                    >
+                      <div
+                        class="cds--list-box__field"
+                      >
+                        <input
+                          aria-activedescendant=""
+                          aria-autocomplete="list"
+                          aria-controls="downshift-_r_3l_-menu"
+                          aria-expanded="false"
+                          aria-haspopup="listbox"
+                          aria-label="Choose an item"
+                          autocomplete="off"
+                          class="cds--text-input cds--text-input--empty"
+                          data-testid="immunization-administered-location-test-id-1-test-id"
+                          id="immunization-administered-location-combobox-test-id-1"
+                          placeholder="Select administered location"
+                          role="combobox"
+                          tabindex="0"
+                          title=""
+                          type="text"
+                          value=""
+                        />
+                        <button
+                          aria-controls="downshift-_r_3l_-menu"
+                          aria-expanded="false"
+                          aria-label="Open"
+                          class="cds--list-box__menu-icon"
+                          id="downshift-_r_3l_-toggle-button"
+                          tabindex="-1"
+                          title="Open"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            fill="currentColor"
+                            focusable="false"
+                            height="16"
+                            preserveAspectRatio="xMidYMid meet"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <ul
+                        aria-labelledby="downshift-_r_3l_-label"
+                        class="cds--list-box__menu"
+                        id="downshift-_r_3l_-menu"
+                        role="listbox"
+                        style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
+                >
+                  <div
+                    class="cds--list-box__wrapper"
+                  >
+                    <div
+                      class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
+                    >
+                      <div
+                        class="cds--list-box__field"
+                      >
+                        <input
+                          aria-activedescendant=""
+                          aria-autocomplete="list"
+                          aria-controls="downshift-_r_3o_-menu"
+                          aria-expanded="false"
+                          aria-haspopup="listbox"
+                          aria-label="Choose an item"
+                          autocomplete="off"
+                          class="cds--text-input cds--text-input--empty"
+                          data-testid="immunization-route-test-id-1-test-id"
+                          id="immunization-route-combobox-test-id-1"
+                          placeholder="Select route"
+                          role="combobox"
+                          tabindex="0"
+                          title=""
+                          type="text"
+                          value=""
+                        />
+                        <button
+                          aria-controls="downshift-_r_3o_-menu"
+                          aria-expanded="false"
+                          aria-label="Open"
+                          class="cds--list-box__menu-icon"
+                          id="downshift-_r_3o_-toggle-button"
+                          tabindex="-1"
+                          title="Open"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            fill="currentColor"
+                            focusable="false"
+                            height="16"
+                            preserveAspectRatio="xMidYMid meet"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <ul
+                        aria-labelledby="downshift-_r_3o_-label"
+                        class="cds--list-box__menu"
+                        id="downshift-_r_3o_-menu"
+                        role="listbox"
+                        style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
+                >
+                  <div
+                    class="cds--list-box__wrapper"
+                  >
+                    <div
+                      class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
+                    >
+                      <div
+                        class="cds--list-box__field"
+                      >
+                        <input
+                          aria-activedescendant=""
+                          aria-autocomplete="list"
+                          aria-controls="downshift-_r_3r_-menu"
+                          aria-expanded="false"
+                          aria-haspopup="listbox"
+                          aria-label="Choose an item"
+                          autocomplete="off"
+                          class="cds--text-input cds--text-input--empty"
+                          data-testid="immunization-site-test-id-1-test-id"
+                          id="immunization-site-combobox-test-id-1"
+                          placeholder="Select site"
+                          role="combobox"
+                          tabindex="0"
+                          title=""
+                          type="text"
+                          value=""
+                        />
+                        <button
+                          aria-controls="downshift-_r_3r_-menu"
+                          aria-expanded="false"
+                          aria-label="Open"
+                          class="cds--list-box__menu-icon"
+                          id="downshift-_r_3r_-toggle-button"
+                          tabindex="-1"
+                          title="Open"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            fill="currentColor"
+                            focusable="false"
+                            height="16"
+                            preserveAspectRatio="xMidYMid meet"
+                            viewBox="0 0 16 16"
+                            width="16"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <ul
+                        aria-labelledby="downshift-_r_3r_-label"
+                        class="cds--list-box__menu"
+                        id="downshift-_r_3r_-menu"
+                        role="listbox"
+                        style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+          >
+            <span
+              class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+            >
+              <div
+                class="cds--tooltip-trigger__wrapper"
+              >
+                <button
+                  aria-label="Close Selected Item"
+                  aria-labelledby="tooltip-_r_3t_"
+                  class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
+                  data-testid="selected-item-close-button"
+                  id="close-selected-item"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <span
+                aria-hidden="true"
+                class="cds--popover"
+                id="tooltip-_r_3t_"
+                role="tooltip"
+              >
+                <span
+                  class="cds--popover-content cds--tooltip-content"
+                >
+                  Close
+                </span>
+                <span
+                  class="cds--popover-caret"
+                />
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

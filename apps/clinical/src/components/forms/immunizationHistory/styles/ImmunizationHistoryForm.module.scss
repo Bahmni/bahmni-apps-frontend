@@ -1,0 +1,61 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.tile {
+  margin: $spacing-03;
+  background-color: $background
+}
+
+.title {
+  @include type-style("heading-compact-02");
+  padding-bottom: $spacing-05;
+}
+
+.box {
+  margin-top: $spacing-05;
+}
+
+.loading {
+  max-inline-size: 100% !important;
+}
+
+.error {
+  @include type-style("body-compact-02");
+  color: $text-error;
+  padding: $spacing-05;
+}
+
+.selectedItem {
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 1px solid $border-subtle-02;
+  padding-bottom: $spacing-06;
+}
+
+.selectedItemTitle {
+  @include type-style("heading-compact-02");
+  margin-bottom: $spacing-04;
+  margin-left: 0;
+}
+
+.column {
+  margin-top: $spacing-04;
+  margin-left: 0;
+}
+
+.datePicker > div {
+    display: block;
+    min-inline-size: -webkit-fill-available !important;
+    > div {
+      display: block;
+      > div {
+        display: block;
+      }
+      input {
+        inline-size: -webkit-fill-available !important;
+      }
+    }
+  }

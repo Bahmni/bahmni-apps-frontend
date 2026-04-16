@@ -1,0 +1,314 @@
+import {
+  Column,
+  ComboBox,
+  DatePicker,
+  DatePickerInput,
+  Grid,
+  TextInput,
+} from '@bahmni/design-system';
+import { useTranslation, Location } from '@bahmni/services';
+import { Medication, ValueSet } from 'fhir/r4';
+import React, { useMemo, useState } from 'react';
+import { ImmunizationConfig } from '../../../../providers/clinicalConfig/models';
+import { ImmunizationInputEntry } from '../models';
+import { useImmunizationHistoryStore } from '../stores';
+import styles from '../styles/ImmunizationHistoryForm.module.scss';
+import {
+  getLocationComboBoxItems,
+  getMedicationComboBoxItems,
+  getValueSetComboBoxItems,
+} from '../utils';
+
+interface SelectedImmunizationItemProps {
+  immunization: ImmunizationInputEntry;
+  routes: ValueSet | undefined;
+  sites: ValueSet | undefined;
+  administeredLocationTag: Location[] | undefined;
+  formFields: ImmunizationConfig['formFields'] | undefined;
+  vaccineDrugs: Medication[] | undefined;
+}
+
+const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
+  immunization,
+  routes,
+  sites,
+  formFields,
+  administeredLocationTag,
+  vaccineDrugs,
+}) => {
+  const { t } = useTranslation();
+  const {
+    updateAdministeredOn,
+    updateAdministeredLocation,
+    updateVaccineDrug,
+    updateRoute,
+    updateSite,
+    updateExpiryDate,
+    updateManufacturer,
+    updateBatchNumber,
+  } = useImmunizationHistoryStore();
+  const { id } = immunization;
+  const [drugSearchTerm, setDrugSearchTerm] = useState('');
+  const [routeSearchTerm, setRouteSearchTerm] = useState('');
+  const [siteSearchTerm, setSiteSearchTerm] = useState('');
+  const [
+    administeredLocationTagSearchTerm,
+    setAdministeredLocationTagSearchTerm,
+  ] = useState('');
+
+  const vaccineDrugComboBoxItems = useMemo(
+    () => getMedicationComboBoxItems(drugSearchTerm, vaccineDrugs),
+    [drugSearchTerm, vaccineDrugs],
+  );
+
+  const administeredLocationTagComboBoxItems = useMemo(
+    () =>
+      getLocationComboBoxItems(
+        administeredLocationTagSearchTerm,
+        administeredLocationTag,
+      ),
+    [administeredLocationTagSearchTerm, administeredLocationTag],
+  );
+
+  const routeComboBoxItems = useMemo(
+    () => getValueSetComboBoxItems(routeSearchTerm, routes),
+    [routeSearchTerm, routes],
+  );
+
+  const siteComboBoxItems = useMemo(
+    () => getValueSetComboBoxItems(siteSearchTerm, sites),
+    [siteSearchTerm, sites],
+  );
+
+  const handleRouteInputChange = (value: string) => {
+    setRouteSearchTerm(value);
+  };
+
+  const handleSiteInputChange = (value: string) => {
+    setSiteSearchTerm(value);
+  };
+
+  const handleAdministeredLocationTagInputChange = (value: string) => {
+    setAdministeredLocationTagSearchTerm(value);
+  };
+
+  return (
+    <div>
+      <span
+        id={`immunization-drug-name-${id}-test-id`}
+        data-testid={`immunization-drug-name-${id}-test-id`}
+        className={styles.selectedItemTitle}
+      >
+        {immunization.vaccineCode.display}
+      </span>
+      <Grid
+        id={`selected-immunization-item-grid-${id}`}
+        data-testid={`selected-immunization-item-grid-${id}-test-id`}
+      >
+        <Column sm={4} md={8} lg={16} className={styles.column}>
+          <ComboBox
+            id={`immunization-drug-name-combobox-${id}`}
+            data-testid={`immunization-drug-name-combobox-${id}-test-id`}
+            placeholder={t('IMMUNIZATION_HISTORY_SEARCH_DRUG_NAME_PLACEHOLDER')}
+            autoAlign
+            items={vaccineDrugComboBoxItems}
+            itemToString={(item) => item!.display!}
+            onChange={({ selectedItem }) =>
+              updateVaccineDrug(id, selectedItem!.code!)
+            }
+            onInputChange={(value: string) => setDrugSearchTerm(value)}
+            size="md"
+            invalid={!!immunization.errors.drugCode}
+            invalidText={
+              immunization.errors.drugCode
+                ? t(immunization.errors.drugCode)
+                : ''
+            }
+          />
+        </Column>
+
+        {formFields?.administeredOn && (
+          <Column sm={4} md={2} lg={5} className={styles.column}>
+            <DatePicker
+              datePickerType="single"
+              value={immunization.administeredOn ?? undefined}
+              onChange={(date) => updateAdministeredOn(id, date[0])}
+              maxDate={new Date()}
+              className={styles.datePicker}
+            >
+              <DatePickerInput
+                id={`immunization-administered-on-${id}`}
+                data-testid={`immunization-administered-on-input-${id}-test-id`}
+                labelText={t('IMMUNIZATION_HISTORY_ADMINISTERED_ON')}
+                placeholder={t('IMMUNIZATION_HISTORY_ADMINISTERED_ON')}
+                size="md"
+                hideLabel
+                invalid={!!immunization.errors.administeredOn}
+                invalidText={
+                  immunization.errors.administeredOn
+                    ? t(immunization.errors.administeredOn)
+                    : ''
+                }
+              />
+            </DatePicker>
+          </Column>
+        )}
+
+        {formFields?.administeredLocation && (
+          <Column sm={4} md={2} lg={5} className={styles.column}>
+            <ComboBox
+              id={`immunization-administered-location-combobox-${id}`}
+              data-testid={`immunization-administered-location-${id}-test-id`}
+              placeholder={t(
+                'IMMUNIZATION_HISTORY_ADMINISTERED_LOCATION_PLACEHOLDER',
+              )}
+              autoAlign
+              items={administeredLocationTagComboBoxItems}
+              itemToString={(item) => item!.display}
+              onChange={({ selectedItem }) =>
+                updateAdministeredLocation(id, selectedItem!.uuid)
+              }
+              onInputChange={(searchQuery: string) =>
+                handleAdministeredLocationTagInputChange(searchQuery)
+              }
+              size="md"
+              invalid={!!immunization.errors.administeredLocation}
+              invalidText={
+                immunization.errors.administeredLocation
+                  ? t(immunization.errors.administeredLocation)
+                  : ''
+              }
+            />
+          </Column>
+        )}
+
+        {formFields?.route && (
+          <Column sm={4} md={2} lg={5} className={styles.column}>
+            <ComboBox
+              id={`immunization-route-combobox-${id}`}
+              data-testid={`immunization-route-${id}-test-id`}
+              placeholder={t('IMMUNIZATION_HISTORY_ROUTE_PLACEHOLDER')}
+              autoAlign
+              items={routeComboBoxItems}
+              itemToString={(item) => item!.display}
+              onChange={({ selectedItem }) =>
+                updateRoute(id, selectedItem!.code)
+              }
+              onInputChange={(searchQuery: string) =>
+                handleRouteInputChange(searchQuery)
+              }
+              size="md"
+              invalid={!!immunization.errors.route}
+              invalidText={
+                immunization.errors.route ? t(immunization.errors.route) : ''
+              }
+            />
+          </Column>
+        )}
+
+        {formFields?.site && (
+          <Column sm={4} md={2} lg={5} className={styles.column}>
+            <ComboBox
+              id={`immunization-site-combobox-${id}`}
+              data-testid={`immunization-site-${id}-test-id`}
+              placeholder={t('IMMUNIZATION_HISTORY_SITE_PLACEHOLDER')}
+              autoAlign
+              items={siteComboBoxItems}
+              itemToString={(item) => item!.display}
+              onChange={({ selectedItem }) =>
+                updateSite(id, selectedItem!.code)
+              }
+              onInputChange={(searchQuery: string) =>
+                handleSiteInputChange(searchQuery)
+              }
+              size="md"
+              invalid={!!immunization.errors.site}
+              invalidText={
+                immunization.errors.site ? t(immunization.errors.site) : ''
+              }
+            />
+          </Column>
+        )}
+
+        {formFields?.manufacturer && (
+          <Column sm={4} md={2} lg={5} className={styles.column}>
+            <TextInput
+              id={`immunization-manufacturer-${id}`}
+              data-testid={`immunization-manufacturer-${id}`}
+              labelText={t('IMMUNIZATION_HISTORY_MANUFACTURER')}
+              placeholder={t('IMMUNIZATION_HISTORY_MANUFACTURER_PLACEHOLDER')}
+              value={immunization.manufacturer ?? ''}
+              onChange={(e) => updateManufacturer(id, e.target.value)}
+              size="md"
+              hideLabel
+              invalid={!!immunization.errors.manufacturer}
+              invalidText={
+                immunization.errors.manufacturer
+                  ? t(immunization.errors.manufacturer)
+                  : ''
+              }
+            />
+          </Column>
+        )}
+
+        {formFields?.batchNumber && (
+          <Column sm={4} md={2} lg={5} className={styles.column}>
+            <TextInput
+              id={`immunization-batch-number-${id}`}
+              data-testid={`immunization-batch-number-${id}`}
+              labelText={t('IMMUNIZATION_HISTORY_BATCH_NUMBER')}
+              placeholder={t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')}
+              value={immunization.batchNumber ?? ''}
+              onChange={(e) => updateBatchNumber(id, e.target.value)}
+              size="md"
+              hideLabel
+              invalid={!!immunization.errors.batchNumber}
+              invalidText={
+                immunization.errors.batchNumber
+                  ? t(immunization.errors.batchNumber)
+                  : ''
+              }
+            />
+          </Column>
+        )}
+
+        {formFields?.expiryDate && (
+          <Column sm={4} md={2} lg={5} className={styles.column}>
+            <DatePicker
+              datePickerType="single"
+              value={immunization.expiryDate ?? undefined}
+              onChange={(date) => updateExpiryDate(id, date[0])}
+              minDate={
+                immunization.administeredOn
+                  ? new Date(
+                      immunization.administeredOn.getFullYear(),
+                      immunization.administeredOn.getMonth(),
+                      immunization.administeredOn.getDate() + 1,
+                    )
+                  : undefined
+              }
+              className={styles.datePicker}
+            >
+              <DatePickerInput
+                id={`immunization-expiry-date-${id}`}
+                data-testid={`immunization-expiry-date-input-${id}`}
+                labelText={t('IMMUNIZATION_HISTORY_EXPIRY_DATE')}
+                placeholder={t('IMMUNIZATION_HISTORY_EXPIRY_DATE')}
+                size="md"
+                hideLabel
+                invalid={!!immunization.errors.expiryDate}
+                invalidText={
+                  immunization.errors.expiryDate
+                    ? t(immunization.errors.expiryDate)
+                    : ''
+                }
+              />
+            </DatePicker>
+          </Column>
+        )}
+      </Grid>
+    </div>
+  );
+};
+
+export default SelectedImmunizationItem;
