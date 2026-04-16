@@ -202,6 +202,7 @@ describe('NotAdministeredTab', () => {
   );
 
   it.each([
+    { field: 'code', override: { code: null } },
     { field: 'reason', override: { reason: null } },
     { field: 'date', override: { date: null } },
   ])('renders - for $field when value is null', ({ field, override }) => {
