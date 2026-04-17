@@ -1,5 +1,32 @@
 import type { InputControlRegistry } from '../../models';
 
+export const mockRegistry: InputControlRegistry[] = [
+  {
+    key: 'allergies',
+    component: () => null,
+    reset: jest.fn(),
+    validate: jest.fn(),
+    hasData: jest.fn(),
+    subscribe: jest.fn(),
+  },
+  {
+    key: 'medications',
+    component: () => null,
+    reset: jest.fn(),
+    validate: jest.fn(),
+    hasData: jest.fn(),
+    subscribe: jest.fn(),
+  },
+  {
+    key: 'observationForms',
+    component: () => null,
+    reset: jest.fn(),
+    validate: jest.fn(),
+    hasData: jest.fn(),
+    subscribe: jest.fn(),
+  },
+];
+
 export const makeMockEntry = (
   key: InputControlRegistry['key'] = 'allergies',
   overrides: Partial<InputControlRegistry> = {},

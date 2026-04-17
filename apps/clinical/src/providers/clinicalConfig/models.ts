@@ -5,9 +5,28 @@ export interface AllergyConceptMap {
   allergyReactionUuid: string;
 }
 
+interface InputControlAttributes {
+  key: string;
+  required: boolean;
+}
+
+export interface InputControl {
+  metadata: Record<string, unknown>;
+  encounterTypes: string[];
+  privileges: string[];
+  attributes: InputControlAttributes[];
+}
+
 export interface ConsultationPad {
   allergyConceptMap: AllergyConceptMap;
   statDurationInMilliseconds?: number;
+  encounterDetails: InputControl;
+  allergies?: InputControl;
+  investigations?: InputControl;
+  medications?: InputControl;
+  observationForms?: InputControl;
+  vaccinations?: InputControl;
+  conditionsAndDiagnoses?: InputControl;
 }
 
 export interface Dashboard {

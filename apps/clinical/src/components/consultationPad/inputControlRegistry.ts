@@ -1,4 +1,4 @@
-import { CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
+import type { ConsultationPad } from '../../providers/clinicalConfig/models';
 import {
   createAllergiesBundleEntries,
   createConditionsBundleEntries,
@@ -27,11 +27,10 @@ import {
 import ObservationFormsPanel from './components/ObservationFormsPanel';
 import type { BundleContext, InputControlRegistry } from './models';
 
-export const INPUT_CONTROL_REGISTRY: InputControlRegistry[] = [
+const BASE_REGISTRY: InputControlRegistry[] = [
   {
     key: 'encounterDetails',
     component: EncounterDetails,
-    privilege: CONSULTATION_PAD_PRIVILEGES.ENCOUNTER,
     reset: () => useEncounterDetailsStore.getState().reset(),
     validate: () =>
       useEncounterDetailsStore.getState().isEncounterDetailsFormReady,
@@ -41,8 +40,6 @@ export const INPUT_CONTROL_REGISTRY: InputControlRegistry[] = [
   {
     key: 'allergies',
     component: AllergiesForm,
-    encounterTypes: ['Consultation'],
-    privilege: CONSULTATION_PAD_PRIVILEGES.ALLERGIES,
     reset: () => useAllergyStore.getState().reset(),
     validate: () => useAllergyStore.getState().validateAllAllergies(),
     hasData: () => useAllergyStore.getState().selectedAllergies.length > 0,
@@ -58,8 +55,6 @@ export const INPUT_CONTROL_REGISTRY: InputControlRegistry[] = [
   {
     key: 'investigations',
     component: InvestigationsForm,
-    encounterTypes: ['Consultation'],
-    privilege: CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS,
     reset: () => useServiceRequestStore.getState().reset(),
     validate: () => true,
     hasData: () =>
@@ -77,8 +72,6 @@ export const INPUT_CONTROL_REGISTRY: InputControlRegistry[] = [
   {
     key: 'conditionsAndDiagnoses',
     component: ConditionsAndDiagnoses,
-    encounterTypes: ['Consultation'],
-    privilege: CONSULTATION_PAD_PRIVILEGES.CONDITIONS_AND_DIAGNOSES,
     reset: () => useConditionsAndDiagnosesStore.getState().reset(),
     validate: () => useConditionsAndDiagnosesStore.getState().validate(),
     hasData: () => {
@@ -111,8 +104,6 @@ export const INPUT_CONTROL_REGISTRY: InputControlRegistry[] = [
   {
     key: 'medications',
     component: MedicationsForm,
-    encounterTypes: ['Consultation'],
-    privilege: CONSULTATION_PAD_PRIVILEGES.MEDICATIONS,
     reset: () => useMedicationStore.getState().reset(),
     validate: () => useMedicationStore.getState().validateAllMedications(),
     hasData: () => useMedicationStore.getState().selectedMedications.length > 0,
@@ -129,8 +120,6 @@ export const INPUT_CONTROL_REGISTRY: InputControlRegistry[] = [
   {
     key: 'vaccinations',
     component: VaccinationForm,
-    encounterTypes: ['Consultation'],
-    privilege: CONSULTATION_PAD_PRIVILEGES.VACCINATIONS,
     reset: () => useVaccinationStore.getState().reset(),
     validate: () => useVaccinationStore.getState().validateAllVaccinations(),
     hasData: () =>
@@ -149,8 +138,6 @@ export const INPUT_CONTROL_REGISTRY: InputControlRegistry[] = [
   {
     key: 'observationForms',
     component: ObservationFormsPanel,
-    encounterTypes: ['Consultation'],
-    privilege: CONSULTATION_PAD_PRIVILEGES.OBSERVATIONS,
     reset: () => useObservationFormsStore.getState().reset(),
     validate: () => useObservationFormsStore.getState().validate(),
     hasData: () => useObservationFormsStore.getState().selectedForms.length > 0,
@@ -166,3 +153,28 @@ export const INPUT_CONTROL_REGISTRY: InputControlRegistry[] = [
       }),
   },
 ];
+
+export function createInputControlRegistry(
+  config: ConsultationPad | undefined,
+): InputControlRegistry[] {
+  return BASE_REGISTRY.flatMap((entry) => {
+    const configKey = entry.key as keyof ConsultationPad;
+    // TODO: remove cast once non-InputControl fields (allergyConceptMap,
+    // statDurationInMilliseconds) are extracted out of ConsultationPad
+    const formConfig = config?.[configKey] as
+      | { encounterTypes?: string[]; privileges?: string[] }
+      | undefined;
+    if (!formConfig) return [];
+    return [
+      {
+        ...entry,
+        encounterTypes: formConfig.encounterTypes?.length
+          ? formConfig.encounterTypes
+          : undefined,
+        privilege: formConfig.privileges?.length
+          ? formConfig.privileges
+          : undefined,
+      },
+    ];
+  });
+}

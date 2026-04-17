@@ -1,11 +1,11 @@
 import { useServiceRequestStore } from '../../stores';
-import { INPUT_CONTROL_REGISTRY } from './inputControlRegistry';
 import type { InputControlRegistry } from './models';
 
 export function getActiveEntries(
+  registry: InputControlRegistry[],
   encounterType: string,
 ): InputControlRegistry[] {
-  return INPUT_CONTROL_REGISTRY.filter(
+  return registry.filter(
     (entry) =>
       !entry.encounterTypes || entry.encounterTypes.includes(encounterType),
   );

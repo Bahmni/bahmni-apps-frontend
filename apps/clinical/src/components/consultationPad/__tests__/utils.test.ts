@@ -1,8 +1,9 @@
 import { useServiceRequestStore } from '../../../stores';
-import { INPUT_CONTROL_REGISTRY } from '../inputControlRegistry';
+import { createInputControlRegistry } from '../inputControlRegistry';
 import type { InputControlRegistry } from '../models';
 import { captureUpdatedResources, getActiveEntries } from '../utils';
 import { makeMockEntry } from './__mocks__/indexMocks';
+import { mockConsultationPadConfig } from './__mocks__/inputControlRegistryMocks';
 
 jest.mock('../../../stores');
 
@@ -14,18 +15,22 @@ beforeEach(() => {
 });
 
 describe('getActiveEntries', () => {
-  it('includes all entries for Consultation encounter type', () => {
-    const result = getActiveEntries('Consultation');
+  let registry: ReturnType<typeof createInputControlRegistry>;
 
-    expect(result).toHaveLength(INPUT_CONTROL_REGISTRY.length);
+  beforeEach(() => {
+    registry = createInputControlRegistry(mockConsultationPadConfig);
+  });
+
+  it('includes all entries for Consultation encounter type', () => {
+    const result = getActiveEntries(registry, 'Consultation');
+
+    expect(result).toHaveLength(registry.length);
   });
 
   it('excludes entries restricted to specific encounter types for non-matching type', () => {
-    const result = getActiveEntries('OPD');
+    const result = getActiveEntries(registry, 'OPD');
 
-    const unrestricted = INPUT_CONTROL_REGISTRY.filter(
-      (e) => !e.encounterTypes,
-    );
+    const unrestricted = registry.filter((e) => !e.encounterTypes);
     expect(result).toHaveLength(unrestricted.length);
     result.forEach((entry) => expect(entry.encounterTypes).toBeUndefined());
   });

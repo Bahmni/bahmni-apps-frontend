@@ -22,7 +22,7 @@ import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
 import InputControlRenderer from './components/InputControlRenderer';
-import { INPUT_CONTROL_REGISTRY } from './inputControlRegistry';
+import { createInputControlRegistry } from './inputControlRegistry';
 import { submitConsultation } from './services';
 import styles from './styles/ConsultationPad.module.scss';
 import { captureUpdatedResources, getActiveEntries } from './utils';
@@ -40,9 +40,15 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { clinicalConfig } = useClinicalConfig();
+  const registry = useMemo(
+    () => createInputControlRegistry(clinicalConfig?.consultationPad),
+    [clinicalConfig],
+  );
+
   const activeEntries = useMemo(
-    () => getActiveEntries(encounterType),
-    [encounterType],
+    () => getActiveEntries(registry, encounterType),
+    [registry, encounterType],
   );
 
   const subscribeAll = useCallback(
@@ -65,7 +71,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const { practitioner } = useActivePractitioner();
   const { activeEncounter } = useEncounterSession({ practitioner });
   const { episodeOfCare } = useClinicalAppData();
-  const { clinicalConfig } = useClinicalConfig();
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
@@ -180,7 +185,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             </div>
           ) : (
             <div className={styles.formList}>
-              {INPUT_CONTROL_REGISTRY.map((entry) => (
+              {registry.map((entry) => (
                 <InputControlRenderer
                   key={entry.key}
                   entry={entry}

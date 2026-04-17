@@ -12,11 +12,12 @@ import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ConsultationPad from '../index';
-import { INPUT_CONTROL_REGISTRY } from '../inputControlRegistry';
+import { createInputControlRegistry } from '../inputControlRegistry';
 import { submitConsultation } from '../services';
 import { captureUpdatedResources, getActiveEntries } from '../utils';
 import {
   mockObsFormsState,
+  mockRegistry,
   mockSubmitResult,
   mockUpdatedResources,
 } from './__mocks__/indexMocks';
@@ -70,32 +71,7 @@ jest.mock('../../../hooks/useEncounterSession');
 jest.mock('../../../providers/clinicalConfig');
 
 jest.mock('../inputControlRegistry', () => ({
-  INPUT_CONTROL_REGISTRY: [
-    {
-      key: 'allergies',
-      component: () => null,
-      reset: jest.fn(),
-      validate: jest.fn(),
-      hasData: jest.fn(),
-      subscribe: jest.fn(),
-    },
-    {
-      key: 'medications',
-      component: () => null,
-      reset: jest.fn(),
-      validate: jest.fn(),
-      hasData: jest.fn(),
-      subscribe: jest.fn(),
-    },
-    {
-      key: 'observationForms',
-      component: () => null,
-      reset: jest.fn(),
-      validate: jest.fn(),
-      hasData: jest.fn(),
-      subscribe: jest.fn(),
-    },
-  ],
+  createInputControlRegistry: jest.fn(),
 }));
 
 jest.mock('../../forms/observations/ObservationFormsContainer', () => ({
@@ -131,13 +107,14 @@ const renderComponent = (
   );
 
 beforeEach(() => {
-  INPUT_CONTROL_REGISTRY.forEach((entry) => {
+  mockRegistry.forEach((entry) => {
     (entry.validate as jest.Mock).mockReturnValue(true);
     (entry.hasData as jest.Mock).mockReturnValue(false);
     (entry.subscribe as jest.Mock).mockReturnValue(jest.fn());
   });
 
-  jest.mocked(getActiveEntries).mockReturnValue(INPUT_CONTROL_REGISTRY as any);
+  jest.mocked(createInputControlRegistry).mockReturnValue(mockRegistry);
+  jest.mocked(getActiveEntries).mockReturnValue(mockRegistry as any);
   jest.mocked(captureUpdatedResources).mockReturnValue(mockUpdatedResources);
   jest.mocked(submitConsultation).mockResolvedValue(mockSubmitResult);
 
@@ -163,6 +140,10 @@ beforeEach(() => {
   jest
     .mocked(useClinicalConfig)
     .mockReturnValue({ clinicalConfig: null } as any);
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
 });
 
 describe('ConsultationPad', () => {
@@ -216,7 +197,7 @@ describe('ConsultationPad', () => {
           selector({ ...defaultEncounterDetailsState, ...storeOverride }),
         );
       if (withData) {
-        (INPUT_CONTROL_REGISTRY[0].hasData as jest.Mock).mockReturnValue(true);
+        (mockRegistry[0].hasData as jest.Mock).mockReturnValue(true);
       }
 
       renderComponent();
@@ -225,7 +206,7 @@ describe('ConsultationPad', () => {
     });
 
     it('is enabled when form is ready and has data', () => {
-      (INPUT_CONTROL_REGISTRY[0].hasData as jest.Mock).mockReturnValue(true);
+      (mockRegistry[0].hasData as jest.Mock).mockReturnValue(true);
 
       renderComponent();
 
@@ -240,16 +221,14 @@ describe('ConsultationPad', () => {
       renderComponent({ onClose });
       await userEvent.click(screen.getByTestId('secondary-button'));
 
-      INPUT_CONTROL_REGISTRY.forEach((entry) =>
-        expect(entry.reset).toHaveBeenCalled(),
-      );
+      mockRegistry.forEach((entry) => expect(entry.reset).toHaveBeenCalled());
       expect(onClose).toHaveBeenCalled();
     });
   });
 
   describe('submit', () => {
     const enableSubmit = () => {
-      (INPUT_CONTROL_REGISTRY[0].hasData as jest.Mock).mockReturnValue(true);
+      (mockRegistry[0].hasData as jest.Mock).mockReturnValue(true);
     };
 
     it('dispatches events, shows success notification, and closes on success', async () => {
@@ -270,21 +249,45 @@ describe('ConsultationPad', () => {
       });
     });
 
-    it('shows error notification on API failure', async () => {
-      jest
-        .mocked(submitConsultation)
-        .mockRejectedValue(new Error('Server error'));
-      enableSubmit();
-
+    it('shows observation forms validation error and does not submit when observationForms entry is invalid', async () => {
+      const obsEntry = mockRegistry.find((e) => e.key === 'observationForms')!;
+      (obsEntry.hasData as jest.Mock).mockReturnValue(true);
+      (obsEntry.validate as jest.Mock).mockReturnValue(false);
       renderComponent();
       await userEvent.click(screen.getByTestId('primary-button'));
 
-      await waitFor(() => {
-        expect(mockAddNotification).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'error', message: 'Server error' }),
-        );
-      });
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'error' }),
+      );
+      expect(submitConsultation).not.toHaveBeenCalled();
     });
+
+    it.each([
+      ['Error instance', new Error('Server error'), 'Server error'],
+      [
+        'non-Error rejection',
+        'unexpected failure',
+        'Error creating consultation bundle',
+      ],
+    ])(
+      'shows error notification when submit fails with %s',
+      async (_, rejection, expectedMessage) => {
+        jest.mocked(submitConsultation).mockRejectedValue(rejection);
+        enableSubmit();
+
+        renderComponent();
+        await userEvent.click(screen.getByTestId('primary-button'));
+
+        await waitFor(() => {
+          expect(mockAddNotification).toHaveBeenCalledWith(
+            expect.objectContaining({
+              type: 'error',
+              message: expectedMessage,
+            }),
+          );
+        });
+      },
+    );
   });
 
   it('matches snapshot', () => {

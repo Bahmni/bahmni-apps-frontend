@@ -10,6 +10,52 @@
     "consultationPad"
   ],
   "additionalProperties": false,
+  "definitions": {
+    "inputControl": {
+      "type": "object",
+      "required": ["metadata", "encounterTypes", "privileges", "attributes"],
+      "additionalProperties": false,
+      "properties": {
+        "metadata": {
+          "type": "object",
+          "description": "Additional metadata for the input control"
+        },
+        "encounterTypes": {
+          "type": "array",
+          "description": "Encounter types for which this control is shown",
+          "items": {
+            "type": "string"
+          }
+        },
+        "privileges": {
+          "type": "array",
+          "description": "Privileges required to view this control",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attributes": {
+          "type": "array",
+          "description": "Form attributes configuration",
+          "items": {
+            "type": "object",
+            "required": ["key", "required"],
+            "additionalProperties": false,
+            "properties": {
+              "key": {
+                "type": "string",
+                "description": "Attribute key"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether this attribute is required"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
   "properties": {
     "patientInformation": {
       "type": "object",
@@ -79,8 +125,8 @@
     "consultationPad": {
       "type": "object",
       "description": "Configuration for consultation pad forms",
-      "required": ["allergyConceptMap"],
-      "additionalProperties": true,
+      "required": ["allergyConceptMap", "encounterDetails"],
+      "additionalProperties": false,
       "properties": {
         "allergyConceptMap": {
           "type": "object",
@@ -114,6 +160,38 @@
         "statDurationInHours": {
           "type": "number",
           "description": "Duration in hours for which a STAT order is valid"
+        },
+        "statDurationInMilliseconds": {
+          "type": "number",
+          "description": "Duration in milliseconds for which a STAT order is valid"
+        },
+        "encounterDetails": {
+          "$ref": "#/definitions/inputControl",
+          "description": "Configuration for the encounter details form"
+        },
+        "allergies": {
+          "$ref": "#/definitions/inputControl",
+          "description": "Configuration for the allergies form"
+        },
+        "investigations": {
+          "$ref": "#/definitions/inputControl",
+          "description": "Configuration for the investigations form"
+        },
+        "medications": {
+          "$ref": "#/definitions/inputControl",
+          "description": "Configuration for the medications form"
+        },
+        "observationForms": {
+          "$ref": "#/definitions/inputControl",
+          "description": "Configuration for the observation forms panel"
+        },
+        "vaccinations": {
+          "$ref": "#/definitions/inputControl",
+          "description": "Configuration for the vaccinations form"
+        },
+        "conditionsAndDiagnoses": {
+          "$ref": "#/definitions/inputControl",
+          "description": "Configuration for the conditions and diagnoses form"
         }
       }
     }
