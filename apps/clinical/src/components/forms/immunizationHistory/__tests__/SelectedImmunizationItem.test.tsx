@@ -167,7 +167,7 @@ describe('SelectedImmunizationItem', () => {
         'COVID',
         'COVID-19 Drug',
         mockStore.updateVaccineDrug,
-        { code: 'covid-19', display: 'COVID-19 Drug' },
+        { code: 'covid-drug-uuid', display: 'COVID-19 Drug' },
       ],
       [
         'updateAdministeredLocation',

@@ -199,6 +199,7 @@ export const mockImmunizationEntryWithErrors: ImmunizationInputEntry = {
 export const mockVaccineDrugs: Medication[] = [
   {
     resourceType: 'Medication',
+    id: 'bcg-drug-uuid',
     extension: [
       {
         url: MEDICINE_EXTENSION_URL,
@@ -213,6 +214,7 @@ export const mockVaccineDrugs: Medication[] = [
 
 export const mockCovid19VaccineDrug: Medication = {
   resourceType: 'Medication',
+  id: 'covid-drug-uuid',
   extension: [
     {
       url: MEDICINE_EXTENSION_URL,
@@ -232,7 +234,7 @@ export const mockEncounterSubject: Reference = {
 
 export const mockImmunizationEntryComplete: ImmunizationInputEntry = {
   ...mockImmunizationEntry,
-  drug: { code: 'covid-19', display: 'COVID-19 Drug' },
+  drug: { code: 'covid-drug-uuid', display: 'COVID-19 Drug' },
   administeredOn: new Date('2025-01-01'),
   administeredLocation: { uuid: 'location-uuid-1', display: 'Main Clinic' },
   route: 'im',

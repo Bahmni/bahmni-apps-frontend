@@ -1,5 +1,6 @@
 import { Immunization, Medication } from 'fhir/r4';
 import { getMedicationDisplay } from '../../../../services/medicationService';
+import { ADMINISTERED_PRODUCT_EXTENSION_URL } from '../constants';
 import {
   getValueSetComboBoxItems,
   getMedicationComboBoxItems,
@@ -124,7 +125,7 @@ describe('getMedicationComboBoxItems', () => {
         'bcg-code',
         'No results',
       ),
-    ).toEqual([{ code: 'bcg-code', display: 'BCG Vaccine' }]);
+    ).toEqual([{ code: 'bcg-drug-uuid', display: 'BCG Vaccine' }]);
   });
 
   it('returns empty array when no medications match the search term', () => {
@@ -139,7 +140,7 @@ describe('getMedicationComboBoxItems', () => {
     ).toEqual([]);
   });
 
-  it('falls back to empty string when first coding entry has no code', () => {
+  it('falls back to empty string when medication has no id', () => {
     (getMedicationDisplay as jest.Mock).mockReturnValue('BCG Vaccine');
     const medicationWithPartialCoding: Medication[] = [
       {
@@ -336,6 +337,7 @@ describe('createImmunizationBundleEntries', () => {
     expect(resource.expirationDate).toBeUndefined();
     expect(resource.manufacturer).toBeUndefined();
     expect(resource.lotNumber).toBeUndefined();
+    expect(resource.extension).toBeUndefined();
   });
 
   it('includes all optional fields when set on a complete entry', () => {
@@ -353,6 +355,33 @@ describe('createImmunizationBundleEntries', () => {
     expect(resource.lotNumber).toBe('BATCH-001');
     expect(resource.occurrenceDateTime).toBeDefined();
     expect(resource.expirationDate).toBeDefined();
+    expect(resource.extension).toEqual([
+      {
+        url: ADMINISTERED_PRODUCT_EXTENSION_URL,
+        valueReference: {
+          reference: 'Medication/covid-drug-uuid',
+          display: 'COVID-19 Drug',
+        },
+      },
+    ]);
+  });
+
+  it('includes administeredProduct extension with display only when drug has no code', () => {
+    const entryWithFreetextDrug = {
+      ...mockImmunizationEntry,
+      drug: { display: 'Custom Vaccine' },
+    };
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [entryWithFreetextDrug],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.extension).toEqual([
+      {
+        url: ADMINISTERED_PRODUCT_EXTENSION_URL,
+        valueReference: { display: 'Custom Vaccine' },
+      },
+    ]);
   });
 
   it('uses location.display when administeredLocation has no uuid (custom value)', () => {

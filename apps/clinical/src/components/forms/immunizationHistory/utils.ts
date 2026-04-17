@@ -1,5 +1,6 @@
 import { generateUUID, resolveComboBoxItems, Location } from '@bahmni/services';
 import {
+  Extension,
   Medication,
   ValueSet,
   ValueSetExpansionContains,
@@ -12,12 +13,25 @@ import {
   createEncounterReferenceFromString,
   createPractitionerReference,
 } from '../../../utils/fhir/referenceCreator';
+import { ADMINISTERED_PRODUCT_EXTENSION_URL } from './constants';
 import {
   CreateImmunizationBundleEntriesParams,
+  ImmunizationDrug,
   ImmunizationLocation,
   LocationComboBoxItem,
   ValueSetComboBoxItem,
 } from './models';
+
+function resolveAdministeredProductExtension(drug: ImmunizationDrug): Extension[] {
+  return [
+    {
+      url: ADMINISTERED_PRODUCT_EXTENSION_URL,
+      valueReference: drug.code
+        ? { reference: `Medication/${drug.code}`, display: drug.display }
+        : { display: drug.display },
+    },
+  ];
+}
 
 function resolveLocationReference(
   location: ImmunizationLocation,
@@ -65,7 +79,7 @@ export function getMedicationComboBoxItems(
         .includes(searchTerm.toLowerCase()),
     )
     .map((med) => ({
-      code: med.code?.coding?.[0]?.code ?? '',
+      code: med.id ?? '',
       display: getMedicationDisplay(med),
     }));
 }
@@ -133,6 +147,9 @@ export function createImmunizationBundleEntries({
         ? { display: entry.manufacturer }
         : undefined,
       lotNumber: entry.batchNumber ?? undefined,
+      extension: entry.drug
+        ? resolveAdministeredProductExtension(entry.drug)
+        : undefined,
       encounter: createEncounterReferenceFromString(encounterReference),
       performer: [
         {
