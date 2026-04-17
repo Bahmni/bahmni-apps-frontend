@@ -13,8 +13,12 @@ type FieldUpdateCase = [fieldName: string, actionName: string, value: unknown];
 
 const FIELD_UPDATE_CASES: FieldUpdateCase[] = [
   ['administeredOn', 'updateAdministeredOn', new Date('2025-01-01')],
-  ['drugCode', 'updateVaccineDrug', 'bcg-code'],
-  ['administeredLocation', 'updateAdministeredLocation', 'Main Clinic'],
+  ['drug', 'updateVaccineDrug', { code: 'bcg-code', display: 'BCG Drug' }],
+  [
+    'administeredLocation',
+    'updateAdministeredLocation',
+    { display: 'Main Clinic' },
+  ],
   ['route', 'updateRoute', 'im'],
   ['site', 'updateSite', 'arm'],
   ['expiryDate', 'updateExpiryDate', new Date('2026-01-01')],
@@ -24,9 +28,13 @@ const FIELD_UPDATE_CASES: FieldUpdateCase[] = [
 
 const ERROR_RETAINED_CASES: FieldUpdateCase[] = [
   ['administeredOn', 'updateAdministeredOn', null],
-  ['drugCode', 'updateVaccineDrug', ''],
-  ['administeredLocation', 'updateAdministeredLocation', ''],
-  ['administeredLocation (whitespace)', 'updateAdministeredLocation', '   '],
+  ['drug', 'updateVaccineDrug', null],
+  ['administeredLocation', 'updateAdministeredLocation', null],
+  [
+    'administeredLocation (whitespace)',
+    'updateAdministeredLocation',
+    { display: '   ' },
+  ],
   ['route', 'updateRoute', ''],
   ['site', 'updateSite', ''],
   ['expiryDate', 'updateExpiryDate', null],
@@ -65,7 +73,7 @@ describe('useImmunizationHistoryStore', () => {
       expect(entry.id).toBeTruthy();
       expect(entry).toMatchObject({
         vaccineCode: mockVaccineCode,
-        drugCode: '',
+        drug: null,
         administeredOn: null,
         administeredLocation: null,
         route: null,
@@ -246,7 +254,7 @@ describe('useImmunizationHistoryStore', () => {
       expect(isValid).toBe(true);
     });
 
-    it('always validates drugCode as required regardless of formFields', () => {
+    it('always validates drug as required regardless of formFields', () => {
       const { result } = renderHook(() => useImmunizationHistoryStore());
 
       act(() => {
@@ -259,7 +267,7 @@ describe('useImmunizationHistoryStore', () => {
       });
 
       expect(isValid).toBe(false);
-      expect(result.current.selectedImmunizations[0].errors.drugCode).toBe(
+      expect(result.current.selectedImmunizations[0].errors.drug).toBe(
         'IMMUNIZATION_HISTORY_DRUG_CODE_REQUIRED',
       );
     });
@@ -274,7 +282,7 @@ describe('useImmunizationHistoryStore', () => {
       });
       const firstId = result.current.selectedImmunizations[0].id;
       act(() => {
-        result.current.updateAdministeredLocation(firstId, '   ');
+        result.current.updateAdministeredLocation(firstId, { display: '   ' });
       });
       let isValid = true;
 
@@ -285,7 +293,7 @@ describe('useImmunizationHistoryStore', () => {
       expect(isValid).toBe(false);
       result.current.selectedImmunizations.forEach((entry) => {
         expect(entry.hasBeenValidated).toBe(true);
-        expect(entry.errors.drugCode).toBe(
+        expect(entry.errors.drug).toBe(
           'IMMUNIZATION_HISTORY_DRUG_CODE_REQUIRED',
         );
         expect(entry.errors.administeredOn).toBe(
@@ -320,7 +328,10 @@ describe('useImmunizationHistoryStore', () => {
       });
       const id = result.current.selectedImmunizations[0].id;
       act(() => {
-        result.current.updateVaccineDrug(id, 'bcg-code');
+        result.current.updateVaccineDrug(id, {
+          code: 'bcg-code',
+          display: 'BCG Drug',
+        });
       });
 
       act(() => {
@@ -346,9 +357,14 @@ describe('useImmunizationHistoryStore', () => {
       });
       const id = result.current.selectedImmunizations[0].id;
       act(() => {
-        result.current.updateVaccineDrug(id, 'bcg-code');
+        result.current.updateVaccineDrug(id, {
+          code: 'bcg-code',
+          display: 'BCG Drug',
+        });
         result.current.updateAdministeredOn(id, new Date('2025-01-01'));
-        result.current.updateAdministeredLocation(id, 'Main Clinic');
+        result.current.updateAdministeredLocation(id, {
+          display: 'Main Clinic',
+        });
         result.current.updateRoute(id, 'im');
         result.current.updateSite(id, 'arm');
         result.current.updateExpiryDate(id, new Date('2026-01-01'));
@@ -374,7 +390,10 @@ describe('useImmunizationHistoryStore', () => {
       });
       const validId = result.current.selectedImmunizations[1].id;
       act(() => {
-        result.current.updateVaccineDrug(validId, 'bcg-code');
+        result.current.updateVaccineDrug(validId, {
+          code: 'bcg-code',
+          display: 'BCG Drug',
+        });
       });
       let isValid = true;
 
@@ -383,11 +402,9 @@ describe('useImmunizationHistoryStore', () => {
       });
 
       expect(isValid).toBe(false);
+      expect(result.current.selectedImmunizations[0].errors.drug).toBeDefined();
       expect(
-        result.current.selectedImmunizations[0].errors.drugCode,
-      ).toBeDefined();
-      expect(
-        result.current.selectedImmunizations[1].errors.drugCode,
+        result.current.selectedImmunizations[1].errors.drug,
       ).toBeUndefined();
     });
   });

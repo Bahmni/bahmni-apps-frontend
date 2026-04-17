@@ -14,20 +14,35 @@ import {
 } from '../../../utils/fhir/referenceCreator';
 import {
   CreateImmunizationBundleEntriesParams,
+  ImmunizationLocation,
   LocationComboBoxItem,
   ValueSetComboBoxItem,
 } from './models';
 
+function resolveLocationReference(
+  location: ImmunizationLocation,
+): { reference: string } | { display: string } {
+  if (location.uuid) {
+    return { reference: `Location/${location.uuid}` };
+  }
+  return { display: location.display };
+}
+
 export function getValueSetComboBoxItems(
   searchTerm: string,
   valueSet: ValueSet | undefined,
+  emptyMessage: string,
 ): ValueSetComboBoxItem[] {
   if (!searchTerm.trim()) return [];
-  return (valueSet?.expansion?.contains ?? [])
+  const items = (valueSet?.expansion?.contains ?? [])
     .filter((item) =>
       item.display?.toLowerCase().includes(searchTerm.toLowerCase()),
     )
     .map(({ code = '', display = '' }) => ({ code, display }));
+  if (!items.length) {
+    return [{ code: '', display: emptyMessage, disabled: true }];
+  }
+  return items;
 }
 
 export function getMedicationComboBoxItems(
@@ -40,7 +55,7 @@ export function getMedicationComboBoxItems(
   const byVaccineCode = (medications ?? []).filter((med) =>
     med.code?.coding?.some((c) => c.code === vaccineCode),
   );
-  if (!byVaccineCode.length && emptyMessage) {
+  if (!byVaccineCode.length) {
     return [{ code: '', display: emptyMessage, disabled: true }];
   }
   return byVaccineCode
@@ -107,7 +122,7 @@ export function createImmunizationBundleEntries({
       patient: encounterSubject,
       occurrenceDateTime: entry.administeredOn?.toISOString(),
       location: entry.administeredLocation
-        ? { reference: `Location/${entry.administeredLocation}` }
+        ? resolveLocationReference(entry.administeredLocation)
         : undefined,
       route: entry.route ? { coding: [{ code: entry.route }] } : undefined,
       site: entry.site ? { coding: [{ code: entry.site }] } : undefined,

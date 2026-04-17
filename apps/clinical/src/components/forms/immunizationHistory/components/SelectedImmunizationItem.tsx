@@ -64,7 +64,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         immunization.vaccineCode.code,
         t('NO_MATCHING_DRUG_NAME_FOUND'),
       ),
-    [drugSearchTerm, vaccineDrugs, immunization.vaccineCode.code, t],
+    [drugSearchTerm, vaccineDrugs, immunization.vaccineCode.code],
   );
 
   const administeredLocationTagComboBoxItems = useMemo(
@@ -77,12 +77,22 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   );
 
   const routeComboBoxItems = useMemo(
-    () => getValueSetComboBoxItems(routeSearchTerm, routes),
+    () =>
+      getValueSetComboBoxItems(
+        routeSearchTerm,
+        routes,
+        t('NO_MATCHING_ROUTE_FOUND'),
+      ),
     [routeSearchTerm, routes],
   );
 
   const siteComboBoxItems = useMemo(
-    () => getValueSetComboBoxItems(siteSearchTerm, sites),
+    () =>
+      getValueSetComboBoxItems(
+        siteSearchTerm,
+        sites,
+        t('NO_MATCHING_SITE_FOUND'),
+      ),
     [siteSearchTerm, sites],
   );
 
@@ -119,19 +129,24 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
             autoAlign
             items={vaccineDrugComboBoxItems}
             itemToString={(item) => item?.display ?? ''}
-            onChange={({ selectedItem }) => {
+            onChange={({ selectedItem, inputValue }) => {
               if (selectedItem?.code) {
-                updateVaccineDrug(id, selectedItem.code);
+                updateVaccineDrug(id, {
+                  code: selectedItem.code,
+                  display: selectedItem.display,
+                });
+              } else if (inputValue?.trim()) {
+                updateVaccineDrug(id, { display: inputValue.trim() });
+              } else {
+                updateVaccineDrug(id, null);
               }
             }}
             allowCustomValue
             onInputChange={(value: string) => setDrugSearchTerm(value)}
             size="md"
-            invalid={!!immunization.errors.drugCode}
+            invalid={!!immunization.errors.drug}
             invalidText={
-              immunization.errors.drugCode
-                ? t(immunization.errors.drugCode)
-                : ''
+              immunization.errors.drug ? t(immunization.errors.drug) : ''
             }
           />
         </Column>
@@ -175,9 +190,18 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               allowCustomValue
               items={administeredLocationTagComboBoxItems}
               itemToString={(item) => item?.display ?? ''}
-              onChange={({ selectedItem }) => {
+              onChange={({ selectedItem, inputValue }) => {
                 if (selectedItem?.uuid) {
-                  updateAdministeredLocation(id, selectedItem.uuid);
+                  updateAdministeredLocation(id, {
+                    uuid: selectedItem.uuid,
+                    display: selectedItem.display,
+                  });
+                } else if (inputValue?.trim()) {
+                  updateAdministeredLocation(id, {
+                    display: inputValue.trim(),
+                  });
+                } else {
+                  updateAdministeredLocation(id, null);
                 }
               }}
               onInputChange={(searchQuery: string) =>

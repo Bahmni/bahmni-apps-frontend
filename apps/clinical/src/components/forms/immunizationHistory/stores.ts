@@ -1,7 +1,12 @@
 import { generateUUID } from '@bahmni/services';
 import { create } from 'zustand';
 import { ImmunizationConfig } from '../../../providers/clinicalConfig/models';
-import { ImmunizationHistoryState, ImmunizationInputEntry } from './models';
+import {
+  ImmunizationDrug,
+  ImmunizationHistoryState,
+  ImmunizationInputEntry,
+  ImmunizationLocation,
+} from './models';
 
 export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
   (set, get) => ({
@@ -11,7 +16,7 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
     addImmunization: (vaccineCode: { code: string; display: string }) => {
       const newEntry: ImmunizationInputEntry = {
         id: generateUUID(),
-        drugCode: '',
+        drug: null,
         vaccineCode,
         administeredOn: null,
         administeredLocation: null,
@@ -54,26 +59,29 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
       }));
     },
 
-    updateVaccineDrug: (id: string, drugCode: string) => {
+    updateVaccineDrug: (id: string, drug: ImmunizationDrug | null) => {
       set((state) => ({
         selectedImmunizations: state.selectedImmunizations.map((entry) => {
           if (entry.id !== id) return entry;
-          const updated = { ...entry, drugCode };
-          if (entry.hasBeenValidated && drugCode) {
+          const updated = { ...entry, drug };
+          if (entry.hasBeenValidated && drug?.display.trim()) {
             updated.errors = { ...entry.errors };
-            delete updated.errors.drugCode;
+            delete updated.errors.drug;
           }
           return updated;
         }),
       }));
     },
 
-    updateAdministeredLocation: (id: string, value: string) => {
+    updateAdministeredLocation: (
+      id: string,
+      value: ImmunizationLocation | null,
+    ) => {
       set((state) => ({
         selectedImmunizations: state.selectedImmunizations.map((entry) => {
           if (entry.id !== id) return entry;
           const updated = { ...entry, administeredLocation: value };
-          if (entry.hasBeenValidated && value.trim()) {
+          if (entry.hasBeenValidated && value?.display.trim()) {
             updated.errors = { ...entry.errors };
             delete updated.errors.administeredLocation;
           }
@@ -176,8 +184,8 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
 
           checkField(
             errors,
-            'drugCode',
-            !entry.drugCode,
+            'drug',
+            !entry.drug,
             'IMMUNIZATION_HISTORY_DRUG_CODE_REQUIRED',
           );
 
@@ -192,7 +200,7 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
             checkField(
               errors,
               'administeredLocation',
-              !entry.administeredLocation?.trim(),
+              !entry.administeredLocation?.display.trim(),
               'IMMUNIZATION_HISTORY_ADMINISTERED_LOCATION_REQUIRED',
             );
           if (formFields?.route?.required)

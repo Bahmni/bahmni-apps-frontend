@@ -286,6 +286,8 @@
   "NO_MATCHING_IMMUNIZATIONS_FOUND": "No se encontraron inmunizaciones coincidentes",
   "NO_MATCHING_INVESTIGATIONS_FOUND": "No se encontraron investigaciones coincidentes",
   "NO_MATCHING_MEDICATIONS_FOUND": "No se encontraron medicamentos coincidentes",
+  "NO_MATCHING_ROUTE_FOUND": "No se encontró ninguna vía de administración coincidente",
+  "NO_MATCHING_SITE_FOUND": "No se encontró ningún sitio coincidente",
   "NO_MEDICATION_HISTORY": "No hay historial de medicamentos",
   "NO_OBSERVATIONS": "No se registraron observaciones",
   "NO_OBSERVATIONS_FOUND": "No se encontraron observaciones",

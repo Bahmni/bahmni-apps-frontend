@@ -1,22 +1,32 @@
 import { Reference } from 'fhir/r4';
 import { ImmunizationConfig } from '../../../providers/clinicalConfig/models';
 
+export interface ImmunizationDrug {
+  code?: string;
+  display: string;
+}
+
+export interface ImmunizationLocation {
+  uuid?: string;
+  display: string;
+}
+
 export interface ImmunizationInputEntry {
   id: string;
-  drugCode: string;
+  drug: ImmunizationDrug | null;
   vaccineCode: {
     code: string;
     display: string;
   };
   administeredOn: Date | null;
-  administeredLocation: string | null;
+  administeredLocation: ImmunizationLocation | null;
   route: string | null;
   site: string | null;
   expiryDate: Date | null;
   manufacturer: string | null;
   batchNumber: string | null;
   errors: {
-    drugCode?: string;
+    drug?: string;
     administeredOn?: string;
     administeredLocation?: string;
     route?: string;
@@ -53,8 +63,11 @@ export interface ImmunizationHistoryState {
   removeImmunization: (id: string) => void;
   setFormFields: (fields: ImmunizationConfig['formFields']) => void;
   updateAdministeredOn: (id: string, value: Date | null) => void;
-  updateVaccineDrug: (id: string, drugCode: string) => void;
-  updateAdministeredLocation: (id: string, value: string) => void;
+  updateVaccineDrug: (id: string, drug: ImmunizationDrug | null) => void;
+  updateAdministeredLocation: (
+    id: string,
+    value: ImmunizationLocation | null,
+  ) => void;
   updateRoute: (id: string, value: string) => void;
   updateSite: (id: string, value: string) => void;
   updateExpiryDate: (id: string, value: Date | null) => void;

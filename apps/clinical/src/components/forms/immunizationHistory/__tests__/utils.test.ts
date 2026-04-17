@@ -15,6 +15,8 @@ import {
   mockImmunizationEntry,
   mockImmunizationEntryComplete,
   mockEncounterSubject,
+  mockValueSetWithPartialItem,
+  mockValueSetWithoutContains,
 } from './__mocks__/immunizationHistoryMocks';
 
 jest.mock('@bahmni/services', () => ({
@@ -41,30 +43,54 @@ describe('getValueSetComboBoxItems', () => {
   it.each([[''], ['   ']])(
     'returns empty array for "%s" searchTerm',
     (searchTerm) => {
-      expect(getValueSetComboBoxItems(searchTerm, mockVaccineValueSet)).toEqual(
-        [],
-      );
+      expect(
+        getValueSetComboBoxItems(searchTerm, mockVaccineValueSet, 'No results'),
+      ).toEqual([]);
     },
   );
 
-  it('returns empty array when valueSet is undefined', () => {
-    expect(getValueSetComboBoxItems('covid', undefined)).toEqual([]);
+  it('returns disabled sentinel when valueSet is undefined', () => {
+    expect(getValueSetComboBoxItems('covid', undefined, 'No results')).toEqual([
+      { code: '', display: 'No results', disabled: true },
+    ]);
   });
 
   it('filters items by search term case-insensitively', () => {
-    expect(getValueSetComboBoxItems('COVID', mockVaccineValueSet)).toEqual([
-      { code: 'covid-19', display: 'COVID-19 Vaccine' },
-    ]);
+    expect(
+      getValueSetComboBoxItems('COVID', mockVaccineValueSet, 'No results'),
+    ).toEqual([{ code: 'covid-19', display: 'COVID-19 Vaccine' }]);
   });
 
   it('returns all items matching the search term', () => {
     expect(
-      getValueSetComboBoxItems('vaccine', mockVaccineValueSet),
+      getValueSetComboBoxItems('vaccine', mockVaccineValueSet, 'No results'),
     ).toHaveLength(2);
   });
 
-  it('returns empty array when no items match', () => {
-    expect(getValueSetComboBoxItems('mumps', mockVaccineValueSet)).toEqual([]);
+  it('returns disabled sentinel when no items match', () => {
+    expect(
+      getValueSetComboBoxItems('mumps', mockVaccineValueSet, 'No results'),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
+  });
+
+  it('defaults code and display to empty string when missing on a matching item', () => {
+    expect(
+      getValueSetComboBoxItems(
+        'Partial',
+        mockValueSetWithPartialItem,
+        'No results',
+      ),
+    ).toEqual([{ code: '', display: 'Partial Vaccine' }]);
+  });
+
+  it('returns disabled sentinel when expansion has no contains and emptyMessage is provided', () => {
+    expect(
+      getValueSetComboBoxItems(
+        'covid',
+        mockValueSetWithoutContains,
+        'No results',
+      ),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
   });
 });
 
@@ -72,46 +98,46 @@ describe('getMedicationComboBoxItems', () => {
   it.each([[''], ['   ']])(
     'returns empty array for "%s" searchTerm',
     (searchTerm) => {
-      expect(getMedicationComboBoxItems(searchTerm, mockVaccineDrugs)).toEqual(
-        [],
-      );
+      expect(
+        getMedicationComboBoxItems(
+          searchTerm,
+          mockVaccineDrugs,
+          'bcg-code',
+          'No results',
+        ),
+      ).toEqual([]);
     },
   );
 
-  it('returns empty array when medications is undefined', () => {
-    expect(getMedicationComboBoxItems('bcg', undefined)).toEqual([]);
+  it('returns disabled sentinel when medications is undefined', () => {
+    expect(
+      getMedicationComboBoxItems('bcg', undefined, 'bcg-code', 'No results'),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
   });
 
   it('filters medications by display name and vaccineCode', () => {
     (getMedicationDisplay as jest.Mock).mockReturnValue('BCG Vaccine');
     expect(
-      getMedicationComboBoxItems('BCG', mockVaccineDrugs, 'bcg-code'),
+      getMedicationComboBoxItems(
+        'BCG',
+        mockVaccineDrugs,
+        'bcg-code',
+        'No results',
+      ),
     ).toEqual([{ code: 'bcg-code', display: 'BCG Vaccine' }]);
   });
 
-  it.each([
-    ['no matching search term', 'flu', 'bcg-code', undefined],
-    ['no matching vaccineCode', 'BCG', 'covid-19', undefined],
-    [
-      'medications exist but no search match with emptyMessage',
-      'flu',
-      'bcg-code',
-      'No results',
-    ],
-  ])(
-    'returns empty array when %s',
-    (_, searchTerm, vaccineCode, emptyMessage) => {
-      (getMedicationDisplay as jest.Mock).mockReturnValue('BCG Vaccine');
-      expect(
-        getMedicationComboBoxItems(
-          searchTerm,
-          mockVaccineDrugs,
-          vaccineCode,
-          emptyMessage,
-        ),
-      ).toEqual([]);
-    },
-  );
+  it('returns empty array when no medications match the search term', () => {
+    (getMedicationDisplay as jest.Mock).mockReturnValue('BCG Vaccine');
+    expect(
+      getMedicationComboBoxItems(
+        'flu',
+        mockVaccineDrugs,
+        'bcg-code',
+        'No results',
+      ),
+    ).toEqual([]);
+  });
 
   it('falls back to empty string when first coding entry has no code', () => {
     (getMedicationDisplay as jest.Mock).mockReturnValue('BCG Vaccine');
@@ -126,6 +152,7 @@ describe('getMedicationComboBoxItems', () => {
         'BCG',
         medicationWithPartialCoding,
         'bcg-code',
+        'No results',
       ),
     ).toEqual([{ code: '', display: 'BCG Vaccine' }]);
   });
@@ -326,6 +353,19 @@ describe('createImmunizationBundleEntries', () => {
     expect(resource.lotNumber).toBe('BATCH-001');
     expect(resource.occurrenceDateTime).toBeDefined();
     expect(resource.expirationDate).toBeDefined();
+  });
+
+  it('uses location.display when administeredLocation has no uuid (custom value)', () => {
+    const entryWithCustomLocation = {
+      ...mockImmunizationEntry,
+      administeredLocation: { display: 'Custom Ward' },
+    };
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [entryWithCustomLocation],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.location).toEqual({ display: 'Custom Ward' });
   });
 
   it('sets the performer with the correct practitioner reference', () => {

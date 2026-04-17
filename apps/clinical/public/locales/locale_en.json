@@ -286,6 +286,8 @@
   "NO_MATCHING_IMMUNIZATIONS_FOUND": "No matching immunizations found",
   "NO_MATCHING_INVESTIGATIONS_FOUND": "No matching Investigations found",
   "NO_MATCHING_MEDICATIONS_FOUND": "No matching Medications found",
+  "NO_MATCHING_ROUTE_FOUND": "No matching route found",
+  "NO_MATCHING_SITE_FOUND": "No matching site found",
   "NO_MEDICATION_HISTORY": "No Medications history",
   "NO_OBSERVATIONS": "No Observations recorded",
   "NO_OBSERVATIONS_FOUND": "No Observations found",

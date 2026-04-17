@@ -50,7 +50,8 @@ export const mockClinicalConfigContext = {
 };
 
 export const mockVaccineValueSet = {
-  resourceType: 'ValueSet',
+  resourceType: 'ValueSet' as const,
+  status: 'active' as const,
   expansion: {
     timestamp: '2024-01-01T00:00:00Z',
     contains: [
@@ -58,6 +59,21 @@ export const mockVaccineValueSet = {
       { code: 'flu', display: 'Influenza Vaccine' },
     ],
   },
+};
+
+export const mockValueSetWithPartialItem = {
+  resourceType: 'ValueSet' as const,
+  status: 'active' as const,
+  expansion: {
+    timestamp: '2024-01-01T00:00:00Z',
+    contains: [{ display: 'Partial Vaccine' }],
+  },
+};
+
+export const mockValueSetWithoutContains = {
+  resourceType: 'ValueSet' as const,
+  status: 'active' as const,
+  expansion: { timestamp: '2024-01-01T00:00:00Z' },
 };
 
 export const mockRoutesValueSet = {
@@ -107,7 +123,7 @@ export const mockMixedVaccinationBundle = {
 
 export const mockImmunizationEntry: ImmunizationInputEntry = {
   id: 'test-id-1',
-  drugCode: '',
+  drug: null,
   vaccineCode: { code: 'covid-19', display: 'COVID-19 Vaccine' },
   administeredOn: null,
   administeredLocation: null,
@@ -168,7 +184,7 @@ export const mockImmunizationEntryWithDate: ImmunizationInputEntry = {
 export const mockImmunizationEntryWithErrors: ImmunizationInputEntry = {
   ...mockImmunizationEntry,
   errors: {
-    drugCode: 'IMMUNIZATION_HISTORY_DRUG_CODE_REQUIRED',
+    drug: 'IMMUNIZATION_HISTORY_DRUG_CODE_REQUIRED',
     administeredOn: 'IMMUNIZATION_HISTORY_ADMINISTERED_ON_REQUIRED',
     administeredLocation: 'IMMUNIZATION_HISTORY_ADMINISTERED_LOCATION_REQUIRED',
     route: 'IMMUNIZATION_HISTORY_ROUTE_REQUIRED',
@@ -216,8 +232,9 @@ export const mockEncounterSubject: Reference = {
 
 export const mockImmunizationEntryComplete: ImmunizationInputEntry = {
   ...mockImmunizationEntry,
+  drug: { code: 'covid-19', display: 'COVID-19 Drug' },
   administeredOn: new Date('2025-01-01'),
-  administeredLocation: 'location-uuid-1',
+  administeredLocation: { uuid: 'location-uuid-1', display: 'Main Clinic' },
   route: 'im',
   site: 'arm',
   expiryDate: new Date('2026-06-01'),

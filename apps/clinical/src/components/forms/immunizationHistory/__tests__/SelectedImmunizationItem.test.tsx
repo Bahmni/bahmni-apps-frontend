@@ -140,7 +140,7 @@ describe('SelectedImmunizationItem', () => {
 
   describe('Error display', () => {
     it.each([
-      ['drugCode', 'Please select a drug name'],
+      ['drug', 'Please select a drug name'],
       ['administeredOn', 'Please select the administered on date'],
       ['administeredLocation', 'Please select an administered location'],
       ['route', 'Please select a route'],
@@ -160,55 +160,6 @@ describe('SelectedImmunizationItem', () => {
   });
 
   describe('Store interactions', () => {
-    it('calls updateVaccineDrug when a drug is selected from the drug combobox', async () => {
-      const user = userEvent.setup();
-      render(<SelectedImmunizationItem {...defaultProps} />);
-      await user.type(screen.getByPlaceholderText('Search drug name'), 'COVID');
-      await user.click(screen.getByText('COVID-19 Drug'));
-      await waitFor(() => {
-        expect(mockStore.updateVaccineDrug).toHaveBeenCalledWith(
-          id,
-          'covid-19',
-        );
-      });
-    });
-
-    it('calls updateAdministeredLocation when a location is selected', async () => {
-      const user = userEvent.setup();
-      render(<SelectedImmunizationItem {...defaultProps} />);
-      await user.type(
-        screen.getByPlaceholderText('Select administered location'),
-        'Main',
-      );
-      await user.click(screen.getByText('Main Clinic'));
-      await waitFor(() => {
-        expect(mockStore.updateAdministeredLocation).toHaveBeenCalledWith(
-          id,
-          'location-uuid-1',
-        );
-      });
-    });
-
-    it('calls updateRoute when a route is selected', async () => {
-      const user = userEvent.setup();
-      render(<SelectedImmunizationItem {...defaultProps} />);
-      await user.type(screen.getByPlaceholderText('Select route'), 'Intra');
-      await user.click(screen.getByText('Intramuscular'));
-      await waitFor(() => {
-        expect(mockStore.updateRoute).toHaveBeenCalledWith(id, 'im');
-      });
-    });
-
-    it('calls updateSite when a site is selected', async () => {
-      const user = userEvent.setup();
-      render(<SelectedImmunizationItem {...defaultProps} />);
-      await user.type(screen.getByPlaceholderText('Select site'), 'Left');
-      await user.click(screen.getByText('Left Arm'));
-      await waitFor(() => {
-        expect(mockStore.updateSite).toHaveBeenCalledWith(id, 'arm');
-      });
-    });
-
     it.each([
       [
         'updateVaccineDrug',
@@ -216,6 +167,7 @@ describe('SelectedImmunizationItem', () => {
         'COVID',
         'COVID-19 Drug',
         mockStore.updateVaccineDrug,
+        { code: 'covid-19', display: 'COVID-19 Drug' },
       ],
       [
         'updateAdministeredLocation',
@@ -223,7 +175,73 @@ describe('SelectedImmunizationItem', () => {
         'Main',
         'Main Clinic',
         mockStore.updateAdministeredLocation,
+        { uuid: 'location-uuid-1', display: 'Main Clinic' },
       ],
+      [
+        'updateRoute',
+        'Select route',
+        'Intra',
+        'Intramuscular',
+        mockStore.updateRoute,
+        'im',
+      ],
+      [
+        'updateSite',
+        'Select site',
+        'Left',
+        'Left Arm',
+        mockStore.updateSite,
+        'arm',
+      ],
+    ])(
+      'calls %s when an item is selected from the combobox',
+      async (
+        _,
+        placeholder,
+        searchTerm,
+        itemText,
+        storeMethod,
+        expectedValue,
+      ) => {
+        const user = userEvent.setup();
+        render(<SelectedImmunizationItem {...defaultProps} />);
+        await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
+        await user.click(screen.getByText(itemText));
+        await waitFor(() => {
+          expect(storeMethod).toHaveBeenCalledWith(id, expectedValue);
+        });
+      },
+    );
+
+    it.each([
+      [
+        'updateVaccineDrug',
+        'Search drug name',
+        'My Custom Drug',
+        mockStore.updateVaccineDrug,
+        { display: 'My Custom Drug' },
+      ],
+      [
+        'updateAdministeredLocation',
+        'Select administered location',
+        'Custom Ward',
+        mockStore.updateAdministeredLocation,
+        { display: 'Custom Ward' },
+      ],
+    ])(
+      'calls %s with display only when a custom value is entered',
+      async (_, placeholder, inputText, storeMethod, expectedValue) => {
+        const user = userEvent.setup();
+        render(<SelectedImmunizationItem {...defaultProps} />);
+        await user.type(screen.getByPlaceholderText(placeholder), inputText);
+        await user.keyboard('{Enter}');
+        await waitFor(() => {
+          expect(storeMethod).toHaveBeenCalledWith(id, expectedValue);
+        });
+      },
+    );
+
+    it.each([
       [
         'updateRoute',
         'Select route',
@@ -247,35 +265,60 @@ describe('SelectedImmunizationItem', () => {
       },
     );
 
-    it('calls updateManufacturer when manufacturer input changes', async () => {
-      const user = userEvent.setup();
-      render(<SelectedImmunizationItem {...defaultProps} />);
-      await user.type(
-        screen.getByTestId(`immunization-manufacturer-${id}`),
-        'Pfizer',
-      );
-      await waitFor(() => {
-        expect(mockStore.updateManufacturer).toHaveBeenCalledWith(
-          id,
-          expect.any(String),
+    it.each([
+      [
+        'updateVaccineDrug',
+        'Search drug name',
+        'COVID',
+        'COVID-19 Drug',
+        mockStore.updateVaccineDrug,
+      ],
+      [
+        'updateAdministeredLocation',
+        'Select administered location',
+        'Main',
+        'Main Clinic',
+        mockStore.updateAdministeredLocation,
+      ],
+    ])(
+      'calls %s with null when selection is cleared',
+      async (_, placeholder, searchTerm, itemText, storeMethod) => {
+        const user = userEvent.setup();
+        render(<SelectedImmunizationItem {...defaultProps} />);
+        await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
+        await user.click(screen.getByText(itemText));
+        storeMethod.mockClear();
+        await user.click(
+          screen.getByRole('button', { name: 'Clear selected item' }),
         );
-      });
-    });
+        await waitFor(() => {
+          expect(storeMethod).toHaveBeenCalledWith(id, null);
+        });
+      },
+    );
 
-    it('calls updateBatchNumber when batch number input changes', async () => {
-      const user = userEvent.setup();
-      render(<SelectedImmunizationItem {...defaultProps} />);
-      await user.type(
-        screen.getByTestId(`immunization-batch-number-${id}`),
-        'BATCH001',
-      );
-      await waitFor(() => {
-        expect(mockStore.updateBatchNumber).toHaveBeenCalledWith(
-          id,
-          expect.any(String),
-        );
-      });
-    });
+    it.each([
+      [
+        'updateManufacturer',
+        `immunization-manufacturer-${id}`,
+        mockStore.updateManufacturer,
+      ],
+      [
+        'updateBatchNumber',
+        `immunization-batch-number-${id}`,
+        mockStore.updateBatchNumber,
+      ],
+    ])(
+      'calls %s when the text input changes',
+      async (_, testId, storeMethod) => {
+        const user = userEvent.setup();
+        render(<SelectedImmunizationItem {...defaultProps} />);
+        await user.type(screen.getByTestId(testId), 'value');
+        await waitFor(() => {
+          expect(storeMethod).toHaveBeenCalledWith(id, expect.any(String));
+        });
+      },
+    );
 
     it.each([
       [

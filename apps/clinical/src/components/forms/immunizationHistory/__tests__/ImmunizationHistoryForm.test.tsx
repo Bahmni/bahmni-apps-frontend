@@ -92,6 +92,19 @@ describe('ImmunizationHistoryForm', () => {
         ).not.toBeInTheDocument();
       },
     );
+
+    it('does not show loading skeleton when a concept set is loading but no immunizations are selected', () => {
+      mockUseQuery.mockImplementation(({ queryKey: qk }: any) => {
+        if (qk[0] === 'routesConceptSet') {
+          return { data: undefined, isLoading: true, error: null };
+        }
+        return defaultQueryMock({ queryKey: qk }) as any;
+      });
+      render(<ImmunizationHistoryForm />);
+      expect(
+        screen.queryByTestId('immunization-history-loading-test-id'),
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Error states', () => {

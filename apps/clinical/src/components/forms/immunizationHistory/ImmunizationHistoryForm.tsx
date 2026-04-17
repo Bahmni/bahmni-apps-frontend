@@ -138,13 +138,15 @@ const ImmunizationHistoryForm = () => {
 
   const isDataLoading = useMemo(() => {
     return (
-      vaccineCodeConceptSetLoading ||
-      routesConceptSetLoading ||
-      sitesConceptSetLoading ||
-      administeredLocationTagLoading ||
-      vaccinationDrugsLoading
+      (vaccineCodeConceptSetLoading ||
+        routesConceptSetLoading ||
+        sitesConceptSetLoading ||
+        administeredLocationTagLoading ||
+        vaccinationDrugsLoading) &&
+      selectedImmunizations.length > 0
     );
   }, [
+    selectedImmunizations,
     vaccineCodeConceptSetLoading,
     routesConceptSetLoading,
     sitesConceptSetLoading,
