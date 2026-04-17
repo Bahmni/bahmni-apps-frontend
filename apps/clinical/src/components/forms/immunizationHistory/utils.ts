@@ -22,7 +22,9 @@ import {
   ValueSetComboBoxItem,
 } from './models';
 
-function resolveAdministeredProductExtension(drug: ImmunizationDrug): Extension[] {
+function resolveAdministeredProductExtension(
+  drug: ImmunizationDrug,
+): Extension[] {
   return [
     {
       url: ADMINISTERED_PRODUCT_EXTENSION_URL,

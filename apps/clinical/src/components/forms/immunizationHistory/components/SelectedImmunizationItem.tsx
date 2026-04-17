@@ -9,7 +9,7 @@ import {
 import { useTranslation, Location } from '@bahmni/services';
 import { Medication, ValueSet } from 'fhir/r4';
 import React, { useMemo, useState } from 'react';
-import { ImmunizationConfig } from '../../../../providers/clinicalConfig/models';
+import { ImmunizationAttribute } from '../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../models';
 import { useImmunizationHistoryStore } from '../stores';
 import styles from '../styles/ImmunizationHistoryForm.module.scss';
@@ -24,7 +24,7 @@ interface SelectedImmunizationItemProps {
   routes: ValueSet | undefined;
   sites: ValueSet | undefined;
   administeredLocationTag: Location[] | undefined;
-  formFields: ImmunizationConfig['formFields'] | undefined;
+  attributes: ImmunizationAttribute[] | undefined;
   vaccineDrugs: Medication[] | undefined;
 }
 
@@ -32,7 +32,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   immunization,
   routes,
   sites,
-  formFields,
+  attributes,
   administeredLocationTag,
   vaccineDrugs,
 }) => {
@@ -55,6 +55,8 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
     administeredLocationTagSearchTerm,
     setAdministeredLocationTagSearchTerm,
   ] = useState('');
+
+  const findAttr = (name: string) => attributes?.find((a) => a.name === name);
 
   const vaccineDrugComboBoxItems = useMemo(
     () =>
@@ -151,7 +153,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           />
         </Column>
 
-        {formFields?.administeredOn && (
+        {findAttr('administeredOn') && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <DatePicker
               datePickerType="single"
@@ -178,7 +180,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {formFields?.administeredLocation && (
+        {findAttr('administeredLocation') && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <ComboBox
               id={`immunization-administered-location-combobox-${id}`}
@@ -218,7 +220,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {formFields?.route && (
+        {findAttr('route') && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <ComboBox
               id={`immunization-route-combobox-${id}`}
@@ -244,7 +246,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {formFields?.site && (
+        {findAttr('site') && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <ComboBox
               id={`immunization-site-combobox-${id}`}
@@ -270,7 +272,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {formFields?.manufacturer && (
+        {findAttr('manufacturer') && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <TextInput
               id={`immunization-manufacturer-${id}`}
@@ -291,7 +293,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {formFields?.batchNumber && (
+        {findAttr('batchNumber') && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <TextInput
               id={`immunization-batch-number-${id}`}
@@ -312,7 +314,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {formFields?.expiryDate && (
+        {findAttr('expiryDate') && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <DatePicker
               datePickerType="single"

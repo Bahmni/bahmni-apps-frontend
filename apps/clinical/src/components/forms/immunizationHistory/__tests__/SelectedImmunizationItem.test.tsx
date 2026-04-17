@@ -5,7 +5,7 @@ import SelectedImmunizationItem from '../components/SelectedImmunizationItem';
 import { useImmunizationHistoryStore } from '../stores';
 import {
   mockCovid19VaccineDrugs,
-  mockFullFormFields,
+  mockFullAttributes,
   mockImmunizationEntry,
   mockImmunizationEntryWithDate,
   mockImmunizationEntryWithErrors,
@@ -28,7 +28,7 @@ const defaultProps = {
   routes: mockRoutesValueSet,
   sites: mockSitesValueSet,
   administeredLocationTag: mockLocations,
-  formFields: mockFullFormFields,
+  attributes: mockFullAttributes,
   vaccineDrugs: mockCovid19VaccineDrugs,
 };
 
@@ -46,9 +46,9 @@ describe('SelectedImmunizationItem', () => {
       ).toHaveTextContent('COVID-19 Vaccine');
     });
 
-    it('always renders drug name combobox regardless of formFields', () => {
+    it('always renders drug name combobox regardless of attributes', () => {
       render(
-        <SelectedImmunizationItem {...defaultProps} formFields={undefined} />,
+        <SelectedImmunizationItem {...defaultProps} attributes={undefined} />,
       );
       expect(
         screen.getByPlaceholderText('Search drug name'),
@@ -58,51 +58,52 @@ describe('SelectedImmunizationItem', () => {
     it.each([
       [
         'administeredOn',
-        { administeredOn: { required: true } },
+        [{ name: 'administeredOn', required: true }],
         `immunization-administered-on-input-${id}-test-id`,
       ],
       [
         'administeredLocation',
-        {
-          administeredLocation: {
+        [
+          {
+            name: 'administeredLocation',
             required: true,
             administeredLocationTag: 'login-location',
           },
-        },
+        ],
         `immunization-administered-location-${id}-test-id`,
       ],
       [
         'route',
-        { route: { required: false, routeConceptUuid: 'route-uuid' } },
+        [{ name: 'route', required: false, routeConceptUuid: 'route-uuid' }],
         `immunization-route-${id}-test-id`,
       ],
       [
         'site',
-        { site: { required: false, siteConceptUuid: 'site-uuid' } },
+        [{ name: 'site', required: false, siteConceptUuid: 'site-uuid' }],
         `immunization-site-${id}-test-id`,
       ],
       [
         'manufacturer',
-        { manufacturer: { required: false } },
+        [{ name: 'manufacturer', required: false }],
         `immunization-manufacturer-${id}`,
       ],
       [
         'batchNumber',
-        { batchNumber: { required: false } },
+        [{ name: 'batchNumber', required: false }],
         `immunization-batch-number-${id}`,
       ],
       [
         'expiryDate',
-        { expiryDate: { required: false } },
+        [{ name: 'expiryDate', required: false }],
         `immunization-expiry-date-input-${id}`,
       ],
     ])(
-      'renders %s field when formFields includes it',
-      (_, formFields, testId) => {
+      'renders %s field when attributes includes it',
+      (_, attributes, testId) => {
         render(
           <SelectedImmunizationItem
             {...defaultProps}
-            formFields={formFields}
+            attributes={attributes}
           />,
         );
         expect(screen.getByTestId(testId)).toBeInTheDocument();
@@ -120,8 +121,8 @@ describe('SelectedImmunizationItem', () => {
       ['manufacturer', `immunization-manufacturer-${id}`],
       ['batchNumber', `immunization-batch-number-${id}`],
       ['expiryDate', `immunization-expiry-date-input-${id}`],
-    ])('does not render %s field when formFields excludes it', (_, testId) => {
-      render(<SelectedImmunizationItem {...defaultProps} formFields={{}} />);
+    ])('does not render %s field when attributes is empty', (_, testId) => {
+      render(<SelectedImmunizationItem {...defaultProps} attributes={[]} />);
       expect(screen.queryByTestId(testId)).not.toBeInTheDocument();
     });
 
@@ -355,7 +356,7 @@ describe('SelectedImmunizationItem', () => {
   describe('Snapshots', () => {
     it.each([
       ['all form fields', defaultProps],
-      ['no optional fields', { ...defaultProps, formFields: undefined }],
+      ['no optional fields', { ...defaultProps, attributes: undefined }],
       [
         'with field errors',
         { ...defaultProps, immunization: mockImmunizationEntryWithErrors },
@@ -369,7 +370,7 @@ describe('SelectedImmunizationItem', () => {
   describe('Accessibility', () => {
     it.each([
       ['all form fields', defaultProps],
-      ['no optional fields', { ...defaultProps, formFields: undefined }],
+      ['no optional fields', { ...defaultProps, attributes: undefined }],
       [
         'with field errors',
         { ...defaultProps, immunization: mockImmunizationEntryWithErrors },

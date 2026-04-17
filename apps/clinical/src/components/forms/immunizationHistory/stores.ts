@@ -1,6 +1,6 @@
 import { generateUUID } from '@bahmni/services';
 import { create } from 'zustand';
-import { ImmunizationConfig } from '../../../providers/clinicalConfig/models';
+import { ImmunizationAttribute } from '../../../providers/clinicalConfig/models';
 import {
   ImmunizationDrug,
   ImmunizationHistoryState,
@@ -11,7 +11,7 @@ import {
 export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
   (set, get) => ({
     selectedImmunizations: [],
-    formFields: undefined,
+    attributes: undefined,
 
     addImmunization: (vaccineCode: { code: string; display: string }) => {
       const newEntry: ImmunizationInputEntry = {
@@ -41,8 +41,8 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
       }));
     },
 
-    setFormFields: (fields: ImmunizationConfig['formFields']) => {
-      set({ formFields: fields });
+    setAttributes: (attrs: ImmunizationAttribute[]) => {
+      set({ attributes: attrs });
     },
 
     updateAdministeredOn: (id: string, value: Date | null) => {
@@ -162,7 +162,10 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
 
     validateAll: () => {
       let isValid = true;
-      const { formFields } = get();
+      const { attributes } = get();
+
+      const findAttr = (name: string) =>
+        attributes?.find((a) => a.name === name);
 
       const checkField = (
         errors: ImmunizationInputEntry['errors'],
@@ -189,49 +192,49 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
             'IMMUNIZATION_HISTORY_DRUG_CODE_REQUIRED',
           );
 
-          if (formFields?.administeredOn?.required)
+          if (findAttr('administeredOn')?.required)
             checkField(
               errors,
               'administeredOn',
               !entry.administeredOn,
               'IMMUNIZATION_HISTORY_ADMINISTERED_ON_REQUIRED',
             );
-          if (formFields?.administeredLocation?.required)
+          if (findAttr('administeredLocation')?.required)
             checkField(
               errors,
               'administeredLocation',
               !entry.administeredLocation?.display.trim(),
               'IMMUNIZATION_HISTORY_ADMINISTERED_LOCATION_REQUIRED',
             );
-          if (formFields?.route?.required)
+          if (findAttr('route')?.required)
             checkField(
               errors,
               'route',
               !entry.route?.trim(),
               'IMMUNIZATION_HISTORY_ROUTE_REQUIRED',
             );
-          if (formFields?.site?.required)
+          if (findAttr('site')?.required)
             checkField(
               errors,
               'site',
               !entry.site?.trim(),
               'IMMUNIZATION_HISTORY_SITE_REQUIRED',
             );
-          if (formFields?.expiryDate?.required)
+          if (findAttr('expiryDate')?.required)
             checkField(
               errors,
               'expiryDate',
               !entry.expiryDate,
               'IMMUNIZATION_HISTORY_EXPIRY_DATE_REQUIRED',
             );
-          if (formFields?.manufacturer?.required)
+          if (findAttr('manufacturer')?.required)
             checkField(
               errors,
               'manufacturer',
               !entry.manufacturer?.trim(),
               'IMMUNIZATION_HISTORY_MANUFACTURER_REQUIRED',
             );
-          if (formFields?.batchNumber?.required)
+          if (findAttr('batchNumber')?.required)
             checkField(
               errors,
               'batchNumber',

@@ -1,6 +1,6 @@
 import { Location } from '@bahmni/services';
 import { Medication, Reference } from 'fhir/r4';
-import { ImmunizationConfig } from '../../../../../providers/clinicalConfig/models';
+import { ImmunizationAttribute } from '../../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../../models';
 
 const MEDICINE_EXTENSION_URL = 'http://fhir.openmrs.org/ext/medicine';
@@ -26,23 +26,31 @@ const buildMedicationEntry = (
   } as Medication,
 });
 
-export const mockImmunizationConfig = {
-  vaccineConceptSetUuid: 'vaccine-concept-set-uuid',
-  formFields: {
-    administeredOn: { required: true },
-    administeredLocation: {
+export const mockImmunizationHistory = {
+  metadata: {
+    routeConceptUuid: 'route-concept-uuid',
+    vaccineConceptSetUuid: 'vaccine-concept-set-uuid',
+    siteConceptUuid: 'site-concept-uuid',
+    administeredLocationTag: 'login-location',
+  },
+  encounterType: ['Immunization'],
+  privilege: ['app:clinical;addHistory'],
+  attributes: [
+    { name: 'administeredOn', required: true },
+    {
+      name: 'administeredLocation',
       required: true,
       administeredLocationTag: 'login-location',
     },
-    route: { required: false, routeConceptUuid: 'route-concept-uuid' },
-    site: { required: false, siteConceptUuid: 'site-concept-uuid' },
-  },
+    { name: 'route', required: false, routeConceptUuid: 'route-concept-uuid' },
+    { name: 'site', required: false, siteConceptUuid: 'site-concept-uuid' },
+  ] as ImmunizationAttribute[],
 };
 
 export const mockClinicalConfigContext = {
   clinicalConfig: {
     consultationPad: {
-      immunizationConfig: mockImmunizationConfig,
+      history: mockImmunizationHistory,
     },
   },
   isLoading: false,
@@ -141,40 +149,50 @@ export const mockVaccineCode = {
   display: 'COVID-19 Vaccine',
 };
 
-export const mockFullFormFields: ImmunizationConfig['formFields'] = {
-  administeredOn: { required: true },
-  administeredLocation: {
-    required: true,
-    administeredLocationTag: 'login-location',
-  },
-  route: { required: false, routeConceptUuid: 'route-concept-uuid' },
-  site: { required: false, siteConceptUuid: 'site-concept-uuid' },
-  manufacturer: { required: false },
-  batchNumber: { required: false },
-  expiryDate: { required: false },
-};
-
-export const mockFormFieldsAdministeredOptional: ImmunizationConfig['formFields'] =
+/** All 7 form fields present, administered fields required, others optional */
+export const mockFullAttributes: ImmunizationAttribute[] = [
+  { name: 'administeredOn', required: true },
   {
-    administeredOn: { required: false },
-    administeredLocation: {
-      required: false,
-      administeredLocationTag: 'login-location',
-    },
-  };
-
-export const mockAllRequiredFormFields: ImmunizationConfig['formFields'] = {
-  administeredOn: { required: true },
-  administeredLocation: {
+    name: 'administeredLocation',
     required: true,
     administeredLocationTag: 'login-location',
   },
-  route: { required: true, routeConceptUuid: 'route-concept-uuid' },
-  site: { required: true, siteConceptUuid: 'site-concept-uuid' },
-  expiryDate: { required: true },
-  manufacturer: { required: true },
-  batchNumber: { required: true },
-};
+  { name: 'route', required: false, routeConceptUuid: 'route-concept-uuid' },
+  { name: 'site', required: false, siteConceptUuid: 'site-concept-uuid' },
+  { name: 'manufacturer', required: false },
+  { name: 'batchNumber', required: false },
+  { name: 'expiryDate', required: false },
+];
+
+/** All 7 form fields present, all fields required */
+export const mockAllRequiredAttributes: ImmunizationAttribute[] = [
+  { name: 'administeredOn', required: true },
+  {
+    name: 'administeredLocation',
+    required: true,
+    administeredLocationTag: 'login-location',
+  },
+  { name: 'route', required: true, routeConceptUuid: 'route-concept-uuid' },
+  { name: 'site', required: true, siteConceptUuid: 'site-concept-uuid' },
+  { name: 'expiryDate', required: true },
+  { name: 'manufacturer', required: true },
+  { name: 'batchNumber', required: true },
+];
+
+/** All 7 form fields present, administered fields optional, others optional */
+export const mockAttributesWithOptionalAdministered: ImmunizationAttribute[] = [
+  { name: 'administeredOn', required: false },
+  {
+    name: 'administeredLocation',
+    required: false,
+    administeredLocationTag: 'login-location',
+  },
+  { name: 'route', required: false, routeConceptUuid: 'route-concept-uuid' },
+  { name: 'site', required: false, siteConceptUuid: 'site-concept-uuid' },
+  { name: 'manufacturer', required: false },
+  { name: 'batchNumber', required: false },
+  { name: 'expiryDate', required: false },
+];
 
 export const mockImmunizationEntryWithDate: ImmunizationInputEntry = {
   ...mockImmunizationEntry,
@@ -246,9 +264,10 @@ export const mockImmunizationEntryComplete: ImmunizationInputEntry = {
 
 export const mockStore = {
   selectedImmunizations: [],
+  attributes: undefined,
   addImmunization: jest.fn(),
   removeImmunization: jest.fn(),
-  setFormFields: jest.fn(),
+  setAttributes: jest.fn(),
   updateAdministeredOn: jest.fn(),
   updateVaccineDrug: jest.fn(),
   updateAdministeredLocation: jest.fn(),

@@ -1,9 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { useImmunizationHistoryStore } from '../stores';
 import {
-  mockAllRequiredFormFields,
-  mockFormFieldsAdministeredOptional,
-  mockFullFormFields,
+  mockAllRequiredAttributes,
+  mockAttributesWithOptionalAdministered,
+  mockFullAttributes,
   mockVaccineCode,
 } from './__mocks__/immunizationHistoryMocks';
 
@@ -53,10 +53,10 @@ describe('useImmunizationHistoryStore', () => {
   });
 
   describe('Initialization', () => {
-    it('initializes with empty selectedImmunizations and undefined formFields', () => {
+    it('initializes with empty selectedImmunizations and undefined attributes', () => {
       const { result } = renderHook(() => useImmunizationHistoryStore());
       expect(result.current.selectedImmunizations).toEqual([]);
-      expect(result.current.formFields).toBeUndefined();
+      expect(result.current.attributes).toBeUndefined();
     });
   });
 
@@ -193,7 +193,7 @@ describe('useImmunizationHistoryStore', () => {
         const { result } = renderHook(() => useImmunizationHistoryStore());
 
         act(() => {
-          result.current.setFormFields(mockAllRequiredFormFields);
+          result.current.setAttributes(mockAllRequiredAttributes);
           result.current.addImmunization(mockVaccineCode);
         });
         const id = result.current.selectedImmunizations[0].id;
@@ -221,7 +221,7 @@ describe('useImmunizationHistoryStore', () => {
         const { result } = renderHook(() => useImmunizationHistoryStore());
 
         act(() => {
-          result.current.setFormFields(mockAllRequiredFormFields);
+          result.current.setAttributes(mockAllRequiredAttributes);
           result.current.addImmunization(mockVaccineCode);
         });
         const id = result.current.selectedImmunizations[0].id;
@@ -254,7 +254,7 @@ describe('useImmunizationHistoryStore', () => {
       expect(isValid).toBe(true);
     });
 
-    it('always validates drug as required regardless of formFields', () => {
+    it('always validates drug as required regardless of attributes', () => {
       const { result } = renderHook(() => useImmunizationHistoryStore());
 
       act(() => {
@@ -276,7 +276,7 @@ describe('useImmunizationHistoryStore', () => {
       const { result } = renderHook(() => useImmunizationHistoryStore());
 
       act(() => {
-        result.current.setFormFields(mockAllRequiredFormFields);
+        result.current.setAttributes(mockAllRequiredAttributes);
         result.current.addImmunization(mockVaccineCode);
         result.current.addImmunization(secondVaccineCode);
       });
@@ -320,10 +320,7 @@ describe('useImmunizationHistoryStore', () => {
       const { result } = renderHook(() => useImmunizationHistoryStore());
 
       act(() => {
-        result.current.setFormFields({
-          ...mockFullFormFields,
-          ...mockFormFieldsAdministeredOptional,
-        });
+        result.current.setAttributes(mockAttributesWithOptionalAdministered);
         result.current.addImmunization(mockVaccineCode);
       });
       const id = result.current.selectedImmunizations[0].id;
@@ -352,7 +349,7 @@ describe('useImmunizationHistoryStore', () => {
       const { result } = renderHook(() => useImmunizationHistoryStore());
 
       act(() => {
-        result.current.setFormFields(mockAllRequiredFormFields);
+        result.current.setAttributes(mockAllRequiredAttributes);
         result.current.addImmunization(mockVaccineCode);
       });
       const id = result.current.selectedImmunizations[0].id;
@@ -428,17 +425,17 @@ describe('useImmunizationHistoryStore', () => {
   });
 
   describe('getState', () => {
-    it('returns the current store state including formFields set via setFormFields', () => {
+    it('returns the current store state including attributes set via setAttributes', () => {
       const { result } = renderHook(() => useImmunizationHistoryStore());
 
       act(() => {
-        result.current.setFormFields(mockFullFormFields);
+        result.current.setAttributes(mockFullAttributes);
         result.current.addImmunization(mockVaccineCode);
       });
 
       const state = result.current.getState();
       expect(state.selectedImmunizations).toHaveLength(1);
-      expect(state.formFields).toEqual(mockFullFormFields);
+      expect(state.attributes).toEqual(mockFullAttributes);
     });
   });
 });

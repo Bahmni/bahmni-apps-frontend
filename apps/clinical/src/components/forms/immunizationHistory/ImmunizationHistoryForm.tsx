@@ -27,7 +27,7 @@ const ImmunizationHistoryForm = () => {
     addImmunization,
     removeImmunization,
     selectedImmunizations,
-    setFormFields,
+    setAttributes,
   } = useImmunizationHistoryStore();
 
   const {
@@ -36,14 +36,26 @@ const ImmunizationHistoryForm = () => {
     error: configError,
   } = useClinicalConfig();
 
-  const immunizationFormConfig =
-    clinicalConfig?.consultationPad?.immunizationConfig;
-  const { formFields, vaccineConceptSetUuid } = immunizationFormConfig;
-  const { route, site, administeredLocation } = formFields;
+  const immunizationHistory = clinicalConfig?.consultationPad?.history;
+  const { metadata, attributes } = immunizationHistory ?? {};
+  const {
+    vaccineConceptSetUuid,
+    routeConceptUuid,
+    siteConceptUuid,
+    administeredLocationTag,
+  } = metadata ?? {};
+
+  const routeAttr = attributes?.find((a) => a.name === 'route');
+  const siteAttr = attributes?.find((a) => a.name === 'site');
+  const administeredLocationAttr = attributes?.find(
+    (a) => a.name === 'administeredLocation',
+  );
 
   useEffect(() => {
-    setFormFields(formFields);
-  }, [formFields]);
+    if (attributes) {
+      setAttributes(attributes);
+    }
+  }, [attributes, setAttributes]);
 
   const {
     data: vaccineCodeConceptSet,
@@ -51,25 +63,21 @@ const ImmunizationHistoryForm = () => {
     error: vaccineCodeConceptSetError,
   } = useQuery({
     queryKey: ['vaccineConceptSetUuid', vaccineConceptSetUuid],
-    queryFn: () => searchFHIRConcepts(vaccineConceptSetUuid),
+    queryFn: () => searchFHIRConcepts(vaccineConceptSetUuid!),
     enabled: !!vaccineConceptSetUuid && !isConfigLoading && !configError,
     staleTime: Infinity,
   });
 
   const {
-    data: administeredLocationTag,
+    data: administeredLocationTagData,
     isLoading: administeredLocationTagLoading,
     error: administeredLocationTagError,
   } = useQuery({
-    queryKey: [
-      'administeredLocationTag',
-      administeredLocation!.administeredLocationTag,
-    ],
-    queryFn: () =>
-      getLocationByTag(administeredLocation!.administeredLocationTag),
+    queryKey: ['administeredLocationTag', administeredLocationTag],
+    queryFn: () => getLocationByTag(administeredLocationTag!),
     enabled:
-      !!administeredLocation &&
-      !!administeredLocation?.administeredLocationTag &&
+      !!administeredLocationAttr &&
+      !!administeredLocationTag &&
       !isConfigLoading &&
       !configError,
     staleTime: Infinity,
@@ -80,10 +88,10 @@ const ImmunizationHistoryForm = () => {
     isLoading: routesConceptSetLoading,
     error: routesConceptSetError,
   } = useQuery({
-    queryKey: ['routesConceptSet', route!.routeConceptUuid],
-    queryFn: () => searchFHIRConcepts(route!.routeConceptUuid),
+    queryKey: ['routesConceptSet', routeConceptUuid],
+    queryFn: () => searchFHIRConcepts(routeConceptUuid!),
     enabled:
-      !!route && !!route?.routeConceptUuid && !isConfigLoading && !configError,
+      !!routeAttr && !!routeConceptUuid && !isConfigLoading && !configError,
     staleTime: Infinity,
   });
 
@@ -92,10 +100,10 @@ const ImmunizationHistoryForm = () => {
     isLoading: sitesConceptSetLoading,
     error: sitesConceptSetError,
   } = useQuery({
-    queryKey: ['sitesConceptSet', site!.siteConceptUuid],
-    queryFn: () => searchFHIRConcepts(site!.siteConceptUuid),
+    queryKey: ['sitesConceptSet', siteConceptUuid],
+    queryFn: () => searchFHIRConcepts(siteConceptUuid!),
     enabled:
-      !!site && !!site?.siteConceptUuid && !isConfigLoading && !configError,
+      !!siteAttr && !!siteConceptUuid && !isConfigLoading && !configError,
     staleTime: Infinity,
   });
 
@@ -250,8 +258,8 @@ const ImmunizationHistoryForm = () => {
                 immunization={immunization}
                 routes={routesConceptSet}
                 sites={sitesConceptSet}
-                formFields={formFields}
-                administeredLocationTag={administeredLocationTag}
+                attributes={attributes}
+                administeredLocationTag={administeredLocationTagData}
                 vaccineDrugs={vaccinationDrugs?.entry
                   ?.filter(
                     (entry) => entry.resource?.resourceType === 'Medication',

@@ -8,6 +8,9 @@ export interface AllergyConceptMap {
 interface InputControlAttributes {
   key: string;
   required: boolean;
+  administeredLocationTag?: string;
+  routeConceptUuid?: string;
+  siteConceptUuid?: string;
 }
 
 export interface InputControl<
