@@ -3,12 +3,12 @@ import { useHasPrivilege } from '@bahmni/widgets';
 import React from 'react';
 import type { InputControlRegistry } from '../models';
 
-interface FormRendererProps {
+interface InputControlRendererProps {
   entry: InputControlRegistry;
   encounterType: string;
 }
 
-const FormRenderer: React.FC<FormRendererProps> = ({
+const InputControlRenderer: React.FC<InputControlRendererProps> = ({
   entry,
   encounterType,
 }) => {
@@ -29,4 +29,4 @@ const FormRenderer: React.FC<FormRendererProps> = ({
   );
 };
 
-export default FormRenderer;
+export default InputControlRenderer;

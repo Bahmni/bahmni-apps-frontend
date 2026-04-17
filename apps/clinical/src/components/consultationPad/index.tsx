@@ -21,7 +21,7 @@ import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
-import FormRenderer from './components/FormRenderer';
+import InputControlRenderer from './components/InputControlRenderer';
 import { INPUT_CONTROL_REGISTRY } from './inputControlRegistry';
 import { submitConsultation } from './services';
 import styles from './styles/ConsultationPad.module.scss';
@@ -181,7 +181,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           ) : (
             <div className={styles.formList}>
               {INPUT_CONTROL_REGISTRY.map((entry) => (
-                <FormRenderer
+                <InputControlRenderer
                   key={entry.key}
                   entry={entry}
                   encounterType={encounterType}

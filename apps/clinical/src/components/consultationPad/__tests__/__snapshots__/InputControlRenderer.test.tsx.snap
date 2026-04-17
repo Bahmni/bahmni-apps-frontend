@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`FormRenderer matches snapshot when rendered with privilege 1`] = `
+exports[`InputControlRenderer matches snapshot when rendered with privilege 1`] = `
 <div>
   <div>
     <div
