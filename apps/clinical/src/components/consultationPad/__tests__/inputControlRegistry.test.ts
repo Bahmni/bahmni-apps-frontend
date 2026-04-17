@@ -1,6 +1,6 @@
 import { CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
 import * as consultationBundleService from '../../../services/consultationBundleService';
-import { FORM_REGISTRY } from '../formRegistry';
+import { INPUT_CONTROL_REGISTRY } from '../inputControlRegistry';
 import type { BundleContext } from '../models';
 
 const mockBundleContext: BundleContext = {
@@ -110,7 +110,7 @@ jest.mock('../components/ObservationFormsPanel', () => ({
   default: () => null,
 }));
 
-describe('FORM_REGISTRY', () => {
+describe('INPUT_CONTROL_REGISTRY', () => {
   const EXPECTED_KEYS = [
     'encounterDetails',
     'allergies',
@@ -122,14 +122,14 @@ describe('FORM_REGISTRY', () => {
   ] as const;
 
   it('contains 7 entries with the correct keys in order', () => {
-    expect(FORM_REGISTRY).toHaveLength(7);
-    expect(FORM_REGISTRY.map((e) => e.key)).toEqual(EXPECTED_KEYS);
+    expect(INPUT_CONTROL_REGISTRY).toHaveLength(7);
+    expect(INPUT_CONTROL_REGISTRY.map((e) => e.key)).toEqual(EXPECTED_KEYS);
   });
 
   it.each(EXPECTED_KEYS)(
     '%s entry has required shape (component, reset, validate, hasData, subscribe)',
     (key) => {
-      const entry = FORM_REGISTRY.find((e) => e.key === key)!;
+      const entry = INPUT_CONTROL_REGISTRY.find((e) => e.key === key)!;
       expect(entry.component).toBeDefined();
       expect(typeof entry.reset).toBe('function');
       expect(typeof entry.validate).toBe('function');
@@ -139,7 +139,9 @@ describe('FORM_REGISTRY', () => {
   );
 
   it('encounterDetails has no encounterTypes (renders for all encounter types)', () => {
-    const entry = FORM_REGISTRY.find((e) => e.key === 'encounterDetails')!;
+    const entry = INPUT_CONTROL_REGISTRY.find(
+      (e) => e.key === 'encounterDetails',
+    )!;
     expect(entry.encounterTypes).toBeUndefined();
   });
 
@@ -151,12 +153,14 @@ describe('FORM_REGISTRY', () => {
     'vaccinations',
     'observationForms',
   ] as const)('%s is restricted to Consultation encounter type', (key) => {
-    const entry = FORM_REGISTRY.find((e) => e.key === key)!;
+    const entry = INPUT_CONTROL_REGISTRY.find((e) => e.key === key)!;
     expect(entry.encounterTypes).toEqual(['Consultation']);
   });
 
   it('encounterDetails has no createBundleEntries', () => {
-    const entry = FORM_REGISTRY.find((e) => e.key === 'encounterDetails')!;
+    const entry = INPUT_CONTROL_REGISTRY.find(
+      (e) => e.key === 'encounterDetails',
+    )!;
     expect(entry.createBundleEntries).toBeUndefined();
   });
 
@@ -168,7 +172,7 @@ describe('FORM_REGISTRY', () => {
     'vaccinations',
     'observationForms',
   ] as const)('%s has createBundleEntries', (key) => {
-    const entry = FORM_REGISTRY.find((e) => e.key === key)!;
+    const entry = INPUT_CONTROL_REGISTRY.find((e) => e.key === key)!;
     expect(typeof entry.createBundleEntries).toBe('function');
   });
 
@@ -184,19 +188,23 @@ describe('FORM_REGISTRY', () => {
     ['vaccinations', CONSULTATION_PAD_PRIVILEGES.VACCINATIONS],
     ['observationForms', CONSULTATION_PAD_PRIVILEGES.OBSERVATIONS],
   ] as const)('%s has the correct privilege', (key, expectedPrivilege) => {
-    const entry = FORM_REGISTRY.find((e) => e.key === key)!;
+    const entry = INPUT_CONTROL_REGISTRY.find((e) => e.key === key)!;
     expect(entry.privilege).toEqual(expectedPrivilege);
   });
 
   it('encounterDetails.hasData always returns false', () => {
     expect(
-      FORM_REGISTRY.find((e) => e.key === 'encounterDetails')!.hasData(),
+      INPUT_CONTROL_REGISTRY.find(
+        (e) => e.key === 'encounterDetails',
+      )!.hasData(),
     ).toBe(false);
   });
 
   it('investigations.validate always returns true', () => {
     expect(
-      FORM_REGISTRY.find((e) => e.key === 'investigations')!.validate(),
+      INPUT_CONTROL_REGISTRY.find(
+        (e) => e.key === 'investigations',
+      )!.validate(),
     ).toBe(true);
   });
 
@@ -212,13 +220,15 @@ describe('FORM_REGISTRY', () => {
       'vaccinations',
       'observationForms',
     ] as const)('%s.reset delegates to store reset', (key) => {
-      FORM_REGISTRY.find((e) => e.key === key)!.reset();
+      INPUT_CONTROL_REGISTRY.find((e) => e.key === key)!.reset();
       expect(mockReset).toHaveBeenCalledTimes(1);
     });
 
     it('encounterDetails.validate returns isEncounterDetailsFormReady from store', () => {
       expect(
-        FORM_REGISTRY.find((e) => e.key === 'encounterDetails')!.validate(),
+        INPUT_CONTROL_REGISTRY.find(
+          (e) => e.key === 'encounterDetails',
+        )!.validate(),
       ).toBe(true);
     });
 
@@ -228,12 +238,14 @@ describe('FORM_REGISTRY', () => {
       ['vaccinations', mockValidateAllVaccinations],
       ['conditionsAndDiagnoses', mockValidateConditions],
     ] as const)('%s.validate delegates to store', (key, mockFn) => {
-      FORM_REGISTRY.find((e) => e.key === key)!.validate();
+      INPUT_CONTROL_REGISTRY.find((e) => e.key === key)!.validate();
       expect(mockFn).toHaveBeenCalledTimes(1);
     });
 
     it('observationForms.validate delegates to observationFormsStore.validate', () => {
-      FORM_REGISTRY.find((e) => e.key === 'observationForms')!.validate();
+      INPUT_CONTROL_REGISTRY.find(
+        (e) => e.key === 'observationForms',
+      )!.validate();
       expect(mockObsFormsValidate).toHaveBeenCalledTimes(1);
     });
 
@@ -245,14 +257,16 @@ describe('FORM_REGISTRY', () => {
       'conditionsAndDiagnoses',
       'observationForms',
     ] as const)('%s.hasData returns false when store has no data', (key) => {
-      expect(FORM_REGISTRY.find((e) => e.key === key)!.hasData()).toBe(false);
+      expect(INPUT_CONTROL_REGISTRY.find((e) => e.key === key)!.hasData()).toBe(
+        false,
+      );
     });
 
     it.each(EXPECTED_KEYS)(
       '%s.subscribe delegates to store subscribe',
       (key) => {
         const cb = jest.fn();
-        FORM_REGISTRY.find((e) => e.key === key)!.subscribe(cb);
+        INPUT_CONTROL_REGISTRY.find((e) => e.key === key)!.subscribe(cb);
         expect(mockSubscribe).toHaveBeenCalledWith(cb);
       },
     );
@@ -267,7 +281,7 @@ describe('FORM_REGISTRY', () => {
       ['medications', 'createMedicationRequestEntries'],
       ['vaccinations', 'createMedicationRequestEntries'],
     ] as const)('%s delegates to %s', (key, serviceFn) => {
-      FORM_REGISTRY.find((e) => e.key === key)!.createBundleEntries!(
+      INPUT_CONTROL_REGISTRY.find((e) => e.key === key)!.createBundleEntries!(
         mockBundleContext,
       );
       expect(
@@ -280,7 +294,7 @@ describe('FORM_REGISTRY', () => {
     });
 
     it('conditionsAndDiagnoses delegates to createDiagnosisBundleEntries and createConditionsBundleEntries', () => {
-      FORM_REGISTRY.find((e) => e.key === 'conditionsAndDiagnoses')!
+      INPUT_CONTROL_REGISTRY.find((e) => e.key === 'conditionsAndDiagnoses')!
         .createBundleEntries!(mockBundleContext);
       expect(
         jest.mocked(consultationBundleService.createDiagnosisBundleEntries),
@@ -291,7 +305,7 @@ describe('FORM_REGISTRY', () => {
     });
 
     it('observationForms delegates to createObservationBundleEntries', () => {
-      FORM_REGISTRY.find((e) => e.key === 'observationForms')!
+      INPUT_CONTROL_REGISTRY.find((e) => e.key === 'observationForms')!
         .createBundleEntries!(mockBundleContext);
       expect(
         jest.mocked(consultationBundleService.createObservationBundleEntries),

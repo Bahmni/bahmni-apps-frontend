@@ -1,6 +1,6 @@
 import type { BundleEntry, Reference } from 'fhir/r4';
 
-export type FormKey =
+export type InputControlKey =
   | 'encounterDetails'
   | 'allergies'
   | 'investigations'
@@ -17,8 +17,8 @@ export interface BundleContext {
   statDurationInMilliseconds?: number;
 }
 
-export interface FormRegistry {
-  key: FormKey;
+export interface InputControlRegistry {
+  key: InputControlKey;
   encounterTypes?: string[];
   privilege?: string[];
   component: React.ComponentType;

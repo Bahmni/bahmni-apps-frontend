@@ -1,15 +1,17 @@
 import { useServiceRequestStore } from '../../stores';
-import { FORM_REGISTRY } from './formRegistry';
-import type { FormRegistry } from './models';
+import { INPUT_CONTROL_REGISTRY } from './inputControlRegistry';
+import type { InputControlRegistry } from './models';
 
-export function getActiveEntries(encounterType: string): FormRegistry[] {
-  return FORM_REGISTRY.filter(
+export function getActiveEntries(
+  encounterType: string,
+): InputControlRegistry[] {
+  return INPUT_CONTROL_REGISTRY.filter(
     (entry) =>
       !entry.encounterTypes || entry.encounterTypes.includes(encounterType),
   );
 }
 
-export function captureUpdatedResources(entries: FormRegistry[]) {
+export function captureUpdatedResources(entries: InputControlRegistry[]) {
   const serviceRequests: Record<string, boolean> = {};
   useServiceRequestStore
     .getState()

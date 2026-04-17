@@ -22,7 +22,7 @@ import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
 import FormRenderer from './components/FormRenderer';
-import { FORM_REGISTRY } from './formRegistry';
+import { INPUT_CONTROL_REGISTRY } from './inputControlRegistry';
 import { submitConsultation } from './services';
 import styles from './styles/ConsultationPad.module.scss';
 import { captureUpdatedResources, getActiveEntries } from './utils';
@@ -180,7 +180,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             </div>
           ) : (
             <div className={styles.formList}>
-              {FORM_REGISTRY.map((entry) => (
+              {INPUT_CONTROL_REGISTRY.map((entry) => (
                 <FormRenderer
                   key={entry.key}
                   entry={entry}

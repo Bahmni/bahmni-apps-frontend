@@ -11,8 +11,8 @@ import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
-import { FORM_REGISTRY } from '../formRegistry';
 import ConsultationPad from '../index';
+import { INPUT_CONTROL_REGISTRY } from '../inputControlRegistry';
 import { submitConsultation } from '../services';
 import { captureUpdatedResources, getActiveEntries } from '../utils';
 import {
@@ -69,8 +69,8 @@ jest.mock('../../../hooks/useClinicalAppData');
 jest.mock('../../../hooks/useEncounterSession');
 jest.mock('../../../providers/clinicalConfig');
 
-jest.mock('../formRegistry', () => ({
-  FORM_REGISTRY: [
+jest.mock('../inputControlRegistry', () => ({
+  INPUT_CONTROL_REGISTRY: [
     {
       key: 'allergies',
       component: () => null,
@@ -131,13 +131,13 @@ const renderComponent = (
   );
 
 beforeEach(() => {
-  FORM_REGISTRY.forEach((entry) => {
+  INPUT_CONTROL_REGISTRY.forEach((entry) => {
     (entry.validate as jest.Mock).mockReturnValue(true);
     (entry.hasData as jest.Mock).mockReturnValue(false);
     (entry.subscribe as jest.Mock).mockReturnValue(jest.fn());
   });
 
-  jest.mocked(getActiveEntries).mockReturnValue(FORM_REGISTRY as any);
+  jest.mocked(getActiveEntries).mockReturnValue(INPUT_CONTROL_REGISTRY as any);
   jest.mocked(captureUpdatedResources).mockReturnValue(mockUpdatedResources);
   jest.mocked(submitConsultation).mockResolvedValue(mockSubmitResult);
 
@@ -216,7 +216,7 @@ describe('ConsultationPad', () => {
           selector({ ...defaultEncounterDetailsState, ...storeOverride }),
         );
       if (withData) {
-        (FORM_REGISTRY[0].hasData as jest.Mock).mockReturnValue(true);
+        (INPUT_CONTROL_REGISTRY[0].hasData as jest.Mock).mockReturnValue(true);
       }
 
       renderComponent();
@@ -225,7 +225,7 @@ describe('ConsultationPad', () => {
     });
 
     it('is enabled when form is ready and has data', () => {
-      (FORM_REGISTRY[0].hasData as jest.Mock).mockReturnValue(true);
+      (INPUT_CONTROL_REGISTRY[0].hasData as jest.Mock).mockReturnValue(true);
 
       renderComponent();
 
@@ -240,14 +240,16 @@ describe('ConsultationPad', () => {
       renderComponent({ onClose });
       await userEvent.click(screen.getByTestId('secondary-button'));
 
-      FORM_REGISTRY.forEach((entry) => expect(entry.reset).toHaveBeenCalled());
+      INPUT_CONTROL_REGISTRY.forEach((entry) =>
+        expect(entry.reset).toHaveBeenCalled(),
+      );
       expect(onClose).toHaveBeenCalled();
     });
   });
 
   describe('submit', () => {
     const enableSubmit = () => {
-      (FORM_REGISTRY[0].hasData as jest.Mock).mockReturnValue(true);
+      (INPUT_CONTROL_REGISTRY[0].hasData as jest.Mock).mockReturnValue(true);
     };
 
     it('dispatches events, shows success notification, and closes on success', async () => {

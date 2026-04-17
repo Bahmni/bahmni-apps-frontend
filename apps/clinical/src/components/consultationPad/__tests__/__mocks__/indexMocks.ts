@@ -1,9 +1,9 @@
-import type { FormRegistry } from '../../models';
+import type { InputControlRegistry } from '../../models';
 
 export const makeMockEntry = (
-  key: FormRegistry['key'] = 'allergies',
-  overrides: Partial<FormRegistry> = {},
-): FormRegistry => ({
+  key: InputControlRegistry['key'] = 'allergies',
+  overrides: Partial<InputControlRegistry> = {},
+): InputControlRegistry => ({
   key,
   component: () => null,
   reset: jest.fn(),

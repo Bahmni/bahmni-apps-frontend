@@ -25,9 +25,9 @@ import {
   VaccinationForm,
 } from '../forms';
 import ObservationFormsPanel from './components/ObservationFormsPanel';
-import type { BundleContext, FormRegistry } from './models';
+import type { BundleContext, InputControlRegistry } from './models';
 
-export const FORM_REGISTRY: FormRegistry[] = [
+export const INPUT_CONTROL_REGISTRY: InputControlRegistry[] = [
   {
     key: 'encounterDetails',
     component: EncounterDetails,

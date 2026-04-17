@@ -1,20 +1,10 @@
 import { useServiceRequestStore } from '../../../stores';
-import { FORM_REGISTRY } from '../formRegistry';
-import type { FormRegistry } from '../models';
+import { INPUT_CONTROL_REGISTRY } from '../inputControlRegistry';
+import type { InputControlRegistry } from '../models';
 import { captureUpdatedResources, getActiveEntries } from '../utils';
+import { makeMockEntry } from './__mocks__/indexMocks';
 
 jest.mock('../../../stores');
-
-const mockFormEntry = (overrides: Partial<FormRegistry> = {}): FormRegistry =>
-  ({
-    key: 'allergies',
-    component: jest.fn() as unknown as React.ComponentType,
-    reset: jest.fn(),
-    validate: jest.fn().mockReturnValue(true),
-    hasData: jest.fn().mockReturnValue(false),
-    subscribe: jest.fn(),
-    ...overrides,
-  }) as FormRegistry;
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -27,13 +17,15 @@ describe('getActiveEntries', () => {
   it('includes all entries for Consultation encounter type', () => {
     const result = getActiveEntries('Consultation');
 
-    expect(result).toHaveLength(FORM_REGISTRY.length);
+    expect(result).toHaveLength(INPUT_CONTROL_REGISTRY.length);
   });
 
   it('excludes entries restricted to specific encounter types for non-matching type', () => {
     const result = getActiveEntries('OPD');
 
-    const unrestricted = FORM_REGISTRY.filter((e) => !e.encounterTypes);
+    const unrestricted = INPUT_CONTROL_REGISTRY.filter(
+      (e) => !e.encounterTypes,
+    );
     expect(result).toHaveLength(unrestricted.length);
     result.forEach((entry) => expect(entry.encounterTypes).toBeUndefined());
   });
@@ -49,8 +41,7 @@ describe('captureUpdatedResources', () => {
     ['allergies', 'allergies', 'allergies'],
   ])('returns true for %s when hasData is true', (_label, key, resultKey) => {
     const entries = [
-      mockFormEntry({
-        key: key as FormRegistry['key'],
+      makeMockEntry(key as InputControlRegistry['key'], {
         hasData: jest.fn().mockReturnValue(true),
       }),
     ];
@@ -62,8 +53,7 @@ describe('captureUpdatedResources', () => {
 
   it('returns true for medications when medications hasData', () => {
     const entries = [
-      mockFormEntry({
-        key: 'medications',
+      makeMockEntry('medications', {
         hasData: jest.fn().mockReturnValue(true),
       }),
     ];
@@ -73,8 +63,7 @@ describe('captureUpdatedResources', () => {
 
   it('returns true for medications when vaccinations hasData', () => {
     const entries = [
-      mockFormEntry({
-        key: 'vaccinations',
+      makeMockEntry('vaccinations', {
         hasData: jest.fn().mockReturnValue(true),
       }),
     ];

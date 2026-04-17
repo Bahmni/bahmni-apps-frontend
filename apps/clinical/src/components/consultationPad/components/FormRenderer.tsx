@@ -1,10 +1,10 @@
 import { MenuItemDivider } from '@bahmni/design-system';
 import { useHasPrivilege } from '@bahmni/widgets';
 import React from 'react';
-import type { FormRegistry } from '../models';
+import type { InputControlRegistry } from '../models';
 
 interface FormRendererProps {
-  entry: FormRegistry;
+  entry: InputControlRegistry;
   encounterType: string;
 }
 
