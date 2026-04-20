@@ -5,7 +5,7 @@ export interface AllergyConceptMap {
   allergyReactionUuid: string;
 }
 
-interface InputControlAttributes {
+export interface InputControlAttributes {
   key: string;
   required: boolean;
   administeredLocationTag?: string;

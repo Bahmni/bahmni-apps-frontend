@@ -63,8 +63,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const resolvedEncounterType = useMemo(() => {
     return (
       (encounterType ||
-        clinicalConfig?.consultationPad?.encounterDetails?.metadata
-          ?.defaultEncounterType) ??
+        (clinicalConfig?.consultationPad?.encounterDetails?.metadata
+          ?.defaultEncounterType as string | undefined)) ??
       null
     );
   }, [encounterType, clinicalConfig]);

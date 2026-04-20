@@ -9,7 +9,7 @@ import {
 import { useTranslation, Location } from '@bahmni/services';
 import { Medication, ValueSet } from 'fhir/r4';
 import React, { useMemo, useState } from 'react';
-import { ImmunizationAttribute } from '../../../../providers/clinicalConfig/models';
+import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../models';
 import { useImmunizationHistoryStore } from '../stores';
 import styles from '../styles/ImmunizationHistoryForm.module.scss';
@@ -24,7 +24,7 @@ interface SelectedImmunizationItemProps {
   routes: ValueSet | undefined;
   sites: ValueSet | undefined;
   administeredLocationTag: Location[] | undefined;
-  attributes: ImmunizationAttribute[] | undefined;
+  attributes: InputControlAttributes[] | undefined;
   vaccineDrugs: Medication[] | undefined;
 }
 
@@ -56,7 +56,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
     setAdministeredLocationTagSearchTerm,
   ] = useState('');
 
-  const findAttr = (name: string) => attributes?.find((a) => a.name === name);
+  const findAttr = (name: string) => attributes?.find((a) => a.key === name);
 
   const vaccineDrugComboBoxItems = useMemo(
     () =>

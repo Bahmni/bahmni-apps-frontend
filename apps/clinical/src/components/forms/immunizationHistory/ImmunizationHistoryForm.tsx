@@ -36,20 +36,21 @@ const ImmunizationHistoryForm = () => {
     error: configError,
   } = useClinicalConfig();
 
-  const immunizationHistory = clinicalConfig?.consultationPad?.history;
+  const immunizationHistory =
+    clinicalConfig?.consultationPad?.immunizationHistory;
   const { metadata, attributes } = immunizationHistory ?? {};
-  const {
-    vaccineConceptSetUuid,
-    routeConceptUuid,
-    siteConceptUuid,
-    administeredLocationTag,
-  } = metadata ?? {};
+  const vaccineConceptSetUuid = metadata?.vaccineConceptSetUuid as
+    | string
+    | undefined;
 
-  const routeAttr = attributes?.find((a) => a.name === 'route');
-  const siteAttr = attributes?.find((a) => a.name === 'site');
+  const routeAttr = attributes?.find((a) => a.key === 'route');
+  const siteAttr = attributes?.find((a) => a.key === 'site');
   const administeredLocationAttr = attributes?.find(
-    (a) => a.name === 'administeredLocation',
+    (a) => a.key === 'administeredLocation',
   );
+  const routeConceptUuid = routeAttr?.routeConceptUuid;
+  const siteConceptUuid = siteAttr?.siteConceptUuid;
+  const administeredLocationTag = administeredLocationAttr?.administeredLocationTag;
 
   useEffect(() => {
     if (attributes) {

@@ -1,5 +1,5 @@
 import { Reference } from 'fhir/r4';
-import { ImmunizationAttribute } from '../../../providers/clinicalConfig/models';
+import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 
 export interface ImmunizationDrug {
   code?: string;
@@ -58,10 +58,10 @@ export interface CreateImmunizationBundleEntriesParams {
 
 export interface ImmunizationHistoryState {
   selectedImmunizations: ImmunizationInputEntry[];
-  attributes: ImmunizationAttribute[] | undefined;
+  attributes: InputControlAttributes[] | undefined;
   addImmunization: (vaccineCode: { code: string; display: string }) => void;
   removeImmunization: (id: string) => void;
-  setAttributes: (attrs: ImmunizationAttribute[]) => void;
+  setAttributes: (attrs: InputControlAttributes[]) => void;
   updateAdministeredOn: (id: string, value: Date | null) => void;
   updateVaccineDrug: (id: string, drug: ImmunizationDrug | null) => void;
   updateAdministeredLocation: (

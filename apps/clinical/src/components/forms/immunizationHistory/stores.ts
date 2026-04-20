@@ -1,6 +1,6 @@
 import { generateUUID } from '@bahmni/services';
 import { create } from 'zustand';
-import { ImmunizationAttribute } from '../../../providers/clinicalConfig/models';
+import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import {
   ImmunizationDrug,
   ImmunizationHistoryState,
@@ -41,7 +41,7 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
       }));
     },
 
-    setAttributes: (attrs: ImmunizationAttribute[]) => {
+    setAttributes: (attrs: InputControlAttributes[]) => {
       set({ attributes: attrs });
     },
 
@@ -165,7 +165,7 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
       const { attributes } = get();
 
       const findAttr = (name: string) =>
-        attributes?.find((a) => a.name === name);
+        attributes?.find((a) => a.key === name);
 
       const checkField = (
         errors: ImmunizationInputEntry['errors'],
