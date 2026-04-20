@@ -23,6 +23,8 @@ import {
 import { parseDateStringToDate } from '../utils/ageUtils';
 import { usePersonAttributes } from './usePersonAttributes';
 
+const TRAILING_BRACKETED_SUFFIX = /\s\[.*\]$/;
+
 interface UpdatePatientFormData {
   patientUuid: string;
   profile: BasicInfoData & {
@@ -72,10 +74,13 @@ export const useUpdatePatient = () => {
       }
     },
     onError: (error) => {
+      const message = (
+        error instanceof Error ? error.message : String(error)
+      ).replace(TRAILING_BRACKETED_SUFFIX, '');
       addNotification({
         type: 'error',
         title: t('ERROR_UPDATING_PATIENT'),
-        message: error instanceof Error ? error.message : String(error),
+        message,
         timeout: 5000,
       });
     },
