@@ -4,6 +4,7 @@
 @use "@carbon/react/scss/theme" as *;
 
 .relationshipSection {
+  padding: $spacing-02 $spacing-06 $spacing-02 $spacing-06;
   display: flex;
   flex-direction: column;
   overflow: visible;
@@ -35,9 +36,17 @@
       border-bottom: none !important;
     }
 
+    thead tr th:first-child {
+      padding-inline-start: 0 !important;
+    }
+
     tbody tr td {
       border-top: none !important;
       border-bottom: none !important;
+    }
+
+    tbody tr td:first-child {
+      padding-inline-start: 0 !important;
     }
 
     tr:hover td {
@@ -90,7 +99,7 @@
 }
 
 .addButtonContainer {
-  padding: $spacing-06;
+  padding-block: $spacing-06;
 }
 
 .wrapButton {

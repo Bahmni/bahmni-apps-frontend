@@ -15,6 +15,7 @@
 .patientDetailsHeader {
   display: flex;
   align-content: center;
+  padding-inline-start: $spacing-06;
 }
 
 .sectionTitle {
@@ -283,7 +284,8 @@
     background-color: $layer;
     min-block-size: 4rem;
     padding-block: $spacing-05;
-    padding-inline: $spacing-06;
+    padding-inline-start: $spacing-02;
+    padding-inline-end: $spacing-06;
     border: none;
 
     &:hover {
@@ -299,20 +301,28 @@
   // Match font size, weight and color of the first section's .sectionTitle
   :global(.cds--accordion__title) {
     @include type-style("heading-compact-02");
-    padding-inline-start: 0;
+    padding-inline-start: $spacing-03;
     color: $text-primary;
   }
 
   // Remove Carbon's wrapper padding — sectionContent handles spacing
   :global(.cds--accordion__item--active > .cds--accordion__wrapper) {
-    padding-block: 0;
-    padding-block-end: 0;
+    padding-block: 0 !important;
+    padding-block-end: 0 !important;
+    padding-inline: 0 !important;
   }
 
   // Remove Carbon's default horizontal padding from content area
   :global(.cds--accordion__content) {
-    padding-inline: 0;
-    padding-inline-end: 0;
+    padding-inline: 0 !important;
+    padding-inline-end: 0 !important;
+    padding-inline-start: 0 !important;
   }
+
+  // Remove Carbon's align="start" left margin on accordion content
+  :global(.cds--accordion--start .cds--accordion__content) {
+    margin-inline-start: 0 !important;
+  }
+
 }
 

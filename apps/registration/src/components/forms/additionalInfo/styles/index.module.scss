@@ -3,7 +3,7 @@
 @use "@carbon/react/scss/type" as *;
 
 .additionalInfoSection {
-  padding: $spacing-02 $spacing-06;
+  padding: $spacing-02 $spacing-06 $spacing-02 $spacing-06;
   display: flex;
   flex-direction: column;
   overflow: visible;
