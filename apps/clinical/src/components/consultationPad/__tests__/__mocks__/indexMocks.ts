@@ -1,6 +1,6 @@
-import type { InputControlRegistry } from '../../models';
+import type { EncounterInputControl } from '../../models';
 
-export const mockRegistry: InputControlRegistry[] = [
+export const mockRegistry: EncounterInputControl[] = [
   {
     key: 'allergies',
     component: () => null,
@@ -28,9 +28,9 @@ export const mockRegistry: InputControlRegistry[] = [
 ];
 
 export const makeMockEntry = (
-  key: InputControlRegistry['key'] = 'allergies',
-  overrides: Partial<InputControlRegistry> = {},
-): InputControlRegistry => ({
+  key: EncounterInputControl['key'] = 'allergies',
+  overrides: Partial<EncounterInputControl> = {},
+): EncounterInputControl => ({
   key,
   component: () => null,
   reset: jest.fn(),
@@ -52,6 +52,16 @@ export const mockSubmitResult = {
   patientUUID: 'patient-uuid',
   encounterTypeName: 'Consultation',
   updatedConcepts: new Map<string, string>(),
+};
+
+export const mockEncounterConcepts = {
+  encounterTypes: [
+    { name: 'Consultation', uuid: 'd34fe3ab-5e07-11ef-8f7c-0242ac120002' },
+    { name: 'OPD', uuid: 'd37e03e0-0000-11ef-8f7c-0242ac120002' },
+  ],
+  visitTypes: [],
+  orderTypes: [],
+  conceptData: [],
 };
 
 export const mockUpdatedResources = {

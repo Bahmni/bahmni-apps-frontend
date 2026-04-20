@@ -25,9 +25,9 @@ import {
   VaccinationForm,
 } from '../forms';
 import ObservationFormsPanel from './components/ObservationFormsPanel';
-import type { BundleContext, InputControlRegistry } from './models';
+import type { EncounterContext, EncounterInputControl } from './models';
 
-const BASE_REGISTRY: InputControlRegistry[] = [
+const BASE_REGISTRY: EncounterInputControl[] = [
   {
     key: 'encounterDetails',
     component: EncounterDetails,
@@ -44,7 +44,7 @@ const BASE_REGISTRY: InputControlRegistry[] = [
     validate: () => useAllergyStore.getState().validateAllAllergies(),
     hasData: () => useAllergyStore.getState().selectedAllergies.length > 0,
     subscribe: (cb) => useAllergyStore.subscribe(cb),
-    createBundleEntries: (ctx: BundleContext) =>
+    createBundleEntries: (ctx: EncounterContext) =>
       createAllergiesBundleEntries({
         selectedAllergies: useAllergyStore.getState().selectedAllergies,
         encounterSubject: ctx.encounterSubject,
@@ -60,7 +60,7 @@ const BASE_REGISTRY: InputControlRegistry[] = [
     hasData: () =>
       useServiceRequestStore.getState().selectedServiceRequests.size > 0,
     subscribe: (cb) => useServiceRequestStore.subscribe(cb),
-    createBundleEntries: (ctx: BundleContext) =>
+    createBundleEntries: (ctx: EncounterContext) =>
       createServiceRequestBundleEntries({
         selectedServiceRequests:
           useServiceRequestStore.getState().selectedServiceRequests,
@@ -80,7 +80,7 @@ const BASE_REGISTRY: InputControlRegistry[] = [
       return selectedDiagnoses.length > 0 || selectedConditions.length > 0;
     },
     subscribe: (cb) => useConditionsAndDiagnosesStore.subscribe(cb),
-    createBundleEntries: (ctx: BundleContext) => {
+    createBundleEntries: (ctx: EncounterContext) => {
       const { selectedDiagnoses, selectedConditions } =
         useConditionsAndDiagnosesStore.getState();
       return [
@@ -108,7 +108,7 @@ const BASE_REGISTRY: InputControlRegistry[] = [
     validate: () => useMedicationStore.getState().validateAllMedications(),
     hasData: () => useMedicationStore.getState().selectedMedications.length > 0,
     subscribe: (cb) => useMedicationStore.subscribe(cb),
-    createBundleEntries: (ctx: BundleContext) =>
+    createBundleEntries: (ctx: EncounterContext) =>
       createMedicationRequestEntries({
         selectedMedications: useMedicationStore.getState().selectedMedications,
         encounterSubject: ctx.encounterSubject,
@@ -125,7 +125,7 @@ const BASE_REGISTRY: InputControlRegistry[] = [
     hasData: () =>
       useVaccinationStore.getState().selectedVaccinations.length > 0,
     subscribe: (cb) => useVaccinationStore.subscribe(cb),
-    createBundleEntries: (ctx: BundleContext) =>
+    createBundleEntries: (ctx: EncounterContext) =>
       createMedicationRequestEntries({
         selectedMedications:
           useVaccinationStore.getState().selectedVaccinations,
@@ -142,7 +142,7 @@ const BASE_REGISTRY: InputControlRegistry[] = [
     validate: () => useObservationFormsStore.getState().validate(),
     hasData: () => useObservationFormsStore.getState().selectedForms.length > 0,
     subscribe: (cb) => useObservationFormsStore.subscribe(cb),
-    createBundleEntries: (ctx: BundleContext) =>
+    createBundleEntries: (ctx: EncounterContext) =>
       createObservationBundleEntries({
         observationFormsData: useObservationFormsStore
           .getState()
@@ -154,9 +154,9 @@ const BASE_REGISTRY: InputControlRegistry[] = [
   },
 ];
 
-export function createInputControlRegistry(
+export function loadEncounterInputControls(
   config: ConsultationPad | undefined,
-): InputControlRegistry[] {
+): EncounterInputControl[] {
   return BASE_REGISTRY.flatMap((entry) => {
     const configKey = entry.key as keyof ConsultationPad;
     // TODO: remove cast once non-InputControl fields (allergyConceptMap,
@@ -168,9 +168,10 @@ export function createInputControlRegistry(
     return [
       {
         ...entry,
-        encounterTypes: formConfig.encounterTypes?.length
-          ? formConfig.encounterTypes
-          : undefined,
+        encounterTypes:
+          entry.key === 'encounterDetails' || !formConfig.encounterTypes?.length
+            ? undefined
+            : formConfig.encounterTypes,
         privilege: formConfig.privileges?.length
           ? formConfig.privileges
           : undefined,

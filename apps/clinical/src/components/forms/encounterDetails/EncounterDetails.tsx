@@ -12,7 +12,7 @@ import {
   type Provider,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useActiveVisit } from '../../../hooks/useActiveVisit';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useLocations } from '../../../hooks/useLocations';
@@ -21,17 +21,12 @@ import { OpenMRSLocation } from '../../../models/location';
 import { useEncounterDetailsStore } from '../../../stores';
 import styles from './styles/EncounterDetails.module.scss';
 
-// Constants
-const CONSULTATION_ENCOUNTER_NAME = 'Consultation';
-
 const EncounterDetails: React.FC = () => {
   const { t } = useTranslation();
   const practitionerState = useActivePractitioner();
 
-  // Get patient UUID from hook
   const patientUUID = usePatientUUID();
 
-  // Hooks
   const {
     activeVisit,
     loading: loadingActiveVisit,
@@ -55,13 +50,13 @@ const EncounterDetails: React.FC = () => {
     error: practitionerError,
   } = practitionerState;
 
-  // Store selectors - only get what we need
   const {
     selectedLocation,
     selectedEncounterType,
     selectedVisitType,
     encounterParticipants,
     consultationDate,
+    requestedEncounterType,
     isError,
     setSelectedLocation,
     setSelectedEncounterType,
@@ -76,7 +71,8 @@ const EncounterDetails: React.FC = () => {
     setIsError,
   } = useEncounterDetailsStore();
 
-  // Memoized values
+  const [isEncounterTypeNotFound, setIsEncounterTypeNotFound] = useState(false);
+
   const availablePractitioners = useMemo(
     () => (practitioner ? [practitioner] : []),
     [practitioner],
@@ -102,28 +98,35 @@ const EncounterDetails: React.FC = () => {
     ],
   );
 
-  // Event handlers can be added later when fields become interactive
-
-  // Initialize default location
   useEffect(() => {
     if (locations.length > 0 && !selectedLocation) {
       setSelectedLocation(locations[0]);
     }
   }, [locations, selectedLocation, setSelectedLocation]);
 
-  // Initialize default encounter type (Consultation)
   useEffect(() => {
-    if (encounterConcepts?.encounterTypes && !selectedEncounterType) {
-      const consultationType = encounterConcepts.encounterTypes.find(
-        (item) => item.name === CONSULTATION_ENCOUNTER_NAME,
-      );
-      if (consultationType) {
-        setSelectedEncounterType(consultationType);
-      }
+    if (!encounterConcepts?.encounterTypes?.length || selectedEncounterType)
+      return;
+
+    const targetName = requestedEncounterType;
+
+    const match = targetName
+      ? encounterConcepts.encounterTypes.find(
+          (item) => item.name === targetName,
+        )
+      : undefined;
+
+    if (targetName && !match) {
+      setIsEncounterTypeNotFound(true);
+      return;
     }
+
+    setIsEncounterTypeNotFound(false);
+    setSelectedEncounterType(match ?? encounterConcepts.encounterTypes[0]);
   }, [
     encounterConcepts?.encounterTypes,
     selectedEncounterType,
+    requestedEncounterType,
     setSelectedEncounterType,
   ]);
 
@@ -231,7 +234,8 @@ const EncounterDetails: React.FC = () => {
       !!locationsError ||
         !!encounterConceptsError ||
         !!practitionerError ||
-        !!activeVisitError,
+        !!activeVisitError ||
+        isEncounterTypeNotFound,
     );
   }, [
     setIsError,
@@ -239,6 +243,7 @@ const EncounterDetails: React.FC = () => {
     encounterConceptsError,
     practitionerError,
     activeVisitError,
+    isEncounterTypeNotFound,
   ]);
 
   return (
@@ -274,7 +279,7 @@ const EncounterDetails: React.FC = () => {
             label={t('SELECT_ENCOUNTER_TYPE')}
             items={encounterConcepts?.encounterTypes ?? []}
             itemToString={(item: Concept) => item?.name ?? ''}
-            initialSelectedItem={selectedEncounterType}
+            selectedItem={selectedEncounterType}
             disabled
             size="md"
           />

@@ -7,15 +7,17 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
+import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ConsultationPad from '../index';
-import { createInputControlRegistry } from '../inputControlRegistry';
+import { loadEncounterInputControls } from '../inputControlRegistry';
 import { submitConsultation } from '../services';
 import { captureUpdatedResources, getActiveEntries } from '../utils';
 import {
+  mockEncounterConcepts,
   mockObsFormsState,
   mockRegistry,
   mockSubmitResult,
@@ -67,11 +69,12 @@ jest.mock('@bahmni/widgets', () => ({
 jest.mock('../../../stores/encounterDetailsStore');
 jest.mock('../../../stores/observationFormsStore');
 jest.mock('../../../hooks/useClinicalAppData');
+jest.mock('../../../hooks/useEncounterConcepts');
 jest.mock('../../../hooks/useEncounterSession');
 jest.mock('../../../providers/clinicalConfig');
 
 jest.mock('../inputControlRegistry', () => ({
-  createInputControlRegistry: jest.fn(),
+  loadEncounterInputControls: jest.fn(),
 }));
 
 jest.mock('../../forms/observations/ObservationFormsContainer', () => ({
@@ -91,6 +94,7 @@ jest.mock('../utils', () => ({
 const defaultEncounterDetailsState = {
   isEncounterDetailsFormReady: true,
   isError: false,
+  setRequestedEncounterType: jest.fn(),
 };
 
 const mockAddNotification = jest.fn();
@@ -113,7 +117,7 @@ beforeEach(() => {
     (entry.subscribe as jest.Mock).mockReturnValue(jest.fn());
   });
 
-  jest.mocked(createInputControlRegistry).mockReturnValue(mockRegistry);
+  jest.mocked(loadEncounterInputControls).mockReturnValue(mockRegistry);
   jest.mocked(getActiveEntries).mockReturnValue(mockRegistry as any);
   jest.mocked(captureUpdatedResources).mockReturnValue(mockUpdatedResources);
   jest.mocked(submitConsultation).mockResolvedValue(mockSubmitResult);
@@ -123,6 +127,9 @@ beforeEach(() => {
     .mockImplementation((selector: any) =>
       selector(defaultEncounterDetailsState),
     );
+  (useEncounterDetailsStore as any).getState = jest
+    .fn()
+    .mockReturnValue(defaultEncounterDetailsState);
   jest
     .mocked(useObservationFormsStore)
     .mockReturnValue(mockObsFormsState as any);
@@ -134,6 +141,12 @@ beforeEach(() => {
     .mocked(useNotification)
     .mockReturnValue({ addNotification: mockAddNotification } as any);
   jest.mocked(useClinicalAppData).mockReturnValue({ episodeOfCare: [] } as any);
+  jest.mocked(useEncounterConcepts).mockReturnValue({
+    encounterConcepts: mockEncounterConcepts,
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
+  } as any);
   jest
     .mocked(useEncounterSession)
     .mockReturnValue({ activeEncounter: null } as any);
@@ -214,6 +227,92 @@ describe('ConsultationPad', () => {
     });
   });
 
+  describe('resolvedEncounterType', () => {
+    it('falls back to config defaultEncounterType when encounterType prop is empty', () => {
+      jest.mocked(useClinicalConfig).mockReturnValue({
+        clinicalConfig: {
+          consultationPad: {
+            encounterDetails: { metadata: { defaultEncounterType: 'OPD' } },
+          },
+        },
+      } as any);
+
+      renderComponent({ encounterType: '' });
+
+      expect(
+        defaultEncounterDetailsState.setRequestedEncounterType,
+      ).toHaveBeenCalledWith('OPD');
+    });
+  });
+
+  describe('encounterType prop validation', () => {
+    it('renders error state when encounterType prop is not in the configured list', () => {
+      renderComponent({ encounterType: 'UnknownType' });
+
+      expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    });
+
+    it('renders skeleton while encounter concepts are loading and encounterType prop is set', () => {
+      jest.mocked(useEncounterConcepts).mockReturnValue({
+        encounterConcepts: null,
+        loading: true,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      renderComponent({ encounterType: 'Consultation' });
+
+      expect(screen.queryByTestId('allergies-divider')).not.toBeInTheDocument();
+    });
+
+    it('renders normally when encounterType prop is valid', () => {
+      renderComponent({ encounterType: 'Consultation' });
+
+      expect(
+        screen.queryByText('Something went wrong'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not validate when encounterType prop is empty', () => {
+      renderComponent({ encounterType: '' });
+
+      expect(
+        screen.queryByText('Something went wrong'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('lifecycle', () => {
+    it('resets active entries on unmount', () => {
+      const { unmount } = renderComponent();
+      unmount();
+
+      mockRegistry.forEach((entry) => expect(entry.reset).toHaveBeenCalled());
+    });
+  });
+
+  describe('useEncounterSession integration', () => {
+    it('passes selectedEncounterType uuid to useEncounterSession', () => {
+      jest
+        .mocked(useEncounterDetailsStore)
+        .mockImplementation((selector: any) =>
+          selector({
+            ...defaultEncounterDetailsState,
+            selectedEncounterType: {
+              uuid: 'encounter-type-uuid',
+              name: 'Consultation',
+            },
+          }),
+        );
+
+      renderComponent();
+
+      expect(useEncounterSession).toHaveBeenCalledWith(
+        expect.objectContaining({ encounterTypeUUID: 'encounter-type-uuid' }),
+      );
+    });
+  });
+
   describe('cancel', () => {
     it('resets all entries and calls onClose', async () => {
       const onClose = jest.fn();
@@ -288,6 +387,40 @@ describe('ConsultationPad', () => {
         });
       },
     );
+
+    it('passes episodeOfCare uuids to submitConsultation', async () => {
+      jest.mocked(useClinicalAppData).mockReturnValue({
+        episodeOfCare: [{ uuid: 'eoc-1' }, { uuid: 'eoc-2' }],
+      } as any);
+      enableSubmit();
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(submitConsultation).toHaveBeenCalledWith(
+          expect.objectContaining({ episodeOfCareUuids: ['eoc-1', 'eoc-2'] }),
+        );
+      });
+    });
+
+    it('passes statDurationInMilliseconds from config to submitConsultation', async () => {
+      jest.mocked(useClinicalConfig).mockReturnValue({
+        clinicalConfig: {
+          consultationPad: { statDurationInMilliseconds: 3000 },
+        },
+      } as any);
+      enableSubmit();
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(submitConsultation).toHaveBeenCalledWith(
+          expect.objectContaining({ statDurationInMilliseconds: 3000 }),
+        );
+      });
+    });
   });
 
   it('matches snapshot', () => {

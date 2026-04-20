@@ -347,6 +347,19 @@ describe('BasicForm Integration Tests', () => {
     });
   });
 
+  test('sets isError when requestedEncounterType is not in the fetched encounterTypes list', async () => {
+    useEncounterDetailsStore
+      .getState()
+      .setRequestedEncounterType('NonExistentEncounterType');
+
+    renderBasicForm();
+
+    await waitFor(() => {
+      const store = useEncounterDetailsStore.getState();
+      expect(store.isError).toBe(true);
+    });
+  });
+
   test('displays error messages when API calls fail', async () => {
     // Mock all APIs to fail
     (getEncounterConcepts as jest.Mock).mockRejectedValue(

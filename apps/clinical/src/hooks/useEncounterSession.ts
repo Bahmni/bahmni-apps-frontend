@@ -4,8 +4,8 @@ import { Encounter } from 'fhir/r4';
 import { useState, useEffect } from 'react';
 
 interface UseEncounterSessionOptions {
-  /** The practitioner to use for session filtering */
   practitioner: Provider | null;
+  encounterTypeUUID?: string;
 }
 
 interface UseEncounterSessionReturn {
@@ -28,7 +28,7 @@ interface UseEncounterSessionReturn {
 export function useEncounterSession(
   options: UseEncounterSessionOptions,
 ): UseEncounterSessionReturn {
-  const { practitioner } = options;
+  const { practitioner, encounterTypeUUID } = options;
   const [hasActiveSession, setHasActiveSession] = useState<boolean>(false);
   const [activeEncounter, setActiveEncounter] = useState<Encounter | null>(
     null,
@@ -52,8 +52,7 @@ export function useEncounterSession(
     // Get practitioner UUID for session filtering
     const practitionerUUID = practitioner?.uuid;
 
-    // Only proceed if we have a practitioner UUID
-    if (!practitionerUUID) {
+    if (!practitionerUUID || !encounterTypeUUID) {
       setHasActiveSession(false);
       setActiveEncounter(null);
       setIsPractitionerMatch(false);
@@ -69,6 +68,8 @@ export function useEncounterSession(
       const activeEncounter = await findActiveEncounterInSession(
         patientUUID,
         practitionerUUID,
+        undefined,
+        encounterTypeUUID,
       );
       const sessionExists = activeEncounter !== null;
 
@@ -102,7 +103,7 @@ export function useEncounterSession(
     }
 
     fetchSessionState();
-  }, [patientUUID, practitioner?.uuid]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [patientUUID, practitioner?.uuid, encounterTypeUUID]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Computed property for encounter ownership - determines if user can edit the active encounter
   const editActiveEncounter = hasActiveSession && isPractitionerMatch;

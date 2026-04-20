@@ -1,17 +1,17 @@
 import { useServiceRequestStore } from '../../stores';
-import type { InputControlRegistry } from './models';
+import type { EncounterInputControl } from './models';
 
 export function getActiveEntries(
-  registry: InputControlRegistry[],
+  registry: EncounterInputControl[],
   encounterType: string,
-): InputControlRegistry[] {
+): EncounterInputControl[] {
   return registry.filter(
     (entry) =>
       !entry.encounterTypes || entry.encounterTypes.includes(encounterType),
   );
 }
 
-export function captureUpdatedResources(entries: InputControlRegistry[]) {
+export function captureUpdatedResources(entries: EncounterInputControl[]) {
   const serviceRequests: Record<string, boolean> = {};
   useServiceRequestStore
     .getState()

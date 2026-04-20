@@ -35,11 +35,7 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
       className={styles.newConsultationButton}
       size="md"
       disabled={isActionAreaVisible || isLoading}
-      onClick={() =>
-        dispatchConsultationStart({
-          encounterType: 'Consultation',
-        })
-      }
+      onClick={() => dispatchConsultationStart({})}
       data-testid="consultation-action-button"
     >
       {isActionAreaVisible

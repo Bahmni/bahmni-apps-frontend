@@ -4,7 +4,6 @@ import { getActiveVisit } from '../encounterService';
 import {
   ENCOUNTER_SESSION_DURATION_GP_URL,
   ENCOUNTER_SEARCH_URL,
-  CONSULTATION_ENCOUNTER_TYPE_UUID,
 } from './constants';
 
 interface EncounterSearchParams {
@@ -98,6 +97,7 @@ export async function findActiveEncounterInSession(
   patientUUID: string,
   practitionerUUID?: string,
   sessionDurationMinutes?: number,
+  encounterTypeUUID?: string,
 ): Promise<Encounter | null> {
   try {
     if (!patientUUID) return null;
@@ -111,7 +111,7 @@ export async function findActiveEncounterInSession(
       patient: patientUUID,
       _tag: 'encounter',
       _lastUpdated: lastUpdatedParam,
-      type: CONSULTATION_ENCOUNTER_TYPE_UUID,
+      type: encounterTypeUUID,
     };
 
     // Add participant filter if practitioner UUID is provided

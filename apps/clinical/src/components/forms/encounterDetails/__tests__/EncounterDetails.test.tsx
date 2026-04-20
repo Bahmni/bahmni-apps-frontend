@@ -39,6 +39,7 @@ jest.mock('@bahmni/design-system', () => {
     disabled?: boolean;
 
     initialSelectedItem?: any;
+    selectedItem?: any;
     invalid?: boolean;
     invalidText?: string;
   }
@@ -52,6 +53,7 @@ jest.mock('@bahmni/design-system', () => {
       itemToString,
       disabled,
       initialSelectedItem,
+      selectedItem,
       invalid,
       invalidText,
     }: MockDropdownProps) => {
@@ -64,6 +66,8 @@ jest.mock('@bahmni/design-system', () => {
         }
       };
 
+      const displayItem = initialSelectedItem ?? selectedItem;
+
       return (
         <div data-testid={id}>
           <div>{titleText}</div>
@@ -73,10 +77,8 @@ jest.mock('@bahmni/design-system', () => {
             aria-invalid={invalid}
             aria-errormessage={invalid ? `${id}-error` : undefined}
           >
-            {initialSelectedItem && (
-              <option value="selected">
-                {safeItemToString(initialSelectedItem)}
-              </option>
+            {displayItem && (
+              <option value="selected">{safeItemToString(displayItem)}</option>
             )}
             {items.map((item, i) => (
               <option
@@ -232,6 +234,7 @@ describe('BasicForm', () => {
     selectedVisitType: null,
     encounterParticipants: [],
     consultationDate: new Date(),
+    requestedEncounterType: null,
     isEncounterDetailsFormReady: true,
     activeVisit: null,
     activeVisitError: null,
@@ -1096,6 +1099,7 @@ describe('BasicForm', () => {
         (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
           ...mockStoreState,
           selectedEncounterType: null,
+          requestedEncounterType: 'Consultation',
         });
 
         renderBasicForm();

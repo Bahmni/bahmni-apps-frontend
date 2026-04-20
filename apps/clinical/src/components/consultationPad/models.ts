@@ -9,7 +9,7 @@ export type InputControlKey =
   | 'vaccinations'
   | 'observationForms';
 
-export interface BundleContext {
+export interface EncounterContext {
   encounterSubject: Reference;
   encounterReference: string;
   practitionerUUID: string;
@@ -17,7 +17,7 @@ export interface BundleContext {
   statDurationInMilliseconds?: number;
 }
 
-export interface InputControlRegistry {
+export interface EncounterInputControl {
   key: InputControlKey;
   encounterTypes?: string[];
   privilege?: string[];
@@ -26,5 +26,5 @@ export interface InputControlRegistry {
   validate: () => boolean;
   hasData: () => boolean;
   subscribe: (cb: () => void) => () => void;
-  createBundleEntries?: (ctx: BundleContext) => BundleEntry[];
+  createBundleEntries?: (ctx: EncounterContext) => BundleEntry[];
 }

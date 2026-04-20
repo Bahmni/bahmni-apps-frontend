@@ -16,15 +16,16 @@ import React, {
 } from 'react';
 import { ERROR_TITLES } from '../../constants/errors';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
+import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
 import InputControlRenderer from './components/InputControlRenderer';
-import { createInputControlRegistry } from './inputControlRegistry';
+import { loadEncounterInputControls } from './inputControlRegistry';
 import { submitConsultation } from './services';
-import styles from './styles/ConsultationPad.module.scss';
+import styles from './styles/index.module.scss';
 import { captureUpdatedResources, getActiveEntries } from './utils';
 
 interface ConsultationPadProps {
@@ -42,13 +43,35 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   const { clinicalConfig } = useClinicalConfig();
   const registry = useMemo(
-    () => createInputControlRegistry(clinicalConfig?.consultationPad),
+    () => loadEncounterInputControls(clinicalConfig?.consultationPad),
     [clinicalConfig],
   );
 
+  const {
+    encounterConcepts,
+    loading: loadingEncounterTypes,
+    error: encounterTypesError,
+  } = useEncounterConcepts();
+
+  const isEncounterTypePropInvalid = useMemo(() => {
+    if (!encounterType || loadingEncounterTypes) return false;
+    return !encounterConcepts?.encounterTypes.some(
+      (et) => et.name === encounterType,
+    );
+  }, [encounterType, encounterConcepts, loadingEncounterTypes]);
+
+  const resolvedEncounterType = useMemo(() => {
+    return (
+      (encounterType ||
+        clinicalConfig?.consultationPad?.encounterDetails?.metadata
+          ?.defaultEncounterType) ??
+      null
+    );
+  }, [encounterType, clinicalConfig]);
+
   const activeEntries = useMemo(
-    () => getActiveEntries(registry, encounterType),
-    [registry, encounterType],
+    () => getActiveEntries(registry, resolvedEncounterType!),
+    [registry, resolvedEncounterType],
   );
 
   const subscribeAll = useCallback(
@@ -67,9 +90,21 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     (state) => state.isEncounterDetailsFormReady,
   );
   const isError = useEncounterDetailsStore((state) => state.isError);
+  const selectedEncounterType = useEncounterDetailsStore(
+    (state) => state.selectedEncounterType,
+  );
+
+  useEffect(() => {
+    useEncounterDetailsStore
+      .getState()
+      .setRequestedEncounterType(resolvedEncounterType);
+  }, [resolvedEncounterType]);
 
   const { practitioner } = useActivePractitioner();
-  const { activeEncounter } = useEncounterSession({ practitioner });
+  const { activeEncounter } = useEncounterSession({
+    practitioner,
+    encounterTypeUUID: selectedEncounterType?.uuid,
+  });
   const { episodeOfCare } = useClinicalAppData();
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
@@ -161,40 +196,50 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     onClose();
   };
 
+  const hasError =
+    isError || isEncounterTypePropInvalid || !!encounterTypesError;
+
+  const renderPadContent = (() => {
+    if (hasError)
+      return (
+        <div className={styles.error}>
+          <h3>{t('CONSULTATION_PAD_ERROR_TITLE')}</h3>
+          <p>{t('CONSULTATION_PAD_ERROR_BODY')}</p>
+        </div>
+      );
+    return (
+      <div className={styles.formList}>
+        {registry.map((entry) => (
+          <InputControlRenderer
+            key={entry.key}
+            entry={entry}
+            encounterType={resolvedEncounterType!}
+          />
+        ))}
+      </div>
+    );
+  })();
+
+  const enablePrimaryButton = useMemo(
+    () =>
+      hasError ||
+      !isEncounterDetailsFormReady ||
+      isSubmitting ||
+      !hasConsultationData,
+    [hasError, isEncounterDetailsFormReady, isSubmitting, hasConsultationData],
+  );
   return (
     <>
       <ActionArea
         data-testid="consultation-pad-action-area"
-        title={isError ? '' : t('CONSULTATION_ACTION_NEW')}
+        title={hasError ? '' : t('CONSULTATION_ACTION_NEW')}
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
         onPrimaryButtonClick={handleSubmit}
-        isPrimaryButtonDisabled={
-          isError ||
-          !isEncounterDetailsFormReady ||
-          isSubmitting ||
-          !hasConsultationData
-        }
+        isPrimaryButtonDisabled={enablePrimaryButton}
         hidden={!!viewingForm}
         secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
         onSecondaryButtonClick={handleCancel}
-        content={
-          isError ? (
-            <div className={styles.emptyState}>
-              <h3>{t('CONSULTATION_PAD_ERROR_TITLE')}</h3>
-              <p>{t('CONSULTATION_PAD_ERROR_BODY')}</p>
-            </div>
-          ) : (
-            <div className={styles.formList}>
-              {registry.map((entry) => (
-                <InputControlRenderer
-                  key={entry.key}
-                  entry={entry}
-                  encounterType={encounterType}
-                />
-              ))}
-            </div>
-          )
-        }
+        content={renderPadContent}
       />
       {viewingForm && (
         <ObservationFormsContainer

@@ -11,6 +11,21 @@
   ],
   "additionalProperties": false,
   "definitions": {
+    "encounterDetailsControl": {
+      "allOf": [{ "$ref": "#/definitions/inputControl" }],
+      "properties": {
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaultEncounterType": {
+              "type": "string",
+              "description": "Encounter type name to use when none is specified by the caller"
+            }
+          }
+        }
+      }
+    },
     "inputControl": {
       "type": "object",
       "required": ["metadata", "encounterTypes", "privileges", "attributes"],
@@ -166,7 +181,7 @@
           "description": "Duration in milliseconds for which a STAT order is valid"
         },
         "encounterDetails": {
-          "$ref": "#/definitions/inputControl",
+          "$ref": "#/definitions/encounterDetailsControl",
           "description": "Configuration for the encounter details form"
         },
         "allergies": {

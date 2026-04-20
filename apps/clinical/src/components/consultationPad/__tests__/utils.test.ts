@@ -1,6 +1,6 @@
 import { useServiceRequestStore } from '../../../stores';
-import { createInputControlRegistry } from '../inputControlRegistry';
-import type { InputControlRegistry } from '../models';
+import { loadEncounterInputControls } from '../inputControlRegistry';
+import type { EncounterInputControl } from '../models';
 import { captureUpdatedResources, getActiveEntries } from '../utils';
 import { makeMockEntry } from './__mocks__/indexMocks';
 import { mockConsultationPadConfig } from './__mocks__/inputControlRegistryMocks';
@@ -15,10 +15,10 @@ beforeEach(() => {
 });
 
 describe('getActiveEntries', () => {
-  let registry: ReturnType<typeof createInputControlRegistry>;
+  let registry: ReturnType<typeof loadEncounterInputControls>;
 
   beforeEach(() => {
-    registry = createInputControlRegistry(mockConsultationPadConfig);
+    registry = loadEncounterInputControls(mockConsultationPadConfig);
   });
 
   it('includes all entries for Consultation encounter type', () => {
@@ -46,7 +46,7 @@ describe('captureUpdatedResources', () => {
     ['allergies', 'allergies', 'allergies'],
   ])('returns true for %s when hasData is true', (_label, key, resultKey) => {
     const entries = [
-      makeMockEntry(key as InputControlRegistry['key'], {
+      makeMockEntry(key as EncounterInputControl['key'], {
         hasData: jest.fn().mockReturnValue(true),
       }),
     ];

@@ -1,10 +1,10 @@
 import type { ConsultationPad } from '../../../providers/clinicalConfig/models';
 import * as consultationBundleService from '../../../services/consultationBundleService';
-import { createInputControlRegistry } from '../inputControlRegistry';
-import type { BundleContext } from '../models';
+import { loadEncounterInputControls } from '../inputControlRegistry';
+import type { EncounterContext } from '../models';
 import { mockConsultationPadConfig } from './__mocks__/inputControlRegistryMocks';
 
-const mockBundleContext: BundleContext = {
+const mockBundleContext: EncounterContext = {
   encounterSubject: { reference: 'Patient/patient-uuid' },
   encounterReference: 'urn:uuid:encounter-ref',
   practitionerUUID: 'practitioner-uuid',
@@ -99,7 +99,7 @@ jest.mock('../components/ObservationFormsPanel', () => ({
   default: () => null,
 }));
 
-describe('createInputControlRegistry', () => {
+describe('loadEncounterInputControls', () => {
   const EXPECTED_KEYS = [
     'encounterDetails',
     'allergies',
@@ -110,11 +110,11 @@ describe('createInputControlRegistry', () => {
     'observationForms',
   ] as const;
 
-  let registry: ReturnType<typeof createInputControlRegistry>;
+  let registry: ReturnType<typeof loadEncounterInputControls>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    registry = createInputControlRegistry(mockConsultationPadConfig);
+    registry = loadEncounterInputControls(mockConsultationPadConfig);
   });
 
   it('contains 7 entries with the correct keys in order', () => {
@@ -134,10 +134,21 @@ describe('createInputControlRegistry', () => {
     },
   );
 
-  it('encounterDetails has no encounterTypes when config has empty array (renders for all encounter types)', () => {
-    const entry = registry.find((e) => e.key === 'encounterDetails')!;
-    expect(entry.encounterTypes).toBeUndefined();
-  });
+  it.each<[string[]]>([[[]], [['Consultation']], [['Immunization', 'OPD']]])(
+    'encounterDetails.encounterTypes is always undefined regardless of config value %j',
+    (configuredEncounterTypes) => {
+      const result = loadEncounterInputControls({
+        ...mockConsultationPadConfig,
+        encounterDetails: {
+          ...mockConsultationPadConfig.encounterDetails,
+          encounterTypes: configuredEncounterTypes,
+        },
+      });
+      expect(
+        result.find((e) => e.key === 'encounterDetails')!.encounterTypes,
+      ).toBeUndefined();
+    },
+  );
 
   it.each([
     'allergies',
@@ -197,11 +208,11 @@ describe('createInputControlRegistry', () => {
   );
 
   it('returns empty registry when config is undefined', () => {
-    expect(createInputControlRegistry(undefined)).toHaveLength(0);
+    expect(loadEncounterInputControls(undefined)).toHaveLength(0);
   });
 
   it('excludes entries whose config key is absent', () => {
-    const result = createInputControlRegistry({
+    const result = loadEncounterInputControls({
       ...mockConsultationPadConfig,
       allergies: undefined,
       medications: undefined,

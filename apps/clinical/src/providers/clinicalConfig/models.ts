@@ -17,10 +17,18 @@ export interface InputControl {
   attributes: InputControlAttributes[];
 }
 
+export interface EncounterDetailsMetadata {
+  defaultEncounterType?: string;
+}
+
+export interface EncounterDetailsControl extends InputControl {
+  metadata: EncounterDetailsMetadata;
+}
+
 export interface ConsultationPad {
   allergyConceptMap: AllergyConceptMap;
   statDurationInMilliseconds?: number;
-  encounterDetails: InputControl;
+  encounterDetails: EncounterDetailsControl;
   allergies?: InputControl;
   investigations?: InputControl;
   medications?: InputControl;

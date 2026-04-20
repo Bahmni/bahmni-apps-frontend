@@ -8,13 +8,13 @@ import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { extractConceptsFromResponseBundle } from '../../utils/fhir/conceptExtractor';
 import { createConsultationBundle } from '../../utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
-import type { BundleContext, InputControlRegistry } from './models';
+import type { EncounterContext, EncounterInputControl } from './models';
 
 interface SubmissionRequest {
   activeEncounter: Encounter | null;
   episodeOfCareUuids: string[];
   statDurationInMilliseconds?: number;
-  activeEntries: InputControlRegistry[];
+  activeEntries: EncounterInputControl[];
 }
 
 interface SubmissionResult {
@@ -59,7 +59,7 @@ export async function submitConsultation(
     placeholderReference,
   );
 
-  const ctx: BundleContext = {
+  const ctx: EncounterContext = {
     encounterSubject: encounterResource.subject!,
     encounterReference,
     practitionerUUID: practitioner!.uuid,
