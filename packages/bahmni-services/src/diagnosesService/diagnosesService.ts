@@ -3,6 +3,7 @@ import { get } from '../api';
 import {
   CERTAINITY_CONCEPTS,
   PATIENT_DIAGNOSIS_RESOURCE_URL,
+  PATIENT_DIAGNOSIS_PAGE_URL,
 } from './constants';
 import { Diagnosis } from './models';
 
@@ -10,14 +11,20 @@ import { Diagnosis } from './models';
 const CONFIRMED_STATUS = 'confirmed';
 const PROVISIONAL_STATUS = 'provisional';
 
-/**
- * Fetches diagnoses for a given patient UUID from the FHIR R4 endpoint
- * @param patientUUID - The UUID of the patient
- * @returns Promise resolving to a Bundle containing diagnoses
- */
+// Fetches all diagnoses (for consultation forms — no pagination)
 async function getPatientDiagnosesBundle(patientUUID: string): Promise<Bundle> {
-  const url = PATIENT_DIAGNOSIS_RESOURCE_URL(patientUUID);
-  return await get<Bundle>(url);
+  return await get<Bundle>(PATIENT_DIAGNOSIS_RESOURCE_URL(patientUUID));
+}
+
+// Fetches a single page of diagnoses (for the paginated widget)
+async function getPatientDiagnosesBundlePage(
+  patientUUID: string,
+  count: number,
+  offset: number,
+): Promise<Bundle> {
+  return await get<Bundle>(
+    PATIENT_DIAGNOSIS_PAGE_URL(patientUUID, count, offset),
+  );
 }
 
 /**
@@ -121,4 +128,38 @@ export async function getPatientDiagnoses(
   const bundle = await getPatientDiagnosesBundle(patientUUID);
   const formattedDiagnoses = formatDiagnoses(bundle);
   return deduplicateDiagnoses(formattedDiagnoses);
+}
+
+export interface DiagnosisPage {
+  diagnoses: Diagnosis[];
+  total: number | undefined;
+}
+
+/**
+ * Fetches a single page of diagnoses using offset-based pagination.
+ * Uses _getpagesoffset = (page - 1) * count to jump directly to any page.
+ * No per-page deduplication — cross-page dedup is not possible with server-side pagination.
+ * @param patientUUID - The UUID of the patient
+ * @param count - Number of items per page (default 10)
+ * @param page - 1-based page number (default 1)
+ * @returns Promise resolving to a DiagnosisPage with diagnoses and total count
+ */
+export async function getDiagnosesPage(
+  patientUUID: string,
+  count: number = 10,
+  page: number = 1,
+): Promise<DiagnosisPage> {
+  const offset = (page - 1) * count;
+  const bundle = await getPatientDiagnosesBundlePage(
+    patientUUID,
+    count,
+    offset,
+  );
+  // No per-page deduplication — with server-side pagination each page only has
+  // a subset of records, so cross-page deduplication is not possible.
+  const diagnoses = formatDiagnoses(bundle);
+  return {
+    diagnoses,
+    total: bundle.total,
+  };
 }

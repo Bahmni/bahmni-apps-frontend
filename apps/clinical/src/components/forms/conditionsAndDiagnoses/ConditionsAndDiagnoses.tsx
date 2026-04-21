@@ -152,7 +152,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
 
   const isConditionDuplicate = (diagnosisId: string): boolean => {
     const isExistingCondition = existingConditions!.some(
-      (d) => d.code === diagnosisId,
+      (d) => d.code?.coding?.[0]?.code === diagnosisId,
     );
     const isSelectedConditions =
       selectedConditions?.some((condition) => condition.id === diagnosisId) ||

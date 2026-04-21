@@ -5,7 +5,11 @@ import {
   mockEmptyConditionBundle,
   mockMalformedBundle,
 } from '../__mocks__/mocks';
-import { getConditions, getConditionsBundle } from '../conditionService';
+import {
+  getConditions,
+  getConditionsBundle,
+  getConditionPage,
+} from '../conditionService';
 
 jest.mock('../../api');
 
@@ -77,6 +81,78 @@ describe('conditionService', () => {
 
       const result = await getConditions(patientUUID);
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getConditionPage', () => {
+    const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
+
+    it('should fetch page 1 with default count', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockConditionBundle);
+
+      const result = await getConditionPage(patientUUID);
+
+      expect(get).toHaveBeenCalledWith(
+        `/openmrs/ws/fhir2/R4/Condition?category=problem-list-item&patient=${patientUUID}&_count=10&_getpagesoffset=0&_sort=-_lastUpdated`,
+      );
+      expect(result.conditions).toEqual([mockCondition]);
+      expect(result.total).toBe(1);
+    });
+
+    it('should calculate correct offset for page 2', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockConditionBundle);
+
+      await getConditionPage(patientUUID, 5, 2);
+
+      expect(get).toHaveBeenCalledWith(
+        `/openmrs/ws/fhir2/R4/Condition?category=problem-list-item&patient=${patientUUID}&_count=5&_getpagesoffset=5&_sort=-_lastUpdated`,
+      );
+    });
+
+    it('should calculate correct offset for page 3 with count 10', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockConditionBundle);
+
+      await getConditionPage(patientUUID, 10, 3);
+
+      expect(get).toHaveBeenCalledWith(
+        `/openmrs/ws/fhir2/R4/Condition?category=problem-list-item&patient=${patientUUID}&_count=10&_getpagesoffset=20&_sort=-_lastUpdated`,
+      );
+    });
+
+    it('should return total from bundle', async () => {
+      const bundleWithTotal = { ...mockConditionBundle, total: 42 };
+      (get as jest.Mock).mockResolvedValueOnce(bundleWithTotal);
+
+      const result = await getConditionPage(patientUUID, 10, 1);
+
+      expect(result.total).toBe(42);
+    });
+
+    it('should return undefined total when bundle total is missing', async () => {
+      const bundleWithoutTotal = { ...mockConditionBundle, total: undefined };
+      (get as jest.Mock).mockResolvedValueOnce(bundleWithoutTotal);
+
+      const result = await getConditionPage(patientUUID, 10, 1);
+
+      expect(result.total).toBeUndefined();
+    });
+
+    it('should return empty conditions for empty bundle', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockEmptyConditionBundle);
+
+      const result = await getConditionPage(patientUUID, 10, 1);
+
+      expect(result.conditions).toEqual([]);
+      expect(result.total).toBe(0);
+    });
+
+    it('should propagate errors from the API', async () => {
+      const error = new Error('Network error');
+      (get as jest.Mock).mockRejectedValueOnce(error);
+
+      await expect(getConditionPage(patientUUID)).rejects.toThrow(
+        'Network error',
+      );
     });
   });
 });

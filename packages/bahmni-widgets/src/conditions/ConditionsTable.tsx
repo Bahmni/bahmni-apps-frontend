@@ -1,39 +1,49 @@
 import { SortableDataTable, StatusTag, Tile } from '@bahmni/design-system';
 import {
-  getConditions,
+  getConditionPage,
   useTranslation,
   FormatDateResult,
   formatDateDistance,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
+import { WidgetProps } from '../registry/model';
 import { ConditionViewModel, ConditionStatus } from './models';
 import styles from './styles/ConditionsTable.module.scss';
 import { createConditionViewModels } from './utils';
-
-const fetchConditions = async (
-  patientUUID: string,
-): Promise<ConditionViewModel[]> => {
-  const response = await getConditions(patientUUID!);
-  return createConditionViewModels(response);
-};
 
 // TODO: Take UUID As A Prop
 /**
  * Component to display patient conditions using SortableDataTable
  */
-const ConditionsTable: React.FC = () => {
-  const [conditions, setConditions] = useState<ConditionViewModel[]>([]);
+const ConditionsTable: React.FC<WidgetProps> = ({ config }) => {
+  // Number() safely handles non-numeric config values (NaN → falsy → fallback 10)
+  const configPageSize = Number(config?.pageSize) || 10;
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);
+
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['conditions', patientUUID!],
+    queryKey: ['conditions', patientUUID!, currentPage, selectedPageSize],
     enabled: !!patientUUID,
-    queryFn: () => fetchConditions(patientUUID!),
+    placeholderData: (prev) => prev,
+    queryFn: async () => {
+      const page = await getConditionPage(
+        patientUUID!,
+        selectedPageSize,
+        currentPage,
+      );
+      return {
+        conditions: createConditionViewModels(page.conditions),
+        total: page.total,
+      };
+    },
   });
 
   // Listen to consultation saved events and refetch if conditions were updated
@@ -52,6 +62,11 @@ const ConditionsTable: React.FC = () => {
     [patientUUID, refetch],
   );
 
+  // Reset pagination when patient changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [patientUUID]);
+
   useEffect(() => {
     if (isError)
       addNotification({
@@ -59,8 +74,22 @@ const ConditionsTable: React.FC = () => {
         message: error.message,
         type: 'error',
       });
-    if (data) setConditions(data);
-  }, [data, isLoading, isError, error, addNotification, t]);
+  }, [isError, error, addNotification, t]);
+
+  const handlePageChange = useCallback(
+    (newPage: number, newPageSize: number) => {
+      if (newPageSize !== selectedPageSize) {
+        // Page size changed: reset to page 1, re-fetch with new _count
+        setSelectedPageSize(newPageSize);
+        setCurrentPage(1);
+      } else {
+        // Offset-based pagination: any page can be fetched directly via
+        // _getpagesoffset = (page - 1) * _count — no cursor cache needed
+        setCurrentPage(newPage);
+      }
+    },
+    [selectedPageSize],
+  );
 
   const headers = useMemo(
     () => [
@@ -125,13 +154,17 @@ const ConditionsTable: React.FC = () => {
         <SortableDataTable
           headers={headers}
           ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
-          rows={conditions}
+          rows={data?.conditions ?? []}
           loading={isLoading}
           errorStateMessage={isError ? error.message : null}
           emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}
           renderCell={renderCell}
           className={styles.conditionsTableBody}
           dataTestId="conditions-table"
+          pageSize={selectedPageSize}
+          totalItems={data?.total}
+          page={currentPage}
+          onPageChange={handlePageChange}
         />
       </div>
     </>

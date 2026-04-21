@@ -82,7 +82,7 @@ describe('PatientProgramsTable', () => {
 
   it('should show empty state when there is no data', () => {
     (useQuery as jest.Mock).mockReturnValue({
-      data: [],
+      data: { programs: [], total: 0 },
       error: null,
       isError: false,
       isLoading: false,
@@ -98,30 +98,33 @@ describe('PatientProgramsTable', () => {
 
   it('should show programs table when patient has programs', () => {
     (useQuery as jest.Mock).mockReturnValue({
-      data: [
-        {
-          id: 'program-1',
-          uuid: 'program-uuid-1',
-          programName: 'HIV Program',
-          dateEnrolled: '2023-01-15T10:30:00.000+00:00',
-          dateCompleted: null,
-          outcomeName: null,
-          outcomeDetails: null,
-          currentStateName: 'On ART',
-          attributes: {},
-        },
-        {
-          id: 'program-2',
-          uuid: 'program-uuid-2',
-          programName: 'TB Program',
-          dateEnrolled: '2022-06-10T08:15:00.000+00:00',
-          dateCompleted: '2023-01-10T08:15:00.000+00:00',
-          outcomeName: 'Cured',
-          outcomeDetails: 'Patient completed treatment successfully',
-          currentStateName: 'Treatment Complete',
-          attributes: {},
-        },
-      ],
+      data: {
+        programs: [
+          {
+            id: 'program-1',
+            uuid: 'program-uuid-1',
+            programName: 'HIV Program',
+            dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+            dateCompleted: null,
+            outcomeName: null,
+            outcomeDetails: null,
+            currentStateName: 'On ART',
+            attributes: {},
+          },
+          {
+            id: 'program-2',
+            uuid: 'program-uuid-2',
+            programName: 'TB Program',
+            dateEnrolled: '2022-06-10T08:15:00.000+00:00',
+            dateCompleted: '2023-01-10T08:15:00.000+00:00',
+            outcomeName: 'Cured',
+            outcomeDetails: 'Patient completed treatment successfully',
+            currentStateName: 'Treatment Complete',
+            attributes: {},
+          },
+        ],
+        total: 2,
+      },
       error: null,
       isError: false,
       isLoading: false,
@@ -159,36 +162,39 @@ describe('PatientProgramsTable', () => {
     );
 
     (useQuery as jest.Mock).mockReturnValue({
-      data: [
-        {
-          id: 'program-1',
-          uuid: 'program-uuid-1',
-          programName: 'HIV Program',
-          dateEnrolled: '2023-01-15T10:30:00.000+00:00',
-          dateCompleted: null,
-          outcomeName: null,
-          outcomeDetails: null,
-          currentStateName: null,
-          attributes: {
-            'Registration Number': 'REG123456',
-            'Treatment Category': 'Category I',
+      data: {
+        programs: [
+          {
+            id: 'program-1',
+            uuid: 'program-uuid-1',
+            programName: 'HIV Program',
+            dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+            dateCompleted: null,
+            outcomeName: null,
+            outcomeDetails: null,
+            currentStateName: null,
+            attributes: {
+              'Registration Number': 'REG123456',
+              'Treatment Category': 'Category I',
+            },
           },
-        },
-        {
-          id: 'program-2',
-          uuid: 'program-uuid-2',
-          programName: 'TB Program',
-          dateEnrolled: '2022-06-10T08:15:00.000+00:00',
-          dateCompleted: '2023-01-10T08:15:00.000+00:00',
-          outcomeName: 'Cured',
-          outcomeDetails: 'Patient completed treatment successfully',
-          currentStateName: 'Treatment Complete',
-          attributes: {
-            'Registration Number': 'REG789012',
-            'Treatment Category': null,
+          {
+            id: 'program-2',
+            uuid: 'program-uuid-2',
+            programName: 'TB Program',
+            dateEnrolled: '2022-06-10T08:15:00.000+00:00',
+            dateCompleted: '2023-01-10T08:15:00.000+00:00',
+            outcomeName: 'Cured',
+            outcomeDetails: 'Patient completed treatment successfully',
+            currentStateName: 'Treatment Complete',
+            attributes: {
+              'Registration Number': 'REG789012',
+              'Treatment Category': null,
+            },
           },
-        },
-      ],
+        ],
+        total: 2,
+      },
       error: null,
       isError: false,
       isLoading: false,
@@ -207,44 +213,81 @@ describe('PatientProgramsTable', () => {
     expect(nullAttributeCell).toHaveTextContent('-');
   });
 
-  it('should match snapshot with program data', () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: [
-        {
-          id: 'program-1',
-          uuid: 'program-uuid-1',
-          programName: 'HIV Program',
-          dateEnrolled: '2023-01-15T10:30:00.000+00:00',
-          dateCompleted: null,
-          outcomeName: null,
-          outcomeDetails: null,
-          currentStateName: 'On ART',
-          attributes: {},
-        },
-        {
-          id: 'program-2',
-          uuid: 'program-uuid-2',
-          programName: 'TB Program',
-          dateEnrolled: '2022-06-10T08:15:00.000+00:00',
-          dateCompleted: '2023-01-10T08:15:00.000+00:00',
-          outcomeName: 'Cured',
-          outcomeDetails: 'Patient completed treatment successfully',
-          currentStateName: 'Treatment Complete',
-          attributes: {},
-        },
-      ],
-      error: null,
-      isError: false,
-      isLoading: false,
+  describe('Pagination', () => {
+    const manyPrograms = Array.from({ length: 3 }, (_, i) => ({
+      id: `program-${i + 1}`,
+      uuid: `program-uuid-${i + 1}`,
+      programName: `Program ${i + 1}`,
+      dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+      dateCompleted: null,
+      outcomeName: null,
+      outcomeDetails: null,
+      currentStateName: null,
+      attributes: {},
+    }));
+
+    it('renders pagination when server total exceeds pageSize', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { programs: manyPrograms, total: 5 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{ fields: ['programName', 'startDate'], pageSize: 1 }}
+          />
+        </QueryClientProvider>,
+      );
+      expect(
+        screen.getByRole('button', { name: /next page/i }),
+      ).toBeInTheDocument();
     });
-    const { container } = render(wrapper);
-    expect(container).toMatchSnapshot();
+
+    it('hides pagination when server total is fewer than or equal to pageSize', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { programs: manyPrograms, total: 3 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{ fields: ['programName', 'startDate'], pageSize: 10 }}
+          />
+        </QueryClientProvider>,
+      );
+      expect(
+        screen.queryByRole('button', { name: /next page/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('displays the current page of programs returned by the server', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { programs: manyPrograms.slice(0, 2), total: 3 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{ fields: ['programName', 'startDate'], pageSize: 2 }}
+          />
+        </QueryClientProvider>,
+      );
+      expect(screen.getByText('Program 1')).toBeInTheDocument();
+      expect(screen.getByText('Program 2')).toBeInTheDocument();
+      expect(screen.queryByText('Program 3')).not.toBeInTheDocument();
+    });
   });
 
-  describe('Accessibility', () => {
-    it('passes accessibility tests with data', async () => {
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [
+  it('should match snapshot with program data', () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        programs: [
           {
             id: 'program-1',
             uuid: 'program-uuid-1',
@@ -268,6 +311,46 @@ describe('PatientProgramsTable', () => {
             attributes: {},
           },
         ],
+        total: 2,
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+    const { container } = render(wrapper);
+    expect(container).toMatchSnapshot();
+  });
+
+  describe('Accessibility', () => {
+    it('passes accessibility tests with data', async () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          programs: [
+            {
+              id: 'program-1',
+              uuid: 'program-uuid-1',
+              programName: 'HIV Program',
+              dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+              dateCompleted: null,
+              outcomeName: null,
+              outcomeDetails: null,
+              currentStateName: 'On ART',
+              attributes: {},
+            },
+            {
+              id: 'program-2',
+              uuid: 'program-uuid-2',
+              programName: 'TB Program',
+              dateEnrolled: '2022-06-10T08:15:00.000+00:00',
+              dateCompleted: '2023-01-10T08:15:00.000+00:00',
+              outcomeName: 'Cured',
+              outcomeDetails: 'Patient completed treatment successfully',
+              currentStateName: 'Treatment Complete',
+              attributes: {},
+            },
+          ],
+          total: 2,
+        },
         error: null,
         isError: false,
         isLoading: false,

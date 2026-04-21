@@ -125,9 +125,16 @@ export {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
 } from './allergyService';
-export { getConditions, type ConditionInputEntry } from './conditionService';
+export {
+  getConditions,
+  getConditionPage,
+  type ConditionPage,
+  type ConditionInputEntry,
+} from './conditionService';
 export {
   getPatientDiagnoses,
+  getDiagnosesPage,
+  type DiagnosisPage,
   type Diagnosis,
   type DiagnosisInputEntry,
   type DiagnosesByDate,
@@ -285,10 +292,12 @@ export {
 export { getServiceRequests } from './orderRequestService';
 export {
   getPatientPrograms,
+  getPatientProgramsPage,
   getProgramByUUID,
   getCurrentStateName,
   extractAttributes,
   updateProgramState,
+  type ProgramPage,
   type ProgramEnrollment,
   type PatientProgramsResponse,
 } from './programService';
@@ -303,6 +312,8 @@ export {
 export {
   getDocumentReferences,
   getFormattedDocumentReferences,
+  getDocumentReferencePage,
+  type DocumentReferencePage,
   type DocumentViewModel,
   type DocumentReference,
 } from './documentReferenceService';
