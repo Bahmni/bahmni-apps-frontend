@@ -1,11 +1,19 @@
 @use '@carbon/styles/scss/spacing' as *;
 
+.buttonContent {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+}
+
 .opdVisitGroup {
   display: flex;
   align-items: center;
+  max-width: 100%;
 
   .visitButton {
     min-width: $spacing-13 + $spacing-12;
+    max-width: 100%;
   }
 
   .visitDropdown :global(.cds--list-box__menu) {

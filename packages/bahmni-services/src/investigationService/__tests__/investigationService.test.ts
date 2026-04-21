@@ -685,14 +685,14 @@ describe('investigationService', () => {
       expect(result).toBe('lab-order-uuid');
     });
 
-    it('should return undefined when category name is not found', async () => {
+    it('should return null when category name is not found', async () => {
       const result = await getCategoryUuidFromOrderTypes('Non Existent Order');
-      expect(result).toBeUndefined();
+      expect(result).toBeNull();
     });
 
-    it('should return undefined when category name is undefined', async () => {
+    it('should return null when category name is undefined', async () => {
       const result = await getCategoryUuidFromOrderTypes(undefined);
-      expect(result).toBeUndefined();
+      expect(result).toBeNull();
     });
   });
 

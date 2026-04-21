@@ -152,6 +152,7 @@
   "NOTIFICATION_PATIENT_SAVE_FAILED": "Failed to save patient",
   "NOTIFICATION_PATIENT_UPDATE_FAILED": "Failed to update patient",
   "NOTIFICATION_VALIDATION_ERRORS": "Please fill the mandatory fields",
+  "PATIENT_DASHBOARD_REDIRECT": "Patient Dashboard",
   "NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA": "Unable to get patient data",
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "Unable to get patient address data",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "Unable to get patient contact data",
