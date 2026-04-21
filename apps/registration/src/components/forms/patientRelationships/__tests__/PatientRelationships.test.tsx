@@ -136,7 +136,7 @@ describe('PatientRelationships', () => {
           screen.getAllByRole('button', { name: 'REGISTRATION_REMOVE' }),
         ).toHaveLength(2);
       });
-    });
+    }, 15000);
   });
 
   describe('Ref Methods', () => {

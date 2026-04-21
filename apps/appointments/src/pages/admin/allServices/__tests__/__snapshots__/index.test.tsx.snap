@@ -74,7 +74,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
             </h2>
           </div>
           <div
-            class="sortable-data-table _sortableDataTableBody_1xyik_1"
+            class="sortable-data-table _sortableDataTableBody_1w499_1"
             data-testid="all-services-sortable-data-table-test-id"
           >
             <div

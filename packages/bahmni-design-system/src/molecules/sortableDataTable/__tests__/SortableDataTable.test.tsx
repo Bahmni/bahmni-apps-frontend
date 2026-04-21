@@ -1,5 +1,6 @@
 import { DataTableHeader } from '@carbon/react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { SortableDataTable } from '../SortableDataTable';
 import '@testing-library/jest-dom';
@@ -326,6 +327,456 @@ describe('SortableDataTable', () => {
         />,
       );
       expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('Pagination', () => {
+    const manyRows = Array.from({ length: 12 }, (_, i) => ({
+      id: `row-${i}`,
+      name: `Medication ${i + 1}`,
+      dosage: `${i + 1} Tablet`,
+      dosageUnit: 'Tablet',
+      instruction: 'Oral',
+      startDate: '01/01/2025',
+      orderDate: '01/01/2025',
+      orderedBy: `Dr. ${i + 1}`,
+      quantity: `${i + 1} Tablet`,
+      status: 'active',
+    }));
+
+    it('renders pagination when pageSize is provided and rows exceed pageSize', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Paginated Table"
+          renderCell={renderCell}
+          pageSize={5}
+        />,
+      );
+
+      expect(
+        screen.getByRole('button', { name: /next page/i }),
+      ).toBeInTheDocument();
+    });
+
+    it('does not render pagination when rows fit on one page', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="No Pagination Table"
+          renderCell={renderCell}
+          pageSize={20}
+        />,
+      );
+
+      expect(
+        screen.queryByRole('button', { name: /next page/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not render pagination when pageSize prop is not provided', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="No Pagination Prop Table"
+          renderCell={renderCell}
+        />,
+      );
+
+      expect(
+        screen.queryByRole('button', { name: /next page/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('displays only the first page rows when pageSize is provided', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="First Page Table"
+          renderCell={renderCell}
+          pageSize={5}
+        />,
+      );
+
+      expect(screen.getByText('Medication 1')).toBeInTheDocument();
+      expect(screen.getByText('Medication 5')).toBeInTheDocument();
+      expect(screen.queryByText('Medication 6')).not.toBeInTheDocument();
+    });
+
+    it('navigates to next page showing correct rows', async () => {
+      const user = userEvent.setup();
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Next Page Table"
+          renderCell={renderCell}
+          pageSize={5}
+        />,
+      );
+
+      const nextButton = screen.getByRole('button', { name: /next page/i });
+      await user.click(nextButton);
+
+      expect(screen.getByText('Medication 6')).toBeInTheDocument();
+      expect(screen.queryByText('Medication 1')).not.toBeInTheDocument();
+    });
+
+    it('disables previous page button on first page', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Prev Disabled Table"
+          renderCell={renderCell}
+          pageSize={5}
+        />,
+      );
+
+      const prevButton = screen.getByRole('button', { name: /previous page/i });
+      expect(prevButton).toBeDisabled();
+    });
+
+    it('disables next page button on last page', async () => {
+      const user = userEvent.setup();
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Next Disabled Table"
+          renderCell={renderCell}
+          pageSize={10}
+        />,
+      );
+
+      const nextButton = screen.getByRole('button', { name: /next page/i });
+      await user.click(nextButton);
+
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
+    });
+
+    it('calls onPageChange callback when page changes', async () => {
+      const user = userEvent.setup();
+      const onPageChange = jest.fn();
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Callback Table"
+          renderCell={renderCell}
+          pageSize={5}
+          onPageChange={onPageChange}
+        />,
+      );
+
+      const nextButton = screen.getByRole('button', { name: /next page/i });
+      await user.click(nextButton);
+
+      expect(onPageChange).toHaveBeenCalledWith(2, 5);
+    });
+
+    it('changes page size when a new page size is selected', async () => {
+      const user = userEvent.setup();
+      const onPageChange = jest.fn();
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Page Size Table"
+          renderCell={renderCell}
+          pageSize={5}
+          pageSizes={[5, 10, 25]}
+          onPageChange={onPageChange}
+        />,
+      );
+
+      const select = screen.getByRole('combobox', { name: /items per page/i });
+      await user.selectOptions(select, '10');
+
+      expect(onPageChange).toHaveBeenCalledWith(1, 10);
+    });
+
+    it('maintains sort order across page changes', async () => {
+      const user = userEvent.setup();
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Sort Preserved Table"
+          renderCell={renderCell}
+          pageSize={5}
+        />,
+      );
+
+      // Sort ascending by name (first click)
+      const nameHeader = screen.getByTestId('table-header-name');
+      await user.click(nameHeader);
+
+      // After ascending sort, alphabetical order is:
+      // Medication 1, Medication 10, Medication 11, Medication 12, Medication 2 … (page 1)
+      // Medication 3, Medication 4, Medication 5, Medication 6, Medication 7 … (page 2)
+      expect(screen.getByText('Medication 1')).toBeInTheDocument();
+      // Medication 3 should NOT be on page 1 (it falls on page 2 alphabetically)
+      expect(screen.queryByText('Medication 3')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /next page/i }));
+
+      // Page 2 must show the next 5 items in the same sort order
+      expect(screen.getByText('Medication 3')).toBeInTheDocument();
+      // Medication 1 must no longer be visible (it was on page 1)
+      expect(screen.queryByText('Medication 1')).not.toBeInTheDocument();
+    });
+
+    it('displays page range text showing items for current page', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Range Text Table"
+          renderCell={renderCell}
+          pageSize={5}
+        />,
+      );
+
+      // Carbon Pagination renders range e.g. "1–5 of 12 items"
+      expect(screen.getByText(/of 12 items/)).toBeInTheDocument();
+    });
+
+    it('displays page counter text', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Counter Text Table"
+          renderCell={renderCell}
+          pageSize={5}
+        />,
+      );
+
+      // 12 rows ÷ 5 per page = 3 pages — Carbon renders "of 3 pages" in multiple elements
+      expect(screen.getAllByText(/of 3 pages/).length).toBeGreaterThan(0);
+    });
+
+    it('resets to page 1 when rows prop changes', async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Reset Page Table"
+          renderCell={renderCell}
+          pageSize={5}
+        />,
+      );
+
+      // Navigate to page 2
+      await user.click(screen.getByRole('button', { name: /next page/i }));
+      expect(screen.getByText('Medication 6')).toBeInTheDocument();
+
+      // Rows shrink — all fit on one page
+      rerender(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows.slice(0, 3)}
+          ariaLabel="Reset Page Table"
+          renderCell={renderCell}
+          pageSize={5}
+        />,
+      );
+
+      // useEffect resets currentPage to 1 asynchronously after rows.length changes
+      await waitFor(() => {
+        expect(screen.getByText('Medication 1')).toBeInTheDocument();
+      });
+      // Pagination is hidden (3 rows < pageSize 5)
+      expect(
+        screen.queryByRole('button', { name: /next page/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows more rows after user increases page size via dropdown', async () => {
+      const user = userEvent.setup();
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={manyRows}
+          ariaLabel="Page Size Update Table"
+          renderCell={renderCell}
+          pageSize={5}
+          pageSizes={[5, 10, 25]}
+        />,
+      );
+
+      // Initially only first 5 rows visible
+      expect(screen.getByText('Medication 5')).toBeInTheDocument();
+      expect(screen.queryByText('Medication 6')).not.toBeInTheDocument();
+
+      // User changes page size to 10
+      const select = screen.getByRole('combobox', { name: /items per page/i });
+      await user.selectOptions(select, '10');
+
+      // All 10 rows now visible on page 1
+      expect(screen.getByText('Medication 6')).toBeInTheDocument();
+    });
+  });
+
+  describe('Server-side pagination (totalItems prop)', () => {
+    const serverPageRows = [
+      {
+        id: 'row-0',
+        name: 'Medication 1',
+        dosage: '1 Tablet',
+        dosageUnit: 'Tablet',
+        instruction: 'Oral',
+        startDate: '01/01/2025',
+        orderDate: '01/01/2025',
+        orderedBy: 'Dr. 1',
+        quantity: '1 Tablet',
+        status: 'active',
+      },
+      {
+        id: 'row-1',
+        name: 'Medication 2',
+        dosage: '2 Tablet',
+        dosageUnit: 'Tablet',
+        instruction: 'Oral',
+        startDate: '01/01/2025',
+        orderDate: '01/01/2025',
+        orderedBy: 'Dr. 2',
+        quantity: '2 Tablet',
+        status: 'active',
+      },
+    ];
+
+    it('renders pagination when totalItems exceeds pageSize', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={serverPageRows}
+          ariaLabel="Server Paginated Table"
+          renderCell={renderCell}
+          pageSize={2}
+          totalItems={10}
+          page={1}
+        />,
+      );
+
+      expect(
+        screen.getByRole('button', { name: /next page/i }),
+      ).toBeInTheDocument();
+    });
+
+    it('does not render pagination when totalItems equals pageSize', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={serverPageRows}
+          ariaLabel="Server No Pagination Table"
+          renderCell={renderCell}
+          pageSize={10}
+          totalItems={2}
+          page={1}
+        />,
+      );
+
+      expect(
+        screen.queryByRole('button', { name: /next page/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders all provided rows without client-side slicing in server-side mode', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={serverPageRows}
+          ariaLabel="Server All Rows Table"
+          renderCell={renderCell}
+          pageSize={2}
+          totalItems={20}
+          page={1}
+        />,
+      );
+
+      expect(screen.getByText('Medication 1')).toBeInTheDocument();
+      expect(screen.getByText('Medication 2')).toBeInTheDocument();
+    });
+
+    it('calls onPageChange when next page is clicked in server-side mode', async () => {
+      const user = userEvent.setup();
+      const onPageChange = jest.fn();
+
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={serverPageRows}
+          ariaLabel="Server Page Change Table"
+          renderCell={renderCell}
+          pageSize={2}
+          totalItems={10}
+          page={1}
+          onPageChange={onPageChange}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /next page/i }));
+
+      expect(onPageChange).toHaveBeenCalledWith(2, 2);
+    });
+
+    it('renders pagination component when totalItems exceeds pageSize with controlled page', () => {
+      render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={serverPageRows}
+          ariaLabel="Server Controlled Page Table"
+          renderCell={renderCell}
+          pageSize={2}
+          totalItems={10}
+          page={3}
+        />,
+      );
+
+      // Pagination should be rendered — prev/next buttons are present
+      expect(
+        screen.getByRole('button', { name: /previous page/i }),
+      ).toBeInTheDocument();
+    });
+
+    it('does not reset page internally when rows change in server-side mode', async () => {
+      const onPageChange = jest.fn();
+      const { rerender } = render(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={serverPageRows}
+          ariaLabel="Server No Reset Table"
+          renderCell={renderCell}
+          pageSize={2}
+          totalItems={10}
+          page={2}
+          onPageChange={onPageChange}
+        />,
+      );
+
+      // Simulate new page data arriving (rows change) — page should not reset
+      rerender(
+        <SortableDataTable
+          headers={mockHeaders}
+          rows={[{ ...serverPageRows[0], id: 'row-new', name: 'New Med' }]}
+          ariaLabel="Server No Reset Table"
+          renderCell={renderCell}
+          pageSize={2}
+          totalItems={10}
+          page={2}
+          onPageChange={onPageChange}
+        />,
+      );
+
+      // onPageChange should NOT have been called with page 1 (no reset)
+      expect(onPageChange).not.toHaveBeenCalledWith(1, expect.any(Number));
     });
   });
 });
