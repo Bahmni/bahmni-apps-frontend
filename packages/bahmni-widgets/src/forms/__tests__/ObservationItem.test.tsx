@@ -8,18 +8,24 @@ expect.extend(toHaveNoViolations);
 
 // Mock the design system components
 jest.mock('@bahmni/design-system', () => ({
-  ImageTile: ({ imageSrc, alt, id }: any) => (
+  ImageTile: ({ imageSrc, alt, id, hideThumbnail }: any) => (
     <div
       data-testid="image-tile"
       data-src={imageSrc}
       data-alt={alt}
       data-id={id}
+      data-hide-thumbnail={String(hideThumbnail)}
     >
       Image: {imageSrc}
     </div>
   ),
-  VideoTile: ({ videoSrc, id }: any) => (
-    <div data-testid="video-tile" data-src={videoSrc} data-id={id}>
+  VideoTile: ({ videoSrc, id, hideThumbnail }: any) => (
+    <div
+      data-testid="video-tile"
+      data-src={videoSrc}
+      data-id={id}
+      data-hide-thumbnail={String(hideThumbnail)}
+    >
       Video: {videoSrc}
     </div>
   ),
@@ -488,6 +494,46 @@ describe('ObservationItem', () => {
       expect(
         screen.getByText(/File: 100\/55-Consultation-abc123.pdf/),
       ).toBeInTheDocument();
+    });
+
+    it('should forward hideThumbnail prop to ImageTile', () => {
+      const observation: ExtractedObservation = {
+        id: 'xray-uuid',
+        display: 'X-Ray',
+        observationValue: {
+          value: 'http://example.com/image.jpg',
+          type: 'string',
+        },
+      };
+
+      render(
+        <ObservationItem observation={observation} index={0} hideThumbnail />,
+      );
+
+      expect(screen.getByTestId('image-tile')).toHaveAttribute(
+        'data-hide-thumbnail',
+        'true',
+      );
+    });
+
+    it('should forward hideThumbnail prop to VideoTile', () => {
+      const observation: ExtractedObservation = {
+        id: 'video-uuid',
+        display: 'Procedure Video',
+        observationValue: {
+          value: 'http://example.com/video.mp4',
+          type: 'string',
+        },
+      };
+
+      render(
+        <ObservationItem observation={observation} index={0} hideThumbnail />,
+      );
+
+      expect(screen.getByTestId('video-tile')).toHaveAttribute(
+        'data-hide-thumbnail',
+        'true',
+      );
     });
 
     it('should render FileTile for PDF values in group members', () => {

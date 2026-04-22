@@ -11,6 +11,7 @@ interface ObservationItemProps {
   index: number;
   formName?: string;
   comment?: string;
+  hideThumbnail?: boolean;
 }
 
 interface ObservationMemberProps {
@@ -19,12 +20,16 @@ interface ObservationMemberProps {
   memberIndex?: number;
   formName?: string;
   comment?: string;
+  hideThumbnail?: boolean;
 }
 
 /**
  * Helper function to render value with media support (images/videos)
  */
-const renderValueWithMedia = (valueAsString: string): React.ReactNode => {
+const renderValueWithMedia = (
+  valueAsString: string,
+  hideThumbnail?: boolean,
+): React.ReactNode => {
   const valueType = getValueType(valueAsString);
 
   if (valueType === 'Image') {
@@ -33,12 +38,19 @@ const renderValueWithMedia = (valueAsString: string): React.ReactNode => {
         imageSrc={valueAsString}
         alt={valueAsString}
         id={`${valueAsString}-img`}
+        hideThumbnail={hideThumbnail}
       />
     );
   }
 
   if (valueType === 'Video') {
-    return <VideoTile id={`${valueAsString}-video`} videoSrc={valueAsString} />;
+    return (
+      <VideoTile
+        id={`${valueAsString}-video`}
+        videoSrc={valueAsString}
+        hideThumbnail={hideThumbnail}
+      />
+    );
   }
 
   if (valueType === 'PDF') {
@@ -78,6 +90,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
   memberIndex = 0,
   formName = '',
   comment,
+  hideThumbnail,
 }) => {
   const { t } = useTranslation();
   const hasGroupMembers = member.members && member.members.length > 0;
@@ -110,6 +123,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
               depth={depth + 1}
               memberIndex={nestedIndex}
               formName={formName}
+              hideThumbnail={hideThumbnail}
             />
           ))}
         </div>
@@ -121,7 +135,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
   const { rangeString, isAbnormal } = getObservationDisplayInfo(member);
   const formattedValue = formatObservationValue(member, t);
   const valueToDisplay = formattedValue
-    ? renderValueWithMedia(formattedValue)
+    ? renderValueWithMedia(formattedValue, hideThumbnail)
     : null;
 
   return (
@@ -174,6 +188,7 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
   index,
   formName = '',
   comment,
+  hideThumbnail,
 }) => {
   const { t } = useTranslation();
   const hasGroupMembers = observation.members && observation.members.length > 0;
@@ -183,7 +198,7 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
   const testIdPrefix = formName ? `${formName}-` : '';
   const formattedValue = formatObservationValue(observation, t);
   const valueToDisplay = formattedValue
-    ? renderValueWithMedia(formattedValue)
+    ? renderValueWithMedia(formattedValue, hideThumbnail)
     : null;
 
   return (
@@ -222,6 +237,7 @@ export const ObservationItem: React.FC<ObservationItemProps> = ({
                 depth={0}
                 memberIndex={memberIndex}
                 formName={formName}
+                hideThumbnail={hideThumbnail}
               />
             ))}
           </div>

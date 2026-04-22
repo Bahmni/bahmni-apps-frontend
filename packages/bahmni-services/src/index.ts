@@ -75,6 +75,9 @@ export {
   getAppointmentById,
   getUpcomingAppointments,
   getPastAppointments,
+  getUpcomingAppointmentsPage,
+  getPastAppointmentsPage,
+  type AppointmentPage,
   getAllAppointmentServices,
   deleteAppointmentService,
   APPOINTMENT_STATUSES,
@@ -317,3 +320,9 @@ export {
   type DocumentViewModel,
   type DocumentReference,
 } from './documentReferenceService';
+
+export { uploadDocument } from './documentUploadService';
+export type {
+  DocumentUploadResponse,
+  ProcessedFileData,
+} from './documentUploadService';

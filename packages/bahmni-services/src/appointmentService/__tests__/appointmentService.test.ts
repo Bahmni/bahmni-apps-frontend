@@ -7,6 +7,8 @@ import {
 import {
   getUpcomingAppointments,
   getPastAppointments,
+  getUpcomingAppointmentsPage,
+  getPastAppointmentsPage,
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
   getAppointmentById,
@@ -21,6 +23,8 @@ import {
   updateAppointmentStatusUrl,
   ALL_APPOINTMENT_SERVICES_URL,
   getDeleteAppointmentServiceUrl,
+  getUpcomingAppointmentsPageUrl,
+  getPastAppointmentsPageUrl,
 } from '../constants';
 
 jest.mock('../../api');
@@ -196,5 +200,131 @@ describe('Appointment Service', () => {
     expect(mockedGet).toHaveBeenCalledWith(
       PAST_APPOINTMENTS_URL(patientUUID, 5),
     );
+  });
+
+  describe('getUpcomingAppointmentsPage', () => {
+    it('should fetch page 1 with default count and offset 0', async () => {
+      const mockBundle = setupMockBundle([upcomingAppointment]);
+      (mockBundle as any).total = 42;
+
+      const result = await getUpcomingAppointmentsPage(patientUUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        getUpcomingAppointmentsPageUrl(patientUUID, 10, 0),
+      );
+      expect(result.bundle).toEqual(mockBundle);
+      expect(result.total).toBe(42);
+    });
+
+    it('should calculate correct offset for page 2', async () => {
+      const mockBundle = setupMockBundle([upcomingAppointment]);
+      (mockBundle as any).total = 50;
+
+      await getUpcomingAppointmentsPage(patientUUID, 10, 2);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        getUpcomingAppointmentsPageUrl(patientUUID, 10, 10),
+      );
+    });
+
+    it('should calculate correct offset for page 3', async () => {
+      const mockBundle = setupMockBundle([upcomingAppointment]);
+      (mockBundle as any).total = 100;
+
+      await getUpcomingAppointmentsPage(patientUUID, 10, 3);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        getUpcomingAppointmentsPageUrl(patientUUID, 10, 20),
+      );
+    });
+
+    it('should return total from bundle', async () => {
+      const mockBundle = setupMockBundle([upcomingAppointment]);
+      (mockBundle as any).total = 99;
+
+      const result = await getUpcomingAppointmentsPage(patientUUID, 10, 1);
+
+      expect(result.total).toBe(99);
+    });
+
+    it('should fall back to entry length when bundle total is undefined', async () => {
+      const mockBundle = setupMockBundle([upcomingAppointment]);
+      delete (mockBundle as any).total;
+
+      const result = await getUpcomingAppointmentsPage(patientUUID, 10, 1);
+
+      expect(result.total).toBe(1);
+    });
+
+    it('should propagate API errors', async () => {
+      mockedGet.mockRejectedValue(new Error('API Error'));
+
+      await expect(getUpcomingAppointmentsPage(patientUUID)).rejects.toThrow(
+        'API Error',
+      );
+    });
+  });
+
+  describe('getPastAppointmentsPage', () => {
+    it('should fetch page 1 with default count and offset 0', async () => {
+      const mockBundle = setupMockBundle([pastAppointment]);
+      (mockBundle as any).total = 30;
+
+      const result = await getPastAppointmentsPage(patientUUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        getPastAppointmentsPageUrl(patientUUID, 10, 0),
+      );
+      expect(result.bundle).toEqual(mockBundle);
+      expect(result.total).toBe(30);
+    });
+
+    it('should calculate correct offset for page 2', async () => {
+      const mockBundle = setupMockBundle([pastAppointment]);
+      (mockBundle as any).total = 50;
+
+      await getPastAppointmentsPage(patientUUID, 10, 2);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        getPastAppointmentsPageUrl(patientUUID, 10, 10),
+      );
+    });
+
+    it('should calculate correct offset for page 3', async () => {
+      const mockBundle = setupMockBundle([pastAppointment]);
+      (mockBundle as any).total = 100;
+
+      await getPastAppointmentsPage(patientUUID, 10, 3);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        getPastAppointmentsPageUrl(patientUUID, 10, 20),
+      );
+    });
+
+    it('should return total from bundle', async () => {
+      const mockBundle = setupMockBundle([pastAppointment]);
+      (mockBundle as any).total = 77;
+
+      const result = await getPastAppointmentsPage(patientUUID, 10, 1);
+
+      expect(result.total).toBe(77);
+    });
+
+    it('should fall back to entry length when bundle total is undefined', async () => {
+      const mockBundle = setupMockBundle([pastAppointment]);
+      delete (mockBundle as any).total;
+
+      const result = await getPastAppointmentsPage(patientUUID, 10, 1);
+
+      expect(result.total).toBe(1);
+    });
+
+    it('should propagate API errors', async () => {
+      mockedGet.mockRejectedValue(new Error('API Error'));
+
+      await expect(getPastAppointmentsPage(patientUUID)).rejects.toThrow(
+        'API Error',
+      );
+    });
   });
 });

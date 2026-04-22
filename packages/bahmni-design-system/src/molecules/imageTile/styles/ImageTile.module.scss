@@ -32,6 +32,16 @@
   }
 }
 
+.hideThumbnail {
+  background-color: $background-brand;
+  color: $background;
+  padding: $spacing-02;
+}
+
+.imageIcon {
+  fill: $background;
+}
+
 .thumbnailImage {
   width: 100%;
   height: 100%;

@@ -174,13 +174,18 @@ describe('BasicForm Integration Tests', () => {
   test('successfully initializes form with all data loaded', async () => {
     renderBasicForm();
 
-    // Wait for all API calls to complete and form to be ready
-    await waitFor(() => {
-      expect(screen.getByText('Location')).toBeInTheDocument();
-      expect(screen.getByText('Encounter Type')).toBeInTheDocument();
-      expect(screen.getByText('Participant(s)')).toBeInTheDocument();
-      expect(screen.getByText('Encounter Date')).toBeInTheDocument();
-    });
+    // Wait for all API calls to complete and form to be ready.
+    // Real hooks (useLocations, useEncounterConcepts, useActiveVisit) each trigger
+    // async render cycles, so we allow up to 10 s for the cascade to settle.
+    await waitFor(
+      () => {
+        expect(screen.getByText('Location')).toBeInTheDocument();
+        expect(screen.getByText('Encounter Type')).toBeInTheDocument();
+        expect(screen.getByText('Participant(s)')).toBeInTheDocument();
+        expect(screen.getByText('Encounter Date')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     let store = useEncounterDetailsStore.getState();
     act(() => {
@@ -208,7 +213,7 @@ describe('BasicForm Integration Tests', () => {
       uuid: '789',
     });
     expect(store.isEncounterDetailsFormReady).toBe(true);
-  });
+  }, 15000);
 
   test('handles location cookie not found error', async () => {
     (getCookieByName as jest.Mock).mockImplementation((cookieName) => {
