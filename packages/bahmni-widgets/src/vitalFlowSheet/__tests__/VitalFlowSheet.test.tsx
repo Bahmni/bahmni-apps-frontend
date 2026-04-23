@@ -95,7 +95,6 @@ describe('VitalFlowSheet Empty State', () => {
   });
 
   it('should show empty state when tabularData has empty observation data', () => {
-    // Arrange
     mockUseVitalFlowSheet.mockReturnValue({
       data: {
         tabularData: {
@@ -118,10 +117,8 @@ describe('VitalFlowSheet Empty State', () => {
       refetch: jest.fn(),
     });
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
-    // Assert
     expect(screen.getByTestId('empty-state')).toBeInTheDocument();
     expect(
       screen.getByText('No vital signs data available'),
@@ -130,7 +127,6 @@ describe('VitalFlowSheet Empty State', () => {
   });
 
   it('should show empty state when conceptDetails is empty', () => {
-    // Arrange
     mockUseVitalFlowSheet.mockReturnValue({
       data: {
         tabularData: {
@@ -145,10 +141,8 @@ describe('VitalFlowSheet Empty State', () => {
       refetch: jest.fn(),
     });
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
-    // Assert
     expect(screen.getByTestId('empty-state')).toBeInTheDocument();
     expect(
       screen.getByText('No vital signs data available'),
@@ -157,7 +151,6 @@ describe('VitalFlowSheet Empty State', () => {
   });
 
   it('should show data table when valid data is present', () => {
-    // Arrange
     mockUseVitalFlowSheet.mockReturnValue({
       data: {
         tabularData: {
@@ -190,10 +183,8 @@ describe('VitalFlowSheet Empty State', () => {
       refetch: jest.fn(),
     });
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
-    // Assert
     expect(screen.getByTestId('data-table')).toBeInTheDocument();
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
     expect(screen.getByText('2 headers')).toBeInTheDocument(); // Vital Sign + 1 observation time
@@ -201,7 +192,6 @@ describe('VitalFlowSheet Empty State', () => {
   });
 
   it('should show loading state when loading is true', () => {
-    // Arrange
     mockUseVitalFlowSheet.mockReturnValue({
       data: null,
       loading: true,
@@ -209,10 +199,8 @@ describe('VitalFlowSheet Empty State', () => {
       refetch: jest.fn(),
     });
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
-    // Assert - The SortableDataTable should show loading state
     expect(screen.getByTestId('loading-state')).toBeInTheDocument();
     expect(screen.getByText('Loading...')).toBeInTheDocument();
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
@@ -220,7 +208,6 @@ describe('VitalFlowSheet Empty State', () => {
   });
 
   it('should show error state when error is present', () => {
-    // Arrange
     const mockError = new Error('Failed to fetch vital signs');
     mockUseVitalFlowSheet.mockReturnValue({
       data: null,
@@ -229,10 +216,8 @@ describe('VitalFlowSheet Empty State', () => {
       refetch: jest.fn(),
     });
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
-    // Assert - The SortableDataTable should show error state
     expect(screen.getByTestId('error-state')).toBeInTheDocument();
     expect(screen.getByText('Failed to fetch vital signs')).toBeInTheDocument();
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
@@ -362,7 +347,6 @@ describe('VitalFlowSheet Auto-Refresh', () => {
   });
 
   it('should call useSubscribeConsultationSaved with correct dependencies', () => {
-    // Arrange
     const mockRefetch = jest.fn();
     mockUseVitalFlowSheet.mockReturnValue({
       data: {
@@ -387,15 +371,12 @@ describe('VitalFlowSheet Auto-Refresh', () => {
       refetch: mockRefetch,
     });
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
-    // Assert
     expect(mockUseSubscribeConsultationSaved).toHaveBeenCalled();
   });
 
   it('should refetch when consultation is saved with matching patient UUID and observations updated', () => {
-    // Arrange
     const mockRefetch = jest.fn();
     let capturedCallback: ((payload: any) => void) | null = null;
 
@@ -430,7 +411,6 @@ describe('VitalFlowSheet Auto-Refresh', () => {
 
     mockUsePatientUUID.mockReturnValue('test-patient-uuid');
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
     // Simulate consultation saved event with matching patient and observations
@@ -444,12 +424,10 @@ describe('VitalFlowSheet Auto-Refresh', () => {
       });
     }
 
-    // Assert
     expect(mockRefetch).toHaveBeenCalled();
   });
 
   it('should not refetch when consultation is saved but patient UUID does not match', () => {
-    // Arrange
     const mockRefetch = jest.fn();
     let capturedCallback: ((payload: any) => void) | null = null;
 
@@ -484,7 +462,6 @@ describe('VitalFlowSheet Auto-Refresh', () => {
 
     mockUsePatientUUID.mockReturnValue('test-patient-uuid');
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
     // Simulate consultation saved event with different patient UUID
@@ -495,12 +472,10 @@ describe('VitalFlowSheet Auto-Refresh', () => {
       });
     }
 
-    // Assert
     expect(mockRefetch).not.toHaveBeenCalled();
   });
 
   it('should not refetch when consultation is saved but observations were not updated', () => {
-    // Arrange
     const mockRefetch = jest.fn();
     let capturedCallback: ((payload: any) => void) | null = null;
 
@@ -535,7 +510,6 @@ describe('VitalFlowSheet Auto-Refresh', () => {
 
     mockUsePatientUUID.mockReturnValue('test-patient-uuid');
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
     // Simulate consultation saved event with matching patient but no observation updates
@@ -548,7 +522,6 @@ describe('VitalFlowSheet Auto-Refresh', () => {
       });
     }
 
-    // Assert
     expect(mockRefetch).not.toHaveBeenCalled();
   });
 });
@@ -574,7 +547,6 @@ describe('VitalFlowSheet Auto-Refresh with Real Events', () => {
   });
 
   it('should refetch when real consultation saved event is dispatched with matching patient and observations', () => {
-    // Arrange
     const mockRefetch = jest.fn();
     mockUseVitalFlowSheet.mockReturnValue({
       data: {
@@ -611,7 +583,6 @@ describe('VitalFlowSheet Auto-Refresh with Real Events', () => {
       return () => window.removeEventListener('consultation:saved', handler);
     });
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
     const updatedConcepts = new Map<string, string>();
@@ -631,12 +602,10 @@ describe('VitalFlowSheet Auto-Refresh with Real Events', () => {
     // Run all timers to process the setTimeout in dispatchConsultationSaved
     jest.runAllTimers();
 
-    // Assert - refetch should be called via real event system
     expect(mockRefetch).toHaveBeenCalled();
   });
 
   it('should not refetch when real event is dispatched with different patient UUID', () => {
-    // Arrange
     const mockRefetch = jest.fn();
     mockUseVitalFlowSheet.mockReturnValue({
       data: {
@@ -673,7 +642,6 @@ describe('VitalFlowSheet Auto-Refresh with Real Events', () => {
       return () => window.removeEventListener('consultation:saved', handler);
     });
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
     // Dispatch real event with different patient UUID
@@ -692,12 +660,10 @@ describe('VitalFlowSheet Auto-Refresh with Real Events', () => {
     // Run all timers to process the setTimeout in dispatchConsultationSaved
     jest.runAllTimers();
 
-    // Assert - refetch should NOT be called because patient UUID doesn't match
     expect(mockRefetch).not.toHaveBeenCalled();
   });
 
   it('should not refetch when real event is dispatched without observations update', () => {
-    // Arrange
     const mockRefetch = jest.fn();
     mockUseVitalFlowSheet.mockReturnValue({
       data: {
@@ -734,7 +700,6 @@ describe('VitalFlowSheet Auto-Refresh with Real Events', () => {
       return () => window.removeEventListener('consultation:saved', handler);
     });
 
-    // Act
     render(<VitalFlowSheet {...defaultProps} />);
 
     // Dispatch real event with matching patient but no observations update
@@ -753,7 +718,6 @@ describe('VitalFlowSheet Auto-Refresh with Real Events', () => {
     // Run all timers to process the setTimeout in dispatchConsultationSaved
     jest.runAllTimers();
 
-    // Assert - refetch should NOT be called because no concepts were updated
     expect(mockRefetch).not.toHaveBeenCalled();
   });
 

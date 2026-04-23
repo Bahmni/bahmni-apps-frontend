@@ -88,10 +88,8 @@ describe('vitalFlowSheetService', () => {
   describe('Happy path tests - getVitalFlowSheetData', () => {
     // Happy Path Tests
     it('should fetch vital flow sheet data successfully with default groupBy', async () => {
-      // Arrange
       (get as jest.Mock).mockResolvedValue(mockVitalFlowSheetData);
 
-      // Act
       const result = await getVitalFlowSheetData(
         mockPatientUuid,
         mockLatestCount,
@@ -99,18 +97,15 @@ describe('vitalFlowSheetService', () => {
         mockGroupBy,
       );
 
-      // Assert
       const expectedUrl = `${VITAL_FLOW_SHEET_URL}groupBy=obstime&latestCount=5&patientUuid=patient-uuid-123&obsConcepts=Temperature&obsConcepts=Blood+Pressure&obsConcepts=Heart+Rate`;
       expect(get).toHaveBeenCalledWith(expectedUrl);
       expect(result).toEqual(mockVitalFlowSheetData);
     });
 
     it('should fetch vital flow sheet data successfully with custom groupBy', async () => {
-      // Arrange
       const customGroupBy = 'encounter';
       (get as jest.Mock).mockResolvedValue(mockVitalFlowSheetData);
 
-      // Act
       const result = await getVitalFlowSheetData(
         mockPatientUuid,
         mockLatestCount,
@@ -118,14 +113,12 @@ describe('vitalFlowSheetService', () => {
         customGroupBy,
       );
 
-      // Assert
       const expectedUrl = `${VITAL_FLOW_SHEET_URL}groupBy=encounter&latestCount=5&patientUuid=patient-uuid-123&obsConcepts=Temperature&obsConcepts=Blood+Pressure&obsConcepts=Heart+Rate`;
       expect(get).toHaveBeenCalledWith(expectedUrl);
       expect(result).toEqual(mockVitalFlowSheetData);
     });
 
     it('should handle single observation concept', async () => {
-      // Arrange
       const singleConcept = ['Temperature'];
       const singleConceptData: VitalFlowSheetData = {
         tabularData: {
@@ -137,7 +130,6 @@ describe('vitalFlowSheetService', () => {
       };
       (get as jest.Mock).mockResolvedValue(singleConceptData);
 
-      // Act
       const result = await getVitalFlowSheetData(
         mockPatientUuid,
         mockLatestCount,
@@ -145,7 +137,6 @@ describe('vitalFlowSheetService', () => {
         mockGroupBy,
       );
 
-      // Assert
       const expectedUrl = `${VITAL_FLOW_SHEET_URL}groupBy=obstime&latestCount=5&patientUuid=patient-uuid-123&obsConcepts=Temperature`;
       expect(get).toHaveBeenCalledWith(expectedUrl);
       expect(result).toEqual(singleConceptData);
@@ -153,14 +144,12 @@ describe('vitalFlowSheetService', () => {
   });
 
   it('should return empty data when API returns empty response', async () => {
-    // Arrange
     const emptyData: VitalFlowSheetData = {
       tabularData: {},
       conceptDetails: [],
     };
     (get as jest.Mock).mockResolvedValue(emptyData);
 
-    // Act
     const result = await getVitalFlowSheetData(
       mockPatientUuid,
       mockLatestCount,
@@ -168,17 +157,14 @@ describe('vitalFlowSheetService', () => {
       mockGroupBy,
     );
 
-    // Assert
     expect(result).toEqual(emptyData);
   });
 
   // Sad Path Tests
   it('should throw error when API call fails', async () => {
-    // Arrange
     const mockError = new Error('Network Error');
     (get as jest.Mock).mockRejectedValue(mockError);
 
-    // Act & Assert
     await expect(
       getVitalFlowSheetData(
         mockPatientUuid,
@@ -191,11 +177,9 @@ describe('vitalFlowSheetService', () => {
   });
 
   it('should throw error when API returns 404', async () => {
-    // Arrange
     const notFoundError = new Error('Patient not found');
     (get as jest.Mock).mockRejectedValue(notFoundError);
 
-    // Act & Assert
     await expect(
       getVitalFlowSheetData(
         mockPatientUuid,
@@ -207,11 +191,9 @@ describe('vitalFlowSheetService', () => {
   });
 
   it('should throw error when API returns 500', async () => {
-    // Arrange
     const serverError = new Error('Internal Server Error');
     (get as jest.Mock).mockRejectedValue(serverError);
 
-    // Act & Assert
     await expect(
       getVitalFlowSheetData(
         mockPatientUuid,
@@ -223,11 +205,9 @@ describe('vitalFlowSheetService', () => {
   });
 
   it('should throw error when API returns malformed data', async () => {
-    // Arrange
     const malformedError = new Error('Invalid JSON response');
     (get as jest.Mock).mockRejectedValue(malformedError);
 
-    // Act & Assert
     await expect(
       getVitalFlowSheetData(
         mockPatientUuid,
@@ -240,12 +220,10 @@ describe('vitalFlowSheetService', () => {
 
   // Edge Cases
   it('should handle very long concept names', async () => {
-    // Arrange
     const longConceptName = 'A'.repeat(1000);
     const longConcepts = [longConceptName];
     (get as jest.Mock).mockResolvedValue(mockVitalFlowSheetData);
 
-    // Act
     const result = await getVitalFlowSheetData(
       mockPatientUuid,
       mockLatestCount,
@@ -253,18 +231,15 @@ describe('vitalFlowSheetService', () => {
       mockGroupBy,
     );
 
-    // Assert
     const expectedUrl = `${VITAL_FLOW_SHEET_URL}groupBy=obstime&latestCount=5&patientUuid=patient-uuid-123&obsConcepts=${longConceptName}`;
     expect(get).toHaveBeenCalledWith(expectedUrl);
     expect(result).toEqual(mockVitalFlowSheetData);
   });
 
   it('should handle API timeout error', async () => {
-    // Arrange
     const timeoutError = new Error('Request timeout');
     (get as jest.Mock).mockRejectedValue(timeoutError);
 
-    // Act & Assert
     await expect(
       getVitalFlowSheetData(
         mockPatientUuid,
@@ -276,10 +251,8 @@ describe('vitalFlowSheetService', () => {
   });
 
   it('should handle API returning null', async () => {
-    // Arrange
     (get as jest.Mock).mockResolvedValue(null);
 
-    // Act
     const result = await getVitalFlowSheetData(
       mockPatientUuid,
       mockLatestCount,
@@ -287,7 +260,6 @@ describe('vitalFlowSheetService', () => {
       mockGroupBy,
     );
 
-    // Assert
     expect(result).toBeNull();
   });
 });

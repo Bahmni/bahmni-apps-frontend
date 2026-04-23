@@ -87,7 +87,7 @@ const PatientRegisterSection: React.FC<PatientRegisterSectionProps> = ({
   return (
     <div className={styles.formContainer}>
       <div className={styles.accordionWrapper}>
-        <Accordion>
+        <Accordion align="start">
           <AccordionItem
             title={section.translationKey ? t(section.translationKey) : ''}
             open={isExpanded}

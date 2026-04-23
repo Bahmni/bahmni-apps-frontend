@@ -6,6 +6,7 @@ import {
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { useNotification } from '../../notification';
 import AllergiesTable from '../AllergiesTable';
 
@@ -13,9 +14,6 @@ jest.mock('../../notification');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedAllergies: jest.fn(),
-}));
-jest.mock('../../hooks/usePatientUUID', () => ({
-  usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
 
 const mockAddNotification = jest.fn();
@@ -110,9 +108,18 @@ describe('AllergiesTable Integration', () => {
   });
 
   const wrapper = (
-    <QueryClientProvider client={queryClient}>
-      <AllergiesTable />
-    </QueryClientProvider>
+    <MemoryRouter initialEntries={['/patient/test-patient-uuid']}>
+      <Routes>
+        <Route
+          path="/patient/:patientUuid"
+          element={
+            <QueryClientProvider client={queryClient}>
+              <AllergiesTable />
+            </QueryClientProvider>
+          }
+        />
+      </Routes>
+    </MemoryRouter>
   );
 
   it('displays patient allergies with all critical information for clinical review', async () => {

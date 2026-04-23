@@ -1,8 +1,10 @@
 import * as bahmniServices from '@bahmni/services';
 import { useHasPrivilege } from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Coding } from 'fhir/r4';
+import React from 'react';
 import i18n from '../../../../../setupTests.i18n';
 import { useClinicalConfig } from '../../../../providers/clinicalConfig';
 import { useAllergyStore } from '../../../../stores/allergyStore';
@@ -30,25 +32,16 @@ jest.mock('@bahmni/widgets', () => ({
   useHasPrivilege: jest.fn(() => true),
 }));
 
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: jest.fn(() => ({
-    data: [],
-    isLoading: false,
-    error: null,
-  })),
-}));
-
-jest.mock('../../../../utils/allergy', () => ({
-  getCategoryDisplayName: jest.fn((type: string) => {
-    const categories: Record<string, string> = {
-      medication: 'ALLERGY_CATEGORY_DRUG',
-      food: 'ALLERGY_CATEGORY_FOOD',
-      environment: 'ALLERGY_CATEGORY_ENVIRONMENT',
-      other: 'ALLERGY_CATEGORY_OTHER',
-    };
-    return categories[type] || 'ALLERGY_CATEGORY_OTHER';
-  }),
-}));
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+  Wrapper.displayName = 'QueryClientWrapper';
+  return Wrapper;
+};
 
 const mockUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
   typeof useClinicalConfig
@@ -67,14 +60,6 @@ const mockClinicalConfig = {
     },
   },
 };
-
-jest.mock('../styles/AllergiesForm.module.scss', () => ({
-  allergiesFormTile: 'allergiesFormTile',
-  allergiesFormTitle: 'allergiesFormTitle',
-  allergiesBox: 'allergiesBox',
-  selectedAllergyItem: 'selectedAllergyItem',
-  duplicateNotification: 'duplicateNotification',
-}));
 
 const mockReactionConcepts: Coding[] = [
   {
@@ -133,7 +118,7 @@ describe('AllergiesForm Integration Tests', () => {
   });
 
   test('loads and displays allergens from API', async () => {
-    render(<AllergiesForm />);
+    render(<AllergiesForm />, { wrapper: createWrapper() });
 
     const searchBox = screen.getByRole('combobox', {
       name: /search for allergies/i,
@@ -147,7 +132,7 @@ describe('AllergiesForm Integration Tests', () => {
   });
 
   test('adds allergy to store when selected', async () => {
-    render(<AllergiesForm />);
+    render(<AllergiesForm />, { wrapper: createWrapper() });
 
     const searchBox = screen.getByRole('combobox', {
       name: /search for allergies/i,
@@ -172,7 +157,9 @@ describe('AllergiesForm Integration Tests', () => {
   test('does not render and makes no API calls when user lacks Add Allergies privilege', () => {
     jest.mocked(useHasPrivilege).mockReturnValue(false);
 
-    const { container } = render(<AllergiesForm />);
+    const { container } = render(<AllergiesForm />, {
+      wrapper: createWrapper(),
+    });
 
     expect(container).toBeEmptyDOMElement();
     expect(bahmniServices.getFormattedAllergies).not.toHaveBeenCalled();
@@ -183,7 +170,7 @@ describe('AllergiesForm Integration Tests', () => {
       bahmniServices.fetchAndFormatAllergenConcepts as jest.Mock
     ).mockRejectedValue(new Error('API Error'));
 
-    render(<AllergiesForm />);
+    render(<AllergiesForm />, { wrapper: createWrapper() });
 
     const searchBox = screen.getByRole('combobox', {
       name: /search for allergies/i,

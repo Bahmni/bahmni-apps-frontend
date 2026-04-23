@@ -267,22 +267,8 @@ describe('Header', () => {
   });
 
   describe('Props and Data Flow', () => {
-    it('handles null activeSideNavItemId', () => {
-      render(<Header {...defaultProps} activeSideNavItemId={null} />);
-
-      expect(screen.getByTestId('sidenav-item-dashboard')).not.toHaveAttribute(
-        'aria-current',
-      );
-      expect(screen.getByTestId('sidenav-item-patients')).not.toHaveAttribute(
-        'aria-current',
-      );
-    });
-
-    it('handles undefined activeSideNavItemId', () => {
-      const propsWithUndefinedActive = { ...defaultProps };
-      delete propsWithUndefinedActive.activeSideNavItemId;
-
-      render(<Header {...propsWithUndefinedActive} />);
+    it.each([null, undefined])('handles %s activeSideNavItemId', (value) => {
+      render(<Header {...defaultProps} activeSideNavItemId={value} />);
 
       expect(screen.getByTestId('sidenav-item-dashboard')).not.toHaveAttribute(
         'aria-current',

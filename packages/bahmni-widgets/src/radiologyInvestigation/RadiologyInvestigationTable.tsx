@@ -37,6 +37,7 @@ import {
   updateInvestigationsWithReportInfo,
 } from '../utils/Investigations';
 import { RadiologyInvestigationViewModel } from './models';
+import { QualityAssessment } from './QualityAssessment';
 import styles from './styles/RadiologyInvestigationTable.module.scss';
 import {
   createRadiologyInvestigationViewModels,
@@ -47,6 +48,11 @@ import {
 
 export const radiologyInvestigationQueryKeys = (patientUUID: string) =>
   ['radiologyInvestigation', patientUUID] as const;
+
+enum ModalType {
+  REPORT = 'report',
+  QA = 'qa',
+}
 
 const fetchRadiologyInvestigations = async (
   patientUUID: string,
@@ -83,6 +89,8 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
   );
   const [selectedInvestigation, setSelectedInvestigation] =
     useState<RadiologyInvestigationViewModel | null>(null);
+  const [modalType, setModalType] = useState<ModalType | null>(null);
+  const [qaRecordedDate, setQaRecordedDate] = useState<string | undefined>();
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -248,8 +256,12 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     );
     const hasViewImagesLink = availableStudies.length > 0 && pacsViewerUrl;
     const hasViewReportLink = !!investigation.reportId;
+    const hasImagingStudyId =
+      investigation.imagingStudies &&
+      investigation.imagingStudies.length > 0 &&
+      investigation.imagingStudies[0]?.id;
 
-    if (hasViewImagesLink || hasViewReportLink) {
+    if (hasViewImagesLink || hasViewReportLink || hasImagingStudyId) {
       return (
         <div
           id={`${investigation.id}-results`}
@@ -280,9 +292,24 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
             <Link
               id={`${investigation.id}-view-report-link`}
               testId={`${investigation.id}-view-report-link-test-id`}
-              onClick={() => setSelectedInvestigation(investigation)}
+              onClick={() => {
+                setSelectedInvestigation(investigation);
+                setModalType(ModalType.REPORT);
+              }}
             >
               {t('RADIOLOGY_VIEW_REPORT')}
+            </Link>
+          )}
+          {hasImagingStudyId && hasViewReportLink && (
+            <Link
+              id={`${investigation.id}-view-qa-link`}
+              testId={`${investigation.id}-view-qa-link-test-id`}
+              onClick={() => {
+                setSelectedInvestigation(investigation);
+                setModalType(ModalType.QA);
+              }}
+            >
+              {t('RADIOLOGY_VIEW_QA')}
             </Link>
           )}
         </div>
@@ -389,9 +416,14 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     );
   }
 
-  const reportedOn =
+  const reportedOnDate =
     selectedInvestigation?.reportedDate &&
     formatDateTime(selectedInvestigation.reportedDate, t, true).formattedResult;
+
+  const qaRecordedOnDate =
+    qaRecordedDate && formatDateTime(qaRecordedDate, t, true).formattedResult;
+
+  const reportedBy = selectedInvestigation?.reportedBy;
 
   return (
     <div
@@ -440,12 +472,15 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
         })}
       </Accordion>
 
-      {selectedInvestigation && (
+      {selectedInvestigation && modalType === ModalType.REPORT && (
         <Modal
           open={!!selectedInvestigation}
-          onRequestClose={() => setSelectedInvestigation(null)}
+          onRequestClose={() => {
+            setSelectedInvestigation(null);
+            setModalType(null);
+          }}
           passiveModal
-          modalLabel={`Recorded On : ${reportedOn}  | Recorded By: ${selectedInvestigation.reportedBy}`}
+          modalLabel={`${t('RECORDED_ON')} : ${reportedOnDate}  | ${t('RECORDED_BY')}: ${reportedBy}`}
           modalHeading={selectedInvestigation.testName}
           testId="diagnostic-report-modal"
           size="lg"
@@ -455,6 +490,35 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
           <Modal.Body>
             <RadiologyInvestigationReport
               reportId={selectedInvestigation.reportId!}
+            />
+          </Modal.Body>
+        </Modal>
+      )}
+
+      {selectedInvestigation && modalType === ModalType.QA && (
+        <Modal
+          open={!!selectedInvestigation}
+          onRequestClose={() => {
+            setSelectedInvestigation(null);
+            setModalType(null);
+            setQaRecordedDate(undefined);
+          }}
+          passiveModal
+          modalLabel={
+            qaRecordedDate
+              ? `${t('RECORDED_ON')} : ${qaRecordedOnDate} | ${t('RECORDED_BY')}: ${reportedBy}`
+              : `${t('RECORDED_BY')}: ${reportedBy}`
+          }
+          modalHeading={t('RADIOLOGY_QUALITY_ASSESSMENT')}
+          testId="quality-assessment-modal"
+          size="lg"
+          id="modalIdForActionAreaLayout"
+          portalId={'main-display-area'}
+        >
+          <Modal.Body>
+            <QualityAssessment
+              imagingStudyId={selectedInvestigation.imagingStudies![0].id}
+              onDateLoaded={setQaRecordedDate}
             />
           </Modal.Body>
         </Modal>

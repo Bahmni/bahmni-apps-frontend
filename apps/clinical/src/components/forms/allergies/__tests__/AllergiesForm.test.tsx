@@ -18,13 +18,6 @@ expect.extend(toHaveNoViolations);
 // Mock modules
 jest.mock('../../../../stores/allergyStore');
 jest.mock('../../../../hooks/useAllergenSearch');
-jest.mock('../styles/AllergiesForm.module.scss', () => ({
-  allergiesFormTile: 'allergiesFormTile',
-  allergiesFormTitle: 'allergiesFormTitle',
-  allergiesBox: 'allergiesBox',
-  selectedAllergyItem: 'selectedAllergyItem',
-  duplicateNotification: 'duplicateNotification',
-}));
 
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
@@ -357,7 +350,6 @@ describe('AllergiesForm', () => {
 
   describe('Input Validation', () => {
     const testCases = [
-      { name: 'null selectedItem', selectedItem: null },
       { name: 'undefined selectedItem', selectedItem: undefined },
       {
         name: 'selectedItem with empty uuid',

@@ -1,11 +1,16 @@
 import { get, post } from '../../api';
 import { mockEnrollments, patientUUID } from '../__mocks__/mocks';
-import { PROGRAM_DETAILS_URL, PATIENT_PROGRAMS_URL } from '../constants';
+import {
+  PROGRAM_DETAILS_URL,
+  PATIENT_PROGRAMS_URL,
+  PATIENT_PROGRAMS_PAGE_URL,
+} from '../constants';
 import { ProgramEnrollment, PatientProgramsResponse } from '../model';
 import {
   extractAttributes,
   getCurrentStateName,
   getPatientPrograms,
+  getPatientProgramsPage,
   getProgramByUUID,
   updateProgramState,
 } from '../programService';
@@ -199,6 +204,96 @@ describe('programService', () => {
       await expect(
         updateProgramState(programEnrollmentUUID, stateConceptUUID),
       ).rejects.toThrow('Failed to update program state');
+    });
+  });
+
+  describe('getPatientProgramsPage', () => {
+    it('should fetch page 1 with default count', async () => {
+      const mockResponse: PatientProgramsResponse = {
+        results: mockEnrollments.slice(0, 1),
+        totalCount: 10,
+      };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getPatientProgramsPage(patientUUID);
+
+      expect(get).toHaveBeenCalledWith(
+        PATIENT_PROGRAMS_PAGE_URL(patientUUID, 15, 0),
+      );
+      expect(result.programs).toEqual(mockEnrollments.slice(0, 1));
+      expect(result.total).toBe(10);
+    });
+
+    it('should calculate correct startIndex for page 2', async () => {
+      const mockResponse: PatientProgramsResponse = {
+        results: [],
+        totalCount: 20,
+      };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      await getPatientProgramsPage(patientUUID, 5, 2);
+
+      expect(get).toHaveBeenCalledWith(
+        PATIENT_PROGRAMS_PAGE_URL(patientUUID, 5, 5),
+      );
+    });
+
+    it('should calculate correct startIndex for page 3 with count 10', async () => {
+      const mockResponse: PatientProgramsResponse = {
+        results: [],
+        totalCount: 30,
+      };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      await getPatientProgramsPage(patientUUID, 10, 3);
+
+      expect(get).toHaveBeenCalledWith(
+        PATIENT_PROGRAMS_PAGE_URL(patientUUID, 10, 20),
+      );
+    });
+
+    it('should return totalCount from response when available', async () => {
+      const mockResponse: PatientProgramsResponse = {
+        results: mockEnrollments.slice(0, 2),
+        totalCount: 42,
+      };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getPatientProgramsPage(patientUUID, 15, 1);
+
+      expect(result.total).toBe(42);
+    });
+
+    it('should return undefined total when totalCount is absent', async () => {
+      const mockResponse: PatientProgramsResponse = {
+        results: mockEnrollments.slice(0, 2),
+      };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getPatientProgramsPage(patientUUID, 15, 1);
+
+      expect(result.total).toBeUndefined();
+    });
+
+    it('should return empty programs when no enrollments exist', async () => {
+      const mockResponse: PatientProgramsResponse = {
+        results: [],
+        totalCount: 0,
+      };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getPatientProgramsPage(patientUUID);
+
+      expect(result.programs).toEqual([]);
+      expect(result.total).toBe(0);
+    });
+
+    it('should propagate API errors', async () => {
+      (get as jest.Mock).mockRejectedValue(new Error('Network error'));
+
+      await expect(getPatientProgramsPage(patientUUID)).rejects.toThrow(
+        'Network error',
+      );
     });
   });
 });

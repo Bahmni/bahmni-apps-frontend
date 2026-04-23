@@ -1,5 +1,5 @@
 import {
-  getPatientDiagnoses,
+  getDiagnosesPage,
   getFormattedError,
   useTranslation,
   useSubscribeConsultationSaved,
@@ -7,13 +7,14 @@ import {
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
 import DiagnosesTable from '../DiagnosesTable';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  getPatientDiagnoses: jest.fn(),
+  getDiagnosesPage: jest.fn(),
   getFormattedError: jest.fn(),
   useTranslation: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
@@ -22,8 +23,8 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('../../hooks/usePatientUUID');
 jest.mock('../../notification');
 
-const mockGetPatientDiagnoses = getPatientDiagnoses as jest.MockedFunction<
-  typeof getPatientDiagnoses
+const mockGetDiagnosesPage = getDiagnosesPage as jest.MockedFunction<
+  typeof getDiagnosesPage
 >;
 const mockGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
@@ -41,6 +42,11 @@ const mockuseSubscribeConsultationSaved =
 const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
 >;
+
+const wrapPage = (diagnoses: Diagnosis[], total?: number) => ({
+  diagnoses,
+  total: total ?? diagnoses.length,
+});
 
 const mockDiagnoses: Diagnosis[] = [
   {
@@ -122,7 +128,7 @@ describe('DiagnosesTable Integration', () => {
   });
 
   it('renders diagnoses from service through complete data flow', async () => {
-    mockGetPatientDiagnoses.mockResolvedValue(mockDiagnoses);
+    mockGetDiagnosesPage.mockResolvedValue(wrapPage(mockDiagnoses));
 
     renderWithQueryClient(<DiagnosesTable />);
 
@@ -135,12 +141,12 @@ describe('DiagnosesTable Integration', () => {
       expect(screen.getByText('Provisional')).toBeInTheDocument();
     });
 
-    expect(mockGetPatientDiagnoses).toHaveBeenCalledWith('patient-123');
+    expect(mockGetDiagnosesPage).toHaveBeenCalledWith('patient-123', 5, 1);
   });
 
   it('propagates service errors through hook to component UI', async () => {
     const serviceError = new Error('Network timeout');
-    mockGetPatientDiagnoses.mockRejectedValue(serviceError);
+    mockGetDiagnosesPage.mockRejectedValue(serviceError);
 
     renderWithQueryClient(<DiagnosesTable />);
 
@@ -157,7 +163,7 @@ describe('DiagnosesTable Integration', () => {
   });
 
   it('handles empty service response through complete flow', async () => {
-    mockGetPatientDiagnoses.mockResolvedValue([]);
+    mockGetDiagnosesPage.mockResolvedValue(wrapPage([]));
 
     renderWithQueryClient(<DiagnosesTable />);
 
@@ -176,28 +182,34 @@ describe('DiagnosesTable Integration', () => {
       expect(screen.getByTestId('diagnoses-table-empty')).toBeInTheDocument();
     });
 
-    expect(mockGetPatientDiagnoses).not.toHaveBeenCalled();
+    expect(mockGetDiagnosesPage).not.toHaveBeenCalled();
   });
 
   it('shows loading state during service call', async () => {
-    let resolvePromise: (value: Diagnosis[]) => void;
-    const servicePromise = new Promise<Diagnosis[]>((resolve) => {
+    let resolvePromise: (value: {
+      diagnoses: Diagnosis[];
+      total: number;
+    }) => void;
+    const servicePromise = new Promise<{
+      diagnoses: Diagnosis[];
+      total: number;
+    }>((resolve) => {
       resolvePromise = resolve;
     });
-    mockGetPatientDiagnoses.mockReturnValue(servicePromise);
+    mockGetDiagnosesPage.mockReturnValue(servicePromise);
 
     renderWithQueryClient(<DiagnosesTable />);
 
     expect(screen.getByTestId('diagnoses-table-skeleton')).toBeInTheDocument();
 
-    resolvePromise!(mockDiagnoses);
+    resolvePromise!(wrapPage(mockDiagnoses));
     await waitFor(() => {
       expect(screen.getByText('Hypertension')).toBeInTheDocument();
     });
   });
 
   it('registers consultation saved event listener', async () => {
-    mockGetPatientDiagnoses.mockResolvedValue(mockDiagnoses);
+    mockGetDiagnosesPage.mockResolvedValue(wrapPage(mockDiagnoses));
 
     renderWithQueryClient(<DiagnosesTable />);
 
@@ -214,7 +226,7 @@ describe('DiagnosesTable Integration', () => {
       eventCallback = callback;
     });
 
-    mockGetPatientDiagnoses.mockResolvedValue(mockDiagnoses);
+    mockGetDiagnosesPage.mockResolvedValue(wrapPage(mockDiagnoses));
 
     renderWithQueryClient(<DiagnosesTable />);
 
@@ -223,7 +235,7 @@ describe('DiagnosesTable Integration', () => {
     });
 
     // Initially called once
-    expect(mockGetPatientDiagnoses).toHaveBeenCalledTimes(1);
+    expect(mockGetDiagnosesPage).toHaveBeenCalledTimes(1);
 
     // Trigger consultation saved event
     const updatedDiagnoses: Diagnosis[] = [
@@ -240,7 +252,7 @@ describe('DiagnosesTable Integration', () => {
         recorder: 'Dr. Wilson',
       },
     ];
-    mockGetPatientDiagnoses.mockResolvedValue(updatedDiagnoses);
+    mockGetDiagnosesPage.mockResolvedValue(wrapPage(updatedDiagnoses));
 
     eventCallback({
       patientUUID: 'patient-123',
@@ -249,8 +261,171 @@ describe('DiagnosesTable Integration', () => {
 
     // Should refetch and display new diagnosis
     await waitFor(() => {
-      expect(mockGetPatientDiagnoses).toHaveBeenCalledTimes(2);
+      expect(mockGetDiagnosesPage).toHaveBeenCalledTimes(2);
       expect(screen.getByText('Asthma')).toBeInTheDocument();
+    });
+  });
+
+  describe('Pagination', () => {
+    it('calls service with page=1 on initial load', async () => {
+      mockGetDiagnosesPage.mockResolvedValue(wrapPage(mockDiagnoses));
+
+      renderWithQueryClient(<DiagnosesTable />);
+
+      await waitFor(() => {
+        expect(mockGetDiagnosesPage).toHaveBeenCalledWith('patient-123', 5, 1);
+      });
+    });
+
+    it('navigates to page 2 via offset-based fetch', async () => {
+      const user = userEvent.setup();
+      const queryClient = createTestQueryClient();
+
+      const page2Diagnoses: Diagnosis[] = [
+        {
+          id: '3',
+          display: 'Asthma',
+          certainty: {
+            code: 'confirmed',
+            display: 'CERTAINITY_CONFIRMED',
+            system: '',
+          },
+          recordedDate: '2024-02-01T10:30:00+00:00',
+          recorder: 'Dr. Wilson',
+        },
+      ];
+
+      mockGetDiagnosesPage.mockResolvedValueOnce(wrapPage(mockDiagnoses, 4));
+      mockGetDiagnosesPage.mockResolvedValueOnce(wrapPage(page2Diagnoses, 4));
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <DiagnosesTable config={{ pageSize: 2 }} />
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Hypertension')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: /next page/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText('Asthma')).toBeInTheDocument();
+      });
+
+      expect(mockGetDiagnosesPage).toHaveBeenLastCalledWith(
+        'patient-123',
+        2,
+        2,
+      );
+      expect(screen.queryByText('Hypertension')).not.toBeInTheDocument();
+    });
+
+    it('navigates back to page 1 when previous button is clicked', async () => {
+      const user = userEvent.setup();
+      const queryClient = createTestQueryClient();
+
+      const page2Diagnoses: Diagnosis[] = [
+        {
+          id: '3',
+          display: 'Asthma',
+          certainty: {
+            code: 'confirmed',
+            display: 'CERTAINITY_CONFIRMED',
+            system: '',
+          },
+          recordedDate: '2024-02-01T10:30:00+00:00',
+          recorder: 'Dr. Wilson',
+        },
+      ];
+
+      mockGetDiagnosesPage.mockResolvedValueOnce(wrapPage(mockDiagnoses, 4));
+      mockGetDiagnosesPage.mockResolvedValueOnce(wrapPage(page2Diagnoses, 4));
+      mockGetDiagnosesPage.mockResolvedValueOnce(wrapPage(mockDiagnoses, 4));
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <DiagnosesTable config={{ pageSize: 2 }} />
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Hypertension')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: /next page/i }));
+      await waitFor(() => {
+        expect(screen.getByText('Asthma')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: /previous page/i }));
+      await waitFor(() => {
+        expect(screen.getByText('Hypertension')).toBeInTheDocument();
+      });
+
+      expect(mockGetDiagnosesPage).toHaveBeenLastCalledWith(
+        'patient-123',
+        2,
+        1,
+      );
+    });
+
+    it('re-fetches from page 1 when page size is changed', async () => {
+      const user = userEvent.setup();
+      const queryClient = createTestQueryClient();
+
+      mockGetDiagnosesPage.mockResolvedValueOnce(wrapPage(mockDiagnoses, 4));
+      mockGetDiagnosesPage.mockResolvedValueOnce(wrapPage(mockDiagnoses, 4));
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <DiagnosesTable config={{ pageSize: 2 }} />
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Hypertension')).toBeInTheDocument();
+      });
+
+      const select = screen.getByRole('combobox', { name: /items per page/i });
+      await user.selectOptions(select, '5');
+
+      await waitFor(() => {
+        expect(mockGetDiagnosesPage).toHaveBeenCalledTimes(2);
+      });
+
+      expect(mockGetDiagnosesPage).toHaveBeenLastCalledWith(
+        'patient-123',
+        5,
+        1,
+      );
+    });
+
+    it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', async () => {
+      mockGetDiagnosesPage.mockResolvedValue(wrapPage(mockDiagnoses, 2));
+
+      renderWithQueryClient(<DiagnosesTable config={{ pageSize: 10 }} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hypertension')).toBeInTheDocument();
+      });
+
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
+    });
+
+    it('shows pagination when server total exceeds pageSize', async () => {
+      mockGetDiagnosesPage.mockResolvedValue(wrapPage(mockDiagnoses, 5));
+
+      renderWithQueryClient(<DiagnosesTable config={{ pageSize: 2 }} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hypertension')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByRole('button', { name: /next page/i }),
+      ).toBeInTheDocument();
     });
   });
 });

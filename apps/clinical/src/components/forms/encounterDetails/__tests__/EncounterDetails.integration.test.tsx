@@ -7,9 +7,6 @@ import {
 } from '@bahmni/services';
 import { useActivePractitioner } from '@bahmni/widgets';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import { useActiveVisit } from '../../../../hooks/useActiveVisit';
-import { useEncounterConcepts } from '../../../../hooks/useEncounterConcepts';
-import { useLocations } from '../../../../hooks/useLocations';
 import { getEncounterConcepts } from '../../../../services/encounterConceptsService';
 import { getLocations } from '../../../../services/locationService';
 import { useEncounterDetailsStore } from '../../../../stores/encounterDetailsStore';
@@ -33,19 +30,6 @@ jest.mock('../../../../services/encounterConceptsService', () => ({
 // Mock location service
 jest.mock('../../../../services/locationService', () => ({
   getLocations: jest.fn(),
-}));
-
-// Mock hooks
-jest.mock('../../../../hooks/useEncounterConcepts', () => ({
-  useEncounterConcepts: jest.fn(),
-}));
-
-jest.mock('../../../../hooks/useActiveVisit', () => ({
-  useActiveVisit: jest.fn(),
-}));
-
-jest.mock('../../../../hooks/useLocations', () => ({
-  useLocations: jest.fn(),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -165,30 +149,9 @@ describe('BasicForm Integration Tests', () => {
     (getActiveVisit as jest.Mock).mockResolvedValue(mockActiveVisit);
     (getLocations as jest.Mock).mockResolvedValue([mockLocationData]);
 
-    // Mock hooks
-    (useEncounterConcepts as jest.Mock).mockReturnValue({
-      encounterConcepts: mockEncounterConcepts,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
     (useActivePractitioner as jest.Mock).mockReturnValue({
       practitioner: mockProvider,
       user: mockUser,
-      loading: false,
-      error: null,
-    });
-
-    (useActiveVisit as jest.Mock).mockReturnValue({
-      activeVisit: mockActiveVisit,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-
-    (useLocations as jest.Mock).mockReturnValue({
-      locations: [mockLocationData],
       loading: false,
       error: null,
     });
@@ -211,13 +174,18 @@ describe('BasicForm Integration Tests', () => {
   test('successfully initializes form with all data loaded', async () => {
     renderBasicForm();
 
-    // Wait for all API calls to complete and form to be ready
-    await waitFor(() => {
-      expect(screen.getByText('Location')).toBeInTheDocument();
-      expect(screen.getByText('Encounter Type')).toBeInTheDocument();
-      expect(screen.getByText('Participant(s)')).toBeInTheDocument();
-      expect(screen.getByText('Encounter Date')).toBeInTheDocument();
-    });
+    // Wait for all API calls to complete and form to be ready.
+    // Real hooks (useLocations, useEncounterConcepts, useActiveVisit) each trigger
+    // async render cycles, so we allow up to 10 s for the cascade to settle.
+    await waitFor(
+      () => {
+        expect(screen.getByText('Location')).toBeInTheDocument();
+        expect(screen.getByText('Encounter Type')).toBeInTheDocument();
+        expect(screen.getByText('Participant(s)')).toBeInTheDocument();
+        expect(screen.getByText('Encounter Date')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     let store = useEncounterDetailsStore.getState();
     act(() => {
@@ -234,11 +202,6 @@ describe('BasicForm Integration Tests', () => {
     expect(screen.getByText('Visit Type')).toBeInTheDocument();
     expect(screen.getByText('Participant(s)')).toBeInTheDocument();
 
-    // Verify hooks were called
-    expect(useEncounterConcepts).toHaveBeenCalled();
-    expect(useActiveVisit).toHaveBeenCalled();
-    expect(useLocations).toHaveBeenCalled();
-
     store = useEncounterDetailsStore.getState();
     expect(store.selectedLocation).toEqual({
       uuid: '123',
@@ -250,7 +213,7 @@ describe('BasicForm Integration Tests', () => {
       uuid: '789',
     });
     expect(store.isEncounterDetailsFormReady).toBe(true);
-  });
+  }, 15000);
 
   test('handles location cookie not found error', async () => {
     (getCookieByName as jest.Mock).mockImplementation((cookieName) => {
@@ -262,11 +225,7 @@ describe('BasicForm Integration Tests', () => {
       return null;
     });
 
-    (useLocations as jest.Mock).mockReturnValue({
-      locations: [],
-      loading: false,
-      error: null,
-    });
+    (getLocations as jest.Mock).mockResolvedValue([]);
 
     renderBasicForm();
 
@@ -285,13 +244,6 @@ describe('BasicForm Integration Tests', () => {
     (getEncounterConcepts as jest.Mock).mockRejectedValue(
       new Error('Encounter concepts API error'),
     );
-
-    (useEncounterConcepts as jest.Mock).mockReturnValue({
-      encounterConcepts: null,
-      loading: false,
-      error: new Error('Encounter concepts API error'),
-      refetch: jest.fn(),
-    });
 
     renderBasicForm();
 
@@ -340,13 +292,6 @@ describe('BasicForm Integration Tests', () => {
       new Error('Active visit API error'),
     );
 
-    (useActiveVisit as jest.Mock).mockReturnValue({
-      activeVisit: null,
-      loading: false,
-      error: new Error('Active visit API error'),
-      refetch: jest.fn(),
-    });
-
     renderBasicForm();
 
     await waitFor(() => {
@@ -375,12 +320,7 @@ describe('BasicForm Integration Tests', () => {
       ],
     };
 
-    (useActiveVisit as jest.Mock).mockReturnValue({
-      activeVisit: mockActiveVisitNoType,
-      loading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
+    (getActiveVisit as jest.Mock).mockResolvedValue(mockActiveVisitNoType);
 
     renderBasicForm();
 
@@ -425,30 +365,9 @@ describe('BasicForm Integration Tests', () => {
       throw new Error('Cookie error');
     });
 
-    // Mock all hooks to return errors
-    (useEncounterConcepts as jest.Mock).mockReturnValue({
-      encounterConcepts: null,
-      loading: false,
-      error: new Error('API Error'),
-      refetch: jest.fn(),
-    });
-
     (useActivePractitioner as jest.Mock).mockReturnValue({
       practitioner: null,
       user: null,
-      loading: false,
-      error: new Error('API Error'),
-    });
-
-    (useActiveVisit as jest.Mock).mockReturnValue({
-      activeVisit: null,
-      loading: false,
-      error: new Error('API Error'),
-      refetch: jest.fn(),
-    });
-
-    (useLocations as jest.Mock).mockReturnValue({
-      locations: [],
       loading: false,
       error: new Error('API Error'),
     });

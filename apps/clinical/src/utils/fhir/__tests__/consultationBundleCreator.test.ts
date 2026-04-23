@@ -19,7 +19,6 @@ describe('consultationBundleCreator utility functions', () => {
     });
 
     it('should create a ConsultationBundle with the provided entries', () => {
-      // Arrange
       const mockEntries: Array<BundleEntry<FhirResource>> = [
         {
           fullUrl: 'urn:uuid:123',
@@ -33,10 +32,8 @@ describe('consultationBundleCreator utility functions', () => {
         },
       ];
 
-      // Act
       const result = createConsultationBundle(mockEntries);
 
-      // Assert
       expect(result).toEqual({
         resourceType: 'ConsultationBundle',
         type: 'transaction',
@@ -47,13 +44,10 @@ describe('consultationBundleCreator utility functions', () => {
     });
 
     it('should create a ConsultationBundle with empty entries when provided an empty array', () => {
-      // Arrange
       const mockEntries: Array<BundleEntry<FhirResource>> = [];
 
-      // Act
       const result = createConsultationBundle(mockEntries);
 
-      // Assert
       expect(result).toEqual({
         resourceType: 'ConsultationBundle',
         type: 'transaction',
@@ -66,7 +60,6 @@ describe('consultationBundleCreator utility functions', () => {
 
   describe('createBundleEntry', () => {
     it('should create a BundleEntry with the provided fullURL, resource, and request method', () => {
-      // Arrange
       const fullURL = 'urn:uuid:456';
       const resource: FhirResource = {
         resourceType: 'Patient',
@@ -74,10 +67,8 @@ describe('consultationBundleCreator utility functions', () => {
       };
       const requestMethod = 'POST';
 
-      // Act
       const result = createBundleEntry(fullURL, resource, requestMethod);
 
-      // Assert
       expect(result).toEqual({
         fullUrl: fullURL,
         resource: resource,

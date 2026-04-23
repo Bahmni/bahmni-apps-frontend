@@ -1,4 +1,1 @@
-export {
-  default as PatientProgramsTable,
-  programsQueryKeys,
-} from './PatientProgramsTable';
+export { default as PatientProgramsTable } from './PatientProgramsTable';

@@ -303,7 +303,6 @@ describe('useAddressFields', () => {
         result.current.clearChildFields('stateProvince');
       });
 
-      // Assert: Autocomplete descendants should be cleared, free text descendants should be preserved
       // Descendants of stateProvince are: [cityVillage, countyDistrict]
       expect(result.current.address.stateProvince).toBe('Maharashtra'); // Field itself unchanged
       expect(result.current.address.country).toBe('India'); // Parent (not descendant) unchanged

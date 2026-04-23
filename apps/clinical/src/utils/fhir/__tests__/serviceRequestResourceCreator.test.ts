@@ -45,7 +45,6 @@ describe('serviceRequestResourceCreator', () => {
     };
 
     it('should create a ServiceRequest resource with routine priority', () => {
-      // Arrange
       const priority = 'routine' as const;
       const mockServiceCodeableConcept = {
         coding: [{ code: serviceConceptUUID }],
@@ -53,7 +52,6 @@ describe('serviceRequestResourceCreator', () => {
 
       mockCreateCodeableConcept.mockReturnValueOnce(mockServiceCodeableConcept);
 
-      // Act
       const result = createServiceRequestResource(
         serviceConceptUUID,
         subjectReference,
@@ -62,7 +60,6 @@ describe('serviceRequestResourceCreator', () => {
         priority,
       );
 
-      // Assert
       expect(result).toEqual({
         resourceType: 'ServiceRequest',
         status: 'active',
@@ -85,7 +82,6 @@ describe('serviceRequestResourceCreator', () => {
     });
 
     it('should create a ServiceRequest resource with stat priority', () => {
-      // Arrange
       const priority = 'stat' as const;
       const mockServiceCodeableConcept = {
         coding: [{ code: serviceConceptUUID }],
@@ -93,7 +89,6 @@ describe('serviceRequestResourceCreator', () => {
 
       mockCreateCodeableConcept.mockReturnValueOnce(mockServiceCodeableConcept);
 
-      // Act
       const result = createServiceRequestResource(
         serviceConceptUUID,
         subjectReference,
@@ -102,17 +97,14 @@ describe('serviceRequestResourceCreator', () => {
         priority,
       );
 
-      // Assert
       expect(result.priority).toBe('stat');
     });
 
     it('should handle minimal Reference objects without type property', () => {
-      // Arrange
       const minimalSubjectRef: Reference = { reference: 'Patient/123' };
       const minimalEncounterRef: Reference = { reference: 'Encounter/456' };
       const minimalRequesterRef: Reference = { reference: 'Practitioner/789' };
 
-      // Act
       const result = createServiceRequestResource(
         serviceConceptUUID,
         minimalSubjectRef,
@@ -121,14 +113,12 @@ describe('serviceRequestResourceCreator', () => {
         'routine',
       );
 
-      // Assert
       expect(result.subject).toEqual(minimalSubjectRef);
       expect(result.encounter).toEqual(minimalEncounterRef);
       expect(result.requester).toEqual(minimalRequesterRef);
     });
 
     it('should always set resourceType to "ServiceRequest"', () => {
-      // Act
       const result = createServiceRequestResource(
         serviceConceptUUID,
         subjectReference,
@@ -137,12 +127,10 @@ describe('serviceRequestResourceCreator', () => {
         'routine',
       );
 
-      // Assert
       expect(result.resourceType).toBe('ServiceRequest');
     });
 
     it('should always set status to "active"', () => {
-      // Act
       const result = createServiceRequestResource(
         serviceConceptUUID,
         subjectReference,
@@ -151,12 +139,10 @@ describe('serviceRequestResourceCreator', () => {
         'routine',
       );
 
-      // Assert
       expect(result.status).toBe('active');
     });
 
     it('should always set intent to "order"', () => {
-      // Act
       const result = createServiceRequestResource(
         serviceConceptUUID,
         subjectReference,
@@ -165,15 +151,12 @@ describe('serviceRequestResourceCreator', () => {
         'routine',
       );
 
-      // Assert
       expect(result.intent).toBe('order');
     });
 
     it('should handle empty UUID string', () => {
-      // Arrange
       const emptyUUID = '';
 
-      // Act
       const result = createServiceRequestResource(
         emptyUUID,
         subjectReference,
@@ -182,13 +165,11 @@ describe('serviceRequestResourceCreator', () => {
         'routine',
       );
 
-      // Assert
       expect(mockCreateCoding).toHaveBeenCalledWith(emptyUUID);
       expect(result).toBeDefined();
     });
 
     it('should handle Reference objects with additional properties', () => {
-      // Arrange
       const extendedSubjectRef: Reference = {
         reference: 'Patient/123',
         type: 'Patient',
@@ -203,7 +184,6 @@ describe('serviceRequestResourceCreator', () => {
         },
       };
 
-      // Act
       const result = createServiceRequestResource(
         serviceConceptUUID,
         extendedSubjectRef,
@@ -212,13 +192,11 @@ describe('serviceRequestResourceCreator', () => {
         'stat',
       );
 
-      // Assert
       expect(result.subject).toEqual(extendedSubjectRef);
       expect(result.encounter).toEqual(extendedEncounterRef);
     });
 
     it('should create proper structure for FHIR ServiceRequest resource', () => {
-      // Act
       const result = createServiceRequestResource(
         serviceConceptUUID,
         subjectReference,
@@ -227,7 +205,6 @@ describe('serviceRequestResourceCreator', () => {
         'routine',
       );
 
-      // Assert - Verify all required FHIR ServiceRequest properties are present
       expect(result).toHaveProperty('resourceType');
       expect(result).toHaveProperty('status');
       expect(result).toHaveProperty('intent');
@@ -252,14 +229,12 @@ describe('serviceRequestResourceCreator', () => {
     });
 
     it('should create consistent code property using helper functions', () => {
-      // Arrange
       const mockCoding = { code: serviceConceptUUID };
       const mockCodeableConcept = { coding: [mockCoding] };
 
       mockCreateCoding.mockReturnValueOnce(mockCoding);
       mockCreateCodeableConcept.mockReturnValueOnce(mockCodeableConcept);
 
-      // Act
       const result = createServiceRequestResource(
         serviceConceptUUID,
         subjectReference,
@@ -268,7 +243,6 @@ describe('serviceRequestResourceCreator', () => {
         'routine',
       );
 
-      // Assert
       expect(result.code).toEqual(mockCodeableConcept);
       expect(mockCreateCoding).toHaveBeenCalledWith(serviceConceptUUID);
       expect(mockCreateCodeableConcept).toHaveBeenCalledWith([mockCoding]);

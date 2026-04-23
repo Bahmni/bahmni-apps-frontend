@@ -21,7 +21,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
           data-testid="encounter-enc-1-test-id-accordion-item"
         >
           <button
-            aria-controls="accordion-item-_r_k_"
+            aria-controls="accordion-item-_r_m_"
             aria-expanded="true"
             class="cds--accordion__heading"
             type="button"
@@ -53,7 +53,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
           >
             <div
               class="cds--accordion__content"
-              id="accordion-item-_r_k_"
+              id="accordion-item-_r_m_"
             >
               <div
                 aria-label="encounter-enc-1-rows-aria-label"
@@ -106,7 +106,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                       data-testid="grouped-obs-Blood Pressure-0-test-id-accordion-item"
                     >
                       <button
-                        aria-controls="accordion-item-_r_l_"
+                        aria-controls="accordion-item-_r_n_"
                         aria-expanded="true"
                         class="cds--accordion__heading"
                         type="button"
@@ -138,7 +138,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                       >
                         <div
                           class="cds--accordion__content"
-                          id="accordion-item-_r_l_"
+                          id="accordion-item-_r_n_"
                         >
                           <div
                             aria-label="grouped-obs-Blood Pressure-0-rows-aria-label"

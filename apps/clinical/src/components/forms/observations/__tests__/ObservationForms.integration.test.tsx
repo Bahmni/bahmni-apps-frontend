@@ -6,7 +6,6 @@ import React from 'react';
 import * as pinnedFormsService from '../../../../services/pinnedFormsService';
 import ObservationForms from '../ObservationForms';
 
-// Setup jest-axe matchers
 expect.extend(toHaveNoViolations);
 
 // Mock react-i18next
@@ -37,20 +36,6 @@ jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(),
   useHasPrivilege: jest.fn(() => true),
-}));
-
-// Mock hooks
-const mockUseObservationFormsSearch = jest.fn();
-const mockUsePinnedObservationForms = jest.fn();
-
-jest.mock('../../../../hooks/useObservationFormsSearch', () => ({
-  __esModule: true,
-  default: () => mockUseObservationFormsSearch(),
-}));
-
-jest.mock('../../../../hooks/usePinnedObservationForms', () => ({
-  __esModule: true,
-  usePinnedObservationForms: () => mockUsePinnedObservationForms(),
 }));
 
 describe('ObservationForms Integration Tests', () => {
@@ -93,50 +78,15 @@ describe('ObservationForms Integration Tests', () => {
     observationFormsError: null,
   };
 
-  // Mock factories for consistent test data
-  const createMockObservationFormsSearchReturn = (overrides = {}) => ({
-    forms: mockAvailableForms,
-    isLoading: false,
-    error: null,
-    ...overrides,
-  });
-
-  const createMockPinnedObservationFormsReturn = (overrides = {}) => ({
-    pinnedForms: [],
-    updatePinnedForms: jest.fn(),
-    isLoading: false,
-    error: null,
-    ...overrides,
-  });
-
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Set default mock return values
-    mockUseObservationFormsSearch.mockReturnValue(
-      createMockObservationFormsSearchReturn(),
-    );
-    mockUsePinnedObservationForms.mockReturnValue(
-      createMockPinnedObservationFormsReturn(),
-    );
 
     mockedLoadPinnedForms.mockResolvedValue([]);
     mockedSavePinnedForms.mockResolvedValue();
   });
 
   const renderComponent = (component: React.ReactElement) => {
-    const mockedPinnedValues = mockUsePinnedObservationForms();
-    const mockedFormsValues = mockUseObservationFormsSearch();
-    const componentWithProps = React.cloneElement(component, {
-      ...(component.props ?? {}),
-      pinnedForms: mockedPinnedValues.pinnedForms,
-      updatePinnedForms: mockedPinnedValues.updatePinnedForms,
-      isPinnedFormsLoading: mockedPinnedValues.isLoading,
-      allForms: mockedFormsValues.forms,
-      isAllFormsLoading: mockedFormsValues.isLoading,
-      observationFormsError: mockedFormsValues.error,
-    } as any);
-    return render(componentWithProps);
+    return render(component);
   };
 
   describe('Default Forms Persistence', () => {
@@ -173,13 +123,9 @@ describe('ObservationForms Integration Tests', () => {
     it('should persist default forms display even when database has user pinned forms', async () => {
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
-      mockUsePinnedObservationForms.mockReturnValue(
-        createMockPinnedObservationFormsReturn({
-          pinnedForms: userPinnedForms,
-        }),
+      renderComponent(
+        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
       );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
 
       await waitFor(() => {
         expect(
@@ -209,14 +155,13 @@ describe('ObservationForms Integration Tests', () => {
       const mockUpdatePinnedForms = jest.fn();
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1 is already pinned
 
-      mockUsePinnedObservationForms.mockReturnValue(
-        createMockPinnedObservationFormsReturn({
-          pinnedForms: userPinnedForms,
-          updatePinnedForms: mockUpdatePinnedForms,
-        }),
+      renderComponent(
+        <ObservationForms
+          {...defaultProps}
+          pinnedForms={userPinnedForms}
+          updatePinnedForms={mockUpdatePinnedForms}
+        />,
       );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
       await waitFor(() => {
         expect(
           screen.getByTestId('pinned-form-Custom Form 1'),
@@ -236,14 +181,13 @@ describe('ObservationForms Integration Tests', () => {
       const mockUpdatePinnedForms = jest.fn();
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1 is pinned
 
-      mockUsePinnedObservationForms.mockReturnValue(
-        createMockPinnedObservationFormsReturn({
-          pinnedForms: userPinnedForms,
-          updatePinnedForms: mockUpdatePinnedForms,
-        }),
+      renderComponent(
+        <ObservationForms
+          {...defaultProps}
+          pinnedForms={userPinnedForms}
+          updatePinnedForms={mockUpdatePinnedForms}
+        />,
       );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
 
       await waitFor(() => {
         expect(
@@ -269,15 +213,9 @@ describe('ObservationForms Integration Tests', () => {
     it('should persist pinned forms across component remounts (session simulation)', async () => {
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
-      mockUsePinnedObservationForms.mockReturnValue(
-        createMockPinnedObservationFormsReturn({
-          pinnedForms: userPinnedForms,
-        }),
-      );
-
       // First mount - simulate session 1
       const { unmount } = renderComponent(
-        <ObservationForms {...defaultProps} />,
+        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
       );
 
       await waitFor(() => {
@@ -289,7 +227,9 @@ describe('ObservationForms Integration Tests', () => {
       unmount();
 
       // Second mount - simulate session 2 (component remount)
-      renderComponent(<ObservationForms {...defaultProps} />);
+      renderComponent(
+        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
+      );
 
       // Verify forms persist across sessions
       await waitFor(() => {
@@ -328,14 +268,13 @@ describe('ObservationForms Integration Tests', () => {
       const mockUpdatePinnedForms = jest.fn();
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
-      mockUsePinnedObservationForms.mockReturnValue(
-        createMockPinnedObservationFormsReturn({
-          pinnedForms: userPinnedForms,
-          updatePinnedForms: mockUpdatePinnedForms,
-        }),
+      renderComponent(
+        <ObservationForms
+          {...defaultProps}
+          pinnedForms={userPinnedForms}
+          updatePinnedForms={mockUpdatePinnedForms}
+        />,
       );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
 
       await waitFor(() => {
         expect(
@@ -379,14 +318,8 @@ describe('ObservationForms Integration Tests', () => {
     it('should maintain accessibility across pin/unpin workflows', async () => {
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
-      mockUsePinnedObservationForms.mockReturnValue(
-        createMockPinnedObservationFormsReturn({
-          pinnedForms: userPinnedForms,
-        }),
-      );
-
       const { container } = renderComponent(
-        <ObservationForms {...defaultProps} />,
+        <ObservationForms {...defaultProps} pinnedForms={userPinnedForms} />,
       );
 
       await waitFor(() => {
@@ -395,8 +328,6 @@ describe('ObservationForms Integration Tests', () => {
         ).toBeInTheDocument();
       });
 
-      // Test accessibility on the main container
-      // Since Tile doesn't pass through data-testid, use class selector
       const observationFormsTile = container.querySelector(
         '.observationFormsTile',
       );
@@ -404,7 +335,7 @@ describe('ObservationForms Integration Tests', () => {
 
       const result = await axe(observationFormsTile!, {
         rules: {
-          'nested-interactive': { enabled: false }, // Disable this rule for known design system limitation
+          'nested-interactive': { enabled: false }, // Known design system limitation
         },
       });
       expect(result).toHaveNoViolations();
@@ -426,14 +357,8 @@ describe('ObservationForms Integration Tests', () => {
       // Include default forms in the large set
       const allForms = [...mockAvailableForms, ...largeMockForms];
 
-      mockUseObservationFormsSearch.mockReturnValue(
-        createMockObservationFormsSearchReturn({
-          forms: allForms,
-        }),
-      );
-
       const { container } = renderComponent(
-        <ObservationForms {...defaultProps} />,
+        <ObservationForms {...defaultProps} allForms={allForms} />,
       );
 
       // Should render without performance issues
@@ -458,14 +383,13 @@ describe('ObservationForms Integration Tests', () => {
 
       const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
-      mockUsePinnedObservationForms.mockReturnValue(
-        createMockPinnedObservationFormsReturn({
-          pinnedForms: userPinnedForms,
-          updatePinnedForms: mockUpdatePinnedForms,
-        }),
+      renderComponent(
+        <ObservationForms
+          {...defaultProps}
+          pinnedForms={userPinnedForms}
+          updatePinnedForms={mockUpdatePinnedForms}
+        />,
       );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
 
       await waitFor(() => {
         expect(
@@ -491,16 +415,9 @@ describe('ObservationForms Integration Tests', () => {
       // Test backend integration with search results
       const searchResults = [mockAvailableForms[1], mockAvailableForms[2]]; // Vitals and Custom Form 1
 
-      mockUseObservationFormsSearch.mockReturnValue(
-        createMockObservationFormsSearchReturn({
-          forms: searchResults,
-        }),
+      renderComponent(
+        <ObservationForms {...defaultProps} allForms={searchResults} />,
       );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
-
-      // Verify backend hook was called
-      expect(mockUseObservationFormsSearch).toHaveBeenCalled();
 
       // Verify search section is present for backend integration
       expect(
@@ -516,9 +433,6 @@ describe('ObservationForms Integration Tests', () => {
         <ObservationForms {...defaultProps} selectedForms={selectedForms} />,
       );
 
-      // Verify backend integration happens
-      expect(mockUseObservationFormsSearch).toHaveBeenCalled();
-
       // Verify selected forms are properly displayed
       expect(screen.getByTestId('added-forms-section')).toBeInTheDocument();
       expect(screen.getByTestId('selected-form-Vitals')).toBeInTheDocument();
@@ -533,18 +447,13 @@ describe('ObservationForms Integration Tests', () => {
     it('should handle backend search errors', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      // Mock backend search error
-      mockUseObservationFormsSearch.mockReturnValue(
-        createMockObservationFormsSearchReturn({
-          forms: [],
-          error: new Error('Search API failed'),
-        }),
+      renderComponent(
+        <ObservationForms
+          {...defaultProps}
+          allForms={[]}
+          observationFormsError={new Error('Search API failed')}
+        />,
       );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
-
-      // Verify backend was called despite error
-      expect(mockUseObservationFormsSearch).toHaveBeenCalled();
 
       // Component should still render search functionality
       expect(
@@ -558,18 +467,9 @@ describe('ObservationForms Integration Tests', () => {
     });
 
     it('should handle backend loading state', () => {
-      // Mock backend loading state
-      mockUseObservationFormsSearch.mockReturnValue(
-        createMockObservationFormsSearchReturn({
-          forms: [],
-          isLoading: true,
-        }),
+      renderComponent(
+        <ObservationForms {...defaultProps} allForms={[]} isAllFormsLoading />,
       );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
-
-      // Verify backend integration occurs during loading
-      expect(mockUseObservationFormsSearch).toHaveBeenCalled();
 
       // Search combobox should be disabled during backend loading
       const searchCombobox = screen.getByRole('combobox');
@@ -587,18 +487,13 @@ describe('ObservationForms Integration Tests', () => {
       // Mock backend returns search results
       const searchResults = [mockAvailableForms[1]]; // Vitals
 
-      mockUseObservationFormsSearch.mockReturnValue(
-        createMockObservationFormsSearchReturn({
-          forms: searchResults,
-        }),
-      );
-
       renderComponent(
-        <ObservationForms {...defaultProps} onFormSelect={mockOnFormSelect} />,
+        <ObservationForms
+          {...defaultProps}
+          onFormSelect={mockOnFormSelect}
+          allForms={searchResults}
+        />,
       );
-
-      // Verify backend integration
-      expect(mockUseObservationFormsSearch).toHaveBeenCalled();
 
       // The component should integrate with backend data
       // Form selection would occur through ComboBox interactions
@@ -609,15 +504,9 @@ describe('ObservationForms Integration Tests', () => {
     });
 
     it('should show skeleton loading state when forms are loading', () => {
-      // Set forms to loading state
-      mockUseObservationFormsSearch.mockReturnValue(
-        createMockObservationFormsSearchReturn({
-          forms: [],
-          isLoading: true,
-        }),
+      renderComponent(
+        <ObservationForms {...defaultProps} allForms={[]} isAllFormsLoading />,
       );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
 
       // Should show skeleton when forms are loading
       expect(screen.getByTestId('pinned-forms-section')).toBeInTheDocument();
@@ -625,14 +514,9 @@ describe('ObservationForms Integration Tests', () => {
     });
 
     it('should show skeleton loading state when pinned forms are loading', () => {
-      // Set pinned forms to loading state
-      mockUsePinnedObservationForms.mockReturnValue(
-        createMockPinnedObservationFormsReturn({
-          isLoading: true,
-        }),
+      renderComponent(
+        <ObservationForms {...defaultProps} isPinnedFormsLoading />,
       );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
 
       // Should show skeleton when pinned forms are loading
       expect(screen.getByTestId('pinned-forms-section')).toBeInTheDocument();
@@ -640,20 +524,14 @@ describe('ObservationForms Integration Tests', () => {
     });
 
     it('should show skeleton loading state when both are loading', () => {
-      // Set both to loading state
-      mockUseObservationFormsSearch.mockReturnValue(
-        createMockObservationFormsSearchReturn({
-          forms: [],
-          isLoading: true,
-        }),
+      renderComponent(
+        <ObservationForms
+          {...defaultProps}
+          allForms={[]}
+          isAllFormsLoading
+          isPinnedFormsLoading
+        />,
       );
-      mockUsePinnedObservationForms.mockReturnValue(
-        createMockPinnedObservationFormsReturn({
-          isLoading: true,
-        }),
-      );
-
-      renderComponent(<ObservationForms {...defaultProps} />);
 
       // Should show skeleton when both are loading
       expect(screen.getByTestId('pinned-forms-section')).toBeInTheDocument();
@@ -690,14 +568,13 @@ describe('ObservationForms Integration Tests', () => {
 
         const userPinnedForms = [mockAvailableForms[2]]; // Custom Form 1
 
-        mockUsePinnedObservationForms.mockReturnValue(
-          createMockPinnedObservationFormsReturn({
-            pinnedForms: userPinnedForms,
-            updatePinnedForms: mockUpdatePinnedForms,
-          }),
+        renderComponent(
+          <ObservationForms
+            {...defaultProps}
+            pinnedForms={userPinnedForms}
+            updatePinnedForms={mockUpdatePinnedForms}
+          />,
         );
-
-        renderComponent(<ObservationForms {...defaultProps} />);
 
         await waitFor(() => {
           expect(
@@ -749,14 +626,13 @@ describe('ObservationForms Integration Tests', () => {
 
         const userPinnedForms = [mockAvailableForms[2]];
 
-        mockUsePinnedObservationForms.mockReturnValue(
-          createMockPinnedObservationFormsReturn({
-            pinnedForms: userPinnedForms,
-            updatePinnedForms: mockUpdatePinnedForms,
-          }),
+        renderComponent(
+          <ObservationForms
+            {...defaultProps}
+            pinnedForms={userPinnedForms}
+            updatePinnedForms={mockUpdatePinnedForms}
+          />,
         );
-
-        renderComponent(<ObservationForms {...defaultProps} />);
 
         await waitFor(() => {
           expect(
@@ -788,14 +664,13 @@ describe('ObservationForms Integration Tests', () => {
 
         const userPinnedForms = [mockAvailableForms[2], mockAvailableForms[3]];
 
-        mockUsePinnedObservationForms.mockReturnValue(
-          createMockPinnedObservationFormsReturn({
-            pinnedForms: userPinnedForms,
-            updatePinnedForms: mockUpdatePinnedForms,
-          }),
+        renderComponent(
+          <ObservationForms
+            {...defaultProps}
+            pinnedForms={userPinnedForms}
+            updatePinnedForms={mockUpdatePinnedForms}
+          />,
         );
-
-        renderComponent(<ObservationForms {...defaultProps} />);
 
         await waitFor(() => {
           expect(
@@ -840,13 +715,12 @@ describe('ObservationForms Integration Tests', () => {
           },
         ];
 
-        mockUsePinnedObservationForms.mockReturnValue(
-          createMockPinnedObservationFormsReturn({
-            pinnedForms: orphanedPinnedForms,
-          }),
+        renderComponent(
+          <ObservationForms
+            {...defaultProps}
+            pinnedForms={orphanedPinnedForms}
+          />,
         );
-
-        renderComponent(<ObservationForms {...defaultProps} />);
 
         // Should still render default forms
         await waitFor(() => {
@@ -874,13 +748,9 @@ describe('ObservationForms Integration Tests', () => {
           { name: 'No UUID Form', id: 3, privileges: [] }, // Missing uuid
         ];
 
-        mockUseObservationFormsSearch.mockReturnValue(
-          createMockObservationFormsSearchReturn({
-            forms: malformedForms,
-          }),
+        renderComponent(
+          <ObservationForms {...defaultProps} allForms={malformedForms} />,
         );
-
-        renderComponent(<ObservationForms {...defaultProps} />);
 
         // Should handle gracefully and not crash
         await waitFor(() => {
@@ -906,13 +776,9 @@ describe('ObservationForms Integration Tests', () => {
           }, // Same UUID as default form
         ];
 
-        mockUseObservationFormsSearch.mockReturnValue(
-          createMockObservationFormsSearchReturn({
-            forms: formsWithDuplicates,
-          }),
+        renderComponent(
+          <ObservationForms {...defaultProps} allForms={formsWithDuplicates} />,
         );
-
-        renderComponent(<ObservationForms {...defaultProps} />);
 
         await waitFor(() => {
           expect(
@@ -935,13 +801,12 @@ describe('ObservationForms Integration Tests', () => {
         // Mock forms missing critical properties
         const incompleteForm = { name: 'Incomplete Form', privileges: [] }; // Missing uuid and id
 
-        mockUseObservationFormsSearch.mockReturnValue(
-          createMockObservationFormsSearchReturn({
-            forms: [...mockAvailableForms, incompleteForm],
-          }),
+        renderComponent(
+          <ObservationForms
+            {...defaultProps}
+            allForms={[...mockAvailableForms, incompleteForm]}
+          />,
         );
-
-        renderComponent(<ObservationForms {...defaultProps} />);
 
         // Should render default forms despite malformed data
         await waitFor(() => {
@@ -959,14 +824,13 @@ describe('ObservationForms Integration Tests', () => {
       it('should handle search API failures', async () => {
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-        mockUseObservationFormsSearch.mockReturnValue(
-          createMockObservationFormsSearchReturn({
-            forms: [],
-            error: new Error('Failed to fetch forms'),
-          }),
+        renderComponent(
+          <ObservationForms
+            {...defaultProps}
+            allForms={[]}
+            observationFormsError={new Error('Failed to fetch forms')}
+          />,
         );
-
-        renderComponent(<ObservationForms {...defaultProps} />);
 
         // Should still show pinned forms section
         await waitFor(() => {
@@ -976,11 +840,6 @@ describe('ObservationForms Integration Tests', () => {
         });
 
         consoleSpy.mockRestore();
-
-        // Restore to working state
-        mockUseObservationFormsSearch.mockReturnValue(
-          createMockObservationFormsSearchReturn(),
-        );
       });
 
       it('should handle network connectivity issues', async () => {

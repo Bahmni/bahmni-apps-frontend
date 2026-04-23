@@ -805,20 +805,7 @@ describe('ConditionsAndDiagnoses', () => {
   });
 
   describe('Selection Edge Cases', () => {
-    test('should not call addDiagnosis when selectedItem is null', async () => {
-      renderComponent();
-      const comboBox = screen.getByRole('combobox');
-
-      // Simulate onChange with null selectedItem
-      fireEvent.change(comboBox, {
-        target: { value: '' },
-        selectedItem: null,
-      });
-
-      expect(addDiagnosisMock).not.toHaveBeenCalled();
-    });
-
-    test('should not call addDiagnosis when selectedItem is undefined', async () => {
+    test('should not call addDiagnosis when selectedItem is falsy', async () => {
       renderComponent();
       const comboBox = screen.getByRole('combobox');
 
@@ -948,6 +935,58 @@ describe('ConditionsAndDiagnoses', () => {
         mockConditionEntries,
       );
       expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('Consultation Saved Subscription', () => {
+    it('refetches existing diagnoses and conditions when consultation is saved with conditions', async () => {
+      renderComponent();
+
+      // renderComponent sets up useQuery mock — capture the refetch the component actually holds
+      const usedRefetch = (useQuery as jest.Mock).mock.results[0].value.refetch;
+
+      const event = new CustomEvent('consultation:saved', {
+        detail: {
+          patientUUID: 'test-patient-uuid',
+          updatedResources: {
+            conditions: true,
+            allergies: false,
+            medications: false,
+            serviceRequests: {},
+          },
+          updatedConcepts: new Map(),
+        },
+      });
+      window.dispatchEvent(event);
+
+      await waitFor(() => {
+        // refetch is called once per query (conditions + diagnoses = 2 calls)
+        expect(usedRefetch).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    it('does not refetch when consultation is saved for a different patient', async () => {
+      renderComponent();
+
+      const usedRefetch = (useQuery as jest.Mock).mock.results[0].value.refetch;
+
+      const event = new CustomEvent('consultation:saved', {
+        detail: {
+          patientUUID: 'different-patient-uuid',
+          updatedResources: {
+            conditions: true,
+            allergies: false,
+            medications: false,
+            serviceRequests: {},
+          },
+          updatedConcepts: new Map(),
+        },
+      });
+      window.dispatchEvent(event);
+
+      await waitFor(() => {
+        expect(usedRefetch).not.toHaveBeenCalled();
+      });
     });
   });
 

@@ -47,10 +47,12 @@ export const getAppointmentTestCases = (
   mocks: ReturnType<typeof getAppointmentMocks>,
 ) => {
   const { Component, queryKeyPrefix, testProps = {} } = config;
+  const defaultPageSize = testProps.pageSize ?? 10;
+  const mergedProps = { pageSize: defaultPageSize, ...testProps };
 
   return {
     renderLoadingTest: () => {
-      render(<Component patientUUID="test-uuid" {...testProps} />);
+      render(<Component patientUUID="test-uuid" {...mergedProps} />);
       expect(mocks.mockUseQuery).toHaveBeenCalled();
     },
 
@@ -63,7 +65,7 @@ export const getAppointmentTestCases = (
         error: mockError,
       } as any);
 
-      render(<Component patientUUID="test-uuid" {...testProps} />);
+      render(<Component patientUUID="test-uuid" {...mergedProps} />);
 
       expect(mocks.mockUseQuery).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -73,11 +75,16 @@ export const getAppointmentTestCases = (
     },
 
     correctParametersTest: () => {
-      render(<Component patientUUID="test-uuid" {...testProps} />);
+      render(<Component patientUUID="test-uuid" {...mergedProps} />);
 
       expect(mocks.mockUseQuery).toHaveBeenCalledWith(
         expect.objectContaining({
-          queryKey: expect.arrayContaining([queryKeyPrefix, 'test-uuid']),
+          queryKey: expect.arrayContaining([
+            queryKeyPrefix,
+            'test-uuid',
+            1,
+            defaultPageSize,
+          ]),
           enabled: true,
           queryFn: expect.any(Function),
         }),

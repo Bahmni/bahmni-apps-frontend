@@ -107,18 +107,48 @@ describe('AppointmentsTable', () => {
       expect(screen.getByTestId('upcoming-appointments')).toBeInTheDocument();
     });
 
-    it('should accept numberOfPastAppointments in config', () => {
-      const numberOfPastAppointments = 5;
+    it('should pass pageSize from config to UpcomingAppointments and PastAppointments', () => {
+      render(
+        <AppointmentsTable config={{ pageSize: 10 }} episodeOfCareUuids={[]} />,
+      );
 
+      expect(mockUpcomingAppointments).toHaveBeenCalledWith(
+        expect.objectContaining({ pageSize: 10 }),
+        undefined,
+      );
+      expect(mockPastAppointments).toHaveBeenCalledWith(
+        expect.objectContaining({ pageSize: 10 }),
+        undefined,
+      );
+    });
+
+    it('should use default pageSize of 5 when config is absent', () => {
+      render(<AppointmentsTable config={{}} episodeOfCareUuids={[]} />);
+
+      expect(mockUpcomingAppointments).toHaveBeenCalledWith(
+        expect.objectContaining({ pageSize: 5 }),
+        undefined,
+      );
+      expect(mockPastAppointments).toHaveBeenCalledWith(
+        expect.objectContaining({ pageSize: 5 }),
+        undefined,
+      );
+    });
+
+    it('should not pass numberOfPastAppointments to PastAppointments', () => {
       render(
         <AppointmentsTable
-          config={{ numberOfPastAppointments }}
+          config={{ numberOfPastAppointments: 5 }}
           episodeOfCareUuids={[]}
         />,
       );
 
-      const pastTab = screen.getByText('APPOINTMENTS_TAB_PAST');
-      expect(pastTab).toBeInTheDocument();
+      expect(mockPastAppointments).toHaveBeenCalledWith(
+        expect.not.objectContaining({
+          numberOfPastAppointments: expect.anything(),
+        }),
+        undefined,
+      );
     });
 
     it('should accept custom fields config', () => {

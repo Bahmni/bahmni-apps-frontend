@@ -1,23 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { VideoTile } from '../VideoTile';
 
-jest.mock('../styles/VideoTile.module.scss', () => ({
-  thumbnailButton: 'thumbnailButton-class',
-  thumbnailVideo: 'thumbnailVideo-class',
-  playIconOverlay: 'playIconOverlay-class',
-  playIcon: 'playIcon-class',
-  modalVideoContainer: 'modalVideoContainer-class',
-  modalVideo: 'modalVideo-class',
-}));
-
 describe('VideoTile', () => {
   const defaultProps = {
     videoSrc: '100/9-Consultation-27627c65-5f95-4118-b8e5-89f0aa8cc3b8.mp4',
-    alt: 'Test video',
     id: 'test-video',
   };
 
-  it('should render thumbnail button and video', () => {
+  it('should render thumbnail button, video and play icon overlay', () => {
     render(<VideoTile {...defaultProps} />);
 
     const button = screen.getByTestId('test-video-test-id');
@@ -33,6 +23,9 @@ describe('VideoTile', () => {
       'src',
       '/openmrs/auth?requested_document=/document_images/100/9-Consultation-27627c65-5f95-4118-b8e5-89f0aa8cc3b8.mp4#t=0.1',
     );
+
+    const playIcon = screen.getByTestId('test-video-video-play-test-id');
+    expect(playIcon).toBeInTheDocument();
   });
 
   it('should open modal when thumbnail is clicked', async () => {
@@ -95,5 +88,51 @@ describe('VideoTile', () => {
         '/openmrs/auth?requested_document=/document_images/100/9-Consultation-27627c65-5f95-4118-b8e5-89f0aa8cc3b8.mp4',
       );
     });
+  });
+
+  it('should render icon and hide thumbnail when hideThumbnail is true', () => {
+    render(<VideoTile {...defaultProps} hideThumbnail />);
+
+    const button = screen.getByTestId('test-video-test-id');
+    expect(button).toHaveClass('hideThumbnail');
+
+    const icon = screen.getByTestId('test-video-hidden-thumbnail-test-id');
+    expect(icon).toBeInTheDocument();
+
+    const thumbnailVideo = screen.queryByTestId('test-video-thumbnail-test-id');
+    expect(thumbnailVideo).not.toBeInTheDocument();
+
+    const playIcon = screen.queryByTestId('test-video-video-play-test-id');
+    expect(playIcon).not.toBeInTheDocument();
+  });
+
+  it('should still open modal when hideThumbnail is true and thumbnail is clicked', async () => {
+    render(
+      <VideoTile {...defaultProps} modalTitle="Video Preview" hideThumbnail />,
+    );
+
+    const button = screen.getByTestId('test-video-test-id');
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText('Video Preview')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('test-video-modal-video-test-id'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('should apply custom className to thumbnail button', () => {
+    render(<VideoTile {...defaultProps} className="custom-class" />);
+
+    const button = screen.getByTestId('test-video-test-id');
+    expect(button).toHaveClass('custom-class');
+  });
+
+  it('should not render modal initially', () => {
+    render(<VideoTile {...defaultProps} modalTitle="Video Preview" />);
+
+    const modalVideo = screen.queryByTestId('test-video-modal-video-test-id');
+    expect(modalVideo).not.toBeInTheDocument();
   });
 });

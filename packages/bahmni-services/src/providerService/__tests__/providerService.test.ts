@@ -47,47 +47,36 @@ describe('providerService', () => {
 
   describe('getCurrentProvider', () => {
     it('should fetch provider using userUUID', async () => {
-      // Arrange
       (get as jest.Mock).mockResolvedValueOnce(mockProviderResponse);
 
-      // Act
       const result = await getCurrentProvider(mockUserUUID);
 
-      // Assert
       expect(get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUserUUID));
       expect(result).toEqual(mockProviderResponse.results[0]);
     });
 
     it('should return null if provider results are empty', async () => {
-      // Arrange
       (get as jest.Mock).mockResolvedValueOnce({ results: [] });
 
-      // Act
       const result = await getCurrentProvider(mockUserUUID);
 
-      // Assert
       expect(result).toBeNull();
       expect(get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUserUUID));
     });
 
     it('should return null if provider results are null', async () => {
-      // Arrange
       (get as jest.Mock).mockResolvedValueOnce({ results: null });
 
-      // Act
       const result = await getCurrentProvider(mockUserUUID);
 
-      // Assert
       expect(result).toBeNull();
       expect(get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUserUUID));
     });
 
     it('should throw error if provider API call fails', async () => {
-      // Arrange
       const mockError = new Error('Provider API Error');
       (get as jest.Mock).mockRejectedValueOnce(mockError);
 
-      // Act & Assert
       await expect(getCurrentProvider(mockUserUUID)).rejects.toThrow(
         'Provider API Error',
       );

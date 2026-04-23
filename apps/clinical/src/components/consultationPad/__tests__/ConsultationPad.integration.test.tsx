@@ -50,15 +50,6 @@ jest.mock('@bahmni/form2-controls', () => ({
   )),
 }));
 
-// Mock the form2-controls CSS
-jest.mock('@bahmni/form2-controls/dist/bundle.css', () => ({}));
-
-jest.mock('../../forms/medications/MedicationsForm', () => {
-  return function MockMedicationsForm() {
-    return <div data-testid="medications-form">Medications Form</div>;
-  };
-});
-
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedError: jest.fn(),
@@ -66,6 +57,11 @@ jest.mock('@bahmni/services', () => ({
   logAuditEvent: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   getConditions: jest.fn(),
+  getPatientMedicationBundle: jest
+    .fn()
+    .mockResolvedValue({ resourceType: 'Bundle', entry: [] }),
+  getConfig: jest.fn().mockResolvedValue({}),
+  fetchMedicationOrdersMetadata: jest.fn().mockResolvedValue({}),
 }));
 
 // Mock useUserPrivilege hook
@@ -85,18 +81,24 @@ jest.mock('@bahmni/widgets', () => ({
   ]),
 }));
 
-// Mock TanStack Query
-jest.mock('@tanstack/react-query', () => ({
-  ...jest.requireActual('@tanstack/react-query'),
-  useQuery: jest.fn(() => ({
-    data: [],
-    isLoading: false,
-    error: null,
-  })),
-  QueryClient: jest.requireActual('@tanstack/react-query').QueryClient,
-  QueryClientProvider: jest.requireActual('@tanstack/react-query')
-    .QueryClientProvider,
-}));
+// Mock TanStack Query - use stable references to prevent infinite re-render loops
+// caused by useMemo/useEffect dependencies comparing array references
+jest.mock('@tanstack/react-query', () => {
+  const stableEmptyArray: never[] = [];
+  const stableRefetch = jest.fn();
+  return {
+    ...jest.requireActual('@tanstack/react-query'),
+    useQuery: jest.fn(() => ({
+      data: stableEmptyArray,
+      isLoading: false,
+      error: null,
+      refetch: stableRefetch,
+    })),
+    QueryClient: jest.requireActual('@tanstack/react-query').QueryClient,
+    QueryClientProvider: jest.requireActual('@tanstack/react-query')
+      .QueryClientProvider,
+  };
+});
 
 const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
   typeof useUserPrivilege

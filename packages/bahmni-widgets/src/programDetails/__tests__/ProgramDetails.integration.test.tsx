@@ -1,9 +1,14 @@
-import { getProgramByUUID, updateProgramState } from '@bahmni/services';
+import {
+  getProgramByUUID,
+  updateProgramState,
+  getCurrentUserPrivileges,
+} from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { useNotification } from '../../notification';
-import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
+import { UserPrivilegeProvider } from '../../userPrivileges/UserPrivilegeProvider';
 import { mockProgramWithAttributes } from '../__mocks__/mocks';
 import ProgramDetails from '../ProgramDetails';
 
@@ -11,9 +16,17 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getProgramByUUID: jest.fn(),
   updateProgramState: jest.fn(),
+  getCurrentUserPrivileges: jest
+    .fn()
+    .mockResolvedValue([
+      { uuid: 'privilege-uuid-1', name: 'Edit Patient Programs' },
+    ]),
+  getFormattedError: jest.fn((error: Error) => ({
+    title: 'Error',
+    message: error.message,
+  })),
 }));
 jest.mock('../../notification');
-jest.mock('../../userPrivileges/useUserPrivilege');
 
 describe('ProgramDetails Integration', () => {
   const queryClient: QueryClient = new QueryClient({
@@ -27,13 +40,11 @@ describe('ProgramDetails Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
+      { uuid: 'privilege-uuid-1', name: 'Edit Patient Programs' },
+    ]);
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: jest.fn(),
-    });
-    (useUserPrivilege as jest.Mock).mockReturnValue({
-      userPrivileges: [
-        { uuid: 'privilege-uuid-1', name: 'Edit Patient Programs' },
-      ],
     });
   });
 
@@ -41,26 +52,31 @@ describe('ProgramDetails Integration', () => {
     queryClient.clear();
   });
 
+  const renderWithProviders = (ui: React.ReactElement) =>
+    render(
+      <QueryClientProvider client={queryClient}>
+        <UserPrivilegeProvider>{ui}</UserPrivilegeProvider>
+      </QueryClientProvider>,
+    );
+
   it('should fetch and display program details correctly', async () => {
     (getProgramByUUID as jest.Mock).mockResolvedValue(
       mockProgramWithAttributes,
     );
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ProgramDetails
-          programUUID="enrollment-uuid-2"
-          config={{
-            fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
-            ],
-          }}
-        />
-      </QueryClientProvider>,
+    renderWithProviders(
+      <ProgramDetails
+        programUUID="enrollment-uuid-2"
+        config={{
+          fields: [
+            'programName',
+            'Registration Number',
+            'Treatment Category',
+            'startDate',
+            'state',
+          ],
+        }}
+      />,
     );
 
     expect(
@@ -90,15 +106,13 @@ describe('ProgramDetails Integration', () => {
     const errorMessage = 'Failed to fetch program details from server';
     (getProgramByUUID as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ProgramDetails
-          programUUID="enrollment-uuid-1"
-          config={{
-            fields: ['programName', 'startDate', 'endDate', 'state'],
-          }}
-        />
-      </QueryClientProvider>,
+    renderWithProviders(
+      <ProgramDetails
+        programUUID="enrollment-uuid-1"
+        config={{
+          fields: ['programName', 'startDate', 'endDate', 'state'],
+        }}
+      />,
     );
 
     expect(
@@ -146,21 +160,19 @@ describe('ProgramDetails Integration', () => {
 
     (updateProgramState as jest.Mock).mockResolvedValue(updatedMockProgram);
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ProgramDetails
-          programUUID="enrollment-uuid-2"
-          config={{
-            fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
-            ],
-          }}
-        />
-      </QueryClientProvider>,
+    renderWithProviders(
+      <ProgramDetails
+        programUUID="enrollment-uuid-2"
+        config={{
+          fields: [
+            'programName',
+            'Registration Number',
+            'Treatment Category',
+            'startDate',
+            'state',
+          ],
+        }}
+      />,
     );
 
     await waitFor(() => {
@@ -205,21 +217,19 @@ describe('ProgramDetails Integration', () => {
       new Error('Failed to update program state'),
     );
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ProgramDetails
-          programUUID="enrollment-uuid-2"
-          config={{
-            fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
-            ],
-          }}
-        />
-      </QueryClientProvider>,
+    renderWithProviders(
+      <ProgramDetails
+        programUUID="enrollment-uuid-2"
+        config={{
+          fields: [
+            'programName',
+            'Registration Number',
+            'Treatment Category',
+            'startDate',
+            'state',
+          ],
+        }}
+      />,
     );
 
     await waitFor(() => {
@@ -257,21 +267,19 @@ describe('ProgramDetails Integration', () => {
       new Error('Operation failed [invalidStateTransition] for program'),
     );
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ProgramDetails
-          programUUID="enrollment-uuid-2"
-          config={{
-            fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
-            ],
-          }}
-        />
-      </QueryClientProvider>,
+    renderWithProviders(
+      <ProgramDetails
+        programUUID="enrollment-uuid-2"
+        config={{
+          fields: [
+            'programName',
+            'Registration Number',
+            'Treatment Category',
+            'startDate',
+            'state',
+          ],
+        }}
+      />,
     );
 
     await waitFor(() => {

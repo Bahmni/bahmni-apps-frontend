@@ -32,9 +32,7 @@ const AppointmentsTable: React.FC<WidgetProps> = ({ config }) => {
 
   const configuredFields =
     (config?.fields as string[] | undefined) ?? DEFAULT_FIELDS;
-  const numberOfPastAppointments = config?.numberOfPastAppointments as
-    | number
-    | undefined;
+  const configPageSize = Number(config?.pageSize) || 5;
 
   const headers = useMemo(
     () =>
@@ -160,6 +158,7 @@ const AppointmentsTable: React.FC<WidgetProps> = ({ config }) => {
           <TabPanel className={styles.appointmentTabs}>
             <UpcomingAppointments
               patientUUID={patientUUID}
+              pageSize={configPageSize}
               headers={headers}
               sortable={sortable}
               renderCell={renderCell}
@@ -169,7 +168,7 @@ const AppointmentsTable: React.FC<WidgetProps> = ({ config }) => {
           <TabPanel className={styles.appointmentTabs}>
             <PastAppointments
               patientUUID={patientUUID}
-              numberOfPastAppointments={numberOfPastAppointments}
+              pageSize={configPageSize}
               headers={headers}
               sortable={sortable}
               renderCell={renderCell}

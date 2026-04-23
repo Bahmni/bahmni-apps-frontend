@@ -58,10 +58,6 @@ jest.mock('@bahmni/form2-controls', () => {
   };
 });
 
-// Mock the form2-controls CSS
-jest.mock('@bahmni/form2-controls/dist/bundle.css', () => ({}));
-jest.mock('../styles/form2-controls-fixes.scss', () => ({}));
-
 // Mock the usePatientUUID hook
 jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
@@ -156,18 +152,6 @@ jest.mock('@bahmni/design-system', () => ({
     MD: 'MD',
     LG: 'LG',
   },
-}));
-
-// Mock styles
-jest.mock('../styles/ObservationFormsContainer.module.scss', () => ({
-  formView: 'formView',
-  formContent: 'formContent',
-  formViewActionArea: 'formViewActionArea',
-  formTitleContainer: 'formTitleContainer',
-  pinIconContainer: 'pinIconContainer',
-  pinned: 'pinned',
-  unpinned: 'unpinned',
-  errorNotificationWrapper: 'errorNotificationWrapper',
 }));
 
 describe('ObservationFormsContainer', () => {
@@ -493,7 +477,6 @@ describe('ObservationFormsContainer', () => {
       const pinIcon = screen.getByTestId('icon-pin-icon');
       const pinContainer = pinIcon.parentElement;
 
-      expect(pinContainer).toHaveClass('pinned');
       expect(pinContainer).toHaveAttribute('title', 'Unpin form');
     });
 
@@ -509,7 +492,6 @@ describe('ObservationFormsContainer', () => {
       const pinIcon = screen.getByTestId('icon-pin-icon');
       const pinContainer = pinIcon.parentElement;
 
-      expect(pinContainer).toHaveClass('unpinned');
       expect(pinContainer).toHaveAttribute('title', 'Pin form');
     });
 

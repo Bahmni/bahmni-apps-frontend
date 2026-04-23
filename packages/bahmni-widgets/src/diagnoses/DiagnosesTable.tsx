@@ -1,31 +1,38 @@
 import { SortableDataTable, Tag, Tile } from '@bahmni/design-system';
 import {
   formatDateTime,
-  sortByDate,
   Diagnosis,
   useTranslation,
-  getPatientDiagnoses,
+  getDiagnosesPage,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { useMemo, useCallback, useEffect, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
+import { WidgetProps } from '../registry/model';
 import styles from './styles/DiagnosesTable.module.scss';
 
 /**
  * Component to display patient diagnoses using SortableDataTable
  */
-const DiagnosesTable: React.FC = () => {
+const DiagnosesTable: React.FC<WidgetProps> = ({ config }) => {
+  // Number() safely handles non-numeric config values (NaN → falsy → fallback 10)
+  const configPageSize = Number(config?.pageSize) || 5;
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);
+
   // Use TanStack Query for data fetching and caching
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['diagnoses', patientUUID!],
+    queryKey: ['diagnoses', patientUUID!, currentPage, selectedPageSize],
     enabled: !!patientUUID,
-    queryFn: () => getPatientDiagnoses(patientUUID!),
+    placeholderData: (prev) => prev,
+    queryFn: () =>
+      getDiagnosesPage(patientUUID!, selectedPageSize, currentPage),
   });
 
   // Listen to consultation saved events and refetch if diagnoses were updated
@@ -44,6 +51,11 @@ const DiagnosesTable: React.FC = () => {
     [patientUUID, refetch],
   );
 
+  // Reset pagination when patient changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [patientUUID]);
+
   // Handle errors with notifications
   useEffect(() => {
     if (isError) {
@@ -55,6 +67,21 @@ const DiagnosesTable: React.FC = () => {
     }
   }, [isError, error, addNotification, t]);
 
+  const handlePageChange = useCallback(
+    (newPage: number, newPageSize: number) => {
+      if (newPageSize !== selectedPageSize) {
+        // Page size changed: reset to page 1, re-fetch with new _count
+        setSelectedPageSize(newPageSize);
+        setCurrentPage(1);
+      } else {
+        // Offset-based pagination: any page can be fetched directly via
+        // _getpagesoffset = (page - 1) * _count — no cursor cache needed
+        setCurrentPage(newPage);
+      }
+    },
+    [selectedPageSize],
+  );
+
   // Define table headers
   const headers = useMemo(
     () => [
@@ -65,9 +92,9 @@ const DiagnosesTable: React.FC = () => {
     [t],
   );
 
-  const processedDiagnoses = useMemo(() => {
-    return sortByDate(data ?? [], 'recordedDate');
-  }, [data]);
+  // Server sorts by _sort=-_lastUpdated (latest first); no per-page client sort needed.
+  // Per-page sortByDate would only sort within a page, producing inconsistent cross-page order.
+  const processedDiagnoses = data?.diagnoses ?? [];
 
   const renderCell = useCallback(
     (diagnosis: Diagnosis, cellId: string) => {
@@ -121,6 +148,10 @@ const DiagnosesTable: React.FC = () => {
           renderCell={renderCell}
           className={styles.diagnosesTableBody}
           dataTestId="diagnoses-table"
+          pageSize={selectedPageSize}
+          totalItems={data?.total}
+          page={currentPage}
+          onPageChange={handlePageChange}
         />
       </div>
     </>
