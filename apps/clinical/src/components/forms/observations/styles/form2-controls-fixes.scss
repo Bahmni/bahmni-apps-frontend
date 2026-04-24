@@ -91,14 +91,25 @@ button.abnormal-button:disabled {
 .form-builder-row .obs-control-select-wrapper .needsclick__control {
   width: 100% !important;
   max-width: 100% !important;
+  height: auto !important;
 }
 
+/**
+ * Use CSS grid to stack single-value and input-container in the same cell.
+ * This lets the grid row height be driven only by the single-value text,
+ * so the control stays at its default height for short text and auto-expands
+ * only when the selected text is long enough to wrap.
+ */
 .form-builder-row .obs-control-select-wrapper .needsclick__value-container {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
   max-width: calc(100% - 40px) !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 .form-builder-row .obs-control-select-wrapper .needsclick__input-container {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
   max-width: 100% !important;
   overflow: hidden !important;
 }
@@ -112,7 +123,12 @@ button.abnormal-button:disabled {
 }
 
 .form-builder-row .obs-control-select-wrapper .needsclick__single-value {
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: normal !important;
+  position: relative !important;
+  transform: none !important;
+  max-width: 100% !important;
 }
