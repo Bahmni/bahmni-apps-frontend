@@ -56,7 +56,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
     setAdministeredLocationTagSearchTerm,
   ] = useState('');
 
-  const findAttr = (name: string) => attributes?.find((a) => a.key === name);
+  const findAttr = (name: string) => attributes?.find((a) => a.name === name);
 
   const vaccineDrugComboBoxItems = useMemo(
     () =>

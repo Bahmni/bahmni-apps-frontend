@@ -165,7 +165,7 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
       const { attributes } = get();
 
       const findAttr = (name: string) =>
-        attributes?.find((a) => a.key === name);
+        attributes?.find((a) => a.name === name);
 
       const checkField = (
         errors: ImmunizationInputEntry['errors'],

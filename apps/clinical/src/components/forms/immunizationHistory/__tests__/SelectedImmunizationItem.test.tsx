@@ -58,43 +58,37 @@ describe('SelectedImmunizationItem', () => {
     it.each([
       [
         'administeredOn',
-        [{ key: 'administeredOn', required: true }],
+        [{ name: 'administeredOn', required: true }],
         `immunization-administered-on-input-${id}-test-id`,
       ],
       [
         'administeredLocation',
-        [
-          {
-            key: 'administeredLocation',
-            required: true,
-            administeredLocationTag: 'login-location',
-          },
-        ],
+        [{ name: 'administeredLocation', required: true }],
         `immunization-administered-location-${id}-test-id`,
       ],
       [
         'route',
-        [{ key: 'route', required: false, routeConceptUuid: 'route-uuid' }],
+        [{ name: 'route', required: false, routeConceptUuid: 'route-uuid' }],
         `immunization-route-${id}-test-id`,
       ],
       [
         'site',
-        [{ key: 'site', required: false, siteConceptUuid: 'site-uuid' }],
+        [{ name: 'site', required: false, siteConceptUuid: 'site-uuid' }],
         `immunization-site-${id}-test-id`,
       ],
       [
         'manufacturer',
-        [{ key: 'manufacturer', required: false }],
+        [{ name: 'manufacturer', required: false }],
         `immunization-manufacturer-${id}`,
       ],
       [
         'batchNumber',
-        [{ key: 'batchNumber', required: false }],
+        [{ name: 'batchNumber', required: false }],
         `immunization-batch-number-${id}`,
       ],
       [
         'expiryDate',
-        [{ key: 'expiryDate', required: false }],
+        [{ name: 'expiryDate', required: false }],
         `immunization-expiry-date-input-${id}`,
       ],
     ])(

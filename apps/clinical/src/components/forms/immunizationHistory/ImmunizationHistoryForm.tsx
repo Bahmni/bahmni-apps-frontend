@@ -43,14 +43,11 @@ const ImmunizationHistoryForm = () => {
     | string
     | undefined;
 
-  const routeAttr = attributes?.find((a) => a.key === 'route');
-  const siteAttr = attributes?.find((a) => a.key === 'site');
-  const administeredLocationAttr = attributes?.find(
-    (a) => a.key === 'administeredLocation',
-  );
-  const routeConceptUuid = routeAttr?.routeConceptUuid;
-  const siteConceptUuid = siteAttr?.siteConceptUuid;
-  const administeredLocationTag = administeredLocationAttr?.administeredLocationTag;
+  const routeConceptUuid = metadata?.routeConceptUuid as string | undefined;
+  const siteConceptUuid = metadata?.siteConceptUuid as string | undefined;
+  const administeredLocationTag = metadata?.administeredLocationTag as
+    | string
+    | undefined;
 
   useEffect(() => {
     if (attributes) {
@@ -76,11 +73,7 @@ const ImmunizationHistoryForm = () => {
   } = useQuery({
     queryKey: ['administeredLocationTag', administeredLocationTag],
     queryFn: () => getLocationByTag(administeredLocationTag!),
-    enabled:
-      !!administeredLocationAttr &&
-      !!administeredLocationTag &&
-      !isConfigLoading &&
-      !configError,
+    enabled: !!administeredLocationTag && !isConfigLoading && !configError,
     staleTime: Infinity,
   });
 
@@ -91,8 +84,7 @@ const ImmunizationHistoryForm = () => {
   } = useQuery({
     queryKey: ['routesConceptSet', routeConceptUuid],
     queryFn: () => searchFHIRConcepts(routeConceptUuid!),
-    enabled:
-      !!routeAttr && !!routeConceptUuid && !isConfigLoading && !configError,
+    enabled: !!routeConceptUuid && !isConfigLoading && !configError,
     staleTime: Infinity,
   });
 
@@ -103,8 +95,7 @@ const ImmunizationHistoryForm = () => {
   } = useQuery({
     queryKey: ['sitesConceptSet', siteConceptUuid],
     queryFn: () => searchFHIRConcepts(siteConceptUuid!),
-    enabled:
-      !!siteAttr && !!siteConceptUuid && !isConfigLoading && !configError,
+    enabled: !!siteConceptUuid && !isConfigLoading && !configError,
     staleTime: Infinity,
   });
 

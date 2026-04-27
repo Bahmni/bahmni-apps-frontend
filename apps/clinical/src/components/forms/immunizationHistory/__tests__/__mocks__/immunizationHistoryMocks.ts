@@ -36,14 +36,10 @@ export const mockImmunizationHistory = {
   encounterType: ['Immunization'],
   privilege: ['app:clinical;addHistory'],
   attributes: [
-    { key: 'administeredOn', required: true },
-    {
-      key: 'administeredLocation',
-      required: true,
-      administeredLocationTag: 'login-location',
-    },
-    { key: 'route', required: false, routeConceptUuid: 'route-concept-uuid' },
-    { key: 'site', required: false, siteConceptUuid: 'site-concept-uuid' },
+    { name: 'administeredOn', required: true },
+    { name: 'administeredLocation', required: true },
+    { name: 'route', required: false },
+    { name: 'site', required: false },
   ] as InputControlAttributes[],
 };
 
@@ -151,48 +147,37 @@ export const mockVaccineCode = {
 
 /** All 7 form fields present, administered fields required, others optional */
 export const mockFullAttributes: InputControlAttributes[] = [
-  { key: 'administeredOn', required: true },
-  {
-    key: 'administeredLocation',
-    required: true,
-    administeredLocationTag: 'login-location',
-  },
-  { key: 'route', required: false, routeConceptUuid: 'route-concept-uuid' },
-  { key: 'site', required: false, siteConceptUuid: 'site-concept-uuid' },
-  { key: 'manufacturer', required: false },
-  { key: 'batchNumber', required: false },
-  { key: 'expiryDate', required: false },
+  { name: 'administeredOn', required: true },
+  { name: 'administeredLocation', required: true },
+  { name: 'route', required: false },
+  { name: 'site', required: false },
+  { name: 'manufacturer', required: false },
+  { name: 'batchNumber', required: false },
+  { name: 'expiryDate', required: false },
 ];
 
 /** All 7 form fields present, all fields required */
 export const mockAllRequiredAttributes: InputControlAttributes[] = [
-  { key: 'administeredOn', required: true },
-  {
-    key: 'administeredLocation',
-    required: true,
-    administeredLocationTag: 'login-location',
-  },
-  { key: 'route', required: true, routeConceptUuid: 'route-concept-uuid' },
-  { key: 'site', required: true, siteConceptUuid: 'site-concept-uuid' },
-  { key: 'expiryDate', required: true },
-  { key: 'manufacturer', required: true },
-  { key: 'batchNumber', required: true },
+  { name: 'administeredOn', required: true },
+  { name: 'administeredLocation', required: true },
+  { name: 'route', required: true },
+  { name: 'site', required: true },
+  { name: 'expiryDate', required: true },
+  { name: 'manufacturer', required: true },
+  { name: 'batchNumber', required: true },
 ];
 
 /** All 7 form fields present, administered fields optional, others optional */
-export const mockAttributesWithOptionalAdministered: InputControlAttributes[] = [
-  { key: 'administeredOn', required: false },
-  {
-    key: 'administeredLocation',
-    required: false,
-    administeredLocationTag: 'login-location',
-  },
-  { key: 'route', required: false, routeConceptUuid: 'route-concept-uuid' },
-  { key: 'site', required: false, siteConceptUuid: 'site-concept-uuid' },
-  { key: 'manufacturer', required: false },
-  { key: 'batchNumber', required: false },
-  { key: 'expiryDate', required: false },
-];
+export const mockAttributesWithOptionalAdministered: InputControlAttributes[] =
+  [
+    { name: 'administeredOn', required: false },
+    { name: 'administeredLocation', required: false },
+    { name: 'route', required: false },
+    { name: 'site', required: false },
+    { name: 'manufacturer', required: false },
+    { name: 'batchNumber', required: false },
+    { name: 'expiryDate', required: false },
+  ];
 
 export const mockImmunizationEntryWithDate: ImmunizationInputEntry = {
   ...mockImmunizationEntry,

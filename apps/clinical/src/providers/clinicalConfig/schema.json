@@ -54,12 +54,12 @@
           "description": "Form attributes configuration",
           "items": {
             "type": "object",
-            "required": ["key", "required"],
+            "required": ["name", "required"],
             "additionalProperties": false,
             "properties": {
-              "key": {
+              "name": {
                 "type": "string",
-                "description": "Attribute key"
+                "description": "Attribute name"
               },
               "required": {
                 "type": "boolean",
