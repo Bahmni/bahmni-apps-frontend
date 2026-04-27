@@ -34,6 +34,7 @@ export interface ConsultationSavedEventPayload {
     conditions: boolean;
     allergies: boolean;
     medications: boolean;
+    immunizations?: boolean;
     serviceRequests: Record<string, boolean>;
   };
   updatedConcepts: Map<string, string>;

@@ -1,0 +1,257 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NotAdministeredTab matches snapshot 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="immunization-not-administered-tab-test-id"
+    id="immunization-not-administered-tab"
+  >
+    <div
+      class="sortable-data-table _sortableDataTableBody_1w499_1"
+      data-testid="not-administered-immunizations-table"
+    >
+      <div
+        class="cds--data-table-content"
+      >
+        <table
+          aria-label="IMMUNIZATION_HISTORY_WIDGET_NOT_ADMINISTERED_TABLE_ARIA"
+          class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+        >
+          <thead>
+            <tr>
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-_r_10_"
+                >
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_CODE header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-_r_10_"
+                  class="cds--table-sort"
+                  data-testid="table-header-code"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      IMMUNIZATION_HISTORY_WIDGET_COL_CODE
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+              <th
+                data-testid="table-header-reason"
+                scope="col"
+              >
+                <div
+                  class="cds--table-header-label"
+                >
+                  IMMUNIZATION_HISTORY_WIDGET_COL_REASON
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </div>
+              </th>
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-_r_12_"
+                >
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_DATE header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-_r_12_"
+                  class="cds--table-sort"
+                  data-testid="table-header-date"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      IMMUNIZATION_HISTORY_WIDGET_COL_DATE
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-_r_13_"
+                >
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-_r_13_"
+                  class="cds--table-sort"
+                  data-testid="table-header-recordedBy"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            aria-live="polite"
+          >
+            <tr
+              data-testid="table-row-waiver-uuid-1"
+            >
+              <td
+                data-testid="table-cell-waiver-uuid-1-code"
+              >
+                <span
+                  class="code"
+                >
+                  Hepatitis B
+                </span>
+              </td>
+              <td
+                data-testid="table-cell-waiver-uuid-1-reason"
+              >
+                Patient refused
+              </td>
+              <td
+                data-testid="table-cell-waiver-uuid-1-date"
+              >
+                19-3-2026
+              </td>
+              <td
+                data-testid="table-cell-waiver-uuid-1-recordedBy"
+              >
+                John Davis
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
