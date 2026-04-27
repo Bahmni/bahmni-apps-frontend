@@ -30,7 +30,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               <input
                 aria-activedescendant=""
                 aria-autocomplete="list"
-                aria-controls="downshift-_r_ca_-menu"
+                aria-controls="downshift-_r_b0_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
                 aria-label="Choose an item"
@@ -39,6 +39,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 data-testid="immunization-drug-name-combobox-test-id-1-test-id"
                 id="immunization-drug-name-combobox-test-id-1"
                 placeholder="Search drug name"
+                required=""
                 role="combobox"
                 tabindex="0"
                 title=""
@@ -46,11 +47,11 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 value=""
               />
               <button
-                aria-controls="downshift-_r_ca_-menu"
+                aria-controls="downshift-_r_b0_-menu"
                 aria-expanded="false"
                 aria-label="Open"
                 class="cds--list-box__menu-icon"
-                id="downshift-_r_ca_-toggle-button"
+                id="downshift-_r_b0_-toggle-button"
                 tabindex="-1"
                 title="Open"
                 type="button"
@@ -72,9 +73,9 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               </button>
             </div>
             <ul
-              aria-labelledby="downshift-_r_ca_-label"
+              aria-labelledby="downshift-_r_b0_-label"
               class="cds--list-box__menu"
-              id="downshift-_r_ca_-menu"
+              id="downshift-_r_b0_-menu"
               role="listbox"
               style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
             />
@@ -149,7 +150,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               <input
                 aria-activedescendant=""
                 aria-autocomplete="list"
-                aria-controls="downshift-_r_ce_-menu"
+                aria-controls="downshift-_r_b4_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
                 aria-label="Choose an item"
@@ -165,11 +166,11 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 value=""
               />
               <button
-                aria-controls="downshift-_r_ce_-menu"
+                aria-controls="downshift-_r_b4_-menu"
                 aria-expanded="false"
                 aria-label="Open"
                 class="cds--list-box__menu-icon"
-                id="downshift-_r_ce_-toggle-button"
+                id="downshift-_r_b4_-toggle-button"
                 tabindex="-1"
                 title="Open"
                 type="button"
@@ -191,9 +192,9 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               </button>
             </div>
             <ul
-              aria-labelledby="downshift-_r_ce_-label"
+              aria-labelledby="downshift-_r_b4_-label"
               class="cds--list-box__menu"
-              id="downshift-_r_ce_-menu"
+              id="downshift-_r_b4_-menu"
               role="listbox"
               style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
             />
@@ -215,7 +216,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               <input
                 aria-activedescendant=""
                 aria-autocomplete="list"
-                aria-controls="downshift-_r_ch_-menu"
+                aria-controls="downshift-_r_b7_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
                 aria-label="Choose an item"
@@ -231,11 +232,11 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 value=""
               />
               <button
-                aria-controls="downshift-_r_ch_-menu"
+                aria-controls="downshift-_r_b7_-menu"
                 aria-expanded="false"
                 aria-label="Open"
                 class="cds--list-box__menu-icon"
-                id="downshift-_r_ch_-toggle-button"
+                id="downshift-_r_b7_-toggle-button"
                 tabindex="-1"
                 title="Open"
                 type="button"
@@ -257,9 +258,9 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               </button>
             </div>
             <ul
-              aria-labelledby="downshift-_r_ch_-label"
+              aria-labelledby="downshift-_r_b7_-label"
               class="cds--list-box__menu"
-              id="downshift-_r_ch_-menu"
+              id="downshift-_r_b7_-menu"
               role="listbox"
               style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
             />
@@ -281,7 +282,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               <input
                 aria-activedescendant=""
                 aria-autocomplete="list"
-                aria-controls="downshift-_r_ck_-menu"
+                aria-controls="downshift-_r_ba_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
                 aria-label="Choose an item"
@@ -297,11 +298,11 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 value=""
               />
               <button
-                aria-controls="downshift-_r_ck_-menu"
+                aria-controls="downshift-_r_ba_-menu"
                 aria-expanded="false"
                 aria-label="Open"
                 class="cds--list-box__menu-icon"
-                id="downshift-_r_ck_-toggle-button"
+                id="downshift-_r_ba_-toggle-button"
                 tabindex="-1"
                 title="Open"
                 type="button"
@@ -323,9 +324,9 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               </button>
             </div>
             <ul
-              aria-labelledby="downshift-_r_ck_-label"
+              aria-labelledby="downshift-_r_ba_-label"
               class="cds--list-box__menu"
-              id="downshift-_r_ck_-menu"
+              id="downshift-_r_ba_-menu"
               role="listbox"
               style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
             />
@@ -464,762 +465,6 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                     />
                   </svg>
                 </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`SelectedImmunizationItem Snapshots matches snapshot with no optional fields 1`] = `
-<div>
-  <div>
-    <span
-      class="selectedItemTitle"
-      data-testid="immunization-drug-name-test-id-1-test-id"
-      id="immunization-drug-name-test-id-1-test-id"
-    >
-      COVID-19 Vaccine
-    </span>
-    <div
-      class="cds--css-grid"
-      data-testid="selected-immunization-item-grid-test-id-1-test-id"
-      id="selected-immunization-item-grid-test-id-1"
-    >
-      <div
-        class="column cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
-      >
-        <div
-          class="cds--list-box__wrapper"
-        >
-          <div
-            class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
-          >
-            <div
-              class="cds--list-box__field"
-            >
-              <input
-                aria-activedescendant=""
-                aria-autocomplete="list"
-                aria-controls="downshift-_r_co_-menu"
-                aria-expanded="false"
-                aria-haspopup="listbox"
-                aria-label="Choose an item"
-                autocomplete="off"
-                class="cds--text-input cds--text-input--empty"
-                data-testid="immunization-drug-name-combobox-test-id-1-test-id"
-                id="immunization-drug-name-combobox-test-id-1"
-                placeholder="Search drug name"
-                role="combobox"
-                tabindex="0"
-                title=""
-                type="text"
-                value=""
-              />
-              <button
-                aria-controls="downshift-_r_co_-menu"
-                aria-expanded="false"
-                aria-label="Open"
-                class="cds--list-box__menu-icon"
-                id="downshift-_r_co_-toggle-button"
-                tabindex="-1"
-                title="Open"
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  fill="currentColor"
-                  focusable="false"
-                  height="16"
-                  preserveAspectRatio="xMidYMid meet"
-                  viewBox="0 0 16 16"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                  />
-                </svg>
-              </button>
-            </div>
-            <ul
-              aria-labelledby="downshift-_r_co_-label"
-              class="cds--list-box__menu"
-              id="downshift-_r_co_-menu"
-              role="listbox"
-              style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`SelectedImmunizationItem Snapshots matches snapshot with with field errors 1`] = `
-<div>
-  <div>
-    <span
-      class="selectedItemTitle"
-      data-testid="immunization-drug-name-test-id-1-test-id"
-      id="immunization-drug-name-test-id-1-test-id"
-    >
-      COVID-19 Vaccine
-    </span>
-    <div
-      class="cds--css-grid"
-      data-testid="selected-immunization-item-grid-test-id-1-test-id"
-      id="selected-immunization-item-grid-test-id-1"
-    >
-      <div
-        class="column cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
-      >
-        <div
-          class="cds--list-box__wrapper"
-        >
-          <div
-            class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md cds--list-box--invalid"
-            data-invalid="true"
-          >
-            <div
-              class="cds--list-box__field"
-            >
-              <input
-                aria-activedescendant=""
-                aria-autocomplete="list"
-                aria-controls="downshift-_r_cr_-menu"
-                aria-describedby="combobox-invalid-text-id-_r_cq_"
-                aria-expanded="false"
-                aria-haspopup="listbox"
-                aria-label="Choose an item"
-                autocomplete="off"
-                class="cds--text-input cds--text-input--empty"
-                data-testid="immunization-drug-name-combobox-test-id-1-test-id"
-                id="immunization-drug-name-combobox-test-id-1"
-                placeholder="Search drug name"
-                role="combobox"
-                tabindex="0"
-                title=""
-                type="text"
-                value=""
-              />
-              <svg
-                aria-hidden="true"
-                class="cds--list-box__invalid-icon"
-                fill="currentColor"
-                focusable="false"
-                height="16"
-                preserveAspectRatio="xMidYMid meet"
-                viewBox="0 0 16 16"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8,1C4.2,1,1,4.2,1,8s3.2,7,7,7s7-3.1,7-7S11.9,1,8,1z M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2 c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                />
-                <path
-                  d="M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8 c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                  data-icon-path="inner-path"
-                  opacity="0"
-                />
-              </svg>
-              <button
-                aria-controls="downshift-_r_cr_-menu"
-                aria-expanded="false"
-                aria-label="Open"
-                class="cds--list-box__menu-icon"
-                id="downshift-_r_cr_-toggle-button"
-                tabindex="-1"
-                title="Open"
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  fill="currentColor"
-                  focusable="false"
-                  height="16"
-                  preserveAspectRatio="xMidYMid meet"
-                  viewBox="0 0 16 16"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                  />
-                </svg>
-              </button>
-            </div>
-            <ul
-              aria-labelledby="downshift-_r_cr_-label"
-              class="cds--list-box__menu"
-              id="downshift-_r_cr_-menu"
-              role="listbox"
-              style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
-            />
-          </div>
-          <div
-            class="cds--form-requirement"
-            id="combobox-invalid-text-id-_r_cq_"
-          >
-            Please select a drug name
-          </div>
-        </div>
-      </div>
-      <div
-        class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="cds--form-item datePicker"
-        >
-          <div
-            class="cds--date-picker cds--date-picker--single"
-          >
-            <div
-              class="cds--date-picker-container"
-            >
-              <label
-                class="cds--label cds--visually-hidden"
-                dir="auto"
-                for="immunization-administered-on-test-id-1"
-              >
-                Administered On
-              </label>
-              <div
-                class="cds--date-picker-input__wrapper cds--date-picker-input__wrapper--invalid"
-              >
-                <span>
-                  <input
-                    class="cds--date-picker__input cds--date-picker__input--md cds--date-picker__input--invalid flatpickr-input"
-                    data-invalid="true"
-                    data-testid="immunization-administered-on-input-test-id-1-test-id"
-                    id="immunization-administered-on-test-id-1"
-                    pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                    placeholder="Administered On"
-                    type="text"
-                  />
-                  <svg
-                    aria-hidden="true"
-                    class="cds--date-picker__icon cds--date-picker__icon--invalid"
-                    fill="currentColor"
-                    focusable="false"
-                    height="16"
-                    preserveAspectRatio="xMidYMid meet"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M8,1C4.2,1,1,4.2,1,8s3.2,7,7,7s7-3.1,7-7S11.9,1,8,1z M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2 c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                    />
-                    <path
-                      d="M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8 c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                      data-icon-path="inner-path"
-                      opacity="0"
-                    />
-                  </svg>
-                </span>
-              </div>
-              <div
-                class="cds--form-requirement"
-                dir="auto"
-              >
-                Please select the administered on date
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="cds--list-box__wrapper"
-        >
-          <div
-            class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md cds--list-box--invalid"
-            data-invalid="true"
-          >
-            <div
-              class="cds--list-box__field"
-            >
-              <input
-                aria-activedescendant=""
-                aria-autocomplete="list"
-                aria-controls="downshift-_r_cv_-menu"
-                aria-describedby="combobox-invalid-text-id-_r_cu_"
-                aria-expanded="false"
-                aria-haspopup="listbox"
-                aria-label="Choose an item"
-                autocomplete="off"
-                class="cds--text-input cds--text-input--empty"
-                data-testid="immunization-administered-location-test-id-1-test-id"
-                id="immunization-administered-location-combobox-test-id-1"
-                placeholder="Select administered location"
-                role="combobox"
-                tabindex="0"
-                title=""
-                type="text"
-                value=""
-              />
-              <svg
-                aria-hidden="true"
-                class="cds--list-box__invalid-icon"
-                fill="currentColor"
-                focusable="false"
-                height="16"
-                preserveAspectRatio="xMidYMid meet"
-                viewBox="0 0 16 16"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8,1C4.2,1,1,4.2,1,8s3.2,7,7,7s7-3.1,7-7S11.9,1,8,1z M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2 c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                />
-                <path
-                  d="M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8 c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                  data-icon-path="inner-path"
-                  opacity="0"
-                />
-              </svg>
-              <button
-                aria-controls="downshift-_r_cv_-menu"
-                aria-expanded="false"
-                aria-label="Open"
-                class="cds--list-box__menu-icon"
-                id="downshift-_r_cv_-toggle-button"
-                tabindex="-1"
-                title="Open"
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  fill="currentColor"
-                  focusable="false"
-                  height="16"
-                  preserveAspectRatio="xMidYMid meet"
-                  viewBox="0 0 16 16"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                  />
-                </svg>
-              </button>
-            </div>
-            <ul
-              aria-labelledby="downshift-_r_cv_-label"
-              class="cds--list-box__menu"
-              id="downshift-_r_cv_-menu"
-              role="listbox"
-              style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
-            />
-          </div>
-          <div
-            class="cds--form-requirement"
-            id="combobox-invalid-text-id-_r_cu_"
-          >
-            Please select an administered location
-          </div>
-        </div>
-      </div>
-      <div
-        class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="cds--list-box__wrapper"
-        >
-          <div
-            class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md cds--list-box--invalid"
-            data-invalid="true"
-          >
-            <div
-              class="cds--list-box__field"
-            >
-              <input
-                aria-activedescendant=""
-                aria-autocomplete="list"
-                aria-controls="downshift-_r_d2_-menu"
-                aria-describedby="combobox-invalid-text-id-_r_d1_"
-                aria-expanded="false"
-                aria-haspopup="listbox"
-                aria-label="Choose an item"
-                autocomplete="off"
-                class="cds--text-input cds--text-input--empty"
-                data-testid="immunization-route-test-id-1-test-id"
-                id="immunization-route-combobox-test-id-1"
-                placeholder="Select route"
-                role="combobox"
-                tabindex="0"
-                title=""
-                type="text"
-                value=""
-              />
-              <svg
-                aria-hidden="true"
-                class="cds--list-box__invalid-icon"
-                fill="currentColor"
-                focusable="false"
-                height="16"
-                preserveAspectRatio="xMidYMid meet"
-                viewBox="0 0 16 16"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8,1C4.2,1,1,4.2,1,8s3.2,7,7,7s7-3.1,7-7S11.9,1,8,1z M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2 c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                />
-                <path
-                  d="M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8 c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                  data-icon-path="inner-path"
-                  opacity="0"
-                />
-              </svg>
-              <button
-                aria-controls="downshift-_r_d2_-menu"
-                aria-expanded="false"
-                aria-label="Open"
-                class="cds--list-box__menu-icon"
-                id="downshift-_r_d2_-toggle-button"
-                tabindex="-1"
-                title="Open"
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  fill="currentColor"
-                  focusable="false"
-                  height="16"
-                  preserveAspectRatio="xMidYMid meet"
-                  viewBox="0 0 16 16"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                  />
-                </svg>
-              </button>
-            </div>
-            <ul
-              aria-labelledby="downshift-_r_d2_-label"
-              class="cds--list-box__menu"
-              id="downshift-_r_d2_-menu"
-              role="listbox"
-              style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
-            />
-          </div>
-          <div
-            class="cds--form-requirement"
-            id="combobox-invalid-text-id-_r_d1_"
-          >
-            Please select a route
-          </div>
-        </div>
-      </div>
-      <div
-        class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="cds--list-box__wrapper"
-        >
-          <div
-            class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md cds--list-box--invalid"
-            data-invalid="true"
-          >
-            <div
-              class="cds--list-box__field"
-            >
-              <input
-                aria-activedescendant=""
-                aria-autocomplete="list"
-                aria-controls="downshift-_r_d5_-menu"
-                aria-describedby="combobox-invalid-text-id-_r_d4_"
-                aria-expanded="false"
-                aria-haspopup="listbox"
-                aria-label="Choose an item"
-                autocomplete="off"
-                class="cds--text-input cds--text-input--empty"
-                data-testid="immunization-site-test-id-1-test-id"
-                id="immunization-site-combobox-test-id-1"
-                placeholder="Select site"
-                role="combobox"
-                tabindex="0"
-                title=""
-                type="text"
-                value=""
-              />
-              <svg
-                aria-hidden="true"
-                class="cds--list-box__invalid-icon"
-                fill="currentColor"
-                focusable="false"
-                height="16"
-                preserveAspectRatio="xMidYMid meet"
-                viewBox="0 0 16 16"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8,1C4.2,1,1,4.2,1,8s3.2,7,7,7s7-3.1,7-7S11.9,1,8,1z M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2 c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                />
-                <path
-                  d="M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8 c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                  data-icon-path="inner-path"
-                  opacity="0"
-                />
-              </svg>
-              <button
-                aria-controls="downshift-_r_d5_-menu"
-                aria-expanded="false"
-                aria-label="Open"
-                class="cds--list-box__menu-icon"
-                id="downshift-_r_d5_-toggle-button"
-                tabindex="-1"
-                title="Open"
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  fill="currentColor"
-                  focusable="false"
-                  height="16"
-                  preserveAspectRatio="xMidYMid meet"
-                  viewBox="0 0 16 16"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                  />
-                </svg>
-              </button>
-            </div>
-            <ul
-              aria-labelledby="downshift-_r_d5_-label"
-              class="cds--list-box__menu"
-              id="downshift-_r_d5_-menu"
-              role="listbox"
-              style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
-            />
-          </div>
-          <div
-            class="cds--form-requirement"
-            id="combobox-invalid-text-id-_r_d4_"
-          >
-            Please select a site
-          </div>
-        </div>
-      </div>
-      <div
-        class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="cds--form-item cds--text-input-wrapper"
-        >
-          <div
-            class="cds--text-input__label-wrapper"
-          >
-            <label
-              class="cds--label cds--visually-hidden"
-              dir="auto"
-              for="immunization-manufacturer-test-id-1"
-            >
-              Manufacturer
-            </label>
-          </div>
-          <div
-            class="cds--text-input__field-outer-wrapper"
-          >
-            <div
-              class="cds--text-input__field-wrapper"
-              data-invalid="true"
-            >
-              <svg
-                aria-hidden="true"
-                class="cds--text-input__invalid-icon"
-                fill="currentColor"
-                focusable="false"
-                height="16"
-                preserveAspectRatio="xMidYMid meet"
-                viewBox="0 0 16 16"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8,1C4.2,1,1,4.2,1,8s3.2,7,7,7s7-3.1,7-7S11.9,1,8,1z M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2 c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                />
-                <path
-                  d="M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8 c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                  data-icon-path="inner-path"
-                  opacity="0"
-                />
-              </svg>
-              <input
-                aria-describedby="immunization-manufacturer-test-id-1-error-msg"
-                aria-invalid="true"
-                class="cds--text-input cds--text-input--invalid cds--text-input--md cds--layout--size-md"
-                data-invalid="true"
-                data-testid="immunization-manufacturer-test-id-1"
-                id="immunization-manufacturer-test-id-1"
-                placeholder="Enter manufacturer"
-                title="Enter manufacturer"
-                type="text"
-                value=""
-              />
-              <span
-                aria-atomic="true"
-                aria-live="assertive"
-                class="cds--text-input__counter-alert"
-                role="alert"
-              />
-            </div>
-            <div
-              class="cds--form-requirement"
-              dir="auto"
-              id="immunization-manufacturer-test-id-1-error-msg"
-            >
-              Please enter a manufacturer
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="cds--form-item cds--text-input-wrapper"
-        >
-          <div
-            class="cds--text-input__label-wrapper"
-          >
-            <label
-              class="cds--label cds--visually-hidden"
-              dir="auto"
-              for="immunization-batch-number-test-id-1"
-            >
-              Batch Number
-            </label>
-          </div>
-          <div
-            class="cds--text-input__field-outer-wrapper"
-          >
-            <div
-              class="cds--text-input__field-wrapper"
-              data-invalid="true"
-            >
-              <svg
-                aria-hidden="true"
-                class="cds--text-input__invalid-icon"
-                fill="currentColor"
-                focusable="false"
-                height="16"
-                preserveAspectRatio="xMidYMid meet"
-                viewBox="0 0 16 16"
-                width="16"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8,1C4.2,1,1,4.2,1,8s3.2,7,7,7s7-3.1,7-7S11.9,1,8,1z M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2 c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                />
-                <path
-                  d="M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8 c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                  data-icon-path="inner-path"
-                  opacity="0"
-                />
-              </svg>
-              <input
-                aria-describedby="immunization-batch-number-test-id-1-error-msg"
-                aria-invalid="true"
-                class="cds--text-input cds--text-input--invalid cds--text-input--md cds--layout--size-md"
-                data-invalid="true"
-                data-testid="immunization-batch-number-test-id-1"
-                id="immunization-batch-number-test-id-1"
-                placeholder="Enter batch number"
-                title="Enter batch number"
-                type="text"
-                value=""
-              />
-              <span
-                aria-atomic="true"
-                aria-live="assertive"
-                class="cds--text-input__counter-alert"
-                role="alert"
-              />
-            </div>
-            <div
-              class="cds--form-requirement"
-              dir="auto"
-              id="immunization-batch-number-test-id-1-error-msg"
-            >
-              Please enter a batch number
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="cds--form-item datePicker"
-        >
-          <div
-            class="cds--date-picker cds--date-picker--single"
-          >
-            <div
-              class="cds--date-picker-container"
-            >
-              <label
-                class="cds--label cds--visually-hidden"
-                dir="auto"
-                for="immunization-expiry-date-test-id-1"
-              >
-                Expiry Date
-              </label>
-              <div
-                class="cds--date-picker-input__wrapper cds--date-picker-input__wrapper--invalid"
-              >
-                <span>
-                  <input
-                    class="cds--date-picker__input cds--date-picker__input--md cds--date-picker__input--invalid flatpickr-input"
-                    data-invalid="true"
-                    data-testid="immunization-expiry-date-input-test-id-1"
-                    id="immunization-expiry-date-test-id-1"
-                    pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                    placeholder="Expiry Date"
-                    type="text"
-                  />
-                  <svg
-                    aria-hidden="true"
-                    class="cds--date-picker__icon cds--date-picker__icon--invalid"
-                    fill="currentColor"
-                    focusable="false"
-                    height="16"
-                    preserveAspectRatio="xMidYMid meet"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M8,1C4.2,1,1,4.2,1,8s3.2,7,7,7s7-3.1,7-7S11.9,1,8,1z M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2 c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                    />
-                    <path
-                      d="M7.5,4h1v5h-1C7.5,9,7.5,4,7.5,4z M8,12.2c-0.4,0-0.8-0.4-0.8-0.8s0.3-0.8,0.8-0.8 c0.4,0,0.8,0.4,0.8,0.8S8.4,12.2,8,12.2z"
-                      data-icon-path="inner-path"
-                      opacity="0"
-                    />
-                  </svg>
-                </span>
-              </div>
-              <div
-                class="cds--form-requirement"
-                dir="auto"
-              >
-                Please select an expiry date
               </div>
             </div>
           </div>

@@ -46,16 +46,12 @@ describe('SelectedImmunizationItem', () => {
       ).toHaveTextContent('COVID-19 Vaccine');
     });
 
-    it('always renders drug name combobox regardless of attributes', () => {
-      render(
-        <SelectedImmunizationItem {...defaultProps} attributes={undefined} />,
-      );
-      expect(
-        screen.getByPlaceholderText('Search drug name'),
-      ).toBeInTheDocument();
-    });
-
     it.each([
+      [
+        'drug',
+        [{ name: 'drug', required: true }],
+        `immunization-drug-name-combobox-${id}-test-id`,
+      ],
       [
         'administeredOn',
         [{ name: 'administeredOn', required: true }],
@@ -105,6 +101,7 @@ describe('SelectedImmunizationItem', () => {
     );
 
     it.each([
+      ['drug', `immunization-drug-name-combobox-${id}-test-id`],
       ['administeredOn', `immunization-administered-on-input-${id}-test-id`],
       [
         'administeredLocation',
@@ -348,15 +345,10 @@ describe('SelectedImmunizationItem', () => {
   });
 
   describe('Snapshots', () => {
-    it.each([
-      ['all form fields', defaultProps],
-      ['no optional fields', { ...defaultProps, attributes: undefined }],
-      [
-        'with field errors',
-        { ...defaultProps, immunization: mockImmunizationEntryWithErrors },
-      ],
-    ])('matches snapshot with %s', (_, props) => {
-      const { container } = render(<SelectedImmunizationItem {...props} />);
+    it('matches snapshot with all form fields', () => {
+      const { container } = render(
+        <SelectedImmunizationItem {...defaultProps} />,
+      );
       expect(container).toMatchSnapshot();
     });
   });

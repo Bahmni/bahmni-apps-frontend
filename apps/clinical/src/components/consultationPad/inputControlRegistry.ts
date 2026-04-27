@@ -143,7 +143,6 @@ const BASE_REGISTRY: EncounterInputControl[] = [
   {
     key: 'immunizationHistory',
     component: ImmunizationHistoryForm,
-    encounterTypes: ['Immunization'],
     reset: () => useImmunizationHistoryStore.getState().reset(),
     validate: () => useImmunizationHistoryStore.getState().validateAll(),
     hasData: () =>

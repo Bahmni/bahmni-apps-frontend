@@ -36,6 +36,7 @@ export const mockImmunizationHistory = {
   encounterType: ['Immunization'],
   privilege: ['app:clinical;addHistory'],
   attributes: [
+    { name: 'drug', required: true },
     { name: 'administeredOn', required: true },
     { name: 'administeredLocation', required: true },
     { name: 'route', required: false },
@@ -145,8 +146,9 @@ export const mockVaccineCode = {
   display: 'COVID-19 Vaccine',
 };
 
-/** All 7 form fields present, administered fields required, others optional */
+/** All 8 form fields present, drug and administered fields required, others optional */
 export const mockFullAttributes: InputControlAttributes[] = [
+  { name: 'drug', required: true },
   { name: 'administeredOn', required: true },
   { name: 'administeredLocation', required: true },
   { name: 'route', required: false },
@@ -156,8 +158,9 @@ export const mockFullAttributes: InputControlAttributes[] = [
   { name: 'expiryDate', required: false },
 ];
 
-/** All 7 form fields present, all fields required */
+/** All 8 form fields present, all fields required */
 export const mockAllRequiredAttributes: InputControlAttributes[] = [
+  { name: 'drug', required: true },
   { name: 'administeredOn', required: true },
   { name: 'administeredLocation', required: true },
   { name: 'route', required: true },
@@ -167,9 +170,10 @@ export const mockAllRequiredAttributes: InputControlAttributes[] = [
   { name: 'batchNumber', required: true },
 ];
 
-/** All 7 form fields present, administered fields optional, others optional */
+/** All 8 form fields present, administered fields optional, others optional */
 export const mockAttributesWithOptionalAdministered: InputControlAttributes[] =
   [
+    { name: 'drug', required: false },
     { name: 'administeredOn', required: false },
     { name: 'administeredLocation', required: false },
     { name: 'route', required: false },

@@ -254,10 +254,11 @@ describe('useImmunizationHistoryStore', () => {
       expect(isValid).toBe(true);
     });
 
-    it('always validates drug as required regardless of attributes', () => {
+    it('validates drug as required when drug attribute has required: true', () => {
       const { result } = renderHook(() => useImmunizationHistoryStore());
 
       act(() => {
+        result.current.setAttributes([{ name: 'drug', required: true }]);
         result.current.addImmunization(mockVaccineCode);
       });
       let isValid = true;
@@ -270,6 +271,25 @@ describe('useImmunizationHistoryStore', () => {
       expect(result.current.selectedImmunizations[0].errors.drug).toBe(
         'IMMUNIZATION_HISTORY_DRUG_CODE_REQUIRED',
       );
+    });
+
+    it('skips drug validation when drug attribute is absent', () => {
+      const { result } = renderHook(() => useImmunizationHistoryStore());
+
+      act(() => {
+        result.current.setAttributes([]);
+        result.current.addImmunization(mockVaccineCode);
+      });
+      let isValid = true;
+
+      act(() => {
+        isValid = result.current.validateAll();
+      });
+
+      expect(isValid).toBe(true);
+      expect(
+        result.current.selectedImmunizations[0].errors.drug,
+      ).toBeUndefined();
     });
 
     it('sets errors for all required fields and marks each entry as validated, treating whitespace-only values as empty', () => {
@@ -382,6 +402,7 @@ describe('useImmunizationHistoryStore', () => {
       const { result } = renderHook(() => useImmunizationHistoryStore());
 
       act(() => {
+        result.current.setAttributes([{ name: 'drug', required: true }]);
         result.current.addImmunization(mockVaccineCode);
         result.current.addImmunization(secondVaccineCode);
       });

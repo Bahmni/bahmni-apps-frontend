@@ -214,6 +214,7 @@ exports[`ImmunizationHistoryForm Snapshots matches snapshot with selected immuni
                           data-testid="immunization-drug-name-combobox-test-id-1-test-id"
                           id="immunization-drug-name-combobox-test-id-1"
                           placeholder="Search drug name"
+                          required=""
                           role="combobox"
                           tabindex="0"
                           title=""
