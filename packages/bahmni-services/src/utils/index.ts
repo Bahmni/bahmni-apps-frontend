@@ -3,6 +3,8 @@ export {
   generateId,
   generateUUID,
   getCookieByName,
+  deleteCookie,
+  setCookie,
   isStringEmpty,
   getPriorityByOrder,
   groupByDate,

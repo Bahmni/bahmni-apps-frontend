@@ -21,7 +21,7 @@ import { createConditionViewModels } from './utils';
  */
 const ConditionsTable: React.FC<WidgetProps> = ({ config }) => {
   // Number() safely handles non-numeric config values (NaN → falsy → fallback 10)
-  const configPageSize = Number(config?.pageSize) || 10;
+  const configPageSize = Number(config?.pageSize) || 5;
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
   const { addNotification } = useNotification();

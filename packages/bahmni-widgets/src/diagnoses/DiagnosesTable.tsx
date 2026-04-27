@@ -18,7 +18,7 @@ import styles from './styles/DiagnosesTable.module.scss';
  */
 const DiagnosesTable: React.FC<WidgetProps> = ({ config }) => {
   // Number() safely handles non-numeric config values (NaN → falsy → fallback 10)
-  const configPageSize = Number(config?.pageSize) || 10;
+  const configPageSize = Number(config?.pageSize) || 5;
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();

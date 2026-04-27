@@ -493,7 +493,7 @@ describe('PatientProgramsTable Integration', () => {
     expect(mockedGetPatientProgramsPage).toHaveBeenCalledTimes(1);
     expect(mockedGetPatientProgramsPage).toHaveBeenCalledWith(
       'test-patient-uuid',
-      15,
+      5,
       1,
     );
   });
@@ -601,7 +601,7 @@ describe('PatientProgramsTable Integration', () => {
       await waitFor(() => {
         expect(mockedGetPatientProgramsPage).toHaveBeenCalledWith(
           'test-patient-uuid',
-          15,
+          5,
           1,
         );
       });
@@ -643,7 +643,7 @@ describe('PatientProgramsTable Integration', () => {
       });
     });
 
-    it('hides pagination when server total is fewer than or equal to pageSize', async () => {
+    it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', async () => {
       mockedGetPatientProgramsPage.mockResolvedValue(
         wrapPage(mockPatientProgramsResponse.results, 2),
       );
@@ -663,9 +663,7 @@ describe('PatientProgramsTable Integration', () => {
         expect(screen.getByText('HIV Program')).toBeInTheDocument();
       });
 
-      expect(
-        screen.queryByRole('button', { name: /next page/i }),
-      ).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
     });
 
     it('shows pagination when server total exceeds pageSize', async () => {

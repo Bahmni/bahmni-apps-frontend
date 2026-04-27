@@ -1,3 +1,4 @@
+import { PlayFilledAlt, Video } from '@carbon/icons-react';
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { Modal } from '../../atoms/modal';
@@ -7,6 +8,7 @@ import styles from './styles/VideoTile.module.scss';
 export interface VideoTileProps {
   videoSrc: string;
   id: string;
+  hideThumbnail?: boolean;
   className?: string;
   modalTitle?: string;
   onModalOpen?: () => void;
@@ -16,6 +18,7 @@ export interface VideoTileProps {
 export const VideoTile: React.FC<VideoTileProps> = ({
   videoSrc,
   id,
+  hideThumbnail = false,
   className,
   modalTitle,
   onModalOpen,
@@ -40,32 +43,44 @@ export const VideoTile: React.FC<VideoTileProps> = ({
         data-testid={`${id}-test-id`}
         aria-label={`${id}-aria-label`}
         type="button"
-        className={classNames(styles.thumbnailButton, className)}
+        className={classNames(styles.thumbnailButton, className, {
+          [styles.hideThumbnail]: hideThumbnail,
+        })}
         onClick={handleThumbnailClick}
       >
-        <video
-          id={`${id}-thumbnail`}
-          data-testid={`${id}-thumbnail-test-id`}
-          aria-label={`${id}-thumbnail-aria-label`}
-          className={styles.thumbnailVideo}
-          preload="metadata"
-          muted
-        >
-          <source
-            src={`${DOCUMENT_AUTH_BASE_URL}${videoSrc}#t=0.1`}
-            type="video/mp4"
+        {hideThumbnail ? (
+          <Video
+            id={`${id}-hidden-thumbnail`}
+            data-testid={`${id}-hidden-thumbnail-test-id`}
+            aria-label={`${id}-thumbnail-aria-label`}
+            size={24}
+            className={styles.videoIcon}
           />
-        </video>
-        <div className={styles.playIconOverlay}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className={styles.playIcon}
-          >
-            <path d="M8 5v14l11-7z" />
-          </svg>
-        </div>
+        ) : (
+          <>
+            <video
+              id={`${id}-thumbnail`}
+              data-testid={`${id}-thumbnail-test-id`}
+              aria-label={`${id}-thumbnail-aria-label`}
+              className={styles.thumbnailVideo}
+              preload="metadata"
+              muted
+            >
+              <source
+                src={`${DOCUMENT_AUTH_BASE_URL}${videoSrc}#t=0.1`}
+                type="video/mp4"
+              />
+            </video>
+            <div className={styles.playIconOverlay}>
+              <PlayFilledAlt
+                id={`${id}-video-play`}
+                data-testid={`${id}-video-play-test-id`}
+                aria-label={`${id}-video-play-aria-label`}
+                size={16}
+              />
+            </div>
+          </>
+        )}
       </button>
 
       {isModalOpen && (

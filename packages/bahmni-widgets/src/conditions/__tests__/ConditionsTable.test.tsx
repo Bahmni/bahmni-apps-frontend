@@ -173,7 +173,7 @@ describe('ConditionsTable', () => {
       ).toBeInTheDocument();
     });
 
-    it('hides pagination when server total is fewer than or equal to pageSize', () => {
+    it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', () => {
       (useQuery as jest.Mock).mockReturnValue({
         data: { conditions: manyConditions, total: 3 },
         error: null,
@@ -185,9 +185,7 @@ describe('ConditionsTable', () => {
           <ConditionsTable config={{ pageSize: 10 }} />
         </QueryClientProvider>,
       );
-      expect(
-        screen.queryByRole('button', { name: /next page/i }),
-      ).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
     });
 
     it('displays the current page of conditions returned by the server', () => {

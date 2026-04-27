@@ -14,7 +14,6 @@ import {
 } from 'date-fns';
 import { Age } from '../patientService/models';
 import {
-  DEFAULT_BROWSER_DATE_FORMAT,
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
   DEFAULT_TIME_FORMAT,
@@ -156,6 +155,35 @@ function formatDateGeneric(
 }
 
 /**
+ * Detects the browser's locale date format using Intl.DateTimeFormat API
+ * and converts it to a date-fns compatible format string.
+ *
+ * @returns Date format string in date-fns format (e.g., 'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd')
+ *          Falls back to DEFAULT_DATE_FORMAT (dd/MM/yyyy) if parsing fails
+ */
+export function getBrowserLocaleDateFormat(): string {
+  try {
+    const parts = new Intl.DateTimeFormat().formatToParts(new Date());
+
+    const tokenMap: Record<string, string> = {
+      day: 'dd',
+      month: 'MM',
+      year: 'yyyy',
+    };
+
+    return parts
+      .map((part) => {
+        return (
+          tokenMap[part.type] || (part.type === 'literal' ? part.value : '')
+        );
+      })
+      .join('');
+  } catch {
+    return DEFAULT_DATE_FORMAT;
+  }
+}
+
+/**
  * Universal date/time formatting method that retrieves the date format with intelligent fallback.
  *
  * Fallback priority:
@@ -190,7 +218,7 @@ export function formatDateTime(
     finalFormat =
       dateFormat ??
       localStorage.getItem(DEFAULT_DATE_FORMAT_STORAGE_KEY) ??
-      DEFAULT_BROWSER_DATE_FORMAT;
+      getBrowserLocaleDateFormat();
   } catch {
     finalFormat = DEFAULT_DATE_FORMAT;
   }

@@ -316,7 +316,7 @@ describe('DocumentsTable Integration', () => {
       expect(mockedGetDocumentReferencePage).toHaveBeenCalledWith(
         'test-patient-uuid',
         encounterUuids,
-        10,
+        5,
         1,
       );
     });
@@ -333,7 +333,7 @@ describe('DocumentsTable Integration', () => {
       expect(mockedGetDocumentReferencePage).toHaveBeenCalledWith(
         'test-patient-uuid',
         undefined,
-        10,
+        5,
         1,
       );
     });
@@ -664,7 +664,7 @@ describe('DocumentsTable Integration', () => {
       expect(screen.getByText('Lab_Result_2024')).toBeInTheDocument();
     });
 
-    it('hides pagination when server total is fewer than or equal to pageSize', async () => {
+    it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', async () => {
       mockedGetDocumentReferencePage.mockResolvedValueOnce(
         wrapPage([prescriptionDoc, xrayDoc]),
       );
@@ -675,9 +675,7 @@ describe('DocumentsTable Integration', () => {
         expect(screen.getByText('Prescription_2024')).toBeInTheDocument();
       });
 
-      expect(
-        screen.queryByRole('button', { name: /next page/i }),
-      ).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
     });
 
     it('fetches documents from service with configured pageSize', async () => {

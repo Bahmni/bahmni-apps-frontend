@@ -7,6 +7,7 @@ export { IconButton, type IconButtonProps } from './atoms/iconButton';
 export { Breadcrumb, type BreadcrumbProps } from './atoms/breadcrumb';
 export { Tile, type TileProps } from './atoms/tile';
 export { Tag, type TagProps } from './atoms/tag';
+export { SelectableTag, type SelectableTagProps } from './atoms/selectableTag';
 export {
   Icon,
   type IconProps,

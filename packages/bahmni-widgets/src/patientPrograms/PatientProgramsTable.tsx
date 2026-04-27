@@ -23,7 +23,7 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   // Number() safely handles non-numeric config values (NaN → falsy → fallback 15)
-  const configPageSize = Number(config?.pageSize) || 15;
+  const configPageSize = Number(config?.pageSize) || 5;
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);

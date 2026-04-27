@@ -36,9 +36,9 @@ export function validateAllSections(
   } = refs;
 
   const isProfileValid = profileRef.current?.validate() ?? false;
-  const isAddressValid = addressRef.current?.validate() ?? false;
-  const isContactValid = contactRef.current?.validate() ?? false;
-  const isAdditionalValid = additionalRef.current?.validate() ?? false;
+  const isAddressValid = addressRef.current?.validate() ?? true;
+  const isContactValid = contactRef.current?.validate() ?? true;
+  const isAdditionalValid = additionalRef.current?.validate() ?? true;
   const isRelationshipsValid = relationshipsRef?.current?.validate() ?? true;
 
   let allValid =
@@ -100,38 +100,11 @@ export function collectFormData(
     return null;
   }
 
-  const addressData = addressRef.current?.getData();
-  if (!addressData) {
-    addNotification({
-      title: t('NOTIFICATION_ERROR_TITLE'),
-      message: t('NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA'),
-      type: 'error',
-      timeout: 5000,
-    });
-    return null;
-  }
-
-  const contactData = contactRef.current?.getData();
-  if (!contactData) {
-    addNotification({
-      title: t('NOTIFICATION_ERROR_TITLE'),
-      message: t('NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA'),
-      type: 'error',
-      timeout: 5000,
-    });
-    return null;
-  }
-
-  const additionalData = additionalRef.current?.getData();
-  if (!additionalData) {
-    addNotification({
-      title: t('NOTIFICATION_ERROR_TITLE'),
-      message: t('NOTIFICATION_UNABLE_TO_GET_ADDITIONAL_DATA'),
-      type: 'error',
-      timeout: 5000,
-    });
-    return null;
-  }
+  // Configurable sections may be removed from config — use empty object as default
+  // when the section component is not mounted (ref.current is null)
+  const addressData = addressRef.current?.getData() ?? {};
+  const contactData = contactRef.current?.getData() ?? {};
+  const additionalData = additionalRef.current?.getData() ?? {};
 
   // Collect relationships data if the section exists
   const relationshipsData = relationshipsRef?.current?.getData() ?? [];

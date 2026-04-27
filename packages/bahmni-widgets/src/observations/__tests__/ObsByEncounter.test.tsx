@@ -161,6 +161,31 @@ describe('ObsByEncounter', () => {
       expect(sourceElement?.getAttribute('src')).toContain(videoPath);
     });
 
+    it('should render icon instead of image when hideThumbnail is true', () => {
+      const imagePath = '/documents/patient-scan.jpg';
+      mockGetValueType.mockReturnValue('Image');
+      mockTransformObservationToRowCell.mockReturnValueOnce({
+        index: 0,
+        header: 'X-Ray Image',
+        value: imagePath,
+        provider: 'Dr. Smith',
+      });
+
+      const result = extractObservationsFromBundle(
+        mockBundleWithMixedObservations,
+      );
+      const groupedData = groupObservationsByEncounter(result);
+
+      const { container } = render(
+        <ObsByEncounter groupedData={groupedData} hideThumbnail />,
+      );
+
+      expect(container.querySelector('img')).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId(`${imagePath}-img-hidden-thumbnail-test-id`),
+      ).toBeInTheDocument();
+    });
+
     it('should render string value as text when not image or video', () => {
       mockGetValueType.mockReturnValue('string');
       mockTransformObservationToRowCell.mockReturnValueOnce({

@@ -1,0 +1,29 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/colors" as *;
+
+.profileContainer {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+  position: relative;
+}
+
+.greeting {
+  @include type-style("body-compact-01");
+  white-space: nowrap;
+  color: inherit;
+}
+
+.overflowMenu {
+  background: transparent;
+
+  :global(.cds--overflow-menu-options--open) {
+    margin-top: $spacing-03;
+  }
+}
+
+.loading {
+  @include type-style("label-01");
+  padding: $spacing-03 $spacing-04;
+}

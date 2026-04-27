@@ -1,3 +1,5 @@
+import { ImagingStudy, Observation } from 'fhir/r4';
+import { get } from '../../api';
 import { getServiceRequests } from '../../orderRequestService';
 import {
   mockPatientUUID,
@@ -8,12 +10,15 @@ import {
   mockRadiologyInvestigationBundleWithImagingStudy,
   mockImagingStudies,
 } from '../__mocks__/mocks';
+import { IMAGING_STUDY_FETCH_QC_URL } from '../constants';
 import {
   getPatientRadiologyInvestigationBundle,
   getPatientRadiologyInvestigations,
   getPatientRadiologyInvestigationBundleWithImagingStudy,
+  fetchQualityAssessment,
 } from '../radiologyInvestigationService';
 
+jest.mock('../../api');
 jest.mock('../../orderRequestService');
 
 describe('radiologyInvestigationService', () => {
@@ -157,6 +162,42 @@ describe('radiologyInvestigationService', () => {
           mockCategory,
         ),
       ).rejects.toThrow('Network error');
+    });
+  });
+
+  describe('fetchQualityAssessment', () => {
+    it('should fetch quality assessment for imaging study', async () => {
+      const mockImagingStudy: ImagingStudy = {
+        resourceType: 'ImagingStudy',
+        id: 'imaging-study-123',
+        status: 'available',
+        subject: { reference: 'Patient/patient-123' },
+        contained: [
+          {
+            resourceType: 'Observation',
+            id: 'qc-obs-1',
+            status: 'final',
+            code: { coding: [{ code: 'qc-code' }] },
+          } as Observation,
+        ],
+      };
+
+      (get as jest.Mock).mockResolvedValue(mockImagingStudy);
+
+      const result = await fetchQualityAssessment('imaging-study-123');
+
+      expect(get).toHaveBeenCalledWith(
+        IMAGING_STUDY_FETCH_QC_URL('imaging-study-123'),
+      );
+      expect(result).toEqual(mockImagingStudy);
+    });
+
+    it('should propagate API errors', async () => {
+      (get as jest.Mock).mockRejectedValue(new Error('Failed to fetch'));
+
+      await expect(fetchQualityAssessment('imaging-study-123')).rejects.toThrow(
+        'Failed to fetch',
+      );
     });
   });
 });

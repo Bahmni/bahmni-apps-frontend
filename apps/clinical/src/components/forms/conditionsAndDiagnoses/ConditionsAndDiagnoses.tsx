@@ -10,6 +10,7 @@ import {
   type ConceptSearch,
   getConditions,
   getPatientDiagnoses,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import {
   useNotification,
@@ -67,6 +68,7 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     data: existingConditions,
     isLoading: existingConditionsLoading,
     error: existingConditionsError,
+    refetch: refetchConditions,
   } = useQuery({
     queryKey: ['conditions', patientUUID!],
     enabled: !!patientUUID && canAddDiagnoses,
@@ -78,11 +80,27 @@ const ConditionsAndDiagnoses: React.FC = React.memo(() => {
     data: existingDiagnoses,
     isLoading: existingDiagnosesLoading,
     error: existingDiagnosesError,
+    refetch: refetchDiagnoses,
   } = useQuery({
     queryKey: ['diagnoses', patientUUID!],
     enabled: !!patientUUID && canAddDiagnoses,
     queryFn: () => getPatientDiagnoses(patientUUID!),
   });
+
+  // Refresh duplicate-check caches after a consultation is saved so that newly
+  // added diagnoses/conditions are reflected immediately without a page reload.
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (
+        payload.patientUUID === patientUUID &&
+        payload.updatedResources.conditions
+      ) {
+        refetchDiagnoses();
+        refetchConditions();
+      }
+    },
+    [patientUUID, refetchDiagnoses, refetchConditions],
+  );
 
   useEffect(() => {
     if (existingConditionsError) {

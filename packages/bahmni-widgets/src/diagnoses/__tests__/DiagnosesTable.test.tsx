@@ -350,7 +350,7 @@ describe('DiagnosesTable', () => {
       ).toBeInTheDocument();
     });
 
-    it('hides pagination when server total is fewer than or equal to pageSize', () => {
+    it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', () => {
       mockUseQuery.mockReturnValue({
         data: { diagnoses: manyDiagnoses, total: 3 },
         isLoading: false,
@@ -360,9 +360,7 @@ describe('DiagnosesTable', () => {
       } as any);
 
       render(<DiagnosesTable config={{ pageSize: 10 }} />);
-      expect(
-        screen.queryByRole('button', { name: /next page/i }),
-      ).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
     });
 
     it('displays the current page of diagnoses returned by the server', () => {

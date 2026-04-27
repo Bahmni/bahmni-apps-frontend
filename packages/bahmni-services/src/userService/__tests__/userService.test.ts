@@ -1,17 +1,31 @@
-import { get } from '../../api';
+import { get, del, post } from '../../api';
 import { BAHMNI_USER_COOKIE_NAME } from '../../constants/app';
-import { getCookieByName } from '../../utils';
-import { USER_RESOURCE_URL, BAHMNI_USER_LOCATION_COOKIE } from '../constants';
-import { getCurrentUser, getUserLoginLocation } from '../userService';
+import { getCookieByName, deleteCookie } from '../../utils';
+import {
+  USER_RESOURCE_URL,
+  BAHMNI_USER_LOCATION_COOKIE,
+  LOGOUT_URL,
+  LOGOUT_COOKIES,
+  AVAILABLE_LOCATIONS_URL,
+  APP_SETTINGS_URL,
+  SAVE_USER_LOCATION_URL,
+} from '../constants';
+import {
+  getCurrentUser,
+  getUserLoginLocation,
+  logout,
+  getDefaultDateFormat,
+  getAvailableLocations,
+  saveUserLocation,
+} from '../userService';
 
-// Mock dependencies
 jest.mock('../../api');
 jest.mock('../../utils', () => ({
   ...jest.requireActual('../../utils'),
   getCookieByName: jest.fn(),
+  deleteCookie: jest.fn(),
 }));
 
-//TODO: Remove this import once the test i18n setup is complete
 jest.mock('i18next', () => ({
   __esModule: true,
   default: {
@@ -256,5 +270,152 @@ describe('getUserLocation', () => {
     const result = await getUserLoginLocation();
     expect(getCookieByName).toHaveBeenCalledWith(BAHMNI_USER_LOCATION_COOKIE);
     expect(result).toEqual(userLocation);
+  });
+});
+
+describe('logout', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (del as jest.Mock).mockReset();
+    (deleteCookie as jest.Mock).mockReset();
+  });
+
+  it('should delete session and clear cookies on successful logout', async () => {
+    (del as jest.Mock).mockResolvedValue({});
+
+    await logout();
+
+    expect(del).toHaveBeenCalledWith(LOGOUT_URL);
+    LOGOUT_COOKIES.forEach((cookieName) => {
+      expect(deleteCookie).toHaveBeenCalledWith(cookieName);
+    });
+  });
+
+  it('should clear all required cookies', async () => {
+    (del as jest.Mock).mockResolvedValue({});
+
+    await logout();
+
+    expect(deleteCookie).toHaveBeenCalledTimes(LOGOUT_COOKIES.length);
+  });
+
+  it('should throw error when API call fails', async () => {
+    const mockError = new Error('Network error');
+    (del as jest.Mock).mockRejectedValue(mockError);
+
+    await expect(logout()).rejects.toThrow('USER_LOGOUT_FAILED');
+  });
+
+  it('should not clear cookies if API call fails', async () => {
+    const mockError = new Error('Network error');
+    (del as jest.Mock).mockRejectedValue(mockError);
+
+    try {
+      await logout();
+    } catch {
+      // Expected to throw
+    }
+
+    expect(deleteCookie).not.toHaveBeenCalled();
+  });
+});
+
+describe('getDefaultDateFormat', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (get as jest.Mock).mockReset();
+  });
+
+  it('should return the date format when setting exists', async () => {
+    (get as jest.Mock).mockResolvedValue([
+      { property: 'default_dateFormat', value: 'dd/MM/yyyy' },
+    ]);
+
+    const result = await getDefaultDateFormat();
+
+    expect(get).toHaveBeenCalledWith(APP_SETTINGS_URL('commons'));
+    expect(result).toBe('dd/MM/yyyy');
+  });
+
+  it('should return null when setting does not exist', async () => {
+    (get as jest.Mock).mockResolvedValue([
+      { property: 'other_setting', value: 'some-value' },
+    ]);
+
+    const result = await getDefaultDateFormat();
+
+    expect(result).toBeNull();
+  });
+
+  it('should return null when settings array is empty', async () => {
+    (get as jest.Mock).mockResolvedValue([]);
+
+    const result = await getDefaultDateFormat();
+
+    expect(result).toBeNull();
+  });
+});
+
+describe('getAvailableLocations', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (get as jest.Mock).mockReset();
+  });
+
+  it('should return locations on success', async () => {
+    const mockLocations = [
+      { name: 'Ward 1', uuid: 'uuid-1' },
+      { name: 'Ward 2', uuid: 'uuid-2' },
+    ];
+    (get as jest.Mock).mockResolvedValue({ results: mockLocations });
+
+    const result = await getAvailableLocations();
+
+    expect(get).toHaveBeenCalledWith(AVAILABLE_LOCATIONS_URL);
+    expect(result).toEqual(mockLocations);
+  });
+
+  it('should return empty array when results is null', async () => {
+    (get as jest.Mock).mockResolvedValue({ results: null });
+
+    const result = await getAvailableLocations();
+
+    expect(result).toEqual([]);
+  });
+
+  it('should return empty array on API failure', async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    (get as jest.Mock).mockRejectedValue(new Error('Network error'));
+
+    const result = await getAvailableLocations();
+
+    expect(result).toEqual([]);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to fetch available locations:',
+      expect.any(Error),
+    );
+    consoleErrorSpy.mockRestore();
+  });
+});
+
+describe('saveUserLocation', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (post as jest.Mock).mockReset();
+  });
+
+  it('should post location to the correct URL', async () => {
+    (post as jest.Mock).mockResolvedValue({});
+
+    await saveUserLocation('user-uuid-123', {
+      name: 'ICU',
+      uuid: 'loc-uuid-456',
+    });
+
+    expect(post).toHaveBeenCalledWith(SAVE_USER_LOCATION_URL('user-uuid-123'), {
+      userProperties: { loginLocation: 'loc-uuid-456' },
+    });
   });
 });

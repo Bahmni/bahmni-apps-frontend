@@ -117,11 +117,9 @@ export const SortableDataTable = <T extends { id: string }>({
 
   const rowMap = new Map(rows.map((row) => [row.id, row]));
 
-  // In server-side mode (totalItems defined), use server total for pagination visibility
-  // In client-side mode, use rows.length
-  const showPagination =
-    pageSize !== undefined &&
-    (totalItems !== undefined ? totalItems > pageSize : rows.length > pageSize);
+  // Always show pagination footer when pageSize is defined, even if all items fit on one page.
+  // This lets users see the total count and change the page size.
+  const showPagination = pageSize !== undefined;
 
   return (
     <div

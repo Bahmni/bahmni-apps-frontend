@@ -5,7 +5,7 @@ import {
   useUserPrivilege,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React, { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
@@ -110,8 +110,20 @@ jest.mock('@bahmni/design-system', () => ({
       </div>
     ),
   ),
-  Header: jest.fn(({ sideNavItems, activeSideNavItemId }) => (
+  Header: jest.fn(({ sideNavItems, activeSideNavItemId, globalActions }) => (
     <div data-testid="mocked-header-component">
+      {globalActions?.map(
+        (action: { id: string; label: string; onClick: () => void }) => (
+          <button
+            key={action.id}
+            data-testid={`global-action-${action.id}`}
+            onClick={action.onClick}
+            tabIndex={0}
+          >
+            {action.label}
+          </button>
+        ),
+      )}
       {sideNavItems.map(
         (item: {
           id: string;
@@ -235,6 +247,32 @@ describe('ConsultationPage', () => {
       await waitFor(() => {
         expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
       });
+    });
+
+    it('should show a search icon in the header reachable via keyboard Tab navigation', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      const searchIcon = screen.getByTestId('global-action-search');
+      expect(searchIcon).toBeInTheDocument();
+      expect(searchIcon).toHaveAttribute('tabindex', '0');
+    });
+
+    it('should expand search input when the search icon is clicked', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('global-action-search'));
+
+      expect(
+        screen.getByTestId('patient-search-container'),
+      ).toBeInTheDocument();
     });
 
     it('should handle the loading state', () => {

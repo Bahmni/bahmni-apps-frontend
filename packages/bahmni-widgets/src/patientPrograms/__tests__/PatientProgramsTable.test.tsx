@@ -245,7 +245,7 @@ describe('PatientProgramsTable', () => {
       ).toBeInTheDocument();
     });
 
-    it('hides pagination when server total is fewer than or equal to pageSize', () => {
+    it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', () => {
       (useQuery as jest.Mock).mockReturnValue({
         data: { programs: manyPrograms, total: 3 },
         error: null,
@@ -259,9 +259,7 @@ describe('PatientProgramsTable', () => {
           />
         </QueryClientProvider>,
       );
-      expect(
-        screen.queryByRole('button', { name: /next page/i }),
-      ).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
     });
 
     it('displays the current page of programs returned by the server', () => {

@@ -187,6 +187,19 @@ describe('MedicationsForm', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
+    jest.spyOn(Intl, 'DateTimeFormat').mockImplementation(
+      () =>
+        ({
+          formatToParts: () => [
+            { type: 'month', value: '3' },
+            { type: 'literal', value: '/' },
+            { type: 'day', value: '24' },
+            { type: 'literal', value: '/' },
+            { type: 'year', value: '2026' },
+          ],
+        }) as any,
+    );
+
     (useMedicationStore as unknown as jest.Mock).mockReturnValue(mockStore);
     (useMedicationSearch as jest.Mock).mockReturnValue(
       mockMedicationSearchHook,
@@ -214,6 +227,10 @@ describe('MedicationsForm', () => {
     } as unknown as ReturnType<typeof useQueryClient>);
 
     mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithMedications);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   // HAPPY PATH TESTS

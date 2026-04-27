@@ -46,17 +46,11 @@ const DATE_FORMAT_MAP: Record<string, string> = {
 };
 
 /**
- * Detects the browser's locale date format using Intl.DateTimeFormat API.
- * Uses formatToParts() to analyze the browser's default date formatting pattern
+ * Detects the browser's locale date format using Intl.DateTimeFormat API
  * and converts it to a date-fns compatible format string.
  *
- * Implementation:
- * - Uses Intl.DateTimeFormat().formatToParts() to get locale date components
- * - Maps date parts (day, month, year) to date-fns tokens (dd, MM, yyyy)
- * - Preserves literal separators (/, -, ., spaces) from the locale
- * - Falls back to DEFAULT_DATE_FORMAT (dd/MM/yyyy) if parsing fails
- *
  * @returns Date format string in date-fns format (e.g., 'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd')
+ *          Falls back to DEFAULT_DATE_FORMAT (dd/MM/yyyy) if parsing fails
  */
 export function getBrowserLocaleDateFormat(): string {
   try {

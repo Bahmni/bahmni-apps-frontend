@@ -12,6 +12,7 @@
   },
   "include": [
     "./setupTests.ts",
+    "./setupTests.i18n.ts",
     "jest.config.ts",
     "src/**/*.test.ts",
     "src/**/*.spec.ts",
