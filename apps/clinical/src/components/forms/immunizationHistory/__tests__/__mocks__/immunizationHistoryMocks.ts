@@ -3,9 +3,9 @@ import { Medication, Reference } from 'fhir/r4';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../../models';
 
-const MEDICINE_EXTENSION_URL = 'http://fhir.openmrs.org/ext/medicine';
+const MEDICINE_EXTENSION_URL = 'http://fhir.openmrs.org/ext/medicine'; // NOSONAR
 const MEDICINE_DRUG_NAME_EXTENSION_URL =
-  'http://fhir.openmrs.org/ext/medicine#drugName';
+  'http://fhir.openmrs.org/ext/medicine#drugName'; // NOSONAR
 
 const buildMedicationEntry = (
   drugName: string,

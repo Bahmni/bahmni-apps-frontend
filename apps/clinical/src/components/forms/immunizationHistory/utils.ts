@@ -166,7 +166,7 @@ export function createImmunizationBundleEntries({
           function: {
             coding: [
               {
-                system: 'http://terminology.hl7.org/CodeSystem/v2-0443',
+                system: 'http://terminology.hl7.org/CodeSystem/v2-0443', // NOSONAR
                 code: 'EP',
                 display: 'Entering Provider',
               },
