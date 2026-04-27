@@ -388,7 +388,9 @@ describe('createImmunizationBundleEntries', () => {
         },
       },
     ]);
-    expect(resource.note).toEqual([{ text: 'Third dose completed successfully.' }]);
+    expect(resource.note).toEqual([
+      { text: 'Third dose completed successfully.' },
+    ]);
   });
 
   it('includes administeredProduct extension with display only when drug has no code', () => {

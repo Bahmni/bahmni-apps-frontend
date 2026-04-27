@@ -47,7 +47,7 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
     (payload: ConsultationSavedEventPayload) => {
       if (
         payload.patientUUID === patientUUID &&
-        payload.updatedResources.immunizations
+        payload.updatedResources.immunizationHistory
       ) {
         refetch();
       }

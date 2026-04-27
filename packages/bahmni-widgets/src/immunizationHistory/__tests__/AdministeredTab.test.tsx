@@ -168,7 +168,7 @@ describe('AdministeredTab', () => {
       description: 'same patient with immunization update',
       payload: {
         patientUUID: 'patient-uuid-123',
-        updatedResources: { immunizations: true },
+        updatedResources: { immunizationHistory: true },
       } as ConsultationSavedEventPayload,
       expectedCallCount: 1,
     },
@@ -176,7 +176,7 @@ describe('AdministeredTab', () => {
       description: 'different patient',
       payload: {
         patientUUID: 'other-uuid',
-        updatedResources: { immunizations: true },
+        updatedResources: { immunizationHistory: true },
       } as ConsultationSavedEventPayload,
       expectedCallCount: 0,
     },

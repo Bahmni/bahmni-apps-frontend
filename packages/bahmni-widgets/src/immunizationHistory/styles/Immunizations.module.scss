@@ -22,6 +22,9 @@
         color: $text-primary;
         padding: $spacing-05;
     }
+    button {
+      margin-inline-end: $spacing-01;
+    }
 }
 
 .code {
