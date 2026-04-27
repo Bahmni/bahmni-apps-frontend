@@ -146,7 +146,7 @@ export const mockVaccineCode = {
   display: 'COVID-19 Vaccine',
 };
 
-/** All 8 form fields present, drug and administered fields required, others optional */
+/** All 9 form fields present, drug and administered fields required, others optional */
 export const mockFullAttributes: InputControlAttributes[] = [
   { name: 'drug', required: true },
   { name: 'administeredOn', required: true },
@@ -156,9 +156,10 @@ export const mockFullAttributes: InputControlAttributes[] = [
   { name: 'manufacturer', required: false },
   { name: 'batchNumber', required: false },
   { name: 'expiryDate', required: false },
+  { name: 'note', required: false },
 ];
 
-/** All 8 form fields present, all fields required */
+/** All 9 form fields present, all fields required (note is never required) */
 export const mockAllRequiredAttributes: InputControlAttributes[] = [
   { name: 'drug', required: true },
   { name: 'administeredOn', required: true },
@@ -168,9 +169,10 @@ export const mockAllRequiredAttributes: InputControlAttributes[] = [
   { name: 'expiryDate', required: true },
   { name: 'manufacturer', required: true },
   { name: 'batchNumber', required: true },
+  { name: 'note', required: false },
 ];
 
-/** All 8 form fields present, administered fields optional, others optional */
+/** All 9 form fields present, administered fields optional, others optional */
 export const mockAttributesWithOptionalAdministered: InputControlAttributes[] =
   [
     { name: 'drug', required: false },
@@ -181,6 +183,7 @@ export const mockAttributesWithOptionalAdministered: InputControlAttributes[] =
     { name: 'manufacturer', required: false },
     { name: 'batchNumber', required: false },
     { name: 'expiryDate', required: false },
+    { name: 'note', required: false },
   ];
 
 export const mockImmunizationEntryWithDate: ImmunizationInputEntry = {
@@ -265,6 +268,7 @@ export const mockStore = {
   updateExpiryDate: jest.fn(),
   updateManufacturer: jest.fn(),
   updateBatchNumber: jest.fn(),
+  updateNote: jest.fn(),
   validateAll: jest.fn(),
   reset: jest.fn(),
   getState: jest.fn(),

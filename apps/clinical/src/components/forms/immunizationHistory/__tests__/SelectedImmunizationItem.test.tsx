@@ -87,6 +87,11 @@ describe('SelectedImmunizationItem', () => {
         [{ name: 'expiryDate', required: false }],
         `immunization-expiry-date-input-${id}`,
       ],
+      [
+        'note',
+        [{ name: 'note', required: false }],
+        `immunization-add-note-link-${id}-test-id`,
+      ],
     ])(
       'renders %s field when attributes includes it',
       (_, attributes, testId) => {
@@ -112,6 +117,7 @@ describe('SelectedImmunizationItem', () => {
       ['manufacturer', `immunization-manufacturer-${id}`],
       ['batchNumber', `immunization-batch-number-${id}`],
       ['expiryDate', `immunization-expiry-date-input-${id}`],
+      ['note', `immunization-add-note-link-${id}-test-id`],
     ])('does not render %s field when attributes is empty', (_, testId) => {
       render(<SelectedImmunizationItem {...defaultProps} attributes={[]} />);
       expect(screen.queryByTestId(testId)).not.toBeInTheDocument();
@@ -342,6 +348,52 @@ describe('SelectedImmunizationItem', () => {
         });
       },
     );
+  });
+
+  describe('Note field interactions', () => {
+    it('opens textarea on link click, calls updateNote on input, and clears on close', async () => {
+      const user = userEvent.setup();
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={[{ name: 'note', required: false }]}
+        />,
+      );
+
+      expect(
+        screen.getByTestId(`immunization-add-note-link-${id}-test-id`),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId(`immunization-note-${id}-test-id`),
+      ).not.toBeInTheDocument();
+
+      await user.click(
+        screen.getByTestId(`immunization-add-note-link-${id}-test-id`),
+      );
+      expect(
+        screen.queryByTestId(`immunization-add-note-link-${id}-test-id`),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId(`immunization-note-${id}-test-id`),
+      ).toBeInTheDocument();
+
+      await user.type(
+        screen.getByTestId(`immunization-note-${id}-test-id`),
+        'A',
+      );
+      await waitFor(() => {
+        expect(mockStore.updateNote).toHaveBeenCalledWith(
+          id,
+          expect.any(String),
+        );
+      });
+
+      await user.click(screen.getByRole('button', { name: /close/i }));
+      expect(
+        screen.queryByTestId(`immunization-note-${id}-test-id`),
+      ).not.toBeInTheDocument();
+      expect(mockStore.updateNote).toHaveBeenCalledWith(id, '');
+    });
   });
 
   describe('Snapshots', () => {

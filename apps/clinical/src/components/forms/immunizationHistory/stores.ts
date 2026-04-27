@@ -161,6 +161,14 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
       }));
     },
 
+    updateNote: (id: string, value: string) => {
+      set((state) => ({
+        selectedImmunizations: state.selectedImmunizations.map((entry) =>
+          entry.id === id ? { ...entry, note: value } : entry,
+        ),
+      }));
+    },
+
     validateAll: () => {
       let isValid = true;
       const { attributes } = get();

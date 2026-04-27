@@ -44,6 +44,11 @@
   margin-left: 0;
 }
 
+.textArea {
+  margin-block-start: -1rem;
+  margin-inline-start: 0;
+}
+
 .column {
   margin-top: $spacing-04;
   margin-left: 0;

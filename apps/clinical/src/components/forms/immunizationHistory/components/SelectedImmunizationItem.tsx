@@ -4,6 +4,8 @@ import {
   DatePicker,
   DatePickerInput,
   Grid,
+  Link,
+  TextAreaWClose,
   TextInput,
 } from '@bahmni/design-system';
 import { useTranslation, Location } from '@bahmni/services';
@@ -47,8 +49,10 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
     updateExpiryDate,
     updateManufacturer,
     updateBatchNumber,
+    updateNote,
   } = useImmunizationHistoryStore();
   const { id } = immunization;
+  const [hasNote, setHasNote] = useState(!!immunization.note);
   const [drugSearchTerm, setDrugSearchTerm] = useState('');
   const [routeSearchTerm, setRouteSearchTerm] = useState('');
   const [siteSearchTerm, setSiteSearchTerm] = useState('');
@@ -350,6 +354,40 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                 }
               />
             </DatePicker>
+          </Column>
+        )}
+
+        {findAttr('note', attributes) && (
+          <Column sm={4} md={8} lg={16} className={styles.column}>
+            {!hasNote && (
+              <Link
+                href="#"
+                data-testid={`immunization-add-note-link-${id}-test-id`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setHasNote(true);
+                }}
+              >
+                {t('IMMUNIZATION_HISTORY_ADD_NOTE')}
+              </Link>
+            )}
+            {hasNote && (
+              <TextAreaWClose
+                id={`immunization-note-${id}`}
+                data-testid={`immunization-note-${id}-test-id`}
+                labelText={t('IMMUNIZATION_HISTORY_ADD_NOTE')}
+                placeholder={t('IMMUNIZATION_HISTORY_ADD_NOTE_PLACEHOLDER')}
+                value={immunization.note ?? ''}
+                onChange={(e) => updateNote(id, e.target.value)}
+                onClose={() => {
+                  setHasNote(false);
+                  updateNote(id, '');
+                }}
+                enableCounter
+                maxCount={1024}
+                className={styles.textArea}
+              />
+            )}
           </Column>
         )}
       </Grid>

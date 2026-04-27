@@ -427,6 +427,34 @@ describe('useImmunizationHistoryStore', () => {
     });
   });
 
+  describe('updateNote', () => {
+    it('updates note on the target entry without touching other entries, and is a no-op for a non-existent id', () => {
+      const { result } = renderHook(() => useImmunizationHistoryStore());
+
+      act(() => {
+        result.current.addImmunization(mockVaccineCode);
+        result.current.addImmunization(secondVaccineCode);
+      });
+      const targetId = result.current.selectedImmunizations[0].id;
+      const otherEntryBefore = result.current.selectedImmunizations[1];
+
+      act(() => {
+        result.current.updateNote(targetId, 'Some note text');
+      });
+
+      expect(result.current.selectedImmunizations[0].note).toBe(
+        'Some note text',
+      );
+      expect(result.current.selectedImmunizations[1]).toEqual(otherEntryBefore);
+
+      const before = [...result.current.selectedImmunizations];
+      act(() => {
+        result.current.updateNote('non-existent-id', 'Another note');
+      });
+      expect(result.current.selectedImmunizations).toEqual(before);
+    });
+  });
+
   describe('reset', () => {
     it('clears all selected immunizations', () => {
       const { result } = renderHook(() => useImmunizationHistoryStore());
