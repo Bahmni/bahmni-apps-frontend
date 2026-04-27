@@ -61,7 +61,7 @@ const ImmunizationHistoryForm = () => {
     error: vaccineCodeConceptSetError,
   } = useQuery({
     queryKey: ['vaccineConceptSetUuid', vaccineConceptSetUuid],
-    queryFn: () => searchFHIRConcepts(vaccineConceptSetUuid!),
+    queryFn: () => searchFHIRConcepts(vaccineConceptSetUuid),
     enabled: !!vaccineConceptSetUuid && !isConfigLoading && !configError,
     staleTime: Infinity,
   });
@@ -72,7 +72,7 @@ const ImmunizationHistoryForm = () => {
     error: administeredLocationTagError,
   } = useQuery({
     queryKey: ['administeredLocationTag', administeredLocationTag],
-    queryFn: () => getLocationByTag(administeredLocationTag!),
+    queryFn: () => getLocationByTag(administeredLocationTag),
     enabled:
       !!administeredLocationTag &&
       !isConfigLoading &&
@@ -87,7 +87,7 @@ const ImmunizationHistoryForm = () => {
     error: routesConceptSetError,
   } = useQuery({
     queryKey: ['routesConceptSet', routeConceptUuid],
-    queryFn: () => searchFHIRConcepts(routeConceptUuid!),
+    queryFn: () => searchFHIRConcepts(routeConceptUuid),
     enabled:
       !!routeConceptUuid &&
       !isConfigLoading &&
@@ -102,7 +102,7 @@ const ImmunizationHistoryForm = () => {
     error: sitesConceptSetError,
   } = useQuery({
     queryKey: ['sitesConceptSet', siteConceptUuid],
-    queryFn: () => searchFHIRConcepts(siteConceptUuid!),
+    queryFn: () => searchFHIRConcepts(siteConceptUuid),
     enabled:
       !!siteConceptUuid &&
       !isConfigLoading &&
