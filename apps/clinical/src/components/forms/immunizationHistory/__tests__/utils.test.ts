@@ -409,8 +409,8 @@ describe('createImmunizationBundleEntries', () => {
           coding: [
             {
               system: 'http://terminology.hl7.org/CodeSystem/v2-0443',
-              code: 'AP',
-              display: 'Administering Provider',
+              code: 'EP',
+              display: 'Entering Provider',
             },
           ],
         },

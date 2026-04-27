@@ -162,7 +162,7 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
     expect(resource.patient).toEqual(mockEncounterSubject);
     expect(resource.location?.reference).toBe('Location/location-uuid-1');
     expect(resource.encounter?.reference).toBe('Encounter/encounter-uuid');
-    expect(resource.performer?.[0].function?.coding?.[0].code).toBe('AP');
+    expect(resource.performer?.[0].function?.coding?.[0].code).toBe('EP');
   });
 
   it('shows required field validation errors when fields are left empty after vaccine selection', async () => {
