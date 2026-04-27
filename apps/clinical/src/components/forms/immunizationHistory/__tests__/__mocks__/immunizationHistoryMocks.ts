@@ -252,6 +252,7 @@ export const mockImmunizationEntryComplete: ImmunizationInputEntry = {
   expiryDate: new Date('2026-06-01'),
   manufacturer: 'Pfizer',
   batchNumber: 'BATCH-001',
+  note: 'Third dose completed successfully.',
 };
 
 export const mockStore = {

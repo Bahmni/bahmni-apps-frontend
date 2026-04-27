@@ -14,7 +14,12 @@ import {
   createEncounterReferenceFromString,
   createPractitionerReference,
 } from '../../../utils/fhir/referenceCreator';
-import { ADMINISTERED_PRODUCT_EXTENSION_URL } from './constants';
+import {
+  ADMINISTERED_PRODUCT_EXTENSION_URL,
+  ENTERING_PROVIDER_CODE,
+  ENTERING_PROVIDER_DISPLAY,
+  ENTERING_PROVIDER_SYSTEM,
+} from './constants';
 import {
   CreateImmunizationBundleEntriesParams,
   ImmunizationDrug,
@@ -157,6 +162,7 @@ export function createImmunizationBundleEntries({
         ? { display: entry.manufacturer }
         : undefined,
       lotNumber: entry.batchNumber ?? undefined,
+      note: entry.note ? [{ text: entry.note }] : undefined,
       extension: entry.drug
         ? resolveAdministeredProductExtension(entry.drug)
         : undefined,
@@ -166,9 +172,9 @@ export function createImmunizationBundleEntries({
           function: {
             coding: [
               {
-                system: 'http://terminology.hl7.org/CodeSystem/v2-0443', // NOSONAR
-                code: 'EP',
-                display: 'Entering Provider',
+                system: ENTERING_PROVIDER_SYSTEM,
+                code: ENTERING_PROVIDER_CODE,
+                display: ENTERING_PROVIDER_DISPLAY,
               },
             ],
           },

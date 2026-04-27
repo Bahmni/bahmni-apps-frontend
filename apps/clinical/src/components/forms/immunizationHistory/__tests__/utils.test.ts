@@ -361,6 +361,7 @@ describe('createImmunizationBundleEntries', () => {
     expect(resource.manufacturer).toBeUndefined();
     expect(resource.lotNumber).toBeUndefined();
     expect(resource.extension).toBeUndefined();
+    expect(resource.note).toBeUndefined();
   });
 
   it('includes all optional fields when set on a complete entry', () => {
@@ -387,6 +388,7 @@ describe('createImmunizationBundleEntries', () => {
         },
       },
     ]);
+    expect(resource.note).toEqual([{ text: 'Third dose completed successfully.' }]);
   });
 
   it('includes administeredProduct extension with display only when drug has no code', () => {

@@ -15,7 +15,7 @@ export const mockAdministeredImmunization: Immunization = {
   protocolApplied: [{ doseNumberPositiveInt: 3 }],
   performer: [
     {
-      function: { coding: [{ code: 'AP' }] },
+      function: { coding: [{ code: 'EP' }] },
       actor: { display: 'Aisha Khan' },
     },
     {
@@ -61,7 +61,7 @@ export const mockNotAdministeredImmunization: Immunization = {
   statusReason: { coding: [{ display: 'Patient refused' }] },
   performer: [
     {
-      function: { coding: [{ code: 'AP' }] },
+      function: { coding: [{ code: 'EP' }] },
       actor: { display: 'John Davis' },
     },
   ],

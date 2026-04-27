@@ -1,6 +1,6 @@
 import { Immunization } from 'fhir/r4';
 import {
-  ADMINISTERING_PROVIDER_CODE,
+  ENTERING_PROVIDER_CODE,
   FHIR_EXT_IMMUNIZATION_DRUG,
   ORDERING_PROVIDER_CODE,
 } from './constants';
@@ -41,10 +41,7 @@ export function createAdministeredImmunizationViewModel(
   const site = immunization.site?.coding?.[0]?.display ?? null;
   const manufacturer = immunization.manufacturer?.display ?? null;
   const batchNumber = immunization.lotNumber ?? null;
-  const recordedBy = getPerformerDisplay(
-    immunization,
-    ADMINISTERING_PROVIDER_CODE,
-  );
+  const recordedBy = getPerformerDisplay(immunization, ENTERING_PROVIDER_CODE);
   const orderedBy = getPerformerDisplay(immunization, ORDERING_PROVIDER_CODE);
   const notes = immunization.note?.[0]?.text ?? null;
 
@@ -81,6 +78,6 @@ export function createNotAdministeredImmunizationViewModel(
     code: immunization.vaccineCode?.coding?.[0]?.display ?? null,
     reason: immunization.statusReason?.coding?.[0]?.display ?? null,
     date: immunization.occurrenceDateTime ?? null,
-    recordedBy: getPerformerDisplay(immunization, ADMINISTERING_PROVIDER_CODE),
+    recordedBy: getPerformerDisplay(immunization, ENTERING_PROVIDER_CODE),
   };
 }

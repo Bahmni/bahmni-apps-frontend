@@ -64,7 +64,7 @@ describe('createAdministeredImmunizationViewModel', () => {
       override: {
         performer: [
           {
-            function: { coding: [{ code: 'AP' }] },
+            function: { coding: [{ code: 'EP' }] },
             actor: { display: 'Nurse' },
           },
         ],
