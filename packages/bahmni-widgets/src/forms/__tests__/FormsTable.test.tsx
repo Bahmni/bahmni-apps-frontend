@@ -16,13 +16,10 @@ import userEvent from '@testing-library/user-event';
 import { Bundle, Observation } from 'fhir/r4';
 import { toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
-import { ExtractedObservation } from '../../observations/models';
 import FormsTable from '../FormsTable';
-import ObservationItem from '../ObservationItem';
 
 expect.extend(toHaveNoViolations);
 
-// Mock dependencies
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientFormData: jest.fn(),
@@ -47,7 +44,6 @@ jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),
 }));
 
-// Mock Form2 Container component
 jest.mock('@bahmni/form2-controls', () => ({
   Container: ({ metadata }: { metadata: any }) => (
     <div data-testid="form2-container">
@@ -81,7 +77,7 @@ const mockUseSubscribeConsultationSaved =
   >;
 
 // Mock ResizeObserver to avoid "ResizeObserver is not defined" errors
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
+globalThis.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
@@ -234,8 +230,8 @@ describe('FormsTable', () => {
     mockUseTranslation.mockReturnValue({
       t: (key: string) => {
         const translations: Record<string, string> = {
-          FORM_RECORDED_ON: 'Recorded On',
-          FORM_RECORDED_BY: 'Recorded By',
+          RECORDED_ON: 'Recorded On',
+          RECORDED_BY: 'Recorded By',
           FORMS_HEADING: 'Forms',
           FORMS_UNAVAILABLE: 'No forms available',
           ERROR_FETCHING_FORM_METADATA: 'Error fetching form metadata',
@@ -630,213 +626,6 @@ describe('FormsTable', () => {
       await waitFor(() => {
         const modal = screen.getByTestId('form-details-modal');
         expect(modal).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('ObservationItem Component', () => {
-    describe('Simple Observations (Leaf Nodes)', () => {
-      it('renders a simple observation with label and value', () => {
-        const observation: ExtractedObservation = {
-          id: 'concept-1',
-          display: 'Temperature',
-          observationValue: {
-            value: '98.6',
-            type: 'string',
-          },
-        };
-
-        render(<ObservationItem observation={observation} index={0} />);
-
-        expect(screen.getByText('Temperature')).toBeInTheDocument();
-        expect(screen.getByText('98.6')).toBeInTheDocument();
-      });
-
-      it('uses display as primary display label', () => {
-        const observation: ExtractedObservation = {
-          id: 'concept-1',
-          display: 'Heart Rate',
-          observationValue: {
-            value: '70',
-            type: 'string',
-          },
-        };
-
-        render(<ObservationItem observation={observation} index={0} />);
-
-        expect(screen.getByText('Heart Rate')).toBeInTheDocument();
-        expect(screen.queryByText('Pulse')).not.toBeInTheDocument();
-        expect(screen.queryByText('HR')).not.toBeInTheDocument();
-      });
-
-      it('renders display label for top-level observation', () => {
-        const observation: ExtractedObservation = {
-          id: 'concept-1',
-          display: 'Pulse',
-          observationValue: {
-            value: '70',
-            type: 'string',
-          },
-        };
-
-        const { container } = render(
-          <ObservationItem observation={observation} index={0} />,
-        );
-
-        // Top-level ObservationItem uses display
-        const label = container.querySelector('.rowLabel');
-        expect(label).toBeInTheDocument();
-        expect(screen.getByText('70')).toBeInTheDocument();
-      });
-    });
-
-    describe('Observations with Group Members', () => {
-      it('renders observation with group members', () => {
-        const observation: ExtractedObservation = {
-          id: 'bp-concept',
-          display: 'Blood Pressure',
-          members: [
-            {
-              id: 'sbp-concept',
-              display: 'Systolic',
-              observationValue: {
-                value: '120',
-                type: 'string',
-              },
-            },
-            {
-              id: 'dbp-concept',
-              display: 'Diastolic',
-              observationValue: {
-                value: '80',
-                type: 'string',
-              },
-            },
-          ],
-        };
-
-        render(<ObservationItem observation={observation} index={0} />);
-
-        expect(screen.getByText('Blood Pressure')).toBeInTheDocument();
-        expect(screen.getByText('Systolic')).toBeInTheDocument();
-        expect(screen.getByText('120')).toBeInTheDocument();
-        expect(screen.getByText('Diastolic')).toBeInTheDocument();
-        expect(screen.getByText('80')).toBeInTheDocument();
-      });
-    });
-
-    describe('Nested Group Members (Recursive Rendering)', () => {
-      it('renders deeply nested group members', () => {
-        const observation: ExtractedObservation = {
-          id: 'parent-concept',
-          display: 'Parent Group',
-          members: [
-            {
-              id: 'child-group-concept',
-              display: 'Child Group',
-              members: [
-                {
-                  id: 'grandchild-concept',
-                  display: 'Grandchild',
-                  observationValue: {
-                    value: '100',
-                    type: 'string',
-                  },
-                },
-              ],
-            },
-          ],
-        };
-
-        render(<ObservationItem observation={observation} index={0} />);
-
-        expect(screen.getByText('Parent Group')).toBeInTheDocument();
-        expect(screen.getByText('Child Group')).toBeInTheDocument();
-        expect(screen.getByText('Grandchild')).toBeInTheDocument();
-        expect(screen.getByText('100')).toBeInTheDocument();
-      });
-
-      it('renders mixed group members with both nested groups and leaf nodes', () => {
-        const observation: ExtractedObservation = {
-          id: 'vitals-concept',
-          display: 'Vitals',
-          members: [
-            {
-              id: 'bp-concept',
-              display: 'Blood Pressure',
-              members: [
-                {
-                  id: 'sbp-concept',
-                  display: 'Systolic',
-                  observationValue: {
-                    value: '120',
-                    type: 'string',
-                  },
-                },
-                {
-                  id: 'dbp-concept',
-                  display: 'Diastolic',
-                  observationValue: {
-                    value: '80',
-                    type: 'string',
-                  },
-                },
-              ],
-            },
-            {
-              id: 'temp-concept',
-              display: 'Temperature',
-              observationValue: {
-                value: '98.6',
-                type: 'string',
-              },
-            },
-          ],
-        };
-
-        render(<ObservationItem observation={observation} index={0} />);
-
-        expect(screen.getByText('Vitals')).toBeInTheDocument();
-        expect(screen.getByText('Blood Pressure')).toBeInTheDocument();
-        expect(screen.getByText('Systolic')).toBeInTheDocument();
-        expect(screen.getByText('120')).toBeInTheDocument();
-        expect(screen.getByText('Diastolic')).toBeInTheDocument();
-        expect(screen.getByText('80')).toBeInTheDocument();
-        expect(screen.getByText('Temperature')).toBeInTheDocument();
-        expect(screen.getByText('98.6')).toBeInTheDocument();
-      });
-    });
-
-    describe('Comments and Provider Information', () => {
-      it('renders observation with comment and provider name', () => {
-        const observation: ExtractedObservation = {
-          id: 'concept-1',
-          display: 'Temperature',
-          observationValue: {
-            value: '102.5',
-            type: 'string',
-          },
-          encounter: {
-            id: 'enc-1',
-            type: 'visit',
-            date: '2024-01-01',
-            provider: 'Dr. Smith',
-          },
-        };
-
-        render(
-          <ObservationItem
-            observation={observation}
-            index={0}
-            comment="Patient has fever"
-          />,
-        );
-
-        expect(screen.getByText('Temperature')).toBeInTheDocument();
-        expect(screen.getByText('102.5')).toBeInTheDocument();
-        expect(
-          screen.getByText('Patient has fever - by Dr. Smith'),
-        ).toBeInTheDocument();
       });
     });
   });

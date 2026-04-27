@@ -2,12 +2,12 @@ import { get, post } from '../api';
 import { getDisplayNameForConcept } from '../conceptService';
 import {
   PATIENT_PROGRAMS_URL,
+  PATIENT_PROGRAMS_PAGE_URL,
   PROGRAM_DETAILS_URL,
   PROGRAMS_URL,
 } from './constants';
 import { PatientProgramsResponse, ProgramEnrollment } from './model';
 
-// TODO: Add Optional parameters for pagination and filtering
 /**
  * Fetches programs for a given patient UUID
  * @param patientUUID - The UUID of the patient
@@ -17,6 +17,34 @@ export const getPatientPrograms = async (
   patientUUID: string,
 ): Promise<PatientProgramsResponse> => {
   return await get<PatientProgramsResponse>(PATIENT_PROGRAMS_URL(patientUUID));
+};
+
+export interface ProgramPage {
+  programs: ProgramEnrollment[];
+  total: number | undefined;
+}
+
+/**
+ * Fetches a single page of patient programs using offset-based pagination.
+ * Uses startIndex = (page - 1) * count to jump directly to any page.
+ * @param patientUUID - The UUID of the patient
+ * @param count - Number of items per page (default 15)
+ * @param page - 1-based page number (default 1)
+ * @returns Promise resolving to a ProgramPage with programs and total count
+ */
+export const getPatientProgramsPage = async (
+  patientUUID: string,
+  count: number = 15,
+  page: number = 1,
+): Promise<ProgramPage> => {
+  const startIndex = (page - 1) * count;
+  const response = await get<PatientProgramsResponse>(
+    PATIENT_PROGRAMS_PAGE_URL(patientUUID, count, startIndex),
+  );
+  return {
+    programs: response.results,
+    total: response.totalCount,
+  };
 };
 
 /**

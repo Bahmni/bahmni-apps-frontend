@@ -938,6 +938,58 @@ describe('ConditionsAndDiagnoses', () => {
     });
   });
 
+  describe('Consultation Saved Subscription', () => {
+    it('refetches existing diagnoses and conditions when consultation is saved with conditions', async () => {
+      renderComponent();
+
+      // renderComponent sets up useQuery mock — capture the refetch the component actually holds
+      const usedRefetch = (useQuery as jest.Mock).mock.results[0].value.refetch;
+
+      const event = new CustomEvent('consultation:saved', {
+        detail: {
+          patientUUID: 'test-patient-uuid',
+          updatedResources: {
+            conditions: true,
+            allergies: false,
+            medications: false,
+            serviceRequests: {},
+          },
+          updatedConcepts: new Map(),
+        },
+      });
+      window.dispatchEvent(event);
+
+      await waitFor(() => {
+        // refetch is called once per query (conditions + diagnoses = 2 calls)
+        expect(usedRefetch).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    it('does not refetch when consultation is saved for a different patient', async () => {
+      renderComponent();
+
+      const usedRefetch = (useQuery as jest.Mock).mock.results[0].value.refetch;
+
+      const event = new CustomEvent('consultation:saved', {
+        detail: {
+          patientUUID: 'different-patient-uuid',
+          updatedResources: {
+            conditions: true,
+            allergies: false,
+            medications: false,
+            serviceRequests: {},
+          },
+          updatedConcepts: new Map(),
+        },
+      });
+      window.dispatchEvent(event);
+
+      await waitFor(() => {
+        expect(usedRefetch).not.toHaveBeenCalled();
+      });
+    });
+  });
+
   describe('Privilege Guard', () => {
     it('renders null when user lacks Add Diagnoses privilege', () => {
       mockedUseUserPrivilege.mockReturnValue(mockUserPrivilegesEmpty);

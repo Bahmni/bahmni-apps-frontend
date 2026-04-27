@@ -1,18 +1,24 @@
 import i18next from 'i18next';
-import { get } from '../api';
+import { get, del, post } from '../api';
 import { BAHMNI_USER_COOKIE_NAME } from '../constants/app';
-import { getCookieByName } from '../utils';
+import { getCookieByName, deleteCookie } from '../utils';
 import {
   USER_RESOURCE_URL,
   BAHMNI_USER_LOCATION_COOKIE,
   APP_SETTINGS_URL,
   DEFAULT_DATE_FORMAT_PROPERTY,
+  LOGOUT_URL,
+  LOGOUT_COOKIES,
+  ERROR_MESSAGES,
+  AVAILABLE_LOCATIONS_URL,
+  SAVE_USER_LOCATION_URL,
 } from './constants';
 import {
   UserResponse,
   User,
   UserLocation,
   AppSettingsResponse,
+  LocationsResponse,
 } from './models';
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -69,4 +75,52 @@ export const getDefaultDateFormat = async (): Promise<string | null> => {
     (setting) => setting.property === DEFAULT_DATE_FORMAT_PROPERTY,
   );
   return dateFormatSetting?.value ?? null;
+};
+
+/**
+ * Fetches available locations with Login Location tag
+ * @returns Promise<UserLocation[]> - Array of available locations
+ * @throws Error when API call fails
+ */
+export const getAvailableLocations = async (): Promise<UserLocation[]> => {
+  try {
+    const response = await get<LocationsResponse>(AVAILABLE_LOCATIONS_URL);
+    return response.results ?? [];
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to fetch available locations:', error);
+    return [];
+  }
+};
+
+/**
+ * Logs out the current user by clearing session and cookies
+ * @throws Error with i18n key if logout fails
+ */
+export const logout = async (): Promise<void> => {
+  try {
+    await del(LOGOUT_URL);
+    LOGOUT_COOKIES.forEach((cookieName) => {
+      deleteCookie(cookieName);
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Logout failed:', error);
+    throw new Error(i18next.t(ERROR_MESSAGES.LOGOUT_FAILED));
+  }
+};
+
+/**
+ * Saves the user's location preference to the server
+ * @param userUuid - The UUID of the user
+ * @param location - The location object to save
+ * @throws Error when the API call fails
+ */
+export const saveUserLocation = async (
+  userUuid: string,
+  location: UserLocation,
+): Promise<void> => {
+  await post(SAVE_USER_LOCATION_URL(userUuid), {
+    userProperties: { loginLocation: location.uuid },
+  });
 };

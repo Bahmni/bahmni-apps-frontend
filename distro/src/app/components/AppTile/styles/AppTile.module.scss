@@ -1,0 +1,39 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/colors" as *;
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 8.125rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  padding: $spacing-05;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: 2px solid $blue-60;
+    outline-offset: -2px;
+  }
+}
+
+.label {
+  @include type-style("body-compact-01");
+  margin: 0;
+  text-align: left;
+}
+
+.bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.arrow {
+  color: $blue-60;
+}

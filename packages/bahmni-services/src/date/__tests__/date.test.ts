@@ -1,5 +1,6 @@
 import { addDays } from 'date-fns';
 import { getUserPreferredLocale } from '../../i18n/translationService';
+import { DEFAULT_DATE_FORMAT } from '../constants';
 import {
   calculateAge,
   formatDateTime,
@@ -10,6 +11,7 @@ import {
   DURATION_UNIT_TO_DAYS,
   calculateEndDate,
   doDateRangesOverlap,
+  getBrowserLocaleDateFormat,
 } from '../date';
 
 const mockT = (key: string, options?: { count?: number }) => {
@@ -743,5 +745,61 @@ describe('calculateEndDate', () => {
     expect(() => calculateEndDate('invalid-date', 7, 'd')).toThrow(
       'Invalid date',
     );
+  });
+});
+
+describe('getBrowserLocaleDateFormat', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it.each([
+    [
+      'MM/dd/yyyy for US pattern',
+      [
+        { type: 'month', value: '3' },
+        { type: 'literal', value: '/' },
+        { type: 'day', value: '24' },
+        { type: 'literal', value: '/' },
+        { type: 'year', value: '2026' },
+      ],
+      'MM/dd/yyyy',
+    ],
+    [
+      'dd/MM/yyyy for UK/European pattern',
+      [
+        { type: 'day', value: '24' },
+        { type: 'literal', value: '/' },
+        { type: 'month', value: '3' },
+        { type: 'literal', value: '/' },
+        { type: 'year', value: '2026' },
+      ],
+      'dd/MM/yyyy',
+    ],
+    [
+      'yyyy-MM-dd for Asian pattern',
+      [
+        { type: 'year', value: '2026' },
+        { type: 'literal', value: '-' },
+        { type: 'month', value: '03' },
+        { type: 'literal', value: '-' },
+        { type: 'day', value: '24' },
+      ],
+      'yyyy-MM-dd',
+    ],
+  ])('returns %s', (_, parts, expected) => {
+    jest
+      .spyOn(Intl, 'DateTimeFormat')
+      .mockImplementation(() => ({ formatToParts: () => parts }) as any);
+
+    expect(getBrowserLocaleDateFormat()).toBe(expected);
+  });
+
+  it('returns default format when error occurs', () => {
+    jest.spyOn(Intl, 'DateTimeFormat').mockImplementation(() => {
+      throw new Error('DateTimeFormat error');
+    });
+
+    expect(getBrowserLocaleDateFormat()).toBe(DEFAULT_DATE_FORMAT);
   });
 });

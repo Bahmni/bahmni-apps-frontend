@@ -57,6 +57,7 @@
     td:first-child {
       width: $spacing-13 + $spacing-06;
       white-space: nowrap;
+      padding-inline-start: 0 !important;
       @include type-style("heading-compact-01");
       align-content: center;
     }

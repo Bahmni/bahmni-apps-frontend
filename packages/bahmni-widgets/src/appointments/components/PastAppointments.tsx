@@ -1,13 +1,12 @@
-import { getPastAppointments } from '@bahmni/services';
+import { getPastAppointmentsPage } from '@bahmni/services';
 import React from 'react';
-import { useAppointmentQuery } from '../hooks/useAppointmentQuery';
-import { useFormattedAppointments } from '../hooks/useFormattedAppointments';
+import { usePaginatedAppointments } from '../hooks/usePaginatedAppointments';
 import type { FormattedAppointment } from '../utils';
 import AppointmentTabContent from './AppointmentTabContent';
 
 interface PastAppointmentsProps {
   patientUUID: string;
-  numberOfPastAppointments?: number;
+  pageSize: number;
   headers: Array<{ key: string; header: string }>;
   sortable: Array<{ key: string; sortable: boolean }>;
   renderCell: (row: FormattedAppointment, key: string) => React.ReactNode;
@@ -15,20 +14,24 @@ interface PastAppointmentsProps {
 
 const PastAppointments: React.FC<PastAppointmentsProps> = ({
   patientUUID,
-  numberOfPastAppointments,
+  pageSize,
   headers,
   sortable,
   renderCell,
 }) => {
-  const { data, isLoading } = useAppointmentQuery({
-    queryKey: ['appointments-past', patientUUID, numberOfPastAppointments],
-    queryFn: () => getPastAppointments(patientUUID, numberOfPastAppointments),
+  const {
+    formattedAppointments,
+    isLoading,
+    currentPage,
+    selectedPageSize,
+    serverTotal,
+    handlePageChange,
+  } = usePaginatedAppointments({
+    queryKeyPrefix: 'appointments-past',
     patientUUID,
-  });
-
-  const formattedAppointments = useFormattedAppointments({
-    data,
+    pageSize,
     idPrefix: 'past',
+    queryFn: (count, page) => getPastAppointmentsPage(patientUUID, count, page),
   });
 
   return (
@@ -39,6 +42,10 @@ const PastAppointments: React.FC<PastAppointmentsProps> = ({
       headers={headers}
       sortable={sortable}
       renderCell={renderCell}
+      pageSize={selectedPageSize}
+      page={currentPage}
+      totalItems={serverTotal}
+      onPageChange={handlePageChange}
     />
   );
 };

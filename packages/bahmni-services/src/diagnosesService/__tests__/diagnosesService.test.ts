@@ -1,7 +1,7 @@
 import { Condition, Bundle } from 'fhir/r4';
 import { get } from '../../api';
 import { CERTAINITY_CONCEPTS } from '../constants';
-import { getPatientDiagnoses } from '../diagnosesService';
+import { getPatientDiagnoses, getDiagnosesPage } from '../diagnosesService';
 
 jest.mock('../../api');
 
@@ -660,6 +660,118 @@ describe('diagnosesService', () => {
         expect(resultMap.get('Asthma')?.id).toBe('unique-1'); // Only one
         expect(resultMap.get('Hypertension')?.id).toBe('hypertension-2'); // Most recent
       });
+    });
+  });
+
+  describe('getDiagnosesPage', () => {
+    const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
+
+    const createMockDiagnosis = (
+      overrides: Partial<Condition> = {},
+    ): Condition => ({
+      resourceType: 'Condition',
+      id: 'diagnosis-1',
+      subject: { reference: 'Patient/test-patient', display: 'Test Patient' },
+      code: { text: 'Test Diagnosis' },
+      verificationStatus: {
+        coding: [
+          {
+            system:
+              'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+            code: 'confirmed',
+            display: 'Confirmed',
+          },
+        ],
+      },
+      recordedDate: '2025-03-25T06:48:32+00:00',
+      recorder: { reference: 'Practitioner/p-1', display: 'Dr. Smith' },
+      ...overrides,
+    });
+
+    const createMockBundle = (
+      conditions: Condition[] = [],
+      total?: number,
+    ): Bundle => ({
+      resourceType: 'Bundle',
+      id: 'bundle-id',
+      type: 'searchset',
+      total: total ?? conditions.length,
+      entry: conditions.map((c) => ({
+        resource: c,
+        fullUrl: `http://example.com/Condition/${c.id}`,
+      })),
+    });
+
+    it('should fetch page 1 with default count', async () => {
+      const bundle = createMockBundle([createMockDiagnosis()], 10);
+      (get as jest.Mock).mockResolvedValueOnce(bundle);
+
+      const result = await getDiagnosesPage(patientUUID);
+
+      expect(get).toHaveBeenCalledWith(
+        `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}&_count=10&_getpagesoffset=0&_sort=-_lastUpdated`,
+      );
+      expect(result.diagnoses).toHaveLength(1);
+      expect(result.total).toBe(10);
+    });
+
+    it('should calculate correct offset for page 2', async () => {
+      const bundle = createMockBundle([], 20);
+      (get as jest.Mock).mockResolvedValueOnce(bundle);
+
+      await getDiagnosesPage(patientUUID, 5, 2);
+
+      expect(get).toHaveBeenCalledWith(
+        `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}&_count=5&_getpagesoffset=5&_sort=-_lastUpdated`,
+      );
+    });
+
+    it('should calculate correct offset for page 3 with count 10', async () => {
+      const bundle = createMockBundle([], 30);
+      (get as jest.Mock).mockResolvedValueOnce(bundle);
+
+      await getDiagnosesPage(patientUUID, 10, 3);
+
+      expect(get).toHaveBeenCalledWith(
+        `/openmrs/ws/fhir2/R4/Condition?category=encounter-diagnosis&patient=${patientUUID}&_count=10&_getpagesoffset=20&_sort=-_lastUpdated`,
+      );
+    });
+
+    it('should return total from bundle', async () => {
+      const bundle = createMockBundle([createMockDiagnosis()], 42);
+      (get as jest.Mock).mockResolvedValueOnce(bundle);
+
+      const result = await getDiagnosesPage(patientUUID, 10, 1);
+
+      expect(result.total).toBe(42);
+    });
+
+    it('should return undefined total when bundle total is missing', async () => {
+      const bundle = {
+        ...createMockBundle([createMockDiagnosis()]),
+        total: undefined,
+      };
+      (get as jest.Mock).mockResolvedValueOnce(bundle);
+
+      const result = await getDiagnosesPage(patientUUID, 10, 1);
+
+      expect(result.total).toBeUndefined();
+    });
+
+    it('should return empty diagnoses for empty bundle', async () => {
+      const bundle = createMockBundle([], 0);
+      (get as jest.Mock).mockResolvedValueOnce(bundle);
+
+      const result = await getDiagnosesPage(patientUUID, 10, 1);
+
+      expect(result.diagnoses).toEqual([]);
+      expect(result.total).toBe(0);
+    });
+
+    it('should propagate errors from the API', async () => {
+      (get as jest.Mock).mockRejectedValueOnce(new Error('API Error'));
+
+      await expect(getDiagnosesPage(patientUUID)).rejects.toThrow('API Error');
     });
   });
 });

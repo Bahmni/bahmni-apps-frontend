@@ -25,7 +25,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: () => ({ t: (key: string) => key }),
   formatDateTime: () => ({ formattedResult: '15/01/2024 4:00 PM' }),
-  getDocumentReferences: jest.fn(),
+  getDocumentReferencePage: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
 
@@ -117,7 +117,10 @@ const mockQueryData = (
   overrides: Partial<ReturnType<typeof useQuery>> = {},
 ) =>
   ({
-    data: documents,
+    data: {
+      documents,
+      total: documents.length,
+    },
     error: null,
     isError: false,
     isLoading: false,
@@ -785,15 +788,170 @@ describe('DocumentsTable', () => {
     });
   });
 
+  describe('Pagination', () => {
+    const manyDocs = Array.from({ length: 12 }, (_, i) => ({
+      id: `doc-page-${i}`,
+      documentIdentifier: `Document ${i + 1}`,
+      documentType: 'Notes',
+      uploadedOn: '2024-01-01T00:00:00Z',
+      uploadedBy: `Dr. ${i + 1}`,
+      contentType: 'application/pdf',
+      documentUrl: `100/doc-${i}.pdf`,
+      attachments: [
+        { url: `100/doc-${i}.pdf`, contentType: 'application/pdf' },
+      ],
+    }));
+
+    it('renders pagination when documents exceed default pageSize of 5', () => {
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData(manyDocs));
+      renderComponent({ config: defaultConfig });
+
+      expect(
+        screen.getByRole('button', { name: /next page/i }),
+      ).toBeInTheDocument();
+    });
+
+    it('shows pagination footer but disables next when documents are fewer than or equal to pageSize', () => {
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([mockPdfDocument, mockImageDocument]),
+      );
+      renderComponent({ config: { ...defaultConfig, pageSize: 10 } });
+
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
+    });
+
+    it('respects config pageSize to show only that many rows per page', () => {
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData(manyDocs));
+      renderComponent({ config: { ...defaultConfig, pageSize: 5 } });
+
+      expect(screen.getByText('Document 1')).toBeInTheDocument();
+      expect(screen.getByText('Document 5')).toBeInTheDocument();
+      expect(screen.queryByText('Document 6')).not.toBeInTheDocument();
+    });
+
+    it('navigates to next page showing different rows', async () => {
+      const user = userEvent.setup();
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData(manyDocs));
+      renderComponent({ config: { ...defaultConfig, pageSize: 5 } });
+
+      const nextButton = screen.getByRole('button', { name: /next page/i });
+      await user.click(nextButton);
+
+      expect(screen.getByText('Document 6')).toBeInTheDocument();
+      expect(screen.queryByText('Document 1')).not.toBeInTheDocument();
+    });
+
+    it('shows more rows after user increases page size via dropdown', async () => {
+      const user = userEvent.setup();
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData(manyDocs));
+      renderComponent({ config: { ...defaultConfig, pageSize: 5 } });
+
+      // Initially only 5 rows visible
+      expect(screen.getByText('Document 5')).toBeInTheDocument();
+      expect(screen.queryByText('Document 6')).not.toBeInTheDocument();
+
+      // User changes page size to 10
+      const select = screen.getByRole('combobox', { name: /items per page/i });
+      await user.selectOptions(select, '10');
+
+      // All 10 rows now visible
+      expect(screen.getByText('Document 6')).toBeInTheDocument();
+    });
+
+    it('modal still works on paginated documents', async () => {
+      const user = userEvent.setup();
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData(manyDocs));
+      renderComponent({ config: { ...defaultConfig, pageSize: 5 } });
+
+      const nextButton = screen.getByRole('button', { name: /next page/i });
+      await user.click(nextButton);
+
+      const links = screen.getAllByText('DOCUMENTS_VIEW_ATTACHMENTS');
+      await user.click(links[0]);
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+  });
+
+  describe('Default Sort', () => {
+    it('sorts documents by uploadedOn descending by default', () => {
+      // Pass docs in ascending order (oldest first) — component must reverse them
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([
+          mockGenericDocument, // 2024-01-13 (oldest)
+          mockImageDocument, // 2024-01-14
+          mockPdfDocument, // 2024-01-15 (newest)
+        ]),
+      );
+      renderComponent({ config: defaultConfig });
+
+      const rows = screen.getAllByRole('row');
+      // rows[0] = header; data rows start at index 1
+      expect(rows[1]).toHaveTextContent('Test Document'); // Jan 15 — newest first
+      expect(rows[2]).toHaveTextContent('X-Ray Image'); // Jan 14
+      expect(rows[3]).toHaveTextContent('Clinical Notes'); // Jan 13 — oldest last
+    });
+
+    it('places documents with no uploadedOn at the bottom', () => {
+      const noDateDoc = {
+        ...mockPdfDocument,
+        id: 'doc-no-date',
+        documentIdentifier: 'No Date Doc',
+        uploadedOn: '',
+      };
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([
+          noDateDoc, // no date — should go to bottom
+          mockImageDocument, // 2024-01-14
+          mockPdfDocument, // 2024-01-15
+        ]),
+      );
+      renderComponent({ config: defaultConfig });
+
+      const rows = screen.getAllByRole('row');
+      expect(rows[1]).toHaveTextContent('Test Document'); // Jan 15 first
+      expect(rows[2]).toHaveTextContent('X-Ray Image'); // Jan 14 second
+      expect(rows[3]).toHaveTextContent('No Date Doc'); // no date last
+    });
+
+    it('maintains date desc sort order when navigating to page 2', async () => {
+      const user = userEvent.setup();
+      const pagedDocs = Array.from({ length: 12 }, (_, i) => ({
+        id: `sort-doc-${i}`,
+        documentIdentifier: `Doc ${String(i + 1).padStart(2, '0')}`,
+        documentType: 'Notes',
+        uploadedOn: `2024-01-${String(i + 1).padStart(2, '0')}T10:00:00Z`,
+        uploadedBy: 'Dr. Test',
+        contentType: 'application/pdf',
+        documentUrl: `100/doc-${i}.pdf`,
+        attachments: [
+          { url: `100/doc-${i}.pdf`, contentType: 'application/pdf' },
+        ],
+      }));
+
+      // Pass in ascending order — component must sort descending before paginating
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData(pagedDocs));
+      renderComponent({ config: { ...defaultConfig, pageSize: 5 } });
+
+      // Page 1: should show 5 newest (Doc 12 → Doc 08)
+      const page1Rows = screen.getAllByRole('row').slice(1);
+      expect(page1Rows[0]).toHaveTextContent('Doc 12');
+      expect(page1Rows[4]).toHaveTextContent('Doc 08');
+
+      // Navigate to page 2 — should show next 5 in desc order (Doc 07 → Doc 03)
+      await user.click(screen.getByRole('button', { name: /next page/i }));
+
+      const page2Rows = screen.getAllByRole('row').slice(1);
+      expect(page2Rows[0]).toHaveTextContent('Doc 07');
+      expect(page2Rows[4]).toHaveTextContent('Doc 03');
+    });
+  });
+
   describe('Accessibility', () => {
     it('passes accessibility tests with data', async () => {
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockPdfDocument, mockImageDocument],
-        error: null,
-        isError: false,
-        isLoading: false,
-        refetch: jest.fn(),
-      });
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([mockPdfDocument, mockImageDocument]),
+      );
 
       const { container } = renderComponent({ config: defaultConfig });
 
@@ -860,13 +1018,7 @@ describe('DocumentsTable', () => {
 
     it('passes accessibility tests with modal open', async () => {
       const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockPdfDocument],
-        error: null,
-        isError: false,
-        isLoading: false,
-        refetch: jest.fn(),
-      });
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
 
       const { container } = renderComponent({ config: defaultConfig });
 
@@ -880,13 +1032,7 @@ describe('DocumentsTable', () => {
 
     it('closes modal when Escape key is pressed', async () => {
       const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockPdfDocument],
-        error: null,
-        isError: false,
-        isLoading: false,
-        refetch: jest.fn(),
-      });
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
 
       renderComponent({ config: defaultConfig });
 
@@ -902,13 +1048,7 @@ describe('DocumentsTable', () => {
 
     it('modal dialog is properly labelled with document identifier for screen readers', async () => {
       const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockPdfDocument],
-        error: null,
-        isError: false,
-        isLoading: false,
-        refetch: jest.fn(),
-      });
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
 
       renderComponent({ config: defaultConfig });
 

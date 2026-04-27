@@ -1,12 +1,12 @@
-import { getUpcomingAppointments } from '@bahmni/services';
+import { getUpcomingAppointmentsPage } from '@bahmni/services';
 import React from 'react';
-import { useAppointmentQuery } from '../hooks/useAppointmentQuery';
-import { useFormattedAppointments } from '../hooks/useFormattedAppointments';
+import { usePaginatedAppointments } from '../hooks/usePaginatedAppointments';
 import type { FormattedAppointment } from '../utils';
 import AppointmentTabContent from './AppointmentTabContent';
 
 interface UpcomingAppointmentsProps {
   patientUUID: string;
+  pageSize: number;
   headers: Array<{ key: string; header: string }>;
   sortable: Array<{ key: string; sortable: boolean }>;
   renderCell: (row: FormattedAppointment, key: string) => React.ReactNode;
@@ -14,19 +14,25 @@ interface UpcomingAppointmentsProps {
 
 const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
   patientUUID,
+  pageSize,
   headers,
   sortable,
   renderCell,
 }) => {
-  const { data, isLoading } = useAppointmentQuery({
-    queryKey: ['appointments-upcoming', patientUUID],
-    queryFn: () => getUpcomingAppointments(patientUUID),
+  const {
+    formattedAppointments,
+    isLoading,
+    currentPage,
+    selectedPageSize,
+    serverTotal,
+    handlePageChange,
+  } = usePaginatedAppointments({
+    queryKeyPrefix: 'appointments-upcoming',
     patientUUID,
-  });
-
-  const formattedAppointments = useFormattedAppointments({
-    data,
+    pageSize,
     idPrefix: 'upcoming',
+    queryFn: (count, page) =>
+      getUpcomingAppointmentsPage(patientUUID, count, page),
   });
 
   return (
@@ -37,6 +43,10 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
       headers={headers}
       sortable={sortable}
       renderCell={renderCell}
+      pageSize={selectedPageSize}
+      page={currentPage}
+      totalItems={serverTotal}
+      onPageChange={handlePageChange}
     />
   );
 };

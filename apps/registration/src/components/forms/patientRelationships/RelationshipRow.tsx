@@ -6,6 +6,7 @@ import {
   Close,
   Link,
 } from '@bahmni/design-system';
+import { formatDateTime } from '@bahmni/services';
 import { getPatientUrlExternal } from '../../../constants/app';
 import type { PatientSuggestion } from '../../../hooks/usePatientSearch';
 import type { RelationshipData } from './PatientRelationships';
@@ -88,7 +89,9 @@ export const RelationshipRow = ({
           className={styles.readOnlyText}
           data-testid="existing-relationship-till-date"
         >
-          {relationship.tillDate ?? '-'}
+          {relationship.tillDate
+            ? formatDateTime(relationship.tillDate, t).formattedResult
+            : '-'}
         </span>
       ),
       actions: (

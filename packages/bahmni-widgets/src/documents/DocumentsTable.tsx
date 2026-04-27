@@ -2,7 +2,7 @@ import { SortableDataTable, Modal, Link } from '@bahmni/design-system';
 import {
   useTranslation,
   formatDateTime,
-  getFormattedDocumentReferences,
+  getDocumentReferencePage,
   DocumentViewModel,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
@@ -45,6 +45,12 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
+  const configPageSize = Number(config?.pageSize) || 5;
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);
+  const [serverTotal, setServerTotal] = useState<number | undefined>(undefined);
+
   const handleViewAttachments = useCallback((doc: DocumentViewModel) => {
     setSelectedDoc(doc);
     setIsModalOpen(true);
@@ -61,10 +67,33 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
   }, []);
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['documents', patientUUID!, encounterUuids],
+    queryKey: [
+      'documents',
+      patientUUID!,
+      encounterUuids,
+      currentPage,
+      selectedPageSize,
+    ],
     enabled: !!patientUUID,
-    queryFn: () => getFormattedDocumentReferences(patientUUID!, encounterUuids),
+    queryFn: () =>
+      getDocumentReferencePage(
+        patientUUID!,
+        encounterUuids,
+        selectedPageSize,
+        currentPage,
+      ),
   });
+
+  useEffect(() => {
+    if (data) {
+      setServerTotal(data.total);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setServerTotal(undefined);
+  }, [patientUUID]);
 
   useEffect(() => {
     if (isError) {
@@ -112,10 +141,35 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     return () => controller.abort();
   }, [isModalOpen, selectedDoc]);
 
+  const handlePageChange = useCallback(
+    (newPage: number, newPageSize: number) => {
+      if (newPageSize !== selectedPageSize) {
+        setSelectedPageSize(newPageSize);
+        setCurrentPage(1);
+        setServerTotal(undefined);
+      } else {
+        setCurrentPage(newPage);
+      }
+    },
+    [selectedPageSize],
+  );
+
   const fields = useMemo(
     () => (config?.fields as string[]) ?? DEFAULT_DOCUMENT_FIELDS,
     [config?.fields],
   );
+
+  const sortedData = useMemo(() => {
+    const docs = data?.documents ?? [];
+    return [...docs].sort((a, b) => {
+      if (!a.uploadedOn && !b.uploadedOn) return 0;
+      if (!a.uploadedOn) return 1;
+      if (!b.uploadedOn) return -1;
+      return (
+        new Date(b.uploadedOn).getTime() - new Date(a.uploadedOn).getTime()
+      );
+    });
+  }, [data]);
 
   const headers = useMemo(() => createDocumentHeaders(fields, t), [fields, t]);
 
@@ -177,7 +231,7 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
         <SortableDataTable
           headers={headers}
           ariaLabel={t('DOCUMENTS_TABLE_HEADING')}
-          rows={data ?? []}
+          rows={sortedData}
           loading={isLoading}
           errorStateMessage={isError ? error?.message : null}
           sortable={sortable}
@@ -185,6 +239,10 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
           renderCell={renderCell}
           className={styles.documentsTableBody}
           dataTestId="documents-table"
+          pageSize={selectedPageSize}
+          totalItems={serverTotal}
+          page={currentPage}
+          onPageChange={handlePageChange}
         />
       </div>
 

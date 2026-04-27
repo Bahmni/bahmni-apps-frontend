@@ -1,5 +1,7 @@
 import { Bundle, ServiceRequest, ImagingStudy } from 'fhir/r4';
+import { get } from '../api';
 import { getServiceRequests } from '../orderRequestService';
+import { IMAGING_STUDY_FETCH_QC_URL } from './constants';
 
 /**
  * Fetches radiology investigations for a given patient UUID from the FHIR R4 endpoint
@@ -71,4 +73,10 @@ export async function getPatientRadiologyInvestigations(
       ?.filter((entry) => entry.resource?.resourceType === 'ServiceRequest')
       .map((entry) => entry.resource as ServiceRequest) ?? [];
   return radiologyInvestigations;
+}
+
+export async function fetchQualityAssessment(
+  imagingStudyId: string,
+): Promise<ImagingStudy> {
+  return await get<ImagingStudy>(IMAGING_STUDY_FETCH_QC_URL(imagingStudyId));
 }

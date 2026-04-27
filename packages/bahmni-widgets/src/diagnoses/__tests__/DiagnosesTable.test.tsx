@@ -139,7 +139,7 @@ describe('DiagnosesTable', () => {
 
   it('renders empty state', () => {
     mockUseQuery.mockReturnValue({
-      data: [],
+      data: { diagnoses: [], total: 0 },
       isLoading: false,
       isError: false,
       error: null,
@@ -150,9 +150,10 @@ describe('DiagnosesTable', () => {
     expect(screen.getByText('No diagnoses recorded')).toBeInTheDocument();
   });
 
-  it('sorts diagnoses by date', () => {
+  it('renders diagnoses in the order returned by the server (sorted by _lastUpdated desc)', () => {
+    // Server sorts via _sort=-_lastUpdated; component renders rows as-is without client-side re-sort
     mockUseQuery.mockReturnValue({
-      data: mockDiagnoses,
+      data: { diagnoses: mockDiagnoses, total: mockDiagnoses.length },
       isLoading: false,
       isError: false,
       error: null,
@@ -160,12 +161,15 @@ describe('DiagnosesTable', () => {
     } as any);
 
     render(<DiagnosesTable />);
-    expect(mockSortByDate).toHaveBeenCalledWith(mockDiagnoses, 'recordedDate');
+    // sortByDate is no longer called — sorting is delegated to the server
+    expect(mockSortByDate).not.toHaveBeenCalled();
+    // All diagnoses are still rendered
+    expect(screen.getByText('Hypertension')).toBeInTheDocument();
   });
 
   it('renders diagnosis display cell with confirmed certainty', () => {
     mockUseQuery.mockReturnValue({
-      data: [mockDiagnoses[0]],
+      data: { diagnoses: [mockDiagnoses[0]], total: 1 },
       isLoading: false,
       isError: false,
       error: null,
@@ -179,7 +183,7 @@ describe('DiagnosesTable', () => {
 
   it('renders diagnosis display cell with provisional certainty', () => {
     mockUseQuery.mockReturnValue({
-      data: [mockDiagnoses[1]],
+      data: { diagnoses: [mockDiagnoses[1]], total: 1 },
       isLoading: false,
       isError: false,
       error: null,
@@ -193,7 +197,7 @@ describe('DiagnosesTable', () => {
 
   it('renders formatted recorded date', () => {
     mockUseQuery.mockReturnValue({
-      data: [mockDiagnoses[0]],
+      data: { diagnoses: [mockDiagnoses[0]], total: 1 },
       isLoading: false,
       isError: false,
       error: null,
@@ -210,7 +214,7 @@ describe('DiagnosesTable', () => {
 
   it('renders recorder name when available', () => {
     mockUseQuery.mockReturnValue({
-      data: [mockDiagnoses[0]],
+      data: { diagnoses: [mockDiagnoses[0]], total: 1 },
       isLoading: false,
       isError: false,
       error: null,
@@ -223,7 +227,7 @@ describe('DiagnosesTable', () => {
 
   it('renders "Not available" when recorder is empty', () => {
     mockUseQuery.mockReturnValue({
-      data: [mockDiagnoses[2]],
+      data: { diagnoses: [mockDiagnoses[2]], total: 1 },
       isLoading: false,
       isError: false,
       error: null,
@@ -236,7 +240,7 @@ describe('DiagnosesTable', () => {
 
   it('registers consultation saved event listener', () => {
     mockUseQuery.mockReturnValue({
-      data: mockDiagnoses,
+      data: { diagnoses: mockDiagnoses, total: mockDiagnoses.length },
       isLoading: false,
       isError: false,
       error: null,
@@ -254,7 +258,7 @@ describe('DiagnosesTable', () => {
     });
 
     mockUseQuery.mockReturnValue({
-      data: mockDiagnoses,
+      data: { diagnoses: mockDiagnoses, total: mockDiagnoses.length },
       isLoading: false,
       isError: false,
       error: null,
@@ -279,7 +283,7 @@ describe('DiagnosesTable', () => {
     });
 
     mockUseQuery.mockReturnValue({
-      data: mockDiagnoses,
+      data: { diagnoses: mockDiagnoses, total: mockDiagnoses.length },
       isLoading: false,
       isError: false,
       error: null,
@@ -304,7 +308,7 @@ describe('DiagnosesTable', () => {
     });
 
     mockUseQuery.mockReturnValue({
-      data: mockDiagnoses,
+      data: { diagnoses: mockDiagnoses, total: mockDiagnoses.length },
       isLoading: false,
       isError: false,
       error: null,
@@ -322,9 +326,62 @@ describe('DiagnosesTable', () => {
     expect(mockRefetch).not.toHaveBeenCalled();
   });
 
+  describe('Pagination', () => {
+    const manyDiagnoses: Diagnosis[] = Array.from({ length: 3 }, (_, i) => ({
+      id: `${i + 1}`,
+      display: `Diagnosis ${i + 1}`,
+      certainty: { code: 'confirmed' },
+      recordedDate: '2024-01-15T10:30:00Z',
+      recorder: 'Dr. Smith',
+    }));
+
+    it('renders pagination when server total exceeds pageSize', () => {
+      mockUseQuery.mockReturnValue({
+        data: { diagnoses: manyDiagnoses, total: 5 },
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<DiagnosesTable config={{ pageSize: 1 }} />);
+      expect(
+        screen.getByRole('button', { name: /next page/i }),
+      ).toBeInTheDocument();
+    });
+
+    it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', () => {
+      mockUseQuery.mockReturnValue({
+        data: { diagnoses: manyDiagnoses, total: 3 },
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<DiagnosesTable config={{ pageSize: 10 }} />);
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
+    });
+
+    it('displays the current page of diagnoses returned by the server', () => {
+      mockUseQuery.mockReturnValue({
+        data: { diagnoses: manyDiagnoses.slice(0, 2), total: 3 },
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<DiagnosesTable config={{ pageSize: 2 }} />);
+      expect(screen.getByText('Diagnosis 1')).toBeInTheDocument();
+      expect(screen.getByText('Diagnosis 2')).toBeInTheDocument();
+      expect(screen.queryByText('Diagnosis 3')).not.toBeInTheDocument();
+    });
+  });
+
   it('has no accessibility violations', async () => {
     mockUseQuery.mockReturnValue({
-      data: mockDiagnoses,
+      data: { diagnoses: mockDiagnoses, total: mockDiagnoses.length },
       isLoading: false,
       isError: false,
       error: null,

@@ -15,25 +15,38 @@ export const initI18n = async (namespace: string) => {
   const userPreferredLocale = getUserPreferredLocale();
   const translations = await getTranslations(userPreferredLocale, namespace);
 
-  await i18n
-    .use(LanguageDetector)
-    .use(initReactI18next)
-    .init({
-      fallbackLng: 'en',
-      ns: [namespace],
-      defaultNS: namespace,
-      resources: translations,
-      detection: {
-        order: ['localStorage'],
-        lookupLocalStorage: LOCALE_STORAGE_KEY,
-      },
-      interpolation: {
-        escapeValue: false,
-      },
-      react: {
-        useSuspense: true,
-      },
+  if (i18n.isInitialized) {
+    // Add namespace without reinitializing to preserve existing namespaces
+    Object.entries(translations).forEach(([lang, namespaces]) => {
+      Object.entries(namespaces).forEach(([ns, resources]) => {
+        i18n.addResourceBundle(lang, ns, resources, true, true);
+      });
     });
+
+    i18n.options.defaultNS = namespace;
+    i18n.options.fallbackNS = Object.keys(i18n.store.data[i18n.language] ?? {});
+  } else {
+    // First initialization
+    await i18n
+      .use(LanguageDetector)
+      .use(initReactI18next)
+      .init({
+        fallbackLng: 'en',
+        ns: [namespace],
+        defaultNS: namespace,
+        resources: translations,
+        detection: {
+          order: ['localStorage'],
+          lookupLocalStorage: LOCALE_STORAGE_KEY,
+        },
+        interpolation: {
+          escapeValue: false,
+        },
+        react: {
+          useSuspense: true,
+        },
+      });
+  }
 
   return i18n;
 };

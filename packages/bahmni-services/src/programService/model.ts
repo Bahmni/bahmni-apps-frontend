@@ -189,4 +189,5 @@ export interface ProgramEnrollment extends BaseResource {
 
 export interface PatientProgramsResponse {
   results: ProgramEnrollment[];
+  totalCount?: number;
 }

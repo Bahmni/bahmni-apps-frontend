@@ -1,19 +1,12 @@
 import { formatDateTime } from '@bahmni/services';
-import { Observation, Bundle, Encounter, Reference } from 'fhir/r4';
+import { Observation, Bundle, Encounter } from 'fhir/r4';
+import { extractId, extractObservationValue } from '../utils/Observations';
 import {
   EncounterDetails,
-  ObservationValue,
   ExtractedObservation,
   ExtractedObservationsResult,
   ObservationsByEncounter,
 } from './models';
-
-const NORMAL_REFERENCE_RANGE_CODE = 'normal';
-const REFERENCE_RANGE_SYSTEM =
-  'http://terminology.hl7.org/CodeSystem/referencerange-meaning';
-const ABNORMAL_INTERPRETATION_CODE = 'A';
-const INTERPRETATION_SYSTEM =
-  'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation';
 
 export const formatEncounterTitle = (
   encounterDetails: EncounterDetails | undefined,
@@ -105,131 +98,6 @@ export const transformObservationToRowCell = (
     provider: observation.encounter?.provider,
   };
 };
-
-const extractId = (ref?: string | Reference): string | undefined => {
-  const referenceStr = typeof ref === 'string' ? ref : ref?.reference;
-  return referenceStr?.split('/')?.pop();
-};
-
-function isAbnormalInterpretation(observation: Observation): boolean {
-  if (!observation.interpretation || observation.interpretation.length === 0) {
-    return false;
-  }
-
-  return observation.interpretation.some((interp) =>
-    interp.coding?.some(
-      (coding) =>
-        coding.system === INTERPRETATION_SYSTEM &&
-        coding.code === ABNORMAL_INTERPRETATION_CODE,
-    ),
-  );
-}
-
-function extractObservationValue(
-  observation: Observation,
-): ObservationValue | undefined {
-  const {
-    valueQuantity,
-    valueCodeableConcept,
-    valueString,
-    valueBoolean,
-    valueInteger,
-    valueDateTime,
-    valueTime,
-    referenceRange,
-  } = observation;
-
-  const isAbnormal = isAbnormalInterpretation(observation);
-
-  if (valueQuantity) {
-    const observationValue: ObservationValue = {
-      value: valueQuantity.value ?? '',
-      unit: valueQuantity.unit,
-      type: 'quantity',
-      isAbnormal,
-    };
-
-    if (referenceRange && referenceRange.length > 0) {
-      const normalRange = referenceRange.find((range) =>
-        range.type?.coding?.some(
-          (coding) =>
-            coding.system === REFERENCE_RANGE_SYSTEM &&
-            coding.code === NORMAL_REFERENCE_RANGE_CODE,
-        ),
-      );
-
-      if (normalRange && (normalRange.low || normalRange.high)) {
-        observationValue.referenceRange = {
-          low: normalRange.low
-            ? {
-                value: normalRange.low.value!,
-                unit: normalRange.low.unit,
-              }
-            : undefined,
-          high: normalRange.high
-            ? {
-                value: normalRange.high.value!,
-                unit: normalRange.high.unit,
-              }
-            : undefined,
-        };
-      }
-    }
-
-    return observationValue;
-  }
-
-  if (valueCodeableConcept) {
-    return {
-      value:
-        valueCodeableConcept.text ?? valueCodeableConcept!.coding![0]!.display!,
-      type: 'codeable',
-      isAbnormal,
-    };
-  }
-
-  if (valueString) {
-    return {
-      value: valueString,
-      type: 'string',
-      isAbnormal,
-    };
-  }
-
-  if (valueDateTime) {
-    return {
-      value: valueDateTime,
-      type: 'dateTime',
-      isAbnormal,
-    };
-  }
-
-  if (valueTime) {
-    return {
-      value: valueTime,
-      type: 'time',
-      isAbnormal,
-    };
-  }
-
-  if (valueBoolean !== undefined) {
-    return {
-      value: valueBoolean,
-      type: 'boolean',
-      isAbnormal,
-    };
-  }
-
-  if (valueInteger !== undefined) {
-    return {
-      value: valueInteger,
-      type: 'integer',
-      isAbnormal,
-    };
-  }
-
-  return undefined;
-}
 
 function extractEncounterDetails(
   encounterId: string,

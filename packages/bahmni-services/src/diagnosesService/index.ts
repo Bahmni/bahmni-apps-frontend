@@ -1,4 +1,8 @@
-export { getPatientDiagnoses } from './diagnosesService';
+export {
+  getPatientDiagnoses,
+  getDiagnosesPage,
+  type DiagnosisPage,
+} from './diagnosesService';
 export {
   type Diagnosis,
   type DiagnosisInputEntry,
