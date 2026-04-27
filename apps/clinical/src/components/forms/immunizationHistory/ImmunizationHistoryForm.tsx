@@ -18,7 +18,7 @@ import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import SelectedImmunizationItem from './components/SelectedImmunizationItem';
 import { useImmunizationHistoryStore } from './stores';
 import styles from './styles/ImmunizationHistoryForm.module.scss';
-import { getComboBoxItems } from './utils';
+import { findAttr, getComboBoxItems } from './utils';
 
 const ImmunizationHistoryForm = () => {
   const { t } = useTranslation();
@@ -73,7 +73,11 @@ const ImmunizationHistoryForm = () => {
   } = useQuery({
     queryKey: ['administeredLocationTag', administeredLocationTag],
     queryFn: () => getLocationByTag(administeredLocationTag!),
-    enabled: !!administeredLocationTag && !isConfigLoading && !configError,
+    enabled:
+      !!administeredLocationTag &&
+      !isConfigLoading &&
+      !configError &&
+      !!findAttr('administeredLocation', attributes),
     staleTime: Infinity,
   });
 
@@ -84,7 +88,11 @@ const ImmunizationHistoryForm = () => {
   } = useQuery({
     queryKey: ['routesConceptSet', routeConceptUuid],
     queryFn: () => searchFHIRConcepts(routeConceptUuid!),
-    enabled: !!routeConceptUuid && !isConfigLoading && !configError,
+    enabled:
+      !!routeConceptUuid &&
+      !isConfigLoading &&
+      !configError &&
+      !!findAttr('route', attributes),
     staleTime: Infinity,
   });
 
@@ -95,7 +103,11 @@ const ImmunizationHistoryForm = () => {
   } = useQuery({
     queryKey: ['sitesConceptSet', siteConceptUuid],
     queryFn: () => searchFHIRConcepts(siteConceptUuid!),
-    enabled: !!siteConceptUuid && !isConfigLoading && !configError,
+    enabled:
+      !!siteConceptUuid &&
+      !isConfigLoading &&
+      !configError &&
+      !!findAttr('site', attributes),
     staleTime: Infinity,
   });
 

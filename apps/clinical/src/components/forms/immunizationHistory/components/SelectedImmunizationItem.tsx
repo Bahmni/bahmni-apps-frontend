@@ -17,6 +17,7 @@ import {
   getLocationComboBoxItems,
   getMedicationComboBoxItems,
   getValueSetComboBoxItems,
+  findAttr,
 } from '../utils';
 
 interface SelectedImmunizationItemProps {
@@ -55,8 +56,6 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
     administeredLocationTagSearchTerm,
     setAdministeredLocationTagSearchTerm,
   ] = useState('');
-
-  const findAttr = (name: string) => attributes?.find((a) => a.name === name);
 
   const vaccineDrugComboBoxItems = useMemo(
     () =>
@@ -153,7 +152,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           />
         </Column>
 
-        {findAttr('administeredOn') && (
+        {findAttr('administeredOn', attributes) && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <DatePicker
               datePickerType="single"
@@ -180,7 +179,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {findAttr('administeredLocation') && (
+        {findAttr('administeredLocation', attributes) && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <ComboBox
               id={`immunization-administered-location-combobox-${id}`}
@@ -220,7 +219,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {findAttr('route') && (
+        {findAttr('route', attributes) && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <ComboBox
               id={`immunization-route-combobox-${id}`}
@@ -246,7 +245,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {findAttr('site') && (
+        {findAttr('site', attributes) && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <ComboBox
               id={`immunization-site-combobox-${id}`}
@@ -272,7 +271,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {findAttr('manufacturer') && (
+        {findAttr('manufacturer', attributes) && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <TextInput
               id={`immunization-manufacturer-${id}`}
@@ -293,7 +292,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {findAttr('batchNumber') && (
+        {findAttr('batchNumber', attributes) && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <TextInput
               id={`immunization-batch-number-${id}`}
@@ -314,7 +313,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           </Column>
         )}
 
-        {findAttr('expiryDate') && (
+        {findAttr('expiryDate', attributes) && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
             <DatePicker
               datePickerType="single"

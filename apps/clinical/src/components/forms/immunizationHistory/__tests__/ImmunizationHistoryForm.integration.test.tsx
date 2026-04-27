@@ -207,6 +207,24 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
     });
   });
 
+  it('makes no API calls when immunizationHistory is not configured', async () => {
+    (useClinicalConfig as jest.Mock).mockReturnValue({
+      ...mockClinicalConfigContext,
+      clinicalConfig: { consultationPad: {} },
+    });
+
+    render(<ImmunizationHistoryForm />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId('immunization-history-loading-test-id'),
+      ).not.toBeInTheDocument();
+    });
+
+    expect(searchFHIRConcepts).not.toHaveBeenCalled();
+    expect(getLocationByTag).not.toHaveBeenCalled();
+  });
+
   it('shows error state and produces empty bundle when an API call fails', async () => {
     (getLocationByTag as jest.Mock).mockRejectedValue(
       new Error('Network error'),

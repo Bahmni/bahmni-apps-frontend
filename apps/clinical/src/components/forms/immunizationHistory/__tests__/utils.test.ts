@@ -2,6 +2,7 @@ import { Immunization, Medication } from 'fhir/r4';
 import { getMedicationDisplay } from '../../../../services/medicationService';
 import { ADMINISTERED_PRODUCT_EXTENSION_URL } from '../constants';
 import {
+  findAttr,
   getValueSetComboBoxItems,
   getMedicationComboBoxItems,
   getLocationComboBoxItems,
@@ -39,6 +40,28 @@ const BASE_BUNDLE_PARAMS = {
   encounterReference: 'Encounter/encounter-uuid',
   practitionerUUID: 'practitioner-uuid',
 };
+
+describe('findAttr', () => {
+  const attributes = [
+    { name: 'administeredOn', required: true },
+    { name: 'route', required: false },
+  ];
+
+  it.each([
+    ['administeredOn', { name: 'administeredOn', required: true }],
+    ['route', { name: 'route', required: false }],
+  ])('returns the attribute config for "%s"', (name, expected) => {
+    expect(findAttr(name, attributes)).toEqual(expected);
+  });
+
+  it('returns undefined when attribute name is not in the list', () => {
+    expect(findAttr('site', attributes)).toBeUndefined();
+  });
+
+  it('returns undefined when attributes is undefined', () => {
+    expect(findAttr('administeredOn', undefined)).toBeUndefined();
+  });
+});
 
 describe('getValueSetComboBoxItems', () => {
   it.each([[''], ['   ']])(

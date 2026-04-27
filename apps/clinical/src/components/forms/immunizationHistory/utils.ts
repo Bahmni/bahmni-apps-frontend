@@ -7,6 +7,7 @@ import {
   BundleEntry,
   Immunization,
 } from 'fhir/r4';
+import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import { getMedicationDisplay } from '../../../services/medicationService';
 import { createBundleEntry } from '../../../utils/fhir/consultationBundleCreator';
 import {
@@ -42,6 +43,13 @@ function resolveLocationReference(
     return { reference: `Location/${location.uuid}` };
   }
   return { display: location.display };
+}
+
+export function findAttr(
+  name: string,
+  attributes: InputControlAttributes[] | undefined,
+): InputControlAttributes | undefined {
+  return attributes?.find((a) => a.name === name);
 }
 
 export function getValueSetComboBoxItems(

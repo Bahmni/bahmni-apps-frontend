@@ -7,6 +7,7 @@ import {
   ImmunizationInputEntry,
   ImmunizationLocation,
 } from './models';
+import { findAttr } from './utils';
 
 export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
   (set, get) => ({
@@ -164,9 +165,6 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
       let isValid = true;
       const { attributes } = get();
 
-      const findAttr = (name: string) =>
-        attributes?.find((a) => a.name === name);
-
       const checkField = (
         errors: ImmunizationInputEntry['errors'],
         key: keyof ImmunizationInputEntry['errors'],
@@ -192,49 +190,49 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
             'IMMUNIZATION_HISTORY_DRUG_CODE_REQUIRED',
           );
 
-          if (findAttr('administeredOn')?.required)
+          if (findAttr('administeredOn', attributes)?.required)
             checkField(
               errors,
               'administeredOn',
               !entry.administeredOn,
               'IMMUNIZATION_HISTORY_ADMINISTERED_ON_REQUIRED',
             );
-          if (findAttr('administeredLocation')?.required)
+          if (findAttr('administeredLocation', attributes)?.required)
             checkField(
               errors,
               'administeredLocation',
               !entry.administeredLocation?.display.trim(),
               'IMMUNIZATION_HISTORY_ADMINISTERED_LOCATION_REQUIRED',
             );
-          if (findAttr('route')?.required)
+          if (findAttr('route', attributes)?.required)
             checkField(
               errors,
               'route',
               !entry.route?.trim(),
               'IMMUNIZATION_HISTORY_ROUTE_REQUIRED',
             );
-          if (findAttr('site')?.required)
+          if (findAttr('site', attributes)?.required)
             checkField(
               errors,
               'site',
               !entry.site?.trim(),
               'IMMUNIZATION_HISTORY_SITE_REQUIRED',
             );
-          if (findAttr('expiryDate')?.required)
+          if (findAttr('expiryDate', attributes)?.required)
             checkField(
               errors,
               'expiryDate',
               !entry.expiryDate,
               'IMMUNIZATION_HISTORY_EXPIRY_DATE_REQUIRED',
             );
-          if (findAttr('manufacturer')?.required)
+          if (findAttr('manufacturer', attributes)?.required)
             checkField(
               errors,
               'manufacturer',
               !entry.manufacturer?.trim(),
               'IMMUNIZATION_HISTORY_MANUFACTURER_REQUIRED',
             );
-          if (findAttr('batchNumber')?.required)
+          if (findAttr('batchNumber', attributes)?.required)
             checkField(
               errors,
               'batchNumber',
