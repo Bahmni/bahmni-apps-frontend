@@ -3,7 +3,7 @@
   "title": "Registration Configuration Schema",
   "description": "Schema for validating registration app configuration",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": "string",

@@ -27,12 +27,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_16_"
+                  id="table-sort-_r_27_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_PROGRAM_NAME header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_16_"
+                  aria-describedby="table-sort-_r_27_"
                   class="cds--table-sort"
                   data-testid="table-header-programName"
                   type="button"
@@ -88,12 +88,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_17_"
+                  id="table-sort-_r_28_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_START_DATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_17_"
+                  aria-describedby="table-sort-_r_28_"
                   class="cds--table-sort"
                   data-testid="table-header-startDate"
                   type="button"
@@ -149,12 +149,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_18_"
+                  id="table-sort-_r_29_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_END_DATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_18_"
+                  aria-describedby="table-sort-_r_29_"
                   class="cds--table-sort"
                   data-testid="table-header-endDate"
                   type="button"
@@ -210,12 +210,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_19_"
+                  id="table-sort-_r_2a_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_STATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_19_"
+                  aria-describedby="table-sort-_r_2a_"
                   class="cds--table-sort"
                   data-testid="table-header-state"
                   type="button"
@@ -271,12 +271,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_1a_"
+                  id="table-sort-_r_2b_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_OUTCOME header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_1a_"
+                  aria-describedby="table-sort-_r_2b_"
                   class="cds--table-sort"
                   data-testid="table-header-outcome"
                   type="button"
@@ -462,6 +462,250 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
             </tr>
           </tbody>
         </table>
+      </div>
+      <div
+        class="_sortableDataTablePagination_1w499_37"
+      >
+        <div
+          class="cds--pagination cds--pagination--md"
+        >
+          <div
+            class="cds--pagination__left"
+          >
+            <label
+              class="cds--pagination__text"
+              for="cds-pagination-select-id-_r_2c_"
+              id="cds-pagination-select-id-_r_2c_-count-label"
+            >
+              Items per page:
+            </label>
+            <div
+              class="cds--form-item cds--select__item-count"
+            >
+              <div
+                class="cds--select cds--select--inline"
+              >
+                <div
+                  class="cds--select-input--inline__wrapper"
+                >
+                  <div
+                    class="cds--select-input__wrapper"
+                  >
+                    <select
+                      class="cds--select-input"
+                      id="cds-pagination-select-id-_r_2c_"
+                      title="5"
+                    >
+                      <option
+                        class="cds--select-option"
+                        value="5"
+                      >
+                        5
+                      </option>
+                      <option
+                        class="cds--select-option"
+                        value="10"
+                      >
+                        10
+                      </option>
+                      <option
+                        class="cds--select-option"
+                        value="25"
+                      >
+                        25
+                      </option>
+                      <option
+                        class="cds--select-option"
+                        value="50"
+                      >
+                        50
+                      </option>
+                      <option
+                        class="cds--select-option"
+                        value="100"
+                      >
+                        100
+                      </option>
+                    </select>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--select__arrow"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 16 16"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span
+              class="cds--pagination__text cds--pagination__items-count"
+            >
+              1–2 of 2 items
+            </span>
+          </div>
+          <div
+            class="cds--pagination__right"
+          >
+            <div
+              class="cds--form-item cds--select__page-number"
+            >
+              <div
+                class="cds--select cds--select--inline"
+              >
+                <label
+                  class="cds--label cds--visually-hidden"
+                  dir="auto"
+                  for="cds-pagination-select-id-_r_2c_-right"
+                >
+                  Page of 1 pages
+                </label>
+                <div
+                  class="cds--select-input--inline__wrapper"
+                >
+                  <div
+                    class="cds--select-input__wrapper"
+                  >
+                    <select
+                      class="cds--select-input"
+                      id="cds-pagination-select-id-_r_2c_-right"
+                      title="1"
+                    >
+                      <option
+                        class="cds--select-option"
+                        value="1"
+                      >
+                        1
+                      </option>
+                    </select>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--select__arrow"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 16 16"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span
+              class="cds--pagination__text"
+            >
+              of 1 page
+            </span>
+            <div
+              class="cds--pagination__control-buttons"
+            >
+              <span
+                class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip cds--icon-tooltip--disabled"
+              >
+                <div
+                  class="cds--tooltip-trigger__wrapper"
+                >
+                  <button
+                    aria-label="Previous page"
+                    aria-labelledby="tooltip-_r_2g_"
+                    class="cds--pagination__button cds--pagination__button--backward cds--pagination__button--no-index cds--btn cds--btn--ghost cds--btn--disabled cds--btn--icon-only"
+                    disabled=""
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M20 24L10 16 20 8z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <span
+                  aria-hidden="true"
+                  class="cds--popover"
+                  id="tooltip-_r_2g_"
+                  role="tooltip"
+                >
+                  <span
+                    class="cds--popover-content cds--tooltip-content"
+                  >
+                    Previous page
+                  </span>
+                  <span
+                    class="cds--popover-caret"
+                  />
+                </span>
+              </span>
+              <span
+                class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top-end cds--tooltip cds--icon-tooltip cds--icon-tooltip--disabled"
+              >
+                <div
+                  class="cds--tooltip-trigger__wrapper"
+                >
+                  <button
+                    aria-label="Next page"
+                    aria-labelledby="tooltip-_r_2k_"
+                    class="cds--pagination__button cds--pagination__button--forward cds--pagination__button--no-index cds--btn cds--btn--ghost cds--btn--disabled cds--btn--icon-only"
+                    disabled=""
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 8L22 16 12 24z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <span
+                  aria-hidden="true"
+                  class="cds--popover"
+                  id="tooltip-_r_2k_"
+                  role="tooltip"
+                >
+                  <span
+                    class="cds--popover-content cds--tooltip-content"
+                  >
+                    Next page
+                  </span>
+                  <span
+                    class="cds--popover-caret"
+                  />
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

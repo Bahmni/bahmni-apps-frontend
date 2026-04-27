@@ -45,7 +45,7 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
-  const configPageSize = Number(config?.pageSize) || 10;
+  const configPageSize = Number(config?.pageSize) || 5;
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);

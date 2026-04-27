@@ -23,6 +23,7 @@ export interface ObservationConfig {
   conceptNames?: string[];
   conceptUuid?: string[];
   titleTranslationKey?: string;
+  hideThumbnail?: boolean;
 }
 
 export const conceptUuidQueryKeys = (conceptName: string) =>
@@ -35,7 +36,11 @@ export const observationsQueryKeys = (
 
 const Observations: React.FC<WidgetProps> = ({ config }) => {
   const observationConfig = config as ObservationConfig;
-  const { conceptNames = [], conceptUuid = [] } = observationConfig;
+  const {
+    conceptNames = [],
+    conceptUuid = [],
+    hideThumbnail = false,
+  } = observationConfig;
   const notifiedIndices = useRef(new Set());
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
@@ -174,7 +179,11 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
         <p>{translatedTitle}</p>
       </Tile>
       {hasData ? (
-        <ObsByEncounter groupedData={groupedData} title={translatedTitle} />
+        <ObsByEncounter
+          groupedData={groupedData}
+          title={translatedTitle}
+          hideThumbnail={hideThumbnail}
+        />
       ) : (
         <SortableDataTable
           headers={headers}

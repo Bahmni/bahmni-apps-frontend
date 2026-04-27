@@ -11,8 +11,8 @@ jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
 
 const PATIENT_UUID = 'test-patient-uuid';
-const BASE_URL = `/openmrs/ws/fhir2/R4/DocumentReference?patient=${PATIENT_UUID}&_sort=-date&_count=100&_getpagesoffset=0`;
-const PAGE_BASE_URL = `/openmrs/ws/fhir2/R4/DocumentReference?patient=${PATIENT_UUID}&_sort=-date&_count=10&_getpagesoffset=0`;
+const BASE_URL = `/openmrs/ws/fhir2/R4/DocumentReference?patient=${PATIENT_UUID}&_sort=-_lastUpdated&_count=100&_getpagesoffset=0`;
+const PAGE_BASE_URL = `/openmrs/ws/fhir2/R4/DocumentReference?patient=${PATIENT_UUID}&_sort=-_lastUpdated&_count=10&_getpagesoffset=0`;
 
 const mockDocumentReference: DocumentReference = {
   resourceType: 'DocumentReference',
@@ -411,7 +411,7 @@ describe('documentReferenceService', () => {
 
       await getDocumentReferencePage(PATIENT_UUID, undefined, 25);
 
-      const expectedUrl = `/openmrs/ws/fhir2/R4/DocumentReference?patient=${PATIENT_UUID}&_sort=-date&_count=25&_getpagesoffset=0`;
+      const expectedUrl = `/openmrs/ws/fhir2/R4/DocumentReference?patient=${PATIENT_UUID}&_sort=-_lastUpdated&_count=25&_getpagesoffset=0`;
       expect(mockedGet).toHaveBeenCalledWith(expectedUrl);
     });
 
@@ -420,7 +420,7 @@ describe('documentReferenceService', () => {
 
       await getDocumentReferencePage(PATIENT_UUID, undefined, 10, 2);
 
-      const expectedUrl = `/openmrs/ws/fhir2/R4/DocumentReference?patient=${PATIENT_UUID}&_sort=-date&_count=10&_getpagesoffset=10`;
+      const expectedUrl = `/openmrs/ws/fhir2/R4/DocumentReference?patient=${PATIENT_UUID}&_sort=-_lastUpdated&_count=10&_getpagesoffset=10`;
       expect(mockedGet).toHaveBeenCalledWith(expectedUrl);
     });
 
@@ -430,7 +430,7 @@ describe('documentReferenceService', () => {
       await getDocumentReferencePage(PATIENT_UUID, undefined, 2, 5);
 
       // offset = (5 - 1) * 2 = 8
-      const expectedUrl = `/openmrs/ws/fhir2/R4/DocumentReference?patient=${PATIENT_UUID}&_sort=-date&_count=2&_getpagesoffset=8`;
+      const expectedUrl = `/openmrs/ws/fhir2/R4/DocumentReference?patient=${PATIENT_UUID}&_sort=-_lastUpdated&_count=2&_getpagesoffset=8`;
       expect(mockedGet).toHaveBeenCalledWith(expectedUrl);
     });
 

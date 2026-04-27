@@ -11,6 +11,10 @@ interface AppointmentTabContentProps {
   headers: Array<{ key: string; header: string }>;
   sortable: Array<{ key: string; sortable: boolean }>;
   renderCell: (row: FormattedAppointment, key: string) => React.ReactNode;
+  pageSize?: number;
+  page?: number;
+  totalItems?: number;
+  onPageChange?: (page: number, pageSize: number) => void;
 }
 
 const AppointmentTabContent: React.FC<AppointmentTabContentProps> = ({
@@ -20,10 +24,14 @@ const AppointmentTabContent: React.FC<AppointmentTabContentProps> = ({
   headers,
   sortable,
   renderCell,
+  pageSize,
+  page,
+  totalItems,
+  onPageChange,
 }) => {
   const { t } = useTranslation();
 
-  if (appointments.length === 0) {
+  if (!isLoading && appointments.length === 0) {
     return <p className={styles.appointmentTableEmpty}>{t(emptyMessageKey)}</p>;
   }
 
@@ -36,6 +44,10 @@ const AppointmentTabContent: React.FC<AppointmentTabContentProps> = ({
       sortable={sortable}
       renderCell={renderCell}
       className={styles.appointmentsTableBody}
+      pageSize={pageSize}
+      page={page}
+      totalItems={totalItems}
+      onPageChange={onPageChange}
     />
   );
 };

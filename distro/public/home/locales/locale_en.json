@@ -1,0 +1,21 @@
+{
+  "HOME_CHANGE_PASSWORD": "Change Password",
+  "HOME_ERROR_FETCH_CONFIG": "Failed to load home page configuration",
+  "HOME_ERROR_LOGOUT_FAILED": "Failed to logout. Please try again.",
+  "HOME_LOGOUT": "Logout",
+  "HOME_MODULE_ADMIN": "Admin",
+  "HOME_MODULE_APPOINTMENT_SCHEDULING": "Appointment Scheduling",
+  "HOME_MODULE_ATOMFEED_CONSOLE": "Atomfeed Console",
+  "HOME_MODULE_BED_MANAGEMENT": "Bed Management",
+  "HOME_MODULE_CLINICAL": "Clinical",
+  "HOME_MODULE_IMPLEMENTER_INTERFACE": "Implementer Interface",
+  "HOME_MODULE_LAB_LITE": "Lab Lite",
+  "HOME_MODULE_OPERATION_THEATRE": "Operation Theatre",
+  "HOME_MODULE_ORDERS": "Orders",
+  "HOME_MODULE_PATIENT_DOCUMENTS": "Patient Documents",
+  "HOME_MODULE_PROGRAMS": "Programs",
+  "HOME_MODULE_RADIOLOGY": "Radiology",
+  "HOME_MODULE_REGISTRATION": "Registration",
+  "HOME_MODULE_REPORTS": "Reports",
+  "HOME_SELECT_LOCATION": "Select Location"
+}

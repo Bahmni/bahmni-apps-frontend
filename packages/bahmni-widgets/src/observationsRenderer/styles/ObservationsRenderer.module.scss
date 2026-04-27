@@ -1,0 +1,110 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.resultsContainer {
+  background-color: $layer-02;
+  overflow-y: auto;
+  max-height: 70vh;
+  width: 100%;
+  padding: $spacing-05;
+}
+
+.observation {
+  padding: $spacing-05;
+  border-bottom: 1px solid $border-subtle-02;
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.groupContainer {
+  display: block;
+}
+
+.rowContainer {
+  display: flex;
+  align-items: center;
+}
+
+.groupLabel {
+  @include type-style("heading-compact-01");
+  display: block;
+  margin-block-end: $spacing-04;
+}
+
+.rowLabel {
+  @include type-style("heading-compact-01");
+  flex-basis: 30%;
+}
+
+.rowValue {
+  @include type-style("body-compact-01");
+  flex-basis: 70%;
+}
+
+.groupMembers {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-03;
+}
+
+.memberRow {
+  display: flex;
+  padding: $spacing-03 $spacing-04;
+}
+
+.memberLabel {
+  @include type-style("body-compact-01");
+  flex-basis: 30%;
+}
+
+.memberValue {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+}
+
+.abnormalValue {
+  @include type-style("heading-compact-01");
+  color: $support-error;
+}
+
+.rangeInfo {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+}
+
+.nestedGroup {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-03;
+  margin-block-start: $spacing-03;
+}
+
+.nestedGroupLabel {
+  @include type-style("body-compact-01");
+  font-weight: 600;
+}
+
+.nestedGroupMembers {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.commentSection {
+  margin-block-start: $spacing-04;
+  padding-block-start: $spacing-04;
+  border-block-start: 1px solid $border-subtle-01;
+}
+
+.commentText {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+  font-style: italic;
+}

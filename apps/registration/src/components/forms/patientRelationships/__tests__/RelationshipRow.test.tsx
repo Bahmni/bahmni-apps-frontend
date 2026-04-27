@@ -4,6 +4,13 @@ import type { PatientSuggestion } from '../../../../hooks/usePatientSearch';
 import type { RelationshipData } from '../PatientRelationships';
 import { RelationshipRow } from '../RelationshipRow';
 
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  formatDateTime: jest.fn(() => ({
+    formattedResult: '31/12/2025',
+  })),
+}));
+
 describe('RelationshipRow', () => {
   const mockRelationshipTypes = [
     { uuid: 'type1', aIsToB: 'Parent', bIsToA: 'Child' },
@@ -298,7 +305,7 @@ describe('RelationshipRow', () => {
       patientId: 'PAT002',
       patientUuid: 'patient2',
       patientName: 'Jane Smith',
-      tillDate: '31/12/2025',
+      tillDate: '2025-12-31',
       isExisting: true,
     };
 

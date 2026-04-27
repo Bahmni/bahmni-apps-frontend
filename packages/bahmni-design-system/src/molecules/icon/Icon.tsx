@@ -19,7 +19,7 @@ export interface IconProps {
  *
  * @component
  * @param {Object} props - Component props
- * @param {string} props.name - Icon name in the format "fa-home", "fa-regular-user", or "far-user"
+ * @param {string} props.name - Icon name in FontAwesome format (e.g., "fa-home", "fa-user", "fa-stethoscope")
  * @param {ICON_SIZE} [props.size] - Icon size from ICON_SIZE enum (XXS, XS, SM, LG, XL, XXL, X1-X10)
  * @param {string} [props.color] - Icon color as CSS color value
  * @param {string} props.id - Unique identifier for the icon (used for testing and accessibility)
@@ -28,6 +28,23 @@ export interface IconProps {
  * @param {string} [props.testId] - Test identifier for testing purposes
  * @returns {React.ReactElement} React component
  */
+const getPaddingClass = (padding: ICON_PADDING): string => {
+  switch (padding) {
+    case ICON_PADDING.NONE:
+      return styles.paddingNone;
+    case ICON_PADDING.XXSMALL:
+      return styles.paddingXxsmall;
+    case ICON_PADDING.XSMALL:
+      return styles.paddingXsmall;
+    case ICON_PADDING.SMALL:
+      return styles.paddingSmall;
+    case ICON_PADDING.MEDIUM:
+      return styles.paddingMedium;
+    case ICON_PADDING.LARGE:
+      return styles.paddingLarge;
+  }
+};
+
 export const Icon: React.FC<IconProps> = ({
   name,
   size = ICON_SIZE.XS,
@@ -37,30 +54,15 @@ export const Icon: React.FC<IconProps> = ({
   padding = ICON_PADDING.XXSMALL,
   testId,
 }) => {
+  const paddingClass = getPaddingClass(padding);
+
   if (!name || !/^fas?-[a-zA-Z0-9_-]+$/.test(name)) {
     return;
   }
 
-  const getPaddingClass = (padding: ICON_PADDING): string => {
-    switch (padding) {
-      case ICON_PADDING.NONE:
-        return styles.paddingNone;
-      case ICON_PADDING.XXSMALL:
-        return styles.paddingXxsmall;
-      case ICON_PADDING.XSMALL:
-        return styles.paddingXsmall;
-      case ICON_PADDING.SMALL:
-        return styles.paddingSmall;
-      case ICON_PADDING.MEDIUM:
-        return styles.paddingMedium;
-      case ICON_PADDING.LARGE:
-        return styles.paddingLarge;
-    }
-  };
-
   return (
     <span
-      className={`${styles.bahmniIcon} ${getPaddingClass(padding)}`}
+      className={`${styles.bahmniIcon} ${paddingClass}`}
       id={id}
       data-testid={testId}
       aria-label={ariaLabel}

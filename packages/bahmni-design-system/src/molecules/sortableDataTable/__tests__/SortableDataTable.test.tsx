@@ -360,7 +360,7 @@ describe('SortableDataTable', () => {
       ).toBeInTheDocument();
     });
 
-    it('does not render pagination when rows fit on one page', () => {
+    it('renders pagination footer even when all rows fit on one page', () => {
       render(
         <SortableDataTable
           headers={mockHeaders}
@@ -371,9 +371,9 @@ describe('SortableDataTable', () => {
         />,
       );
 
-      expect(
-        screen.queryByRole('button', { name: /next page/i }),
-      ).not.toBeInTheDocument();
+      // Footer is shown so the user can see total count and change page size,
+      // but next page is disabled since there is only one page.
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
     });
 
     it('does not render pagination when pageSize prop is not provided', () => {
@@ -592,10 +592,8 @@ describe('SortableDataTable', () => {
       await waitFor(() => {
         expect(screen.getByText('Medication 1')).toBeInTheDocument();
       });
-      // Pagination is hidden (3 rows < pageSize 5)
-      expect(
-        screen.queryByRole('button', { name: /next page/i }),
-      ).not.toBeInTheDocument();
+      // Pagination footer is still shown (pageSize is defined), but next is disabled (only 1 page)
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
     });
 
     it('shows more rows after user increases page size via dropdown', async () => {
@@ -670,7 +668,7 @@ describe('SortableDataTable', () => {
       ).toBeInTheDocument();
     });
 
-    it('does not render pagination when totalItems equals pageSize', () => {
+    it('renders pagination footer when totalItems is less than pageSize', () => {
       render(
         <SortableDataTable
           headers={mockHeaders}
@@ -683,9 +681,9 @@ describe('SortableDataTable', () => {
         />,
       );
 
-      expect(
-        screen.queryByRole('button', { name: /next page/i }),
-      ).not.toBeInTheDocument();
+      // Footer is shown so the user can see total count and change page size,
+      // but next page is disabled since there is only one page.
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
     });
 
     it('renders all provided rows without client-side slicing in server-side mode', () => {

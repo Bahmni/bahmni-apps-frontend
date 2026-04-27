@@ -13,6 +13,7 @@ import { formatEncounterTitle, transformObservationToRowCell } from '../utils';
 export interface ObsByEncounterProps {
   groupedData: ObservationsByEncounter[];
   title?: string;
+  hideThumbnail?: boolean;
 }
 
 const renderObservation = (
@@ -21,6 +22,7 @@ const renderObservation = (
   encounterIndex: number,
   title: string,
   t: (key: string, options?: { provider?: string }) => string,
+  hideThumbnail?: boolean,
 ) => {
   const rowData = transformObservationToRowCell(observation, index, t);
 
@@ -30,11 +32,22 @@ const renderObservation = (
 
   if (valueType === 'Image')
     valueToDisplay = (
-      <ImageTile imageSrc={value} alt={value} id={`${value}-img`} />
+      <ImageTile
+        imageSrc={value}
+        alt={value}
+        id={`${value}-img`}
+        hideThumbnail={hideThumbnail}
+      />
     );
 
   if (valueType === 'Video')
-    valueToDisplay = <VideoTile id={`${value}-video`} videoSrc={value} />;
+    valueToDisplay = (
+      <VideoTile
+        id={`${value}-video`}
+        videoSrc={value}
+        hideThumbnail={hideThumbnail}
+      />
+    );
 
   if (valueType === 'PDF')
     valueToDisplay = <FileTile id={`${value}-pdf`} src={value} />;
@@ -70,6 +83,7 @@ const renderGroupedObservation = (
   groupIndex: number,
   encounterIndex: number,
   title: string,
+  hideThumbnail?: boolean,
 ) => {
   return (
     <CollapsibleRowGroup
@@ -79,7 +93,14 @@ const renderGroupedObservation = (
       open={isLatestEncounter}
     >
       {groupedObs.members?.map((child, childIndex) =>
-        renderObservation(child, childIndex, encounterIndex, title, t),
+        renderObservation(
+          child,
+          childIndex,
+          encounterIndex,
+          title,
+          t,
+          hideThumbnail,
+        ),
       )}
     </CollapsibleRowGroup>
   );
@@ -88,6 +109,7 @@ const renderGroupedObservation = (
 export const ObsByEncounter: React.FC<ObsByEncounterProps> = ({
   groupedData,
   title = '',
+  hideThumbnail,
 }) => {
   const { t } = useTranslation();
   const renderEncounter = (
@@ -105,7 +127,14 @@ export const ObsByEncounter: React.FC<ObsByEncounterProps> = ({
         open={isLatestEncounter}
       >
         {encounter.observations.map((obs, obsIndex) =>
-          renderObservation(obs, obsIndex, encounterIndex, title, t),
+          renderObservation(
+            obs,
+            obsIndex,
+            encounterIndex,
+            title,
+            t,
+            hideThumbnail,
+          ),
         )}
         {encounter.groupedObservations.map((groupedObs, groupIndex) =>
           renderGroupedObservation(
@@ -115,6 +144,7 @@ export const ObsByEncounter: React.FC<ObsByEncounterProps> = ({
             groupIndex,
             encounterIndex,
             title,
+            hideThumbnail,
           ),
         )}
       </CollapsibleRowGroup>

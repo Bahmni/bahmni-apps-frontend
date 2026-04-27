@@ -46,6 +46,7 @@ export interface ExtractedObservation {
   members?: ExtractedObservation[];
   sortId?: string;
   conceptId?: string;
+  comment?: string;
 }
 
 export interface ExtractedObservationsResult {

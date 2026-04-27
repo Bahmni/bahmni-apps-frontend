@@ -75,6 +75,9 @@ export {
   getAppointmentById,
   getUpcomingAppointments,
   getPastAppointments,
+  getUpcomingAppointmentsPage,
+  getPastAppointmentsPage,
+  type AppointmentPage,
   getAllAppointmentServices,
   deleteAppointmentService,
   APPOINTMENT_STATUSES,
@@ -87,6 +90,8 @@ export {
   generateId,
   generateUUID,
   getCookieByName,
+  deleteCookie,
+  setCookie,
   isStringEmpty,
   getPriorityByOrder,
   groupByDate,
@@ -166,6 +171,7 @@ export {
   getPatientRadiologyInvestigations,
   getPatientRadiologyInvestigationBundle,
   getPatientRadiologyInvestigationBundleWithImagingStudy,
+  fetchQualityAssessment,
 } from './radiologyInvestigationService';
 export { getLabInvestigationsBundle } from './labInvestigationService';
 export {
@@ -193,7 +199,10 @@ export { getConfig } from './configService';
 export {
   getCurrentUser,
   getUserLoginLocation,
+  getAvailableLocations,
   getDefaultDateFormat,
+  logout,
+  saveUserLocation,
   type User,
 } from './userService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
@@ -317,3 +326,9 @@ export {
   type DocumentViewModel,
   type DocumentReference,
 } from './documentReferenceService';
+
+export { uploadDocument } from './documentUploadService';
+export type {
+  DocumentUploadResponse,
+  ProcessedFileData,
+} from './documentUploadService';

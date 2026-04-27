@@ -24,6 +24,9 @@ jest.mock('@bahmni/services', () => ({
       totalCount: 0,
     }),
   ),
+  formatDateTime: jest.fn(() => ({
+    formattedResult: '31/12/2025',
+  })),
 }));
 
 describe('PatientRelationships', () => {

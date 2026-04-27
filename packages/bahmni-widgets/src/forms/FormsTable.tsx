@@ -4,7 +4,6 @@ import {
   AccordionItem,
   Link,
   Modal,
-  SkeletonText,
 } from '@bahmni/design-system';
 import {
   formatDateTime,
@@ -25,11 +24,16 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bundle, Observation } from 'fhir/r4';
 import React, { useCallback, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
+import { ObservationsRenderer } from '../observationsRenderer';
 import { WidgetProps } from '../registry/model';
 import { FormRecordViewModel, GroupedFormRecords } from './models';
-import ObservationItem from './ObservationItem';
 import styles from './styles/FormsTable.module.scss';
-import { filterObservationsByFormName } from './utils';
+import { extractFormFieldPath } from './utils';
+
+interface FormsTableConfig {
+  numberOfVisits?: number;
+  hideThumbnail?: boolean;
+}
 
 /**
  * Component to display patient forms grouped by form name in accordion format
@@ -45,7 +49,8 @@ const FormsTable: React.FC<WidgetProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] =
     useState<FormRecordViewModel | null>(null);
-  const numberOfVisits = config?.numberOfVisits as number;
+  const { numberOfVisits, hideThumbnail = false } = (config ??
+    {}) as FormsTableConfig;
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -98,16 +103,20 @@ const FormsTable: React.FC<WidgetProps> = ({
   }, [selectedRecord, getFormUuidByName]);
 
   // Fetch form metadata when a record is selected
-  const { isLoading: isLoadingMetadata, error: metadataError } =
-    useQuery<FormMetadata>({
-      queryKey: ['formMetadata', selectedFormUuid],
-      queryFn: () => fetchFormMetadata(selectedFormUuid!),
-      enabled: !!selectedFormUuid && isModalOpen,
-    });
+  const {
+    isLoading: isLoadingMetadata,
+    isError: isMetadataError,
+    error: metadataError,
+  } = useQuery<FormMetadata>({
+    queryKey: ['formMetadata', selectedFormUuid],
+    queryFn: () => fetchFormMetadata(selectedFormUuid!),
+    enabled: !!selectedFormUuid && isModalOpen,
+  });
 
   const {
     data: fhirObservationBundle,
     isLoading: isLoadingEncounterData,
+    isError: isFormDataError,
     error: formDataError,
   } = useQuery<Bundle<Observation>>({
     queryKey: ['formsEncounterFHIR', selectedRecord?.encounterUuid],
@@ -130,22 +139,37 @@ const FormsTable: React.FC<WidgetProps> = ({
     [patientUuid],
   );
 
-  // Extract observations from FHIR bundle and filter by form name
+  // Extract raw FHIR observations from bundle and filter by form name
   const filteredObservations = useMemo(() => {
-    if (!fhirObservationBundle || !selectedRecord?.formName) {
+    if (!fhirObservationBundle?.entry || !selectedRecord?.formName) {
       return [];
     }
 
-    return filterObservationsByFormName(
-      fhirObservationBundle,
-      selectedRecord.formName,
-    );
+    const allObservations = fhirObservationBundle.entry
+      .filter((entry) => entry.resource?.resourceType === 'Observation')
+      .map((entry) => entry.resource as Observation);
+
+    // Filter by form name using formFieldPath
+    return allObservations.filter((obs) => {
+      const formFieldPath = extractFormFieldPath(obs);
+      return !formFieldPath || formFieldPath.includes(selectedRecord.formName);
+    });
   }, [fhirObservationBundle, selectedRecord?.formName]);
+
+  const modalErrorMessage = useMemo(() => {
+    if (metadataError) {
+      return getFormattedError(metadataError).message;
+    }
+    if (formDataError) {
+      return getFormattedError(formDataError).message;
+    }
+    return undefined;
+  }, [metadataError, formDataError]);
 
   const headers = useMemo(
     () => [
-      { key: 'recordedOn', header: t('FORM_RECORDED_ON') },
-      { key: 'recordedBy', header: t('FORM_RECORDED_BY') },
+      { key: 'recordedOn', header: t('RECORDED_ON') },
+      { key: 'recordedBy', header: t('RECORDED_BY') },
     ],
     [t],
   );
@@ -289,35 +313,15 @@ const FormsTable: React.FC<WidgetProps> = ({
           size="md"
           testId="form-details-modal"
         >
-          <div className={styles.formContent}>
-            {isLoadingMetadata || isLoadingEncounterData ? (
-              <SkeletonText width="100%" lineCount={3} />
-            ) : metadataError ? (
-              <div>
-                {getFormattedError(metadataError).message ??
-                  t('ERROR_FETCHING_FORM_METADATA')}
-              </div>
-            ) : formDataError ? (
-              <div>
-                {getFormattedError(formDataError).message ??
-                  t('ERROR_FETCHING_FORM_DATA')}
-              </div>
-            ) : filteredObservations.length > 0 ? (
-              <div className={styles.formDetailsContainer}>
-                {filteredObservations.map(({ obs, comment }, index) => (
-                  <ObservationItem
-                    key={`${obs.id}`}
-                    observation={obs}
-                    index={index}
-                    formName={selectedRecord.formName}
-                    comment={comment}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div>{t('NO_FORM_DATA_AVAILABLE')}</div>
-            )}
-          </div>
+          <ObservationsRenderer
+            observations={filteredObservations}
+            isLoading={isLoadingMetadata || isLoadingEncounterData}
+            isError={isMetadataError || isFormDataError}
+            errorMessage={modalErrorMessage}
+            emptyStateMessage={t('NO_FORM_DATA_AVAILABLE')}
+            testIdPrefix={selectedRecord.formName}
+            hideThumbnail={hideThumbnail}
+          />
         </Modal>
       )}
     </>
