@@ -1,0 +1,364 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AdministeredTab matches snapshot 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="immunization-administered-tab-test-id"
+    id="immunization-administered-tab"
+  >
+    <div
+      class="expandable-data-table _expandableDataTableBody_15ny8_1"
+      data-testid="administered-immunizations-table"
+    >
+      <div
+        class="cds--data-table-content"
+      >
+        <table
+          aria-label="IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TABLE_ARIA"
+          class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+        >
+          <thead>
+            <tr>
+              <th
+                class="cds--table-expand"
+                id="expand"
+                scope="col"
+              />
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-_r_29_"
+                >
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_CODE header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-_r_29_"
+                  class="cds--table-sort"
+                  data-testid="table-header-code"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      IMMUNIZATION_HISTORY_WIDGET_COL_CODE
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+              <th
+                data-testid="table-header-doseSequence"
+                scope="col"
+              >
+                <div
+                  class="cds--table-header-label"
+                >
+                  IMMUNIZATION_HISTORY_WIDGET_COL_DOSE_SEQUENCE
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </div>
+              </th>
+              <th
+                data-testid="table-header-drugName"
+                scope="col"
+              >
+                <div
+                  class="cds--table-header-label"
+                >
+                  IMMUNIZATION_HISTORY_WIDGET_COL_DRUG_NAME
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </div>
+              </th>
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-_r_2c_"
+                >
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_ON header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-_r_2c_"
+                  class="cds--table-sort"
+                  data-testid="table-header-administeredOn"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_ON
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+              <th
+                aria-sort="none"
+                class="cds--table-sort__header"
+                scope="col"
+              >
+                <div
+                  class="cds--table-sort__description"
+                  id="table-sort-_r_2d_"
+                >
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_LOCATION header in ascending order
+                </div>
+                <button
+                  aria-describedby="table-sort-_r_2d_"
+                  class="cds--table-sort"
+                  data-testid="table-header-administeredLocation"
+                  type="button"
+                >
+                  <span
+                    class="cds--table-sort__flex"
+                  >
+                    <div
+                      class="cds--table-header-label"
+                    >
+                      IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_LOCATION
+                    </div>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                      />
+                    </svg>
+                    <svg
+                      aria-hidden="true"
+                      class="cds--table-sort__icon-unsorted"
+                      fill="currentColor"
+                      focusable="false"
+                      height="20"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                      />
+                    </svg>
+                    <div
+                      class="cds--table-header-label--decorator-inner"
+                    />
+                  </span>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            aria-live="polite"
+          >
+            <tr
+              class="cds--parent-row"
+              data-parent-row="true"
+              data-testid="table-row-imm-uuid-1"
+            >
+              <td
+                class="cds--table-expand"
+                headers="expand"
+              >
+                <button
+                  aria-controls="expanded-row-imm-uuid-1"
+                  aria-expanded="false"
+                  aria-label="Expand current row"
+                  class="cds--table-expand__button"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-expand__svg"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                    />
+                  </svg>
+                </button>
+              </td>
+              <td
+                data-testid="table-cell-imm-uuid-1-code"
+              >
+                <div
+                  class="code"
+                >
+                  <span>
+                    Measles
+                  </span>
+                  <span
+                    class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--auto-align cds--autoalign cds--popover--bottom cds--toggletip _tooltipIcon_d1wk8_1 cds--autoalign"
+                  >
+                    <button
+                      aria-controls="id-_r_2e_"
+                      aria-expanded="false"
+                      aria-label="Show information"
+                      class="cds--toggletip-button"
+                      type="button"
+                    >
+                      <span
+                        aria-label="Third dose completed successfully."
+                        class="_bahmniIcon_1cg5e_1 _paddingNone_1cg5e_1"
+                        id="tooltip-icon-fa-file-lines"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="svg-inline--fa fa-file-lines fa-lg "
+                          data-icon="file-lines"
+                          data-prefix="fas"
+                          data-testid="tooltip-icon-fa-file-lines"
+                          focusable="false"
+                          role="img"
+                          viewBox="0 0 384 512"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM112 256l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16s7.2-16 16-16z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                    <span
+                      class="cds--popover"
+                      id="id-_r_2e_"
+                    >
+                      <span
+                        class="cds--popover-content"
+                        style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                      >
+                        <div
+                          class="cds--toggletip-content"
+                        >
+                          Third dose completed successfully.
+                        </div>
+                        <span
+                          class="cds--popover-caret cds--popover--auto-align"
+                        />
+                      </span>
+                    </span>
+                  </span>
+                </div>
+              </td>
+              <td
+                data-testid="table-cell-imm-uuid-1-doseSequence"
+              >
+                3
+              </td>
+              <td
+                data-testid="table-cell-imm-uuid-1-drugName"
+              >
+                MisoPrime
+              </td>
+              <td
+                data-testid="table-cell-imm-uuid-1-administeredOn"
+              >
+                24-3-2026
+              </td>
+              <td
+                data-testid="table-cell-imm-uuid-1-administeredLocation"
+              >
+                Test Hospital
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

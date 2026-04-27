@@ -333,6 +333,8 @@ export {
   type Location,
   type ChildLocation,
 } from './locationService';
+export { getPatientImmunizations } from './immunizationService';
+export type { ImmunizationStatus } from './immunizationService';
 export { uploadDocument } from './documentUploadService';
 export type {
   DocumentUploadResponse,

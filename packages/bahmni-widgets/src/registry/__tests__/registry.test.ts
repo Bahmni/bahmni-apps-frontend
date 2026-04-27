@@ -268,6 +268,7 @@ describe('Widget Registry', () => {
         'patientDocuments',
         'programs',
         'treatment',
+        'immunizationHistory',
       ];
 
       expect(types).toHaveLength(expectedTypes.length);
@@ -397,7 +398,7 @@ describe('Widget Registry', () => {
       resetWidgetRegistry();
       const countAfterReset = getAllWidgetTypes().length;
 
-      expect(countAfterReset).toBe(13); // Only built-in widgets
+      expect(countAfterReset).toBe(14); // Only built-in widgets
       expect(countWithCustom).toBeGreaterThan(countAfterReset);
     });
   });

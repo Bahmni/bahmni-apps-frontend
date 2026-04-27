@@ -58,4 +58,8 @@ export const builtInWidgets: WidgetConfig[] = [
     type: 'treatment',
     component: lazy(() => import('../medications/MedicationsTable')),
   },
+  {
+    type: 'immunizationHistory',
+    component: lazy(() => import('../immunizationHistory/ImmunizationHistory')),
+  },
 ];

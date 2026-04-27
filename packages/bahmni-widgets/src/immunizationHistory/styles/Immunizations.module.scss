@@ -1,0 +1,41 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.widget {
+    [role='tabpanel'] {
+        padding: 0;
+    }
+}
+
+.header {
+    background: $background;
+    min-block-size: fit-content;
+    border-top: 1px solid $border-subtle;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    border-bottom: 1px solid $border-subtle-02;
+    p {
+        @include type-style("heading-compact-02");
+        color: $text-primary;
+        padding: $spacing-05;
+    }
+}
+
+.code {
+    display: flex;
+    gap: $spacing-02;
+    align-items: center;
+    font-weight: bold;
+}
+
+.expandedRowContent {
+    color: $text-primary;
+    @include type-style("body-compact-01");
+
+    span + span::before {
+        content: ' | ';
+    }
+}

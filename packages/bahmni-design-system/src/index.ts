@@ -141,3 +141,7 @@ export {
   InlineNotification,
   type InlineNotificationProps,
 } from './atoms/inlineNotification';
+export {
+  TableExpandedRow,
+  type TableExpandedRowProps,
+} from './atoms/tableExpandedRow';
