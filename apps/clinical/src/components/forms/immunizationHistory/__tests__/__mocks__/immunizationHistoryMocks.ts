@@ -137,6 +137,7 @@ export const mockImmunizationEntry: ImmunizationInputEntry = {
   expiryDate: null,
   manufacturer: null,
   batchNumber: null,
+  doseSequence: null,
   errors: {},
   hasBeenValidated: false,
 };
@@ -146,7 +147,7 @@ export const mockVaccineCode = {
   display: 'COVID-19 Vaccine',
 };
 
-/** All 9 form fields present, drug and administered fields required, others optional */
+/** All 10 form fields present, drug and administered fields required, others optional */
 export const mockFullAttributes: InputControlAttributes[] = [
   { name: 'drug', required: true },
   { name: 'administeredOn', required: true },
@@ -155,11 +156,12 @@ export const mockFullAttributes: InputControlAttributes[] = [
   { name: 'site', required: false },
   { name: 'manufacturer', required: false },
   { name: 'batchNumber', required: false },
+  { name: 'doseSequence', required: false },
   { name: 'expiryDate', required: false },
   { name: 'note', required: false },
 ];
 
-/** All 9 form fields present, all fields required (note is never required) */
+/** All 10 form fields present, all fields required (note is never required) */
 export const mockAllRequiredAttributes: InputControlAttributes[] = [
   { name: 'drug', required: true },
   { name: 'administeredOn', required: true },
@@ -169,10 +171,11 @@ export const mockAllRequiredAttributes: InputControlAttributes[] = [
   { name: 'expiryDate', required: true },
   { name: 'manufacturer', required: true },
   { name: 'batchNumber', required: true },
+  { name: 'doseSequence', required: true },
   { name: 'note', required: false },
 ];
 
-/** All 9 form fields present, administered fields optional, others optional */
+/** All 10 form fields present, administered fields optional, others optional */
 export const mockAttributesWithOptionalAdministered: InputControlAttributes[] =
   [
     { name: 'drug', required: false },
@@ -182,6 +185,7 @@ export const mockAttributesWithOptionalAdministered: InputControlAttributes[] =
     { name: 'site', required: false },
     { name: 'manufacturer', required: false },
     { name: 'batchNumber', required: false },
+    { name: 'doseSequence', required: false },
     { name: 'expiryDate', required: false },
     { name: 'note', required: false },
   ];
@@ -202,6 +206,7 @@ export const mockImmunizationEntryWithErrors: ImmunizationInputEntry = {
     expiryDate: 'IMMUNIZATION_HISTORY_EXPIRY_DATE_REQUIRED',
     manufacturer: 'IMMUNIZATION_HISTORY_MANUFACTURER_REQUIRED',
     batchNumber: 'IMMUNIZATION_HISTORY_BATCH_NUMBER_REQUIRED',
+    doseSequence: 'IMMUNIZATION_HISTORY_DOSE_SEQUENCE_REQUIRED',
   },
   hasBeenValidated: true,
 };
@@ -252,6 +257,7 @@ export const mockImmunizationEntryComplete: ImmunizationInputEntry = {
   expiryDate: new Date('2026-06-01'),
   manufacturer: 'Pfizer',
   batchNumber: 'BATCH-001',
+  doseSequence: 3,
   note: 'Third dose completed successfully.',
 };
 
@@ -269,6 +275,7 @@ export const mockStore = {
   updateExpiryDate: jest.fn(),
   updateManufacturer: jest.fn(),
   updateBatchNumber: jest.fn(),
+  updateDoseSequence: jest.fn(),
   updateNote: jest.fn(),
   validateAll: jest.fn(),
   reset: jest.fn(),

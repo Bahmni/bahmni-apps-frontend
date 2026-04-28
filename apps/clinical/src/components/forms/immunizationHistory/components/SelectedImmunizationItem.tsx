@@ -5,6 +5,7 @@ import {
   DatePickerInput,
   Grid,
   Link,
+  NumberInput,
   TextAreaWClose,
   TextInput,
 } from '@bahmni/design-system';
@@ -49,6 +50,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
     updateExpiryDate,
     updateManufacturer,
     updateBatchNumber,
+    updateDoseSequence,
     updateNote,
   } = useImmunizationHistoryStore();
   const { id } = immunization;
@@ -316,6 +318,30 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               invalidText={
                 immunization.errors.batchNumber
                   ? t(immunization.errors.batchNumber)
+                  : ''
+              }
+            />
+          </Column>
+        )}
+
+        {findAttr('doseSequence', attributes) && (
+          <Column sm={4} md={2} lg={5} className={styles.column}>
+            <NumberInput
+              id={`immunization-dose-sequence-${id}`}
+              data-testid={`immunization-dose-sequence-${id}`}
+              label={t('IMMUNIZATION_HISTORY_DOSE_SEQUENCE')}
+              placeholder={t('IMMUNIZATION_HISTORY_DOSE_SEQUENCE_PLACEHOLDER')}
+              value={immunization.doseSequence ?? 0}
+              onChange={(_e, { value }) =>
+                updateDoseSequence(id, Number(value))
+              }
+              min={0}
+              size="md"
+              hideLabel
+              invalid={!!immunization.errors.doseSequence}
+              invalidText={
+                immunization.errors.doseSequence
+                  ? t(immunization.errors.doseSequence)
                   : ''
               }
             />
