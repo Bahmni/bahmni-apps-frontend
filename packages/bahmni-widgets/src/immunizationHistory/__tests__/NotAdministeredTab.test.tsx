@@ -7,10 +7,15 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
 import NotAdministeredTab from '../components/NotAdministeredTab';
+import { NOT_ADMINISTERED_COLUMN_FIELDS } from '../constants';
+import { NotAdministeredTabConfig } from '../model';
 import { createNotAdministeredImmunizationViewModel } from '../utils';
 import { mockNotAdministeredImmunization } from './__mocks__/immunizationMocks';
+
+const defaultConfig: NotAdministeredTabConfig = {
+  columns: NOT_ADMINISTERED_COLUMN_FIELDS,
+};
 
 expect.extend(toHaveNoViolations);
 
@@ -60,7 +65,9 @@ describe('NotAdministeredTab', () => {
   });
 
   it('renders column headers', () => {
-    render(<NotAdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_CODE'),
     ).toBeInTheDocument();
@@ -76,7 +83,9 @@ describe('NotAdministeredTab', () => {
   });
 
   it('renders row data', () => {
-    render(<NotAdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(screen.getByText('Hepatitis B')).toBeInTheDocument();
     expect(screen.getByText('Patient refused')).toBeInTheDocument();
     expect(screen.getByText('19-3-2026')).toBeInTheDocument();
@@ -108,7 +117,12 @@ describe('NotAdministeredTab', () => {
         ...queryResult,
         refetch: jest.fn(),
       } as any);
-      render(<NotAdministeredTab patientUUID="patient-uuid" />);
+      render(
+        <NotAdministeredTab
+          patientUUID="patient-uuid"
+          config={defaultConfig}
+        />,
+      );
       expect(screen.getByText(expectedText)).toBeInTheDocument();
     },
   );
@@ -120,14 +134,21 @@ describe('NotAdministeredTab', () => {
       isError: false,
       refetch: jest.fn(),
     } as any);
-    render(<NotAdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(
       screen.getByTestId('not-administered-immunizations-table-skeleton'),
     ).toBeInTheDocument();
   });
 
   it('fetches not-done immunizations with correct query key', () => {
-    render(<NotAdministeredTab patientUUID="patient-uuid-123" />);
+    render(
+      <NotAdministeredTab
+        patientUUID="patient-uuid-123"
+        config={defaultConfig}
+      />,
+    );
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         queryKey: ['immunizations', 'patient-uuid-123', 'not-done'],
@@ -140,7 +161,12 @@ describe('NotAdministeredTab', () => {
     mockGetPatientImmunizations.mockResolvedValue([
       mockNotAdministeredImmunization,
     ]);
-    render(<NotAdministeredTab patientUUID="patient-uuid-123" />);
+    render(
+      <NotAdministeredTab
+        patientUUID="patient-uuid-123"
+        config={defaultConfig}
+      />,
+    );
 
     const { queryFn } = mockUseQuery.mock.calls[0][0] as any;
     const result = await queryFn();
@@ -196,7 +222,12 @@ describe('NotAdministeredTab', () => {
           callback(payload);
         },
       );
-      render(<NotAdministeredTab patientUUID="patient-uuid-123" />);
+      render(
+        <NotAdministeredTab
+          patientUUID="patient-uuid-123"
+          config={defaultConfig}
+        />,
+      );
       expect(refetch).toHaveBeenCalledTimes(expectedCallCount);
     },
   );
@@ -212,7 +243,9 @@ describe('NotAdministeredTab', () => {
       isError: false,
       refetch: jest.fn(),
     } as any);
-    render(<NotAdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(
       screen.getByTestId(`table-cell-${mockRow.id}-${field}`),
     ).toHaveTextContent('-');
@@ -220,14 +253,14 @@ describe('NotAdministeredTab', () => {
 
   it('passes accessibility tests', async () => {
     const { container } = render(
-      <NotAdministeredTab patientUUID="patient-uuid" />,
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(await axe(container)).toHaveNoViolations();
   });
 
   it('matches snapshot', () => {
     const { asFragment } = render(
-      <NotAdministeredTab patientUUID="patient-uuid" />,
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(asFragment()).toMatchSnapshot();
   });

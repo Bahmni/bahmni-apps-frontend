@@ -16,7 +16,13 @@ import { WidgetProps } from '../registry/model';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import AdministeredTab from './components/AdministeredTab';
 import NotAdministeredTab from './components/NotAdministeredTab';
-import { ADD_IMMUNIZATIONS_PRIVILEGE } from './constants';
+import {
+  ADD_IMMUNIZATIONS_PRIVILEGE,
+  ADMINISTERED_COLUMN_FIELDS,
+  ADMINISTERED_EXPANDED_FIELDS,
+  NOT_ADMINISTERED_COLUMN_FIELDS,
+} from './constants';
+import { AdministeredTabConfig, NotAdministeredTabConfig } from './model';
 import styles from './styles/Immunizations.module.scss';
 
 const getTitleByStatus = (status: ImmunizationStatus) => {
@@ -39,6 +45,26 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
   const encounterType = config?.encounterType as string;
   const startEncounterPrivilege = config?.startEncounterPrivilege as string;
 
+  const completedFields = config?.completedFields as string[] | undefined;
+  const notCompletedFields = config?.notCompletedFields as string[] | undefined;
+
+  const administeredConfig: AdministeredTabConfig = {
+    columns: completedFields
+      ? completedFields.filter((f) => ADMINISTERED_COLUMN_FIELDS.includes(f))
+      : ADMINISTERED_COLUMN_FIELDS,
+    expandedFields: completedFields
+      ? completedFields.filter((f) => ADMINISTERED_EXPANDED_FIELDS.includes(f))
+      : ADMINISTERED_EXPANDED_FIELDS,
+  };
+
+  const notAdministeredConfig: NotAdministeredTabConfig = {
+    columns: notCompletedFields
+      ? notCompletedFields.filter((f) =>
+          NOT_ADMINISTERED_COLUMN_FIELDS.includes(f),
+        )
+      : NOT_ADMINISTERED_COLUMN_FIELDS,
+  };
+
   const hasAddImmunizationsPrivilege = useHasPrivilege(
     startEncounterPrivilege ?? ADD_IMMUNIZATIONS_PRIVILEGE,
   );
@@ -54,9 +80,19 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
   const renderTabByStatus = (status: ImmunizationStatus) => {
     switch (status) {
       case 'completed':
-        return <AdministeredTab patientUUID={patientUUID!} />;
+        return (
+          <AdministeredTab
+            patientUUID={patientUUID!}
+            config={administeredConfig}
+          />
+        );
       case 'not-done':
-        return <NotAdministeredTab patientUUID={patientUUID!} />;
+        return (
+          <NotAdministeredTab
+            patientUUID={patientUUID!}
+            config={notAdministeredConfig}
+          />
+        );
       default:
         return (
           <Tabs
@@ -71,10 +107,16 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
             </TabList>
             <TabPanels>
               <TabPanel>
-                <AdministeredTab patientUUID={patientUUID!} />
+                <AdministeredTab
+                  patientUUID={patientUUID!}
+                  config={administeredConfig}
+                />
               </TabPanel>
               <TabPanel>
-                <NotAdministeredTab patientUUID={patientUUID!} />
+                <NotAdministeredTab
+                  patientUUID={patientUUID!}
+                  config={notAdministeredConfig}
+                />
               </TabPanel>
             </TabPanels>
           </Tabs>

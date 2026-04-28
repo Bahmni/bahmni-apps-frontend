@@ -6,6 +6,14 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import ImmunizationHistory from '../ImmunizationHistory';
+import {
+  createAdministeredImmunizationViewModel,
+  createNotAdministeredImmunizationViewModel,
+} from '../utils';
+import {
+  mockAdministeredImmunization,
+  mockNotAdministeredImmunization,
+} from './__mocks__/immunizationMocks';
 
 expect.extend(toHaveNoViolations);
 
@@ -208,6 +216,50 @@ describe('ImmunizationHistory', () => {
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
+  });
+
+  it.each([
+    {
+      label: 'completedFields filters administered columns',
+      config: {
+        status: 'completed',
+        completedFields: ['code', 'administeredOn'],
+      },
+      mockData: createAdministeredImmunizationViewModel(
+        mockAdministeredImmunization,
+      ),
+      visibleHeaders: [
+        'IMMUNIZATION_HISTORY_WIDGET_COL_CODE',
+        'IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_ON',
+      ],
+      hiddenHeaders: ['IMMUNIZATION_HISTORY_WIDGET_COL_DOSE_SEQUENCE'],
+    },
+    {
+      label: 'notCompletedFields filters not-administered columns',
+      config: { status: 'not-done', notCompletedFields: ['code', 'date'] },
+      mockData: createNotAdministeredImmunizationViewModel(
+        mockNotAdministeredImmunization,
+      ),
+      visibleHeaders: [
+        'IMMUNIZATION_HISTORY_WIDGET_COL_CODE',
+        'IMMUNIZATION_HISTORY_WIDGET_COL_DATE',
+      ],
+      hiddenHeaders: ['IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY'],
+    },
+  ])('$label', ({ config, mockData, visibleHeaders, hiddenHeaders }) => {
+    mockUseQuery.mockReturnValue({
+      data: [mockData],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+    render(<ImmunizationHistory config={config} />);
+    visibleHeaders.forEach((h) =>
+      expect(screen.getByText(h)).toBeInTheDocument(),
+    );
+    hiddenHeaders.forEach((h) =>
+      expect(screen.queryByText(h)).not.toBeInTheDocument(),
+    );
   });
 
   it.each([

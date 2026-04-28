@@ -8,11 +8,21 @@ import { useQuery } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import AdministeredTab from '../components/AdministeredTab';
+import {
+  ADMINISTERED_COLUMN_FIELDS,
+  ADMINISTERED_EXPANDED_FIELDS,
+} from '../constants';
+import { AdministeredTabConfig } from '../model';
 import { createAdministeredImmunizationViewModel } from '../utils';
 import {
   mockAdministeredImmunization,
   mockMinimalAdministeredImmunization,
 } from './__mocks__/immunizationMocks';
+
+const defaultConfig: AdministeredTabConfig = {
+  columns: ADMINISTERED_COLUMN_FIELDS,
+  expandedFields: ADMINISTERED_EXPANDED_FIELDS,
+};
 
 expect.extend(toHaveNoViolations);
 
@@ -65,7 +75,9 @@ describe('AdministeredTab', () => {
   });
 
   it('renders column headers', () => {
-    render(<AdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_CODE'),
     ).toBeInTheDocument();
@@ -84,7 +96,9 @@ describe('AdministeredTab', () => {
   });
 
   it('renders row data', () => {
-    render(<AdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(screen.getByText('Measles')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getByText('MisoPrime')).toBeInTheDocument();
@@ -117,7 +131,9 @@ describe('AdministeredTab', () => {
         ...queryResult,
         refetch: jest.fn(),
       } as any);
-      render(<AdministeredTab patientUUID="patient-uuid" />);
+      render(
+        <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+      );
       expect(screen.getByText(expectedText)).toBeInTheDocument();
     },
   );
@@ -129,14 +145,18 @@ describe('AdministeredTab', () => {
       isError: false,
       refetch: jest.fn(),
     } as any);
-    render(<AdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(
       screen.getByTestId('administered-immunizations-table-skeleton'),
     ).toBeInTheDocument();
   });
 
   it('fetches completed immunizations with correct query key', () => {
-    render(<AdministeredTab patientUUID="patient-uuid-123" />);
+    render(
+      <AdministeredTab patientUUID="patient-uuid-123" config={defaultConfig} />,
+    );
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         queryKey: ['immunizations', 'patient-uuid-123', 'completed'],
@@ -149,7 +169,9 @@ describe('AdministeredTab', () => {
     mockGetPatientImmunizations.mockResolvedValue([
       mockAdministeredImmunization,
     ]);
-    render(<AdministeredTab patientUUID="patient-uuid-123" />);
+    render(
+      <AdministeredTab patientUUID="patient-uuid-123" config={defaultConfig} />,
+    );
 
     const { queryFn } = mockUseQuery.mock.calls[0][0] as any;
     const result = await queryFn();
@@ -203,13 +225,20 @@ describe('AdministeredTab', () => {
           callback(payload);
         },
       );
-      render(<AdministeredTab patientUUID="patient-uuid-123" />);
+      render(
+        <AdministeredTab
+          patientUUID="patient-uuid-123"
+          config={defaultConfig}
+        />,
+      );
       expect(refetch).toHaveBeenCalledTimes(expectedCallCount);
     },
   );
 
   it('displays tooltip icon when immunization has notes', () => {
-    render(<AdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(
       screen.getByLabelText('Third dose completed successfully.'),
     ).toBeInTheDocument();
@@ -222,14 +251,18 @@ describe('AdministeredTab', () => {
       isError: false,
       refetch: jest.fn(),
     } as any);
-    render(<AdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(
       screen.queryByLabelText('Third dose completed successfully.'),
     ).not.toBeInTheDocument();
   });
 
   it('renders expanded row content for a row with details', () => {
-    render(<AdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Expand current row' }));
     expect(
       screen.getByTestId(`immunization-expanded-row-${mockRow.id}-test-id`),
@@ -243,7 +276,9 @@ describe('AdministeredTab', () => {
       isError: false,
       refetch: jest.fn(),
     } as any);
-    render(<AdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(
       screen.queryByTestId(
         `immunization-expanded-row-${mockMinimalRow.id}-test-id`,
@@ -269,13 +304,15 @@ describe('AdministeredTab', () => {
       isError: false,
       refetch: jest.fn(),
     } as any);
-    render(<AdministeredTab patientUUID="patient-uuid" />);
+    render(
+      <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
     expect(screen.getByTestId(testId)).toHaveTextContent('-');
   });
 
   it('passes accessibility tests', async () => {
     const { container } = render(
-      <AdministeredTab patientUUID="patient-uuid" />,
+      <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     // empty-table-header: Carbon's expand column header has no text — known Carbon limitation
     expect(
@@ -287,7 +324,7 @@ describe('AdministeredTab', () => {
 
   it('matches snapshot', () => {
     const { asFragment } = render(
-      <AdministeredTab patientUUID="patient-uuid" />,
+      <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(asFragment()).toMatchSnapshot();
   });
