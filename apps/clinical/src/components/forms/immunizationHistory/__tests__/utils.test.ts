@@ -389,7 +389,13 @@ describe('createImmunizationBundleEntries', () => {
       },
     ]);
     expect(resource.note).toEqual([
-      { text: 'Third dose completed successfully.' },
+      {
+        text: 'Third dose completed successfully.',
+        authorReference: {
+          reference: 'Practitioner/practitioner-uuid',
+          type: 'Practitioner',
+        },
+      },
     ]);
   });
 

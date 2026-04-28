@@ -162,7 +162,14 @@ export function createImmunizationBundleEntries({
         ? { display: entry.manufacturer }
         : undefined,
       lotNumber: entry.batchNumber ?? undefined,
-      note: entry.note ? [{ text: entry.note }] : undefined,
+      note: entry.note
+        ? [
+            {
+              text: entry.note,
+              authorReference: createPractitionerReference(practitionerUUID),
+            },
+          ]
+        : undefined,
       extension: entry.drug
         ? resolveAdministeredProductExtension(entry.drug)
         : undefined,
