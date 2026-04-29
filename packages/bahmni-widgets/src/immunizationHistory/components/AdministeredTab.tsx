@@ -173,6 +173,7 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({
           'IMMUNIZATION_HISTORY_WIDGET_NO_IMMUNIZATIONS_RECORDED',
         )}
         renderCell={renderCell}
+        className={styles.table}
         renderExpandedContent={renderExpandedContent}
       />
     </div>

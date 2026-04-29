@@ -7,7 +7,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
     id="immunization-administered-tab"
   >
     <div
-      class="expandable-data-table _expandableDataTableBody_15ny8_1"
+      class="table _expandableDataTableBody_15ny8_1"
       data-testid="administered-immunizations-table"
     >
       <div
