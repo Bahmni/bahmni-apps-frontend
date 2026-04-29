@@ -8,9 +8,10 @@ import {
   TextAreaWClose,
   TextInput,
 } from '@bahmni/design-system';
-import { useTranslation, Location } from '@bahmni/services';
+import { useTranslation, Location, getUserLoginLocation } from '@bahmni/services';
 import { Medication, ValueSet } from 'fhir/r4';
 import React, { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../models';
 import { useImmunizationHistoryStore } from '../stores';
@@ -21,6 +22,7 @@ import {
   getValueSetComboBoxItems,
   findAttr,
 } from '../utils';
+import { getAvailableStocks } from '../../../../services/inventoryService';
 
 interface SelectedImmunizationItemProps {
   immunization: ImmunizationInputEntry;
@@ -56,10 +58,39 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   const [drugSearchTerm, setDrugSearchTerm] = useState('');
   const [routeSearchTerm, setRouteSearchTerm] = useState('');
   const [siteSearchTerm, setSiteSearchTerm] = useState('');
+  const [batchSearchTerm, setBatchSearchTerm] = useState('');
   const [
     administeredLocationTagSearchTerm,
     setAdministeredLocationTagSearchTerm,
   ] = useState('');
+
+  // BAH-4551: Fetch available stock batches from inventory
+  const productUuid = immunization.drug?.code ?? '';
+  const locationUuid = getUserLoginLocation()?.uuid ?? '';
+  
+  const {
+    data: availableStocks = [],
+    isLoading: stocksLoading,
+  } = useQuery({
+    queryKey: ['availableStocks', productUuid, locationUuid],
+    queryFn: () => getAvailableStocks(productUuid, locationUuid),
+    enabled: !!productUuid && !!locationUuid,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Format batch options for ComboBox with batch number and expiry date
+  const batchComboBoxItems = useMemo(() => {
+    const filtered = availableStocks.filter((stock) =>
+      stock.batch_number.toLowerCase().includes(batchSearchTerm.toLowerCase())
+    );
+    
+    return filtered.map((stock) => ({
+      code: stock.batch_number,
+      display: `${stock.batch_number} (Exp: ${new Date(stock.expiry_date).toLocaleDateString()})`,
+      expiryDate: stock.expiry_date,
+      disabled: false,
+    }));
+  }, [availableStocks, batchSearchTerm]);
 
   const vaccineDrugComboBoxItems = useMemo(
     () =>
@@ -303,15 +334,33 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
 
         {findAttr('batchNumber', attributes) && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
-            <TextInput
+            <ComboBox
               id={`immunization-batch-number-${id}`}
               data-testid={`immunization-batch-number-${id}`}
-              labelText={t('IMMUNIZATION_HISTORY_BATCH_NUMBER')}
-              placeholder={t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')}
-              value={immunization.batchNumber ?? ''}
-              onChange={(e) => updateBatchNumber(id, e.target.value)}
+              titleText={t('IMMUNIZATION_HISTORY_BATCH_NUMBER')}
+              placeholder={
+                stocksLoading
+                  ? t('LOADING')
+                  : batchComboBoxItems.length === 0
+                  ? t('NO_BATCHES_AVAILABLE')
+                  : t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')
+              }
+              items={batchComboBoxItems}
+              itemToString={(item) => item?.display ?? ''}
+              selectedItem={
+                batchComboBoxItems.find((b) => b.code === immunization.batchNumber) ?? null
+              }
+              onInputChange={(value) => setBatchSearchTerm(value)}
+              onChange={(e) => {
+                if (e.selectedItem) {
+                  updateBatchNumber(id, e.selectedItem.code);
+                  if (e.selectedItem.expiryDate) {
+                    updateExpiryDate(id, new Date(e.selectedItem.expiryDate));
+                  }
+                }
+              }}
               size="md"
-              hideLabel
+              disabled={stocksLoading || batchComboBoxItems.length === 0}
               invalid={!!immunization.errors.batchNumber}
               invalidText={
                 immunization.errors.batchNumber
