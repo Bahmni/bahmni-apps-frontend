@@ -55,24 +55,25 @@ export const VisitTypeSelector = ({
             onVisitTypeSelect(defaultVisitType);
           }
         }}
+        renderIcon={
+          hasActiveVisit
+            ? () => (
+                <Icon
+                  id="patient-dashboard-arrow"
+                  data-testid="patient-dashboard-arrow"
+                  name="fa-arrow-right"
+                  size={ICON_SIZE.SM}
+                  padding={ICON_PADDING.NONE}
+                />
+              )
+            : undefined
+        }
       >
-        {!isLoadingVisitTypes && defaultVisitType ? (
-          hasActiveVisit ? (
-            <span className={styles.buttonContent}>
-              {activeVisitLabel ?? t('ENTER_VISIT_DETAILS')}
-              <Icon
-                id="patient-dashboard-arrow"
-                name="fa-arrow-right"
-                size={ICON_SIZE.SM}
-                padding={ICON_PADDING.NONE}
-              />
-            </span>
-          ) : (
-            t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
-          )
-        ) : (
-          ''
-        )}
+        {!isLoadingVisitTypes && defaultVisitType
+          ? hasActiveVisit
+            ? (activeVisitLabel ?? t('ENTER_VISIT_DETAILS'))
+            : t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
+          : ''}
       </Button>
       {!hasActiveVisit && (
         <Dropdown

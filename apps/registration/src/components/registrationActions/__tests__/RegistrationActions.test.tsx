@@ -389,6 +389,33 @@ describe('RegistrationActions', () => {
     });
 
     it('should navigate to extension URL when active visit button is clicked', async () => {
+      const onBeforeNavigate = jest.fn().mockResolvedValue('patient-uuid-123');
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={onBeforeNavigate}
+        />,
+      );
+
+      const activeVisitButton = screen.getByTestId('active-visit-button');
+      fireEvent.click(activeVisitButton);
+
+      await waitFor(() => {
+        expect(onBeforeNavigate).toHaveBeenCalled();
+        expect(mockHandleExtensionNavigation).toHaveBeenCalledWith(
+          '/clinical/patient/{{patientUuid}}/dashboard',
+          {},
+          expect.any(Function),
+        );
+      });
+    });
+
+    it('should not navigate when active visit button is clicked and onBeforeNavigate is not provided', async () => {
       mockUseFilteredExtensions.mockReturnValue({
         filteredExtensions: [startVisitExtension],
         isLoading: false,
@@ -401,13 +428,33 @@ describe('RegistrationActions', () => {
       const activeVisitButton = screen.getByTestId('active-visit-button');
       fireEvent.click(activeVisitButton);
 
-      await waitFor(() => {
-        expect(mockHandleExtensionNavigation).toHaveBeenCalledWith(
-          '/clinical/patient/{{patientUuid}}/dashboard',
-          {},
-          expect.any(Function),
-        );
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(mockHandleExtensionNavigation).not.toHaveBeenCalled();
+    });
+
+    it('should not navigate when active visit button is clicked and onBeforeNavigate returns null', async () => {
+      const onBeforeNavigate = jest.fn().mockResolvedValue(null);
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
       });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={onBeforeNavigate}
+        />,
+      );
+
+      const activeVisitButton = screen.getByTestId('active-visit-button');
+      fireEvent.click(activeVisitButton);
+
+      await waitFor(() => {
+        expect(onBeforeNavigate).toHaveBeenCalled();
+      });
+
+      expect(mockHandleExtensionNavigation).not.toHaveBeenCalled();
     });
 
     it('should not call createVisit or navigate when onBeforeNavigate returns null', async () => {

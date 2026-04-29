@@ -165,6 +165,27 @@ describe('VisitTypeSelector', () => {
     expect(mockOnVisitTypeSelect).not.toHaveBeenCalled();
   });
 
+  it('calls onVisitTypeSelect with default visit type when active visit exists and no onActiveVisitClick provided', async () => {
+    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
+    mockCheckIfActiveVisitExists.mockResolvedValue(true);
+
+    renderComponent(patientUuid);
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockCheckIfActiveVisitExists).toHaveBeenCalledWith(patientUuid),
+    );
+
+    const user = userEvent.setup();
+    const button = screen.getByRole('button');
+    await user.click(button);
+
+    expect(mockOnVisitTypeSelect).toHaveBeenCalledWith({
+      name: 'OPD',
+      uuid: '54f43754-c6ce-4472-890e-0f28acaeaea6',
+    });
+  });
+
   it('button kind is "primary" when hasActiveVisit is true', async () => {
     const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
     mockCheckIfActiveVisitExists.mockResolvedValue(true);
