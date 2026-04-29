@@ -1,4 +1,8 @@
 import {
+  DEFAULT_DATE_FORMAT,
+  DEFAULT_DATE_FORMAT_STORAGE_KEY,
+} from '@bahmni/services';
+import {
   QueryClient,
   QueryClientProvider,
   useQuery,
@@ -32,10 +36,12 @@ describe('PatientProgramsTable', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.setItem(DEFAULT_DATE_FORMAT_STORAGE_KEY, DEFAULT_DATE_FORMAT);
   });
 
   afterEach(() => {
     queryClient.clear();
+    localStorage.removeItem(DEFAULT_DATE_FORMAT_STORAGE_KEY);
   });
 
   const wrapper = (
