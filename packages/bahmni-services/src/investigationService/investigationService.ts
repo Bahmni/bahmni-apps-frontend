@@ -112,13 +112,13 @@ export const getFlattenedInvestigations = async (): Promise<
 
 export const getCategoryUuidFromOrderTypes = async (
   categoryName: string | undefined,
-): Promise<string | undefined> => {
-  if (!categoryName) return undefined;
+): Promise<string | null> => {
+  if (!categoryName) return null;
   const orderTypesData = await getOrderTypes();
   const orderType = orderTypesData.results.find(
     (ot) => ot.display.toLowerCase() === categoryName.toLowerCase(),
   );
-  return orderType?.uuid;
+  return orderType?.uuid ?? null;
 };
 
 export const getOrderTypeNames = async (): Promise<string[]> => {

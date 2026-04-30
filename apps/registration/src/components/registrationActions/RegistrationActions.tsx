@@ -46,17 +46,19 @@ export const RegistrationActions = ({
     return null;
   }
 
-  const handleVisitTypeSelect = async (
-    visitType: VisitType,
-    extension: AppExtensionConfig,
-  ) => {
+  const handleVisitTypeSelect = async (visitType: VisitType) => {
     if (!onBeforeNavigate) return;
 
     const patientUuid = await onBeforeNavigate();
     if (!patientUuid) return;
 
     await createVisit(patientUuid, visitType);
+  };
 
+  const handleActiveVisitClick = async (extension: AppExtensionConfig) => {
+    if (!onBeforeNavigate) return;
+    const patientUuid = await onBeforeNavigate();
+    if (!patientUuid) return;
     if (extension.url) {
       handleExtensionNavigation(extension.url, routeContext, navigate);
     }
@@ -81,8 +83,10 @@ export const RegistrationActions = ({
             <VisitTypeSelector
               key={extension.id}
               onVisitTypeSelect={(visitType) =>
-                handleVisitTypeSelect(visitType, extension)
+                handleVisitTypeSelect(visitType)
               }
+              activeVisitLabel={t('PATIENT_DASHBOARD_REDIRECT')}
+              onActiveVisitClick={() => handleActiveVisitClick(extension)}
               data-testid="visit-type-selector"
             />
           );

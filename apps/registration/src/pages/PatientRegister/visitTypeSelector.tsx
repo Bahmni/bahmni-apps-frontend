@@ -1,4 +1,10 @@
-import { Button, Dropdown } from '@bahmni/design-system';
+import {
+  Button,
+  Dropdown,
+  Icon,
+  ICON_PADDING,
+  ICON_SIZE,
+} from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useParams } from 'react-router-dom';
 import { useActiveVisit, useVisitTypes } from '../../hooks/useVisit';
@@ -8,10 +14,14 @@ import styles from './styles/VisitTypeSelector.module.scss';
 
 interface VisitTypeSelectorProps {
   onVisitTypeSelect: (visitType: { name: string; uuid: string }) => void;
+  activeVisitLabel?: string;
+  onActiveVisitClick?: () => void;
 }
 
 export const VisitTypeSelector = ({
   onVisitTypeSelect,
+  activeVisitLabel,
+  onActiveVisitClick,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const { patientUuid } = useParams<{ patientUuid: string }>();
@@ -32,13 +42,36 @@ export const VisitTypeSelector = ({
         id="visit-button"
         data-testid="start-visit-button"
         className={styles.visitButton}
-        kind="tertiary"
+        kind={hasActiveVisit ? 'primary' : 'tertiary'}
         disabled={isLoadingVisitTypes || visitTypesArray.length === 0}
-        onClick={() => defaultVisitType && onVisitTypeSelect(defaultVisitType)}
+        onClick={() => {
+          if (hasActiveVisit) {
+            if (onActiveVisitClick) {
+              onActiveVisitClick();
+            } else if (defaultVisitType) {
+              onVisitTypeSelect(defaultVisitType);
+            }
+          } else if (defaultVisitType) {
+            onVisitTypeSelect(defaultVisitType);
+          }
+        }}
+        renderIcon={
+          hasActiveVisit
+            ? () => (
+                <Icon
+                  id="patient-dashboard-arrow"
+                  data-testid="patient-dashboard-arrow"
+                  name="fa-arrow-right"
+                  size={ICON_SIZE.SM}
+                  padding={ICON_PADDING.NONE}
+                />
+              )
+            : undefined
+        }
       >
         {!isLoadingVisitTypes && defaultVisitType
           ? hasActiveVisit
-            ? t('ENTER_VISIT_DETAILS')
+            ? (activeVisitLabel ?? t('ENTER_VISIT_DETAILS'))
             : t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
           : ''}
       </Button>

@@ -22,8 +22,12 @@ const mockUseCreateVisit = useCreateVisit as jest.MockedFunction<
 jest.mock('../../../pages/PatientRegister/visitTypeSelector', () => ({
   VisitTypeSelector: ({
     onVisitTypeSelect,
+    activeVisitLabel,
+    onActiveVisitClick,
   }: {
     onVisitTypeSelect: (visitType: VisitType) => void;
+    activeVisitLabel?: string;
+    onActiveVisitClick?: () => void;
   }) => (
     <div data-testid="visit-type-selector">
       <button
@@ -34,6 +38,11 @@ jest.mock('../../../pages/PatientRegister/visitTypeSelector', () => ({
       >
         Select Visit Type
       </button>
+      {onActiveVisitClick && (
+        <button data-testid="active-visit-button" onClick={onActiveVisitClick}>
+          {activeVisitLabel ?? 'Enter Visit Details'}
+        </button>
+      )}
     </div>
   ),
 }));
@@ -349,7 +358,7 @@ describe('RegistrationActions', () => {
       mockCreateVisit.mockClear();
     });
 
-    it('should call onBeforeNavigate, createVisit and navigate when visit type is selected', async () => {
+    it('should call onBeforeNavigate and createVisit when visit type is selected, but NOT navigate', async () => {
       const onBeforeNavigate = jest.fn().mockResolvedValue('patient-uuid-123');
       mockCreateVisit.mockResolvedValue(undefined);
 
@@ -374,12 +383,78 @@ describe('RegistrationActions', () => {
           name: 'OPD',
           uuid: 'opd-visit-type-uuid',
         });
+      });
+
+      expect(mockHandleExtensionNavigation).not.toHaveBeenCalled();
+    });
+
+    it('should navigate to extension URL when active visit button is clicked', async () => {
+      const onBeforeNavigate = jest.fn().mockResolvedValue('patient-uuid-123');
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={onBeforeNavigate}
+        />,
+      );
+
+      const activeVisitButton = screen.getByTestId('active-visit-button');
+      fireEvent.click(activeVisitButton);
+
+      await waitFor(() => {
+        expect(onBeforeNavigate).toHaveBeenCalled();
         expect(mockHandleExtensionNavigation).toHaveBeenCalledWith(
           '/clinical/patient/{{patientUuid}}/dashboard',
           {},
           expect.any(Function),
         );
       });
+    });
+
+    it('should not navigate when active visit button is clicked and onBeforeNavigate is not provided', async () => {
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions extensionPointId="org.bahmni.registration.navigation" />,
+      );
+
+      const activeVisitButton = screen.getByTestId('active-visit-button');
+      fireEvent.click(activeVisitButton);
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(mockHandleExtensionNavigation).not.toHaveBeenCalled();
+    });
+
+    it('should not navigate when active visit button is clicked and onBeforeNavigate returns null', async () => {
+      const onBeforeNavigate = jest.fn().mockResolvedValue(null);
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={onBeforeNavigate}
+        />,
+      );
+
+      const activeVisitButton = screen.getByTestId('active-visit-button');
+      fireEvent.click(activeVisitButton);
+
+      await waitFor(() => {
+        expect(onBeforeNavigate).toHaveBeenCalled();
+      });
+
+      expect(mockHandleExtensionNavigation).not.toHaveBeenCalled();
     });
 
     it('should not call createVisit or navigate when onBeforeNavigate returns null', async () => {
