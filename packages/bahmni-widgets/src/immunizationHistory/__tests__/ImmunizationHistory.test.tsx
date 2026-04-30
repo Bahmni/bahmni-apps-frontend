@@ -1,6 +1,6 @@
 import { useSubscribeConsultationSaved } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
@@ -220,10 +220,10 @@ describe('ImmunizationHistory', () => {
 
   it.each([
     {
-      label: 'completedFields filters administered columns',
+      label: 'administeredFields filters administered columns',
       config: {
         status: 'completed',
-        completedFields: ['code', 'administeredOn'],
+        administeredFields: ['code', 'administeredOn'],
       },
       mockData: createAdministeredImmunizationViewModel(
         mockAdministeredImmunization,
@@ -235,8 +235,8 @@ describe('ImmunizationHistory', () => {
       hiddenHeaders: ['IMMUNIZATION_HISTORY_WIDGET_COL_DOSE_SEQUENCE'],
     },
     {
-      label: 'notCompletedFields filters not-administered columns',
-      config: { status: 'not-done', notCompletedFields: ['code', 'date'] },
+      label: 'notAdministeredFields filters not-administered columns',
+      config: { status: 'not-done', notAdministeredFields: ['code', 'date'] },
       mockData: createNotAdministeredImmunizationViewModel(
         mockNotAdministeredImmunization,
       ),
@@ -260,6 +260,44 @@ describe('ImmunizationHistory', () => {
     hiddenHeaders.forEach((h) =>
       expect(screen.queryByText(h)).not.toBeInTheDocument(),
     );
+  });
+
+  it('administeredFields filters expanded fields', () => {
+    mockUseQuery.mockReturnValue({
+      data: [
+        createAdministeredImmunizationViewModel(mockAdministeredImmunization),
+      ],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+    render(
+      <ImmunizationHistory
+        config={{
+          status: 'completed',
+          administeredFields: ['code', 'route', 'manufacturer'],
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Expand current row' }));
+    expect(
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_ROUTE'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_MANUFACTURER'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_SITE'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_BATCH_NUMBER'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_RECORDED_BY'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_ORDERED_BY'),
+    ).not.toBeInTheDocument();
   });
 
   it.each([

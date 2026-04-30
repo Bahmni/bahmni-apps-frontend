@@ -45,21 +45,25 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
   const encounterType = config?.encounterType as string;
   const startEncounterPrivilege = config?.startEncounterPrivilege as string;
 
-  const completedFields = config?.completedFields as string[] | undefined;
-  const notCompletedFields = config?.notCompletedFields as string[] | undefined;
+  const administeredFields = config?.administeredFields as string[] | undefined;
+  const notAdministeredFields = config?.notAdministeredFields as
+    | string[]
+    | undefined;
 
   const administeredConfig: AdministeredTabConfig = {
-    columns: completedFields
-      ? completedFields.filter((f) => ADMINISTERED_COLUMN_FIELDS.includes(f))
+    columns: administeredFields
+      ? administeredFields.filter((f) => ADMINISTERED_COLUMN_FIELDS.includes(f))
       : ADMINISTERED_COLUMN_FIELDS,
-    expandedFields: completedFields
-      ? completedFields.filter((f) => ADMINISTERED_EXPANDED_FIELDS.includes(f))
+    expandedFields: administeredFields
+      ? administeredFields.filter((f) =>
+          ADMINISTERED_EXPANDED_FIELDS.includes(f),
+        )
       : ADMINISTERED_EXPANDED_FIELDS,
   };
 
   const notAdministeredConfig: NotAdministeredTabConfig = {
-    columns: notCompletedFields
-      ? notCompletedFields.filter((f) =>
+    columns: notAdministeredFields
+      ? notAdministeredFields.filter((f) =>
           NOT_ADMINISTERED_COLUMN_FIELDS.includes(f),
         )
       : NOT_ADMINISTERED_COLUMN_FIELDS,
