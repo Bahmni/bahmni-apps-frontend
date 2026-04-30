@@ -99,6 +99,33 @@
         }
       }
     },
+    "patientSearch": {
+      "type": "object",
+      "description": "Configuration for patient search dropdown display",
+      "additionalProperties": false,
+      "properties": {
+        "displayFields": {
+          "type": "array",
+          "description": "Fields to display in patient search dropdown results. Each entry maps to a PatientSearchResult field.",
+          "items": {
+            "type": "object",
+            "required": ["field"],
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "type": "string",
+                "enum": ["name", "identifier", "gender", "age"],
+                "description": "Field name from PatientSearchResult"
+              },
+              "bold": {
+                "type": "boolean",
+                "description": "Whether to render this field in bold"
+              }
+            }
+          }
+        }
+      }
+    },
     "actions": {
       "type": "array",
       "description": "List of available actions"
