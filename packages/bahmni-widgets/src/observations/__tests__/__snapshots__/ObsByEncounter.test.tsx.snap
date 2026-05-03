@@ -9,7 +9,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
   >
     <div
       aria-label="encounter-enc-1-aria-label"
-      class="_container_1ml42_1"
+      class="_container_ajkme_1"
       data-testid="encounter-enc-1-test-id"
       id="encounter-enc-1"
     >
@@ -17,7 +17,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
         class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
       >
         <li
-          class="cds--accordion__item cds--accordion__item--active _accordion_1ml42_5"
+          class="cds--accordion__item cds--accordion__item--active _accordion_ajkme_14"
           data-testid="encounter-enc-1-test-id-accordion-item"
         >
           <button
@@ -57,7 +57,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
             >
               <div
                 aria-label="encounter-enc-1-rows-aria-label"
-                class="_rows_1ml42_35"
+                class="_rows_ajkme_44"
                 data-testid="encounter-enc-1-rows-test-id"
                 id="encounter-enc-1-rows"
               >
@@ -94,7 +94,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                 </div>
                 <div
                   aria-label="grouped-obs-Blood Pressure-0-aria-label"
-                  class="_container_1ml42_1"
+                  class="_container_ajkme_1"
                   data-testid="grouped-obs-Blood Pressure-0-test-id"
                   id="grouped-obs-Blood Pressure-0"
                 >
@@ -102,7 +102,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                     class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
                   >
                     <li
-                      class="cds--accordion__item cds--accordion__item--active _accordion_1ml42_5"
+                      class="cds--accordion__item cds--accordion__item--active _accordion_ajkme_14"
                       data-testid="grouped-obs-Blood Pressure-0-test-id-accordion-item"
                     >
                       <button
@@ -142,7 +142,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                         >
                           <div
                             aria-label="grouped-obs-Blood Pressure-0-rows-aria-label"
-                            class="_rows_1ml42_35"
+                            class="_rows_ajkme_44"
                             data-testid="grouped-obs-Blood Pressure-0-rows-test-id"
                             id="grouped-obs-Blood Pressure-0-rows"
                           >

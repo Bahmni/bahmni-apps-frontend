@@ -8,20 +8,20 @@ $table-cell-min-width: 6.875rem;
 
 .sectionWrapper {
   box-shadow: 0px 2px 6px 0px $shadow;
-  :global(html:has([data-separator])) & {
+  :global([data-split-view]) & {
     overflow-x: auto;
   }
 }
 
-:global(html:has([data-separator]) #main-display-area div[id^="accordion-item"]) {
+:global([data-split-view] #main-display-area div[id^="accordion-item"]) {
   overflow-x: auto;
 }
 
-:global(html:has([data-separator]) #main-display-area div[id^="accordion-item"]:has(.cds--data-table td:nth-child(5))) {
+:global([data-split-view] #main-display-area div[id^="accordion-item"]:has(.cds--data-table td:nth-child(5))) {
   padding-block-end: $spacing-05;
 }
 
-:global(html:has([data-separator]) #main-display-area .cds--data-table:has(td:nth-child(5))) {
+:global([data-split-view] #main-display-area .cds--data-table:has(td:nth-child(5))) {
   min-width: $table-min-width;
 
   td, th {
