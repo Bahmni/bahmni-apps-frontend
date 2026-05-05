@@ -1,6 +1,6 @@
 import { createObservationBundleEntries } from '../../../services/consultationBundleService';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
-import { registerInputControl } from '../../consultationPad/formRegistry';
+import { registerInputControl } from '../registry';
 import ObservationFormsPanel from './ObservationFormsPanel';
 
 registerInputControl({

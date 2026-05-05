@@ -20,6 +20,7 @@ export interface InputControl<
 }
 
 export interface ConsultationPad {
+  [key: string]: InputControl | AllergyConceptMap | number | undefined;
   allergyConceptMap: AllergyConceptMap;
   statDurationInMilliseconds?: number;
   encounterDetails: InputControl;
