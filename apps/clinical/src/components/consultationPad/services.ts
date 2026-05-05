@@ -8,13 +8,13 @@ import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { extractConceptsFromResponseBundle } from '../../utils/fhir/conceptExtractor';
 import { createConsultationBundle } from '../../utils/fhir/consultationBundleCreator';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
-import type { EncounterContext, EncounterInputControl } from './models';
+import type { EncounterContext, InputControl } from '../forms';
 
 interface SubmissionRequest {
   activeEncounter: Encounter | null;
   episodeOfCareUuids: string[];
   statDurationInMilliseconds?: number;
-  activeEntries: EncounterInputControl[];
+  activeEntries: InputControl[];
 }
 
 interface SubmissionResult {

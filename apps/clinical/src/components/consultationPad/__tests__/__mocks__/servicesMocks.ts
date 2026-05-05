@@ -1,6 +1,6 @@
 import type { Bundle, BundleEntry, Encounter } from 'fhir/r4';
 import type { ConsultationBundle } from '../../../../models/consultationBundle';
-import type { EncounterInputControl } from '../../models';
+import type { InputControl } from '../../../forms';
 
 export const mockStoreState = {
   selectedEncounterType: { uuid: 'enc-type-uuid', name: 'OPD' },
@@ -44,8 +44,8 @@ export const mockBundle: ConsultationBundle = {
 export const mockUpdatedConcepts = new Map([['uuid-1', 'Blood Pressure']]);
 
 export const mockFormEntry = (
-  overrides: Partial<EncounterInputControl> = {},
-): EncounterInputControl => ({
+  overrides: Partial<InputControl> = {},
+): InputControl => ({
   key: 'allergies',
   component: () => null,
   reset: jest.fn(),

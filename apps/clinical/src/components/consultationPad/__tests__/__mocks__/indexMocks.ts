@@ -1,6 +1,6 @@
-import type { EncounterInputControl } from '../../models';
+import type { InputControl } from '../../../forms';
 
-export const mockRegistry: EncounterInputControl[] = [
+export const mockRegistry: InputControl[] = [
   {
     key: 'allergies',
     component: () => null,
@@ -28,9 +28,9 @@ export const mockRegistry: EncounterInputControl[] = [
 ];
 
 export const makeMockEntry = (
-  key: EncounterInputControl['key'] = 'allergies',
-  overrides: Partial<EncounterInputControl> = {},
-): EncounterInputControl => ({
+  key: InputControl['key'] = 'allergies',
+  overrides: Partial<InputControl> = {},
+): InputControl => ({
   key,
   component: () => null,
   reset: jest.fn(),
