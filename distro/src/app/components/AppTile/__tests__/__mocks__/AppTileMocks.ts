@@ -3,5 +3,4 @@ export const defaultProps = {
   label: 'HOME_MODULE_REGISTRATION',
   icon: 'registration',
   url: '/registration',
-  privileges: ['Add Patients'],
 };

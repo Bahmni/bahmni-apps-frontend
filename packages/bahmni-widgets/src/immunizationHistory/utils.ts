@@ -1,3 +1,4 @@
+import { camelToScreamingSnakeCase } from '@bahmni/services';
 import { Immunization } from 'fhir/r4';
 import {
   ENTERING_PROVIDER_CODE,
@@ -32,6 +33,28 @@ function getDoseNumber(immunization: Immunization): string | null {
     immunization.protocolApplied?.[0]?.doseNumberPositiveInt ??
     immunization.protocolApplied?.[0]?.doseNumberString;
   return doseNumber ? doseNumber.toString() : null;
+}
+
+export function createImmunizationHeaders(
+  fields: string[],
+  t: (key: string) => string,
+): Array<{ key: string; header: string }> {
+  return fields.map((field) => ({
+    key: field,
+    header: t(
+      `IMMUNIZATION_HISTORY_WIDGET_COL_${camelToScreamingSnakeCase(field)}`,
+    ),
+  }));
+}
+
+export function createColumnSortConfig(
+  fields: string[],
+  sortability: Record<string, boolean>,
+): Array<{ key: string; sortable: boolean }> {
+  return fields.map((field) => ({
+    key: field,
+    sortable: sortability[field] ?? false,
+  }));
 }
 
 export function createAdministeredImmunizationViewModel(

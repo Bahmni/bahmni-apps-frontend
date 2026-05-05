@@ -25,7 +25,7 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
           class="cds--tooltip-trigger__wrapper"
         >
           <button
-            aria-labelledby="tooltip-_r_o_"
+            aria-labelledby="tooltip-_r_11_"
             class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--ghost cds--btn--icon-only"
             data-testid="immunization-history-widget-add-button-test-id"
             id="immunization-history-widget-add-button"
@@ -58,7 +58,7 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
         <span
           aria-hidden="true"
           class="cds--popover"
-          id="tooltip-_r_o_"
+          id="tooltip-_r_11_"
           role="tooltip"
         >
           <span
@@ -104,10 +104,10 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
         role="tablist"
       >
         <button
-          aria-controls="ccs-_r_r_-tabpanel-0"
+          aria-controls="ccs-_r_14_-tabpanel-0"
           aria-selected="true"
           class="cds--tabs__nav-item cds--tabs__nav-link cds--tabs__nav-item--selected"
-          id="ccs-_r_r_-tab-0"
+          id="ccs-_r_14_-tab-0"
           role="tab"
           tabindex="0"
           type="button"
@@ -152,10 +152,10 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
           </button>
         </div>
         <button
-          aria-controls="ccs-_r_r_-tabpanel-1"
+          aria-controls="ccs-_r_14_-tabpanel-1"
           aria-selected="false"
           class="cds--tabs__nav-item cds--tabs__nav-link"
-          id="ccs-_r_r_-tab-1"
+          id="ccs-_r_14_-tab-1"
           role="tab"
           tabindex="-1"
           type="button"
@@ -224,9 +224,9 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
       </button>
     </div>
     <div
-      aria-labelledby="ccs-_r_r_-tab-0"
+      aria-labelledby="ccs-_r_14_-tab-0"
       class="cds--tab-content cds--tab-content--interactive"
-      id="ccs-_r_r_-tabpanel-0"
+      id="ccs-_r_14_-tabpanel-0"
       role="tabpanel"
       tabindex="-1"
     >
@@ -243,10 +243,10 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
       </div>
     </div>
     <div
-      aria-labelledby="ccs-_r_r_-tab-1"
+      aria-labelledby="ccs-_r_14_-tab-1"
       class="cds--tab-content cds--tab-content--interactive"
       hidden=""
-      id="ccs-_r_r_-tabpanel-1"
+      id="ccs-_r_14_-tabpanel-1"
       role="tabpanel"
       tabindex="-1"
     >
@@ -291,7 +291,7 @@ exports[`ImmunizationHistory matches snapshot without tabs (status filter applie
           class="cds--tooltip-trigger__wrapper"
         >
           <button
-            aria-labelledby="tooltip-_r_t_"
+            aria-labelledby="tooltip-_r_16_"
             class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--ghost cds--btn--icon-only"
             data-testid="immunization-history-widget-add-button-test-id"
             id="immunization-history-widget-add-button"
@@ -324,7 +324,7 @@ exports[`ImmunizationHistory matches snapshot without tabs (status filter applie
         <span
           aria-hidden="true"
           class="cds--popover"
-          id="tooltip-_r_t_"
+          id="tooltip-_r_16_"
           role="tooltip"
         >
           <span

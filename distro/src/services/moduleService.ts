@@ -53,7 +53,9 @@ export const filterByPrivilege = (
   extensions: Module[],
   userPrivileges?: string[],
 ): Module[] => {
-  if (!userPrivileges || userPrivileges.length === 0) {
+  // undefined = skip privilege check (caller hasn't loaded privileges yet)
+  // []        = user has zero privileges (only public tiles shown)
+  if (userPrivileges === undefined) {
     return extensions;
   }
 

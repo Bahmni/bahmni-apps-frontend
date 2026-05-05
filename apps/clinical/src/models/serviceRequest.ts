@@ -1,4 +1,5 @@
 export interface ServiceRequestInputEntry {
+  uid: string;
   id: string;
   display: string;
   selectedPriority?: SupportedServiceRequestPriority;

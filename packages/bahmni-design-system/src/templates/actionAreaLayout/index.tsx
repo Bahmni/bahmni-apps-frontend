@@ -45,6 +45,7 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
       id="action-area-layout"
       data-testid="action-area-layout-test-id"
       aria-label="action-area-layout-aria-label"
+      data-split-view={isActionAreaVisible || undefined}
       className={classNames(
         styles.layout,
         isActionAreaVisible && styles.collapsedModal,

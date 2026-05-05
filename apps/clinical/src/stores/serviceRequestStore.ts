@@ -12,20 +12,19 @@ export interface ServiceRequestState {
     conceptUUID: string,
     display: string,
   ) => void;
-  removeServiceRequest: (category: string, serviceRequestId: string) => void;
+  removeServiceRequest: (category: string, serviceRequestUid: string) => void;
   updatePriority: (
     category: string,
-    serviceRequestId: string,
+    serviceRequestUid: string,
     priority: SupportedServiceRequestPriority,
   ) => void;
   updateNote: (
     category: string,
-    serviceRequestId: string,
+    serviceRequestUid: string,
     note: string,
   ) => void;
   reset: () => void;
   getState: () => ServiceRequestState;
-  isSelectedInCategory: (category: string, conceptCode: string) => boolean;
 }
 
 export const useServiceRequestStore = create<ServiceRequestState>(
@@ -38,6 +37,7 @@ export const useServiceRequestStore = create<ServiceRequestState>(
       display: string,
     ) => {
       const newServiceRequest: ServiceRequestInputEntry = {
+        uid: crypto.randomUUID(),
         id: conceptUUID,
         selectedPriority: 'routine',
         display: display,
@@ -57,11 +57,11 @@ export const useServiceRequestStore = create<ServiceRequestState>(
       }));
     },
 
-    removeServiceRequest: (category: string, serviceRequestId: string) => {
+    removeServiceRequest: (category: string, serviceRequestUid: string) => {
       const currentServiceRequests =
         get().selectedServiceRequests.get(category);
       const updatedList = currentServiceRequests?.filter(
-        (entry) => entry.id !== serviceRequestId,
+        (entry) => entry.uid !== serviceRequestUid,
       );
 
       set((state) => {
@@ -77,7 +77,7 @@ export const useServiceRequestStore = create<ServiceRequestState>(
 
     updatePriority: (
       category: string,
-      serviceRequestId: string,
+      serviceRequestUid: string,
       priority: SupportedServiceRequestPriority,
     ) => {
       const currentServiceRequests =
@@ -85,7 +85,7 @@ export const useServiceRequestStore = create<ServiceRequestState>(
       if (!currentServiceRequests) return;
 
       const updatedList = currentServiceRequests.map((serviceRequest) => {
-        if (serviceRequest.id !== serviceRequestId) {
+        if (serviceRequest.uid !== serviceRequestUid) {
           return serviceRequest;
         }
         return {
@@ -102,13 +102,13 @@ export const useServiceRequestStore = create<ServiceRequestState>(
       }));
     },
 
-    updateNote: (category: string, serviceRequestId: string, note: string) => {
+    updateNote: (category: string, serviceRequestUid: string, note: string) => {
       const currentServiceRequests =
         get().selectedServiceRequests.get(category);
       if (!currentServiceRequests) return;
 
       const updatedList = currentServiceRequests.map((serviceRequest) => {
-        if (serviceRequest.id !== serviceRequestId) {
+        if (serviceRequest.uid !== serviceRequestUid) {
           return serviceRequest;
         }
         return {
@@ -132,26 +132,6 @@ export const useServiceRequestStore = create<ServiceRequestState>(
     },
 
     getState: () => get(),
-
-    isSelectedInCategory: (category: string, conceptCode: string): boolean => {
-      // Case-insensitive category lookup
-      const categoryLower = category.toLowerCase();
-      const selectedServiceRequests = get().selectedServiceRequests;
-      let selectedInCategory: ServiceRequestInputEntry[] | undefined;
-
-      for (const [key, value] of selectedServiceRequests) {
-        if (key.toLowerCase() === categoryLower) {
-          selectedInCategory = value;
-          break;
-        }
-      }
-
-      return (
-        selectedInCategory?.some(
-          (si) => si.id.toLowerCase() === conceptCode.toLowerCase(),
-        ) ?? false
-      );
-    },
   }),
 );
 

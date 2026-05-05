@@ -1,6 +1,5 @@
 import { Tile, Icon, ICON_SIZE } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import { useHasPrivilege } from '@bahmni/widgets';
 import { ArrowRight } from '@carbon/icons-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,23 +10,11 @@ interface AppTileProps {
   label: string;
   icon: string;
   url: string;
-  privileges?: string[];
 }
 
-export const AppTile: React.FC<AppTileProps> = ({
-  id,
-  label,
-  icon,
-  url,
-  privileges,
-}) => {
+export const AppTile: React.FC<AppTileProps> = ({ id, label, icon, url }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const hasAccess = useHasPrivilege(privileges);
-
-  if (!hasAccess) {
-    return null;
-  }
 
   const handleClick = () => {
     if (url.startsWith('/') || url.startsWith('http')) {

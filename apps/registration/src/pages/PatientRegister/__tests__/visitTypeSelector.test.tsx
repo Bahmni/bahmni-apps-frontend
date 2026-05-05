@@ -26,6 +26,9 @@ jest.mock('@bahmni/services', () => ({
       if (key === 'ENTER_VISIT_DETAILS') {
         return 'Enter Visit Details';
       }
+      if (key === 'PATIENT_DASHBOARD_REDIRECT') {
+        return 'Patient Dashboard';
+      }
       return key;
     },
   }),
@@ -63,7 +66,13 @@ describe('VisitTypeSelector', () => {
     });
   });
 
-  const renderComponent = (patientUuid?: string) => {
+  const renderComponent = (
+    patientUuid?: string,
+    extraProps?: {
+      activeVisitLabel?: string;
+      onActiveVisitClick?: () => void;
+    },
+  ) => {
     const initialEntries = patientUuid
       ? [`/patient/${patientUuid}`]
       : ['/patient/new'];
@@ -79,6 +88,7 @@ describe('VisitTypeSelector', () => {
                   element={
                     <VisitTypeSelector
                       onVisitTypeSelect={mockOnVisitTypeSelect}
+                      {...extraProps}
                     />
                   }
                 />
@@ -103,7 +113,7 @@ describe('VisitTypeSelector', () => {
     expect(button).toHaveAttribute('id', 'visit-button');
   });
 
-  it('shows "Enter Visit Details" when patient has active visit', async () => {
+  it('shows "Enter Visit Details" when patient has active visit and no activeVisitLabel provided', async () => {
     const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
     mockCheckIfActiveVisitExists.mockResolvedValue(true);
 
@@ -116,6 +126,103 @@ describe('VisitTypeSelector', () => {
 
     const button = screen.getByRole('button');
     expect(button).toHaveTextContent('Enter Visit Details');
+  });
+
+  it('shows activeVisitLabel when patient has active visit and activeVisitLabel is provided', async () => {
+    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
+    mockCheckIfActiveVisitExists.mockResolvedValue(true);
+
+    renderComponent(patientUuid, { activeVisitLabel: 'Patient Dashboard' });
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockCheckIfActiveVisitExists).toHaveBeenCalledWith(patientUuid),
+    );
+
+    const button = screen.getByRole('button');
+    expect(button).toHaveTextContent('Patient Dashboard');
+  });
+
+  it('calls onActiveVisitClick when provided and hasActiveVisit is true', async () => {
+    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
+    const mockOnActiveVisitClick = jest.fn();
+    mockCheckIfActiveVisitExists.mockResolvedValue(true);
+
+    renderComponent(patientUuid, {
+      onActiveVisitClick: mockOnActiveVisitClick,
+    });
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockCheckIfActiveVisitExists).toHaveBeenCalledWith(patientUuid),
+    );
+
+    const user = userEvent.setup();
+    const button = screen.getByRole('button');
+    await user.click(button);
+
+    expect(mockOnActiveVisitClick).toHaveBeenCalled();
+    expect(mockOnVisitTypeSelect).not.toHaveBeenCalled();
+  });
+
+  it('calls onVisitTypeSelect with default visit type when active visit exists and no onActiveVisitClick provided', async () => {
+    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
+    mockCheckIfActiveVisitExists.mockResolvedValue(true);
+
+    renderComponent(patientUuid);
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockCheckIfActiveVisitExists).toHaveBeenCalledWith(patientUuid),
+    );
+
+    const user = userEvent.setup();
+    const button = screen.getByRole('button');
+    await user.click(button);
+
+    expect(mockOnVisitTypeSelect).toHaveBeenCalledWith({
+      name: 'OPD',
+      uuid: '54f43754-c6ce-4472-890e-0f28acaeaea6',
+    });
+  });
+
+  it('button kind is "primary" when hasActiveVisit is true', async () => {
+    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
+    mockCheckIfActiveVisitExists.mockResolvedValue(true);
+
+    renderComponent(patientUuid);
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockCheckIfActiveVisitExists).toHaveBeenCalledWith(patientUuid),
+    );
+
+    const button = screen.getByRole('button');
+    expect(button).toHaveClass('cds--btn--primary');
+  });
+
+  it('shows arrow icon when hasActiveVisit is true', async () => {
+    const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
+    mockCheckIfActiveVisitExists.mockResolvedValue(true);
+
+    renderComponent(patientUuid);
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockCheckIfActiveVisitExists).toHaveBeenCalledWith(patientUuid),
+    );
+
+    expect(screen.getByTestId('patient-dashboard-arrow')).toBeInTheDocument();
+  });
+
+  it('does not show arrow icon when hasActiveVisit is false', async () => {
+    renderComponent();
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+
+    expect(
+      screen.queryByTestId('patient-dashboard-arrow'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the dropdown with the correct list of items when no active visit', async () => {

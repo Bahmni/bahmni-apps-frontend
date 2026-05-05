@@ -210,6 +210,18 @@ describe('Lab Investigation Utils', () => {
       expect(result[0].id).toBe('test-2');
     });
 
+    it('should not filter out entries with an empty replaces array', () => {
+      const mockBundle = createMockBundle([
+        createMockServiceRequest({ id: 'test-1', replaces: [] }),
+        createMockServiceRequest({ id: 'test-2', replaces: [] }),
+      ]);
+
+      const result = filterLabInvestigationEntries(mockBundle);
+
+      expect(result).toHaveLength(2);
+      expect(result.map((r) => r.id)).toEqual(['test-1', 'test-2']);
+    });
+
     it('should handle multiple replaces references', () => {
       const mockBundle = createMockBundle([
         createMockServiceRequest({ id: 'test-1' }),

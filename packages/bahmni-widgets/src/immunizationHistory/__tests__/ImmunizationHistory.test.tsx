@@ -1,11 +1,19 @@
 import { useSubscribeConsultationSaved } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import ImmunizationHistory from '../ImmunizationHistory';
+import {
+  createAdministeredImmunizationViewModel,
+  createNotAdministeredImmunizationViewModel,
+} from '../utils';
+import {
+  mockAdministeredImmunization,
+  mockNotAdministeredImmunization,
+} from './__mocks__/immunizationMocks';
 
 expect.extend(toHaveNoViolations);
 
@@ -208,6 +216,88 @@ describe('ImmunizationHistory', () => {
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
+  });
+
+  it.each([
+    {
+      label: 'administeredFields filters administered columns',
+      config: {
+        status: 'completed',
+        administeredFields: ['code', 'administeredOn'],
+      },
+      mockData: createAdministeredImmunizationViewModel(
+        mockAdministeredImmunization,
+      ),
+      visibleHeaders: [
+        'IMMUNIZATION_HISTORY_WIDGET_COL_CODE',
+        'IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_ON',
+      ],
+      hiddenHeaders: ['IMMUNIZATION_HISTORY_WIDGET_COL_DOSE_SEQUENCE'],
+    },
+    {
+      label: 'notAdministeredFields filters not-administered columns',
+      config: { status: 'not-done', notAdministeredFields: ['code', 'date'] },
+      mockData: createNotAdministeredImmunizationViewModel(
+        mockNotAdministeredImmunization,
+      ),
+      visibleHeaders: [
+        'IMMUNIZATION_HISTORY_WIDGET_COL_CODE',
+        'IMMUNIZATION_HISTORY_WIDGET_COL_DATE',
+      ],
+      hiddenHeaders: ['IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY'],
+    },
+  ])('$label', ({ config, mockData, visibleHeaders, hiddenHeaders }) => {
+    mockUseQuery.mockReturnValue({
+      data: [mockData],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+    render(<ImmunizationHistory config={config} />);
+    visibleHeaders.forEach((h) =>
+      expect(screen.getByText(h)).toBeInTheDocument(),
+    );
+    hiddenHeaders.forEach((h) =>
+      expect(screen.queryByText(h)).not.toBeInTheDocument(),
+    );
+  });
+
+  it('administeredFields filters expanded fields', () => {
+    mockUseQuery.mockReturnValue({
+      data: [
+        createAdministeredImmunizationViewModel(mockAdministeredImmunization),
+      ],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+    render(
+      <ImmunizationHistory
+        config={{
+          status: 'completed',
+          administeredFields: ['code', 'route', 'manufacturer'],
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Expand current row' }));
+    expect(
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_ROUTE'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_MANUFACTURER'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_SITE'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_BATCH_NUMBER'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_RECORDED_BY'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_ORDERED_BY'),
+    ).not.toBeInTheDocument();
   });
 
   it.each([

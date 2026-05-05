@@ -83,6 +83,11 @@ describe('SelectedImmunizationItem', () => {
         `immunization-batch-number-${id}`,
       ],
       [
+        'doseSequence',
+        [{ name: 'doseSequence', required: false }],
+        `immunization-dose-sequence-${id}`,
+      ],
+      [
         'expiryDate',
         [{ name: 'expiryDate', required: false }],
         `immunization-expiry-date-input-${id}`,
@@ -116,6 +121,7 @@ describe('SelectedImmunizationItem', () => {
       ['site', `immunization-site-${id}-test-id`],
       ['manufacturer', `immunization-manufacturer-${id}`],
       ['batchNumber', `immunization-batch-number-${id}`],
+      ['doseSequence', `immunization-dose-sequence-${id}`],
       ['expiryDate', `immunization-expiry-date-input-${id}`],
       ['note', `immunization-add-note-link-${id}-test-id`],
     ])('does not render %s field when attributes is empty', (_, testId) => {
@@ -145,6 +151,7 @@ describe('SelectedImmunizationItem', () => {
       ['site', 'Please select a site'],
       ['manufacturer', 'Please enter a manufacturer'],
       ['batchNumber', 'Please enter a batch number'],
+      ['doseSequence', 'Please enter a dose sequence'],
       ['expiryDate', 'Please select an expiry date'],
     ])('shows error message for %s field when error is set', (_, errorText) => {
       render(
@@ -317,6 +324,21 @@ describe('SelectedImmunizationItem', () => {
         });
       },
     );
+
+    it('calls updateDoseSequence with a number when value is typed', async () => {
+      const user = userEvent.setup();
+      render(<SelectedImmunizationItem {...defaultProps} />);
+      await user.type(
+        screen.getByTestId(`immunization-dose-sequence-${id}`),
+        '3',
+      );
+      await waitFor(() => {
+        expect(mockStore.updateDoseSequence).toHaveBeenCalledWith(
+          id,
+          expect.any(Number),
+        );
+      });
+    });
 
     it.each([
       [

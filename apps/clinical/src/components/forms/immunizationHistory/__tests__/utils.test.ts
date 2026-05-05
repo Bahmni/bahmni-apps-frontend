@@ -281,29 +281,20 @@ describe('getComboBoxItems', () => {
     ).toEqual([{ display: 'No results', disabled: true }]);
   });
 
-  it('returns filtered items when search matches', () => {
-    expect(
-      getComboBoxItems(
-        'covid',
-        mockVaccineValueSet,
-        false,
-        false,
-        COMBO_BOX_MESSAGES,
-      ),
-    ).toEqual([{ code: 'covid-19', display: 'COVID-19 Vaccine' }]);
-  });
-
-  it('filters case-insensitively', () => {
-    expect(
-      getComboBoxItems(
-        'COVID',
-        mockVaccineValueSet,
-        false,
-        false,
-        COMBO_BOX_MESSAGES,
-      ),
-    ).toEqual([{ code: 'covid-19', display: 'COVID-19 Vaccine' }]);
-  });
+  it.each([['covid'], ['COVID']])(
+    'returns filtered items matching "%s" case-insensitively',
+    (searchTerm) => {
+      expect(
+        getComboBoxItems(
+          searchTerm,
+          mockVaccineValueSet,
+          false,
+          false,
+          COMBO_BOX_MESSAGES,
+        ),
+      ).toEqual([{ code: 'covid-19', display: 'COVID-19 Vaccine' }]);
+    },
+  );
 });
 
 describe('createImmunizationBundleEntries', () => {
@@ -362,6 +353,7 @@ describe('createImmunizationBundleEntries', () => {
     expect(resource.lotNumber).toBeUndefined();
     expect(resource.extension).toBeUndefined();
     expect(resource.note).toBeUndefined();
+    expect(resource.protocolApplied).toBeUndefined();
   });
 
   it('includes all optional fields when set on a complete entry', () => {
@@ -397,7 +389,24 @@ describe('createImmunizationBundleEntries', () => {
         },
       },
     ]);
+    expect(resource.protocolApplied).toEqual([{ doseNumberPositiveInt: 3 }]);
   });
+
+  it.each([
+    [3, [{ doseNumberPositiveInt: 3 }]],
+    [null, undefined],
+  ])(
+    'maps doseSequence %s to protocolApplied %j',
+    (doseSequence, expectedProtocolApplied) => {
+      const entry = { ...mockImmunizationEntry, doseSequence };
+      const result = createImmunizationBundleEntries({
+        ...BASE_BUNDLE_PARAMS,
+        selectedImmunizations: [entry],
+      });
+      const resource = result[0].resource as Immunization;
+      expect(resource.protocolApplied).toEqual(expectedProtocolApplied);
+    },
+  );
 
   it('includes administeredProduct extension with display only when drug has no code', () => {
     const entryWithFreetextDrug = {

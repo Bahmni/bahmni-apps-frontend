@@ -24,7 +24,6 @@ jest.mock('@bahmni/services', () => ({
       { uuid: 'PROC', display: 'Procedure Order', conceptClasses: [] },
     ],
   }),
-  getExistingServiceRequestsForAllCategories: jest.fn().mockResolvedValue([]),
   getCurrentUserPrivileges: jest.fn(() => Promise.resolve([])),
   findActiveEncounterInSession: jest
     .fn()
@@ -34,9 +33,6 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   usePatientUUID: jest.fn().mockReturnValue('mock-patient-uuid'),
-  useActivePractitioner: jest.fn().mockReturnValue({
-    practitioner: { uuid: 'mock-practitioner-uuid' },
-  }),
   useUserPrivilege: jest.fn(),
   useHasPrivilege: jest.fn(() => true),
 }));
@@ -203,16 +199,17 @@ describe('InvestigationsForm Integration Tests', () => {
       (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         addServiceRequest: jest.fn((category, id, display) => {
+          const uid = `uid-${id}`;
           mockStore.selectedServiceRequests.set(category, [
-            { id, display, selectedPriority: 'routine' },
+            { uid, id, display, selectedPriority: 'routine' },
           ]);
         }),
-        removeServiceRequest: jest.fn((category, code) => {
+        removeServiceRequest: jest.fn((category, uid) => {
           const requests =
             mockStore.selectedServiceRequests.get(category) ?? [];
           mockStore.selectedServiceRequests.set(
             category,
-            requests.filter((req) => req.id !== code),
+            requests.filter((req) => req.uid !== uid),
           );
         }),
       });
@@ -318,8 +315,9 @@ describe('InvestigationsForm Integration Tests', () => {
       (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
         ...mockStore,
         addServiceRequest: jest.fn((category, id, display) => {
+          const uid = `uid-${id}`;
           mockStore.selectedServiceRequests.set(category, [
-            { id, display, selectedPriority: 'routine' },
+            { uid, id, display, selectedPriority: 'routine' },
           ]);
         }),
         removeServiceRequest: removeServiceRequestMock,
@@ -345,10 +343,10 @@ describe('InvestigationsForm Integration Tests', () => {
       const removeButton = screen.getByRole('button', { name: /close/i });
       await user.click(removeButton);
 
-      // Verify removeServiceRequest was called with correct arguments
+      // Verify removeServiceRequest was called with the uid (not the concept id)
       expect(removeServiceRequestMock).toHaveBeenCalledWith(
         'Lab Order',
-        'lipid-001',
+        'uid-lipid-001',
       );
     });
   });
@@ -526,7 +524,7 @@ describe('InvestigationsForm Integration Tests', () => {
       });
     });
 
-    test('should prevent selection of already selected investigations', async () => {
+    test('should allow re-selection of already selected investigations (duplicates allowed)', async () => {
       const user = userEvent.setup();
 
       const mockStoreWithSelection = {
@@ -536,6 +534,7 @@ describe('InvestigationsForm Integration Tests', () => {
             'Lab Order',
             [
               {
+                uid: 'uid-cbc-001',
                 id: 'cbc-001',
                 display: 'Complete Blood Count',
                 selectedPriority: 'routine',
@@ -555,11 +554,13 @@ describe('InvestigationsForm Integration Tests', () => {
       await user.type(combobox, 'complete blood');
 
       await waitFor(() => {
+        // Item should be selectable (not disabled) even though it's already selected
         const option = screen.getByRole('option', {
-          name: /Complete Blood Count.*already/i,
+          name: 'Complete Blood Count',
         });
         expect(option).toBeInTheDocument();
-        expect(option).toHaveAttribute('disabled');
+        expect(option).not.toHaveAttribute('disabled');
+        expect(option.textContent).not.toMatch(/already/i);
       });
     });
   });

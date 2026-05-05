@@ -7,7 +7,7 @@ export const PATIENT_IMMUNIZATION_URL = (
   patientUuid: string,
   status?: ImmunizationStatus,
 ) => {
-  let url = `${IMMUNIZATION_FHIR_URL}?patient=${patientUuid}&_sort=-_lastUpdated&_count=100`;
+  let url = `${IMMUNIZATION_FHIR_URL}?patient=${patientUuid}&_sort=-date&_count=100`;
 
   if (status) {
     url += `&status=${status}`;

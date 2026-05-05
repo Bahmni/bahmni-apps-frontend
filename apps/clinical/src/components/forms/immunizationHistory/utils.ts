@@ -162,6 +162,9 @@ export function createImmunizationBundleEntries({
         ? { display: entry.manufacturer }
         : undefined,
       lotNumber: entry.batchNumber ?? undefined,
+      protocolApplied: entry.doseSequence
+        ? [{ doseNumberPositiveInt: entry.doseSequence }]
+        : undefined,
       note: entry.note
         ? [
             {

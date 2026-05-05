@@ -37,3 +37,13 @@ export const mockModules: Module[] = [
 ];
 
 export const mockEmptyModules: Module[] = [];
+
+export const mockPublicModule: Module = {
+  id: 'reports',
+  extensionPointId: 'org.bahmni.home.dashboard',
+  type: 'link',
+  label: 'Reports',
+  icon: 'fa fa-bar-chart',
+  url: '/reports',
+  order: 4,
+};

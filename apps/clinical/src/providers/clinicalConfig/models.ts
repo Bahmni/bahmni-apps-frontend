@@ -48,9 +48,19 @@ export interface ContextInformation {
   program?: ProgramConfig;
 }
 
+export interface PatientSearchDisplayField {
+  field: 'name' | 'identifier' | 'gender' | 'age';
+  bold?: boolean;
+}
+
+export interface PatientSearchConfig {
+  displayFields?: PatientSearchDisplayField[];
+}
+
 export interface ClinicalConfig {
   patientInformation: Record<string, unknown>;
   contextInformation?: ContextInformation;
+  patientSearch?: PatientSearchConfig;
   actions: Array<unknown>;
   dashboards: Array<Dashboard>;
   consultationPad: ConsultationPad;

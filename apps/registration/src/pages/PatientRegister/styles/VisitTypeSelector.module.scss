@@ -3,9 +3,16 @@
 .opdVisitGroup {
   display: flex;
   align-items: center;
+  max-width: 100%;
 
   .visitButton {
     min-width: $spacing-13 + $spacing-12;
+    max-width: 100%;
+    justify-content: flex-start;
+    column-gap: $spacing-02;
+
+    // Reset the inflated padding-inline-end Carbon adds for its absolutely-positioned icon
+    padding-inline-end: calc(#{$spacing-05} - 0.0625rem);
   }
 
   .visitDropdown :global(.cds--list-box__menu) {

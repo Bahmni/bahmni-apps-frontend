@@ -1,6 +1,8 @@
 import { Immunization } from 'fhir/r4';
 import {
   createAdministeredImmunizationViewModel,
+  createColumnSortConfig,
+  createImmunizationHeaders,
   createNotAdministeredImmunizationViewModel,
 } from '../utils';
 import {
@@ -9,6 +11,51 @@ import {
   mockMinimalNotAdministeredImmunization,
   mockNotAdministeredImmunization,
 } from './__mocks__/immunizationMocks';
+
+describe('createImmunizationHeaders', () => {
+  it.each([
+    {
+      field: 'code',
+      expectedKey: 'IMMUNIZATION_HISTORY_WIDGET_COL_CODE',
+    },
+    {
+      field: 'administeredOn',
+      expectedKey: 'IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_ON',
+    },
+  ])('maps $field to header key $expectedKey', ({ field, expectedKey }) => {
+    const result = createImmunizationHeaders([field], (k) => k);
+    expect(result).toEqual([{ key: field, header: expectedKey }]);
+  });
+});
+
+describe('createColumnSortConfig', () => {
+  it.each([
+    {
+      description: 'known sortable field',
+      field: 'code',
+      sortability: { code: true },
+      expected: true,
+    },
+    {
+      description: 'known non-sortable field',
+      field: 'doseSequence',
+      sortability: { doseSequence: false },
+      expected: false,
+    },
+    {
+      description: 'field absent from sortability map',
+      field: 'unknownField',
+      sortability: {},
+      expected: false,
+    },
+  ])(
+    'returns sortable=$expected for $description',
+    ({ field, sortability, expected }) => {
+      const result = createColumnSortConfig([field], sortability);
+      expect(result).toEqual([{ key: field, sortable: expected }]);
+    },
+  );
+});
 
 describe('createAdministeredImmunizationViewModel', () => {
   it('maps all fields from a full immunization', () => {
