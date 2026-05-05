@@ -9,3 +9,7 @@ export const getPatientUrl = (patientUuid: string): string =>
 
 export const getPatientUrlExternal = (patientUuid: string): string =>
   `/bahmni-new${BAHMNI_REGISTRATION_PATIENT}/${patientUuid}`;
+
+export const DEFAULT_PHOTO_WIDTH_PX = 600;
+export const DEFAULT_PHOTO_HEIGHT_PX = 600;
+export const DEFAULT_PHOTO_MAX_FILE_SIZE_KB = 500;

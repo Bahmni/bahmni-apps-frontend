@@ -243,6 +243,47 @@
             }
           }
         },
+        "patientPhoto": {
+          "type": "object",
+          "description": "Patient photo capture constraints. Two mutually exclusive modes: (A) fixed dimensions with quality compression — provide widthPx + heightPx (+ optional maxFileSizeKb); (B) variable dimensions at full quality — provide all of minWidthPx, maxWidthPx, minHeightPx, maxHeightPx, maxFileSizeKb. Partial Mode B configs are rejected at validation time.",
+          "additionalProperties": false,
+          "properties": {
+            "widthPx": {
+              "type": "number",
+              "description": "Mode A: target photo width in pixels"
+            },
+            "heightPx": {
+              "type": "number",
+              "description": "Mode A: target photo height in pixels"
+            },
+            "minWidthPx": {
+              "type": "number",
+              "description": "Mode B: minimum photo width in pixels"
+            },
+            "maxWidthPx": {
+              "type": "number",
+              "description": "Mode B: maximum photo width in pixels"
+            },
+            "minHeightPx": {
+              "type": "number",
+              "description": "Mode B: minimum photo height in pixels"
+            },
+            "maxHeightPx": {
+              "type": "number",
+              "description": "Mode B: maximum photo height in pixels"
+            },
+            "maxFileSizeKb": {
+              "type": "number",
+              "description": "Maximum photo file size in kilobytes"
+            }
+          },
+          "dependencies": {
+            "minWidthPx":  ["maxWidthPx", "minHeightPx", "maxHeightPx", "maxFileSizeKb"],
+            "maxWidthPx":  ["minWidthPx", "minHeightPx", "maxHeightPx", "maxFileSizeKb"],
+            "minHeightPx": ["minWidthPx", "maxWidthPx", "maxHeightPx", "maxFileSizeKb"],
+            "maxHeightPx": ["minWidthPx", "maxWidthPx", "minHeightPx", "maxFileSizeKb"]
+          }
+        },
         "additionalPatientInformation": {
           "type": "object",
           "description": "Additional patient information configuration",

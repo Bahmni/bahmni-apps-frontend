@@ -5,6 +5,16 @@ export interface PatientSearchConfig {
   appointment: AppointmentSearchField[];
 }
 
+export interface PatientPhotoConfig {
+  widthPx?: number;
+  heightPx?: number;
+  minWidthPx?: number;
+  maxWidthPx?: number;
+  minHeightPx?: number;
+  maxHeightPx?: number;
+  maxFileSizeKb?: number;
+}
+
 export interface PatientInformationConfig {
   defaultIdentifierPrefix?: string;
   autoCompleteFields?: string[];
@@ -45,6 +55,7 @@ export interface PatientInformationConfig {
       translationKey: string;
     }>;
   };
+  patientPhoto?: PatientPhotoConfig;
 }
 
 export interface FieldValidationRule {
