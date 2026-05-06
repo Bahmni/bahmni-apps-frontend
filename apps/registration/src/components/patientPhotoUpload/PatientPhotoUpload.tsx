@@ -183,9 +183,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     ) : (
       <>
         <div
-          className={styles.imagePreviewContainer}
-          // eslint-disable-next-line react/forbid-dom-props
-          style={cropBoxStyle}
+          className={styles.capturedImageWrapper}
           data-testid="capture-preview-container"
         >
           <img

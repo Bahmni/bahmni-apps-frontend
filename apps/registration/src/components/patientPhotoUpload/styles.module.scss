@@ -104,3 +104,15 @@
   border: 2px solid white;
   pointer-events: none;
 }
+
+.capturedImageWrapper {
+  display: flex;
+  justify-content: center;
+  background: $layer-02;
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+}
