@@ -81,21 +81,27 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   const { data: availableStocks = [], isLoading: stocksLoading } = useQuery({
     queryKey: ['availableStocks', productUuid, locationUuid],
     queryFn: () => getAvailableStocks(productUuid, locationUuid),
-    enabled:
-      isFetchBatchNumberEnabled && !!productUuid && !!locationUuid,
+    enabled: isFetchBatchNumberEnabled && !!productUuid && !!locationUuid,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const batchComboBoxItems = useMemo(() => {
     const filtered = batchSearchTerm.trim()
       ? availableStocks.filter((stock) =>
-          stock.batchNumber.toLowerCase().includes(batchSearchTerm.toLowerCase()),
+          stock.batchNumber
+            .toLowerCase()
+            .includes(batchSearchTerm.toLowerCase()),
         )
       : availableStocks;
 
     return filtered.map((stock) => {
-      const formattedDate = formatDateTime(stock.expiryDate, t, false, 'dd-MMM-yyyy');
-      
+      const formattedDate = formatDateTime(
+        stock.expiryDate,
+        t,
+        false,
+        'dd-MMM-yyyy',
+      );
+
       return {
         code: stock.batchNumber,
         display: `${stock.batchNumber} [${formattedDate.formattedResult}] - ${stock.stockLocationName}`,
@@ -113,7 +119,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         immunization.vaccineCode.code,
         t('NO_MATCHING_DRUG_NAME_FOUND'),
       ),
-    [drugSearchTerm, vaccineDrugs, immunization.vaccineCode.code],
+    [drugSearchTerm, vaccineDrugs, immunization.vaccineCode.code, t],
   );
 
   const administeredLocationTagComboBoxItems = useMemo(
@@ -132,7 +138,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         routes,
         t('NO_MATCHING_ROUTE_FOUND'),
       ),
-    [routeSearchTerm, routes],
+    [routeSearchTerm, routes, t],
   );
 
   const siteComboBoxItems = useMemo(
@@ -142,7 +148,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         sites,
         t('NO_MATCHING_SITE_FOUND'),
       ),
-    [siteSearchTerm, sites],
+    [siteSearchTerm, sites, t],
   );
 
   const handleRouteInputChange = (value: string) => {
