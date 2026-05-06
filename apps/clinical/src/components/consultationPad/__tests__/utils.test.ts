@@ -84,10 +84,11 @@ describe('loadEncounterInputControls', () => {
     (configuredEncounterTypes) => {
       const result = loadEncounterInputControls({
         ...mockConsultationPadConfig,
-        encounterDetails: {
-          ...mockConsultationPadConfig.encounterDetails,
-          encounterTypes: configuredEncounterTypes,
-        },
+        inputControls: mockConsultationPadConfig.inputControls.map((c) =>
+          c.type === 'encounterDetails'
+            ? { ...c, encounterTypes: configuredEncounterTypes }
+            : c,
+        ),
       });
       expect(
         result.find((e) => e.key === 'encounterDetails')!.encounterTypes,
@@ -129,34 +130,27 @@ describe('loadEncounterInputControls', () => {
   });
 
   it.each([
-    [
-      'encounterDetails',
-      mockConsultationPadConfig.encounterDetails!.privileges,
-    ],
-    ['allergies', mockConsultationPadConfig.allergies!.privileges],
-    ['investigations', mockConsultationPadConfig.investigations!.privileges],
-    [
-      'conditionsAndDiagnoses',
-      mockConsultationPadConfig.conditionsAndDiagnoses!.privileges,
-    ],
-    ['medications', mockConsultationPadConfig.medications!.privileges],
-    ['vaccinations', mockConsultationPadConfig.vaccinations!.privileges],
-    [
-      'observationForms',
-      mockConsultationPadConfig.observationForms!.privileges,
-    ],
-  ] as const)(
-    '%s has the correct privilege from config',
-    (key, expectedPrivilege) => {
-      const entry = registry.find((e) => e.key === key)!;
-      expect(entry.privilege).toEqual(expectedPrivilege);
-    },
-  );
+    'encounterDetails',
+    'allergies',
+    'investigations',
+    'conditionsAndDiagnoses',
+    'medications',
+    'vaccinations',
+    'observationForms',
+  ] as const)('%s has the correct privilege from config', (key) => {
+    const expectedPrivilege = mockConsultationPadConfig.inputControls.find(
+      (c) => c.type === key,
+    )!.privileges;
+    const entry = registry.find((e) => e.key === key)!;
+    expect(entry.privilege).toEqual(expectedPrivilege);
+  });
 
   it('sets privilege to undefined when privileges is empty', () => {
     const result = loadEncounterInputControls({
       ...mockConsultationPadConfig,
-      allergies: { ...mockConsultationPadConfig.allergies!, privileges: [] },
+      inputControls: mockConsultationPadConfig.inputControls.map((c) =>
+        c.type === 'allergies' ? { ...c, privileges: [] } : c,
+      ),
     });
     expect(
       result.find((e) => e.key === 'allergies')!.privilege,
@@ -167,17 +161,21 @@ describe('loadEncounterInputControls', () => {
     expect(loadEncounterInputControls(undefined)).toHaveLength(0);
   });
 
-  it('returns entries in config key order, not registry order', () => {
+  it('returns entries in array order, with encounterDetails always first', () => {
+    const findControl = (type: string) =>
+      mockConsultationPadConfig.inputControls.find((c) => c.type === type)!;
     const reversedConfig: ConsultationPad = {
       allergyConceptMap: mockConsultationPadConfig.allergyConceptMap,
-      observationForms: mockConsultationPadConfig.observationForms,
-      immunizationHistory: mockConsultationPadConfig.immunizationHistory,
-      vaccinations: mockConsultationPadConfig.vaccinations,
-      medications: mockConsultationPadConfig.medications,
-      conditionsAndDiagnoses: mockConsultationPadConfig.conditionsAndDiagnoses,
-      investigations: mockConsultationPadConfig.investigations,
-      allergies: mockConsultationPadConfig.allergies,
-      encounterDetails: mockConsultationPadConfig.encounterDetails,
+      inputControls: [
+        findControl('observationForms'),
+        findControl('immunizationHistory'),
+        findControl('vaccinations'),
+        findControl('medications'),
+        findControl('conditionsAndDiagnoses'),
+        findControl('investigations'),
+        findControl('allergies'),
+        findControl('encounterDetails'),
+      ],
     };
     const result = loadEncounterInputControls(reversedConfig);
     expect(result.map((e) => e.key)).toEqual([
@@ -192,12 +190,30 @@ describe('loadEncounterInputControls', () => {
     ]);
   });
 
-  it('excludes entries whose config key is absent', () => {
+  it('skips inputControls items whose type has no matching registered control', () => {
     const result = loadEncounterInputControls({
       ...mockConsultationPadConfig,
-      allergies: undefined,
-      medications: undefined,
-    } as ConsultationPad);
+      inputControls: [
+        ...mockConsultationPadConfig.inputControls,
+        {
+          type: 'unknownForm',
+          encounterTypes: [],
+          privileges: [],
+          attributes: [],
+          metadata: {},
+        },
+      ],
+    });
+    expect(result).toHaveLength(EXPECTED_KEYS.length);
+  });
+
+  it('excludes entries not present in the inputControls array', () => {
+    const result = loadEncounterInputControls({
+      ...mockConsultationPadConfig,
+      inputControls: mockConsultationPadConfig.inputControls.filter(
+        (c) => c.type !== 'allergies' && c.type !== 'medications',
+      ),
+    });
     expect(result.find((e) => e.key === 'allergies')).toBeUndefined();
     expect(result.find((e) => e.key === 'medications')).toBeUndefined();
     expect(result.find((e) => e.key === 'investigations')).toBeDefined();

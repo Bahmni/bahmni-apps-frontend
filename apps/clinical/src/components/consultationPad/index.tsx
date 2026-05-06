@@ -23,6 +23,7 @@ import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
+import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
 import { submitConsultation } from './services';
 import styles from './styles/index.module.scss';
 import {
@@ -66,8 +67,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const resolvedEncounterType = useMemo(() => {
     return (
       (encounterType ||
-        (clinicalConfig?.consultationPad?.encounterDetails?.metadata
-          ?.defaultEncounterType as string | undefined)) ??
+        (clinicalConfig?.consultationPad?.inputControls?.find(
+          (c) => c.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY,
+        )?.metadata?.defaultEncounterType as string | undefined)) ??
       null
     );
   }, [encounterType, clinicalConfig]);

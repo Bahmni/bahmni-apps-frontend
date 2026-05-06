@@ -230,7 +230,12 @@ describe('ConsultationPad', () => {
       jest.mocked(useClinicalConfig).mockReturnValue({
         clinicalConfig: {
           consultationPad: {
-            encounterDetails: { metadata: { defaultEncounterType: 'OPD' } },
+            inputControls: [
+              {
+                type: 'encounterDetails',
+                metadata: { defaultEncounterType: 'OPD' },
+              },
+            ],
           },
         },
       } as any);

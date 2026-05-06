@@ -15,6 +15,7 @@ import { Medication } from 'fhir/r4';
 import { useEffect, useMemo, useState } from 'react';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import SelectedImmunizationItem from './components/SelectedImmunizationItem';
+import { IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY } from './constants';
 import { useImmunizationHistoryStore } from './stores';
 import styles from './styles/ImmunizationHistoryForm.module.scss';
 import { findAttr, getComboBoxItems } from './utils';
@@ -36,7 +37,9 @@ const ImmunizationHistoryForm = () => {
   } = useClinicalConfig();
 
   const immunizationHistory =
-    clinicalConfig?.consultationPad?.immunizationHistory;
+    clinicalConfig?.consultationPad?.inputControls?.find(
+      (c) => c.type === IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
+    );
   const { metadata, attributes } = immunizationHistory ?? {};
   const vaccineConceptSetUuid = metadata?.vaccineConceptSetUuid as
     | string

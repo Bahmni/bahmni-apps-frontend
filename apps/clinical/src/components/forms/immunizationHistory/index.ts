@@ -1,10 +1,11 @@
 import { registerInputControl } from '../registry';
+import { IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY } from './constants';
 import ImmunizationHistoryForm from './ImmunizationHistoryForm';
 import { useImmunizationHistoryStore } from './stores';
 import { createImmunizationBundleEntries } from './utils';
 
 registerInputControl({
-  key: 'immunizationHistory',
+  key: IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
   component: ImmunizationHistoryForm,
   reset: () => useImmunizationHistoryStore.getState().reset(),
   validate: () => useImmunizationHistoryStore.getState().validateAll(),

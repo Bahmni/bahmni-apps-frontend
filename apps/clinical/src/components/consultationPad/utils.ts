@@ -9,28 +9,26 @@ export function loadEncounterInputControls(
 ): InputControl[] {
   if (!config) return [];
   const registeredControls = getRegisteredInputControls();
-  return Object.entries(config)
-    .sort(([a], [b]) => {
-      if (a === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return -1;
-      if (b === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return 1;
+  return [...config.inputControls]
+    .sort((a, b) => {
+      if (a.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return -1;
+      if (b.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return 1;
       return 0;
     })
-    .flatMap(([key, formConfig]) => {
-      const entry = registeredControls.find((e) => e.key === key);
-      if (!entry || !formConfig) return [];
-      const { encounterTypes, privileges } = formConfig as {
-        encounterTypes?: string[];
-        privileges?: string[];
-      };
+    .flatMap((formConfig) => {
+      const entry = registeredControls.find((e) => e.key === formConfig.type);
+      if (!entry) return [];
       return [
         {
           ...entry,
           encounterTypes:
-            key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY ||
-            !encounterTypes?.length
+            formConfig.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY ||
+            !formConfig.encounterTypes?.length
               ? undefined
-              : encounterTypes,
-          privilege: privileges?.length ? privileges : undefined,
+              : formConfig.encounterTypes,
+          privilege: formConfig.privileges?.length
+            ? formConfig.privileges
+            : undefined,
         },
       ];
     });
