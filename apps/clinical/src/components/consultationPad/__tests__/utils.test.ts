@@ -167,6 +167,31 @@ describe('loadEncounterInputControls', () => {
     expect(loadEncounterInputControls(undefined)).toHaveLength(0);
   });
 
+  it('returns entries in config key order, not registry order', () => {
+    const reversedConfig: ConsultationPad = {
+      allergyConceptMap: mockConsultationPadConfig.allergyConceptMap,
+      observationForms: mockConsultationPadConfig.observationForms,
+      immunizationHistory: mockConsultationPadConfig.immunizationHistory,
+      vaccinations: mockConsultationPadConfig.vaccinations,
+      medications: mockConsultationPadConfig.medications,
+      conditionsAndDiagnoses: mockConsultationPadConfig.conditionsAndDiagnoses,
+      investigations: mockConsultationPadConfig.investigations,
+      allergies: mockConsultationPadConfig.allergies,
+      encounterDetails: mockConsultationPadConfig.encounterDetails,
+    };
+    const result = loadEncounterInputControls(reversedConfig);
+    expect(result.map((e) => e.key)).toEqual([
+      'encounterDetails',
+      'observationForms',
+      'immunizationHistory',
+      'vaccinations',
+      'medications',
+      'conditionsAndDiagnoses',
+      'investigations',
+      'allergies',
+    ]);
+  });
+
   it('excludes entries whose config key is absent', () => {
     const result = loadEncounterInputControls({
       ...mockConsultationPadConfig,

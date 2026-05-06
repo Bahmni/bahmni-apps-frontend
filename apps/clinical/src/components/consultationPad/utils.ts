@@ -2,28 +2,38 @@ import type { ConsultationPad } from '../../providers/clinicalConfig/models';
 import { useServiceRequestStore } from '../../stores';
 import type { InputControl } from '../forms';
 import { getRegisteredInputControls } from '../forms/registry';
+import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
 
 export function loadEncounterInputControls(
   config: ConsultationPad | undefined,
 ): InputControl[] {
-  return getRegisteredInputControls().flatMap((entry) => {
-    const formConfig = config?.[entry.key] as
-      | { encounterTypes?: string[]; privileges?: string[] }
-      | undefined;
-    if (!formConfig) return [];
-    return [
-      {
-        ...entry,
-        encounterTypes:
-          entry.key === 'encounterDetails' || !formConfig.encounterTypes?.length
-            ? undefined
-            : formConfig.encounterTypes,
-        privilege: formConfig.privileges?.length
-          ? formConfig.privileges
-          : undefined,
-      },
-    ];
-  });
+  if (!config) return [];
+  const registeredControls = getRegisteredInputControls();
+  return Object.entries(config)
+    .sort(([a], [b]) => {
+      if (a === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return -1;
+      if (b === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return 1;
+      return 0;
+    })
+    .flatMap(([key, formConfig]) => {
+      const entry = registeredControls.find((e) => e.key === key);
+      if (!entry || !formConfig) return [];
+      const { encounterTypes, privileges } = formConfig as {
+        encounterTypes?: string[];
+        privileges?: string[];
+      };
+      return [
+        {
+          ...entry,
+          encounterTypes:
+            key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY ||
+            !encounterTypes?.length
+              ? undefined
+              : encounterTypes,
+          privilege: privileges?.length ? privileges : undefined,
+        },
+      ];
+    });
 }
 
 export function getActiveEntries(
