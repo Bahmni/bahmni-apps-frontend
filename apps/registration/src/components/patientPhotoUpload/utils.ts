@@ -33,12 +33,13 @@ const hasAllVariableFields = (config?: PatientPhotoConfig): boolean =>
   config?.minWidthPx != null &&
   config?.maxWidthPx != null &&
   config?.minHeightPx != null &&
-  config?.maxHeightPx != null &&
-  config?.maxFileSizeKb != null;
+  config?.maxHeightPx != null;
 
 export const resolvePhotoConfig = (
   config?: PatientPhotoConfig,
 ): ResolvedPhotoConfig => {
+  const maxFileSizeBytes =
+    (config?.maxFileSizeKb ?? DEFAULT_PHOTO_MAX_FILE_SIZE_KB) * 1024;
   if (hasAllVariableFields(config)) {
     return {
       mode: 'variable',
@@ -46,15 +47,14 @@ export const resolvePhotoConfig = (
       maxWidthPx: config!.maxWidthPx!,
       minHeightPx: config!.minHeightPx!,
       maxHeightPx: config!.maxHeightPx!,
-      maxFileSizeBytes: config!.maxFileSizeKb! * 1024,
+      maxFileSizeBytes,
     };
   }
   return {
     mode: 'fixed',
     widthPx: config?.widthPx ?? DEFAULT_PHOTO_WIDTH_PX,
     heightPx: config?.heightPx ?? DEFAULT_PHOTO_HEIGHT_PX,
-    maxFileSizeBytes:
-      (config?.maxFileSizeKb ?? DEFAULT_PHOTO_MAX_FILE_SIZE_KB) * 1024,
+    maxFileSizeBytes,
   };
 };
 

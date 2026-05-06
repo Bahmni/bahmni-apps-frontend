@@ -78,7 +78,7 @@ describe('resolvePhotoConfig', () => {
     expect(result).toMatchObject({ maxFileSizeBytes: 250 * 1024 });
   });
 
-  it('returns variable mode when all four dim fields and maxFileSizeKb are provided', () => {
+  it('returns variable mode when all four dim fields are provided', () => {
     const result = resolvePhotoConfig({
       minWidthPx: 100,
       maxWidthPx: 600,
@@ -96,7 +96,24 @@ describe('resolvePhotoConfig', () => {
     });
   });
 
-  it('falls back to fixed mode if any variable-mode field is missing (defensive — schema should reject earlier)', () => {
+  it('uses default maxFileSizeKb in variable mode when not provided', () => {
+    const result = resolvePhotoConfig({
+      minWidthPx: 100,
+      maxWidthPx: 600,
+      minHeightPx: 135,
+      maxHeightPx: 810,
+    });
+    expect(result).toEqual({
+      mode: 'variable',
+      minWidthPx: 100,
+      maxWidthPx: 600,
+      minHeightPx: 135,
+      maxHeightPx: 810,
+      maxFileSizeBytes: DEFAULT_MAX_FILE_SIZE_BYTES,
+    });
+  });
+
+  it('falls back to fixed mode if any variable-mode dim field is missing (defensive — schema should reject earlier)', () => {
     const result = resolvePhotoConfig({
       minWidthPx: 100,
       maxWidthPx: 600,

@@ -245,7 +245,7 @@
         },
         "patientPhoto": {
           "type": "object",
-          "description": "Patient photo capture constraints. Two mutually exclusive modes: (A) fixed dimensions with quality compression — provide widthPx + heightPx (+ optional maxFileSizeKb); (B) variable dimensions at full quality — provide all of minWidthPx, maxWidthPx, minHeightPx, maxHeightPx, maxFileSizeKb. Partial Mode B configs are rejected at validation time.",
+          "description": "Patient photo capture constraints. Two mutually exclusive modes: (A) fixed dimensions with quality compression — provide widthPx + heightPx; (B) variable dimensions at full quality — provide all four of minWidthPx, maxWidthPx, minHeightPx, maxHeightPx. maxFileSizeKb is optional in both modes (defaults to 500). Partial Mode B configs are rejected at validation time.",
           "additionalProperties": false,
           "properties": {
             "widthPx": {
@@ -278,10 +278,10 @@
             }
           },
           "dependencies": {
-            "minWidthPx":  ["maxWidthPx", "minHeightPx", "maxHeightPx", "maxFileSizeKb"],
-            "maxWidthPx":  ["minWidthPx", "minHeightPx", "maxHeightPx", "maxFileSizeKb"],
-            "minHeightPx": ["minWidthPx", "maxWidthPx", "maxHeightPx", "maxFileSizeKb"],
-            "maxHeightPx": ["minWidthPx", "maxWidthPx", "minHeightPx", "maxFileSizeKb"]
+            "minWidthPx":  ["maxWidthPx", "minHeightPx", "maxHeightPx"],
+            "maxWidthPx":  ["minWidthPx", "minHeightPx", "maxHeightPx"],
+            "minHeightPx": ["minWidthPx", "maxWidthPx", "maxHeightPx"],
+            "maxHeightPx": ["minWidthPx", "maxWidthPx", "minHeightPx"]
           }
         },
         "additionalPatientInformation": {
