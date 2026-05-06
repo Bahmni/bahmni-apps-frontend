@@ -51,15 +51,17 @@ export function isValidHexColour(value: string): boolean {
 export function applyBahmniTheme(config: Partial<BahmniThemeConfig>): void {
   if (Object.keys(config).length === 0) return;
 
-  const validEntries = Object.entries(config).filter(([token, value]) => {
-    if (!isValidHexColour(value as string)) {
-      console.warn(
-        `Invalid colour value for \`$${token}\` — using Bahmni default`,
-      );
-      return false;
-    }
-    return true;
-  });
+  const validEntries = Object.entries(config)
+    .map(([token, value]) => {
+      if (!isValidHexColour(value as string)) {
+        console.warn(
+          `Invalid colour value for \`$${token}\` — using Bahmni default`,
+        );
+        return [token, BAHMNI_DEFAULT_THEME[token as keyof BahmniThemeConfig]];
+      }
+      return [token, value];
+    })
+    .filter(([, value]) => value !== undefined);
 
   if (validEntries.length === 0) return;
 

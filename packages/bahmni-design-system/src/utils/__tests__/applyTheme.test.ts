@@ -94,7 +94,7 @@ describe('applyBahmniTheme', () => {
     expect(tag.textContent).toContain('--cds-link-inverse-visited: #BE95FF;');
   });
 
-  it('skips invalid hex values and applies only valid ones', () => {
+  it('falls back to Bahmni default for invalid hex values', () => {
     applyBahmniTheme({
       'button-primary': '#007d79',
       interactive: 'not-a-colour',
@@ -103,7 +103,8 @@ describe('applyBahmniTheme', () => {
     const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
     expect(tag.textContent).toContain('--cds-button-primary: #007d79;');
     expect(tag.textContent).toContain('--cds-focus: #fff;');
-    expect(tag.textContent).not.toContain('--cds-interactive:');
+    // invalid value falls back to Bahmni default, not dropped
+    expect(tag.textContent).toContain('--cds-interactive: #007d79;');
   });
 
   it('logs warning for invalid colour values', () => {
@@ -114,8 +115,12 @@ describe('applyBahmniTheme', () => {
     );
   });
 
-  it('does nothing when all values are invalid', () => {
+  it('applies Bahmni defaults when all overrides are invalid', () => {
     applyBahmniTheme({ interactive: 'blue', focus: 'red' });
-    expect(document.getElementById('bahmni-theme')).toBeNull();
+    const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
+    // invalid overrides fall back to their Bahmni defaults
+    expect(tag.textContent).toContain('--cds-interactive: #007d79;');
+    expect(tag.textContent).toContain('--cds-focus: #007d79;');
   });
+
 });
