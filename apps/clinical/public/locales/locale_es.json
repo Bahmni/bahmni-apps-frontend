@@ -192,6 +192,7 @@
   "IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER": "Seleccionar número de lote",
   "IMMUNIZATION_HISTORY_BATCH_NUMBER_REQUIRED": "Por favor ingrese el número de lote",
   "NO_BATCHES_AVAILABLE": "No hay lotes disponibles",
+  "IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR": "No hay lotes disponibles",
   "IMMUNIZATION_HISTORY_DOSE_SEQUENCE": "Secuencia de Dosis",
   "IMMUNIZATION_HISTORY_DOSE_SEQUENCE_PLACEHOLDER": "Ingresar secuencia de dosis",
   "IMMUNIZATION_HISTORY_DOSE_SEQUENCE_REQUIRED": "Por favor ingrese una secuencia de dosis",

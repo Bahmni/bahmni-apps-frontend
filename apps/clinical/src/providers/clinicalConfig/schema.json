@@ -64,6 +64,11 @@
               "required": {
                 "type": "boolean",
                 "description": "Whether this attribute is required"
+              },
+              "config": {
+                "type": "object",
+                "description": "Additional configuration for the attribute",
+                "additionalProperties": true
               }
             }
           }
