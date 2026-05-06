@@ -350,7 +350,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   data-testid="program-uuid-1-start-date-test-id"
                   id="program-uuid-1-start-date"
                 >
-                  01/15/2023
+                  15/01/2023
                 </span>
               </td>
               <td
@@ -409,7 +409,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   data-testid="program-uuid-2-start-date-test-id"
                   id="program-uuid-2-start-date"
                 >
-                  06/10/2022
+                  10/06/2022
                 </span>
               </td>
               <td
@@ -419,7 +419,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   data-testid="program-uuid-2-end-date-test-id"
                   id="program-uuid-2-end-date"
                 >
-                  01/10/2023
+                  10/01/2023
                 </span>
               </td>
               <td

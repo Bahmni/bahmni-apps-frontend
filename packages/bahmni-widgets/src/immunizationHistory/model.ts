@@ -22,3 +22,12 @@ export interface NotAdministeredImmunizationViewModel {
   date: string | null;
   recordedBy: string | null;
 }
+
+export interface AdministeredTabConfig {
+  columns: string[];
+  expandedFields: string[];
+}
+
+export interface NotAdministeredTabConfig {
+  columns: string[];
+}

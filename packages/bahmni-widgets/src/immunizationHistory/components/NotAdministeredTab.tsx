@@ -8,20 +8,22 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
-import { NotAdministeredImmunizationViewModel } from '../model';
+import { NOT_ADMINISTERED_COLUMN_SORTABILITY } from '../constants';
+import {
+  NotAdministeredImmunizationViewModel,
+  NotAdministeredTabConfig,
+} from '../model';
 import styles from '../styles/Immunizations.module.scss';
-import { createNotAdministeredImmunizationViewModel } from '../utils';
+import {
+  createColumnSortConfig,
+  createImmunizationHeaders,
+  createNotAdministeredImmunizationViewModel,
+} from '../utils';
 
 interface NotAdministeredTabProps {
   patientUUID: string;
+  config: NotAdministeredTabConfig;
 }
-
-const COLUMN_SORT_CONFIG = [
-  { key: 'code', sortable: true },
-  { key: 'reason', sortable: false },
-  { key: 'date', sortable: true },
-  { key: 'recordedBy', sortable: true },
-];
 
 const fetchNotAdministeredImmunizations = async (
   patientUUID: string,
@@ -32,6 +34,7 @@ const fetchNotAdministeredImmunizations = async (
 
 const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
   patientUUID,
+  config,
 }) => {
   const { t } = useTranslation();
   const { data, isLoading, isError, refetch } = useQuery({
@@ -53,16 +56,17 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
   );
 
   const headers = useMemo(
-    () => [
-      { key: 'code', header: t('IMMUNIZATION_HISTORY_WIDGET_COL_CODE') },
-      { key: 'reason', header: t('IMMUNIZATION_HISTORY_WIDGET_COL_REASON') },
-      { key: 'date', header: t('IMMUNIZATION_HISTORY_WIDGET_COL_DATE') },
-      {
-        key: 'recordedBy',
-        header: t('IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY'),
-      },
-    ],
-    [t],
+    () => createImmunizationHeaders(config.columns, t),
+    [config.columns, t],
+  );
+
+  const sortable = useMemo(
+    () =>
+      createColumnSortConfig(
+        config.columns,
+        NOT_ADMINISTERED_COLUMN_SORTABILITY,
+      ),
+    [config.columns],
   );
 
   const renderCell = (
@@ -86,7 +90,7 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
       <SortableDataTable
         headers={headers}
         rows={data}
-        sortable={COLUMN_SORT_CONFIG}
+        sortable={sortable}
         ariaLabel={t('IMMUNIZATION_HISTORY_WIDGET_NOT_ADMINISTERED_TABLE_ARIA')}
         loading={isLoading}
         errorStateMessage={
@@ -97,6 +101,7 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
         )}
         renderCell={renderCell}
         dataTestId="not-administered-immunizations-table"
+        className={styles.table}
       />
     </div>
   );

@@ -238,7 +238,7 @@ const LabInvestigation: React.FC<WidgetProps> = ({
         >
           {group.tests?.map((test) => (
             <LabInvestigationItem
-              key={`${group.date}-${test.testName}-${test.id || test.testName}`}
+              key={test.id ?? `${group.date}-${test.testName}`}
               test={test}
               isOpen={openAccordionIndices.has(index)}
               hasProcessedReport={!!test.reportId}

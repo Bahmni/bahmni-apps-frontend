@@ -26,6 +26,7 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
         expiryDate: null,
         manufacturer: null,
         batchNumber: null,
+        doseSequence: null,
         errors: {},
         hasBeenValidated: false,
       };
@@ -174,6 +175,21 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
       }));
     },
 
+    updateDoseSequence: (id: string, value: number | null) => {
+      const sanitized = value === null ? null : Math.max(0, Math.floor(value));
+      set((state) => ({
+        selectedImmunizations: state.selectedImmunizations.map((entry) => {
+          if (entry.id !== id) return entry;
+          const updated = { ...entry, doseSequence: sanitized };
+          if (entry.hasBeenValidated && sanitized !== null && sanitized >= 1) {
+            updated.errors = { ...entry.errors };
+            delete updated.errors.doseSequence;
+          }
+          return updated;
+        }),
+      }));
+    },
+
     updateNote: (id: string, value: string) => {
       set((state) => ({
         selectedImmunizations: state.selectedImmunizations.map((entry) =>
@@ -260,6 +276,14 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
               'batchNumber',
               !entry.batchNumber?.trim(),
               'IMMUNIZATION_HISTORY_BATCH_NUMBER_REQUIRED',
+            );
+
+          if (findAttr('doseSequence', attributes)?.required)
+            checkField(
+              errors,
+              'doseSequence',
+              entry.doseSequence === null || entry.doseSequence < 1,
+              'IMMUNIZATION_HISTORY_DOSE_SEQUENCE_REQUIRED',
             );
 
           if (

@@ -1,9 +1,11 @@
-import { Loading, Search } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { ComboBox } from '@bahmni/design-system';
+import { type PatientSearchResult, useTranslation } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import usePatientSearch from '../../hooks/usePatientSearch';
+import { useClinicalConfig } from '../../providers/clinicalConfig';
+import type { PatientSearchDisplayField } from '../../providers/clinicalConfig/models';
 import styles from './styles/PatientSearch.module.scss';
 
 interface PatientSearchProps {
@@ -11,40 +13,119 @@ interface PatientSearchProps {
   onClose: () => void;
 }
 
-const LISTBOX_ID = 'patient-search-listbox';
+type PatientSearchItem =
+  | PatientSearchResult
+  | { display: string; disabled: true };
+
+const DEFAULT_DISPLAY_FIELDS: PatientSearchDisplayField[] = [
+  { field: 'name', bold: true },
+  { field: 'identifier' },
+];
+
+const formatPatientName = (patient: PatientSearchResult): string =>
+  [patient.givenName, patient.middleName, patient.familyName]
+    .filter(Boolean)
+    .join(' ');
+
+const getFieldValue = (
+  patient: PatientSearchResult,
+  field: PatientSearchDisplayField['field'],
+): string | null => {
+  switch (field) {
+    case 'name':
+      return formatPatientName(patient);
+    case 'identifier':
+      return patient.identifier;
+    case 'gender':
+      return patient.gender;
+    case 'age':
+      return patient.age;
+    default:
+      return null;
+  }
+};
+
+const isPatientResult = (
+  item: PatientSearchItem,
+): item is PatientSearchResult => 'uuid' in item;
+
+// Server-side search; disable client-side filtering
+const alwaysTrue = () => true;
 
 const PatientSearch: React.FC<PatientSearchProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { addNotification } = useNotification();
+  const { clinicalConfig } = useClinicalConfig();
   const containerRef = useRef<HTMLDivElement>(null);
-
   const [inputValue, setInputValue] = useState('');
   const [submittedTerm, setSubmittedTerm] = useState('');
-  const [focusedIndex, setFocusedIndex] = useState(-1);
+
+  const displayFields =
+    clinicalConfig?.patientSearch?.displayFields ?? DEFAULT_DISPLAY_FIELDS;
 
   const { results, isLoading, isError, error } =
     usePatientSearch(submittedTerm);
 
-  const showDropdown =
-    submittedTerm.trim().length > 0 &&
-    inputValue === submittedTerm &&
-    !isLoading &&
-    !isError;
+  const comboBoxItems: PatientSearchItem[] = useMemo(() => {
+    if (!submittedTerm.trim()) return [];
 
-  // Reset state when the search panel is closed
+    if (isLoading) {
+      return [{ display: t('SEARCHING'), disabled: true as const }];
+    }
+
+    if (isError) {
+      return [
+        {
+          display: error?.message ?? t('ERROR_DEFAULT_TITLE'),
+          disabled: true as const,
+        },
+      ];
+    }
+
+    if (results.length === 0) {
+      return [{ display: t('NO_MATCHING_RECORDS'), disabled: true as const }];
+    }
+
+    return results;
+  }, [submittedTerm, isLoading, isError, error, results, t]);
+
+  const renderDropdownItem = useMemo(
+    () =>
+      function PatientSearchItem(item: PatientSearchItem) {
+        if (!isPatientResult(item)) {
+          return <span className={styles.resultField}>{item.display}</span>;
+        }
+        return (
+          <div className={styles.resultItem}>
+            {displayFields.map(({ field, bold }) => {
+              const value = getFieldValue(item, field);
+              if (!value) return null;
+              return (
+                <span
+                  key={field}
+                  className={bold ? styles.resultFieldBold : styles.resultField}
+                >
+                  {value}
+                </span>
+              );
+            })}
+          </div>
+        );
+      },
+    [displayFields],
+  );
+
+  // Reset state when closed; auto-focus input when opened
   useEffect(() => {
     if (!isOpen) {
       setInputValue('');
       setSubmittedTerm('');
-      setFocusedIndex(-1);
+      return;
     }
+    const input = containerRef.current?.querySelector('input');
+    if (input) input.focus();
   }, [isOpen]);
-
-  // Reset focused index when results change
-  useEffect(() => {
-    setFocusedIndex(-1);
-  }, [results]);
 
   // Click-outside handler to close the search panel
   useEffect(() => {
@@ -65,27 +146,53 @@ const PatientSearch: React.FC<PatientSearchProps> = ({ isOpen, onClose }) => {
     };
   }, [isOpen, onClose]);
 
-  // Keyboard handler: Escape closes the panel
+  // Keyboard handler: Escape closes the panel, Enter submits search
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose();
+        if (submittedTerm) {
+          // First Escape: dismiss dropdown, keep input text, refocus
+          event.stopPropagation();
+          setSubmittedTerm('');
+          const input =
+            containerRef.current?.querySelector<HTMLInputElement>('input');
+          if (input) {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+          }
+        } else {
+          onClose();
+        }
+        return;
+      }
+      if (
+        event.key === 'Enter' &&
+        inputValue.trim() &&
+        inputValue.trim() !== submittedTerm
+      ) {
+        // Stop Carbon's ComboBox from processing this Enter (which would
+        // trigger auto-selection via indexToHighlight when results arrive).
+        event.stopPropagation();
+        setSubmittedTerm(inputValue.trim());
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, onClose]);
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Use capture phase so our handler fires before Carbon's internal handler
+    // can stop propagation on Enter/Escape.
+    container.addEventListener('keydown', handleKeyDown, true);
+    return () => container.removeEventListener('keydown', handleKeyDown, true);
+  }, [isOpen, onClose, inputValue, submittedTerm]);
 
   useEffect(() => {
     if (isError && submittedTerm) {
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
-        message: error?.message,
+        message: error?.message ?? '',
         type: 'error',
       });
     }
@@ -93,50 +200,11 @@ const PatientSearch: React.FC<PatientSearchProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const handleResultClick = (resultUuid: string) => {
-    navigate(`../${resultUuid}`);
+  const handleChange = (selectedItem: PatientSearchItem | null | undefined) => {
+    if (!selectedItem || !isPatientResult(selectedItem)) return;
+    navigate(`../${selectedItem.uuid}`);
     onClose();
   };
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      if (focusedIndex >= 0 && showDropdown && results[focusedIndex]) {
-        handleResultClick(results[focusedIndex].uuid);
-        return;
-      }
-      if (inputValue.trim()) {
-        setSubmittedTerm(inputValue.trim());
-        setFocusedIndex(-1);
-      }
-      return;
-    }
-
-    if (!showDropdown || results.length === 0) return;
-
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      setFocusedIndex((prev) => Math.min(prev + 1, results.length - 1));
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      setFocusedIndex((prev) => Math.max(prev - 1, -1));
-    }
-  };
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
-    setSubmittedTerm('');
-  };
-
-  const handleClear = () => {
-    setInputValue('');
-    setSubmittedTerm('');
-    setFocusedIndex(-1);
-  };
-
-  const activedescendant =
-    focusedIndex >= 0
-      ? `patient-search-result-${results[focusedIndex]?.uuid}`
-      : undefined;
 
   return (
     <div
@@ -144,84 +212,32 @@ const PatientSearch: React.FC<PatientSearchProps> = ({ isOpen, onClose }) => {
       className={styles.patientSearchContainer}
       data-testid="patient-search-container"
     >
-      <Search
-        id="patient-search-input"
-        testId="patient-search-input"
-        labelText={t('SEARCH_PATIENT_ID_PLACEHOLDER')}
+      <ComboBox
+        id="patient-search-combobox"
+        data-testid="patient-search-combobox"
         placeholder={t('SEARCH_PATIENT_ID_PLACEHOLDER')}
-        value={inputValue}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        onClear={handleClear}
-        autoFocus
+        items={comboBoxItems}
+        itemToString={(item) => {
+          if (!item) return '';
+          return isPatientResult(item)
+            ? `${formatPatientName(item)} (${item.identifier})`
+            : item.display;
+        }}
+        itemToElement={renderDropdownItem}
+        onChange={({ selectedItem }) => handleChange(selectedItem)}
+        onInputChange={(input) => {
+          setInputValue(input);
+          if (!input.trim()) {
+            setSubmittedTerm('');
+          }
+        }}
+        selectedItem={null}
+        shouldFilterItem={alwaysTrue}
+        autoAlign
+        aria-label={t('SEARCH_PATIENT_ID_PLACEHOLDER')}
         size="md"
         className={styles.searchInput}
-        role="combobox"
-        aria-expanded={showDropdown}
-        aria-controls={LISTBOX_ID}
-        aria-activedescendant={activedescendant}
       />
-      {isLoading && submittedTerm && (
-        <div
-          className={styles.resultsDropdown}
-          data-testid="patient-search-loading"
-        >
-          <Loading description={t('SEARCHING')} role="status" small />
-        </div>
-      )}
-      {showDropdown && (
-        <div
-          id={LISTBOX_ID}
-          className={styles.resultsDropdown}
-          data-testid="patient-search-results"
-          role="listbox"
-          aria-label={t('SEARCH_PATIENT_ID_PLACEHOLDER')}
-        >
-          {results.length === 0 ? (
-            <div
-              className={styles.noResults}
-              data-testid="patient-search-no-results"
-              role="option"
-              aria-selected={false}
-            >
-              {t('NO_MATCHING_RECORDS')}
-            </div>
-          ) : (
-            results.map((result, index) => (
-              <div
-                key={result.uuid}
-                id={`patient-search-result-${result.uuid}`}
-                className={styles.resultItem}
-                data-testid={`patient-search-result-${result.uuid}`}
-                role="option"
-                aria-selected={index === focusedIndex}
-                onClick={() => handleResultClick(result.uuid)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    handleResultClick(result.uuid);
-                  }
-                }}
-                tabIndex={0}
-              >
-                <span
-                  className={styles.patientName}
-                  data-testid="patient-search-result-name"
-                >
-                  {[result.givenName, result.middleName, result.familyName]
-                    .filter(Boolean)
-                    .join(' ')}
-                </span>
-                <span
-                  className={styles.patientIdentifier}
-                  data-testid="patient-search-result-identifier"
-                >
-                  {result.identifier}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      )}
     </div>
   );
 };

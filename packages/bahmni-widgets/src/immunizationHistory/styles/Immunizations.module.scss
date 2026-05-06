@@ -34,11 +34,27 @@
     font-weight: bold;
 }
 
-.expandedRowContent {
-    color: $text-primary;
-    @include type-style("body-compact-01");
+.table {
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
 
-    span + span::before {
-        content: ' | ';
-    }
+  td, th {
+    width: auto;
+  }
+
+  th[data-testid$="-doseSequence"],
+  td[data-testid$="-doseSequence"] {
+    width: 9%;
+  }
+}
+
+.expandedRowContent {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+
+  span + span::before {
+      content: ' | ';
+  }
 }

@@ -35,11 +35,26 @@ describe('useServiceRequestStore', () => {
         result.current.selectedServiceRequests.get(category);
       expect(categoryRequests).toBeDefined();
       expect(categoryRequests).toHaveLength(1);
-      expect(categoryRequests![0]).toEqual({
-        id: conceptUUID,
-        selectedPriority: 'routine',
-        display: 'Test Display',
+      expect(categoryRequests![0].id).toBe(conceptUUID);
+      expect(categoryRequests![0].selectedPriority).toBe('routine');
+      expect(categoryRequests![0].display).toBe('Test Display');
+      expect(typeof categoryRequests![0].uid).toBe('string');
+      expect(categoryRequests![0].uid).toBeTruthy();
+    });
+
+    test('should generate unique uid for each service request', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+
+      act(() => {
+        result.current.addServiceRequest(category, 'test-uuid-1', 'Test 1');
+        result.current.addServiceRequest(category, 'test-uuid-1', 'Test 2');
       });
+
+      const categoryRequests =
+        result.current.selectedServiceRequests.get(category);
+      expect(categoryRequests).toHaveLength(2);
+      expect(categoryRequests![0].uid).not.toBe(categoryRequests![1].uid);
     });
 
     test('should add multiple service requests to the same category', () => {
@@ -66,6 +81,25 @@ describe('useServiceRequestStore', () => {
       expect(categoryRequests).toHaveLength(2);
       expect(categoryRequests![0].id).toBe(conceptUUID2); // Most recent first
       expect(categoryRequests![1].id).toBe(conceptUUID1);
+    });
+
+    test('should add duplicate service requests (same concept id) to a category', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptUUID = 'test-uuid-1';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptUUID, 'Test Display');
+        result.current.addServiceRequest(category, conceptUUID, 'Test Display');
+      });
+
+      const categoryRequests =
+        result.current.selectedServiceRequests.get(category);
+      expect(categoryRequests).toHaveLength(2);
+      expect(categoryRequests![0].id).toBe(conceptUUID);
+      expect(categoryRequests![1].id).toBe(conceptUUID);
+      // Each entry should have a unique uid
+      expect(categoryRequests![0].uid).not.toBe(categoryRequests![1].uid);
     });
 
     test('should add service requests to different categories', () => {
@@ -173,7 +207,7 @@ describe('useServiceRequestStore', () => {
 
   // REMOVE SERVICE REQUEST TESTS
   describe('removeServiceRequest', () => {
-    test('should remove a service request from a category', () => {
+    test('should remove a service request from a category by uid', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'lab';
       const conceptUUID = 'test-uuid-1';
@@ -186,8 +220,10 @@ describe('useServiceRequestStore', () => {
         1,
       );
 
+      const uid = result.current.selectedServiceRequests.get(category)![0].uid;
+
       act(() => {
-        result.current.removeServiceRequest(category, conceptUUID);
+        result.current.removeServiceRequest(category, uid);
       });
 
       // When all items are removed, the category should be deleted from the Map
@@ -197,45 +233,73 @@ describe('useServiceRequestStore', () => {
       expect(result.current.selectedServiceRequests.has(category)).toBe(false);
     });
 
-    test('should remove only the specified service request from multiple requests', () => {
+    test('should remove only the specified service request by uid from multiple requests', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'lab';
-      const conceptUUID1 = 'test-uuid-1';
-      const conceptUUID2 = 'test-uuid-2';
-      const conceptUUID3 = 'test-uuid-3';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID1, 'Test 1');
-        result.current.addServiceRequest(category, conceptUUID2, 'Test 2');
-        result.current.addServiceRequest(category, conceptUUID3, 'Test 3');
-      });
-
-      act(() => {
-        result.current.removeServiceRequest(category, conceptUUID2);
+        result.current.addServiceRequest(category, 'test-uuid-1', 'Test 1');
+        result.current.addServiceRequest(category, 'test-uuid-2', 'Test 2');
+        result.current.addServiceRequest(category, 'test-uuid-3', 'Test 3');
       });
 
       const categoryRequests =
-        result.current.selectedServiceRequests.get(category);
-      expect(categoryRequests).toHaveLength(2);
+        result.current.selectedServiceRequests.get(category)!;
+      // Most recent first: uuid-3, uuid-2, uuid-1
+      const uidToRemove = categoryRequests.find(
+        (r) => r.id === 'test-uuid-2',
+      )!.uid;
+
+      act(() => {
+        result.current.removeServiceRequest(category, uidToRemove);
+      });
+
+      const afterRemoval = result.current.selectedServiceRequests.get(category);
+      expect(afterRemoval).toHaveLength(2);
       expect(
-        categoryRequests!.find((req) => req.id === conceptUUID2),
+        afterRemoval!.find((req) => req.id === 'test-uuid-2'),
       ).toBeUndefined();
       expect(
-        categoryRequests!.find((req) => req.id === conceptUUID1),
+        afterRemoval!.find((req) => req.id === 'test-uuid-1'),
       ).toBeDefined();
       expect(
-        categoryRequests!.find((req) => req.id === conceptUUID3),
+        afterRemoval!.find((req) => req.id === 'test-uuid-3'),
       ).toBeDefined();
+    });
+
+    test('should remove only one of two duplicate concept-id entries by uid', () => {
+      const { result } = renderHook(() => useServiceRequestStore());
+      const category = 'lab';
+      const conceptUUID = 'test-uuid-1';
+
+      act(() => {
+        result.current.addServiceRequest(category, conceptUUID, 'Test Display');
+        result.current.addServiceRequest(category, conceptUUID, 'Test Display');
+      });
+
+      expect(result.current.selectedServiceRequests.get(category)).toHaveLength(
+        2,
+      );
+
+      const uid = result.current.selectedServiceRequests.get(category)![0].uid;
+
+      act(() => {
+        result.current.removeServiceRequest(category, uid);
+      });
+
+      expect(result.current.selectedServiceRequests.get(category)).toHaveLength(
+        1,
+      );
     });
 
     test('should handle removing from non-existent category gracefully', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'non-existent';
-      const conceptUUID = 'test-uuid-1';
+      const uid = 'some-uid';
 
       expect(() => {
         act(() => {
-          result.current.removeServiceRequest(category, conceptUUID);
+          result.current.removeServiceRequest(category, uid);
         });
       }).not.toThrow();
 
@@ -246,11 +310,10 @@ describe('useServiceRequestStore', () => {
       expect(result.current.selectedServiceRequests.has(category)).toBe(false);
     });
 
-    test('should handle removing non-existent service request gracefully', () => {
+    test('should handle removing non-existent uid gracefully', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'lab';
       const conceptUUID1 = 'test-uuid-1';
-      const conceptUUID2 = 'test-uuid-2';
 
       act(() => {
         result.current.addServiceRequest(
@@ -261,7 +324,7 @@ describe('useServiceRequestStore', () => {
       });
 
       act(() => {
-        result.current.removeServiceRequest(category, conceptUUID2);
+        result.current.removeServiceRequest(category, 'non-existent-uid');
       });
 
       const categoryRequests =
@@ -273,7 +336,7 @@ describe('useServiceRequestStore', () => {
 
   // UPDATE NOTE TESTS
   describe('updateNote', () => {
-    test('should update note of a service request', () => {
+    test('should update note of a service request by uid', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'lab';
       const conceptUUID = 'test-uuid-1';
@@ -283,8 +346,10 @@ describe('useServiceRequestStore', () => {
         result.current.addServiceRequest(category, conceptUUID, 'Test Display');
       });
 
+      const uid = result.current.selectedServiceRequests.get(category)![0].uid;
+
       act(() => {
-        result.current.updateNote(category, conceptUUID, note);
+        result.current.updateNote(category, uid, note);
       });
 
       const categoryRequests =
@@ -292,26 +357,28 @@ describe('useServiceRequestStore', () => {
       expect(categoryRequests![0].note).toBe(note);
     });
 
-    test('should update note of only the specified service request', () => {
+    test('should update note of only the specified service request by uid', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'lab';
-      const conceptUUID1 = 'test-uuid-1';
-      const conceptUUID2 = 'test-uuid-2';
       const note = 'Special instructions for test 1';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID1, 'Test 1');
-        result.current.addServiceRequest(category, conceptUUID2, 'Test 2');
-      });
-
-      act(() => {
-        result.current.updateNote(category, conceptUUID1, note);
+        result.current.addServiceRequest(category, 'test-uuid-1', 'Test 1');
+        result.current.addServiceRequest(category, 'test-uuid-2', 'Test 2');
       });
 
       const categoryRequests =
-        result.current.selectedServiceRequests.get(category);
-      const request1 = categoryRequests!.find((req) => req.id === conceptUUID1);
-      const request2 = categoryRequests!.find((req) => req.id === conceptUUID2);
+        result.current.selectedServiceRequests.get(category)!;
+      const uid1 = categoryRequests.find((r) => r.id === 'test-uuid-1')!.uid;
+
+      act(() => {
+        result.current.updateNote(category, uid1, note);
+      });
+
+      const updatedRequests =
+        result.current.selectedServiceRequests.get(category)!;
+      const request1 = updatedRequests.find((req) => req.id === 'test-uuid-1');
+      const request2 = updatedRequests.find((req) => req.id === 'test-uuid-2');
 
       expect(request1!.note).toBe(note);
       expect(request2!.note).toBeUndefined();
@@ -320,12 +387,12 @@ describe('useServiceRequestStore', () => {
     test('should handle updating note for non-existent category gracefully', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'non-existent';
-      const conceptUUID = 'test-uuid-1';
+      const uid = 'some-uid';
       const note = 'Test note';
 
       expect(() => {
         act(() => {
-          result.current.updateNote(category, conceptUUID, note);
+          result.current.updateNote(category, uid, note);
         });
       }).not.toThrow();
 
@@ -342,11 +409,16 @@ describe('useServiceRequestStore', () => {
 
       act(() => {
         result.current.addServiceRequest(category, conceptUUID, 'Test Display');
-        result.current.updateNote(category, conceptUUID, 'Initial note');
+      });
+
+      const uid = result.current.selectedServiceRequests.get(category)![0].uid;
+
+      act(() => {
+        result.current.updateNote(category, uid, 'Initial note');
       });
 
       act(() => {
-        result.current.updateNote(category, conceptUUID, '');
+        result.current.updateNote(category, uid, '');
       });
 
       const categoryRequests =
@@ -358,23 +430,26 @@ describe('useServiceRequestStore', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const labCategory = 'lab';
       const radiologyCategory = 'radiology';
-      const labUUID = 'lab-uuid-1';
-      const radUUID = 'rad-uuid-1';
       const labNote = 'Lab note';
       const radNote = 'Radiology note';
 
       act(() => {
-        result.current.addServiceRequest(labCategory, labUUID, 'Lab Test');
+        result.current.addServiceRequest(labCategory, 'lab-uuid-1', 'Lab Test');
         result.current.addServiceRequest(
           radiologyCategory,
-          radUUID,
+          'rad-uuid-1',
           'Rad Test',
         );
       });
 
+      const labUid =
+        result.current.selectedServiceRequests.get(labCategory)![0].uid;
+      const radUid =
+        result.current.selectedServiceRequests.get(radiologyCategory)![0].uid;
+
       act(() => {
-        result.current.updateNote(labCategory, labUUID, labNote);
-        result.current.updateNote(radiologyCategory, radUUID, radNote);
+        result.current.updateNote(labCategory, labUid, labNote);
+        result.current.updateNote(radiologyCategory, radUid, radNote);
       });
 
       const labRequests =
@@ -389,7 +464,7 @@ describe('useServiceRequestStore', () => {
 
   // UPDATE PRIORITY TESTS
   describe('updatePriority', () => {
-    test('should update priority of a service request', () => {
+    test('should update priority of a service request by uid', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'lab';
       const conceptUUID = 'test-uuid-1';
@@ -399,8 +474,10 @@ describe('useServiceRequestStore', () => {
         result.current.addServiceRequest(category, conceptUUID, 'Test Display');
       });
 
+      const uid = result.current.selectedServiceRequests.get(category)![0].uid;
+
       act(() => {
-        result.current.updatePriority(category, conceptUUID, newPriority);
+        result.current.updatePriority(category, uid, newPriority);
       });
 
       const categoryRequests =
@@ -408,26 +485,28 @@ describe('useServiceRequestStore', () => {
       expect(categoryRequests![0].selectedPriority).toBe(newPriority);
     });
 
-    test('should update priority of only the specified service request', () => {
+    test('should update priority of only the specified service request by uid', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'lab';
-      const conceptUUID1 = 'test-uuid-1';
-      const conceptUUID2 = 'test-uuid-2';
       const newPriority: SupportedServiceRequestPriority = 'stat';
 
       act(() => {
-        result.current.addServiceRequest(category, conceptUUID1, 'Test 1');
-        result.current.addServiceRequest(category, conceptUUID2, 'Test 2');
-      });
-
-      act(() => {
-        result.current.updatePriority(category, conceptUUID1, newPriority);
+        result.current.addServiceRequest(category, 'test-uuid-1', 'Test 1');
+        result.current.addServiceRequest(category, 'test-uuid-2', 'Test 2');
       });
 
       const categoryRequests =
-        result.current.selectedServiceRequests.get(category);
-      const request1 = categoryRequests!.find((req) => req.id === conceptUUID1);
-      const request2 = categoryRequests!.find((req) => req.id === conceptUUID2);
+        result.current.selectedServiceRequests.get(category)!;
+      const uid1 = categoryRequests.find((r) => r.id === 'test-uuid-1')!.uid;
+
+      act(() => {
+        result.current.updatePriority(category, uid1, newPriority);
+      });
+
+      const updatedRequests =
+        result.current.selectedServiceRequests.get(category)!;
+      const request1 = updatedRequests.find((req) => req.id === 'test-uuid-1');
+      const request2 = updatedRequests.find((req) => req.id === 'test-uuid-2');
 
       expect(request1!.selectedPriority).toBe(newPriority);
       expect(request2!.selectedPriority).toBe('routine');
@@ -436,12 +515,12 @@ describe('useServiceRequestStore', () => {
     test('should handle updating priority for non-existent category gracefully', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'non-existent';
-      const conceptUUID = 'test-uuid-1';
+      const uid = 'some-uid';
       const newPriority: SupportedServiceRequestPriority = 'stat';
 
       expect(() => {
         act(() => {
-          result.current.updatePriority(category, conceptUUID, newPriority);
+          result.current.updatePriority(category, uid, newPriority);
         });
       }).not.toThrow();
 
@@ -452,11 +531,10 @@ describe('useServiceRequestStore', () => {
       expect(result.current.selectedServiceRequests.has(category)).toBe(false);
     });
 
-    test('should handle updating priority for non-existent service request gracefully', () => {
+    test('should handle updating priority for non-existent uid gracefully', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'lab';
       const conceptUUID1 = 'test-uuid-1';
-      const conceptUUID2 = 'test-uuid-2';
       const newPriority: SupportedServiceRequestPriority = 'stat';
 
       act(() => {
@@ -468,7 +546,11 @@ describe('useServiceRequestStore', () => {
       });
 
       act(() => {
-        result.current.updatePriority(category, conceptUUID2, newPriority);
+        result.current.updatePriority(
+          category,
+          'non-existent-uid',
+          newPriority,
+        );
       });
 
       const categoryRequests =
@@ -491,11 +573,16 @@ describe('useServiceRequestStore', () => {
         result.current.selectedServiceRequests.get(category)![0];
 
       act(() => {
-        result.current.updatePriority(category, conceptUUID, newPriority);
+        result.current.updatePriority(
+          category,
+          originalRequest.uid,
+          newPriority,
+        );
       });
 
       const updatedRequest =
         result.current.selectedServiceRequests.get(category)![0];
+      expect(updatedRequest.uid).toBe(originalRequest.uid);
       expect(updatedRequest.id).toBe(originalRequest.id);
       expect(updatedRequest.display).toBe(originalRequest.display);
       expect(updatedRequest.selectedPriority).toBe(newPriority);
@@ -583,14 +670,18 @@ describe('useServiceRequestStore', () => {
         3,
       );
 
+      const requests = result.current.selectedServiceRequests.get(category)!;
+      const uid2 = requests.find((r) => r.id === 'uuid-2')!.uid;
+      const uid1 = requests.find((r) => r.id === 'uuid-1')!.uid;
+
       // Update priority of middle item
       act(() => {
-        result.current.updatePriority(category, 'uuid-2', 'stat');
+        result.current.updatePriority(category, uid2, 'stat');
       });
 
       // Remove first item
       act(() => {
-        result.current.removeServiceRequest(category, 'uuid-1');
+        result.current.removeServiceRequest(category, uid1);
       });
 
       const finalRequests =
@@ -616,7 +707,13 @@ describe('useServiceRequestStore', () => {
           'rad-uuid-1',
           'Radiology Test',
         );
-        result.current.updatePriority(labCategory, 'lab-uuid-1', 'stat');
+      });
+
+      const labUid =
+        result.current.selectedServiceRequests.get(labCategory)![0].uid;
+
+      act(() => {
+        result.current.updatePriority(labCategory, labUid, 'stat');
       });
 
       const labRequests =
@@ -628,7 +725,7 @@ describe('useServiceRequestStore', () => {
       expect(radiologyRequests![0].selectedPriority).toBe('routine');
     });
 
-    test('should handle adding duplicate service requests with different display names', () => {
+    test('should handle adding duplicate service requests with same concept id (duplicates now allowed)', () => {
       const { result } = renderHook(() => useServiceRequestStore());
       const category = 'lab';
       const conceptUUID = 'test-uuid-1';
@@ -651,9 +748,11 @@ describe('useServiceRequestStore', () => {
       expect(categoryRequests).toHaveLength(2);
       expect(categoryRequests![0].display).toBe('Second Display');
       expect(categoryRequests![1].display).toBe('First Display');
-      // Both should have the same ID
+      // Both should have the same concept ID
       expect(categoryRequests![0].id).toBe(conceptUUID);
       expect(categoryRequests![1].id).toBe(conceptUUID);
+      // But each should have a unique uid
+      expect(categoryRequests![0].uid).not.toBe(categoryRequests![1].uid);
     });
 
     test('should preserve display name when updating priority', () => {
@@ -666,8 +765,10 @@ describe('useServiceRequestStore', () => {
         result.current.addServiceRequest(category, conceptUUID, displayName);
       });
 
+      const uid = result.current.selectedServiceRequests.get(category)![0].uid;
+
       act(() => {
-        result.current.updatePriority(category, conceptUUID, 'stat');
+        result.current.updatePriority(category, uid, 'stat');
       });
 
       const categoryRequests =
@@ -713,244 +814,6 @@ describe('useServiceRequestStore', () => {
       const categoryRequests =
         result.current.selectedServiceRequests.get(category);
       expect(categoryRequests![0].display).toBe(unicodeDisplayName);
-    });
-  });
-
-  // IS SELECTED IN CATEGORY TESTS
-  describe('isSelectedInCategory', () => {
-    test('should return true when service request is selected in category', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const category = 'lab';
-      const conceptCode = 'GLU';
-
-      act(() => {
-        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
-      });
-
-      const isSelected = result.current.isSelectedInCategory(
-        category,
-        conceptCode,
-      );
-      expect(isSelected).toBe(true);
-    });
-
-    test('should return false when service request is not selected in category', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const category = 'lab';
-      const conceptCode1 = 'GLU';
-      const conceptCode2 = 'CREAT';
-
-      act(() => {
-        result.current.addServiceRequest(
-          category,
-          conceptCode1,
-          'Glucose Test',
-        );
-      });
-
-      const isSelected = result.current.isSelectedInCategory(
-        category,
-        conceptCode2,
-      );
-      expect(isSelected).toBe(false);
-    });
-
-    test('should return false when category does not exist', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const category = 'non-existent';
-      const conceptCode = 'GLU';
-
-      const isSelected = result.current.isSelectedInCategory(
-        category,
-        conceptCode,
-      );
-      expect(isSelected).toBe(false);
-    });
-
-    test('should be case-insensitive for category matching', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const category = 'Lab';
-      const conceptCode = 'GLU';
-
-      act(() => {
-        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
-      });
-
-      const isSelectedLowercase = result.current.isSelectedInCategory(
-        'lab',
-        conceptCode,
-      );
-      const isSelectedUppercase = result.current.isSelectedInCategory(
-        'LAB',
-        conceptCode,
-      );
-      const isSelectedMixedCase = result.current.isSelectedInCategory(
-        'LaB',
-        conceptCode,
-      );
-
-      expect(isSelectedLowercase).toBe(true);
-      expect(isSelectedUppercase).toBe(true);
-      expect(isSelectedMixedCase).toBe(true);
-    });
-
-    test('should be case-insensitive for concept code matching', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const category = 'lab';
-      const conceptCode = 'GLU';
-
-      act(() => {
-        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
-      });
-
-      const isSelectedLowercase = result.current.isSelectedInCategory(
-        category,
-        'glu',
-      );
-      const isSelectedUppercase = result.current.isSelectedInCategory(
-        category,
-        'GLU',
-      );
-      const isSelectedMixedCase = result.current.isSelectedInCategory(
-        category,
-        'GlU',
-      );
-
-      expect(isSelectedLowercase).toBe(true);
-      expect(isSelectedUppercase).toBe(true);
-      expect(isSelectedMixedCase).toBe(true);
-    });
-
-    test('should be case-insensitive for both category and concept code', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const category = 'Lab';
-      const conceptCode = 'GLU';
-
-      act(() => {
-        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
-      });
-
-      const isSelected = result.current.isSelectedInCategory('lab', 'glu');
-      expect(isSelected).toBe(true);
-    });
-
-    test('should handle multiple service requests in same category', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const category = 'lab';
-      const conceptCode1 = 'GLU';
-      const conceptCode2 = 'CREAT';
-      const conceptCode3 = 'CBC';
-
-      act(() => {
-        result.current.addServiceRequest(
-          category,
-          conceptCode1,
-          'Glucose Test',
-        );
-        result.current.addServiceRequest(
-          category,
-          conceptCode2,
-          'Creatinine Test',
-        );
-        result.current.addServiceRequest(
-          category,
-          conceptCode3,
-          'Complete Blood Count',
-        );
-      });
-
-      expect(result.current.isSelectedInCategory(category, conceptCode1)).toBe(
-        true,
-      );
-      expect(result.current.isSelectedInCategory(category, conceptCode2)).toBe(
-        true,
-      );
-      expect(result.current.isSelectedInCategory(category, conceptCode3)).toBe(
-        true,
-      );
-      expect(result.current.isSelectedInCategory(category, 'UNKNOWN')).toBe(
-        false,
-      );
-    });
-
-    test('should return false after removing service request', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const category = 'lab';
-      const conceptCode = 'GLU';
-
-      act(() => {
-        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
-      });
-
-      expect(result.current.isSelectedInCategory(category, conceptCode)).toBe(
-        true,
-      );
-
-      act(() => {
-        result.current.removeServiceRequest(category, conceptCode);
-      });
-
-      expect(result.current.isSelectedInCategory(category, conceptCode)).toBe(
-        false,
-      );
-    });
-
-    test('should work independently for different categories', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const labCategory = 'lab';
-      const radiologyCategory = 'radiology';
-      const labCode = 'GLU';
-      const radiologyCode = 'CXR';
-
-      act(() => {
-        result.current.addServiceRequest(labCategory, labCode, 'Glucose Test');
-        result.current.addServiceRequest(
-          radiologyCategory,
-          radiologyCode,
-          'Chest X-Ray',
-        );
-      });
-
-      expect(result.current.isSelectedInCategory(labCategory, labCode)).toBe(
-        true,
-      );
-      expect(
-        result.current.isSelectedInCategory(radiologyCategory, radiologyCode),
-      ).toBe(true);
-      expect(
-        result.current.isSelectedInCategory(labCategory, radiologyCode),
-      ).toBe(false);
-      expect(
-        result.current.isSelectedInCategory(radiologyCategory, labCode),
-      ).toBe(false);
-    });
-
-    test('should handle empty concept code string', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const category = 'lab';
-
-      const isSelected = result.current.isSelectedInCategory(category, '');
-      expect(isSelected).toBe(false);
-    });
-
-    test('should handle whitespace in concept codes', () => {
-      const { result } = renderHook(() => useServiceRequestStore());
-      const category = 'lab';
-      const conceptCode = 'GLU TEST';
-
-      act(() => {
-        result.current.addServiceRequest(category, conceptCode, 'Glucose Test');
-      });
-
-      const isSelectedExact = result.current.isSelectedInCategory(
-        category,
-        'GLU TEST',
-      );
-      const isSelectedWithDifferentWhitespace =
-        result.current.isSelectedInCategory(category, 'GLU  TEST');
-
-      expect(isSelectedExact).toBe(true);
-      expect(isSelectedWithDifferentWhitespace).toBe(false); // Different whitespace is different string
     });
   });
 });

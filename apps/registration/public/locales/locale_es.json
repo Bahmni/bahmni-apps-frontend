@@ -152,6 +152,7 @@
   "NOTIFICATION_PATIENT_SAVE_FAILED": "Error al guardar el paciente",
   "NOTIFICATION_PATIENT_UPDATE_FAILED": "Error al actualizar el paciente",
   "NOTIFICATION_VALIDATION_ERRORS": "Por favor complete los campos obligatorios",
+  "PATIENT_DASHBOARD_REDIRECT": "Panel del Paciente",
   "NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA": "No se pueden obtener los datos del paciente",
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "No se pueden obtener los datos de dirección del paciente",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "No se pueden obtener los datos de contacto del paciente",

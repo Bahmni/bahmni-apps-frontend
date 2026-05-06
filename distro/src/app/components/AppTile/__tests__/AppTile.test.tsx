@@ -1,4 +1,3 @@
-import { useHasPrivilege } from '@bahmni/widgets';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { AppTile } from '../AppTile';
@@ -9,10 +8,6 @@ expect.extend(toHaveNoViolations);
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
-}));
-
-jest.mock('@bahmni/widgets', () => ({
-  useHasPrivilege: jest.fn(),
 }));
 
 jest.mock('@bahmni/design-system', () => ({
@@ -28,10 +23,6 @@ jest.mock('@bahmni/design-system', () => ({
   ),
   ICON_SIZE: { LG: 'lg' },
 }));
-
-const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
-  typeof useHasPrivilege
->;
 
 describe('AppTile', () => {
   const originalLocation = window.location;
@@ -52,9 +43,7 @@ describe('AppTile', () => {
     });
   });
 
-  it('renders tile with label and icon when user has access', () => {
-    mockUseHasPrivilege.mockReturnValue(true);
-
+  it('renders tile with label and icon', () => {
     render(<AppTile {...defaultProps} />);
 
     expect(screen.getByTestId('app-tile-registration')).toBeInTheDocument();
@@ -64,17 +53,7 @@ describe('AppTile', () => {
     );
   });
 
-  it('does not render when user lacks access', () => {
-    mockUseHasPrivilege.mockReturnValue(false);
-
-    const { container } = render(<AppTile {...defaultProps} />);
-
-    expect(container.firstChild).toBeNull();
-  });
-
   it('uses window.location.href for hash URLs on click', () => {
-    mockUseHasPrivilege.mockReturnValue(true);
-
     render(
       <AppTile
         {...defaultProps}
@@ -92,8 +71,6 @@ describe('AppTile', () => {
   });
 
   it('uses react router navigate for relative URLs on click', () => {
-    mockUseHasPrivilege.mockReturnValue(true);
-
     render(<AppTile {...defaultProps} url="registration" />);
 
     const tile = screen.getByTestId('app-tile-registration');
@@ -102,30 +79,12 @@ describe('AppTile', () => {
     expect(mockNavigate).toHaveBeenCalledWith('registration');
   });
 
-  it('renders tile without privileges when not specified', () => {
-    mockUseHasPrivilege.mockReturnValue(true);
-
-    render(<AppTile {...defaultProps} privileges={undefined} />);
-
-    expect(screen.getByTestId('app-tile-registration')).toBeInTheDocument();
-  });
-
-  it('passes privileges to useHasPrivilege hook', () => {
-    mockUseHasPrivilege.mockReturnValue(true);
-
-    render(<AppTile {...defaultProps} />);
-
-    expect(mockUseHasPrivilege).toHaveBeenCalledWith(defaultProps.privileges);
-  });
-
   it.each([
     ['/bahmni/clinical/#/default/patient/search', 'absolute path with hash'],
     ['/implementer-interface/#', 'non-bahmni absolute path'],
     ['/lab', 'absolute path without hash'],
     ['https://localhost/openmrs', 'full http URL'],
   ])('uses window.location.href for %s (%s)', (url) => {
-    mockUseHasPrivilege.mockReturnValue(true);
-
     render(<AppTile {...defaultProps} url={url} />);
 
     const tile = screen.getByTestId('app-tile-registration');
@@ -139,8 +98,6 @@ describe('AppTile', () => {
     ['Enter', { key: 'Enter' }],
     ['Space', { key: ' ' }],
   ])('activates on %s key', (_label, keyEvent) => {
-    mockUseHasPrivilege.mockReturnValue(true);
-
     render(
       <AppTile
         {...defaultProps}
@@ -158,8 +115,6 @@ describe('AppTile', () => {
   });
 
   it('does not activate on non-activating keys', () => {
-    mockUseHasPrivilege.mockReturnValue(true);
-
     render(
       <AppTile
         {...defaultProps}
@@ -175,8 +130,6 @@ describe('AppTile', () => {
   });
 
   it('has no accessibility violations', async () => {
-    mockUseHasPrivilege.mockReturnValue(true);
-
     const { container } = render(<AppTile {...defaultProps} />);
 
     expect(await axe(container)).toHaveNoViolations();

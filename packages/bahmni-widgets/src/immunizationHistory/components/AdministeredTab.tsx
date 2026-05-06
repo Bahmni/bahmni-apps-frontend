@@ -12,21 +12,22 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
-import { AdministeredImmunizationViewModel } from '../model';
+import { ADMINISTERED_COLUMN_SORTABILITY } from '../constants';
+import {
+  AdministeredImmunizationViewModel,
+  AdministeredTabConfig,
+} from '../model';
 import styles from '../styles/Immunizations.module.scss';
-import { createAdministeredImmunizationViewModel } from '../utils';
+import {
+  createAdministeredImmunizationViewModel,
+  createColumnSortConfig,
+  createImmunizationHeaders,
+} from '../utils';
 
 interface AdministeredTabProps {
   patientUUID: string;
+  config: AdministeredTabConfig;
 }
-
-const COLUMN_SORT_CONFIG = [
-  { key: 'code', sortable: true },
-  { key: 'doseSequence', sortable: false },
-  { key: 'drugName', sortable: false },
-  { key: 'administeredOn', sortable: true },
-  { key: 'administeredLocation', sortable: true },
-];
 
 const fetchAdministeredImmunizations = async (
   patientUUID: string,
@@ -35,7 +36,10 @@ const fetchAdministeredImmunizations = async (
   return immunizations.map(createAdministeredImmunizationViewModel);
 };
 
-const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
+const AdministeredTab: React.FC<AdministeredTabProps> = ({
+  patientUUID,
+  config,
+}) => {
   const { t } = useTranslation();
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['immunizations', patientUUID, 'completed'],
@@ -56,26 +60,14 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
   );
 
   const headers = useMemo(
-    () => [
-      { key: 'code', header: t('IMMUNIZATION_HISTORY_WIDGET_COL_CODE') },
-      {
-        key: 'doseSequence',
-        header: t('IMMUNIZATION_HISTORY_WIDGET_COL_DOSE_SEQUENCE'),
-      },
-      {
-        key: 'drugName',
-        header: t('IMMUNIZATION_HISTORY_WIDGET_COL_DRUG_NAME'),
-      },
-      {
-        key: 'administeredOn',
-        header: t('IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_ON'),
-      },
-      {
-        key: 'administeredLocation',
-        header: t('IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_LOCATION'),
-      },
-    ],
-    [t],
+    () => createImmunizationHeaders(config.columns, t),
+    [config.columns, t],
+  );
+
+  const sortable = useMemo(
+    () =>
+      createColumnSortConfig(config.columns, ADMINISTERED_COLUMN_SORTABILITY),
+    [config.columns],
   );
 
   const renderCell = (row: AdministeredImmunizationViewModel, key: string) => {
@@ -104,34 +96,37 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
   const renderExpandedContent = (row: AdministeredImmunizationViewModel) => {
     if (!row.hasDetails) return null;
 
-    const details: { label: string; value: string }[] = [
-      row.route && {
-        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_ROUTE'),
-        value: row.route,
-      },
-      row.site && {
-        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_SITE'),
-        value: row.site,
-      },
-      row.manufacturer && {
-        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_MANUFACTURER'),
-        value: row.manufacturer,
-      },
-      row.batchNumber && {
-        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_BATCH_NUMBER'),
-        value: row.batchNumber,
-      },
-      row.recordedBy && {
-        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_RECORDED_BY'),
-        value: row.recordedBy,
-      },
-      row.orderedBy && {
-        label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_ORDERED_BY'),
-        value: row.orderedBy,
-      },
-    ].filter((detail): detail is { label: string; value: string } =>
-      Boolean(detail),
-    );
+    const allDetails: Record<string, { label: string; value: string | null }> =
+      {
+        route: {
+          label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_ROUTE'),
+          value: row.route,
+        },
+        site: {
+          label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_SITE'),
+          value: row.site,
+        },
+        manufacturer: {
+          label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_MANUFACTURER'),
+          value: row.manufacturer,
+        },
+        batchNumber: {
+          label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_BATCH_NUMBER'),
+          value: row.batchNumber,
+        },
+        recordedBy: {
+          label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_RECORDED_BY'),
+          value: row.recordedBy,
+        },
+        orderedBy: {
+          label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_ORDERED_BY'),
+          value: row.orderedBy,
+        },
+      };
+
+    const details = config.expandedFields
+      .map((field) => allDetails[field])
+      .filter((d): d is { label: string; value: string } => Boolean(d?.value));
 
     return (
       <TableExpandedRow colSpan={headers.length + 1}>
@@ -168,7 +163,7 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
         headers={headers}
         rows={data}
         dataTestId="administered-immunizations-table"
-        sortable={COLUMN_SORT_CONFIG}
+        sortable={sortable}
         ariaLabel={t('IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TABLE_ARIA')}
         loading={isLoading}
         errorStateMessage={
@@ -178,6 +173,7 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({ patientUUID }) => {
           'IMMUNIZATION_HISTORY_WIDGET_NO_IMMUNIZATIONS_RECORDED',
         )}
         renderCell={renderCell}
+        className={styles.table}
         renderExpandedContent={renderExpandedContent}
       />
     </div>

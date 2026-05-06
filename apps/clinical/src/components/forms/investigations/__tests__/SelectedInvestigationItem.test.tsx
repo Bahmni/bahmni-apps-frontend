@@ -7,6 +7,7 @@ import SelectedInvestigationItem from '../SelectedInvestigationItem';
 expect.extend(toHaveNoViolations);
 
 const mockInvestigation: ServiceRequestInputEntry = {
+  uid: 'uid-test-investigation-1',
   id: 'test-investigation-1',
   display: 'Complete Blood Count (CBC)',
   selectedPriority: 'routine',
