@@ -114,6 +114,10 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({
           label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_BATCH_NUMBER'),
           value: row.batchNumber,
         },
+        expiryDate: {
+          label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_EXPIRY_DATE'),
+          value: formatDateTime(row.expiryDate!, t).formattedResult,
+        },
         recordedBy: {
           label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_RECORDED_BY'),
           value: row.recordedBy,

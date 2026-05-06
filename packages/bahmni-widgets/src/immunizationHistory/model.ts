@@ -9,6 +9,7 @@ export interface AdministeredImmunizationViewModel {
   site: string | null;
   manufacturer: string | null;
   batchNumber: string | null;
+  expiryDate: string | null;
   recordedBy: string | null;
   orderedBy: string | null;
   notes: string | null;
