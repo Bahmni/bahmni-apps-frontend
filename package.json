@@ -111,6 +111,10 @@
     "webpack-pwa-manifest": "^4.3.0",
     "workbox-webpack-plugin": "^7.0.0"
   },
+  "resolutions": {
+    "path-to-regexp": "0.1.13",
+    "picomatch": "4.0.4"
+  },
   "workspaces": [
     "apps/*",
     "packages/*",
