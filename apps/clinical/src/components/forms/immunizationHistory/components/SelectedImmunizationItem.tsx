@@ -86,9 +86,11 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   });
 
   const batchComboBoxItems = useMemo(() => {
-    const filtered = availableStocks.filter((stock) =>
-      stock.batchNumber.toLowerCase().includes(batchSearchTerm.toLowerCase()),
-    );
+    const filtered = batchSearchTerm.trim()
+      ? availableStocks.filter((stock) =>
+          stock.batchNumber.toLowerCase().includes(batchSearchTerm.toLowerCase()),
+        )
+      : availableStocks;
 
     return filtered.map((stock) => ({
       code: stock.batchNumber,
@@ -344,7 +346,6 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               <ComboBox
                 id={`immunization-batch-number-${id}`}
                 data-testid={`immunization-batch-number-${id}`}
-                titleText={t('IMMUNIZATION_HISTORY_BATCH_NUMBER')}
                 placeholder={
                   stocksLoading
                     ? t('LOADING')
@@ -366,9 +367,12 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                     if (e.selectedItem.expiryDate) {
                       updateExpiryDate(id, new Date(e.selectedItem.expiryDate));
                     }
+                  } else {
+                    updateBatchNumber(id, '');
                   }
                 }}
                 size="md"
+                required={findAttr('batchNumber', attributes)?.required}
                 disabled={stocksLoading || batchComboBoxItems.length === 0}
                 invalid={
                   !!immunization.errors.batchNumber ||
