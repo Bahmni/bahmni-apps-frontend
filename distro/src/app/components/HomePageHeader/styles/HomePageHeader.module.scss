@@ -1,6 +1,23 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
 
+:global(.cds--header a.cds--header__name),
+:global(.cds--header a.cds--header__name:hover) {
+  color: $text-inverse;
+}
+
+:global(.cds--header .cds--overflow-menu) svg {
+  fill: $icon-inverse;
+  color: $icon-inverse;
+}
+
+:global(.cds--header .cds--overflow-menu:hover),
+:global(.cds--header .cds--overflow-menu--open),
+:global(.cds--header .cds--overflow-menu:active) {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+
 .header {
   --cds-text-primary: #{$text-inverse};
 

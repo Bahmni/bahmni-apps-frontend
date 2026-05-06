@@ -3,7 +3,7 @@ import {
   applyBahmniTheme,
   BAHMNI_DEFAULT_THEME,
 } from '@bahmni/design-system';
-import { initAppI18n } from '@bahmni/services';
+import { initAppI18n, fetchThemeConfig } from '@bahmni/services';
 import '@bahmni/widgets/styles';
 import React, { StrictMode } from 'react';
 import * as ReactDOMModule from 'react-dom';
@@ -27,6 +27,9 @@ window.React = React;
 window.ReactDOM = ReactDOMModule;
 
 applyBahmniTheme(BAHMNI_DEFAULT_THEME);
+fetchThemeConfig()
+  .then((overrides) => applyBahmniTheme({ ...BAHMNI_DEFAULT_THEME, ...overrides }))
+  .catch(() => {});
 
 initFontAwesome();
 initAppI18n('home')
