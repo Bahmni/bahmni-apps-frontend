@@ -9,11 +9,16 @@ import {
   TextAreaWClose,
   TextInput,
 } from '@bahmni/design-system';
-import { useTranslation, Location, getUserLoginLocation } from '@bahmni/services';
+import {
+  useTranslation,
+  Location,
+  getUserLoginLocation,
+} from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import { Medication, ValueSet } from 'fhir/r4';
 import React, { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
+import { getAvailableStocks } from '../../../../services/inventoryService';
 import { ImmunizationInputEntry } from '../models';
 import { useImmunizationHistoryStore } from '../stores';
 import styles from '../styles/ImmunizationHistoryForm.module.scss';
@@ -23,7 +28,6 @@ import {
   getValueSetComboBoxItems,
   findAttr,
 } from '../utils';
-import { getAvailableStocks } from '../../../../services/inventoryService';
 
 interface SelectedImmunizationItemProps {
   immunization: ImmunizationInputEntry;
@@ -69,11 +73,8 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   // BAH-4551: Fetch available stock batches from inventory
   const productUuid = immunization.drug?.code ?? '';
   const locationUuid = getUserLoginLocation()?.uuid ?? '';
-  
-  const {
-    data: availableStocks = [],
-    isLoading: stocksLoading,
-  } = useQuery({
+
+  const { data: availableStocks = [], isLoading: stocksLoading } = useQuery({
     queryKey: ['availableStocks', productUuid, locationUuid],
     queryFn: () => getAvailableStocks(productUuid, locationUuid),
     enabled: !!productUuid && !!locationUuid,
@@ -83,13 +84,13 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   // Format batch options for ComboBox with batch number and expiry date
   const batchComboBoxItems = useMemo(() => {
     const filtered = availableStocks.filter((stock) =>
-      stock.batch_number.toLowerCase().includes(batchSearchTerm.toLowerCase())
+      stock.batchNumber.toLowerCase().includes(batchSearchTerm.toLowerCase()),
     );
-    
+
     return filtered.map((stock) => ({
-      code: stock.batch_number,
-      display: `${stock.batch_number} (Exp: ${new Date(stock.expiry_date).toLocaleDateString()})`,
-      expiryDate: stock.expiry_date,
+      code: stock.batchNumber,
+      display: `${stock.batchNumber} (Exp: ${new Date(stock.expiryDate).toLocaleDateString()})`,
+      expiryDate: stock.expiryDate,
       disabled: false,
     }));
   }, [availableStocks, batchSearchTerm]);
@@ -344,13 +345,15 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                 stocksLoading
                   ? t('LOADING')
                   : batchComboBoxItems.length === 0
-                  ? t('NO_BATCHES_AVAILABLE')
-                  : t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')
+                    ? t('NO_BATCHES_AVAILABLE')
+                    : t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')
               }
               items={batchComboBoxItems}
               itemToString={(item) => item?.display ?? ''}
               selectedItem={
-                batchComboBoxItems.find((b) => b.code === immunization.batchNumber) ?? null
+                batchComboBoxItems.find(
+                  (b) => b.code === immunization.batchNumber,
+                ) ?? null
               }
               onInputChange={(value) => setBatchSearchTerm(value)}
               onChange={(e) => {
