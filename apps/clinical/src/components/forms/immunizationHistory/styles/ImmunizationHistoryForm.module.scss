@@ -68,3 +68,19 @@
       }
     }
   }
+
+.batchNumberComboBox {
+  :global(.cds--list-box__menu-item__option) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    height: auto !important;
+    min-height: 2.5rem !important;
+    padding-block: $spacing-03 !important;
+  }
+
+  :global(.cds--list-box__menu) {
+    z-index: 9999 !important;
+    max-height: 18rem !important;
+  }
+}

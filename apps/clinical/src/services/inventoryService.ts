@@ -1,4 +1,5 @@
 import { get } from '@bahmni/services';
+import { AVAILABLE_STOCKS_URL } from '../constants/app';
 
 export interface StockBatch {
   stockLocationName: string;
@@ -14,9 +15,6 @@ export interface AvailableStockResponse {
   data: StockBatch[];
 }
 
-const GET_AVAILABLE_STOCKS_URL = (productUuid: string, locationUuid: string) =>
-  `/openmrs/ws/rest/v1/availableStocks?productUuid=${productUuid}&locationUuid=${locationUuid}`;
-
 /**
  * Fetches available stock batches for a given product (vaccine) at a specific location
  * @param productUuid - The UUID of the vaccine/drug product
@@ -29,7 +27,7 @@ export const getAvailableStocks = async (
 ): Promise<StockBatch[]> => {
   try {
     const response = await get<AvailableStockResponse>(
-      GET_AVAILABLE_STOCKS_URL(productUuid, locationUuid),
+      AVAILABLE_STOCKS_URL(productUuid, locationUuid),
     );
     return response.data ?? [];
   } catch (error) {

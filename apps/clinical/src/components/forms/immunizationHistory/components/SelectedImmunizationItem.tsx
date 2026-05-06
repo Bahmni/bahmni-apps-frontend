@@ -351,12 +351,11 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               <ComboBox
                 id={`immunization-batch-number-${id}`}
                 data-testid={`immunization-batch-number-${id}`}
+                className={styles.batchNumberComboBox}
                 placeholder={
                   stocksLoading
                     ? t('LOADING')
-                    : batchComboBoxItems.length === 0
-                      ? t('NO_BATCHES_AVAILABLE')
-                      : t('IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER')
+                    : t('IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER')
                 }
                 items={batchComboBoxItems}
                 itemToString={(item) => item?.display ?? ''}
@@ -378,11 +377,12 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                 }}
                 size="md"
                 required={findAttr('batchNumber', attributes)?.required}
-                disabled={stocksLoading || batchComboBoxItems.length === 0}
+                disabled={stocksLoading}
                 invalid={
                   !!immunization.errors.batchNumber ||
                   (!stocksLoading &&
                     batchComboBoxItems.length === 0 &&
+                    batchSearchTerm.trim() !== '' &&
                     !!productUuid)
                 }
                 invalidText={
@@ -390,6 +390,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                     ? t(immunization.errors.batchNumber)
                     : !stocksLoading &&
                         batchComboBoxItems.length === 0 &&
+                        batchSearchTerm.trim() !== '' &&
                         !!productUuid
                       ? t('IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR')
                       : ''
