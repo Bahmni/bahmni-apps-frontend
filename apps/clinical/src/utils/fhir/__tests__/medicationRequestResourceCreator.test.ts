@@ -126,8 +126,9 @@ describe('medicationRequestResourceCreator', () => {
 
       // Check timing
       expect(dosage.timing).toBeDefined();
-      expect(dosage.timing!.event).toEqual(['2024-01-01T10:00:00.000Z']);
+      expect(dosage.timing!.event).toBeUndefined();
       expect(dosage.timing!.repeat).toEqual({
+        boundsPeriod: { start: '2024-01-01T10:00:00.000Z' },
         duration: 7,
         durationUnit: 'd',
       });
@@ -261,8 +262,10 @@ describe('medicationRequestResourceCreator', () => {
 
       const timing = result.dosageInstruction![0].timing;
       expect(timing).toBeDefined();
-      expect(timing!.repeat).toBeUndefined();
-      expect(timing!.event).toEqual(['2024-01-01T10:00:00.000Z']);
+      expect(timing!.event).toBeUndefined();
+      expect(timing!.repeat).toEqual({
+        boundsPeriod: { start: '2024-01-01T10:00:00.000Z' },
+      });
       expect(timing!.code).toBeDefined();
     });
 
@@ -309,6 +312,7 @@ describe('medicationRequestResourceCreator', () => {
       );
 
       expect(result.dosageInstruction![0].timing!.repeat).toEqual({
+        boundsPeriod: { start: '2024-01-01T10:00:00.000Z' },
         duration: 2,
         durationUnit: 'wk',
       });
@@ -573,7 +577,9 @@ describe('medicationRequestResourceCreator', () => {
       );
 
       const timing = result.dosageInstruction![0].timing;
-      expect(timing!.event![0]).toBe(dateWithTimezone.toISOString());
+      expect(timing!.repeat!.boundsPeriod!.start).toBe(
+        dateWithTimezone.toISOString(),
+      );
     });
   });
 });

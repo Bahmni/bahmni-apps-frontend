@@ -17,6 +17,7 @@ export const ADMINISTERED_EXPANDED_FIELDS: string[] = [
   'site',
   'manufacturer',
   'batchNumber',
+  'expiryDate',
   'recordedBy',
   'orderedBy',
 ];

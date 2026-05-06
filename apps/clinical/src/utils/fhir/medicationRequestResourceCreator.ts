@@ -142,16 +142,19 @@ const createTiming = (
       },
     };
   } else {
-    // Add event (start date) for non-STAT orders
     if (startDate) {
-      // Convert to ISO format with timezone
       const date = new Date(startDate);
-      timing.event = [date.toISOString()];
+      timing.repeat = {
+        ...timing.repeat,
+        boundsPeriod: {
+          start: date.toISOString(),
+        },
+      };
     }
 
     if (duration && durationUnit) {
-      // Add repeat information if duration is specified
       timing.repeat = {
+        ...timing.repeat,
         duration: duration,
         durationUnit: durationUnit.code,
       };

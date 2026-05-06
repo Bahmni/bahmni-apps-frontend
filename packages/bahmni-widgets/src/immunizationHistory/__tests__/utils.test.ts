@@ -74,6 +74,7 @@ describe('createAdministeredImmunizationViewModel', () => {
       site: 'Shoulder',
       manufacturer: 'Medsource',
       batchNumber: '12345',
+      expiryDate: '2026-04-01',
       recordedBy: 'Aisha Khan',
       orderedBy: 'Dr S.Johnson',
       notes: 'Third dose completed successfully.',
@@ -92,6 +93,7 @@ describe('createAdministeredImmunizationViewModel', () => {
     expect(result.site).toBeNull();
     expect(result.manufacturer).toBeNull();
     expect(result.batchNumber).toBeNull();
+    expect(result.expiryDate).toBeNull();
     expect(result.recordedBy).toBeNull();
     expect(result.orderedBy).toBeNull();
     expect(result.notes).toBeNull();
@@ -106,6 +108,7 @@ describe('createAdministeredImmunizationViewModel', () => {
       override: { manufacturer: { display: 'ABC Corp' } },
     },
     { field: 'batchNumber', override: { lotNumber: 'LOT-001' } },
+    { field: 'expiryDate', override: { expirationDate: '2026-06-01' } },
     {
       field: 'recordedBy',
       override: {
@@ -151,6 +154,12 @@ describe('createAdministeredImmunizationViewModel', () => {
       field: 'administeredOn',
       override: { occurrenceDateTime: undefined },
       key: 'administeredOn',
+      expected: null,
+    },
+    {
+      field: 'expiryDate',
+      override: { expirationDate: undefined },
+      key: 'expiryDate',
       expected: null,
     },
   ])(
