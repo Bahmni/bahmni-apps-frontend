@@ -16,6 +16,7 @@
 
 .box {
   margin-top: $spacing-05;
+  overflow: visible;
 }
 
 .loading {
@@ -81,6 +82,7 @@
 
   :global(.cds--list-box__menu) {
     z-index: 9999 !important;
-    max-height: 18rem !important;
+    max-height: 12rem !important;
+    overflow-y: auto !important;
   }
 }
