@@ -1,1 +1,1 @@
-export { fetchThemeConfig } from './themeService';
+export { fetchThemeConfig, type BahmniThemeConfig } from './themeService';
