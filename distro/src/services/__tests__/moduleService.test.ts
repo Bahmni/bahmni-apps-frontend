@@ -110,10 +110,12 @@ describe('moduleService', () => {
       expect(result).toEqual(mockExtensions);
     });
 
-    it('returns all extensions when privileges array is empty', () => {
+    it('hides privileged extensions when privileges array is empty', () => {
       const result = filterByPrivilege(mockExtensions, []);
 
-      expect(result).toEqual(mockExtensions);
+      const ids = result.map((e) => e.id);
+      expect(ids).not.toContain('clinical');
+      expect(ids).toContain('registration');
     });
 
     it('filters extensions by user privileges', () => {

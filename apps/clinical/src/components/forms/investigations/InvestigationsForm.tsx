@@ -3,32 +3,10 @@ import {
   Tile,
   BoxWHeader,
   SelectedItem,
-  InlineNotification,
 } from '@bahmni/design-system';
-import {
-  useTranslation,
-  getOrderTypes,
-  getExistingServiceRequestsForAllCategories,
-  ORDER_TYPE_QUERY_KEY,
-  useSubscribeConsultationSaved,
-  ConsultationSavedEventPayload,
-} from '@bahmni/services';
-import {
-  usePatientUUID,
-  useActivePractitioner,
-  useHasPrivilege,
-  CONSULTATION_PAD_PRIVILEGES,
-} from '@bahmni/widgets';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, {
-  useMemo,
-  useCallback,
-  useState,
-  useEffect,
-  useRef,
-} from 'react';
-import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
-import { useEncounterSession } from '../../../hooks/useEncounterSession';
+import { useTranslation } from '@bahmni/services';
+import { useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
+import React, { useMemo, useCallback, useState } from 'react';
 import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
 import type { FlattenedInvestigations } from '../../../models/investigations';
 import useServiceRequestStore from '../../../stores/serviceRequestStore';
@@ -37,45 +15,13 @@ import styles from './styles/InvestigationsForm.module.scss';
 
 const InvestigationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
-  const patientUUID = usePatientUUID();
   const canAddInvestigations = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS,
   );
-  const queryClient = useQueryClient();
-  const { practitioner } = useActivePractitioner();
-  const { activeEncounter } = useEncounterSession({ practitioner });
-  const { episodeOfCare, visit, encounter } = useClinicalAppData();
-
-  const currentEncounterId = activeEncounter?.id;
-  const currentPractitionerUuid = practitioner?.uuid;
-
-  const episodeEncounterUuids = useMemo(() => {
-    return Array.from(
-      new Set([
-        ...episodeOfCare.flatMap((eoc) => eoc.encounterUuids),
-        ...visit.flatMap((v) => v.encounterUuids),
-        ...encounter.map((enc) => enc.uuid),
-      ]),
-    );
-  }, [episodeOfCare, visit, encounter]);
-
-  const hasEpisodeContext = episodeEncounterUuids.length > 0;
 
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedInvestigationItem, setSelectedInvestigationItem] =
     useState<FlattenedInvestigations | null>(null);
-  const [showDuplicateNotification, setShowDuplicateNotification] =
-    useState(false);
-  const [duplicateInvestigationId, setDuplicateInvestigationId] = useState<
-    string | null
-  >(null);
-  const [duplicateCategory, setDuplicateCategory] = useState<string | null>(
-    null,
-  );
-  const [duplicateCategoryCode, setDuplicateCategoryCode] = useState<
-    string | null
-  >(null);
-  const notificationDismissedRef = useRef(false);
 
   const { investigations, isLoading, error } =
     useInvestigationsSearch(searchTerm);
@@ -85,56 +31,7 @@ const InvestigationsForm: React.FC = React.memo(() => {
     updatePriority,
     updateNote,
     removeServiceRequest,
-    isSelectedInCategory,
   } = useServiceRequestStore();
-
-  // Static query for order types - cached globally, doesn't re-fetch when encounter changes
-  const { data: orderTypesData } = useQuery({
-    queryKey: ORDER_TYPE_QUERY_KEY,
-    queryFn: getOrderTypes,
-  });
-
-  // Determine encounter UUIDs: use active encounter if available, otherwise fall back to episode encounters
-  const effectiveEncounterUuids = useMemo(() => {
-    if (currentEncounterId) return [currentEncounterId];
-    if (hasEpisodeContext) return episodeEncounterUuids;
-    return undefined;
-  }, [currentEncounterId, hasEpisodeContext, episodeEncounterUuids]);
-
-  // Dynamic query for existing service requests - re-fetches when patient/encounter changes
-  const {
-    data: existingServiceRequests,
-    refetch: refetchExistingServiceRequests,
-  } = useQuery({
-    queryKey: ['existingServiceRequests', patientUUID, effectiveEncounterUuids],
-    queryFn: () =>
-      getExistingServiceRequestsForAllCategories(
-        orderTypesData!.results,
-        patientUUID!,
-        effectiveEncounterUuids,
-      ),
-    enabled:
-      !!patientUUID &&
-      (!!currentEncounterId || hasEpisodeContext) &&
-      !!orderTypesData &&
-      canAddInvestigations,
-    refetchOnMount: 'always',
-  });
-
-  useSubscribeConsultationSaved(
-    (payload: ConsultationSavedEventPayload) => {
-      if (
-        payload.patientUUID === patientUUID &&
-        Object.keys(payload.updatedResources.serviceRequests).length > 0
-      ) {
-        queryClient.removeQueries({
-          queryKey: ['existingServiceRequests', patientUUID],
-        });
-        refetchExistingServiceRequests();
-      }
-    },
-    [patientUUID, queryClient, refetchExistingServiceRequests],
-  );
 
   const translateOrderType = useCallback(
     (category: string): string => {
@@ -144,81 +41,6 @@ const InvestigationsForm: React.FC = React.memo(() => {
     },
     [t],
   );
-
-  const isDuplicateInvestigation = useCallback(
-    (
-      investigationCode: string,
-      category: string,
-      categoryCode: string,
-    ): boolean => {
-      const isExistingInvestigation = existingServiceRequests?.some(
-        (sr) =>
-          sr.conceptCode.toLowerCase() === investigationCode.toLowerCase() &&
-          sr.categoryUuid.toLowerCase() === categoryCode.toLowerCase() &&
-          sr.requesterUuid.toLowerCase() ===
-            currentPractitionerUuid?.toLowerCase(),
-      );
-
-      const isSelectedInvestigation = isSelectedInCategory(
-        category,
-        investigationCode,
-      );
-
-      return (isExistingInvestigation ?? false) || isSelectedInvestigation;
-    },
-    [existingServiceRequests, isSelectedInCategory, currentPractitionerUuid],
-  );
-
-  useEffect(() => {
-    if (showDuplicateNotification) {
-      if (searchTerm === '') {
-        setShowDuplicateNotification(false);
-        return;
-      }
-
-      if (
-        duplicateInvestigationId &&
-        duplicateCategory &&
-        duplicateCategoryCode &&
-        !isDuplicateInvestigation(
-          duplicateInvestigationId,
-          duplicateCategory,
-          duplicateCategoryCode,
-        )
-      ) {
-        setShowDuplicateNotification(false);
-        setDuplicateInvestigationId(null);
-        setDuplicateCategory(null);
-        setDuplicateCategoryCode(null);
-      }
-    } else if (
-      !notificationDismissedRef.current &&
-      searchTerm !== '' &&
-      duplicateInvestigationId &&
-      duplicateCategory &&
-      duplicateCategoryCode &&
-      isDuplicateInvestigation(
-        duplicateInvestigationId,
-        duplicateCategory,
-        duplicateCategoryCode,
-      )
-    ) {
-      setShowDuplicateNotification(true);
-    }
-
-    // Reset dismissed state when search is cleared so future duplicate attempts re-show the notification
-    if (searchTerm === '') {
-      notificationDismissedRef.current = false;
-    }
-  }, [
-    searchTerm,
-    selectedServiceRequests,
-    showDuplicateNotification,
-    duplicateInvestigationId,
-    duplicateCategory,
-    duplicateCategoryCode,
-    isDuplicateInvestigation,
-  ]);
 
   const arrangeFilteredInvestigationsByCategory = useCallback(
     (investigations: FlattenedInvestigations[]): FlattenedInvestigations[] => {
@@ -288,42 +110,12 @@ const InvestigationsForm: React.FC = React.memo(() => {
       ];
     }
 
-    const mappedItems = investigations.map((item) => {
-      // Only check against current session selections for dropdown display
-      // Backend duplicates are handled via notification in handleChange
-      // Case-insensitive category lookup
-      const categoryLower = item.category.toLowerCase();
-      let selectedItemsInCategory;
-
-      for (const [key, value] of selectedServiceRequests) {
-        if (key.toLowerCase() === categoryLower) {
-          selectedItemsInCategory = value;
-          break;
-        }
-      }
-
-      if (!selectedItemsInCategory) return item;
-
-      const isAlreadySelected = selectedItemsInCategory.some(
-        (selectedItem) =>
-          selectedItem.id.toLowerCase() === item.code.toLowerCase(),
-      );
-      return {
-        ...item,
-        display: isAlreadySelected
-          ? `${item.display} ${t('INVESTIGATION_ALREADY_SELECTED')}`
-          : item.display,
-        disabled: isAlreadySelected,
-      };
-    });
-
-    return arrangeFilteredInvestigationsByCategory(mappedItems);
+    return arrangeFilteredInvestigationsByCategory(investigations);
   }, [
     investigations,
     searchTerm,
     isLoading,
     error,
-    selectedServiceRequests,
     t,
     arrangeFilteredInvestigationsByCategory,
   ]);
@@ -333,24 +125,6 @@ const InvestigationsForm: React.FC = React.memo(() => {
   ) => {
     if (!selectedItem?.code) return;
 
-    if (
-      isDuplicateInvestigation(
-        selectedItem.code,
-        selectedItem.category,
-        selectedItem.categoryCode,
-      )
-    ) {
-      setShowDuplicateNotification(true);
-      setDuplicateInvestigationId(selectedItem.code);
-      setDuplicateCategory(selectedItem.category);
-      setDuplicateCategoryCode(selectedItem.categoryCode);
-      return;
-    }
-
-    setShowDuplicateNotification(false);
-    setDuplicateInvestigationId(null);
-    setDuplicateCategory(null);
-    setDuplicateCategoryCode(null);
     addServiceRequest(
       selectedItem.category,
       selectedItem.code,
@@ -389,27 +163,6 @@ const InvestigationsForm: React.FC = React.memo(() => {
         size="md"
       />
 
-      {showDuplicateNotification && (
-        <InlineNotification
-          kind="error"
-          lowContrast
-          subtitle={
-            duplicateCategory?.toLowerCase().includes('procedure')
-              ? t('PROCEDURE_ALREADY_ADDED')
-              : t('INVESTIGATION_ALREADY_ADDED')
-          }
-          onClose={() => {
-            setShowDuplicateNotification(false);
-            setDuplicateInvestigationId(null);
-            setDuplicateCategory(null);
-            setDuplicateCategoryCode(null);
-            notificationDismissedRef.current = true;
-          }}
-          hideCloseButton={false}
-          className={styles.duplicateNotification}
-        />
-      )}
-
       {selectedServiceRequests &&
         selectedServiceRequests.size > 0 &&
         Array.from(selectedServiceRequests.keys()).map((category) => (
@@ -422,20 +175,19 @@ const InvestigationsForm: React.FC = React.memo(() => {
           >
             {selectedServiceRequests.get(category)?.map((serviceRequest) => (
               <SelectedItem
-                key={serviceRequest.id}
+                key={serviceRequest.uid}
                 onClose={() =>
-                  removeServiceRequest(category, serviceRequest.id)
+                  removeServiceRequest(category, serviceRequest.uid)
                 }
                 className={styles.selectedInvestigationItem}
               >
                 <SelectedInvestigationItem
-                  key={serviceRequest.id}
                   investigation={serviceRequest}
                   onPriorityChange={(priority) =>
-                    updatePriority(category, serviceRequest.id, priority)
+                    updatePriority(category, serviceRequest.uid, priority)
                   }
                   onNoteChange={(note) =>
-                    updateNote(category, serviceRequest.id, note)
+                    updateNote(category, serviceRequest.uid, note)
                   }
                 />
               </SelectedItem>

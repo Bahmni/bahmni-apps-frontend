@@ -695,12 +695,14 @@ describe('consultationBundleService', () => {
 
   describe('createServiceRequestBundleEntries', () => {
     const mockServiceRequest: ServiceRequestInputEntry = {
+      uid: 'uid-service-request-123',
       id: 'service-request-123',
       display: 'Blood Test',
       selectedPriority: 'routine',
     };
 
     const mockStatServiceRequest: ServiceRequestInputEntry = {
+      uid: 'uid-service-request-456',
       id: 'service-request-456',
       display: 'Emergency CT Scan',
       selectedPriority: 'stat',

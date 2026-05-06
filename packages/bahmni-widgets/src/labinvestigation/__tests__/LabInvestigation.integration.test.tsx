@@ -268,6 +268,31 @@ describe('LabInvestigation Integration Tests', () => {
     });
   });
 
+  it('displays multiple duplicate investigations with the same name on the same date', async () => {
+    const duplicateRequests = [
+      createMockServiceRequest({
+        id: 'lab-test-dup-1',
+        code: { text: 'Complete Blood Count' },
+      }),
+      createMockServiceRequest({
+        id: 'lab-test-dup-2',
+        code: { text: 'Complete Blood Count' },
+      }),
+    ];
+
+    mockGetLabTestBundle.mockResolvedValue(createMockBundle(duplicateRequests));
+
+    renderLabInvestigations();
+
+    await waitFor(() => {
+      expect(screen.getByText(/25\/03\/2025/i)).toBeInTheDocument();
+    });
+
+    // Both duplicate investigations should be rendered
+    const completeCbcElements = screen.getAllByText('Complete Blood Count');
+    expect(completeCbcElements).toHaveLength(2);
+  });
+
   it('responds to patient UUID changes', async () => {
     renderLabInvestigations();
 

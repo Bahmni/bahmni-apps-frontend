@@ -30,7 +30,7 @@ export function filterLabInvestigationEntries(
   // Filter out entries that either have a "replaces" field or are being replaced
   const filteredEntries = labInvestigationBundle.entry.filter((entry) => {
     const entryId = entry.resource?.id;
-    const isReplacer = entry.resource?.replaces;
+    const isReplacer = (entry.resource?.replaces?.length ?? 0) > 0;
     const isReplaced = replacedIds.has(entryId);
     return !isReplacer && !isReplaced;
   });
