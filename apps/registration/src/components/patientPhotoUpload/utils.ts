@@ -60,7 +60,7 @@ export const resolvePhotoConfig = (
 
 export const dataUrlByteSize = (dataUrl: string): number => {
   const base64 = dataUrl.split(',')[1] ?? '';
-  const padding = (base64.match(/=+$/) ?? [''])[0].length;
+  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
   return Math.floor(base64.length * 0.75) - padding;
 };
 
