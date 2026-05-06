@@ -12,6 +12,7 @@ export const mockAdministeredImmunization: Immunization = {
   site: { coding: [{ display: 'Shoulder' }] },
   manufacturer: { display: 'Medsource' },
   lotNumber: '12345',
+  expirationDate: '2026-04-01',
   protocolApplied: [{ doseNumberPositiveInt: 3 }],
   performer: [
     {

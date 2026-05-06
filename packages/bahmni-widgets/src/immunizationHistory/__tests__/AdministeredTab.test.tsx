@@ -267,6 +267,9 @@ describe('AdministeredTab', () => {
     expect(
       screen.getByTestId(`immunization-expanded-row-${mockRow.id}-test-id`),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_EXPIRY_DATE'),
+    ).toBeInTheDocument();
   });
 
   it('does not render expanded row content for a row without details', () => {

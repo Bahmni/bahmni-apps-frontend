@@ -64,6 +64,7 @@ export function createAdministeredImmunizationViewModel(
   const site = immunization.site?.coding?.[0]?.display ?? null;
   const manufacturer = immunization.manufacturer?.display ?? null;
   const batchNumber = immunization.lotNumber ?? null;
+  const expiryDate = immunization.expirationDate ?? null;
   const recordedBy = getPerformerDisplay(immunization, ENTERING_PROVIDER_CODE);
   const orderedBy = getPerformerDisplay(immunization, ORDERING_PROVIDER_CODE);
   const notes = immunization.note?.[0]?.text ?? null;
@@ -79,6 +80,7 @@ export function createAdministeredImmunizationViewModel(
     site,
     manufacturer,
     batchNumber,
+    expiryDate,
     recordedBy,
     orderedBy,
     notes,
@@ -87,6 +89,7 @@ export function createAdministeredImmunizationViewModel(
       site ??
       manufacturer ??
       batchNumber ??
+      expiryDate ??
       recordedBy ??
       orderedBy
     ),
