@@ -13,6 +13,7 @@ import {
   useTranslation,
   Location,
   getUserLoginLocation,
+  formatDateTime,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { Medication, ValueSet } from 'fhir/r4';
@@ -92,13 +93,17 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         )
       : availableStocks;
 
-    return filtered.map((stock) => ({
-      code: stock.batchNumber,
-      display: `${stock.batchNumber} (Exp: ${new Date(stock.expiryDate).toLocaleDateString()})`,
-      expiryDate: stock.expiryDate,
-      disabled: false,
-    }));
-  }, [availableStocks, batchSearchTerm]);
+    return filtered.map((stock) => {
+      const formattedDate = formatDateTime(stock.expiryDate, t, false, 'dd-MMM-yyyy');
+      
+      return {
+        code: stock.batchNumber,
+        display: `${stock.batchNumber} [${formattedDate.formattedResult}] - ${stock.stockLocationName}`,
+        expiryDate: stock.expiryDate,
+        disabled: false,
+      };
+    });
+  }, [availableStocks, batchSearchTerm, t]);
 
   const vaccineDrugComboBoxItems = useMemo(
     () =>
@@ -351,7 +356,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                     ? t('LOADING')
                     : batchComboBoxItems.length === 0
                       ? t('NO_BATCHES_AVAILABLE')
-                      : t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')
+                      : t('IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER')
                 }
                 items={batchComboBoxItems}
                 itemToString={(item) => item?.display ?? ''}
