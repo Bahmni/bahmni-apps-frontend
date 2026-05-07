@@ -27,6 +27,10 @@ jest.mock('@bahmni/services', () => ({
   getLocationByTag: jest.fn(),
   getVaccinations: jest.fn(),
   searchFHIRConcepts: jest.fn(),
+  getUserLoginLocation: jest.fn(() => ({
+    uuid: 'test-location-uuid',
+    display: 'Test Location',
+  })),
 }));
 
 jest.mock('../../../../providers/clinicalConfig', () => ({

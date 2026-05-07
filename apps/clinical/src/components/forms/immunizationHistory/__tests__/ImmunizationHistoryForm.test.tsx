@@ -25,6 +25,13 @@ jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
   useQuery: jest.fn(),
 }));
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  getUserLoginLocation: jest.fn(() => ({
+    uuid: 'test-location-uuid',
+    display: 'Test Location',
+  })),
+}));
 
 expect.extend(toHaveNoViolations);
 

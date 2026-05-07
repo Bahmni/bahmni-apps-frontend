@@ -361,7 +361,9 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                 placeholder={
                   stocksLoading
                     ? t('LOADING')
-                    : t('IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER')
+                    : batchComboBoxItems.length === 0
+                      ? t('IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR')
+                      : t('IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER')
                 }
                 items={batchComboBoxItems}
                 itemToString={(item) => item?.display ?? ''}

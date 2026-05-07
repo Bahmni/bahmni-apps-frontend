@@ -155,7 +155,7 @@ export const mockFullAttributes: InputControlAttributes[] = [
   { name: 'route', required: false },
   { name: 'site', required: false },
   { name: 'manufacturer', required: false },
-  { name: 'batchNumber', required: false },
+  { name: 'batchNumber', required: false, config: { isFetchBatchNumberEnabled: false } },
   { name: 'doseSequence', required: false },
   { name: 'expiryDate', required: false },
   { name: 'note', required: false },

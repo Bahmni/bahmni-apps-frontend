@@ -1,6 +1,8 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import SelectedImmunizationItem from '../components/SelectedImmunizationItem';
 import { useImmunizationHistoryStore } from '../stores';
 import {
@@ -16,6 +18,13 @@ import {
 } from './__mocks__/immunizationHistoryMocks';
 
 jest.mock('../stores');
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  getUserLoginLocation: jest.fn(() => ({
+    uuid: 'test-location-uuid',
+    display: 'Test Location',
+  })),
+}));
 
 expect.extend(toHaveNoViolations);
 
@@ -32,6 +41,16 @@ const defaultProps = {
   vaccineDrugs: mockCovid19VaccineDrugs,
 };
 
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+  return Wrapper;
+};
+
 describe('SelectedImmunizationItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -40,7 +59,7 @@ describe('SelectedImmunizationItem', () => {
 
   describe('Rendering', () => {
     it('displays vaccine display name', () => {
-      render(<SelectedImmunizationItem {...defaultProps} />);
+      render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
       expect(
         screen.getByTestId(`immunization-drug-name-${id}-test-id`),
       ).toHaveTextContent('COVID-19 Vaccine');
@@ -105,6 +124,7 @@ describe('SelectedImmunizationItem', () => {
             {...defaultProps}
             attributes={attributes}
           />,
+          { wrapper: createWrapper() },
         );
         expect(screen.getByTestId(testId)).toBeInTheDocument();
       },
@@ -125,7 +145,7 @@ describe('SelectedImmunizationItem', () => {
       ['expiryDate', `immunization-expiry-date-input-${id}`],
       ['note', `immunization-add-note-link-${id}-test-id`],
     ])('does not render %s field when attributes is empty', (_, testId) => {
-      render(<SelectedImmunizationItem {...defaultProps} attributes={[]} />);
+      render(<SelectedImmunizationItem {...defaultProps} attributes={[]} />, { wrapper: createWrapper() });
       expect(screen.queryByTestId(testId)).not.toBeInTheDocument();
     });
 
@@ -135,6 +155,7 @@ describe('SelectedImmunizationItem', () => {
           {...defaultProps}
           immunization={mockImmunizationEntryWithDate}
         />,
+        { wrapper: createWrapper() },
       );
       expect(
         screen.getByTestId(`immunization-expiry-date-input-${id}`),
@@ -159,6 +180,7 @@ describe('SelectedImmunizationItem', () => {
           {...defaultProps}
           immunization={mockImmunizationEntryWithErrors}
         />,
+        { wrapper: createWrapper() },
       );
       expect(screen.getByText(errorText)).toBeInTheDocument();
     });
@@ -209,7 +231,7 @@ describe('SelectedImmunizationItem', () => {
         expectedValue,
       ) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />);
+        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
         await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
         await user.click(screen.getByText(itemText));
         await waitFor(() => {
@@ -237,7 +259,7 @@ describe('SelectedImmunizationItem', () => {
       'calls %s with display only when a custom value is entered',
       async (_, placeholder, inputText, storeMethod, expectedValue) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />);
+        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
         await user.type(screen.getByPlaceholderText(placeholder), inputText);
         await user.keyboard('{Enter}');
         await waitFor(() => {
@@ -259,7 +281,7 @@ describe('SelectedImmunizationItem', () => {
       'does not call %s when selection is cleared',
       async (_, placeholder, searchTerm, itemText, storeMethod) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />);
+        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
         await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
         await user.click(screen.getByText(itemText));
         storeMethod.mockClear();
@@ -289,7 +311,7 @@ describe('SelectedImmunizationItem', () => {
       'calls %s with null when selection is cleared',
       async (_, placeholder, searchTerm, itemText, storeMethod) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />);
+        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
         await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
         await user.click(screen.getByText(itemText));
         storeMethod.mockClear();
@@ -317,7 +339,7 @@ describe('SelectedImmunizationItem', () => {
       'calls %s when the text input changes',
       async (_, testId, storeMethod) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />);
+        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
         await user.type(screen.getByTestId(testId), 'value');
         await waitFor(() => {
           expect(storeMethod).toHaveBeenCalledWith(id, expect.any(String));
@@ -327,7 +349,7 @@ describe('SelectedImmunizationItem', () => {
 
     it('calls updateDoseSequence with a number when value is typed', async () => {
       const user = userEvent.setup();
-      render(<SelectedImmunizationItem {...defaultProps} />);
+      render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
       await user.type(
         screen.getByTestId(`immunization-dose-sequence-${id}`),
         '3',
@@ -357,7 +379,7 @@ describe('SelectedImmunizationItem', () => {
       'calls %s when a date is selected from the calendar',
       async (_, testId, storeMethod, calendarIndex) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />);
+        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
         await user.click(screen.getByTestId(testId));
         const calendars = screen.getAllByRole('application', {
           name: /calendar/i,
@@ -380,6 +402,7 @@ describe('SelectedImmunizationItem', () => {
           {...defaultProps}
           attributes={[{ name: 'note', required: false }]}
         />,
+        { wrapper: createWrapper() },
       );
 
       expect(
@@ -422,6 +445,7 @@ describe('SelectedImmunizationItem', () => {
     it('matches snapshot with all form fields', () => {
       const { container } = render(
         <SelectedImmunizationItem {...defaultProps} />,
+        { wrapper: createWrapper() },
       );
       expect(container).toMatchSnapshot();
     });
@@ -436,7 +460,7 @@ describe('SelectedImmunizationItem', () => {
         { ...defaultProps, immunization: mockImmunizationEntryWithErrors },
       ],
     ])('has no accessibility violations with %s', async (_, props) => {
-      const { container } = render(<SelectedImmunizationItem {...props} />);
+      const { container } = render(<SelectedImmunizationItem {...props} />, { wrapper: createWrapper() });
       await act(async () => {});
       expect(await axe(container)).toHaveNoViolations();
     });
