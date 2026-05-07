@@ -1,10 +1,9 @@
 import React from 'react';
 import type { Preview } from '@storybook/react';
 import { Theme } from '@carbon/react';
-import '../src/styles/index.scss';
 import { initFontAwesome } from '../src/fontawesome';
 
-// Initialize FontAwesome for the icons
+// Initialize FontAwesome icons for tests
 initFontAwesome();
 
 const preview: Preview = {
