@@ -59,7 +59,9 @@ describe('SelectedImmunizationItem', () => {
 
   describe('Rendering', () => {
     it('displays vaccine display name', () => {
-      render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
+      render(<SelectedImmunizationItem {...defaultProps} />, {
+        wrapper: createWrapper(),
+      });
       expect(
         screen.getByTestId(`immunization-drug-name-${id}-test-id`),
       ).toHaveTextContent('COVID-19 Vaccine');
@@ -145,7 +147,9 @@ describe('SelectedImmunizationItem', () => {
       ['expiryDate', `immunization-expiry-date-input-${id}`],
       ['note', `immunization-add-note-link-${id}-test-id`],
     ])('does not render %s field when attributes is empty', (_, testId) => {
-      render(<SelectedImmunizationItem {...defaultProps} attributes={[]} />, { wrapper: createWrapper() });
+      render(<SelectedImmunizationItem {...defaultProps} attributes={[]} />, {
+        wrapper: createWrapper(),
+      });
       expect(screen.queryByTestId(testId)).not.toBeInTheDocument();
     });
 
@@ -231,7 +235,9 @@ describe('SelectedImmunizationItem', () => {
         expectedValue,
       ) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
+        render(<SelectedImmunizationItem {...defaultProps} />, {
+          wrapper: createWrapper(),
+        });
         await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
         await user.click(screen.getByText(itemText));
         await waitFor(() => {
@@ -259,7 +265,9 @@ describe('SelectedImmunizationItem', () => {
       'calls %s with display only when a custom value is entered',
       async (_, placeholder, inputText, storeMethod, expectedValue) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
+        render(<SelectedImmunizationItem {...defaultProps} />, {
+          wrapper: createWrapper(),
+        });
         await user.type(screen.getByPlaceholderText(placeholder), inputText);
         await user.keyboard('{Enter}');
         await waitFor(() => {
@@ -281,7 +289,9 @@ describe('SelectedImmunizationItem', () => {
       'does not call %s when selection is cleared',
       async (_, placeholder, searchTerm, itemText, storeMethod) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
+        render(<SelectedImmunizationItem {...defaultProps} />, {
+          wrapper: createWrapper(),
+        });
         await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
         await user.click(screen.getByText(itemText));
         storeMethod.mockClear();
@@ -311,7 +321,9 @@ describe('SelectedImmunizationItem', () => {
       'calls %s with null when selection is cleared',
       async (_, placeholder, searchTerm, itemText, storeMethod) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
+        render(<SelectedImmunizationItem {...defaultProps} />, {
+          wrapper: createWrapper(),
+        });
         await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
         await user.click(screen.getByText(itemText));
         storeMethod.mockClear();
@@ -339,7 +351,9 @@ describe('SelectedImmunizationItem', () => {
       'calls %s when the text input changes',
       async (_, testId, storeMethod) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
+        render(<SelectedImmunizationItem {...defaultProps} />, {
+          wrapper: createWrapper(),
+        });
         await user.type(screen.getByTestId(testId), 'value');
         await waitFor(() => {
           expect(storeMethod).toHaveBeenCalledWith(id, expect.any(String));
@@ -349,7 +363,9 @@ describe('SelectedImmunizationItem', () => {
 
     it('calls updateDoseSequence with a number when value is typed', async () => {
       const user = userEvent.setup();
-      render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
+      render(<SelectedImmunizationItem {...defaultProps} />, {
+        wrapper: createWrapper(),
+      });
       await user.type(
         screen.getByTestId(`immunization-dose-sequence-${id}`),
         '3',
@@ -379,7 +395,9 @@ describe('SelectedImmunizationItem', () => {
       'calls %s when a date is selected from the calendar',
       async (_, testId, storeMethod, calendarIndex) => {
         const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />, { wrapper: createWrapper() });
+        render(<SelectedImmunizationItem {...defaultProps} />, {
+          wrapper: createWrapper(),
+        });
         await user.click(screen.getByTestId(testId));
         const calendars = screen.getAllByRole('application', {
           name: /calendar/i,
@@ -460,7 +478,9 @@ describe('SelectedImmunizationItem', () => {
         { ...defaultProps, immunization: mockImmunizationEntryWithErrors },
       ],
     ])('has no accessibility violations with %s', async (_, props) => {
-      const { container } = render(<SelectedImmunizationItem {...props} />, { wrapper: createWrapper() });
+      const { container } = render(<SelectedImmunizationItem {...props} />, {
+        wrapper: createWrapper(),
+      });
       await act(async () => {});
       expect(await axe(container)).toHaveNoViolations();
     });
