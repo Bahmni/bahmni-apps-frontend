@@ -45,14 +45,31 @@ export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
     () => transformExtensionConfigToTabs(ordersConfig),
     [ordersConfig],
   );
-  const ordersTableColumnHeadersGeneric = useMemo(
-    () => ordersTableConfig?.ordersTableColumnHeadersGeneric ?? [],
-    [ordersTableConfig],
-  );
-  const ordersTableColumnHeadersCustom = useMemo(
-    () => ordersTableConfig?.ordersTableColumnHeadersCustom ?? [],
-    [ordersTableConfig],
-  );
+  const hasBeenAdmittedConfig = {
+    key: 'hasBeenAdmitted',
+    header: '',
+    translationKey: '',
+    visible: true,
+    sortable: false,
+  };
+  const ordersTableColumnHeadersGeneric = useMemo(() => {
+    if (ordersTableConfig?.ordersTableColumnHeadersGeneric) {
+      return [
+        ...ordersTableConfig.ordersTableColumnHeadersGeneric,
+        hasBeenAdmittedConfig,
+      ];
+    }
+    return [];
+  }, [ordersTableConfig]);
+  const ordersTableColumnHeadersCustom = useMemo(() => {
+    if (ordersTableConfig?.ordersTableColumnHeadersCustom) {
+      return [
+        ...ordersTableConfig.ordersTableColumnHeadersCustom,
+        hasBeenAdmittedConfig,
+      ];
+    }
+    return [];
+  }, [ordersTableConfig]);
   const value = useMemo(
     () => ({
       ordersConfig,
