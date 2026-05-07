@@ -9,10 +9,7 @@ import {
   TextAreaWClose,
   TextInput,
 } from '@bahmni/design-system';
-import {
-  useTranslation,
-  Location,
-} from '@bahmni/services';
+import { useTranslation, Location } from '@bahmni/services';
 import { Medication, ValueSet } from 'fhir/r4';
 import React, { useMemo, useState } from 'react';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
@@ -311,8 +308,12 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           <BatchNumberField
             immunization={immunization}
             attributes={attributes}
-            onBatchNumberChange={(batchNumber) => updateBatchNumber(id, batchNumber)}
-            onExpiryDateChange={(expiryDate) => updateExpiryDate(id, expiryDate)}
+            onBatchNumberChange={(batchNumber) =>
+              updateBatchNumber(id, batchNumber)
+            }
+            onExpiryDateChange={(expiryDate) =>
+              updateExpiryDate(id, expiryDate)
+            }
           />
         )}
 

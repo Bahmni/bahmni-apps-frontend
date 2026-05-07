@@ -1,17 +1,17 @@
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
 import { getUserLoginLocation } from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
+import { InputControlAttributes } from '../../../../../../providers/clinicalConfig/models';
 import { getAvailableStocks } from '../../../../../../services/inventoryService';
 import { useBatchNumberLogic } from '../useBatchNumber';
-import { InputControlAttributes } from '../../../../../../providers/clinicalConfig/models';
 
 jest.mock('@bahmni/services', () => ({
   getUserLoginLocation: jest.fn(),
   useTranslation: () => ({
     t: (key: string) => key,
   }),
-  formatDateTime: jest.fn((date: string) => ({
+  formatDateTime: jest.fn(() => ({
     formattedResult: '31-Dec-2025',
   })),
 }));
@@ -20,8 +20,12 @@ jest.mock('../../../../../../services/inventoryService', () => ({
   getAvailableStocks: jest.fn(),
 }));
 
-const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<typeof getUserLoginLocation>;
-const mockGetAvailableStocks = getAvailableStocks as jest.MockedFunction<typeof getAvailableStocks>;
+const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<
+  typeof getUserLoginLocation
+>;
+const mockGetAvailableStocks = getAvailableStocks as jest.MockedFunction<
+  typeof getAvailableStocks
+>;
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -31,9 +35,11 @@ const createWrapper = () => {
       },
     },
   });
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
+  Wrapper.displayName = 'QueryClientWrapper';
+  return Wrapper;
 };
 
 describe('useBatchNumberLogic', () => {
@@ -57,8 +63,12 @@ describe('useBatchNumberLogic', () => {
 
   it('should return initial state with empty batch items', () => {
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: mockAttributes, drugCode: undefined }),
-      { wrapper: createWrapper() }
+      () =>
+        useBatchNumberLogic({
+          attributes: mockAttributes,
+          drugCode: undefined,
+        }),
+      { wrapper: createWrapper() },
     );
 
     expect(result.current.batchComboBoxItems).toEqual([]);
@@ -90,8 +100,12 @@ describe('useBatchNumberLogic', () => {
     mockGetAvailableStocks.mockResolvedValue(mockStocks);
 
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: mockAttributes, drugCode: 'drug-123' }),
-      { wrapper: createWrapper() }
+      () =>
+        useBatchNumberLogic({
+          attributes: mockAttributes,
+          drugCode: 'drug-123',
+        }),
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -137,8 +151,12 @@ describe('useBatchNumberLogic', () => {
     mockGetAvailableStocks.mockResolvedValue(mockStocks);
 
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: mockAttributes, drugCode: 'drug-123' }),
-      { wrapper: createWrapper() }
+      () =>
+        useBatchNumberLogic({
+          attributes: mockAttributes,
+          drugCode: 'drug-123',
+        }),
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -179,8 +197,12 @@ describe('useBatchNumberLogic', () => {
     mockGetAvailableStocks.mockResolvedValue(mockStocks);
 
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: mockAttributes, drugCode: 'drug-123' }),
-      { wrapper: createWrapper() }
+      () =>
+        useBatchNumberLogic({
+          attributes: mockAttributes,
+          drugCode: 'drug-123',
+        }),
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -213,8 +235,12 @@ describe('useBatchNumberLogic', () => {
     mockGetAvailableStocks.mockResolvedValue(mockStocks);
 
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: mockAttributes, drugCode: 'drug-123' }),
-      { wrapper: createWrapper() }
+      () =>
+        useBatchNumberLogic({
+          attributes: mockAttributes,
+          drugCode: 'drug-123',
+        }),
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -240,8 +266,12 @@ describe('useBatchNumberLogic', () => {
     ];
 
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: attributesWithoutFetch, drugCode: 'drug-123' }),
-      { wrapper: createWrapper() }
+      () =>
+        useBatchNumberLogic({
+          attributes: attributesWithoutFetch,
+          drugCode: 'drug-123',
+        }),
+      { wrapper: createWrapper() },
     );
 
     expect(result.current.isFetchBatchNumberEnabled).toBe(false);
@@ -250,8 +280,12 @@ describe('useBatchNumberLogic', () => {
 
   it('should not fetch when drugCode is not provided', () => {
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: mockAttributes, drugCode: undefined }),
-      { wrapper: createWrapper() }
+      () =>
+        useBatchNumberLogic({
+          attributes: mockAttributes,
+          drugCode: undefined,
+        }),
+      { wrapper: createWrapper() },
     );
 
     expect(mockGetAvailableStocks).not.toHaveBeenCalled();
@@ -266,12 +300,16 @@ describe('useBatchNumberLogic', () => {
 
   it('should handle loading state', async () => {
     mockGetAvailableStocks.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve([]), 100))
+      () => new Promise((resolve) => setTimeout(() => resolve([]), 100)),
     );
 
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: mockAttributes, drugCode: 'drug-123' }),
-      { wrapper: createWrapper() }
+      () =>
+        useBatchNumberLogic({
+          attributes: mockAttributes,
+          drugCode: 'drug-123',
+        }),
+      { wrapper: createWrapper() },
     );
 
     expect(result.current.stocksLoading).toBe(true);
@@ -290,8 +328,12 @@ describe('useBatchNumberLogic', () => {
     ];
 
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: attributesWithoutConfig, drugCode: 'drug-123' }),
-      { wrapper: createWrapper() }
+      () =>
+        useBatchNumberLogic({
+          attributes: attributesWithoutConfig,
+          drugCode: 'drug-123',
+        }),
+      { wrapper: createWrapper() },
     );
 
     expect(result.current.isFetchBatchNumberEnabled).toBe(false);
@@ -300,7 +342,7 @@ describe('useBatchNumberLogic', () => {
   it('should handle empty attributes array', () => {
     const { result } = renderHook(
       () => useBatchNumberLogic({ attributes: [], drugCode: 'drug-123' }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     expect(result.current.isFetchBatchNumberEnabled).toBe(false);
@@ -308,8 +350,9 @@ describe('useBatchNumberLogic', () => {
 
   it('should handle undefined attributes', () => {
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: undefined, drugCode: 'drug-123' }),
-      { wrapper: createWrapper() }
+      () =>
+        useBatchNumberLogic({ attributes: undefined, drugCode: 'drug-123' }),
+      { wrapper: createWrapper() },
     );
 
     expect(result.current.isFetchBatchNumberEnabled).toBe(false);

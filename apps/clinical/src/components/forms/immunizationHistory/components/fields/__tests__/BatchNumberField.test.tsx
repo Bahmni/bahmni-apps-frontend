@@ -1,19 +1,19 @@
+import { getUserLoginLocation } from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-import { getUserLoginLocation } from '@bahmni/services';
-import { getAvailableStocks } from '../../../../../../services/inventoryService';
-import BatchNumberField from '../BatchNumberField';
-import { ImmunizationInputEntry } from '../../../models';
 import { InputControlAttributes } from '../../../../../../providers/clinicalConfig/models';
+import { getAvailableStocks } from '../../../../../../services/inventoryService';
+import { ImmunizationInputEntry } from '../../../models';
+import BatchNumberField from '../BatchNumberField';
 
 jest.mock('@bahmni/services', () => ({
   getUserLoginLocation: jest.fn(),
   useTranslation: () => ({
     t: (key: string) => key,
   }),
-  formatDateTime: jest.fn((date: string) => ({
+  formatDateTime: jest.fn(() => ({
     formattedResult: '31-Dec-2025',
   })),
 }));
@@ -22,8 +22,12 @@ jest.mock('../../../../../../services/inventoryService', () => ({
   getAvailableStocks: jest.fn(),
 }));
 
-const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<typeof getUserLoginLocation>;
-const mockGetAvailableStocks = getAvailableStocks as jest.MockedFunction<typeof getAvailableStocks>;
+const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<
+  typeof getUserLoginLocation
+>;
+const mockGetAvailableStocks = getAvailableStocks as jest.MockedFunction<
+  typeof getAvailableStocks
+>;
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -33,9 +37,11 @@ const createWrapper = () => {
       },
     },
   });
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
+  Wrapper.displayName = 'QueryClientWrapper';
+  return Wrapper;
 };
 
 describe('BatchNumberField', () => {
@@ -88,15 +94,17 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
-      expect(screen.getByTestId('immunization-batch-number-test-id')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('immunization-batch-number-test-id'),
+      ).toBeInTheDocument();
     });
 
     it('should display loading placeholder when stocks are loading', () => {
       mockGetAvailableStocks.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve([]), 100))
+        () => new Promise((resolve) => setTimeout(() => resolve([]), 100)),
       );
 
       render(
@@ -106,7 +114,7 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       expect(screen.getByPlaceholderText('LOADING')).toBeInTheDocument();
@@ -122,12 +130,14 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR')
+          screen.getByPlaceholderText(
+            'IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR',
+          ),
         ).toBeInTheDocument();
       });
     });
@@ -153,12 +163,14 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER')
+          screen.getByPlaceholderText(
+            'IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER',
+          ),
         ).toBeInTheDocument();
       });
     });
@@ -185,12 +197,14 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER')
+          screen.getByPlaceholderText(
+            'IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER',
+          ),
         ).toBeInTheDocument();
       });
 
@@ -201,7 +215,9 @@ describe('BatchNumberField', () => {
       await user.click(option);
 
       expect(mockOnBatchNumberChange).toHaveBeenCalledWith('BATCH001');
-      expect(mockOnExpiryDateChange).toHaveBeenCalledWith(new Date('2025-12-31'));
+      expect(mockOnExpiryDateChange).toHaveBeenCalledWith(
+        new Date('2025-12-31'),
+      );
     });
 
     it('should handle empty selection', async () => {
@@ -214,7 +230,7 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       await waitFor(() => {
@@ -241,7 +257,7 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       await waitFor(() => {
@@ -283,7 +299,7 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       await waitFor(() => {
@@ -292,7 +308,7 @@ describe('BatchNumberField', () => {
 
       const user = userEvent.setup();
       const combobox = screen.getByRole('combobox');
-      
+
       // Type a search term
       await user.type(combobox, 'BATCH');
 
@@ -302,7 +318,7 @@ describe('BatchNumberField', () => {
 
     it('should disable ComboBox when stocks are loading', () => {
       mockGetAvailableStocks.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve([]), 100))
+        () => new Promise((resolve) => setTimeout(() => resolve([]), 100)),
       );
 
       render(
@@ -312,7 +328,7 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       const combobox = screen.getByRole('combobox');
@@ -329,7 +345,7 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       await waitFor(() => {
@@ -358,12 +374,16 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
-      expect(screen.getByTestId('immunization-batch-number-test-id')).toBeInTheDocument();
       expect(
-        screen.getByPlaceholderText('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')
+        screen.getByTestId('immunization-batch-number-test-id'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(
+          'IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER',
+        ),
       ).toBeInTheDocument();
     });
 
@@ -377,10 +397,12 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
-      const input = screen.getByPlaceholderText('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER');
+      const input = screen.getByPlaceholderText(
+        'IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER',
+      );
       await user.type(input, 'MANUAL-BATCH-001');
 
       expect(mockOnBatchNumberChange).toHaveBeenCalled();
@@ -399,7 +421,7 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       const input = screen.getByDisplayValue('EXISTING-BATCH');
@@ -419,7 +441,7 @@ describe('BatchNumberField', () => {
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
-        { wrapper: createWrapper() }
+        { wrapper: createWrapper() },
       );
 
       expect(screen.getByText('BATCH_NUMBER_REQUIRED')).toBeInTheDocument();

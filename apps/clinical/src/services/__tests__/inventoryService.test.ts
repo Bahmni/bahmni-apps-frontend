@@ -1,14 +1,18 @@
 import { get } from '@bahmni/services';
 import { AVAILABLE_STOCKS_URL } from '../../constants/app';
-import { getAvailableStocks, AvailableStockResponse } from '../inventoryService';
+import {
+  getAvailableStocks,
+  AvailableStockResponse,
+} from '../inventoryService';
 
 jest.mock('@bahmni/services', () => ({
   get: jest.fn(),
 }));
 
 jest.mock('../../constants/app', () => ({
-  AVAILABLE_STOCKS_URL: jest.fn((productUuid: string, locationUuid: string) => 
-    `/api/stocks?product=${productUuid}&location=${locationUuid}`
+  AVAILABLE_STOCKS_URL: jest.fn(
+    (productUuid: string, locationUuid: string) =>
+      `/api/stocks?product=${productUuid}&location=${locationUuid}`,
   ),
 }));
 
@@ -55,7 +59,7 @@ describe('inventoryService', () => {
       const result = await getAvailableStocks(productUuid, locationUuid);
 
       expect(mockGet).toHaveBeenCalledWith(
-        AVAILABLE_STOCKS_URL(productUuid, locationUuid)
+        AVAILABLE_STOCKS_URL(productUuid, locationUuid),
       );
       expect(result).toEqual(mockResponse.data);
       expect(result).toHaveLength(2);
@@ -94,9 +98,10 @@ describe('inventoryService', () => {
       const result = await getAvailableStocks(productUuid, locationUuid);
 
       expect(result).toEqual([]);
+      // eslint-disable-next-line no-console
       expect(console.error).toHaveBeenCalledWith(
         'Failed to fetch available stocks:',
-        error
+        error,
       );
     });
 
@@ -123,7 +128,10 @@ describe('inventoryService', () => {
 
       await getAvailableStocks(productUuid, locationUuid);
 
-      expect(AVAILABLE_STOCKS_URL).toHaveBeenCalledWith(productUuid, locationUuid);
+      expect(AVAILABLE_STOCKS_URL).toHaveBeenCalledWith(
+        productUuid,
+        locationUuid,
+      );
     });
   });
 });

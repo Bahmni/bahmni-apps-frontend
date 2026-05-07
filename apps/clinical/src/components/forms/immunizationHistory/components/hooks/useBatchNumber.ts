@@ -1,4 +1,8 @@
-import { useTranslation, getUserLoginLocation, formatDateTime } from '@bahmni/services';
+import {
+  useTranslation,
+  getUserLoginLocation,
+  formatDateTime,
+} from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
@@ -10,7 +14,10 @@ interface UseBatchNumberLogicProps {
   drugCode: string | undefined;
 }
 
-export const useBatchNumberLogic = ({ attributes, drugCode }: UseBatchNumberLogicProps) => {
+export const useBatchNumberLogic = ({
+  attributes,
+  drugCode,
+}: UseBatchNumberLogicProps) => {
   const { t } = useTranslation();
   const [batchSearchTerm, setBatchSearchTerm] = useState('');
 

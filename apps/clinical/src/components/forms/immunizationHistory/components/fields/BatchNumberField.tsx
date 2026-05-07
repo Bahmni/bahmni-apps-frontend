@@ -51,13 +51,13 @@ const BatchNumberField: React.FC<BatchNumberFieldProps> = ({
     if (immunization.errors.batchNumber) {
       return true;
     }
-    
-    const hasNoBatchesAvailable = 
+
+    const hasNoBatchesAvailable =
       !stocksLoading &&
       batchComboBoxItems.length === 0 &&
       batchSearchTerm.trim() !== '' &&
       !!productUuid;
-    
+
     return hasNoBatchesAvailable;
   };
 
@@ -65,21 +65,23 @@ const BatchNumberField: React.FC<BatchNumberFieldProps> = ({
     if (immunization.errors.batchNumber) {
       return t(immunization.errors.batchNumber);
     }
-    
-    const hasNoBatchesAvailable = 
+
+    const hasNoBatchesAvailable =
       !stocksLoading &&
       batchComboBoxItems.length === 0 &&
       batchSearchTerm.trim() !== '' &&
       !!productUuid;
-    
+
     if (hasNoBatchesAvailable) {
       return t('IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR');
     }
-    
+
     return '';
   };
 
-  const handleBatchChange = (selectedItem: typeof batchComboBoxItems[0] | null) => {
+  const handleBatchChange = (
+    selectedItem: (typeof batchComboBoxItems)[0] | null,
+  ) => {
     if (selectedItem) {
       onBatchNumberChange(selectedItem.code);
       if (selectedItem.expiryDate) {
