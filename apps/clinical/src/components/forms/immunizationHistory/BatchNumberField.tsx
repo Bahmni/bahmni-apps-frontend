@@ -3,9 +3,9 @@ import { useTranslation } from '@bahmni/services';
 import React from 'react';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from './models';
+import styles from './styles/ImmunizationHistoryForm.module.scss';
 import { useBatchNumberLogic } from './useBatchNumber';
 import { findAttr } from './utils';
-import styles from './styles/ImmunizationHistoryForm.module.scss';
 
 interface BatchNumberFieldProps {
   immunization: ImmunizationInputEntry;
