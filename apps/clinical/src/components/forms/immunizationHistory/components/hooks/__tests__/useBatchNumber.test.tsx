@@ -47,9 +47,6 @@ describe('useBatchNumberLogic', () => {
     {
       name: 'batchNumber',
       required: true,
-      config: {
-        isFetchBatchNumberEnabled: true,
-      },
     },
   ];
 
@@ -67,6 +64,7 @@ describe('useBatchNumberLogic', () => {
         useBatchNumberLogic({
           attributes: mockAttributes,
           drugCode: undefined,
+          isFetchBatchNumberEnabled: true,
         }),
       { wrapper: createWrapper() },
     );
@@ -104,6 +102,7 @@ describe('useBatchNumberLogic', () => {
         useBatchNumberLogic({
           attributes: mockAttributes,
           drugCode: 'drug-123',
+          isFetchBatchNumberEnabled: true,
         }),
       { wrapper: createWrapper() },
     );
@@ -155,6 +154,7 @@ describe('useBatchNumberLogic', () => {
         useBatchNumberLogic({
           attributes: mockAttributes,
           drugCode: 'drug-123',
+          isFetchBatchNumberEnabled: true,
         }),
       { wrapper: createWrapper() },
     );
@@ -201,6 +201,7 @@ describe('useBatchNumberLogic', () => {
         useBatchNumberLogic({
           attributes: mockAttributes,
           drugCode: 'drug-123',
+          isFetchBatchNumberEnabled: true,
         }),
       { wrapper: createWrapper() },
     );
@@ -239,6 +240,7 @@ describe('useBatchNumberLogic', () => {
         useBatchNumberLogic({
           attributes: mockAttributes,
           drugCode: 'drug-123',
+          isFetchBatchNumberEnabled: true,
         }),
       { wrapper: createWrapper() },
     );
@@ -255,21 +257,12 @@ describe('useBatchNumberLogic', () => {
   });
 
   it('should not fetch when isFetchBatchNumberEnabled is false', () => {
-    const attributesWithoutFetch: InputControlAttributes[] = [
-      {
-        name: 'batchNumber',
-        required: true,
-        config: {
-          isFetchBatchNumberEnabled: false,
-        },
-      },
-    ];
-
     const { result } = renderHook(
       () =>
         useBatchNumberLogic({
-          attributes: attributesWithoutFetch,
+          attributes: mockAttributes,
           drugCode: 'drug-123',
+          isFetchBatchNumberEnabled: false,
         }),
       { wrapper: createWrapper() },
     );
@@ -284,6 +277,7 @@ describe('useBatchNumberLogic', () => {
         useBatchNumberLogic({
           attributes: mockAttributes,
           drugCode: undefined,
+          isFetchBatchNumberEnabled: true,
         }),
       { wrapper: createWrapper() },
     );
@@ -308,6 +302,7 @@ describe('useBatchNumberLogic', () => {
         useBatchNumberLogic({
           attributes: mockAttributes,
           drugCode: 'drug-123',
+          isFetchBatchNumberEnabled: true,
         }),
       { wrapper: createWrapper() },
     );
@@ -319,18 +314,11 @@ describe('useBatchNumberLogic', () => {
     });
   });
 
-  it('should default to false when config is not provided', () => {
-    const attributesWithoutConfig: InputControlAttributes[] = [
-      {
-        name: 'batchNumber',
-        required: true,
-      },
-    ];
-
+  it('should default to false when isFetchBatchNumberEnabled is not provided', () => {
     const { result } = renderHook(
       () =>
         useBatchNumberLogic({
-          attributes: attributesWithoutConfig,
+          attributes: mockAttributes,
           drugCode: 'drug-123',
         }),
       { wrapper: createWrapper() },
@@ -341,20 +329,29 @@ describe('useBatchNumberLogic', () => {
 
   it('should handle empty attributes array', () => {
     const { result } = renderHook(
-      () => useBatchNumberLogic({ attributes: [], drugCode: 'drug-123' }),
+      () =>
+        useBatchNumberLogic({
+          attributes: [],
+          drugCode: 'drug-123',
+          isFetchBatchNumberEnabled: true,
+        }),
       { wrapper: createWrapper() },
     );
 
-    expect(result.current.isFetchBatchNumberEnabled).toBe(false);
+    expect(result.current.isFetchBatchNumberEnabled).toBe(true);
   });
 
   it('should handle undefined attributes', () => {
     const { result } = renderHook(
       () =>
-        useBatchNumberLogic({ attributes: undefined, drugCode: 'drug-123' }),
+        useBatchNumberLogic({
+          attributes: undefined,
+          drugCode: 'drug-123',
+          isFetchBatchNumberEnabled: true,
+        }),
       { wrapper: createWrapper() },
     );
 
-    expect(result.current.isFetchBatchNumberEnabled).toBe(false);
+    expect(result.current.isFetchBatchNumberEnabled).toBe(true);
   });
 });

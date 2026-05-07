@@ -31,6 +31,7 @@ interface SelectedImmunizationItemProps {
   administeredLocationTag: Location[] | undefined;
   attributes: InputControlAttributes[] | undefined;
   vaccineDrugs: Medication[] | undefined;
+  isFetchBatchNumberEnabled?: boolean;
 }
 
 const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
@@ -40,6 +41,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   attributes,
   administeredLocationTag,
   vaccineDrugs,
+  isFetchBatchNumberEnabled,
 }) => {
   const { t } = useTranslation();
   const {
@@ -72,7 +74,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         immunization.vaccineCode.code,
         t('NO_MATCHING_DRUG_NAME_FOUND'),
       ),
-    [drugSearchTerm, vaccineDrugs, immunization.vaccineCode.code, t],
+    [drugSearchTerm, vaccineDrugs, immunization.vaccineCode.code],
   );
 
   const administeredLocationTagComboBoxItems = useMemo(
@@ -91,7 +93,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         routes,
         t('NO_MATCHING_ROUTE_FOUND'),
       ),
-    [routeSearchTerm, routes, t],
+    [routeSearchTerm, routes],
   );
 
   const siteComboBoxItems = useMemo(
@@ -101,7 +103,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         sites,
         t('NO_MATCHING_SITE_FOUND'),
       ),
-    [siteSearchTerm, sites, t],
+    [siteSearchTerm, sites],
   );
 
   const handleRouteInputChange = (value: string) => {
@@ -308,6 +310,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
           <BatchNumberField
             immunization={immunization}
             attributes={attributes}
+            isFetchBatchNumberEnabled={isFetchBatchNumberEnabled}
             onBatchNumberChange={(batchNumber) =>
               updateBatchNumber(id, batchNumber)
             }

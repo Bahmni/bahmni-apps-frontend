@@ -32,6 +32,7 @@ export const mockImmunizationHistory = {
     vaccineConceptSetUuid: 'vaccine-concept-set-uuid',
     siteConceptUuid: 'site-concept-uuid',
     administeredLocationTag: 'login-location',
+    isFetchBatchNumberEnabled: false,
   },
   encounterType: ['Immunization'],
   privilege: ['app:clinical;addHistory'],
@@ -160,7 +161,6 @@ export const mockFullAttributes: InputControlAttributes[] = [
   {
     name: 'batchNumber',
     required: false,
-    config: { isFetchBatchNumberEnabled: false },
   },
   { name: 'doseSequence', required: false },
   { name: 'expiryDate', required: false },

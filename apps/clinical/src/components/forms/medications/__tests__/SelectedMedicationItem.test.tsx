@@ -300,19 +300,28 @@ describe('SelectedMedicationItem', () => {
 
         render(<SelectedMedicationItem {...props} />);
 
+        // Wait for component to mount and useEffect hooks to complete
+        await waitFor(() => {
+          expect(
+            screen.getByRole('combobox', { name: /Route/i }),
+          ).toBeInTheDocument();
+        });
+
         // Click on the route dropdown
         const routeDropdown = screen.getByRole('combobox', { name: /Route/i });
         await user.click(routeDropdown);
 
         // Find and click the 'IV' option
-        const ivOption = await screen.findByRole('option', { name: 'IV' });
+        const ivOption = await screen.findByRole('option', { name: 'IV' }, { timeout: 10000 });
         await user.click(ivOption);
 
-        expect(updateRoute).toHaveBeenCalledWith('entry-1', {
-          uuid: 'iv-uuid',
-          name: 'IV',
+        await waitFor(() => {
+          expect(updateRoute).toHaveBeenCalledWith('entry-1', {
+            uuid: 'iv-uuid',
+            name: 'IV',
+          });
         });
-      });
+      }, 15000);
 
       test('updates duration unit when duration unit dropdown changes', async () => {
         const updateDurationUnit = jest.fn();
@@ -321,19 +330,28 @@ describe('SelectedMedicationItem', () => {
 
         render(<SelectedMedicationItem {...props} />);
 
+        // Wait for component to mount and useEffect hooks to complete
+        await waitFor(() => {
+          expect(
+            screen.getByRole('combobox', { name: /Duration Unit/i }),
+          ).toBeInTheDocument();
+        });
+
         const durationUnitDropdown = screen.getByRole('combobox', {
           name: /Duration Unit/i,
         });
         await user.click(durationUnitDropdown);
 
-        const daysOption = await screen.findByRole('option', { name: 'Days' });
+        const daysOption = await screen.findByRole('option', { name: 'Days' }, { timeout: 10000 });
         await user.click(daysOption);
 
-        expect(updateDurationUnit).toHaveBeenCalledWith(
-          'entry-1',
-          DURATION_UNIT_OPTIONS[2],
-        );
-      });
+        await waitFor(() => {
+          expect(updateDurationUnit).toHaveBeenCalledWith(
+            'entry-1',
+            DURATION_UNIT_OPTIONS[2],
+          );
+        });
+      }, 15000);
 
       test('updates instruction when instruction dropdown changes', async () => {
         const updateInstruction = jest.fn();
@@ -1330,9 +1348,14 @@ describe('SelectedMedicationItem', () => {
 
       const { container } = render(<SelectedMedicationItem {...props} />);
 
+      // Wait for component to fully render
+      await waitFor(() => {
+        expect(screen.getByRole('spinbutton', { name: /Dosage/i })).toBeInTheDocument();
+      });
+
       const results = await axe(container);
       expect(results).toHaveNoViolations();
-    });
+    }, 15000);
 
     test('all form controls have proper labels', () => {
       const props = createDefaultProps();

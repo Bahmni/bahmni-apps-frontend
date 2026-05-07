@@ -78,9 +78,6 @@ describe('BatchNumberField', () => {
       {
         name: 'batchNumber',
         required: true,
-        config: {
-          isFetchBatchNumberEnabled: true,
-        },
       },
     ];
 
@@ -91,6 +88,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
+          isFetchBatchNumberEnabled={true}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -111,6 +109,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
+          isFetchBatchNumberEnabled={true}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -127,6 +126,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
+          isFetchBatchNumberEnabled={true}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -160,6 +160,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
+          isFetchBatchNumberEnabled={true}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -194,6 +195,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
+          isFetchBatchNumberEnabled={true}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -227,6 +229,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
+          isFetchBatchNumberEnabled={true}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -254,6 +257,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={immunizationWithError}
           attributes={attributesWithFetch}
+          isFetchBatchNumberEnabled={true}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -296,6 +300,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={immunizationWithDrug}
           attributes={attributesWithFetch}
+          isFetchBatchNumberEnabled={true}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -325,6 +330,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
+          isFetchBatchNumberEnabled={true}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -342,6 +348,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
+          isFetchBatchNumberEnabled={true}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -360,17 +367,15 @@ describe('BatchNumberField', () => {
       {
         name: 'batchNumber',
         required: false,
-        config: {
-          isFetchBatchNumberEnabled: false,
-        },
       },
     ];
 
-    it('should render TextInput when fetch is disabled', () => {
+    it('should render ComboBox when fetch is disabled', () => {
       render(
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithoutFetch}
+          isFetchBatchNumberEnabled={false}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -394,21 +399,23 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithoutFetch}
+          isFetchBatchNumberEnabled={false}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
         { wrapper: createWrapper() },
       );
 
-      const input = screen.getByPlaceholderText(
-        'IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER',
-      );
+      const input = screen.getByRole('combobox');
       await user.type(input, 'MANUAL-BATCH-001');
+      await user.keyboard('{Enter}');
 
-      expect(mockOnBatchNumberChange).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(mockOnBatchNumberChange).toHaveBeenCalled();
+      });
     });
 
-    it('should display batch number value in TextInput', () => {
+    it('should display batch number value in ComboBox', async () => {
       const immunizationWithBatch = {
         ...mockImmunization,
         batchNumber: 'EXISTING-BATCH',
@@ -418,17 +425,24 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={immunizationWithBatch}
           attributes={attributesWithoutFetch}
+          isFetchBatchNumberEnabled={false}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
         { wrapper: createWrapper() },
       );
 
-      const input = screen.getByDisplayValue('EXISTING-BATCH');
-      expect(input).toBeInTheDocument();
+      await waitFor(() => {
+        const input = screen.getByRole('combobox');
+        expect(input).toBeInTheDocument();
+      });
+      
+      // The ComboBox should have the batch number as its value
+      const combobox = screen.getByTestId('immunization-batch-number-test-id');
+      expect(combobox).toBeInTheDocument();
     });
 
-    it('should show validation error in TextInput mode', () => {
+    it('should show validation error in ComboBox mode', () => {
       const immunizationWithError = {
         ...mockImmunization,
         errors: { batchNumber: 'BATCH_NUMBER_REQUIRED' },
@@ -438,6 +452,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={immunizationWithError}
           attributes={attributesWithoutFetch}
+          isFetchBatchNumberEnabled={false}
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,

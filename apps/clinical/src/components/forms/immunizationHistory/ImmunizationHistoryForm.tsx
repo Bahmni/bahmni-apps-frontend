@@ -50,6 +50,8 @@ const ImmunizationHistoryForm = () => {
   const administeredLocationTag = metadata?.administeredLocationTag as
     | string
     | undefined;
+  const isFetchBatchNumberEnabled =
+    (metadata?.isFetchBatchNumberEnabled as boolean) ?? false;
 
   useEffect(() => {
     if (attributes) {
@@ -266,6 +268,7 @@ const ImmunizationHistoryForm = () => {
                 sites={sitesConceptSet}
                 attributes={attributes}
                 administeredLocationTag={administeredLocationTagData}
+                isFetchBatchNumberEnabled={isFetchBatchNumberEnabled}
                 vaccineDrugs={vaccinationDrugs?.entry
                   ?.filter(
                     (entry) => entry.resource?.resourceType === 'Medication',

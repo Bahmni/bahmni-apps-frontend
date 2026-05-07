@@ -18,6 +18,16 @@ import {
 } from './__mocks__/immunizationHistoryMocks';
 
 jest.mock('../stores');
+jest.mock('../components/hooks/useBatchNumber', () => ({
+  useBatchNumberLogic: jest.fn(() => ({
+    batchComboBoxItems: [],
+    batchSearchTerm: '',
+    setBatchSearchTerm: jest.fn(),
+    stocksLoading: false,
+    isFetchBatchNumberEnabled: false,
+    productUuid: undefined,
+  })),
+}));
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getUserLoginLocation: jest.fn(() => ({
@@ -294,10 +304,21 @@ describe('SelectedImmunizationItem', () => {
         });
         await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
         await user.click(screen.getByText(itemText));
+        
+        // Wait for the initial call to complete
+        await waitFor(() => {
+          expect(storeMethod).toHaveBeenCalled();
+        });
+        
         storeMethod.mockClear();
-        await user.click(
-          screen.getByRole('button', { name: 'Clear selected item' }),
-        );
+        
+        // Clear the selection
+        const clearButtons = screen.getAllByRole('button', { name: 'Clear selected item' });
+        await user.click(clearButtons[clearButtons.length - 1]);
+        
+        // Give it a moment to ensure no call is made
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         expect(storeMethod).not.toHaveBeenCalled();
       },
     );
@@ -336,30 +357,29 @@ describe('SelectedImmunizationItem', () => {
       },
     );
 
-    it.each([
-      [
-        'updateManufacturer',
-        `immunization-manufacturer-${id}`,
-        mockStore.updateManufacturer,
-      ],
-      [
-        'updateBatchNumber',
-        `immunization-batch-number-${id}`,
-        mockStore.updateBatchNumber,
-      ],
-    ])(
-      'calls %s when the text input changes',
-      async (_, testId, storeMethod) => {
-        const user = userEvent.setup();
-        render(<SelectedImmunizationItem {...defaultProps} />, {
-          wrapper: createWrapper(),
-        });
-        await user.type(screen.getByTestId(testId), 'value');
-        await waitFor(() => {
-          expect(storeMethod).toHaveBeenCalledWith(id, expect.any(String));
-        });
-      },
-    );
+    it('calls updateManufacturer when the text input changes', async () => {
+      const user = userEvent.setup();
+      render(<SelectedImmunizationItem {...defaultProps} />, {
+        wrapper: createWrapper(),
+      });
+      await user.type(screen.getByTestId(`immunization-manufacturer-${id}`), 'value');
+      await waitFor(() => {
+        expect(mockStore.updateManufacturer).toHaveBeenCalledWith(id, expect.any(String));
+      });
+    });
+
+    it('calls updateBatchNumber when the combobox input changes', async () => {
+      const user = userEvent.setup();
+      render(<SelectedImmunizationItem {...defaultProps} />, {
+        wrapper: createWrapper(),
+      });
+      const batchInput = screen.getByTestId(`immunization-batch-number-${id}`);
+      await user.type(batchInput, 'BATCH-001');
+      await user.keyboard('{Enter}');
+      await waitFor(() => {
+        expect(mockStore.updateBatchNumber).toHaveBeenCalledWith(id, expect.any(String));
+      });
+    });
 
     it('calls updateDoseSequence with a number when value is typed', async () => {
       const user = userEvent.setup();

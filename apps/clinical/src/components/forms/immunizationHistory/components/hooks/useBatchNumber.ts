@@ -7,23 +7,20 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
 import { getAvailableStocks } from '../../../../../services/inventoryService';
-import { findAttr } from '../../utils';
 
 interface UseBatchNumberLogicProps {
   attributes: InputControlAttributes[] | undefined;
   drugCode: string | undefined;
+  isFetchBatchNumberEnabled?: boolean;
 }
 
 export const useBatchNumberLogic = ({
   attributes,
   drugCode,
+  isFetchBatchNumberEnabled = false,
 }: UseBatchNumberLogicProps) => {
   const { t } = useTranslation();
   const [batchSearchTerm, setBatchSearchTerm] = useState('');
-
-  const batchNumberAttr = findAttr('batchNumber', attributes);
-  const isFetchBatchNumberEnabled =
-    (batchNumberAttr?.config?.isFetchBatchNumberEnabled as boolean) ?? false;
 
   const productUuid = drugCode ?? '';
   const locationUuid = getUserLoginLocation()?.uuid ?? '';

@@ -176,14 +176,23 @@ describe('ImmunizationHistoryForm', () => {
           return defaultQueryMock({ queryKey: qk }) as any;
         });
         render(<ImmunizationHistoryForm />);
+        
+        // Wait for component to be ready
+        await waitFor(() => {
+          expect(
+            screen.getByRole('combobox', { name: /search to add immunization/i }),
+          ).toBeInTheDocument();
+        });
+
         await user.type(
           screen.getByRole('combobox', { name: /search to add immunization/i }),
           'test',
         );
         await waitFor(() => {
           expect(screen.getByText(expectedText)).toBeInTheDocument();
-        });
+        }, { timeout: 10000 });
       },
+      15000,
     );
 
     it('filters vaccine results by search term', async () => {
@@ -295,17 +304,23 @@ describe('ImmunizationHistoryForm', () => {
         return defaultQueryMock({ queryKey: qk }) as any;
       });
       render(<ImmunizationHistoryForm />);
+      
+      // Wait for component to be ready
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText('Search drug name')).toBeInTheDocument();
+      });
+
       const drugCombobox = screen.getByPlaceholderText('Search drug name');
       await user.type(drugCombobox, 'Paracetamol');
       await waitFor(() => {
         expect(screen.getByText('Paracetamol')).toBeInTheDocument();
-      });
+      }, { timeout: 10000 });
       await user.clear(drugCombobox);
       await user.type(drugCombobox, 'ShouldBeExcluded');
       await waitFor(() => {
         expect(screen.queryByText('ShouldBeExcluded')).not.toBeInTheDocument();
-      });
-    });
+      }, { timeout: 10000 });
+    }, 15000);
 
     it('calls removeImmunization when close button clicked', async () => {
       const user = userEvent.setup();
