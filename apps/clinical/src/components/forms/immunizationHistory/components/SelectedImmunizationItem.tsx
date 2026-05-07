@@ -86,13 +86,15 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   });
 
   const batchComboBoxItems = useMemo(() => {
+      const validStocks = availableStocks.filter((stock) => stock.batchNumber);
+
     const filtered = batchSearchTerm.trim()
-      ? availableStocks.filter((stock) =>
+      ? validStocks.filter((stock) =>
           stock.batchNumber
             .toLowerCase()
             .includes(batchSearchTerm.toLowerCase()),
         )
-      : availableStocks;
+      : validStocks;
 
     return filtered.map((stock) => {
       const formattedDate = formatDateTime(
