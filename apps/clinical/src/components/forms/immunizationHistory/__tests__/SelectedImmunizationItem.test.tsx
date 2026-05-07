@@ -304,21 +304,23 @@ describe('SelectedImmunizationItem', () => {
         });
         await user.type(screen.getByPlaceholderText(placeholder), searchTerm);
         await user.click(screen.getByText(itemText));
-        
+
         // Wait for the initial call to complete
         await waitFor(() => {
           expect(storeMethod).toHaveBeenCalled();
         });
-        
+
         storeMethod.mockClear();
-        
+
         // Clear the selection
-        const clearButtons = screen.getAllByRole('button', { name: 'Clear selected item' });
+        const clearButtons = screen.getAllByRole('button', {
+          name: 'Clear selected item',
+        });
         await user.click(clearButtons[clearButtons.length - 1]);
-        
+
         // Give it a moment to ensure no call is made
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
         expect(storeMethod).not.toHaveBeenCalled();
       },
     );
@@ -362,9 +364,15 @@ describe('SelectedImmunizationItem', () => {
       render(<SelectedImmunizationItem {...defaultProps} />, {
         wrapper: createWrapper(),
       });
-      await user.type(screen.getByTestId(`immunization-manufacturer-${id}`), 'value');
+      await user.type(
+        screen.getByTestId(`immunization-manufacturer-${id}`),
+        'value',
+      );
       await waitFor(() => {
-        expect(mockStore.updateManufacturer).toHaveBeenCalledWith(id, expect.any(String));
+        expect(mockStore.updateManufacturer).toHaveBeenCalledWith(
+          id,
+          expect.any(String),
+        );
       });
     });
 
@@ -377,7 +385,10 @@ describe('SelectedImmunizationItem', () => {
       await user.type(batchInput, 'BATCH-001');
       await user.keyboard('{Enter}');
       await waitFor(() => {
-        expect(mockStore.updateBatchNumber).toHaveBeenCalledWith(id, expect.any(String));
+        expect(mockStore.updateBatchNumber).toHaveBeenCalledWith(
+          id,
+          expect.any(String),
+        );
       });
     });
 

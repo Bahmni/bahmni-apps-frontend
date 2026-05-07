@@ -15,7 +15,6 @@ interface UseBatchNumberLogicProps {
 }
 
 export const useBatchNumberLogic = ({
-  attributes,
   drugCode,
   isFetchBatchNumberEnabled = false,
 }: UseBatchNumberLogicProps) => {

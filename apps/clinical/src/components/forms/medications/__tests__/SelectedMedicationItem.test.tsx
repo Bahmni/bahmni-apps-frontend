@@ -312,7 +312,11 @@ describe('SelectedMedicationItem', () => {
         await user.click(routeDropdown);
 
         // Find and click the 'IV' option
-        const ivOption = await screen.findByRole('option', { name: 'IV' }, { timeout: 10000 });
+        const ivOption = await screen.findByRole(
+          'option',
+          { name: 'IV' },
+          { timeout: 10000 },
+        );
         await user.click(ivOption);
 
         await waitFor(() => {
@@ -342,7 +346,11 @@ describe('SelectedMedicationItem', () => {
         });
         await user.click(durationUnitDropdown);
 
-        const daysOption = await screen.findByRole('option', { name: 'Days' }, { timeout: 10000 });
+        const daysOption = await screen.findByRole(
+          'option',
+          { name: 'Days' },
+          { timeout: 10000 },
+        );
         await user.click(daysOption);
 
         await waitFor(() => {
@@ -1350,7 +1358,9 @@ describe('SelectedMedicationItem', () => {
 
       // Wait for component to fully render
       await waitFor(() => {
-        expect(screen.getByRole('spinbutton', { name: /Dosage/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('spinbutton', { name: /Dosage/i }),
+        ).toBeInTheDocument();
       });
 
       const results = await axe(container);

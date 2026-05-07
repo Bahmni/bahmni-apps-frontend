@@ -88,7 +88,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
-          isFetchBatchNumberEnabled={true}
+          isFetchBatchNumberEnabled
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -109,7 +109,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
-          isFetchBatchNumberEnabled={true}
+          isFetchBatchNumberEnabled
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -126,7 +126,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
-          isFetchBatchNumberEnabled={true}
+          isFetchBatchNumberEnabled
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -160,7 +160,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
-          isFetchBatchNumberEnabled={true}
+          isFetchBatchNumberEnabled
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -195,7 +195,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
-          isFetchBatchNumberEnabled={true}
+          isFetchBatchNumberEnabled
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -229,7 +229,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
-          isFetchBatchNumberEnabled={true}
+          isFetchBatchNumberEnabled
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -257,7 +257,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={immunizationWithError}
           attributes={attributesWithFetch}
-          isFetchBatchNumberEnabled={true}
+          isFetchBatchNumberEnabled
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -300,7 +300,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={immunizationWithDrug}
           attributes={attributesWithFetch}
-          isFetchBatchNumberEnabled={true}
+          isFetchBatchNumberEnabled
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -330,7 +330,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
-          isFetchBatchNumberEnabled={true}
+          isFetchBatchNumberEnabled
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -348,7 +348,7 @@ describe('BatchNumberField', () => {
         <BatchNumberField
           immunization={mockImmunization}
           attributes={attributesWithFetch}
-          isFetchBatchNumberEnabled={true}
+          isFetchBatchNumberEnabled
           onBatchNumberChange={mockOnBatchNumberChange}
           onExpiryDateChange={mockOnExpiryDateChange}
         />,
@@ -436,7 +436,7 @@ describe('BatchNumberField', () => {
         const input = screen.getByRole('combobox');
         expect(input).toBeInTheDocument();
       });
-      
+
       // The ComboBox should have the batch number as its value
       const combobox = screen.getByTestId('immunization-batch-number-test-id');
       expect(combobox).toBeInTheDocument();

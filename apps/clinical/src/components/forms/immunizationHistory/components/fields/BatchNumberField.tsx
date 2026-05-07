@@ -12,7 +12,7 @@ interface BatchNumberFieldProps {
   attributes: InputControlAttributes[] | undefined;
   isFetchBatchNumberEnabled?: boolean;
   onBatchNumberChange: (batchNumber: string) => void;
-  onExpiryDateChange: (expiryDate: Date) => void;
+  onExpiryDateChange: (expiryDate: Date | null) => void;
 }
 
 const BatchNumberField: React.FC<BatchNumberFieldProps> = ({
@@ -45,7 +45,7 @@ const BatchNumberField: React.FC<BatchNumberFieldProps> = ({
       if (stocksLoading) {
         return t('LOADING');
       }
-      if (batchComboBoxItems.length === 0) {
+      if (batchComboBoxItems.length === 0 && productUuid) {
         return t('IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR');
       }
       return t('IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER');
@@ -76,18 +76,6 @@ const BatchNumberField: React.FC<BatchNumberFieldProps> = ({
       return t(immunization.errors.batchNumber);
     }
 
-    if (isFetchEnabled) {
-      const hasNoBatchesAvailable =
-        !stocksLoading &&
-        batchComboBoxItems.length === 0 &&
-        batchSearchTerm.trim() !== '' &&
-        !!productUuid;
-
-      if (hasNoBatchesAvailable) {
-        return t('IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR');
-      }
-    }
-
     return '';
   };
 
@@ -100,10 +88,13 @@ const BatchNumberField: React.FC<BatchNumberFieldProps> = ({
       if (selectedItem.expiryDate) {
         onExpiryDateChange(new Date(selectedItem.expiryDate));
       }
+      setBatchSearchTerm('');
     } else if (inputValue?.trim()) {
       onBatchNumberChange(inputValue.trim());
     } else {
       onBatchNumberChange('');
+      onExpiryDateChange(null);
+      setBatchSearchTerm('');
     }
   };
 
@@ -115,14 +106,15 @@ const BatchNumberField: React.FC<BatchNumberFieldProps> = ({
         className={styles.batchNumberComboBox}
         placeholder={getPlaceholderText()}
         items={batchComboBoxItems}
-        itemToString={(item) => item?.display ?? ''}
+        itemToString={(item) => item?.code ?? ''}
+        itemToElement={(item) => <span>{item?.display ?? ''}</span>}
         selectedItem={
           batchComboBoxItems.find((b) => b.code === immunization.batchNumber) ??
           null
         }
         onInputChange={(value) => setBatchSearchTerm(value)}
-        onChange={(e) =>
-          handleBatchChange(e.selectedItem ?? null, e.inputValue ?? undefined)
+        onChange={({ selectedItem, inputValue }) =>
+          handleBatchChange(selectedItem ?? null, inputValue ?? undefined)
         }
         size="md"
         required={batchNumberAttr?.required}
