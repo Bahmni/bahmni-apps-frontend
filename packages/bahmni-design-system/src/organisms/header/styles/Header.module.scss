@@ -1,11 +1,81 @@
 // HeaderWSideNav.module.scss
 @use "@carbon/react/scss/spacing" as *;
-@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/motion" as *;
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/breakpoint" as *;
 
+// ── Header bar background ────────────────────────────────────────────────────
+:global(.cds--header) {
+  background-color: $background-brand;
+  border-block-end-color: $background-brand;
+}
+
+// ── Header name ("Home" link) ────────────────────────────────────────────────
+// Carbon sets text-primary on .cds--header__name regardless of background.
+:global(.cds--header__name),
+:global(.cds--header a.cds--header__name:hover) {
+  color: $text-inverse;
+}
+
+// ── Global bar ───────────────────────────────────────────────────────────────
+:global(.cds--header .cds--header__global) {
+  color: $text-inverse;
+}
+
+// ── Overflow menu ────────────────────────────────────────────────────────────
+:global(.cds--header .cds--overflow-menu) svg {
+  fill: $icon-inverse;
+  color: $icon-inverse;
+}
+
+:global(.cds--header .cds--overflow-menu:hover) {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+// ── Global action icons ──────────────────────────────────────────────────────
+// Carbon's ghost button sets link-primary (blue) on action buttons — override.
+:global(.cds--header .cds--header__global .cds--header__action),
+:global(.cds--header .cds--header__global .cds--header__action:hover),
+:global(.cds--header .cds--header__global .cds--header__action:active) {
+  color: $icon-inverse;
+}
+
+:global(.cds--header .cds--header__action) svg,
+:global(.cds--header .cds--header__action:hover) svg,
+:global(.cds--header .cds--header__action--active) svg {
+  fill: $icon-inverse;
+}
+
+:global(.cds--header .cds--header__action:hover),
+:global(.cds--header .cds--header__action--active) {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+:global(.cds--header .cds--header__action:focus) {
+  border-color: $icon-inverse;
+}
+
+// ── Breadcrumb ───────────────────────────────────────────────────────────────
+:global(.cds--header .cds--breadcrumb) {
+  color: $text-inverse;
+}
+
+:global(.cds--header .cds--breadcrumb-item .cds--link),
+:global(.cds--header .cds--breadcrumb-item .cds--link:visited),
+:global(.cds--header .cds--breadcrumb-item .cds--link:hover),
+:global(.cds--header .cds--breadcrumb-item .cds--link:visited:hover) {
+  color: $text-inverse;
+}
+
+:global(.cds--header .cds--breadcrumb-item::after),
+:global(.cds--header .cds--breadcrumb-item [aria-current="page"]),
+:global(.cds--header .cds--breadcrumb-item.cds--breadcrumb-item--current .cds--link) {
+  color: $text-inverse;
+  font-weight: 600;
+}
+
+// ── Layout ───────────────────────────────────────────────────────────────────
 .headerWSideNav {
   display: flex;
   flex-direction: column;
@@ -21,16 +91,28 @@
       display: none;
     }
 
-    // Show only the non-current items
     :global(.cds--breadcrumb-item--current) {
-      display: inline-block; // or flex, depending on your base styles
+      display: inline-block;
     }
   }
 }
 
+// ── Side nav icons ───────────────────────────────────────────────────────────
+// FontAwesome uses fill="currentColor" — Carbon doesn't set color on <a>
+// so icons inherit browser link blue without this override.
 .sideNavItems {
   border-right: 1px solid $border-subtle-01;
+
   :global(.cds--side-nav__items) {
     padding: 0rem !important;
+  }
+
+  :global(.cds--side-nav__icon) svg {
+    color: $icon-secondary;
+  }
+
+  :global(.cds--side-nav__item--active .cds--side-nav__icon) svg,
+  :global(.cds--side-nav__link:hover .cds--side-nav__icon) svg {
+    color: $icon-primary;
   }
 }

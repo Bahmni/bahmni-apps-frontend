@@ -1,5 +1,6 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
 
 .container {
   margin-top: 3.75rem;
@@ -15,7 +16,7 @@
 
 .skeletonTile {
   height: 8.125rem;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, $skeleton-background 25%, $skeleton-element 50%, $skeleton-background 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;

@@ -1,6 +1,6 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
-@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
 
 .tile {
   display: flex;
@@ -10,14 +10,17 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   padding: $spacing-05;
+  background-color: $background;
+  box-shadow: 0 2px 6px 0 $shadow;
 
   &:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 16px 0 $shadow;
   }
 
   &:focus,
   &:focus-visible {
-    outline: 2px solid $blue-60;
+    outline: 2px solid $focus;
     outline-offset: -2px;
   }
 }
@@ -32,8 +35,5 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-}
-
-.arrow {
-  color: $blue-60;
+  color: $interactive;
 }

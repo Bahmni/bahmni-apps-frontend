@@ -13,9 +13,12 @@ import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ConsultationPad from '../index';
-import { loadEncounterInputControls } from '../inputControlRegistry';
 import { submitConsultation } from '../services';
-import { captureUpdatedResources, getActiveEntries } from '../utils';
+import {
+  loadEncounterInputControls,
+  captureUpdatedResources,
+  getActiveEntries,
+} from '../utils';
 import {
   mockEncounterConcepts,
   mockObsFormsState,
@@ -73,10 +76,6 @@ jest.mock('../../../hooks/useEncounterConcepts');
 jest.mock('../../../hooks/useEncounterSession');
 jest.mock('../../../providers/clinicalConfig');
 
-jest.mock('../inputControlRegistry', () => ({
-  loadEncounterInputControls: jest.fn(),
-}));
-
 jest.mock('../../forms/observations/ObservationFormsContainer', () => ({
   __esModule: true,
   default: () => null,
@@ -87,6 +86,7 @@ jest.mock('../services', () => ({
 }));
 
 jest.mock('../utils', () => ({
+  loadEncounterInputControls: jest.fn(),
   getActiveEntries: jest.fn(),
   captureUpdatedResources: jest.fn(),
 }));
@@ -203,15 +203,13 @@ describe('ConsultationPad', () => {
         true,
       ],
       ['no consultation data', {}, false],
-    ])('is disabled when %s', (_, storeOverride, withData) => {
+    ])('is disabled when %s', (_, storeOverride, hasData) => {
       jest
         .mocked(useEncounterDetailsStore)
         .mockImplementation((selector: any) =>
           selector({ ...defaultEncounterDetailsState, ...storeOverride }),
         );
-      if (withData) {
-        (mockRegistry[0].hasData as jest.Mock).mockReturnValue(true);
-      }
+      (mockRegistry[0].hasData as jest.Mock).mockReturnValue(hasData);
 
       renderComponent();
 
@@ -232,7 +230,12 @@ describe('ConsultationPad', () => {
       jest.mocked(useClinicalConfig).mockReturnValue({
         clinicalConfig: {
           consultationPad: {
-            encounterDetails: { metadata: { defaultEncounterType: 'OPD' } },
+            inputControls: [
+              {
+                type: 'encounterDetails',
+                metadata: { defaultEncounterType: 'OPD' },
+              },
+            ],
           },
         },
       } as any);
@@ -265,21 +268,19 @@ describe('ConsultationPad', () => {
       expect(screen.queryByTestId('allergies-divider')).not.toBeInTheDocument();
     });
 
-    it('renders normally when encounterType prop is valid', () => {
-      renderComponent({ encounterType: 'Consultation' });
+    it.each([
+      ['valid', 'Consultation'],
+      ['empty', ''],
+    ])(
+      'does not show error state when encounterType is %s',
+      (_, encounterType) => {
+        renderComponent({ encounterType });
 
-      expect(
-        screen.queryByText('Something went wrong'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('does not validate when encounterType prop is empty', () => {
-      renderComponent({ encounterType: '' });
-
-      expect(
-        screen.queryByText('Something went wrong'),
-      ).not.toBeInTheDocument();
-    });
+        expect(
+          screen.queryByText('Something went wrong'),
+        ).not.toBeInTheDocument();
+      },
+    );
   });
 
   describe('lifecycle', () => {
@@ -388,10 +389,27 @@ describe('ConsultationPad', () => {
       },
     );
 
-    it('passes episodeOfCare uuids to submitConsultation', async () => {
-      jest.mocked(useClinicalAppData).mockReturnValue({
-        episodeOfCare: [{ uuid: 'eoc-1' }, { uuid: 'eoc-2' }],
-      } as any);
+    it.each([
+      [
+        'episodeOfCare uuids',
+        () =>
+          jest.mocked(useClinicalAppData).mockReturnValue({
+            episodeOfCare: [{ uuid: 'eoc-1' }, { uuid: 'eoc-2' }],
+          } as any),
+        { episodeOfCareUuids: ['eoc-1', 'eoc-2'] },
+      ],
+      [
+        'statDurationInMilliseconds from config',
+        () =>
+          jest.mocked(useClinicalConfig).mockReturnValue({
+            clinicalConfig: {
+              consultationPad: { statDurationInMilliseconds: 3000 },
+            },
+          } as any),
+        { statDurationInMilliseconds: 3000 },
+      ],
+    ])('passes %s to submitConsultation', async (_, setup, expectedArgs) => {
+      setup();
       enableSubmit();
 
       renderComponent();
@@ -399,25 +417,7 @@ describe('ConsultationPad', () => {
 
       await waitFor(() => {
         expect(submitConsultation).toHaveBeenCalledWith(
-          expect.objectContaining({ episodeOfCareUuids: ['eoc-1', 'eoc-2'] }),
-        );
-      });
-    });
-
-    it('passes statDurationInMilliseconds from config to submitConsultation', async () => {
-      jest.mocked(useClinicalConfig).mockReturnValue({
-        clinicalConfig: {
-          consultationPad: { statDurationInMilliseconds: 3000 },
-        },
-      } as any);
-      enableSubmit();
-
-      renderComponent();
-      await userEvent.click(screen.getByTestId('primary-button'));
-
-      await waitFor(() => {
-        expect(submitConsultation).toHaveBeenCalledWith(
-          expect.objectContaining({ statDurationInMilliseconds: 3000 }),
+          expect.objectContaining(expectedArgs),
         );
       });
     });

@@ -39,6 +39,7 @@ export {
   type PersonAttributeConcept,
   type PatientSearchField,
   type AppointmentSearchField,
+  type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
 } from './models';
