@@ -1,7 +1,6 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
-@use "@carbon/react/scss/colors" as *;
 
 .selectedAllergyTitle {
   @include type-style("heading-compact-01");

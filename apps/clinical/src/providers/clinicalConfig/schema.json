@@ -11,26 +11,15 @@
   ],
   "additionalProperties": false,
   "definitions": {
-    "encounterDetailsControl": {
-      "allOf": [{ "$ref": "#/definitions/inputControl" }],
-      "properties": {
-        "metadata": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "defaultEncounterType": {
-              "type": "string",
-              "description": "Encounter type name to use when none is specified by the caller"
-            }
-          }
-        }
-      }
-    },
     "inputControl": {
       "type": "object",
-      "required": ["metadata", "encounterTypes", "privileges", "attributes"],
+      "required": ["type", "metadata", "encounterTypes", "privileges", "attributes"],
       "additionalProperties": false,
       "properties": {
+        "type": {
+          "type": "string",
+          "description": "Identifier matching the registered form key (e.g. encounterDetails, allergies)"
+        },
         "metadata": {
           "type": "object",
           "description": "Additional metadata for the input control"
@@ -167,7 +156,7 @@
     "consultationPad": {
       "type": "object",
       "description": "Configuration for consultation pad forms",
-      "required": ["allergyConceptMap", "encounterDetails"],
+      "required": ["allergyConceptMap", "inputControls"],
       "additionalProperties": true,
       "properties": {
         "allergyConceptMap": {
@@ -203,37 +192,12 @@
           "type": "number",
           "description": "Duration in milliseconds for which a STAT order is valid"
         },
-        "encounterDetails": {
-          "$ref": "#/definitions/encounterDetailsControl",
-          "description": "Configuration for the encounter details form"
-        },
-        "allergies": {
-          "$ref": "#/definitions/inputControl",
-          "description": "Configuration for the allergies form"
-        },
-        "investigations": {
-          "$ref": "#/definitions/inputControl",
-          "description": "Configuration for the investigations form"
-        },
-        "medications": {
-          "$ref": "#/definitions/inputControl",
-          "description": "Configuration for the medications form"
-        },
-        "observationForms": {
-          "$ref": "#/definitions/inputControl",
-          "description": "Configuration for the observation forms panel"
-        },
-        "vaccinations": {
-          "$ref": "#/definitions/inputControl",
-          "description": "Configuration for the vaccinations form"
-        },
-        "conditionsAndDiagnoses": {
-          "$ref": "#/definitions/inputControl",
-          "description": "Configuration for the conditions and diagnoses form"
-        },
-        "immunizationHistory": {
-          "$ref": "#/definitions/inputControl",
-          "description": "Configuration for the immunization history form"
+        "inputControls": {
+          "type": "array",
+          "description": "Ordered list of input controls to display in the consultation pad",
+          "items": {
+            "$ref": "#/definitions/inputControl"
+          }
         }
       }
     }

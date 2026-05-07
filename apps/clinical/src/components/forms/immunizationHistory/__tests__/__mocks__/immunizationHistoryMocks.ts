@@ -47,7 +47,9 @@ export const mockImmunizationHistory = {
 export const mockClinicalConfigContext = {
   clinicalConfig: {
     consultationPad: {
-      immunizationHistory: mockImmunizationHistory,
+      inputControls: [
+        { type: 'immunizationHistory', ...mockImmunizationHistory },
+      ],
     },
   },
   isLoading: false,

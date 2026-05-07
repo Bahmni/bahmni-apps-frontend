@@ -1,5 +1,5 @@
-@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/breakpoint" as *;
 @use "@carbon/react/scss/type" as *;
 
@@ -7,7 +7,7 @@
   position: relative;
   height: 100%;
   width: 100%;
-  border-left: 1px solid $gray-20;
+  border-left: 1px solid $border-subtle;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -33,7 +33,7 @@
   display: flex;
   width: 100%;
   gap: 0;
-  border-top: 1px solid $gray-20;
+  border-top: 1px solid $border-subtle;
 
   .twoButtons {
     min-width: calc(100% / 2);

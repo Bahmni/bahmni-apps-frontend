@@ -2,12 +2,12 @@ import type { ObservationForm } from '@bahmni/services';
 import { useActivePractitioner } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
-import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
-import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
-import { useObservationFormsStore } from '../../../stores/observationFormsStore';
-import ObservationForms from '../../forms/observations/ObservationForms';
-import ObservationFormsPanel from '../components/ObservationFormsPanel';
+import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
+import useObservationFormsSearch from '../../../../hooks/useObservationFormsSearch';
+import { usePinnedObservationForms } from '../../../../hooks/usePinnedObservationForms';
+import { useObservationFormsStore } from '../../../../stores/observationFormsStore';
+import ObservationForms from '../ObservationForms';
+import ObservationFormsPanel from '../ObservationFormsPanel';
 
 expect.extend(toHaveNoViolations);
 
@@ -32,24 +32,24 @@ jest.mock('@bahmni/widgets', () => ({
   useActivePractitioner: jest.fn(),
 }));
 
-jest.mock('../../../hooks/useClinicalAppData', () => ({
+jest.mock('../../../../hooks/useClinicalAppData', () => ({
   useClinicalAppData: jest.fn(),
 }));
 
-jest.mock('../../../hooks/useObservationFormsSearch', () => ({
+jest.mock('../../../../hooks/useObservationFormsSearch', () => ({
   __esModule: true,
   default: jest.fn(),
 }));
 
-jest.mock('../../../hooks/usePinnedObservationForms', () => ({
+jest.mock('../../../../hooks/usePinnedObservationForms', () => ({
   usePinnedObservationForms: jest.fn(),
 }));
 
-jest.mock('../../../stores/observationFormsStore', () => ({
+jest.mock('../../../../stores/observationFormsStore', () => ({
   useObservationFormsStore: jest.fn(),
 }));
 
-jest.mock('../../forms/observations/ObservationForms', () => ({
+jest.mock('../ObservationForms', () => ({
   __esModule: true,
   default: jest.fn(() => <div data-testid="observation-forms" />),
 }));

@@ -4,7 +4,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
 <div>
   <div
     aria-label="base-layout-aria-label"
-    class="_layout_69f5z_85"
+    class="_layout_ma379_85"
     data-testid="base-layout-test-id"
     id="base-layout"
   >
@@ -15,7 +15,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
     >
       <nav
         aria-label="Breadcrumb"
-        class="_breadcrumb_dqa8m_8"
+        class="_breadcrumb_7z10y_70"
         data-testid="breadcrumb"
       >
         <ol
@@ -47,7 +47,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
     </header>
     <div
       aria-label="main-display-area-aria-label"
-      class="_main_69f5z_92"
+      class="_main_ma379_93"
       data-testid="main-display-area-test-id"
       id="main-display-area"
     >

@@ -1,8 +1,8 @@
 import { useHasPrivilege } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import InputControlRenderer from '../components/InputControlRenderer';
-import type { EncounterInputControl } from '../models';
+import type { InputControl } from '../models';
+import InputControlRenderer from '../renderer';
 
 expect.extend(toHaveNoViolations);
 
@@ -12,7 +12,7 @@ jest.mock('@bahmni/widgets', () => ({
 
 const MockComponent = () => <div data-testid="mock-form">Form Content</div>;
 
-const baseEntry: EncounterInputControl = {
+const baseEntry: InputControl = {
   key: 'allergies',
   component: MockComponent,
   reset: jest.fn(),
