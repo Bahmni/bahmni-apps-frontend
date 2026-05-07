@@ -13,6 +13,7 @@ import { useTranslation, Location } from '@bahmni/services';
 import { Medication, ValueSet } from 'fhir/r4';
 import React, { useMemo, useState } from 'react';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
+import BatchNumberField from '../BatchNumberField';
 import { ImmunizationInputEntry } from '../models';
 import { useImmunizationHistoryStore } from '../stores';
 import styles from '../styles/ImmunizationHistoryForm.module.scss';
@@ -22,7 +23,6 @@ import {
   getValueSetComboBoxItems,
   findAttr,
 } from '../utils';
-import BatchNumberField from './fields/BatchNumberField';
 
 interface SelectedImmunizationItemProps {
   immunization: ImmunizationInputEntry;

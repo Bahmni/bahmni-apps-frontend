@@ -18,7 +18,7 @@ import {
 } from './__mocks__/immunizationHistoryMocks';
 
 jest.mock('../stores');
-jest.mock('../components/hooks/useBatchNumber', () => ({
+jest.mock('../useBatchNumber', () => ({
   useBatchNumberLogic: jest.fn(() => ({
     batchComboBoxItems: [],
     batchSearchTerm: '',

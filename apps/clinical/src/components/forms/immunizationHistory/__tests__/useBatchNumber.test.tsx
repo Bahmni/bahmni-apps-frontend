@@ -2,8 +2,8 @@ import { getUserLoginLocation } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { InputControlAttributes } from '../../../../../../providers/clinicalConfig/models';
-import { getAvailableStocks } from '../../../../../../services/inventoryService';
+import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
+import { getAvailableStocks } from '../../../../services/inventoryService';
 import { useBatchNumberLogic } from '../useBatchNumber';
 
 jest.mock('@bahmni/services', () => ({
@@ -16,7 +16,7 @@ jest.mock('@bahmni/services', () => ({
   })),
 }));
 
-jest.mock('../../../../../../services/inventoryService', () => ({
+jest.mock('../../../../services/inventoryService', () => ({
   getAvailableStocks: jest.fn(),
 }));
 

@@ -3,10 +3,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { InputControlAttributes } from '../../../../../../providers/clinicalConfig/models';
-import { getAvailableStocks } from '../../../../../../services/inventoryService';
-import { ImmunizationInputEntry } from '../../../models';
+import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
+import { getAvailableStocks } from '../../../../services/inventoryService';
 import BatchNumberField from '../BatchNumberField';
+import { ImmunizationInputEntry } from '../models';
 
 jest.mock('@bahmni/services', () => ({
   getUserLoginLocation: jest.fn(),
@@ -18,7 +18,7 @@ jest.mock('@bahmni/services', () => ({
   })),
 }));
 
-jest.mock('../../../../../../services/inventoryService', () => ({
+jest.mock('../../../../services/inventoryService', () => ({
   getAvailableStocks: jest.fn(),
 }));
 
@@ -170,7 +170,7 @@ describe('BatchNumberField', () => {
       await waitFor(() => {
         expect(
           screen.getByPlaceholderText(
-            'IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER',
+            'IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER',
           ),
         ).toBeInTheDocument();
       });
@@ -205,7 +205,7 @@ describe('BatchNumberField', () => {
       await waitFor(() => {
         expect(
           screen.getByPlaceholderText(
-            'IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER',
+            'IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER',
           ),
         ).toBeInTheDocument();
       });

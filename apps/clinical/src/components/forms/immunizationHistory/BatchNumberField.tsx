@@ -1,11 +1,11 @@
 import { Column, ComboBox } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React from 'react';
-import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
-import { ImmunizationInputEntry } from '../../models';
-import styles from '../../styles/ImmunizationHistoryForm.module.scss';
-import { findAttr } from '../../utils';
-import { useBatchNumberLogic } from '../hooks/useBatchNumber';
+import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
+import { ImmunizationInputEntry } from './models';
+import { useBatchNumberLogic } from './useBatchNumber';
+import { findAttr } from './utils';
+import styles from './styles/ImmunizationHistoryForm.module.scss';
 
 interface BatchNumberFieldProps {
   immunization: ImmunizationInputEntry;
@@ -48,7 +48,7 @@ const BatchNumberField: React.FC<BatchNumberFieldProps> = ({
       if (batchComboBoxItems.length === 0 && productUuid) {
         return t('IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR');
       }
-      return t('IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER');
+      return t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER');
     }
     return t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER');
   };

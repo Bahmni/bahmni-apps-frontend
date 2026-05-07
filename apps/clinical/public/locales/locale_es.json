@@ -190,7 +190,6 @@
   "IMMUNIZATION_HISTORY_ADMINISTERED_ON_REQUIRED": "Por favor seleccione la fecha de administración",
   "IMMUNIZATION_HISTORY_BATCH_NUMBER": "Número de Lote",
   "IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER": "Seleccionar número de lote",
-  "IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER": "Ingresar Número de Lote",
   "IMMUNIZATION_HISTORY_BATCH_NUMBER_REQUIRED": "Por favor ingrese el número de lote",
   "NO_BATCHES_AVAILABLE": "No hay lotes disponibles",
   "IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR": "No hay lotes disponibles",
