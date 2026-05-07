@@ -83,6 +83,7 @@ export const transformOrderData = (
       urgentCount: urgentOrders,
       isExpandable: true,
       orders: ordersDetails,
+      hasBeenAdmitted: order.hasBeenAdmitted === 'true',
     };
   });
 };

@@ -58,6 +58,7 @@ export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
           <span className={styles.unassigned}>{t('UNASSIGNED')}</span>
         )}
       </TableCell>
+      <TableCell />
     </TableRow>
   );
 };

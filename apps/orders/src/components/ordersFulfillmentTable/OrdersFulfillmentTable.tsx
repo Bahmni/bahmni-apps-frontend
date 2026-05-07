@@ -1,6 +1,8 @@
 import { ExpandableSortableDataTable } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
+import { faBed } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {
   useMemo,
   useState,
@@ -299,6 +301,16 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
         );
       case 'ordersPending':
         return row.totalOrdersCount;
+      case 'hasBeenAdmitted':
+        return (
+          <span className={row.hasBeenAdmitted ? styles.ipdBedIndication : ''}>
+            {row.hasBeenAdmitted ? (
+              <FontAwesomeIcon icon={faBed} data-testid="bed-icon" />
+            ) : (
+              ''
+            )}
+          </span>
+        );
       case 'priority':
         return (
           <div className={styles.priorityCell}>

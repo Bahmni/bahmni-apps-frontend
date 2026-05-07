@@ -13,6 +13,7 @@ export interface OrderResponseItem {
   orders?: string;
   birthdate: number;
   gender: string;
+  hasBeenAdmitted?: string;
 }
 
 export async function fetchOrders(
