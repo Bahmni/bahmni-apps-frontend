@@ -62,6 +62,7 @@ const mockRows: PatientOrderRow[] = [
     totalOrdersCount: 3,
     urgentCount: 1,
     isExpandable: true,
+    hasBeenAdmitted: true,
     orders: [
       {
         id: 'order-1-1',
@@ -72,6 +73,7 @@ const mockRows: PatientOrderRow[] = [
         provider: 'Mike Ronoh',
         dateTime: '12 Nov 25 04:24 PM',
         owner: null,
+        patientUuid: 'uuid#1',
       },
       {
         id: 'order-1-2',
@@ -82,6 +84,7 @@ const mockRows: PatientOrderRow[] = [
         provider: 'Mike Ronoh',
         dateTime: '12 Nov 25 04:24 PM',
         owner: 'Ted Okatch',
+        patientUuid: 'uuid#2',
       },
     ],
   },
@@ -93,6 +96,7 @@ const mockRows: PatientOrderRow[] = [
     totalOrdersCount: 2,
     urgentCount: 0,
     isExpandable: true,
+    hasBeenAdmitted: false,
     orders: [
       {
         id: 'order-2-1',
@@ -103,6 +107,7 @@ const mockRows: PatientOrderRow[] = [
         provider: 'Sarah Kimani',
         dateTime: '12 Nov 25 03:15 PM',
         owner: 'Jane Wanjiku',
+        patientUuid: 'uuid#3',
       },
     ],
   },
@@ -118,11 +123,13 @@ const mockHeaders = [
   { key: 'provider', header: 'Provider' },
   { key: 'dateTime', header: 'Date and Time' },
   { key: 'owner', header: 'Owner' },
+  { key: 'hasBeenAdmitted', header: '' },
 ];
 
 const drugOrderHeaders = [
   { key: 'identifier', header: 'Identifier' },
   { key: 'patientName', header: 'Patient Name' },
+  { key: 'hasBeenAdmitted', header: '' },
 ];
 
 describe('OrdersFulfillmentTable', () => {
@@ -192,6 +199,22 @@ describe('OrdersFulfillmentTable', () => {
 
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
+  });
+
+  it('renders admitted column with Yes for admitted patients', () => {
+    render(
+      <OrdersFulfillmentTable rows={[mockRows[0]]} headers={mockHeaders} />,
+    );
+
+    expect(screen.getByTestId('bed-icon')).toBeInTheDocument();
+  });
+
+  it('renders admitted column with No for non-admitted patients', () => {
+    render(
+      <OrdersFulfillmentTable rows={[mockRows[1]]} headers={mockHeaders} />,
+    );
+
+    expect(screen.queryByTestId('bed-icon')).not.toBeInTheDocument();
   });
 
   it('expands row to show order details', () => {

@@ -35,7 +35,8 @@ $col-priority: 8%;
 $col-status: 8%;
 $col-provider: 12%;
 $col-date-time: 11%;
-$col-owner: 13%;
+$col-owner: calc(13% - 36px);
+$col-admitted: 36px;
 
 .ordersTable {
   thead tr th:nth-child(1),
@@ -111,6 +112,13 @@ $col-owner: 13%;
     min-width: 100px;
     text-align: left;
   }
+  thead tr th:last-child,
+  tbody tr td:last-child {
+    width: $col-admitted;
+    min-width: 36px;
+    text-align: right;
+    padding: 0;
+  }
 
   thead tr {
     height: $row-height;
@@ -142,4 +150,12 @@ $col-owner: 13%;
 }
 .centerAlignText{
   text-align: center;
+}
+
+.ipdBedIndication {
+  background: #88af28;
+  color: white;
+  padding: 2px 8px;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
 }
