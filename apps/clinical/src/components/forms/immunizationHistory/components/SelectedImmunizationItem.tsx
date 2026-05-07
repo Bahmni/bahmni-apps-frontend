@@ -12,14 +12,10 @@ import {
 import {
   useTranslation,
   Location,
-  getUserLoginLocation,
-  formatDateTime,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
 import { Medication, ValueSet } from 'fhir/r4';
 import React, { useMemo, useState } from 'react';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
-import { getAvailableStocks } from '../../../../services/inventoryService';
 import { ImmunizationInputEntry } from '../models';
 import { useImmunizationHistoryStore } from '../stores';
 import styles from '../styles/ImmunizationHistoryForm.module.scss';
@@ -29,6 +25,7 @@ import {
   getValueSetComboBoxItems,
   findAttr,
 } from '../utils';
+import BatchNumberField from './fields/BatchNumberField';
 
 interface SelectedImmunizationItemProps {
   immunization: ImmunizationInputEntry;
@@ -65,53 +62,10 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   const [drugSearchTerm, setDrugSearchTerm] = useState('');
   const [routeSearchTerm, setRouteSearchTerm] = useState('');
   const [siteSearchTerm, setSiteSearchTerm] = useState('');
-  const [batchSearchTerm, setBatchSearchTerm] = useState('');
   const [
     administeredLocationTagSearchTerm,
     setAdministeredLocationTagSearchTerm,
   ] = useState('');
-
-  const batchNumberAttr = findAttr('batchNumber', attributes);
-  const isFetchBatchNumberEnabled =
-    (batchNumberAttr?.config?.isFetchBatchNumberEnabled as boolean) ?? false;
-
-  const productUuid = immunization.drug?.code ?? '';
-  const locationUuid = getUserLoginLocation()?.uuid ?? '';
-
-  const { data: availableStocks = [], isLoading: stocksLoading } = useQuery({
-    queryKey: ['availableStocks', productUuid, locationUuid],
-    queryFn: () => getAvailableStocks(productUuid, locationUuid),
-    enabled: isFetchBatchNumberEnabled && !!productUuid && !!locationUuid,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  const batchComboBoxItems = useMemo(() => {
-      const validStocks = availableStocks.filter((stock) => stock.batchNumber);
-
-    const filtered = batchSearchTerm.trim()
-      ? validStocks.filter((stock) =>
-          stock.batchNumber
-            .toLowerCase()
-            .includes(batchSearchTerm.toLowerCase()),
-        )
-      : validStocks;
-
-    return filtered.map((stock) => {
-      const formattedDate = formatDateTime(
-        stock.expiryDate,
-        t,
-        false,
-        'dd-MMM-yyyy',
-      );
-
-      return {
-        code: stock.batchNumber,
-        display: `${stock.batchNumber} [${formattedDate.formattedResult}] - ${stock.stockLocationName}`,
-        expiryDate: stock.expiryDate,
-        disabled: false,
-      };
-    });
-  }, [availableStocks, batchSearchTerm, t]);
 
   const vaccineDrugComboBoxItems = useMemo(
     () =>
@@ -354,77 +308,12 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         )}
 
         {findAttr('batchNumber', attributes) && (
-          <Column sm={4} md={2} lg={5} className={styles.column}>
-            {isFetchBatchNumberEnabled ? (
-              <ComboBox
-                id={`immunization-batch-number-${id}`}
-                data-testid={`immunization-batch-number-${id}`}
-                className={styles.batchNumberComboBox}
-                placeholder={
-                  stocksLoading
-                    ? t('LOADING')
-                    : batchComboBoxItems.length === 0
-                      ? t('IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR')
-                      : t('IMMUNIZATION_HISTORY_ENTER_BATCH_NUMBER')
-                }
-                items={batchComboBoxItems}
-                itemToString={(item) => item?.display ?? ''}
-                selectedItem={
-                  batchComboBoxItems.find(
-                    (b) => b.code === immunization.batchNumber,
-                  ) ?? null
-                }
-                onInputChange={(value) => setBatchSearchTerm(value)}
-                onChange={(e) => {
-                  if (e.selectedItem) {
-                    updateBatchNumber(id, e.selectedItem.code);
-                    if (e.selectedItem.expiryDate) {
-                      updateExpiryDate(id, new Date(e.selectedItem.expiryDate));
-                    }
-                  } else {
-                    updateBatchNumber(id, '');
-                  }
-                }}
-                size="md"
-                required={findAttr('batchNumber', attributes)?.required}
-                disabled={stocksLoading}
-                invalid={
-                  !!immunization.errors.batchNumber ||
-                  (!stocksLoading &&
-                    batchComboBoxItems.length === 0 &&
-                    batchSearchTerm.trim() !== '' &&
-                    !!productUuid)
-                }
-                invalidText={
-                  immunization.errors.batchNumber
-                    ? t(immunization.errors.batchNumber)
-                    : !stocksLoading &&
-                        batchComboBoxItems.length === 0 &&
-                        batchSearchTerm.trim() !== '' &&
-                        !!productUuid
-                      ? t('IMMUNIZATION_HISTORY_NO_BATCHES_AVAILABLE_ERROR')
-                      : ''
-                }
-              />
-            ) : (
-              <TextInput
-                id={`immunization-batch-number-${id}`}
-                data-testid={`immunization-batch-number-${id}`}
-                labelText={t('IMMUNIZATION_HISTORY_BATCH_NUMBER')}
-                placeholder={t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')}
-                value={immunization.batchNumber ?? ''}
-                onChange={(e) => updateBatchNumber(id, e.target.value)}
-                size="md"
-                hideLabel
-                invalid={!!immunization.errors.batchNumber}
-                invalidText={
-                  immunization.errors.batchNumber
-                    ? t(immunization.errors.batchNumber)
-                    : ''
-                }
-              />
-            )}
-          </Column>
+          <BatchNumberField
+            immunization={immunization}
+            attributes={attributes}
+            onBatchNumberChange={(batchNumber) => updateBatchNumber(id, batchNumber)}
+            onExpiryDateChange={(expiryDate) => updateExpiryDate(id, expiryDate)}
+          />
         )}
 
         {findAttr('doseSequence', attributes) && (
