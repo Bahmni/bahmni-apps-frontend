@@ -27,6 +27,7 @@ export {
 
 // Hooks
 export { usePatientUUID } from './hooks/usePatientUUID';
+export { usePatient } from './patientDetails/usePatient';
 export { useUserPrivilege } from './userPrivileges/useUserPrivilege';
 export { useHasPrivilege } from './userPrivileges/useHasPrivilege';
 

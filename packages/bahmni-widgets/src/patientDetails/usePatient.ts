@@ -6,6 +6,10 @@ import {
 import { useState, useEffect, useCallback } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 
+interface UsePatientOptions {
+  enabled?: boolean;
+}
+
 interface UsePatientResult {
   patient: FormattedPatientData | null;
   loading: boolean;
@@ -15,15 +19,19 @@ interface UsePatientResult {
 
 /**
  * Custom hook to fetch and manage patient data
+ * @param options - Optional configuration. Set `enabled: false` to skip the fetch
+ *   (e.g. when patient data is already provided via props from a parent component).
  * @returns Object containing patient, loading state, error state, and refetch function
  */
-export const usePatient = (): UsePatientResult => {
+export const usePatient = (options?: UsePatientOptions): UsePatientResult => {
+  const enabled = options?.enabled !== false;
   const patientUUID = usePatientUUID();
   const [patient, setPatient] = useState<FormattedPatientData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchPatient = useCallback(async () => {
+    if (!enabled) return;
     if (!patientUUID) {
       setError(new Error('Invalid patient UUID'));
       return;
@@ -40,11 +48,11 @@ export const usePatient = (): UsePatientResult => {
     } finally {
       setLoading(false);
     }
-  }, [patientUUID]);
+  }, [patientUUID, enabled]);
 
   useEffect(() => {
-    fetchPatient();
-  }, [patientUUID, fetchPatient]);
+    if (enabled) fetchPatient();
+  }, [patientUUID, fetchPatient, enabled]);
 
   return { patient, loading, error, refetch: fetchPatient };
 };

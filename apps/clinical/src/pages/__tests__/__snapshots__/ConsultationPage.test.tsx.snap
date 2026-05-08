@@ -12,6 +12,21 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
       <div
         data-testid="mocked-header-component"
       >
+        <span
+          data-testid="breadcrumb-item-home"
+        >
+          Home
+        </span>
+        <span
+          data-testid="breadcrumb-item-clinical"
+        >
+          Clinical
+        </span>
+        <span
+          data-testid="breadcrumb-item-current"
+        >
+          Current Patient
+        </span>
         <button
           data-testid="global-action-search"
           tabindex="0"
@@ -59,6 +74,7 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
         role="region"
       >
         <div
+          data-loading="false"
           data-testid="mocked-patient-header"
         />
       </div>

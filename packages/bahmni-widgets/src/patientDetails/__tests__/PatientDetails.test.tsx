@@ -227,6 +227,102 @@ describe('PatientDetails Component', () => {
     });
   });
 
+  describe('External props override internal hook', () => {
+    it('uses patient data from props when provided, skipping the internal hook', () => {
+      const externalPatient = createMockPatient({
+        fullName: 'External Patient',
+      });
+      // usePatient mock returns different data — should be ignored
+      mockedUsePatient.mockReturnValue({
+        patient: createMockPatient({ fullName: 'Internal Patient' }),
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(
+        <PatientDetails
+          patient={externalPatient}
+          loading={false}
+          error={null}
+        />,
+      );
+
+      expect(screen.getByTestId('patient-name')).toHaveTextContent(
+        'External Patient',
+      );
+      expect(screen.queryByText('Internal Patient')).not.toBeInTheDocument();
+    });
+
+    it('shows skeleton when loading prop is true, even if internal hook has patient data', () => {
+      mockedUsePatient.mockReturnValue({
+        patient: createMockPatient({ fullName: 'Internal Patient' }),
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      // Passing loading=true via props with patient=null
+      render(<PatientDetails patient={null} loading error={null} />);
+
+      expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
+      expect(screen.queryByTestId('patient-name')).not.toBeInTheDocument();
+    });
+
+    it('shows skeleton when error prop is set, even if internal hook has patient data', () => {
+      mockedUsePatient.mockReturnValue({
+        patient: createMockPatient({ fullName: 'Internal Patient' }),
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(
+        <PatientDetails
+          patient={null}
+          loading={false}
+          error={new Error('External error')}
+        />,
+      );
+
+      expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
+    });
+
+    it('disables internal hook fetch when patient prop is provided', () => {
+      const externalPatient = createMockPatient();
+      // usePatient should be called with enabled: false
+      mockedUsePatient.mockReturnValue({
+        patient: null,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(
+        <PatientDetails
+          patient={externalPatient}
+          loading={false}
+          error={null}
+        />,
+      );
+
+      expect(mockedUsePatient).toHaveBeenCalledWith({ enabled: false });
+    });
+
+    it('enables internal hook fetch when no patient prop is provided', () => {
+      mockedUsePatient.mockReturnValue({
+        patient: null,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<PatientDetails />);
+
+      expect(mockedUsePatient).toHaveBeenCalledWith({ enabled: true });
+    });
+  });
+
   describe('Accessibility', () => {
     it('passes axe accessibility tests with patient data', async () => {
       jest.useRealTimers(); // axe doesn't work well with fake timers
