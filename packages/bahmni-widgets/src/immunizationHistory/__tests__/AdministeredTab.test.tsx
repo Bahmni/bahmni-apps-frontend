@@ -5,7 +5,7 @@ import {
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import AdministeredTab from '../components/AdministeredTab';
 import {
@@ -70,8 +70,12 @@ describe('AdministeredTab', () => {
     } as any);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     jest.clearAllMocks();
+    // Allow any pending state updates to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
   });
 
   it('renders column headers', () => {
@@ -206,7 +210,8 @@ describe('AdministeredTab', () => {
       description: 'same patient without immunization update',
       payload: {
         patientUUID: 'patient-uuid-123',
-        updatedResources: { immunizations: false },
+        updatedResources: { immunizationHistory: false },
+        updatedConcepts: {},
       } as ConsultationSavedEventPayload,
       expectedCallCount: 0,
     },
@@ -235,51 +240,70 @@ describe('AdministeredTab', () => {
     },
   );
 
-  it('displays tooltip icon when immunization has notes', () => {
-    render(
+  it('displays tooltip icon when immunization has notes', async () => {
+    const { unmount } = render(
       <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(
       screen.getByLabelText('Third dose completed successfully.'),
     ).toBeInTheDocument();
+    
+    // Cleanup properly
+    await act(async () => {
+      unmount();
+    });
   });
 
-  it('does not display tooltip icon when immunization has no notes', () => {
+  it('does not display tooltip icon when immunization has no notes', async () => {
     mockUseQuery.mockReturnValue({
       data: [mockMinimalRow],
       isLoading: false,
       isError: false,
       refetch: jest.fn(),
     } as any);
-    render(
+    const { unmount } = render(
       <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(
       screen.queryByLabelText('Third dose completed successfully.'),
     ).not.toBeInTheDocument();
+    
+    // Cleanup properly
+    await act(async () => {
+      unmount();
+    });
   });
 
-  it('renders expanded row content for a row with details', () => {
-    render(
+  it('renders expanded row content for a row with details', async () => {
+    const { unmount } = render(
       <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Expand current row' }));
+    
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Expand current row' }));
+    });
+    
     expect(
       screen.getByTestId(`immunization-expanded-row-${mockRow.id}-test-id`),
     ).toBeInTheDocument();
     expect(
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_EXPIRY_DATE'),
     ).toBeInTheDocument();
+    
+    // Cleanup properly
+    await act(async () => {
+      unmount();
+    });
   });
 
-  it('does not render expanded row content for a row without details', () => {
+  it('does not render expanded row content for a row without details', async () => {
     mockUseQuery.mockReturnValue({
       data: [mockMinimalRow],
       isLoading: false,
       isError: false,
       refetch: jest.fn(),
     } as any);
-    render(
+    const { unmount } = render(
       <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(
@@ -287,6 +311,11 @@ describe('AdministeredTab', () => {
         `immunization-expanded-row-${mockMinimalRow.id}-test-id`,
       ),
     ).not.toBeInTheDocument();
+    
+    // Cleanup properly
+    await act(async () => {
+      unmount();
+    });
   });
 
   it.each([
@@ -300,21 +329,26 @@ describe('AdministeredTab', () => {
       rowOverride: { code: null },
       testId: `table-cell-${mockRow.id}-code`,
     },
-  ])('renders - when $description', ({ rowOverride, testId }) => {
+  ])('renders - when $description', async ({ rowOverride, testId }) => {
     mockUseQuery.mockReturnValue({
       data: [{ ...mockRow, ...rowOverride }],
       isLoading: false,
       isError: false,
       refetch: jest.fn(),
     } as any);
-    render(
+    const { unmount } = render(
       <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(screen.getByTestId(testId)).toHaveTextContent('-');
+    
+    // Cleanup properly
+    await act(async () => {
+      unmount();
+    });
   });
 
   it('passes accessibility tests', async () => {
-    const { container } = render(
+    const { container, unmount } = render(
       <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     // empty-table-header: Carbon's expand column header has no text — known Carbon limitation
@@ -323,12 +357,22 @@ describe('AdministeredTab', () => {
         rules: { 'empty-table-header': { enabled: false } },
       }),
     ).toHaveNoViolations();
+    
+    // Cleanup properly
+    await act(async () => {
+      unmount();
+    });
   });
 
-  it('matches snapshot', () => {
-    const { asFragment } = render(
+  it('matches snapshot', async () => {
+    const { asFragment, unmount } = render(
       <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(asFragment()).toMatchSnapshot();
+    
+    // Cleanup properly
+    await act(async () => {
+      unmount();
+    });
   });
 });
