@@ -247,7 +247,7 @@ describe('AdministeredTab', () => {
     expect(
       screen.getByLabelText('Third dose completed successfully.'),
     ).toBeInTheDocument();
-    
+
     // Cleanup properly
     await act(async () => {
       unmount();
@@ -267,7 +267,7 @@ describe('AdministeredTab', () => {
     expect(
       screen.queryByLabelText('Third dose completed successfully.'),
     ).not.toBeInTheDocument();
-    
+
     // Cleanup properly
     await act(async () => {
       unmount();
@@ -278,18 +278,20 @@ describe('AdministeredTab', () => {
     const { unmount } = render(
       <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
-    
+
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Expand current row' }));
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Expand current row' }),
+      );
     });
-    
+
     expect(
       screen.getByTestId(`immunization-expanded-row-${mockRow.id}-test-id`),
     ).toBeInTheDocument();
     expect(
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_DETAIL_EXPIRY_DATE'),
     ).toBeInTheDocument();
-    
+
     // Cleanup properly
     await act(async () => {
       unmount();
@@ -311,7 +313,7 @@ describe('AdministeredTab', () => {
         `immunization-expanded-row-${mockMinimalRow.id}-test-id`,
       ),
     ).not.toBeInTheDocument();
-    
+
     // Cleanup properly
     await act(async () => {
       unmount();
@@ -340,7 +342,7 @@ describe('AdministeredTab', () => {
       <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(screen.getByTestId(testId)).toHaveTextContent('-');
-    
+
     // Cleanup properly
     await act(async () => {
       unmount();
@@ -357,7 +359,7 @@ describe('AdministeredTab', () => {
         rules: { 'empty-table-header': { enabled: false } },
       }),
     ).toHaveNoViolations();
-    
+
     // Cleanup properly
     await act(async () => {
       unmount();
@@ -369,7 +371,7 @@ describe('AdministeredTab', () => {
       <AdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(asFragment()).toMatchSnapshot();
-    
+
     // Cleanup properly
     await act(async () => {
       unmount();
