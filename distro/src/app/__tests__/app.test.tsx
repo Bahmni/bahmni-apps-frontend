@@ -16,6 +16,7 @@ jest.mock('@bahmni/services', () => ({
     display: 'Test User',
   }),
   getVisibleModules: jest.fn().mockResolvedValue([]),
+  getDefaultDateFormat: jest.fn().mockResolvedValue('DD/MM/YYYY'),
 }));
 
 describe('App', () => {
