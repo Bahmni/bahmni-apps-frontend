@@ -1,23 +1,19 @@
-import { getUserLoginLocation } from '@bahmni/services';
+import { getUserLoginLocation, getAvailableStocks } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
-import { getAvailableStocks } from '../../../../services/inventoryService';
 import { useBatchNumberLogic } from '../useBatchNumber';
 
 jest.mock('@bahmni/services', () => ({
   getUserLoginLocation: jest.fn(),
+  getAvailableStocks: jest.fn(),
   useTranslation: () => ({
     t: (key: string) => key,
   }),
   formatDateTime: jest.fn(() => ({
     formattedResult: '31-Dec-2025',
   })),
-}));
-
-jest.mock('../../../../services/inventoryService', () => ({
-  getAvailableStocks: jest.fn(),
 }));
 
 const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<

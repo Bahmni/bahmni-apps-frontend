@@ -353,3 +353,9 @@ export {
   getVisibleModules,
   type Module,
 } from './moduleService';
+
+export {
+  getAvailableStocks,
+  type StockBatch,
+  type AvailableStockResponse,
+} from './inventoryService';

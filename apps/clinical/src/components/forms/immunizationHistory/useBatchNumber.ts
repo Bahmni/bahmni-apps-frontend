@@ -2,11 +2,11 @@ import {
   useTranslation,
   getUserLoginLocation,
   formatDateTime,
+  getAvailableStocks,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
-import { getAvailableStocks } from '../../../services/inventoryService';
 
 interface UseBatchNumberLogicProps {
   attributes: InputControlAttributes[] | undefined;

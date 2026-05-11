@@ -1,19 +1,6 @@
-import { get } from '@bahmni/services';
-import { AVAILABLE_STOCKS_URL } from '../constants/app';
-
-export interface StockBatch {
-  stockLocationName: string;
-  availableQuantity: number;
-  onHandQuantity: number;
-  unit: string;
-  batchNumber: string;
-  expiryDate: string;
-}
-
-export interface AvailableStockResponse {
-  count: number;
-  data: StockBatch[];
-}
+import { get } from '../api';
+import { AVAILABLE_STOCKS_URL } from './constants';
+import { AvailableStockResponse, StockBatch } from './models';
 
 /**
  * Fetches available stock batches for a given product (vaccine) at a specific location

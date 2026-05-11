@@ -1,19 +1,10 @@
-import { get } from '@bahmni/services';
-import { AVAILABLE_STOCKS_URL } from '../../constants/app';
-import {
-  getAvailableStocks,
-  AvailableStockResponse,
-} from '../inventoryService';
+import { get } from '../../api';
+import { AVAILABLE_STOCKS_URL } from '../constants';
+import { getAvailableStocks } from '../inventoryService';
+import type { AvailableStockResponse } from '../models';
 
-jest.mock('@bahmni/services', () => ({
+jest.mock('../../api', () => ({
   get: jest.fn(),
-}));
-
-jest.mock('../../constants/app', () => ({
-  AVAILABLE_STOCKS_URL: jest.fn(
-    (productUuid: string, locationUuid: string) =>
-      `/api/stocks?product=${productUuid}&location=${locationUuid}`,
-  ),
 }));
 
 describe('inventoryService', () => {
@@ -128,9 +119,8 @@ describe('inventoryService', () => {
 
       await getAvailableStocks(productUuid, locationUuid);
 
-      expect(AVAILABLE_STOCKS_URL).toHaveBeenCalledWith(
-        productUuid,
-        locationUuid,
+      expect(mockGet).toHaveBeenCalledWith(
+        AVAILABLE_STOCKS_URL(productUuid, locationUuid),
       );
     });
   });

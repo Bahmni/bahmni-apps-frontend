@@ -21,10 +21,3 @@ export const CLINICAL_NAMESPACE = 'clinical';
 
 export const CLINICAL_V2_CONFIG_BASE_URL =
   '/bahmni_config/openmrs/apps/clinical/v2';
-
-export const AVAILABLE_STOCKS_URL = (
-  productUuid: string,
-  locationUuid: string,
-) =>
-  OPENMRS_REST_V1 +
-  `/availableStocks?productUuid=${productUuid}&locationUuid=${locationUuid}`;
