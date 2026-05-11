@@ -74,5 +74,5 @@ export function applyBahmniTheme(config: Partial<BahmniThemeConfig>): void {
     document.head.appendChild(tag);
   }
 
-  tag.textContent = `:root,\n.cds--white,\n.cds--g10 {\n${rules}\n}`;
+  tag.textContent = `:root,\n.cds--white {\n${rules}\n}`;
 }
