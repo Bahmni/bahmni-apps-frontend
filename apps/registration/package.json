@@ -15,6 +15,9 @@
     "./styles": "./dist/index.css",
     "./locales/*": "./dist/locales/*"
   },
+  "dependencies": {
+    "browser-image-compression": "^2.0.2"
+  },
   "peerDependencies": {
     "@tanstack/react-query": "^5.85.5",
     "react": ">=18.0.0",
