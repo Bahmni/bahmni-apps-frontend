@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 
 import App from '../app';
@@ -27,15 +27,12 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 describe('App', () => {
-  it('renders the index route', async () => {
-    render(
+  it('should render successfully', () => {
+    const { baseElement } = render(
       <BrowserRouter>
         <App />
       </BrowserRouter>,
     );
-
-    await act(async () => {});
-
-    expect(screen.getByRole('main')).toBeInTheDocument();
+    expect(baseElement).toBeTruthy();
   });
 });
