@@ -27,6 +27,9 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import type { DiagnosticReport } from 'fhir/r4';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  getStatusDotClassName,
+} from '../genericServiceRequest/utils';
+import {
   ServiceRequestStatus,
   STATUS_TRANSLATION_MAP,
 } from '../genericServiceRequest/models';
@@ -277,19 +280,6 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     });
   };
 
-  const getStatusDotClassName = (status: string): string => {
-    switch (status) {
-      case ServiceRequestStatus.Active:
-        return styles.inProgressStatus;
-      case ServiceRequestStatus.Completed:
-        return styles.completedStatus;
-      case ServiceRequestStatus.Revoked:
-        return styles.revokedStatus;
-      default:
-        return styles.unknownStatus;
-    }
-  };
-
   const renderResultsCell = (
     investigation: RadiologyInvestigationViewModel,
     primaryInvestigation?: RadiologyInvestigationViewModel,
@@ -445,7 +435,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
                 investigation.status as ServiceRequestStatus
               ],
             )}
-            dotClassName={getStatusDotClassName(investigation.status)}
+            dotClassName={getStatusDotClassName(investigation.status, styles)}
             testId={`${investigation.id}-status`}
           />
         );

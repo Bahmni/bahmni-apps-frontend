@@ -30,6 +30,7 @@ import {
 import styles from './styles/GenericServiceRequestTable.module.scss';
 import {
   filterServiceRequestReplacementEntries,
+  getStatusDotClassName,
   mapServiceRequest,
   sortServiceRequestsByPriority,
 } from './utils';
@@ -191,19 +192,6 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     }));
   }, [serviceRequests, t]);
 
-  const getStatusDotClassName = (status: string): string => {
-    switch (status) {
-      case ServiceRequestStatus.Active:
-        return styles.inProgressStatus;
-      case ServiceRequestStatus.Completed:
-        return styles.completedStatus;
-      case ServiceRequestStatus.Revoked:
-        return styles.revokedStatus;
-      default:
-        return styles.unknownStatus;
-    }
-  };
-
   const renderCell = useCallback(
     (request: ServiceRequestViewModel, cellId: string) => {
       switch (cellId) {
@@ -233,7 +221,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
               label={t(
                 STATUS_TRANSLATION_MAP[request.status as ServiceRequestStatus],
               )}
-              dotClassName={getStatusDotClassName(request.status)}
+              dotClassName={getStatusDotClassName(request.status, styles)}
               testId={`${request.id}-status`}
             />
           );

@@ -1,0 +1,19 @@
+@use "@carbon/react/scss/colors" as *;
+
+// Shared status colour styles for StatusTag dot indicator
+// Used by GenericServiceRequestTable and RadiologyInvestigationTable
+.inProgressStatus {
+  color: $yellow-70;
+}
+
+.completedStatus {
+  color: $green-50;
+}
+
+.revokedStatus {
+  color: $cool-gray-20;
+}
+
+.unknownStatus {
+  color: $cool-gray-20;
+}

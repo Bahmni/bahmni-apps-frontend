@@ -1,7 +1,7 @@
 import { Loading } from '@bahmni/design-system';
 import { AppContextProvider, NotificationProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useRef } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { ThemeConfigProvider } from '../providers/themeConfig';
 import { LocationProvider } from './context';
@@ -28,21 +28,23 @@ const AppointmentsApp = lazy(() =>
   })),
 );
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 export function App() {
+  const queryClient = useRef(
+    new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+          refetchOnMount: false,
+          refetchOnReconnect: false,
+          refetchOnWindowFocus: false,
+        },
+      },
+    }),
+  );
+
   return (
     <LocationProvider>
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient.current}>
         <NotificationProvider>
           <ThemeConfigProvider>
             <AppContextProvider>
