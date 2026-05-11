@@ -314,7 +314,9 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               id={`immunization-manufacturer-${id}`}
               data-testid={`immunization-manufacturer-${id}`}
               labelText={t('IMMUNIZATION_INPUT_CONTROL_MANUFACTURER')}
-              placeholder={t('IMMUNIZATION_HISTORY_MANUFACTURER_PLACEHOLDER')}
+              placeholder={t(
+                'IMMUNIZATION_INPUT_CONTROL_MANUFACTURER_PLACEHOLDER',
+              )}
               value={immunization.manufacturer ?? ''}
               onChange={(e) => updateManufacturer(id, e.target.value)}
               hideLabel
@@ -334,7 +336,9 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               id={`immunization-batch-number-${id}`}
               data-testid={`immunization-batch-number-${id}`}
               labelText={t('IMMUNIZATION_INPUT_CONTROL_BATCH_NUMBER')}
-              placeholder={t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')}
+              placeholder={t(
+                'IMMUNIZATION_INPUT_CONTROL_BATCH_NUMBER_PLACEHOLDER',
+              )}
               value={immunization.batchNumber ?? ''}
               onChange={(e) => updateBatchNumber(id, e.target.value)}
               hideLabel
@@ -354,7 +358,9 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               id={`immunization-dose-sequence-${id}`}
               data-testid={`immunization-dose-sequence-${id}`}
               label={t('IMMUNIZATION_INPUT_CONTROL_DOSE_SEQUENCE')}
-              placeholder={t('IMMUNIZATION_HISTORY_DOSE_SEQUENCE_PLACEHOLDER')}
+              placeholder={t(
+                'IMMUNIZATION_INPUT_CONTROL_DOSE_SEQUENCE_PLACEHOLDER',
+              )}
               value={immunization.doseSequence ?? 0}
               onChange={(_e, { value }) =>
                 updateDoseSequence(id, Number(value))

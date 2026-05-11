@@ -9,6 +9,7 @@ import React from 'react';
 import { HomePageGrid } from './components/HomePageGrid';
 import { HomePageHeader } from './components/HomePageHeader';
 import { LocationProvider } from './context';
+import styles from './styles/IndexPage.module.scss';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
@@ -23,7 +24,7 @@ export const IndexPage: React.FC = () => {
             <NotificationProvider>
               <NotificationServiceComponent />
               <HomePageHeader />
-              <main>
+              <main className={styles.homePageBody}>
                 <HomePageGrid />
               </main>
             </NotificationProvider>
