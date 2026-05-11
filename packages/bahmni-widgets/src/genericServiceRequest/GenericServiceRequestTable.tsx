@@ -4,6 +4,7 @@ import {
   Accordion,
   AccordionItem,
   Tag,
+  StatusTag,
 } from '@bahmni/design-system';
 import {
   getFormattedError,
@@ -190,6 +191,19 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     }));
   }, [serviceRequests, t]);
 
+  const getStatusDotClassName = (status: string): string => {
+    switch (status) {
+      case ServiceRequestStatus.Active:
+        return styles.inProgressStatus;
+      case ServiceRequestStatus.Completed:
+        return styles.completedStatus;
+      case ServiceRequestStatus.Revoked:
+        return styles.revokedStatus;
+      default:
+        return styles.unknownStatus;
+    }
+  };
+
   const renderCell = useCallback(
     (request: ServiceRequestViewModel, cellId: string) => {
       switch (cellId) {
@@ -215,11 +229,13 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
           return request.orderedBy;
         case 'status':
           return (
-            <Tag type="outline">
-              {t(
+            <StatusTag
+              label={t(
                 STATUS_TRANSLATION_MAP[request.status as ServiceRequestStatus],
               )}
-            </Tag>
+              dotClassName={getStatusDotClassName(request.status)}
+              testId={`${request.id}-status`}
+            />
           );
 
         default:

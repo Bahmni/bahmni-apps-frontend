@@ -5,6 +5,7 @@ import {
   Link,
   Modal,
   SortableDataTable,
+  StatusTag,
   Tag,
   TooltipIcon,
 } from '@bahmni/design-system';
@@ -276,6 +277,19 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     });
   };
 
+  const getStatusDotClassName = (status: string): string => {
+    switch (status) {
+      case ServiceRequestStatus.Active:
+        return styles.inProgressStatus;
+      case ServiceRequestStatus.Completed:
+        return styles.completedStatus;
+      case ServiceRequestStatus.Revoked:
+        return styles.revokedStatus;
+      default:
+        return styles.unknownStatus;
+    }
+  };
+
   const renderResultsCell = (
     investigation: RadiologyInvestigationViewModel,
     primaryInvestigation?: RadiologyInvestigationViewModel,
@@ -425,18 +439,15 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
         );
       case 'status':
         return (
-          <span
-            id={`${investigation.id}-status`}
-            data-testid={`${investigation.id}-status-test-id`}
-          >
-            <Tag type="outline">
-              {t(
-                STATUS_TRANSLATION_MAP[
-                  investigation.status as ServiceRequestStatus
-                ],
-              )}
-            </Tag>
-          </span>
+          <StatusTag
+            label={t(
+              STATUS_TRANSLATION_MAP[
+                investigation.status as ServiceRequestStatus
+              ],
+            )}
+            dotClassName={getStatusDotClassName(investigation.status)}
+            testId={`${investigation.id}-status`}
+          />
         );
       default:
         return null;

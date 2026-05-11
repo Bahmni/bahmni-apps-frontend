@@ -2,7 +2,6 @@ import '@carbon/styles/css/styles.css';
 
 export {
   applyBahmniTheme,
-  isValidHexColour,
   BAHMNI_DEFAULT_THEME,
   type BahmniThemeConfig,
 } from './utils/applyTheme';

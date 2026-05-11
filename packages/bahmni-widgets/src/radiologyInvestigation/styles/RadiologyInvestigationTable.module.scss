@@ -31,6 +31,23 @@
   color: $yellow-70 !important;
 }
 
+// Status colour styles for StatusTag dot indicator
+.inProgressStatus {
+  color: $yellow-70;
+}
+
+.completedStatus {
+  color: $green-50;
+}
+
+.revokedStatus {
+  color: $cool-gray-20;
+}
+
+.unknownStatus {
+  color: $cool-gray-20;
+}
+
 .customAccordianItem {
   background-color: $layer-01;
   :global(.cds--accordion__content) {

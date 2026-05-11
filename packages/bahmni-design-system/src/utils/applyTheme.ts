@@ -1,48 +1,47 @@
 export interface BahmniThemeConfig {
-  'background-brand'?: string;
-  'text-inverse'?: string;
-  'icon-inverse'?: string;
-  'button-primary'?: string;
-  'button-primary-hover'?: string;
-  'button-primary-active'?: string;
-  'button-tertiary'?: string;
-  'button-tertiary-hover'?: string;
-  'button-tertiary-active'?: string;
-  interactive?: string;
-  focus?: string;
-  'border-interactive'?: string;
-  'link-primary'?: string;
-  'link-primary-hover'?: string;
-  'link-secondary'?: string;
+  primary?: string;
+  'primary-text'?: string;
+  'primary-hover'?: string;
+  'primary-active'?: string;
+  'link-hover'?: string;
   'link-visited'?: string;
-  'link-inverse-visited'?: string;
-  'layer-01'?: string;
+  'link-visited-on-dark'?: string;
+  background?: string;
 }
 
 export const BAHMNI_DEFAULT_THEME: Required<BahmniThemeConfig> = {
-  'background-brand': '#007d79',
-  'text-inverse': '#ffffff',
-  'icon-inverse': '#ffffff',
-  'button-primary': '#007d79',
-  'button-primary-hover': '#006b68',
-  'button-primary-active': '#004144',
-  'button-tertiary': '#007d79',
-  'button-tertiary-hover': '#006b68',
-  'button-tertiary-active': '#007d79',
-  interactive: '#007d79',
-  focus: '#007d79',
-  'border-interactive': '#007d79',
-  'link-primary': '#007d79',
-  'link-primary-hover': '#005d5d',
-  'link-secondary': '#005d5d',
+  primary: '#007d79',
+  'primary-text': '#ffffff',
+  'primary-hover': '#006b68',
+  'primary-active': '#004144',
+  'link-hover': '#005d5d',
   'link-visited': '#8A3FFC',
-  'link-inverse-visited': '#BE95FF',
-  'layer-01': '#f4f4f4',
+  'link-visited-on-dark': '#BE95FF',
+  background: '#f4f4f4',
 };
 
-export function isValidHexColour(value: string): boolean {
-  return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value);
-}
+// Maps each compact config key to the full set of CSS tokens it controls.
+// Tokens that share a colour in Bahmni's default palette are grouped under
+// the most semantically representative key so implementers only override once.
+const THEME_TOKEN_MAP: Record<keyof BahmniThemeConfig, string[]> = {
+  primary: [
+    'background-brand',
+    'button-primary',
+    'button-tertiary',
+    'button-tertiary-active',
+    'interactive',
+    'focus',
+    'border-interactive',
+    'link-primary',
+  ],
+  'primary-text': ['text-inverse', 'icon-inverse'],
+  'primary-hover': ['button-primary-hover', 'button-tertiary-hover'],
+  'primary-active': ['button-primary-active'],
+  'link-hover': ['link-primary-hover', 'link-secondary'],
+  'link-visited': ['link-visited'],
+  'link-visited-on-dark': ['link-inverse-visited'],
+  background: ['layer-01'],
+};
 
 // A <style> tag is used instead of document.documentElement.style.setProperty
 // because Carbon v11 defines tokens on .cds--white / .cds--g10 class selectors,
@@ -51,21 +50,20 @@ export function isValidHexColour(value: string): boolean {
 export function applyBahmniTheme(config: Partial<BahmniThemeConfig>): void {
   if (Object.keys(config).length === 0) return;
 
-  const validEntries = Object.entries(config)
-    .map(([token, value]) => {
-      if (!isValidHexColour(value as string)) {
-        console.warn(
-          `Invalid colour value for \`$${token}\` — using Bahmni default`,
-        );
-        return [token, BAHMNI_DEFAULT_THEME[token as keyof BahmniThemeConfig]];
-      }
-      return [token, value];
-    })
-    .filter(([, value]) => value !== undefined);
+  const cssProperties: [string, string][] = [];
 
-  if (validEntries.length === 0) return;
+  for (const [key, value] of Object.entries(config) as [
+    keyof BahmniThemeConfig,
+    string,
+  ][]) {
+    for (const cssToken of THEME_TOKEN_MAP[key] ?? []) {
+      cssProperties.push([cssToken, value]);
+    }
+  }
 
-  const rules = validEntries
+  if (cssProperties.length === 0) return;
+
+  const rules = cssProperties
     .map(([token, value]) => `  --cds-${token}: ${value};`)
     .join('\n');
 
