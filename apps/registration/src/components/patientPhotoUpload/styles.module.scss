@@ -84,3 +84,35 @@
   margin-top: $spacing-09 * -1 !important;
   margin-left: $spacing-05 * 11 !important;
 }
+
+.videoWrapper {
+  position: relative;
+  background: $layer-02;
+
+  video {
+    display: block;
+    width: 100%;
+  }
+}
+
+.cropBox {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 2px solid white;
+  pointer-events: none;
+}
+
+.capturedImageWrapper {
+  display: flex;
+  justify-content: center;
+  background: $layer-02;
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+}

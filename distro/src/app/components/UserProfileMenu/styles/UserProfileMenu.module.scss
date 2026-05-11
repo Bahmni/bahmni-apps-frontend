@@ -1,5 +1,6 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
 
 .profileContainer {
   display: flex;
@@ -16,6 +17,15 @@
 
 .overflowMenu {
   background: transparent;
+
+  &:global(.cds--overflow-menu--open) {
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+
+  &:global(.cds--overflow-menu--open) svg {
+    fill: $icon-inverse;
+    color: $icon-inverse;
+  }
 
   :global(.cds--overflow-menu-options--open) {
     margin-top: $spacing-03;

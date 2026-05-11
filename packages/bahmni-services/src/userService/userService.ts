@@ -12,6 +12,7 @@ import {
   ERROR_MESSAGES,
   AVAILABLE_LOCATIONS_URL,
   SAVE_USER_LOCATION_URL,
+  UPDATE_SESSION_LOCATION_URL,
 } from './constants';
 import {
   UserResponse,
@@ -83,14 +84,8 @@ export const getDefaultDateFormat = async (): Promise<string | null> => {
  * @throws Error when API call fails
  */
 export const getAvailableLocations = async (): Promise<UserLocation[]> => {
-  try {
-    const response = await get<LocationsResponse>(AVAILABLE_LOCATIONS_URL);
-    return response.results ?? [];
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to fetch available locations:', error);
-    return [];
-  }
+  const response = await get<LocationsResponse>(AVAILABLE_LOCATIONS_URL);
+  return response.results ?? [];
 };
 
 /**
@@ -123,4 +118,16 @@ export const saveUserLocation = async (
   await post(SAVE_USER_LOCATION_URL(userUuid), {
     userProperties: { loginLocation: location.uuid },
   });
+};
+
+/**
+ * Updates the OpenMRS server-side session with the selected location.
+ * This ensures encounters and observations are attributed to the correct location.
+ * @param locationUuid - The UUID of the location to set on the session
+ * @throws Error when the API call fails
+ */
+export const updateSessionLocation = async (
+  locationUuid: string,
+): Promise<void> => {
+  await post(UPDATE_SESSION_LOCATION_URL, { sessionLocation: locationUuid });
 };

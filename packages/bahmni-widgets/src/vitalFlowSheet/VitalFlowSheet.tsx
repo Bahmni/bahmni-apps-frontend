@@ -19,6 +19,8 @@ import {
   createConceptRows,
 } from './utils';
 
+const NO_SORTABLE_COLUMNS: { key: string; sortable: boolean }[] = [];
+
 // TODO: Add JSON Schmema for VitalFlowSheetConfig
 interface VitalFlowSheetConfig {
   latestCount: number;
@@ -292,6 +294,7 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
       renderCell={renderCell}
       className={styles.vitalFlowSheetDataTable}
       dataTestId="vital-flow-sheet-table"
+      sortable={NO_SORTABLE_COLUMNS}
     />
   );
 };

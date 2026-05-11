@@ -151,17 +151,15 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
         </div>
       </div>
       {member.comment && (
-        <div
+        <p
           className={styles.commentSection}
           data-testid={`${prefix}obs-member-comment-${displayLabel}-${memberIndex}`}
           // eslint-disable-next-line react/forbid-dom-props
           style={{ paddingLeft: `${depth * 16}px` }}
         >
-          <span className={styles.commentText}>
-            {member.comment}
-            {member.encounter?.provider && ` - by ${member.encounter.provider}`}
-          </span>
-        </div>
+          {member.comment}
+          {member.encounter?.provider && ` - by ${member.encounter.provider}`}
+        </p>
       )}
     </>
   );

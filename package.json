@@ -21,9 +21,10 @@
   },
   "private": true,
   "dependencies": {
-    "@bahmni/form2-controls": "0.0.3-dev.25",
+    "@bahmni/form2-controls": "0.0.3-dev.42",
     "@tanstack/react-query": "^5.85.5",
     "@types/fhir": "^0.0.41",
+    "browser-image-compression": "^2.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.12.0",

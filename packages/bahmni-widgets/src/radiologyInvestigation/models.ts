@@ -12,9 +12,11 @@ export interface RadiologyInvestigationViewModel {
   readonly orderedDate: string;
   readonly status: string;
   readonly replaces?: string[];
+  readonly basedOn?: string[];
   readonly imagingStudies?: ImagingStudy[];
   readonly note?: string;
   readonly reportId?: string;
   readonly reportedBy?: string;
   readonly reportedDate?: string;
+  readonly linkedOrders?: RadiologyInvestigationViewModel[];
 }

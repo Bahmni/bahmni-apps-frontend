@@ -151,6 +151,7 @@ describe('RadiologyInvestigationTable', () => {
           RADIOLOGY_INVESTIGATION_NAME: 'Investigation Name',
           RADIOLOGY_RESULTS: 'Results',
           RADIOLOGY_ORDERED_BY: 'Ordered By',
+          RADIOLOGY_ORDERED_ON: 'Ordered On',
           SERVICE_REQUEST_ORDERED_STATUS: 'Status',
           RADIOLOGY_INVESTIGATION_HEADING: 'Radiology Investigations',
           NO_RADIOLOGY_INVESTIGATIONS: 'No radiology investigations recorded',
@@ -707,7 +708,7 @@ describe('RadiologyInvestigationTable', () => {
 
     expect(mockGetDiagnosticReports).toHaveBeenCalledTimes(1);
     expect(mockGetDiagnosticReports).toHaveBeenCalledWith('test-patient-uuid', [
-      'investigation-1',
+      'investigation-2',
     ]);
   });
 
@@ -796,6 +797,63 @@ describe('RadiologyInvestigationTable', () => {
     expect(
       screen.getByTestId('investigation-2-view-report-link-test-id'),
     ).toBeInTheDocument();
+  });
+
+  it('should sort investigations by date in descending order (most recent first)', async () => {
+    const mockBundleWithDifferentDates = {
+      resourceType: 'Bundle' as const,
+      type: 'searchset' as const,
+      entry: [
+        {
+          resource: createMockServiceRequest({
+            id: 'investigation-1',
+            code: { text: 'Old Investigation' },
+            priority: 'routine',
+            requester: { display: 'Dr. Smith' },
+            occurrencePeriod: { start: '2023-12-01T10:00:00.000Z' },
+          }),
+        },
+        {
+          resource: createMockServiceRequest({
+            id: 'investigation-2',
+            code: { text: 'Recent Investigation' },
+            priority: 'routine',
+            requester: { display: 'Dr. Johnson' },
+            occurrencePeriod: { start: '2023-12-03T10:00:00.000Z' },
+          }),
+        },
+        {
+          resource: createMockServiceRequest({
+            id: 'investigation-3',
+            code: { text: 'Middle Investigation' },
+            priority: 'routine',
+            requester: { display: 'Dr. Brown' },
+            occurrencePeriod: { start: '2023-12-02T10:00:00.000Z' },
+          }),
+        },
+      ],
+    };
+
+    mockGetCategoryUuidFromOrderTypes.mockResolvedValue(mockCategoryUuid);
+    mockGetPatientRadiologyInvestigationBundleWithImagingStudy.mockResolvedValue(
+      mockBundleWithDifferentDates,
+    );
+
+    render(
+      renderRadiologyInvestigationTable({
+        orderType: 'Radiology Order',
+        viewReportsCombined: true,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Recent Investigation')).toBeInTheDocument();
+    });
+
+    const accordions = screen.getAllByTestId('accordian-table-title');
+    expect(accordions[0]).toHaveTextContent('12/03/2023');
+    expect(accordions[1]).toHaveTextContent('12/02/2023');
+    expect(accordions[2]).toHaveTextContent('12/01/2023');
   });
 
   describe('Accessibility', () => {
@@ -949,5 +1007,80 @@ describe('RadiologyInvestigationTable', () => {
         mockGetPatientRadiologyInvestigationBundleWithImagingStudy,
       ).not.toHaveBeenCalled();
     });
+  });
+
+  describe('Configuration Scenarios', () => {
+    it.each([
+      { groupLinkedOrders: true, showInlineReport: true },
+      { groupLinkedOrders: true, showInlineReport: false },
+      { groupLinkedOrders: false, showInlineReport: true },
+      { groupLinkedOrders: false, showInlineReport: false },
+    ])(
+      'groupLinkedOrders=$groupLinkedOrders, showInlineReport=$showInlineReport',
+      async ({ groupLinkedOrders, showInlineReport }) => {
+        const isExpandable = groupLinkedOrders || showInlineReport;
+        const hasOrderedOnColumn = groupLinkedOrders;
+        const hasViewReportLink = !showInlineReport;
+        const investigationId =
+          groupLinkedOrders && !showInlineReport
+            ? 'primary-order'
+            : 'investigation-1';
+
+        const mockBundleWithReport =
+          createMockBundleWithServiceRequestAndImagingStudy(
+            createMockServiceRequest({
+              id: investigationId,
+              code: { text: 'Chest X-Ray' },
+              status: 'completed',
+              requester: { display: 'Dr. Smith' },
+              occurrencePeriod: { start: '2023-12-01T10:30:00.000Z' },
+            }),
+            [],
+          );
+
+        mockGetPatientRadiologyInvestigationBundleWithImagingStudy.mockResolvedValue(
+          mockBundleWithReport,
+        );
+        mockGetDiagnosticReports.mockResolvedValue({
+          resourceType: 'Bundle',
+          type: 'searchset',
+          entry: [
+            {
+              resource: {
+                resourceType: 'DiagnosticReport',
+                id: 'report-123',
+                status: 'final',
+                code: { text: 'Chest X-Ray' },
+                basedOn: [{ reference: `ServiceRequest/${investigationId}` }],
+                resultsInterpreter: [{ display: 'Dr. Radiologist' }],
+                issued: '2023-12-02T14:30:00.000Z',
+              } as any,
+            },
+          ],
+        });
+
+        render(
+          renderRadiologyInvestigationTable({
+            orderType: 'Radiology Order',
+            groupLinkedOrders,
+            showInlineReport,
+          }),
+        );
+
+        await waitFor(() => {
+          expect(!!screen.queryByText('Ordered On')).toBe(hasOrderedOnColumn);
+
+          const tableTestId = isExpandable
+            ? 'radiology-investigations-expandable-table-12/01/2023'
+            : 'radiology-investigations-table-12/01/2023';
+          expect(screen.getByTestId(tableTestId)).toBeInTheDocument();
+
+          const viewReportLinkTestId = `${investigationId}-view-report-link-test-id`;
+          expect(!!screen.queryByTestId(viewReportLinkTestId)).toBe(
+            hasViewReportLink,
+          );
+        });
+      },
+    );
   });
 });

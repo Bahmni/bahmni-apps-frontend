@@ -15,6 +15,7 @@ export const APP_SETTINGS_URL = (module: string) =>
   OPENMRS_REST_V1 + `/bahmni/app/setting?module=${module}`;
 export const DEFAULT_DATE_FORMAT_PROPERTY = 'default_dateFormat';
 export const LOGOUT_URL = SESSION_URL;
+export const UPDATE_SESSION_LOCATION_URL = SESSION_URL;
 export const LOGOUT_COOKIES = [
   BAHMNI_USER_COOKIE_NAME,
   BAHMNI_USER_LOCATION_COOKIE,

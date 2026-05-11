@@ -108,6 +108,69 @@ export const getAvailableImagingStudies = (
 };
 
 /**
+ * Finds the root/primary order by traversing up the basedOn chain
+ * Primary order is the one without a basedOn field
+ * @param orderId - The ID of the order to find the primary for
+ * @param investigationsMap - Map of order ID to investigation
+ * @returns The ID of the primary order
+ */
+const findPrimaryOrderId = (
+  orderId: string,
+  investigationsMap: Map<string, RadiologyInvestigationViewModel>,
+): string => {
+  const investigation = investigationsMap.get(orderId);
+  if (!investigation) return orderId;
+
+  if (!investigation.basedOn || investigation.basedOn.length === 0) {
+    return orderId;
+  }
+
+  // Traverse up the chain
+  const basedOnId = investigation.basedOn[0];
+  return findPrimaryOrderId(basedOnId, investigationsMap);
+};
+
+export const groupInvestigationsByPrimaryOrder = (
+  investigations: RadiologyInvestigationViewModel[],
+): RadiologyInvestigationViewModel[] => {
+  const investigationsMap = new Map(investigations.map((inv) => [inv.id, inv]));
+
+  const primaryToLinkedMap = new Map<
+    string,
+    RadiologyInvestigationViewModel[]
+  >();
+
+  const primaryOrdersMap = new Map<string, RadiologyInvestigationViewModel>();
+
+  // First pass: identify all orders and their primary
+  investigations.forEach((investigation) => {
+    const primaryId = findPrimaryOrderId(investigation.id, investigationsMap);
+
+    if (primaryId === investigation.id) {
+      // This is a primary order
+      primaryOrdersMap.set(primaryId, investigation);
+      if (!primaryToLinkedMap.has(primaryId)) {
+        primaryToLinkedMap.set(primaryId, []);
+      }
+    } else {
+      // This is a linked order
+      if (!primaryToLinkedMap.has(primaryId)) {
+        primaryToLinkedMap.set(primaryId, []);
+      }
+      primaryToLinkedMap.get(primaryId)!.push(investigation);
+    }
+  });
+
+  return Array.from(primaryOrdersMap.values()).map((primaryOrder) => {
+    const linkedOrders = primaryToLinkedMap.get(primaryOrder.id) ?? [];
+    return {
+      ...primaryOrder,
+      ...(linkedOrders.length > 0 && { linkedOrders }),
+    };
+  });
+};
+
+/**
  * Transforms FHIR Bundle containing ServiceRequest and ImagingStudy resources into radiology investigation view models
  * @param bundle - FHIR Bundle containing ServiceRequest and ImagingStudy resources
  * @returns Array of RadiologyInvestigationViewModel view models ready for table rendering
@@ -124,6 +187,13 @@ export function createRadiologyInvestigationViewModels(
     const replaces = order.replaces
       ?.map((replace) => {
         const reference = replace.reference ?? '';
+        return reference.split('/').pop() ?? '';
+      })
+      .filter((id) => id.length > 0);
+
+    const basedOn = order.basedOn
+      ?.map((basedOnRef) => {
+        const reference = basedOnRef.reference ?? '';
         return reference.split('/').pop() ?? '';
       })
       .filter((id) => id.length > 0);
@@ -145,8 +215,9 @@ export function createRadiologyInvestigationViewModels(
       priority: order.priority!,
       orderedBy: order.requester!.display!,
       orderedDate: orderedDate,
-      status: order.status!.toLowerCase(),
+      status: order.status.toLowerCase(),
       ...(replaces && replaces.length > 0 && { replaces }),
+      ...(basedOn && basedOn.length > 0 && { basedOn }),
       ...(note && { note }),
       ...(imagingStudiesViewModels.length > 0 && {
         imagingStudies: imagingStudiesViewModels,

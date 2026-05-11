@@ -1,7 +1,14 @@
 import { useCamera } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import imageCompression from 'browser-image-compression';
 import { PatientPhotoUpload } from './PatientPhotoUpload';
+
+jest.mock('browser-image-compression', () => {
+  const fn: jest.Mock & { getDataUrlFromFile?: jest.Mock } = jest.fn();
+  fn.getDataUrlFromFile = jest.fn();
+  return { __esModule: true, default: fn };
+});
 
 jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
@@ -11,6 +18,10 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 const mockUseCamera = useCamera as jest.MockedFunction<typeof useCamera>;
+const mockCompress = imageCompression as unknown as jest.Mock;
+const mockGetDataUrl = (
+  imageCompression as unknown as { getDataUrlFromFile: jest.Mock }
+).getDataUrlFromFile;
 
 describe('PatientPhotoUpload', () => {
   const mockOnPhotoConfirm = jest.fn();
@@ -30,6 +41,15 @@ describe('PatientPhotoUpload', () => {
     URL.createObjectURL = jest.fn(() => 'blob:mock-url');
     URL.revokeObjectURL = jest.fn();
     global.alert = jest.fn();
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        blob: () => Promise.resolve(new Blob(['x'], { type: 'image/jpeg' })),
+      }),
+    ) as unknown as typeof fetch;
+    mockCompress.mockResolvedValue(
+      new File(['c'], 'photo.jpg', { type: 'image/jpeg' }),
+    );
+    mockGetDataUrl.mockResolvedValue('data:image/jpeg;base64,mockcompressed');
 
     HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
       drawImage: jest.fn(),
@@ -211,9 +231,9 @@ describe('PatientPhotoUpload', () => {
       await user.click(captureBtn);
 
       expect(mockCapture).toHaveBeenCalled();
-      expect(mockStop).toHaveBeenCalled();
 
       await waitFor(() => {
+        expect(mockStop).toHaveBeenCalled();
         expect(screen.getByAltText('Preview')).toBeInTheDocument();
         expect(
           screen.getByRole('button', {

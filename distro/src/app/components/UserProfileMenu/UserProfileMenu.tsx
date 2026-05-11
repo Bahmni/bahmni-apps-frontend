@@ -3,6 +3,7 @@ import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { UserAvatar } from '@carbon/icons-react';
 import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
 import React, { useState } from 'react';
+import { LOGIN_PATH, CHANGE_PASSWORD_PATH } from '../../../constants/app';
 import styles from './styles/UserProfileMenu.module.scss';
 
 export const UserProfileMenu: React.FC = () => {
@@ -14,7 +15,7 @@ export const UserProfileMenu: React.FC = () => {
   if (loading) {
     return (
       <div className={styles.loading} role="status">
-        {t('LOADING')}
+        {t('HOME_LOADING')}
       </div>
     );
   }
@@ -27,9 +28,8 @@ export const UserProfileMenu: React.FC = () => {
     setIsLoggingOut(true);
     try {
       await logout();
-      window.location.href = '/bahmni/home/index.html#/login';
+      window.location.href = LOGIN_PATH;
     } catch (error) {
-      setIsLoggingOut(false);
       const { title } = getFormattedError(error);
       addNotification({
         title,
@@ -38,6 +38,8 @@ export const UserProfileMenu: React.FC = () => {
       });
       // eslint-disable-next-line no-console
       console.error('Logout failed:', error);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -45,7 +47,7 @@ export const UserProfileMenu: React.FC = () => {
     <div className={styles.profileContainer}>
       <OverflowMenu
         renderIcon={UserAvatar}
-        size="sm"
+        size="lg"
         flipped
         iconDescription={t('HOME_USER_MENU')}
         className={styles.overflowMenu}
@@ -54,7 +56,7 @@ export const UserProfileMenu: React.FC = () => {
         <OverflowMenuItem
           itemText={t('HOME_CHANGE_PASSWORD')}
           onClick={() => {
-            window.location.href = '/bahmni/home/index.html#/changePassword';
+            window.location.href = CHANGE_PASSWORD_PATH;
           }}
           data-testid="change-password-option"
         />
@@ -66,7 +68,9 @@ export const UserProfileMenu: React.FC = () => {
           hasDivider
         />
       </OverflowMenu>
-      <span className={styles.greeting}>Hi, {user.display}</span>
+      <span className={styles.greeting}>
+        {t('HOME_GREETING', { name: user.display })}
+      </span>
     </div>
   );
 };

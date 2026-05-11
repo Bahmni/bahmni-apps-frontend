@@ -26,6 +26,10 @@ $table-cell-min-width: 6.875rem;
   td, th {
     min-width: $table-cell-min-width;
   }
+
+  td:first-child , th:first-child {
+    min-width: unset !important;
+  }
 }
 
 .sectionName {

@@ -21,7 +21,7 @@ jest.mock('@bahmni/design-system', () => ({
       {name}
     </div>
   ),
-  ICON_SIZE: { LG: 'lg' },
+  ICON_SIZE: { LG: 'lg', X2: '2x' },
 }));
 
 describe('AppTile', () => {

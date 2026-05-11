@@ -1,9 +1,7 @@
+import { type UserLocation } from '@bahmni/services';
 import React from 'react';
 
-export interface UserLocation {
-  name: string;
-  uuid: string;
-}
+export type { UserLocation };
 
 interface LocationContextType {
   location: UserLocation | null;

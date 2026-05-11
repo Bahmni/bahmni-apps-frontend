@@ -4,6 +4,8 @@
   "HOME_ERROR_LOCATION_SYNC_FAILED": "El cambio de ubicación se guardó localmente pero no se pudo sincronizar con el servidor.",
   "HOME_ERROR_LOCATION_SYNC_FAILED_TITLE": "Advertencia de sincronización de ubicación",
   "HOME_ERROR_LOGOUT_FAILED": "Error al cerrar sesión. Por favor, inténtelo de nuevo.",
+  "HOME_GREETING": "Hola, {{name}}",
+  "HOME_LOADING": "Cargando",
   "HOME_LOADING_MODULES": "Cargando módulos",
   "HOME_LOGOUT": "Cerrar sesión",
   "HOME_MODULE_ADMIN": "Administración",
@@ -20,6 +22,7 @@
   "HOME_MODULE_RADIOLOGY": "Radiología",
   "HOME_MODULE_REGISTRATION": "Registro",
   "HOME_MODULE_REPORTS": "Reportes",
+  "HOME_NO_LOCATION_SELECTED": "Ninguna ubicación seleccionada",
   "HOME_NO_MODULES": "No hay módulos disponibles",
   "HOME_SELECT_LOCATION": "Seleccionar Ubicación",
   "HOME_USER_MENU": "Menú del Usuario"

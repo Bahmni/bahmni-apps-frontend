@@ -98,12 +98,7 @@
 }
 
 .commentSection {
-  margin-block-start: $spacing-04;
-  padding-block-start: $spacing-04;
-  border-block-start: 1px solid $border-subtle-01;
-}
-
-.commentText {
+  margin-top: -$spacing-04;
   @include type-style("body-compact-01");
   color: $text-secondary;
   font-style: italic;

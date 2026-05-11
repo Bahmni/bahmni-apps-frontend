@@ -457,6 +457,7 @@ export const Profile = ({
         <PatientPhotoUpload
           onPhotoConfirm={setPatientImage}
           initialPhoto={initialPhoto ?? undefined}
+          photoConfig={registrationConfig?.patientInformation?.patientPhoto}
         />
 
         <div className={styles.col}>

@@ -1,7 +1,11 @@
 import { logout, getFormattedError } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { UserProfileMenu } from '../UserProfileMenu';
+
+expect.extend(toHaveNoViolations);
 
 const mockAddNotification = jest.fn();
 
@@ -120,11 +124,12 @@ describe('UserProfileMenu', () => {
     expect(screen.getByTestId('menu-divider')).toBeInTheDocument();
   });
 
-  it('redirects to old app change password page on click', () => {
+  it('redirects to old app change password page on click', async () => {
+    const user = userEvent.setup();
     render(<UserProfileMenu />);
 
     const changePasswordBtn = screen.getByTestId('change-password-option');
-    fireEvent.click(changePasswordBtn);
+    await user.click(changePasswordBtn);
 
     expect(window.location.href).toBe(
       '/bahmni/home/index.html#/changePassword',
@@ -133,11 +138,12 @@ describe('UserProfileMenu', () => {
 
   it('calls logout and redirects on logout click', async () => {
     mockLogout.mockResolvedValue(undefined);
+    const user = userEvent.setup();
 
     render(<UserProfileMenu />);
 
     const logoutBtn = screen.getByTestId('logout-option');
-    fireEvent.click(logoutBtn);
+    await user.click(logoutBtn);
 
     await waitFor(() => {
       expect(mockLogout).toHaveBeenCalled();
@@ -150,11 +156,12 @@ describe('UserProfileMenu', () => {
     mockLogout.mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 100)),
     );
+    const user = userEvent.setup();
 
     render(<UserProfileMenu />);
 
     const logoutBtn = screen.getByTestId('logout-option');
-    fireEvent.click(logoutBtn);
+    await user.click(logoutBtn);
 
     expect(logoutBtn).toBeDisabled();
   });
@@ -170,7 +177,7 @@ describe('UserProfileMenu', () => {
 
     render(<UserProfileMenu />);
 
-    expect(screen.getByText('LOADING')).toBeInTheDocument();
+    expect(screen.getByText('Loading')).toBeInTheDocument();
   });
 
   it('returns null when user data is not available', () => {
@@ -192,11 +199,12 @@ describe('UserProfileMenu', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => {});
     mockLogout.mockRejectedValue(new Error('Logout failed'));
+    const user = userEvent.setup();
 
     render(<UserProfileMenu />);
 
     const logoutBtn = screen.getByTestId('logout-option');
-    fireEvent.click(logoutBtn);
+    await user.click(logoutBtn);
 
     await waitFor(() => {
       expect(mockLogout).toHaveBeenCalled();
@@ -209,5 +217,12 @@ describe('UserProfileMenu', () => {
     });
     expect(logoutBtn).not.toBeDisabled();
     consoleErrorSpy.mockRestore();
+  });
+
+  describe('Accessibility', () => {
+    it('passes axe accessibility tests in default state', async () => {
+      const { container } = render(<UserProfileMenu />);
+      expect(await axe(container)).toHaveNoViolations();
+    });
   });
 });

@@ -5,7 +5,6 @@
 
 .investigationName {
   @include type-style("heading-compact-01");
-  color: $text-primary;
   display: flex;
   align-items: center;
   gap: $spacing-02;
@@ -21,6 +20,9 @@
   td {
     width: 25%;
     border-block-end: 0 !important;
+  }
+  td:first-child {
+    width: unset !important; //specificaly for expandable data table's first column which has down arrow.
   }
 }
 
@@ -46,4 +48,30 @@
   text-align: center;
 
   @include type-style("body-compact-01");
+}
+
+.linkedOrderRow {
+  .investigationName {
+    @include type-style("body-compact-01");
+  }
+}
+
+.expandableContentSpacer {
+  border: none !important;
+}
+
+.reportSection {
+  padding: 0 !important;
+  .reportTitle {
+    @include type-style("body-compact-01");
+  }
+
+  .reportDetails {
+    @include type-style("body-compact-01");
+    margin: $spacing-05 0;
+  }
+}
+
+.reportTile {
+  padding: 1rem 3.5rem 2rem 3.5rem !important;
 }

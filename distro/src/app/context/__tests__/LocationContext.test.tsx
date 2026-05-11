@@ -3,6 +3,7 @@ import {
   getAvailableLocations,
   getCurrentUser,
   saveUserLocation,
+  updateSessionLocation,
   setCookie,
 } from '@bahmni/services';
 import { renderHook, act } from '@testing-library/react';
@@ -14,7 +15,11 @@ jest.mock('@bahmni/services', () => ({
   getAvailableLocations: jest.fn(),
   getCurrentUser: jest.fn(),
   saveUserLocation: jest.fn(),
+  updateSessionLocation: jest.fn(),
   setCookie: jest.fn(),
+  notificationService: {
+    showWarning: jest.fn(),
+  },
 }));
 
 const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<
@@ -28,6 +33,9 @@ const mockGetCurrentUser = getCurrentUser as jest.MockedFunction<
 >;
 const mockSaveUserLocation = saveUserLocation as jest.MockedFunction<
   typeof saveUserLocation
+>;
+const mockUpdateSessionLocation = updateSessionLocation as jest.MockedFunction<
+  typeof updateSessionLocation
 >;
 const mockSetCookie = setCookie as jest.MockedFunction<typeof setCookie>;
 
@@ -54,6 +62,7 @@ describe('LocationContext', () => {
     mockGetAvailableLocations.mockResolvedValue(mockLocations);
     mockGetCurrentUser.mockResolvedValue(mockUser);
     mockSaveUserLocation.mockResolvedValue(undefined);
+    mockUpdateSessionLocation.mockResolvedValue(undefined);
     mockSetCookie.mockImplementation(() => {});
   });
 

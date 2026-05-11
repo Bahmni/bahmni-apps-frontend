@@ -3,14 +3,14 @@ import {
   getAvailableLocations,
   getCurrentUser,
   saveUserLocation,
+  updateSessionLocation,
   setCookie,
   notificationService,
+  BAHMNI_USER_LOCATION_COOKIE,
 } from '@bahmni/services';
 import i18next from 'i18next';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { LocationContext, UserLocation } from './LocationContext';
-
-const BAHMNI_USER_LOCATION_COOKIE = 'bahmni.user.location';
 
 interface LocationProviderProps {
   children: React.ReactNode;
@@ -52,38 +52,50 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     initializeLocation();
   }, []);
 
-  const handleSetLocation = (newLocation: UserLocation | null) => {
-    const previousLocation = location;
-    try {
-      setError(null);
-      setLocationState(newLocation);
+  const handleSetLocation = useCallback(
+    (newLocation: UserLocation | null) => {
+      const previousLocation = location;
+      try {
+        setError(null);
+        setLocationState(newLocation);
 
-      if (newLocation) {
-        setCookie(
-          BAHMNI_USER_LOCATION_COOKIE,
-          encodeURIComponent(JSON.stringify(newLocation)),
-        );
+        if (newLocation) {
+          setCookie(
+            BAHMNI_USER_LOCATION_COOKIE,
+            encodeURIComponent(JSON.stringify(newLocation)),
+          );
 
-        if (userUuid) {
-          saveUserLocation(userUuid, newLocation).catch((err) => {
+          updateSessionLocation(newLocation.uuid).catch((err) => {
             // eslint-disable-next-line no-console
-            console.warn('Failed to save location to server:', err);
+            console.warn('Failed to update session location:', err);
             notificationService.showWarning(
               i18next.t('HOME_ERROR_LOCATION_SYNC_FAILED_TITLE'),
               i18next.t('HOME_ERROR_LOCATION_SYNC_FAILED'),
             );
           });
+
+          if (userUuid) {
+            saveUserLocation(userUuid, newLocation).catch((err) => {
+              // eslint-disable-next-line no-console
+              console.warn('Failed to save location to server:', err);
+              notificationService.showWarning(
+                i18next.t('HOME_ERROR_LOCATION_SYNC_FAILED_TITLE'),
+                i18next.t('HOME_ERROR_LOCATION_SYNC_FAILED'),
+              );
+            });
+          }
         }
+      } catch (err) {
+        setLocationState(previousLocation);
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to update location';
+        setError(errorMessage);
+        // eslint-disable-next-line no-console
+        console.error('Error updating location:', err);
       }
-    } catch (err) {
-      setLocationState(previousLocation);
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to update location';
-      setError(errorMessage);
-      // eslint-disable-next-line no-console
-      console.error('Error updating location:', err);
-    }
-  };
+    },
+    [location, userUuid],
+  );
 
   const value = useMemo(
     () => ({

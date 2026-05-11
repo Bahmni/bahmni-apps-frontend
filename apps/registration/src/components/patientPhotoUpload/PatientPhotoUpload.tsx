@@ -2,35 +2,42 @@ import { Button, Modal, FileUploader, IconButton } from '@bahmni/design-system';
 import { useTranslation, useCamera } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
 import React, { useState, useCallback, useEffect } from 'react';
+import type { PatientPhotoConfig } from '../../providers/registrationConfig/models';
 import styles from './styles.module.scss';
+import {
+  base64FromDataUrl,
+  captureWithSizeConstraint,
+  fileToObjectUrl,
+  resolvePhotoConfig,
+  revokeObjectUrl,
+  toJpegDataUrl,
+} from './utils';
 
 interface PatientPhotoUploadProps {
   onPhotoConfirm: (base64Image: string) => void;
   initialPhoto?: string;
+  photoConfig?: PatientPhotoConfig;
 }
-
-const toJpegDataUrl = (img: HTMLImageElement, quality = 1) => {
-  const canvas = document.createElement('canvas');
-  canvas.width = img.naturalWidth || img.width;
-  canvas.height = img.naturalHeight || img.height;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return undefined;
-  ctx.drawImage(img, 0, 0);
-  return canvas.toDataURL('image/jpeg', quality);
-};
-
-const base64FromDataUrl = (dataUrl: string) => dataUrl.split(',')[1] || '';
-
-const fileToObjectUrl = (file: File) => URL.createObjectURL(file);
-const revokeObjectUrl = (url?: string) => {
-  if (url) URL.revokeObjectURL(url);
-};
 
 export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
   onPhotoConfirm,
   initialPhoto,
+  photoConfig,
 }) => {
   const { t } = useTranslation();
+
+  const resolvedConfig = resolvePhotoConfig(photoConfig);
+  const { maxFileSizeBytes } = resolvedConfig;
+  const cropBoxStyle =
+    resolvedConfig.mode === 'fixed'
+      ? {
+          aspectRatio: `${resolvedConfig.widthPx} / ${resolvedConfig.heightPx}`,
+          maxWidth: `${resolvedConfig.widthPx}px`,
+        }
+      : {
+          aspectRatio: `${resolvedConfig.maxWidthPx} / ${resolvedConfig.maxHeightPx}`,
+          maxWidth: `${resolvedConfig.maxWidthPx}px`,
+        };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mode, setMode] = useState<'idle' | 'capture' | 'upload'>('idle');
@@ -46,8 +53,6 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
       setConfirmedUrl(initialPhoto);
     }
   }, [initialPhoto]);
-
-  const MAX_FILE_SIZE = 500 * 1024;
 
   const { videoRef, start, stop, capture } = useCamera();
 
@@ -92,7 +97,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
 
     const file = files[0];
     setFileName(file.name);
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > maxFileSizeBytes) {
       const fileSizeKB = Math.round(file.size / 1000);
       setFileSizeError(
         t('CREATE_PATIENT_UPLOAD_PHOTO_FILE_SIZE_ERROR', {
@@ -110,11 +115,9 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     setPreviewUrl(url);
   };
 
-  const handleCaptureClick = () => {
-    const dataUrl = capture();
-    if (dataUrl) {
-      setPreviewUrl(dataUrl);
-    }
+  const handleCaptureClick = async () => {
+    const url = await captureWithSizeConstraint(capture, resolvedConfig);
+    if (url) setPreviewUrl(url);
     stop();
   };
 
@@ -151,7 +154,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     return !previewUrl ? (
       <>
         <div
-          className={styles.imagePreviewContainer}
+          className={styles.videoWrapper}
           data-testid="capture-video-container"
         >
           <video
@@ -159,6 +162,11 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
             autoPlay
             playsInline
             data-testid="capture-video"
+          />
+          <div
+            className={styles.cropBox}
+            // eslint-disable-next-line react/forbid-dom-props
+            style={cropBoxStyle}
           />
         </div>
         <div className={styles.buttonGroup} data-testid="capture-button-group">
@@ -175,7 +183,7 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
     ) : (
       <>
         <div
-          className={styles.imagePreviewContainer}
+          className={styles.capturedImageWrapper}
           data-testid="capture-preview-container"
         >
           <img

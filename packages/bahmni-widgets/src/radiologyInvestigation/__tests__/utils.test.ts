@@ -16,6 +16,7 @@ import {
   filterRadiologyInvestionsReplacementEntries,
   createRadiologyInvestigationViewModels,
   getAvailableImagingStudies,
+  groupInvestigationsByPrimaryOrder,
 } from '../utils';
 
 describe('radiologyInvestigation utilities', () => {
@@ -263,6 +264,24 @@ describe('radiologyInvestigation utilities', () => {
         },
       ]);
     });
+
+    it('should handle ServiceRequest with basedOn field', () => {
+      const bundle = createMockServiceRequestBundle(
+        createMockServiceRequest({
+          id: 'linked-order',
+          basedOn: [
+            {
+              reference: 'ServiceRequest/primary-order',
+              type: 'ServiceRequest',
+            },
+          ],
+        }),
+      );
+
+      const result = createRadiologyInvestigationViewModels(bundle);
+
+      expect(result[0].basedOn).toEqual(['primary-order']);
+    });
   });
 
   describe('getAvailableImagingStudies', () => {
@@ -290,6 +309,68 @@ describe('radiologyInvestigation utilities', () => {
       );
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('groupInvestigationsByPrimaryOrder', () => {
+    it('should return standalone orders unchanged', () => {
+      const investigations = [
+        createMockRadiologyInvestigation('1', 'X-Ray', 'stat'),
+        createMockRadiologyInvestigation('2', 'CT Scan', 'routine'),
+      ];
+
+      const result = groupInvestigationsByPrimaryOrder(investigations);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].linkedOrders).toBeUndefined();
+    });
+
+    it('should group linked orders with primary order', () => {
+      const investigations = [
+        createMockRadiologyInvestigation('primary-1', 'X-Ray', 'stat'),
+        {
+          ...createMockRadiologyInvestigation(
+            'linked-1',
+            'Follow-up',
+            'routine',
+          ),
+          basedOn: ['primary-1'],
+        },
+      ];
+
+      const result = groupInvestigationsByPrimaryOrder(investigations);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('primary-1');
+      expect(result[0].linkedOrders).toHaveLength(1);
+      expect(result[0].linkedOrders?.[0].id).toBe('linked-1');
+    });
+
+    it('should handle mixed standalone and primary with linked orders', () => {
+      const investigations = [
+        createMockRadiologyInvestigation('standalone-1', 'CT Scan', 'stat'),
+        createMockRadiologyInvestigation('primary-1', 'X-Ray', 'routine'),
+        {
+          ...createMockRadiologyInvestigation(
+            'linked-1',
+            'X-Ray Follow-up',
+            'routine',
+          ),
+          basedOn: ['primary-1'],
+        },
+        createMockRadiologyInvestigation('standalone-2', 'MRI', 'stat'),
+      ];
+
+      const result = groupInvestigationsByPrimaryOrder(investigations);
+
+      expect(result).toHaveLength(3);
+      expect(result.find((r) => r.id === 'standalone-1')).toBeDefined();
+      expect(result.find((r) => r.id === 'standalone-2')).toBeDefined();
+
+      const primaryGroup = result.find((r) => r.id === 'primary-1');
+      expect(primaryGroup).toBeDefined();
+      expect(primaryGroup?.linkedOrders).toHaveLength(1);
+      expect(primaryGroup?.linkedOrders?.[0].id).toBe('linked-1');
     });
   });
 });

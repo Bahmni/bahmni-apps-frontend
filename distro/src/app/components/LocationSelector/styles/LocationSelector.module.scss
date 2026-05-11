@@ -17,3 +17,9 @@
   padding: $spacing-03 $spacing-04;
   color: var(--cds-text-error);
 }
+
+.noLocation {
+  @include type-style("label-01");
+  padding: $spacing-03 $spacing-04;
+  color: var(--cds-text-secondary);
+}

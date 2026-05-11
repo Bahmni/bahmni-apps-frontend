@@ -1,4 +1,4 @@
-import { Module } from '../../../../../services/moduleService';
+import { Module } from '@bahmni/services';
 
 export const mockModules: Module[] = [
   {

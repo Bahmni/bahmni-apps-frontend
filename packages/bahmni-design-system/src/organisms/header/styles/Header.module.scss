@@ -24,12 +24,16 @@
 }
 
 // ── Overflow menu ────────────────────────────────────────────────────────────
-:global(.cds--header .cds--overflow-menu) svg {
+:global(.cds--header .cds--overflow-menu) svg,
+:global(.cds--header .cds--overflow-menu:focus) svg,
+:global(.cds--header .cds--overflow-menu--open) svg {
   fill: $icon-inverse;
   color: $icon-inverse;
 }
 
-:global(.cds--header .cds--overflow-menu:hover) {
+:global(.cds--header .cds--overflow-menu:hover),
+:global(.cds--header .cds--overflow-menu:focus),
+:global(.cds--header .cds--overflow-menu--open) {
   background-color: rgba(0, 0, 0, 0.15);
 }
 

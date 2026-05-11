@@ -1,6 +1,6 @@
 import { Dropdown } from '@bahmni/design-system';
 import { useTranslation, UserLocation } from '@bahmni/services';
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation } from '../../context/LocationContext';
 import styles from './styles/LocationSelector.module.scss';
 
@@ -8,28 +8,17 @@ export const LocationSelector: React.FC = () => {
   const { t } = useTranslation();
   const { location, setLocation, availableLocations, loading, error } =
     useLocation();
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  const handleLocationChange = async (selected: UserLocation) => {
+  const handleLocationChange = (selected: UserLocation) => {
     if (!selected || selected.uuid === location?.uuid) {
       return;
     }
-
-    try {
-      setIsUpdating(true);
-      await setLocation(selected);
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to change location:', err);
-    } finally {
-      setIsUpdating(false);
-    }
+    setLocation(selected);
   };
 
   if (loading) {
     return (
       <div className={styles.loading} role="status">
-        {t('LOADING')}
+        {t('HOME_LOADING')}
       </div>
     );
   }
@@ -45,7 +34,7 @@ export const LocationSelector: React.FC = () => {
   if (!location) {
     return (
       <div className={styles.noLocation} role="status">
-        {t('NO_LOCATION_SELECTED')}
+        {t('HOME_NO_LOCATION_SELECTED')}
       </div>
     );
   }
@@ -66,7 +55,6 @@ export const LocationSelector: React.FC = () => {
         onChange={({ selectedItem }: { selectedItem: UserLocation }) =>
           handleLocationChange(selectedItem)
         }
-        disabled={isUpdating}
         size="sm"
         data-testid="location-selector"
       />

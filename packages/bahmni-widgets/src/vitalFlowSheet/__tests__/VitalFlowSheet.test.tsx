@@ -29,6 +29,9 @@ jest.mock('react-router-dom', () => ({
   useParams: () => ({ patientUuid: 'test-patient-uuid' }),
 }));
 
+// eslint-disable-next-line no-var
+var mockCapturedSortable: unknown;
+
 // Mock the SortableDataTable component
 jest.mock('@bahmni/design-system', () => ({
   SortableDataTable: ({
@@ -37,7 +40,9 @@ jest.mock('@bahmni/design-system', () => ({
     headers,
     loading,
     errorStateMessage,
+    sortable,
   }: any) => {
+    mockCapturedSortable = sortable;
     if (loading) {
       return <div data-testid="loading-state">Loading...</div>;
     }
@@ -91,6 +96,7 @@ describe('VitalFlowSheet Empty State', () => {
   };
 
   beforeEach(() => {
+    mockCapturedSortable = undefined;
     jest.clearAllMocks();
   });
 
@@ -189,6 +195,8 @@ describe('VitalFlowSheet Empty State', () => {
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
     expect(screen.getByText('2 headers')).toBeInTheDocument(); // Vital Sign + 1 observation time
     expect(screen.getByText('2 rows')).toBeInTheDocument(); // Temperature + Blood Pressure
+    // BAH-4673: sort options removed from all columns
+    expect(mockCapturedSortable).toEqual([]);
   });
 
   it('should show loading state when loading is true', () => {

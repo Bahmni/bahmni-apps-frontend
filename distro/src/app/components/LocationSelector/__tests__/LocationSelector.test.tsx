@@ -55,7 +55,7 @@ describe('LocationSelector', () => {
   it('renders loading state', () => {
     renderWithContext({ loading: true });
 
-    expect(screen.getByRole('status')).toHaveTextContent('LOADING');
+    expect(screen.getByRole('status')).toHaveTextContent('Loading');
   });
 
   it('renders error state', () => {
@@ -71,7 +71,7 @@ describe('LocationSelector', () => {
     renderWithContext({ location: null });
 
     expect(screen.getByRole('status')).toHaveTextContent(
-      'NO_LOCATION_SELECTED',
+      'No location selected',
     );
   });
 
@@ -93,26 +93,5 @@ describe('LocationSelector', () => {
     });
 
     expect(context.setLocation).not.toHaveBeenCalled();
-  });
-
-  it('handles error from setLocation gracefully', async () => {
-    const consoleErrorSpy = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
-    const failingSetLocation = jest.fn(() => {
-      throw new Error('Update failed');
-    });
-
-    renderWithContext({ setLocation: failingSetLocation });
-
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('location-option-location-uuid-456'));
-    });
-
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'Failed to change location:',
-      expect.any(Error),
-    );
-    consoleErrorSpy.mockRestore();
   });
 });
