@@ -17,10 +17,10 @@ describe('applyBahmniTheme', () => {
     expect(tag?.tagName).toBe('STYLE');
   });
 
-  it('targets :root, .cds--white and .cds--g10 selectors', () => {
+  it('targets :root and .cds--white selectors', () => {
     applyBahmniTheme({ primary: '#007d79' });
     const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
-    expect(tag.textContent).toContain(':root,\n.cds--white,\n.cds--g10 {');
+    expect(tag.textContent).toContain(':root,\n.cds--white {');
   });
 
   it('reuses the existing style tag on subsequent calls', () => {
