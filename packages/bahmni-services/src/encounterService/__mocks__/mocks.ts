@@ -15,13 +15,13 @@ export const mockVisitBundle = {
   entry: [
     {
       fullUrl:
-        'http://localhost/openmrs/ws/fhir2/R4/Encounter/f8c5eeb5-86d9-44d4-b37a-9de74a122a6e',
+        'http://localhost/openmrs/ws/fhir2/R4/Encounter/de947029-15f6-4318-afff-a1cbce3593d2',
       resource: {
         resourceType: 'Encounter',
-        id: 'f8c5eeb5-86d9-44d4-b37a-9de74a122a6e',
+        id: 'de947029-15f6-4318-afff-a1cbce3593d2',
         meta: {
-          versionId: '1742486096000',
-          lastUpdated: '2025-03-20T15:54:56.000+00:00',
+          versionId: '1744107291000',
+          lastUpdated: '2025-04-08T10:14:51.000+00:00',
           tag: [
             {
               system: 'http://fhir.openmrs.org/ext/encounter-tag',
@@ -40,8 +40,8 @@ export const mockVisitBundle = {
             coding: [
               {
                 system: 'http://fhir.openmrs.org/code-system/visit-type',
-                code: '54f43754-c6ce-4472-890e-0f28acaeaea6',
-                display: 'OPD',
+                code: 'b7494a80-fdf9-49bb-bb40-396c47b40343',
+                display: 'IPD',
               },
             ],
           },
@@ -52,61 +52,7 @@ export const mockVisitBundle = {
           display: 'Steffi Maria Graf (Patient Identifier: ABC200000)',
         },
         period: {
-          start: '2025-02-18T09:57:21+00:00',
-          end: '2025-02-18T10:17:44+00:00',
-        },
-        location: [
-          {
-            location: {
-              reference: 'Location/72636eba-29bf-4d6c-97c4-4b04d87a95b5',
-              type: 'Location',
-              display: 'Bahmni Hospital',
-            },
-          },
-        ],
-      },
-    },
-    {
-      fullUrl:
-        'http://localhost/openmrs/ws/fhir2/R4/Encounter/0a10f47c-a066-423d-8a99-1a67dd5a199d',
-      resource: {
-        resourceType: 'Encounter',
-        id: '0a10f47c-a066-423d-8a99-1a67dd5a199d',
-        meta: {
-          versionId: '1742579365000',
-          lastUpdated: '2025-03-21T17:49:25.000+00:00',
-          tag: [
-            {
-              system: 'http://fhir.openmrs.org/ext/encounter-tag',
-              code: 'visit',
-              display: 'Visit',
-            },
-          ],
-        },
-        status: 'unknown',
-        class: {
-          system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
-          code: 'AMB',
-        },
-        type: [
-          {
-            coding: [
-              {
-                system: 'http://fhir.openmrs.org/code-system/visit-type',
-                code: '54f43754-c6ce-4472-890e-0f28acaeaea6',
-                display: 'OPD',
-              },
-            ],
-          },
-        ],
-        subject: {
-          reference: 'Patient/02f47490-d657-48ee-98e7-4c9133ea168b',
-          type: 'Patient',
-          display: 'Steffi Maria Graf (Patient Identifier: ABC200000)',
-        },
-        period: {
-          start: '2025-03-21T06:11:00+00:00',
-          end: '2025-03-21T06:11:03+00:00',
+          start: '2025-04-08T10:14:51+00:00',
         },
         location: [
           {
@@ -174,13 +120,13 @@ export const mockVisitBundle = {
     },
     {
       fullUrl:
-        'http://localhost/openmrs/ws/fhir2/R4/Encounter/de947029-15f6-4318-afff-a1cbce3593d2',
+        'http://localhost/openmrs/ws/fhir2/R4/Encounter/0a10f47c-a066-423d-8a99-1a67dd5a199d',
       resource: {
         resourceType: 'Encounter',
-        id: 'de947029-15f6-4318-afff-a1cbce3593d2',
+        id: '0a10f47c-a066-423d-8a99-1a67dd5a199d',
         meta: {
-          versionId: '1744107291000',
-          lastUpdated: '2025-04-08T10:14:51.000+00:00',
+          versionId: '1742579365000',
+          lastUpdated: '2025-03-21T17:49:25.000+00:00',
           tag: [
             {
               system: 'http://fhir.openmrs.org/ext/encounter-tag',
@@ -199,8 +145,8 @@ export const mockVisitBundle = {
             coding: [
               {
                 system: 'http://fhir.openmrs.org/code-system/visit-type',
-                code: 'b7494a80-fdf9-49bb-bb40-396c47b40343',
-                display: 'IPD',
+                code: '54f43754-c6ce-4472-890e-0f28acaeaea6',
+                display: 'OPD',
               },
             ],
           },
@@ -211,7 +157,61 @@ export const mockVisitBundle = {
           display: 'Steffi Maria Graf (Patient Identifier: ABC200000)',
         },
         period: {
-          start: '2025-04-08T10:14:51+00:00',
+          start: '2025-03-21T06:11:00+00:00',
+          end: '2025-03-21T06:11:03+00:00',
+        },
+        location: [
+          {
+            location: {
+              reference: 'Location/72636eba-29bf-4d6c-97c4-4b04d87a95b5',
+              type: 'Location',
+              display: 'Bahmni Hospital',
+            },
+          },
+        ],
+      },
+    },
+    {
+      fullUrl:
+        'http://localhost/openmrs/ws/fhir2/R4/Encounter/f8c5eeb5-86d9-44d4-b37a-9de74a122a6e',
+      resource: {
+        resourceType: 'Encounter',
+        id: 'f8c5eeb5-86d9-44d4-b37a-9de74a122a6e',
+        meta: {
+          versionId: '1742486096000',
+          lastUpdated: '2025-03-20T15:54:56.000+00:00',
+          tag: [
+            {
+              system: 'http://fhir.openmrs.org/ext/encounter-tag',
+              code: 'visit',
+              display: 'Visit',
+            },
+          ],
+        },
+        status: 'unknown',
+        class: {
+          system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+          code: 'AMB',
+        },
+        type: [
+          {
+            coding: [
+              {
+                system: 'http://fhir.openmrs.org/code-system/visit-type',
+                code: '54f43754-c6ce-4472-890e-0f28acaeaea6',
+                display: 'OPD',
+              },
+            ],
+          },
+        ],
+        subject: {
+          reference: 'Patient/02f47490-d657-48ee-98e7-4c9133ea168b',
+          type: 'Patient',
+          display: 'Steffi Maria Graf (Patient Identifier: ABC200000)',
+        },
+        period: {
+          start: '2025-02-18T09:57:21+00:00',
+          end: '2025-02-18T10:17:44+00:00',
         },
         location: [
           {
@@ -227,8 +227,8 @@ export const mockVisitBundle = {
   ],
 };
 
-// The current active visit is the one without an end date
-export const mockActiveVisit = mockVisitBundle.entry[3].resource;
+// The current active visit is the one without an end date (now first due to _sort=-_lastUpdated)
+export const mockActiveVisit = mockVisitBundle.entry[0].resource;
 
 export const mockFormsEncounter = {
   resourceType: 'Bundle',

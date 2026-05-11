@@ -137,7 +137,7 @@
   "ENCOUNTER_TYPE": "Tipo de Encuentro",
   "ERROR_ALLERGY_CONCEPT_MAP_NOT_FOUND": "No se encontró la configuración del mapa de conceptos de alergias",
   "ERROR_CLINICAL_CONFIG_NOT_FOUND": "No se encontró la configuración clínica",
-  "ERROR_CONDITION_MISSING_CODING_INFORMATION": "Falta información de codificación de condición requerida",
+  "ERROR_CONDITION_MISSING_CODING_INFORMATION": "Falta información de visualización de la condición",
   "ERROR_CONDITION_MISSING_REQUIRED_FIELDS": "Faltan campos requeridos en los datos de condición",
   "ERROR_CONFIG_GENERIC_MESSAGE": "No se pudo cargar {{config}}. Por favor, intente actualizar la página.",
   "ERROR_CONFIG_TITLE": "Error de {{config}}",

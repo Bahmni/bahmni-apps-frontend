@@ -12,7 +12,7 @@ const INACTIVE_STATUS = 'inactive';
  * @returns `true` if the condition has all required fields, `false` otherwise
  */
 const isValidFhirCondition = (condition: Condition): boolean => {
-  return !!(condition.id && condition.code && condition.recordedDate);
+  return !!condition.id;
 };
 
 /**
@@ -49,20 +49,23 @@ export function createConditionViewModels(
 
     const status = mapFhirStatusToEnum(condition);
     const coding = condition.code?.coding?.[0];
+    const nonCodedDisplay = condition.extension?.find(
+      (ext) => ext.valueString,
+    )?.valueString;
 
-    if (!coding) {
+    if (!coding && !nonCodedDisplay) {
       throw new Error(i18next.t('ERROR_CONDITION_MISSING_CODING_INFORMATION'));
     }
 
     return {
       id: condition.id!,
-      display: condition.code?.text ?? coding.display ?? '',
+      display: condition.code?.text ?? coding?.display ?? nonCodedDisplay ?? '',
       status,
       onsetDate: condition.onsetDateTime,
       recordedDate: condition.recordedDate,
       recorder: condition.recorder?.display,
-      code: coding.code ?? '',
-      codeDisplay: coding.display ?? '',
+      code: coding?.code ?? '',
+      codeDisplay: coding?.display ?? nonCodedDisplay ?? '',
       note: condition.note?.map((note) => note.text).filter(Boolean),
     };
   });

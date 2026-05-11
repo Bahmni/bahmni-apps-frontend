@@ -137,7 +137,7 @@
   "ENCOUNTER_TYPE": "Encounter Type",
   "ERROR_ALLERGY_CONCEPT_MAP_NOT_FOUND": "Allergy concept map configuration not found",
   "ERROR_CLINICAL_CONFIG_NOT_FOUND": "Clinical configuration not found",
-  "ERROR_CONDITION_MISSING_CODING_INFORMATION": "Missing required condition coding information",
+  "ERROR_CONDITION_MISSING_CODING_INFORMATION": "Condition is missing display information",
   "ERROR_CONDITION_MISSING_REQUIRED_FIELDS": "Missing required fields in condition data",
   "ERROR_CONFIG_GENERIC_MESSAGE": "Unable to load {{config}}. Please try refreshing the page.",
   "ERROR_CONFIG_TITLE": "{{config}} Error",
