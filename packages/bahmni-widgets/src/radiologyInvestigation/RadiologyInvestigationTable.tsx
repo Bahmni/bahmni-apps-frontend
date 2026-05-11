@@ -27,12 +27,10 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import type { DiagnosticReport } from 'fhir/r4';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  getStatusDotClassName,
-} from '../genericServiceRequest/utils';
-import {
   ServiceRequestStatus,
   STATUS_TRANSLATION_MAP,
 } from '../genericServiceRequest/models';
+import { getStatusDotClassName } from '../genericServiceRequest/utils';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { RadiologyInvestigationReport } from '../radiologyInvestigationReport';
