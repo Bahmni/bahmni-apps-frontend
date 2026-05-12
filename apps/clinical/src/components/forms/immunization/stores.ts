@@ -298,10 +298,9 @@ function createImmunizationHistoryStore() {
     },
 
     removeImmunization: (id: string) => {
+      const notRemoved = (e: ImmunizationInputEntry) => e.id !== id;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.filter(
-          (e) => e.id !== id,
-        ),
+        selectedImmunizations: state.selectedImmunizations.filter(notRemoved),
       }));
     },
 
@@ -310,18 +309,18 @@ function createImmunizationHistoryStore() {
     },
 
     updateAdministeredOn: (id: string, value: Date | null) => {
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applyAdministeredOnUpdate(entry, value) : entry;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.map((entry) =>
-          entry.id === id ? applyAdministeredOnUpdate(entry, value) : entry,
-        ),
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));
     },
 
     updateVaccineDrug: (id: string, drug: ImmunizationDrug | null) => {
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applyVaccineDrugUpdate(entry, drug) : entry;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.map((entry) =>
-          entry.id === id ? applyVaccineDrugUpdate(entry, drug) : entry,
-        ),
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));
     },
 
@@ -329,83 +328,81 @@ function createImmunizationHistoryStore() {
       id: string,
       value: ImmunizationLocation | null,
     ) => {
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applyAdministeredLocationUpdate(entry, value) : entry;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.map((entry) =>
-          entry.id === id
-            ? applyAdministeredLocationUpdate(entry, value)
-            : entry,
-        ),
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));
     },
 
     updateRoute: (id: string, value: string) => {
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applyRouteUpdate(entry, value) : entry;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.map((entry) =>
-          entry.id === id ? applyRouteUpdate(entry, value) : entry,
-        ),
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));
     },
 
     updateSite: (id: string, value: string) => {
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applySiteUpdate(entry, value) : entry;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.map((entry) =>
-          entry.id === id ? applySiteUpdate(entry, value) : entry,
-        ),
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));
     },
 
     updateExpiryDate: (id: string, value: Date | null) => {
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applyExpiryDateUpdate(entry, value) : entry;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.map((entry) =>
-          entry.id === id ? applyExpiryDateUpdate(entry, value) : entry,
-        ),
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));
     },
 
     updateManufacturer: (id: string, value: string) => {
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applyManufacturerUpdate(entry, value) : entry;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.map((entry) =>
-          entry.id === id ? applyManufacturerUpdate(entry, value) : entry,
-        ),
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));
     },
 
     updateBatchNumber: (id: string, value: string) => {
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applyBatchNumberUpdate(entry, value) : entry;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.map((entry) =>
-          entry.id === id ? applyBatchNumberUpdate(entry, value) : entry,
-        ),
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));
     },
 
     updateDoseSequence: (id: string, value: number | null) => {
       const sanitized = value === null ? null : Math.max(0, Math.floor(value));
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applyDoseSequenceUpdate(entry, sanitized) : entry;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.map((entry) =>
-          entry.id === id ? applyDoseSequenceUpdate(entry, sanitized) : entry,
-        ),
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));
     },
 
     updateNote: (id: string, value: string) => {
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applyNoteUpdate(entry, value) : entry;
       set((state) => ({
-        selectedImmunizations: state.selectedImmunizations.map((entry) =>
-          entry.id === id ? applyNoteUpdate(entry, value) : entry,
-        ),
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));
     },
 
     validateAll: () => {
       const { attributes } = get();
       let isValid = true;
-      set((state) => {
-        const validated = state.selectedImmunizations.map((entry) => {
-          const result = validateEntry(entry, attributes);
-          if (!result.valid) isValid = false;
-          return result.entry;
-        });
-        return { selectedImmunizations: validated };
-      });
+      const applyValidation = (entry: ImmunizationInputEntry) => {
+        const result = validateEntry(entry, attributes);
+        if (!result.valid) isValid = false;
+        return result.entry;
+      };
+      set((state) => ({
+        selectedImmunizations: state.selectedImmunizations.map(applyValidation),
+      }));
       return isValid;
     },
 
