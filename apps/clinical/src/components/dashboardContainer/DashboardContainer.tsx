@@ -16,7 +16,8 @@ import styles from './styles/DashboardContainer.module.scss';
 export interface DashboardContainerProps {
   sections: DashboardSectionConfig[];
   activeItemId?: string | null;
-  scrollVersion?: number;
+  /** Incrementing counter to re-trigger scroll on repeated clicks of the same sidebar item */
+  scrollTrigger?: number;
 }
 
 /**
@@ -28,7 +29,7 @@ export interface DashboardContainerProps {
 const DashboardContainer: React.FC<DashboardContainerProps> = ({
   sections,
   activeItemId,
-  scrollVersion,
+  scrollTrigger,
 }) => {
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();
@@ -89,7 +90,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
         });
       }
     }
-  }, [activeItemId, sections, scrollVersion]);
+  }, [activeItemId, sections, scrollTrigger]);
 
   // If no sections, show a message
   if (!sections.length) {

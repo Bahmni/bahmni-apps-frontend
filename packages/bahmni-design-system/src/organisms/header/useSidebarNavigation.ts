@@ -15,7 +15,6 @@ export interface SidebarItem {
  */
 export const useSidebarNavigation = (items: SidebarItem[]) => {
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
-  const [scrollVersion, setScrollVersion] = useState(0);
 
   const effectiveActiveItemId = useMemo(() => {
     if (!items.length) return null;
@@ -31,12 +30,10 @@ export const useSidebarNavigation = (items: SidebarItem[]) => {
 
   const handleItemClick = useCallback((itemId: string) => {
     setActiveItemId(itemId);
-    setScrollVersion((v) => v + 1);
   }, []);
 
   return {
     activeItemId: effectiveActiveItemId,
     handleItemClick,
-    scrollVersion,
   };
 };

@@ -64,7 +64,7 @@ const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
 const renderDashboardContainerWithProvider = (
   sections: DashboardSectionType[],
   activeItemId?: string | null,
-  scrollVersion?: number,
+  scrollTrigger?: number,
 ) => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -81,7 +81,7 @@ const renderDashboardContainerWithProvider = (
         <DashboardContainer
           sections={sections}
           activeItemId={activeItemId}
-          scrollVersion={scrollVersion}
+          scrollTrigger={scrollTrigger}
         />
       </ClinicalAppProvider>
     </QueryClientProvider>,
@@ -167,7 +167,7 @@ describe('DashboardContainer Component', () => {
     jest.restoreAllMocks();
   });
 
-  it('scrolls again when scrollVersion changes even if activeItemId stays the same', async () => {
+  it('scrolls again when scrollTrigger changes even if activeItemId stays the same', async () => {
     // Create a spy div element with scrollIntoView method
     const spyElement = document.createElement('div');
     const scrollSpy = jest.spyOn(spyElement, 'scrollIntoView');
@@ -191,14 +191,14 @@ describe('DashboardContainer Component', () => {
       expect(scrollSpy).toHaveBeenCalledTimes(1);
     });
 
-    // Re-render with same activeItemId but incremented scrollVersion
+    // Re-render with same activeItemId but incremented scrollTrigger
     rerender(
       <QueryClientProvider client={queryClient}>
         <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
           <DashboardContainer
             sections={mockSections}
             activeItemId="section-1-id"
-            scrollVersion={2}
+            scrollTrigger={2}
           />
         </ClinicalAppProvider>
       </QueryClientProvider>,

@@ -8,13 +8,11 @@ interface TestComponentProps {
 }
 
 const TestComponent: React.FC<TestComponentProps> = ({ items }) => {
-  const { activeItemId, handleItemClick, scrollVersion } =
-    useSidebarNavigation(items);
+  const { activeItemId, handleItemClick } = useSidebarNavigation(items);
 
   return (
     <div>
       <div data-testid="active-item-id">{activeItemId ?? 'none'}</div>
-      <div data-testid="scroll-version">{scrollVersion}</div>
       <button data-testid="set-item1" onClick={() => handleItemClick('item1')}>
         Set Item 1
       </button>
@@ -69,34 +67,6 @@ describe('useSidebarNavigation Hook', () => {
 
     // Should maintain the active item
     expect(screen.getByTestId('active-item-id')).toHaveTextContent('item2');
-  });
-
-  it('should initialize scrollVersion to 0', () => {
-    render(<TestComponent items={mockSidebarItems} />);
-    expect(screen.getByTestId('scroll-version')).toHaveTextContent('0');
-  });
-
-  it('should increment scrollVersion on each click, including re-clicks on the same item', () => {
-    render(<TestComponent items={mockSidebarItems} />);
-
-    expect(screen.getByTestId('scroll-version')).toHaveTextContent('0');
-
-    act(() => {
-      screen.getByTestId('set-item1').click();
-    });
-    expect(screen.getByTestId('scroll-version')).toHaveTextContent('1');
-
-    // Click the same item again - scrollVersion should still increment
-    act(() => {
-      screen.getByTestId('set-item1').click();
-    });
-    expect(screen.getByTestId('scroll-version')).toHaveTextContent('2');
-
-    // Click a different item
-    act(() => {
-      screen.getByTestId('set-item2').click();
-    });
-    expect(screen.getByTestId('scroll-version')).toHaveTextContent('3');
   });
 
   it('should reset to first item if active item no longer exists in items array', () => {
