@@ -15,6 +15,7 @@ import React, {
   useState,
 } from 'react';
 import { ERROR_TITLES } from '../../constants/errors';
+import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
@@ -33,14 +34,15 @@ import {
 } from './utils';
 
 interface ConsultationPadProps {
-  encounterType: string;
+  encounterSessionStartContext: EncounterSessionStartContext;
   onClose: () => void;
 }
 
 const ConsultationPad: React.FC<ConsultationPadProps> = ({
-  encounterType,
+  encounterSessionStartContext,
   onClose,
 }) => {
+  const encounterType = encounterSessionStartContext.encounterType;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,10 +68,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   const resolvedEncounterType = useMemo(() => {
     return (
-      (encounterType ||
-        (clinicalConfig?.consultationPad?.inputControls?.find(
-          (c) => c.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY,
-        )?.metadata?.defaultEncounterType as string | undefined)) ??
+      encounterType ??
+      (clinicalConfig?.consultationPad?.inputControls?.find(
+        (c) => c.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY,
+      )?.metadata?.defaultEncounterType as string | undefined) ??
       null
     );
   }, [encounterType, clinicalConfig]);
@@ -217,6 +219,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             key={entry.key}
             entry={entry}
             encounterType={resolvedEncounterType!}
+            encounterSessionStartContext={encounterSessionStartContext}
           />
         ))}
       </div>

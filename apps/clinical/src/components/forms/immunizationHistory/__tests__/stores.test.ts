@@ -1,4 +1,4 @@
-import { useImmunizationHistoryStore } from '../stores';
+import { getImmunizationStore } from '../stores';
 import {
   mockAllRequiredAttributes,
   mockAttributesWithOptionalAdministered,
@@ -8,7 +8,8 @@ import {
 } from './__mocks__/immunizationHistoryMocks';
 
 const secondVaccineCode = { code: 'flu', display: 'Influenza Vaccine' };
-const store = () => useImmunizationHistoryStore.getState();
+const STORE_KEY = 'immunizationHistory';
+const store = () => getImmunizationStore(STORE_KEY).getState();
 
 type FieldUpdateCase = [fieldName: string, actionName: string, value: unknown];
 
@@ -91,6 +92,51 @@ describe('useImmunizationHistoryStore', () => {
       );
       expect(store().selectedImmunizations[1].vaccineCode).toEqual(
         mockVaccineCode,
+      );
+      expect(store().selectedImmunizations[0].id).not.toBe(
+        store().selectedImmunizations[1].id,
+      );
+    });
+  });
+
+  describe('addImmunization with defaults', () => {
+    const defaults = {
+      basedOnReference: 'med-request-uuid',
+      drug: { code: 'covid-drug-uuid', display: 'COVID-19 Drug' },
+      administeredOn: new Date('2025-06-01'),
+      administeredLocation: { uuid: 'loc-uuid', display: 'Main Clinic' },
+    };
+
+    it('adds an entry with the correct shape from defaults', () => {
+      store().addImmunization(mockVaccineCode, defaults);
+
+      expect(store().selectedImmunizations).toHaveLength(1);
+      const entry = store().selectedImmunizations[0];
+      expect(entry.id).toBeTruthy();
+      expect(entry).toMatchObject({
+        vaccineCode: mockVaccineCode,
+        drug: defaults.drug,
+        administeredOn: defaults.administeredOn,
+        administeredLocation: defaults.administeredLocation,
+        basedOnReference: defaults.basedOnReference,
+        route: null,
+        site: null,
+        expiryDate: null,
+        manufacturer: null,
+        batchNumber: null,
+        doseSequence: null,
+        errors: {},
+        hasBeenValidated: false,
+      });
+    });
+
+    it('prepends the new entry and generates a unique id per entry', () => {
+      store().addImmunization(mockVaccineCode);
+      store().addImmunization(secondVaccineCode, defaults);
+
+      expect(store().selectedImmunizations).toHaveLength(2);
+      expect(store().selectedImmunizations[0].vaccineCode).toEqual(
+        secondVaccineCode,
       );
       expect(store().selectedImmunizations[0].id).not.toBe(
         store().selectedImmunizations[1].id,

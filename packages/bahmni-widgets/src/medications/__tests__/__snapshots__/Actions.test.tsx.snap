@@ -1,0 +1,86 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Actions matches snapshot for multiple actions 1`] = `
+<div>
+  <span
+    class="cds--overflow-menu__wrapper"
+  >
+    <span
+      class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+    >
+      <div
+        class="cds--tooltip-trigger__wrapper"
+      >
+        <button
+          aria-expanded="false"
+          aria-haspopup="true"
+          aria-labelledby="tooltip-_r_e_"
+          class="cds--overflow-menu cds--overflow-menu--md cds--btn cds--btn--md cds--layout--size-md cds--btn--ghost cds--btn--icon-only"
+          data-testid="medication-actions-overflow-menu"
+          id="medication-actions-overflow-menu"
+          type="button"
+        >
+          <svg
+            aria-label="Options"
+            class="cds--overflow-menu__icon"
+            fill="currentColor"
+            focusable="false"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            viewBox="0 0 32 32"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="16"
+              cy="8"
+              r="2"
+            />
+            <circle
+              cx="16"
+              cy="16"
+              r="2"
+            />
+            <circle
+              cx="16"
+              cy="24"
+              r="2"
+            />
+          </svg>
+        </button>
+      </div>
+      <span
+        aria-hidden="true"
+        class="cds--popover"
+        id="tooltip-_r_e_"
+        role="tooltip"
+      >
+        <span
+          class="cds--popover-content cds--tooltip-content"
+        >
+          Options
+        </span>
+        <span
+          class="cds--popover-caret"
+        />
+      </span>
+    </span>
+  </span>
+</div>
+`;
+
+exports[`Actions matches snapshot for single action 1`] = `
+<div>
+  <button
+    aria-label="Administer"
+    class="cds--btn cds--btn--ghost cds--btn--disabled"
+    data-testid="medication-action-administer-button"
+    disabled=""
+    id="medication-action-administer-button"
+    type="button"
+  >
+    Administer
+  </button>
+</div>
+`;

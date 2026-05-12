@@ -24,7 +24,13 @@ const baseEntry: InputControl = {
 describe('InputControlRenderer', () => {
   it('renders the component and divider when privilege is granted', () => {
     jest.mocked(useHasPrivilege).mockReturnValue(true);
-    render(<InputControlRenderer entry={baseEntry} encounterType="OPD" />);
+    render(
+      <InputControlRenderer
+        entry={baseEntry}
+        encounterType="OPD"
+        encounterSessionStartContext={{}}
+      />,
+    );
 
     expect(screen.getByTestId('mock-form')).toBeInTheDocument();
     expect(screen.getByRole('separator')).toBeInTheDocument();
@@ -32,7 +38,13 @@ describe('InputControlRenderer', () => {
 
   it('renders nothing when privilege is not granted', () => {
     jest.mocked(useHasPrivilege).mockReturnValue(false);
-    render(<InputControlRenderer entry={baseEntry} encounterType="OPD" />);
+    render(
+      <InputControlRenderer
+        entry={baseEntry}
+        encounterType="OPD"
+        encounterSessionStartContext={{}}
+      />,
+    );
 
     expect(screen.queryByTestId('mock-form')).not.toBeInTheDocument();
   });
@@ -45,6 +57,7 @@ describe('InputControlRenderer', () => {
         <InputControlRenderer
           entry={{ ...baseEntry, encounterTypes }}
           encounterType={encounterType}
+          encounterSessionStartContext={{}}
         />,
       );
 
@@ -60,6 +73,7 @@ describe('InputControlRenderer', () => {
         <InputControlRenderer
           entry={{ ...baseEntry, encounterTypes }}
           encounterType={encounterType}
+          encounterSessionStartContext={{}}
         />,
       );
 
@@ -70,7 +84,11 @@ describe('InputControlRenderer', () => {
   it('matches snapshot when rendered with privilege', () => {
     jest.mocked(useHasPrivilege).mockReturnValue(true);
     const { container } = render(
-      <InputControlRenderer entry={baseEntry} encounterType="OPD" />,
+      <InputControlRenderer
+        entry={baseEntry}
+        encounterType="OPD"
+        encounterSessionStartContext={{}}
+      />,
     );
     expect(container).toMatchSnapshot();
   });
@@ -78,7 +96,11 @@ describe('InputControlRenderer', () => {
   it('has no accessibility violations when rendered with privilege', async () => {
     jest.mocked(useHasPrivilege).mockReturnValue(true);
     const { container } = render(
-      <InputControlRenderer entry={baseEntry} encounterType="OPD" />,
+      <InputControlRenderer
+        entry={baseEntry}
+        encounterType="OPD"
+        encounterSessionStartContext={{}}
+      />,
     );
     expect(await axe(container)).toHaveNoViolations();
   });

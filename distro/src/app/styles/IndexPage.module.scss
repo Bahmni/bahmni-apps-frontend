@@ -1,0 +1,7 @@
+@use "@carbon/react/scss/theme" as *;
+
+.homePageBody {
+  background-color: $layer;
+  min-height: 100vh;
+  overflow-x: hidden;
+}

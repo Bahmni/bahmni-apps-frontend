@@ -339,6 +339,7 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       ),
       note: getNote(medication.note),
       doseForm: doseForm,
+      fhirResource: medication,
     };
   });
 }

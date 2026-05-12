@@ -1,5 +1,7 @@
 import {
   getLocationByTag,
+  getMedicationByUuid,
+  getUserLoginLocation,
   getVaccinations,
   searchFHIRConcepts,
 } from '@bahmni/services';
@@ -10,13 +12,17 @@ import { Immunization } from 'fhir/r4';
 import React from 'react';
 import { useClinicalConfig } from '../../../../providers/clinicalConfig';
 import ImmunizationHistoryForm from '../ImmunizationHistoryForm';
-import { useImmunizationHistoryStore } from '../stores';
+import { getImmunizationStore } from '../stores';
 import { createImmunizationBundleEntries } from '../utils';
 import {
+  mockAdministrationInputControlConfig,
   mockClinicalConfigContext,
   mockCovid19VaccineDrug,
   mockEncounterSubject,
+  mockFetchedMedication,
+  mockImmunizationInputControlConfig,
   mockLocations,
+  mockMedicationRequest,
   mockRoutesValueSet,
   mockSitesValueSet,
   mockVaccineValueSet,
@@ -25,6 +31,8 @@ import {
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getLocationByTag: jest.fn(),
+  getMedicationByUuid: jest.fn(),
+  getUserLoginLocation: jest.fn(),
   getVaccinations: jest.fn(),
   searchFHIRConcepts: jest.fn(),
 }));
@@ -55,7 +63,7 @@ const createWrapper = () => {
 describe('ImmunizationHistoryForm Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    useImmunizationHistoryStore.getState().reset();
+    getImmunizationStore('immunizationHistory').getState().reset();
 
     (useClinicalConfig as jest.Mock).mockReturnValue(mockClinicalConfigContext);
     (searchFHIRConcepts as jest.Mock).mockImplementation((uuid: string) => {
@@ -68,12 +76,26 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
       return Promise.resolve(undefined);
     });
     (getLocationByTag as jest.Mock).mockResolvedValue(mockLocations);
+    (getMedicationByUuid as jest.Mock).mockResolvedValue(mockFetchedMedication);
     (getVaccinations as jest.Mock).mockResolvedValue(mockVaccinationBundle);
+    (getUserLoginLocation as jest.Mock).mockReturnValue({
+      uuid: 'loc-uuid',
+      display: 'Login Location',
+      name: 'Login Location',
+    });
   });
 
   it('creates valid bundle entries when all required fields are filled', async () => {
     const user = userEvent.setup();
-    render(<ImmunizationHistoryForm />, { wrapper: createWrapper() });
+    render(
+      <ImmunizationHistoryForm
+        encounterSessionStartContext={{}}
+        inputControlConfig={mockImmunizationInputControlConfig}
+      />,
+      {
+        wrapper: createWrapper(),
+      },
+    );
 
     await waitFor(() => {
       expect(
@@ -98,8 +120,8 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
       expect(screen.getByText('Added Immunization')).toBeInTheDocument();
     });
 
-    const { id } =
-      useImmunizationHistoryStore.getState().selectedImmunizations[0];
+    const { id } = getImmunizationStore('immunizationHistory').getState()
+      .selectedImmunizations[0];
 
     await user.type(screen.getByPlaceholderText('Search drug name'), 'COVID');
     await waitFor(() => {
@@ -108,7 +130,7 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
     await user.click(screen.getByText('COVID-19 Drug'));
 
     await act(async () => {
-      useImmunizationHistoryStore
+      getImmunizationStore('immunizationHistory')
         .getState()
         .updateAdministeredOn(id, new Date('2025-01-15'));
     });
@@ -124,7 +146,9 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
 
     let isValid = false;
     await act(async () => {
-      isValid = useImmunizationHistoryStore.getState().validateAll();
+      isValid = getImmunizationStore('immunizationHistory')
+        .getState()
+        .validateAll();
     });
     expect(isValid).toBe(true);
 
@@ -140,7 +164,9 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
       ).not.toBeInTheDocument();
     });
 
-    const { selectedImmunizations } = useImmunizationHistoryStore.getState();
+    const { selectedImmunizations } = getImmunizationStore(
+      'immunizationHistory',
+    ).getState();
     const bundleEntries = createImmunizationBundleEntries({
       selectedImmunizations,
       encounterSubject: mockEncounterSubject,
@@ -167,7 +193,15 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
 
   it('shows required field validation errors when fields are left empty after vaccine selection', async () => {
     const user = userEvent.setup();
-    render(<ImmunizationHistoryForm />, { wrapper: createWrapper() });
+    render(
+      <ImmunizationHistoryForm
+        encounterSessionStartContext={{}}
+        inputControlConfig={mockImmunizationInputControlConfig}
+      />,
+      {
+        wrapper: createWrapper(),
+      },
+    );
 
     await waitFor(() => {
       expect(
@@ -192,7 +226,9 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
 
     let isValid = true;
     await act(async () => {
-      isValid = useImmunizationHistoryStore.getState().validateAll();
+      isValid = getImmunizationStore('immunizationHistory')
+        .getState()
+        .validateAll();
     });
     expect(isValid).toBe(false);
 
@@ -213,7 +249,9 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
       clinicalConfig: { consultationPad: {} },
     });
 
-    render(<ImmunizationHistoryForm />, { wrapper: createWrapper() });
+    render(<ImmunizationHistoryForm encounterSessionStartContext={{}} />, {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(
@@ -230,7 +268,15 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
       new Error('Network error'),
     );
 
-    render(<ImmunizationHistoryForm />, { wrapper: createWrapper() });
+    render(
+      <ImmunizationHistoryForm
+        encounterSessionStartContext={{}}
+        inputControlConfig={mockImmunizationInputControlConfig}
+      />,
+      {
+        wrapper: createWrapper(),
+      },
+    );
 
     await waitFor(() => {
       expect(
@@ -244,12 +290,36 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
     expect(screen.queryByText('Added Immunization')).not.toBeInTheDocument();
 
     const bundleEntries = createImmunizationBundleEntries({
-      selectedImmunizations:
-        useImmunizationHistoryStore.getState().selectedImmunizations,
+      selectedImmunizations: getImmunizationStore(
+        'immunizationHistory',
+      ).getState().selectedImmunizations,
       encounterSubject: mockEncounterSubject,
       encounterReference: 'Encounter/encounter-uuid',
       practitionerUUID: 'practitioner-uuid',
     });
     expect(bundleEntries).toHaveLength(0);
+  });
+
+  it('shows error state when getMedicationByUuid call fails', async () => {
+    (getMedicationByUuid as jest.Mock).mockRejectedValue(
+      new Error('Network error'),
+    );
+
+    render(
+      <ImmunizationHistoryForm
+        encounterSessionStartContext={{ basedOn: mockMedicationRequest }}
+        inputControlConfig={mockAdministrationInputControlConfig}
+      />,
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('immunization-history-error-test-id'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Error loading immunization details'),
+      ).toBeInTheDocument();
+    });
   });
 });

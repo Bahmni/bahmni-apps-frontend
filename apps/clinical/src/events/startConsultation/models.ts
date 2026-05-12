@@ -1,3 +1,4 @@
-export interface ConsultationStartEvent {
+export interface EncounterSessionStartContext {
   encounterType?: string;
+  [key: string]: unknown;
 }

@@ -1,3 +1,4 @@
+import { MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
 import { ConceptClass } from '../conceptService';
 
 /**
@@ -45,6 +46,7 @@ export interface MedicationRequest {
   readonly isImmediate: boolean;
   readonly note?: string;
   readonly doseForm?: string;
+  readonly fhirResource: FhirMedicationRequest;
 }
 
 export interface FormattedMedicationRequest {
@@ -62,6 +64,7 @@ export interface FormattedMedicationRequest {
   readonly isImmediate: boolean;
   readonly note?: string;
   readonly doseForm?: string;
+  readonly fhirResource: FhirMedicationRequest;
 }
 
 /**

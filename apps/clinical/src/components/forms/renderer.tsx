@@ -1,16 +1,19 @@
 import { MenuItemDivider } from '@bahmni/design-system';
 import { useHasPrivilege } from '@bahmni/widgets';
 import React from 'react';
+import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import type { InputControl } from './models';
 
 interface InputControlRendererProps {
   entry: InputControl;
   encounterType: string;
+  encounterSessionStartContext: EncounterSessionStartContext;
 }
 
 const InputControlRenderer: React.FC<InputControlRendererProps> = ({
   entry,
   encounterType,
+  encounterSessionStartContext,
 }) => {
   const hasPrivilege = useHasPrivilege(entry.privilege);
 
@@ -23,7 +26,10 @@ const InputControlRenderer: React.FC<InputControlRendererProps> = ({
   const Component = entry.component;
   return (
     <div>
-      <Component />
+      <Component
+        encounterSessionStartContext={encounterSessionStartContext}
+        inputControlConfig={entry.inputControlConfig}
+      />
       <MenuItemDivider data-testid={`${entry.key}-divider`} />
     </div>
   );

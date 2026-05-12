@@ -4,6 +4,9 @@
 @use "@carbon/react/scss/theme" as *;
 
 .form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-05;
   margin: $spacing-03;
   padding: $spacing-05;
   background-color: $background
@@ -11,15 +14,9 @@
 
 .title {
   @include type-style("heading-compact-02");
-  padding-bottom: $spacing-05;
-}
-
-.box {
-  margin-top: $spacing-05;
 }
 
 .loading {
-  margin-block: $spacing-05;
   max-inline-size: 100% !important;
 }
 

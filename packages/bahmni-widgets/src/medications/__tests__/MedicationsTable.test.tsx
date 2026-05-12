@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
+import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import MedicationsTable from '../MedicationsTable';
 import {
   formatMedicationRequest,
@@ -46,6 +47,8 @@ jest.mock('react-router-dom', () => ({
   useParams: jest.fn(),
 }));
 
+jest.mock('../../userPrivileges/useUserPrivilege');
+
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
@@ -77,6 +80,9 @@ const mockSortMedicationsByDateDistance =
     typeof sortMedicationsByDateDistance
   >;
 const mockGroupByDate = groupByDate as jest.MockedFunction<typeof groupByDate>;
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
 
 const mockMedications: MedicationRequest[] = [
   {
@@ -205,6 +211,7 @@ describe('MedicationsTable', () => {
     mockSortMedicationsByDateDistance.mockImplementation((meds: any[]) => meds);
     mockGroupByDate.mockReturnValue([]);
     mockFormatDateTime.mockReturnValue({ formattedResult: '15/01/2024' });
+    mockUseUserPrivilege.mockReturnValue({ userPrivileges: [] } as any);
   });
 
   it('renders error state', () => {
@@ -454,6 +461,26 @@ describe('MedicationsTable', () => {
         queryKey: ['medications', 'patient-uuid-123', [], undefined],
       }),
     );
+  });
+
+  it.each([
+    { label: 'config is not provided', config: undefined },
+    { label: 'actions is undefined', config: {} },
+    { label: 'actions is an empty array', config: { actions: [] } },
+  ])('hides the actions column when $label', ({ config }) => {
+    mockUseQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    } as any);
+
+    render(<MedicationsTable config={config} />);
+
+    expect(
+      screen.queryByText('MEDICATIONS_WIDGET_COL_ACTIONS'),
+    ).not.toBeInTheDocument();
   });
 
   describe('Medication doseForm display', () => {

@@ -1,16 +1,16 @@
 import { clearRegistry, getRegisteredInputControls } from '../../registry';
-import { IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY } from '../constants';
+import {
+  IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,
+  IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
+} from '../constants';
 import ImmunizationHistoryForm from '../ImmunizationHistoryForm';
-import { useImmunizationHistoryStore } from '../stores';
+import { getImmunizationStore } from '../stores';
 import { createImmunizationBundleEntries } from '../utils';
 
 import '../index';
 
 jest.mock('../stores', () => ({
-  useImmunizationHistoryStore: {
-    getState: jest.fn(),
-    subscribe: jest.fn(),
-  },
+  getImmunizationStore: jest.fn(),
 }));
 
 jest.mock('../utils', () => ({
@@ -21,63 +21,93 @@ jest.mock('../ImmunizationHistoryForm', () => 'ImmunizationHistoryForm');
 
 afterAll(() => clearRegistry());
 
-const mockGetState = useImmunizationHistoryStore.getState as jest.Mock;
-const mockSubscribe = useImmunizationHistoryStore.subscribe as jest.Mock;
+const mockGetImmunizationStore = getImmunizationStore as jest.Mock;
 const mockCreateEntries = createImmunizationBundleEntries as jest.Mock;
 
 describe('immunizationHistory index registration', () => {
   let mockReset: jest.Mock;
   let mockValidateAll: jest.Mock;
+  let mockSubscribe: jest.Mock;
+  let mockGetState: jest.Mock;
 
   beforeEach(() => {
     mockReset = jest.fn();
     mockValidateAll = jest.fn().mockReturnValue(true);
+    mockSubscribe = jest.fn();
     jest.clearAllMocks();
-    mockGetState.mockReturnValue({
+    mockGetState = jest.fn().mockReturnValue({
       reset: mockReset,
       validateAll: mockValidateAll,
       selectedImmunizations: [],
     });
+    mockGetImmunizationStore.mockReturnValue({
+      getState: mockGetState,
+      subscribe: mockSubscribe,
+    });
   });
 
-  const getEntry = () =>
-    getRegisteredInputControls().find(
-      (e) => e.key === IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
-    )!;
+  const getEntry = (key: string) =>
+    getRegisteredInputControls().find((e) => e.key === key)!;
 
-  it('registers with correct key and component', () => {
-    const entry = getEntry();
+  it.each([
+    [IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY],
+    [IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY],
+  ])('registers %s with correct key and component', (key) => {
+    const entry = getEntry(key);
     expect(entry).toBeDefined();
     expect(entry.component).toBe(ImmunizationHistoryForm);
   });
 
-  it('delegates reset and validate to store', () => {
-    getEntry().reset();
+  it.each([
+    [IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY],
+    [IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY],
+  ])('delegates reset and validate to correct store for %s', (key) => {
+    getEntry(key).reset();
+    expect(mockGetImmunizationStore).toHaveBeenCalledWith(key);
     expect(mockReset).toHaveBeenCalledTimes(1);
-    getEntry().validate();
+
+    getEntry(key).validate();
+    expect(mockGetImmunizationStore).toHaveBeenCalledWith(key);
     expect(mockValidateAll).toHaveBeenCalledTimes(1);
   });
 
   it.each([
-    { count: 0, expected: false },
-    { count: 1, expected: true },
+    { key: IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY, count: 0, expected: false },
+    { key: IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY, count: 1, expected: true },
+    {
+      key: IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,
+      count: 0,
+      expected: false,
+    },
+    {
+      key: IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,
+      count: 1,
+      expected: true,
+    },
   ])(
-    'hasData() returns $expected when selectedImmunizations has $count items',
-    ({ count, expected }) => {
+    'hasData() returns $expected when selectedImmunizations has $count items for $key',
+    ({ key, count, expected }) => {
       mockGetState.mockReturnValue({
-        selectedImmunizations: Array(count).fill({}),
+        selectedImmunizations: new Array(count).fill({}),
       });
-      expect(getEntry().hasData()).toBe(expected);
+      expect(getEntry(key).hasData()).toBe(expected);
     },
   );
 
-  it('subscribe() delegates to store', () => {
+  it.each([
+    [IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY],
+    [IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY],
+  ])('subscribe() delegates to correct store for %s', (key) => {
     const cb = jest.fn();
-    getEntry().subscribe(cb);
+    getEntry(key).subscribe(cb);
+    expect(mockGetImmunizationStore).toHaveBeenCalledWith(key);
     expect(mockSubscribe).toHaveBeenCalledWith(cb);
   });
 
-  it('createBundleEntries() calls util with correct args', () => {
+  it.each([
+    [IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY],
+    [IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY],
+  ])('createBundleEntries() calls util with correct args for %s', (key) => {
     const selectedImmunizations = [{ id: 'imm-1' }];
     mockGetState.mockReturnValue({ selectedImmunizations });
     const ctx = {
@@ -86,7 +116,8 @@ describe('immunizationHistory index registration', () => {
       practitionerUUID: 'prac-1',
       consultationDate: new Date(),
     };
-    getEntry().createBundleEntries!(ctx as any);
+    getEntry(key).createBundleEntries!(ctx as any);
+    expect(mockGetImmunizationStore).toHaveBeenCalledWith(key);
     expect(mockCreateEntries).toHaveBeenCalledWith({
       selectedImmunizations,
       encounterSubject: ctx.encounterSubject,

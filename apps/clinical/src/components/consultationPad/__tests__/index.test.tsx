@@ -104,7 +104,7 @@ const renderComponent = (
 ) =>
   render(
     <ConsultationPad
-      encounterType="Consultation"
+      encounterSessionStartContext={{ encounterType: 'Consultation' }}
       onClose={jest.fn()}
       {...props}
     />,
@@ -226,7 +226,7 @@ describe('ConsultationPad', () => {
   });
 
   describe('resolvedEncounterType', () => {
-    it('falls back to config defaultEncounterType when encounterType prop is empty', () => {
+    it('falls back to config defaultEncounterType when encounterType is not in encounterSessionStartContext', () => {
       jest.mocked(useClinicalConfig).mockReturnValue({
         clinicalConfig: {
           consultationPad: {
@@ -240,7 +240,7 @@ describe('ConsultationPad', () => {
         },
       } as any);
 
-      renderComponent({ encounterType: '' });
+      renderComponent({ encounterSessionStartContext: {} });
 
       expect(
         defaultEncounterDetailsState.setRequestedEncounterType,
@@ -249,13 +249,15 @@ describe('ConsultationPad', () => {
   });
 
   describe('encounterType prop validation', () => {
-    it('renders error state when encounterType prop is not in the configured list', () => {
-      renderComponent({ encounterType: 'UnknownType' });
+    it('renders error state when specified encounterType is not defined in configuration', () => {
+      renderComponent({
+        encounterSessionStartContext: { encounterType: 'UnknownType' },
+      });
 
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     });
 
-    it('renders skeleton while encounter concepts are loading and encounterType prop is set', () => {
+    it('renders skeleton while encounter concepts are loading and encounterType is set in event', () => {
       jest.mocked(useEncounterConcepts).mockReturnValue({
         encounterConcepts: null,
         loading: true,
@@ -263,18 +265,20 @@ describe('ConsultationPad', () => {
         refetch: jest.fn(),
       } as any);
 
-      renderComponent({ encounterType: 'Consultation' });
+      renderComponent({
+        encounterSessionStartContext: { encounterType: 'Consultation' },
+      });
 
       expect(screen.queryByTestId('allergies-divider')).not.toBeInTheDocument();
     });
 
     it.each([
-      ['valid', 'Consultation'],
-      ['empty', ''],
+      ['valid', { encounterType: 'Consultation' }],
+      ['not set', {}],
     ])(
       'does not show error state when encounterType is %s',
-      (_, encounterType) => {
-        renderComponent({ encounterType });
+      (_, encounterSessionStartContext) => {
+        renderComponent({ encounterSessionStartContext });
 
         expect(
           screen.queryByText('Something went wrong'),

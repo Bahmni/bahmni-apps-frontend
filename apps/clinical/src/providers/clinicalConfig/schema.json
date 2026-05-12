@@ -14,11 +14,15 @@
     "inputControl": {
       "type": "object",
       "required": ["type", "metadata", "encounterTypes", "privileges", "attributes"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "type": {
           "type": "string",
           "description": "Identifier matching the registered form key (e.g. encounterDetails, allergies)"
+        },
+        "label": {
+          "type": "string",
+          "description": "Display label for the input control"
         },
         "metadata": {
           "type": "object",

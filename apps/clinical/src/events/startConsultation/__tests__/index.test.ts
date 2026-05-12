@@ -3,12 +3,12 @@ import {
   dispatchConsultationStart,
   useSubscribeConsultationStart,
   CONSULTATION_START_EVENT,
-  type ConsultationStartEvent,
+  type EncounterSessionStartContext,
 } from '..';
 
 describe('startConsultation', () => {
   describe('dispatchConsultationStart', () => {
-    it.each<[ConsultationStartEvent, ConsultationStartEvent]>([
+    it.each<[EncounterSessionStartContext, EncounterSessionStartContext]>([
       [{ encounterType: 'OPD' }, { encounterType: 'OPD' }],
       [{}, {}],
     ])('should dispatch event with payload %o', (payload, expected) => {
@@ -28,7 +28,7 @@ describe('startConsultation', () => {
   describe('useSubscribeConsultationStart', () => {
     it('should call callback when event is dispatched', () => {
       const callback = jest.fn();
-      const payload: ConsultationStartEvent = { encounterType: 'OPD' };
+      const payload: EncounterSessionStartContext = { encounterType: 'OPD' };
 
       renderHook(() => useSubscribeConsultationStart(callback));
 

@@ -1,5 +1,5 @@
-import { Location } from '@bahmni/services';
-import { Medication, Reference } from 'fhir/r4';
+import { AvailableStockResponse, Location } from '@bahmni/services';
+import { Medication, MedicationRequest, Reference } from 'fhir/r4';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../../models';
 
@@ -42,6 +42,33 @@ export const mockImmunizationHistory = {
     { name: 'route', required: false },
     { name: 'site', required: false },
   ] as InputControlAttributes[],
+};
+
+export const mockImmunizationInputControlConfig = {
+  type: 'immunizationHistory',
+  metadata: mockImmunizationHistory.metadata,
+  encounterTypes: ['Immunization'],
+  privileges: ['app:clinical;addHistory'],
+  attributes: mockImmunizationHistory.attributes,
+};
+
+export const mockImmunizationInputControlConfigWithFetchStockBatches = {
+  ...mockImmunizationInputControlConfig,
+  metadata: {
+    ...mockImmunizationInputControlConfig.metadata,
+    fetchStockBatches: true,
+  },
+};
+
+export const mockAdministrationInputControlConfig = {
+  type: 'immunizationAdministration',
+  metadata: {
+    ...mockImmunizationHistory.metadata,
+    disableAdditionalAdministrations: true,
+  },
+  encounterTypes: ['Immunization'],
+  privileges: ['app:clinical;addHistory'],
+  attributes: mockImmunizationHistory.attributes,
 };
 
 export const mockClinicalConfigContext = {
@@ -261,6 +288,89 @@ export const mockImmunizationEntryComplete: ImmunizationInputEntry = {
   batchNumber: 'BATCH-001',
   doseSequence: 3,
   note: 'Third dose completed successfully.',
+};
+
+export const mockImmunizationEntryWithBasedOn: ImmunizationInputEntry = {
+  ...mockImmunizationEntry,
+  basedOnReference: 'med-request-uuid',
+  drug: { code: 'covid-drug-uuid', display: 'COVID-19 Drug' },
+  administeredOn: new Date('2025-01-01'),
+  administeredLocation: { uuid: 'location-uuid-1', display: 'Main Clinic' },
+};
+
+export const mockImmunizationEntryWithBasedOnNoDrug: ImmunizationInputEntry = {
+  ...mockImmunizationEntry,
+  basedOnReference: 'med-request-uuid',
+};
+
+export const mockImmunizationEntryWithBasedOnAndNullFields: ImmunizationInputEntry =
+  {
+    ...mockImmunizationEntry,
+    basedOnReference: 'med-request-uuid',
+    drug: null,
+    administeredOn: null,
+    administeredLocation: null,
+  };
+
+export const mockImmunizationEntryWithCustomDrug: ImmunizationInputEntry = {
+  ...mockImmunizationEntry,
+  drug: { display: 'Custom Drug Name' },
+};
+
+export const mockImmunizationEntryWithCustomLocation: ImmunizationInputEntry = {
+  ...mockImmunizationEntry,
+  administeredLocation: { display: 'Custom Ward' },
+};
+
+export const mockMedicationRequest: MedicationRequest = {
+  resourceType: 'MedicationRequest',
+  id: 'med-request-uuid',
+  status: 'active',
+  intent: 'order',
+  subject: { reference: 'Patient/patient-uuid' },
+  medicationReference: {
+    reference: 'Medication/covid-drug-uuid',
+    display: 'COVID-19 Drug',
+  },
+};
+
+export const mockFetchedMedication: Medication = {
+  resourceType: 'Medication',
+  id: 'covid-drug-uuid',
+  code: { coding: [{ code: 'covid-19', display: 'COVID-19 Vaccine' }] },
+};
+
+export const mockVaccinationBundleWithCovid = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [{ resource: mockCovid19VaccineDrug }],
+};
+
+export const mockAvailableStockResponse: AvailableStockResponse = {
+  count: 2,
+  data: [
+    {
+      stockLocationName: 'Nurse Station',
+      availableQuantity: 10,
+      onHandQuantity: 15,
+      unit: 'vial',
+      batchNumber: 'BATCH-001',
+      expiryDate: '2026-12-31',
+    },
+    {
+      stockLocationName: 'Nurse Station',
+      availableQuantity: 5,
+      onHandQuantity: 5,
+      unit: 'vial',
+      batchNumber: 'BATCH-002',
+      expiryDate: '2027-06-30',
+    },
+  ],
+};
+
+export const mockEmptyAvailableStockResponse: AvailableStockResponse = {
+  count: 0,
+  data: [],
 };
 
 export const mockStore = {

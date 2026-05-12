@@ -179,6 +179,7 @@ export {
   type Frequency as MedicationFrequency,
   type OrderAttribute,
 } from './medicationRequestService';
+export { getMedicationByUuid } from './medicationService';
 export {
   getPatientRadiologyInvestigations,
   getPatientRadiologyInvestigationBundle,
@@ -364,3 +365,8 @@ export {
   getVisibleModules,
   type Module,
 } from './moduleService';
+
+export {
+  getAvailableStocks,
+  type AvailableStockResponse,
+} from './inventoryService';

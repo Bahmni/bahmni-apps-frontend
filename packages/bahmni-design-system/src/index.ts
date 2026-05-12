@@ -8,10 +8,13 @@ export {
 
 export { Close, TrashCan } from '@carbon/icons-react';
 
+export { ArrowRight, type ArrowRightProps } from './atoms/arrowRight';
+
 export { Button, type ButtonProps } from './atoms/button';
 export { IconButton, type IconButtonProps } from './atoms/iconButton';
 export { Breadcrumb, type BreadcrumbProps } from './atoms/breadcrumb';
 export { Tile, type TileProps } from './atoms/tile';
+export { ClickableTile, type ClickableTileProps } from './atoms/clickableTile';
 export { Tag, type TagProps } from './atoms/tag';
 export { SelectableTag, type SelectableTagProps } from './atoms/selectableTag';
 export {
@@ -63,6 +66,10 @@ export {
 export { TooltipIcon, type TooltipIconProps } from './molecules/tooltipIcon';
 export { StatusTag, type StatusTagProps } from './molecules/statusTag';
 export { SkeletonText, type SkeletonTextProps } from './atoms/skeletonText';
+export {
+  SkeletonPlaceholder,
+  type SkeletonPlaceholderProps,
+} from './atoms/skeletonPlaceholder';
 export {
   DropdownSkeleton,
   type DropdownSkeletonProps,

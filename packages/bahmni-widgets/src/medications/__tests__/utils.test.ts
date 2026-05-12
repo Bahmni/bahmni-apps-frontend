@@ -14,6 +14,7 @@ import {
   sortMedicationsByDateDistance,
   MEDICATION_STATUS_PRIORITY_ORDER,
 } from '../utils';
+import { fhirMedicationRequestMock } from './__mocks__/medicationMocks';
 
 // Mock date-fns functions for consistent testing
 jest.mock('date-fns', () => ({
@@ -56,6 +57,7 @@ describe('formatMedicationRequest', () => {
       priority: 'stat',
       asNeeded: true,
       isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
     };
 
     const result = formatMedicationRequest(input);
@@ -73,6 +75,7 @@ describe('formatMedicationRequest', () => {
       status: 'active',
       asNeeded: true,
       isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
     });
   });
 
@@ -89,6 +92,7 @@ describe('formatMedicationRequest', () => {
       instructions: '',
       asNeeded: false,
       isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
     };
 
     const result = formatMedicationRequest(input);
@@ -106,6 +110,7 @@ describe('formatMedicationRequest', () => {
       status: 'on-hold',
       asNeeded: false,
       isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
     });
   });
 
@@ -122,6 +127,7 @@ describe('formatMedicationRequest', () => {
       instructions: '',
       asNeeded: true,
       isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
     };
 
     const result = formatMedicationRequest(input);
@@ -139,6 +145,7 @@ describe('formatMedicationRequest', () => {
       status: 'active',
       asNeeded: true,
       isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
     });
   });
 
@@ -155,6 +162,7 @@ describe('formatMedicationRequest', () => {
       instructions: '',
       asNeeded: false,
       isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
     };
 
     const result = formatMedicationRequest(input);
@@ -180,6 +188,7 @@ describe('formatMedicationRequest', () => {
       instructions: '',
       asNeeded: false,
       isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
     };
 
     const result = formatMedicationRequest(input);
@@ -203,6 +212,7 @@ describe('formatMedicationRequest', () => {
       route: 'oral',
       asNeeded: false,
       isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
     };
 
     const result = formatMedicationRequest(input);

@@ -1,32 +1,52 @@
 import { generateUUID } from '@bahmni/services';
-import { create } from 'zustand';
+import { useStore } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import {
   ImmunizationDrug,
   ImmunizationHistoryState,
   ImmunizationInputEntry,
   ImmunizationLocation,
+  ImmunizationStoreKey,
 } from './models';
 import { findAttr } from './utils';
 
-export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
-  (set, get) => ({
+type ImmunizationHistoryStoreApi = ReturnType<
+  typeof createImmunizationHistoryStore
+>;
+
+const storeRegistry = new Map<
+  ImmunizationStoreKey,
+  ImmunizationHistoryStoreApi
+>();
+
+function createImmunizationHistoryStore() {
+  return createStore<ImmunizationHistoryState>((set, get) => ({
     selectedImmunizations: [],
     attributes: undefined,
 
-    addImmunization: (vaccineCode: { code: string; display: string }) => {
+    addImmunization: (
+      vaccineCode: { code: string; display: string },
+      defaults?: {
+        basedOnReference?: string | null;
+        drug?: ImmunizationDrug | null;
+        administeredOn?: Date | null;
+        administeredLocation?: ImmunizationLocation | null;
+      },
+    ) => {
       const newEntry: ImmunizationInputEntry = {
         id: generateUUID(),
-        drug: null,
+        drug: defaults?.drug ?? null,
         vaccineCode,
-        administeredOn: null,
-        administeredLocation: null,
+        administeredOn: defaults?.administeredOn ?? null,
+        administeredLocation: defaults?.administeredLocation ?? null,
         route: null,
         site: null,
         expiryDate: null,
         manufacturer: null,
         batchNumber: null,
         doseSequence: null,
+        basedOnReference: defaults?.basedOnReference,
         errors: {},
         hasBeenValidated: false,
       };
@@ -152,7 +172,7 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
         selectedImmunizations: state.selectedImmunizations.map((entry) => {
           if (entry.id !== id) return entry;
           const updated = { ...entry, manufacturer: value };
-          if (entry.hasBeenValidated && value.trim()) {
+          if (entry.hasBeenValidated && value?.trim()) {
             updated.errors = { ...entry.errors };
             delete updated.errors.manufacturer;
           }
@@ -166,7 +186,7 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
         selectedImmunizations: state.selectedImmunizations.map((entry) => {
           if (entry.id !== id) return entry;
           const updated = { ...entry, batchNumber: value };
-          if (entry.hasBeenValidated && value.trim()) {
+          if (entry.hasBeenValidated && value?.trim()) {
             updated.errors = { ...entry.errors };
             delete updated.errors.batchNumber;
           }
@@ -307,5 +327,20 @@ export const useImmunizationHistoryStore = create<ImmunizationHistoryState>(
     },
 
     getState: () => get(),
-  }),
-);
+  }));
+}
+
+export function getImmunizationStore(
+  key: ImmunizationStoreKey,
+): ImmunizationHistoryStoreApi {
+  if (!storeRegistry.has(key)) {
+    storeRegistry.set(key, createImmunizationHistoryStore());
+  }
+  return storeRegistry.get(key)!;
+}
+
+export function useImmunizationHistoryStore(
+  key: ImmunizationStoreKey,
+): ImmunizationHistoryState {
+  return useStore(getImmunizationStore(key));
+}

@@ -1,5 +1,13 @@
 import { Reference } from 'fhir/r4';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
+import {
+  IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,
+  IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
+} from './constants';
+
+export type ImmunizationStoreKey =
+  | typeof IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY
+  | typeof IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY;
 
 export interface ImmunizationDrug {
   code?: string;
@@ -27,6 +35,7 @@ export interface ImmunizationInputEntry {
   batchNumber: string | null;
   doseSequence: number | null;
   note?: string;
+  basedOnReference?: string | null;
   errors: {
     drug?: string;
     administeredOn?: string;
@@ -47,6 +56,12 @@ export interface ValueSetComboBoxItem {
   disabled?: boolean;
 }
 
+export interface BatchNumberComboBoxItem {
+  batchNumber: string;
+  expiryDate: string;
+  disabled?: boolean;
+}
+
 export interface LocationComboBoxItem {
   uuid: string;
   display: string;
@@ -62,7 +77,15 @@ export interface CreateImmunizationBundleEntriesParams {
 export interface ImmunizationHistoryState {
   selectedImmunizations: ImmunizationInputEntry[];
   attributes: InputControlAttributes[] | undefined;
-  addImmunization: (vaccineCode: { code: string; display: string }) => void;
+  addImmunization: (
+    vaccineCode: { code: string; display: string },
+    defaults?: {
+      basedOnReference?: string | null;
+      drug?: ImmunizationDrug | null;
+      administeredOn?: Date | null;
+      administeredLocation?: ImmunizationLocation | null;
+    },
+  ) => void;
   removeImmunization: (id: string) => void;
   setAttributes: (attrs: InputControlAttributes[]) => void;
   updateAdministeredOn: (id: string, value: Date | null) => void;

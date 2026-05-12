@@ -7,9 +7,8 @@
   }
 }
 
-.loading {
-  @include type-style("label-01");
-  padding: $spacing-03 $spacing-04;
+.skeleton {
+  height: $spacing-08;
 }
 
 .error {

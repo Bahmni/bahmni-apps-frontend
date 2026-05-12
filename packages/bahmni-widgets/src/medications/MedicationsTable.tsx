@@ -28,6 +28,8 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
+import Actions from './components/Actions';
+import { MedicationAction } from './models';
 import styles from './styles/MedicationsTable.module.scss';
 import {
   formatMedicationRequest,
@@ -77,6 +79,16 @@ const getMedicationStatusKey = (status: string): string => {
   }
 };
 
+const BASE_SORTABLE = [
+  { key: 'name', sortable: true },
+  { key: 'dosage', sortable: false },
+  { key: 'instruction', sortable: false },
+  { key: 'startDate', sortable: true },
+  { key: 'orderedBy', sortable: true },
+  { key: 'orderDate', sortable: true },
+  { key: 'status', sortable: true },
+];
+
 const MedicationsTable: React.FC<WidgetProps> = ({
   config,
   episodeOfCareUuids,
@@ -86,6 +98,8 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const code = (config?.code as string[]) || [];
+  const actions = (config?.actions as MedicationAction[]) ?? [];
+  const hasActions = actions.length > 0;
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -112,7 +126,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         type: 'error',
       });
     }
-  }, [isError, error, addNotification, t]);
+  }, [isError, error, addNotification]);
 
   // Listen to consultation saved events and refetch if medications were updated
   useSubscribeConsultationSaved(
@@ -167,8 +181,8 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     [t],
   );
 
-  const headers = useMemo(
-    () => [
+  const { baseHeaders, activeHeaders, activeSortable } = useMemo(() => {
+    const base = [
       { key: 'name', header: t('MEDICATIONS_MEDICINE_NAME') },
       { key: 'dosage', header: t('MEDICATIONS_DOSAGE') },
       { key: 'instruction', header: t('MEDICATIONS_INSTRUCTIONS') },
@@ -176,21 +190,20 @@ const MedicationsTable: React.FC<WidgetProps> = ({
       { key: 'orderedBy', header: t('MEDICATIONS_ORDERED_BY') },
       { key: 'orderDate', header: t('MEDICATIONS_ORDERED_ON') },
       { key: 'status', header: t('MEDICATIONS_STATUS') },
-    ],
-    [t],
-  );
-  const sortable = useMemo(
-    () => [
-      { key: 'name', sortable: true },
-      { key: 'dosage', sortable: false },
-      { key: 'instruction', sortable: false },
-      { key: 'startDate', sortable: true },
-      { key: 'orderedBy', sortable: true },
-      { key: 'orderDate', sortable: true },
-      { key: 'status', sortable: true },
-    ],
-    [],
-  );
+    ];
+    return {
+      baseHeaders: base,
+      activeHeaders: hasActions
+        ? [
+            ...base,
+            { key: 'actions', header: t('MEDICATIONS_WIDGET_COL_ACTIONS') },
+          ]
+        : base,
+      activeSortable: hasActions
+        ? [...BASE_SORTABLE, { key: 'actions', sortable: false }]
+        : BASE_SORTABLE,
+    };
+  }, [hasActions]);
 
   const formattedMedications = useMemo(() => {
     if (!medications) return [];
@@ -287,6 +300,8 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             dotClassName={getMedicationStatusClassName(row.status)}
           />
         );
+      case 'actions':
+        return <Actions actions={actions} medication={row.fhirResource} />;
       default:
         return null;
     }
@@ -318,12 +333,12 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         <TabPanels>
           <TabPanel className={styles.medicationTabs}>
             <SortableDataTable
-              headers={headers}
+              headers={activeHeaders}
               ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}
               rows={emptyEncounterFilter ? [] : activeAndScheduledMedications}
               loading={isLoading}
               errorStateMessage={error}
-              sortable={sortable}
+              sortable={activeSortable}
               emptyStateMessage={t('NO_ACTIVE_MEDICATIONS')}
               renderCell={renderCell}
               className={styles.medicationsTableBody}
@@ -336,12 +351,12 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             processedAllMedications.length === 0 ||
             emptyEncounterFilter ? (
               <SortableDataTable
-                headers={headers}
+                headers={baseHeaders}
                 ariaLabel={t('MEDICATIONS_TABLE_ARIA_LABEL')}
                 rows={[]}
                 loading={isLoading}
                 errorStateMessage={error}
-                sortable={sortable}
+                sortable={BASE_SORTABLE}
                 emptyStateMessage={t('NO_MEDICATION_HISTORY')}
                 renderCell={renderCell}
                 className={styles.medicationsTableBody}
@@ -359,12 +374,12 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                       className={styles.customAccordianItem}
                     >
                       <SortableDataTable
-                        headers={headers}
+                        headers={baseHeaders}
                         ariaLabel={t('MEDICATIONS_DISPLAY_CONTROL_HEADING')}
                         rows={medications}
                         loading={isLoading}
                         errorStateMessage={error}
-                        sortable={sortable}
+                        sortable={BASE_SORTABLE}
                         emptyStateMessage={t('NO_MEDICATION_HISTORY')}
                         renderCell={renderCell}
                         className={classNames(
