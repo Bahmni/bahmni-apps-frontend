@@ -27,6 +27,10 @@
 }
 
 .userMenu {
+  --cds-layer: #{$layer-02};
+  --cds-field: #{$field-02};
+  --cds-text-primary: #{$text-primary};
+
   display: flex;
   align-items: center;
   padding: 0 $spacing-03;

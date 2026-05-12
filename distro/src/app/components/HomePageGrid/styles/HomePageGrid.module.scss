@@ -33,6 +33,7 @@ $header-height: 3.75rem;
 
 .emptyState {
   @include type-style("label-01");
+
   text-align: center;
   padding: $spacing-09 $spacing-04;
   color: $text-secondary;
