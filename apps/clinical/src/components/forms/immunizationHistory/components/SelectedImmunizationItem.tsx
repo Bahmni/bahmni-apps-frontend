@@ -21,6 +21,7 @@ import { ImmunizationInputEntry, ImmunizationStoreKey } from '../models';
 import { useImmunizationHistoryStore } from '../stores';
 import styles from '../styles/ImmunizationHistoryForm.module.scss';
 import {
+  formatBatchItemDisplay,
   getBatchNumberComboBoxItems,
   getLocationComboBoxItems,
   getMedicationComboBoxItems,
@@ -360,12 +361,20 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               allowCustomValue={!stockBatchesEnabled}
               items={batchNumberComboBoxItems}
               itemToString={(item) => item?.batchNumber ?? ''}
+              className={styles.batchNumber}
+              itemToElement={(item) => (
+                <span>{formatBatchItemDisplay(item, t)}</span>
+              )}
               selectedItem={
                 batchNumberComboBoxItems.find(
                   (item) => item.batchNumber === immunization.batchNumber,
                 ) ??
                 (immunization.batchNumber
-                  ? { batchNumber: immunization.batchNumber, expiryDate: '' }
+                  ? {
+                      batchNumber: immunization.batchNumber,
+                      expiryDate: '',
+                      stockLocationName: '',
+                    }
                   : null)
               }
               onChange={({ selectedItem, inputValue }) => {

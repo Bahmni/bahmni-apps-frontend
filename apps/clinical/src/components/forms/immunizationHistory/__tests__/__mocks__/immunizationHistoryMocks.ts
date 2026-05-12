@@ -368,6 +368,36 @@ export const mockAvailableStockResponse: AvailableStockResponse = {
   ],
 };
 
+export const mockAvailableStockWithEmptyBatch: AvailableStockResponse = {
+  count: 3,
+  data: [
+    {
+      stockLocationName: 'Nurse Station',
+      availableQuantity: 10,
+      onHandQuantity: 10,
+      unit: 'vial',
+      batchNumber: 'BATCH-001',
+      expiryDate: '2026-12-31',
+    },
+    {
+      stockLocationName: 'Nurse Station',
+      availableQuantity: 5,
+      onHandQuantity: 5,
+      unit: 'vial',
+      batchNumber: '',
+      expiryDate: '2027-01-01',
+    },
+    {
+      stockLocationName: 'Nurse Station',
+      availableQuantity: 3,
+      onHandQuantity: 3,
+      unit: 'vial',
+      batchNumber: '   ',
+      expiryDate: '2027-03-15',
+    },
+  ],
+};
+
 export const mockEmptyAvailableStockResponse: AvailableStockResponse = {
   count: 0,
   data: [],
