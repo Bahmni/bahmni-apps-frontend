@@ -159,13 +159,13 @@ export function formatBatchItemDisplay(
   t: (key: string) => string,
 ): string {
   if (!item) return '';
-  return (
-    (item.batchNumber ?? '') +
-    (item.expiryDate
-      ? ` [${formatDateTime(item.expiryDate, t, false, 'dd-MMM-yyyy').formattedResult}]`
-      : '') +
-    (item.stockLocationName ? ` - ${item.stockLocationName}` : '')
-  );
+  const expiryPart = item.expiryDate
+    ? ` [${formatDateTime(item.expiryDate, t, false, 'd MMM yyyy').formattedResult}]`
+    : '';
+  const locationPart = item.stockLocationName
+    ? ` - ${item.stockLocationName}`
+    : '';
+  return item.batchNumber + expiryPart + locationPart;
 }
 
 export function getLocationComboBoxItems(

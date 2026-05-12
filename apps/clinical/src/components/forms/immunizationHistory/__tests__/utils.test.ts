@@ -17,6 +17,7 @@ import {
 } from '../utils';
 import {
   mockAvailableStockResponse,
+  mockAvailableStockWithEmptyBatch,
   mockEmptyAvailableStockResponse,
   mockEncounterSubject,
   mockFetchedMedication,
@@ -36,6 +37,7 @@ import {
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+  formatDateTime: jest.fn().mockReturnValue({ formattedResult: '31 Dec 2026' }),
 }));
 
 jest.mock('../../../../services/medicationService');
@@ -293,29 +295,10 @@ describe('getBatchNumberComboBoxItems', () => {
     ]);
   });
 
-  it('filters out items with empty batch numbers', () => {
-    const stocksWithEmptyBatch = {
-      count: 3,
-      data: [
-        {
-          stockLocationName: 'Nurse Station',
-          availableQuantity: 10,
-          onHandQuantity: 10,
-          unit: 'vial',
-          batchNumber: 'BATCH-001',
-          expiryDate: '2026-12-31',
-        },
-        {
-          stockLocationName: 'Nurse Station',
-          availableQuantity: 5,
-          onHandQuantity: 5,
-          unit: 'vial',
-          batchNumber: '',
-          expiryDate: '2027-01-01',
-        },
-      ],
-    };
-    expect(getBatchNumberComboBoxItems(stocksWithEmptyBatch)).toEqual([
+  it('filters out items with empty or whitespace-only batch numbers', () => {
+    expect(
+      getBatchNumberComboBoxItems(mockAvailableStockWithEmptyBatch),
+    ).toEqual([
       {
         batchNumber: 'BATCH-001',
         expiryDate: '2026-12-31',
@@ -332,51 +315,40 @@ describe('formatBatchItemDisplay', () => {
     expect(formatBatchItemDisplay(null, mockT)).toBe('');
   });
 
-  it('returns batch number only when no expiry date or location', () => {
-    expect(
-      formatBatchItemDisplay(
-        { batchNumber: 'BATCH-001', expiryDate: '', stockLocationName: '' },
-        mockT,
-      ),
-    ).toBe('BATCH-001');
-  });
-
-  it('includes formatted expiry date when present', () => {
-    const result = formatBatchItemDisplay(
-      {
-        batchNumber: 'BATCH-001',
-        expiryDate: '2026-12-31',
-        stockLocationName: '',
-      },
-      mockT,
-    );
-    expect(result).toMatch(/^BATCH-001 \[.+\]$/);
-  });
-
-  it('includes stock location name when present', () => {
-    expect(
-      formatBatchItemDisplay(
-        {
-          batchNumber: 'BATCH-001',
-          expiryDate: '',
-          stockLocationName: 'Nurse Station',
-        },
-        mockT,
-      ),
-    ).toBe('BATCH-001 - Nurse Station');
-  });
-
-  it('includes both expiry date and location when both present', () => {
-    const result = formatBatchItemDisplay(
-      {
-        batchNumber: 'BATCH-001',
-        expiryDate: '2026-12-31',
-        stockLocationName: 'Nurse Station',
-      },
-      mockT,
-    );
-    expect(result).toMatch(/^BATCH-001 \[.+\] - Nurse Station$/);
-  });
+  it.each([
+    ['no expiry date or location', 'BATCH-001', '', '', 'BATCH-001'],
+    [
+      'expiry date only',
+      'BATCH-001',
+      '2026-12-31',
+      '',
+      'BATCH-001 [31 Dec 2026]',
+    ],
+    [
+      'stock location only',
+      'BATCH-001',
+      '',
+      'Nurse Station',
+      'BATCH-001 - Nurse Station',
+    ],
+    [
+      'both expiry date and location',
+      'BATCH-001',
+      '2026-12-31',
+      'Nurse Station',
+      'BATCH-001 [31 Dec 2026] - Nurse Station',
+    ],
+  ])(
+    'formats correctly with %s',
+    (_, batchNumber, expiryDate, stockLocationName, expected) => {
+      expect(
+        formatBatchItemDisplay(
+          { batchNumber, expiryDate, stockLocationName },
+          mockT,
+        ),
+      ).toBe(expected);
+    },
+  );
 });
 
 describe('getComboBoxItems', () => {

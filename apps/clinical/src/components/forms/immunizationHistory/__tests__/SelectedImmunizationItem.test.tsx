@@ -458,8 +458,12 @@ describe('SelectedImmunizationItem', () => {
       render(<SelectedImmunizationItem {...defaultProps} />);
       await user.click(screen.getByPlaceholderText('Enter batch number'));
       await waitFor(() => {
-        expect(screen.getByText(/BATCH-001/)).toBeInTheDocument();
-        expect(screen.getByText(/BATCH-002/)).toBeInTheDocument();
+        expect(
+          screen.getByText('BATCH-001 [31 Dec 2026] - Nurse Station'),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('BATCH-002 [30 Jun 2027] - Nurse Station'),
+        ).toBeInTheDocument();
       });
     });
 
