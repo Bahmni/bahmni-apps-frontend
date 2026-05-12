@@ -379,69 +379,65 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
       >
         <div
-          class="batchNumberComboBox"
+          class="cds--list-box__wrapper batchNumber"
         >
           <div
-            class="cds--list-box__wrapper"
+            class="cds--combo-box cds--autoalign cds--list-box"
           >
             <div
-              class="cds--combo-box cds--autoalign cds--list-box"
+              class="cds--list-box__field"
             >
-              <div
-                class="cds--list-box__field"
-              >
-                <input
-                  aria-activedescendant=""
-                  aria-autocomplete="list"
-                  aria-controls="downshift-_r_mo_-menu"
-                  aria-expanded="false"
-                  aria-haspopup="listbox"
-                  aria-label="Choose an item"
-                  autocomplete="off"
-                  class="cds--text-input cds--text-input--empty"
-                  data-testid="immunization-batch-number-test-id-1"
-                  id="immunization-batch-number-test-id-1"
-                  placeholder="Enter batch number"
-                  role="combobox"
-                  tabindex="0"
-                  title=""
-                  type="text"
-                  value=""
-                />
-                <button
-                  aria-controls="downshift-_r_mo_-menu"
-                  aria-expanded="false"
-                  aria-label="Open"
-                  class="cds--list-box__menu-icon"
-                  id="downshift-_r_mo_-toggle-button"
-                  tabindex="-1"
-                  title="Open"
-                  type="button"
-                >
-                  <svg
-                    aria-hidden="true"
-                    fill="currentColor"
-                    focusable="false"
-                    height="16"
-                    preserveAspectRatio="xMidYMid meet"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                    />
-                  </svg>
-                </button>
-              </div>
-              <ul
-                aria-labelledby="downshift-_r_mo_-label"
-                class="cds--list-box__menu"
-                id="downshift-_r_mo_-menu"
-                role="listbox"
-                style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+              <input
+                aria-activedescendant=""
+                aria-autocomplete="list"
+                aria-controls="downshift-_r_mo_-menu"
+                aria-expanded="false"
+                aria-haspopup="listbox"
+                aria-label="Choose an item"
+                autocomplete="off"
+                class="cds--text-input cds--text-input--empty"
+                data-testid="immunization-batch-number-test-id-1"
+                id="immunization-batch-number-test-id-1"
+                placeholder="Enter batch number"
+                role="combobox"
+                tabindex="0"
+                title=""
+                type="text"
+                value=""
               />
+              <button
+                aria-controls="downshift-_r_mo_-menu"
+                aria-expanded="false"
+                aria-label="Open"
+                class="cds--list-box__menu-icon"
+                id="downshift-_r_mo_-toggle-button"
+                tabindex="-1"
+                title="Open"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  />
+                </svg>
+              </button>
             </div>
+            <ul
+              aria-labelledby="downshift-_r_mo_-label"
+              class="cds--list-box__menu"
+              id="downshift-_r_mo_-menu"
+              role="listbox"
+              style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+            />
           </div>
         </div>
       </div>

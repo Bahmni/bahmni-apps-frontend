@@ -52,16 +52,14 @@
   margin-left: 0;
 }
 
-/* stylelint-disable selector-pseudo-class-no-unknown */
-.batchNumberComboBox :global(.cds--list-box__menu-item__option) {
-  overflow: visible;
-  text-overflow: unset;
-  white-space: normal;
-  overflow-wrap: break-word;
-  height: auto;
-  min-height: 2.5rem;
+.batchNumber {
+  span {
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
 }
-/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .datePicker > div {
     display: block;

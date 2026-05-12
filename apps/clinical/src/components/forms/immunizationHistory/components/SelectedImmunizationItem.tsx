@@ -353,50 +353,49 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
 
         {findAttr('batchNumber', attributes) && (
           <Column sm={4} md={2} lg={5} className={styles.column}>
-            <div className={styles.batchNumberComboBox}>
-              <ComboBox
-                id={`immunization-batch-number-${id}`}
-                data-testid={`immunization-batch-number-${id}`}
-                placeholder={t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')}
-                autoAlign
-                allowCustomValue={!stockBatchesEnabled}
-                items={batchNumberComboBoxItems}
-                itemToString={(item) => item?.batchNumber ?? ''}
-                itemToElement={(item) => (
-                  <span>{formatBatchItemDisplay(item, t)}</span>
-                )}
-                selectedItem={
-                  batchNumberComboBoxItems.find(
-                    (item) => item.batchNumber === immunization.batchNumber,
-                  ) ??
-                  (immunization.batchNumber
-                    ? {
-                        batchNumber: immunization.batchNumber,
-                        expiryDate: '',
-                        stockLocationName: '',
-                      }
-                    : null)
-                }
-                onChange={({ selectedItem, inputValue }) => {
-                  if (selectedItem && !selectedItem.disabled) {
-                    updateBatchNumber(id, selectedItem.batchNumber ?? '');
-                    if (selectedItem.expiryDate) {
-                      updateExpiryDate(id, new Date(selectedItem.expiryDate));
+            <ComboBox
+              id={`immunization-batch-number-${id}`}
+              data-testid={`immunization-batch-number-${id}`}
+              placeholder={t('IMMUNIZATION_HISTORY_BATCH_NUMBER_PLACEHOLDER')}
+              autoAlign
+              allowCustomValue={!stockBatchesEnabled}
+              items={batchNumberComboBoxItems}
+              itemToString={(item) => item?.batchNumber ?? ''}
+              className={styles.batchNumber}
+              itemToElement={(item) => (
+                <span>{formatBatchItemDisplay(item, t)}</span>
+              )}
+              selectedItem={
+                batchNumberComboBoxItems.find(
+                  (item) => item.batchNumber === immunization.batchNumber,
+                ) ??
+                (immunization.batchNumber
+                  ? {
+                      batchNumber: immunization.batchNumber,
+                      expiryDate: '',
+                      stockLocationName: '',
                     }
-                  } else if (inputValue?.trim()) {
-                    updateBatchNumber(id, inputValue.trim());
-                  } else {
-                    updateBatchNumber(id, '');
+                  : null)
+              }
+              onChange={({ selectedItem, inputValue }) => {
+                if (selectedItem && !selectedItem.disabled) {
+                  updateBatchNumber(id, selectedItem.batchNumber ?? '');
+                  if (selectedItem.expiryDate) {
+                    updateExpiryDate(id, new Date(selectedItem.expiryDate));
                   }
-                }}
-                invalid={!!immunization.errors.batchNumber}
-                invalidText={
-                  immunization.errors.batchNumber
-                    ? t(immunization.errors.batchNumber)
-                    : ''
+                } else if (inputValue?.trim()) {
+                  updateBatchNumber(id, inputValue.trim());
+                } else {
+                  updateBatchNumber(id, '');
                 }
-              />
-            </div>
+              }}
+              invalid={!!immunization.errors.batchNumber}
+              invalidText={
+                immunization.errors.batchNumber
+                  ? t(immunization.errors.batchNumber)
+                  : ''
+              }
+            />
           </Column>
         )}
 
