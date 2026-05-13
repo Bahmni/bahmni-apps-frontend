@@ -211,27 +211,34 @@ const ImmunizationForm = ({
   };
 
   const isDataLoading = useMemo(() => {
-    return (
-      (vaccineCodeConceptSetLoading ||
-        routesConceptSetLoading ||
-        sitesConceptSetLoading ||
-        administeredLocationTagLoading ||
-        vaccinationDrugsLoading ||
-        basedOnMedicationLoading) &&
-      selectedImmunizations.length > 0
-    );
+    const isLoading =
+      isConfigLoading ||
+      vaccineCodeConceptSetLoading ||
+      routesConceptSetLoading ||
+      sitesConceptSetLoading ||
+      administeredLocationTagLoading ||
+      vaccinationDrugsLoading ||
+      basedOnMedicationLoading;
+
+    const willAutoPopulate =
+      !!basedOn && (basedOnMedicationLoading || vaccinationDrugsLoading);
+
+    return isLoading && (selectedImmunizations.length > 0 || willAutoPopulate);
   }, [
     selectedImmunizations,
+    isConfigLoading,
     vaccineCodeConceptSetLoading,
     routesConceptSetLoading,
     sitesConceptSetLoading,
     administeredLocationTagLoading,
     vaccinationDrugsLoading,
     basedOnMedicationLoading,
+    basedOn,
   ]);
 
   const isDataError = useMemo(() => {
     return (
+      !!configError ||
       !!vaccineCodeConceptSetError ||
       !!routesConceptSetError ||
       !!sitesConceptSetError ||
@@ -240,6 +247,7 @@ const ImmunizationForm = ({
       !!basedOnMedicationError
     );
   }, [
+    configError,
     vaccineCodeConceptSetError,
     routesConceptSetError,
     sitesConceptSetError,
