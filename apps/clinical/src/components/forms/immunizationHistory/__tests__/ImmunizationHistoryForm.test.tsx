@@ -34,6 +34,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getAvailableStocks: jest.fn(),
   getUserLoginLocation: jest.fn(),
+  formatDateTime: jest.fn().mockReturnValue({ formattedResult: '31 Dec 2026' }),
 }));
 jest.mock('../stores');
 jest.mock('../../../../providers/clinicalConfig', () => ({
@@ -612,8 +613,12 @@ describe('ImmunizationHistoryForm', () => {
       );
       await user.click(screen.getByPlaceholderText('Enter batch number'));
       await waitFor(() => {
-        expect(screen.getByText('BATCH-001')).toBeInTheDocument();
-        expect(screen.getByText('BATCH-002')).toBeInTheDocument();
+        expect(
+          screen.getByText('BATCH-001 [31 Dec 2026] - Nurse Station'),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('BATCH-002 [31 Dec 2026] - Nurse Station'),
+        ).toBeInTheDocument();
       });
     });
   });

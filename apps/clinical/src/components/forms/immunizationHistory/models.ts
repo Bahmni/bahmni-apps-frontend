@@ -60,6 +60,7 @@ export interface BatchNumberComboBoxItem {
   batchNumber: string;
   expiryDate: string;
   disabled?: boolean;
+  stockLocationName: string;
 }
 
 export interface LocationComboBoxItem {

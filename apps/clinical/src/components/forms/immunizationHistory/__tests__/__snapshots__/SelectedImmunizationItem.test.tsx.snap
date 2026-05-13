@@ -379,7 +379,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
       >
         <div
-          class="cds--list-box__wrapper"
+          class="cds--list-box__wrapper batchNumber"
         >
           <div
             class="cds--combo-box cds--autoalign cds--list-box"

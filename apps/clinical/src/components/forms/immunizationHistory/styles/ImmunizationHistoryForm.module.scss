@@ -52,6 +52,15 @@
   margin-left: 0;
 }
 
+.batchNumber {
+  span {
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+}
+
 .datePicker > div {
     display: block;
     min-inline-size: -webkit-fill-available !important;
