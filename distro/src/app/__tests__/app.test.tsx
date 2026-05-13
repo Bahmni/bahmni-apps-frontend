@@ -5,9 +5,8 @@ import App from '../app';
 
 // Lazy-loaded pages are mocked so Suspense resolves synchronously.
 // These mocks test that distro wires routes correctly — not what's inside each page.
-// TODO: When pages move to apps/home/ (or other packages), only the import paths below change.
-jest.mock('../IndexPage', () => ({
-  IndexPage: () => <main data-testid="index-page" />,
+jest.mock('@bahmni/home-app', () => ({
+  HomeApp: () => <main data-testid="index-page" />,
 }));
 
 describe('App', () => {
