@@ -3,6 +3,7 @@ import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { UserAvatar } from '@carbon/icons-react';
 import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LOGIN_PATH, CHANGE_PASSWORD_PATH } from '../../constants/app';
 import styles from './styles/UserProfileMenu.module.scss';
 
@@ -10,6 +11,7 @@ export const UserProfileMenu: React.FC = () => {
   const { t } = useTranslation();
   const { user, loading } = useActivePractitioner();
   const { addNotification } = useNotification();
+  const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   if (loading) {
@@ -56,7 +58,7 @@ export const UserProfileMenu: React.FC = () => {
         <OverflowMenuItem
           itemText={t('HOME_CHANGE_PASSWORD')}
           onClick={() => {
-            window.location.href = CHANGE_PASSWORD_PATH;
+            navigate(CHANGE_PASSWORD_PATH);
           }}
           data-testid="change-password-option"
         />

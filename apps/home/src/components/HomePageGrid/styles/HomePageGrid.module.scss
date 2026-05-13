@@ -34,6 +34,7 @@
 
 .emptyState {
   @include type-style("label-01");
+
   text-align: center;
   padding: $spacing-09 $spacing-04;
   color: var(--cds-text-02);

@@ -11,6 +11,7 @@
 
 .greeting {
   @include type-style("body-compact-01");
+
   white-space: nowrap;
   color: inherit;
 }
@@ -34,5 +35,6 @@
 
 .loading {
   @include type-style("label-01");
+
   padding: $spacing-03 $spacing-04;
 }

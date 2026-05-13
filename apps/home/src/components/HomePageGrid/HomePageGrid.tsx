@@ -63,7 +63,24 @@ export const HomePageGrid: React.FC = () => {
     );
   }
 
-  if (privilegeError || isError) {
+  if (privilegeError) {
+    return (
+      <div
+        className={styles.errorContainer}
+        data-testid="home-error"
+        role="alert"
+      >
+        <InlineNotification
+          kind="error"
+          lowContrast
+          subtitle={t('HOME_ERROR_FETCH_CONFIG')}
+          hideCloseButton={false}
+        />
+      </div>
+    );
+  }
+
+  if (isError) {
     return (
       <div
         className={styles.errorContainer}
