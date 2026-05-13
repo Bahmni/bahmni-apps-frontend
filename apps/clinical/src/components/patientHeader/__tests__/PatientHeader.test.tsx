@@ -1,5 +1,5 @@
-import { useTranslation } from '@bahmni/services';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { useTranslation, CONSULTATION_SAVED_EVENT } from '@bahmni/services';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { dispatchConsultationStart } from '../../../events/startConsultation';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
@@ -195,6 +195,43 @@ describe('PatientHeader Component', () => {
         'NO_ACTIVE_ENCOUNTER',
       );
       expect(header).not.toHaveAttribute('data-can-edit-encounter');
+    });
+  });
+
+  describe('Consultation saved refetch', () => {
+    test('calls refetch when consultation saved event is dispatched', () => {
+      const mockRefetch = jest.fn();
+      mockedUseEncounterSession.mockReturnValue({
+        hasActiveSession: false,
+        activeEncounter: null,
+        isPractitionerMatch: false,
+        matchReason: [],
+        editActiveEncounter: false,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      });
+
+      renderComponent();
+
+      act(() => {
+        window.dispatchEvent(
+          new CustomEvent(CONSULTATION_SAVED_EVENT, {
+            detail: {
+              patientUUID: 'patient-uuid',
+              updatedResources: {
+                conditions: false,
+                allergies: false,
+                medications: false,
+                serviceRequests: {},
+              },
+              updatedConcepts: new Map(),
+            },
+          }),
+        );
+      });
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1);
     });
   });
 });

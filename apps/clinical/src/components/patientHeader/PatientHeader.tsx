@@ -1,5 +1,6 @@
 import {
   useTranslation,
+  useSubscribeConsultationSaved,
   CONSULTATION_ENCOUNTER_TYPE_UUID,
 } from '@bahmni/services';
 import { PatientDetails, useActivePractitioner } from '@bahmni/widgets';
@@ -28,10 +29,15 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   // Single hook call shared with ConsultationActionButton via props to avoid
   // duplicate FHIR searches. matchReason is exposed on the DOM so downstream
   // widget consumers can read it without waiting for ConsultationPad to open.
-  const { matchReason, editActiveEncounter, isLoading } = useEncounterSession({
-    practitioner,
-    encounterTypeUUID: CONSULTATION_ENCOUNTER_TYPE_UUID,
-  });
+  const { matchReason, editActiveEncounter, isLoading, refetch } =
+    useEncounterSession({
+      practitioner,
+      encounterTypeUUID: CONSULTATION_ENCOUNTER_TYPE_UUID,
+    });
+
+  useSubscribeConsultationSaved(() => {
+    refetch();
+  }, [refetch]);
 
   return (
     <div
