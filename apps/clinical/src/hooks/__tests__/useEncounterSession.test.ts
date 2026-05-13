@@ -55,20 +55,23 @@ describe('useEncounterSession', () => {
 
       expect(result.current.hasActiveSession).toBe(false);
       expect(result.current.activeEncounter).toBeNull();
-      expect(result.current.matchReason).toBeNull();
+      expect(result.current.matchReason).toEqual([]);
       expect(result.current.editActiveEncounter).toBe(false);
       expect(mockResolveEncounterMatchDecision).not.toHaveBeenCalled();
     });
 
     it('returns empty state when practitioner is null', async () => {
       const { result } = renderHook(() =>
-        useEncounterSession({ practitioner: null, encounterTypeUUID: ENCOUNTER_TYPE_UUID }),
+        useEncounterSession({
+          practitioner: null,
+          encounterTypeUUID: ENCOUNTER_TYPE_UUID,
+        }),
       );
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       expect(result.current.hasActiveSession).toBe(false);
-      expect(result.current.matchReason).toBeNull();
+      expect(result.current.matchReason).toEqual([]);
       expect(mockResolveEncounterMatchDecision).not.toHaveBeenCalled();
     });
 
@@ -79,19 +82,19 @@ describe('useEncounterSession', () => {
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      expect(result.current.matchReason).toBeNull();
+      expect(result.current.matchReason).toEqual([]);
       expect(result.current.editActiveEncounter).toBe(false);
       expect(mockResolveEncounterMatchDecision).not.toHaveBeenCalled();
     });
   });
 
   describe('MATCHED', () => {
-    it('returns editActiveEncounter=true, canEditEncounter=true', async () => {
+    it('returns editActiveEncounter=true and matchReason=[MATCHED]', async () => {
       const encounter = { id: 'enc-1' } as any;
       mockResolveEncounterMatchDecision.mockResolvedValue({
         matched: true,
         encounter,
-        reason: 'MATCHED',
+        reasons: ['MATCHED'],
       });
 
       const { result } = renderHook(() => useEncounterSession(defaultOptions));
@@ -100,87 +103,106 @@ describe('useEncounterSession', () => {
 
       expect(result.current.hasActiveSession).toBe(true);
       expect(result.current.activeEncounter).toEqual(encounter);
-      expect(result.current.matchReason).toBe('MATCHED');
+      expect(result.current.matchReason).toEqual(['MATCHED']);
       expect(result.current.editActiveEncounter).toBe(true);
-      expect(result.current.canEditEncounter).toBe(true);
       expect(result.current.isPractitionerMatch).toBe(true);
     });
   });
 
   describe('SESSION_EXPIRED', () => {
-    it('returns editActiveEncounter=false, canEditEncounter=false — no Edit button for expired session', async () => {
+    it('returns editActiveEncounter=false and matchReason=[SESSION_EXPIRED]', async () => {
       mockResolveEncounterMatchDecision.mockResolvedValue({
         matched: false,
         encounter: { id: 'enc-1' } as any,
-        reason: 'SESSION_EXPIRED',
+        reasons: ['SESSION_EXPIRED'],
       });
 
       const { result } = renderHook(() => useEncounterSession(defaultOptions));
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      expect(result.current.matchReason).toBe('SESSION_EXPIRED');
+      expect(result.current.matchReason).toEqual(['SESSION_EXPIRED']);
       expect(result.current.editActiveEncounter).toBe(false);
-      expect(result.current.canEditEncounter).toBe(false);
-      expect(result.current.isPractitionerMatch).toBe(true);
+      expect(result.current.isPractitionerMatch).toBe(false);
     });
   });
 
   describe('PROVIDER_MISMATCH', () => {
-    it('returns editActiveEncounter=false but canEditEncounter=true — widgets show Edit, button does not', async () => {
+    it('returns matchReason=[PROVIDER_MISMATCH] when only provider differs', async () => {
       mockResolveEncounterMatchDecision.mockResolvedValue({
         matched: false,
         encounter: { id: 'enc-1' } as any,
-        reason: 'PROVIDER_MISMATCH',
+        reasons: ['PROVIDER_MISMATCH'],
       });
 
       const { result } = renderHook(() => useEncounterSession(defaultOptions));
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      expect(result.current.matchReason).toBe('PROVIDER_MISMATCH');
+      expect(result.current.matchReason).toEqual(['PROVIDER_MISMATCH']);
       expect(result.current.editActiveEncounter).toBe(false);
-      expect(result.current.canEditEncounter).toBe(true);
+      expect(result.current.isPractitionerMatch).toBe(false);
+    });
+
+    it('returns matchReason=[PROVIDER_MISMATCH, LOCATION_MISMATCH] when both differ', async () => {
+      mockResolveEncounterMatchDecision.mockResolvedValue({
+        matched: false,
+        encounter: { id: 'enc-1' } as any,
+        reasons: ['PROVIDER_MISMATCH', 'LOCATION_MISMATCH'],
+      });
+
+      const { result } = renderHook(() => useEncounterSession(defaultOptions));
+
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.matchReason).toEqual([
+        'PROVIDER_MISMATCH',
+        'LOCATION_MISMATCH',
+      ]);
+      // LOCATION_MISMATCH alongside PROVIDER_MISMATCH means different provider's encounter
+      // at a different location — sessionExists is false so both are false
+      expect(result.current.editActiveEncounter).toBe(false);
       expect(result.current.isPractitionerMatch).toBe(false);
     });
   });
 
   describe('LOCATION_MISMATCH', () => {
-    it('returns editActiveEncounter=true and canEditEncounter=true', async () => {
+    it('returns editActiveEncounter=true and matchReason=[LOCATION_MISMATCH]', async () => {
       mockResolveEncounterMatchDecision.mockResolvedValue({
         matched: false,
         encounter: { id: 'enc-1' } as any,
-        reason: 'LOCATION_MISMATCH',
+        reasons: ['LOCATION_MISMATCH'],
       });
 
       const { result } = renderHook(() => useEncounterSession(defaultOptions));
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      expect(result.current.matchReason).toBe('LOCATION_MISMATCH');
+      expect(result.current.matchReason).toEqual(['LOCATION_MISMATCH']);
       expect(result.current.editActiveEncounter).toBe(true);
-      expect(result.current.canEditEncounter).toBe(true);
       expect(result.current.isPractitionerMatch).toBe(true);
     });
   });
 
   describe('NO_ACTIVE_VISIT / NO_ACTIVE_ENCOUNTER', () => {
     it.each(['NO_ACTIVE_VISIT', 'NO_ACTIVE_ENCOUNTER'] as const)(
-      'returns editActiveEncounter=false for %s',
-      async (reason) => {
+      'returns editActiveEncounter=false and matchReason=[%s]',
+      async (reasonCode) => {
         mockResolveEncounterMatchDecision.mockResolvedValue({
           matched: false,
           encounter: null,
-          reason,
+          reasons: [reasonCode],
         });
 
-        const { result } = renderHook(() => useEncounterSession(defaultOptions));
+        const { result } = renderHook(() =>
+          useEncounterSession(defaultOptions),
+        );
 
         await waitFor(() => expect(result.current.isLoading).toBe(false));
 
         expect(result.current.hasActiveSession).toBe(false);
         expect(result.current.activeEncounter).toBeNull();
-        expect(result.current.matchReason).toBe(reason);
+        expect(result.current.matchReason).toEqual([reasonCode]);
         expect(result.current.editActiveEncounter).toBe(false);
       },
     );
@@ -191,7 +213,7 @@ describe('useEncounterSession', () => {
       mockResolveEncounterMatchDecision.mockResolvedValue({
         matched: true,
         encounter: null,
-        reason: 'MATCHED',
+        reasons: ['MATCHED'],
       });
 
       renderHook(() => useEncounterSession(defaultOptions));
@@ -213,7 +235,7 @@ describe('useEncounterSession', () => {
       mockResolveEncounterMatchDecision.mockResolvedValue({
         matched: false,
         encounter: null,
-        reason: 'NO_ACTIVE_ENCOUNTER',
+        reasons: ['NO_ACTIVE_ENCOUNTER'],
       });
 
       renderHook(() => useEncounterSession(defaultOptions));
@@ -231,7 +253,9 @@ describe('useEncounterSession', () => {
 
   describe('error handling', () => {
     it('defaults to NO_ACTIVE_ENCOUNTER when resolver throws', async () => {
-      mockResolveEncounterMatchDecision.mockRejectedValue(new Error('network error'));
+      mockResolveEncounterMatchDecision.mockRejectedValue(
+        new Error('network error'),
+      );
 
       const { result } = renderHook(() => useEncounterSession(defaultOptions));
 
@@ -239,7 +263,7 @@ describe('useEncounterSession', () => {
 
       expect(result.current.hasActiveSession).toBe(false);
       expect(result.current.activeEncounter).toBeNull();
-      expect(result.current.matchReason).toBe('NO_ACTIVE_ENCOUNTER');
+      expect(result.current.matchReason).toEqual(['NO_ACTIVE_ENCOUNTER']);
       expect(result.current.editActiveEncounter).toBe(false);
     });
   });
@@ -249,7 +273,7 @@ describe('useEncounterSession', () => {
       mockResolveEncounterMatchDecision.mockResolvedValue({
         matched: true,
         encounter: { id: 'enc-1' } as any,
-        reason: 'MATCHED',
+        reasons: ['MATCHED'],
       });
 
       const { result } = renderHook(() => useEncounterSession(defaultOptions));
