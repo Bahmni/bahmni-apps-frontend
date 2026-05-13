@@ -31,7 +31,7 @@ const buildValueSet = (contains?: { code?: string; display: string }[]) => ({
   status: 'active' as const,
   expansion: {
     timestamp: '2024-01-01T00:00:00Z',
-    ...(contains !== undefined ? { contains } : {}),
+    ...(contains === undefined ? {} : { contains }),
   },
 });
 
