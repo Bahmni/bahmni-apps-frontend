@@ -8,6 +8,7 @@ import {
   buildBasedOnImmunizationEntry,
   createImmunizationBundleEntries,
   findAttr,
+  formatBatchItemDisplay,
   getBatchNumberComboBoxItems,
   getComboBoxItems,
   getLocationComboBoxItems,
@@ -16,6 +17,7 @@ import {
 } from '../utils';
 import {
   mockAvailableStockResponse,
+  mockAvailableStockWithEmptyBatch,
   mockEmptyAvailableStockResponse,
   mockEncounterSubject,
   mockFetchedMedication,
@@ -35,6 +37,7 @@ import {
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+  formatDateTime: jest.fn().mockReturnValue({ formattedResult: '31 Dec 2026' }),
 }));
 
 jest.mock('../../../../services/medicationService');
@@ -246,8 +249,16 @@ describe('getBatchNumberComboBoxItems', () => {
 
   it('returns mapped BatchNumberComboBoxItems from availableStocks.data', () => {
     expect(getBatchNumberComboBoxItems(mockAvailableStockResponse)).toEqual([
-      { batchNumber: 'BATCH-001', expiryDate: '2026-12-31' },
-      { batchNumber: 'BATCH-002', expiryDate: '2027-06-30' },
+      {
+        batchNumber: 'BATCH-001',
+        expiryDate: '2026-12-31',
+        stockLocationName: 'Nurse Station',
+      },
+      {
+        batchNumber: 'BATCH-002',
+        expiryDate: '2027-06-30',
+        stockLocationName: 'Nurse Station',
+      },
     ]);
   });
 
@@ -261,6 +272,7 @@ describe('getBatchNumberComboBoxItems', () => {
       {
         batchNumber: 'Error loading stock batches',
         expiryDate: '',
+        stockLocationName: '',
         disabled: true,
       },
     ]);
@@ -277,10 +289,66 @@ describe('getBatchNumberComboBoxItems', () => {
       {
         batchNumber: 'No stock batches available',
         expiryDate: '',
+        stockLocationName: '',
         disabled: true,
       },
     ]);
   });
+
+  it('filters out items with empty or whitespace-only batch numbers', () => {
+    expect(
+      getBatchNumberComboBoxItems(mockAvailableStockWithEmptyBatch),
+    ).toEqual([
+      {
+        batchNumber: 'BATCH-001',
+        expiryDate: '2026-12-31',
+        stockLocationName: 'Nurse Station',
+      },
+    ]);
+  });
+});
+
+describe('formatBatchItemDisplay', () => {
+  const mockT = (key: string) => key;
+
+  it('returns empty string for null item', () => {
+    expect(formatBatchItemDisplay(null, mockT)).toBe('');
+  });
+
+  it.each([
+    ['no expiry date or location', 'BATCH-001', '', '', 'BATCH-001'],
+    [
+      'expiry date only',
+      'BATCH-001',
+      '2026-12-31',
+      '',
+      'BATCH-001 [31 Dec 2026]',
+    ],
+    [
+      'stock location only',
+      'BATCH-001',
+      '',
+      'Nurse Station',
+      'BATCH-001 - Nurse Station',
+    ],
+    [
+      'both expiry date and location',
+      'BATCH-001',
+      '2026-12-31',
+      'Nurse Station',
+      'BATCH-001 [31 Dec 2026] - Nurse Station',
+    ],
+  ])(
+    'formats correctly with %s',
+    (_, batchNumber, expiryDate, stockLocationName, expected) => {
+      expect(
+        formatBatchItemDisplay(
+          { batchNumber, expiryDate, stockLocationName },
+          mockT,
+        ),
+      ).toBe(expected);
+    },
+  );
 });
 
 describe('getComboBoxItems', () => {

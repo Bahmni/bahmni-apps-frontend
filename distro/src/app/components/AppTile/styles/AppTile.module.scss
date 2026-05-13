@@ -1,16 +1,18 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/motion" as *;
 
 .tile {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 10rem;
   height: 8.125rem;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all $duration-moderate-01 $standard-easing;
   padding: $spacing-05;
-  background-color: $background;
+  background-color: $layer-02;
   box-shadow: 0 2px 6px 0 $shadow;
 
   &:hover {
