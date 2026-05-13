@@ -221,7 +221,14 @@ export {
   type Provider,
   type Person,
 } from './providerService';
-export { findActiveEncounterInSession } from './encounterSessionService';
+export {
+  findActiveEncounterInSession,
+  resolveEncounterMatchDecision,
+  type EncounterMatchDecision,
+  type MatchReasonCode,
+  MATCH_REASON_MESSAGES,
+  CONSULTATION_ENCOUNTER_TYPE_UUID,
+} from './encounterSessionService';
 
 export {
   getActiveVisit,

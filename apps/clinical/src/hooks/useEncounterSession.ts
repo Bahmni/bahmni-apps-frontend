@@ -1,61 +1,52 @@
-import { findActiveEncounterInSession, Provider } from '@bahmni/services';
-import { usePatientUUID } from '@bahmni/widgets';
+import { useEffect, useState } from 'react';
 import { Encounter } from 'fhir/r4';
-import { useState, useEffect } from 'react';
+import {
+  Provider,
+  resolveEncounterMatchDecision,
+  EncounterMatchDecision,
+  MatchReasonCode,
+  getUserLoginLocation,
+} from '@bahmni/services';
+import { usePatientUUID } from '@bahmni/widgets';
 
-interface UseEncounterSessionOptions {
+export interface UseEncounterSessionOptions {
   practitioner: Provider | null;
   encounterTypeUUID?: string;
 }
 
-interface UseEncounterSessionReturn {
+export interface UseEncounterSessionReturn {
   hasActiveSession: boolean;
   activeEncounter: Encounter | null;
   isPractitionerMatch: boolean;
+  matchReason: MatchReasonCode | null;
   editActiveEncounter: boolean;
+  canEditEncounter: boolean;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 }
 
-/**
- * Hook to manage encounter session state
- * Determines if there's an active encounter session for the current patient
- * @param options - Options containing the practitioner to use for session filtering
- * @returns Object containing session state and utilities
- */
-
 export function useEncounterSession(
   options: UseEncounterSessionOptions,
 ): UseEncounterSessionReturn {
   const { practitioner, encounterTypeUUID } = options;
-  const [hasActiveSession, setHasActiveSession] = useState<boolean>(false);
-  const [activeEncounter, setActiveEncounter] = useState<Encounter | null>(
-    null,
-  );
-  const [isPractitionerMatch, setIsPractitionerMatch] =
-    useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Start with false to not block UI
+  const [matchDecision, setMatchDecision] = useState<EncounterMatchDecision | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const patientUUID = usePatientUUID();
+  const practitionerUUID = practitioner?.uuid;
+
+  let locationUUID = '';
+  try {
+    locationUUID = getUserLoginLocation().uuid;
+  } catch {
+    // location cookie unavailable
+  }
 
   const fetchSessionState = async () => {
-    if (!patientUUID) {
-      setHasActiveSession(false);
-      setActiveEncounter(null);
-      setIsPractitionerMatch(false);
-      setIsLoading(false);
-      return;
-    }
-
-    // Get practitioner UUID for session filtering
-    const practitionerUUID = practitioner?.uuid;
-
-    if (!practitionerUUID || !encounterTypeUUID) {
-      setHasActiveSession(false);
-      setActiveEncounter(null);
-      setIsPractitionerMatch(false);
+    if (!patientUUID || !practitionerUUID || !encounterTypeUUID) {
+      setMatchDecision(null);
       setIsLoading(false);
       return;
     }
@@ -64,57 +55,67 @@ export function useEncounterSession(
     setError(null);
 
     try {
-      // Find active encounter for current patient and practitioner
-      const activeEncounter = await findActiveEncounterInSession(
+      const decision = await resolveEncounterMatchDecision(
         patientUUID,
         practitionerUUID,
-        undefined,
+        locationUUID,
         encounterTypeUUID,
       );
-      const sessionExists = activeEncounter !== null;
-
-      // Since server filters by practitioner, if we get an encounter, it belongs to current practitioner
-      const practitionerMatches = sessionExists;
-
-      // Set session state
-      setHasActiveSession(sessionExists);
-      setActiveEncounter(activeEncounter);
-      setIsPractitionerMatch(practitionerMatches);
+      setMatchDecision(decision);
     } catch {
-      // Don't set error state as it might block the consultation pad
       setError(null);
-
-      // Default to "New Consultation" (safer) on any error
-      setHasActiveSession(false);
-      setActiveEncounter(null);
-      setIsPractitionerMatch(false);
+      setMatchDecision({
+        matched: false,
+        encounter: null,
+        reason: 'NO_ACTIVE_ENCOUNTER',
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    // Reset state when practitioner changes to prevent stale data
     if (practitioner?.uuid) {
-      setHasActiveSession(false);
-      setActiveEncounter(null);
-      setIsPractitionerMatch(false);
+      setMatchDecision(null);
       setError(null);
     }
-
     fetchSessionState();
   }, [patientUUID, practitioner?.uuid, encounterTypeUUID]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Computed property for encounter ownership - determines if user can edit the active encounter
-  const editActiveEncounter = hasActiveSession && isPractitionerMatch;
-
-  return {
-    hasActiveSession,
-    activeEncounter,
-    isPractitionerMatch,
-    editActiveEncounter,
+  const result = {
+    hasActiveSession: matchDecision?.matched ?? false,
+    activeEncounter: matchDecision?.encounter ?? null,
+    isPractitionerMatch:
+      matchDecision?.reason === 'MATCHED' ||
+      matchDecision?.reason === 'SESSION_EXPIRED' ||
+      matchDecision?.reason === 'LOCATION_MISMATCH',
+    matchReason: matchDecision?.reason ?? null,
+    editActiveEncounter:
+      matchDecision?.reason === 'MATCHED' ||
+      matchDecision?.reason === 'LOCATION_MISMATCH',
+    canEditEncounter:
+      matchDecision?.reason === 'MATCHED' ||
+      matchDecision?.reason === 'LOCATION_MISMATCH' ||
+      matchDecision?.reason === 'PROVIDER_MISMATCH',
     isLoading,
     error,
     refetch: fetchSessionState,
   };
+
+  // TODO: remove before merge
+  console.log('[useEncounterSession]', {
+    patientUUID,
+    practitionerUUID,
+    locationUUID,
+    encounterTypeUUID,
+    matchReason: result.matchReason,
+    hasActiveSession: result.hasActiveSession,
+    editActiveEncounter: result.editActiveEncounter,
+    canEditEncounter: result.canEditEncounter,
+    isPractitionerMatch: result.isPractitionerMatch,
+    encounterId: result.activeEncounter?.id ?? null,
+    isLoading: result.isLoading,
+  });
+
+  return result;
 }
