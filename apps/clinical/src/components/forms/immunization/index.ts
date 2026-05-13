@@ -4,15 +4,16 @@ import {
   IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,
   IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
 } from './constants';
-import ImmunizationHistoryForm from './ImmunizationHistoryForm';
+import ImmunizationForm from './ImmunizationForm';
+import { ImmunizationStoreKey } from './models';
 import { getImmunizationStore } from './stores';
 import { createImmunizationBundleEntries } from './utils';
 
-const registerImmunizationControl = (key: string) => {
+const registerImmunizationControl = (key: ImmunizationStoreKey) => {
   const store = () => getImmunizationStore(key);
   registerInputControl({
     key,
-    component: ImmunizationHistoryForm,
+    component: ImmunizationForm,
     reset: () => store().getState().reset(),
     validate: () => store().getState().validateAll(),
     hasData: () => store().getState().selectedImmunizations.length > 0,
@@ -30,4 +31,4 @@ const registerImmunizationControl = (key: string) => {
 registerImmunizationControl(IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY);
 registerImmunizationControl(IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY);
 
-export { default } from './ImmunizationHistoryForm';
+export { default } from './ImmunizationForm';
