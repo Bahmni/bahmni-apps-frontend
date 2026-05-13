@@ -25,10 +25,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   const { t } = useTranslation();
   const { practitioner } = useActivePractitioner();
 
-  // Preloads encounter session decision on page load so downstream consumers
-  // (Allergies, Conditions, Medications widgets) have matchReason available
-  // without waiting for ConsultationPad to open.
-  const { matchReason, canEditEncounter } = useEncounterSession({
+  const { matchReason, editActiveEncounter } = useEncounterSession({
     practitioner,
     encounterTypeUUID: CONSULTATION_ENCOUNTER_TYPE_UUID,
   });
@@ -38,8 +35,10 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
       aria-label={t('PATIENT_HEADER_LABEL')}
       className={styles.header}
       data-testid="patient-header"
-      data-match-reason={matchReason ?? undefined}
-      data-can-edit-encounter={canEditEncounter}
+      data-match-reason={
+        matchReason.length > 0 ? matchReason.join(',') : undefined
+      }
+      data-can-edit-encounter={editActiveEncounter}
     >
       <PatientDetails />
       <ConsultationActionButton isActionAreaVisible={isActionAreaVisible} />

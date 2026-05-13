@@ -6,10 +6,14 @@ import { usePatientUUID } from '@bahmni/widgets';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useEncounterSession } from '../useEncounterSession';
 
-jest.mock('@bahmni/services', () => ({
-  resolveEncounterMatchDecision: jest.fn(),
-  getUserLoginLocation: jest.fn(),
-}));
+jest.mock('@bahmni/services', () => {
+  const { isOwnInSessionEncounter } = jest.requireActual('@bahmni/services');
+  return {
+    resolveEncounterMatchDecision: jest.fn(),
+    getUserLoginLocation: jest.fn(),
+    isOwnInSessionEncounter,
+  };
+});
 
 jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn(),

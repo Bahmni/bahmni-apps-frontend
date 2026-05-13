@@ -21,18 +21,13 @@ export interface EncounterMatchDecision {
 }
 
 export const MATCH_REASON_MESSAGES: Record<MatchReasonCode, string> = {
-  MATCHED: 'Encounter matched - resuming previous consultation',
-  NO_ACTIVE_VISIT: 'No active visit found for this patient',
-  NO_ACTIVE_ENCOUNTER:
-    'No consultation found for this patient in the active visit',
-  SESSION_EXPIRED:
-    'Your previous session has expired - starting a new consultation',
-  PROVIDER_MISMATCH:
-    'Another provider started a consultation - this will create a new one',
-  LOCATION_MISMATCH:
-    'You started an encounter at a different location - this will create a new one',
-  MULTIPLE_ENCOUNTERS_FOUND:
-    'Multiple active consultations found - please contact administrator',
+  MATCHED: 'ENCOUNTER_MATCH_REASON_MATCHED',
+  NO_ACTIVE_VISIT: 'ENCOUNTER_MATCH_REASON_NO_ACTIVE_VISIT',
+  NO_ACTIVE_ENCOUNTER: 'ENCOUNTER_MATCH_REASON_NO_ACTIVE_ENCOUNTER',
+  SESSION_EXPIRED: 'ENCOUNTER_MATCH_REASON_SESSION_EXPIRED',
+  PROVIDER_MISMATCH: 'ENCOUNTER_MATCH_REASON_PROVIDER_MISMATCH',
+  LOCATION_MISMATCH: 'ENCOUNTER_MATCH_REASON_LOCATION_MISMATCH',
+  MULTIPLE_ENCOUNTERS_FOUND: 'ENCOUNTER_MATCH_REASON_MULTIPLE_FOUND',
 };
 
 function checkLocationMatch(
@@ -61,18 +56,24 @@ export async function resolveEncounterMatchDecision(
   encounterTypeUUID?: string,
 ): Promise<EncounterMatchDecision> {
   try {
-    // Step 1: Check if patient has an active visit
     const activeVisit = await getActiveVisit(patientUUID);
     if (!activeVisit) {
       return { matched: false, encounter: null, reasons: ['NO_ACTIVE_VISIT'] };
     }
 
-    const activeVisitId = activeVisit.id!;
+    const activeVisitId = activeVisit.id;
+    if (!activeVisitId) {
+      return {
+        matched: false,
+        encounter: null,
+        reasons: ['NO_ACTIVE_ENCOUNTER'],
+      };
+    }
+
     const sessionDuration = await getEncounterSessionDuration();
     const sessionStartTime = new Date(Date.now() - sessionDuration * 60 * 1000);
     const lastUpdatedParam = `ge${sessionStartTime.toISOString()}`;
 
-    // Step 2: Run all searches in parallel to collect all findings
     const [inSessionOwn, allTimeOwn, inSessionAny] = await Promise.all([
       searchEncounters({
         patient: patientUUID,
@@ -95,7 +96,6 @@ export async function resolveEncounterMatchDecision(
       }),
     ]);
 
-    // Filter all results to only encounters belonging to the active visit
     const inSessionOwnInVisit = filterEncountersByVisit(
       inSessionOwn,
       activeVisitId,
@@ -109,7 +109,6 @@ export async function resolveEncounterMatchDecision(
       activeVisitId,
     );
 
-    // Derive distinct encounter groups
     const inSessionOwnIds = new Set(inSessionOwnInVisit.map((e) => e.id));
 
     // SESSION_EXPIRED = found all-time for this practitioner but NOT in-session
@@ -122,13 +121,10 @@ export async function resolveEncounterMatchDecision(
       (e) => !inSessionOwnIds.has(e.id),
     );
 
-    // Build reasons array
     const reasons: MatchReasonCode[] = [];
     let primaryEncounter: Encounter | null = null;
 
-    // Check in-session encounters for this practitioner
     if (inSessionOwnInVisit.length > 1) {
-      // Multiple active encounters found — error state, return immediately
       return {
         matched: false,
         encounter: inSessionOwnInVisit[0],
@@ -150,7 +146,6 @@ export async function resolveEncounterMatchDecision(
       primaryEncounter = inSessionOwnInVisit[0];
     }
 
-    // Check SESSION_EXPIRED (encounter exists but outside session window)
     if (sessionExpiredEncounters.length > 0) {
       reasons.push('SESSION_EXPIRED');
       if (!reasons.includes('LOCATION_MISMATCH')) {
@@ -163,7 +158,6 @@ export async function resolveEncounterMatchDecision(
       primaryEncounter ??= sessionExpiredEncounters[0];
     }
 
-    // Check PROVIDER_MISMATCH (another provider's in-session encounter)
     if (otherProviderEncounters.length > 0) {
       reasons.push('PROVIDER_MISMATCH');
       if (!reasons.includes('LOCATION_MISMATCH')) {
@@ -197,4 +191,15 @@ export async function resolveEncounterMatchDecision(
       reasons: ['NO_ACTIVE_ENCOUNTER'],
     };
   }
+}
+
+export function isOwnInSessionEncounter(
+  decision: EncounterMatchDecision,
+): boolean {
+  return (
+    decision.matched ||
+    (decision.reasons.includes('LOCATION_MISMATCH') &&
+      !decision.reasons.includes('SESSION_EXPIRED') &&
+      !decision.reasons.includes('PROVIDER_MISMATCH'))
+  );
 }

@@ -224,6 +224,7 @@ export {
 export {
   findActiveEncounterInSession,
   resolveEncounterMatchDecision,
+  isOwnInSessionEncounter,
   type EncounterMatchDecision,
   type MatchReasonCode,
   MATCH_REASON_MESSAGES,

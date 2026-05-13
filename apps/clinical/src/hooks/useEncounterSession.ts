@@ -1,6 +1,7 @@
 import {
   Provider,
   resolveEncounterMatchDecision,
+  isOwnInSessionEncounter,
   MatchReasonCode,
   getUserLoginLocation,
 } from '@bahmni/services';
@@ -29,7 +30,6 @@ export function useEncounterSession(
 ): UseEncounterSessionReturn {
   const { practitioner, encounterTypeUUID } = options;
 
-  // Original state variables — logic unchanged from main
   const [hasActiveSession, setHasActiveSession] = useState<boolean>(false);
   const [activeEncounter, setActiveEncounter] = useState<Encounter | null>(
     null,
@@ -38,8 +38,6 @@ export function useEncounterSession(
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  // New state added by BAH-4701 — independent of existing fields
   const [matchReason, setMatchReason] = useState<MatchReasonCode[]>([]);
 
   const patientUUID = usePatientUUID();
@@ -73,20 +71,11 @@ export function useEncounterSession(
         encounterTypeUUID,
       );
 
-      // Original logic: sessionExists = encounter found in-session for this practitioner
-      // LOCATION_MISMATCH is only "own in-session" when it appears without SESSION_EXPIRED or PROVIDER_MISMATCH
-      const sessionExists =
-        decision.reasons.includes('MATCHED') ||
-        (decision.reasons.includes('LOCATION_MISMATCH') &&
-          !decision.reasons.includes('SESSION_EXPIRED') &&
-          !decision.reasons.includes('PROVIDER_MISMATCH'));
+      const sessionExists = isOwnInSessionEncounter(decision);
 
-      // Original state updates — unchanged
       setHasActiveSession(sessionExists);
       setActiveEncounter(decision.encounter);
       setIsPractitionerMatch(sessionExists);
-
-      // New: matchReason set independently
       setMatchReason(decision.reasons);
     } catch {
       setError(null);
@@ -110,23 +99,7 @@ export function useEncounterSession(
     fetchSessionState();
   }, [patientUUID, practitioner?.uuid, encounterTypeUUID]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Original computed property — unchanged from main
   const editActiveEncounter = hasActiveSession && isPractitionerMatch;
-
-  // TODO: remove before merge
-  // eslint-disable-next-line no-console
-  console.log('[useEncounterSession]', {
-    patientUUID,
-    practitionerUUID,
-    locationUUID,
-    encounterTypeUUID,
-    matchReason,
-    hasActiveSession,
-    editActiveEncounter,
-    isPractitionerMatch,
-    encounterId: activeEncounter?.id ?? null,
-    isLoading,
-  });
 
   return {
     hasActiveSession,
