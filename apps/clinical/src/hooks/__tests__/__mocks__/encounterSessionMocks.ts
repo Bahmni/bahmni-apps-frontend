@@ -15,7 +15,7 @@ export const mockActiveEncounter: Encounter = {
   id: 'enc-1234-5678-abcd',
   status: 'in-progress',
   class: {
-    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    system: 'https://terminology.hl7.org/CodeSystem/v3-ActCode',
     code: 'AMB',
   },
   subject: {
