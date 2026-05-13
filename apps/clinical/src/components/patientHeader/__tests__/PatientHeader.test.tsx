@@ -15,12 +15,21 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('../../../events/startConsultation', () => ({
   dispatchConsultationStart: jest.fn(),
 }));
-// Mock the PatientDetails component
+// Mock the PatientDetails component – capture props for assertion
+const mockPatientDetails = jest.fn(({ patient, loading, error }: any) => (
+  <div
+    data-testid="patient-details-mock"
+    data-patient-name={patient?.fullName}
+    data-loading={String(loading)}
+    data-error={error?.message}
+  >
+    PatientDetails Mock
+  </div>
+));
+
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
-  PatientDetails: () => (
-    <div data-testid="patient-details-mock">PatientDetails Mock</div>
-  ),
+  PatientDetails: (...args: any[]) => mockPatientDetails(...args),
   useActivePractitioner: jest.fn(() => ({
     uuid: 'active-practitioner-uuid',
     practitioner: { uuid: 'active-practitioner-uuid' },
@@ -91,6 +100,27 @@ describe('PatientHeader Component', () => {
       renderComponent();
       const patientDetails = screen.getByTestId('patient-details-mock');
       expect(patientDetails).toBeInTheDocument();
+    });
+  });
+
+  // Patient data forwarding tests
+  describe('Patient data forwarding', () => {
+    test('forwards patient, loading, and error props to PatientDetails', () => {
+      const patient = { fullName: 'Jane Doe' } as any;
+      const error = new Error('fetch failed');
+      renderComponent({ patient, loading: true, error });
+
+      const patientDetails = screen.getByTestId('patient-details-mock');
+      expect(patientDetails).toHaveAttribute('data-patient-name', 'Jane Doe');
+      expect(patientDetails).toHaveAttribute('data-loading', 'true');
+      expect(patientDetails).toHaveAttribute('data-error', 'fetch failed');
+    });
+
+    test('renders PatientDetails without patient props when none provided', () => {
+      renderComponent();
+
+      const patientDetails = screen.getByTestId('patient-details-mock');
+      expect(patientDetails).not.toHaveAttribute('data-patient-name');
     });
   });
 

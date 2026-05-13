@@ -15,6 +15,7 @@ import {
 import {
   ProgramDetails,
   useNotification,
+  usePatient,
   useUserPrivilege,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -120,6 +121,11 @@ const ConsultationPage: React.FC = () => {
     [handleSearchOpen, t],
   );
   const viewingForm = useObservationFormsStore((state) => state.viewingForm);
+  const {
+    patient,
+    loading: patientLoading,
+    error: patientError,
+  } = usePatient();
 
   const breadcrumbItems = [
     { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
@@ -128,7 +134,11 @@ const ConsultationPage: React.FC = () => {
       label: 'Clinical',
       href: BAHMNI_CLINICAL_PATH,
     },
-    { id: 'current', label: t('CURRENT_PATIENT'), isCurrentPage: true },
+    {
+      id: 'current',
+      label: patient?.fullName ?? t('CURRENT_PATIENT'),
+      isCurrentPage: true,
+    },
   ];
 
   const episodeUuids = useMemo(() => {
@@ -290,7 +300,12 @@ const ConsultationPage: React.FC = () => {
               aria-label={t('PATIENT_HEADER_SECTION')}
               className={styles.stickySection}
             >
-              <PatientHeader isActionAreaVisible={isActionAreaVisible} />
+              <PatientHeader
+                isActionAreaVisible={isActionAreaVisible}
+                patient={patient}
+                loading={patientLoading}
+                error={patientError}
+              />
               {renderContextInformation()}
             </div>
             <DashboardContainer

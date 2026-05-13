@@ -1,14 +1,36 @@
 import { Icon, ICON_SIZE } from '@bahmni/design-system';
-import { getFormattedAge, formatDateTime } from '@bahmni/services';
+import {
+  type FormattedPatientData,
+  getFormattedAge,
+  formatDateTime,
+} from '@bahmni/services';
 import { SkeletonText } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './__styles__/PatientDetails.module.scss';
 import { usePatient } from './usePatient';
 
-const PatientDetails: React.FC = () => {
+interface PatientDetailsProps {
+  patient?: FormattedPatientData | null;
+  loading?: boolean;
+  error?: Error | null;
+}
+
+const PatientDetails: React.FC<PatientDetailsProps> = ({
+  patient: patientProp,
+  loading: loadingProp,
+  error: errorProp,
+}) => {
   const { t } = useTranslation();
-  const { patient, loading, error } = usePatient();
+  const hasExternalData = patientProp !== undefined;
+  const {
+    patient: internalPatient,
+    loading: internalLoading,
+    error: internalError,
+  } = usePatient({ enabled: !hasExternalData });
+  const patient = hasExternalData ? patientProp : internalPatient;
+  const loading = hasExternalData ? (loadingProp ?? false) : internalLoading;
+  const error = hasExternalData ? (errorProp ?? null) : internalError;
 
   if (loading || error || !patient) {
     return (

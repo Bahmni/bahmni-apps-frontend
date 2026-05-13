@@ -2,6 +2,7 @@ import { getConfig } from '@bahmni/services';
 import {
   useHasPrivilege,
   useNotification,
+  usePatient,
   useUserPrivilege,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -47,9 +48,18 @@ jest.mock('../../stores/observationFormsStore', () => ({
   ),
 }));
 
+const MockPatientHeader = jest.fn(({ patient, loading, error }: any) => (
+  <div
+    data-testid="mocked-patient-header"
+    data-patient-name={patient?.fullName}
+    data-loading={String(loading)}
+    data-error={error?.message}
+  />
+));
+
 jest.mock('../../components/patientHeader/PatientHeader', () => ({
   __esModule: true,
-  default: jest.fn(() => <div data-testid="mocked-patient-header" />),
+  default: (...args: any[]) => MockPatientHeader(...args),
 }));
 
 jest.mock('../../components/dashboardContainer/DashboardContainer', () => ({
@@ -110,38 +120,52 @@ jest.mock('@bahmni/design-system', () => ({
       </div>
     ),
   ),
-  Header: jest.fn(({ sideNavItems, activeSideNavItemId, globalActions }) => (
-    <div data-testid="mocked-header-component">
-      {globalActions?.map(
-        (action: { id: string; label: string; onClick: () => void }) => (
-          <button
-            key={action.id}
-            data-testid={`global-action-${action.id}`}
-            onClick={action.onClick}
-            tabIndex={0}
-          >
-            {action.label}
-          </button>
-        ),
-      )}
-      {sideNavItems.map(
-        (item: {
-          id: string;
-          icon: string;
-          label: string;
-          href?: string;
-          renderIcon?: ReactNode;
-        }) => (
-          <div key={item.id} data-testid={`sidenav-item-${item.id}`}>
-            {item.label}
-          </div>
-        ),
-      )}
-      <div data-testid="active-sidenav-item">
-        {activeSideNavItemId ?? 'none'}
+  Header: jest.fn(
+    ({ sideNavItems, activeSideNavItemId, globalActions, breadcrumbItems }) => (
+      <div data-testid="mocked-header-component">
+        {breadcrumbItems?.map(
+          (item: {
+            id: string;
+            label: string;
+            href?: string;
+            isCurrentPage?: boolean;
+          }) => (
+            <span key={item.id} data-testid={`breadcrumb-item-${item.id}`}>
+              {item.label}
+            </span>
+          ),
+        )}
+        {globalActions?.map(
+          (action: { id: string; label: string; onClick: () => void }) => (
+            <button
+              key={action.id}
+              data-testid={`global-action-${action.id}`}
+              onClick={action.onClick}
+              tabIndex={0}
+            >
+              {action.label}
+            </button>
+          ),
+        )}
+        {sideNavItems.map(
+          (item: {
+            id: string;
+            icon: string;
+            label: string;
+            href?: string;
+            renderIcon?: ReactNode;
+          }) => (
+            <div key={item.id} data-testid={`sidenav-item-${item.id}`}>
+              {item.label}
+            </div>
+          ),
+        )}
+        <div data-testid="active-sidenav-item">
+          {activeSideNavItemId ?? 'none'}
+        </div>
       </div>
-    </div>
-  )),
+    ),
+  ),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -149,6 +173,7 @@ jest.mock('@bahmni/widgets', () => ({
   useUserPrivilege: jest.fn(),
   useHasPrivilege: jest.fn(),
   useNotification: jest.fn(),
+  usePatient: jest.fn(),
 }));
 
 jest.mock('@bahmni/services', () => ({
@@ -234,6 +259,13 @@ describe('ConsultationPage', () => {
       clearAllNotifications: jest.fn(),
     });
 
+    (usePatient as jest.Mock).mockReturnValue({
+      patient: null,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
     (getConfig as jest.Mock).mockResolvedValue(mockDashboardConfig);
   });
 
@@ -296,6 +328,64 @@ describe('ConsultationPage', () => {
       renderWithProvider();
 
       expect(screen.getByTestId('carbon-loading')).toBeInTheDocument();
+    });
+
+    it('should show patient name in breadcrumb when patient data is loaded', async () => {
+      (usePatient as jest.Mock).mockReturnValue({
+        patient: { fullName: 'John Doe' },
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('breadcrumb-item-current')).toHaveTextContent(
+        'John Doe',
+      );
+    });
+
+    it('should show fallback text in breadcrumb when patient is null', async () => {
+      (usePatient as jest.Mock).mockReturnValue({
+        patient: null,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('breadcrumb-item-current')).toHaveTextContent(
+        'Current Patient',
+      );
+    });
+
+    it('should pass patient data down to PatientHeader to avoid duplicate fetch', async () => {
+      const mockPatient = { fullName: 'John Doe' };
+      (usePatient as jest.Mock).mockReturnValue({
+        patient: mockPatient,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      const patientHeader = screen.getByTestId('mocked-patient-header');
+      expect(patientHeader).toHaveAttribute('data-patient-name', 'John Doe');
+      expect(patientHeader).toHaveAttribute('data-loading', 'false');
     });
 
     it('should show error when no default dashboard is available', () => {

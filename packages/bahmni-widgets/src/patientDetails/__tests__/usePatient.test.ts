@@ -179,6 +179,48 @@ describe('usePatient hook', () => {
     expect(mockedGetFormattedPatientById).toHaveBeenCalledWith('new-uuid');
   });
 
+  describe('enabled option', () => {
+    it('does not fetch when enabled is false', async () => {
+      mockedUsePatientUUID.mockReturnValue('test-uuid');
+
+      const { result } = renderHook(() => usePatient({ enabled: false }));
+
+      // Allow any async operations to settle
+      await act(async () => {});
+
+      expect(mockedGetFormattedPatientById).not.toHaveBeenCalled();
+      expect(result.current.patient).toBeNull();
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBeNull();
+    });
+
+    it('fetches normally when enabled is true', async () => {
+      mockedUsePatientUUID.mockReturnValue('test-uuid');
+      mockedGetFormattedPatientById.mockResolvedValueOnce(mockPatientData);
+
+      const { result } = renderHook(() => usePatient({ enabled: true }));
+
+      await waitFor(() => {
+        expect(result.current.patient).toEqual(mockPatientData);
+      });
+
+      expect(mockedGetFormattedPatientById).toHaveBeenCalledWith('test-uuid');
+    });
+
+    it('fetches normally when options are not provided', async () => {
+      mockedUsePatientUUID.mockReturnValue('test-uuid');
+      mockedGetFormattedPatientById.mockResolvedValueOnce(mockPatientData);
+
+      const { result } = renderHook(() => usePatient());
+
+      await waitFor(() => {
+        expect(result.current.patient).toEqual(mockPatientData);
+      });
+
+      expect(mockedGetFormattedPatientById).toHaveBeenCalledWith('test-uuid');
+    });
+  });
+
   it('clears error on successful refetch after failure', async () => {
     const mockError = new Error('Network error');
     mockedUsePatientUUID.mockReturnValue('test-uuid');
