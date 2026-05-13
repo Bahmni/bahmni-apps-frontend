@@ -1,17 +1,24 @@
 import { Encounter } from 'fhir/r4';
 import { getActiveVisit } from '../../encounterService';
+import { resolveEncounterMatchDecision } from '../encounterMatchDecisionMapper';
 import {
   searchEncounters,
   getEncounterSessionDuration,
 } from '../encounterSessionService';
-import { resolveEncounterMatchDecision } from '../encounterMatchDecisionMapper';
 
 jest.mock('../../encounterService');
 jest.mock('../encounterSessionService');
 
-const mockGetActiveVisit = getActiveVisit as jest.MockedFunction<typeof getActiveVisit>;
-const mockSearchEncounters = searchEncounters as jest.MockedFunction<typeof searchEncounters>;
-const mockGetEncounterSessionDuration = getEncounterSessionDuration as jest.MockedFunction<typeof getEncounterSessionDuration>;
+const mockGetActiveVisit = getActiveVisit as jest.MockedFunction<
+  typeof getActiveVisit
+>;
+const mockSearchEncounters = searchEncounters as jest.MockedFunction<
+  typeof searchEncounters
+>;
+const mockGetEncounterSessionDuration =
+  getEncounterSessionDuration as jest.MockedFunction<
+    typeof getEncounterSessionDuration
+  >;
 
 const PATIENT_UUID = 'patient-123';
 const PRACTITIONER_UUID = 'practitioner-456';
@@ -23,14 +30,20 @@ const createActiveVisit = (): Encounter => ({
   resourceType: 'Encounter',
   id: VISIT_UUID,
   status: 'in-progress',
-  class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
+  class: {
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    code: 'AMB',
+  },
 });
 
 const createEncounter = (id: string, locationUUID?: string): Encounter => ({
   resourceType: 'Encounter',
   id,
   status: 'finished',
-  class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
+  class: {
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    code: 'AMB',
+  },
   partOf: { reference: `Encounter/${VISIT_UUID}` },
   ...(locationUUID && {
     location: [{ location: { reference: `Location/${locationUUID}` } }],
@@ -60,10 +73,17 @@ describe('resolveEncounterMatchDecision', () => {
       mockGetActiveVisit.mockResolvedValue(null);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
-      expect(result).toEqual({ matched: false, encounter: null, reasons: ['NO_ACTIVE_VISIT'] });
+      expect(result).toEqual({
+        matched: false,
+        encounter: null,
+        reasons: ['NO_ACTIVE_VISIT'],
+      });
       expect(mockSearchEncounters).not.toHaveBeenCalled();
     });
   });
@@ -75,10 +95,17 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([encounter], [encounter], [encounter]);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
-      expect(result).toEqual({ matched: true, encounter, reasons: ['MATCHED'] });
+      expect(result).toEqual({
+        matched: true,
+        encounter,
+        reasons: ['MATCHED'],
+      });
       expect(mockSearchEncounters).toHaveBeenCalledTimes(3);
     });
   });
@@ -90,10 +117,17 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([encounter], [encounter], [encounter]);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
-      expect(result).toEqual({ matched: false, encounter, reasons: ['LOCATION_MISMATCH'] });
+      expect(result).toEqual({
+        matched: false,
+        encounter,
+        reasons: ['LOCATION_MISMATCH'],
+      });
     });
 
     it('returns [LOCATION_MISMATCH] when encounter has no location entries', async () => {
@@ -102,10 +136,17 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([encounter], [encounter], [encounter]);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
-      expect(result).toEqual({ matched: false, encounter, reasons: ['LOCATION_MISMATCH'] });
+      expect(result).toEqual({
+        matched: false,
+        encounter,
+        reasons: ['LOCATION_MISMATCH'],
+      });
     });
   });
 
@@ -117,7 +158,10 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([enc1, enc2], [enc1, enc2], [enc1, enc2]);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
       expect(result).toEqual({
@@ -135,10 +179,17 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([], [encounter], []);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
-      expect(result).toEqual({ matched: false, encounter, reasons: ['SESSION_EXPIRED'] });
+      expect(result).toEqual({
+        matched: false,
+        encounter,
+        reasons: ['SESSION_EXPIRED'],
+      });
     });
 
     it('returns [SESSION_EXPIRED, LOCATION_MISMATCH] when expired encounter is at different location', async () => {
@@ -147,7 +198,10 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([], [encounter], []);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
       expect(result).toEqual({
@@ -165,10 +219,17 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([], [], [encounter]);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
-      expect(result).toEqual({ matched: false, encounter, reasons: ['PROVIDER_MISMATCH'] });
+      expect(result).toEqual({
+        matched: false,
+        encounter,
+        reasons: ['PROVIDER_MISMATCH'],
+      });
     });
 
     it('returns [PROVIDER_MISMATCH, LOCATION_MISMATCH] when another provider at different location', async () => {
@@ -177,7 +238,10 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([], [], [encounter]);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
       expect(result).toEqual({
@@ -191,12 +255,18 @@ describe('resolveEncounterMatchDecision', () => {
   describe('combined reasons', () => {
     it('returns [SESSION_EXPIRED, PROVIDER_MISMATCH] when both exist simultaneously', async () => {
       const expiredEncounter = createEncounter('enc-expired', LOCATION_UUID);
-      const otherProviderEncounter = createEncounter('enc-other', LOCATION_UUID);
+      const otherProviderEncounter = createEncounter(
+        'enc-other',
+        LOCATION_UUID,
+      );
       mockGetActiveVisit.mockResolvedValue(createActiveVisit());
       mockSearches([], [expiredEncounter], [otherProviderEncounter]);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
       expect(result.reasons).toEqual(['SESSION_EXPIRED', 'PROVIDER_MISMATCH']);
@@ -210,10 +280,17 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([], [expiredEncounter], [otherProviderEncounter]);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
-      expect(result.reasons).toEqual(['SESSION_EXPIRED', 'LOCATION_MISMATCH', 'PROVIDER_MISMATCH']);
+      expect(result.reasons).toEqual([
+        'SESSION_EXPIRED',
+        'LOCATION_MISMATCH',
+        'PROVIDER_MISMATCH',
+      ]);
     });
   });
 
@@ -223,10 +300,17 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([], [], []);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
-      expect(result).toEqual({ matched: false, encounter: null, reasons: ['NO_ACTIVE_ENCOUNTER'] });
+      expect(result).toEqual({
+        matched: false,
+        encounter: null,
+        reasons: ['NO_ACTIVE_ENCOUNTER'],
+      });
     });
 
     it('returns NO_ACTIVE_ENCOUNTER when encounters found but none belong to active visit', async () => {
@@ -235,13 +319,24 @@ describe('resolveEncounterMatchDecision', () => {
         partOf: { reference: 'Encounter/different-visit' },
       };
       mockGetActiveVisit.mockResolvedValue(createActiveVisit());
-      mockSearches([wrongVisitEncounter], [wrongVisitEncounter], [wrongVisitEncounter]);
-
-      const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+      mockSearches(
+        [wrongVisitEncounter],
+        [wrongVisitEncounter],
+        [wrongVisitEncounter],
       );
 
-      expect(result).toEqual({ matched: false, encounter: null, reasons: ['NO_ACTIVE_ENCOUNTER'] });
+      const result = await resolveEncounterMatchDecision(
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
+      );
+
+      expect(result).toEqual({
+        matched: false,
+        encounter: null,
+        reasons: ['NO_ACTIVE_ENCOUNTER'],
+      });
     });
   });
 
@@ -251,16 +346,25 @@ describe('resolveEncounterMatchDecision', () => {
       mockSearches([], [], []);
 
       await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
       const calls = mockSearchEncounters.mock.calls;
       expect(calls).toHaveLength(3);
 
-      expect(calls[0][0]).toMatchObject({ patient: PATIENT_UUID, participant: PRACTITIONER_UUID });
+      expect(calls[0][0]).toMatchObject({
+        patient: PATIENT_UUID,
+        participant: PRACTITIONER_UUID,
+      });
       expect(calls[0][0]._lastUpdated).toMatch(/^ge/);
 
-      expect(calls[1][0]).toMatchObject({ patient: PATIENT_UUID, participant: PRACTITIONER_UUID });
+      expect(calls[1][0]).toMatchObject({
+        patient: PATIENT_UUID,
+        participant: PRACTITIONER_UUID,
+      });
       expect(calls[1][0]._lastUpdated).toBeUndefined();
 
       expect(calls[2][0]).toMatchObject({ patient: PATIENT_UUID });
@@ -272,7 +376,9 @@ describe('resolveEncounterMatchDecision', () => {
       mockGetActiveVisit.mockResolvedValue(null);
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
       );
 
       expect(result.reasons).toEqual(['NO_ACTIVE_VISIT']);
@@ -281,14 +387,23 @@ describe('resolveEncounterMatchDecision', () => {
 
   describe('error handling', () => {
     it('returns NO_ACTIVE_ENCOUNTER and logs error when getActiveVisit throws', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       mockGetActiveVisit.mockRejectedValue(new Error('Network error'));
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
-      expect(result).toEqual({ matched: false, encounter: null, reasons: ['NO_ACTIVE_ENCOUNTER'] });
+      expect(result).toEqual({
+        matched: false,
+        encounter: null,
+        reasons: ['NO_ACTIVE_ENCOUNTER'],
+      });
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error in resolveEncounterMatchDecision:',
         'Network error',
@@ -297,15 +412,24 @@ describe('resolveEncounterMatchDecision', () => {
     });
 
     it('returns NO_ACTIVE_ENCOUNTER when searchEncounters throws', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       mockGetActiveVisit.mockResolvedValue(createActiveVisit());
       mockSearchEncounters.mockRejectedValue(new Error('API timeout'));
 
       const result = await resolveEncounterMatchDecision(
-        PATIENT_UUID, PRACTITIONER_UUID, LOCATION_UUID, ENCOUNTER_TYPE_UUID,
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
       );
 
-      expect(result).toEqual({ matched: false, encounter: null, reasons: ['NO_ACTIVE_ENCOUNTER'] });
+      expect(result).toEqual({
+        matched: false,
+        encounter: null,
+        reasons: ['NO_ACTIVE_ENCOUNTER'],
+      });
       consoleSpy.mockRestore();
     });
   });

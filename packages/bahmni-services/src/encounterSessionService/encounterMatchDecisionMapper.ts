@@ -96,9 +96,18 @@ export async function resolveEncounterMatchDecision(
     ]);
 
     // Filter all results to only encounters belonging to the active visit
-    const inSessionOwnInVisit = filterEncountersByVisit(inSessionOwn, activeVisitId);
-    const allTimeOwnInVisit = filterEncountersByVisit(allTimeOwn, activeVisitId);
-    const inSessionAnyInVisit = filterEncountersByVisit(inSessionAny, activeVisitId);
+    const inSessionOwnInVisit = filterEncountersByVisit(
+      inSessionOwn,
+      activeVisitId,
+    );
+    const allTimeOwnInVisit = filterEncountersByVisit(
+      allTimeOwn,
+      activeVisitId,
+    );
+    const inSessionAnyInVisit = filterEncountersByVisit(
+      inSessionAny,
+      activeVisitId,
+    );
 
     // Derive distinct encounter groups
     const inSessionOwnIds = new Set(inSessionOwnInVisit.map((e) => e.id));
@@ -151,7 +160,7 @@ export async function resolveEncounterMatchDecision(
         );
         if (!locationMatches) reasons.push('LOCATION_MISMATCH');
       }
-      if (!primaryEncounter) primaryEncounter = sessionExpiredEncounters[0];
+      primaryEncounter ??= sessionExpiredEncounters[0];
     }
 
     // Check PROVIDER_MISMATCH (another provider's in-session encounter)
@@ -164,7 +173,7 @@ export async function resolveEncounterMatchDecision(
         );
         if (!locationMatches) reasons.push('LOCATION_MISMATCH');
       }
-      if (!primaryEncounter) primaryEncounter = otherProviderEncounters[0];
+      primaryEncounter ??= otherProviderEncounters[0];
     }
 
     if (reasons.length === 0) {
@@ -177,6 +186,7 @@ export async function resolveEncounterMatchDecision(
 
     return { matched: false, encounter: primaryEncounter, reasons };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(
       'Error in resolveEncounterMatchDecision:',
       error instanceof Error ? error.message : error,

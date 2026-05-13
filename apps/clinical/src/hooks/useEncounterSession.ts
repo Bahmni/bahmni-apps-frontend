@@ -31,8 +31,11 @@ export function useEncounterSession(
 
   // Original state variables — logic unchanged from main
   const [hasActiveSession, setHasActiveSession] = useState<boolean>(false);
-  const [activeEncounter, setActiveEncounter] = useState<Encounter | null>(null);
-  const [isPractitionerMatch, setIsPractitionerMatch] = useState<boolean>(false);
+  const [activeEncounter, setActiveEncounter] = useState<Encounter | null>(
+    null,
+  );
+  const [isPractitionerMatch, setIsPractitionerMatch] =
+    useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
