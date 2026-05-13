@@ -11,11 +11,12 @@ import userEvent from '@testing-library/user-event';
 import { Immunization } from 'fhir/r4';
 import React from 'react';
 import { useClinicalConfig } from '../../../../providers/clinicalConfig';
-import ImmunizationHistoryForm from '../ImmunizationHistoryForm';
+import ImmunizationForm from '../ImmunizationForm';
 import { getImmunizationStore } from '../stores';
 import { createImmunizationBundleEntries } from '../utils';
 import {
   mockAdministrationInputControlConfig,
+  mockAdministrationInputControlConfigAllowed,
   mockClinicalConfigContext,
   mockCovid19VaccineDrug,
   mockEncounterSubject,
@@ -23,10 +24,11 @@ import {
   mockImmunizationInputControlConfig,
   mockLocations,
   mockMedicationRequest,
+  mockMedicationRequestNoMedRef,
   mockRoutesValueSet,
   mockSitesValueSet,
   mockVaccineValueSet,
-} from './__mocks__/immunizationHistoryMocks';
+} from './__mocks__/immunizationMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -60,10 +62,11 @@ const createWrapper = () => {
   return Wrapper;
 };
 
-describe('ImmunizationHistoryForm Integration Tests', () => {
+describe('ImmunizationForm Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     getImmunizationStore('immunizationHistory').getState().reset();
+    getImmunizationStore('immunizationAdministration').getState().reset();
 
     (useClinicalConfig as jest.Mock).mockReturnValue(mockClinicalConfigContext);
     (searchFHIRConcepts as jest.Mock).mockImplementation((uuid: string) => {
@@ -88,9 +91,11 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
   it('creates valid bundle entries when all required fields are filled', async () => {
     const user = userEvent.setup();
     render(
-      <ImmunizationHistoryForm
-        encounterSessionStartContext={{}}
-        inputControlConfig={mockImmunizationInputControlConfig}
+      <ImmunizationForm
+        encounterSessionStartContext={{
+          basedOn: mockMedicationRequestNoMedRef,
+        }}
+        inputControlConfig={mockAdministrationInputControlConfigAllowed}
       />,
       {
         wrapper: createWrapper(),
@@ -120,7 +125,7 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
       expect(screen.getByText('Added Immunization')).toBeInTheDocument();
     });
 
-    const { id } = getImmunizationStore('immunizationHistory').getState()
+    const { id } = getImmunizationStore('immunizationAdministration').getState()
       .selectedImmunizations[0];
 
     await user.type(screen.getByPlaceholderText('Search drug name'), 'COVID');
@@ -130,7 +135,7 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
     await user.click(screen.getByText('COVID-19 Drug'));
 
     await act(async () => {
-      getImmunizationStore('immunizationHistory')
+      getImmunizationStore('immunizationAdministration')
         .getState()
         .updateAdministeredOn(id, new Date('2025-01-15'));
     });
@@ -146,7 +151,7 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
 
     let isValid = false;
     await act(async () => {
-      isValid = getImmunizationStore('immunizationHistory')
+      isValid = getImmunizationStore('immunizationAdministration')
         .getState()
         .validateAll();
     });
@@ -165,7 +170,7 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
     });
 
     const { selectedImmunizations } = getImmunizationStore(
-      'immunizationHistory',
+      'immunizationAdministration',
     ).getState();
     const bundleEntries = createImmunizationBundleEntries({
       selectedImmunizations,
@@ -194,9 +199,11 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
   it('shows required field validation errors when fields are left empty after vaccine selection', async () => {
     const user = userEvent.setup();
     render(
-      <ImmunizationHistoryForm
-        encounterSessionStartContext={{}}
-        inputControlConfig={mockImmunizationInputControlConfig}
+      <ImmunizationForm
+        encounterSessionStartContext={{
+          basedOn: mockMedicationRequestNoMedRef,
+        }}
+        inputControlConfig={mockAdministrationInputControlConfigAllowed}
       />,
       {
         wrapper: createWrapper(),
@@ -226,7 +233,7 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
 
     let isValid = true;
     await act(async () => {
-      isValid = getImmunizationStore('immunizationHistory')
+      isValid = getImmunizationStore('immunizationAdministration')
         .getState()
         .validateAll();
     });
@@ -249,7 +256,7 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
       clinicalConfig: { consultationPad: {} },
     });
 
-    render(<ImmunizationHistoryForm encounterSessionStartContext={{}} />, {
+    render(<ImmunizationForm encounterSessionStartContext={{}} />, {
       wrapper: createWrapper(),
     });
 
@@ -269,7 +276,7 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
     );
 
     render(
-      <ImmunizationHistoryForm
+      <ImmunizationForm
         encounterSessionStartContext={{}}
         inputControlConfig={mockImmunizationInputControlConfig}
       />,
@@ -306,7 +313,7 @@ describe('ImmunizationHistoryForm Integration Tests', () => {
     );
 
     render(
-      <ImmunizationHistoryForm
+      <ImmunizationForm
         encounterSessionStartContext={{ basedOn: mockMedicationRequest }}
         inputControlConfig={mockAdministrationInputControlConfig}
       />,
