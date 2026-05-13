@@ -12,3 +12,13 @@ export const handleAction = (
       }),
     );
 };
+
+export const handleEditAction = (
+  editMedications: MedicationRequest[],
+): void => {
+  globalThis.dispatchEvent(
+    new CustomEvent('startConsultation', {
+      detail: { editMedications },
+    }),
+  );
+};

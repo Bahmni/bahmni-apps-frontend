@@ -10,6 +10,7 @@ export interface MedicationState {
   selectedMedications: MedicationInputEntry[];
 
   addMedication: (medication: Medication, displayName: string) => void;
+  loadMedicationsForEdit: (entries: MedicationInputEntry[]) => void;
   removeMedication: (medicationId: string) => void;
   updateDosage: (medicationId: string, dosage: number) => void;
   updateDosageUnit: (medicationId: string, unit: Concept) => void;
@@ -65,6 +66,10 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
     set((state) => ({
       selectedMedications: [newMedication, ...state.selectedMedications],
     }));
+  },
+
+  loadMedicationsForEdit: (entries: MedicationInputEntry[]) => {
+    set({ selectedMedications: entries });
   },
 
   removeMedication: (medicationId: string) => {

@@ -2,6 +2,7 @@ import {
   SortableDataTable,
   Accordion,
   AccordionItem,
+  Button,
   Tab,
   TabList,
   TabPanel,
@@ -10,11 +11,14 @@ import {
   Tag,
   StatusTag,
   TooltipIcon,
+  Icon,
+  ICON_SIZE,
 } from '@bahmni/design-system';
 import {
   useTranslation,
   groupByDate,
   formatDateTime,
+  hasPrivilege,
   FormattedMedicationRequest,
   MedicationRequest,
   shouldEnableEncounterFilter,
@@ -28,6 +32,8 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
+import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
+import { handleEditAction } from './components/actionHandlers';
 import Actions from './components/Actions';
 import { MedicationAction } from './models';
 import styles from './styles/MedicationsTable.module.scss';
@@ -97,9 +103,13 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
+  const { userPrivileges } = useUserPrivilege();
   const code = (config?.code as string[]) || [];
   const actions = (config?.actions as MedicationAction[]) ?? [];
   const hasActions = actions.length > 0;
+  const editAction = actions.find((a) => a.type === 'edit');
+  const canEdit =
+    !!editAction && hasPrivilege(userPrivileges, editAction.requiredPrivilege);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -232,6 +242,38 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     return [...activeMedications, ...scheduledMedications];
   }, [allMedications]);
 
+  // Medications eligible for edit: active medications from the current encounter.
+  // TODO: When BAH-4665 merges, use useEncounterMatchDecision to filter by
+  // matched encounterUuid instead of showing edit for all active medications.
+  const editableMedications = useMemo(() => {
+    if (!canEdit) return [];
+    return activeAndScheduledMedications.filter(
+      (m) => m.status === 'active' || m.status === 'on-hold',
+    );
+  }, [activeAndScheduledMedications, canEdit]);
+
+  const hasEditableMedications = editableMedications.length > 0;
+
+  const handleEditAll = useCallback(() => {
+    const fhirResources = editableMedications.map((m) => m.fhirResource);
+    handleEditAction(fhirResources);
+  }, [editableMedications]);
+
+  const handleEditSingle = useCallback(
+    (medication: FormattedMedicationRequest) => {
+      handleEditAction([medication.fhirResource]);
+    },
+    [],
+  );
+
+  const isEditable = useCallback(
+    (medication: FormattedMedicationRequest) => {
+      if (!canEdit) return false;
+      return medication.status === 'active' || medication.status === 'on-hold';
+    },
+    [canEdit],
+  );
+
   // Process medications for date grouping (only for All medications tab)
   const processedAllMedications = useMemo(() => {
     return processGroupedMedications(allMedications);
@@ -301,7 +343,32 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           />
         );
       case 'actions':
-        return <Actions actions={actions} medication={row.fhirResource} />;
+        return (
+          <>
+            {isEditable(row) && (
+              <Button
+                id={`medication-edit-button-${row.id}`}
+                data-testid={`medication-edit-button-${row.id}`}
+                aria-label={t('MEDICATIONS_EDIT_ACTION')}
+                kind="ghost"
+                size="sm"
+                hasIconOnly
+                renderIcon={() => (
+                  <Icon
+                    id="edit-medication-icon"
+                    name="fa-pen-to-square"
+                    size={ICON_SIZE.SM}
+                  />
+                )}
+                onClick={() => handleEditSingle(row)}
+              />
+            )}
+            <Actions
+              actions={actions.filter((a) => a.type !== 'edit')}
+              medication={row.fhirResource}
+            />
+          </>
+        );
       default:
         return null;
     }
@@ -319,6 +386,30 @@ const MedicationsTable: React.FC<WidgetProps> = ({
 
   return (
     <div data-testid="medications-table">
+      {editAction && (
+        <div
+          className={styles.widgetEditActions}
+          data-testid="medications-widget-edit-actions"
+        >
+          <Button
+            id="medications-edit-all-button"
+            data-testid="medications-edit-all-button"
+            aria-label={t('MEDICATIONS_EDIT_ALL')}
+            kind="ghost"
+            size="sm"
+            hasIconOnly
+            renderIcon={() => (
+              <Icon
+                id="edit-medication-icon"
+                name="fa-pen-to-square"
+                size={ICON_SIZE.SM}
+              />
+            )}
+            disabled={!hasEditableMedications}
+            onClick={handleEditAll}
+          />
+        </div>
+      )}
       <Tabs
         selectedIndex={selectedIndex}
         onChange={(state) => handleTabChange(state.selectedIndex)}

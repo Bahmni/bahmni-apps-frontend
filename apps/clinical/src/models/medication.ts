@@ -34,6 +34,9 @@ export interface MedicationInputEntry {
   doseForm?: string;
   note?: string;
 
+  // Edit support
+  fhirResourceId?: string;
+
   // Validation
   errors: {
     dosage?: string;

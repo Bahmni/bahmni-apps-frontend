@@ -84,6 +84,12 @@
   }
 }
 
+.widgetEditActions {
+  display: flex;
+  justify-content: flex-end;
+  padding: $spacing-02 $spacing-03;
+}
+
 .customAccordianItem {
   background-color: $layer-01;
   :global(.cds--accordion__content) {

@@ -90,6 +90,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
       } = medicationInputEntry;
 
       const [hasNote, setHasNote] = useState(!!note);
+      const hasMountedRef = React.useRef(false);
 
       const setDefaultInstruction = useCallback(() => {
         if (
@@ -181,6 +182,11 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
       ]);
 
       useEffect(() => {
+        // Skip on first render for edited medications to preserve loaded values
+        if (!hasMountedRef.current) {
+          hasMountedRef.current = true;
+          if (medicationInputEntry.fhirResourceId) return;
+        }
         if (isPRN || !isSTAT) {
           updateFrequency(id, null);
         }

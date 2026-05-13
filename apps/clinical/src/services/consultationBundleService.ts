@@ -353,7 +353,7 @@ export function createMedicationRequestEntries({
   }
   const medicationRequestEntries: BundleEntry[] = [];
   for (const medication of selectedMedications) {
-    const medicationResourceURL = `urn:uuid:${crypto.randomUUID()}`;
+    const isEdit = !!medication.fhirResourceId;
     const medicationResource = createMedicationRequestResource(
       medication,
       encounterSubject,
@@ -362,10 +362,23 @@ export function createMedicationRequestEntries({
       statDurationInMilliseconds,
     );
 
+    if (isEdit) {
+      medicationResource.id = medication.fhirResourceId;
+    }
+
+    const fullUrl = isEdit
+      ? `MedicationRequest/${medication.fhirResourceId}`
+      : `urn:uuid:${crypto.randomUUID()}`;
+    const method = isEdit ? 'PUT' : 'POST';
+    const resourceUrl = isEdit
+      ? `MedicationRequest/${medication.fhirResourceId}`
+      : undefined;
+
     const medicationRequestEntry = createBundleEntry(
-      medicationResourceURL,
+      fullUrl,
       medicationResource,
-      'POST',
+      method,
+      resourceUrl,
     );
 
     medicationRequestEntries.push(medicationRequestEntry);
