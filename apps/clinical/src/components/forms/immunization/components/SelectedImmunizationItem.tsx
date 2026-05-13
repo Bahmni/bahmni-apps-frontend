@@ -383,7 +383,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                   : null)
               }
               onChange={({ selectedItem, inputValue }) => {
-                if (selectedItem && !selectedItem.disabled) {
+                if (selectedItem?.batchNumber && !selectedItem.disabled) {
                   updateBatchNumber(id, selectedItem.batchNumber ?? '');
                   if (selectedItem.expiryDate) {
                     updateExpiryDate(id, new Date(selectedItem.expiryDate));

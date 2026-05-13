@@ -26,7 +26,7 @@ exports[`ImmunizationForm Snapshots matches snapshot with combobox visible (base
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_4p_-menu"
+            aria-controls="downshift-_r_6r_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search to add immunization"
@@ -42,11 +42,11 @@ exports[`ImmunizationForm Snapshots matches snapshot with combobox visible (base
             value=""
           />
           <button
-            aria-controls="downshift-_r_4p_-menu"
+            aria-controls="downshift-_r_6r_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_4p_-toggle-button"
+            id="downshift-_r_6r_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -68,9 +68,9 @@ exports[`ImmunizationForm Snapshots matches snapshot with combobox visible (base
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_4p_-label"
+          aria-labelledby="downshift-_r_6r_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_4p_-menu"
+          id="downshift-_r_6r_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -94,6 +94,68 @@ exports[`ImmunizationForm Snapshots matches snapshot with no immunizations 1`] =
     >
       Immunization History
     </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-_r_6h_-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search to add immunization"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            data-testid="immunization-history-search-combobox"
+            id="immunization-history-search"
+            placeholder="Search to add immunization"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-_r_6h_-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-_r_6h_-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-_r_6h_-label"
+          class="cds--list-box__menu"
+          id="downshift-_r_6h_-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
   </div>
 </div>
 `;
@@ -111,6 +173,68 @@ exports[`ImmunizationForm Snapshots matches snapshot with selected immunizations
       id="immunization-history-form-title"
     >
       Immunization History
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-_r_6k_-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Search to add immunization"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            data-testid="immunization-history-search-combobox"
+            id="immunization-history-search"
+            placeholder="Search to add immunization"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-_r_6k_-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-_r_6k_-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-_r_6k_-label"
+          class="cds--list-box__menu"
+          id="downshift-_r_6k_-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
     </div>
     <div
       aria-label="Added Immunization"
@@ -159,7 +283,7 @@ exports[`ImmunizationForm Snapshots matches snapshot with selected immunizations
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_4k_"
+                  aria-labelledby="tooltip-_r_6m_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -184,7 +308,7 @@ exports[`ImmunizationForm Snapshots matches snapshot with selected immunizations
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_4k_"
+                id="tooltip-_r_6m_"
                 role="tooltip"
               >
                 <span

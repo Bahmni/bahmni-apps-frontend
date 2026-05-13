@@ -95,22 +95,11 @@ describe('ImmunizationForm', () => {
   });
 
   describe('Rendering', () => {
-    it.each([
-      [
-        'history form type',
-        { basedOn: mockMedicationRequestNoMedRef },
-        mockImmunizationInputControlConfig,
-      ],
-      [
-        'disableAdditionalAdministrations is true',
-        { basedOn: mockMedicationRequest },
-        mockAdministrationInputControlConfig,
-      ],
-    ])('hides search combobox when %s', (_, context, config) => {
+    it('hides search combobox when basedOnReference exists and disableAdditionalAdministrations is true', () => {
       render(
         <ImmunizationForm
-          encounterSessionStartContext={context}
-          inputControlConfig={config}
+          encounterSessionStartContext={{ basedOn: mockMedicationRequest }}
+          inputControlConfig={mockAdministrationInputControlConfig}
         />,
       );
       expect(
@@ -118,16 +107,20 @@ describe('ImmunizationForm', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('renders form title and search combobox when basedOnReference exists', () => {
+    it.each([
+      ['history form type', undefined, mockImmunizationInputControlConfig],
+      [
+        'basedOnReference exists and disableAdditionalAdministrations is false',
+        { basedOn: mockMedicationRequestNoMedRef },
+        mockAdministrationInputControlConfigAllowed,
+      ],
+    ])('shows search combobox when %s', (_, context, config) => {
       render(
         <ImmunizationForm
-          encounterSessionStartContext={{
-            basedOn: mockMedicationRequestNoMedRef,
-          }}
-          inputControlConfig={mockAdministrationInputControlConfigAllowed}
+          encounterSessionStartContext={context}
+          inputControlConfig={config}
         />,
       );
-      expect(screen.getByText('Immunization History')).toBeInTheDocument();
       expect(
         screen.getByRole('combobox', { name: /search to add immunization/i }),
       ).toBeInTheDocument();

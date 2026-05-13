@@ -299,7 +299,7 @@ const ImmunizationForm = ({
       >
         {t(label)}
       </div>
-      {!!basedOnReference && !disableAdditionalAdministrations && (
+      {!(!!basedOnReference && disableAdditionalAdministrations) && (
         <ComboBox
           id="immunization-history-search"
           data-testid="immunization-history-search-combobox"
