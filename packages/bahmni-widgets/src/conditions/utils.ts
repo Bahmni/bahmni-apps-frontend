@@ -51,27 +51,24 @@ export function createConditionViewModels(
 
     const status = mapFhirStatusToEnum(condition);
     const coding = condition.code?.coding?.[0];
-    const codedDisplay =
-      condition.code?.text?.trim() || coding?.display?.trim();
-    const nonCodedDisplay = condition.extension
-      ?.find(
-        (ext) => ext.url === NON_CODED_CONDITION_EXT_URL && ext.valueString,
-      )
-      ?.valueString?.trim();
+    const codedDisplay = condition.code?.text ?? coding?.display;
+    const nonCodedDisplay = condition.extension?.find(
+      (ext) => ext.url === NON_CODED_CONDITION_EXT_URL && ext.valueString,
+    )?.valueString;
 
-    if (!codedDisplay && !nonCodedDisplay) {
+    if (!codedDisplay?.trim() && !nonCodedDisplay?.trim()) {
       throw new Error(i18next.t('ERROR_CONDITION_MISSING_DISPLAY_INFORMATION'));
     }
 
     return {
       id: condition.id!,
-      display: codedDisplay || nonCodedDisplay || '',
+      display: codedDisplay ?? nonCodedDisplay ?? '',
       status,
       onsetDate: condition.onsetDateTime,
       recordedDate: condition.recordedDate,
       recorder: condition.recorder?.display,
       code: coding?.code ?? '',
-      codeDisplay: coding?.display?.trim() || nonCodedDisplay || '',
+      codeDisplay: coding?.display ?? nonCodedDisplay ?? '',
       note: condition.note?.map((note) => note.text).filter(Boolean),
     };
   });
