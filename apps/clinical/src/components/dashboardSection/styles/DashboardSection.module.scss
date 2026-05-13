@@ -16,6 +16,10 @@ $table-cell-min-width: 6.875rem;
   overflow-x: auto;
 }
 
+:global([data-split-view] #main-display-area div[id^="accordion-item"] div[id^="accordion-item"]) {
+  overflow-x: visible;
+}
+
 :global([data-split-view] #main-display-area div[id^="accordion-item"]:has(.cds--data-table td:nth-child(5))) {
   padding-block-end: $spacing-05;
 }

@@ -4,14 +4,6 @@
 
 .container {
   width: 100%;
-  :global([data-split-view] #main-display-area) & {
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    scroll-padding-bottom: $spacing-05;
-    .container {
-      overflow-x: visible !important;
-    }
-  }
 }
 
 .accordion {
@@ -22,9 +14,7 @@
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
-  :global([data-split-view] #main-display-area) & {
-    overflow: visible;
-  }
+  overflow-y: visible;
   div:last-child {
     padding-block: 0;
   }
@@ -50,7 +40,7 @@
   max-width: 100%;
   box-sizing: border-box;
   :global([data-split-view] #main-display-area) & {
-    min-width: 40rem;
+    min-width: 75rem;
     padding-block-end: $spacing-05;
   }
 }
