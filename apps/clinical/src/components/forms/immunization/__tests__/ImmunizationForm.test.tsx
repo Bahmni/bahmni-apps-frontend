@@ -8,12 +8,14 @@ import ImmunizationForm from '../ImmunizationForm';
 import { useImmunizationHistoryStore } from '../stores';
 import {
   mockAdministrationInputControlConfig,
+  mockAdministrationInputControlConfigAllowed,
   mockClinicalConfigContext,
   mockFetchedMedication,
   mockImmunizationInputControlConfig,
   mockImmunizationEntry,
   mockLocations,
   mockMedicationRequest,
+  mockMedicationRequestNoMedRef,
   mockMixedVaccinationBundle,
   mockRoutesValueSet,
   mockSitesValueSet,
@@ -79,29 +81,42 @@ describe('ImmunizationForm', () => {
   });
 
   describe('Rendering', () => {
-    it('renders form title and search combobox', () => {
+    it.each([
+      [
+        'history form type',
+        { basedOn: mockMedicationRequestNoMedRef },
+        mockImmunizationInputControlConfig,
+      ],
+      [
+        'disableAdditionalAdministrations is true',
+        { basedOn: mockMedicationRequest },
+        mockAdministrationInputControlConfig,
+      ],
+    ])('hides search combobox when %s', (_, context, config) => {
       render(
         <ImmunizationForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockImmunizationInputControlConfig}
+          encounterSessionStartContext={context}
+          inputControlConfig={config}
+        />,
+      );
+      expect(
+        screen.queryByRole('combobox', { name: /search to add immunization/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders form title and search combobox when basedOnReference exists', () => {
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{
+            basedOn: mockMedicationRequestNoMedRef,
+          }}
+          inputControlConfig={mockAdministrationInputControlConfigAllowed}
         />,
       );
       expect(screen.getByText('Immunization History')).toBeInTheDocument();
       expect(
         screen.getByRole('combobox', { name: /search to add immunization/i }),
       ).toBeInTheDocument();
-    });
-
-    it('hides search combobox when disableAdditionalAdministrations is true in metadata', () => {
-      render(
-        <ImmunizationForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockAdministrationInputControlConfig}
-        />,
-      );
-      expect(
-        screen.queryByRole('combobox', { name: /search to add immunization/i }),
-      ).not.toBeInTheDocument();
     });
   });
 
@@ -221,8 +236,10 @@ describe('ImmunizationForm', () => {
         });
         render(
           <ImmunizationForm
-            encounterSessionStartContext={{}}
-            inputControlConfig={mockImmunizationInputControlConfig}
+            encounterSessionStartContext={{
+              basedOn: mockMedicationRequestNoMedRef,
+            }}
+            inputControlConfig={mockAdministrationInputControlConfigAllowed}
           />,
         );
         await user.type(
@@ -239,8 +256,10 @@ describe('ImmunizationForm', () => {
       const user = userEvent.setup();
       render(
         <ImmunizationForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockImmunizationInputControlConfig}
+          encounterSessionStartContext={{
+            basedOn: mockMedicationRequestNoMedRef,
+          }}
+          inputControlConfig={mockAdministrationInputControlConfigAllowed}
         />,
       );
       await user.type(
@@ -259,8 +278,10 @@ describe('ImmunizationForm', () => {
       const user = userEvent.setup();
       render(
         <ImmunizationForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockImmunizationInputControlConfig}
+          encounterSessionStartContext={{
+            basedOn: mockMedicationRequestNoMedRef,
+          }}
+          inputControlConfig={mockAdministrationInputControlConfigAllowed}
         />,
       );
       await user.type(
@@ -283,8 +304,10 @@ describe('ImmunizationForm', () => {
       const user = userEvent.setup();
       render(
         <ImmunizationForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockImmunizationInputControlConfig}
+          encounterSessionStartContext={{
+            basedOn: mockMedicationRequestNoMedRef,
+          }}
+          inputControlConfig={mockAdministrationInputControlConfigAllowed}
         />,
       );
       await user.type(
@@ -502,15 +525,26 @@ describe('ImmunizationForm', () => {
 
   describe('Snapshots', () => {
     it.each([
-      ['no immunizations', mockStore],
+      ['no immunizations', mockStore, {}, undefined],
       [
         'selected immunizations',
         { ...mockStore, selectedImmunizations: [mockImmunizationEntry] },
+        {},
+        undefined,
       ],
-    ])('matches snapshot with %s', (_, storeOverride) => {
+      [
+        'combobox visible (basedOnReference present)',
+        mockStore,
+        { basedOn: mockMedicationRequestNoMedRef },
+        mockAdministrationInputControlConfigAllowed,
+      ],
+    ])('matches snapshot with %s', (_, storeOverride, context, config) => {
       jest.mocked(useImmunizationHistoryStore).mockReturnValue(storeOverride);
       const { container } = render(
-        <ImmunizationForm encounterSessionStartContext={{}} />,
+        <ImmunizationForm
+          encounterSessionStartContext={context}
+          inputControlConfig={config}
+        />,
       );
       expect(container).toMatchSnapshot();
     });

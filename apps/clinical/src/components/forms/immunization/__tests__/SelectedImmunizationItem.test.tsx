@@ -9,7 +9,7 @@ import {
   mockFullAttributes,
   mockImmunizationEntry,
   mockImmunizationEntryWithBasedOn,
-  mockImmunizationEntryWithBasedOnAndNullFields,
+  mockImmunizationEntryWithBasedOnNoDrug,
   mockImmunizationEntryWithCustomDrug,
   mockImmunizationEntryWithCustomLocation,
   mockImmunizationEntryWithDate,
@@ -273,7 +273,7 @@ describe('SelectedImmunizationItem', () => {
         render(
           <SelectedImmunizationItem
             {...defaultProps}
-            immunization={mockImmunizationEntryWithBasedOnAndNullFields}
+            immunization={mockImmunizationEntryWithBasedOnNoDrug}
           />,
         );
         expect(getElement()).not.toBeDisabled();

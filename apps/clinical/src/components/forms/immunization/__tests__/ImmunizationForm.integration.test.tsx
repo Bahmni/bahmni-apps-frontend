@@ -16,6 +16,7 @@ import { getImmunizationStore } from '../stores';
 import { createImmunizationBundleEntries } from '../utils';
 import {
   mockAdministrationInputControlConfig,
+  mockAdministrationInputControlConfigAllowed,
   mockClinicalConfigContext,
   mockCovid19VaccineDrug,
   mockEncounterSubject,
@@ -23,6 +24,7 @@ import {
   mockImmunizationInputControlConfig,
   mockLocations,
   mockMedicationRequest,
+  mockMedicationRequestNoMedRef,
   mockRoutesValueSet,
   mockSitesValueSet,
   mockVaccineValueSet,
@@ -64,6 +66,7 @@ describe('ImmunizationForm Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     getImmunizationStore('immunizationHistory').getState().reset();
+    getImmunizationStore('immunizationAdministration').getState().reset();
 
     (useClinicalConfig as jest.Mock).mockReturnValue(mockClinicalConfigContext);
     (searchFHIRConcepts as jest.Mock).mockImplementation((uuid: string) => {
@@ -89,8 +92,10 @@ describe('ImmunizationForm Integration Tests', () => {
     const user = userEvent.setup();
     render(
       <ImmunizationForm
-        encounterSessionStartContext={{}}
-        inputControlConfig={mockImmunizationInputControlConfig}
+        encounterSessionStartContext={{
+          basedOn: mockMedicationRequestNoMedRef,
+        }}
+        inputControlConfig={mockAdministrationInputControlConfigAllowed}
       />,
       {
         wrapper: createWrapper(),
@@ -120,7 +125,7 @@ describe('ImmunizationForm Integration Tests', () => {
       expect(screen.getByText('Added Immunization')).toBeInTheDocument();
     });
 
-    const { id } = getImmunizationStore('immunizationHistory').getState()
+    const { id } = getImmunizationStore('immunizationAdministration').getState()
       .selectedImmunizations[0];
 
     await user.type(screen.getByPlaceholderText('Search drug name'), 'COVID');
@@ -130,7 +135,7 @@ describe('ImmunizationForm Integration Tests', () => {
     await user.click(screen.getByText('COVID-19 Drug'));
 
     await act(async () => {
-      getImmunizationStore('immunizationHistory')
+      getImmunizationStore('immunizationAdministration')
         .getState()
         .updateAdministeredOn(id, new Date('2025-01-15'));
     });
@@ -146,7 +151,7 @@ describe('ImmunizationForm Integration Tests', () => {
 
     let isValid = false;
     await act(async () => {
-      isValid = getImmunizationStore('immunizationHistory')
+      isValid = getImmunizationStore('immunizationAdministration')
         .getState()
         .validateAll();
     });
@@ -165,7 +170,7 @@ describe('ImmunizationForm Integration Tests', () => {
     });
 
     const { selectedImmunizations } = getImmunizationStore(
-      'immunizationHistory',
+      'immunizationAdministration',
     ).getState();
     const bundleEntries = createImmunizationBundleEntries({
       selectedImmunizations,
@@ -195,8 +200,10 @@ describe('ImmunizationForm Integration Tests', () => {
     const user = userEvent.setup();
     render(
       <ImmunizationForm
-        encounterSessionStartContext={{}}
-        inputControlConfig={mockImmunizationInputControlConfig}
+        encounterSessionStartContext={{
+          basedOn: mockMedicationRequestNoMedRef,
+        }}
+        inputControlConfig={mockAdministrationInputControlConfigAllowed}
       />,
       {
         wrapper: createWrapper(),
@@ -226,7 +233,7 @@ describe('ImmunizationForm Integration Tests', () => {
 
     let isValid = true;
     await act(async () => {
-      isValid = getImmunizationStore('immunizationHistory')
+      isValid = getImmunizationStore('immunizationAdministration')
         .getState()
         .validateAll();
     });

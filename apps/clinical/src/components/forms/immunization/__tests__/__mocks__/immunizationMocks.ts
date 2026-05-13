@@ -26,48 +26,64 @@ const buildMedicationEntry = (
   } as Medication,
 });
 
-export const mockImmunizationHistory = {
-  metadata: {
-    routeConceptUuid: 'route-concept-uuid',
-    vaccineConceptSetUuid: 'vaccine-concept-set-uuid',
-    siteConceptUuid: 'site-concept-uuid',
-    administeredLocationTag: 'login-location',
+const buildValueSet = (contains?: { code?: string; display: string }[]) => ({
+  resourceType: 'ValueSet' as const,
+  status: 'active' as const,
+  expansion: {
+    timestamp: '2024-01-01T00:00:00Z',
+    ...(contains !== undefined ? { contains } : {}),
   },
-  encounterType: ['Immunization'],
-  privilege: ['app:clinical;addHistory'],
-  attributes: [
-    { name: 'drug', required: true },
-    { name: 'administeredOn', required: true },
-    { name: 'administeredLocation', required: true },
-    { name: 'route', required: false },
-    { name: 'site', required: false },
-  ] as InputControlAttributes[],
+});
+
+const baseMetadata = {
+  routeConceptUuid: 'route-concept-uuid',
+  vaccineConceptSetUuid: 'vaccine-concept-set-uuid',
+  siteConceptUuid: 'site-concept-uuid',
+  administeredLocationTag: 'login-location',
+};
+
+const baseAttributes: InputControlAttributes[] = [
+  { name: 'drug', required: true },
+  { name: 'administeredOn', required: true },
+  { name: 'administeredLocation', required: true },
+  { name: 'route', required: false },
+  { name: 'site', required: false },
+];
+
+const baseInputControlConfig = {
+  encounterTypes: ['Immunization'],
+  privileges: ['app:clinical;addHistory'],
+  attributes: baseAttributes,
+  metadata: baseMetadata,
 };
 
 export const mockImmunizationInputControlConfig = {
+  ...baseInputControlConfig,
   type: 'immunizationHistory',
-  metadata: mockImmunizationHistory.metadata,
-  encounterTypes: ['Immunization'],
-  privileges: ['app:clinical;addHistory'],
-  attributes: mockImmunizationHistory.attributes,
+};
+
+export const mockAdministrationInputControlConfigAllowed = {
+  ...baseInputControlConfig,
+  type: 'immunizationAdministration',
 };
 
 export const mockAdministrationInputControlConfig = {
+  ...baseInputControlConfig,
   type: 'immunizationAdministration',
-  metadata: {
-    ...mockImmunizationHistory.metadata,
-    disableAdditionalAdministrations: true,
-  },
-  encounterTypes: ['Immunization'],
-  privileges: ['app:clinical;addHistory'],
-  attributes: mockImmunizationHistory.attributes,
+  metadata: { ...baseMetadata, disableAdditionalAdministrations: true },
 };
 
 export const mockClinicalConfigContext = {
   clinicalConfig: {
     consultationPad: {
       inputControls: [
-        { type: 'immunizationHistory', ...mockImmunizationHistory },
+        {
+          type: 'immunizationHistory',
+          metadata: baseMetadata,
+          encounterType: ['Immunization'],
+          privilege: ['app:clinical;addHistory'],
+          attributes: baseAttributes,
+        },
       ],
     },
   },
@@ -75,50 +91,24 @@ export const mockClinicalConfigContext = {
   error: null,
 };
 
-export const mockVaccineValueSet = {
-  resourceType: 'ValueSet' as const,
-  status: 'active' as const,
-  expansion: {
-    timestamp: '2024-01-01T00:00:00Z',
-    contains: [
-      { code: 'covid-19', display: 'COVID-19 Vaccine' },
-      { code: 'flu', display: 'Influenza Vaccine' },
-    ],
-  },
-};
+export const mockVaccineValueSet = buildValueSet([
+  { code: 'covid-19', display: 'COVID-19 Vaccine' },
+  { code: 'flu', display: 'Influenza Vaccine' },
+]);
 
-export const mockValueSetWithPartialItem = {
-  resourceType: 'ValueSet' as const,
-  status: 'active' as const,
-  expansion: {
-    timestamp: '2024-01-01T00:00:00Z',
-    contains: [{ display: 'Partial Vaccine' }],
-  },
-};
+export const mockValueSetWithPartialItem = buildValueSet([
+  { display: 'Partial Vaccine' },
+]);
 
-export const mockValueSetWithoutContains = {
-  resourceType: 'ValueSet' as const,
-  status: 'active' as const,
-  expansion: { timestamp: '2024-01-01T00:00:00Z' },
-};
+export const mockValueSetWithoutContains = buildValueSet();
 
-export const mockRoutesValueSet = {
-  resourceType: 'ValueSet' as const,
-  status: 'active' as const,
-  expansion: {
-    timestamp: '2024-01-01T00:00:00Z',
-    contains: [{ code: 'im', display: 'Intramuscular' }],
-  },
-};
+export const mockRoutesValueSet = buildValueSet([
+  { code: 'im', display: 'Intramuscular' },
+]);
 
-export const mockSitesValueSet = {
-  resourceType: 'ValueSet' as const,
-  status: 'active' as const,
-  expansion: {
-    timestamp: '2024-01-01T00:00:00Z',
-    contains: [{ code: 'arm', display: 'Left Arm' }],
-  },
-};
+export const mockSitesValueSet = buildValueSet([
+  { code: 'arm', display: 'Left Arm' },
+]);
 
 export const mockLocations: Location[] = [
   { uuid: 'location-uuid-1', display: 'Main Clinic', childLocations: [] },
@@ -183,33 +173,12 @@ export const mockFullAttributes: InputControlAttributes[] = [
 ];
 
 /** All 10 form fields present, all fields required */
-export const mockAllRequiredAttributes: InputControlAttributes[] = [
-  { name: 'drug', required: true },
-  { name: 'administeredOn', required: true },
-  { name: 'administeredLocation', required: true },
-  { name: 'route', required: true },
-  { name: 'site', required: true },
-  { name: 'expiryDate', required: true },
-  { name: 'manufacturer', required: true },
-  { name: 'batchNumber', required: true },
-  { name: 'doseSequence', required: true },
-  { name: 'note', required: true },
-];
+export const mockAllRequiredAttributes: InputControlAttributes[] =
+  mockFullAttributes.map((a) => ({ ...a, required: true }));
 
-/** All 10 form fields present, administered fields optional, others optional */
+/** All 10 form fields present, all fields optional */
 export const mockAttributesWithOptionalAdministered: InputControlAttributes[] =
-  [
-    { name: 'drug', required: false },
-    { name: 'administeredOn', required: false },
-    { name: 'administeredLocation', required: false },
-    { name: 'route', required: false },
-    { name: 'site', required: false },
-    { name: 'manufacturer', required: false },
-    { name: 'batchNumber', required: false },
-    { name: 'doseSequence', required: false },
-    { name: 'expiryDate', required: false },
-    { name: 'note', required: false },
-  ];
+  mockFullAttributes.map((a) => ({ ...a, required: false }));
 
 export const mockImmunizationEntryWithDate: ImmunizationInputEntry = {
   ...mockImmunizationEntry,
@@ -297,15 +266,6 @@ export const mockImmunizationEntryWithBasedOnNoDrug: ImmunizationInputEntry = {
   basedOnReference: 'med-request-uuid',
 };
 
-export const mockImmunizationEntryWithBasedOnAndNullFields: ImmunizationInputEntry =
-  {
-    ...mockImmunizationEntry,
-    basedOnReference: 'med-request-uuid',
-    drug: null,
-    administeredOn: null,
-    administeredLocation: null,
-  };
-
 export const mockImmunizationEntryWithCustomDrug: ImmunizationInputEntry = {
   ...mockImmunizationEntry,
   drug: { display: 'Custom Drug Name' },
@@ -326,6 +286,14 @@ export const mockMedicationRequest: MedicationRequest = {
     reference: 'Medication/covid-drug-uuid',
     display: 'COVID-19 Drug',
   },
+};
+
+export const mockMedicationRequestNoMedRef: MedicationRequest = {
+  resourceType: 'MedicationRequest',
+  id: 'test-ref-uuid',
+  status: 'active',
+  intent: 'order',
+  subject: { reference: 'Patient/patient-uuid' },
 };
 
 export const mockFetchedMedication: Medication = {

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ImmunizationForm Snapshots matches snapshot with no immunizations 1`] = `
+exports[`ImmunizationForm Snapshots matches snapshot with combobox visible (basedOnReference present) 1`] = `
 <div>
   <div
     class="form"
@@ -26,7 +26,7 @@ exports[`ImmunizationForm Snapshots matches snapshot with no immunizations 1`] =
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_3h_-menu"
+            aria-controls="downshift-_r_2e_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search to add immunization"
@@ -42,11 +42,11 @@ exports[`ImmunizationForm Snapshots matches snapshot with no immunizations 1`] =
             value=""
           />
           <button
-            aria-controls="downshift-_r_3h_-menu"
+            aria-controls="downshift-_r_2e_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_3h_-toggle-button"
+            id="downshift-_r_2e_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -68,13 +68,31 @@ exports[`ImmunizationForm Snapshots matches snapshot with no immunizations 1`] =
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_3h_-label"
+          aria-labelledby="downshift-_r_2e_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_3h_-menu"
+          id="downshift-_r_2e_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
       </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ImmunizationForm Snapshots matches snapshot with no immunizations 1`] = `
+<div>
+  <div
+    class="form"
+    data-testid="immunization-history-form-test-id"
+    id="immunization-history-form"
+  >
+    <div
+      class="title"
+      data-testid="immunization-history-form-title-test-id"
+      id="immunization-history-form-title"
+    >
+      Immunization History
     </div>
   </div>
 </div>
@@ -93,68 +111,6 @@ exports[`ImmunizationForm Snapshots matches snapshot with selected immunizations
       id="immunization-history-form-title"
     >
       Immunization History
-    </div>
-    <div
-      class="cds--list-box__wrapper"
-    >
-      <div
-        class="cds--combo-box cds--autoalign cds--list-box cds--list-box--md"
-      >
-        <div
-          class="cds--list-box__field"
-        >
-          <input
-            aria-activedescendant=""
-            aria-autocomplete="list"
-            aria-controls="downshift-_r_3k_-menu"
-            aria-expanded="false"
-            aria-haspopup="listbox"
-            aria-label="Search to add immunization"
-            autocomplete="off"
-            class="cds--text-input cds--text-input--empty"
-            data-testid="immunization-history-search-combobox"
-            id="immunization-history-search"
-            placeholder="Search to add immunization"
-            role="combobox"
-            tabindex="0"
-            title=""
-            type="text"
-            value=""
-          />
-          <button
-            aria-controls="downshift-_r_3k_-menu"
-            aria-expanded="false"
-            aria-label="Open"
-            class="cds--list-box__menu-icon"
-            id="downshift-_r_3k_-toggle-button"
-            tabindex="-1"
-            title="Open"
-            type="button"
-          >
-            <svg
-              aria-hidden="true"
-              fill="currentColor"
-              focusable="false"
-              height="16"
-              preserveAspectRatio="xMidYMid meet"
-              viewBox="0 0 16 16"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-              />
-            </svg>
-          </button>
-        </div>
-        <ul
-          aria-labelledby="downshift-_r_3k_-label"
-          class="cds--list-box__menu"
-          id="downshift-_r_3k_-menu"
-          role="listbox"
-          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
-        />
-      </div>
     </div>
     <div
       aria-label="Added Immunization"
@@ -203,7 +159,7 @@ exports[`ImmunizationForm Snapshots matches snapshot with selected immunizations
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_3m_"
+                  aria-labelledby="tooltip-_r_29_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -228,7 +184,7 @@ exports[`ImmunizationForm Snapshots matches snapshot with selected immunizations
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_3m_"
+                id="tooltip-_r_29_"
                 role="tooltip"
               >
                 <span
