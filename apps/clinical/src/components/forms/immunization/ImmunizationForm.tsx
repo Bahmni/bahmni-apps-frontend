@@ -26,14 +26,14 @@ import {
 } from './constants';
 import { ImmunizationStoreKey } from './models';
 import { useImmunizationHistoryStore } from './stores';
-import styles from './styles/ImmunizationHistoryForm.module.scss';
+import styles from './styles/ImmunizationForm.module.scss';
 import {
   buildBasedOnImmunizationEntry,
   findAttr,
   getComboBoxItems,
 } from './utils';
 
-const ImmunizationHistoryForm = ({
+const ImmunizationForm = ({
   encounterSessionStartContext,
   inputControlConfig,
 }: {
@@ -79,7 +79,7 @@ const ImmunizationHistoryForm = ({
   const {
     metadata,
     attributes,
-    label = 'IMMUNIZATION_HISTORY_FORM_TITLE',
+    label = 'IMMUNIZATION_INPUT_CONTROL_FORM_TITLE',
   } = inputControlConfig ?? {};
   const vaccineConceptSetUuid = metadata?.vaccineConceptSetUuid as
     | string
@@ -166,6 +166,14 @@ const ImmunizationHistoryForm = ({
     staleTime: Infinity,
   });
 
+  const vaccineMedications = useMemo(
+    () =>
+      vaccinationDrugs?.entry
+        ?.filter((e) => e.resource?.resourceType === 'Medication')
+        .map((e) => e.resource as Medication) ?? [],
+    [vaccinationDrugs],
+  );
+
   const stockQueries = useQueries({
     queries: selectedImmunizations.map((immunization) => {
       const locationUuid = immunization.administeredLocation?.uuid;
@@ -178,14 +186,6 @@ const ImmunizationHistoryForm = ({
       };
     }),
   });
-
-  const vaccineMedications = useMemo(
-    () =>
-      vaccinationDrugs?.entry
-        ?.filter((e) => e.resource?.resourceType === 'Medication')
-        .map((e) => e.resource as Medication) ?? [],
-    [vaccinationDrugs],
-  );
 
   useEffect(() => {
     if (!basedOn || !basedOnMedication || !vaccinationDrugs) return;
@@ -226,27 +226,34 @@ const ImmunizationHistoryForm = ({
   };
 
   const isDataLoading = useMemo(() => {
-    return (
-      (vaccineCodeConceptSetLoading ||
-        routesConceptSetLoading ||
-        sitesConceptSetLoading ||
-        administeredLocationTagLoading ||
-        vaccinationDrugsLoading ||
-        basedOnMedicationLoading) &&
-      selectedImmunizations.length > 0
-    );
+    const isLoading =
+      isConfigLoading ||
+      vaccineCodeConceptSetLoading ||
+      routesConceptSetLoading ||
+      sitesConceptSetLoading ||
+      administeredLocationTagLoading ||
+      vaccinationDrugsLoading ||
+      basedOnMedicationLoading;
+
+    const willAutoPopulate =
+      !!basedOn && (basedOnMedicationLoading || vaccinationDrugsLoading);
+
+    return isLoading && (selectedImmunizations.length > 0 || willAutoPopulate);
   }, [
     selectedImmunizations,
+    isConfigLoading,
     vaccineCodeConceptSetLoading,
     routesConceptSetLoading,
     sitesConceptSetLoading,
     administeredLocationTagLoading,
     vaccinationDrugsLoading,
     basedOnMedicationLoading,
+    basedOn,
   ]);
 
   const isDataError = useMemo(() => {
     return (
+      !!configError ||
       !!vaccineCodeConceptSetError ||
       !!routesConceptSetError ||
       !!sitesConceptSetError ||
@@ -255,6 +262,7 @@ const ImmunizationHistoryForm = ({
       !!basedOnMedicationError
     );
   }, [
+    configError,
     vaccineCodeConceptSetError,
     routesConceptSetError,
     sitesConceptSetError,
@@ -291,11 +299,11 @@ const ImmunizationHistoryForm = ({
       >
         {t(label)}
       </div>
-      {!disableAdditionalAdministrations && (
+      {!(!!basedOnReference && disableAdditionalAdministrations) && (
         <ComboBox
           id="immunization-history-search"
           data-testid="immunization-history-search-combobox"
-          placeholder={t('IMMUNIZATION_HISTORY_SEARCH_PLACEHOLDER')}
+          placeholder={t('IMMUNIZATION_INPUT_CONTROL_SEARCH_PLACEHOLDER')}
           items={vaccineCodeComboBoxItems}
           itemToString={(item) => item?.display ?? ''}
           onChange={({ selectedItem }) => {
@@ -310,7 +318,7 @@ const ImmunizationHistoryForm = ({
           clearSelectedOnChange
           size="md"
           autoAlign
-          aria-label={t('IMMUNIZATION_HISTORY_SEARCH_ARIA_LABEL')}
+          aria-label={t('IMMUNIZATION_INPUT_CONTROL_SEARCH_ARIA_LABEL')}
         />
       )}
       {isDataLoading ? (
@@ -331,7 +339,7 @@ const ImmunizationHistoryForm = ({
         </div>
       ) : null}
       {showSelectedImmunizations && (
-        <BoxWHeader title={t('IMMUNIZATION_HISTORY_ADDED_ITEMS')}>
+        <BoxWHeader title={t('IMMUNIZATION_INPUT_CONTROL_ADDED_ITEMS')}>
           {selectedImmunizations.map((immunization, immunizationIndex) => (
             <SelectedItem
               key={immunization.id}
@@ -358,4 +366,4 @@ const ImmunizationHistoryForm = ({
   );
 };
 
-export default ImmunizationHistoryForm;
+export default ImmunizationForm;

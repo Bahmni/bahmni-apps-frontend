@@ -4,7 +4,7 @@ import './investigations';
 import './conditionsAndDiagnoses';
 import './medications';
 import './vaccinations';
-import './immunizationHistory';
+import './immunization';
 import './observations';
 
 export type { InputControl, EncounterContext } from './models';
