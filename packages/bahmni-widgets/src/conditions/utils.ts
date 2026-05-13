@@ -6,7 +6,7 @@ import { ConditionViewModel, ConditionStatus } from './models';
 const ACTIVE_STATUS = 'active';
 const INACTIVE_STATUS = 'inactive';
 const NON_CODED_CONDITION_EXT_URL =
-  'http://fhir.openmrs.org/ext/non-coded-condition';
+  'http://fhir.openmrs.org/ext/non-coded-condition'; // NOSONAR
 
 /**
  * Validates that a FHIR Condition resource has all required fields for table display.
@@ -52,7 +52,7 @@ export function createConditionViewModels(
     const status = mapFhirStatusToEnum(condition);
     const coding = condition.code?.coding?.[0];
     const codedDisplay =
-      condition.code?.text?.trim() ?? coding?.display?.trim();
+      condition.code?.text?.trim() || coding?.display?.trim();
     const nonCodedDisplay = condition.extension
       ?.find(
         (ext) => ext.url === NON_CODED_CONDITION_EXT_URL && ext.valueString,
@@ -65,13 +65,13 @@ export function createConditionViewModels(
 
     return {
       id: condition.id!,
-      display: codedDisplay ?? nonCodedDisplay ?? '',
+      display: codedDisplay || nonCodedDisplay || '',
       status,
       onsetDate: condition.onsetDateTime,
       recordedDate: condition.recordedDate,
       recorder: condition.recorder?.display,
       code: coding?.code ?? '',
-      codeDisplay: coding?.display?.trim() ?? nonCodedDisplay ?? '',
+      codeDisplay: coding?.display?.trim() || nonCodedDisplay || '',
       note: condition.note?.map((note) => note.text).filter(Boolean),
     };
   });

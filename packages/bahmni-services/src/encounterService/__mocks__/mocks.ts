@@ -80,8 +80,8 @@ export const mockVisitBundle = {
     }),
     createMockEncounterEntry({
       id: '30e8e897-d005-48e6-82ac-3ad1351efb1b',
-      versionId: '1744107291000',
-      lastUpdated: '2025-04-08T10:14:51.000+00:00',
+      versionId: '1744107290000',
+      lastUpdated: '2025-04-08T10:14:50.000+00:00',
       visitTypeCode: '54f43754-c6ce-4472-890e-0f28acaeaea6',
       visitTypeDisplay: 'OPD',
       period: {
