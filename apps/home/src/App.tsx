@@ -25,11 +25,11 @@ const HomeApp: React.FC = () => {
     const initializeApp = async () => {
       try {
         await initAppI18n(HOME_NAMESPACE);
-        initFontAwesome();
-        setIsInitialized(true);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to initialize app:', error);
+      } finally {
+        initFontAwesome();
         setIsInitialized(true);
       }
     };
