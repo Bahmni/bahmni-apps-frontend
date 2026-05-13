@@ -1,0 +1,52 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+
+$header-height: 3.75rem;
+
+.container {
+  margin-top: $header-height;
+  padding: $spacing-07;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tileGrid {
+  display: grid;
+  grid-template-columns: repeat(1, 10rem);
+  gap: $spacing-07;
+  justify-content: center;
+
+  @include breakpoint('md') {
+    grid-template-columns: repeat(2, 10rem);
+  }
+
+  @include breakpoint('lg') {
+    grid-template-columns: repeat(3, 10rem);
+  }
+}
+
+.skeletonTile {
+  height: 8.125rem;
+}
+
+.emptyState {
+  @include type-style("label-01");
+
+  text-align: center;
+  padding: $spacing-09 $spacing-04;
+  color: $text-secondary;
+}
+
+.errorContainer {
+  margin-top: $header-height;
+  padding: $spacing-07;
+  max-width: 50rem;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-05;
+  align-items: center;
+}

@@ -1,0 +1,1 @@
+export { HomePageGrid } from './HomePageGrid';
