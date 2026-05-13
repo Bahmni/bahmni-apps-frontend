@@ -1,4 +1,10 @@
-import { generateUUID, resolveComboBoxItems, Location } from '@bahmni/services';
+import {
+  generateUUID,
+  resolveComboBoxItems,
+  formatDateTime,
+  Location,
+  type AvailableStockResponse,
+} from '@bahmni/services';
 import {
   BundleEntry,
   Extension,
@@ -23,6 +29,7 @@ import {
   ENTERING_PROVIDER_SYSTEM,
 } from './constants';
 import {
+  BatchNumberComboBoxItem,
   CreateImmunizationBundleEntriesParams,
   ImmunizationDrug,
   ImmunizationLocation,
@@ -111,6 +118,54 @@ export function getMedicationComboBoxItems(
       code: med.id ?? '',
       display: getMedicationDisplay(med),
     }));
+}
+
+export function getBatchNumberComboBoxItems(
+  availableStocks: AvailableStockResponse | undefined,
+  errorMessage?: string,
+  emptyMessage?: string,
+): BatchNumberComboBoxItem[] {
+  if (errorMessage) {
+    return [
+      {
+        batchNumber: errorMessage,
+        expiryDate: '',
+        stockLocationName: '',
+        disabled: true,
+      },
+    ];
+  }
+  if (emptyMessage) {
+    return [
+      {
+        batchNumber: emptyMessage,
+        expiryDate: '',
+        stockLocationName: '',
+        disabled: true,
+      },
+    ];
+  }
+  return (availableStocks?.data ?? [])
+    .filter(({ batchNumber }) => !!batchNumber?.trim())
+    .map(({ batchNumber, expiryDate, stockLocationName }) => ({
+      batchNumber: batchNumber.trim(),
+      expiryDate,
+      stockLocationName,
+    }));
+}
+
+export function formatBatchItemDisplay(
+  item: BatchNumberComboBoxItem | null,
+  t: (key: string) => string,
+): string {
+  if (!item) return '';
+  const expiryPart = item.expiryDate
+    ? ` [${formatDateTime(item.expiryDate, t, false, 'd MMM yyyy').formattedResult}]`
+    : '';
+  const locationPart = item.stockLocationName
+    ? ` - ${item.stockLocationName}`
+    : '';
+  return item.batchNumber + expiryPart + locationPart;
 }
 
 export function getLocationComboBoxItems(

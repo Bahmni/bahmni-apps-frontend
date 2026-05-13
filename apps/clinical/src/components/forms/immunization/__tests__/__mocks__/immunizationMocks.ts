@@ -1,4 +1,4 @@
-import { Location } from '@bahmni/services';
+import { Location, type AvailableStockResponse } from '@bahmni/services';
 import { Medication, MedicationRequest, Reference } from 'fhir/r4';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../../models';
@@ -71,6 +71,14 @@ export const mockAdministrationInputControlConfig = {
   ...baseInputControlConfig,
   type: 'immunizationAdministration',
   metadata: { ...baseMetadata, disableAdditionalAdministrations: true },
+};
+
+export const mockImmunizationInputControlConfigWithFetchStockBatches = {
+  ...mockImmunizationInputControlConfig,
+  metadata: {
+    ...baseMetadata,
+    fetchStockBatches: true,
+  },
 };
 
 export const mockClinicalConfigContext = {
@@ -266,6 +274,15 @@ export const mockImmunizationEntryWithBasedOnNoDrug: ImmunizationInputEntry = {
   basedOnReference: 'med-request-uuid',
 };
 
+export const mockImmunizationEntryWithBasedOnAndNullFields: ImmunizationInputEntry =
+  {
+    ...mockImmunizationEntry,
+    basedOnReference: 'med-request-uuid',
+    drug: null,
+    administeredOn: null,
+    administeredLocation: null,
+  };
+
 export const mockImmunizationEntryWithCustomDrug: ImmunizationInputEntry = {
   ...mockImmunizationEntry,
   drug: { display: 'Custom Drug Name' },
@@ -300,6 +317,63 @@ export const mockFetchedMedication: Medication = {
   resourceType: 'Medication',
   id: 'covid-drug-uuid',
   code: { coding: [{ code: 'covid-19', display: 'COVID-19 Vaccine' }] },
+};
+
+export const mockAvailableStockResponse: AvailableStockResponse = {
+  count: 2,
+  data: [
+    {
+      stockLocationName: 'Nurse Station',
+      availableQuantity: 10,
+      onHandQuantity: 15,
+      unit: 'vial',
+      batchNumber: 'BATCH-001',
+      expiryDate: '2026-12-31',
+    },
+    {
+      stockLocationName: 'Nurse Station',
+      availableQuantity: 5,
+      onHandQuantity: 5,
+      unit: 'vial',
+      batchNumber: 'BATCH-002',
+      expiryDate: '2027-06-30',
+    },
+  ],
+};
+
+export const mockAvailableStockWithEmptyBatch: AvailableStockResponse = {
+  count: 3,
+  data: [
+    {
+      stockLocationName: 'Nurse Station',
+      availableQuantity: 10,
+      onHandQuantity: 10,
+      unit: 'vial',
+      batchNumber: 'BATCH-001',
+      expiryDate: '2026-12-31',
+    },
+    {
+      stockLocationName: 'Nurse Station',
+      availableQuantity: 5,
+      onHandQuantity: 5,
+      unit: 'vial',
+      batchNumber: '',
+      expiryDate: '2027-01-01',
+    },
+    {
+      stockLocationName: 'Nurse Station',
+      availableQuantity: 3,
+      onHandQuantity: 3,
+      unit: 'vial',
+      batchNumber: '   ',
+      expiryDate: '2027-03-15',
+    },
+  ],
+};
+
+export const mockEmptyAvailableStockResponse: AvailableStockResponse = {
+  count: 0,
+  data: [],
 };
 
 export const mockVaccinationBundleWithCovid = {

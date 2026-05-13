@@ -26,7 +26,7 @@ exports[`ImmunizationForm Snapshots matches snapshot with combobox visible (base
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_2e_-menu"
+            aria-controls="downshift-_r_4p_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Search to add immunization"
@@ -42,11 +42,11 @@ exports[`ImmunizationForm Snapshots matches snapshot with combobox visible (base
             value=""
           />
           <button
-            aria-controls="downshift-_r_2e_-menu"
+            aria-controls="downshift-_r_4p_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_2e_-toggle-button"
+            id="downshift-_r_4p_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -68,9 +68,9 @@ exports[`ImmunizationForm Snapshots matches snapshot with combobox visible (base
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_2e_-label"
+          aria-labelledby="downshift-_r_4p_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_2e_-menu"
+          id="downshift-_r_4p_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -159,7 +159,7 @@ exports[`ImmunizationForm Snapshots matches snapshot with selected immunizations
               >
                 <button
                   aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_29_"
+                  aria-labelledby="tooltip-_r_4k_"
                   class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                   data-testid="selected-item-close-button"
                   id="close-selected-item"
@@ -184,7 +184,7 @@ exports[`ImmunizationForm Snapshots matches snapshot with selected immunizations
               <span
                 aria-hidden="true"
                 class="cds--popover"
-                id="tooltip-_r_29_"
+                id="tooltip-_r_4k_"
                 role="tooltip"
               >
                 <span

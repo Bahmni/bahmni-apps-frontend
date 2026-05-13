@@ -5,6 +5,7 @@ import {
   SelectedItem,
 } from '@bahmni/design-system';
 import {
+  getAvailableStocks,
   getLocationByTag,
   getMedicationByUuid,
   getUserLoginLocation,
@@ -12,7 +13,7 @@ import {
   searchFHIRConcepts,
   useTranslation,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { Medication, MedicationRequest } from 'fhir/r4';
 import { useEffect, useMemo, useState } from 'react';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
@@ -91,6 +92,7 @@ const ImmunizationForm = ({
     | undefined;
   const disableAdditionalAdministrations =
     metadata?.disableAdditionalAdministrations as boolean | undefined;
+  const fetchStockBatches = metadata?.fetchStockBatches as boolean | undefined;
 
   useEffect(() => {
     if (attributes) {
@@ -171,6 +173,19 @@ const ImmunizationForm = ({
         .map((e) => e.resource as Medication) ?? [],
     [vaccinationDrugs],
   );
+
+  const stockQueries = useQueries({
+    queries: selectedImmunizations.map((immunization) => {
+      const locationUuid = immunization.administeredLocation?.uuid;
+      return {
+        queryKey: ['availableStocks', immunization.drug?.code, locationUuid],
+        queryFn: () =>
+          getAvailableStocks(immunization.drug!.code!, locationUuid!),
+        enabled:
+          !!fetchStockBatches && !!immunization.drug?.code && !!locationUuid,
+      };
+    }),
+  });
 
   useEffect(() => {
     if (!basedOn || !basedOnMedication || !vaccinationDrugs) return;
@@ -325,7 +340,7 @@ const ImmunizationForm = ({
       ) : null}
       {showSelectedImmunizations && (
         <BoxWHeader title={t('IMMUNIZATION_INPUT_CONTROL_ADDED_ITEMS')}>
-          {selectedImmunizations.map((immunization) => (
+          {selectedImmunizations.map((immunization, immunizationIndex) => (
             <SelectedItem
               key={immunization.id}
               className={styles.selectedItem}
@@ -339,6 +354,9 @@ const ImmunizationForm = ({
                 administeredLocationTag={administeredLocationTagData}
                 vaccineDrugs={vaccineMedications}
                 storeKey={immunizationFormType}
+                availableStocks={stockQueries[immunizationIndex]?.data}
+                stocksError={stockQueries[immunizationIndex]?.isError ?? false}
+                stockBatchesEnabled={!!fetchStockBatches}
               />
             </SelectedItem>
           ))}
