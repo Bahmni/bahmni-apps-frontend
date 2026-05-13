@@ -6,7 +6,7 @@ jest.mock('i18next', () => ({
     const translations: { [key: string]: string } = {
       ERROR_CONDITION_MISSING_REQUIRED_FIELDS:
         'Missing required fields in condition data',
-      ERROR_CONDITION_MISSING_CODING_INFORMATION:
+      ERROR_CONDITION_MISSING_DISPLAY_INFORMATION:
         'Condition is missing display information',
     };
     return translations[key] || key;
@@ -107,6 +107,7 @@ const mockValidConditions: Condition[] = [
         {
           system: 'http://snomed.info/sct',
           code: '195967001',
+          display: 'Asthma',
         },
       ],
     },
@@ -233,8 +234,8 @@ describe('createConditionViewModels', () => {
       },
       {
         code: '195967001',
-        codeDisplay: '',
-        display: '',
+        codeDisplay: 'Asthma',
+        display: 'Asthma',
         id: 'condition-no-status',
         note: undefined,
         onsetDate: undefined,

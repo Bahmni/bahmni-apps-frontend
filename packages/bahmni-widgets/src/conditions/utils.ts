@@ -5,6 +5,8 @@ import { ConditionViewModel, ConditionStatus } from './models';
 // Constants for better maintainability
 const ACTIVE_STATUS = 'active';
 const INACTIVE_STATUS = 'inactive';
+const NON_CODED_CONDITION_EXT_URL =
+  'http://fhir.openmrs.org/ext/non-coded-condition';
 
 /**
  * Validates that a FHIR Condition resource has all required fields for table display.
@@ -49,23 +51,27 @@ export function createConditionViewModels(
 
     const status = mapFhirStatusToEnum(condition);
     const coding = condition.code?.coding?.[0];
-    const nonCodedDisplay = condition.extension?.find(
-      (ext) => ext.valueString,
-    )?.valueString;
+    const codedDisplay =
+      condition.code?.text?.trim() ?? coding?.display?.trim();
+    const nonCodedDisplay = condition.extension
+      ?.find(
+        (ext) => ext.url === NON_CODED_CONDITION_EXT_URL && ext.valueString,
+      )
+      ?.valueString?.trim();
 
-    if (!coding && !nonCodedDisplay) {
-      throw new Error(i18next.t('ERROR_CONDITION_MISSING_CODING_INFORMATION'));
+    if (!codedDisplay && !nonCodedDisplay) {
+      throw new Error(i18next.t('ERROR_CONDITION_MISSING_DISPLAY_INFORMATION'));
     }
 
     return {
       id: condition.id!,
-      display: condition.code?.text ?? coding?.display ?? nonCodedDisplay ?? '',
+      display: codedDisplay ?? nonCodedDisplay ?? '',
       status,
       onsetDate: condition.onsetDateTime,
       recordedDate: condition.recordedDate,
       recorder: condition.recorder?.display,
       code: coding?.code ?? '',
-      codeDisplay: coding?.display ?? nonCodedDisplay ?? '',
+      codeDisplay: coding?.display?.trim() ?? nonCodedDisplay ?? '',
       note: condition.note?.map((note) => note.text).filter(Boolean),
     };
   });
