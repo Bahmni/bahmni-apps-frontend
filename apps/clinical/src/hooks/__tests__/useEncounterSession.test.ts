@@ -3,7 +3,7 @@ import {
   getUserLoginLocation,
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { useEncounterSession } from '../useEncounterSession';
 
 jest.mock('@bahmni/services', () => {
@@ -284,9 +284,13 @@ describe('useEncounterSession', () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(mockResolveEncounterMatchDecision).toHaveBeenCalledTimes(1);
 
-      await result.current.refetch();
+      await act(async () => {
+        await result.current.refetch();
+      });
 
-      expect(mockResolveEncounterMatchDecision).toHaveBeenCalledTimes(2);
+      await waitFor(() =>
+        expect(mockResolveEncounterMatchDecision).toHaveBeenCalledTimes(2),
+      );
     });
   });
 });

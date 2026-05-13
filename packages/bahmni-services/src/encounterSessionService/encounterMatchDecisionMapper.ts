@@ -30,13 +30,18 @@ export const MATCH_REASON_MESSAGES: Record<MatchReasonCode, string> = {
   MULTIPLE_ENCOUNTERS_FOUND: 'ENCOUNTER_MATCH_REASON_MULTIPLE_FOUND',
 };
 
+function getReferenceId(reference?: string): string | undefined {
+  if (!reference) return undefined;
+  return reference.split('/').filter(Boolean).pop();
+}
+
 function checkLocationMatch(
   encounter: Encounter,
   loginLocationUUID: string,
 ): boolean {
   const encounterLocations = encounter.location ?? [];
   return encounterLocations.some(
-    (loc) => loc.location?.reference?.split('/')[1] === loginLocationUUID,
+    (loc) => getReferenceId(loc.location?.reference) === loginLocationUUID,
   );
 }
 
@@ -45,7 +50,7 @@ function filterEncountersByVisit(
   visitId: string,
 ): Encounter[] {
   return encounters.filter(
-    (enc) => enc.partOf?.reference?.split('/')[1] === visitId,
+    (enc) => getReferenceId(enc.partOf?.reference) === visitId,
   );
 }
 
@@ -111,10 +116,12 @@ export async function resolveEncounterMatchDecision(
 
     const inSessionOwnIds = new Set(inSessionOwnInVisit.map((e) => e.id));
 
-    // SESSION_EXPIRED = found all-time for this practitioner but NOT in-session
-    const sessionExpiredEncounters = allTimeOwnInVisit.filter(
-      (e) => !inSessionOwnIds.has(e.id),
-    );
+    // SESSION_EXPIRED = found all-time for this practitioner but NOT in-session,
+    // only relevant when no in-session encounter exists for this practitioner
+    const sessionExpiredEncounters =
+      inSessionOwnInVisit.length === 0
+        ? allTimeOwnInVisit.filter((e) => !inSessionOwnIds.has(e.id))
+        : [];
 
     // PROVIDER_MISMATCH = found in-session for any provider but NOT this practitioner
     const otherProviderEncounters = inSessionAnyInVisit.filter(

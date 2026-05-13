@@ -148,6 +148,31 @@ describe('resolveEncounterMatchDecision', () => {
         reasons: ['LOCATION_MISMATCH'],
       });
     });
+
+    it('does not add SESSION_EXPIRED when in-session encounter exists but location mismatches', async () => {
+      const inSessionEncounter = createEncounter(
+        'enc-current',
+        'different-location',
+      );
+      const oldEncounter = createEncounter('enc-old', 'different-location');
+      mockGetActiveVisit.mockResolvedValue(createActiveVisit());
+      // inSessionOwn has current encounter; allTimeOwn has both (current + old expired)
+      mockSearches(
+        [inSessionEncounter],
+        [inSessionEncounter, oldEncounter],
+        [inSessionEncounter],
+      );
+
+      const result = await resolveEncounterMatchDecision(
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
+      );
+
+      expect(result.reasons).toEqual(['LOCATION_MISMATCH']);
+      expect(result.reasons).not.toContain('SESSION_EXPIRED');
+    });
   });
 
   describe('MULTIPLE_ENCOUNTERS_FOUND', () => {
