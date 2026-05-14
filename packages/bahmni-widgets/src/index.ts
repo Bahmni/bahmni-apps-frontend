@@ -48,6 +48,16 @@ export {
 // Config Provider Factories
 export { createConfigProvider, createConfigHook } from './configProvider';
 
+// Brand Theme
+export {
+  BrandThemeProvider,
+  useBrandTheme,
+  BrandThemeContext,
+  BRAND_THEME_CONFIG_URL,
+  type BrandThemeContextType,
+  type BahmniThemeConfig,
+} from './brandTheme';
+
 // Widget Registry
 export {
   registerWidget,

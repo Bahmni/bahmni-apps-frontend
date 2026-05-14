@@ -1,11 +1,11 @@
 import * as designSystem from '@bahmni/design-system';
 import * as services from '@bahmni/services';
-import { NotificationProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
+import { NotificationProvider } from '../../notification';
 import { useBrandTheme } from '../hook';
-import { BrandThemeProvider } from '../provider';
+import { BrandThemeProvider, BRAND_THEME_CONFIG_URL } from '../provider';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -104,6 +104,48 @@ describe('BrandThemeProvider', () => {
         expect(result.current.themeConfig).toEqual(overrides);
         expect(result.current.isLoading).toBe(false);
         expect(result.current.error).toBeNull();
+      });
+    });
+  });
+
+  describe('Custom configUrl', () => {
+    it('fetches from a custom configUrl when provided', async () => {
+      const customUrl = '/custom/path/brand.json';
+      const overrides = { primary: '#00ff00' };
+      mockGetConfig.mockResolvedValue(overrides);
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <NotificationProvider>
+            <BrandThemeProvider configUrl={customUrl}>
+              <TestChild />
+            </BrandThemeProvider>
+          </NotificationProvider>
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        expect(mockGetConfig).toHaveBeenCalledWith(
+          customUrl,
+          expect.any(Object),
+        );
+      });
+    });
+
+    it('uses the default Bahmni config URL when no configUrl is provided', async () => {
+      mockGetConfig.mockResolvedValue({});
+
+      render(
+        <Wrapper>
+          <TestChild />
+        </Wrapper>,
+      );
+
+      await waitFor(() => {
+        expect(mockGetConfig).toHaveBeenCalledWith(
+          BRAND_THEME_CONFIG_URL,
+          expect.any(Object),
+        );
       });
     });
   });

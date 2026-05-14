@@ -1,9 +1,12 @@
 import { Loading } from '@bahmni/design-system';
-import { AppContextProvider, NotificationProvider } from '@bahmni/widgets';
+import {
+  AppContextProvider,
+  BrandThemeProvider,
+  NotificationProvider,
+} from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { lazy, Suspense, useRef } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { BrandThemeProvider } from '../providers/brandTheme';
 import { LocationProvider } from './context';
 
 const IndexPage = lazy(() =>
