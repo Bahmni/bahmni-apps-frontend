@@ -1,7 +1,10 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { LocationContext } from '../../../context/LocationContext';
 import { LocationSelector } from '../LocationSelector';
 import { mockLocation, mockLocations } from './__mocks__/LocationSelectorMocks';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/design-system', () => ({
   Dropdown: ({ items, onChange, label, disabled, ...props }: any) => (
@@ -18,6 +21,9 @@ jest.mock('@bahmni/design-system', () => ({
         </button>
       ))}
     </div>
+  ),
+  SkeletonPlaceholder: ({ className }: any) => (
+    <div data-testid="skeleton-placeholder" className={className} />
   ),
 }));
 
@@ -52,10 +58,11 @@ describe('LocationSelector', () => {
     );
   });
 
-  it('renders loading state', () => {
+  it('renders skeleton while loading', () => {
     renderWithContext({ loading: true });
 
-    expect(screen.getByRole('status')).toHaveTextContent('Loading');
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByTestId('skeleton-placeholder')).toBeInTheDocument();
   });
 
   it('renders error state', () => {
@@ -93,5 +100,10 @@ describe('LocationSelector', () => {
     });
 
     expect(context.setLocation).not.toHaveBeenCalled();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = renderWithContext();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

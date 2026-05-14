@@ -95,50 +95,26 @@ exports[`HomePageGrid Snapshots matches snapshot in loading state 1`] = `
     role="status"
   >
     <div
-      class="cds--css-grid"
+      class="tileGrid"
     >
       <div
-        class="tileColumn cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="skeletonTile"
-        />
-      </div>
+        class="cds--skeleton__placeholder skeletonTile"
+      />
       <div
-        class="tileColumn cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="skeletonTile"
-        />
-      </div>
+        class="cds--skeleton__placeholder skeletonTile"
+      />
       <div
-        class="tileColumn cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="skeletonTile"
-        />
-      </div>
+        class="cds--skeleton__placeholder skeletonTile"
+      />
       <div
-        class="tileColumn cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="skeletonTile"
-        />
-      </div>
+        class="cds--skeleton__placeholder skeletonTile"
+      />
       <div
-        class="tileColumn cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="skeletonTile"
-        />
-      </div>
+        class="cds--skeleton__placeholder skeletonTile"
+      />
       <div
-        class="tileColumn cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-5 cds--css-grid-column"
-      >
-        <div
-          class="skeletonTile"
-        />
-      </div>
+        class="cds--skeleton__placeholder skeletonTile"
+      />
     </div>
   </div>
 </div>
@@ -150,40 +126,28 @@ exports[`HomePageGrid Snapshots matches snapshot with modules 1`] = `
     class="container"
   >
     <div
-      class="cds--css-grid"
+      class="tileGrid"
     >
       <div
-        class="tileColumn cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-5 cds--css-grid-column"
+        data-testid="app-tile-clinical"
       >
-        <div
-          data-testid="app-tile-clinical"
-        >
-          <span>
-            LABEL_CLINICAL
-          </span>
-        </div>
+        <span>
+          LABEL_CLINICAL
+        </span>
       </div>
       <div
-        class="tileColumn cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-5 cds--css-grid-column"
+        data-testid="app-tile-registration"
       >
-        <div
-          data-testid="app-tile-registration"
-        >
-          <span>
-            LABEL_REGISTRATION
-          </span>
-        </div>
+        <span>
+          LABEL_REGISTRATION
+        </span>
       </div>
       <div
-        class="tileColumn cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-5 cds--css-grid-column"
+        data-testid="app-tile-inpatient"
       >
-        <div
-          data-testid="app-tile-inpatient"
-        >
-          <span>
-            LABEL_INPATIENT
-          </span>
-        </div>
+        <span>
+          LABEL_INPATIENT
+        </span>
       </div>
     </div>
   </div>

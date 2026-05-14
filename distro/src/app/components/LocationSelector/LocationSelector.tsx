@@ -1,4 +1,4 @@
-import { Dropdown } from '@bahmni/design-system';
+import { Dropdown, SkeletonPlaceholder } from '@bahmni/design-system';
 import { useTranslation, UserLocation } from '@bahmni/services';
 import React from 'react';
 import { useLocation } from '../../context/LocationContext';
@@ -17,8 +17,8 @@ export const LocationSelector: React.FC = () => {
 
   if (loading) {
     return (
-      <div className={styles.loading} role="status">
-        {t('HOME_LOADING')}
+      <div role="status" aria-label={t('HOME_LOADING')}>
+        <SkeletonPlaceholder className={styles.skeleton} />
       </div>
     );
   }
