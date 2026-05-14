@@ -134,7 +134,7 @@
   "DURATION_UNIT_WEEKS": "Semanas",
   "DURATION_UNIT_YEARS": "Años",
   "ENCOUNTER_DATE": "Fecha de Encuentro",
-  "ENCOUNTER_MATCH_REASON_LOCATION_MISMATCH": "Inició una consulta en una ubicación diferente - esto creará una nueva",
+  "ENCOUNTER_MATCH_REASON_LOCATION_MISMATCH": "Su consulta fue iniciada en una ubicación diferente - continuando esta consulta",
   "ENCOUNTER_MATCH_REASON_MATCHED": "Consulta encontrada - reanudando la consulta anterior",
   "ENCOUNTER_MATCH_REASON_MULTIPLE_FOUND": "Se encontraron múltiples consultas activas - comuníquese con el administrador",
   "ENCOUNTER_MATCH_REASON_NO_ACTIVE_ENCOUNTER": "No se encontró ninguna consulta para este paciente en la visita activa",

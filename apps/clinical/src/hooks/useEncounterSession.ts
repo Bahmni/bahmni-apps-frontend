@@ -1,7 +1,7 @@
 import {
   Provider,
   resolveEncounterMatchDecision,
-  isOwnInSessionEncounter,
+  canResumeOwnInSessionEncounter,
   MatchReasonCode,
   getUserLoginLocation,
 } from '@bahmni/services';
@@ -43,14 +43,7 @@ export function useEncounterSession(
   const patientUUID = usePatientUUID();
   const practitionerUUID = practitioner?.uuid;
 
-  let locationUUID = '';
-  try {
-    locationUUID = getUserLoginLocation().uuid;
-  } catch {
-    // location cookie unavailable
-  }
-
-  const fetchSessionState = async () => {
+  const fetchSessionState = async (signal: { ignored: boolean }) => {
     if (!patientUUID || !practitionerUUID || !encounterTypeUUID) {
       setHasActiveSession(false);
       setActiveEncounter(null);
@@ -60,6 +53,14 @@ export function useEncounterSession(
       return;
     }
 
+    // Resolve login location inside the fetch so it reads a fresh value each call
+    let loginLocationUUID: string | undefined;
+    try {
+      loginLocationUUID = getUserLoginLocation().uuid;
+    } catch {
+      // location cookie unavailable — location check will be skipped in mapper
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -67,28 +68,35 @@ export function useEncounterSession(
       const decision = await resolveEncounterMatchDecision(
         patientUUID,
         practitionerUUID,
-        locationUUID,
+        loginLocationUUID,
         encounterTypeUUID,
       );
 
-      const sessionExists = isOwnInSessionEncounter(decision);
+      if (signal.ignored) return;
 
-      setHasActiveSession(sessionExists);
+      const isResumableSession = canResumeOwnInSessionEncounter(decision);
+
+      setHasActiveSession(isResumableSession);
       setActiveEncounter(decision.encounter);
-      setIsPractitionerMatch(sessionExists);
+      setIsPractitionerMatch(isResumableSession);
       setMatchReason(decision.reasons);
-    } catch {
-      setError(null);
+    } catch (err) {
+      if (signal.ignored) return;
+      setError(
+        err instanceof Error ? err.message : 'Failed to load encounter session',
+      );
       setHasActiveSession(false);
       setActiveEncounter(null);
       setIsPractitionerMatch(false);
       setMatchReason(['NO_ACTIVE_ENCOUNTER']);
     } finally {
-      setIsLoading(false);
+      if (!signal.ignored) setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    const signal = { ignored: false };
+
     if (practitioner?.uuid) {
       setHasActiveSession(false);
       setActiveEncounter(null);
@@ -96,7 +104,11 @@ export function useEncounterSession(
       setMatchReason([]);
       setError(null);
     }
-    fetchSessionState();
+    fetchSessionState(signal);
+
+    return () => {
+      signal.ignored = true;
+    };
   }, [patientUUID, practitioner?.uuid, encounterTypeUUID]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const editActiveEncounter = hasActiveSession && isPractitionerMatch;
@@ -109,6 +121,6 @@ export function useEncounterSession(
     editActiveEncounter,
     isLoading,
     error,
-    refetch: fetchSessionState,
+    refetch: () => fetchSessionState({ ignored: false }),
   };
 }

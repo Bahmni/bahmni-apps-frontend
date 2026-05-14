@@ -1,34 +1,17 @@
 import { Encounter } from 'fhir/r4';
 import { getActiveVisit } from '../encounterService';
 import {
+  type MatchReasonCode,
+  type EncounterMatchDecision,
+  MATCH_REASON_MESSAGES,
+} from './constants';
+import {
   searchEncounters,
   getEncounterSessionDuration,
 } from './encounterSessionService';
 
-export type MatchReasonCode =
-  | 'MATCHED'
-  | 'NO_ACTIVE_VISIT'
-  | 'NO_ACTIVE_ENCOUNTER'
-  | 'SESSION_EXPIRED'
-  | 'PROVIDER_MISMATCH'
-  | 'LOCATION_MISMATCH'
-  | 'MULTIPLE_ENCOUNTERS_FOUND';
-
-export interface EncounterMatchDecision {
-  matched: boolean;
-  encounter: Encounter | null;
-  reasons: MatchReasonCode[];
-}
-
-export const MATCH_REASON_MESSAGES: Record<MatchReasonCode, string> = {
-  MATCHED: 'ENCOUNTER_MATCH_REASON_MATCHED',
-  NO_ACTIVE_VISIT: 'ENCOUNTER_MATCH_REASON_NO_ACTIVE_VISIT',
-  NO_ACTIVE_ENCOUNTER: 'ENCOUNTER_MATCH_REASON_NO_ACTIVE_ENCOUNTER',
-  SESSION_EXPIRED: 'ENCOUNTER_MATCH_REASON_SESSION_EXPIRED',
-  PROVIDER_MISMATCH: 'ENCOUNTER_MATCH_REASON_PROVIDER_MISMATCH',
-  LOCATION_MISMATCH: 'ENCOUNTER_MATCH_REASON_LOCATION_MISMATCH',
-  MULTIPLE_ENCOUNTERS_FOUND: 'ENCOUNTER_MATCH_REASON_MULTIPLE_FOUND',
-};
+export type { MatchReasonCode, EncounterMatchDecision };
+export { MATCH_REASON_MESSAGES };
 
 function getReferenceId(reference?: string): string | undefined {
   if (!reference) return undefined;
@@ -37,8 +20,9 @@ function getReferenceId(reference?: string): string | undefined {
 
 function checkLocationMatch(
   encounter: Encounter,
-  loginLocationUUID: string,
+  loginLocationUUID: string | undefined,
 ): boolean {
+  if (!loginLocationUUID) return true; // location unknown — skip check, don't penalise clinician
   const encounterLocations = encounter.location ?? [];
   return encounterLocations.some(
     (loc) => getReferenceId(loc.location?.reference) === loginLocationUUID,
@@ -57,17 +41,56 @@ function filterEncountersByVisit(
 export async function resolveEncounterMatchDecision(
   patientUUID: string,
   practitionerUUID: string,
-  locationUUID: string,
+  locationUUID: string | undefined,
   encounterTypeUUID?: string,
 ): Promise<EncounterMatchDecision> {
   try {
+    // 1. Active visit? → NO → NO_ACTIVE_VISIT
     const activeVisit = await getActiveVisit(patientUUID);
-    if (!activeVisit) {
+    if (!activeVisit?.id) {
       return { matched: false, encounter: null, reasons: ['NO_ACTIVE_VISIT'] };
     }
 
-    const activeVisitId = activeVisit.id;
-    if (!activeVisitId) {
+    // 2. Get session window
+    const sessionDuration = await getEncounterSessionDuration();
+    const sessionStartTime = new Date(Date.now() - sessionDuration * 60 * 1000);
+    const recentUpdatedParam = `ge${sessionStartTime.toISOString()}`;
+
+    // 3. Two parallel searches:
+    //    recentEncounters         — all providers, session window  → detect MATCHED / LOCATION_MISMATCH / PROVIDER_MISMATCH
+    //    practitionerAllTimeEncounters — this practitioner, all time → detect SESSION_EXPIRED
+    const [recentEncounters, practitionerAllTimeEncounters] = await Promise.all(
+      [
+        searchEncounters({
+          patient: patientUUID,
+          _tag: 'encounter',
+          _lastUpdated: recentUpdatedParam,
+          type: encounterTypeUUID,
+        }),
+        searchEncounters({
+          patient: patientUUID,
+          _tag: 'encounter',
+          participant: practitionerUUID,
+          type: encounterTypeUUID,
+        }),
+      ],
+    );
+
+    // 4. Filter to current visit only
+    const recentEncountersInVisit = filterEncountersByVisit(
+      recentEncounters,
+      activeVisit.id,
+    );
+    const practitionerEncountersAllTime = filterEncountersByVisit(
+      practitionerAllTimeEncounters,
+      activeVisit.id,
+    );
+
+    // 5. No encounters at all → NO_ACTIVE_ENCOUNTER
+    if (
+      recentEncountersInVisit.length === 0 &&
+      practitionerEncountersAllTime.length === 0
+    ) {
       return {
         matched: false,
         encounter: null,
@@ -75,106 +98,58 @@ export async function resolveEncounterMatchDecision(
       };
     }
 
-    const sessionDuration = await getEncounterSessionDuration();
-    const sessionStartTime = new Date(Date.now() - sessionDuration * 60 * 1000);
-    const lastUpdatedParam = `ge${sessionStartTime.toISOString()}`;
-
-    const [inSessionOwn, allTimeOwn, inSessionAny] = await Promise.all([
-      searchEncounters({
-        patient: patientUUID,
-        _tag: 'encounter',
-        _lastUpdated: lastUpdatedParam,
-        participant: practitionerUUID,
-        type: encounterTypeUUID,
-      }),
-      searchEncounters({
-        patient: patientUUID,
-        _tag: 'encounter',
-        participant: practitionerUUID,
-        type: encounterTypeUUID,
-      }),
-      searchEncounters({
-        patient: patientUUID,
-        _tag: 'encounter',
-        _lastUpdated: lastUpdatedParam,
-        type: encounterTypeUUID,
-      }),
-    ]);
-
-    const inSessionOwnInVisit = filterEncountersByVisit(
-      inSessionOwn,
-      activeVisitId,
+    // 6. Split recent encounters by practitioner
+    const currentPractitionerRecentEncounters = recentEncountersInVisit.filter(
+      (e) =>
+        getReferenceId(e.participant?.[0]?.individual?.reference) ===
+        practitionerUUID,
     );
-    const allTimeOwnInVisit = filterEncountersByVisit(
-      allTimeOwn,
-      activeVisitId,
-    );
-    const inSessionAnyInVisit = filterEncountersByVisit(
-      inSessionAny,
-      activeVisitId,
+    const otherProvidersRecentEncounters = recentEncountersInVisit.filter(
+      (e) =>
+        getReferenceId(e.participant?.[0]?.individual?.reference) !==
+        practitionerUUID,
     );
 
-    const inSessionOwnIds = new Set(inSessionOwnInVisit.map((e) => e.id));
+    // 7. Multiple recent encounters by this practitioner → MULTIPLE_ENCOUNTERS_FOUND
+    if (currentPractitionerRecentEncounters.length > 1) {
+      return {
+        matched: false,
+        encounter: currentPractitionerRecentEncounters[0],
+        reasons: ['MULTIPLE_ENCOUNTERS_FOUND'],
+      };
+    }
 
-    // SESSION_EXPIRED = found all-time for this practitioner but NOT in-session,
-    // only relevant when no in-session encounter exists for this practitioner
-    const sessionExpiredEncounters =
-      inSessionOwnInVisit.length === 0
-        ? allTimeOwnInVisit.filter((e) => !inSessionOwnIds.has(e.id))
-        : [];
+    // 8. One recent encounter by this practitioner → MATCHED or LOCATION_MISMATCH
+    if (currentPractitionerRecentEncounters.length === 1) {
+      const encounter = currentPractitionerRecentEncounters[0];
+      if (checkLocationMatch(encounter, locationUUID)) {
+        return { matched: true, encounter, reasons: ['MATCHED'] };
+      }
+      return { matched: false, encounter, reasons: ['LOCATION_MISMATCH'] };
+    }
 
-    // PROVIDER_MISMATCH = found in-session for any provider but NOT this practitioner
-    const otherProviderEncounters = inSessionAnyInVisit.filter(
-      (e) => !inSessionOwnIds.has(e.id),
-    );
-
+    // 9. No recent encounter by this practitioner — check other conditions
     const reasons: MatchReasonCode[] = [];
     let primaryEncounter: Encounter | null = null;
 
-    if (inSessionOwnInVisit.length > 1) {
-      return {
-        matched: false,
-        encounter: inSessionOwnInVisit[0],
-        reasons: ['MULTIPLE_ENCOUNTERS_FOUND'],
-      };
-    } else if (inSessionOwnInVisit.length === 1) {
-      const locationMatches = checkLocationMatch(
-        inSessionOwnInVisit[0],
-        locationUUID,
-      );
-      if (locationMatches) {
-        return {
-          matched: true,
-          encounter: inSessionOwnInVisit[0],
-          reasons: ['MATCHED'],
-        };
-      }
-      reasons.push('LOCATION_MISMATCH');
-      primaryEncounter = inSessionOwnInVisit[0];
-    }
-
-    if (sessionExpiredEncounters.length > 0) {
-      reasons.push('SESSION_EXPIRED');
-      if (!reasons.includes('LOCATION_MISMATCH')) {
-        const locationMatches = checkLocationMatch(
-          sessionExpiredEncounters[0],
-          locationUUID,
-        );
-        if (!locationMatches) reasons.push('LOCATION_MISMATCH');
-      }
-      primaryEncounter ??= sessionExpiredEncounters[0];
-    }
-
-    if (otherProviderEncounters.length > 0) {
+    // Other providers actively working → PROVIDER_MISMATCH
+    if (otherProvidersRecentEncounters.length > 0) {
       reasons.push('PROVIDER_MISMATCH');
-      if (!reasons.includes('LOCATION_MISMATCH')) {
-        const locationMatches = checkLocationMatch(
-          otherProviderEncounters[0],
-          locationUUID,
-        );
-        if (!locationMatches) reasons.push('LOCATION_MISMATCH');
-      }
-      primaryEncounter ??= otherProviderEncounters[0];
+      primaryEncounter = otherProvidersRecentEncounters[0];
+    }
+
+    // This practitioner had an encounter outside session window → SESSION_EXPIRED
+    if (practitionerEncountersAllTime.length > 0) {
+      reasons.push('SESSION_EXPIRED');
+      primaryEncounter ??= practitionerEncountersAllTime[0];
+    }
+
+    // 10. Add LOCATION_MISMATCH if primary encounter is at a different location
+    if (
+      primaryEncounter &&
+      !checkLocationMatch(primaryEncounter, locationUUID)
+    ) {
+      reasons.push('LOCATION_MISMATCH');
     }
 
     if (reasons.length === 0) {
@@ -200,7 +175,7 @@ export async function resolveEncounterMatchDecision(
   }
 }
 
-export function isOwnInSessionEncounter(
+export function canResumeOwnInSessionEncounter(
   decision: EncounterMatchDecision,
 ): boolean {
   return (

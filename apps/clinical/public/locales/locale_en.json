@@ -134,7 +134,7 @@
   "DURATION_UNIT_WEEKS": "Weeks",
   "DURATION_UNIT_YEARS": "Years",
   "ENCOUNTER_DATE": "Encounter Date",
-  "ENCOUNTER_MATCH_REASON_LOCATION_MISMATCH": "You started an encounter at a different location - this will create a new one",
+  "ENCOUNTER_MATCH_REASON_LOCATION_MISMATCH": "Your encounter was started at a different location - continuing this consultation",
   "ENCOUNTER_MATCH_REASON_MATCHED": "Encounter matched - resuming previous consultation",
   "ENCOUNTER_MATCH_REASON_MULTIPLE_FOUND": "Multiple active consultations found - please contact administrator",
   "ENCOUNTER_MATCH_REASON_NO_ACTIVE_ENCOUNTER": "No consultation found for this patient in the active visit",

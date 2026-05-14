@@ -25,7 +25,10 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   const { t } = useTranslation();
   const { practitioner } = useActivePractitioner();
 
-  const { matchReason, editActiveEncounter } = useEncounterSession({
+  // Single hook call shared with ConsultationActionButton via props to avoid
+  // duplicate FHIR searches. matchReason is exposed on the DOM so downstream
+  // widget consumers can read it without waiting for ConsultationPad to open.
+  const { matchReason, editActiveEncounter, isLoading } = useEncounterSession({
     practitioner,
     encounterTypeUUID: CONSULTATION_ENCOUNTER_TYPE_UUID,
   });
@@ -38,10 +41,14 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
       data-match-reason={
         matchReason.length > 0 ? matchReason.join(',') : undefined
       }
-      data-can-edit-encounter={editActiveEncounter}
+      data-can-edit-encounter={editActiveEncounter ? 'true' : undefined}
     >
       <PatientDetails />
-      <ConsultationActionButton isActionAreaVisible={isActionAreaVisible} />
+      <ConsultationActionButton
+        isActionAreaVisible={isActionAreaVisible}
+        editActiveEncounter={editActiveEncounter}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

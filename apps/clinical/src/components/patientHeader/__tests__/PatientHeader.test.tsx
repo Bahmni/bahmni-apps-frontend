@@ -148,10 +148,16 @@ describe('PatientHeader Component', () => {
   });
 
   describe('Data attributes', () => {
-    test('sets data-can-edit-encounter to false by default', () => {
+    test('does not set data-can-edit-encounter by default', () => {
       renderComponent();
       const header = screen.getByLabelText('Patient Header');
-      expect(header).toHaveAttribute('data-can-edit-encounter', 'false');
+      expect(header).not.toHaveAttribute('data-can-edit-encounter');
+    });
+
+    test('does not set data-match-reason by default', () => {
+      renderComponent();
+      const header = screen.getByLabelText('Patient Header');
+      expect(header).not.toHaveAttribute('data-match-reason');
     });
 
     test('sets data-match-reason and data-can-edit-encounter=true when session is matched', () => {
@@ -188,7 +194,7 @@ describe('PatientHeader Component', () => {
         'data-match-reason',
         'NO_ACTIVE_ENCOUNTER',
       );
-      expect(header).toHaveAttribute('data-can-edit-encounter', 'false');
+      expect(header).not.toHaveAttribute('data-can-edit-encounter');
     });
   });
 });

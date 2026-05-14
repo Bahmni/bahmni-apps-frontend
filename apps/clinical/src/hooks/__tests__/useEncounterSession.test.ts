@@ -7,11 +7,12 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { useEncounterSession } from '../useEncounterSession';
 
 jest.mock('@bahmni/services', () => {
-  const { isOwnInSessionEncounter } = jest.requireActual('@bahmni/services');
+  const { canResumeOwnInSessionEncounter } =
+    jest.requireActual('@bahmni/services');
   return {
     resolveEncounterMatchDecision: jest.fn(),
     getUserLoginLocation: jest.fn(),
-    isOwnInSessionEncounter,
+    canResumeOwnInSessionEncounter,
   };
 });
 
@@ -232,7 +233,7 @@ describe('useEncounterSession', () => {
       );
     });
 
-    it('passes empty string when getUserLoginLocation throws', async () => {
+    it('passes undefined when getUserLoginLocation throws', async () => {
       mockGetUserLoginLocation.mockImplementation(() => {
         throw new Error('cookie missing');
       });
@@ -248,7 +249,7 @@ describe('useEncounterSession', () => {
         expect(mockResolveEncounterMatchDecision).toHaveBeenCalledWith(
           PATIENT_UUID,
           PRACTITIONER_UUID,
-          '',
+          undefined,
           ENCOUNTER_TYPE_UUID,
         ),
       );
