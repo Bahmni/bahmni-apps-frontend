@@ -1,5 +1,3 @@
-import { LmpData } from '@bahmni/services';
-
 import { ORDER_PRIORITY } from './ordersConfig';
 
 export interface OrderStatusConfig {
@@ -32,7 +30,6 @@ export interface Order {
   providerComments?: string;
   patient?: PatientDetails;
   note?: string;
-  lmpData?: LmpData | null;
 }
 
 export interface PatientOrderRow {

@@ -168,11 +168,3 @@ export const PERSON_ATTRIBUTE_TYPES_URL =
  * Using UUID (not concept name) because FHIR API requires code parameter in UUID format
  */
 export const LMP_CONCEPT_UUID = 'c45a7e4b-3f10-11e4-adec-0800271c1b75';
-
-/**
- * FHIR R4 URL to fetch the most recent LMP observation for a patient
- * Uses concept UUID which is stable across environments
- * Returns most recent observation sorted by _lastUpdated
- */
-export const LMP_OBSERVATION_URL = (patientUuid: string) =>
-  `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&code=${encodeURIComponent(LMP_CONCEPT_UUID)}&_sort=-_lastUpdated&_count=1`;
