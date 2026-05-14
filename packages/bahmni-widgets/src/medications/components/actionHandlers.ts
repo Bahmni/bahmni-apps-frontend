@@ -15,10 +15,21 @@ export const handleAction = (
 
 export const handleEditAction = (
   editMedications: MedicationRequest[],
+  encounterType: string,
 ): void => {
+  // Extract the encounter UUID from the medication being edited
+  const encounterRef = editMedications[0]?.encounter?.reference;
+  const editEncounterUuid = encounterRef?.split('/').pop();
+
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
-      detail: { editMedications },
+      detail: {
+        encounterType,
+        editMedications,
+        editOnly: 'medications',
+        editTitle: 'MEDICATIONS_EDIT_FORM_TITLE',
+        editEncounterUuid,
+      },
     }),
   );
 };

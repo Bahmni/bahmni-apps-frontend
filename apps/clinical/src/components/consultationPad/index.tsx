@@ -4,9 +4,11 @@ import {
   type AuditEventType,
   dispatchAuditEvent,
   dispatchConsultationSaved,
+  get,
   useTranslation,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
+import type { Encounter } from 'fhir/r4';
 import React, {
   useCallback,
   useEffect,
@@ -76,9 +78,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   }, [encounterType, clinicalConfig]);
 
+  const editOnlyKey = encounterSessionStartContext.editOnly as
+    | string
+    | undefined;
+  const editTitle = encounterSessionStartContext.editTitle as
+    | string
+    | undefined;
+
   const activeEntries = useMemo(
-    () => getActiveEntries(registry, resolvedEncounterType!),
-    [registry, resolvedEncounterType],
+    () => getActiveEntries(registry, resolvedEncounterType!, editOnlyKey),
+    [registry, resolvedEncounterType, editOnlyKey],
   );
 
   const subscribeAll = useCallback(
@@ -108,10 +117,26 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   }, [resolvedEncounterType]);
 
   const { practitioner } = useActivePractitioner();
-  const { activeEncounter } = useEncounterSession({
+  const { activeEncounter: sessionEncounter } = useEncounterSession({
     practitioner,
     encounterTypeUUID: selectedEncounterType?.uuid,
   });
+
+  // For edits, fetch the original encounter directly by UUID
+  const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
+    | string
+    | undefined;
+  const [editEncounter, setEditEncounter] = useState<Encounter | null>(null);
+  useEffect(() => {
+    if (editEncounterUuid) {
+      get<Encounter>(`/openmrs/ws/fhir2/R4/Encounter/${editEncounterUuid}`)
+        .then(setEditEncounter)
+        .catch(() => setEditEncounter(null));
+    }
+  }, [editEncounterUuid]);
+
+  const activeEncounter = editEncounterUuid ? editEncounter : sessionEncounter;
+
   const { episodeOfCare } = useClinicalAppData();
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
@@ -214,7 +239,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       );
     return (
       <div className={styles.formList}>
-        {registry.map((entry) => (
+        {activeEntries.map((entry) => (
           <InputControlRenderer
             key={entry.key}
             entry={entry}
@@ -238,7 +263,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     <>
       <ActionArea
         data-testid="consultation-pad-action-area"
-        title={hasError ? '' : t('CONSULTATION_ACTION_NEW')}
+        title={
+          hasError
+            ? ''
+            : editTitle
+              ? t(editTitle)
+              : t('CONSULTATION_ACTION_NEW')
+        }
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
         onPrimaryButtonClick={handleSubmit}
         isPrimaryButtonDisabled={enablePrimaryButton}

@@ -2,7 +2,7 @@ import {
   SortableDataTable,
   Accordion,
   AccordionItem,
-  Button,
+  IconButton,
   Tab,
   TabList,
   TabPanel,
@@ -254,16 +254,18 @@ const MedicationsTable: React.FC<WidgetProps> = ({
 
   const hasEditableMedications = editableMedications.length > 0;
 
+  const editEncounterType = editAction?.encounterType ?? 'Consultation';
+
   const handleEditAll = useCallback(() => {
     const fhirResources = editableMedications.map((m) => m.fhirResource);
-    handleEditAction(fhirResources);
-  }, [editableMedications]);
+    handleEditAction(fhirResources, editEncounterType);
+  }, [editableMedications, editEncounterType]);
 
   const handleEditSingle = useCallback(
     (medication: FormattedMedicationRequest) => {
-      handleEditAction([medication.fhirResource]);
+      handleEditAction([medication.fhirResource], editEncounterType);
     },
-    [],
+    [editEncounterType],
   );
 
   const isEditable = useCallback(
@@ -342,33 +344,31 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             dotClassName={getMedicationStatusClassName(row.status)}
           />
         );
-      case 'actions':
+      case 'actions': {
+        const nonEditActions = actions.filter((a) => a.type !== 'edit');
         return (
           <>
             {isEditable(row) && (
-              <Button
-                id={`medication-edit-button-${row.id}`}
-                data-testid={`medication-edit-button-${row.id}`}
-                aria-label={t('MEDICATIONS_EDIT_ACTION')}
+              <IconButton
+                label={t('MEDICATIONS_EDIT_ACTION')}
                 kind="ghost"
                 size="sm"
-                hasIconOnly
-                renderIcon={() => (
-                  <Icon
-                    id="edit-medication-icon"
-                    name="fa-pen-to-square"
-                    size={ICON_SIZE.SM}
-                  />
-                )}
                 onClick={() => handleEditSingle(row)}
-              />
+                testId={`medication-edit-button-${row.id}`}
+              >
+                <Icon
+                  id={`edit-icon-${row.id}`}
+                  name="fa-pen-to-square"
+                  size={ICON_SIZE.SM}
+                />
+              </IconButton>
             )}
-            <Actions
-              actions={actions.filter((a) => a.type !== 'edit')}
-              medication={row.fhirResource}
-            />
+            {nonEditActions.length > 0 && (
+              <Actions actions={nonEditActions} medication={row.fhirResource} />
+            )}
           </>
         );
+      }
       default:
         return null;
     }
@@ -391,23 +391,21 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           className={styles.widgetEditActions}
           data-testid="medications-widget-edit-actions"
         >
-          <Button
-            id="medications-edit-all-button"
-            data-testid="medications-edit-all-button"
-            aria-label={t('MEDICATIONS_EDIT_ALL')}
+          <IconButton
+            label={t('MEDICATIONS_EDIT_ALL')}
             kind="ghost"
             size="sm"
-            hasIconOnly
-            renderIcon={() => (
-              <Icon
-                id="edit-medication-icon"
-                name="fa-pen-to-square"
-                size={ICON_SIZE.SM}
-              />
-            )}
+            align="left-end"
             disabled={!hasEditableMedications}
             onClick={handleEditAll}
-          />
+            testId="medications-edit-all-button"
+          >
+            <Icon
+              id="edit-all-medication-icon"
+              name="fa-pen-to-square"
+              size={ICON_SIZE.SM}
+            />
+          </IconButton>
         </div>
       )}
       <Tabs

@@ -40,11 +40,22 @@ export function loadEncounterInputControls(
 export function getActiveEntries(
   registry: InputControl[],
   encounterType: string,
+  editOnlyKey?: string,
 ): InputControl[] {
-  return registry.filter(
-    (entry) =>
-      !entry.encounterTypes || entry.encounterTypes.includes(encounterType),
-  );
+  return registry.filter((entry) => {
+    const matchesEncounterType =
+      !entry.encounterTypes || entry.encounterTypes.includes(encounterType);
+    if (!matchesEncounterType) return false;
+
+    // When editOnly is set, show only the target form + encounterDetails
+    if (editOnlyKey) {
+      return (
+        entry.key === editOnlyKey ||
+        entry.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY
+      );
+    }
+    return true;
+  });
 }
 
 export function captureUpdatedResources(entries: InputControl[]) {
