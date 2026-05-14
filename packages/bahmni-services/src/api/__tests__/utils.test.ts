@@ -2,6 +2,7 @@ import { decode } from 'html-entities';
 import {
   decodeHtmlEntities,
   isOpenMRSWebServiceApi,
+  isTemplateServiceApi,
   getResponseUrl,
 } from '../utils';
 
@@ -283,6 +284,34 @@ describe('Utils', () => {
         testCases.forEach((url) => {
           expect(isOpenMRSWebServiceApi(url)).toBe(true);
         });
+      });
+    });
+  });
+
+  describe('isTemplateServiceApi', () => {
+    it('should return true for template service proxy URLs', () => {
+      const testCases = [
+        '/openmrs/ws/rest/v1/bahmnicore/template/api/render',
+        '/openmrs/ws/rest/v1/bahmnicore/template/api/templates',
+        '/openmrs/ws/rest/v1/bahmnicore/template/reports/pdf',
+      ];
+
+      testCases.forEach((url) => {
+        expect(isTemplateServiceApi(url)).toBe(true);
+      });
+    });
+
+    it('should return false for non-template-service URLs', () => {
+      const testCases = [
+        '/openmrs/ws/rest/v1/patient',
+        '/openmrs/ws/fhir2/R4/Patient',
+        '/template-service/api/render',
+        '/api/v1/templates',
+        '',
+      ];
+
+      testCases.forEach((url) => {
+        expect(isTemplateServiceApi(url)).toBe(false);
       });
     });
   });

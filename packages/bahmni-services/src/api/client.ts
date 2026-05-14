@@ -4,6 +4,7 @@ import { BINARY_RESPONSE_TYPES, LOGIN_PATH } from './constants';
 import {
   decodeHtmlEntities,
   isOpenMRSWebServiceApi,
+  isTemplateServiceApi,
   getResponseUrl,
 } from './utils';
 
@@ -27,7 +28,7 @@ client.interceptors.response.use(
     try {
       const url = getResponseUrl(response.config);
       if (
-        isOpenMRSWebServiceApi(url) &&
+        isOpenMRSWebServiceApi(url) &&!isTemplateServiceApi(url)&&
         !BINARY_RESPONSE_TYPES.includes(response.config.responseType as string)
       ) {
         response.data = decodeHtmlEntities(response.data);
