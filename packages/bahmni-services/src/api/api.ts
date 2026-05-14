@@ -1,13 +1,17 @@
-import { AxiosResponse } from 'axios';
+import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import client from './client';
 
 /**
  * HTTP GET request
  * @param url - The URL to send the GET request to
+ * @param options - Optional Axios request config
  * @returns Promise resolving to the response data
  */
-export const get = async <T = unknown>(url: string): Promise<T> => {
-  const response: AxiosResponse<T> = await client.get(url);
+export const get = async <T = unknown>(
+  url: string,
+  options?: AxiosRequestConfig,
+): Promise<T> => {
+  const response: AxiosResponse<T> = await client.get(url, options);
   return response.data;
 };
 

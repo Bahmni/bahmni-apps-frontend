@@ -47,8 +47,20 @@ describe('Public API Methods', () => {
 
         const result = await get('/api/patients/1');
 
-        expect(mockAxiosGet).toHaveBeenCalledWith('/api/patients/1');
+        expect(mockAxiosGet).toHaveBeenCalledWith('/api/patients/1', undefined);
         expect(result).toEqual(mockData);
+      });
+
+      it('should make GET request with options and return response data', async () => {
+        const mockBlob = new Blob(['data'], { type: 'image/jpeg' });
+        mockAxiosGet.mockResolvedValue({ data: mockBlob });
+
+        const result = await get('/api/image', { responseType: 'blob' });
+
+        expect(mockAxiosGet).toHaveBeenCalledWith('/api/image', {
+          responseType: 'blob',
+        });
+        expect(result).toEqual(mockBlob);
       });
 
       it('should handle GET request errors', async () => {
@@ -56,7 +68,7 @@ describe('Public API Methods', () => {
         mockAxiosGet.mockRejectedValue(error);
 
         await expect(get('/api/patients/1')).rejects.toThrow('Network error');
-        expect(mockAxiosGet).toHaveBeenCalledWith('/api/patients/1');
+        expect(mockAxiosGet).toHaveBeenCalledWith('/api/patients/1', undefined);
       });
     });
 
