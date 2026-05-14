@@ -8,6 +8,7 @@ import {
   buildBasedOnImmunizationEntry,
   createImmunizationBundleEntries,
   findAttr,
+  formatBatchItemDisplay,
   getBatchNumberComboBoxItems,
   getComboBoxItems,
   getLocationComboBoxItems,
@@ -16,6 +17,7 @@ import {
 } from '../utils';
 import {
   mockAvailableStockResponse,
+  mockAvailableStockWithEmptyBatch,
   mockEmptyAvailableStockResponse,
   mockEncounterSubject,
   mockFetchedMedication,
@@ -30,11 +32,12 @@ import {
   mockVaccineValueSet,
   mockValueSetWithPartialItem,
   mockValueSetWithoutContains,
-} from './__mocks__/immunizationHistoryMocks';
+} from './__mocks__/immunizationMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   generateUUID: jest.fn().mockReturnValue('mock-uuid'),
+  formatDateTime: jest.fn().mockReturnValue({ formattedResult: '31 Dec 2026' }),
 }));
 
 jest.mock('../../../../services/medicationService');
@@ -65,11 +68,12 @@ describe('findAttr', () => {
     expect(findAttr(name, attributes)).toEqual(expected);
   });
 
-  it.each([
-    ['attribute name is not in the list', 'site', attributes],
-    ['attributes is undefined', 'administeredOn', undefined],
-  ] as const)('returns undefined when %s', (_, name, attrs) => {
-    expect(findAttr(name, attrs)).toBeUndefined();
+  it('returns undefined when attribute name is not in the list', () => {
+    expect(findAttr('site', attributes)).toBeUndefined();
+  });
+
+  it('returns undefined when attributes is undefined', () => {
+    expect(findAttr('administeredOn', undefined)).toBeUndefined();
   });
 });
 
@@ -246,12 +250,20 @@ describe('getBatchNumberComboBoxItems', () => {
 
   it('returns mapped BatchNumberComboBoxItems from availableStocks.data', () => {
     expect(getBatchNumberComboBoxItems(mockAvailableStockResponse)).toEqual([
-      { batchNumber: 'BATCH-001', expiryDate: '2026-12-31' },
-      { batchNumber: 'BATCH-002', expiryDate: '2027-06-30' },
+      {
+        batchNumber: 'BATCH-001',
+        expiryDate: '2026-12-31',
+        stockLocationName: 'Nurse Station',
+      },
+      {
+        batchNumber: 'BATCH-002',
+        expiryDate: '2027-06-30',
+        stockLocationName: 'Nurse Station',
+      },
     ]);
   });
 
-  it('returns a disabled error item when errorMessage is provided', () => {
+  it('returns disabled error item when errorMessage is provided', () => {
     expect(
       getBatchNumberComboBoxItems(
         mockAvailableStockResponse,
@@ -261,12 +273,13 @@ describe('getBatchNumberComboBoxItems', () => {
       {
         batchNumber: 'Error loading stock batches',
         expiryDate: '',
+        stockLocationName: '',
         disabled: true,
       },
     ]);
   });
 
-  it('returns a disabled empty item when emptyMessage is provided and count is 0', () => {
+  it('returns disabled empty item when emptyMessage is provided', () => {
     expect(
       getBatchNumberComboBoxItems(
         mockEmptyAvailableStockResponse,
@@ -277,10 +290,66 @@ describe('getBatchNumberComboBoxItems', () => {
       {
         batchNumber: 'No stock batches available',
         expiryDate: '',
+        stockLocationName: '',
         disabled: true,
       },
     ]);
   });
+
+  it('filters out items with empty or whitespace-only batch numbers', () => {
+    expect(
+      getBatchNumberComboBoxItems(mockAvailableStockWithEmptyBatch),
+    ).toEqual([
+      {
+        batchNumber: 'BATCH-001',
+        expiryDate: '2026-12-31',
+        stockLocationName: 'Nurse Station',
+      },
+    ]);
+  });
+});
+
+describe('formatBatchItemDisplay', () => {
+  const mockT = (key: string) => key;
+
+  it('returns empty string for null item', () => {
+    expect(formatBatchItemDisplay(null, mockT)).toBe('');
+  });
+
+  it.each([
+    ['no expiry date or location', 'BATCH-001', '', '', 'BATCH-001'],
+    [
+      'expiry date only',
+      'BATCH-001',
+      '2026-12-31',
+      '',
+      'BATCH-001 [31 Dec 2026]',
+    ],
+    [
+      'stock location only',
+      'BATCH-001',
+      '',
+      'Nurse Station',
+      'BATCH-001 - Nurse Station',
+    ],
+    [
+      'both expiry date and location',
+      'BATCH-001',
+      '2026-12-31',
+      'Nurse Station',
+      'BATCH-001 [31 Dec 2026] - Nurse Station',
+    ],
+  ])(
+    'formats correctly with %s',
+    (_, batchNumber, expiryDate, stockLocationName, expected) => {
+      expect(
+        formatBatchItemDisplay(
+          { batchNumber, expiryDate, stockLocationName },
+          mockT,
+        ),
+      ).toBe(expected);
+    },
+  );
 });
 
 describe('getComboBoxItems', () => {
@@ -367,13 +436,20 @@ describe('createImmunizationBundleEntries', () => {
     expect(result).toHaveLength(2);
   });
 
-  it('builds a correct minimal bundle entry', () => {
+  it('sets fullUrl using the generated UUID', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
+    expect(result[0].fullUrl).toBe('urn:uuid:mock-uuid');
+  });
+
+  it('constructs the core immunization resource correctly for a minimal entry', () => {
     const result = createImmunizationBundleEntries({
       ...BASE_BUNDLE_PARAMS,
       selectedImmunizations: [mockImmunizationEntry],
     });
     const resource = result[0].resource as Immunization;
-    expect(result[0].fullUrl).toBe('urn:uuid:mock-uuid');
     expect(resource).toMatchObject({
       resourceType: 'Immunization',
       status: 'completed',
@@ -383,6 +459,14 @@ describe('createImmunizationBundleEntries', () => {
       patient: mockEncounterSubject,
       encounter: { reference: 'Encounter/encounter-uuid' },
     });
+  });
+
+  it('omits optional fields when they are null on a minimal entry', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
+    const resource = result[0].resource as Immunization;
     expect(resource.occurrenceDateTime).toBeUndefined();
     expect(resource.location).toBeUndefined();
     expect(resource.route).toBeUndefined();
@@ -513,7 +597,7 @@ describe('createImmunizationBundleEntries', () => {
     expect(resource.location).toEqual({ display: 'Custom Ward' });
   });
 
-  it('sets performer and request method on each entry', () => {
+  it('sets the performer with the correct practitioner reference', () => {
     const result = createImmunizationBundleEntries({
       ...BASE_BUNDLE_PARAMS,
       selectedImmunizations: [mockImmunizationEntry],
@@ -536,6 +620,13 @@ describe('createImmunizationBundleEntries', () => {
         },
       },
     ]);
+  });
+
+  it('sets the bundle request method to POST', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
     expect(result[0].request?.method).toBe('POST');
   });
 });

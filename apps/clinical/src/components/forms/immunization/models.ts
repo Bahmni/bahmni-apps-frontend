@@ -46,6 +46,7 @@ export interface ImmunizationInputEntry {
     manufacturer?: string;
     batchNumber?: string;
     doseSequence?: string;
+    note?: string;
   };
   hasBeenValidated: boolean;
 }
@@ -60,6 +61,7 @@ export interface BatchNumberComboBoxItem {
   batchNumber: string;
   expiryDate: string;
   disabled?: boolean;
+  stockLocationName: string;
 }
 
 export interface LocationComboBoxItem {

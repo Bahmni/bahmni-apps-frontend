@@ -9,10 +9,11 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalConfig } from '../../../../providers/clinicalConfig';
-import ImmunizationHistoryForm from '../ImmunizationHistoryForm';
+import ImmunizationForm from '../ImmunizationForm';
 import { useImmunizationHistoryStore } from '../stores';
 import {
   mockAdministrationInputControlConfig,
+  mockAdministrationInputControlConfigAllowed,
   mockAvailableStockResponse,
   mockClinicalConfigContext,
   mockFetchedMedication,
@@ -22,18 +23,20 @@ import {
   mockImmunizationInputControlConfigWithFetchStockBatches,
   mockLocations,
   mockMedicationRequest,
+  mockMedicationRequestNoMedRef,
   mockMixedVaccinationBundle,
   mockRoutesValueSet,
   mockSitesValueSet,
   mockStore,
   mockVaccinationBundle,
   mockVaccineValueSet,
-} from './__mocks__/immunizationHistoryMocks';
+} from './__mocks__/immunizationMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getAvailableStocks: jest.fn(),
   getUserLoginLocation: jest.fn(),
+  formatDateTime: jest.fn().mockReturnValue({ formattedResult: '31 Dec 2026' }),
 }));
 jest.mock('../stores');
 jest.mock('../../../../providers/clinicalConfig', () => ({
@@ -77,7 +80,7 @@ const defaultQueryMock = ({ queryKey }: { queryKey: readonly unknown[] }) => {
   return { data: undefined, isLoading: false, error: null };
 };
 
-describe('ImmunizationHistoryForm', () => {
+describe('ImmunizationForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(useImmunizationHistoryStore).mockReturnValue(mockStore);
@@ -92,29 +95,35 @@ describe('ImmunizationHistoryForm', () => {
   });
 
   describe('Rendering', () => {
-    it('renders form title and search combobox', () => {
+    it('hides search combobox when basedOnReference exists and disableAdditionalAdministrations is true', () => {
       render(
-        <ImmunizationHistoryForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockImmunizationInputControlConfig}
-        />,
-      );
-      expect(screen.getByText('Immunization History')).toBeInTheDocument();
-      expect(
-        screen.getByRole('combobox', { name: /search to add immunization/i }),
-      ).toBeInTheDocument();
-    });
-
-    it('hides search combobox when disableAdditionalAdministrations is true in metadata', () => {
-      render(
-        <ImmunizationHistoryForm
-          encounterSessionStartContext={{}}
+        <ImmunizationForm
+          encounterSessionStartContext={{ basedOn: mockMedicationRequest }}
           inputControlConfig={mockAdministrationInputControlConfig}
         />,
       );
       expect(
         screen.queryByRole('combobox', { name: /search to add immunization/i }),
       ).not.toBeInTheDocument();
+    });
+
+    it.each([
+      ['history form type', undefined, mockImmunizationInputControlConfig],
+      [
+        'basedOnReference exists and disableAdditionalAdministrations is false',
+        { basedOn: mockMedicationRequestNoMedRef },
+        mockAdministrationInputControlConfigAllowed,
+      ],
+    ])('shows search combobox when %s', (_, context, config) => {
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={context}
+          inputControlConfig={config}
+        />,
+      );
+      expect(
+        screen.getByRole('combobox', { name: /search to add immunization/i }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -133,7 +142,7 @@ describe('ImmunizationHistoryForm', () => {
           return defaultQueryMock({ queryKey: qk }) as any;
         });
         render(
-          <ImmunizationHistoryForm
+          <ImmunizationForm
             encounterSessionStartContext={{}}
             inputControlConfig={mockImmunizationInputControlConfig}
           />,
@@ -155,7 +164,7 @@ describe('ImmunizationHistoryForm', () => {
         return defaultQueryMock({ queryKey: qk }) as any;
       });
       render(
-        <ImmunizationHistoryForm
+        <ImmunizationForm
           encounterSessionStartContext={{}}
           inputControlConfig={mockImmunizationInputControlConfig}
         />,
@@ -185,7 +194,7 @@ describe('ImmunizationHistoryForm', () => {
           return defaultQueryMock({ queryKey: qk }) as any;
         });
         render(
-          <ImmunizationHistoryForm
+          <ImmunizationForm
             encounterSessionStartContext={{}}
             inputControlConfig={mockImmunizationInputControlConfig}
           />,
@@ -233,9 +242,11 @@ describe('ImmunizationHistoryForm', () => {
           return defaultQueryMock({ queryKey: qk }) as any;
         });
         render(
-          <ImmunizationHistoryForm
-            encounterSessionStartContext={{}}
-            inputControlConfig={mockImmunizationInputControlConfig}
+          <ImmunizationForm
+            encounterSessionStartContext={{
+              basedOn: mockMedicationRequestNoMedRef,
+            }}
+            inputControlConfig={mockAdministrationInputControlConfigAllowed}
           />,
         );
         await user.type(
@@ -251,9 +262,11 @@ describe('ImmunizationHistoryForm', () => {
     it('filters vaccine results by search term', async () => {
       const user = userEvent.setup();
       render(
-        <ImmunizationHistoryForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockImmunizationInputControlConfig}
+        <ImmunizationForm
+          encounterSessionStartContext={{
+            basedOn: mockMedicationRequestNoMedRef,
+          }}
+          inputControlConfig={mockAdministrationInputControlConfigAllowed}
         />,
       );
       await user.type(
@@ -271,9 +284,11 @@ describe('ImmunizationHistoryForm', () => {
     it('calls addImmunization with code and display when item selected', async () => {
       const user = userEvent.setup();
       render(
-        <ImmunizationHistoryForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockImmunizationInputControlConfig}
+        <ImmunizationForm
+          encounterSessionStartContext={{
+            basedOn: mockMedicationRequestNoMedRef,
+          }}
+          inputControlConfig={mockAdministrationInputControlConfigAllowed}
         />,
       );
       await user.type(
@@ -295,9 +310,11 @@ describe('ImmunizationHistoryForm', () => {
     it('does not call addImmunization when selection is cleared', async () => {
       const user = userEvent.setup();
       render(
-        <ImmunizationHistoryForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockImmunizationInputControlConfig}
+        <ImmunizationForm
+          encounterSessionStartContext={{
+            basedOn: mockMedicationRequestNoMedRef,
+          }}
+          inputControlConfig={mockAdministrationInputControlConfigAllowed}
         />,
       );
       await user.type(
@@ -323,7 +340,7 @@ describe('ImmunizationHistoryForm', () => {
         selectedImmunizations: [mockImmunizationEntry],
       });
       render(
-        <ImmunizationHistoryForm
+        <ImmunizationForm
           encounterSessionStartContext={{}}
           inputControlConfig={mockImmunizationInputControlConfig}
         />,
@@ -338,7 +355,7 @@ describe('ImmunizationHistoryForm', () => {
 
     it('does not show BoxWHeader when no immunizations selected', () => {
       render(
-        <ImmunizationHistoryForm
+        <ImmunizationForm
           encounterSessionStartContext={{}}
           inputControlConfig={mockImmunizationInputControlConfig}
         />,
@@ -362,7 +379,7 @@ describe('ImmunizationHistoryForm', () => {
         return defaultQueryMock({ queryKey: qk }) as any;
       });
       render(
-        <ImmunizationHistoryForm
+        <ImmunizationForm
           encounterSessionStartContext={{}}
           inputControlConfig={mockImmunizationInputControlConfig}
         />,
@@ -387,7 +404,7 @@ describe('ImmunizationHistoryForm', () => {
         return defaultQueryMock({ queryKey: qk }) as any;
       });
       render(
-        <ImmunizationHistoryForm
+        <ImmunizationForm
           encounterSessionStartContext={{}}
           inputControlConfig={mockImmunizationInputControlConfig}
         />,
@@ -411,7 +428,7 @@ describe('ImmunizationHistoryForm', () => {
         selectedImmunizations: [mockImmunizationEntry],
       });
       render(
-        <ImmunizationHistoryForm
+        <ImmunizationForm
           encounterSessionStartContext={{}}
           inputControlConfig={mockImmunizationInputControlConfig}
         />,
@@ -444,7 +461,7 @@ describe('ImmunizationHistoryForm', () => {
     ])('does not call addImmunization when %s', (_, payload, setupMocks) => {
       setupMocks();
       render(
-        <ImmunizationHistoryForm
+        <ImmunizationForm
           encounterSessionStartContext={payload}
           inputControlConfig={mockAdministrationInputControlConfig}
         />,
@@ -463,7 +480,7 @@ describe('ImmunizationHistoryForm', () => {
         return defaultQueryMock({ queryKey: qk }) as any;
       });
       render(
-        <ImmunizationHistoryForm
+        <ImmunizationForm
           encounterSessionStartContext={consultationPayloadWithBasedOn}
           inputControlConfig={mockAdministrationInputControlConfig}
         />,
@@ -492,7 +509,7 @@ describe('ImmunizationHistoryForm', () => {
         return defaultQueryMock({ queryKey: qk }) as any;
       });
       render(
-        <ImmunizationHistoryForm
+        <ImmunizationForm
           encounterSessionStartContext={consultationPayloadWithBasedOn}
           inputControlConfig={mockAdministrationInputControlConfig}
         />,
@@ -544,7 +561,7 @@ describe('ImmunizationHistoryForm', () => {
           selectedImmunizations: [immunization],
         });
         render(
-          <ImmunizationHistoryForm
+          <ImmunizationForm
             encounterSessionStartContext={{}}
             inputControlConfig={config}
           />,
@@ -576,7 +593,7 @@ describe('ImmunizationHistoryForm', () => {
       });
       render(
         <QueryClientProvider client={queryClient}>
-          <ImmunizationHistoryForm
+          <ImmunizationForm
             encounterSessionStartContext={{}}
             inputControlConfig={
               mockImmunizationInputControlConfigWithFetchStockBatches
@@ -602,7 +619,7 @@ describe('ImmunizationHistoryForm', () => {
         { data: mockAvailableStockResponse, isLoading: false, isError: false },
       ] as any);
       render(
-        <ImmunizationHistoryForm
+        <ImmunizationForm
           encounterSessionStartContext={{}}
           inputControlConfig={{
             ...mockImmunizationInputControlConfig,
@@ -612,23 +629,38 @@ describe('ImmunizationHistoryForm', () => {
       );
       await user.click(screen.getByPlaceholderText('Enter batch number'));
       await waitFor(() => {
-        expect(screen.getByText('BATCH-001')).toBeInTheDocument();
-        expect(screen.getByText('BATCH-002')).toBeInTheDocument();
+        expect(
+          screen.getByText('BATCH-001 [31 Dec 2026] - Nurse Station'),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('BATCH-002 [31 Dec 2026] - Nurse Station'),
+        ).toBeInTheDocument();
       });
     });
   });
 
   describe('Snapshots', () => {
     it.each([
-      ['no immunizations', mockStore],
+      ['no immunizations', mockStore, {}, undefined],
       [
         'selected immunizations',
         { ...mockStore, selectedImmunizations: [mockImmunizationEntry] },
+        {},
+        undefined,
       ],
-    ])('matches snapshot with %s', (_, storeOverride) => {
+      [
+        'combobox visible (basedOnReference present)',
+        mockStore,
+        { basedOn: mockMedicationRequestNoMedRef },
+        mockAdministrationInputControlConfigAllowed,
+      ],
+    ])('matches snapshot with %s', (_, storeOverride, context, config) => {
       jest.mocked(useImmunizationHistoryStore).mockReturnValue(storeOverride);
       const { container } = render(
-        <ImmunizationHistoryForm encounterSessionStartContext={{}} />,
+        <ImmunizationForm
+          encounterSessionStartContext={context}
+          inputControlConfig={config}
+        />,
       );
       expect(container).toMatchSnapshot();
     });
@@ -644,7 +676,7 @@ describe('ImmunizationHistoryForm', () => {
     ])('has no accessibility violations with %s', async (_, storeOverride) => {
       jest.mocked(useImmunizationHistoryStore).mockReturnValue(storeOverride);
       const { container } = render(
-        <ImmunizationHistoryForm encounterSessionStartContext={{}} />,
+        <ImmunizationForm encounterSessionStartContext={{}} />,
       );
       await act(async () => {});
       expect(await axe(container)).toHaveNoViolations();

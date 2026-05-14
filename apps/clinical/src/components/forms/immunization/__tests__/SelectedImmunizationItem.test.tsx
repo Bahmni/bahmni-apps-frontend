@@ -4,10 +4,11 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import SelectedImmunizationItem from '../components/SelectedImmunizationItem';
 import { IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY } from '../constants';
 import { useImmunizationHistoryStore } from '../stores';
+import * as immunizationUtils from '../utils';
 import {
   mockAvailableStockResponse,
-  mockEmptyAvailableStockResponse,
   mockCovid19VaccineDrugs,
+  mockEmptyAvailableStockResponse,
   mockFullAttributes,
   mockImmunizationEntry,
   mockImmunizationEntryWithBasedOn,
@@ -20,7 +21,7 @@ import {
   mockRoutesValueSet,
   mockSitesValueSet,
   mockStore,
-} from './__mocks__/immunizationHistoryMocks';
+} from './__mocks__/immunizationMocks';
 
 jest.mock('../stores');
 
@@ -108,6 +109,11 @@ describe('SelectedImmunizationItem', () => {
         [{ name: 'note', required: false }],
         `immunization-add-note-link-${id}-test-id`,
       ],
+      [
+        'note (required)',
+        [{ name: 'note', required: true }],
+        `immunization-note-${id}-test-id`,
+      ],
     ])(
       'renders %s field when attributes includes it',
       (_, attributes, testId) => {
@@ -163,6 +169,33 @@ describe('SelectedImmunizationItem', () => {
       expect(screen.getByRole('combobox')).toHaveValue(expectedDisplay);
     });
 
+    it.each([
+      [
+        'drug',
+        { ...mockImmunizationEntry, drug: { display: 'Custom Drug' } },
+        `immunization-drug-name-combobox-${id}-test-id`,
+      ],
+      [
+        'administeredLocation',
+        {
+          ...mockImmunizationEntry,
+          administeredLocation: { display: 'Custom Location' },
+        },
+        `immunization-administered-location-${id}-test-id`,
+      ],
+    ])(
+      'renders %s combobox with selected item when field has a value but no code/uuid',
+      (_, immunization, testId) => {
+        render(
+          <SelectedImmunizationItem
+            {...defaultProps}
+            immunization={immunization}
+          />,
+        );
+        expect(screen.getByTestId(testId)).toBeInTheDocument();
+      },
+    );
+
     it('sets expiryDate minDate to the day after administeredOn when administeredOn is set', () => {
       render(
         <SelectedImmunizationItem
@@ -187,6 +220,7 @@ describe('SelectedImmunizationItem', () => {
       ['batchNumber', 'Please enter a batch number'],
       ['doseSequence', 'Please enter a dose sequence'],
       ['expiryDate', 'Please select an expiry date'],
+      ['note', 'Please enter a note'],
     ])('shows error message for %s field when error is set', (_, errorText) => {
       render(
         <SelectedImmunizationItem
@@ -458,8 +492,12 @@ describe('SelectedImmunizationItem', () => {
       render(<SelectedImmunizationItem {...defaultProps} />);
       await user.click(screen.getByPlaceholderText('Enter batch number'));
       await waitFor(() => {
-        expect(screen.getByText('BATCH-001')).toBeInTheDocument();
-        expect(screen.getByText('BATCH-002')).toBeInTheDocument();
+        expect(
+          screen.getByText('BATCH-001 [31 Dec 2026] - Nurse Station'),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('BATCH-002 [30 Jun 2027] - Nurse Station'),
+        ).toBeInTheDocument();
       });
     });
 
@@ -467,7 +505,7 @@ describe('SelectedImmunizationItem', () => {
       const user = userEvent.setup();
       render(<SelectedImmunizationItem {...defaultProps} />);
       await user.click(screen.getByPlaceholderText('Enter batch number'));
-      await user.click(screen.getByText('BATCH-001'));
+      await user.click(screen.getByText(/BATCH-001/));
       await waitFor(() => {
         expect(mockStore.updateBatchNumber).toHaveBeenCalledWith(
           id,
@@ -501,7 +539,7 @@ describe('SelectedImmunizationItem', () => {
         />,
       );
       await user.click(screen.getByPlaceholderText('Enter batch number'));
-      await user.click(screen.getByText('BATCH-NO-EXPIRY'));
+      await user.click(screen.getByText(/BATCH-NO-EXPIRY/));
       await waitFor(() => {
         expect(mockStore.updateBatchNumber).toHaveBeenCalledWith(
           id,
@@ -537,7 +575,7 @@ describe('SelectedImmunizationItem', () => {
       const user = userEvent.setup();
       render(<SelectedImmunizationItem {...defaultProps} />);
       await user.click(screen.getByPlaceholderText('Enter batch number'));
-      await user.click(screen.getByText('BATCH-001'));
+      await user.click(screen.getByText(/BATCH-001/));
       mockStore.updateBatchNumber.mockClear();
       await user.click(
         screen.getByRole('button', { name: 'Clear selected item' }),
@@ -578,6 +616,26 @@ describe('SelectedImmunizationItem', () => {
         expect(
           screen.getByText('Error loading stock batches'),
         ).toBeInTheDocument();
+      });
+    });
+
+    it('calls updateBatchNumber with empty string when selected item has no batchNumber', async () => {
+      jest
+        .spyOn(immunizationUtils, 'getBatchNumberComboBoxItems')
+        .mockReturnValueOnce([
+          {
+            batchNumber: undefined as unknown as string,
+            expiryDate: '',
+            stockLocationName: '',
+          },
+        ]);
+      const user = userEvent.setup();
+      render(<SelectedImmunizationItem {...defaultProps} />);
+      await user.click(screen.getByPlaceholderText('Enter batch number'));
+      const options = screen.getAllByRole('option');
+      await user.click(options[0]);
+      await waitFor(() => {
+        expect(mockStore.updateBatchNumber).toHaveBeenCalledWith(id, '');
       });
     });
 

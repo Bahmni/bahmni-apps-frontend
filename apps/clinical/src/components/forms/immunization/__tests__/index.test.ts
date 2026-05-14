@@ -3,7 +3,7 @@ import {
   IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,
   IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
 } from '../constants';
-import ImmunizationHistoryForm from '../ImmunizationHistoryForm';
+import ImmunizationForm from '../ImmunizationForm';
 import { getImmunizationStore } from '../stores';
 import { createImmunizationBundleEntries } from '../utils';
 
@@ -17,7 +17,7 @@ jest.mock('../utils', () => ({
   createImmunizationBundleEntries: jest.fn().mockReturnValue([]),
 }));
 
-jest.mock('../ImmunizationHistoryForm', () => 'ImmunizationHistoryForm');
+jest.mock('../ImmunizationForm', () => 'ImmunizationForm');
 
 afterAll(() => clearRegistry());
 
@@ -55,7 +55,7 @@ describe('immunizationHistory index registration', () => {
   ])('registers %s with correct key and component', (key) => {
     const entry = getEntry(key);
     expect(entry).toBeDefined();
-    expect(entry.component).toBe(ImmunizationHistoryForm);
+    expect(entry.component).toBe(ImmunizationForm);
   });
 
   it.each([
