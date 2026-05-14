@@ -34,6 +34,10 @@ export const isOpenMRSWebServiceApi = (url: string): boolean => {
   return url.includes('/openmrs/ws');
 };
 
+export const isTemplateServiceApi = (url: string): boolean => {
+  return url.includes('/bahmnicore/template/');
+};
+
 /**
  * Gets the URL from axios config safely
  * @param config - Axios request config

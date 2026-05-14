@@ -1,6 +1,8 @@
 import '@bahmni/design-system/styles';
 
 // Widget Components
+export { DocumentPrintButton } from './documentPrintButton';
+export type { PrintOption } from './documentPrintButton';
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
 export { AppointmentsTable } from './appointments';

@@ -353,3 +353,11 @@ export {
   getVisibleModules,
   type Module,
 } from './moduleService';
+
+export { getTemplates, renderAsHtml } from './templateService';
+export type {
+  TemplateInfo,
+  TemplateTrigger,
+  RenderRequest,
+  TemplateListResponse,
+} from './templateService';

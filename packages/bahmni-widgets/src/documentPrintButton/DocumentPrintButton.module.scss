@@ -1,0 +1,20 @@
+@use '@carbon/styles/scss/spacing' as *;
+
+.printButtonGroup {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+
+  .printButton {
+    min-width: $spacing-13 + $spacing-12;
+    max-width: 100%;
+    justify-content: flex-start;
+  }
+
+  .printDropdown :global(.cds--list-box__menu) {
+    left: auto;
+    min-width: $spacing-13 + $spacing-12;
+    right: $spacing-10;
+    margin-top: $spacing-03;
+  }
+}

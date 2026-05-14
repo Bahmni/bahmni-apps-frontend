@@ -16,6 +16,7 @@ jest.mock('../../errorHandling', () => ({
 jest.mock('../utils', () => ({
   decodeHtmlEntities: jest.fn((data) => data),
   isOpenMRSWebServiceApi: jest.fn(() => true),
+  isTemplateServiceApi: jest.fn(() => false),
   getResponseUrl: jest.fn(() => '/openmrs/ws/rest/v1/patient'),
 }));
 
@@ -59,6 +60,9 @@ describe('Axios Client', () => {
     let isOpenMRSWebServiceApi: jest.MockedFunction<
       typeof import('../utils').isOpenMRSWebServiceApi
     >;
+    let isTemplateServiceApi: jest.MockedFunction<
+      typeof import('../utils').isTemplateServiceApi
+    >;
     let getResponseUrl: jest.MockedFunction<
       typeof import('../utils').getResponseUrl
     >;
@@ -77,6 +81,10 @@ describe('Axios Client', () => {
       isOpenMRSWebServiceApi =
         utilsModule.isOpenMRSWebServiceApi as jest.MockedFunction<
           typeof import('../utils').isOpenMRSWebServiceApi
+        >;
+      isTemplateServiceApi =
+        utilsModule.isTemplateServiceApi as jest.MockedFunction<
+          typeof import('../utils').isTemplateServiceApi
         >;
       getResponseUrl = utilsModule.getResponseUrl as jest.MockedFunction<
         typeof import('../utils').getResponseUrl
@@ -113,6 +121,28 @@ describe('Axios Client', () => {
         );
         expect(decodeHtmlEntities).toHaveBeenCalledWith(testData);
         expect(result.data).toEqual(decodedData);
+      });
+
+      it('should skip HTML entity decoding for template service responses even when URL is under /openmrs/ws', async () => {
+        const testData = '<html><body>&lt;Patient&gt;</body></html>';
+
+        getResponseUrl.mockReturnValue(
+          '/openmrs/ws/rest/v1/bahmnicore/template/api/render',
+        );
+        isOpenMRSWebServiceApi.mockReturnValueOnce(true);
+        isTemplateServiceApi.mockReturnValueOnce(true);
+
+        const mockResponse = {
+          data: testData,
+          config: { url: '/openmrs/ws/rest/v1/bahmnicore/template/api/render' },
+        };
+
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
+        const result = responseInterceptor.fulfilled(mockResponse);
+
+        expect(decodeHtmlEntities).not.toHaveBeenCalled();
+        expect(result.data).toBe(testData);
       });
 
       it('should skip HTML entity decoding for non-OpenMRS API responses', async () => {
