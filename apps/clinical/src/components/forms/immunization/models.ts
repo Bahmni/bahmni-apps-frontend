@@ -46,6 +46,7 @@ export interface ImmunizationInputEntry {
     manufacturer?: string;
     batchNumber?: string;
     doseSequence?: string;
+    note?: string;
   };
   hasBeenValidated: boolean;
 }

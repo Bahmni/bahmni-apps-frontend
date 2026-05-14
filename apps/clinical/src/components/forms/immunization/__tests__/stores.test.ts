@@ -5,7 +5,7 @@ import {
   mockFullAttributes,
   mockImmunizationEntryWithErrors,
   mockVaccineCode,
-} from './__mocks__/immunizationHistoryMocks';
+} from './__mocks__/immunizationMocks';
 
 const secondVaccineCode = { code: 'flu', display: 'Influenza Vaccine' };
 const STORE_KEY = 'immunizationHistory';
@@ -27,6 +27,7 @@ const FIELD_UPDATE_CASES: FieldUpdateCase[] = [
   ['manufacturer', 'updateManufacturer', 'Pfizer'],
   ['batchNumber', 'updateBatchNumber', 'BATCH-001'],
   ['doseSequence', 'updateDoseSequence', 3],
+  ['note', 'updateNote', 'Some note'],
 ];
 
 const ERROR_RETAINED_CASES: FieldUpdateCase[] = [
@@ -46,6 +47,8 @@ const ERROR_RETAINED_CASES: FieldUpdateCase[] = [
   ['batchNumber', 'updateBatchNumber', ''],
   ['batchNumber (whitespace)', 'updateBatchNumber', '   '],
   ['doseSequence', 'updateDoseSequence', null],
+  ['note', 'updateNote', ''],
+  ['note (whitespace)', 'updateNote', '   '],
 ];
 
 describe('useImmunizationHistoryStore', () => {
@@ -279,6 +282,7 @@ describe('useImmunizationHistoryStore', () => {
       store().updateManufacturer(id, 'Pfizer');
       store().updateBatchNumber(id, 'BATCH-001');
       store().updateDoseSequence(id, 3);
+      store().updateNote(id, 'Some note');
 
       const isValid = store().validateAll();
 
@@ -292,7 +296,7 @@ describe('useImmunizationHistoryStore', () => {
         '2025-01-01',
         '2024-06-01',
         false,
-        'IMMUNIZATION_HISTORY_EXPIRY_DATE_BEFORE_ADMINISTERED_ON',
+        'IMMUNIZATION_INPUT_CONTROL_EXPIRY_DATE_BEFORE_ADMINISTERED_ON',
       ],
       ['same as', '2025-01-01', '2025-01-01', true, undefined],
       ['after', '2025-01-01', '2026-01-01', true, undefined],
@@ -357,10 +361,11 @@ describe('useImmunizationHistoryStore', () => {
       [
         'before',
         new Date('2025-01-01'),
-        'IMMUNIZATION_HISTORY_EXPIRY_DATE_BEFORE_ADMINISTERED_ON',
+        'IMMUNIZATION_INPUT_CONTROL_EXPIRY_DATE_BEFORE_ADMINISTERED_ON',
       ],
       ['on', new Date('2025-06-01'), undefined],
       ['after', new Date('2026-01-01'), undefined],
+      ['null', null, undefined],
     ])(
       'updateExpiryDate: sets expiryDate error when new value is %s administeredOn',
       (_label, newExpiryDate, expectedError) => {
@@ -370,6 +375,7 @@ describe('useImmunizationHistoryStore', () => {
         store().updateAdministeredOn(id, new Date('2025-06-01'));
         store().validateAll();
 
+        store().updateExpiryDate(id, new Date('2025-01-01'));
         store().updateExpiryDate(id, newExpiryDate);
 
         expect(store().selectedImmunizations[0].errors.expiryDate).toBe(
@@ -382,7 +388,7 @@ describe('useImmunizationHistoryStore', () => {
       [
         'after expiryDate',
         new Date('2025-06-01'),
-        'IMMUNIZATION_HISTORY_EXPIRY_DATE_BEFORE_ADMINISTERED_ON',
+        'IMMUNIZATION_INPUT_CONTROL_EXPIRY_DATE_BEFORE_ADMINISTERED_ON',
       ],
       ['before expiryDate', new Date('2024-12-01'), undefined],
       ['null', null, undefined],

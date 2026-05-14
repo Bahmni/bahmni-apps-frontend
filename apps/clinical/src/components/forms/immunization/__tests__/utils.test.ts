@@ -32,7 +32,7 @@ import {
   mockVaccineValueSet,
   mockValueSetWithPartialItem,
   mockValueSetWithoutContains,
-} from './__mocks__/immunizationHistoryMocks';
+} from './__mocks__/immunizationMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -68,11 +68,12 @@ describe('findAttr', () => {
     expect(findAttr(name, attributes)).toEqual(expected);
   });
 
-  it.each([
-    ['attribute name is not in the list', 'site', attributes],
-    ['attributes is undefined', 'administeredOn', undefined],
-  ] as const)('returns undefined when %s', (_, name, attrs) => {
-    expect(findAttr(name, attrs)).toBeUndefined();
+  it('returns undefined when attribute name is not in the list', () => {
+    expect(findAttr('site', attributes)).toBeUndefined();
+  });
+
+  it('returns undefined when attributes is undefined', () => {
+    expect(findAttr('administeredOn', undefined)).toBeUndefined();
   });
 });
 
@@ -262,7 +263,7 @@ describe('getBatchNumberComboBoxItems', () => {
     ]);
   });
 
-  it('returns a disabled error item when errorMessage is provided', () => {
+  it('returns disabled error item when errorMessage is provided', () => {
     expect(
       getBatchNumberComboBoxItems(
         mockAvailableStockResponse,
@@ -278,7 +279,7 @@ describe('getBatchNumberComboBoxItems', () => {
     ]);
   });
 
-  it('returns a disabled empty item when emptyMessage is provided and count is 0', () => {
+  it('returns disabled empty item when emptyMessage is provided', () => {
     expect(
       getBatchNumberComboBoxItems(
         mockEmptyAvailableStockResponse,
@@ -435,13 +436,20 @@ describe('createImmunizationBundleEntries', () => {
     expect(result).toHaveLength(2);
   });
 
-  it('builds a correct minimal bundle entry', () => {
+  it('sets fullUrl using the generated UUID', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
+    expect(result[0].fullUrl).toBe('urn:uuid:mock-uuid');
+  });
+
+  it('constructs the core immunization resource correctly for a minimal entry', () => {
     const result = createImmunizationBundleEntries({
       ...BASE_BUNDLE_PARAMS,
       selectedImmunizations: [mockImmunizationEntry],
     });
     const resource = result[0].resource as Immunization;
-    expect(result[0].fullUrl).toBe('urn:uuid:mock-uuid');
     expect(resource).toMatchObject({
       resourceType: 'Immunization',
       status: 'completed',
@@ -451,6 +459,14 @@ describe('createImmunizationBundleEntries', () => {
       patient: mockEncounterSubject,
       encounter: { reference: 'Encounter/encounter-uuid' },
     });
+  });
+
+  it('omits optional fields when they are null on a minimal entry', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
+    const resource = result[0].resource as Immunization;
     expect(resource.occurrenceDateTime).toBeUndefined();
     expect(resource.location).toBeUndefined();
     expect(resource.route).toBeUndefined();
@@ -581,7 +597,7 @@ describe('createImmunizationBundleEntries', () => {
     expect(resource.location).toEqual({ display: 'Custom Ward' });
   });
 
-  it('sets performer and request method on each entry', () => {
+  it('sets the performer with the correct practitioner reference', () => {
     const result = createImmunizationBundleEntries({
       ...BASE_BUNDLE_PARAMS,
       selectedImmunizations: [mockImmunizationEntry],
@@ -604,6 +620,13 @@ describe('createImmunizationBundleEntries', () => {
         },
       },
     ]);
+  });
+
+  it('sets the bundle request method to POST', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
     expect(result[0].request?.method).toBe('POST');
   });
 });
