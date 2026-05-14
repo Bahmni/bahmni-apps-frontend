@@ -42,5 +42,6 @@
   "ORDER_OWNER": "Propietario de la Orden",
   "NOTES": "Notas",
   "ORDER_SAVE_SUCCESS": "Detalles de la orden actualizados correctamente",
-  "ORDER_SAVE_ERROR": "Error al actualizar los detalles de la orden"
+  "ORDER_SAVE_ERROR": "Error al actualizar los detalles de la orden",
+  "DAYS_SINCE_LMP": "Días desde la FUM"
 }

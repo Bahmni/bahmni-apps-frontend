@@ -1,8 +1,10 @@
 import { del, get, post, put } from '../api';
+import { differenceInDays, parseISO } from 'date-fns';
 import { Patient, Bundle, Observation } from 'fhir/r4';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
 import { PATIENT_NOT_FOUND_ERROR_KEY } from '../errorHandling';
+import { OPENMRS_FHIR_R4 } from '../constants/app';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
 import {
@@ -29,6 +31,7 @@ import {
   RELATED_PERSON_URL,
   RELATED_PERSON_BY_ID_URL,
   LMP_OBSERVATION_URL,
+  LMP_CONCEPT_UUID,
 } from './constants';
 import {
   PatientSearchField,
@@ -503,6 +506,7 @@ export const getPersonAttributeTypes =
   };
 
 /**
+<<<<<<< HEAD
  * Parses the fhir2Extension.telecomAttributeTypeMap global property value into structured
  * mappings. Mirrors the backend's own parsing (OpenmrsAppContext#parseTelecomAttributeTypeMappings):
  * `;`-separated entries of the form `attributeTypeUuid:SYSTEM:USE:RANK`, where USE and RANK are
@@ -562,19 +566,27 @@ export const deleteRelatedPerson = async (uuid: string): Promise<void> =>
   del<void>(RELATED_PERSON_BY_ID_URL(uuid));
 /*
 * Calculate the number of days between an LMP date and today
+ * Build FHIR R4 URL to fetch the most recent LMP observation for a patient
+ * @param patientUuid - The UUID of the patient
+ * @returns URL string for FHIR Observation query
+ */
+const getLmpObservationUrl = (patientUuid: string): string =>
+  `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&code=${encodeURIComponent(LMP_CONCEPT_UUID)}&_sort=-_lastUpdated&_count=1`;
+
+/**
+ * Calculate the number of days between an LMP date and today using date-fns
  * @param lmpDateStr - ISO date string for the last menstrual period (e.g. "2024-03-15")
  * @returns Number of days since LMP, or null if the date is invalid
  */
 export const calculateDaysSinceLmp = (lmpDateStr: string): number | null => {
   if (!lmpDateStr) return null;
-  const lmpDate = new Date(lmpDateStr);
-  if (isNaN(lmpDate.getTime())) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  lmpDate.setHours(0, 0, 0, 0);
-  const diffMs = today.getTime() - lmpDate.getTime();
-  if (diffMs < 0) return null;
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  try {
+    const lmpDate = parseISO(lmpDateStr);
+    const daysDiff = differenceInDays(new Date(), lmpDate);
+    return daysDiff >= 0 ? daysDiff : null;
+  } catch {
+    return null;
+  }
 };
 
 /**
@@ -592,7 +604,7 @@ export const getPatientLmpData = async (
 
   try {
     const bundle = await get<Bundle<Observation>>(
-      LMP_OBSERVATION_URL(patientUuid),
+      getLmpObservationUrl(patientUuid),
     );
     const observations =
       bundle.entry
@@ -605,7 +617,8 @@ export const getPatientLmpData = async (
 
     // Use the most recent observation (results are sorted by -_lastUpdated)
     const lmpObs = observations[0];
-    const lmpDateStr = lmpObs.valueDateTime ?? lmpObs.valueString ?? null;
+    const lmpDateStr =
+      lmpObs.valueDateTime ?? lmpObs.valueDate ?? lmpObs.valueString ?? null;
 
     if (!lmpDateStr) return null;
 

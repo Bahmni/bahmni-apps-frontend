@@ -91,14 +91,22 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   }, [tabLabel, providers]);
 
   useEffect(() => {
+    let isMounted = true;
+
     if (isOpen && isRadiologyTab && order?.patientUuid) {
       setLmpData(null);
       getPatientLmpData(order.patientUuid).then((data) => {
-        setLmpData(data);
+        if (isMounted) {
+          setLmpData(data);
+        }
       });
     } else if (!isOpen) {
       setLmpData(null);
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [isOpen, isRadiologyTab, order?.patientUuid]);
 
   const getNestedValue = (obj: Order, key: string): string => {
