@@ -3,7 +3,7 @@ import { AppContextProvider, NotificationProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { lazy, Suspense, useRef } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { ThemeConfigProvider } from '../providers/themeConfig';
+import { BrandThemeProvider } from '../providers/brandTheme';
 import { LocationProvider } from './context';
 
 const IndexPage = lazy(() =>
@@ -46,7 +46,7 @@ export function App() {
     <LocationProvider>
       <QueryClientProvider client={queryClient.current}>
         <NotificationProvider>
-          <ThemeConfigProvider>
+          <BrandThemeProvider>
             <AppContextProvider>
               <Suspense fallback={<Loading />}>
                 <Routes>
@@ -58,7 +58,7 @@ export function App() {
                 </Routes>
               </Suspense>
             </AppContextProvider>
-          </ThemeConfigProvider>
+          </BrandThemeProvider>
         </NotificationProvider>
       </QueryClientProvider>
     </LocationProvider>

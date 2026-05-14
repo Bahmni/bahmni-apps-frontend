@@ -4,8 +4,8 @@ import { NotificationProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { useThemeConfig } from '../hook';
-import { ThemeConfigProvider } from '../provider';
+import { useBrandTheme } from '../hook';
+import { BrandThemeProvider } from '../provider';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -28,13 +28,13 @@ const { BAHMNI_DEFAULT_THEME } = designSystem;
 
 const TestChild = () => <div data-testid="child">child</div>;
 
-describe('ThemeConfigProvider', () => {
+describe('BrandThemeProvider', () => {
   let queryClient: QueryClient;
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <NotificationProvider>
-        <ThemeConfigProvider>{children}</ThemeConfigProvider>
+        <BrandThemeProvider>{children}</BrandThemeProvider>
       </NotificationProvider>
     </QueryClientProvider>
   );
@@ -50,7 +50,7 @@ describe('ThemeConfigProvider', () => {
     queryClient.clear();
   });
 
-  describe('Theme application', () => {
+  describe('Brand colour application', () => {
     it('applies merged config after successful fetch', async () => {
       const overrides = { primary: '#ff0000', 'primary-hover': '#cc0000' };
       mockGetConfig.mockResolvedValue(overrides);
@@ -96,7 +96,7 @@ describe('ThemeConfigProvider', () => {
       const overrides = { primary: '#ff0000' };
       mockGetConfig.mockResolvedValue(overrides);
 
-      const { result } = renderHook(() => useThemeConfig(), {
+      const { result } = renderHook(() => useBrandTheme(), {
         wrapper: Wrapper,
       });
 
@@ -109,14 +109,14 @@ describe('ThemeConfigProvider', () => {
   });
 });
 
-describe('useThemeConfig', () => {
-  it('throws when used outside ThemeConfigProvider', () => {
+describe('useBrandTheme', () => {
+  it('throws when used outside BrandThemeProvider', () => {
     const consoleError = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
 
-    expect(() => renderHook(() => useThemeConfig())).toThrow(
-      'useThemeConfig must be used within a ThemeConfigProvider',
+    expect(() => renderHook(() => useBrandTheme())).toThrow(
+      'useBrandTheme must be used within a BrandThemeProvider',
     );
 
     consoleError.mockRestore();
