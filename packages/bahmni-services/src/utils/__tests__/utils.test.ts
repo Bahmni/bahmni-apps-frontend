@@ -1,6 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import {
   capitalize,
+  capitalizeFirstLetter,
   generateId,
   generateUUID,
   getCookieByName,
@@ -69,6 +70,22 @@ describe('common utility functions', () => {
       const id1 = generateId();
       const id2 = generateId();
       expect(id1).not.toBe(id2);
+    });
+  });
+
+  describe('capitalizeFirstLetter', () => {
+    it('should capitalize only the first letter, leaving the rest unchanged', () => {
+      expect(capitalizeFirstLetter('john')).toBe('John');
+      expect(capitalizeFirstLetter('JOHN')).toBe('JOHN');
+      expect(capitalizeFirstLetter('McDonald')).toBe('McDonald');
+    });
+
+    it('should handle empty string', () => {
+      expect(capitalizeFirstLetter('')).toBe('');
+    });
+
+    it('should handle single character', () => {
+      expect(capitalizeFirstLetter('a')).toBe('A');
     });
   });
 
