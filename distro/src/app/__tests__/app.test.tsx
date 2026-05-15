@@ -1,5 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 
 import App from '../app';
 
@@ -20,5 +20,17 @@ describe('App', () => {
     await act(async () => {});
 
     expect(screen.getByRole('main')).toBeInTheDocument();
+  });
+
+  it('redirects root / to /home/', async () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await act(async () => {});
+
+    expect(screen.getByTestId('index-page')).toBeInTheDocument();
   });
 });
