@@ -23,6 +23,7 @@ import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
+import { useMedicationStore } from '../../stores/medicationsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
@@ -251,13 +252,23 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   })();
 
+  const isEditMode = !!editOnlyKey;
+  const medicationState = useMedicationStore();
+  const editChangesExist = isEditMode ? medicationState.hasEditChanges() : true;
   const enablePrimaryButton = useMemo(
     () =>
       hasError ||
       !isEncounterDetailsFormReady ||
       isSubmitting ||
-      !hasConsultationData,
-    [hasError, isEncounterDetailsFormReady, isSubmitting, hasConsultationData],
+      !hasConsultationData ||
+      !editChangesExist,
+    [
+      hasError,
+      isEncounterDetailsFormReady,
+      isSubmitting,
+      hasConsultationData,
+      editChangesExist,
+    ],
   );
   return (
     <>

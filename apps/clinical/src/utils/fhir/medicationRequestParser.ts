@@ -26,21 +26,26 @@ export function parseFhirToMedicationInputEntry(
     fhirMedRequest.medicationReference?.display ?? 'Medication';
 
   const dosage = dosageInstruction?.doseAndRate?.[0]?.doseQuantity?.value ?? 0;
-  const dosageUnitCode =
-    dosageInstruction?.doseAndRate?.[0]?.doseQuantity?.code;
-  const dosageUnit = resolveConceptByUuid(
-    dosageUnitCode,
-    medicationConfig.doseUnits,
-  );
+  const doseQuantity = dosageInstruction?.doseAndRate?.[0]?.doseQuantity;
+  const dosageUnit =
+    resolveConceptByUuid(doseQuantity?.code, medicationConfig.doseUnits) ??
+    resolveConceptByName(doseQuantity?.unit, medicationConfig.doseUnits);
 
-  const frequencyCode = dosageInstruction?.timing?.code?.coding?.[0]?.code;
-  const frequency = resolveFrequencyByUuid(
-    frequencyCode,
-    medicationConfig.frequencies,
-  );
+  const frequencyCoding = dosageInstruction?.timing?.code?.coding?.[0];
+  const frequency =
+    resolveFrequencyByUuid(
+      frequencyCoding?.code,
+      medicationConfig.frequencies,
+    ) ??
+    resolveFrequencyByName(
+      frequencyCoding?.display,
+      medicationConfig.frequencies,
+    );
 
-  const routeCode = dosageInstruction?.route?.coding?.[0]?.code;
-  const route = resolveConceptByUuid(routeCode, medicationConfig.routes);
+  const routeCoding = dosageInstruction?.route?.coding?.[0];
+  const route =
+    resolveConceptByUuid(routeCoding?.code, medicationConfig.routes) ??
+    resolveConceptByName(routeCoding?.display, medicationConfig.routes);
 
   const repeat = dosageInstruction?.timing?.repeat;
   const duration = repeat?.duration ?? 0;
@@ -58,11 +63,10 @@ export function parseFhirToMedicationInputEntry(
   const startDate = parseStartDate(fhirMedRequest, isSTAT);
 
   const dispenseQuantity = fhirMedRequest.dispenseRequest?.quantity?.value ?? 0;
-  const dispenseUnitCode = fhirMedRequest.dispenseRequest?.quantity?.code;
-  const dispenseUnit = resolveConceptByUuid(
-    dispenseUnitCode,
-    medicationConfig.doseUnits,
-  );
+  const dispenseQty = fhirMedRequest.dispenseRequest?.quantity;
+  const dispenseUnit =
+    resolveConceptByUuid(dispenseQty?.code, medicationConfig.doseUnits) ??
+    resolveConceptByName(dispenseQty?.unit, medicationConfig.doseUnits);
 
   const note =
     fhirMedRequest.note
@@ -130,12 +134,28 @@ function resolveConceptByUuid(
   return concepts.find((c) => c.uuid === uuid) ?? null;
 }
 
+function resolveConceptByName(
+  name: string | undefined,
+  concepts: Concept[] | undefined,
+): Concept | null {
+  if (!name || !concepts) return null;
+  return concepts.find((c) => c.name === name) ?? null;
+}
+
 function resolveFrequencyByUuid(
   uuid: string | undefined,
   frequencies: MedicationConfig['frequencies'] | undefined,
 ): MedicationConfig['frequencies'][number] | null {
   if (!uuid || !frequencies) return null;
   return frequencies.find((f) => f.uuid === uuid) ?? null;
+}
+
+function resolveFrequencyByName(
+  name: string | undefined,
+  frequencies: MedicationConfig['frequencies'] | undefined,
+): MedicationConfig['frequencies'][number] | null {
+  if (!name || !frequencies) return null;
+  return frequencies.find((f) => f.name === name) ?? null;
 }
 
 function resolveDurationUnit(

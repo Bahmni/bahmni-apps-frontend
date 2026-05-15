@@ -84,10 +84,15 @@
   }
 }
 
+.medicationsTableWrapper {
+  position: relative;
+}
+
 .widgetEditActions {
-  display: flex;
-  justify-content: flex-end;
-  padding: $spacing-02 $spacing-03;
+  position: absolute;
+  inset-block-start: -$spacing-08;
+  inset-inline-end: $spacing-03;
+  z-index: 1;
 }
 
 .customAccordianItem {

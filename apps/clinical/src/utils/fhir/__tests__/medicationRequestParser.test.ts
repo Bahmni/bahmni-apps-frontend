@@ -144,11 +144,14 @@ describe('parseFhirToMedicationInputEntry', () => {
     expect(result.medication.id).toBe('med-456');
   });
 
-  it('handles unknown concept UUIDs by returning null', () => {
+  it('handles unknown concept UUIDs and names by returning null', () => {
     const fhirMed = createMockFhirMedRequest();
     fhirMed.dosageInstruction![0].doseAndRate![0].doseQuantity!.code =
       'unknown-uuid';
+    fhirMed.dosageInstruction![0].doseAndRate![0].doseQuantity!.unit =
+      'Unknown Unit';
     fhirMed.dosageInstruction![0].route!.coding![0].code = 'unknown-route';
+    fhirMed.dosageInstruction![0].route!.coding![0].display = 'Unknown Route';
     const result = parseFhirToMedicationInputEntry(fhirMed, mockConfig);
 
     expect(result.dosageUnit).toBeNull();

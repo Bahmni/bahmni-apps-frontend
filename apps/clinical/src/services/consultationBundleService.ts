@@ -353,7 +353,7 @@ export function createMedicationRequestEntries({
   }
   const medicationRequestEntries: BundleEntry[] = [];
   for (const medication of selectedMedications) {
-    const isEdit = !!medication.fhirResourceId;
+    const medicationResourceURL = `urn:uuid:${crypto.randomUUID()}`;
     const medicationResource = createMedicationRequestResource(
       medication,
       encounterSubject,
@@ -362,23 +362,18 @@ export function createMedicationRequestEntries({
       statDurationInMilliseconds,
     );
 
-    if (isEdit) {
-      medicationResource.id = medication.fhirResourceId;
+    // Revisions create a new resource that supersedes the original
+    // via priorPrescription, rather than updating in place.
+    if (medication.fhirResourceId) {
+      medicationResource.priorPrescription = {
+        reference: `MedicationRequest/${medication.fhirResourceId}`,
+      };
     }
 
-    const fullUrl = isEdit
-      ? `MedicationRequest/${medication.fhirResourceId}`
-      : `urn:uuid:${crypto.randomUUID()}`;
-    const method = isEdit ? 'PUT' : 'POST';
-    const resourceUrl = isEdit
-      ? `MedicationRequest/${medication.fhirResourceId}`
-      : undefined;
-
     const medicationRequestEntry = createBundleEntry(
-      fullUrl,
+      medicationResourceURL,
       medicationResource,
-      method,
-      resourceUrl,
+      'POST',
     );
 
     medicationRequestEntries.push(medicationRequestEntry);

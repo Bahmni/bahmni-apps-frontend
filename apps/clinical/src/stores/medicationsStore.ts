@@ -8,6 +8,8 @@ import { extractDoseForm } from '../utils/fhir/medicationUtilities';
 
 export interface MedicationState {
   selectedMedications: MedicationInputEntry[];
+  originalEditSnapshots: Map<string, MedicationInputEntry>;
+  hasEditChanges: () => boolean;
 
   addMedication: (medication: Medication, displayName: string) => void;
   loadMedicationsForEdit: (entries: MedicationInputEntry[]) => void;
@@ -33,8 +35,42 @@ export interface MedicationState {
   reset: () => void;
   getState: () => MedicationState;
 }
+function hasMedicationChanged(
+  current: MedicationInputEntry,
+  original: MedicationInputEntry,
+): boolean {
+  return (
+    current.dosage !== original.dosage ||
+    current.dosageUnit?.uuid !== original.dosageUnit?.uuid ||
+    current.frequency?.uuid !== original.frequency?.uuid ||
+    current.route?.uuid !== original.route?.uuid ||
+    current.duration !== original.duration ||
+    current.durationUnit?.code !== original.durationUnit?.code ||
+    current.instruction?.uuid !== original.instruction?.uuid ||
+    current.isPRN !== original.isPRN ||
+    current.isSTAT !== original.isSTAT ||
+    current.dispenseQuantity !== original.dispenseQuantity ||
+    current.dispenseUnit?.uuid !== original.dispenseUnit?.uuid ||
+    (current.note ?? '') !== (original.note ?? '') ||
+    current.startDate?.toDateString() !== original.startDate?.toDateString()
+  );
+}
+
 export const useMedicationStore = create<MedicationState>((set, get) => ({
   selectedMedications: [],
+  originalEditSnapshots: new Map(),
+
+  hasEditChanges: () => {
+    const { selectedMedications, originalEditSnapshots } = get();
+    // New medications (not from edit) count as changes
+    if (selectedMedications.some((m) => !m.fhirResourceId)) return true;
+    // Any edited medication differs from its snapshot
+    return selectedMedications.some((m) => {
+      const original = originalEditSnapshots.get(m.id);
+      if (!original) return true;
+      return hasMedicationChanged(m, original);
+    });
+  },
 
   addMedication: (medication: Medication, displayName: string) => {
     const doseForm = extractDoseForm(medication, displayName);
@@ -69,7 +105,20 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
   },
 
   loadMedicationsForEdit: (entries: MedicationInputEntry[]) => {
-    set({ selectedMedications: entries });
+    set((state) => {
+      const existingIds = new Set(state.selectedMedications.map((m) => m.id));
+      const newEntries = entries.filter((e) => !existingIds.has(e.id));
+      const updatedSnapshots = new Map(state.originalEditSnapshots);
+      for (const entry of newEntries) {
+        if (!updatedSnapshots.has(entry.id)) {
+          updatedSnapshots.set(entry.id, { ...entry });
+        }
+      }
+      return {
+        selectedMedications: [...state.selectedMedications, ...newEntries],
+        originalEditSnapshots: updatedSnapshots,
+      };
+    });
   },
 
   removeMedication: (medicationId: string) => {
@@ -380,7 +429,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
   },
 
   reset: () => {
-    set({ selectedMedications: [] });
+    set({ selectedMedications: [], originalEditSnapshots: new Map() });
   },
 
   getState: () => get(),

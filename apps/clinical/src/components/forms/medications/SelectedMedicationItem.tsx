@@ -182,7 +182,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
       ]);
 
       useEffect(() => {
-        // Skip on first render for edited medications to preserve loaded values
+        // Skip first render only for edited medications to preserve parsed values
         if (!hasMountedRef.current) {
           hasMountedRef.current = true;
           if (medicationInputEntry.fhirResourceId) return;
@@ -200,6 +200,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         if (isSTAT) {
           updateStartDate(id, getTodayDate());
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- medicationInputEntry.fhirResourceId is stable
       }, [
         isSTAT,
         isPRN,

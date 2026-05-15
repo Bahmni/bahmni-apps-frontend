@@ -385,7 +385,10 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   }
 
   return (
-    <div data-testid="medications-table">
+    <div
+      data-testid="medications-table"
+      className={styles.medicationsTableWrapper}
+    >
       {editAction && (
         <div
           className={styles.widgetEditActions}
@@ -395,7 +398,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             label={t('MEDICATIONS_EDIT_ALL')}
             kind="ghost"
             size="sm"
-            align="left-end"
+            align="left"
             disabled={!hasEditableMedications}
             onClick={handleEditAll}
             testId="medications-edit-all-button"
