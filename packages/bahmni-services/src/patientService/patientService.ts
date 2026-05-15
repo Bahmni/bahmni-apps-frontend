@@ -188,17 +188,17 @@ export const getFormattedPatientById = async (
 };
 
 /**
- * Fetch patient image and convert to data URL
- * @param patientUUID - The UUID of the patient
- * @returns Promise<string | null> - The image data URL or null
+ * Fetches a patient's photo from OpenMRS as a Blob and converts it to a base64 data URL
+ * suitable for use as an img src attribute
+ * @param patientUUID - The UUID of the patient whose photo to fetch
+ * @returns A base64 data URL string for the patient photo
  */
-export const getPatientImageAsDataUrl = async (
+export const getPatientPhotoDataUrl = async (
   patientUUID: string,
-): Promise<string | null> => {
-  const response = await fetch(PATIENT_IMAGE_URL(patientUUID));
-  if (!response.ok) return null;
-
-  const blob = await response.blob();
+): Promise<string> => {
+  const blob = await get<Blob>(PATIENT_IMAGE_URL(patientUUID), {
+    responseType: 'blob',
+  });
   return await blobToDataUrl(blob);
 };
 

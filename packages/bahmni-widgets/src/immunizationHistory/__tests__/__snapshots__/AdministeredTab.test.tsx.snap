@@ -294,6 +294,7 @@ exports[`AdministeredTab matches snapshot 1`] = `
                         aria-label="Third dose completed successfully."
                         class="_bahmniIcon_1cg5e_1 _paddingNone_1cg5e_1"
                         id="tooltip-icon-fa-file-lines"
+                        role="img"
                       >
                         <svg
                           aria-hidden="true"
