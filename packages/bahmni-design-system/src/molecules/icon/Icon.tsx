@@ -65,6 +65,7 @@ export const Icon: React.FC<IconProps> = ({
       className={`${styles.bahmniIcon} ${paddingClass}`}
       id={id}
       data-testid={testId}
+      role={ariaLabel ? 'img' : undefined}
       aria-label={ariaLabel}
     >
       <FontAwesomeIcon

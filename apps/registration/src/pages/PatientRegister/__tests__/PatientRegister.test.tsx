@@ -24,7 +24,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
   getPatientProfile: jest.fn(),
-  getPatientImageAsDataUrl: jest.fn(),
+  getPatientPhotoDataUrl: jest.fn(),
   useTranslation: () => ({
     t: (key: string) => key,
   }),
