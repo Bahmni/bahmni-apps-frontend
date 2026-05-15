@@ -1,120 +1,127 @@
-import { findActiveEncounterInSession, Provider } from '@bahmni/services';
+import {
+  Provider,
+  resolveEncounterMatchDecision,
+  canResumeOwnInSessionEncounter,
+  MatchReasonCode,
+  getUserLoginLocation,
+} from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
 import { Encounter } from 'fhir/r4';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-interface UseEncounterSessionOptions {
+export interface UseEncounterSessionOptions {
   practitioner: Provider | null;
   encounterTypeUUID?: string;
 }
 
-interface UseEncounterSessionReturn {
+export interface UseEncounterSessionReturn {
   hasActiveSession: boolean;
   activeEncounter: Encounter | null;
   isPractitionerMatch: boolean;
+  matchReason: MatchReasonCode[];
   editActiveEncounter: boolean;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 }
 
-/**
- * Hook to manage encounter session state
- * Determines if there's an active encounter session for the current patient
- * @param options - Options containing the practitioner to use for session filtering
- * @returns Object containing session state and utilities
- */
-
 export function useEncounterSession(
   options: UseEncounterSessionOptions,
 ): UseEncounterSessionReturn {
   const { practitioner, encounterTypeUUID } = options;
+
   const [hasActiveSession, setHasActiveSession] = useState<boolean>(false);
   const [activeEncounter, setActiveEncounter] = useState<Encounter | null>(
     null,
   );
   const [isPractitionerMatch, setIsPractitionerMatch] =
     useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Start with false to not block UI
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [matchReason, setMatchReason] = useState<MatchReasonCode[]>([]);
 
   const patientUUID = usePatientUUID();
+  const practitionerUUID = practitioner?.uuid;
 
-  const fetchSessionState = async () => {
-    if (!patientUUID) {
+  const fetchSessionState = async (signal: { ignored: boolean }) => {
+    if (!patientUUID || !practitionerUUID || !encounterTypeUUID) {
       setHasActiveSession(false);
       setActiveEncounter(null);
       setIsPractitionerMatch(false);
+      setMatchReason([]);
+      setError(null);
       setIsLoading(false);
       return;
     }
 
-    // Get practitioner UUID for session filtering
-    const practitionerUUID = practitioner?.uuid;
-
-    if (!practitionerUUID || !encounterTypeUUID) {
-      setHasActiveSession(false);
-      setActiveEncounter(null);
-      setIsPractitionerMatch(false);
-      setIsLoading(false);
-      return;
+    // Resolve login location inside the fetch so it reads a fresh value each call
+    let loginLocationUUID: string | undefined;
+    try {
+      loginLocationUUID = getUserLoginLocation().uuid;
+    } catch {
+      // location cookie unavailable — location check will be skipped in mapper
     }
 
     setIsLoading(true);
     setError(null);
 
     try {
-      // Find active encounter for current patient and practitioner
-      const activeEncounter = await findActiveEncounterInSession(
+      const decision = await resolveEncounterMatchDecision(
         patientUUID,
         practitionerUUID,
-        undefined,
+        loginLocationUUID,
         encounterTypeUUID,
       );
-      const sessionExists = activeEncounter !== null;
 
-      // Since server filters by practitioner, if we get an encounter, it belongs to current practitioner
-      const practitionerMatches = sessionExists;
+      if (signal.ignored) return;
 
-      // Set session state
-      setHasActiveSession(sessionExists);
-      setActiveEncounter(activeEncounter);
-      setIsPractitionerMatch(practitionerMatches);
-    } catch {
-      // Don't set error state as it might block the consultation pad
-      setError(null);
+      const isResumableSession = canResumeOwnInSessionEncounter(decision);
 
-      // Default to "New Consultation" (safer) on any error
+      setHasActiveSession(isResumableSession);
+      setActiveEncounter(decision.encounter);
+      setIsPractitionerMatch(isResumableSession);
+      setMatchReason(decision.reasons);
+    } catch (err) {
+      if (signal.ignored) return;
+      setError(
+        err instanceof Error ? err.message : 'Failed to load encounter session',
+      );
       setHasActiveSession(false);
       setActiveEncounter(null);
       setIsPractitionerMatch(false);
+      setMatchReason(['NO_ACTIVE_ENCOUNTER']);
     } finally {
-      setIsLoading(false);
+      if (!signal.ignored) setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    // Reset state when practitioner changes to prevent stale data
+    const signal = { ignored: false };
+
     if (practitioner?.uuid) {
       setHasActiveSession(false);
       setActiveEncounter(null);
       setIsPractitionerMatch(false);
+      setMatchReason([]);
       setError(null);
     }
+    fetchSessionState(signal);
 
-    fetchSessionState();
+    return () => {
+      signal.ignored = true;
+    };
   }, [patientUUID, practitioner?.uuid, encounterTypeUUID]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Computed property for encounter ownership - determines if user can edit the active encounter
   const editActiveEncounter = hasActiveSession && isPractitionerMatch;
 
   return {
     hasActiveSession,
     activeEncounter,
     isPractitionerMatch,
+    matchReason,
     editActiveEncounter,
     isLoading,
     error,
-    refetch: fetchSessionState,
+    refetch: () => fetchSessionState({ ignored: false }),
   };
 }
