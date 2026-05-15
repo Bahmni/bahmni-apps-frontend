@@ -182,10 +182,15 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
       ]);
 
       useEffect(() => {
-        // Edited medications already have parsed values; skip first render to preserve them
+        // Edited medications already have parsed values; skip to preserve them
+        if (medicationInputEntry.fhirResourceId) {
+          if (!hasMountedRef.current) {
+            hasMountedRef.current = true;
+          }
+          return;
+        }
         if (!hasMountedRef.current) {
           hasMountedRef.current = true;
-          if (medicationInputEntry.fhirResourceId) return;
         }
         if (isPRN || !isSTAT) {
           updateFrequency(id, null);

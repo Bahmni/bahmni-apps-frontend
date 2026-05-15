@@ -252,8 +252,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   })();
 
   const isEditMode = !!editOnlyKey;
-  const medicationState = useMedicationStore();
-  const editChangesExist = isEditMode ? medicationState.hasEditChanges() : true;
+  const hasEditChanges = useMedicationStore((state) => state.hasEditChanges);
+  const selectedMedications = useMedicationStore(
+    (state) => state.selectedMedications,
+  );
+  const editChangesExist = isEditMode ? hasEditChanges() : true;
   const enablePrimaryButton = useMemo(
     () =>
       hasError ||
@@ -267,6 +270,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       isSubmitting,
       hasConsultationData,
       editChangesExist,
+      selectedMedications,
     ],
   );
   return (
