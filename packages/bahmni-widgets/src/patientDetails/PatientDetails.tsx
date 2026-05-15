@@ -1,16 +1,36 @@
 import { Icon, ICON_SIZE } from '@bahmni/design-system';
-import { getFormattedAge, formatDateTime } from '@bahmni/services';
+import {
+  getFormattedPatientById,
+  getPatientPhotoDataUrl,
+} from '@bahmni/services';
 import { SkeletonText } from '@carbon/react';
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 import styles from './__styles__/PatientDetails.module.scss';
-import { usePatient } from './usePatient';
+import { createPatientDetailsViewModel } from './utils';
 
 const PatientDetails: React.FC = () => {
   const { t } = useTranslation();
-  const { patient, loading, error } = usePatient();
+  const patientUUID = usePatientUUID();
+  const {
+    data: patient,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['patient', patientUUID],
+    queryFn: () => getFormattedPatientById(patientUUID!),
+    enabled: !!patientUUID,
+  });
 
-  if (loading || error || !patient) {
+  const { data: photoDataUrl } = useQuery({
+    queryKey: ['patientPhoto', patientUUID],
+    queryFn: () => getPatientPhotoDataUrl(patientUUID!),
+    enabled: !!patientUUID,
+  });
+
+  if (isLoading || error || !patient) {
     return (
       <div className={styles.skeletonContainer}>
         <SkeletonText
@@ -22,64 +42,46 @@ const PatientDetails: React.FC = () => {
         <SkeletonText
           width="50%"
           lineCount={3}
-          data-testid="skeleton-loade-subheader"
+          data-testid="skeleton-loader-subheader"
         />
       </div>
     );
   }
 
-  const formatField = (value?: string | number | null) => value ?? null;
-
-  const formattedIdentifiers = patient.identifiers.size
-    ? Array.from(patient.identifiers.entries())
-
-        .map(([key, value]) => value)
-        .filter((value) => value != null && value !== '')
-        .join(' | ')
-    : null;
-
-  const formattedGender = formatField(patient.gender);
-
-  const formattedAge = patient.birthDate
-    ? getFormattedAge(patient.birthDate, t)
-    : null;
-
-  const formattedBirthDate = patient.birthDate
-    ? formatDateTime(patient.birthDate, t).formattedResult
-    : null;
-
-  const details = [formattedAge, formattedBirthDate]
-    .filter(Boolean)
-    .join(' | ');
+  const { fullName, gender, formattedIdentifiers, ageDetails } =
+    createPatientDetailsViewModel(patient, t);
 
   return (
-    <div className={styles.header}>
-      {patient.fullName && (
+    <div className={styles.container}>
+      {photoDataUrl ? (
+        <img
+          id="patient-photo"
+          data-testid="patient-photo-test-id"
+          src={photoDataUrl}
+          alt={fullName}
+          className={styles.photo}
+        />
+      ) : null}
+      <div className={styles.header}>
         <p data-testid="patient-name" className={styles.patientName}>
-          {patient.fullName}
+          {fullName}
         </p>
-      )}
-      <div className={styles.patientDetails}>
-        <div className={styles.identifierAndGenderWrapper}>
-          {formattedIdentifiers && (
+        <div className={styles.details}>
+          <div className={styles.identifierAndGenderWrapper}>
             <p className={styles.detailsWithIcon}>
               <Icon id="id-card" name="fa-id-card" size={ICON_SIZE.SM} />
               <span>{formattedIdentifiers}</span>
             </p>
-          )}
-          {formattedGender && (
             <p className={styles.detailsWithIcon}>
               <Icon id="gender" name="fa-mars-stroke-up" size={ICON_SIZE.SM} />
-              <span>{formattedGender}</span>
+              <span>{gender}</span>
             </p>
-          )}
-        </div>
-        {details && (
+          </div>
           <p className={styles.detailsWithIcon}>
             <Icon id="age" name="fa-cake-candles" size={ICON_SIZE.SM} />
-            <span>{details}</span>
+            <span>{ageDetails}</span>
           </p>
-        )}
+        </div>
       </div>
     </div>
   );

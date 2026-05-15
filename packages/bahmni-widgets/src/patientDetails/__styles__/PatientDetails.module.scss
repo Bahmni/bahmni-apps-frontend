@@ -7,11 +7,25 @@
   width: 70%;
 }
 
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: $spacing-05;
+}
+
+.photo {
+  width: $spacing-10;
+  height: $spacing-10;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 .header {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: start;
   gap: $spacing-03;
   align-self: stretch;
 
@@ -21,7 +35,7 @@
   }
 }
 
-.patientDetails {
+.details {
   display: flex;
   flex-wrap: wrap;
   column-gap: $spacing-05;
@@ -51,7 +65,7 @@
 }
 
 @include breakpoint-down(lg) {
-  .patientDetails {
+  .details {
     display: flex;
     flex-direction: column;
     gap: $spacing-03;
