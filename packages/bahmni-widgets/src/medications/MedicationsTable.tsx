@@ -243,34 +243,58 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   }, [allMedications]);
 
   const [canEditEncounter, setCanEditEncounter] = useState(false);
+  const [activeEncounterUuid, setActiveEncounterUuid] = useState('');
+  const [activePractitionerUuid, setActivePractitionerUuid] = useState('');
 
   useEffect(() => {
-    const readAttribute = () => {
+    const readAttributes = () => {
       const header = document.querySelector('[data-testid="patient-header"]');
       setCanEditEncounter(
         header?.getAttribute('data-can-edit-encounter') === 'true',
       );
+      setActiveEncounterUuid(
+        header?.getAttribute('data-active-encounter-uuid') ?? '',
+      );
+      setActivePractitionerUuid(
+        header?.getAttribute('data-active-practitioner-uuid') ?? '',
+      );
     };
 
-    readAttribute();
+    readAttributes();
 
     const header = document.querySelector('[data-testid="patient-header"]');
     if (!header) return;
 
-    const observer = new MutationObserver(readAttribute);
+    const observer = new MutationObserver(readAttributes);
     observer.observe(header, {
       attributes: true,
-      attributeFilter: ['data-can-edit-encounter'],
+      attributeFilter: [
+        'data-can-edit-encounter',
+        'data-active-encounter-uuid',
+        'data-active-practitioner-uuid',
+      ],
     });
     return () => observer.disconnect();
   }, []);
 
   const editableMedications = useMemo(() => {
-    if (!canEdit || !canEditEncounter) return [];
+    if (!canEdit || !canEditEncounter || !activeEncounterUuid) return [];
     return activeAndScheduledMedications.filter(
-      (m) => m.status === 'active' || m.status === 'on-hold',
+      (m) =>
+        (m.status === 'active' || m.status === 'on-hold') &&
+        m.fhirResource?.encounter?.reference?.endsWith(activeEncounterUuid) &&
+        (!activePractitionerUuid ||
+          m.fhirResource?.requester?.reference?.endsWith(
+            activePractitionerUuid,
+          )),
     );
-  }, [activeAndScheduledMedications, canEdit, canEditEncounter]);
+  }, [
+    activeAndScheduledMedications,
+    canEdit,
+    canEditEncounter,
+    activeEncounterUuid,
+    activePractitionerUuid,
+  ]);
 
   const hasEditableMedications = editableMedications.length > 0;
 
@@ -290,10 +314,19 @@ const MedicationsTable: React.FC<WidgetProps> = ({
 
   const isEditable = useCallback(
     (medication: FormattedMedicationRequest) => {
-      if (!canEdit || !canEditEncounter) return false;
-      return medication.status === 'active' || medication.status === 'on-hold';
+      if (!canEdit || !canEditEncounter || !activeEncounterUuid) return false;
+      return (
+        (medication.status === 'active' || medication.status === 'on-hold') &&
+        !!medication.fhirResource?.encounter?.reference?.endsWith(
+          activeEncounterUuid,
+        ) &&
+        (!activePractitionerUuid ||
+          !!medication.fhirResource?.requester?.reference?.endsWith(
+            activePractitionerUuid,
+          ))
+      );
     },
-    [canEdit, canEditEncounter],
+    [canEdit, canEditEncounter, activeEncounterUuid, activePractitionerUuid],
   );
 
   // Process medications for date grouping (only for All medications tab)

@@ -802,7 +802,10 @@ describe('MedicationsTable', () => {
           status: med.status,
           asNeeded: med.asNeeded,
           isImmediate: med.isImmediate,
-          fhirResource: { resourceType: 'MedicationRequest' },
+          fhirResource: {
+            resourceType: 'MedicationRequest',
+            encounter: { reference: 'Encounter/enc-uuid-123' },
+          },
         }),
       );
 
@@ -818,11 +821,14 @@ describe('MedicationsTable', () => {
     const setPatientHeaderAttribute = (
       matchReason: string | null,
       canEdit: string | null,
+      encounterUuid: string | null = 'enc-uuid-123',
     ) => {
       const header = document.createElement('div');
       header.setAttribute('data-testid', 'patient-header');
       if (matchReason) header.setAttribute('data-match-reason', matchReason);
       if (canEdit) header.setAttribute('data-can-edit-encounter', canEdit);
+      if (encounterUuid)
+        header.setAttribute('data-active-encounter-uuid', encounterUuid);
       document.body.appendChild(header);
       return header;
     };
@@ -857,7 +863,7 @@ describe('MedicationsTable', () => {
 
     it('disables edit-all button when session expired and can-edit-encounter is not set', () => {
       setupWithActiveMeds();
-      setPatientHeaderAttribute('SESSION_EXPIRED', null);
+      setPatientHeaderAttribute('SESSION_EXPIRED', null, null);
 
       render(<MedicationsTable config={editConfig} />);
 
@@ -866,7 +872,7 @@ describe('MedicationsTable', () => {
 
     it('disables edit-all button when provider mismatch and can-edit-encounter is not set', () => {
       setupWithActiveMeds();
-      setPatientHeaderAttribute('PROVIDER_MISMATCH', null);
+      setPatientHeaderAttribute('PROVIDER_MISMATCH', null, null);
 
       render(<MedicationsTable config={editConfig} />);
 
@@ -881,9 +887,18 @@ describe('MedicationsTable', () => {
       expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
     });
 
+    it('disables edit-all when medications belong to a different encounter', () => {
+      setupWithActiveMeds();
+      setPatientHeaderAttribute('MATCHED', 'true', 'different-encounter-uuid');
+
+      render(<MedicationsTable config={editConfig} />);
+
+      expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
+    });
+
     it('hides per-row edit buttons when can-edit-encounter is not set', () => {
       setupWithActiveMeds();
-      setPatientHeaderAttribute('SESSION_EXPIRED', null);
+      setPatientHeaderAttribute('SESSION_EXPIRED', null, null);
 
       render(<MedicationsTable config={editConfig} />);
 

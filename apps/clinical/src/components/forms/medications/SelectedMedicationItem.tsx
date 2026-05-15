@@ -164,7 +164,14 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         updateDispenseUnit,
       ]);
 
+      const editQuantitySkippedRef = React.useRef(
+        !!medicationInputEntry.fhirResourceId,
+      );
       useEffect(() => {
+        if (editQuantitySkippedRef.current) {
+          editQuantitySkippedRef.current = false;
+          return;
+        }
         const totalQuantity = calculateTotalQuantity(
           dosage,
           frequency,
@@ -218,9 +225,10 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
       ]);
 
       useEffect(() => {
+        if (medicationInputEntry.fhirResourceId) return;
         setDefaultInstruction();
         setDefaultDurationUnit();
-      }, [setDefaultInstruction, setDefaultDurationUnit]);
+      }, [setDefaultInstruction, setDefaultDurationUnit]); // eslint-disable-line react-hooks/exhaustive-deps
 
       const medicineName = display.split('(')[0];
       const medicineDetails = display.includes('(')
