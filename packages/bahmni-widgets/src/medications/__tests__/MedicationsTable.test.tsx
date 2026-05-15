@@ -833,7 +833,7 @@ describe('MedicationsTable', () => {
         .forEach((el) => el.remove());
     });
 
-    it('shows edit button when encounter match reason is MATCHED', () => {
+    it('shows edit button when data-can-edit-encounter is true', () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('MATCHED', 'true');
 
@@ -844,7 +844,18 @@ describe('MedicationsTable', () => {
       ).toBeInTheDocument();
     });
 
-    it('disables edit-all button when encounter match reason is SESSION_EXPIRED', () => {
+    it('shows edit button when location mismatch but can-edit-encounter is true', () => {
+      setupWithActiveMeds();
+      setPatientHeaderAttribute('LOCATION_MISMATCH', 'true');
+
+      render(<MedicationsTable config={editConfig} />);
+
+      expect(
+        screen.getByTestId('medications-edit-all-button'),
+      ).toBeInTheDocument();
+    });
+
+    it('disables edit-all button when session expired and can-edit-encounter is not set', () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('SESSION_EXPIRED', null);
 
@@ -853,18 +864,9 @@ describe('MedicationsTable', () => {
       expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
     });
 
-    it('disables edit-all button when encounter match reason is PROVIDER_MISMATCH', () => {
+    it('disables edit-all button when provider mismatch and can-edit-encounter is not set', () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('PROVIDER_MISMATCH', null);
-
-      render(<MedicationsTable config={editConfig} />);
-
-      expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
-    });
-
-    it('disables edit-all button when encounter match reason is LOCATION_MISMATCH', () => {
-      setupWithActiveMeds();
-      setPatientHeaderAttribute('LOCATION_MISMATCH', null);
 
       render(<MedicationsTable config={editConfig} />);
 
@@ -879,7 +881,7 @@ describe('MedicationsTable', () => {
       expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
     });
 
-    it('hides per-row edit buttons when encounter is not matched', () => {
+    it('hides per-row edit buttons when can-edit-encounter is not set', () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('SESSION_EXPIRED', null);
 

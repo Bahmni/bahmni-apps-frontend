@@ -116,17 +116,10 @@ export async function resolveEncounterMatchDecision(
       (e) => !hasParticipant(e, practitionerUUID),
     );
 
-    // 7. Multiple recent encounters by this practitioner → MULTIPLE_ENCOUNTERS_FOUND
-    if (currentPractitionerRecentEncounters.length > 1) {
-      return {
-        matched: false,
-        encounter: currentPractitionerRecentEncounters[0],
-        reasons: ['MULTIPLE_ENCOUNTERS_FOUND'],
-      };
-    }
-
-    // 8. One recent encounter by this practitioner → MATCHED or LOCATION_MISMATCH
-    if (currentPractitionerRecentEncounters.length === 1) {
+    // 7–8. One or more recent encounters by this practitioner → MATCHED or LOCATION_MISMATCH
+    //       When multiple exist, pick the most recent (index 0) — they all belong
+    //       to this practitioner within the session window.
+    if (currentPractitionerRecentEncounters.length >= 1) {
       const encounter = currentPractitionerRecentEncounters[0];
       if (checkLocationMatch(encounter, locationUUID)) {
         return { matched: true, encounter, reasons: ['MATCHED'] };

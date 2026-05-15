@@ -242,11 +242,28 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     return [...activeMedications, ...scheduledMedications];
   }, [allMedications]);
 
-  const patientHeader = document.querySelector(
-    '[data-testid="patient-header"]',
-  );
-  const matchReason = patientHeader?.getAttribute('data-match-reason') ?? '';
-  const canEditEncounter = matchReason === 'MATCHED';
+  const [canEditEncounter, setCanEditEncounter] = useState(false);
+
+  useEffect(() => {
+    const readAttribute = () => {
+      const header = document.querySelector('[data-testid="patient-header"]');
+      setCanEditEncounter(
+        header?.getAttribute('data-can-edit-encounter') === 'true',
+      );
+    };
+
+    readAttribute();
+
+    const header = document.querySelector('[data-testid="patient-header"]');
+    if (!header) return;
+
+    const observer = new MutationObserver(readAttribute);
+    observer.observe(header, {
+      attributes: true,
+      attributeFilter: ['data-can-edit-encounter'],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   const editableMedications = useMemo(() => {
     if (!canEdit || !canEditEncounter) return [];
