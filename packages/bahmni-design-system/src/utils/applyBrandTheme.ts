@@ -1,4 +1,4 @@
-export interface BahmniThemeConfig {
+export interface BrandThemeConfig {
   primary?: string;
   'primary-text'?: string;
   'primary-hover'?: string;
@@ -6,10 +6,10 @@ export interface BahmniThemeConfig {
   'link-hover'?: string;
   'link-visited'?: string;
   'link-visited-on-dark'?: string;
-  background?: string;
+  'layer-01'?: string;
 }
 
-export const BAHMNI_DEFAULT_THEME: Required<BahmniThemeConfig> = {
+export const BAHMNI_DEFAULT_THEME: Required<BrandThemeConfig> = {
   primary: '#007d79',
   'primary-text': '#ffffff',
   'primary-hover': '#006b68',
@@ -17,13 +17,13 @@ export const BAHMNI_DEFAULT_THEME: Required<BahmniThemeConfig> = {
   'link-hover': '#005d5d',
   'link-visited': '#8A3FFC',
   'link-visited-on-dark': '#BE95FF',
-  background: '#f4f4f4',
+  'layer-01': '#f4f4f4',
 };
 
 // Maps each compact config key to the full set of CSS tokens it controls.
 // Tokens that share a colour in Bahmni's default palette are grouped under
 // the most semantically representative key so implementers only override once.
-const THEME_TOKEN_MAP: Record<keyof BahmniThemeConfig, string[]> = {
+const THEME_TOKEN_MAP: Record<keyof BrandThemeConfig, string[]> = {
   primary: [
     'background-brand',
     'button-primary',
@@ -40,20 +40,20 @@ const THEME_TOKEN_MAP: Record<keyof BahmniThemeConfig, string[]> = {
   'link-hover': ['link-primary-hover', 'link-secondary'],
   'link-visited': ['link-visited'],
   'link-visited-on-dark': ['link-inverse-visited'],
-  background: ['layer-01'],
+  'layer-01': ['layer-01'],
 };
 
 // A <style> tag is used instead of document.documentElement.style.setProperty
 // because Carbon v11 defines tokens on .cds--white / .cds--g10 class selectors,
 // not just :root. Inline styles on :root cannot override class-level values.
 // Appending a <style> tag after Carbon's CSS wins via last-definition cascade.
-export function applyBahmniTheme(config: Partial<BahmniThemeConfig>): void {
+export function applyBrandTheme(config: Partial<BrandThemeConfig>): void {
   if (Object.keys(config).length === 0) return;
 
   const cssProperties: [string, string][] = [];
 
   for (const [key, value] of Object.entries(config) as [
-    keyof BahmniThemeConfig,
+    keyof BrandThemeConfig,
     string,
   ][]) {
     for (const cssToken of THEME_TOKEN_MAP[key] ?? []) {

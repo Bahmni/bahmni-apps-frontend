@@ -1,9 +1,9 @@
-import { type BahmniThemeConfig } from '@bahmni/design-system';
+import { type BrandThemeConfig } from '@bahmni/design-system';
 
-export type { BahmniThemeConfig };
+export type { BrandThemeConfig };
 
 export interface BrandThemeContextType {
-  themeConfig: BahmniThemeConfig | null | undefined;
+  brandThemeConfig: BrandThemeConfig | null | undefined;
   isLoading: boolean;
   error: Error | null;
 }

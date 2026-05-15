@@ -1,22 +1,22 @@
-import { applyBahmniTheme, BAHMNI_DEFAULT_THEME } from '@bahmni/design-system';
+import { applyBrandTheme } from '@bahmni/design-system';
 import { getConfig } from '@bahmni/services';
 import React, { ReactNode, useEffect, useMemo } from 'react';
 import { createConfigProvider } from '../configProvider';
 import { BrandThemeContext } from './context';
 import { useBrandTheme } from './hook';
-import { type BahmniThemeConfig, type BrandThemeContextType } from './models';
+import { type BrandThemeConfig, type BrandThemeContextType } from './models';
 import brandThemeSchema from './schema.json';
 
-export const BRAND_THEME_CONFIG_URL =
-  '/bahmni_config/openmrs/apps/home/bahmni-brand.json';
+export const BRAND_THEME_URL =
+  '/bahmni_config/openmrs/apps/home/brand-extension.json';
 
 // Applies resolved brand colours as a CSS side effect once config has loaded.
 // Rendered only after InternalBrandThemeProvider confirms the fetch succeeded.
 const BrandThemeApplier: React.FC = () => {
-  const { themeConfig } = useBrandTheme();
+  const { brandThemeConfig } = useBrandTheme();
   useEffect(() => {
-    applyBahmniTheme({ ...BAHMNI_DEFAULT_THEME, ...(themeConfig ?? {}) });
-  }, [themeConfig]);
+    applyBrandTheme(brandThemeConfig ?? {});
+  }, [brandThemeConfig]);
   return null;
 };
 
@@ -27,17 +27,16 @@ interface BrandThemeProviderProps {
 
 export const BrandThemeProvider: React.FC<BrandThemeProviderProps> = ({
   children,
-  configUrl = BRAND_THEME_CONFIG_URL,
+  configUrl = BRAND_THEME_URL,
 }) => {
   const InternalProvider = useMemo(
     () =>
-      createConfigProvider<BahmniThemeConfig, BrandThemeContextType>({
+      createConfigProvider<BrandThemeConfig, BrandThemeContextType>({
         context: BrandThemeContext,
         queryKey: ['brandTheme', configUrl],
-        queryFn: () =>
-          getConfig<BahmniThemeConfig>(configUrl, brandThemeSchema),
-        valueMapper: (themeConfig, isLoading, error) => ({
-          themeConfig,
+        queryFn: () => getConfig<BrandThemeConfig>(configUrl, brandThemeSchema),
+        valueMapper: (brandThemeConfig, isLoading, error) => ({
+          brandThemeConfig,
           isLoading,
           error,
         }),

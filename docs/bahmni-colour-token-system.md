@@ -68,12 +68,12 @@ Carbon v11 supports two theming approaches:
 | Build speed | ✅ Fast — uses pre-compiled Carbon CSS | ⚠️ Slower — must compile all Carbon SCSS from source |
 | Visual result in browser | Identical | Identical |
 | Future design system switch | ✅ Change variable names only | ❌ Rewrite build pipeline + SCSS config |
-| Future runtime theming | ✅ `applyBahmniTheme()` overrides inline styles on top | ✅ Also works |
+| Future runtime theming | ✅ `applyBrandTheme()` overrides inline styles on top | ✅ Also works |
 | Design system coupling | To CSS variable name strings only | To Carbon's proprietary SCSS `@use` API |
 
 **CSS custom properties are chosen** because:
 
-1. **Design system agnostic** — CSS custom properties are a web standard. When switching to a different design system, only the variable names in `bahmni-tokens.scss` change. `_palette.scss` hex values and the `applyBahmniTheme()` utility both survive the switch untouched.
+1. **Design system agnostic** — CSS custom properties are a web standard. When switching to a different design system, only the variable names in `bahmni-tokens.scss` change. `_palette.scss` hex values and the `applyBrandTheme()` utility both survive the switch untouched.
 2. **Keeps `bahmni-design-system` isolated** — no service calls, no framework API coupling. The design system owns defaults only; the shell orchestrates runtime config.
 3. **Build stays fast** — pre-compiled `@carbon/styles/css/styles.css` is unchanged.
 4. **Runtime theming compatible** — future dynamic config fetch can override these values via inline styles without touching this layer.
@@ -205,7 +205,7 @@ $bahmni-teal-active:  #004144; // Button/button-primary-active
 // Chosen over SCSS token override because:
 //   - Design system agnostic: only variable names couple to Carbon, not the build API
 //   - Future-proof: switching design systems = rename variables, not rebuild pipeline
-//   - Compatible with runtime theming: applyBahmniTheme() can override further via inline styles
+//   - Compatible with runtime theming: applyBrandTheme() can override further via inline styles
 //
 // Figma → Carbon mapping: strip "Category/" prefix, prepend "--cds-"
 //   e.g. Figma "Button/button-primary" → "--cds-button-primary"
@@ -555,7 +555,7 @@ If Bahmni migrates to a different design system (MUI, Chakra, etc.):
 
 - `_palette.scss` — **untouched**. Hex values have no Carbon coupling.
 - `bahmni-tokens.scss` — **rename variable names only**. Replace `--cds-*` with the new system's token names (e.g. `--mui-palette-primary-main`). Build pipeline unchanged.
-- `applyBahmniTheme()` utility — **untouched**. It is a pure DOM function with no design system dependency.
+- `applyBrandTheme()` utility — **untouched**. It is a pure DOM function with no design system dependency.
 
 ### Runtime dynamic theming (future Phase 7)
 
@@ -566,15 +566,15 @@ bahmni-design-system          bahmni-services              distro/main.tsx
 ─────────────────────         ───────────────              ───────────────
 _palette.scss (defaults)      fetchThemeConfig()           import both
 bahmni-tokens.scss (CSS)   +  HTTP call only          →   fetchThemeConfig()
-applyBahmniTheme() (DOM)      returns plain object           .then(applyBahmniTheme)
+applyBrandTheme() (DOM)      returns plain object           .then(applyBrandTheme)
 No service calls ever         No DOM access                  .catch(() => {})
 ```
 
-`applyBahmniTheme()` sets inline styles on `document.documentElement` — inline styles have higher specificity than any stylesheet rule and cleanly override the static defaults from `bahmni-tokens.scss`:
+`applyBrandTheme()` sets inline styles on `document.documentElement` — inline styles have higher specificity than any stylesheet rule and cleanly override the static defaults from `bahmni-tokens.scss`:
 
 ```ts
-// packages/bahmni-design-system/src/utils/applyTheme.ts
-export interface BahmniThemeConfig {
+// packages/bahmni-design-system/src/utils/applyBrandTheme.ts
+export interface BrandThemeConfig {
   'background-brand'?:       string
   'button-primary'?:         string
   'button-primary-hover'?:   string
@@ -587,7 +587,7 @@ export interface BahmniThemeConfig {
   'border-interactive'?:     string
 }
 
-export function applyBahmniTheme(config: Partial<BahmniThemeConfig>): void {
+export function applyBrandTheme(config: Partial<BrandThemeConfig>): void {
   Object.entries(config).forEach(([token, value]) => {
     document.documentElement.style.setProperty(`--cds-${token}`, value)
   })
@@ -596,9 +596,9 @@ export function applyBahmniTheme(config: Partial<BahmniThemeConfig>): void {
 
 ```ts
 // packages/bahmni-services/src/themeService.ts
-import type { BahmniThemeConfig } from '@bahmni/design-system'
+import type { BrandThemeConfig } from '@bahmni/design-system'
 
-export async function fetchThemeConfig(): Promise<Partial<BahmniThemeConfig>> {
+export async function fetchThemeConfig(): Promise<Partial<BrandThemeConfig>> {
   const res = await fetch('/bahmni-theme.config.json')
   if (!res.ok) return {}    // empty → static defaults in bahmni-tokens.scss remain
   return res.json()
@@ -630,7 +630,7 @@ Static defaults from `bahmni-tokens.scss` act as the guaranteed fallback if the 
 | 4 | No code changes | DevTools + visual verification |
 | 5 | **Modify** (× 16) | `apps/clinical/` and `apps/registration/` — remove dead import |
 | 6 | **Modify** (optional) | `stylelint.config.js` |
-| Future 7 | **Create** | `packages/bahmni-design-system/src/utils/applyTheme.ts` |
+| Future 7 | **Create** | `packages/bahmni-design-system/src/utils/applyBrandTheme.ts` |
 | Future 7 | **Create** | `packages/bahmni-services/src/themeService.ts` |
 | Future 7 | **Modify** | `distro/src/main.tsx` — two-line wiring |
 

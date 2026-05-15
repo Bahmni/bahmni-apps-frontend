@@ -53,9 +53,9 @@ export {
   BrandThemeProvider,
   useBrandTheme,
   BrandThemeContext,
-  BRAND_THEME_CONFIG_URL,
+  BRAND_THEME_URL,
   type BrandThemeContextType,
-  type BahmniThemeConfig,
+  type BrandThemeConfig,
 } from './brandTheme';
 
 // Widget Registry

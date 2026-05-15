@@ -5,7 +5,7 @@ import { render, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { NotificationProvider } from '../../notification';
 import { useBrandTheme } from '../hook';
-import { BrandThemeProvider, BRAND_THEME_CONFIG_URL } from '../provider';
+import { BrandThemeProvider, BRAND_THEME_URL } from '../provider';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -14,17 +14,27 @@ jest.mock('@bahmni/services', () => ({
 
 jest.mock('@bahmni/design-system', () => ({
   ...jest.requireActual('@bahmni/design-system'),
-  applyBahmniTheme: jest.fn(),
+  applyBrandTheme: jest.fn(),
 }));
 
 const mockGetConfig = services.getConfig as jest.MockedFunction<
   typeof services.getConfig
 >;
 const mockApplyBahmniTheme =
-  designSystem.applyBahmniTheme as jest.MockedFunction<
-    typeof designSystem.applyBahmniTheme
+  designSystem.applyBrandTheme as jest.MockedFunction<
+    typeof designSystem.applyBrandTheme
   >;
-const { BAHMNI_DEFAULT_THEME } = designSystem;
+
+const FULL_BRAND_CONFIG = {
+  primary: '#ff0000',
+  'primary-text': '#ffffff',
+  'primary-hover': '#cc0000',
+  'primary-active': '#990000',
+  'link-hover': '#aa0000',
+  'link-visited': '#8A3FFC',
+  'link-visited-on-dark': '#BE95FF',
+  'layer-01': '#f4f4f4',
+};
 
 const TestChild = () => <div data-testid="child">child</div>;
 
@@ -51,9 +61,8 @@ describe('BrandThemeProvider', () => {
   });
 
   describe('Brand colour application', () => {
-    it('applies merged config after successful fetch', async () => {
-      const overrides = { primary: '#ff0000', 'primary-hover': '#cc0000' };
-      mockGetConfig.mockResolvedValue(overrides);
+    it('applies config directly after successful fetch without fallback to defaults', async () => {
+      mockGetConfig.mockResolvedValue(FULL_BRAND_CONFIG);
 
       render(
         <Wrapper>
@@ -62,46 +71,21 @@ describe('BrandThemeProvider', () => {
       );
 
       await waitFor(() => {
-        expect(mockApplyBahmniTheme).toHaveBeenCalledWith({
-          ...BAHMNI_DEFAULT_THEME,
-          ...overrides,
-        });
-      });
-    });
-
-    it('falls back to defaults for unspecified keys in a partial override', async () => {
-      const overrides = { primary: '#ff0000' };
-      mockGetConfig.mockResolvedValue(overrides);
-
-      render(
-        <Wrapper>
-          <TestChild />
-        </Wrapper>,
-      );
-
-      await waitFor(() => {
-        expect(mockApplyBahmniTheme).toHaveBeenCalledWith(
-          expect.objectContaining({
-            primary: '#ff0000',
-            'primary-hover': BAHMNI_DEFAULT_THEME['primary-hover'],
-            'link-visited': BAHMNI_DEFAULT_THEME['link-visited'],
-          }),
-        );
+        expect(mockApplyBahmniTheme).toHaveBeenCalledWith(FULL_BRAND_CONFIG);
       });
     });
   });
 
   describe('Context value', () => {
-    it('exposes themeConfig and isLoading: false after successful fetch', async () => {
-      const overrides = { primary: '#ff0000' };
-      mockGetConfig.mockResolvedValue(overrides);
+    it('exposes brandThemeConfig and isLoading: false after successful fetch', async () => {
+      mockGetConfig.mockResolvedValue(FULL_BRAND_CONFIG);
 
       const { result } = renderHook(() => useBrandTheme(), {
         wrapper: Wrapper,
       });
 
       await waitFor(() => {
-        expect(result.current.themeConfig).toEqual(overrides);
+        expect(result.current.brandThemeConfig).toEqual(FULL_BRAND_CONFIG);
         expect(result.current.isLoading).toBe(false);
         expect(result.current.error).toBeNull();
       });
@@ -111,8 +95,7 @@ describe('BrandThemeProvider', () => {
   describe('Custom configUrl', () => {
     it('fetches from a custom configUrl when provided', async () => {
       const customUrl = '/custom/path/brand.json';
-      const overrides = { primary: '#00ff00' };
-      mockGetConfig.mockResolvedValue(overrides);
+      mockGetConfig.mockResolvedValue(FULL_BRAND_CONFIG);
 
       render(
         <QueryClientProvider client={queryClient}>
@@ -132,8 +115,8 @@ describe('BrandThemeProvider', () => {
       });
     });
 
-    it('uses the default Bahmni config URL when no configUrl is provided', async () => {
-      mockGetConfig.mockResolvedValue({});
+    it('uses the default brand config URL when no configUrl is provided', async () => {
+      mockGetConfig.mockResolvedValue(FULL_BRAND_CONFIG);
 
       render(
         <Wrapper>
@@ -143,7 +126,7 @@ describe('BrandThemeProvider', () => {
 
       await waitFor(() => {
         expect(mockGetConfig).toHaveBeenCalledWith(
-          BRAND_THEME_CONFIG_URL,
+          BRAND_THEME_URL,
           expect.any(Object),
         );
       });
