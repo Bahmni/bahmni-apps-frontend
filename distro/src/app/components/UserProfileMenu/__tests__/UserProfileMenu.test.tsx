@@ -14,6 +14,12 @@ jest.mock('@bahmni/widgets', () => ({
   useNotification: jest.fn(),
 }));
 
+jest.mock('@bahmni/design-system', () => ({
+  SkeletonPlaceholder: ({ className }: any) => (
+    <div data-testid="skeleton-placeholder" className={className} />
+  ),
+}));
+
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   logout: jest.fn(),
@@ -166,7 +172,7 @@ describe('UserProfileMenu', () => {
     expect(logoutBtn).toBeDisabled();
   });
 
-  it('shows loading state when user data is loading', () => {
+  it('renders skeleton while loading', () => {
     mockUseActivePractitioner.mockReturnValue({
       practitioner: null,
       user: null,
@@ -177,7 +183,8 @@ describe('UserProfileMenu', () => {
 
     render(<UserProfileMenu />);
 
-    expect(screen.getByText('Loading')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByTestId('skeleton-placeholder')).toBeInTheDocument();
   });
 
   it('returns null when user data is not available', () => {

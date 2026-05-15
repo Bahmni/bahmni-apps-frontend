@@ -2,6 +2,7 @@ import { Patient } from 'fhir/r4';
 import { get, post } from '../../api';
 import { APP_PROPERTY_URL } from '../../applicationConfigService/constants';
 import { getUserLoginLocation } from '../../userService';
+import { blobToDataUrl } from '../../utils';
 import {
   PATIENT_RESOURCE_URL,
   PATIENT_LUCENE_SEARCH_URL,
@@ -11,6 +12,7 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   ADDRESS_HIERARCHY_URL,
+  PATIENT_IMAGE_URL,
 } from '../constants';
 import {
   getPatientById,
@@ -26,14 +28,18 @@ import {
   createPatient,
   getGenders,
   getAddressHierarchyEntries,
-  getPatientImageAsDataUrl,
   getPatientProfile,
+  getPatientPhotoDataUrl,
 } from '../patientService';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
 const mockedPost = post as jest.MockedFunction<typeof post>;
 jest.mock('../../userService');
+jest.mock('../../utils');
+const mockedBlobToDataUrl = blobToDataUrl as jest.MockedFunction<
+  typeof blobToDataUrl
+>;
 const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<
   typeof getUserLoginLocation
 >;
@@ -1414,24 +1420,6 @@ describe('Patient Service', () => {
     });
   });
 
-  describe('getPatientImageAsDataUrl', () => {
-    it('should fetch patient image correctly', async () => {
-      const patientUUID = 'c22a5000-3f10-11e4-adec-0800271c1b75';
-      const mockBlob = new Blob(['test'], { type: 'image/jpeg' });
-      const mockResponse = {
-        ok: true,
-        blob: jest.fn().mockResolvedValue(mockBlob),
-      };
-      global.fetch = jest.fn().mockResolvedValue(mockResponse);
-
-      await getPatientImageAsDataUrl(patientUUID);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining(`patientUuid=${patientUUID}`),
-      );
-    });
-  });
-
   describe('getPatientProfile', () => {
     it('should fetch patient profile correctly', async () => {
       const patientUuid = 'c22a5000-3f10-11e4-adec-0800271c1b75';
@@ -1451,6 +1439,41 @@ describe('Patient Service', () => {
         expect.stringContaining(`/patientprofile/${patientUuid}?v=full`),
       );
       expect(result).toEqual(mockProfile);
+    });
+  });
+
+  describe('getPatientPhotoDataUrl', () => {
+    const PATIENT_UUID = '12345678-1234-1234-1234-123456789abc';
+
+    it('calls get with the correct URL and blob responseType', async () => {
+      const mockBlob = new Blob(['image-data'], { type: 'image/jpeg' });
+      mockedGet.mockResolvedValueOnce(mockBlob as any);
+      mockedBlobToDataUrl.mockResolvedValueOnce('data:image/jpeg;base64,abc');
+
+      await getPatientPhotoDataUrl(PATIENT_UUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(PATIENT_IMAGE_URL(PATIENT_UUID), {
+        responseType: 'blob',
+      });
+    });
+
+    it('returns the data URL from blobToDataUrl', async () => {
+      const mockBlob = new Blob(['image-data'], { type: 'image/jpeg' });
+      const mockDataUrl = 'data:image/jpeg;base64,abc123';
+      mockedGet.mockResolvedValueOnce(mockBlob as any);
+      mockedBlobToDataUrl.mockResolvedValueOnce(mockDataUrl);
+
+      const result = await getPatientPhotoDataUrl(PATIENT_UUID);
+
+      expect(result).toBe(mockDataUrl);
+    });
+
+    it('propagates errors from the API', async () => {
+      mockedGet.mockRejectedValueOnce(new Error('Network error'));
+
+      await expect(getPatientPhotoDataUrl(PATIENT_UUID)).rejects.toThrow(
+        'Network error',
+      );
     });
   });
 });

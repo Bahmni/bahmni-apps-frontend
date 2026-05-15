@@ -1,6 +1,10 @@
-import { useTranslation } from '@bahmni/services';
-import { PatientDetails } from '@bahmni/widgets';
+import {
+  useTranslation,
+  CONSULTATION_ENCOUNTER_TYPE_UUID,
+} from '@bahmni/services';
+import { PatientDetails, useActivePractitioner } from '@bahmni/widgets';
 import React from 'react';
+import { useEncounterSession } from '../../hooks/useEncounterSession';
 import ConsultationActionButton from './ConsultationActionButton';
 import styles from './styles/PatientHeader.module.scss';
 
@@ -19,15 +23,32 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   isActionAreaVisible,
 }) => {
   const { t } = useTranslation();
+  const { practitioner } = useActivePractitioner();
+
+  // Single hook call shared with ConsultationActionButton via props to avoid
+  // duplicate FHIR searches. matchReason is exposed on the DOM so downstream
+  // widget consumers can read it without waiting for ConsultationPad to open.
+  const { matchReason, editActiveEncounter, isLoading } = useEncounterSession({
+    practitioner,
+    encounterTypeUUID: CONSULTATION_ENCOUNTER_TYPE_UUID,
+  });
 
   return (
     <div
       aria-label={t('PATIENT_HEADER_LABEL')}
       className={styles.header}
       data-testid="patient-header"
+      data-match-reason={
+        matchReason.length > 0 ? matchReason.join(',') : undefined
+      }
+      data-can-edit-encounter={editActiveEncounter ? 'true' : undefined}
     >
       <PatientDetails />
-      <ConsultationActionButton isActionAreaVisible={isActionAreaVisible} />
+      <ConsultationActionButton
+        isActionAreaVisible={isActionAreaVisible}
+        editActiveEncounter={editActiveEncounter}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

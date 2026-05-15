@@ -1,10 +1,18 @@
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { HomePageHeader } from '../HomePageHeader';
 
-jest.mock('@carbon/react', () => ({
-  Header: ({ children, ...props }: any) => (
-    <header {...props}>{children}</header>
+expect.extend(toHaveNoViolations);
+
+jest.mock('@bahmni/design-system', () => ({
+  Header: ({ ariaLabel, extraContent }: any) => (
+    <header aria-label={ariaLabel} data-testid="header">
+      {extraContent}
+    </header>
   ),
+}));
+
+jest.mock('@carbon/react', () => ({
   HeaderName: ({ prefix }: any) => (
     <div data-testid="header-name">{prefix}</div>
   ),
@@ -29,7 +37,7 @@ describe('HomePageHeader', () => {
   it('renders the header with correct aria-label', () => {
     render(<HomePageHeader />);
 
-    const header = screen.getByTestId('home-page-header');
+    const header = screen.getByTestId('header');
     expect(header).toBeInTheDocument();
     expect(header).toHaveAttribute('aria-label', 'Bahmni');
   });
@@ -59,5 +67,10 @@ describe('HomePageHeader', () => {
     const globalBar = screen.getByTestId('header-global-bar');
     expect(globalBar).toContainElement(screen.getByTestId('location-selector'));
     expect(globalBar).toContainElement(screen.getByTestId('user-profile-menu'));
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<HomePageHeader />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

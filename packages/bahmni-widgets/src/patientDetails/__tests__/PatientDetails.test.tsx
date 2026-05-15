@@ -1,42 +1,38 @@
 import { FormattedPatientData, formatDateTime } from '@bahmni/services';
+import { UseQueryResult, useQuery } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import PatientDetails from '../PatientDetails';
-import { usePatient } from '../usePatient';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('../usePatient');
+jest.mock('../../hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(() => 'test-uuid'),
+}));
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(),
+}));
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   formatDateTime: jest.fn(),
+  getPatientPhotoDataUrl: jest.fn(),
 }));
 
-jest.mock('@bahmni/design-system', () => ({
-  Icon: ({
-    id,
-    name,
-    testId,
-  }: {
-    id: string;
-    name: string;
-    testId?: string;
-  }) => (
-    <span data-testid={testId ?? `icon-${id}`} data-icon-name={name}>
-      {name}
-    </span>
-  ),
-  ICON_SIZE: {
-    SM: 'small',
-    MD: 'medium',
-    LG: 'large',
-  },
-}));
-
-const mockedUsePatient = usePatient as jest.MockedFunction<typeof usePatient>;
+const mockedUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockedFormatDateTime = formatDateTime as jest.MockedFunction<
   typeof formatDateTime
 >;
+
+const mockPatientQuery = (
+  patientResult: Partial<UseQueryResult>,
+  photoData?: string,
+) => {
+  mockedUseQuery.mockImplementation(({ queryKey }: any) => {
+    if (queryKey[0] === 'patient') return patientResult as UseQueryResult;
+    return { data: photoData } as UseQueryResult;
+  });
+};
 
 const createMockPatient = (
   overrides?: Partial<FormattedPatientData>,
@@ -60,6 +56,7 @@ describe('PatientDetails Component', () => {
       formattedResult: String(date),
       error: undefined,
     }));
+    mockPatientQuery({ data: undefined, isLoading: false, error: null });
   });
 
   afterEach(() => {
@@ -68,13 +65,47 @@ describe('PatientDetails Component', () => {
 
   describe('Loading States', () => {
     it.each([
-      ['loading', { loading: true, error: null, patient: null }],
-      ['error', { loading: false, error: new Error('Failed'), patient: null }],
-      ['no patient', { loading: false, error: null, patient: null }],
+      ['loading', { isLoading: true, error: null, data: undefined }],
+      [
+        'error',
+        { isLoading: false, error: new Error('Failed'), data: undefined },
+      ],
+      ['no patient', { isLoading: false, error: null, data: undefined }],
     ])('renders skeleton when %s', (_, mockState) => {
-      mockedUsePatient.mockReturnValue({ ...mockState, refetch: jest.fn() });
+      mockPatientQuery(mockState);
       render(<PatientDetails />);
       expect(screen.getByTestId('skeleton-loader')).toBeInTheDocument();
+    });
+  });
+
+  describe('Patient Photo', () => {
+    it('does not render photo when query has no data', () => {
+      mockPatientQuery({
+        data: createMockPatient(),
+        isLoading: false,
+        error: null,
+      });
+
+      render(<PatientDetails />);
+
+      expect(
+        screen.queryByTestId('patient-photo-test-id'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders photo data url when query resolves', () => {
+      const photoDataUrl = 'data:image/jpeg;base64,/9j/photo==';
+      mockPatientQuery(
+        { data: createMockPatient(), isLoading: false, error: null },
+        photoDataUrl,
+      );
+
+      render(<PatientDetails />);
+
+      expect(screen.getByTestId('patient-photo-test-id')).toHaveAttribute(
+        'src',
+        photoDataUrl,
+      );
     });
   });
 
@@ -88,12 +119,7 @@ describe('PatientDetails Component', () => {
         ]),
       });
 
-      mockedUsePatient.mockReturnValue({
-        patient,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockPatientQuery({ data: patient, isLoading: false, error: null });
 
       render(<PatientDetails />);
 
@@ -113,12 +139,7 @@ describe('PatientDetails Component', () => {
         identifiers: new Map([['ID', 'ID123']]),
       });
 
-      mockedUsePatient.mockReturnValue({
-        patient,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockPatientQuery({ data: patient, isLoading: false, error: null });
 
       render(<PatientDetails />);
 
@@ -130,17 +151,12 @@ describe('PatientDetails Component', () => {
   });
 
   describe('Missing Fields Handling', () => {
-    it('hides patient name section when name is null', () => {
+    it('renders empty patient name when name is null', () => {
       const patient = createMockPatient({ fullName: null });
-      mockedUsePatient.mockReturnValue({
-        patient,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockPatientQuery({ data: patient, isLoading: false, error: null });
 
       render(<PatientDetails />);
-      expect(screen.queryByTestId('patient-name')).not.toBeInTheDocument();
+      expect(screen.getByTestId('patient-name')).toBeEmptyDOMElement();
     });
 
     it('calculates and shows age when birthDate is provided', () => {
@@ -148,12 +164,7 @@ describe('PatientDetails Component', () => {
         birthDate: '1990-01-01',
       });
 
-      mockedUsePatient.mockReturnValue({
-        patient,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockPatientQuery({ data: patient, isLoading: false, error: null });
 
       render(<PatientDetails />);
       expect(
@@ -161,27 +172,9 @@ describe('PatientDetails Component', () => {
       ).toBeInTheDocument();
     });
 
-    it('shows only birth date when birthDate is null', () => {
-      const patient = createMockPatient({ birthDate: null });
-      mockedUsePatient.mockReturnValue({
-        patient,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      render(<PatientDetails />);
-      expect(screen.queryByText(/YEARS/)).not.toBeInTheDocument();
-    });
-
     it('hides age section when birth date is null', () => {
       const patient = createMockPatient({ birthDate: null });
-      mockedUsePatient.mockReturnValue({
-        patient,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockPatientQuery({ data: patient, isLoading: false, error: null });
 
       render(<PatientDetails />);
       expect(
@@ -193,12 +186,7 @@ describe('PatientDetails Component', () => {
   describe('Identifier Handling', () => {
     it('hides identifier section when no identifiers exist', () => {
       const patient = createMockPatient({ identifiers: new Map() });
-      mockedUsePatient.mockReturnValue({
-        patient,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockPatientQuery({ data: patient, isLoading: false, error: null });
 
       render(<PatientDetails />);
       expect(screen.queryByText(/MRN|ID/)).not.toBeInTheDocument();
@@ -214,12 +202,7 @@ describe('PatientDetails Component', () => {
         ]),
       });
 
-      mockedUsePatient.mockReturnValue({
-        patient,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockPatientQuery({ data: patient, isLoading: false, error: null });
 
       render(<PatientDetails />);
       expect(screen.getByText('MRN123 | OP456')).toBeInTheDocument();
@@ -228,35 +211,18 @@ describe('PatientDetails Component', () => {
   });
 
   describe('Accessibility', () => {
-    it('passes axe accessibility tests with patient data', async () => {
+    it.each([
+      [
+        'patient data',
+        { data: createMockPatient(), isLoading: false, error: null },
+      ],
+      ['loading state', { data: undefined, isLoading: true, error: null }],
+    ])('passes axe accessibility tests with %s', async (_, mockState) => {
       jest.useRealTimers(); // axe doesn't work well with fake timers
-      const patient = createMockPatient();
-      mockedUsePatient.mockReturnValue({
-        patient,
-        loading: false,
-        error: null,
-        refetch: jest.fn(),
-      });
+      mockPatientQuery(mockState);
 
       const { container } = render(<PatientDetails />);
       expect(await axe(container)).toHaveNoViolations();
-      jest.useFakeTimers(); // restore fake timers
-      jest.setSystemTime(new Date('2025-03-16'));
-    });
-
-    it('passes axe accessibility tests in loading state', async () => {
-      jest.useRealTimers(); // axe doesn't work well with fake timers
-      mockedUsePatient.mockReturnValue({
-        patient: null,
-        loading: true,
-        error: null,
-        refetch: jest.fn(),
-      });
-
-      const { container } = render(<PatientDetails />);
-      expect(await axe(container)).toHaveNoViolations();
-      jest.useFakeTimers(); // restore fake timers
-      jest.setSystemTime(new Date('2025-03-16'));
     });
   });
 });
