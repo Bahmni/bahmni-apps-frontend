@@ -1,5 +1,4 @@
 import { act, render, screen } from '@testing-library/react';
-import React from 'react';
 import { HomeApp } from '../App';
 
 const mockInitAppI18n = jest.fn();
@@ -13,26 +12,8 @@ jest.mock('@bahmni/design-system', () => ({
   initFontAwesome: jest.fn(),
 }));
 
-jest.mock('../components/HomePageGrid', () => ({
-  HomePageGrid: () => <div data-testid="home-page-grid" />,
-}));
-
-jest.mock('../components/HomePageHeader', () => ({
-  HomePageHeader: () => <div data-testid="home-page-header" />,
-}));
-
-jest.mock('../context', () => ({
-  LocationProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
-
-jest.mock('@bahmni/widgets', () => ({
-  ActivePractitionerProvider: ({ children }: { children: React.ReactNode }) =>
-    children,
-  UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) =>
-    children,
-  NotificationProvider: ({ children }: { children: React.ReactNode }) =>
-    children,
-  NotificationServiceComponent: () => null,
+jest.mock('../components/HomePage', () => ({
+  HomePage: () => <div data-testid="home-page" />,
 }));
 
 describe('HomeApp', () => {
@@ -42,31 +23,23 @@ describe('HomeApp', () => {
 
   it('shows <Loading /> before initialization completes', () => {
     mockInitAppI18n.mockReturnValue(new Promise(() => {}));
-
     render(<HomeApp />);
-
     expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
 
   it('renders home page content after initialization resolves', async () => {
     render(<HomeApp />);
-
     await act(async () => {});
-
     expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
-    expect(screen.getByTestId('home-page-header')).toBeInTheDocument();
-    expect(screen.getByTestId('home-page-grid')).toBeInTheDocument();
+    expect(screen.getByTestId('home-page')).toBeInTheDocument();
   });
 
   it('renders home page content even when initAppI18n rejects', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     mockInitAppI18n.mockRejectedValue(new Error('i18n failed'));
-
     render(<HomeApp />);
-
     await act(async () => {});
-
     expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
-    expect(screen.getByTestId('home-page-header')).toBeInTheDocument();
+    expect(screen.getByTestId('home-page')).toBeInTheDocument();
   });
 });

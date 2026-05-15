@@ -21,7 +21,7 @@ jest.mock('@carbon/react', () => ({
   ),
 }));
 
-jest.mock('../../LocationSelector', () => ({
+jest.mock('@bahmni/widgets', () => ({
   LocationSelector: () => (
     <div data-testid="location-selector">Location Selector</div>
   ),

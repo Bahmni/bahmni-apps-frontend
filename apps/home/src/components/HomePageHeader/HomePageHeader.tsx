@@ -1,7 +1,7 @@
 import { Header } from '@bahmni/design-system';
+import { LocationSelector } from '@bahmni/widgets';
 import { HeaderGlobalBar, HeaderName } from '@carbon/react';
 import React from 'react';
-import { LocationSelector } from '../LocationSelector';
 import { UserProfileMenu } from '../UserProfileMenu';
 import styles from './styles/HomePageHeader.module.scss';
 

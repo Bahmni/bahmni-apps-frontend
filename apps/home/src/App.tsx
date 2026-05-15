@@ -1,22 +1,8 @@
 import { initFontAwesome, Loading } from '@bahmni/design-system';
 import { initAppI18n } from '@bahmni/services';
-import {
-  ActivePractitionerProvider,
-  NotificationProvider,
-  NotificationServiceComponent,
-  UserPrivilegeProvider,
-} from '@bahmni/widgets';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
-import { HomePageGrid } from './components/HomePageGrid';
-import { HomePageHeader } from './components/HomePageHeader';
+import { HomePage } from './components/HomePage';
 import { HOME_NAMESPACE } from './constants/app';
-import { LocationProvider } from './context';
-import styles from './styles/IndexPage.module.scss';
-
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
-});
 
 const HomeApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -40,23 +26,7 @@ const HomeApp: React.FC = () => {
     return <Loading />;
   }
 
-  return (
-    <LocationProvider>
-      <QueryClientProvider client={queryClient}>
-        <ActivePractitionerProvider>
-          <UserPrivilegeProvider>
-            <NotificationProvider>
-              <NotificationServiceComponent />
-              <HomePageHeader />
-              <main className={styles.homePageBody}>
-                <HomePageGrid />
-              </main>
-            </NotificationProvider>
-          </UserPrivilegeProvider>
-        </ActivePractitionerProvider>
-      </QueryClientProvider>
-    </LocationProvider>
-  );
+  return <HomePage />;
 };
 
 export { HomeApp };
