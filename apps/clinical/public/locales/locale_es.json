@@ -438,5 +438,6 @@
   "NO_MATCHING_VACCINATIONS_FOUND": "No se encontraron vacunas coincidentes",
   "ERROR_FETCHING_VACCINATION_CONFIG": "Error al obtener la configuración de vacunas",
   "YEARS_one": " año",
-  "YEARS_other": " años"
+  "YEARS_other": " años",
+  "PRINT_MODAL_PREPARING_DOCUMENT": "Preparando documento…"
 }

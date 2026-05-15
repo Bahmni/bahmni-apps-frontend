@@ -438,5 +438,6 @@
   "NO_MATCHING_VACCINATIONS_FOUND": "No matching Vaccinations found",
   "ERROR_FETCHING_VACCINATION_CONFIG": "Error fetching Vaccination configuration",
   "YEARS_one": " year",
-  "YEARS_other": " years"
+  "YEARS_other": " years",
+  "PRINT_MODAL_PREPARING_DOCUMENT": "Preparing document…"
 }

@@ -1,6 +1,13 @@
 import { useTranslation } from '@bahmni/services';
-import { PatientDetails } from '@bahmni/widgets';
+import {
+  DocumentPrintButton,
+  PatientDetails,
+  usePatientUUID,
+  type PrintOption,
+} from '@bahmni/widgets';
 import React from 'react';
+import { usePatientVisit } from '../../hooks/usePatientVisit';
+import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationActionButton from './ConsultationActionButton';
 import styles from './styles/PatientHeader.module.scss';
 
@@ -19,6 +26,18 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   isActionAreaVisible,
 }) => {
   const { t } = useTranslation();
+  const patientUuid = usePatientUUID();
+  const { activeVisit, lastVisit } = usePatientVisit(patientUuid);
+  const { clinicalConfig } = useClinicalConfig();
+
+  const visitUuid = activeVisit?.id ?? lastVisit?.id;
+
+  const renderContext: Record<string, string> = {
+    ...(patientUuid && { patientUuid }),
+    ...(visitUuid && { visitUuid }),
+  };
+
+  const printOptions: PrintOption[] = clinicalConfig?.printOptions ?? [];
 
   return (
     <div
@@ -27,7 +46,15 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
       data-testid="patient-header"
     >
       <PatientDetails />
-      <ConsultationActionButton isActionAreaVisible={isActionAreaVisible} />
+      <div className={styles.actionButtons}>
+        <ConsultationActionButton isActionAreaVisible={isActionAreaVisible} />
+        <DocumentPrintButton
+          printOptions={printOptions}
+          renderContext={renderContext}
+          data-testid="print-clinical-card"
+          size="md"
+        />
+      </div>
     </div>
   );
 };

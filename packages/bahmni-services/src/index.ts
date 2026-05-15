@@ -224,6 +224,7 @@ export { findActiveEncounterInSession } from './encounterSessionService';
 
 export {
   getActiveVisit,
+  getVisits,
   shouldEnableEncounterFilter,
   getObservationsBundleByEncounterUuid,
   type FormsEncounter,
