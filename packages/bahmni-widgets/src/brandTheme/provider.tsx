@@ -8,7 +8,7 @@ import { type BahmniThemeConfig, type BrandThemeContextType } from './models';
 import brandThemeSchema from './schema.json';
 
 export const BRAND_THEME_CONFIG_URL =
-  '/bahmni_config/openmrs/apps/home/bahmni-theme.json';
+  '/bahmni_config/openmrs/apps/home/bahmni-brand.json';
 
 // Applies resolved brand colours as a CSS side effect once config has loaded.
 // Rendered only after InternalBrandThemeProvider confirms the fetch succeeded.
