@@ -518,6 +518,51 @@ describe('SelectedImmunizationItem', () => {
       });
     });
 
+    it('calls updateDispenseLocation with the stock location when a batch is selected from the stock list', async () => {
+      const user = userEvent.setup();
+      render(<SelectedImmunizationItem {...defaultProps} />);
+      await user.click(screen.getByPlaceholderText('Enter batch number'));
+      await user.click(screen.getByText(/BATCH-001/));
+      await waitFor(() => {
+        expect(mockStore.updateDispenseLocation).toHaveBeenCalledWith(
+          id,
+          'Nurse Station',
+        );
+      });
+    });
+
+    it('calls updateDispenseLocation with null when a free-text batch is entered', async () => {
+      const user = userEvent.setup();
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          stockBatchesEnabled={false}
+        />,
+      );
+      await user.type(
+        screen.getByPlaceholderText('Enter batch number'),
+        'MY-CUSTOM-BATCH',
+      );
+      await user.keyboard('{Enter}');
+      await waitFor(() => {
+        expect(mockStore.updateDispenseLocation).toHaveBeenCalledWith(id, null);
+      });
+    });
+
+    it('calls updateDispenseLocation with null when the batch number input is cleared', async () => {
+      const user = userEvent.setup();
+      render(<SelectedImmunizationItem {...defaultProps} />);
+      await user.click(screen.getByPlaceholderText('Enter batch number'));
+      await user.click(screen.getByText(/BATCH-001/));
+      mockStore.updateDispenseLocation.mockClear();
+      await user.click(
+        screen.getByRole('button', { name: 'Clear selected item' }),
+      );
+      await waitFor(() => {
+        expect(mockStore.updateDispenseLocation).toHaveBeenCalledWith(id, null);
+      });
+    });
+
     it('calls updateBatchNumber but not updateExpiryDate when a batch without an expiry date is selected', async () => {
       const user = userEvent.setup();
       render(

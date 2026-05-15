@@ -33,6 +33,7 @@ export interface ImmunizationInputEntry {
   expiryDate: Date | null;
   manufacturer: string | null;
   batchNumber: string | null;
+  dispenseLocation: string | null;
   doseSequence: number | null;
   note?: string;
   basedOnReference?: string | null;
@@ -101,6 +102,7 @@ export interface ImmunizationHistoryState {
   updateExpiryDate: (id: string, value: Date | null) => void;
   updateManufacturer: (id: string, value: string) => void;
   updateBatchNumber: (id: string, value: string) => void;
+  updateDispenseLocation: (id: string, value: string | null) => void;
   updateDoseSequence: (id: string, value: number | null) => void;
   updateNote: (id: string, value: string) => void;
   validateAll: () => boolean;

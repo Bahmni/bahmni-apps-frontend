@@ -64,6 +64,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
     updateExpiryDate,
     updateManufacturer,
     updateBatchNumber,
+    updateDispenseLocation,
     updateDoseSequence,
     updateNote,
   } = useImmunizationHistoryStore(storeKey);
@@ -385,13 +386,19 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               onChange={({ selectedItem, inputValue }) => {
                 if (selectedItem?.batchNumber && !selectedItem.disabled) {
                   updateBatchNumber(id, selectedItem.batchNumber ?? '');
+                  updateDispenseLocation(
+                    id,
+                    selectedItem.stockLocationName ?? null,
+                  );
                   if (selectedItem.expiryDate) {
                     updateExpiryDate(id, new Date(selectedItem.expiryDate));
                   }
                 } else if (inputValue?.trim()) {
                   updateBatchNumber(id, inputValue.trim());
+                  updateDispenseLocation(id, null);
                 } else {
                   updateBatchNumber(id, '');
+                  updateDispenseLocation(id, null);
                 }
               }}
               invalid={!!immunization.errors.batchNumber}

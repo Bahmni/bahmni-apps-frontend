@@ -3,6 +3,7 @@ import { getMedicationDisplay } from '../../../../services/medicationService';
 import {
   ADMINISTERED_PRODUCT_EXTENSION_URL,
   BASED_ON_EXTENSION_URL,
+  DISPENSE_LOCATION_EXTENSION_URL,
 } from '../constants';
 import {
   buildBasedOnImmunizationEntry,
@@ -580,6 +581,73 @@ describe('createImmunizationBundleEntries', () => {
       {
         url: ADMINISTERED_PRODUCT_EXTENSION_URL,
         valueReference: { display: 'Custom Vaccine' },
+      },
+    ]);
+  });
+
+  it('includes dispenseLocation extension when dispenseLocation is set', () => {
+    const entryWithDispenseLocation = {
+      ...mockImmunizationEntry,
+      dispenseLocation: 'Nurse Station',
+    };
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [entryWithDispenseLocation],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.extension).toEqual([
+      {
+        url: DISPENSE_LOCATION_EXTENSION_URL,
+        valueString: 'Nurse Station',
+      },
+    ]);
+  });
+
+  it.each([
+    ['null', null],
+    ['empty string', ''],
+    ['whitespace', '   '],
+  ])(
+    'omits dispenseLocation extension when value is %s',
+    (_, dispenseLocation) => {
+      const entry = {
+        ...mockImmunizationEntry,
+        dispenseLocation,
+      };
+      const result = createImmunizationBundleEntries({
+        ...BASE_BUNDLE_PARAMS,
+        selectedImmunizations: [entry],
+      });
+      const resource = result[0].resource as Immunization;
+      expect(resource.extension).toBeUndefined();
+    },
+  );
+
+  it('appends dispenseLocation extension alongside administeredProduct and basedOn extensions', () => {
+    const entry = {
+      ...mockImmunizationEntryWithBasedOn,
+      dispenseLocation: 'Nurse Station',
+    };
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [entry],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.extension).toEqual([
+      {
+        url: ADMINISTERED_PRODUCT_EXTENSION_URL,
+        valueReference: {
+          reference: 'Medication/covid-drug-uuid',
+          display: 'COVID-19 Drug',
+        },
+      },
+      {
+        url: BASED_ON_EXTENSION_URL,
+        valueReference: { reference: 'MedicationRequest/med-request-uuid' },
+      },
+      {
+        url: DISPENSE_LOCATION_EXTENSION_URL,
+        valueString: 'Nurse Station',
       },
     ]);
   });
