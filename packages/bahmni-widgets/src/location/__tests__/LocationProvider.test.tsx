@@ -246,6 +246,7 @@ describe('LocationProvider - Persistence', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => {});
     mockSetCookie.mockImplementation(() => {
+      // eslint-disable-next-line no-throw-literal
       throw 'string error';
     });
 

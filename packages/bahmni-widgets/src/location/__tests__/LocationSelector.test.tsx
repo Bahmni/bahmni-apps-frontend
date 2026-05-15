@@ -1,10 +1,22 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { LocationContext } from '../../../context/LocationContext';
+import { LocationContext } from '../LocationContext';
 import { LocationSelector } from '../LocationSelector';
 import { mockLocation, mockLocations } from './__mocks__/LocationSelectorMocks';
 
 expect.extend(toHaveNoViolations);
+
+jest.mock('@bahmni/services', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        HOME_LOADING: 'Loading',
+        HOME_NO_LOCATION_SELECTED: 'No location selected',
+      };
+      return translations[key] ?? key;
+    },
+  }),
+}));
 
 jest.mock('@bahmni/design-system', () => ({
   Dropdown: ({ items, onChange, label, disabled, ...props }: any) => (

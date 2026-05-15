@@ -1,7 +1,7 @@
 import { Dropdown, SkeletonPlaceholder } from '@bahmni/design-system';
 import { useTranslation, UserLocation } from '@bahmni/services';
 import React from 'react';
-import { useLocation } from '../../context/LocationContext';
+import { useLocation } from './LocationContext';
 import styles from './styles/LocationSelector.module.scss';
 
 export const LocationSelector: React.FC = () => {
