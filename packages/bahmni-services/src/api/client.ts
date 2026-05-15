@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { getFormattedError } from '../errorHandling';
-import { LOGIN_PATH } from './constants';
+import { BINARY_RESPONSE_TYPES, LOGIN_PATH } from './constants';
 import {
   decodeHtmlEntities,
   isOpenMRSWebServiceApi,
@@ -26,7 +26,10 @@ client.interceptors.response.use(
   function (response) {
     try {
       const url = getResponseUrl(response.config);
-      if (isOpenMRSWebServiceApi(url)) {
+      if (
+        isOpenMRSWebServiceApi(url) &&
+        !BINARY_RESPONSE_TYPES.includes(response.config.responseType as string)
+      ) {
         response.data = decodeHtmlEntities(response.data);
       }
       return response;
@@ -37,7 +40,7 @@ client.interceptors.response.use(
   },
   function (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-      window.location.href = LOGIN_PATH;
+      globalThis.location.href = LOGIN_PATH;
       return Promise.reject(error);
     }
     const { title, message } = getFormattedError(error);
