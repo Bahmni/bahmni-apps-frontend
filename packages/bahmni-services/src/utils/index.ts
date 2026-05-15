@@ -1,5 +1,6 @@
 export {
   capitalize,
+  capitalizeFirstLetter,
   generateId,
   generateUUID,
   getCookieByName,

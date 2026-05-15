@@ -75,6 +75,19 @@ export const generateUUID = (): string => {
 };
 
 /**
+ * Capitalizes only the first letter of a string, leaving the rest unchanged.
+ * Unlike `capitalize`, this does NOT lowercase the remaining characters first,
+ * which preserves mixed-case names (e.g., "McDonald" stays "McDonald").
+ * Use this for patient names where casing must be preserved.
+ * @param str - The string to capitalize
+ * @returns The string with only its first character uppercased
+ */
+export function capitalizeFirstLetter(str: string): string {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
  * Converts a string to capital case (e.g., 'foo bar' -> 'Foo Bar')
  * @param input - The string to convert
  * @param delimiters - Optional string of delimiter characters (default: " -", space and hyphen)

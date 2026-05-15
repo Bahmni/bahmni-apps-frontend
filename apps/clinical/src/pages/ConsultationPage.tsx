@@ -11,11 +11,14 @@ import {
   BAHMNI_HOME_PATH,
   getConfig,
   generateId,
+  getFormattedPatientById,
+  capitalizeFirstLetter,
 } from '@bahmni/services';
 import {
   ProgramDetails,
   useNotification,
   useUserPrivilege,
+  usePatientUUID,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, {
@@ -121,15 +124,31 @@ const ConsultationPage: React.FC = () => {
   );
   const viewingForm = useObservationFormsStore((state) => state.viewingForm);
 
-  const breadcrumbItems = [
-    { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
-    {
-      id: 'clinical',
-      label: 'Clinical',
-      href: BAHMNI_CLINICAL_PATH,
-    },
-    { id: 'current', label: t('CURRENT_PATIENT'), isCurrentPage: true },
-  ];
+  const patientUUID = usePatientUUID();
+  const { data: patient } = useQuery({
+    queryKey: ['patient', patientUUID],
+    queryFn: () => getFormattedPatientById(patientUUID!),
+    enabled: !!patientUUID,
+  });
+
+  const breadcrumbItems = useMemo(
+    () => [
+      { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
+      { id: 'clinical', label: 'Clinical', href: BAHMNI_CLINICAL_PATH },
+      {
+        id: 'current',
+        label: patient?.fullName
+          ? patient.fullName
+              .trim()
+              .split(/\s+/)
+              .map(capitalizeFirstLetter)
+              .join(' ')
+          : t('CURRENT_PATIENT'),
+        isCurrentPage: true,
+      },
+    ],
+    [patient?.fullName, t],
+  );
 
   const episodeUuids = useMemo(() => {
     const episodeUuid = searchParams.get(EPISODE_UUID_SEARCH_PARAMS_KEY);
