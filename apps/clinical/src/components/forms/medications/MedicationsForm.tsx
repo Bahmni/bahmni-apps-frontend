@@ -143,7 +143,6 @@ const MedicationsForm: React.FC<MedicationsFormProps> = React.memo(
       }
     }, [existingMedicationsError, addNotification, t]);
 
-    // Reset edit state when editMedications changes (e.g., clicking a different edit button)
     const prevEditMedicationsRef = useRef(editMedications);
     useEffect(() => {
       if (prevEditMedicationsRef.current !== editMedications) {
@@ -152,7 +151,6 @@ const MedicationsForm: React.FC<MedicationsFormProps> = React.memo(
       }
     }, [editMedications]);
 
-    // Load medications for editing when edit context is provided
     useEffect(() => {
       if (isEditMode && medicationConfig && !editLoadedRef.current) {
         editLoadedRef.current = true;

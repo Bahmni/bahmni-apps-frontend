@@ -242,15 +242,18 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     return [...activeMedications, ...scheduledMedications];
   }, [allMedications]);
 
-  // Medications eligible for edit: active medications from the current encounter.
-  // TODO: When BAH-4665 merges, use useEncounterMatchDecision to filter by
-  // matched encounterUuid instead of showing edit for all active medications.
+  const patientHeader = document.querySelector(
+    '[data-testid="patient-header"]',
+  );
+  const matchReason = patientHeader?.getAttribute('data-match-reason') ?? '';
+  const canEditEncounter = matchReason === 'MATCHED';
+
   const editableMedications = useMemo(() => {
-    if (!canEdit) return [];
+    if (!canEdit || !canEditEncounter) return [];
     return activeAndScheduledMedications.filter(
       (m) => m.status === 'active' || m.status === 'on-hold',
     );
-  }, [activeAndScheduledMedications, canEdit]);
+  }, [activeAndScheduledMedications, canEdit, canEditEncounter]);
 
   const hasEditableMedications = editableMedications.length > 0;
 
@@ -270,10 +273,10 @@ const MedicationsTable: React.FC<WidgetProps> = ({
 
   const isEditable = useCallback(
     (medication: FormattedMedicationRequest) => {
-      if (!canEdit) return false;
+      if (!canEdit || !canEditEncounter) return false;
       return medication.status === 'active' || medication.status === 'on-hold';
     },
-    [canEdit],
+    [canEdit, canEditEncounter],
   );
 
   // Process medications for date grouping (only for All medications tab)

@@ -770,4 +770,124 @@ describe('MedicationsTable', () => {
       expect(screen.getByText('IV Injection | 1 vial')).toBeInTheDocument();
     });
   });
+
+  describe('Edit button encounter gating', () => {
+    const editConfig = {
+      actions: [
+        {
+          label: 'Edit',
+          type: 'edit',
+          encounterType: 'Consultation',
+          requiredPrivilege: ['Edit Orders'],
+        },
+      ],
+    };
+
+    const setupWithActiveMeds = () => {
+      mockUseUserPrivilege.mockReturnValue({
+        userPrivileges: ['Edit Orders'],
+      } as any);
+
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) => ({
+          id: med.id,
+          name: med.name,
+          dosage: `${med.dose?.value} ${med.dose?.unit}`,
+          dosageUnit: med.dose?.unit ?? '',
+          quantity: `${med.quantity.value} ${med.quantity.unit}`,
+          instruction: med.instructions,
+          startDate: med.startDate,
+          orderDate: med.orderDate,
+          orderedBy: med.orderedBy,
+          status: med.status,
+          asNeeded: med.asNeeded,
+          isImmediate: med.isImmediate,
+          fhirResource: { resourceType: 'MedicationRequest' },
+        }),
+      );
+
+      mockUseQuery.mockReturnValue({
+        data: [mockMedications[0]],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+    };
+
+    const setPatientHeaderAttribute = (
+      matchReason: string | null,
+      canEdit: string | null,
+    ) => {
+      const header = document.createElement('div');
+      header.setAttribute('data-testid', 'patient-header');
+      if (matchReason) header.setAttribute('data-match-reason', matchReason);
+      if (canEdit) header.setAttribute('data-can-edit-encounter', canEdit);
+      document.body.appendChild(header);
+      return header;
+    };
+
+    afterEach(() => {
+      document
+        .querySelectorAll('[data-testid="patient-header"]')
+        .forEach((el) => el.remove());
+    });
+
+    it('shows edit button when encounter match reason is MATCHED', () => {
+      setupWithActiveMeds();
+      setPatientHeaderAttribute('MATCHED', 'true');
+
+      render(<MedicationsTable config={editConfig} />);
+
+      expect(
+        screen.getByTestId('medications-edit-all-button'),
+      ).toBeInTheDocument();
+    });
+
+    it('disables edit-all button when encounter match reason is SESSION_EXPIRED', () => {
+      setupWithActiveMeds();
+      setPatientHeaderAttribute('SESSION_EXPIRED', null);
+
+      render(<MedicationsTable config={editConfig} />);
+
+      expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
+    });
+
+    it('disables edit-all button when encounter match reason is PROVIDER_MISMATCH', () => {
+      setupWithActiveMeds();
+      setPatientHeaderAttribute('PROVIDER_MISMATCH', null);
+
+      render(<MedicationsTable config={editConfig} />);
+
+      expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
+    });
+
+    it('disables edit-all button when encounter match reason is LOCATION_MISMATCH', () => {
+      setupWithActiveMeds();
+      setPatientHeaderAttribute('LOCATION_MISMATCH', null);
+
+      render(<MedicationsTable config={editConfig} />);
+
+      expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
+    });
+
+    it('disables edit-all button when no patient header is present', () => {
+      setupWithActiveMeds();
+
+      render(<MedicationsTable config={editConfig} />);
+
+      expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
+    });
+
+    it('hides per-row edit buttons when encounter is not matched', () => {
+      setupWithActiveMeds();
+      setPatientHeaderAttribute('SESSION_EXPIRED', null);
+
+      render(<MedicationsTable config={editConfig} />);
+
+      expect(
+        screen.queryByTestId('medication-edit-button-1'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });

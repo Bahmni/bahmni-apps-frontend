@@ -362,8 +362,6 @@ export function createMedicationRequestEntries({
       statDurationInMilliseconds,
     );
 
-    // Revisions create a new resource that supersedes the original
-    // via priorPrescription, rather than updating in place.
     if (medication.fhirResourceId) {
       medicationResource.priorPrescription = {
         reference: `MedicationRequest/${medication.fhirResourceId}`,

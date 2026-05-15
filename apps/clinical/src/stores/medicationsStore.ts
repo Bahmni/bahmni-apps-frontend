@@ -62,9 +62,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
 
   hasEditChanges: () => {
     const { selectedMedications, originalEditSnapshots } = get();
-    // New medications (not from edit) count as changes
     if (selectedMedications.some((m) => !m.fhirResourceId)) return true;
-    // Any edited medication differs from its snapshot
     return selectedMedications.some((m) => {
       const original = originalEditSnapshots.get(m.id);
       if (!original) return true;

@@ -123,7 +123,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     encounterTypeUUID: selectedEncounterType?.uuid,
   });
 
-  // For edits, fetch the original encounter directly by UUID
   const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
     | string
     | undefined;
