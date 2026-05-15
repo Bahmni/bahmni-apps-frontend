@@ -49,6 +49,7 @@ export function useEncounterSession(
       setActiveEncounter(null);
       setIsPractitionerMatch(false);
       setMatchReason([]);
+      setError(null);
       setIsLoading(false);
       return;
     }

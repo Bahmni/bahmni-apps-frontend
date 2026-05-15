@@ -15,7 +15,9 @@ export { MATCH_REASON_MESSAGES };
 
 function getReferenceId(reference?: string): string | undefined {
   if (!reference) return undefined;
-  return reference.split('/').filter(Boolean).pop();
+  const parts = reference.split('/').filter(Boolean);
+  const historyIndex = parts.indexOf('_history');
+  return historyIndex > 0 ? parts[historyIndex - 1] : parts.pop();
 }
 
 function checkLocationMatch(
@@ -99,15 +101,19 @@ export async function resolveEncounterMatchDecision(
     }
 
     // 6. Split recent encounters by practitioner
+    const hasParticipant = (
+      e: (typeof recentEncountersInVisit)[0],
+      uuid: string,
+    ) =>
+      e.participant?.some(
+        (p) => getReferenceId(p.individual?.reference) === uuid,
+      ) ?? false;
+
     const currentPractitionerRecentEncounters = recentEncountersInVisit.filter(
-      (e) =>
-        getReferenceId(e.participant?.[0]?.individual?.reference) ===
-        practitionerUUID,
+      (e) => hasParticipant(e, practitionerUUID),
     );
     const otherProvidersRecentEncounters = recentEncountersInVisit.filter(
-      (e) =>
-        getReferenceId(e.participant?.[0]?.individual?.reference) !==
-        practitionerUUID,
+      (e) => !hasParticipant(e, practitionerUUID),
     );
 
     // 7. Multiple recent encounters by this practitioner → MULTIPLE_ENCOUNTERS_FOUND

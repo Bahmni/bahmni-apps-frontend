@@ -355,6 +355,64 @@ describe('resolveEncounterMatchDecision', () => {
     });
   });
 
+  describe('multi-participant encounters', () => {
+    it('returns MATCHED when current practitioner is not the first participant', async () => {
+      const encounter: Encounter = {
+        ...createEncounter('enc-1', LOCATION_UUID, OTHER_PRACTITIONER_UUID),
+        participant: [
+          {
+            individual: {
+              reference: `Practitioner/${OTHER_PRACTITIONER_UUID}`,
+            },
+          },
+          { individual: { reference: `Practitioner/${PRACTITIONER_UUID}` } },
+        ],
+      };
+      mockGetActiveVisit.mockResolvedValue(createActiveVisit());
+      mockSearches([encounter], [encounter]);
+
+      const result = await resolveEncounterMatchDecision(
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
+      );
+
+      expect(result).toEqual({
+        matched: true,
+        encounter,
+        reasons: ['MATCHED'],
+      });
+    });
+
+    it('returns PROVIDER_MISMATCH when current practitioner is absent from all participants', async () => {
+      const encounter: Encounter = {
+        ...createEncounter('enc-1', LOCATION_UUID, OTHER_PRACTITIONER_UUID),
+        participant: [
+          {
+            individual: {
+              reference: `Practitioner/${OTHER_PRACTITIONER_UUID}`,
+            },
+          },
+          {
+            individual: { reference: `Practitioner/yet-another-provider` },
+          },
+        ],
+      };
+      mockGetActiveVisit.mockResolvedValue(createActiveVisit());
+      mockSearches([encounter], []);
+
+      const result = await resolveEncounterMatchDecision(
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
+      );
+
+      expect(result.reasons).toContain('PROVIDER_MISMATCH');
+    });
+  });
+
   describe('locationUUID unknown', () => {
     it('returns MATCHED when locationUUID is undefined and in-session own encounter exists', async () => {
       const encounter = createEncounter('enc-1'); // no location on encounter
