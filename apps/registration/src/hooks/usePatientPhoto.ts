@@ -1,4 +1,4 @@
-import { getPatientImageAsDataUrl } from '@bahmni/services';
+import { getPatientPhotoDataUrl } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 
 interface UsePatientPhotoProps {
@@ -8,7 +8,7 @@ interface UsePatientPhotoProps {
 export const usePatientPhoto = ({ patientUuid }: UsePatientPhotoProps) => {
   const { data: patientPhoto, isLoading } = useQuery({
     queryKey: ['patientPhoto', patientUuid],
-    queryFn: () => getPatientImageAsDataUrl(patientUuid!),
+    queryFn: () => getPatientPhotoDataUrl(patientUuid!),
     enabled: !!patientUuid,
   });
 

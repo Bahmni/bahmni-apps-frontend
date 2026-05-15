@@ -2,6 +2,7 @@ import { useTranslation } from '@bahmni/services';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { dispatchConsultationStart } from '../../../events/startConsultation';
+import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import PatientHeader from '../PatientHeader';
 import '@testing-library/jest-dom';
 
@@ -34,12 +35,17 @@ jest.mock('../../../hooks/useEncounterSession', () => ({
     hasActiveSession: false,
     activeEncounter: null,
     isPractitionerMatch: false,
+    matchReason: [],
     editActiveEncounter: false,
     isLoading: false,
     error: null,
     refetch: jest.fn(),
   })),
 }));
+
+const mockedUseEncounterSession = useEncounterSession as jest.MockedFunction<
+  typeof useEncounterSession
+>;
 
 const mockedUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
@@ -72,6 +78,16 @@ describe('PatientHeader Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedUseTranslation.mockReturnValue({ t: mockTranslate } as any);
+    mockedUseEncounterSession.mockReturnValue({
+      hasActiveSession: false,
+      activeEncounter: null,
+      isPractitionerMatch: false,
+      matchReason: [],
+      editActiveEncounter: false,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
   });
 
   // Basic rendering tests
@@ -128,6 +144,57 @@ describe('PatientHeader Component', () => {
       const { container } = renderComponent();
       const results = await axe(container);
       expect(results).toHaveNoViolations();
+    });
+  });
+
+  describe('Data attributes', () => {
+    test('does not set data-can-edit-encounter by default', () => {
+      renderComponent();
+      const header = screen.getByLabelText('Patient Header');
+      expect(header).not.toHaveAttribute('data-can-edit-encounter');
+    });
+
+    test('does not set data-match-reason by default', () => {
+      renderComponent();
+      const header = screen.getByLabelText('Patient Header');
+      expect(header).not.toHaveAttribute('data-match-reason');
+    });
+
+    test('sets data-match-reason and data-can-edit-encounter=true when session is matched', () => {
+      mockedUseEncounterSession.mockReturnValueOnce({
+        hasActiveSession: true,
+        activeEncounter: null,
+        isPractitionerMatch: true,
+        matchReason: ['MATCHED'],
+        editActiveEncounter: true,
+        isLoading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      renderComponent();
+      const header = screen.getByLabelText('Patient Header');
+      expect(header).toHaveAttribute('data-match-reason', 'MATCHED');
+      expect(header).toHaveAttribute('data-can-edit-encounter', 'true');
+    });
+
+    test('sets data-match-reason when there is no active encounter', () => {
+      mockedUseEncounterSession.mockReturnValueOnce({
+        hasActiveSession: false,
+        activeEncounter: null,
+        isPractitionerMatch: false,
+        matchReason: ['NO_ACTIVE_ENCOUNTER'],
+        editActiveEncounter: false,
+        isLoading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      renderComponent();
+      const header = screen.getByLabelText('Patient Header');
+      expect(header).toHaveAttribute(
+        'data-match-reason',
+        'NO_ACTIVE_ENCOUNTER',
+      );
+      expect(header).not.toHaveAttribute('data-can-edit-encounter');
     });
   });
 });

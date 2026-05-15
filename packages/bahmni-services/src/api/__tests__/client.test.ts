@@ -1,11 +1,6 @@
 import axios from 'axios';
 import client from '../client';
 
-// Mock dependencies
-jest.mock('../constants', () => ({
-  LOGIN_PATH: '/login',
-}));
-
 jest.mock('../../errorHandling', () => ({
   getFormattedError: jest.fn(() => ({
     title: 'Error',
@@ -82,9 +77,8 @@ describe('Axios Client', () => {
         typeof import('../utils').getResponseUrl
       >;
 
-      // Mock window.location
-      delete (window as unknown as { location: unknown }).location;
-      (window as unknown as { location: { href: string } }).location = {
+      delete (globalThis as unknown as { location: unknown }).location;
+      (globalThis as unknown as { location: { href: string } }).location = {
         href: '',
       };
     });
@@ -113,6 +107,28 @@ describe('Axios Client', () => {
         );
         expect(decodeHtmlEntities).toHaveBeenCalledWith(testData);
         expect(result.data).toEqual(decodedData);
+      });
+
+      it('should skip HTML entity decoding for blob responses', async () => {
+        const mockBlob = new Blob(['data'], { type: 'image/jpeg' });
+
+        getResponseUrl.mockReturnValue('/openmrs/ws/rest/v2/patientImage');
+        isOpenMRSWebServiceApi.mockReturnValue(true);
+
+        const mockResponse = {
+          data: mockBlob,
+          config: {
+            url: '/openmrs/ws/rest/v2/patientImage',
+            responseType: 'blob',
+          },
+        };
+
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
+        const result = responseInterceptor.fulfilled(mockResponse);
+
+        expect(decodeHtmlEntities).not.toHaveBeenCalled();
+        expect(result.data).toBe(mockBlob);
       });
 
       it('should skip HTML entity decoding for non-OpenMRS API responses', async () => {
@@ -155,7 +171,7 @@ describe('Axios Client', () => {
         await expect(() =>
           responseInterceptor.rejected(mockError),
         ).rejects.toBe(mockError);
-        expect(window.location.href).toBe('/login');
+        expect(globalThis.location.href).toBe('/bahmni/home/index.html#/login');
       });
 
       it('should handle non-401 Axios errors', async () => {

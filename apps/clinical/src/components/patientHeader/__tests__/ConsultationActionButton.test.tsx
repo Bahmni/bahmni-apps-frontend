@@ -1,8 +1,7 @@
 import { useTranslation } from '@bahmni/services';
-import { useActivePractitioner, useHasPrivilege } from '@bahmni/widgets';
+import { useHasPrivilege } from '@bahmni/widgets';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { dispatchConsultationStart } from '../../../events/startConsultation';
-import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import ConsultationActionButton from '../ConsultationActionButton';
 import '@testing-library/jest-dom';
 
@@ -16,24 +15,14 @@ jest.mock('../../../events/startConsultation', () => ({
 }));
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
-  useActivePractitioner: jest.fn(),
   useHasPrivilege: jest.fn(),
-}));
-jest.mock('../../../hooks/useEncounterSession', () => ({
-  useEncounterSession: jest.fn(),
 }));
 
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
-const mockUseActivePractitioner = useActivePractitioner as jest.MockedFunction<
-  typeof useActivePractitioner
->;
 const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
   typeof useHasPrivilege
->;
-const mockUseEncounterSession = useEncounterSession as jest.MockedFunction<
-  typeof useEncounterSession
 >;
 
 const mockDispatchConsultationStart =
@@ -44,19 +33,14 @@ const mockDispatchConsultationStart =
 describe('ConsultationActionButton', () => {
   const defaultProps = {
     isActionAreaVisible: false,
+    editActiveEncounter: false,
+    isLoading: false,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     mockUseTranslation.mockReturnValue({ t: (key: string) => key } as any);
-    mockUseActivePractitioner.mockReturnValue({
-      practitioner: { uuid: 'practitioner-uuid' },
-    } as any);
-    mockUseEncounterSession.mockReturnValue({
-      editActiveEncounter: false,
-      isLoading: false,
-    } as any);
   });
 
   describe('when user has Add Encounters privilege', () => {
@@ -73,11 +57,9 @@ describe('ConsultationActionButton', () => {
     });
 
     it('shows "Edit Consultation" text when active encounter exists', () => {
-      mockUseEncounterSession.mockReturnValue({
-        editActiveEncounter: true,
-        isLoading: false,
-      } as any);
-      render(<ConsultationActionButton {...defaultProps} />);
+      render(
+        <ConsultationActionButton {...defaultProps} editActiveEncounter />,
+      );
 
       expect(
         screen.getByRole('button', { name: /CONSULTATION_ACTION_EDIT/i }),
@@ -113,11 +95,7 @@ describe('ConsultationActionButton', () => {
     });
 
     it('disables button when loading', () => {
-      mockUseEncounterSession.mockReturnValue({
-        editActiveEncounter: false,
-        isLoading: true,
-      } as any);
-      render(<ConsultationActionButton {...defaultProps} />);
+      render(<ConsultationActionButton {...defaultProps} isLoading />);
 
       expect(
         screen.getByRole('button', { name: /CONSULTATION_ACTION_NEW/i }),
