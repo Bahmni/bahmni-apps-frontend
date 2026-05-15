@@ -1,4 +1,5 @@
 import {
+  FormattedPatientData,
   getFormattedPatientById,
   getPatientPhotoDataUrl,
 } from '@bahmni/services';
