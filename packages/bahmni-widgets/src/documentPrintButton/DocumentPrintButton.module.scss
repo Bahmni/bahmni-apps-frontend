@@ -1,4 +1,9 @@
 @use '@carbon/styles/scss/spacing' as *;
+@use '@carbon/react/scss/theme' as *;
+
+.printButtonBorder {
+  border: 1px solid $interactive;
+}
 
 .printButtonGroup {
   display: flex;

@@ -255,6 +255,7 @@ export {
 
 export {
   getActiveVisit,
+  getVisits,
   shouldEnableEncounterFilter,
   getObservationsBundleByEncounterUuid,
   type FormsEncounter,

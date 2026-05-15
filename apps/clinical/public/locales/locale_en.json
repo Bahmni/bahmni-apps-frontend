@@ -497,5 +497,6 @@
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Systolic Blood Pressure",
   "VITAL_SIGNS_TEMPERATURE": "Temperature",
   "YEARS_one": " year",
-  "YEARS_other": " years"
+  "YEARS_other": " years",
+  "PRINT_MODAL_PREPARING_DOCUMENT": "Preparing document…"
 }

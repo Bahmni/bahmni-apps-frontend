@@ -53,6 +53,7 @@ export function usePrintDocument({
     enabled: triggered,
     staleTime: 0,
     gcTime: 0,
+    retry: false,
   });
 
   useEffect(() => {

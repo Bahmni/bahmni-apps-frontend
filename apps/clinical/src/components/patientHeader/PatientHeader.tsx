@@ -7,12 +7,16 @@ import {
   resetEncounterSession,
 } from '@bahmni/services';
 import {
+  DocumentPrintButton,
   PatientDetails,
   useActivePractitioner,
   usePatientUUID,
+  type PrintOption,
 } from '@bahmni/widgets';
 import React, { useEffect, useRef } from 'react';
+import { usePatientVisit } from '../../hooks/usePatientVisit';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
+import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationActionButton from './ConsultationActionButton';
 import styles from './styles/PatientHeader.module.scss';
 
@@ -83,6 +87,19 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     [patientUUID],
   );
 
+ 
+  const { activeVisit, lastVisit } = usePatientVisit(patientUUID);
+  const { clinicalConfig } = useClinicalConfig();
+
+  const visitUuid = activeVisit?.id ?? lastVisit?.id;
+
+  const renderContext: Record<string, string> = {
+    ...(patientUUID && { patientUUID }),
+    ...(visitUuid && { visitUuid }),
+  };
+
+  const printOptions: PrintOption[] = clinicalConfig?.printOptions ?? [];
+
   return (
     <div
       aria-label={t('PATIENT_HEADER_LABEL')}
@@ -94,11 +111,19 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
       data-can-edit-encounter={editActiveEncounter ? 'true' : undefined}
     >
       <PatientDetails />
-      <ConsultationActionButton
+      <div className={styles.actionButtons}>
+       <ConsultationActionButton
         isActionAreaVisible={isActionAreaVisible}
         editActiveEncounter={editActiveEncounter}
         isLoading={isLoading}
       />
+        <DocumentPrintButton
+          printOptions={printOptions}
+          renderContext={renderContext}
+          data-testid="print-clinical-card"
+          size="md"
+        />
+      </div>
     </div>
   );
 };

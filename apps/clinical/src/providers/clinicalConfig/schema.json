@@ -194,6 +194,19 @@
         }
       }
     },
+    "printOptions": {
+      "type": "array",
+      "description": "List of print options shown in the print button",
+      "items": {
+        "type": "object",
+        "required": ["translationKey", "templateId"],
+        "additionalProperties": false,
+        "properties": {
+          "translationKey": { "type": "string" },
+          "templateId": { "type": "string" } 
+        }
+      }
+    },
     "consultationPad": {
       "type": "object",
       "description": "Configuration for consultation pad forms",

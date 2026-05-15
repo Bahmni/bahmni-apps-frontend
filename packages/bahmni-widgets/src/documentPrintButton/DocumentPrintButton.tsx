@@ -50,14 +50,16 @@ export const DocumentPrintButton = ({
   };
 
   return items.length === 1 ? (
-    <Button
-      kind="ghost"
-      size={size}
-      data-testid={dataTestId}
-      onClick={() => handlePrint(items[0])}
-    >
-      {t(items[0].translationKey)}
-    </Button>
+    <div className={styles.printButtonBorder}>
+      <Button
+        kind="ghost"
+        size={size}
+        data-testid={dataTestId}
+        onClick={() => handlePrint(items[0])}
+      >
+        {t(items[0].translationKey)}
+      </Button>
+    </div>
   ) : (
     <div className={styles.printButtonGroup}>
       <Button
