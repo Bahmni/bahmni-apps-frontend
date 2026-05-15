@@ -35,11 +35,14 @@ describe('HomeApp', () => {
   });
 
   it('renders home page content even when initAppI18n rejects', async () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     mockInitAppI18n.mockRejectedValue(new Error('i18n failed'));
     render(<HomeApp />);
     await act(async () => {});
     expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
     expect(screen.getByTestId('home-page')).toBeInTheDocument();
+    consoleErrorSpy.mockRestore();
   });
 });
