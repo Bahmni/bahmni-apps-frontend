@@ -14,11 +14,7 @@ import {
   dispatchAuditEvent,
   PatientProfileResponse,
 } from '@bahmni/services';
-import {
-  DocumentPrintButton,
-  useNotification,
-  type PrintOption,
-} from '@bahmni/widgets';
+import { useNotification } from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
@@ -239,7 +235,6 @@ const PatientRegister = () => {
   };
 
   const shouldShowActions = metadata?.patientUuid || patientUuidFromUrl == null;
-
   const refs = useMemo<FormControlRefs>(
     () => ({
       profileRef: patientProfileRef,
@@ -309,8 +304,6 @@ const PatientRegister = () => {
       onClick: () => {},
     },
   ];
-
-  const printOptions: PrintOption[] = registrationConfig?.printOptions ?? [];
 
   return (
     <BaseLayout
@@ -382,15 +375,6 @@ const PatientRegister = () => {
                 >
                   {t('CREATE_PATIENT_SAVE')}
                 </Button>
-
-                {patientUuid && (
-                  <DocumentPrintButton
-                    printOptions={printOptions}
-                    renderContext={{ patientUuid }}
-                    data-testid="print-registration-card"
-                  />
-                )}
-
                 <RegistrationActions
                   extensionPointId="org.bahmni.registration.navigation"
                   onBeforeNavigate={handleSave}
