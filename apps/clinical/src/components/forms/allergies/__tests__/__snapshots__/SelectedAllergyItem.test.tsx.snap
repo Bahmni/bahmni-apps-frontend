@@ -33,11 +33,11 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
         data-testid="allergy-severity-dropdown-test-allergy-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
-          for="downshift-_r_7p_-toggle-button"
-          id="downshift-_r_7p_-label"
+          class="cds--label"
+          for="downshift-_r_85_-toggle-button"
+          id="downshift-_r_85_-label"
         >
-          Select Severity
+          Severity
         </label>
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
@@ -45,12 +45,12 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_7p_-menu"
+            aria-controls="downshift-_r_85_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Select severity for this allergy"
             class="cds--list-box__field"
-            id="downshift-_r_7p_-toggle-button"
+            id="downshift-_r_85_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Mild"
@@ -86,9 +86,9 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_7p_-label"
+            aria-labelledby="downshift-_r_85_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_7p_-menu"
+            id="downshift-_r_85_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -102,11 +102,11 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
         class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper cds--autoalign"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="allergy-reactions-multiselect-test-allergy-1-input"
           id="allergy-reactions-multiselect-test-allergy-1-label"
         >
-          Select Reactions
+          Reactions
           <span
             class="cds--visually-hidden"
           >
@@ -237,11 +237,11 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
         data-testid="allergy-severity-dropdown-test-allergy-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
-          for="downshift-_r_7v_-toggle-button"
-          id="downshift-_r_7v_-label"
+          class="cds--label"
+          for="downshift-_r_8b_-toggle-button"
+          id="downshift-_r_8b_-label"
         >
-          Select Severity
+          Severity
         </label>
         <div
           class="cds--dropdown cds--dropdown--invalid cds--autoalign cds--list-box cds--list-box--invalid"
@@ -270,12 +270,12 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
           </svg>
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_7v_-menu"
+            aria-controls="downshift-_r_8b_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Select severity for this allergy"
             class="cds--list-box__field"
-            id="downshift-_r_7v_-toggle-button"
+            id="downshift-_r_8b_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Select Severity"
@@ -311,9 +311,9 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_7v_-label"
+            aria-labelledby="downshift-_r_8b_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_7v_-menu"
+            id="downshift-_r_8b_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
           />
@@ -332,11 +332,11 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
         class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper cds--autoalign"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="allergy-reactions-multiselect-test-allergy-1-input"
           id="allergy-reactions-multiselect-test-allergy-1-label"
         >
-          Select Reactions
+          Reactions
           <span
             class="cds--visually-hidden"
           >

@@ -113,7 +113,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       expect(multiselect).toBeInTheDocument();
       expect(multiselect).toHaveAttribute('placeholder', 'Select Reactions');
@@ -149,7 +149,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       await user.click(multiselect);
 
@@ -170,7 +170,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       await user.click(multiselect);
 
@@ -446,7 +446,7 @@ describe('SelectedAllergyItem', () => {
       ).toBeInTheDocument();
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       expect(multiselect).toBeInTheDocument();
       expect(multiselect).toHaveAttribute('placeholder', 'Select Reactions');
@@ -567,7 +567,7 @@ describe('SelectedAllergyItem', () => {
 
       // Component should render without crashing
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       expect(multiselect).toBeInTheDocument();
 
@@ -584,7 +584,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
 
       // Open the dropdown
@@ -615,7 +615,7 @@ describe('SelectedAllergyItem', () => {
       const { rerender } = render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
 
       // Click to open
@@ -638,7 +638,7 @@ describe('SelectedAllergyItem', () => {
 
       // Verify component re-rendered with updated reactions
       const updatedMultiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 2. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 2. To clear selection, press Delete or Backspace.',
       });
       expect(updatedMultiselect).toBeInTheDocument();
     });
@@ -651,7 +651,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
 
       // Type to open dropdown and filter options
@@ -718,7 +718,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
 
       // Open dropdown
@@ -734,6 +734,23 @@ describe('SelectedAllergyItem', () => {
       await waitFor(() => {
         expect(multiselect).toHaveAttribute('aria-expanded', 'false');
       });
+    });
+  });
+
+  // LABEL VISIBILITY TESTS
+  describe('Label Visibility', () => {
+    test('renders visible "Severity" label above the severity dropdown', () => {
+      render(<SelectedAllergyItem {...defaultProps} />);
+      const label = screen.getByText('Severity');
+      expect(label).toBeInTheDocument();
+      expect(label).not.toHaveClass('cds--visually-hidden');
+    });
+
+    test('renders visible "Reactions" label above the reactions multiselect', () => {
+      render(<SelectedAllergyItem {...defaultProps} />);
+      const label = screen.getByText('Reactions');
+      expect(label).toBeInTheDocument();
+      expect(label).not.toHaveClass('cds--visually-hidden');
     });
   });
 

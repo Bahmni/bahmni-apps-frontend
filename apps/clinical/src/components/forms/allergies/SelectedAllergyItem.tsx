@@ -97,8 +97,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
               id={`allergy-severity-dropdown-${id}`}
               data-testid={`allergy-severity-dropdown-${id}`}
               type="default"
-              titleText={t('ALLERGY_SELECT_SEVERITY')}
-              hideLabel
+              titleText={t('ALLERGY_SEVERITY_LABEL')}
               label={t('ALLERGY_SELECT_SEVERITY')}
               items={ALLERGY_SEVERITY_CONCEPTS}
               selectedItem={selectedSeverity}
@@ -124,8 +123,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
               id={`allergy-reactions-multiselect-${id}`}
               data-testid={`allergy-reactions-multiselect-${id}`}
               type="default"
-              titleText={t('ALLERGY_SELECT_REACTIONS')}
-              hideLabel
+              titleText={t('ALLERGY_REACTIONS_LABEL')}
               placeholder={t('ALLERGY_SELECT_REACTIONS')}
               items={reactionConcepts}
               selectedItems={selectedReactions}
