@@ -249,10 +249,10 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   class="cds--form-item dosageInput"
                 >
                   <div
-                    class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+                    class="cds--number cds--number--helpertext cds--number--sm"
                   >
                     <label
-                      class="cds--label cds--visually-hidden"
+                      class="cds--label"
                       dir="auto"
                       for="dosage-unit-test-medication-1"
                     >
@@ -337,7 +337,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   data-testid="medication-dosage-unit-dropdown-test-medication-1"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="downshift-_r_39_-toggle-button"
                     id="downshift-_r_39_-label"
                   >
@@ -407,7 +407,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   data-testid="medication-frequency-dropdown-test-medication-1"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="downshift-_r_3c_-toggle-button"
                     id="downshift-_r_3c_-label"
                   >
@@ -476,10 +476,10 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   class="cds--form-item durationInput"
                 >
                   <div
-                    class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+                    class="cds--number cds--number--helpertext cds--number--sm"
                   >
                     <label
-                      class="cds--label cds--visually-hidden"
+                      class="cds--label"
                       dir="auto"
                       for="duration-test-medication-1"
                     >
@@ -564,7 +564,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   data-testid="medication-duration-unit-dropdown-test-medication-1"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="downshift-_r_3f_-toggle-button"
                     id="downshift-_r_3f_-label"
                   >
@@ -634,7 +634,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   data-testid="medication-instructions-dropdown-test-medication-1"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="downshift-_r_3i_-toggle-button"
                     id="downshift-_r_3i_-label"
                   >
@@ -704,7 +704,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                   data-testid="medication-route-dropdown-test-medication-1"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="downshift-_r_3l_-toggle-button"
                     id="downshift-_r_3l_-label"
                   >
@@ -780,7 +780,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                       class="cds--date-picker-container"
                     >
                       <label
-                        class="cds--label cds--visually-hidden"
+                        class="cds--label"
                         dir="auto"
                         for="start-date-test-medication-1"
                       >

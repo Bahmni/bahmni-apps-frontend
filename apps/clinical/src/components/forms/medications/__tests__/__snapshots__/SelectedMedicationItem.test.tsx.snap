@@ -78,10 +78,10 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         class="cds--form-item dosageInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+          class="cds--number cds--number--helpertext cds--number--sm"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="dosage-unit-entry-1"
           >
@@ -166,7 +166,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         data-testid="medication-dosage-unit-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_s8_-toggle-button"
           id="downshift-_r_s8_-label"
         >
@@ -236,7 +236,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         data-testid="medication-frequency-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_sb_-toggle-button"
           id="downshift-_r_sb_-label"
         >
@@ -305,10 +305,10 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         class="cds--form-item durationInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+          class="cds--number cds--number--helpertext cds--number--sm"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="duration-entry-1"
           >
@@ -393,7 +393,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         data-testid="medication-duration-unit-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_se_-toggle-button"
           id="downshift-_r_se_-label"
         >
@@ -463,7 +463,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         data-testid="medication-instructions-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_sh_-toggle-button"
           id="downshift-_r_sh_-label"
         >
@@ -533,7 +533,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
         data-testid="medication-route-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_sk_-toggle-button"
           id="downshift-_r_sk_-label"
         >
@@ -609,7 +609,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             class="cds--date-picker-container"
           >
             <label
-              class="cds--label cds--visually-hidden"
+              class="cds--label"
               dir="auto"
               for="start-date-entry-1"
             >
@@ -751,11 +751,11 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         class="cds--form-item dosageInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+          class="cds--number cds--number--helpertext cds--number--sm"
           data-invalid="true"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="dosage-unit-entry-1"
           >
@@ -869,7 +869,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         data-testid="medication-dosage-unit-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_sq_-toggle-button"
           id="downshift-_r_sq_-label"
         >
@@ -965,7 +965,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         data-testid="medication-frequency-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_st_-toggle-button"
           id="downshift-_r_st_-label"
         >
@@ -1060,11 +1060,11 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         class="cds--form-item durationInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+          class="cds--number cds--number--helpertext cds--number--sm"
           data-invalid="true"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="duration-entry-1"
           >
@@ -1178,7 +1178,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         data-testid="medication-duration-unit-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_t0_-toggle-button"
           id="downshift-_r_t0_-label"
         >
@@ -1274,7 +1274,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         data-testid="medication-instructions-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_t3_-toggle-button"
           id="downshift-_r_t3_-label"
         >
@@ -1344,7 +1344,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
         data-testid="medication-route-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_t6_-toggle-button"
           id="downshift-_r_t6_-label"
         >
@@ -1446,7 +1446,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             class="cds--date-picker-container"
           >
             <label
-              class="cds--label cds--visually-hidden"
+              class="cds--label"
               dir="auto"
               for="start-date-entry-1"
             >
