@@ -52,10 +52,10 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
         class="cds--form-item dosageInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+          class="cds--number cds--number--helpertext cds--number--sm"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="dosage-unit-entry-1"
           >
@@ -140,7 +140,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
         data-testid="vaccination-dosage-unit-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_of_-toggle-button"
           id="downshift-_r_of_-label"
         >
@@ -210,7 +210,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
         data-testid="vaccination-frequency-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_oi_-toggle-button"
           id="downshift-_r_oi_-label"
         >
@@ -279,10 +279,10 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
         class="cds--form-item durationInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+          class="cds--number cds--number--helpertext cds--number--sm"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="duration-entry-1"
           >
@@ -367,7 +367,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
         data-testid="vaccination-duration-unit-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_ol_-toggle-button"
           id="downshift-_r_ol_-label"
         >
@@ -437,7 +437,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
         data-testid="vaccination-instructions-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_oo_-toggle-button"
           id="downshift-_r_oo_-label"
         >
@@ -507,7 +507,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
         data-testid="vaccination-route-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_or_-toggle-button"
           id="downshift-_r_or_-label"
         >
@@ -583,7 +583,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
             class="cds--date-picker-container"
           >
             <label
-              class="cds--label cds--visually-hidden"
+              class="cds--label"
               dir="auto"
               for="start-date-entry-1"
             >
@@ -699,11 +699,11 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
         class="cds--form-item dosageInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+          class="cds--number cds--number--helpertext cds--number--sm"
           data-invalid="true"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="dosage-unit-entry-1"
           >
@@ -817,7 +817,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
         data-testid="vaccination-dosage-unit-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_p0_-toggle-button"
           id="downshift-_r_p0_-label"
         >
@@ -913,7 +913,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
         data-testid="vaccination-frequency-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_p3_-toggle-button"
           id="downshift-_r_p3_-label"
         >
@@ -1008,11 +1008,11 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
         class="cds--form-item durationInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+          class="cds--number cds--number--helpertext cds--number--sm"
           data-invalid="true"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="duration-entry-1"
           >
@@ -1126,7 +1126,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
         data-testid="vaccination-duration-unit-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_p6_-toggle-button"
           id="downshift-_r_p6_-label"
         >
@@ -1222,7 +1222,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
         data-testid="vaccination-instructions-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_p9_-toggle-button"
           id="downshift-_r_p9_-label"
         >
@@ -1292,7 +1292,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
         data-testid="vaccination-route-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_pc_-toggle-button"
           id="downshift-_r_pc_-label"
         >
@@ -1394,7 +1394,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
             class="cds--date-picker-container"
           >
             <label
-              class="cds--label cds--visually-hidden"
+              class="cds--label"
               dir="auto"
               for="start-date-entry-1"
             >
@@ -1510,10 +1510,10 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
         class="cds--form-item dosageInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+          class="cds--number cds--number--helpertext cds--number--sm"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="dosage-unit-entry-1"
           >
@@ -1598,7 +1598,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
         data-testid="vaccination-dosage-unit-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_ph_-toggle-button"
           id="downshift-_r_ph_-label"
         >
@@ -1668,7 +1668,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
         data-testid="vaccination-frequency-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_pk_-toggle-button"
           id="downshift-_r_pk_-label"
         >
@@ -1737,10 +1737,10 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
         class="cds--form-item durationInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--sm"
+          class="cds--number cds--number--helpertext cds--number--sm"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="duration-entry-1"
           >
@@ -1825,7 +1825,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
         data-testid="vaccination-duration-unit-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_pn_-toggle-button"
           id="downshift-_r_pn_-label"
         >
@@ -1895,7 +1895,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
         data-testid="vaccination-instructions-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_pq_-toggle-button"
           id="downshift-_r_pq_-label"
         >
@@ -1965,7 +1965,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
         data-testid="vaccination-route-dropdown-entry-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_pt_-toggle-button"
           id="downshift-_r_pt_-label"
         >
@@ -2041,7 +2041,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
             class="cds--date-picker-container"
           >
             <label
-              class="cds--label cds--visually-hidden"
+              class="cds--label"
               dir="auto"
               for="start-date-entry-1"
             >
@@ -2099,7 +2099,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
     class="cds--css-grid"
   >
     <div
-      class="_textAreaWCloseContainer_1s7of_1 cds--sm:col-span-8 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+      class="_textAreaWCloseContainer_1fxzf_1 cds--sm:col-span-8 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
     >
       <div
         class="cds--form-item"
@@ -2108,7 +2108,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
           class="cds--text-area__label-wrapper"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="vaccination-note-entry-1"
           >
@@ -2147,7 +2147,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
         </div>
       </div>
       <div
-        class="_closeButton_1s7of_29 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+        class="_closeButton_1fxzf_19 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
       >
         <span
           class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"

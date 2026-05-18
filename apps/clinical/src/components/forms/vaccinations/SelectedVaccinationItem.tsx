@@ -257,7 +257,6 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                 label={t('MEDICATION_DOSAGE_INPUT_LABEL')}
                 aria-label="Dosage"
                 className={styles.dosageInput}
-                hideLabel
                 onChange={(_, { value }) => {
                   const numericValue = parseFloat(value.toString());
                   if (!isNaN(numericValue)) {
@@ -275,7 +274,6 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                 label={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
                 aria-label="Dosage Unit"
                 className={styles.dosageUnit}
-                hideLabel
                 size="sm"
                 items={medicationConfig.doseUnits ?? []}
                 itemToString={(item) => (item ? item.name : '')}
@@ -298,7 +296,6 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                 titleText={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
                 label={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
                 aria-label="Frequency"
-                hideLabel
                 size="sm"
                 items={
                   medicationConfig.frequencies.filter(
@@ -325,7 +322,6 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                 label={t('MEDICATION_DURATION_INPUT_LABEL')}
                 aria-label="Duration"
                 className={styles.durationInput}
-                hideLabel
                 min={0}
                 size="sm"
                 step={1}
@@ -347,7 +343,6 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                 label={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
                 aria-label="Duration Unit"
                 className={styles.durationUnit}
-                hideLabel
                 size="sm"
                 items={DURATION_UNIT_OPTIONS}
                 itemToString={(item) =>
@@ -373,7 +368,6 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                 titleText={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
                 label={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
                 aria-label="Vaccination Instructions"
-                hideLabel
                 size="sm"
                 items={medicationConfig.dosingInstructions ?? []}
                 itemToString={(item) => (item ? item.name : '')}
@@ -394,7 +388,6 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                 titleText={t('MEDICATION_ROUTE_INPUT_LABEL')}
                 label={t('MEDICATION_ROUTE_INPUT_LABEL')}
                 aria-label="Route"
-                hideLabel
                 size="sm"
                 items={medicationConfig.routes ?? []}
                 itemToString={(item) => (item ? item.name : '')}
@@ -427,7 +420,6 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
                   data-testid={`vaccination-start-date-input-${id}`}
                   labelText={t('MEDICATION_START_DATE_INPUT_LABEL')}
                   aria-label="Start Date"
-                  hideLabel
                   size="sm"
                   disabled={isSTAT}
                 />

@@ -26,7 +26,7 @@
 .vaccinationActions {
   display: flex !important;
   flex-direction: row !important;
-  align-items: start !important;
+  align-items: flex-end !important;
   justify-self: end;
   margin-bottom: $spacing-04;
   margin-left: 0;
@@ -35,7 +35,7 @@
 .dosageControls {
   display: flex !important;
   flex-direction: row !important;
-  align-items: start !important;
+  align-items: flex-end !important;
   margin-bottom: $spacing-04;
   margin-left: 0;
 }
@@ -51,7 +51,7 @@
 .durationControls {
   display: flex !important;
   flex-direction: row !important;
-  align-items: start !important;
+  align-items: flex-end !important;
   margin-bottom: $spacing-04;
   margin-left: 0;
 }
