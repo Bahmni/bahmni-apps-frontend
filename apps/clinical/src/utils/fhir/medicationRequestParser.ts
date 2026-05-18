@@ -79,9 +79,11 @@ export function parseFhirToMedicationInputEntry(
     displayName,
   );
 
+  const resourceId = fhirMedRequest.id ?? crypto.randomUUID();
+
   return {
-    id: fhirMedRequest.id!,
-    fhirResourceId: fhirMedRequest.id!,
+    id: resourceId,
+    fhirResourceId: fhirMedRequest.id ?? undefined,
     medication,
     display: displayName,
     dosage,

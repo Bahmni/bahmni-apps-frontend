@@ -785,7 +785,7 @@ describe('MedicationsTable', () => {
 
     const setupWithActiveMeds = () => {
       mockUseUserPrivilege.mockReturnValue({
-        userPrivileges: ['Edit Orders'],
+        userPrivileges: [{ name: 'Edit Orders' }],
       } as any);
 
       mockFormatMedicationRequest.mockImplementation(
@@ -839,61 +839,81 @@ describe('MedicationsTable', () => {
         .forEach((el) => el.remove());
     });
 
-    it('shows edit button when data-can-edit-encounter is true', () => {
+    it('shows edit button when data-can-edit-encounter is true', async () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('MATCHED', 'true');
 
       render(<MedicationsTable config={editConfig} />);
 
-      expect(
-        screen.getByTestId('medications-edit-all-button'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('medications-edit-all-button'),
+        ).not.toBeDisabled();
+      });
     });
 
-    it('shows edit button when location mismatch but can-edit-encounter is true', () => {
+    it('shows edit button when location mismatch but can-edit-encounter is true', async () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('LOCATION_MISMATCH', 'true');
 
       render(<MedicationsTable config={editConfig} />);
 
-      expect(
-        screen.getByTestId('medications-edit-all-button'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('medications-edit-all-button'),
+        ).not.toBeDisabled();
+      });
     });
 
-    it('disables edit-all button when session expired and can-edit-encounter is not set', () => {
+    it('disables edit-all button when session expired and can-edit-encounter is not set', async () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('SESSION_EXPIRED', null, null);
 
       render(<MedicationsTable config={editConfig} />);
 
-      expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('medications-edit-all-button'),
+        ).toBeDisabled();
+      });
     });
 
-    it('disables edit-all button when provider mismatch and can-edit-encounter is not set', () => {
+    it('disables edit-all button when provider mismatch and can-edit-encounter is not set', async () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('PROVIDER_MISMATCH', null, null);
 
       render(<MedicationsTable config={editConfig} />);
 
-      expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('medications-edit-all-button'),
+        ).toBeDisabled();
+      });
     });
 
-    it('disables edit-all button when no patient header is present', () => {
+    it('disables edit-all button when no patient header is present', async () => {
       setupWithActiveMeds();
 
       render(<MedicationsTable config={editConfig} />);
 
-      expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('medications-edit-all-button'),
+        ).toBeDisabled();
+      });
     });
 
-    it('disables edit-all when medications belong to a different encounter', () => {
+    it('disables edit-all when medications belong to a different encounter', async () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('MATCHED', 'true', 'different-encounter-uuid');
 
       render(<MedicationsTable config={editConfig} />);
 
-      expect(screen.getByTestId('medications-edit-all-button')).toBeDisabled();
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('medications-edit-all-button'),
+        ).toBeDisabled();
+      });
     });
 
     it('hides per-row edit buttons when can-edit-encounter is not set', () => {

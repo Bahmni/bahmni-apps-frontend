@@ -242,40 +242,74 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     return [...activeMedications, ...scheduledMedications];
   }, [allMedications]);
 
-  const [canEditEncounter, setCanEditEncounter] = useState(false);
-  const [activeEncounterUuid, setActiveEncounterUuid] = useState('');
-  const [activePractitionerUuid, setActivePractitionerUuid] = useState('');
+  const [editContext, setEditContext] = useState(() => {
+    const header = document.querySelector('[data-testid="patient-header"]');
+    return {
+      canEditEncounter:
+        header?.getAttribute('data-can-edit-encounter') === 'true',
+      activeEncounterUuid:
+        header?.getAttribute('data-active-encounter-uuid') ?? '',
+      activePractitionerUuid:
+        header?.getAttribute('data-active-practitioner-uuid') ?? '',
+    };
+  });
 
   useEffect(() => {
+    const HEADER_SELECTOR = '[data-testid="patient-header"]';
+    const OBSERVED_ATTRS = [
+      'data-can-edit-encounter',
+      'data-active-encounter-uuid',
+      'data-active-practitioner-uuid',
+    ];
+
     const readAttributes = () => {
-      const header = document.querySelector('[data-testid="patient-header"]');
-      setCanEditEncounter(
-        header?.getAttribute('data-can-edit-encounter') === 'true',
-      );
-      setActiveEncounterUuid(
-        header?.getAttribute('data-active-encounter-uuid') ?? '',
-      );
-      setActivePractitionerUuid(
-        header?.getAttribute('data-active-practitioner-uuid') ?? '',
-      );
+      const header = document.querySelector(HEADER_SELECTOR);
+      setEditContext({
+        canEditEncounter:
+          header?.getAttribute('data-can-edit-encounter') === 'true',
+        activeEncounterUuid:
+          header?.getAttribute('data-active-encounter-uuid') ?? '',
+        activePractitionerUuid:
+          header?.getAttribute('data-active-practitioner-uuid') ?? '',
+      });
+    };
+
+    const observeHeader = (header: Element) => {
+      const observer = new MutationObserver(readAttributes);
+      observer.observe(header, {
+        attributes: true,
+        attributeFilter: OBSERVED_ATTRS,
+      });
+      return observer;
     };
 
     readAttributes();
 
-    const header = document.querySelector('[data-testid="patient-header"]');
-    if (!header) return;
+    const header = document.querySelector(HEADER_SELECTOR);
+    if (header) {
+      const observer = observeHeader(header);
+      return () => observer.disconnect();
+    }
 
-    const observer = new MutationObserver(readAttributes);
-    observer.observe(header, {
-      attributes: true,
-      attributeFilter: [
-        'data-can-edit-encounter',
-        'data-active-encounter-uuid',
-        'data-active-practitioner-uuid',
-      ],
+    // Header not yet in DOM — watch for it to appear
+    const bodyObserver = new MutationObserver(() => {
+      const el = document.querySelector(HEADER_SELECTOR);
+      if (el) {
+        bodyObserver.disconnect();
+        readAttributes();
+        const attrObserver = observeHeader(el);
+        // Store for cleanup — overwrite returned cleanup
+        cleanupRef.current = () => attrObserver.disconnect();
+      }
     });
-    return () => observer.disconnect();
+    bodyObserver.observe(document.body, { childList: true, subtree: true });
+
+    const cleanupRef = { current: () => bodyObserver.disconnect() };
+    return () => cleanupRef.current();
   }, []);
+
+  const { canEditEncounter, activeEncounterUuid, activePractitionerUuid } =
+    editContext;
 
   const editableMedications = useMemo(() => {
     if (!canEdit || !canEditEncounter || !activeEncounterUuid) return [];
@@ -313,20 +347,9 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   );
 
   const isEditable = useCallback(
-    (medication: FormattedMedicationRequest) => {
-      if (!canEdit || !canEditEncounter || !activeEncounterUuid) return false;
-      return (
-        (medication.status === 'active' || medication.status === 'on-hold') &&
-        !!medication.fhirResource?.encounter?.reference?.endsWith(
-          activeEncounterUuid,
-        ) &&
-        (!activePractitionerUuid ||
-          !!medication.fhirResource?.requester?.reference?.endsWith(
-            activePractitionerUuid,
-          ))
-      );
-    },
-    [canEdit, canEditEncounter, activeEncounterUuid, activePractitionerUuid],
+    (medication: FormattedMedicationRequest) =>
+      editableMedications.some((m) => m.id === medication.id),
+    [editableMedications],
   );
 
   // Process medications for date grouping (only for All medications tab)

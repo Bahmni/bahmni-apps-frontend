@@ -127,13 +127,24 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     | string
     | undefined;
   const [editEncounter, setEditEncounter] = useState<Encounter | null>(null);
+  const [editEncounterLoading, setEditEncounterLoading] = useState(false);
   useEffect(() => {
     if (editEncounterUuid) {
+      setEditEncounterLoading(true);
       get<Encounter>(`/openmrs/ws/fhir2/R4/Encounter/${editEncounterUuid}`)
         .then(setEditEncounter)
-        .catch(() => setEditEncounter(null));
+        .catch(() => {
+          setEditEncounter(null);
+          addNotification({
+            title: t('ERROR_DEFAULT_TITLE'),
+            message: t('CONSULTATION_ERROR_GENERIC'),
+            type: 'error',
+            timeout: 5000,
+          });
+        })
+        .finally(() => setEditEncounterLoading(false));
     }
-  }, [editEncounterUuid]);
+  }, [editEncounterUuid, addNotification, t]);
 
   const activeEncounter = editEncounterUuid ? editEncounter : sessionEncounter;
 
@@ -252,27 +263,37 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   })();
 
   const isEditMode = !!editOnlyKey;
-  const hasEditChanges = useMedicationStore((state) => state.hasEditChanges);
-  const selectedMedications = useMedicationStore(
-    (state) => state.selectedMedications,
-  );
-  const editChangesExist = isEditMode ? hasEditChanges() : true;
-  const enablePrimaryButton = useMemo(
-    () =>
-      hasError ||
-      !isEncounterDetailsFormReady ||
-      isSubmitting ||
-      !hasConsultationData ||
-      !editChangesExist,
-    [
-      hasError,
-      isEncounterDetailsFormReady,
-      isSubmitting,
-      hasConsultationData,
-      editChangesExist,
-      selectedMedications,
-    ],
-  );
+  const editChangesExist = useMedicationStore((state) => {
+    if (!isEditMode) return true;
+    const { selectedMedications: meds, originalEditSnapshots } = state;
+    if (meds.some((m) => !m.fhirResourceId)) return true;
+    return meds.some((m) => {
+      const original = originalEditSnapshots.get(m.id);
+      if (!original) return true;
+      return (
+        m.dosage !== original.dosage ||
+        m.dosageUnit?.uuid !== original.dosageUnit?.uuid ||
+        m.frequency?.uuid !== original.frequency?.uuid ||
+        m.route?.uuid !== original.route?.uuid ||
+        m.duration !== original.duration ||
+        m.durationUnit?.code !== original.durationUnit?.code ||
+        m.instruction?.uuid !== original.instruction?.uuid ||
+        m.isPRN !== original.isPRN ||
+        m.isSTAT !== original.isSTAT ||
+        m.dispenseQuantity !== original.dispenseQuantity ||
+        m.dispenseUnit?.uuid !== original.dispenseUnit?.uuid ||
+        (m.note ?? '') !== (original.note ?? '') ||
+        m.startDate?.toDateString() !== original.startDate?.toDateString()
+      );
+    });
+  });
+  const isPrimaryButtonDisabled =
+    hasError ||
+    !isEncounterDetailsFormReady ||
+    isSubmitting ||
+    !hasConsultationData ||
+    !editChangesExist ||
+    editEncounterLoading;
   return (
     <>
       <ActionArea
@@ -286,7 +307,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         }
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
         onPrimaryButtonClick={handleSubmit}
-        isPrimaryButtonDisabled={enablePrimaryButton}
+        isPrimaryButtonDisabled={isPrimaryButtonDisabled}
         hidden={!!viewingForm}
         secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
         onSecondaryButtonClick={handleCancel}

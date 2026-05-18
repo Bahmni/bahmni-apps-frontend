@@ -109,7 +109,12 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
       const updatedSnapshots = new Map(state.originalEditSnapshots);
       for (const entry of newEntries) {
         if (!updatedSnapshots.has(entry.id)) {
-          updatedSnapshots.set(entry.id, { ...entry });
+          updatedSnapshots.set(entry.id, {
+            ...entry,
+            startDate: entry.startDate
+              ? new Date(entry.startDate.getTime())
+              : undefined,
+          });
         }
       }
       return {
