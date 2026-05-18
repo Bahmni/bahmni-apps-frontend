@@ -71,7 +71,9 @@ describe('WhiteLabelProvider', () => {
       );
 
       await waitFor(() => {
-        expect(mockApplyBahmniTheme).toHaveBeenCalledWith(FULL_WHITE_LABEL_CONFIG);
+        expect(mockApplyBahmniTheme).toHaveBeenCalledWith(
+          FULL_WHITE_LABEL_CONFIG,
+        );
       });
     });
 
@@ -102,7 +104,9 @@ describe('WhiteLabelProvider', () => {
       });
 
       await waitFor(() => {
-        expect(result.current.whiteLabelConfig).toEqual(FULL_WHITE_LABEL_CONFIG);
+        expect(result.current.whiteLabelConfig).toEqual(
+          FULL_WHITE_LABEL_CONFIG,
+        );
         expect(result.current.isLoading).toBe(false);
         expect(result.current.error).toBeNull();
       });
