@@ -1,28 +1,22 @@
 import { Button } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-
-import {
-  useActivePractitioner,
-  useHasPrivilege,
-  CONSULTATION_PAD_PRIVILEGES,
-} from '@bahmni/widgets';
+import { useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
 import React from 'react';
 import { dispatchConsultationStart } from '../../events/startConsultation';
-import { useEncounterSession } from '../../hooks/useEncounterSession';
 import styles from './styles/PatientHeader.module.scss';
 
 interface ConsultationActionButtonProps {
   isActionAreaVisible: boolean;
+  editActiveEncounter: boolean;
+  isLoading: boolean;
 }
 
 const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
   isActionAreaVisible,
+  editActiveEncounter,
+  isLoading,
 }) => {
   const { t } = useTranslation();
-  const { practitioner } = useActivePractitioner();
-  const { editActiveEncounter, isLoading } = useEncounterSession({
-    practitioner,
-  });
   const canAddEncounter = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.ENCOUNTER,
   );
