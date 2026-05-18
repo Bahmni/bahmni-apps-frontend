@@ -1,7 +1,7 @@
 import { Loading } from '@bahmni/design-system';
 import {
   AppContextProvider,
-  BrandThemeProvider,
+  WhiteLabelProvider,
   NotificationProvider,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -49,7 +49,7 @@ export function App() {
     <LocationProvider>
       <QueryClientProvider client={queryClient.current}>
         <NotificationProvider>
-          <BrandThemeProvider>
+          <WhiteLabelProvider>
             <AppContextProvider>
               <Suspense fallback={<Loading />}>
                 <Routes>
@@ -61,7 +61,7 @@ export function App() {
                 </Routes>
               </Suspense>
             </AppContextProvider>
-          </BrandThemeProvider>
+          </WhiteLabelProvider>
         </NotificationProvider>
       </QueryClientProvider>
     </LocationProvider>

@@ -50,13 +50,13 @@ export { createConfigProvider, createConfigHook } from './configProvider';
 
 // Brand Theme
 export {
-  BrandThemeProvider,
-  useBrandTheme,
-  BrandThemeContext,
-  BRAND_THEME_URL,
-  type BrandThemeContextType,
-  type BrandThemeConfig,
-} from './brandTheme';
+  WhiteLabelProvider,
+  useWhiteLabel,
+  WhiteLabelContext,
+  WHITE_LABEL_URL,
+  type WhiteLabelContextType,
+  type WhiteLabelConfig,
+} from './whiteLabel';
 
 // Widget Registry
 export {

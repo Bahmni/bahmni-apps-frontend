@@ -1,29 +1,29 @@
-export interface BrandThemeConfig {
+export interface WhiteLabelConfig {
   primary?: string;
   'primary-text'?: string;
   'primary-hover'?: string;
   'primary-active'?: string;
   'link-hover'?: string;
   'link-visited'?: string;
-  'link-visited-on-dark'?: string;
-  'layer-01'?: string;
+  'link-visited-inverse'?: string;
+  'background-secondary'?: string;
 }
 
-export const BAHMNI_DEFAULT_THEME: Required<BrandThemeConfig> = {
+export const BAHMNI_DEFAULT_THEME: Required<WhiteLabelConfig> = {
   primary: '#007d79',
   'primary-text': '#ffffff',
   'primary-hover': '#006b68',
   'primary-active': '#004144',
   'link-hover': '#005d5d',
   'link-visited': '#8A3FFC',
-  'link-visited-on-dark': '#BE95FF',
-  'layer-01': '#f4f4f4',
+  'link-visited-inverse': '#BE95FF',
+  'background-secondary': '#f4f4f4',
 };
 
 // Maps each compact config key to the full set of CSS tokens it controls.
 // Tokens that share a colour in Bahmni's default palette are grouped under
 // the most semantically representative key so implementers only override once.
-const THEME_TOKEN_MAP: Record<keyof BrandThemeConfig, string[]> = {
+const THEME_TOKEN_MAP: Record<keyof WhiteLabelConfig, string[]> = {
   primary: [
     'background-brand',
     'button-primary',
@@ -39,21 +39,21 @@ const THEME_TOKEN_MAP: Record<keyof BrandThemeConfig, string[]> = {
   'primary-active': ['button-primary-active'],
   'link-hover': ['link-primary-hover', 'link-secondary'],
   'link-visited': ['link-visited'],
-  'link-visited-on-dark': ['link-inverse-visited'],
-  'layer-01': ['layer-01'],
+  'link-visited-inverse': ['link-inverse-visited'],
+  'background-secondary': ['layer-01'],
 };
 
 // A <style> tag is used instead of document.documentElement.style.setProperty
 // because Carbon v11 defines tokens on .cds--white / .cds--g10 class selectors,
 // not just :root. Inline styles on :root cannot override class-level values.
 // Appending a <style> tag after Carbon's CSS wins via last-definition cascade.
-export function applyBrandTheme(config: Partial<BrandThemeConfig>): void {
+export function applyWhiteLabel(config: Partial<WhiteLabelConfig>): void {
   if (Object.keys(config).length === 0) return;
 
   const cssProperties: [string, string][] = [];
 
   for (const [key, value] of Object.entries(config) as [
-    keyof BrandThemeConfig,
+    keyof WhiteLabelConfig,
     string,
   ][]) {
     for (const cssToken of THEME_TOKEN_MAP[key] ?? []) {

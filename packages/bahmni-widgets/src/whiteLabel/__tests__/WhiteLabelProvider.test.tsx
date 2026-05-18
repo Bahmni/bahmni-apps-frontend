@@ -4,8 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { NotificationProvider } from '../../notification';
-import { useBrandTheme } from '../hook';
-import { BrandThemeProvider, BRAND_THEME_URL } from '../provider';
+import { useWhiteLabel } from '../hook';
+import { WhiteLabelProvider, WHITE_LABEL_URL } from '../provider';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -14,37 +14,37 @@ jest.mock('@bahmni/services', () => ({
 
 jest.mock('@bahmni/design-system', () => ({
   ...jest.requireActual('@bahmni/design-system'),
-  applyBrandTheme: jest.fn(),
+  applyWhiteLabel: jest.fn(),
 }));
 
 const mockGetConfig = services.getConfig as jest.MockedFunction<
   typeof services.getConfig
 >;
 const mockApplyBahmniTheme =
-  designSystem.applyBrandTheme as jest.MockedFunction<
-    typeof designSystem.applyBrandTheme
+  designSystem.applyWhiteLabel as jest.MockedFunction<
+    typeof designSystem.applyWhiteLabel
   >;
 
-const FULL_BRAND_CONFIG = {
+const FULL_WHITE_LABEL_CONFIG = {
   primary: '#ff0000',
   'primary-text': '#ffffff',
   'primary-hover': '#cc0000',
   'primary-active': '#990000',
   'link-hover': '#aa0000',
   'link-visited': '#8A3FFC',
-  'link-visited-on-dark': '#BE95FF',
-  'layer-01': '#f4f4f4',
+  'link-visited-inverse': '#BE95FF',
+  'background-secondary': '#f4f4f4',
 };
 
 const TestChild = () => <div data-testid="child">child</div>;
 
-describe('BrandThemeProvider', () => {
+describe('WhiteLabelProvider', () => {
   let queryClient: QueryClient;
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <NotificationProvider>
-        <BrandThemeProvider>{children}</BrandThemeProvider>
+        <WhiteLabelProvider>{children}</WhiteLabelProvider>
       </NotificationProvider>
     </QueryClientProvider>
   );
@@ -60,9 +60,9 @@ describe('BrandThemeProvider', () => {
     queryClient.clear();
   });
 
-  describe('Brand colour application', () => {
+  describe('White label colour application', () => {
     it('applies config directly after successful fetch without fallback to defaults', async () => {
-      mockGetConfig.mockResolvedValue(FULL_BRAND_CONFIG);
+      mockGetConfig.mockResolvedValue(FULL_WHITE_LABEL_CONFIG);
 
       render(
         <Wrapper>
@@ -71,21 +71,38 @@ describe('BrandThemeProvider', () => {
       );
 
       await waitFor(() => {
-        expect(mockApplyBahmniTheme).toHaveBeenCalledWith(FULL_BRAND_CONFIG);
+        expect(mockApplyBahmniTheme).toHaveBeenCalledWith(FULL_WHITE_LABEL_CONFIG);
+      });
+    });
+
+    it('renders error state and does not apply theme when config has missing keys', async () => {
+      mockGetConfig.mockRejectedValue(
+        new Error('CONFIG_ERROR_VALIDATION_FAILED'),
+      );
+
+      const { getByTestId } = render(
+        <Wrapper>
+          <TestChild />
+        </Wrapper>,
+      );
+
+      await waitFor(() => {
+        expect(getByTestId('white-label-error-test-id')).toBeTruthy();
+        expect(mockApplyBahmniTheme).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('Context value', () => {
-    it('exposes brandThemeConfig and isLoading: false after successful fetch', async () => {
-      mockGetConfig.mockResolvedValue(FULL_BRAND_CONFIG);
+    it('exposes whiteLabelConfig and isLoading: false after successful fetch', async () => {
+      mockGetConfig.mockResolvedValue(FULL_WHITE_LABEL_CONFIG);
 
-      const { result } = renderHook(() => useBrandTheme(), {
+      const { result } = renderHook(() => useWhiteLabel(), {
         wrapper: Wrapper,
       });
 
       await waitFor(() => {
-        expect(result.current.brandThemeConfig).toEqual(FULL_BRAND_CONFIG);
+        expect(result.current.whiteLabelConfig).toEqual(FULL_WHITE_LABEL_CONFIG);
         expect(result.current.isLoading).toBe(false);
         expect(result.current.error).toBeNull();
       });
@@ -94,15 +111,15 @@ describe('BrandThemeProvider', () => {
 
   describe('Custom configUrl', () => {
     it('fetches from a custom configUrl when provided', async () => {
-      const customUrl = '/custom/path/brand.json';
-      mockGetConfig.mockResolvedValue(FULL_BRAND_CONFIG);
+      const customUrl = '/custom/path/white-label.json';
+      mockGetConfig.mockResolvedValue(FULL_WHITE_LABEL_CONFIG);
 
       render(
         <QueryClientProvider client={queryClient}>
           <NotificationProvider>
-            <BrandThemeProvider configUrl={customUrl}>
+            <WhiteLabelProvider configUrl={customUrl}>
               <TestChild />
-            </BrandThemeProvider>
+            </WhiteLabelProvider>
           </NotificationProvider>
         </QueryClientProvider>,
       );
@@ -115,8 +132,8 @@ describe('BrandThemeProvider', () => {
       });
     });
 
-    it('uses the default brand config URL when no configUrl is provided', async () => {
-      mockGetConfig.mockResolvedValue(FULL_BRAND_CONFIG);
+    it('uses the default white label config URL when no configUrl is provided', async () => {
+      mockGetConfig.mockResolvedValue(FULL_WHITE_LABEL_CONFIG);
 
       render(
         <Wrapper>
@@ -126,7 +143,7 @@ describe('BrandThemeProvider', () => {
 
       await waitFor(() => {
         expect(mockGetConfig).toHaveBeenCalledWith(
-          BRAND_THEME_URL,
+          WHITE_LABEL_URL,
           expect.any(Object),
         );
       });
@@ -134,14 +151,14 @@ describe('BrandThemeProvider', () => {
   });
 });
 
-describe('useBrandTheme', () => {
-  it('throws when used outside BrandThemeProvider', () => {
+describe('useWhiteLabel', () => {
+  it('throws when used outside WhiteLabelProvider', () => {
     const consoleError = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
 
-    expect(() => renderHook(() => useBrandTheme())).toThrow(
-      'useBrandTheme must be used within a BrandThemeProvider',
+    expect(() => renderHook(() => useWhiteLabel())).toThrow(
+      'useWhiteLabel must be used within a WhiteLabelProvider',
     );
 
     consoleError.mockRestore();

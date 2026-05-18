@@ -1,31 +1,31 @@
-import { applyBrandTheme, BAHMNI_DEFAULT_THEME } from '../applyBrandTheme';
+import { applyWhiteLabel, BAHMNI_DEFAULT_THEME } from '../applyWhiteLabel';
 
-describe('applyBrandTheme', () => {
+describe('applyWhiteLabel', () => {
   beforeEach(() => {
     document.getElementById('bahmni-theme')?.remove();
   });
 
   it('does nothing when config is empty', () => {
-    applyBrandTheme({});
+    applyWhiteLabel({});
     expect(document.getElementById('bahmni-theme')).toBeNull();
   });
 
   it('creates a style tag with id bahmni-theme on first call', () => {
-    applyBrandTheme({ primary: '#007d79' });
+    applyWhiteLabel({ primary: '#007d79' });
     const tag = document.getElementById('bahmni-theme');
     expect(tag).not.toBeNull();
     expect(tag?.tagName).toBe('STYLE');
   });
 
   it('targets :root and .cds--white selectors', () => {
-    applyBrandTheme({ primary: '#007d79' });
+    applyWhiteLabel({ primary: '#007d79' });
     const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
     expect(tag.textContent).toContain(':root,\n.cds--white {');
   });
 
   it('reuses the existing style tag on subsequent calls', () => {
-    applyBrandTheme({ primary: '#007d79' });
-    applyBrandTheme({ primary: '#ff0000' });
+    applyWhiteLabel({ primary: '#007d79' });
+    applyWhiteLabel({ primary: '#ff0000' });
     const tags = document.querySelectorAll('#bahmni-theme');
     expect(tags).toHaveLength(1);
     expect((tags[0] as HTMLStyleElement).textContent).toContain('#ff0000');
@@ -33,7 +33,7 @@ describe('applyBrandTheme', () => {
 
   describe('Token expansion', () => {
     it('expands primary to all 8 derived CSS tokens', () => {
-      applyBrandTheme({ primary: '#ff0000' });
+      applyWhiteLabel({ primary: '#ff0000' });
       const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
       expect(tag.textContent).toContain('--cds-background-brand: #ff0000;');
       expect(tag.textContent).toContain('--cds-button-primary: #ff0000;');
@@ -48,14 +48,14 @@ describe('applyBrandTheme', () => {
     });
 
     it('expands primary-text to text-inverse and icon-inverse CSS tokens', () => {
-      applyBrandTheme({ 'primary-text': '#000000' });
+      applyWhiteLabel({ 'primary-text': '#000000' });
       const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
       expect(tag.textContent).toContain('--cds-text-inverse: #000000;');
       expect(tag.textContent).toContain('--cds-icon-inverse: #000000;');
     });
 
     it('expands primary-hover to button-primary-hover and button-tertiary-hover CSS tokens', () => {
-      applyBrandTheme({ 'primary-hover': '#cc0000' });
+      applyWhiteLabel({ 'primary-hover': '#cc0000' });
       const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
       expect(tag.textContent).toContain('--cds-button-primary-hover: #cc0000;');
       expect(tag.textContent).toContain(
@@ -64,26 +64,26 @@ describe('applyBrandTheme', () => {
     });
 
     it('expands link-hover to link-primary-hover and link-secondary CSS tokens', () => {
-      applyBrandTheme({ 'link-hover': '#880000' });
+      applyWhiteLabel({ 'link-hover': '#880000' });
       const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
       expect(tag.textContent).toContain('--cds-link-primary-hover: #880000;');
       expect(tag.textContent).toContain('--cds-link-secondary: #880000;');
     });
 
     it('expands link-visited-on-dark to link-inverse-visited CSS token', () => {
-      applyBrandTheme({ 'link-visited-on-dark': '#BE95FF' });
+      applyWhiteLabel({ 'link-visited-inverse': '#BE95FF' });
       const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
       expect(tag.textContent).toContain('--cds-link-inverse-visited: #BE95FF;');
     });
 
-    it('expands layer-01 to layer-01 CSS token', () => {
-      applyBrandTheme({ 'layer-01': '#eeeeee' });
+    it('expands background-secondary to layer-01 CSS token', () => {
+      applyWhiteLabel({ 'background-secondary': '#eeeeee' });
       const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
       expect(tag.textContent).toContain('--cds-layer-01: #eeeeee;');
     });
 
     it('applies all 18 CSS tokens when BAHMNI_DEFAULT_THEME is passed', () => {
-      applyBrandTheme(BAHMNI_DEFAULT_THEME);
+      applyWhiteLabel(BAHMNI_DEFAULT_THEME);
       const tag = document.getElementById('bahmni-theme') as HTMLStyleElement;
       // primary group
       expect(tag.textContent).toContain('--cds-background-brand: #007d79;');
