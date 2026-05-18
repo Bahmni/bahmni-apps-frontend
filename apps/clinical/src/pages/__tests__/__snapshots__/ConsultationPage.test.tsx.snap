@@ -32,6 +32,8 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
         </button>
         <div
           data-testid="sidenav-item-vitals"
+          role="button"
+          tabindex="0"
         >
           VITALS_SECTION
         </div>
@@ -63,6 +65,8 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
         />
       </div>
       <div
+        data-active-item="vitals"
+        data-scroll-trigger="0"
         data-testid="dashboard-container"
       >
         <article
