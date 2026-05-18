@@ -33,8 +33,8 @@ import {
   getMedicationsFromBundle,
 } from '../../../services/medicationService';
 import { useVaccinationStore } from '../../../stores/vaccinationsStore';
-import { MEDICATIONS_CONFIG_URL } from '../medications/constants';
-import medicationConfigSchema from '../medications/schema.json';
+import { MEDICATIONS_CONFIG_URL } from '../medicationRequest/constants';
+import medicationConfigSchema from '../medicationRequest/schema.json';
 
 import SelectedVaccinationItem from './SelectedVaccinationItem';
 import styles from './styles/VaccinationForm.module.scss';
