@@ -123,6 +123,13 @@ exports[`ConditionsAndDiagnoses Snapshot Tests duplicate diagnosis search should
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
                   data-testid="diagnoses-certainty-dropdown-uuid-1"
                 >
+                  <label
+                    class="cds--label"
+                    for="downshift-_r_9b_-toggle-button"
+                    id="downshift-_r_9b_-label"
+                  >
+                    Certainty
+                  </label>
                   <div
                     class="cds--dropdown cds--autoalign cds--list-box"
                     id="diagnoses-certainty-dropdown-uuid-1"
@@ -439,6 +446,13 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
                   data-testid="diagnoses-certainty-dropdown-uuid-1"
                 >
+                  <label
+                    class="cds--label"
+                    for="downshift-_r_a6_-toggle-button"
+                    id="downshift-_r_a6_-label"
+                  >
+                    Certainty
+                  </label>
                   <div
                     class="cds--dropdown cds--autoalign cds--list-box"
                     id="diagnoses-certainty-dropdown-uuid-1"
@@ -589,7 +603,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                     class="cds--text-input__label-wrapper"
                   >
                     <label
-                      class="cds--label cds--visually-hidden"
+                      class="cds--label"
                       dir="auto"
                       for="condition-duration-value-uuid-3"
                     >
@@ -624,7 +638,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                   class="cds--dropdown__wrapper cds--list-box__wrapper selectedConditionDurationUnit"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="downshift-_r_ad_-toggle-button"
                     id="downshift-_r_ad_-label"
                   >
@@ -764,7 +778,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                     class="cds--text-input__label-wrapper"
                   >
                     <label
-                      class="cds--label cds--visually-hidden"
+                      class="cds--label"
                       dir="auto"
                       for="condition-duration-value-uuid-4"
                     >
@@ -799,7 +813,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                   class="cds--dropdown__wrapper cds--list-box__wrapper selectedConditionDurationUnit"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="downshift-_r_ak_-toggle-button"
                     id="downshift-_r_ak_-label"
                   >
@@ -1111,7 +1125,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                     class="cds--text-input__label-wrapper"
                   >
                     <label
-                      class="cds--label cds--visually-hidden"
+                      class="cds--label"
                       dir="auto"
                       for="condition-duration-value-uuid-3"
                     >
@@ -1146,7 +1160,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                   class="cds--dropdown__wrapper cds--list-box__wrapper selectedConditionDurationUnit"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="downshift-_r_9l_-toggle-button"
                     id="downshift-_r_9l_-label"
                   >
@@ -1286,7 +1300,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                     class="cds--text-input__label-wrapper"
                   >
                     <label
-                      class="cds--label cds--visually-hidden"
+                      class="cds--label"
                       dir="auto"
                       for="condition-duration-value-uuid-4"
                     >
@@ -1321,7 +1335,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                   class="cds--dropdown__wrapper cds--list-box__wrapper selectedConditionDurationUnit"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="downshift-_r_9s_-toggle-button"
                     id="downshift-_r_9s_-label"
                   >
@@ -1565,6 +1579,13 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected diagnoses matc
                   class="cds--dropdown__wrapper cds--list-box__wrapper"
                   data-testid="diagnoses-certainty-dropdown-uuid-1"
                 >
+                  <label
+                    class="cds--label"
+                    for="downshift-_r_91_-toggle-button"
+                    id="downshift-_r_91_-label"
+                  >
+                    Certainty
+                  </label>
                   <div
                     class="cds--dropdown cds--autoalign cds--list-box"
                     id="diagnoses-certainty-dropdown-uuid-1"
