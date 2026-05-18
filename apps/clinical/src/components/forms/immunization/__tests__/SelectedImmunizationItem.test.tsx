@@ -515,6 +515,9 @@ describe('SelectedImmunizationItem', () => {
           id,
           new Date('2026-12-31'),
         );
+        expect(
+          screen.getByTestId(`immunization-expiry-date-input-${id}`),
+        ).toBeDisabled();
       });
     });
 
@@ -590,6 +593,9 @@ describe('SelectedImmunizationItem', () => {
           id,
           'BATCH-NO-EXPIRY',
         );
+        expect(
+          screen.getByTestId(`immunization-expiry-date-input-${id}`),
+        ).not.toBeDisabled();
       });
       expect(mockStore.updateExpiryDate).not.toHaveBeenCalled();
     });
@@ -612,6 +618,9 @@ describe('SelectedImmunizationItem', () => {
           id,
           'MY-CUSTOM-BATCH',
         );
+        expect(
+          screen.getByTestId(`immunization-expiry-date-input-${id}`),
+        ).not.toBeDisabled();
       });
       expect(mockStore.updateExpiryDate).not.toHaveBeenCalled();
     });
@@ -627,6 +636,9 @@ describe('SelectedImmunizationItem', () => {
       );
       await waitFor(() => {
         expect(mockStore.updateBatchNumber).toHaveBeenCalledWith(id, '');
+        expect(
+          screen.getByTestId(`immunization-expiry-date-input-${id}`),
+        ).not.toBeDisabled();
       });
     });
 

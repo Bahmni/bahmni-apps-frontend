@@ -78,6 +78,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
     administeredLocationTagSearchTerm,
     setAdministeredLocationTagSearchTerm,
   ] = useState('');
+  const [isExpiryDateFromBatch, setIsExpiryDateFromBatch] = useState(false);
 
   const vaccineDrugComboBoxItems = useMemo(
     () =>
@@ -392,13 +393,18 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                   );
                   if (selectedItem.expiryDate) {
                     updateExpiryDate(id, new Date(selectedItem.expiryDate));
+                    setIsExpiryDateFromBatch(true);
+                  } else {
+                    setIsExpiryDateFromBatch(false);
                   }
                 } else if (inputValue?.trim()) {
                   updateBatchNumber(id, inputValue.trim());
                   updateDispenseLocation(id, null);
+                  setIsExpiryDateFromBatch(false);
                 } else {
                   updateBatchNumber(id, '');
                   updateDispenseLocation(id, null);
+                  setIsExpiryDateFromBatch(false);
                 }
               }}
               invalid={!!immunization.errors.batchNumber}
@@ -459,6 +465,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                 labelText={t('IMMUNIZATION_INPUT_CONTROL_EXPIRY_DATE')}
                 placeholder={t('IMMUNIZATION_INPUT_CONTROL_EXPIRY_DATE')}
                 hideLabel
+                disabled={isExpiryDateFromBatch}
                 invalid={!!immunization.errors.expiryDate}
                 invalidText={
                   immunization.errors.expiryDate
