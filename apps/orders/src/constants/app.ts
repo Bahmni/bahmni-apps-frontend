@@ -16,4 +16,4 @@ export const RADIOLOGY_TAB_LABEL = 'Radiology Order';
 /**
  * Days threshold above which LMP should be highlighted in red (indicating possible pregnancy)
  */
-export const LMP_WARNING_DAYS_THRESHOLD = 34;
+export const LMP_WARNING_DAYS_THRESHOLD = 28;

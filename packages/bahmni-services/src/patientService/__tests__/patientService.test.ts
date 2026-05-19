@@ -1610,9 +1610,9 @@ describe('Patient Service', () => {
       expect(result).toBeNull();
     });
 
-    it('should calculate 34 days threshold correctly (pregnancy risk)', () => {
-      const result = calculateDaysSinceLmp('2025-01-17');
-      expect(result).toBe(34);
+    it('should calculate 28 days threshold correctly (pregnancy risk)', () => {
+      const result = calculateDaysSinceLmp('2025-01-23');
+      expect(result).toBe(28);
     });
   });
 
