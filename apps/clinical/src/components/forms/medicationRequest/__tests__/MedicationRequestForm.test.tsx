@@ -19,7 +19,7 @@ import { useMedicationSearch } from '../../../../hooks/useMedicationSearch';
 import { MedicationInputEntry } from '../../../../models/medication';
 import { MedicationConfig } from '../../../../models/medicationConfig';
 import { useMedicationStore } from '../../../../stores/medicationsStore';
-import MedicationsForm from '../MedicationsForm';
+import MedicationsForm from '../MedicationRequestForm';
 
 expect.extend(toHaveNoViolations);
 
