@@ -231,7 +231,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   <span className={styles.label}>{t('DAYS_SINCE_LMP')}</span>
                   <span
                     className={`${styles.value} ${
-                      lmpData.daysSinceLmp >= LMP_WARNING_DAYS_THRESHOLD
+                      lmpData.daysSinceLmp > LMP_WARNING_DAYS_THRESHOLD
                         ? styles.lmpWarning
                         : ''
                     }`}

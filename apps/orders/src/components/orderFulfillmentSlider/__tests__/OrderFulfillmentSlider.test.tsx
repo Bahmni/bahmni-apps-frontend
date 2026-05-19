@@ -1435,11 +1435,11 @@ describe('OrderFulfillmentSlider', () => {
       });
     });
 
-    it('applies red styling when daysSinceLmp >= 34 (warning threshold)', async () => {
+    it('applies red styling when daysSinceLmp > 28 (warning threshold)', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
       mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2024-01-01',
-        daysSinceLmp: 34,
+        lmpDate: '2024-01-10',
+        daysSinceLmp: 29,
       });
 
       renderWithIntl(
@@ -1454,14 +1454,14 @@ describe('OrderFulfillmentSlider', () => {
       await waitFor(() => {
         const lmpValue = screen.getByTestId('lmp-days-value');
         expect(lmpValue).toHaveClass('lmpWarning');
-        expect(lmpValue).toHaveTextContent('34');
+        expect(lmpValue).toHaveTextContent('29');
       });
     });
 
-    it('applies red styling when daysSinceLmp > 34', async () => {
+    it('applies red styling when daysSinceLmp > 28', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
       mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2023-12-30',
+        lmpDate: '2023-12-05',
         daysSinceLmp: 40,
       });
 
@@ -1480,11 +1480,11 @@ describe('OrderFulfillmentSlider', () => {
       });
     });
 
-    it('does not apply red styling when daysSinceLmp < 34', async () => {
+    it('does not apply red styling when daysSinceLmp <= 28', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
       mockGetPatientLmpData.mockResolvedValue({
         lmpDate: '2024-02-10',
-        daysSinceLmp: 20,
+        daysSinceLmp: 28,
       });
 
       renderWithIntl(
@@ -1499,7 +1499,7 @@ describe('OrderFulfillmentSlider', () => {
       await waitFor(() => {
         const lmpValue = screen.getByTestId('lmp-days-value');
         expect(lmpValue).not.toHaveClass('lmpWarning');
-        expect(lmpValue).toHaveTextContent('20');
+        expect(lmpValue).toHaveTextContent('28');
       });
     });
 
@@ -1748,10 +1748,10 @@ describe('OrderFulfillmentSlider', () => {
     it('uses correct LMP days value in red warning condition', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
 
-      // Test boundary case: exactly at threshold (34)
+      // Test boundary case: exactly at threshold (28 - should not show red, must be > 28)
       (mockGetPatientLmpData as jest.Mock).mockResolvedValueOnce({
-        lmpDate: '2024-01-01',
-        daysSinceLmp: 34,
+        lmpDate: '2024-01-10',
+        daysSinceLmp: 28,
       });
 
       const { rerender } = renderWithIntl(
@@ -1764,18 +1764,20 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('lmp-days-value')).toHaveClass('lmpWarning');
+        expect(screen.getByTestId('lmp-days-value')).not.toHaveClass(
+          'lmpWarning',
+        );
       });
 
-      // Change order to trigger refetch with just below threshold (33)
+      // Change order to trigger refetch with just above threshold (29)
       const newOrder: Order = {
         ...mockOrder,
         id: 'order-2',
       };
 
       (mockGetPatientLmpData as jest.Mock).mockResolvedValueOnce({
-        lmpDate: '2024-01-02',
-        daysSinceLmp: 33,
+        lmpDate: '2024-01-09',
+        daysSinceLmp: 29,
       });
 
       rerender(
@@ -1789,8 +1791,8 @@ describe('OrderFulfillmentSlider', () => {
 
       await waitFor(() => {
         const lmpValue = screen.getByTestId('lmp-days-value');
-        expect(lmpValue).not.toHaveClass('lmpWarning');
-        expect(lmpValue).toHaveTextContent('33');
+        expect(lmpValue).toHaveClass('lmpWarning');
+        expect(lmpValue).toHaveTextContent('29');
       });
     });
 
