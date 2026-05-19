@@ -39,6 +39,7 @@ jest.mock('../../../../utils/identifierGenderUtils', () => ({
   useIdentifierData: () => ({
     identifierPrefixes: mockIdentifierPrefixes,
     primaryIdentifierType: 'primary-type-uuid',
+    primaryIdentifierTypeName: 'Primary ID',
     identifierSources: mockIdentifierSources,
   }),
 }));
@@ -273,7 +274,7 @@ describe('Profile', () => {
         identifierSourceUuid: 'source-uuid-1',
         identifierPrefix: 'BAH',
         identifierType: 'primary-type-uuid',
-        identifierTypeName: '',
+        identifierTypeName: 'Primary ID',
         preferred: true,
         voided: false,
       });

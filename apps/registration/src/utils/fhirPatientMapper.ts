@@ -10,7 +10,7 @@ import {
   AdditionalIdentifiersData,
 } from '../models/patient';
 
-const PATIENT_ATTRIBUTE_EXT_PREFIX = 'http://fhir.bahmni.org/ext/patient/';
+const PATIENT_ATTRIBUTE_EXT_PREFIX = 'http://fhir.bahmni.org/ext/patient/'; // NOSONAR
 
 function toSlugCase(str: string): string {
   return str
@@ -131,6 +131,10 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
   const allAttributes: PersonAttributesData = { ...contact, ...additional };
 
   personAttributes.forEach((attrType) => {
+    if (!Object.prototype.hasOwnProperty.call(allAttributes, attrType.name)) {
+      return;
+    }
+
     const value = allAttributes[attrType.name];
     const slug = toSlugCase(attrType.name);
     const url = PATIENT_ATTRIBUTE_EXT_PREFIX + slug;
@@ -157,14 +161,14 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
     const addressExtFields: { url: string; valueString: string }[] = [];
     if (address.address1?.trim()) {
       addressExtFields.push({
-        url: 'http://fhir.openmrs.org/ext/address#address1',
+        url: 'http://fhir.openmrs.org/ext/address#address1', // NOSONAR
         valueString: address.address1.trim(),
       });
       hasValue = true;
     }
     if (address.address2?.trim()) {
       addressExtFields.push({
-        url: 'http://fhir.openmrs.org/ext/address#address2',
+        url: 'http://fhir.openmrs.org/ext/address#address2', // NOSONAR
         valueString: address.address2.trim(),
       });
       hasValue = true;
@@ -172,7 +176,7 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
     if (addressExtFields.length > 0) {
       addr.extension = [
         {
-          url: 'http://fhir.openmrs.org/ext/address',
+          url: 'http://fhir.openmrs.org/ext/address', // NOSONAR
           extension: addressExtFields,
         },
       ];
@@ -209,7 +213,7 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
         _birthDate: {
           extension: [
             {
-              url: 'http://hl7.org/fhir/StructureDefinition/patient-birthTime',
+              url: 'http://hl7.org/fhir/StructureDefinition/patient-birthTime', // NOSONAR
               valueDateTime: convertTimeToISODateTime(
                 profile.dateOfBirth,
                 profile.birthTime,
