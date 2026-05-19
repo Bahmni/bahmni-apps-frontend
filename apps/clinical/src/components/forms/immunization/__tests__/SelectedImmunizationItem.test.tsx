@@ -777,6 +777,32 @@ describe('SelectedImmunizationItem', () => {
     });
   });
 
+  describe('Label Visibility', () => {
+    it('renders visible labels for ComboBox fields', () => {
+      render(<SelectedImmunizationItem {...defaultProps} />);
+
+      const drugNameLabel = screen.getByText('Drug');
+      expect(drugNameLabel).toBeInTheDocument();
+      expect(drugNameLabel).not.toHaveClass('cds--visually-hidden');
+
+      const routeLabel = screen.getByText('Route');
+      expect(routeLabel).toBeInTheDocument();
+      expect(routeLabel).not.toHaveClass('cds--visually-hidden');
+
+      const siteLabel = screen.getByText('Site');
+      expect(siteLabel).toBeInTheDocument();
+      expect(siteLabel).not.toHaveClass('cds--visually-hidden');
+
+      const locationLabel = screen.getByText('Location');
+      expect(locationLabel).toBeInTheDocument();
+      expect(locationLabel).not.toHaveClass('cds--visually-hidden');
+
+      const expiryLabel = screen.getByText('Expiry');
+      expect(expiryLabel).toBeInTheDocument();
+      expect(expiryLabel).not.toHaveClass('cds--visually-hidden');
+    });
+  });
+
   describe('Snapshots', () => {
     it('matches snapshot with all form fields', () => {
       const { container } = render(

@@ -21,6 +21,14 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         <div
           class="cds--list-box__wrapper"
         >
+          <label
+            class="cds--label"
+            dir="auto"
+            for="immunization-drug-name-combobox-test-id-1"
+            id="downshift-_r_qn_-label"
+          >
+            Drug
+          </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
           >
@@ -30,10 +38,10 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               <input
                 aria-activedescendant=""
                 aria-autocomplete="list"
-                aria-controls="downshift-_r_rp_-menu"
+                aria-controls="downshift-_r_qn_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-label="Choose an item"
+                aria-labelledby="downshift-_r_qn_-label"
                 autocomplete="off"
                 class="cds--text-input cds--text-input--empty"
                 data-testid="immunization-drug-name-combobox-test-id-1-test-id"
@@ -47,11 +55,11 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 value=""
               />
               <button
-                aria-controls="downshift-_r_rp_-menu"
+                aria-controls="downshift-_r_qn_-menu"
                 aria-expanded="false"
                 aria-label="Open"
                 class="cds--list-box__menu-icon"
-                id="downshift-_r_rp_-toggle-button"
+                id="downshift-_r_qn_-toggle-button"
                 tabindex="-1"
                 title="Open"
                 type="button"
@@ -73,9 +81,9 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               </button>
             </div>
             <ul
-              aria-labelledby="downshift-_r_rp_-label"
+              aria-labelledby="downshift-_r_qn_-label"
               class="cds--list-box__menu"
-              id="downshift-_r_rp_-menu"
+              id="downshift-_r_qn_-menu"
               role="listbox"
               style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
             />
@@ -95,7 +103,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               class="cds--date-picker-container"
             >
               <label
-                class="cds--label cds--visually-hidden"
+                class="cds--label"
                 dir="auto"
                 for="immunization-administered-on-test-id-1"
               >
@@ -141,6 +149,14 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         <div
           class="cds--list-box__wrapper"
         >
+          <label
+            class="cds--label"
+            dir="auto"
+            for="immunization-administered-location-combobox-test-id-1"
+            id="downshift-_r_qr_-label"
+          >
+            Location
+          </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
           >
@@ -150,10 +166,10 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               <input
                 aria-activedescendant=""
                 aria-autocomplete="list"
-                aria-controls="downshift-_r_rt_-menu"
+                aria-controls="downshift-_r_qr_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-label="Choose an item"
+                aria-labelledby="downshift-_r_qr_-label"
                 autocomplete="off"
                 class="cds--text-input cds--text-input--empty"
                 data-testid="immunization-administered-location-test-id-1-test-id"
@@ -166,11 +182,11 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 value=""
               />
               <button
-                aria-controls="downshift-_r_rt_-menu"
+                aria-controls="downshift-_r_qr_-menu"
                 aria-expanded="false"
                 aria-label="Open"
                 class="cds--list-box__menu-icon"
-                id="downshift-_r_rt_-toggle-button"
+                id="downshift-_r_qr_-toggle-button"
                 tabindex="-1"
                 title="Open"
                 type="button"
@@ -192,9 +208,9 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               </button>
             </div>
             <ul
-              aria-labelledby="downshift-_r_rt_-label"
+              aria-labelledby="downshift-_r_qr_-label"
               class="cds--list-box__menu"
-              id="downshift-_r_rt_-menu"
+              id="downshift-_r_qr_-menu"
               role="listbox"
               style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
             />
@@ -207,6 +223,14 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         <div
           class="cds--list-box__wrapper"
         >
+          <label
+            class="cds--label"
+            dir="auto"
+            for="immunization-route-combobox-test-id-1"
+            id="downshift-_r_qu_-label"
+          >
+            Route
+          </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
           >
@@ -216,10 +240,10 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               <input
                 aria-activedescendant=""
                 aria-autocomplete="list"
-                aria-controls="downshift-_r_s0_-menu"
+                aria-controls="downshift-_r_qu_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-label="Choose an item"
+                aria-labelledby="downshift-_r_qu_-label"
                 autocomplete="off"
                 class="cds--text-input cds--text-input--empty"
                 data-testid="immunization-route-test-id-1-test-id"
@@ -232,11 +256,11 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 value=""
               />
               <button
-                aria-controls="downshift-_r_s0_-menu"
+                aria-controls="downshift-_r_qu_-menu"
                 aria-expanded="false"
                 aria-label="Open"
                 class="cds--list-box__menu-icon"
-                id="downshift-_r_s0_-toggle-button"
+                id="downshift-_r_qu_-toggle-button"
                 tabindex="-1"
                 title="Open"
                 type="button"
@@ -258,9 +282,9 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               </button>
             </div>
             <ul
-              aria-labelledby="downshift-_r_s0_-label"
+              aria-labelledby="downshift-_r_qu_-label"
               class="cds--list-box__menu"
-              id="downshift-_r_s0_-menu"
+              id="downshift-_r_qu_-menu"
               role="listbox"
               style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
             />
@@ -273,6 +297,14 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         <div
           class="cds--list-box__wrapper"
         >
+          <label
+            class="cds--label"
+            dir="auto"
+            for="immunization-site-combobox-test-id-1"
+            id="downshift-_r_r1_-label"
+          >
+            Site
+          </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
           >
@@ -282,10 +314,10 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               <input
                 aria-activedescendant=""
                 aria-autocomplete="list"
-                aria-controls="downshift-_r_s3_-menu"
+                aria-controls="downshift-_r_r1_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-label="Choose an item"
+                aria-labelledby="downshift-_r_r1_-label"
                 autocomplete="off"
                 class="cds--text-input cds--text-input--empty"
                 data-testid="immunization-site-test-id-1-test-id"
@@ -298,11 +330,11 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 value=""
               />
               <button
-                aria-controls="downshift-_r_s3_-menu"
+                aria-controls="downshift-_r_r1_-menu"
                 aria-expanded="false"
                 aria-label="Open"
                 class="cds--list-box__menu-icon"
-                id="downshift-_r_s3_-toggle-button"
+                id="downshift-_r_r1_-toggle-button"
                 tabindex="-1"
                 title="Open"
                 type="button"
@@ -324,9 +356,9 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               </button>
             </div>
             <ul
-              aria-labelledby="downshift-_r_s3_-label"
+              aria-labelledby="downshift-_r_r1_-label"
               class="cds--list-box__menu"
-              id="downshift-_r_s3_-menu"
+              id="downshift-_r_r1_-menu"
               role="listbox"
               style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
             />
@@ -343,7 +375,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
             class="cds--text-input__label-wrapper"
           >
             <label
-              class="cds--label cds--visually-hidden"
+              class="cds--label"
               dir="auto"
               for="immunization-manufacturer-test-id-1"
             >
@@ -381,6 +413,14 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         <div
           class="cds--list-box__wrapper batchNumber"
         >
+          <label
+            class="cds--label"
+            dir="auto"
+            for="immunization-batch-number-test-id-1"
+            id="downshift-_r_r4_-label"
+          >
+            Batch Number
+          </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
           >
@@ -390,10 +430,10 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               <input
                 aria-activedescendant=""
                 aria-autocomplete="list"
-                aria-controls="downshift-_r_s6_-menu"
+                aria-controls="downshift-_r_r4_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-label="Choose an item"
+                aria-labelledby="downshift-_r_r4_-label"
                 autocomplete="off"
                 class="cds--text-input cds--text-input--empty"
                 data-testid="immunization-batch-number-test-id-1"
@@ -406,11 +446,11 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 value=""
               />
               <button
-                aria-controls="downshift-_r_s6_-menu"
+                aria-controls="downshift-_r_r4_-menu"
                 aria-expanded="false"
                 aria-label="Open"
                 class="cds--list-box__menu-icon"
-                id="downshift-_r_s6_-toggle-button"
+                id="downshift-_r_r4_-toggle-button"
                 tabindex="-1"
                 title="Open"
                 type="button"
@@ -432,9 +472,9 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               </button>
             </div>
             <ul
-              aria-labelledby="downshift-_r_s6_-label"
+              aria-labelledby="downshift-_r_r4_-label"
               class="cds--list-box__menu"
-              id="downshift-_r_s6_-menu"
+              id="downshift-_r_r4_-menu"
               role="listbox"
               style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
             />
@@ -448,10 +488,10 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
           class="cds--form-item"
         >
           <div
-            class="cds--number cds--number--helpertext cds--number--nolabel cds--number--md"
+            class="cds--number cds--number--helpertext cds--number--md"
           >
             <label
-              class="cds--label cds--visually-hidden"
+              class="cds--label"
               dir="auto"
               for="immunization-dose-sequence-test-id-1"
             >
@@ -545,11 +585,11 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               class="cds--date-picker-container"
             >
               <label
-                class="cds--label cds--visually-hidden"
+                class="cds--label"
                 dir="auto"
                 for="immunization-expiry-date-test-id-1"
               >
-                Expiry Date
+                Expiry
               </label>
               <div
                 class="cds--date-picker-input__wrapper"
