@@ -1,11 +1,18 @@
 import {
+  resetEncounterSession,
+  setEncounterSessionDecision,
+} from '@bahmni/services';
+import {
   QueryClient,
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
 import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import { useNotification } from '../../notification';
+import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import ConditionsTable from '../ConditionsTable';
 
 expect.extend(toHaveNoViolations);
@@ -22,6 +29,8 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getConditions: jest.fn(),
 }));
+jest.mock('../../userPrivileges/useHasPrivilege');
+
 const mockAddNotification = jest.fn();
 
 describe('ConditionsTable', () => {
@@ -34,19 +43,37 @@ describe('ConditionsTable', () => {
   });
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset shared encounter session store
+    resetEncounterSession();
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
+    // Default: no privilege
+    (useHasPrivilege as jest.Mock).mockReturnValue(false);
   });
   afterEach(() => {
     queryClient.clear();
   });
 
-  const wrapper = (
-    <QueryClientProvider client={queryClient}>
-      <ConditionsTable />
-    </QueryClientProvider>
-  );
+  const renderTable = (props = {}) =>
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ConditionsTable {...props} />
+      </QueryClientProvider>,
+    );
+
+  /** Helper: set up store + privilege so the Edit button will be shown */
+  const setupEditEnabled = () => {
+    setEncounterSessionDecision({
+      reasons: ['MATCHED'],
+      encounter: {
+        resourceType: 'Encounter',
+        id: 'enc-1',
+        status: 'in-progress',
+      } as any,
+    });
+    (useHasPrivilege as jest.Mock).mockReturnValue(true);
+  };
 
   const buildCondition = (index: number) => ({
     code: `code-${index}`,
@@ -59,6 +86,7 @@ describe('ConditionsTable', () => {
     recorder: 'Dr. Smith',
     status: 'active',
   });
+
   it('should show loading state when data is loading', () => {
     (useQuery as jest.Mock).mockReturnValue({
       data: null,
@@ -66,7 +94,7 @@ describe('ConditionsTable', () => {
       isError: null,
       isLoading: true,
     });
-    render(wrapper);
+    renderTable();
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
     expect(screen.getByTestId('conditions-table-skeleton')).toBeInTheDocument();
   });
@@ -78,7 +106,7 @@ describe('ConditionsTable', () => {
       isError: true,
       isLoading: false,
     });
-    render(wrapper);
+    renderTable();
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
     expect(screen.getByTestId('conditions-table-error')).toBeInTheDocument();
     expect(mockAddNotification).toHaveBeenCalledWith({
@@ -95,7 +123,7 @@ describe('ConditionsTable', () => {
       isError: false,
       isLoading: false,
     });
-    render(wrapper);
+    renderTable();
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
     expect(screen.getByTestId('conditions-table-empty')).toBeInTheDocument();
   });
@@ -135,7 +163,7 @@ describe('ConditionsTable', () => {
       isError: false,
       isLoading: false,
     });
-    render(wrapper);
+    renderTable();
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
     expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
     const activeStatusTag = screen.getByTestId('condition-status-73211009');
@@ -206,6 +234,24 @@ describe('ConditionsTable', () => {
     });
   });
 
+  // ── BAH-4652: Edit button moved to DashboardSection Tile header ─────────────
+  // ConditionsTable no longer renders an edit button; it lives in DashboardSection.
+
+  it('does not render an edit button (button lives in DashboardSection header)', () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: { conditions: [], total: 0 },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+
+    renderTable();
+
+    expect(
+      screen.queryByTestId('edit-conditions-button'),
+    ).not.toBeInTheDocument();
+  });
+
   describe('Accessibility', () => {
     it('passes accessibility tests with data', async () => {
       (useQuery as jest.Mock).mockReturnValue({
@@ -242,7 +288,24 @@ describe('ConditionsTable', () => {
         isError: false,
         isLoading: false,
       });
-      const { container } = render(wrapper);
+      const { container } = renderTable();
+      await act(async () => {
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+      });
+    });
+
+    it('passes accessibility tests with Edit button visible', async () => {
+      setupEditEnabled();
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { conditions: [], total: 0 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      const { container } = renderTable({ onEditClick: jest.fn() });
+
       await act(async () => {
         const results = await axe(container);
         expect(results).toHaveNoViolations();

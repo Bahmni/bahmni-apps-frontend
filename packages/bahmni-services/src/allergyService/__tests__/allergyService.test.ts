@@ -91,6 +91,7 @@ describe('allergyService', () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
         id: mockAllergyIntolerance.code.coding[0].code,
+        resourceId: mockAllergyIntolerance.id,
         display: mockAllergyIntolerance.code.text,
         category: mockAllergyIntolerance.category,
         criticality: mockAllergyIntolerance.criticality,
@@ -103,6 +104,8 @@ describe('allergyService', () => {
               mockAllergyIntolerance.reaction?.[0].manifestation[0].coding[0]
                 .display,
             ],
+            manifestationCodings:
+              mockAllergyIntolerance.reaction?.[0].manifestation[0].coding,
             severity: mockAllergyIntolerance.reaction?.[0].severity,
           },
         ],

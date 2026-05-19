@@ -156,18 +156,29 @@ export function formatAllergies(
 
     return {
       id: conceptCode,
+      resourceId: allergy.id,
       display: allergy.code?.text ?? '',
       category: allergy.category,
       criticality: allergy.criticality,
       status: statusDisplay,
       recordedDate: allergy.recordedDate!,
       recorder: allergy.recorder?.display,
-      reactions: allergy.reaction?.map((reaction) => ({
-        manifestation: reaction.manifestation.map(
-          (manifestation) => manifestation.text,
-        ),
-        severity: reaction.severity,
-      })),
+      reactions: allergy.reaction?.map((reaction) => {
+        // Deduplicate manifestation entries by text to prevent backend-appended
+        // duplicates from showing multiple times in the AllergiesTable display.
+        const seenTexts = new Set<string>();
+        const unique = reaction.manifestation.filter((m) => {
+          const key = m.text ?? m.coding?.[0]?.display ?? '';
+          if (!key || seenTexts.has(key)) return false;
+          seenTexts.add(key);
+          return true;
+        });
+        return {
+          manifestation: unique.map((m) => m.text ?? ''),
+          manifestationCodings: unique.flatMap((m) => m.coding ?? []),
+          severity: reaction.severity,
+        };
+      }),
       severity: allergySeverity,
       note: allergy.note?.map((note) => note.text),
     } as FormattedAllergy;

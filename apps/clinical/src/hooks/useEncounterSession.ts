@@ -114,7 +114,7 @@ export function useEncounterSession(
 
   const editActiveEncounter = hasActiveSession && isPractitionerMatch;
 
-  return {
+  const result = {
     hasActiveSession,
     activeEncounter,
     isPractitionerMatch,
@@ -124,4 +124,9 @@ export function useEncounterSession(
     error,
     refetch: () => fetchSessionState({ ignored: false }),
   };
+
+  // eslint-disable-next-line no-console
+  console.log('[useEncounterSession]', result);
+
+  return result;
 }

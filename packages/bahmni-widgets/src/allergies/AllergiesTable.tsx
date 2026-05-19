@@ -38,9 +38,6 @@ const getSeverityClassName = (severity: string): string | undefined => {
 };
 
 // TODO: Take UUID As A Prop
-/**
- * Component to display patient allergies using SortableDataTable
- */
 const AllergiesTable: React.FC = () => {
   const [allergies, setAllergies] = useState<FormattedAllergy[]>([]);
   const patientUUID = usePatientUUID();

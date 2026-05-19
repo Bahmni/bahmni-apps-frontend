@@ -33,6 +33,7 @@ import PatientSearch from '../components/patientSearch/PatientSearch';
 import { BAHMNI_CLINICAL_PATH } from '../constants/app';
 import type { EncounterSessionStartContext } from '../events/startConsultation';
 import { useSubscribeConsultationStart } from '../events/startConsultation';
+import type { AllergyInputEntry } from '../models/allergy';
 import { ClinicalAppProvider } from '../providers/ClinicalAppProvider';
 import { useClinicalConfig } from '../providers/clinicalConfig';
 import { useObservationFormsStore } from '../stores/observationFormsStore';
@@ -305,6 +306,11 @@ const ConsultationPage: React.FC = () => {
           encounterSessionStartContext && (
             <ConsultationPad
               encounterSessionStartContext={encounterSessionStartContext}
+              preloadedAllergies={
+                encounterSessionStartContext.preloadedAllergies as
+                  | AllergyInputEntry[]
+                  | undefined
+              }
               onClose={() => setIsActionAreaVisible((prev) => !prev)}
             />
           )

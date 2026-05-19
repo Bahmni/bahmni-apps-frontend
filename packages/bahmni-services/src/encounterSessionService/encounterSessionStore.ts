@@ -1,0 +1,119 @@
+/**
+ * Encounter Session Store
+ *
+ * A vanilla-JS singleton store (no Zustand dependency) that implements the
+ * pub/sub pattern compatible with React's useSyncExternalStore.
+ *
+ * PatientHeader writes the decision once via setDecision(); widgets read via
+ * useEncounterSessionStore() — zero additional FHIR calls per widget.
+ *
+ * canEditOrCreate covers:
+ *   - MATCHED (full match)
+ *   - LOCATION_MISMATCH (provider matches, location differs — AC 4)
+ *   - PROVIDER_MISMATCH (another provider is active — AC 4)
+ *
+ * Reset is called by PatientHeader on patient UUID change.
+ */
+import type { Encounter } from 'fhir/r4';
+import { useEffect, useState } from 'react';
+import type { MatchReasonCode } from './constants';
+
+export interface EncounterSessionState {
+  matchReasons: MatchReasonCode[];
+  activeEncounter: Encounter | null;
+  /** true when button should be shown (MATCHED | LOCATION_MISMATCH | PROVIDER_MISMATCH) */
+  canEditOrCreate: boolean;
+  isLoading: boolean;
+}
+
+type Listener = () => void;
+
+const INITIAL_STATE: EncounterSessionState = {
+  matchReasons: [],
+  activeEncounter: null,
+  canEditOrCreate: false,
+  isLoading: false,
+};
+
+const EDIT_ELIGIBLE_REASONS: MatchReasonCode[] = [
+  'MATCHED',
+  'SESSION_EXPIRED',
+  'LOCATION_MISMATCH',
+  'PROVIDER_MISMATCH',
+];
+
+/**
+ * Internal singleton state container.
+ * Exported only so tests can reset it between cases.
+ */
+let currentState: EncounterSessionState = { ...INITIAL_STATE };
+const listeners = new Set<Listener>();
+
+function notify() {
+  listeners.forEach((l) => l());
+}
+
+/** Subscribe to store changes — compatible with useSyncExternalStore. */
+export function subscribeEncounterSession(listener: Listener): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+/** Read current snapshot — compatible with useSyncExternalStore. */
+export function getEncounterSessionSnapshot(): EncounterSessionState {
+  return currentState;
+}
+
+/** Write encounter match decision into the store (called by PatientHeader). */
+export function setEncounterSessionDecision(decision: {
+  reasons: MatchReasonCode[];
+  encounter: Encounter | null;
+}): void {
+  const canEditOrCreate = decision.reasons.some((r) =>
+    EDIT_ELIGIBLE_REASONS.includes(r),
+  );
+  currentState = {
+    matchReasons: decision.reasons,
+    activeEncounter: decision.encounter,
+    canEditOrCreate,
+    isLoading: false,
+  };
+  notify();
+}
+
+/** Mark as loading while encounter session is being resolved. */
+export function setEncounterSessionLoading(isLoading: boolean): void {
+  currentState = { ...currentState, isLoading };
+  notify();
+}
+
+/** Reset to initial state — called by PatientHeader on patient UUID change. */
+export function resetEncounterSession(): void {
+  currentState = { ...INITIAL_STATE };
+  notify();
+}
+
+/**
+ * React hook that subscribes to the encounter session store and returns
+ * the current state, re-rendering on every store update.
+ *
+ * Compatible down to React 17 (uses useState + useEffect instead of
+ * useSyncExternalStore to avoid a peer-dep bump).
+ */
+export function useEncounterSessionStore(): EncounterSessionState {
+  const [state, setState] = useState<EncounterSessionState>(
+    getEncounterSessionSnapshot,
+  );
+
+  useEffect(() => {
+    // Sync once on mount in case state changed between render and effect
+    setState(getEncounterSessionSnapshot());
+    return subscribeEncounterSession(() => {
+      setState(getEncounterSessionSnapshot());
+    });
+  }, []);
+
+  return state;
+}

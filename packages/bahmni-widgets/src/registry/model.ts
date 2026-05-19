@@ -5,6 +5,7 @@ export interface WidgetProps {
   episodeOfCareUuids?: string[];
   encounterUuids?: string[];
   visitUuids?: string[];
+  onEditClick?: () => void;
 }
 export interface WidgetConfig {
   type: string;

@@ -19,7 +19,9 @@ import type { EncounterSessionStartContext } from '../../events/startConsultatio
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
+import type { AllergyInputEntry } from '../../models/allergy';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
+import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
@@ -35,11 +37,13 @@ import {
 
 interface ConsultationPadProps {
   encounterSessionStartContext: EncounterSessionStartContext;
+  preloadedAllergies?: AllergyInputEntry[];
   onClose: () => void;
 }
 
 const ConsultationPad: React.FC<ConsultationPadProps> = ({
   encounterSessionStartContext,
+  preloadedAllergies,
   onClose,
 }) => {
   const encounterType = encounterSessionStartContext.encounterType;
@@ -129,6 +133,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   useEffect(() => {
     return () => activeEntries.forEach((entry) => entry.reset());
   }, []);
+
+  // Declared after the reset effect so it runs after it on Strict Mode remount,
+  // re-seeding the store with existing allergies for the edit flow (AC 2).
+  useEffect(() => {
+    if (preloadedAllergies?.length) {
+      useAllergyStore.getState().preloadAllergies(preloadedAllergies);
+    }
+  }, [preloadedAllergies]);
 
   const handleSubmit = async () => {
     const validationResults = activeEntries.map((entry) => ({

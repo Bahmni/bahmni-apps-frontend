@@ -2,6 +2,8 @@ import {
   FormattedAllergy,
   AllergySeverity,
   AllergyStatus,
+  resetEncounterSession,
+  setEncounterSessionDecision,
 } from '@bahmni/services';
 import {
   QueryClient,
@@ -9,8 +11,11 @@ import {
   useQuery,
 } from '@tanstack/react-query';
 import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import { useNotification } from '../../notification';
+import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import AllergiesTable from '../AllergiesTable';
 
 expect.extend(toHaveNoViolations);
@@ -43,6 +48,7 @@ jest.mock('@bahmni/design-system', () => ({
     </div>
   ),
 }));
+jest.mock('../../userPrivileges/useHasPrivilege');
 
 const mockAddNotification = jest.fn();
 
@@ -110,20 +116,38 @@ describe('AllergiesTable', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset the shared encounter session store before each test
+    resetEncounterSession();
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
+    // Default: no privilege
+    (useHasPrivilege as jest.Mock).mockReturnValue(false);
   });
 
   afterEach(() => {
     queryClient.clear();
   });
 
-  const wrapper = (
-    <QueryClientProvider client={queryClient}>
-      <AllergiesTable />
-    </QueryClientProvider>
-  );
+  const renderTable = (props = {}) =>
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AllergiesTable {...props} />
+      </QueryClientProvider>,
+    );
+
+  /** Helper: set up store + privilege so the Edit button will be shown */
+  const setupEditEnabled = () => {
+    setEncounterSessionDecision({
+      reasons: ['MATCHED'],
+      encounter: {
+        resourceType: 'Encounter',
+        id: 'enc-1',
+        status: 'in-progress',
+      } as any,
+    });
+    (useHasPrivilege as jest.Mock).mockReturnValue(true);
+  };
 
   describe('Component States', () => {
     it('displays loading state', () => {
@@ -134,7 +158,7 @@ describe('AllergiesTable', () => {
         isLoading: true,
       });
 
-      render(wrapper);
+      renderTable();
 
       expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
       expect(
@@ -150,7 +174,7 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      render(wrapper);
+      renderTable();
 
       expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
       expect(screen.getByTestId('allergies-table-error')).toBeInTheDocument();
@@ -169,7 +193,7 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      render(wrapper);
+      renderTable();
 
       expect(screen.getByTestId('allergy-table')).toBeInTheDocument();
       expect(screen.getByTestId('allergies-table-empty')).toBeInTheDocument();
@@ -186,7 +210,7 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      render(wrapper);
+      renderTable();
 
       expect(screen.getByRole('table')).toHaveAttribute(
         'aria-label',
@@ -206,7 +230,7 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      render(wrapper);
+      renderTable();
 
       expect(screen.getByText('Peanut Allergy')).toBeInTheDocument();
       expect(screen.getByText('[ALLERGY_TYPE_FOOD]')).toBeInTheDocument();
@@ -224,7 +248,7 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      render(wrapper);
+      renderTable();
 
       expect(screen.getByText('ALLERGY_LIST_INACTIVE')).toBeInTheDocument();
     });
@@ -237,7 +261,7 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      render(wrapper);
+      renderTable();
 
       const tooltip = screen.getByTestId('tooltip-icon');
       expect(tooltip).toBeInTheDocument();
@@ -255,7 +279,7 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      render(wrapper);
+      renderTable();
 
       expect(
         screen.getByText('Hives, Difficulty breathing, Anaphylaxis'),
@@ -272,7 +296,7 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      render(wrapper);
+      renderTable();
 
       const allergyNames = screen.getAllByText(
         /Severe Allergy|Moderate Allergy|Mild Allergy/,
@@ -297,7 +321,7 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      render(wrapper);
+      renderTable();
 
       expect(
         screen.getByText('ALLERGY_TABLE_NOT_AVAILABLE'),
@@ -317,12 +341,35 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      render(wrapper);
+      renderTable();
 
       expect(
         screen.getByText('ALLERGY_TABLE_NOT_AVAILABLE'),
       ).toBeInTheDocument();
     });
+  });
+
+  // ── BAH-4652: Edit button moved to DashboardSection Tile header ─────────────
+  // The AllergiesTable widget no longer renders an edit button; the button is
+  // owned by DashboardSection so it appears inline with the section heading.
+
+  it('does not render an edit button (AC 6 — button lives in DashboardSection header)', () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: [mockAllergy],
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+
+    renderTable();
+
+    expect(
+      screen.queryByTestId('edit-allergies-button'),
+    ).not.toBeInTheDocument();
+    // Also confirm no delete buttons are rendered (AC 6)
+    expect(
+      screen.queryByRole('button', { name: /delete/i }),
+    ).not.toBeInTheDocument();
   });
 
   describe('Accessibility', () => {
@@ -334,7 +381,7 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      const { container } = render(wrapper);
+      const { container } = renderTable();
 
       await act(async () => {
         const results = await axe(container);
@@ -350,7 +397,24 @@ describe('AllergiesTable', () => {
         isLoading: false,
       });
 
-      const { container } = render(wrapper);
+      const { container } = renderTable();
+
+      await act(async () => {
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+      });
+    });
+
+    it('passes accessibility tests with Edit button visible', async () => {
+      setupEditEnabled();
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergy],
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      const { container } = renderTable({ onEditClick: jest.fn() });
 
       await act(async () => {
         const results = await axe(container);

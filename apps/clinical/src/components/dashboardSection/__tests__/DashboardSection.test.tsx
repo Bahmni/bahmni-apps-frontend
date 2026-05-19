@@ -30,6 +30,10 @@ jest.mock('@bahmni/design-system', () => ({
     </div>
   )),
   Loading: jest.fn(() => <div data-testid="loading" />),
+  IconButton: jest.fn(({ testId, onClick }) => (
+    <button data-testid={testId} onClick={onClick} />
+  )),
+  Edit: jest.fn(),
 }));
 
 // Mock the translation hook from @bahmni/services
@@ -49,6 +53,11 @@ jest.mock('@bahmni/services', () => {
         return translations[key] || key;
       }),
     }),
+    getAllergies: jest.fn().mockResolvedValue([]),
+    useEncounterSessionStore: jest.fn(() => ({
+      canEditOrCreate: false,
+      isLoading: false,
+    })),
   };
 });
 
@@ -59,6 +68,9 @@ jest.mock('@bahmni/widgets', () => {
     ...actual,
     getWidget: jest.fn(),
     registerWidget: jest.fn(),
+    usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+    useHasPrivilege: jest.fn(() => false),
+    CONSULTATION_PAD_PRIVILEGES: { EDIT_ALLERGIES: ['Edit Allergies'] },
     useUserPrivilege: jest.fn(() => ({
       userPrivileges: [
         { name: 'View Observations' },
