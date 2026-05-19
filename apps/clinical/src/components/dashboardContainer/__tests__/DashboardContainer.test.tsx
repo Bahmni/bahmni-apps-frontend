@@ -64,6 +64,7 @@ const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
 const renderDashboardContainerWithProvider = (
   sections: DashboardSectionType[],
   activeItemId?: string | null,
+  scrollTrigger?: number,
 ) => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -77,7 +78,11 @@ const renderDashboardContainerWithProvider = (
   return render(
     <QueryClientProvider client={queryClient}>
       <ClinicalAppProvider episodeUuids={mockEpisodeIds}>
-        <DashboardContainer sections={sections} activeItemId={activeItemId} />
+        <DashboardContainer
+          sections={sections}
+          activeItemId={activeItemId}
+          scrollTrigger={scrollTrigger}
+        />
       </ClinicalAppProvider>
     </QueryClientProvider>,
   );
@@ -159,6 +164,50 @@ describe('DashboardContainer Component', () => {
     });
 
     // Restore the original implementation
+    jest.restoreAllMocks();
+  });
+
+  it('scrolls again when scrollTrigger changes even if activeItemId stays the same', async () => {
+    // Create a spy div element with scrollIntoView method
+    const spyElement = document.createElement('div');
+    const scrollSpy = jest.spyOn(spyElement, 'scrollIntoView');
+
+    // Mock createRef to return our spy element
+    jest.spyOn(React, 'createRef').mockImplementation(() => ({
+      current: spyElement,
+    }));
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    const { rerender } = renderDashboardContainerWithProvider(
+      mockSections,
+      'section-1-id',
+      1,
+    );
+
+    await waitFor(() => {
+      expect(scrollSpy).toHaveBeenCalledTimes(1);
+    });
+
+    // Re-render with same activeItemId but incremented scrollTrigger
+    rerender(
+      <QueryClientProvider client={queryClient}>
+        <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+          <DashboardContainer
+            sections={mockSections}
+            activeItemId="section-1-id"
+            scrollTrigger={2}
+          />
+        </ClinicalAppProvider>
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(scrollSpy).toHaveBeenCalledTimes(2);
+    });
+
     jest.restoreAllMocks();
   });
 
