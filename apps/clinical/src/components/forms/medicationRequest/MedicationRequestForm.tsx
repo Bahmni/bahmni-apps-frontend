@@ -2,58 +2,53 @@ import {
   BoxWHeader,
   SelectedItem,
   ComboBox,
-  DropdownSkeleton,
+  CodeSnippetSkeleton,
   Tile,
 } from '@bahmni/design-system';
 import {
   getConfig,
   fetchMedicationOrdersMetadata,
   useTranslation,
-  getPatientMedicationBundle,
-  useSubscribeConsultationSaved,
-  ConsultationSavedEventPayload,
+  getVaccinations,
 } from '@bahmni/services';
-import {
-  useNotification,
-  usePatientUUID,
-  useHasPrivilege,
-  CONSULTATION_PAD_PRIVILEGES,
-} from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import { Bundle } from 'fhir/r4';
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-
+import React, { useState, useMemo } from 'react';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
+import { MedicationJSONConfig } from '../../../models/medicationConfig';
+import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
 import {
-  MedicationConfig,
-  MedicationJSONConfig,
-} from '../../../models/medicationConfig';
-import { getMedicationDisplay } from '../../../services/medicationService';
-import { useMedicationStore } from '../../../stores/medicationsStore';
-import { MEDICATIONS_CONFIG_URL } from './constants';
+  getMedicationDisplay,
+  getMedicationsFromBundle,
+} from '../../../services/medicationService';
+import {
+  MEDICATIONS_CONFIG_URL,
+  MEDICATIONS_INPUT_CONTROL_KEY,
+} from './constants';
 import medicationConfigSchema from './schema.json';
-import SelectedMedicationItem from './SelectedMedicationItem';
-import styles from './styles/MedicationsForm.module.scss';
+import SelectedMedicationRequestItem from './SelectedMedicationRequestItem';
+import { MedicationRequestStoreKey, useMedicationRequestStore } from './store';
+import styles from './styles/MedicationRequestForm.module.scss';
+import {
+  getMedicationRequestComboBoxItems,
+  getVaccinationComboBoxItems,
+} from './utils';
 
-/**
- * MedicationsForm component
- *
- * A component that displays a search interface for medications and a list of selected medications.
- * It allows users to search for medications, select them, and specify dosage, frequency, route, timing, and duration.
- */
-
-const MedicationsForm: React.FC = React.memo(() => {
+const MedicationRequestForm: React.FC<{
+  inputControlConfig?: ClinicalInputControlConfig;
+}> = React.memo(({ inputControlConfig }) => {
   const { t } = useTranslation();
-  const patientUUID = usePatientUUID();
-  const { addNotification } = useNotification();
-  const canAddMedications = useHasPrivilege(
-    CONSULTATION_PAD_PRIVILEGES.MEDICATIONS,
-  );
-  const [searchMedicationTerm, setSearchMedicationTerm] = useState('');
-  const isSelectingRef = useRef(false);
-  const [selectedMedicationItem, setSelectedMedicationItem] =
-    useState<MedicationFilterResult | null>(null);
+
+  const {
+    type: inputControlType = MEDICATIONS_INPUT_CONTROL_KEY,
+    label = 'MEDICATIONS_INPUT_CONTROL_TITLE',
+  } = inputControlConfig ?? {};
+
+  const isMedicationRequest =
+    inputControlType === MEDICATIONS_INPUT_CONTROL_KEY;
+
+  const [searchTerm, setSearchTerm] = useState('');
+
   const {
     data: medicationConfig,
     isLoading: medicationConfigLoading,
@@ -68,206 +63,152 @@ const MedicationsForm: React.FC = React.memo(() => {
         ),
         fetchMedicationOrdersMetadata(),
       ]);
-      return { ...metadata, ...jsonConfig } as MedicationConfig;
+      return { ...metadata, ...jsonConfig };
     },
   });
 
-  const { searchResults, loading, error } =
-    useMedicationSearch(searchMedicationTerm);
+  const {
+    searchResults: medicationResults,
+    loading: medicationSearchLoading,
+    error: medicationSearchError,
+  } = useMedicationSearch(isMedicationRequest ? searchTerm : '');
 
   const {
-    selectedMedications,
-    addMedication,
-    removeMedication,
-    updateDosage,
-    updateDosageUnit,
-    updateFrequency,
-    updateRoute,
-    updateDuration,
-    updateDurationUnit,
-    updateInstruction,
-    updateisPRN,
-    updateisSTAT,
-    updateDispenseQuantity,
-    updateDispenseUnit,
-    updateNote,
-    updateStartDate,
-  } = useMedicationStore();
-
-  const {
-    isLoading: existingMedicationsLoading,
-    error: existingMedicationsError,
-    refetch: refetchMedications,
-  } = useQuery<Bundle>({
-    queryKey: ['medications', patientUUID!],
-    enabled:
-      !!patientUUID && patientUUID.trim().length > 0 && canAddMedications,
-    queryFn: () =>
-      getPatientMedicationBundle(patientUUID!, [], undefined, true),
-    refetchOnMount: 'always',
+    data: vaccinationsBundle,
+    isLoading: vaccinationsBundleLoading,
+    error: vaccinationsBundleError,
+  } = useQuery({
+    queryKey: ['vaccinations'],
+    queryFn: getVaccinations,
+    enabled: !isMedicationRequest,
   });
 
-  useSubscribeConsultationSaved(
-    (payload: ConsultationSavedEventPayload) => {
-      if (
-        payload.patientUUID === patientUUID &&
-        payload.updatedResources.medications
-      ) {
-        refetchMedications();
-      }
-    },
-    [patientUUID, refetchMedications],
+  const vaccinationResults = useMemo(
+    () =>
+      vaccinationsBundle ? getMedicationsFromBundle(vaccinationsBundle) : [],
+    [vaccinationsBundle],
   );
 
-  useEffect(() => {
-    if (existingMedicationsError) {
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: existingMedicationsError.message,
-        type: 'error',
-      });
-    }
-  }, [existingMedicationsError, addNotification, t]);
+  const { selectedMedicationRequests, addItem, removeItem } =
+    useMedicationRequestStore(inputControlType as MedicationRequestStoreKey);
 
-  const handleSearch = (searchTerm: string) => {
-    if (!isSelectingRef.current) {
-      setSearchMedicationTerm(searchTerm);
-    }
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
   };
 
-  const handleOnChange = (selectedItem: MedicationFilterResult) => {
-    if (!selectedItem?.medication?.id) {
-      return;
-    }
-
-    const displayName = getMedicationDisplay(selectedItem.medication);
-
-    isSelectingRef.current = true;
-    addMedication(selectedItem.medication, displayName);
-    setSearchMedicationTerm('');
-    setSelectedMedicationItem(selectedItem);
-    setTimeout(() => {
-      isSelectingRef.current = false;
-    }, 100);
+  const handleOnChange = (selected: MedicationFilterResult) => {
+    const displayName = getMedicationDisplay(selected.medication!);
+    addItem(selected.medication!, displayName);
+    setSearchTerm('');
   };
 
   const filteredSearchResults = useMemo(() => {
-    if (!searchMedicationTerm || searchMedicationTerm.trim() === '') {
-      return [];
-    }
-    if (loading || existingMedicationsLoading) {
-      return [
+    if (isMedicationRequest) {
+      return getMedicationRequestComboBoxItems(
+        searchTerm,
+        medicationResults,
+        medicationSearchLoading,
+        !!medicationSearchError,
         {
-          displayName: t('LOADING_MEDICATIONS'),
-          disabled: true,
+          loading: t('LOADING_MEDICATIONS'),
+          error: t('ERROR_SEARCHING_MEDICATIONS'),
+          empty: t('NO_MATCHING_MEDICATIONS_FOUND'),
         },
-      ];
+      );
     }
-    if (error) {
-      return [
-        {
-          displayName: t('ERROR_SEARCHING_MEDICATIONS', {
-            error: error.message,
-          }),
-          disabled: true,
-        },
-      ];
-    }
-    if (!searchResults || searchResults.length === 0) {
-      return [
-        {
-          displayName: t('NO_MATCHING_MEDICATIONS_FOUND'),
-          disabled: true,
-        },
-      ];
-    }
-
-    return searchResults.map((item) => {
-      const itemDisplayName = getMedicationDisplay(item);
-
-      return {
-        medication: item,
-        displayName: itemDisplayName,
-        disabled: false,
-      };
-    });
+    return getVaccinationComboBoxItems(
+      searchTerm,
+      vaccinationResults,
+      vaccinationsBundleLoading,
+      !!vaccinationsBundleError,
+      {
+        loading: t('LOADING_VACCINATIONS'),
+        error: t('ERROR_SEARCHING_VACCINATIONS'),
+        empty: t('NO_MATCHING_VACCINATIONS_FOUND'),
+      },
+    );
   }, [
-    searchMedicationTerm,
-    loading,
-    existingMedicationsLoading,
-    error,
-    searchResults,
-    t,
+    searchTerm,
+    isMedicationRequest,
+    medicationSearchLoading,
+    medicationSearchError,
+    medicationResults,
+    vaccinationsBundleLoading,
+    vaccinationsBundleError,
+    vaccinationResults,
   ]);
-
-  if (!canAddMedications) return null;
 
   return (
     <Tile
-      className={styles.medicationsFormTile}
-      data-testid="medications-form-tile"
+      id={`${inputControlType}-form-tile`}
+      className={styles.form}
+      data-testid={`${inputControlType}-form-tile-test-id`}
+      aria-label={`${inputControlType}-form-tile-aria-label`}
     >
       <div
-        className={styles.medicationsFormTitle}
-        data-testid="medications-form-title"
+        id={`${inputControlType}-form-title`}
+        className={styles.title}
+        data-testid={`${inputControlType}-form-title-test-id`}
+        aria-label={`${inputControlType}-form-title-aria-label`}
       >
-        {t('MEDICATIONS_FORM_TITLE')}
+        {t(label)}
       </div>
-      {medicationConfigLoading && <DropdownSkeleton />}
+      {medicationConfigLoading && (
+        <CodeSnippetSkeleton
+          id={`${inputControlType}-loading-skeleton`}
+          testId={`${inputControlType}-loading-skeleton-test-id`}
+          aria-label={`${inputControlType}-loading-skeleton-aria-label`}
+          type="multi"
+          className={styles.loading}
+        />
+      )}
       {medicationConfigError && (
-        <div>
-          {t('ERROR_FETCHING_MEDICATION_CONFIG', {
-            error: medicationConfigError.message,
-          })}
+        <div
+          id={`${inputControlType}-config-error`}
+          className={styles.error}
+          data-testid={`${inputControlType}-config-error-test-id`}
+          aria-label={`${inputControlType}-config-error-aria-label`}
+        >
+          {t(`ERROR_FETCHING_${inputControlType.toUpperCase()}_CONFIG`)}
         </div>
       )}
       {!medicationConfigLoading && !medicationConfigError && (
         <ComboBox
-          id="medications-search"
-          data-testid="medications-search-combobox"
-          placeholder={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
+          id={`${inputControlType}-search`}
+          data-testid={`${inputControlType}-search-combobox-test-id`}
+          placeholder={t(
+            `${inputControlType.toUpperCase()}_SEARCH_PLACEHOLDER`,
+          )}
           items={filteredSearchResults}
           itemToString={(item) => (item ? item.displayName : '')}
-          onChange={(data) => handleOnChange(data.selectedItem!)}
+          onChange={(data) =>
+            data.selectedItem && handleOnChange(data.selectedItem)
+          }
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-          selectedItem={selectedMedicationItem}
           clearSelectedOnChange
-          allowCustomValue
-          size="md"
           autoAlign
-          disabled={existingMedicationsLoading}
-          aria-label={t('MEDICATIONS_SEARCH_PLACEHOLDER')}
+          aria-label={`${inputControlType}-search-combobox-aria-label`}
         />
       )}
       {medicationConfig &&
-        selectedMedications &&
-        selectedMedications.length > 0 && (
+        selectedMedicationRequests &&
+        selectedMedicationRequests.length > 0 && (
           <BoxWHeader
-            title={t('MEDICATIONS_ADDED_MEDICATIONS')}
-            className={styles.medicationsBox}
+            title={t(`${inputControlType.toUpperCase()}_ADDED_TITLE`)}
+            className={styles.itemsBox}
           >
-            {selectedMedications.map((medication) => (
+            {selectedMedicationRequests.map((item) => (
               <SelectedItem
-                onClose={() => removeMedication(medication.id)}
-                className={styles.selectedMedicationItem}
-                key={medication.id}
+                onClose={() => removeItem(item.id)}
+                className={styles.selectedItem}
+                key={item.id}
               >
-                <SelectedMedicationItem
-                  medicationInputEntry={medication}
+                <SelectedMedicationRequestItem
+                  entry={item}
                   medicationConfig={medicationConfig}
-                  updateDosage={updateDosage}
-                  updateDosageUnit={updateDosageUnit}
-                  updateFrequency={updateFrequency}
-                  updateRoute={updateRoute}
-                  updateDuration={updateDuration}
-                  updateDurationUnit={updateDurationUnit}
-                  updateInstruction={updateInstruction}
-                  updateisPRN={updateisPRN}
-                  updateisSTAT={updateisSTAT}
-                  updateDispenseQuantity={updateDispenseQuantity}
-                  updateDispenseUnit={updateDispenseUnit}
-                  updateNote={updateNote}
-                  updateStartDate={updateStartDate}
+                  inputControlType={
+                    inputControlType as MedicationRequestStoreKey
+                  }
                 />
               </SelectedItem>
             ))}
@@ -277,6 +218,6 @@ const MedicationsForm: React.FC = React.memo(() => {
   );
 });
 
-MedicationsForm.displayName = 'MedicationsForm';
+MedicationRequestForm.displayName = 'MedicationRequestForm';
 
-export default MedicationsForm;
+export default MedicationRequestForm;

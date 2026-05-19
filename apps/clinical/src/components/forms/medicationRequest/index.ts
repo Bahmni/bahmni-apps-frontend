@@ -1,23 +1,35 @@
-import { createMedicationRequestEntries } from '../../../services/consultationBundleService';
-import { useMedicationStore } from '../../../stores';
+import type { EncounterContext } from '../models';
 import { registerInputControl } from '../registry';
-import MedicationsForm from './MedicationsForm';
+import {
+  MEDICATIONS_INPUT_CONTROL_KEY,
+  VACCINATIONS_INPUT_CONTROL_KEY,
+} from './constants';
+import MedicationRequestForm from './MedicationRequestForm';
+import { getMedicationRequestStore, MedicationRequestStoreKey } from './store';
+import { createMedicationRequestEntries } from './utils';
 
-registerInputControl({
-  key: 'medications',
-  component: MedicationsForm,
-  reset: () => useMedicationStore.getState().reset(),
-  validate: () => useMedicationStore.getState().validateAllMedications(),
-  hasData: () => useMedicationStore.getState().selectedMedications.length > 0,
-  subscribe: (cb) => useMedicationStore.subscribe(cb),
-  createBundleEntries: (ctx) =>
-    createMedicationRequestEntries({
-      selectedMedications: useMedicationStore.getState().selectedMedications,
-      encounterSubject: ctx.encounterSubject,
-      encounterReference: ctx.encounterReference,
-      practitionerUUID: ctx.practitionerUUID,
-      statDurationInMilliseconds: ctx.statDurationInMilliseconds,
-    }),
-});
+const registerMedicationRequestControl = (key: MedicationRequestStoreKey) => {
+  const store = () => getMedicationRequestStore(key);
+  registerInputControl({
+    key,
+    component: MedicationRequestForm,
+    reset: () => store().getState().reset(),
+    validate: () => store().getState().validateAll(),
+    hasData: () => store().getState().selectedMedicationRequests.length > 0,
+    subscribe: (cb: () => void) => store().subscribe(cb),
+    createBundleEntries: (ctx: EncounterContext) =>
+      createMedicationRequestEntries({
+        selectedMedicationRequests:
+          store().getState().selectedMedicationRequests,
+        encounterSubject: ctx.encounterSubject,
+        encounterReference: ctx.encounterReference,
+        practitionerUUID: ctx.practitionerUUID,
+        statDurationInMilliseconds: ctx.statDurationInMilliseconds,
+      }),
+  });
+};
 
-export { default } from './MedicationsForm';
+registerMedicationRequestControl(MEDICATIONS_INPUT_CONTROL_KEY);
+registerMedicationRequestControl(VACCINATIONS_INPUT_CONTROL_KEY);
+
+export { default } from './MedicationRequestForm';
