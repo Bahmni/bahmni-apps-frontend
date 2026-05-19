@@ -170,7 +170,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
           for="downshift-_r_s8_-toggle-button"
           id="downshift-_r_s8_-label"
         >
-          Dosage unit
+          Dosage Unit
         </label>
         <div
           class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -186,13 +186,13 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             id="downshift-_r_s8_-toggle-button"
             role="combobox"
             tabindex="0"
-            title="Dosage unit"
+            title="Dosage Unit"
             type="button"
           >
             <span
               class="cds--list-box__label"
             >
-              Dosage unit
+              Dosage Unit
             </span>
             <div
               class="cds--list-box__menu-icon"
@@ -397,7 +397,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
           for="downshift-_r_se_-toggle-button"
           id="downshift-_r_se_-label"
         >
-          Duration unit
+          Duration Unit
         </label>
         <div
           class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -413,13 +413,13 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with default pro
             id="downshift-_r_se_-toggle-button"
             role="combobox"
             tabindex="0"
-            title="Duration unit"
+            title="Duration Unit"
             type="button"
           >
             <span
               class="cds--list-box__label"
             >
-              Duration unit
+              Duration Unit
             </span>
             <div
               class="cds--list-box__menu-icon"
@@ -873,7 +873,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           for="downshift-_r_sq_-toggle-button"
           id="downshift-_r_sq_-label"
         >
-          Dosage unit
+          Dosage Unit
         </label>
         <div
           class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm cds--list-box--invalid"
@@ -910,13 +910,13 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             id="downshift-_r_sq_-toggle-button"
             role="combobox"
             tabindex="0"
-            title="Dosage unit"
+            title="Dosage Unit"
             type="button"
           >
             <span
               class="cds--list-box__label"
             >
-              Dosage unit
+              Dosage Unit
             </span>
             <div
               class="cds--list-box__menu-icon"
@@ -1182,7 +1182,7 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
           for="downshift-_r_t0_-toggle-button"
           id="downshift-_r_t0_-label"
         >
-          Duration unit
+          Duration Unit
         </label>
         <div
           class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm cds--list-box--invalid"
@@ -1219,13 +1219,13 @@ exports[`SelectedMedicationItem Snapshot Tests matches snapshot with errors 1`] 
             id="downshift-_r_t0_-toggle-button"
             role="combobox"
             tabindex="0"
-            title="Duration unit"
+            title="Duration Unit"
             type="button"
           >
             <span
               class="cds--list-box__label"
             >
-              Duration unit
+              Duration Unit
             </span>
             <div
               class="cds--list-box__menu-icon"

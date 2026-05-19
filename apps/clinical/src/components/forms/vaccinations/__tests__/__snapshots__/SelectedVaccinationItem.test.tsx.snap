@@ -144,7 +144,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
           for="downshift-_r_of_-toggle-button"
           id="downshift-_r_of_-label"
         >
-          Dosage unit
+          Dosage Unit
         </label>
         <div
           class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -160,13 +160,13 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
             id="downshift-_r_of_-toggle-button"
             role="combobox"
             tabindex="0"
-            title="Dosage unit"
+            title="Dosage Unit"
             type="button"
           >
             <span
               class="cds--list-box__label"
             >
-              Dosage unit
+              Dosage Unit
             </span>
             <div
               class="cds--list-box__menu-icon"
@@ -371,7 +371,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
           for="downshift-_r_ol_-toggle-button"
           id="downshift-_r_ol_-label"
         >
-          Duration unit
+          Duration Unit
         </label>
         <div
           class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -387,13 +387,13 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with default pr
             id="downshift-_r_ol_-toggle-button"
             role="combobox"
             tabindex="0"
-            title="Duration unit"
+            title="Duration Unit"
             type="button"
           >
             <span
               class="cds--list-box__label"
             >
-              Duration unit
+              Duration Unit
             </span>
             <div
               class="cds--list-box__menu-icon"
@@ -821,7 +821,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
           for="downshift-_r_p0_-toggle-button"
           id="downshift-_r_p0_-label"
         >
-          Dosage unit
+          Dosage Unit
         </label>
         <div
           class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm cds--list-box--invalid"
@@ -858,13 +858,13 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
             id="downshift-_r_p0_-toggle-button"
             role="combobox"
             tabindex="0"
-            title="Dosage unit"
+            title="Dosage Unit"
             type="button"
           >
             <span
               class="cds--list-box__label"
             >
-              Dosage unit
+              Dosage Unit
             </span>
             <div
               class="cds--list-box__menu-icon"
@@ -1130,7 +1130,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
           for="downshift-_r_p6_-toggle-button"
           id="downshift-_r_p6_-label"
         >
-          Duration unit
+          Duration Unit
         </label>
         <div
           class="cds--dropdown cds--dropdown--invalid cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm cds--list-box--invalid"
@@ -1167,13 +1167,13 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with errors 1`]
             id="downshift-_r_p6_-toggle-button"
             role="combobox"
             tabindex="0"
-            title="Duration unit"
+            title="Duration Unit"
             type="button"
           >
             <span
               class="cds--list-box__label"
             >
-              Duration unit
+              Duration Unit
             </span>
             <div
               class="cds--list-box__menu-icon"
@@ -1602,7 +1602,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
           for="downshift-_r_ph_-toggle-button"
           id="downshift-_r_ph_-label"
         >
-          Dosage unit
+          Dosage Unit
         </label>
         <div
           class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -1618,13 +1618,13 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
             id="downshift-_r_ph_-toggle-button"
             role="combobox"
             tabindex="0"
-            title="Dosage unit"
+            title="Dosage Unit"
             type="button"
           >
             <span
               class="cds--list-box__label"
             >
-              Dosage unit
+              Dosage Unit
             </span>
             <div
               class="cds--list-box__menu-icon"
@@ -1829,7 +1829,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
           for="downshift-_r_pn_-toggle-button"
           id="downshift-_r_pn_-label"
         >
-          Duration unit
+          Duration Unit
         </label>
         <div
           class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -1845,13 +1845,13 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
             id="downshift-_r_pn_-toggle-button"
             role="combobox"
             tabindex="0"
-            title="Duration unit"
+            title="Duration Unit"
             type="button"
           >
             <span
               class="cds--list-box__label"
             >
-              Duration unit
+              Duration Unit
             </span>
             <div
               class="cds--list-box__menu-icon"

@@ -341,7 +341,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                     for="downshift-_r_39_-toggle-button"
                     id="downshift-_r_39_-label"
                   >
-                    Dosage unit
+                    Dosage Unit
                   </label>
                   <div
                     class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -357,13 +357,13 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                       id="downshift-_r_39_-toggle-button"
                       role="combobox"
                       tabindex="0"
-                      title="Dosage unit"
+                      title="Dosage Unit"
                       type="button"
                     >
                       <span
                         class="cds--list-box__label"
                       >
-                        Dosage unit
+                        Dosage Unit
                       </span>
                       <div
                         class="cds--list-box__menu-icon"
@@ -568,7 +568,7 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                     for="downshift-_r_3f_-toggle-button"
                     id="downshift-_r_3f_-label"
                   >
-                    Duration unit
+                    Duration Unit
                   </label>
                   <div
                     class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -584,13 +584,13 @@ exports[`MedicationsForm Snapshot Tests matches snapshot with selected medicatio
                       id="downshift-_r_3f_-toggle-button"
                       role="combobox"
                       tabindex="0"
-                      title="Duration unit"
+                      title="Duration Unit"
                       type="button"
                     >
                       <span
                         class="cds--list-box__label"
                       >
-                        Duration unit
+                        Duration Unit
                       </span>
                       <div
                         class="cds--list-box__menu-icon"
