@@ -86,6 +86,8 @@ export interface PatientIdentifier {
   identifierSourceUuid?: string;
   identifierPrefix?: string;
   identifierType: string;
+  identifierTypeName?: string;
+  identifier?: string;
   preferred: boolean;
   voided?: boolean;
 }

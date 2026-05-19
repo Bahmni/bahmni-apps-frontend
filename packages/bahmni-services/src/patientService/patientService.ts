@@ -1,5 +1,5 @@
 import { Patient } from 'fhir/r4';
-import { get, post } from '../api';
+import { get, post, put } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
@@ -12,6 +12,8 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   UPDATE_PATIENT_URL,
+  FHIR_PATIENT_URL,
+  GENERATE_IDENTIFIER_URL,
   ADDRESS_HIERARCHY_URL,
   ADDRESS_HIERARCHY_DEFAULT_LIMIT,
   ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
@@ -276,6 +278,7 @@ export const getIdentifierData = async (): Promise<{
   prefixes: string[];
   sourcesByPrefix: Map<string, string>;
   primaryIdentifierTypeUuid: string | null;
+  primaryIdentifierTypeName: string | null;
 }> => {
   const [identifierTypes, primaryIdentifierTypeUuid] = await Promise.all([
     get<IdentifierTypesResponse>(IDENTIFIER_TYPES_URL),
@@ -286,7 +289,12 @@ export const getIdentifierData = async (): Promise<{
   const sourcesByPrefix = new Map<string, string>();
 
   if (!primaryIdentifierTypeUuid) {
-    return { prefixes, sourcesByPrefix, primaryIdentifierTypeUuid: null };
+    return {
+      prefixes,
+      sourcesByPrefix,
+      primaryIdentifierTypeUuid: null,
+      primaryIdentifierTypeName: null,
+    };
   }
 
   const primaryIdentifierType = identifierTypes.find(
@@ -294,7 +302,12 @@ export const getIdentifierData = async (): Promise<{
   );
 
   if (!primaryIdentifierType) {
-    return { prefixes, sourcesByPrefix, primaryIdentifierTypeUuid };
+    return {
+      prefixes,
+      sourcesByPrefix,
+      primaryIdentifierTypeUuid,
+      primaryIdentifierTypeName: null,
+    };
   }
 
   // Extract prefixes and map sources
@@ -311,6 +324,7 @@ export const getIdentifierData = async (): Promise<{
     prefixes: prefixes.sort(),
     sourcesByPrefix,
     primaryIdentifierTypeUuid,
+    primaryIdentifierTypeName: primaryIdentifierType.name,
   };
 };
 
@@ -340,6 +354,19 @@ export const updatePatient = async (
     patientData,
   );
 };
+
+export const createFhirPatient = <T>(payload: T): Promise<T> =>
+  post<T>(FHIR_PATIENT_URL, payload);
+
+export const generateIdentifier = (
+  sourceUuid: string,
+): Promise<{ identifier: string }> =>
+  post<{ identifier: string }>(GENERATE_IDENTIFIER_URL(sourceUuid), {});
+
+export const updateFhirPatient = <T>(
+  patientUuid: string,
+  payload: T,
+): Promise<T> => put<T>(PATIENT_RESOURCE_URL(patientUuid), payload);
 
 /**
  * Get genders from global property
