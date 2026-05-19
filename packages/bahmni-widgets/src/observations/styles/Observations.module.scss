@@ -13,6 +13,12 @@
     color: $text-error;
     font-weight: bold;
   }
+
+  :global([data-split-view] #main-display-area) & {
+    div[id^="accordion-item"] div[id^="accordion-item"] {
+      overflow-x: visible;
+    }
+  }
 }
 
 .title {
