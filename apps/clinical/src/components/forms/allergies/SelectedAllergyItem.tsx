@@ -141,7 +141,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
           <TextAreaWClose
             id={`allergy-note-${id}`}
             data-testid={`allergy-note-${id}`}
-            labelText={t('ADD_ALLERGY_NOTE')}
+            labelText={t('NOTE_LABEL')}
             placeholder={t('ADD_ALLERGY_NOTE_PLACEHOLDER')}
             value={note ?? ''}
             onChange={(event) => {

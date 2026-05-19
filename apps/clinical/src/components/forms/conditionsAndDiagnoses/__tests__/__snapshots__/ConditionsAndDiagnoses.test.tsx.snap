@@ -607,7 +607,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                       dir="auto"
                       for="condition-duration-value-uuid-3"
                     >
-                      Duration
+                      Duration Value
                     </label>
                   </div>
                   <div
@@ -642,7 +642,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                     for="downshift-_r_ad_-toggle-button"
                     id="downshift-_r_ad_-label"
                   >
-                    Unit
+                    Duration Unit
                   </label>
                   <div
                     class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -782,7 +782,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                       dir="auto"
                       for="condition-duration-value-uuid-4"
                     >
-                      Duration
+                      Duration Value
                     </label>
                   </div>
                   <div
@@ -817,7 +817,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                     for="downshift-_r_ak_-toggle-button"
                     id="downshift-_r_ak_-label"
                   >
-                    Unit
+                    Duration Unit
                   </label>
                   <div
                     class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -833,13 +833,13 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with both diagnoses and cond
                       id="downshift-_r_ak_-toggle-button"
                       role="combobox"
                       tabindex="0"
-                      title="Unit"
+                      title="Duration Unit"
                       type="button"
                     >
                       <span
                         class="cds--list-box__label"
                       >
-                        Unit
+                        Duration Unit
                       </span>
                       <div
                         class="cds--list-box__menu-icon"
@@ -1129,7 +1129,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                       dir="auto"
                       for="condition-duration-value-uuid-3"
                     >
-                      Duration
+                      Duration Value
                     </label>
                   </div>
                   <div
@@ -1164,7 +1164,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                     for="downshift-_r_9l_-toggle-button"
                     id="downshift-_r_9l_-label"
                   >
-                    Unit
+                    Duration Unit
                   </label>
                   <div
                     class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -1304,7 +1304,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                       dir="auto"
                       for="condition-duration-value-uuid-4"
                     >
-                      Duration
+                      Duration Value
                     </label>
                   </div>
                   <div
@@ -1339,7 +1339,7 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                     for="downshift-_r_9s_-toggle-button"
                     id="downshift-_r_9s_-label"
                   >
-                    Unit
+                    Duration Unit
                   </label>
                   <div
                     class="cds--dropdown cds--dropdown--sm cds--autoalign cds--list-box cds--list-box--sm"
@@ -1355,13 +1355,13 @@ exports[`ConditionsAndDiagnoses Snapshot Tests form with selected conditions mat
                       id="downshift-_r_9s_-toggle-button"
                       role="combobox"
                       tabindex="0"
-                      title="Unit"
+                      title="Duration Unit"
                       type="button"
                     >
                       <span
                         class="cds--list-box__label"
                       >
-                        Unit
+                        Duration Unit
                       </span>
                       <div
                         class="cds--list-box__menu-icon"

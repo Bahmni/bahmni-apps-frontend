@@ -463,7 +463,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
             <TextAreaWClose
               id={`medication-note-${id}`}
               data-testid={`medication-note-${id}`}
-              labelText={t('MEDICATION_ADD_NOTE')}
+              labelText={t('NOTE_LABEL')}
               placeholder={t('MEDICATION_ADD_NOTE_PLACEHOLDER')}
               value={note ?? ''}
               onChange={(event) => {

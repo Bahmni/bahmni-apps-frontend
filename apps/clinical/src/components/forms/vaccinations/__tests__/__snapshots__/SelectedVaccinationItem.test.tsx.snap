@@ -2112,7 +2112,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
             dir="auto"
             for="vaccination-note-entry-1"
           >
-            Add Note
+            Note
           </label>
           <div
             class="cds--label cds--text-area__label-counter"

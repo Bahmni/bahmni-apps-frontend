@@ -195,7 +195,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
             <ComboBox
               id={`immunization-drug-name-combobox-${id}`}
               data-testid={`immunization-drug-name-combobox-${id}-test-id`}
-              titleText={t('IMMUNIZATION_INPUT_CONTROL_DRUG_LABEL')}
+              titleText={t('IMMUNIZATION_INPUT_CONTROL_DRUG_NAME_LABEL')}
               placeholder={t(
                 'IMMUNIZATION_INPUT_CONTROL_SEARCH_DRUG_NAME_PLACEHOLDER',
               )}
@@ -269,7 +269,9 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
             <ComboBox
               id={`immunization-administered-location-combobox-${id}`}
               data-testid={`immunization-administered-location-${id}-test-id`}
-              titleText={t('IMMUNIZATION_INPUT_CONTROL_LOCATION_LABEL')}
+              titleText={t(
+                'IMMUNIZATION_INPUT_CONTROL_ADMINISTRATION_LOCATION_LABEL',
+              )}
               placeholder={t(
                 'IMMUNIZATION_INPUT_CONTROL_ADMINISTERED_LOCATION_PLACEHOLDER',
               )}
@@ -349,7 +351,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
             <ComboBox
               id={`immunization-site-combobox-${id}`}
               data-testid={`immunization-site-${id}-test-id`}
-              titleText={t('IMMUNIZATION_INPUT_CONTROL_SITE_LABEL')}
+              titleText={t('IMMUNIZATION_INPUT_CONTROL_BODY_SITE_LABEL')}
               placeholder={t('IMMUNIZATION_INPUT_CONTROL_SITE_PLACEHOLDER')}
               autoAlign
               items={siteComboBoxItems}
@@ -475,7 +477,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               <DatePickerInput
                 id={`immunization-expiry-date-${id}`}
                 data-testid={`immunization-expiry-date-input-${id}`}
-                labelText={t('IMMUNIZATION_INPUT_CONTROL_EXPIRY_LABEL')}
+                labelText={t('IMMUNIZATION_INPUT_CONTROL_EXPIRY_DATE_LABEL')}
                 placeholder={t('IMMUNIZATION_INPUT_CONTROL_EXPIRY_DATE')}
                 disabled={isExpiryDateFromBatch}
                 invalid={!!immunization.errors.expiryDate}
@@ -506,7 +508,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               <TextAreaWClose
                 id={`immunization-note-${id}`}
                 data-testid={`immunization-note-${id}-test-id`}
-                labelText={t('IMMUNIZATION_INPUT_CONTROL_ADD_NOTE')}
+                labelText={t('NOTE_LABEL')}
                 placeholder={t(
                   'IMMUNIZATION_INPUT_CONTROL_ADD_NOTE_PLACEHOLDER',
                 )}

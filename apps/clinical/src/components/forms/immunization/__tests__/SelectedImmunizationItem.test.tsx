@@ -781,7 +781,7 @@ describe('SelectedImmunizationItem', () => {
     it('renders visible labels for ComboBox fields', () => {
       render(<SelectedImmunizationItem {...defaultProps} />);
 
-      const drugNameLabel = screen.getByText('Drug');
+      const drugNameLabel = screen.getByText('Drug Name');
       expect(drugNameLabel).toBeInTheDocument();
       expect(drugNameLabel).not.toHaveClass('cds--visually-hidden');
 
@@ -789,15 +789,15 @@ describe('SelectedImmunizationItem', () => {
       expect(routeLabel).toBeInTheDocument();
       expect(routeLabel).not.toHaveClass('cds--visually-hidden');
 
-      const siteLabel = screen.getByText('Site');
+      const siteLabel = screen.getByText('Body Site');
       expect(siteLabel).toBeInTheDocument();
       expect(siteLabel).not.toHaveClass('cds--visually-hidden');
 
-      const locationLabel = screen.getByText('Location');
+      const locationLabel = screen.getByText('Administration Location');
       expect(locationLabel).toBeInTheDocument();
       expect(locationLabel).not.toHaveClass('cds--visually-hidden');
 
-      const expiryLabel = screen.getByText('Expiry');
+      const expiryLabel = screen.getByText('Expiry Date');
       expect(expiryLabel).toBeInTheDocument();
       expect(expiryLabel).not.toHaveClass('cds--visually-hidden');
     });

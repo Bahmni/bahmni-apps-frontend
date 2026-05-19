@@ -448,7 +448,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
             <TextAreaWClose
               id={`vaccination-note-${id}`}
               data-testid={`vaccination-note-${id}`}
-              labelText={t('VACCINATION_ADD_NOTE')}
+              labelText={t('NOTE_LABEL')}
               placeholder={t('VACCINATION_ADD_NOTE_PLACEHOLDER')}
               value={note ?? ''}
               onChange={(event) => {

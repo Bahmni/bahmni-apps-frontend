@@ -27,7 +27,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
             for="immunization-drug-name-combobox-test-id-1"
             id="downshift-_r_qn_-label"
           >
-            Drug
+            Drug Name
           </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
@@ -155,7 +155,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
             for="immunization-administered-location-combobox-test-id-1"
             id="downshift-_r_qr_-label"
           >
-            Location
+            Administration Location
           </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
@@ -303,7 +303,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
             for="immunization-site-combobox-test-id-1"
             id="downshift-_r_r1_-label"
           >
-            Site
+            Body Site
           </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
@@ -589,7 +589,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 dir="auto"
                 for="immunization-expiry-date-test-id-1"
               >
-                Expiry
+                Expiry Date
               </label>
               <div
                 class="cds--date-picker-input__wrapper"
