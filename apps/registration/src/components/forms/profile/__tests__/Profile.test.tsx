@@ -273,6 +273,7 @@ describe('Profile', () => {
         identifierSourceUuid: 'source-uuid-1',
         identifierPrefix: 'BAH',
         identifierType: 'primary-type-uuid',
+        identifierTypeName: '',
         preferred: true,
         voided: false,
       });
