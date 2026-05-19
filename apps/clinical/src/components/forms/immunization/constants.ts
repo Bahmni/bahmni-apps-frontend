@@ -5,8 +5,8 @@ export const ADMINISTERED_PRODUCT_EXTENSION_URL =
   'http://fhir.bahmni.org/ext/immunization/administeredProduct'; // NOSONAR
 export const BASED_ON_EXTENSION_URL =
   'http://fhir.bahmni.org/ext/immunization/basedOn'; // NOSONAR
-export const DISPENSE_LOCATION_EXTENSION_URL =
-  'http://fhir.bahmni.org/ext/immunization/dispenseLocation'; // NOSONAR
+export const STOCK_LOCATION_EXTENSION_URL =
+  'http://fhir.bahmni.org/ext/immunization/stockLocation'; // NOSONAR
 export const ENTERING_PROVIDER_SYSTEM =
   'http://terminology.hl7.org/CodeSystem/v2-0443'; // NOSONAR
 export const ENTERING_PROVIDER_CODE = 'EP';

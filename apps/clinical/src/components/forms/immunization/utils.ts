@@ -24,7 +24,7 @@ import {
 import {
   ADMINISTERED_PRODUCT_EXTENSION_URL,
   BASED_ON_EXTENSION_URL,
-  DISPENSE_LOCATION_EXTENSION_URL,
+  STOCK_LOCATION_EXTENSION_URL,
   ENTERING_PROVIDER_CODE,
   ENTERING_PROVIDER_DISPLAY,
   ENTERING_PROVIDER_SYSTEM,
@@ -63,14 +63,14 @@ function resolveBasedOnExtension(
   ];
 }
 
-function resolveDispenseLocationExtension(
-  dispenseLocation: string | null | undefined,
+function resolveStockLocationExtension(
+  stockLocation: string | null | undefined,
 ): Extension[] {
-  if (!dispenseLocation?.trim()) return [];
+  if (!stockLocation?.trim()) return [];
   return [
     {
-      url: DISPENSE_LOCATION_EXTENSION_URL,
-      valueString: dispenseLocation,
+      url: STOCK_LOCATION_EXTENSION_URL,
+      valueString: stockLocation,
     },
   ];
 }
@@ -256,7 +256,7 @@ export function createImmunizationBundleEntries({
     const extensions = [
       ...(entry.drug ? resolveAdministeredProductExtension(entry.drug) : []),
       ...resolveBasedOnExtension(entry.basedOnReference),
-      ...resolveDispenseLocationExtension(entry.dispenseLocation),
+      ...resolveStockLocationExtension(entry.stockLocation),
     ];
     const resource: Immunization = {
       resourceType: 'Immunization',

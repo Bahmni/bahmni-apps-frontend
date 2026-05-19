@@ -136,11 +136,11 @@ function applyBatchNumberUpdate(
   return updated;
 }
 
-function applyDispenseLocationUpdate(
+function applyStockLocationUpdate(
   entry: ImmunizationInputEntry,
   value: string | null,
 ): ImmunizationInputEntry {
-  return { ...entry, dispenseLocation: value };
+  return { ...entry, stockLocation: value };
 }
 
 function applyNoteUpdate(
@@ -292,7 +292,7 @@ function createImmunizationHistoryStore() {
         expiryDate: null,
         manufacturer: null,
         batchNumber: null,
-        dispenseLocation: null,
+        stockLocation: null,
         doseSequence: null,
         ...(defaults?.basedOnReference !== undefined && {
           basedOnReference: defaults.basedOnReference,
@@ -383,9 +383,9 @@ function createImmunizationHistoryStore() {
       }));
     },
 
-    updateDispenseLocation: (id: string, value: string | null) => {
+    updateStockLocation: (id: string, value: string | null) => {
       const applyUpdate = (entry: ImmunizationInputEntry) =>
-        entry.id === id ? applyDispenseLocationUpdate(entry, value) : entry;
+        entry.id === id ? applyStockLocationUpdate(entry, value) : entry;
       set((state) => ({
         selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
       }));

@@ -3,7 +3,7 @@ import { getMedicationDisplay } from '../../../../services/medicationService';
 import {
   ADMINISTERED_PRODUCT_EXTENSION_URL,
   BASED_ON_EXTENSION_URL,
-  DISPENSE_LOCATION_EXTENSION_URL,
+  STOCK_LOCATION_EXTENSION_URL,
 } from '../constants';
 import {
   buildBasedOnImmunizationEntry,
@@ -585,19 +585,19 @@ describe('createImmunizationBundleEntries', () => {
     ]);
   });
 
-  it('includes dispenseLocation extension when dispenseLocation is set', () => {
-    const entryWithDispenseLocation = {
+  it('includes stockLocation extension when stockLocation is set', () => {
+    const entryWithStockLocation = {
       ...mockImmunizationEntry,
-      dispenseLocation: 'Nurse Station',
+      stockLocation: 'Nurse Station',
     };
     const result = createImmunizationBundleEntries({
       ...BASE_BUNDLE_PARAMS,
-      selectedImmunizations: [entryWithDispenseLocation],
+      selectedImmunizations: [entryWithStockLocation],
     });
     const resource = result[0].resource as Immunization;
     expect(resource.extension).toEqual([
       {
-        url: DISPENSE_LOCATION_EXTENSION_URL,
+        url: STOCK_LOCATION_EXTENSION_URL,
         valueString: 'Nurse Station',
       },
     ]);
@@ -607,26 +607,23 @@ describe('createImmunizationBundleEntries', () => {
     ['null', null],
     ['empty string', ''],
     ['whitespace', '   '],
-  ])(
-    'omits dispenseLocation extension when value is %s',
-    (_, dispenseLocation) => {
-      const entry = {
-        ...mockImmunizationEntry,
-        dispenseLocation,
-      };
-      const result = createImmunizationBundleEntries({
-        ...BASE_BUNDLE_PARAMS,
-        selectedImmunizations: [entry],
-      });
-      const resource = result[0].resource as Immunization;
-      expect(resource.extension).toBeUndefined();
-    },
-  );
+  ])('omits stockLocation extension when value is %s', (_, stockLocation) => {
+    const entry = {
+      ...mockImmunizationEntry,
+      stockLocation,
+    };
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [entry],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.extension).toBeUndefined();
+  });
 
-  it('appends dispenseLocation extension alongside administeredProduct and basedOn extensions', () => {
+  it('appends stockLocation extension alongside administeredProduct and basedOn extensions', () => {
     const entry = {
       ...mockImmunizationEntryWithBasedOn,
-      dispenseLocation: 'Nurse Station',
+      stockLocation: 'Nurse Station',
     };
     const result = createImmunizationBundleEntries({
       ...BASE_BUNDLE_PARAMS,
@@ -646,7 +643,7 @@ describe('createImmunizationBundleEntries', () => {
         valueReference: { reference: 'MedicationRequest/med-request-uuid' },
       },
       {
-        url: DISPENSE_LOCATION_EXTENSION_URL,
+        url: STOCK_LOCATION_EXTENSION_URL,
         valueString: 'Nurse Station',
       },
     ]);
