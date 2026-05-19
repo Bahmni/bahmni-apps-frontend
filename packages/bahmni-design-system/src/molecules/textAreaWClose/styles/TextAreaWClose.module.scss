@@ -23,7 +23,7 @@
 .closeButton {
   margin: 0 !important;
   position: absolute !important;
-  top: 2px;
+  top: $spacing-06;
   right: 2px;
   background-color: $field-01 !important;
 
@@ -31,4 +31,8 @@
     background-color: $field-01 !important;
     color: $icon-primary !important;
   }
+}
+
+:global(.cds--text-area) {
+  padding-right: $spacing-09 !important;
 }
