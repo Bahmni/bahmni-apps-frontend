@@ -11,13 +11,6 @@
   margin-block-end: $spacing-05;
   display: flex !important;
   position: relative;
-  :global {
-    .cds--text-area__label-wrapper {
-      justify-content: flex-end;
-      position: absolute;
-      bottom: calc($spacing-06 + $spacing-02) * -1;
-    }
-  }
 }
 
 .textAreaWCloseContainerWInvalid {
@@ -25,13 +18,6 @@
   margin-inline-end: $spacing-05 !important;
   display: flex !important;
   position: relative;
-  :global {
-    .cds--text-area__label-wrapper {
-      justify-content: flex-end;
-      position: absolute;
-      bottom: -$spacing-03;
-    }
-  }
 }
 
 .closeButton {

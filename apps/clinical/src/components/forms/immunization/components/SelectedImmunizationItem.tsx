@@ -269,9 +269,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
             <ComboBox
               id={`immunization-administered-location-combobox-${id}`}
               data-testid={`immunization-administered-location-${id}-test-id`}
-              titleText={t(
-                'IMMUNIZATION_INPUT_CONTROL_LOCATION_LABEL',
-              )}
+              titleText={t('IMMUNIZATION_INPUT_CONTROL_LOCATION_LABEL')}
               placeholder={t(
                 'IMMUNIZATION_INPUT_CONTROL_ADMINISTERED_LOCATION_PLACEHOLDER',
               )}
