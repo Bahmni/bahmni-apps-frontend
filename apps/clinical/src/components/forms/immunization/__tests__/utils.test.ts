@@ -54,6 +54,7 @@ const BASE_BUNDLE_PARAMS = {
   encounterSubject: mockEncounterSubject,
   encounterReference: 'Encounter/encounter-uuid',
   practitionerUUID: 'practitioner-uuid',
+  isAdministration: false,
 };
 
 describe('findAttr', () => {
@@ -693,6 +694,26 @@ describe('createImmunizationBundleEntries', () => {
       selectedImmunizations: [mockImmunizationEntry],
     });
     expect(result[0].request?.method).toBe('POST');
+  });
+
+  it('sets primarySource to false for immunization history', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      isAdministration: false,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.primarySource).toBe(false);
+  });
+
+  it('sets primarySource to true for immunization administration', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      isAdministration: true,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.primarySource).toBe(true);
   });
 });
 

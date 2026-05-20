@@ -87,6 +87,7 @@ export interface CreateImmunizationBundleEntriesParams {
   encounterSubject: Reference;
   encounterReference: string;
   practitionerUUID: string;
+  isAdministration: boolean;
 }
 
 export interface ImmunizationHistoryState {

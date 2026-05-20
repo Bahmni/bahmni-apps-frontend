@@ -251,6 +251,7 @@ export function createImmunizationBundleEntries({
   encounterSubject,
   encounterReference,
   practitionerUUID,
+  isAdministration,
 }: CreateImmunizationBundleEntriesParams): BundleEntry[] {
   return selectedImmunizations.map((entry) => {
     const extensions = [
@@ -267,6 +268,7 @@ export function createImmunizationBundleEntries({
         ],
       },
       patient: encounterSubject,
+      primarySource: isAdministration,
       occurrenceDateTime: entry.administeredOn?.toISOString(),
       location: entry.administeredLocation
         ? resolveLocationReference(entry.administeredLocation)
