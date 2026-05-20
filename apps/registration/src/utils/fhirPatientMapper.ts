@@ -135,9 +135,10 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
     });
   }
   Object.entries(additionalIdentifiers).forEach(([typeUuid, value]) => {
-    if (value?.trim()) {
+    const trimmedValue = value?.trim();
+    if (trimmedValue) {
       identifiers.push({
-        value,
+        value: trimmedValue,
         type: {
           coding: [{ code: typeUuid }],
           ...(identifierTypeNames?.[typeUuid] && {
