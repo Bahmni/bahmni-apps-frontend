@@ -1,21 +1,23 @@
-import type { Patient, Extension, Identifier, Address } from 'fhir/r4';
 import {
   PatientAddress,
   PatientIdentifier,
   PersonAttributeType,
 } from '@bahmni/services';
-import { convertTimeToISODateTime } from './dateTimeUtils';
+import type { Patient, Extension, Identifier, Address } from 'fhir/r4';
 import {
   BasicInfoData,
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
+import { convertTimeToISODateTime } from './dateTimeUtils';
 
 const PATIENT_ATTRIBUTE_EXT_PREFIX = 'http://fhir.bahmni.org/ext/patient/'; // NOSONAR
 const IDENTIFIER_LOCATION_EXT_URL =
   'http://fhir.openmrs.org/ext/patient/identifier#location'; // NOSONAR
 
-function buildLocationExtension(locationUuid?: string): Extension[] | undefined {
+function buildLocationExtension(
+  locationUuid?: string,
+): Extension[] | undefined {
   if (!locationUuid) return undefined;
   return [
     {

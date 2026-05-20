@@ -10,13 +10,13 @@ import {
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Patient } from 'fhir/r4';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import {
   BasicInfoData,
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
-import type { Patient } from 'fhir/r4';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
@@ -63,16 +63,14 @@ export const useUpdatePatient = () => {
         contact: formData.contact,
         additional: formData.additional,
         additionalIdentifiers: formData.additionalIdentifiers,
-        additionalIdentifiersInitialData: formData.additionalIdentifiersInitialData,
+        additionalIdentifiersInitialData:
+          formData.additionalIdentifiersInitialData,
         identifierTypeNames: buildIdentifierTypeNames(identifierTypes),
         loginLocationUuid: getUserLoginLocation()?.uuid,
         personAttributes,
         patientUuid: formData.patientUuid,
       });
-      return updateFhirPatient<Patient>(
-        formData.patientUuid,
-        payload,
-      );
+      return updateFhirPatient<Patient>(formData.patientUuid, payload);
     },
     onSuccess: (response, variables) => {
       addNotification({

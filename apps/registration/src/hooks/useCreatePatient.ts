@@ -11,6 +11,7 @@ import {
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
+import type { Patient } from 'fhir/r4';
 import { useNavigate } from 'react-router-dom';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import {
@@ -18,7 +19,6 @@ import {
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
-import type { Patient } from 'fhir/r4';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
