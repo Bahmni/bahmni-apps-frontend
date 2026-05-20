@@ -2099,7 +2099,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
     class="cds--css-grid"
   >
     <div
-      class="_textAreaWCloseContainer_1fxzf_1 cds--sm:col-span-8 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+      class="_textAreaWCloseContainer_9exdl_1 cds--sm:col-span-8 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
     >
       <div
         class="cds--form-item"
@@ -2147,7 +2147,7 @@ exports[`SelectedVaccinationItem Snapshot Tests matches snapshot with note visib
         </div>
       </div>
       <div
-        class="_closeButton_1fxzf_19 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+        class="_closeButton_9exdl_19 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
       >
         <span
           class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
