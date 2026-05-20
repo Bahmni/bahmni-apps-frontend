@@ -92,6 +92,10 @@
     min-width: 0;
     overflow: hidden;
 
+    > div {
+      overflow: hidden !important;
+    }
+
     &:first-child {
       min-width: 40% !important;
     }
