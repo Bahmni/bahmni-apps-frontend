@@ -17,7 +17,11 @@ import {
 import { Medication, ValueSet } from 'fhir/r4';
 import React, { useMemo, useState } from 'react';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
-import { ImmunizationInputEntry, ImmunizationStoreKey } from '../models';
+import {
+  ImmunizationInputEntry,
+  ImmunizationStoreKey,
+  BatchNumberChangeData,
+} from '../models';
 import { useImmunizationHistoryStore } from '../stores';
 import styles from '../styles/ImmunizationForm.module.scss';
 import {
@@ -142,6 +146,30 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
 
   const handleAdministeredLocationTagInputChange = (value: string) => {
     setAdministeredLocationTagSearchTerm(value);
+  };
+
+  const handleBatchNumberChange = ({
+    selectedItem,
+    inputValue,
+  }: BatchNumberChangeData) => {
+    let stockLocation = null;
+    let isExpiryFromBatch = false;
+
+    if (selectedItem?.batchNumber && !selectedItem.disabled) {
+      updateBatchNumber(id, selectedItem.batchNumber ?? '');
+      stockLocation = selectedItem.stockLocationName ?? null;
+      if (selectedItem.expiryDate) {
+        updateExpiryDate(id, new Date(selectedItem.expiryDate));
+        isExpiryFromBatch = true;
+      }
+    } else if (inputValue?.trim()) {
+      updateBatchNumber(id, inputValue.trim());
+    } else {
+      updateBatchNumber(id, '');
+    }
+
+    updateStockLocation(id, stockLocation);
+    setIsExpiryDateFromBatch(isExpiryFromBatch);
   };
 
   return (
@@ -384,29 +412,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                     }
                   : null)
               }
-              onChange={({ selectedItem, inputValue }) => {
-                if (selectedItem?.batchNumber && !selectedItem.disabled) {
-                  updateBatchNumber(id, selectedItem.batchNumber ?? '');
-                  updateStockLocation(
-                    id,
-                    selectedItem.stockLocationName ?? null,
-                  );
-                  if (selectedItem.expiryDate) {
-                    updateExpiryDate(id, new Date(selectedItem.expiryDate));
-                    setIsExpiryDateFromBatch(true);
-                  } else {
-                    setIsExpiryDateFromBatch(false);
-                  }
-                } else if (inputValue?.trim()) {
-                  updateBatchNumber(id, inputValue.trim());
-                  updateStockLocation(id, null);
-                  setIsExpiryDateFromBatch(false);
-                } else {
-                  updateBatchNumber(id, '');
-                  updateStockLocation(id, null);
-                  setIsExpiryDateFromBatch(false);
-                }
-              }}
+              onChange={handleBatchNumberChange}
               invalid={!!immunization.errors.batchNumber}
               invalidText={
                 immunization.errors.batchNumber

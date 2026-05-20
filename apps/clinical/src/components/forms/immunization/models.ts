@@ -70,6 +70,18 @@ export interface LocationComboBoxItem {
   display: string;
 }
 
+export interface SelectedBatchItem {
+  batchNumber?: string;
+  disabled?: boolean;
+  stockLocationName?: string;
+  expiryDate?: string;
+}
+
+export interface BatchNumberChangeData {
+  selectedItem?: SelectedBatchItem | null;
+  inputValue?: string | null;
+}
+
 export interface CreateImmunizationBundleEntriesParams {
   selectedImmunizations: ImmunizationInputEntry[];
   encounterSubject: Reference;
