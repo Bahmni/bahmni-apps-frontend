@@ -11,6 +11,18 @@ import {
 } from '../models/patient';
 
 const PATIENT_ATTRIBUTE_EXT_PREFIX = 'http://fhir.bahmni.org/ext/patient/'; // NOSONAR
+const IDENTIFIER_LOCATION_EXT_URL =
+  'http://fhir.openmrs.org/ext/patient/identifier#location'; // NOSONAR
+
+function buildLocationExtension(locationUuid?: string) {
+  if (!locationUuid) return undefined;
+  return [
+    {
+      url: IDENTIFIER_LOCATION_EXT_URL,
+      valueReference: { reference: `Location/${locationUuid}` },
+    },
+  ];
+}
 
 function toSlugCase(str: string): string {
   return str
@@ -47,6 +59,7 @@ interface FhirIdentifier {
   use?: string;
   value?: string;
   type?: { coding: { code: string }[]; text?: string };
+  extension?: { url: string; valueReference: { reference: string } }[];
 }
 
 interface FhirAddressExtension {
@@ -84,6 +97,8 @@ interface MapperInput {
   contact: PersonAttributesData;
   additional: PersonAttributesData;
   additionalIdentifiers: AdditionalIdentifiersData;
+  identifierTypeNames?: Record<string, string>;
+  loginLocationUuid?: string;
   personAttributes: PersonAttributeType[];
   patientUuid?: string;
 }
@@ -95,12 +110,15 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
     contact,
     additional,
     additionalIdentifiers,
+    identifierTypeNames,
+    loginLocationUuid,
     personAttributes,
     patientUuid,
   } = input;
 
   // Identifiers
   const identifiers: FhirIdentifier[] = [];
+  const locationExt = buildLocationExtension(loginLocationUuid);
   if (profile.patientIdentifier?.identifier) {
     identifiers.push({
       use: 'official',
@@ -113,11 +131,21 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
           text: profile.patientIdentifier.identifierTypeName,
         }),
       },
+      ...(locationExt && { extension: locationExt }),
     });
   }
   Object.entries(additionalIdentifiers).forEach(([typeUuid, value]) => {
     if (value?.trim()) {
-      identifiers.push({ value, type: { coding: [{ code: typeUuid }] } });
+      identifiers.push({
+        value,
+        type: {
+          coding: [{ code: typeUuid }],
+          ...(identifierTypeNames?.[typeUuid] && {
+            text: identifierTypeNames[typeUuid],
+          }),
+        },
+        ...(locationExt && { extension: locationExt }),
+      });
     }
   });
 

@@ -14,6 +14,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   updateFhirPatient: jest.fn(),
   dispatchAuditEvent: jest.fn(),
+  getUserLoginLocation: () => ({ uuid: 'loc-uuid', name: 'Test Location' }),
   AUDIT_LOG_EVENT_DETAILS: {
     EDIT_PATIENT_DETAILS: {
       eventType: 'EDIT_PATIENT_DETAILS',
@@ -24,6 +25,15 @@ jest.mock('@bahmni/services', () => ({
 
 jest.mock('@bahmni/widgets', () => ({
   useNotification: jest.fn(),
+}));
+
+jest.mock('../useAdditionalIdentifiers', () => ({
+  useIdentifierTypes: () => ({
+    data: [
+      { uuid: 'primary-type-uuid', name: 'Patient Identifier' },
+      { uuid: 'old-id-uuid', name: 'Old Identification Number' },
+    ],
+  }),
 }));
 
 const mockUpdateFhirPatient = updateFhirPatient as jest.Mock;

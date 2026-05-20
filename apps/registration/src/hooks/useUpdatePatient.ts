@@ -5,6 +5,7 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
+  getUserLoginLocation,
   useTranslation,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
@@ -19,6 +20,7 @@ import {
   buildFhirPatient,
   type FhirPatientPayload,
 } from '../utils/fhirPatientMapper';
+import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
 
 const TRAILING_BRACKETED_SUFFIX = /\s\[.*\]$/;
@@ -38,10 +40,21 @@ interface UpdatePatientFormData {
   relationships?: RelationshipData[];
 }
 
+function buildIdentifierTypeNames(
+  types?: { uuid: string; name: string }[],
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  types?.forEach((t) => {
+    map[t.uuid] = t.name;
+  });
+  return map;
+}
+
 export const useUpdatePatient = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { personAttributes } = usePersonAttributes();
+  const { data: identifierTypes } = useIdentifierTypes();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -52,6 +65,8 @@ export const useUpdatePatient = () => {
         contact: formData.contact,
         additional: formData.additional,
         additionalIdentifiers: formData.additionalIdentifiers,
+        identifierTypeNames: buildIdentifierTypeNames(identifierTypes),
+        loginLocationUuid: getUserLoginLocation()?.uuid,
         personAttributes,
         patientUuid: formData.patientUuid,
       });

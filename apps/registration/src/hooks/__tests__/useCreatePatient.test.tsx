@@ -13,7 +13,9 @@ import { useCreatePatient } from '../useCreatePatient';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   createFhirPatient: jest.fn(),
+  generateIdentifier: jest.fn(),
   dispatchAuditEvent: jest.fn(),
+  getUserLoginLocation: () => ({ uuid: 'loc-uuid', name: 'Test Location' }),
   AUDIT_LOG_EVENT_DETAILS: {
     REGISTER_NEW_PATIENT: {
       eventType: 'REGISTER_NEW_PATIENT',
@@ -28,6 +30,15 @@ jest.mock('@bahmni/widgets', () => ({
 
 jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
+}));
+
+jest.mock('../useAdditionalIdentifiers', () => ({
+  useIdentifierTypes: () => ({
+    data: [
+      { uuid: 'primary-type-uuid', name: 'Patient Identifier' },
+      { uuid: 'old-id-uuid', name: 'Old Identification Number' },
+    ],
+  }),
 }));
 
 const mockCreateFhirPatient = createFhirPatient as jest.Mock;

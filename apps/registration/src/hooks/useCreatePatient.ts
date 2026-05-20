@@ -6,6 +6,7 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
+  getUserLoginLocation,
   useTranslation,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
@@ -21,6 +22,7 @@ import {
   buildFhirPatient,
   type FhirPatientPayload,
 } from '../utils/fhirPatientMapper';
+import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
 
 interface CreatePatientFormData {
@@ -36,11 +38,22 @@ interface CreatePatientFormData {
   relationships: RelationshipData[];
 }
 
+function buildIdentifierTypeNames(
+  types?: { uuid: string; name: string }[],
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  types?.forEach((t) => {
+    map[t.uuid] = t.name;
+  });
+  return map;
+}
+
 export const useCreatePatient = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const navigate = useNavigate();
   const { personAttributes } = usePersonAttributes();
+  const { data: identifierTypes } = useIdentifierTypes();
 
   const mutation = useMutation({
     mutationFn: async (formData: CreatePatientFormData) => {
@@ -66,6 +79,8 @@ export const useCreatePatient = () => {
         contact: formData.contact,
         additional: formData.additional,
         additionalIdentifiers: formData.additionalIdentifiers,
+        identifierTypeNames: buildIdentifierTypeNames(identifierTypes),
+        loginLocationUuid: getUserLoginLocation()?.uuid,
         personAttributes,
       });
       return createFhirPatient<FhirPatientPayload>(payload);

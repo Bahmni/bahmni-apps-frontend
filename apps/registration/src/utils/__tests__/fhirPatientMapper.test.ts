@@ -128,12 +128,21 @@ describe('buildFhirPatient', () => {
     expect(buildFhirPatient(baseInput).id).toBeUndefined();
   });
 
-  it('should include primary identifier with type text', () => {
-    const result = buildFhirPatient(baseInput);
+  it('should include primary identifier with type text and location', () => {
+    const result = buildFhirPatient({
+      ...baseInput,
+      loginLocationUuid: 'loc-uuid',
+    });
     expect(result.identifier![0]).toEqual({
       use: 'official',
       value: 'BDH200001',
       type: { coding: [{ code: 'id-type-uuid' }], text: 'Patient Identifier' },
+      extension: [
+        {
+          url: 'http://fhir.openmrs.org/ext/patient/identifier#location',
+          valueReference: { reference: 'Location/loc-uuid' },
+        },
+      ],
     });
   });
 
@@ -149,15 +158,23 @@ describe('buildFhirPatient', () => {
     expect(result.identifier).toBeUndefined();
   });
 
-  it('should include additional identifiers and skip empty ones', () => {
+  it('should include additional identifiers with type name, location, and skip empty ones', () => {
     const result = buildFhirPatient({
       ...baseInput,
       additionalIdentifiers: { 'pan-uuid': 'AAAA1234B', 'empty-uuid': '   ' },
+      identifierTypeNames: { 'pan-uuid': 'PAN Card', 'empty-uuid': 'Empty' },
+      loginLocationUuid: 'loc-uuid',
     });
     expect(result.identifier).toHaveLength(2);
     expect(result.identifier![1]).toEqual({
       value: 'AAAA1234B',
-      type: { coding: [{ code: 'pan-uuid' }] },
+      type: { coding: [{ code: 'pan-uuid' }], text: 'PAN Card' },
+      extension: [
+        {
+          url: 'http://fhir.openmrs.org/ext/patient/identifier#location',
+          valueReference: { reference: 'Location/loc-uuid' },
+        },
+      ],
     });
   });
 
