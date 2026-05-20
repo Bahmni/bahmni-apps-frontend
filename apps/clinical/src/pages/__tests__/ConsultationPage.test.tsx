@@ -402,7 +402,7 @@ describe('ConsultationPage', () => {
     it('should show "Current Patient" fallback in breadcrumb while patient data is loading', async () => {
       (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
       (getFormattedPatientById as jest.Mock).mockReturnValue(
-        new Promise(() => { }),
+        new Promise(() => {}),
       );
 
       renderWithProvider();
