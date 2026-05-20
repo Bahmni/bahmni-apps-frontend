@@ -453,6 +453,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                   ? t(immunization.errors.doseSequence)
                   : ''
               }
+              className={styles.doseSequenceInput}
             />
           </Column>
         )}

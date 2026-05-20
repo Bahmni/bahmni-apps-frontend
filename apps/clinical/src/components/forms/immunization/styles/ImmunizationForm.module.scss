@@ -61,6 +61,12 @@
   }
 }
 
+.doseSequenceInput {
+  :global(.cds--number__control-btn.up-icon) {
+    order: unset !important;
+  }
+}
+
 .datePicker > div {
     display: block;
     min-inline-size: -webkit-fill-available !important;
