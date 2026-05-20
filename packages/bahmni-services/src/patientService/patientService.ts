@@ -355,18 +355,18 @@ export const updatePatient = async (
   );
 };
 
-export const createFhirPatient = <T>(payload: T): Promise<T> =>
-  post<T>(FHIR_PATIENT_URL, payload);
+export const createFhirPatient = <TReq>(payload: TReq): Promise<Patient> =>
+  post<Patient>(FHIR_PATIENT_URL, payload);
 
 export const generateIdentifier = (
   sourceUuid: string,
 ): Promise<{ identifier: string }> =>
   post<{ identifier: string }>(GENERATE_IDENTIFIER_URL(sourceUuid), {});
 
-export const updateFhirPatient = <T>(
+export const updateFhirPatient = <TReq>(
   patientUuid: string,
-  payload: T,
-): Promise<T> => put<T>(PATIENT_RESOURCE_URL(patientUuid), payload);
+  payload: TReq,
+): Promise<Patient> => put<Patient>(PATIENT_RESOURCE_URL(patientUuid), payload);
 
 /**
  * Get genders from global property

@@ -16,10 +16,8 @@ import {
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
-import {
-  buildFhirPatient,
-  type FhirPatientPayload,
-} from '../utils/fhirPatientMapper';
+import type { Patient } from 'fhir/r4';
+import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
 
@@ -65,12 +63,13 @@ export const useUpdatePatient = () => {
         contact: formData.contact,
         additional: formData.additional,
         additionalIdentifiers: formData.additionalIdentifiers,
+        additionalIdentifiersInitialData: formData.additionalIdentifiersInitialData,
         identifierTypeNames: buildIdentifierTypeNames(identifierTypes),
         loginLocationUuid: getUserLoginLocation()?.uuid,
         personAttributes,
         patientUuid: formData.patientUuid,
       });
-      return updateFhirPatient<FhirPatientPayload>(
+      return updateFhirPatient<Patient>(
         formData.patientUuid,
         payload,
       );

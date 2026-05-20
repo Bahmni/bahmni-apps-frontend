@@ -18,10 +18,8 @@ import {
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
-import {
-  buildFhirPatient,
-  type FhirPatientPayload,
-} from '../utils/fhirPatientMapper';
+import type { Patient } from 'fhir/r4';
+import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
 
@@ -83,7 +81,7 @@ export const useCreatePatient = () => {
         loginLocationUuid: getUserLoginLocation()?.uuid,
         personAttributes,
       });
-      return createFhirPatient<FhirPatientPayload>(payload);
+      return createFhirPatient<Patient>(payload);
     },
     onSuccess: (response) => {
       addNotification({

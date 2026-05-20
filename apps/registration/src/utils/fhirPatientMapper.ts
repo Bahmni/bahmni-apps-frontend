@@ -1,9 +1,10 @@
+import type { Patient, Extension, Identifier, Address } from 'fhir/r4';
 import {
   PatientAddress,
   PatientIdentifier,
   PersonAttributeType,
 } from '@bahmni/services';
-import { convertTimeToISODateTime } from '../components/forms/profile/dateAgeUtils';
+import { convertTimeToISODateTime } from './dateTimeUtils';
 import {
   BasicInfoData,
   PersonAttributesData,
@@ -14,7 +15,7 @@ const PATIENT_ATTRIBUTE_EXT_PREFIX = 'http://fhir.bahmni.org/ext/patient/'; // N
 const IDENTIFIER_LOCATION_EXT_URL =
   'http://fhir.openmrs.org/ext/patient/identifier#location'; // NOSONAR
 
-function buildLocationExtension(locationUuid?: string) {
+function buildLocationExtension(locationUuid?: string): Extension[] | undefined {
   if (!locationUuid) return undefined;
   return [
     {
@@ -49,45 +50,6 @@ function buildBirthDate(
   return dateOfBirth; // YYYY-MM-DD
 }
 
-interface FhirExtension {
-  url: string;
-  valueString?: string;
-  valueBoolean?: boolean;
-}
-
-interface FhirIdentifier {
-  use?: string;
-  value?: string;
-  type?: { coding: { code: string }[]; text?: string };
-  extension?: { url: string; valueReference: { reference: string } }[];
-}
-
-interface FhirAddressExtension {
-  url: string;
-  extension?: { url: string; valueString: string }[];
-}
-
-interface FhirAddress {
-  use?: string;
-  city?: string;
-  district?: string;
-  state?: string;
-  postalCode?: string;
-  extension?: FhirAddressExtension[];
-}
-
-export interface FhirPatientPayload {
-  resourceType: 'Patient';
-  id?: string;
-  identifier?: FhirIdentifier[];
-  name: { given: string[]; family: string }[];
-  gender: string;
-  birthDate?: string;
-  _birthDate?: { extension: { url: string; valueDateTime: string }[] };
-  extension?: FhirExtension[];
-  address?: FhirAddress[];
-}
-
 interface MapperInput {
   profile: BasicInfoData & {
     dobEstimated: boolean;
@@ -97,19 +59,21 @@ interface MapperInput {
   contact: PersonAttributesData;
   additional: PersonAttributesData;
   additionalIdentifiers: AdditionalIdentifiersData;
+  additionalIdentifiersInitialData?: AdditionalIdentifiersData;
   identifierTypeNames?: Record<string, string>;
   loginLocationUuid?: string;
   personAttributes: PersonAttributeType[];
   patientUuid?: string;
 }
 
-export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
+export function buildFhirPatient(input: MapperInput): Patient {
   const {
     profile,
     address,
     contact,
     additional,
     additionalIdentifiers,
+    additionalIdentifiersInitialData,
     identifierTypeNames,
     loginLocationUuid,
     personAttributes,
@@ -117,7 +81,7 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
   } = input;
 
   // Identifiers
-  const identifiers: FhirIdentifier[] = [];
+  const identifiers: Identifier[] = [];
   const locationExt = buildLocationExtension(loginLocationUuid);
   if (profile.patientIdentifier?.identifier) {
     identifiers.push({
@@ -135,6 +99,9 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
     });
   }
   Object.entries(additionalIdentifiers).forEach(([typeUuid, value]) => {
+    const hasInitialData = additionalIdentifiersInitialData?.[typeUuid]?.trim();
+    if (hasInitialData) return;
+
     const trimmedValue = value?.trim();
     if (trimmedValue) {
       identifiers.push({
@@ -156,7 +123,7 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
   if (profile.middleName?.trim()) given.push(profile.middleName.trim());
 
   // Extensions — person attributes
-  const extensions: FhirExtension[] = [];
+  const extensions: Extension[] = [];
   const allAttributes: PersonAttributesData = { ...contact, ...additional };
 
   personAttributes.forEach((attrType) => {
@@ -175,19 +142,17 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
         extensions.push({ url, valueString: String(value) });
       }
     } else if (patientUuid) {
-      // On update: send extension without value to void
       extensions.push({ url });
     }
   });
 
   // Address
-  const fhirAddresses: FhirAddress[] = [];
+  const fhirAddresses: Address[] = [];
   if (address) {
-    const addr: FhirAddress = { use: 'home' };
+    const addr: Address = { use: 'home' };
     let hasValue = false;
 
-    // address1, address2 go as extensions (OpenMRS FHIR2 convention)
-    const addressExtFields: { url: string; valueString: string }[] = [];
+    const addressExtFields: Extension[] = [];
     if (address.address1?.trim()) {
       addressExtFields.push({
         url: 'http://fhir.openmrs.org/ext/address#address1', // NOSONAR
@@ -230,30 +195,31 @@ export function buildFhirPatient(input: MapperInput): FhirPatientPayload {
     if (hasValue) fhirAddresses.push(addr);
   }
 
-  const payload: FhirPatientPayload = {
+  // Birth time
+  const birthTimeISO = profile.birthTime
+    ? convertTimeToISODateTime(profile.dateOfBirth, profile.birthTime)
+    : null;
+
+  const patient: Patient = {
     resourceType: 'Patient',
     ...(patientUuid && { id: patientUuid }),
     ...(identifiers.length > 0 ? { identifier: identifiers } : {}),
     name: [{ given, family: profile.lastName }],
     gender: mapGender(profile.gender),
     birthDate: buildBirthDate(profile.dateOfBirth, profile.dobEstimated),
-    ...(profile.birthTime &&
-      convertTimeToISODateTime(profile.dateOfBirth, profile.birthTime) && {
-        _birthDate: {
-          extension: [
-            {
-              url: 'http://hl7.org/fhir/StructureDefinition/patient-birthTime', // NOSONAR
-              valueDateTime: convertTimeToISODateTime(
-                profile.dateOfBirth,
-                profile.birthTime,
-              )!,
-            },
-          ],
-        },
-      }),
+    ...(birthTimeISO && {
+      _birthDate: {
+        extension: [
+          {
+            url: 'http://hl7.org/fhir/StructureDefinition/patient-birthTime', // NOSONAR
+            valueDateTime: birthTimeISO,
+          },
+        ],
+      },
+    }),
     ...(extensions.length > 0 && { extension: extensions }),
     ...(fhirAddresses.length > 0 && { address: fhirAddresses }),
   };
 
-  return payload;
+  return patient;
 }
