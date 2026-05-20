@@ -25,7 +25,7 @@ export interface DashboardSectionProps {
   visitUuids: string[];
 }
 
-const EDIT_SUPPORTED_WIDGET_TYPES = new Set(['allergies', 'conditions']);
+const EDIT_SUPPORTED_WIDGET_TYPES = new Set(['allergies']);
 
 /**
  * DashboardSection component that renders a single dashboard section as a Carbon Tile
@@ -83,27 +83,68 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
         };
       });
     }
-    dispatchConsultationStart({ preloadedAllergies });
+    // activeForms scopes ConsultationPad to show ONLY the AllergiesForm (+ encounterDetails).
+    // Does not rely on encounterType so no OpenMRS encounter type registration is needed.
+    dispatchConsultationStart({ activeForms: ['allergies'], preloadedAllergies });
   }, [patientUUID]);
 
-  const handleEditConditions = useCallback(() => {
-    dispatchConsultationStart({});
-  }, []);
+  // Row-level edit: fetch only the specific allergy by its FHIR resource UUID.
+  const handleRowEditAllergy = useCallback(
+    async (resourceId: string) => {
+      let preloadedAllergies: AllergyInputEntry[] | undefined;
+      if (patientUUID) {
+        const rawAllergies = await getAllergies(patientUUID);
+        const target = rawAllergies.find((fhir) => fhir.id === resourceId);
+        if (target) {
+          const severity = target.reaction?.[0]?.severity;
+          const seen = new Set<string>();
+          const selectedReactions: Coding[] = [];
+          for (const r of target.reaction ?? []) {
+            for (const m of r.manifestation ?? []) {
+              for (const c of m.coding ?? []) {
+                if (!c.system && c.code && !seen.has(c.code)) {
+                  seen.add(c.code);
+                  selectedReactions.push(c as Coding);
+                }
+              }
+            }
+          }
+          preloadedAllergies = [
+            {
+              id: target.code?.coding?.[0]?.code ?? target.id ?? '',
+              resourceId: target.id,
+              rawFhirResource: target,
+              display: target.code?.text ?? '',
+              type: target.category?.[0] ?? '',
+              selectedSeverity: severity
+                ? { code: severity, display: `SEVERITY_${severity.toUpperCase()}` }
+                : null,
+              selectedReactions,
+              note: target.note?.map((n) => n.text).join('; '),
+              errors: {},
+              hasBeenValidated: false,
+            },
+          ];
+        }
+      }
+      dispatchConsultationStart({ activeForms: ['allergies'], preloadedAllergies });
+    },
+    [patientUUID],
+  );
 
-  const { canEditOrCreate, isLoading: sessionLoading } =
+  const { canEditOrCreate, isLoading: sessionLoading, matchReasons } =
     useEncounterSessionStore();
+  const noActiveVisit = matchReasons.includes('NO_ACTIVE_VISIT');
   const canEditAllergies = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.EDIT_ALLERGIES,
   );
 
   const getSectionEditHandler = (controls: ControlConfig[]) => {
-    const editableControl = controls.find((c) =>
+    const hasEditable = controls.some((c) =>
       EDIT_SUPPORTED_WIDGET_TYPES.has(c.type),
     );
-    if (!editableControl) return undefined;
-    return editableControl.type === 'allergies'
-      ? handleEditAllergies
-      : handleEditConditions;
+    if (!hasEditable) return undefined;
+    return handleEditAllergies;
   };
 
   const showSectionEditButton = (controls: ControlConfig[]) =>
@@ -142,6 +183,10 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
             episodeOfCareUuids={episodeOfCareUuids}
             encounterUuids={encounterUuids}
             visitUuids={visitUuids}
+            disableActions={noActiveVisit}
+            onRowEditClick={
+              control.type === 'allergies' ? handleRowEditAllergy : undefined
+            }
           />
         </Suspense>
         {showDivider && <div className={styles.divider} />}

@@ -1,4 +1,6 @@
 import {
+  Edit,
+  IconButton,
   Tag,
   TooltipIcon,
   StatusTag,
@@ -16,7 +18,15 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
+import { WidgetProps } from '../registry/model';
+import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './styles/AllergiesTable.module.scss';
+
+interface AllergyActionConfig {
+  label: string;
+  type: string;
+  requiredPrivilege?: string[];
+}
 import {
   getCategoryDisplayName,
   getSeverityDisplayName,
@@ -38,11 +48,31 @@ const getSeverityClassName = (severity: string): string | undefined => {
 };
 
 // TODO: Take UUID As A Prop
-const AllergiesTable: React.FC = () => {
+const AllergiesTable: React.FC<WidgetProps> = ({
+  config,
+  disableActions = false,
+  onRowEditClick,
+}) => {
   const [allergies, setAllergies] = useState<FormattedAllergy[]>([]);
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+
+  // Actions column: config-driven, same pattern as ConditionsTable
+  const configActions = useMemo(
+    () => (config?.actions as AllergyActionConfig[] | undefined) ?? [],
+    [config?.actions],
+  );
+  const actionPrivileges = useMemo(
+    () => configActions.flatMap((a) => a.requiredPrivilege ?? []),
+    [configActions],
+  );
+  const hasActionPrivilege = useHasPrivilege(
+    actionPrivileges.length > 0 ? actionPrivileges : undefined,
+  );
+  const showActions =
+    configActions.length > 0 &&
+    (actionPrivileges.length === 0 || hasActionPrivilege);
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['allergies', patientUUID!],
     enabled: !!patientUUID,
@@ -76,15 +106,16 @@ const AllergiesTable: React.FC = () => {
   }, [data, isLoading, isError, error, addNotification, t]);
 
   // Define table headers
-  const headers = useMemo(
-    () => [
+  const headers = useMemo(() => {
+    const base = [
       { key: 'display', header: t('ALLERGEN') },
       { key: 'manifestation', header: t('REACTIONS') },
       { key: 'recorder', header: t('ALLERGY_LIST_RECORDED_BY') },
       { key: 'status', header: t('ALLERGY_LIST_STATUS') },
-    ],
-    [t],
-  );
+    ];
+    if (showActions) base.push({ key: 'actions', header: t('ACTIONS') });
+    return base;
+  }, [t, showActions]);
 
   const sortable = useMemo(
     () => [
@@ -148,6 +179,22 @@ const AllergiesTable: React.FC = () => {
             }
             testId={`status-${allergy.id}`}
           />
+        );
+      case 'actions':
+        return (
+          <IconButton
+            label={t('EDIT')}
+            kind="ghost"
+            size="sm"
+            disabled={disableActions}
+            testId={`edit-allergy-${allergy.id}`}
+            onClick={() =>
+              !disableActions &&
+              onRowEditClick?.(allergy.resourceId ?? allergy.id)
+            }
+          >
+            <Edit />
+          </IconButton>
         );
       default:
         return undefined;

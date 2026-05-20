@@ -80,10 +80,20 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   }, [encounterType, clinicalConfig]);
 
-  const activeEntries = useMemo(
-    () => getActiveEntries(registry, resolvedEncounterType!),
-    [registry, resolvedEncounterType],
-  );
+  const activeForms = encounterSessionStartContext.activeForms as
+    | string[]
+    | undefined;
+
+  const activeEntries = useMemo(() => {
+    const entries = getActiveEntries(registry, resolvedEncounterType!);
+    if (!activeForms?.length) return entries;
+    // When activeForms is specified, show only those forms + encounterDetails (always required).
+    return entries.filter(
+      (e) =>
+        e.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY ||
+        activeForms.includes(e.key),
+    );
+  }, [registry, resolvedEncounterType, activeForms]);
 
   const subscribeAll = useCallback(
     (cb: () => void) => {
@@ -226,7 +236,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       );
     return (
       <div className={styles.formList}>
-        {registry.map((entry) => (
+        {activeEntries.map((entry) => (
           <InputControlRenderer
             key={entry.key}
             entry={entry}

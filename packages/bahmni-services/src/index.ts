@@ -134,6 +134,7 @@ export {
 export {
   getConditions,
   getConditionPage,
+  markConditionAsInactive,
   type ConditionPage,
   type ConditionInputEntry,
 } from './conditionService';

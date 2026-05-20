@@ -57,6 +57,7 @@ jest.mock('@bahmni/services', () => {
     useEncounterSessionStore: jest.fn(() => ({
       canEditOrCreate: false,
       isLoading: false,
+      matchReasons: [],
     })),
   };
 });

@@ -64,6 +64,7 @@ export function createConditionViewModels(
       code: coding.code ?? '',
       codeDisplay: coding.display ?? '',
       note: condition.note?.map((note) => note.text).filter(Boolean),
+      rawFhirResource: condition,
     };
   });
 }
