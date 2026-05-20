@@ -12,7 +12,7 @@ import {
   getConfig,
   generateId,
   getFormattedPatientById,
-  capitalizeFirstLetter,
+  capitalize,
 } from '@bahmni/services';
 import {
   ProgramDetails,
@@ -138,11 +138,7 @@ const ConsultationPage: React.FC = () => {
       {
         id: 'current',
         label: patient?.fullName
-          ? patient.fullName
-              .trim()
-              .split(/\s+/)
-              .map(capitalizeFirstLetter)
-              .join(' ')
+          ? capitalize(patient.fullName)
           : t('CURRENT_PATIENT'),
         isCurrentPage: true,
       },

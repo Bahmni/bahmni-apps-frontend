@@ -90,7 +90,6 @@ export {
 export { getFormattedError } from './errorHandling';
 export {
   capitalize,
-  capitalizeFirstLetter,
   generateId,
   generateUUID,
   getCookieByName,
