@@ -17,9 +17,17 @@ export const handleEditAction = (
   editMedications: MedicationRequest[],
   encounterType: string,
 ): void => {
-  // Extract the encounter UUID from the medication being edited
+  // Extract the encounter UUID from the first medication being edited.
+  // All medications in a batch edit belong to the same encounter (pre-filtered).
   const encounterRef = editMedications[0]?.encounter?.reference;
-  const editEncounterUuid = encounterRef?.split('/').pop();
+  const editEncounterUuid = encounterRef?.split('/').pop() ?? undefined;
+
+  if (!editEncounterUuid) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[handleEditAction] No encounter reference on medication; falling back to session encounter.',
+    );
+  }
 
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {

@@ -116,10 +116,15 @@ export async function resolveEncounterMatchDecision(
       (e) => !hasParticipant(e, practitionerUUID),
     );
 
-    // 7–8. One or more recent encounters by this practitioner → MATCHED or LOCATION_MISMATCH
-    //       When multiple exist, pick the most recent (index 0) — they all belong
-    //       to this practitioner within the session window.
+    // 7. Recent encounters by this practitioner → MATCHED or LOCATION_MISMATCH
+    //    When multiple exist, pick the first (assumed most recent by FHIR _lastUpdated sort).
     if (currentPractitionerRecentEncounters.length >= 1) {
+      if (currentPractitionerRecentEncounters.length > 1) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[EncounterMatchDecision] ${currentPractitionerRecentEncounters.length} encounters found for practitioner ${practitionerUUID} within session window; picking first.`,
+        );
+      }
       const encounter = currentPractitionerRecentEncounters[0];
       if (checkLocationMatch(encounter, locationUUID)) {
         return { matched: true, encounter, reasons: ['MATCHED'] };

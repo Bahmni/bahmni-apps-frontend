@@ -129,11 +129,15 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const [editEncounter, setEditEncounter] = useState<Encounter | null>(null);
   const [editEncounterLoading, setEditEncounterLoading] = useState(false);
   useEffect(() => {
-    if (editEncounterUuid) {
-      setEditEncounterLoading(true);
-      get<Encounter>(`/openmrs/ws/fhir2/R4/Encounter/${editEncounterUuid}`)
-        .then(setEditEncounter)
-        .catch(() => {
+    if (!editEncounterUuid) return;
+    let cancelled = false;
+    setEditEncounterLoading(true);
+    get<Encounter>(`/openmrs/ws/fhir2/R4/Encounter/${editEncounterUuid}`)
+      .then((enc) => {
+        if (!cancelled) setEditEncounter(enc);
+      })
+      .catch(() => {
+        if (!cancelled) {
           setEditEncounter(null);
           addNotification({
             title: t('ERROR_DEFAULT_TITLE'),
@@ -141,9 +145,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             type: 'error',
             timeout: 5000,
           });
-        })
-        .finally(() => setEditEncounterLoading(false));
-    }
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setEditEncounterLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [editEncounterUuid, addNotification, t]);
 
   const activeEncounter = editEncounterUuid ? editEncounter : sessionEncounter;
@@ -263,30 +272,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   })();
 
   const isEditMode = !!editOnlyKey;
-  const editChangesExist = useMedicationStore((state) => {
-    if (!isEditMode) return true;
-    const { selectedMedications: meds, originalEditSnapshots } = state;
-    if (meds.some((m) => !m.fhirResourceId)) return true;
-    return meds.some((m) => {
-      const original = originalEditSnapshots.get(m.id);
-      if (!original) return true;
-      return (
-        m.dosage !== original.dosage ||
-        m.dosageUnit?.uuid !== original.dosageUnit?.uuid ||
-        m.frequency?.uuid !== original.frequency?.uuid ||
-        m.route?.uuid !== original.route?.uuid ||
-        m.duration !== original.duration ||
-        m.durationUnit?.code !== original.durationUnit?.code ||
-        m.instruction?.uuid !== original.instruction?.uuid ||
-        m.isPRN !== original.isPRN ||
-        m.isSTAT !== original.isSTAT ||
-        m.dispenseQuantity !== original.dispenseQuantity ||
-        m.dispenseUnit?.uuid !== original.dispenseUnit?.uuid ||
-        (m.note ?? '') !== (original.note ?? '') ||
-        m.startDate?.toDateString() !== original.startDate?.toDateString()
-      );
-    });
-  });
+  // Subscribe to selectedMedications to trigger re-renders on field changes;
+  // hasEditChanges() reads from the store via get() at call time.
+  useMedicationStore((state) => state.selectedMedications);
+  const editChangesExist = isEditMode
+    ? useMedicationStore.getState().hasEditChanges()
+    : true;
   const isPrimaryButtonDisabled =
     hasError ||
     !isEncounterDetailsFormReady ||

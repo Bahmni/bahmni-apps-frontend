@@ -203,12 +203,12 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         if (isSTAT) {
           updateStartDate(id, getTodayDate());
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [
         isSTAT,
         isPRN,
         id,
         medicationConfig.frequencies,
+        medicationInputEntry.fhirResourceId,
         updateFrequency,
         updateDuration,
         updateDurationUnit,
@@ -219,7 +219,11 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         if (medicationInputEntry.fhirResourceId) return;
         setDefaultInstruction();
         setDefaultDurationUnit();
-      }, [setDefaultInstruction, setDefaultDurationUnit]); // eslint-disable-line react-hooks/exhaustive-deps
+      }, [
+        medicationInputEntry.fhirResourceId,
+        setDefaultInstruction,
+        setDefaultDurationUnit,
+      ]);
 
       const medicineName = display.split('(')[0];
       const medicineDetails = display.includes('(')

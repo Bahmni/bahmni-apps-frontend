@@ -64,9 +64,11 @@ export function parseFhirToMedicationInputEntry(
 
   const dispenseQuantity = fhirMedRequest.dispenseRequest?.quantity?.value ?? 0;
   const dispenseQty = fhirMedRequest.dispenseRequest?.quantity;
+  const dispenseUnitsSource =
+    medicationConfig.dispensingUnits ?? medicationConfig.doseUnits;
   const dispenseUnit =
-    resolveConceptByUuid(dispenseQty?.code, medicationConfig.doseUnits) ??
-    resolveConceptByName(dispenseQty?.unit, medicationConfig.doseUnits);
+    resolveConceptByUuid(dispenseQty?.code, dispenseUnitsSource) ??
+    resolveConceptByName(dispenseQty?.unit, dispenseUnitsSource);
 
   const note =
     fhirMedRequest.note
@@ -186,15 +188,17 @@ function parseStartDate(
   fhirMedRequest: FhirMedicationRequest,
   isSTAT: boolean,
 ): Date {
-  if (isSTAT) {
-    return new Date();
-  }
   const startDateStr =
     fhirMedRequest.dosageInstruction?.[0]?.timing?.repeat?.boundsPeriod
       ?.start ?? fhirMedRequest.dosageInstruction?.[0]?.timing?.event?.[0];
 
   if (startDateStr) {
     return new Date(startDateStr);
+  }
+
+  // For STAT or missing dates, fall back to now
+  if (isSTAT) {
+    return new Date();
   }
   return new Date();
 }

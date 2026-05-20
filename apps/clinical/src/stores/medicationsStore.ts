@@ -1,4 +1,5 @@
 import { generateUUID } from '@bahmni/services';
+import { isSameDay } from 'date-fns';
 import { Medication } from 'fhir/r4';
 import { create } from 'zustand';
 import { Concept } from '../models/encounterConcepts';
@@ -35,6 +36,12 @@ export interface MedicationState {
   reset: () => void;
   getState: () => MedicationState;
 }
+function areDatesEqual(a: Date | undefined, b: Date | undefined): boolean {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  return isSameDay(a, b);
+}
+
 function hasMedicationChanged(
   current: MedicationInputEntry,
   original: MedicationInputEntry,
@@ -52,7 +59,7 @@ function hasMedicationChanged(
     current.dispenseQuantity !== original.dispenseQuantity ||
     current.dispenseUnit?.uuid !== original.dispenseUnit?.uuid ||
     (current.note ?? '') !== (original.note ?? '') ||
-    current.startDate?.toDateString() !== original.startDate?.toDateString()
+    !areDatesEqual(current.startDate, original.startDate)
   );
 }
 
