@@ -196,7 +196,17 @@ const ConsultationPage: React.FC = () => {
     return getSidebarItems(filteredDashboardConfig, t);
   }, [filteredDashboardConfig, t]);
 
-  const { activeItemId, handleItemClick } = useSidebarNavigation(sidebarItems);
+  const [scrollTrigger, setScrollTrigger] = useState(0);
+  const { activeItemId, handleItemClick: originalHandleItemClick } =
+    useSidebarNavigation(sidebarItems);
+
+  const handleItemClick = useCallback(
+    (id: string) => {
+      originalHandleItemClick(id);
+      setScrollTrigger((v) => v + 1);
+    },
+    [originalHandleItemClick],
+  );
 
   if (clinicalConfigLoading) {
     return (
@@ -296,6 +306,7 @@ const ConsultationPage: React.FC = () => {
             <DashboardContainer
               sections={filteredDashboardConfig!.sections}
               activeItemId={activeItemId}
+              scrollTrigger={scrollTrigger}
             />
           </Suspense>
         }

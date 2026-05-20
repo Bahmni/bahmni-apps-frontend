@@ -47,7 +47,7 @@
           "description": "Form attributes configuration",
           "items": {
             "type": "object",
-            "required": ["name", "required"],
+            "required": ["name"],
             "additionalProperties": false,
             "properties": {
               "name": {
@@ -57,6 +57,14 @@
               "required": {
                 "type": "boolean",
                 "description": "Whether this attribute is required"
+              },
+              "default": {
+                "type": ["string", "number", "boolean"],
+                "description": "Default value to pre-populate the field with"
+              },
+              "readOnly": {
+                "type": "boolean",
+                "description": "Whether this field is non-editable by the user"
               }
             }
           }
