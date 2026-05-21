@@ -1,0 +1,52 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+
+.formContent {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-06;
+  padding: $spacing-05;
+}
+
+.formField {
+  width: 100%;
+}
+
+.fullDateTimeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-03;
+  align-items: start;
+
+  @include breakpoint('md') {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+}
+
+.dateField {
+  min-width: 0;
+  max-width: 100%;
+
+  > div {
+    max-width: 100%;
+
+    input {
+      inline-size: 100% !important;
+      max-width: 100%;
+    }
+  }
+}
+
+.timeField {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.providerServiceGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-05;
+  align-items: start;
+}
