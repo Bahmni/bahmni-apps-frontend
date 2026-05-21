@@ -20,7 +20,7 @@ import { InputControlAttributes } from '../../../../providers/clinicalConfig/mod
 import {
   ImmunizationInputEntry,
   ImmunizationStoreKey,
-  BatchNumberChangeData,
+  BatchNumberComboBoxItem,
 } from '../models';
 import { useImmunizationHistoryStore } from '../stores';
 import styles from '../styles/ImmunizationForm.module.scss';
@@ -44,6 +44,11 @@ interface SelectedImmunizationItemProps {
   availableStocks: AvailableStockResponse | undefined;
   stocksError: boolean;
   stockBatchesEnabled: boolean;
+}
+
+export interface BatchNumberChangeData {
+  selectedItem?: BatchNumberComboBoxItem | null;
+  inputValue?: string | null;
 }
 
 const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
