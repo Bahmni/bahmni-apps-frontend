@@ -73,7 +73,12 @@ export const PersonAttributesProvider: React.FC<
       setPersonAttributes,
       isLoading,
       setIsLoading,
-      error: queryError ? new Error(String(queryError)) : null,
+      error:
+        queryError == null
+          ? null
+          : queryError instanceof Error
+            ? queryError
+            : new Error(String(queryError)),
       setError,
       refetch,
     }),

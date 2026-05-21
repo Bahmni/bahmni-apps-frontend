@@ -208,7 +208,7 @@ export function buildFhirPatient(input: MapperInput): Patient {
     ...(identifiers.length > 0 ? { identifier: identifiers } : {}),
     name: [
       {
-        ...(profile.nameUuid && { id: profile.nameUuid }),
+        ...(patientUuid && profile.nameUuid && { id: profile.nameUuid }),
         given,
         family: profile.lastName,
       },
