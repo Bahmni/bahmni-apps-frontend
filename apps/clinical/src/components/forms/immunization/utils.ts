@@ -24,6 +24,7 @@ import {
 import {
   ADMINISTERED_PRODUCT_EXTENSION_URL,
   BASED_ON_EXTENSION_URL,
+  STOCK_LOCATION_EXTENSION_URL,
   ENTERING_PROVIDER_CODE,
   ENTERING_PROVIDER_DISPLAY,
   ENTERING_PROVIDER_SYSTEM,
@@ -58,6 +59,18 @@ function resolveBasedOnExtension(
     {
       url: BASED_ON_EXTENSION_URL,
       valueReference: { reference: `MedicationRequest/${basedOnReference}` },
+    },
+  ];
+}
+
+function resolveStockLocationExtension(
+  stockLocation: string | null | undefined,
+): Extension[] {
+  if (!stockLocation?.trim()) return [];
+  return [
+    {
+      url: STOCK_LOCATION_EXTENSION_URL,
+      valueString: stockLocation,
     },
   ];
 }
@@ -238,11 +251,13 @@ export function createImmunizationBundleEntries({
   encounterSubject,
   encounterReference,
   practitionerUUID,
+  isAdministration,
 }: CreateImmunizationBundleEntriesParams): BundleEntry[] {
   return selectedImmunizations.map((entry) => {
     const extensions = [
       ...(entry.drug ? resolveAdministeredProductExtension(entry.drug) : []),
       ...resolveBasedOnExtension(entry.basedOnReference),
+      ...resolveStockLocationExtension(entry.stockLocation),
     ];
     const resource: Immunization = {
       resourceType: 'Immunization',
@@ -253,6 +268,7 @@ export function createImmunizationBundleEntries({
         ],
       },
       patient: encounterSubject,
+      primarySource: isAdministration,
       occurrenceDateTime: entry.administeredOn?.toISOString(),
       location: entry.administeredLocation
         ? resolveLocationReference(entry.administeredLocation)
