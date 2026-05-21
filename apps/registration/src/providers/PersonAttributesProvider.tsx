@@ -5,7 +5,13 @@ import {
   PersonAttributeType,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { ReactNode, useEffect, useMemo, useState } from 'react';
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { PersonAttributesContext } from '../contexts/PersonAttributesContext';
 
 interface PersonAttributesProviderProps {
@@ -53,15 +59,13 @@ export const PersonAttributesProvider: React.FC<
   }, [queryError]);
 
   const isLoading = initialAttributes ? false : queryIsLoading;
-  const error = queryError ? new Error(String(queryError)) : null;
 
   const setIsLoading = () => {};
   const setError = () => {};
 
-  // Refetch wrapper to maintain async signature
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     await queryRefetch();
-  };
+  }, [queryRefetch]);
 
   const value = useMemo(
     () => ({
@@ -69,11 +73,11 @@ export const PersonAttributesProvider: React.FC<
       setPersonAttributes,
       isLoading,
       setIsLoading,
-      error,
+      error: queryError ? new Error(String(queryError)) : null,
       setError,
       refetch,
     }),
-    [personAttributes, isLoading, error, refetch],
+    [personAttributes, isLoading, queryError, refetch],
   );
 
   return (

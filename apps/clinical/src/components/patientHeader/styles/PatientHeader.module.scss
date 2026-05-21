@@ -22,6 +22,11 @@
   padding-right: $spacing-05 !important;
 }
 
+.newConsultationButtonSkeleton {
+  width: $spacing-13;
+  height: $spacing-08;
+}
+
 @include breakpoint-down(lg) {
   .header {
     flex-direction: column;

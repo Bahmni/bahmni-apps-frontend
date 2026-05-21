@@ -94,12 +94,15 @@ describe('ConsultationActionButton', () => {
       expect(mockDispatchConsultationStart).toHaveBeenCalled();
     });
 
-    it('disables button when loading', () => {
+    it('shows skeleton when loading', () => {
       render(<ConsultationActionButton {...defaultProps} isLoading />);
 
       expect(
-        screen.getByRole('button', { name: /CONSULTATION_ACTION_NEW/i }),
-      ).toBeDisabled();
+        screen.getByTestId('consultation-action-button-skeleton'),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('consultation-action-button'),
+      ).not.toBeInTheDocument();
     });
   });
 
