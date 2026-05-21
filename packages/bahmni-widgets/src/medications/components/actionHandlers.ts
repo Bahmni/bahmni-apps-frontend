@@ -5,12 +5,17 @@ export const handleAction = (
   action: MedicationAction,
   fhirResource?: MedicationRequest,
 ): void => {
-  if (action.type === 'administer')
+  if (action.type === 'administer') {
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
         detail: { encounterType: action.encounterType, basedOn: fhirResource },
       }),
     );
+  }
+
+  if (action.type === 'edit' && fhirResource) {
+    handleEditAction([fhirResource], action.encounterType);
+  }
 };
 
 export const handleEditAction = (

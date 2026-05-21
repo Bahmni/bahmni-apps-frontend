@@ -274,38 +274,30 @@ const MedicationsTable: React.FC<WidgetProps> = ({
       });
     };
 
-    const observeHeader = (header: Element) => {
-      const observer = new MutationObserver(readAttributes);
-      observer.observe(header, {
-        attributes: true,
-        attributeFilter: OBSERVED_ATTRS,
-      });
-      return observer;
-    };
-
     readAttributes();
 
     const header = document.querySelector(HEADER_SELECTOR);
-    if (header) {
-      const observer = observeHeader(header);
-      return () => observer.disconnect();
-    }
+    if (!header) return;
 
-    // Header not yet in DOM — watch for it to appear
-    const bodyObserver = new MutationObserver(() => {
-      const el = document.querySelector(HEADER_SELECTOR);
-      if (el) {
-        bodyObserver.disconnect();
-        readAttributes();
-        const attrObserver = observeHeader(el);
-        // Store for cleanup — overwrite returned cleanup
-        cleanupRef.current = () => attrObserver.disconnect();
-      }
+    const observer = new MutationObserver(readAttributes);
+    observer.observe(header, {
+      attributes: true,
+      attributeFilter: OBSERVED_ATTRS,
     });
-    bodyObserver.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
-    const cleanupRef = { current: () => bodyObserver.disconnect() };
-    return () => cleanupRef.current();
+  // Re-read attributes when consultation is saved (header may update after refetch)
+  useSubscribeConsultationSaved(() => {
+    const header = document.querySelector('[data-testid="patient-header"]');
+    setEditContext({
+      canEditEncounter:
+        header?.getAttribute('data-can-edit-encounter') === 'true',
+      activeEncounterUuid:
+        header?.getAttribute('data-active-encounter-uuid') ?? '',
+      activePractitionerUuid:
+        header?.getAttribute('data-active-practitioner-uuid') ?? '',
+    });
   }, []);
 
   const { canEditEncounter, activeEncounterUuid, activePractitionerUuid } =
@@ -330,27 +322,19 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     activePractitionerUuid,
   ]);
 
-  const hasEditableMedications = editableMedications.length > 0;
+  const isEditable = useCallback(
+    (medication: FormattedMedicationRequest) =>
+      editableMedications.some((m) => m.id === medication.id),
+    [editableMedications],
+  );
 
+  const hasEditableMedications = editableMedications.length > 0;
   const editEncounterType = editAction?.encounterType ?? 'Consultation';
 
   const handleEditAll = useCallback(() => {
     const fhirResources = editableMedications.map((m) => m.fhirResource);
     handleEditAction(fhirResources, editEncounterType);
   }, [editableMedications, editEncounterType]);
-
-  const handleEditSingle = useCallback(
-    (medication: FormattedMedicationRequest) => {
-      handleEditAction([medication.fhirResource], editEncounterType);
-    },
-    [editEncounterType],
-  );
-
-  const isEditable = useCallback(
-    (medication: FormattedMedicationRequest) =>
-      editableMedications.some((m) => m.id === medication.id),
-    [editableMedications],
-  );
 
   // Process medications for date grouping (only for All medications tab)
   const processedAllMedications = useMemo(() => {
@@ -420,31 +404,14 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             dotClassName={getMedicationStatusClassName(row.status)}
           />
         );
-      case 'actions': {
-        const nonEditActions = actions.filter((a) => a.type !== 'edit');
+      case 'actions':
         return (
-          <>
-            {isEditable(row) && (
-              <IconButton
-                label={t('MEDICATIONS_EDIT_ACTION')}
-                kind="ghost"
-                size="sm"
-                onClick={() => handleEditSingle(row)}
-                testId={`medication-edit-button-${row.id}`}
-              >
-                <Icon
-                  id={`edit-icon-${row.id}`}
-                  name="fa-pen-to-square"
-                  size={ICON_SIZE.SM}
-                />
-              </IconButton>
-            )}
-            {nonEditActions.length > 0 && (
-              <Actions actions={nonEditActions} medication={row.fhirResource} />
-            )}
-          </>
+          <Actions
+            actions={actions}
+            medication={row.fhirResource}
+            hiddenActionTypes={isEditable(row) ? [] : ['edit']}
+          />
         );
-      }
       default:
         return null;
     }

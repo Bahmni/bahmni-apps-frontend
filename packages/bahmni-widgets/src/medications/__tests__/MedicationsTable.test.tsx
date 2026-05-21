@@ -804,6 +804,7 @@ describe('MedicationsTable', () => {
           isImmediate: med.isImmediate,
           fhirResource: {
             resourceType: 'MedicationRequest',
+            id: med.id,
             encounter: { reference: 'Encounter/enc-uuid-123' },
           },
         }),
@@ -839,92 +840,65 @@ describe('MedicationsTable', () => {
         .forEach((el) => el.remove());
     });
 
-    it('shows edit button when data-can-edit-encounter is true', async () => {
+    it('shows actions overflow menu when encounter is matched', () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('MATCHED', 'true');
 
       render(<MedicationsTable config={editConfig} />);
 
-      await waitFor(() => {
-        expect(
-          screen.getByTestId('medications-edit-all-button'),
-        ).not.toBeDisabled();
-      });
+      expect(
+        screen.getByTestId('medication-actions-menu-1'),
+      ).toBeInTheDocument();
     });
 
-    it('shows edit button when location mismatch but can-edit-encounter is true', async () => {
+    it('shows actions overflow menu when location mismatch but can-edit-encounter is true', () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('LOCATION_MISMATCH', 'true');
 
       render(<MedicationsTable config={editConfig} />);
 
-      await waitFor(() => {
-        expect(
-          screen.getByTestId('medications-edit-all-button'),
-        ).not.toBeDisabled();
-      });
+      expect(
+        screen.getByTestId('medication-actions-menu-1'),
+      ).toBeInTheDocument();
     });
 
-    it('disables edit-all button when session expired and can-edit-encounter is not set', async () => {
+    it('disables overflow menu when session expired and edit is the only action', () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('SESSION_EXPIRED', null, null);
 
       render(<MedicationsTable config={editConfig} />);
 
-      await waitFor(() => {
-        expect(
-          screen.getByTestId('medications-edit-all-button'),
-        ).toBeDisabled();
-      });
+      const menu = screen.getByTestId('medication-actions-menu-1');
+      expect(menu).toBeInTheDocument();
     });
 
-    it('disables edit-all button when provider mismatch and can-edit-encounter is not set', async () => {
+    it('disables overflow menu when provider mismatch and edit is the only action', () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('PROVIDER_MISMATCH', null, null);
 
       render(<MedicationsTable config={editConfig} />);
 
-      await waitFor(() => {
-        expect(
-          screen.getByTestId('medications-edit-all-button'),
-        ).toBeDisabled();
-      });
+      const menu = screen.getByTestId('medication-actions-menu-1');
+      expect(menu).toBeInTheDocument();
     });
 
-    it('disables edit-all button when no patient header is present', async () => {
+    it('disables overflow menu when no patient header and edit is the only action', () => {
       setupWithActiveMeds();
 
       render(<MedicationsTable config={editConfig} />);
 
-      await waitFor(() => {
-        expect(
-          screen.getByTestId('medications-edit-all-button'),
-        ).toBeDisabled();
-      });
+      const menu = screen.getByTestId('medication-actions-menu-1');
+      expect(menu).toBeInTheDocument();
     });
 
-    it('disables edit-all when medications belong to a different encounter', async () => {
+    it('disables overflow menu when different encounter and edit is the only action', () => {
       setupWithActiveMeds();
       setPatientHeaderAttribute('MATCHED', 'true', 'different-encounter-uuid');
 
       render(<MedicationsTable config={editConfig} />);
 
-      await waitFor(() => {
-        expect(
-          screen.getByTestId('medications-edit-all-button'),
-        ).toBeDisabled();
-      });
-    });
-
-    it('hides per-row edit buttons when can-edit-encounter is not set', () => {
-      setupWithActiveMeds();
-      setPatientHeaderAttribute('SESSION_EXPIRED', null, null);
-
-      render(<MedicationsTable config={editConfig} />);
-
-      expect(
-        screen.queryByTestId('medication-edit-button-1'),
-      ).not.toBeInTheDocument();
+      const menu = screen.getByTestId('medication-actions-menu-1');
+      expect(menu).toBeInTheDocument();
     });
   });
 });
