@@ -195,10 +195,17 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
 
           {isNoteVisible && (
             <Column sm={4} md={8} lg={16} className={styles.column}>
+              <label
+                htmlFor="stop-medication-note"
+                className={styles.fieldLabel}
+              >
+                {t('STOP_MEDICATION_NOTE_LABEL')}
+              </label>
               <TextArea
                 id="stop-medication-note"
                 data-testid="stop-medication-note"
-                labelText={t('STOP_MEDICATION_NOTE_LABEL')}
+                labelText=""
+                placeholder={t('STOP_MEDICATION_NOTE_PLACEHOLDER')}
                 value={note}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                   setNote(e.target.value);

@@ -30,6 +30,33 @@
       "items": {
         "type": "string"
       }
+    },
+    "stopMedicationFields": {
+      "type": "object",
+      "description": "Visibility and mandatory configuration for stop medication form fields",
+      "properties": {
+        "stopDate": {
+          "type": "object",
+          "properties": {
+            "isVisible": { "type": "boolean" },
+            "isMandatory": { "type": "boolean" }
+          }
+        },
+        "stopReason": {
+          "type": "object",
+          "properties": {
+            "isVisible": { "type": "boolean" },
+            "isMandatory": { "type": "boolean" }
+          }
+        },
+        "note": {
+          "type": "object",
+          "properties": {
+            "isVisible": { "type": "boolean" },
+            "isMandatory": { "type": "boolean" }
+          }
+        }
+      }
     }
   }
 }

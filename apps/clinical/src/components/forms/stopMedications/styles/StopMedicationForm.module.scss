@@ -22,3 +22,10 @@
 .column {
   padding-bottom: $spacing-05;
 }
+
+.fieldLabel {
+  @include type-style('label-01');
+  display: block;
+  margin-bottom: $spacing-02;
+  color: $text-secondary;
+}

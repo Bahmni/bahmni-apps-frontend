@@ -78,6 +78,9 @@ export const useStopMedicationStore = create<StopMedicationState>(
 
     validate: () => {
       const state = get();
+      // Nothing to validate if no medication is being stopped
+      if (!state.medicationToStop) return true;
+
       const errors: Record<string, string> = {};
       const cfg = state.fieldConfig;
       let isValid = true;
