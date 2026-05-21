@@ -102,9 +102,11 @@ const MedicationRequestForm: React.FC<{
   };
 
   const handleOnChange = (selected: MedicationFilterResult) => {
-    const displayName = getMedicationDisplay(selected.medication!);
-    addItem(selected.medication!, displayName);
-    setSearchTerm('');
+    if (selected.medication) {
+      const displayName = getMedicationDisplay(selected.medication);
+      addItem(selected.medication, displayName);
+      setSearchTerm('');
+    }
   };
 
   const filteredSearchResults = useMemo(() => {

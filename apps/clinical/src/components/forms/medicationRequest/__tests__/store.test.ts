@@ -107,14 +107,14 @@ describe('useMedicationRequestStore', () => {
       expect(vacStore().selectedMedicationRequests[0].isSTAT).toBe(true);
     });
 
-    it('applies attribute defaults for dosage, duration, stat, prn, and note on addItem', () => {
+    it('applies attribute defaults for dosage, stat, prn, and note on addItem', () => {
       store().reset();
       store().setAttributes(mockMedicationAttributesWithDefaults);
       store().addItem(mockMedication, 'Paracetamol 500mg');
 
       const entry = store().selectedMedicationRequests[0];
       expect(entry.dosage).toBe(1);
-      expect(entry.duration).toBe(1);
+      expect(entry.duration).toBe(0);
       expect(entry.isSTAT).toBe(true);
       expect(entry.isPRN).toBe(true);
       expect(entry.note).toBe('Some note');

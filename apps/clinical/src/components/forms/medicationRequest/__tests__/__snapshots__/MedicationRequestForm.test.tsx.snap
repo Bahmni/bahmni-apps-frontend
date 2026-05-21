@@ -218,12 +218,6 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
                 class="itemActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
               />
               <div
-                class="dosageControls cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
-              />
-              <div
-                class="durationControls cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
-              />
-              <div
                 class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
               >
                 <span
@@ -498,12 +492,6 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
               </div>
               <div
                 class="itemActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
-              />
-              <div
-                class="dosageControls cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
-              />
-              <div
-                class="durationControls cds--sm:col-span-2 cds--md:col-span-3 cds--lg:col-span-6 cds--css-grid-column"
               />
               <div
                 class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"

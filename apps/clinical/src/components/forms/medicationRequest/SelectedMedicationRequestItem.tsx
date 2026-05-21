@@ -212,63 +212,69 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
             )}
           </Column>
 
-          <Column sm={2} md={3} lg={6} className={styles.dosageControls}>
-            {findAttr('dosage', attributes) && (
-              <NumberInput
-                id={`${inputControlType}-dosage-input-${id}`}
-                data-testid={`${inputControlType}-dosage-input-${id}-test-id`}
-                min={0}
-                step={1}
-                value={dosage}
-                label={t(
-                  `${inputControlType.toUpperCase()}_DOSAGE_INPUT_LABEL`,
-                )}
-                aria-label="Dosage"
-                className={styles.dosageInput}
-                hideLabel
-                type="number"
-                onChange={(_, { value }) => {
-                  updateDosage(
-                    id,
-                    Number.isNaN(value) ? 0 : Number.parseFloat(String(value)),
-                  );
-                }}
-                invalid={!!errors.dosage}
-                invalidText={errors.dosage ? t(errors.dosage) : ''}
-                disabled={findAttr('dosage', attributes)?.readOnly}
-              />
-            )}
-            {findAttr('dosageUnit', attributes) && (
-              <Dropdown
-                id={`${inputControlType}-dosage-unit-dropdown-${id}`}
-                data-testid={`${inputControlType}-dosage-unit-dropdown-${id}-test-id`}
-                titleText={t(
-                  `${inputControlType.toUpperCase()}_DOSAGE_UNIT_INPUT_LABEL`,
-                )}
-                label={t(
-                  `${inputControlType.toUpperCase()}_DOSAGE_UNIT_INPUT_LABEL`,
-                )}
-                aria-label="Dosage Unit"
-                className={styles.dosageUnit}
-                hideLabel
-                items={medicationConfig.doseUnits ?? []}
-                itemToString={(item) => (item ? item.name : '')}
-                selectedItem={dosageUnit}
-                onChange={(e) => {
-                  if (e.selectedItem) {
-                    updateDosageUnit(id, e.selectedItem);
-                    updateDispenseUnit(id, e.selectedItem);
-                  }
-                }}
-                autoAlign
-                invalid={!!errors.dosageUnit}
-                invalidText={errors.dosageUnit ? t(errors.dosageUnit) : ''}
-                disabled={findAttr('dosageUnit', attributes)?.readOnly}
-              />
-            )}
-          </Column>
+          {(findAttr('dosage', attributes) ??
+            findAttr('dosageUnit', attributes)) && (
+            <Column sm={2} md={4} lg={8} className={styles.dosageControls}>
+              {findAttr('dosage', attributes) && (
+                <NumberInput
+                  id={`${inputControlType}-dosage-input-${id}`}
+                  data-testid={`${inputControlType}-dosage-input-${id}-test-id`}
+                  min={0}
+                  step={1}
+                  value={dosage}
+                  label={t(
+                    `${inputControlType.toUpperCase()}_DOSAGE_INPUT_LABEL`,
+                  )}
+                  aria-label="Dosage"
+                  className={styles.dosageInput}
+                  hideLabel
+                  type="number"
+                  onChange={(_, { value }) => {
+                    updateDosage(
+                      id,
+                      Number.isNaN(value)
+                        ? 0
+                        : Number.parseFloat(String(value)),
+                    );
+                  }}
+                  invalid={!!errors.dosage}
+                  invalidText={errors.dosage ? t(errors.dosage) : ''}
+                  disabled={findAttr('dosage', attributes)?.readOnly}
+                />
+              )}
+              {findAttr('dosageUnit', attributes) && (
+                <Dropdown
+                  id={`${inputControlType}-dosage-unit-dropdown-${id}`}
+                  data-testid={`${inputControlType}-dosage-unit-dropdown-${id}-test-id`}
+                  titleText={t(
+                    `${inputControlType.toUpperCase()}_DOSAGE_UNIT_INPUT_LABEL`,
+                  )}
+                  label={t(
+                    `${inputControlType.toUpperCase()}_DOSAGE_UNIT_INPUT_LABEL`,
+                  )}
+                  aria-label="Dosage Unit"
+                  className={styles.dosageUnit}
+                  hideLabel
+                  items={medicationConfig.doseUnits ?? []}
+                  itemToString={(item) => (item ? item.name : '')}
+                  selectedItem={dosageUnit}
+                  onChange={(e) => {
+                    if (e.selectedItem) {
+                      updateDosageUnit(id, e.selectedItem);
+                      updateDispenseUnit(id, e.selectedItem);
+                    }
+                  }}
+                  autoAlign
+                  invalid={!!errors.dosageUnit}
+                  invalidText={errors.dosageUnit ? t(errors.dosageUnit) : ''}
+                  disabled={findAttr('dosageUnit', attributes)?.readOnly}
+                />
+              )}
+            </Column>
+          )}
+
           {findAttr('frequency', attributes) && (
-            <Column sm={1} md={2} lg={4} className={styles.column}>
+            <Column sm={1} md={4} lg={8} className={styles.column}>
               <Dropdown
                 id={`${inputControlType}-frequency-dropdown-${id}`}
                 data-testid={`${inputControlType}-frequency-dropdown-${id}-test-id`}
@@ -301,68 +307,75 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
             </Column>
           )}
 
-          <Column sm={2} md={3} lg={6} className={styles.durationControls}>
-            {findAttr('duration', attributes) && (
-              <NumberInput
-                id={`${inputControlType}-duration-input-${id}`}
-                data-testid={`${inputControlType}-duration-input-${id}-test-id`}
-                label={t(
-                  `${inputControlType.toUpperCase()}_DURATION_INPUT_LABEL`,
-                )}
-                aria-label="Duration"
-                className={styles.durationInput}
-                hideLabel
-                min={0}
-                step={1}
-                value={duration}
-                onChange={(_, { value }) => {
-                  updateDuration(
-                    id,
-                    Number.isNaN(value) ? 0 : Number.parseFloat(String(value)),
-                  );
-                }}
-                invalid={!!errors.duration}
-                invalidText={errors.duration ? t(errors.duration) : ''}
-                disabled={
-                  (isMedicationRequest ? isSTAT && !isPRN : isSTAT) ||
-                  !!findAttr('duration', attributes)?.readOnly
-                }
-              />
-            )}
-            {findAttr('durationUnit', attributes) && (
-              <Dropdown
-                id={`${inputControlType}-duration-unit-dropdown-${id}`}
-                data-testid={`${inputControlType}-duration-unit-dropdown-${id}-test-id`}
-                titleText={t(
-                  `${inputControlType.toUpperCase()}_DURATION_UNIT_INPUT_LABEL`,
-                )}
-                label={t(
-                  `${inputControlType.toUpperCase()}_DURATION_UNIT_INPUT_LABEL`,
-                )}
-                aria-label="Duration Unit"
-                className={styles.durationUnit}
-                hideLabel
-                items={DURATION_UNIT_OPTIONS}
-                itemToString={(item) =>
-                  item ? t(item.display, { defaultValue: item.code }) : ''
-                }
-                selectedItem={durationUnit}
-                onChange={(e) => {
-                  updateDurationUnit(id, e.selectedItem);
-                }}
-                autoAlign
-                invalid={!!errors.durationUnit}
-                invalidText={errors.durationUnit ? t(errors.durationUnit) : ''}
-                disabled={
-                  (isMedicationRequest ? isSTAT && !isPRN : isSTAT) ||
-                  !!findAttr('durationUnit', attributes)?.readOnly
-                }
-              />
-            )}
-          </Column>
+          {(findAttr('duration', attributes) ??
+            findAttr('durationUnit', attributes)) && (
+            <Column sm={2} md={4} lg={8} className={styles.durationControls}>
+              {findAttr('duration', attributes) && (
+                <NumberInput
+                  id={`${inputControlType}-duration-input-${id}`}
+                  data-testid={`${inputControlType}-duration-input-${id}-test-id`}
+                  label={t(
+                    `${inputControlType.toUpperCase()}_DURATION_INPUT_LABEL`,
+                  )}
+                  aria-label="Duration"
+                  className={styles.durationInput}
+                  hideLabel
+                  min={0}
+                  step={1}
+                  value={duration}
+                  onChange={(_, { value }) => {
+                    updateDuration(
+                      id,
+                      Number.isNaN(value)
+                        ? 0
+                        : Number.parseFloat(String(value)),
+                    );
+                  }}
+                  invalid={!!errors.duration}
+                  invalidText={errors.duration ? t(errors.duration) : ''}
+                  disabled={
+                    (isMedicationRequest ? isSTAT && !isPRN : isSTAT) ||
+                    !!findAttr('duration', attributes)?.readOnly
+                  }
+                />
+              )}
+              {findAttr('durationUnit', attributes) && (
+                <Dropdown
+                  id={`${inputControlType}-duration-unit-dropdown-${id}`}
+                  data-testid={`${inputControlType}-duration-unit-dropdown-${id}-test-id`}
+                  titleText={t(
+                    `${inputControlType.toUpperCase()}_DURATION_UNIT_INPUT_LABEL`,
+                  )}
+                  label={t(
+                    `${inputControlType.toUpperCase()}_DURATION_UNIT_INPUT_LABEL`,
+                  )}
+                  aria-label="Duration Unit"
+                  className={styles.durationUnit}
+                  hideLabel
+                  items={DURATION_UNIT_OPTIONS}
+                  itemToString={(item) =>
+                    item ? t(item.display, { defaultValue: item.code }) : ''
+                  }
+                  selectedItem={durationUnit}
+                  onChange={(e) => {
+                    updateDurationUnit(id, e.selectedItem);
+                  }}
+                  autoAlign
+                  invalid={!!errors.durationUnit}
+                  invalidText={
+                    errors.durationUnit ? t(errors.durationUnit) : ''
+                  }
+                  disabled={
+                    (isMedicationRequest ? isSTAT && !isPRN : isSTAT) ||
+                    !!findAttr('durationUnit', attributes)?.readOnly
+                  }
+                />
+              )}
+            </Column>
+          )}
 
           {findAttr('instruction', attributes) && (
-            <Column sm={1} md={2} lg={4} className={styles.column}>
+            <Column sm={1} md={4} lg={8} className={styles.column}>
               <Dropdown
                 id={`${inputControlType}-instructions-dropdown-${id}`}
                 data-testid={`${inputControlType}-instructions-dropdown-${id}-test-id`}
@@ -377,7 +390,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                 itemToString={(item) => (item ? item.name : '')}
                 selectedItem={instruction}
                 onChange={(e) => {
-                  updateInstruction(id, e.selectedItem!);
+                  if (e.selectedItem) updateInstruction(id, e.selectedItem);
                 }}
                 autoAlign
                 invalid={!!errors.instruction}
@@ -388,7 +401,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
           )}
 
           {findAttr('route', attributes) && (
-            <Column sm={1} md={2} lg={4} className={styles.column}>
+            <Column sm={1} md={4} lg={8} className={styles.column}>
               <Dropdown
                 id={`${inputControlType}-route-dropdown-${id}`}
                 data-testid={`${inputControlType}-route-dropdown-${id}-test-id`}
@@ -402,7 +415,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                 itemToString={(item) => (item ? item.name : '')}
                 selectedItem={route}
                 onChange={(e) => {
-                  updateRoute(id, e.selectedItem!);
+                  if (e.selectedItem) updateRoute(id, e.selectedItem);
                 }}
                 autoAlign
                 invalid={!!errors.route}

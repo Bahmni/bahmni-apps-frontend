@@ -331,7 +331,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
         dosageUnit: null,
         frequency: null,
         route: null,
-        duration: durationDefault ? Number(durationDefault) : 0,
+        duration: !statDefault && durationDefault ? Number(durationDefault) : 0,
         durationUnit: null,
         isSTAT: statDefault === true || !isMedicationRequest,
         isPRN: prnDefault === true,
@@ -433,11 +433,17 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
     },
 
     updateisSTAT: (id: string, isSTAT: boolean) => {
-      const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyisSTATUpdate(item, isSTAT) : item;
       set((state) => ({
-        selectedMedicationRequests:
-          state.selectedMedicationRequests.map(applyUpdate),
+        selectedMedicationRequests: state.selectedMedicationRequests.map(
+          (item) => {
+            if (item.id !== id) return item;
+            const updated = applyisSTATUpdate(item, isSTAT);
+            if (isSTAT && !isMedicationRequest) {
+              return { ...updated, duration: 0, durationUnit: null };
+            }
+            return updated;
+          },
+        ),
       }));
     },
 
