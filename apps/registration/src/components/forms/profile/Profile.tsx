@@ -58,8 +58,12 @@ export const Profile = ({
 }: ProfileProps) => {
   const { t } = useTranslation();
   // Use utility hooks for identifier and gender data
-  const { identifierPrefixes, primaryIdentifierType, identifierSources } =
-    useIdentifierData();
+  const {
+    identifierPrefixes,
+    primaryIdentifierType,
+    primaryIdentifierTypeName,
+    identifierSources,
+  } = useIdentifierData();
   const { genders } = useGenderData(t);
 
   // Get registration config for patient information settings
@@ -390,6 +394,7 @@ export const Profile = ({
         }),
         identifierPrefix: formData.patientIdFormat,
         identifierType: primaryIdentifierType ?? '',
+        identifierTypeName: primaryIdentifierTypeName ?? '',
         preferred: true,
         voided: false,
       };

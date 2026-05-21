@@ -1,5 +1,6 @@
 import {
   useTranslation,
+  useSubscribeConsultationSaved,
   CONSULTATION_ENCOUNTER_TYPE_UUID,
   setEncounterSessionDecision,
   setEncounterSessionLoading,
@@ -36,16 +37,22 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
 }) => {
   const { t } = useTranslation();
   const { practitioner } = useActivePractitioner();
+
   const patientUUID = usePatientUUID();
 
   // Single hook call shared with ConsultationActionButton via props to avoid
   // duplicate FHIR searches. matchReason is exposed on the DOM so downstream
   // widget consumers can read it without waiting for ConsultationPad to open.
-  const { matchReason, editActiveEncounter, isLoading, activeEncounter } =
-    useEncounterSession({
-      practitioner,
-      encounterTypeUUID: CONSULTATION_ENCOUNTER_TYPE_UUID,
-    });
+  const {
+    matchReason,
+    editActiveEncounter,
+    isLoading,
+    activeEncounter,
+    refetch,
+  } = useEncounterSession({
+    practitioner,
+    encounterTypeUUID: CONSULTATION_ENCOUNTER_TYPE_UUID,
+  });
 
   // Reset the shared store whenever the patient changes so stale data from a
   // previous patient is never surfaced to widgets on the new patient's page.
@@ -72,6 +79,15 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
       });
     }
   }, [isLoading, matchReason, activeEncounter]);
+
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (payload.patientUUID === patientUUID) {
+        refetch();
+      }
+    },
+    [patientUUID],
+  );
 
   return (
     <div

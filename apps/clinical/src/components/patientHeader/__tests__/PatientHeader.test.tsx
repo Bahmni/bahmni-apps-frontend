@@ -1,5 +1,6 @@
 import {
   useTranslation,
+  CONSULTATION_SAVED_EVENT,
   resetEncounterSession,
   setEncounterSessionDecision,
   getEncounterSessionSnapshot,
@@ -277,6 +278,78 @@ describe('PatientHeader Component', () => {
       // Since usePatientUUID is mocked to 'patient-uuid' and prevRef starts null, reset fires
       expect(getEncounterSessionSnapshot().matchReasons).toEqual([]);
       unmount();
+    });
+  });
+
+  describe('Consultation saved refetch', () => {
+    test('calls refetch when consultation saved event is dispatched for the same patient', () => {
+      const mockRefetch = jest.fn();
+      mockedUseEncounterSession.mockReturnValue({
+        hasActiveSession: false,
+        activeEncounter: null,
+        isPractitionerMatch: false,
+        matchReason: [],
+        editActiveEncounter: false,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      });
+
+      renderComponent();
+
+      act(() => {
+        window.dispatchEvent(
+          new CustomEvent(CONSULTATION_SAVED_EVENT, {
+            detail: {
+              patientUUID: 'patient-uuid',
+              updatedResources: {
+                conditions: false,
+                allergies: false,
+                medications: false,
+                serviceRequests: {},
+              },
+              updatedConcepts: new Map(),
+            },
+          }),
+        );
+      });
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('does not call refetch when consultation saved event is dispatched for a different patient', () => {
+      const mockRefetch = jest.fn();
+      mockedUseEncounterSession.mockReturnValue({
+        hasActiveSession: false,
+        activeEncounter: null,
+        isPractitionerMatch: false,
+        matchReason: [],
+        editActiveEncounter: false,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      });
+
+      renderComponent();
+
+      act(() => {
+        window.dispatchEvent(
+          new CustomEvent(CONSULTATION_SAVED_EVENT, {
+            detail: {
+              patientUUID: 'other-patient-uuid',
+              updatedResources: {
+                conditions: false,
+                allergies: false,
+                medications: false,
+                serviceRequests: {},
+              },
+              updatedConcepts: new Map(),
+            },
+          }),
+        );
+      });
+
+      expect(mockRefetch).not.toHaveBeenCalled();
     });
   });
 });
