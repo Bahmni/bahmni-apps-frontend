@@ -795,10 +795,8 @@ describe('investigationService', () => {
     });
 
     it('should fetch and aggregate existing service requests for all categories', async () => {
-      const { getExistingServiceRequestsForAllCategories } = await import(
-        '../investigationService'
-      );
-
+      const { getExistingServiceRequestsForAllCategories } 
+        = await import('../investigationService');
       const mockGetServiceRequests = jest
         .fn()
         .mockResolvedValue(mockServiceRequestBundle);

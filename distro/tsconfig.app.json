@@ -47,6 +47,9 @@
     },
     {
       "path": "../packages/bahmni-design-system/tsconfig.lib.json"
+    },
+    {
+      "path": "../apps/lab-entry/tsconfig.lib.json"
     }
   ]
 }

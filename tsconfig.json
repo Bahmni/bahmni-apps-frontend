@@ -26,6 +26,9 @@
     },
     {
       "path": "./apps/appointments"
+    },
+    {
+      "path": "./apps/lab-entry"
     }
   ]
 }

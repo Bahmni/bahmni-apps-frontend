@@ -15,6 +15,9 @@
       "path": "../apps/clinical"
     },
     {
+      "path": "../apps/lab-entry"
+    },
+    {
       "path": "../packages/bahmni-widgets"
     },
     {

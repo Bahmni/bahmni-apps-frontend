@@ -1,9 +1,7 @@
 import { MedicationOrdersMetadataResponse } from '../../medicationRequestService';
 
 export interface MedicationConfig
-  extends MedicationOrdersMetadataResponse,
-    MedicationJSONConfig {}
-
+  extends MedicationOrdersMetadataResponse, MedicationJSONConfig {}
 export interface DrugFormDefault {
   doseUnits?: string;
   route?: string;
