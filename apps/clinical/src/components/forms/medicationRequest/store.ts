@@ -30,8 +30,8 @@ export interface MedicationRequestState {
   updateDuration: (id: string, duration: number) => void;
   updateDurationUnit: (id: string, unit: DurationUnitOption | null) => void;
   updateInstruction: (id: string, instruction: Concept) => void;
-  updateisPRN: (id: string, isPRN: boolean) => void;
-  updateisSTAT: (id: string, isSTAT: boolean) => void;
+  updateIsPRN: (id: string, isPRN: boolean) => void;
+  updateIsSTAT: (id: string, isSTAT: boolean) => void;
   updateStartDate: (id: string, date: Date) => void;
   updateDispenseQuantity: (id: string, quantity: number) => void;
   updateDispenseUnit: (id: string, unit: Concept) => void;
@@ -122,7 +122,7 @@ function applyDurationUnitUpdate(
   return updated;
 }
 
-function applyisSTATUpdate(
+function applyIsSTATUpdate(
   item: MedicationInputEntry,
   isSTAT: boolean,
 ): MedicationInputEntry {
@@ -172,7 +172,7 @@ function applyStartDateUpdate(
   return updated;
 }
 
-function applyisPRNUpdate(
+function applyIsPRNUpdate(
   item: MedicationInputEntry,
   isPRN: boolean,
 ): MedicationInputEntry {
@@ -423,21 +423,21 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
       }));
     },
 
-    updateisPRN: (id: string, isPRN: boolean) => {
+    updateIsPRN: (id: string, isPRN: boolean) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyisPRNUpdate(item, isPRN) : item;
+        item.id === id ? applyIsPRNUpdate(item, isPRN) : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
       }));
     },
 
-    updateisSTAT: (id: string, isSTAT: boolean) => {
+    updateIsSTAT: (id: string, isSTAT: boolean) => {
       set((state) => ({
         selectedMedicationRequests: state.selectedMedicationRequests.map(
           (item) => {
             if (item.id !== id) return item;
-            const updated = applyisSTATUpdate(item, isSTAT);
+            const updated = applyIsSTATUpdate(item, isSTAT);
             if (isSTAT && !isMedicationRequest) {
               return { ...updated, duration: 0, durationUnit: null };
             }

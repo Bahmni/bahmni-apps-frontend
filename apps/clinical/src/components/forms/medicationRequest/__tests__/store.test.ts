@@ -26,8 +26,8 @@ const FIELD_UPDATE_CASES: FieldUpdateCase[] = [
   ['duration', 'updateDuration', 7],
   ['durationUnit', 'updateDurationUnit', mockDurationUnit],
   ['instruction', 'updateInstruction', mockInstruction],
-  ['isPRN', 'updateisPRN', true],
-  ['isSTAT', 'updateisSTAT', true],
+  ['isPRN', 'updateIsPRN', true],
+  ['isSTAT', 'updateIsSTAT', true],
   ['startDate', 'updateStartDate', new Date('2025-01-01')],
   ['dispenseQuantity', 'updateDispenseQuantity', 10],
   ['dispenseUnit', 'updateDispenseUnit', mockDispenseUnit],
@@ -43,7 +43,7 @@ const ERROR_CLEARING_CASES: FieldUpdateCase[] = [
   ['durationUnit', 'updateDurationUnit', mockDurationUnit],
   ['instruction', 'updateInstruction', mockInstruction],
   ['note', 'updateNote', 'Some note'],
-  ['prn', 'updateisPRN', true],
+  ['prn', 'updateIsPRN', true],
 ];
 
 const ERROR_RETAINED_CASES: FieldUpdateCase[] = [
@@ -54,7 +54,7 @@ const ERROR_RETAINED_CASES: FieldUpdateCase[] = [
   ['duration', 'updateDuration', 0],
   ['instruction', 'updateInstruction', null],
   ['note', 'updateNote', ''],
-  ['prn', 'updateisPRN', false],
+  ['prn', 'updateIsPRN', false],
 ];
 
 describe('useMedicationRequestStore', () => {
@@ -311,7 +311,7 @@ describe('useMedicationRequestStore', () => {
         store().selectedMedicationRequests[0].errors.durationUnit,
       ).toBeDefined();
 
-      store().updateisSTAT(id, true);
+      store().updateIsSTAT(id, true);
 
       expect(
         store().selectedMedicationRequests[0].errors.duration,
@@ -326,7 +326,7 @@ describe('useMedicationRequestStore', () => {
       const id = store().selectedMedicationRequests[0].id;
 
       store().validateAll();
-      store().updateisSTAT(id, false);
+      store().updateIsSTAT(id, false);
 
       expect(
         store().selectedMedicationRequests[0].errors.duration,
@@ -334,6 +334,19 @@ describe('useMedicationRequestStore', () => {
       expect(
         store().selectedMedicationRequests[0].errors.durationUnit,
       ).toBeDefined();
+    });
+
+    it('resets duration to 0 and durationUnit to null when set to true on a vaccination entry', () => {
+      vacStore().addItem(mockVaccination, 'COVID-19 Vaccine');
+      const id = vacStore().selectedMedicationRequests[0].id;
+
+      vacStore().updateDuration(id, 7);
+      vacStore().updateDurationUnit(id, mockDurationUnit);
+
+      vacStore().updateIsSTAT(id, true);
+
+      expect(vacStore().selectedMedicationRequests[0].duration).toBe(0);
+      expect(vacStore().selectedMedicationRequests[0].durationUnit).toBeNull();
     });
   });
 
@@ -363,7 +376,7 @@ describe('useMedicationRequestStore', () => {
     it('does not require duration or durationUnit when isSTAT is true', () => {
       store().addItem(mockMedication, 'Paracetamol 500mg');
       const id = store().selectedMedicationRequests[0].id;
-      store().updateisSTAT(id, true);
+      store().updateIsSTAT(id, true);
 
       store().validateAll();
 
@@ -378,8 +391,8 @@ describe('useMedicationRequestStore', () => {
     it('returns true and clears all errors when all required fields are valid', () => {
       store().addItem(mockMedication, 'Paracetamol 500mg');
       const id = store().selectedMedicationRequests[0].id;
-      store().updateisSTAT(id, true);
-      store().updateisPRN(id, true);
+      store().updateIsSTAT(id, true);
+      store().updateIsPRN(id, true);
       store().updateDosage(id, 5);
       store().updateDosageUnit(id, mockDosageUnit);
       store().updateFrequency(id, mockFrequency);

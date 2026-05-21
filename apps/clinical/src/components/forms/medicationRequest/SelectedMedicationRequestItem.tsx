@@ -44,8 +44,8 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
       updateDuration,
       updateDurationUnit,
       updateInstruction,
-      updateisPRN,
-      updateisSTAT,
+      updateIsPRN,
+      updateIsSTAT,
       updateStartDate,
       updateDispenseQuantity,
       updateDispenseUnit,
@@ -190,7 +190,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                 labelText={t(`${inputControlType.toUpperCase()}_STAT`)}
                 aria-label="STAT"
                 checked={isSTAT}
-                onChange={(e) => updateisSTAT(id, e.target.checked)}
+                onChange={(e) => updateIsSTAT(id, e.target.checked)}
                 className={styles.statControl}
                 invalid={!!errors.stat}
                 invalidText={errors.stat ? t(errors.stat) : ''}
@@ -204,7 +204,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                 labelText={t(`${inputControlType.toUpperCase()}_PRN`)}
                 aria-label="PRN"
                 checked={isPRN}
-                onChange={(e) => updateisPRN(id, e.target.checked)}
+                onChange={(e) => updateIsPRN(id, e.target.checked)}
                 invalid={!!errors.prn}
                 invalidText={errors.prn ? t(errors.prn) : ''}
                 disabled={findAttr('prn', attributes)?.readOnly}
@@ -435,6 +435,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                 onChange={(date) => {
                   updateStartDate(id, date[0]);
                 }}
+                className={styles.datePicker}
               >
                 <DatePickerInput
                   id={`${inputControlType}-start-date-input-${id}`}
