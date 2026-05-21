@@ -12,6 +12,7 @@ export interface IconProps {
   ariaLabel?: string;
   padding?: ICON_PADDING;
   testId?: string;
+  fixedWidth?: boolean;
 }
 
 /**
@@ -26,6 +27,7 @@ export interface IconProps {
  * @param {string} [props.ariaLabel] - Accessibility label (defaults to id if not provided)
  * @param {ICON_PADDING} [props.padding=ICON_PADDING.XXSMALL] - Padding around the icon from ICON_PADDING enum
  * @param {string} [props.testId] - Test identifier for testing purposes
+ * @param {boolean} [props.fixedWidth=false] - When true, forces the icon to render at a consistent fixed width (FontAwesome fa-fw). Use in navigation lists to align icons and labels.
  * @returns {React.ReactElement} React component
  */
 const getPaddingClass = (padding: ICON_PADDING): string => {
@@ -53,6 +55,7 @@ export const Icon: React.FC<IconProps> = ({
   ariaLabel = id,
   padding = ICON_PADDING.XXSMALL,
   testId,
+  fixedWidth = false,
 }) => {
   const paddingClass = getPaddingClass(padding);
 
@@ -72,6 +75,7 @@ export const Icon: React.FC<IconProps> = ({
         icon={['fas', name as IconName]}
         size={size}
         color={color}
+        fixedWidth={fixedWidth}
         data-testid={id}
       />
     </span>
