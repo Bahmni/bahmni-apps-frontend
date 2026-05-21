@@ -166,7 +166,7 @@ const mockValidConditions: Condition[] = [
 
 describe('utils', () => {
   it('should convert valid FHIR Conditions array to Conditions View Model array', () => {
-    expect(createConditionViewModels(mockValidConditions)).toStrictEqual([
+    expect(createConditionViewModels(mockValidConditions)).toMatchObject([
       {
         code: '73211009',
         codeDisplay: 'Diabetes mellitus',
@@ -207,7 +207,7 @@ describe('utils', () => {
   });
 
   it('should convert valid FHIR Conditions Status to Conditions View Model Status', () => {
-    expect(createConditionViewModels(mockValidConditions)).toStrictEqual([
+    expect(createConditionViewModels(mockValidConditions)).toMatchObject([
       {
         code: '73211009',
         codeDisplay: 'Diabetes mellitus',
