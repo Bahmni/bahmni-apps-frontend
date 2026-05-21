@@ -206,7 +206,13 @@ export function buildFhirPatient(input: MapperInput): Patient {
     resourceType: 'Patient',
     ...(patientUuid && { id: patientUuid }),
     ...(identifiers.length > 0 ? { identifier: identifiers } : {}),
-    name: [{ given, family: profile.lastName }],
+    name: [
+      {
+        ...(profile.nameUuid && { id: profile.nameUuid }),
+        given,
+        family: profile.lastName,
+      },
+    ],
     gender: mapGender(profile.gender),
     birthDate: buildBirthDate(profile.dateOfBirth, profile.dobEstimated),
     ...(birthTimeISO && {

@@ -1,6 +1,6 @@
 import { getGenders, getIdentifierData } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 export const useIdentifierData = () => {
   const { data: identifierData } = useQuery({
@@ -57,13 +57,16 @@ export const useGenderData = (t: (key: string) => string) => {
     });
   }, [gendersFromApi, t]);
 
-  const getGenderDisplay = (code: string): string => {
-    const genderValue = gendersFromApi[code];
-    if (!genderValue) return code;
-    const genderStr = String(genderValue);
-    const genderKey = `CREATE_PATIENT_GENDER_${genderStr.toUpperCase()}`;
-    return t(genderKey);
-  };
+  const getGenderDisplay = useCallback(
+    (code: string): string => {
+      const genderValue = gendersFromApi[code];
+      if (!genderValue) return code;
+      const genderStr = String(genderValue);
+      const genderKey = `CREATE_PATIENT_GENDER_${genderStr.toUpperCase()}`;
+      return t(genderKey);
+    },
+    [gendersFromApi, t],
+  );
 
   return { genders, getGenderDisplay };
 };
