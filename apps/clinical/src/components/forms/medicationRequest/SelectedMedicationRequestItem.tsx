@@ -112,6 +112,8 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
         updateDuration(id, 0);
         updateDurationUnit(id, null);
         updateStartDate(id, getTodayDate());
+      } else {
+        updateFrequency(id, null);
       }
     }, [
       isSTAT,
