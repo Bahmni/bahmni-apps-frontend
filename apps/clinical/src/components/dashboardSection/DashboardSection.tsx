@@ -26,6 +26,7 @@ export interface DashboardSectionProps {
 }
 
 const EDIT_SUPPORTED_WIDGET_TYPES = new Set(['allergies']);
+const EDIT_ALL_ALLERGIES_LABEL = 'EDIT_ALL_ALLERGIES';
 
 /**
  * DashboardSection component that renders a single dashboard section as a Carbon Tile
@@ -85,7 +86,11 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
     }
     // activeForms scopes ConsultationPad to show ONLY the AllergiesForm (+ encounterDetails).
     // Does not rely on encounterType so no OpenMRS encounter type registration is needed.
-    dispatchConsultationStart({ activeForms: ['allergies'], preloadedAllergies });
+    dispatchConsultationStart({
+      editOnly: 'allergies',
+      editTitle: 'EDIT_ALLERGIES_TITLE',
+      preloadedAllergies,
+    });
   }, [patientUUID]);
 
   // Row-level edit: fetch only the specific allergy by its FHIR resource UUID.
@@ -117,7 +122,10 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
               display: target.code?.text ?? '',
               type: target.category?.[0] ?? '',
               selectedSeverity: severity
-                ? { code: severity, display: `SEVERITY_${severity.toUpperCase()}` }
+                ? {
+                    code: severity,
+                    display: `SEVERITY_${severity.toUpperCase()}`,
+                  }
                 : null,
               selectedReactions,
               note: target.note?.map((n) => n.text).join('; '),
@@ -127,14 +135,20 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
           ];
         }
       }
-      dispatchConsultationStart({ activeForms: ['allergies'], preloadedAllergies });
+      dispatchConsultationStart({
+        editOnly: 'allergies',
+        editTitle: 'EDIT_ALLERGIES_TITLE',
+        preloadedAllergies,
+      });
     },
     [patientUUID],
   );
 
-  const { canEditOrCreate, isLoading: sessionLoading, matchReasons } =
-    useEncounterSessionStore();
+  const { matchReasons } = useEncounterSessionStore();
   const noActiveVisit = matchReasons.includes('NO_ACTIVE_VISIT');
+  // Row actions are disabled ONLY when there is no active visit.
+  // Every other state (including NO_ACTIVE_ENCOUNTER and session loading) keeps them enabled.
+  const disableRowActions = noActiveVisit;
   const canEditAllergies = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.EDIT_ALLERGIES,
   );
@@ -148,8 +162,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   };
 
   const showSectionEditButton = (controls: ControlConfig[]) =>
-    !sessionLoading &&
-    canEditOrCreate &&
+    !noActiveVisit &&
     canEditAllergies &&
     controls.some((c) => EDIT_SUPPORTED_WIDGET_TYPES.has(c.type));
 
@@ -183,7 +196,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
             episodeOfCareUuids={episodeOfCareUuids}
             encounterUuids={encounterUuids}
             visitUuids={visitUuids}
-            disableActions={noActiveVisit}
+            disableActions={disableRowActions}
             onRowEditClick={
               control.type === 'allergies' ? handleRowEditAllergy : undefined
             }
@@ -229,7 +242,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
         <p>{t(section.translationKey ?? section.name)}</p>
         {showSectionEditButton(section.controls ?? []) && (
           <IconButton
-            label={t('EDIT')}
+            label={t(EDIT_ALL_ALLERGIES_LABEL)}
             kind="ghost"
             size="sm"
             testId={`edit-section-${section.name}`}

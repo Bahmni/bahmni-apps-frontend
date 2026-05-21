@@ -80,20 +80,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   }, [encounterType, clinicalConfig]);
 
-  const activeForms = encounterSessionStartContext.activeForms as
-    | string[]
+  const editOnlyKey = encounterSessionStartContext.editOnly as
+    | string
+    | undefined;
+  const editTitle = encounterSessionStartContext.editTitle as
+    | string
     | undefined;
 
-  const activeEntries = useMemo(() => {
-    const entries = getActiveEntries(registry, resolvedEncounterType!);
-    if (!activeForms?.length) return entries;
-    // When activeForms is specified, show only those forms + encounterDetails (always required).
-    return entries.filter(
-      (e) =>
-        e.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY ||
-        activeForms.includes(e.key),
-    );
-  }, [registry, resolvedEncounterType, activeForms]);
+  const activeEntries = useMemo(
+    () => getActiveEntries(registry, resolvedEncounterType!, editOnlyKey),
+    [registry, resolvedEncounterType, editOnlyKey],
+  );
 
   const subscribeAll = useCallback(
     (cb: () => void) => {
@@ -122,10 +119,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   }, [resolvedEncounterType]);
 
   const { practitioner } = useActivePractitioner();
-  const { activeEncounter } = useEncounterSession({
+  const { activeEncounter, matchReason } = useEncounterSession({
     practitioner,
     encounterTypeUUID: selectedEncounterType?.uuid,
   });
+
+  // Only resume the existing encounter on an exact MATCHED case.
+  // SESSION_EXPIRED, LOCATION_MISMATCH, PROVIDER_MISMATCH all silently create a new encounter.
+  const encounterForSubmission = matchReason.includes('MATCHED')
+    ? activeEncounter
+    : null;
   const { episodeOfCare } = useClinicalAppData();
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
@@ -175,7 +178,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     try {
       setIsSubmitting(true);
       const result = await submitConsultation({
-        activeEncounter,
+        activeEncounter: encounterForSubmission,
         episodeOfCareUuids,
         statDurationInMilliseconds,
         activeEntries,
@@ -260,7 +263,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     <>
       <ActionArea
         data-testid="consultation-pad-action-area"
-        title={hasError ? '' : t('CONSULTATION_ACTION_NEW')}
+        title={
+          hasError
+            ? ''
+            : editTitle
+              ? t(editTitle)
+              : t('CONSULTATION_ACTION_NEW')
+        }
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
         onPrimaryButtonClick={handleSubmit}
         isPrimaryButtonDisabled={enablePrimaryButton}

@@ -149,7 +149,7 @@ beforeEach(() => {
   } as any);
   jest
     .mocked(useEncounterSession)
-    .mockReturnValue({ activeEncounter: null } as any);
+    .mockReturnValue({ activeEncounter: null, matchReason: [] } as any);
   jest
     .mocked(useClinicalConfig)
     .mockReturnValue({ clinicalConfig: null } as any);

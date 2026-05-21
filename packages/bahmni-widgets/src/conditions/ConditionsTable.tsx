@@ -1,8 +1,10 @@
 import { SortableDataTable, StatusTag, Tile } from '@bahmni/design-system';
-import ConfirmationModal from '../confirmationModal/ConfirmationModal';
 import {
   getConditionPage,
   markConditionAsInactive,
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  type AuditEventType,
   useTranslation,
   FormatDateResult,
   formatDateDistance,
@@ -11,6 +13,7 @@ import {
 import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import ConfirmationModal from '../confirmationModal/ConfirmationModal';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
@@ -30,7 +33,10 @@ interface ConditionActionConfig {
 }
 
 // TODO: Take UUID As A Prop
-const ConditionsTable: React.FC<WidgetProps> = ({ config, disableActions = false }) => {
+const ConditionsTable: React.FC<WidgetProps> = ({
+  config,
+  disableActions = false,
+}) => {
   // Number() safely handles non-numeric config values (NaN → falsy → fallback 10)
   const configPageSize = Number(config?.pageSize) || 5;
   const patientUUID = usePatientUUID();
@@ -57,7 +63,6 @@ const ConditionsTable: React.FC<WidgetProps> = ({ config, disableActions = false
   const showActions =
     configActions.length > 0 &&
     (actionPrivileges.length === 0 || hasActionPrivilege);
-
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['conditions', patientUUID!, currentPage, selectedPageSize],
@@ -118,6 +123,12 @@ const ConditionsTable: React.FC<WidgetProps> = ({ config, disableActions = false
     setIsSubmitting(true);
     try {
       await markConditionAsInactive(conditionToMarkInactive.rawFhirResource);
+      dispatchAuditEvent({
+        eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
+          .eventType as AuditEventType,
+        patientUuid: patientUUID!,
+        messageParams: { conditionDisplay: conditionToMarkInactive.display },
+      });
       refetch();
     } catch {
       addNotification({
@@ -195,7 +206,9 @@ const ConditionsTable: React.FC<WidgetProps> = ({ config, disableActions = false
             <OverflowMenuItem
               itemText={MARK_AS_INACTIVE}
               data-testid={`condition-mark-inactive-${condition.code}`}
-              onClick={() => !isDisabled && setConditionToMarkInactive(condition)}
+              onClick={() =>
+                !isDisabled && setConditionToMarkInactive(condition)
+              }
             />
           </OverflowMenu>
         );

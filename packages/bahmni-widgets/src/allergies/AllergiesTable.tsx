@@ -21,17 +21,19 @@ import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './styles/AllergiesTable.module.scss';
+import {
+  getCategoryDisplayName,
+  getSeverityDisplayName,
+  sortAllergiesBySeverity,
+} from './utils';
+
+const EDIT_ALLERGY_LABEL = 'EDIT_ALLERGY';
 
 interface AllergyActionConfig {
   label: string;
   type: string;
   requiredPrivilege?: string[];
 }
-import {
-  getCategoryDisplayName,
-  getSeverityDisplayName,
-  sortAllergiesBySeverity,
-} from './utils';
 
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {
@@ -183,7 +185,7 @@ const AllergiesTable: React.FC<WidgetProps> = ({
       case 'actions':
         return (
           <IconButton
-            label={t('EDIT')}
+            label={t(EDIT_ALLERGY_LABEL)}
             kind="ghost"
             size="sm"
             disabled={disableActions}
