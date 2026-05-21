@@ -105,24 +105,29 @@ describe('immunizationHistory index registration', () => {
   });
 
   it.each([
-    [IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY],
-    [IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY],
-  ])('createBundleEntries() calls util with correct args for %s', (key) => {
-    const selectedImmunizations = [{ id: 'imm-1' }];
-    mockGetState.mockReturnValue({ selectedImmunizations });
-    const ctx = {
-      encounterSubject: { reference: 'Patient/1' },
-      encounterReference: 'enc-1',
-      practitionerUUID: 'prac-1',
-      consultationDate: new Date(),
-    };
-    getEntry(key).createBundleEntries!(ctx as any);
-    expect(mockGetImmunizationStore).toHaveBeenCalledWith(key);
-    expect(mockCreateEntries).toHaveBeenCalledWith({
-      selectedImmunizations,
-      encounterSubject: ctx.encounterSubject,
-      encounterReference: ctx.encounterReference,
-      practitionerUUID: ctx.practitionerUUID,
-    });
-  });
+    [IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY, false],
+    [IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY, true],
+  ])(
+    'createBundleEntries() calls util with correct args for %s',
+    (key, isAdministration) => {
+      const selectedImmunizations = [{ id: 'imm-1' }];
+      mockGetState.mockReturnValue({ selectedImmunizations });
+      const ctx = {
+        encounterSubject: { reference: 'Patient/1' },
+        encounterReference: 'enc-1',
+        practitionerUUID: 'prac-1',
+        consultationDate: new Date(),
+        isAdministration,
+      };
+      getEntry(key).createBundleEntries!(ctx as any);
+      expect(mockGetImmunizationStore).toHaveBeenCalledWith(key);
+      expect(mockCreateEntries).toHaveBeenCalledWith({
+        selectedImmunizations,
+        encounterSubject: ctx.encounterSubject,
+        encounterReference: ctx.encounterReference,
+        practitionerUUID: ctx.practitionerUUID,
+        isAdministration: ctx.isAdministration,
+      });
+    },
+  );
 });

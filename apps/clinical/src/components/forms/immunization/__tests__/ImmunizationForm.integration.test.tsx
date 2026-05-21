@@ -177,6 +177,7 @@ describe('ImmunizationForm Integration Tests', () => {
       encounterSubject: mockEncounterSubject,
       encounterReference: 'Encounter/encounter-uuid',
       practitionerUUID: 'practitioner-uuid',
+      isAdministration: true,
     });
 
     expect(bundleEntries).toHaveLength(1);
@@ -303,6 +304,7 @@ describe('ImmunizationForm Integration Tests', () => {
       encounterSubject: mockEncounterSubject,
       encounterReference: 'Encounter/encounter-uuid',
       practitionerUUID: 'practitioner-uuid',
+      isAdministration: false,
     });
     expect(bundleEntries).toHaveLength(0);
   });

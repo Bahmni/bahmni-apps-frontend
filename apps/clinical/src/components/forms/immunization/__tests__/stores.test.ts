@@ -80,6 +80,7 @@ describe('useImmunizationHistoryStore', () => {
         expiryDate: null,
         manufacturer: null,
         batchNumber: null,
+        stockLocation: null,
         errors: {},
         hasBeenValidated: false,
       });
@@ -127,6 +128,7 @@ describe('useImmunizationHistoryStore', () => {
         expiryDate: null,
         manufacturer: null,
         batchNumber: null,
+        stockLocation: null,
         doseSequence: null,
         errors: {},
         hasBeenValidated: false,
@@ -428,6 +430,41 @@ describe('useImmunizationHistoryStore', () => {
       const before = [...store().selectedImmunizations];
 
       store().updateNote('non-existent-id', 'Another note');
+
+      expect(store().selectedImmunizations).toEqual(before);
+    });
+  });
+
+  describe('updateStockLocation', () => {
+    it('updates stockLocation on the target entry without touching other entries', () => {
+      store().addImmunization(mockVaccineCode);
+      store().addImmunization(secondVaccineCode);
+      const targetId = store().selectedImmunizations[0].id;
+      const otherEntryBefore = store().selectedImmunizations[1];
+
+      store().updateStockLocation(targetId, 'Nurse Station');
+
+      expect(store().selectedImmunizations[0].stockLocation).toBe(
+        'Nurse Station',
+      );
+      expect(store().selectedImmunizations[1]).toEqual(otherEntryBefore);
+    });
+
+    it('clears stockLocation when called with null', () => {
+      store().addImmunization(mockVaccineCode);
+      const id = store().selectedImmunizations[0].id;
+      store().updateStockLocation(id, 'Nurse Station');
+
+      store().updateStockLocation(id, null);
+
+      expect(store().selectedImmunizations[0].stockLocation).toBeNull();
+    });
+
+    it('is a no-op for a non-existent id', () => {
+      store().addImmunization(mockVaccineCode);
+      const before = [...store().selectedImmunizations];
+
+      store().updateStockLocation('non-existent-id', 'Nurse Station');
 
       expect(store().selectedImmunizations).toEqual(before);
     });
