@@ -36,7 +36,6 @@ const AllergiesForm: React.FC<{
   encounterSessionStartContext?: EncounterSessionStartContext;
 }> = React.memo(({ encounterSessionStartContext }) => {
   // True when opened via the row/section edit button — search to add new allergy is hidden.
-  // Detected via preloadedAllergies presence, consistent with BAH-4593 pattern.
   const isEditMode = !!encounterSessionStartContext?.preloadedAllergies;
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();

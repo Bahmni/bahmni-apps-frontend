@@ -1,5 +1,11 @@
 import { ComponentType, LazyExoticComponent } from 'react';
 
+export interface WidgetActionConfig {
+  label: string;
+  type: string;
+  requiredPrivilege?: string[];
+}
+
 export interface WidgetProps {
   config?: Record<string, unknown>;
   episodeOfCareUuids?: string[];

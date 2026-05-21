@@ -20,21 +20,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ConfirmationModal from '../confirmationModal/ConfirmationModal';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
-import { WidgetProps } from '../registry/model';
+import { WidgetActionConfig, WidgetProps } from '../registry/model';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import { ConditionViewModel, ConditionStatus } from './models';
 import styles from './styles/ConditionsTable.module.scss';
 import { createConditionViewModels } from './utils';
-
-const MARK_AS_INACTIVE = 'Mark as inactive';
-const MARK_INACTIVE_CONFIRM_TITLE = 'CONDITION_MARK_INACTIVE_CONFIRM_TITLE';
-const MARK_INACTIVE_CONFIRM_BODY = 'CONDITION_MARK_INACTIVE_CONFIRM_BODY';
-
-interface ConditionActionConfig {
-  label: string;
-  type: string;
-  requiredPrivilege?: string[];
-}
 
 // TODO: Take UUID As A Prop
 const ConditionsTable: React.FC<WidgetProps> = ({
@@ -54,7 +44,7 @@ const ConditionsTable: React.FC<WidgetProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const configActions = useMemo(
-    () => (config?.actions as ConditionActionConfig[] | undefined) ?? [],
+    () => (config?.actions as WidgetActionConfig[] | undefined) ?? [],
     [config?.actions],
   );
   const actionPrivileges = useMemo(
@@ -133,7 +123,7 @@ const ConditionsTable: React.FC<WidgetProps> = ({
         patientUuid: patientUUID!,
         messageParams: { conditionDisplay: conditionToMarkInactive.display },
       });
-      refetch();
+      await refetch();
     } catch {
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
@@ -207,7 +197,7 @@ const ConditionsTable: React.FC<WidgetProps> = ({
             data-testid={`condition-mark-inactive-${condition.code}`}
             onClick={() => !isDisabled && setConditionToMarkInactive(condition)}
           >
-            {MARK_AS_INACTIVE}
+            {t('CONDITION_MARK_AS_INACTIVE')}
           </Button>
         );
       }
@@ -244,11 +234,10 @@ const ConditionsTable: React.FC<WidgetProps> = ({
         />
       </div>
 
-      {/* AC 9-10: Confirmation modal for "Mark as inactive" */}
       <ConfirmationModal
         open={!!conditionToMarkInactive}
-        heading={t(MARK_INACTIVE_CONFIRM_TITLE)}
-        body={t(MARK_INACTIVE_CONFIRM_BODY)}
+        heading={t('CONDITION_MARK_INACTIVE_CONFIRM_TITLE')}
+        body={t('CONDITION_MARK_INACTIVE_CONFIRM_BODY')}
         confirmLabel={t('YES')}
         cancelLabel={t('NO')}
         isSubmitting={isSubmitting}

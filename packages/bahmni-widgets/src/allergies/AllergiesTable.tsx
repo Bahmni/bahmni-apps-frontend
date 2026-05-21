@@ -18,7 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
-import { WidgetProps } from '../registry/model';
+import { WidgetActionConfig, WidgetProps } from '../registry/model';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './styles/AllergiesTable.module.scss';
 import {
@@ -28,12 +28,6 @@ import {
 } from './utils';
 
 const EDIT_ALLERGY_LABEL = 'EDIT_ALLERGY';
-
-interface AllergyActionConfig {
-  label: string;
-  type: string;
-  requiredPrivilege?: string[];
-}
 
 // Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {
@@ -62,7 +56,7 @@ const AllergiesTable: React.FC<WidgetProps> = ({
 
   // Actions column: config-driven, same pattern as ConditionsTable
   const configActions = useMemo(
-    () => (config?.actions as AllergyActionConfig[] | undefined) ?? [],
+    () => (config?.actions as WidgetActionConfig[] | undefined) ?? [],
     [config?.actions],
   );
   const actionPrivileges = useMemo(

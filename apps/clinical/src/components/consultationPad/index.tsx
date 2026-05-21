@@ -147,8 +147,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     return () => activeEntries.forEach((entry) => entry.reset());
   }, []);
 
-  // Declared after the reset effect so it runs after it on Strict Mode remount,
-  // re-seeding the store with existing allergies for the edit flow (AC 2).
   useEffect(() => {
     if (preloadedAllergies?.length) {
       useAllergyStore.getState().preloadAllergies(preloadedAllergies);

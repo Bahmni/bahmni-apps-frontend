@@ -542,6 +542,223 @@ describe('consultationBundleService', () => {
       });
     });
 
+    describe('Existing allergy (PUT) paths', () => {
+      const mockRawFhirResource: AllergyIntolerance = {
+        resourceType: 'AllergyIntolerance',
+        id: 'allergy-uuid-123',
+        clinicalStatus: {
+          coding: [
+            {
+              system:
+                'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical',
+              code: 'active',
+              display: 'Active',
+            },
+          ],
+        },
+        verificationStatus: {
+          coding: [
+            {
+              system:
+                'http://terminology.hl7.org/CodeSystem/allergyintolerance-verification',
+              code: 'confirmed',
+            },
+          ],
+        },
+        type: 'allergy',
+        category: ['medication' as const],
+        code: {
+          coding: [
+            {
+              code: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+              display: 'Penicillin',
+            },
+          ],
+          text: 'Penicillin',
+        },
+        patient: { reference: 'Patient/patient-123' },
+        reaction: [
+          {
+            manifestation: [
+              {
+                coding: [
+                  {
+                    code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                    display: 'Rash',
+                  },
+                  { system: 'http://snomed.info/sct', code: '271807003' },
+                ],
+                text: 'Rash',
+              },
+            ],
+            severity: 'moderate' as const,
+          },
+        ],
+      };
+
+      const mockExistingAllergy: AllergyInputEntry = {
+        ...mockValidAllergy,
+        resourceId: 'allergy-uuid-123',
+        isModified: true,
+        rawFhirResource: mockRawFhirResource,
+      };
+
+      it('should use PUT method and AllergyIntolerance/{uuid} URL for existing allergy', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockExistingAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect(result[0].fullUrl).toBe('AllergyIntolerance/allergy-uuid-123');
+        expect(
+          (result[0].request as { method: string; url: string }).method,
+        ).toBe('PUT');
+        expect((result[0].request as { method: string; url: string }).url).toBe(
+          'AllergyIntolerance/allergy-uuid-123',
+        );
+      });
+
+      it('should preserve all rawFhirResource fields (clinicalStatus, type, etc.) in PUT body', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockExistingAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const resource = result[0].resource as AllergyIntolerance;
+        expect(resource.clinicalStatus).toBeDefined();
+        expect(resource.type).toBe('allergy');
+        expect(resource.id).toBe('allergy-uuid-123');
+      });
+
+      it('should update severity from selectedSeverity in PUT body', () => {
+        const allergyWithNewSeverity: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          selectedSeverity: { code: 'severe', display: 'Severe' },
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithNewSeverity],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const resource = result[0].resource as AllergyIntolerance;
+        expect(resource.reaction?.[0].severity).toBe('severe');
+      });
+
+      it('should reuse existing FHIR manifestation structure for known reaction codes', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockExistingAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const resource = result[0].resource as AllergyIntolerance;
+        const manifestation = resource.reaction?.[0].manifestation?.[0];
+        // Should reuse full FHIR structure including SNOMED code
+        expect(manifestation?.coding?.length).toBeGreaterThan(1);
+        expect(manifestation?.text).toBe('Rash');
+      });
+
+      it('should build minimal coding for new reactions not in rawFhirResource', () => {
+        const allergyWithNewReaction: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          selectedReactions: [
+            { code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', display: 'Rash' }, // existing
+            { code: 'NEW_REACTION_CODE' }, // new
+          ],
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithNewReaction],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const resource = result[0].resource as AllergyIntolerance;
+        const manifestations = resource.reaction?.[0].manifestation ?? [];
+        expect(manifestations).toHaveLength(2);
+        // New reaction gets minimal coding
+        const newReactionManifest = manifestations.find(
+          (m) => m.coding?.[0]?.code === 'NEW_REACTION_CODE',
+        );
+        expect(newReactionManifest).toBeDefined();
+        expect(newReactionManifest?.coding).toHaveLength(1);
+      });
+
+      it('should skip existing allergy when isModified is false', () => {
+        const unmodifiedAllergy: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          isModified: false,
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [unmodifiedAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        // Unmodified existing allergy is skipped entirely
+        expect(result).toHaveLength(0);
+      });
+
+      it('should include modified existing allergy and skip unmodified one', () => {
+        const unmodifiedAllergy: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          id: 'allergen-A',
+          resourceId: 'uuid-A',
+          isModified: false,
+        };
+        const modifiedAllergy: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          id: 'allergen-B',
+          resourceId: 'uuid-B',
+          isModified: true,
+          rawFhirResource: {
+            ...mockRawFhirResource,
+            id: 'uuid-B',
+          } as AllergyIntolerance,
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [unmodifiedAllergy, modifiedAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect(result[0].fullUrl).toBe('AllergyIntolerance/uuid-B');
+      });
+
+      it('should POST (not PUT) for new allergy without resourceId', () => {
+        const newAllergy: AllergyInputEntry = {
+          ...mockValidAllergy,
+          resourceId: undefined,
+          rawFhirResource: undefined,
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [newAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect((result[0].request as { method: string }).method).toBe('POST');
+        expect(result[0].fullUrl).toMatch(/^urn:uuid:/);
+      });
+    });
+
     describe('createEncounterBundleEntry', () => {
       const mockEncounterResource = {
         resourceType: 'Encounter',

@@ -24,11 +24,6 @@ interface PatientHeaderProps {
  * Header component for the Bahmni Clinical application
  * Displays patient details with consultation action button.
  *
- * BAH-4652: After resolving the encounter session this component also writes
- * the decision into the shared `encounterSessionStore` (Option B plumbing)
- * so that display widgets in @bahmni/widgets can read it without making their
- * own FHIR calls.
- *
  * @param {boolean} isActionAreaVisible - Whether the action area is currently visible
  * @returns {React.ReactElement} The Header component
  */
@@ -70,7 +65,6 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     setEncounterSessionLoading(isLoading);
   }, [isLoading]);
 
-  // Write the resolved decision into the shared store (BAH-4652 Option B).
   useEffect(() => {
     if (!isLoading) {
       setEncounterSessionDecision({

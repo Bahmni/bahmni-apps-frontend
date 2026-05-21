@@ -10,10 +10,12 @@ import {
   CONSULTATION_PAD_PRIVILEGES,
   usePatientUUID,
 } from '@bahmni/widgets';
-import type { Coding } from 'fhir/r4';
 import React, { Suspense, useCallback } from 'react';
 import { dispatchConsultationStart } from '../../events/startConsultation';
-import { AllergyInputEntry } from '../../models/allergy';
+import {
+  AllergyInputEntry,
+  mapAllergyToInputEntry,
+} from '../../models/allergy';
 import { ControlConfig, DashboardSectionConfig } from '../../pages/models';
 import styles from './styles/DashboardSection.module.scss';
 
@@ -47,45 +49,9 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   const handleEditAllergies = useCallback(async () => {
     let preloadedAllergies: AllergyInputEntry[] | undefined;
     if (patientUUID) {
-      // Use raw FHIR resources so we can preserve the full resource for PUT
       const rawAllergies = await getAllergies(patientUUID);
-      preloadedAllergies = rawAllergies.map((fhir) => {
-        const allergenCode = fhir.code?.coding?.[0]?.code ?? fhir.id ?? '';
-        const severity = fhir.reaction?.[0]?.severity;
-
-        // Collect unique OpenMRS concept codings (no system = OpenMRS internal UUID).
-        // Deduplicate by code so repeated FHIR reaction entries don't create duplicates.
-        const seen = new Set<string>();
-        const selectedReactions: Coding[] = [];
-        for (const r of fhir.reaction ?? []) {
-          for (const m of r.manifestation ?? []) {
-            for (const c of m.coding ?? []) {
-              if (!c.system && c.code && !seen.has(c.code)) {
-                seen.add(c.code);
-                selectedReactions.push(c as Coding);
-              }
-            }
-          }
-        }
-
-        return {
-          id: allergenCode,
-          resourceId: fhir.id,
-          rawFhirResource: fhir,
-          display: fhir.code?.text ?? '',
-          type: fhir.category?.[0] ?? '',
-          selectedSeverity: severity
-            ? { code: severity, display: `SEVERITY_${severity.toUpperCase()}` }
-            : null,
-          selectedReactions,
-          note: fhir.note?.map((n) => n.text).join('; '),
-          errors: {},
-          hasBeenValidated: false,
-        };
-      });
+      preloadedAllergies = rawAllergies.map(mapAllergyToInputEntry);
     }
-    // activeForms scopes ConsultationPad to show ONLY the AllergiesForm (+ encounterDetails).
-    // Does not rely on encounterType so no OpenMRS encounter type registration is needed.
     dispatchConsultationStart({
       editOnly: 'allergies',
       editTitle: 'EDIT_ALLERGIES_TITLE',
@@ -101,38 +67,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
         const rawAllergies = await getAllergies(patientUUID);
         const target = rawAllergies.find((fhir) => fhir.id === resourceId);
         if (target) {
-          const severity = target.reaction?.[0]?.severity;
-          const seen = new Set<string>();
-          const selectedReactions: Coding[] = [];
-          for (const r of target.reaction ?? []) {
-            for (const m of r.manifestation ?? []) {
-              for (const c of m.coding ?? []) {
-                if (!c.system && c.code && !seen.has(c.code)) {
-                  seen.add(c.code);
-                  selectedReactions.push(c as Coding);
-                }
-              }
-            }
-          }
-          preloadedAllergies = [
-            {
-              id: target.code?.coding?.[0]?.code ?? target.id ?? '',
-              resourceId: target.id,
-              rawFhirResource: target,
-              display: target.code?.text ?? '',
-              type: target.category?.[0] ?? '',
-              selectedSeverity: severity
-                ? {
-                    code: severity,
-                    display: `SEVERITY_${severity.toUpperCase()}`,
-                  }
-                : null,
-              selectedReactions,
-              note: target.note?.map((n) => n.text).join('; '),
-              errors: {},
-              hasBeenValidated: false,
-            },
-          ];
+          preloadedAllergies = [mapAllergyToInputEntry(target)];
         }
       }
       dispatchConsultationStart({
