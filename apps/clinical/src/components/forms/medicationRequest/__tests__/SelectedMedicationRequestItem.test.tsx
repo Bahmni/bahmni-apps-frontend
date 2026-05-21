@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import SelectedMedicationRequestItem from '../SelectedMedicationRequestItem';
@@ -31,18 +31,20 @@ describe('SelectedMedicationRequestItem', () => {
     mockUseMedicationRequestStore.mockReturnValue(makeMockStore());
   });
 
-  it('renders correctly with the configured set of attributes', () => {
+  it('renders correctly with the configured set of attributes', async () => {
     const { id } = mockSelectedMedication;
     const inputControlType = 'medications';
 
-    render(
-      <SelectedMedicationRequestItem
-        entry={mockSelectedMedication}
-        medicationConfig={mockMedicationConfig}
-        inputControlType={inputControlType}
-        attributes={mockFullMedicationAttributes}
-      />,
-    );
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={mockSelectedMedication}
+          medicationConfig={mockMedicationConfig}
+          inputControlType={inputControlType}
+          attributes={mockFullMedicationAttributes}
+        />,
+      );
+    });
 
     expect(
       screen.getByTestId(`${inputControlType}-selected-item-${id}-test-id`),
@@ -105,18 +107,20 @@ describe('SelectedMedicationRequestItem', () => {
     ).toBeInTheDocument();
   });
 
-  it('does not renders attributes that are not configured', () => {
+  it('does not renders attributes that are not configured', async () => {
     const { id } = mockSelectedMedication;
     const inputControlType = 'medications';
 
-    render(
-      <SelectedMedicationRequestItem
-        entry={mockSelectedMedication}
-        medicationConfig={mockMedicationConfig}
-        inputControlType={inputControlType}
-        attributes={[]}
-      />,
-    );
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={mockSelectedMedication}
+          medicationConfig={mockMedicationConfig}
+          inputControlType={inputControlType}
+          attributes={[]}
+        />,
+      );
+    });
 
     expect(
       screen.queryByTestId(`${inputControlType}-stat-checkbox-${id}-test-id`),
@@ -168,17 +172,19 @@ describe('SelectedMedicationRequestItem', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('renders prn checkboxes only for medication requests', () => {
+  it('renders prn checkboxes only for medication requests', async () => {
     const { id } = mockSelectedMedication;
     const attributes = [{ name: 'prn' }, { name: 'dosage', required: true }];
-    render(
-      <SelectedMedicationRequestItem
-        entry={mockSelectedMedication}
-        medicationConfig={mockMedicationConfig}
-        inputControlType="vaccinations"
-        attributes={attributes}
-      />,
-    );
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={mockSelectedMedication}
+          medicationConfig={mockMedicationConfig}
+          inputControlType="vaccinations"
+          attributes={attributes}
+        />,
+      );
+    });
     expect(
       screen.queryByTestId(`vaccinations-prn-checkbox-${id}-test-id`),
     ).not.toBeInTheDocument();
@@ -213,8 +219,10 @@ describe('SelectedMedicationRequestItem', () => {
       user = userEvent.setup();
     });
 
-    afterEach(() => {
-      store.getState().reset();
+    afterEach(async () => {
+      await act(async () => {
+        store.getState().reset();
+      });
     });
 
     it('should let user capture and store data against configured attributes', async () => {
@@ -223,7 +231,9 @@ describe('SelectedMedicationRequestItem', () => {
       });
       const { id } = mockSelectedMedication;
 
-      render(<TestWrapper />);
+      await act(async () => {
+        render(<TestWrapper />);
+      });
 
       fireEvent.click(screen.getByRole('textbox', { name: 'Start Date' }));
       const todayCell = document.querySelector<HTMLElement>(
@@ -313,14 +323,16 @@ describe('SelectedMedicationRequestItem', () => {
         ],
       });
 
-      render(
-        <SelectedMedicationRequestItem
-          entry={store.getState().selectedMedicationRequests[0]}
-          medicationConfig={mockMedicationConfig}
-          inputControlType="medications"
-          attributes={[{ name: 'frequency' }]}
-        />,
-      );
+      await act(async () => {
+        render(
+          <SelectedMedicationRequestItem
+            entry={store.getState().selectedMedicationRequests[0]}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medications"
+            attributes={[{ name: 'frequency' }]}
+          />,
+        );
+      });
 
       await user.click(screen.getByRole('combobox', { name: 'Frequency' }));
       await user.click(screen.getByRole('option', { name: 'BD' }));
@@ -338,7 +350,9 @@ describe('SelectedMedicationRequestItem', () => {
         ],
       });
 
-      render(<TestWrapper />);
+      await act(async () => {
+        render(<TestWrapper />);
+      });
 
       expect(
         screen.getByRole('textbox', { name: 'Add Note' }),
@@ -353,18 +367,20 @@ describe('SelectedMedicationRequestItem', () => {
     });
   });
 
-  it('should apply drug form defaults for route and dosage unit on mount', () => {
+  it('should apply drug form defaults for route and dosage unit on mount', async () => {
     const mockStore = makeMockStore();
     mockUseMedicationRequestStore.mockReturnValue(mockStore);
 
-    render(
-      <SelectedMedicationRequestItem
-        entry={mockMinimalMedicationEntryWithForm}
-        medicationConfig={mockMedicationConfigWithDrugFormDefaults}
-        inputControlType="medications"
-        attributes={[{ name: 'dosage', required: true }]}
-      />,
-    );
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={mockMinimalMedicationEntryWithForm}
+          medicationConfig={mockMedicationConfigWithDrugFormDefaults}
+          inputControlType="medications"
+          attributes={[{ name: 'dosage', required: true }]}
+        />,
+      );
+    });
 
     expect(mockStore.updateRoute).toHaveBeenCalledWith(
       mockMinimalMedicationEntryWithForm.id,
@@ -384,19 +400,21 @@ describe('SelectedMedicationRequestItem', () => {
     const mockStore = makeMockStore();
     mockUseMedicationRequestStore.mockReturnValue(mockStore);
 
-    render(
-      <SelectedMedicationRequestItem
-        entry={mockMinimalMedicationEntry}
-        medicationConfig={mockMedicationConfig}
-        inputControlType="medications"
-        attributes={[
-          { name: 'dosage', default: 5 },
-          { name: 'frequency', default: 'BD' },
-          { name: 'instruction', default: 'Before Food' },
-          { name: 'durationUnit', default: 'd' },
-        ]}
-      />,
-    );
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={mockMinimalMedicationEntry}
+          medicationConfig={mockMedicationConfig}
+          inputControlType="medications"
+          attributes={[
+            { name: 'dosage', default: 5 },
+            { name: 'frequency', default: 'BD' },
+            { name: 'instruction', default: 'Before Food' },
+            { name: 'durationUnit', default: 'd' },
+          ]}
+        />,
+      );
+    });
 
     expect(mockStore.updateDosage).toHaveBeenCalledWith(
       mockMinimalMedicationEntry.id,
@@ -416,15 +434,17 @@ describe('SelectedMedicationRequestItem', () => {
     );
   });
 
-  it('should update attributes with disabled when marked as readOnly', () => {
-    render(
-      <SelectedMedicationRequestItem
-        entry={{ ...mockSelectedMedication, note: 'existing note' }}
-        medicationConfig={mockMedicationConfig}
-        inputControlType="medications"
-        attributes={mockFullMedicationAttributesReadOnly}
-      />,
-    );
+  it('should update attributes with disabled when marked as readOnly', async () => {
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={{ ...mockSelectedMedication, note: 'existing note' }}
+          medicationConfig={mockMedicationConfig}
+          inputControlType="medications"
+          attributes={mockFullMedicationAttributesReadOnly}
+        />,
+      );
+    });
 
     expect(screen.getByRole('checkbox', { name: 'STAT' })).toBeDisabled();
     expect(screen.getByRole('checkbox', { name: 'PRN' })).toBeDisabled();
@@ -445,15 +465,17 @@ describe('SelectedMedicationRequestItem', () => {
     expect(screen.getByRole('textbox', { name: 'Add Note' })).toBeDisabled();
   });
 
-  it('should show validation errors when required fields are not filled', () => {
-    render(
-      <SelectedMedicationRequestItem
-        entry={mockSelectedMedicationWithAllErrors}
-        medicationConfig={mockMedicationConfig}
-        inputControlType="medications"
-        attributes={mockRequiredMedicationAttributes}
-      />,
-    );
+  it('should show validation errors when required fields are not filled', async () => {
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={mockSelectedMedicationWithAllErrors}
+          medicationConfig={mockMedicationConfig}
+          inputControlType="medications"
+          attributes={mockRequiredMedicationAttributes}
+        />,
+      );
+    });
 
     expect(screen.getByText('Please check STAT')).toBeInTheDocument();
     expect(screen.getByText('Please check PRN')).toBeInTheDocument();
@@ -473,19 +495,21 @@ describe('SelectedMedicationRequestItem', () => {
   });
 
   describe('Snapshot', () => {
-    it('matches snapshot with all attributes', () => {
+    it('matches snapshot with all attributes', async () => {
       const inputControlType = 'medications';
 
-      const { asFragment } = render(
-        <SelectedMedicationRequestItem
-          entry={mockSelectedMedication}
-          medicationConfig={mockMedicationConfig}
-          inputControlType={inputControlType}
-          attributes={mockFullMedicationAttributes}
-        />,
-      );
+      await act(async () => {
+        const { asFragment } = render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType={inputControlType}
+            attributes={mockFullMedicationAttributes}
+          />,
+        );
 
-      expect(asFragment()).toMatchSnapshot();
+        expect(asFragment()).toMatchSnapshot();
+      });
     });
   });
 
@@ -493,17 +517,19 @@ describe('SelectedMedicationRequestItem', () => {
     it('should have no accessibility violations', async () => {
       const inputControlType = 'medications';
 
-      const { container } = render(
-        <SelectedMedicationRequestItem
-          entry={mockSelectedMedication}
-          medicationConfig={mockMedicationConfig}
-          inputControlType={inputControlType}
-          attributes={mockFullMedicationAttributes}
-        />,
-      );
+      await act(async () => {
+        const { container } = render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType={inputControlType}
+            attributes={mockFullMedicationAttributes}
+          />,
+        );
 
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
+        const results = await axe(container);
+        expect(results).toHaveNoViolations();
+      });
     });
   });
 });

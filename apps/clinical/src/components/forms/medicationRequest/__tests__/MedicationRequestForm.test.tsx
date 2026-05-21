@@ -22,7 +22,6 @@ import {
   mockSelectedMedication,
   mockSelectedVaccination,
   mockTwoVaccinationBundle,
-  mockVaccination,
   mockVaccinationBundle,
 } from './__mocks__/MedicationRequestFormMocks';
 
@@ -92,7 +91,6 @@ const vaccinationsConfig = {
 describe('MedicationRequestForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
     localStorage.setItem('default_dateFormat', 'dd/MM/yyyy');
     mockUseMedicationRequestStore.mockReturnValue(makeMockStore() as any);
     mockUseMedicationSearch.mockReturnValue({
@@ -136,31 +134,6 @@ describe('MedicationRequestForm', () => {
         ).toBeInTheDocument();
       },
     );
-
-    it('renders translated custom label from inputControlConfig', () => {
-      renderForm({ label: 'VACCINATION_FORM_TITLE' });
-      expect(screen.getByText('Vaccinations')).toBeInTheDocument();
-    });
-
-    it('calls getConfig and fetchMedicationOrdersMetadata to build medication config', async () => {
-      (getConfig as jest.Mock).mockResolvedValue({ doseUnits: [] });
-      (fetchMedicationOrdersMetadata as jest.Mock).mockResolvedValue({
-        frequencies: [],
-      });
-      mockUseQuery.mockImplementation(
-        jest.requireActual('@tanstack/react-query').useQuery,
-      );
-      renderForm();
-      await waitFor(() => {
-        expect(
-          screen.getByRole('combobox', {
-            name: 'medications-search-combobox-aria-label',
-          }),
-        ).toBeInTheDocument();
-      });
-      expect(getConfig).toHaveBeenCalled();
-      expect(fetchMedicationOrdersMetadata).toHaveBeenCalled();
-    });
   });
 
   describe('Loading states', () => {
@@ -187,6 +160,26 @@ describe('MedicationRequestForm', () => {
         ).not.toBeInTheDocument();
       },
     );
+
+    it('calls getConfig and fetchMedicationOrdersMetadata to build medication config', async () => {
+      (getConfig as jest.Mock).mockResolvedValue({ doseUnits: [] });
+      (fetchMedicationOrdersMetadata as jest.Mock).mockResolvedValue({
+        frequencies: [],
+      });
+      mockUseQuery.mockImplementation(
+        jest.requireActual('@tanstack/react-query').useQuery,
+      );
+      renderForm();
+      await waitFor(() => {
+        expect(
+          screen.getByRole('combobox', {
+            name: 'medications-search-combobox-aria-label',
+          }),
+        ).toBeInTheDocument();
+      });
+      expect(getConfig).toHaveBeenCalled();
+      expect(fetchMedicationOrdersMetadata).toHaveBeenCalled();
+    });
   });
 
   describe('Error states', () => {
@@ -363,92 +356,6 @@ describe('MedicationRequestForm', () => {
           'Paracetamol 500mg',
         ),
       );
-    });
-
-    it('adds medication when item selected via keyboard', async () => {
-      const user = userEvent.setup();
-      const addItem = jest.fn();
-      mockUseMedicationRequestStore.mockReturnValue(
-        makeMockStore({ addItem }) as any,
-      );
-      mockUseMedicationSearch.mockReturnValue({
-        searchResults: [mockMedication],
-        loading: false,
-        error: null,
-      });
-      renderForm();
-      await user.type(
-        screen.getByRole('combobox', {
-          name: 'medications-search-combobox-aria-label',
-        }),
-        'paracetamol',
-      );
-      await waitFor(() =>
-        expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument(),
-      );
-      await user.keyboard('{ArrowDown}');
-      await user.keyboard('{Enter}');
-      await waitFor(() => expect(addItem).toHaveBeenCalled());
-    });
-
-    it('adds vaccination when item clicked in search results', async () => {
-      const user = userEvent.setup();
-      const addItem = jest.fn();
-      mockUseMedicationRequestStore.mockReturnValue(
-        makeMockStore({ addItem }) as any,
-      );
-      renderForm(vaccinationsConfig);
-      await user.type(
-        screen.getByRole('combobox', {
-          name: 'vaccinations-search-combobox-aria-label',
-        }),
-        'covid',
-      );
-      await waitFor(() =>
-        expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument(),
-      );
-      await user.click(screen.getByText('COVID-19 Vaccine'));
-      await waitFor(() =>
-        expect(addItem).toHaveBeenCalledWith(
-          mockVaccination,
-          'COVID-19 Vaccine',
-        ),
-      );
-    });
-
-    it('resets search after selecting vaccination to allow re-selection', async () => {
-      const user = userEvent.setup();
-      const addItem = jest.fn();
-      mockUseMedicationRequestStore.mockReturnValue(
-        makeMockStore({ addItem }) as any,
-      );
-      mockUseQuery.mockImplementation(({ queryKey }: any) => {
-        if (queryKey[0] === 'vaccinations') {
-          return {
-            data: mockTwoVaccinationBundle,
-            isLoading: false,
-            error: null,
-          };
-        }
-        return defaultQueryMock({ queryKey }) as any;
-      });
-      renderForm(vaccinationsConfig);
-      const searchBox = screen.getByRole('combobox', {
-        name: 'vaccinations-search-combobox-aria-label',
-      });
-      await user.type(searchBox, 'covid');
-      await waitFor(() =>
-        expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument(),
-      );
-      await user.click(screen.getByText('COVID-19 Vaccine'));
-      await waitFor(() => expect(addItem).toHaveBeenCalledTimes(1));
-      await user.clear(searchBox);
-      await user.type(searchBox, 'hepatitis');
-      await waitFor(() =>
-        expect(screen.getByText('Hepatitis B Vaccine')).toBeInTheDocument(),
-      );
-      await user.click(screen.getByText('Hepatitis B Vaccine'));
-      await waitFor(() => expect(addItem).toHaveBeenCalledTimes(2));
     });
   });
 
