@@ -7,6 +7,7 @@ import {
   mockFrequency,
   mockInstruction,
   mockMedication,
+  mockMedicationAttributesWithDefaults,
   mockRequiredMedicationAttributes,
   mockRoute,
   mockVaccination,
@@ -104,6 +105,19 @@ describe('useMedicationRequestStore', () => {
     it('defaults isSTAT to true for vaccinations key', () => {
       vacStore().addItem(mockVaccination, 'COVID-19 Vaccine');
       expect(vacStore().selectedMedicationRequests[0].isSTAT).toBe(true);
+    });
+
+    it('applies attribute defaults for dosage, duration, stat, prn, and note on addItem', () => {
+      store().reset();
+      store().setAttributes(mockMedicationAttributesWithDefaults);
+      store().addItem(mockMedication, 'Paracetamol 500mg');
+
+      const entry = store().selectedMedicationRequests[0];
+      expect(entry.dosage).toBe(1);
+      expect(entry.duration).toBe(1);
+      expect(entry.isSTAT).toBe(true);
+      expect(entry.isPRN).toBe(true);
+      expect(entry.note).toBe('Some note');
     });
 
     it('prepends each new entry and generates a unique id per entry', () => {

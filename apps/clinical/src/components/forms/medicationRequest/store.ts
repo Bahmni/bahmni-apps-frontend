@@ -316,19 +316,25 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
     },
 
     addItem: (medication: Medication, displayName: string) => {
+      const { attributes } = get();
       const doseForm = extractDoseForm(medication, displayName);
+      const dosageDefault = findAttr('dosage', attributes)?.default;
+      const durationDefault = findAttr('duration', attributes)?.default;
+      const statDefault = findAttr('stat', attributes)?.default;
+      const prnDefault = findAttr('prn', attributes)?.default;
+      const noteDefault = findAttr('note', attributes)?.default;
       const newItem: MedicationInputEntry = {
         id: `${medication.id}-${generateUUID()}`,
         display: displayName,
         medication,
-        dosage: 0,
+        dosage: dosageDefault ? Number(dosageDefault) : 0,
         dosageUnit: null,
         frequency: null,
         route: null,
-        duration: 0,
+        duration: durationDefault ? Number(durationDefault) : 0,
         durationUnit: null,
-        isSTAT: !isMedicationRequest,
-        isPRN: false,
+        isSTAT: statDefault === true || !isMedicationRequest,
+        isPRN: prnDefault === true,
         startDate: new Date(),
         instruction: null,
         errors: {},
@@ -336,7 +342,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
         dispenseQuantity: 0,
         dispenseUnit: null,
         doseForm,
-        note: '',
+        note: noteDefault ? String(noteDefault) : '',
       };
       set((state) => ({
         selectedMedicationRequests: [

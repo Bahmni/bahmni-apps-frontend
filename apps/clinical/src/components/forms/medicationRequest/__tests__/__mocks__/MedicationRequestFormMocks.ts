@@ -3,6 +3,20 @@ import { MedicationInputEntry } from '../../../../../models/medication';
 import { MedicationConfig } from '../../../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
 
+export const mockMedicationAttributesWithDefaults: InputControlAttributes[] = [
+  { name: 'stat', default: true },
+  { name: 'prn', default: true },
+  { name: 'dosage', default: 1 },
+  { name: 'dosageUnit' },
+  { name: 'frequency' },
+  { name: 'duration', default: 1 },
+  { name: 'durationUnit' },
+  { name: 'instruction' },
+  { name: 'route' },
+  { name: 'startDate' },
+  { name: 'note', default: 'Some note' },
+];
+
 export const mockFullMedicationAttributes: InputControlAttributes[] = [
   { name: 'stat' },
   { name: 'prn' },
@@ -40,7 +54,7 @@ export const mockMedication: Medication = {
       {
         code: 'paracetamol-500',
         display: 'Paracetamol 500mg',
-        system: 'http://snomed.info/sct',
+        system: 'http://snomed.info/sct', // NOSONAR
       },
     ],
   },
@@ -150,6 +164,26 @@ export const mockMinimalMedicationEntry: MedicationInputEntry = {
 export const mockMinimalMedicationEntryWithForm: MedicationInputEntry = {
   ...mockMinimalMedicationEntry,
   medication: mockMedicationWithForm,
+};
+
+export const mockEmptyMedicationEntry: MedicationInputEntry = {
+  id: 'med-empty',
+  display: 'Empty Medication',
+  medication: mockMedicationWithForm,
+  dosage: 0,
+  dosageUnit: null,
+  frequency: null,
+  route: null,
+  duration: 0,
+  durationUnit: null,
+  isSTAT: false,
+  isPRN: false,
+  instruction: null,
+  errors: {},
+  hasBeenValidated: false,
+  dispenseQuantity: 0,
+  dispenseUnit: null,
+  note: '',
 };
 
 export const mockSelectedVaccination: MedicationInputEntry = {

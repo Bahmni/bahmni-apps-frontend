@@ -71,17 +71,6 @@ export function applyDefaultDurationUnit(
   }
 }
 
-export function applyDefaultDosage(
-  attributes: InputControlAttributes[],
-  dosage: number,
-  id: string,
-  updateDosage: (id: string, value: number) => void,
-): void {
-  const defaultValue = findAttr('dosage', attributes)?.default;
-  if (defaultValue === undefined || dosage !== 0) return;
-  updateDosage(id, Number(defaultValue));
-}
-
 export function applyDefaultFrequency(
   attributes: InputControlAttributes[],
   medicationConfig: MedicationConfig,
@@ -96,6 +85,128 @@ export function applyDefaultFrequency(
     (item) => item.name === defaultValue && !isImmediateFrequency(item),
   );
   if (defaultFrequency) updateFrequency(id, defaultFrequency);
+}
+
+export function applyDefaultDosageUnit(
+  attributes: InputControlAttributes[],
+  dosageUnit: Concept | null | undefined,
+  medication: Medication,
+  drugFormDefaults: Record<string, DrugFormDefault> | undefined,
+  doseUnits: Concept[] | undefined,
+  id: string,
+  updateDosageUnit: (id: string, value: Concept) => void,
+  updateDispenseUnit: (id: string, value: Concept) => void,
+): void {
+  if (dosageUnit) return;
+  const defaultValue = findAttr('dosageUnit', attributes)?.default;
+  if (defaultValue && doseUnits?.length) {
+    const unit = doseUnits.find((u) => u.name === String(defaultValue));
+    if (unit) {
+      updateDosageUnit(id, unit);
+      updateDispenseUnit(id, unit);
+      return;
+    }
+  }
+  if (drugFormDefaults && doseUnits?.length) {
+    const unit = getDefaultDosingUnit(medication, drugFormDefaults, doseUnits);
+    if (unit) {
+      updateDosageUnit(id, unit);
+      updateDispenseUnit(id, unit);
+    }
+  }
+}
+
+export function applyDefaultRoute(
+  attributes: InputControlAttributes[],
+  route: Concept | null | undefined,
+  medication: Medication,
+  drugFormDefaults: Record<string, DrugFormDefault> | undefined,
+  routes: Concept[] | undefined,
+  id: string,
+  updateRoute: (id: string, value: Concept) => void,
+): void {
+  if (route) return;
+  const defaultValue = findAttr('route', attributes)?.default;
+  if (defaultValue && routes?.length) {
+    const found = routes.find((r) => r.name === String(defaultValue));
+    if (found) {
+      updateRoute(id, found);
+      return;
+    }
+  }
+  if (drugFormDefaults && routes?.length) {
+    const found = getDefaultRoute(medication, drugFormDefaults, routes);
+    if (found) updateRoute(id, found);
+  }
+}
+
+interface ApplyMountDefaultsParams {
+  attributes: InputControlAttributes[];
+  medicationConfig: MedicationConfig;
+  entry: MedicationInputEntry;
+  updateDosageUnit: (id: string, value: Concept) => void;
+  updateDispenseUnit: (id: string, value: Concept) => void;
+  updateFrequency: (id: string, value: Frequency | null) => void;
+  updateDurationUnit: (id: string, value: DurationUnitOption | null) => void;
+  updateInstruction: (id: string, value: Concept) => void;
+  updateRoute: (id: string, value: Concept) => void;
+}
+
+export function applyMountDefaults({
+  attributes,
+  medicationConfig,
+  entry,
+  updateDosageUnit,
+  updateDispenseUnit,
+  updateFrequency,
+  updateDurationUnit,
+  updateInstruction,
+  updateRoute,
+}: ApplyMountDefaultsParams): void {
+  const {
+    id,
+    medication,
+    dosageUnit,
+    frequency,
+    durationUnit,
+    instruction,
+    route,
+  } = entry;
+
+  applyDefaultDosageUnit(
+    attributes,
+    dosageUnit,
+    medication,
+    medicationConfig.drugFormDefaults,
+    medicationConfig.doseUnits,
+    id,
+    updateDosageUnit,
+    updateDispenseUnit,
+  );
+  applyDefaultFrequency(
+    attributes,
+    medicationConfig,
+    frequency,
+    id,
+    updateFrequency,
+  );
+  applyDefaultDurationUnit(attributes, durationUnit, id, updateDurationUnit);
+  applyDefaultInstruction(
+    attributes,
+    medicationConfig,
+    instruction,
+    id,
+    updateInstruction,
+  );
+  applyDefaultRoute(
+    attributes,
+    route,
+    medication,
+    medicationConfig.drugFormDefaults,
+    medicationConfig.routes,
+    id,
+    updateRoute,
+  );
 }
 
 const toSentinel = (message: string): MedicationFilterResult => ({

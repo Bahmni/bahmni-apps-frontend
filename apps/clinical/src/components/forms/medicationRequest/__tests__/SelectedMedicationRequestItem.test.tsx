@@ -416,10 +416,6 @@ describe('SelectedMedicationRequestItem', () => {
       );
     });
 
-    expect(mockStore.updateDosage).toHaveBeenCalledWith(
-      mockMinimalMedicationEntry.id,
-      5,
-    );
     expect(mockStore.updateFrequency).toHaveBeenCalledWith(
       mockMinimalMedicationEntry.id,
       { uuid: 'bd-uuid', name: 'BD', frequencyPerDay: 2 },

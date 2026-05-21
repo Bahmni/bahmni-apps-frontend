@@ -21,14 +21,9 @@ import {
 import { MedicationRequestStoreKey, useMedicationRequestStore } from './store';
 import styles from './styles/SelectedMedicationRequestItem.module.scss';
 import {
-  applyDefaultDosage,
-  applyDefaultDurationUnit,
-  applyDefaultFrequency,
-  applyDefaultInstruction,
+  applyMountDefaults,
   calculateTotalQuantity,
   findAttr,
-  getDefaultDosingUnit,
-  getDefaultRoute,
   isImmediateFrequency,
 } from './utils';
 
@@ -62,7 +57,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
 
     const {
       id,
-      medication,
       dosage,
       dosageUnit,
       frequency,
@@ -83,42 +77,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
 
     const [hasNote, setHasNote] = useState(!!note);
     const noteRequired = findAttr('note', attributes)?.required;
-
-    useEffect(() => {
-      if (
-        !medicationConfig?.drugFormDefaults ||
-        !medicationConfig.routes ||
-        !medicationConfig.doseUnits
-      ) {
-        return;
-      }
-      const defaultRoute = getDefaultRoute(
-        medication,
-        medicationConfig.drugFormDefaults,
-        medicationConfig.routes,
-      );
-      if (defaultRoute && !route) {
-        updateRoute(id, defaultRoute);
-      }
-      const defaultDosingUnit = getDefaultDosingUnit(
-        medication,
-        medicationConfig.drugFormDefaults,
-        medicationConfig.doseUnits,
-      );
-      if (defaultDosingUnit && !dosageUnit) {
-        updateDosageUnit(id, defaultDosingUnit);
-        updateDispenseUnit(id, defaultDosingUnit);
-      }
-    }, [
-      medication,
-      medicationConfig,
-      route,
-      dosageUnit,
-      id,
-      updateRoute,
-      updateDosageUnit,
-      updateDispenseUnit,
-    ]);
 
     useEffect(() => {
       const totalQuantity = calculateTotalQuantity(
@@ -145,17 +103,15 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
         if (isSTAT) {
           updateStartDate(id, getTodayDate());
         }
-      } else {
-        if (isSTAT) {
-          const immediateFrequency =
-            medicationConfig.frequencies.find(isImmediateFrequency);
-          if (immediateFrequency) {
-            updateFrequency(id, immediateFrequency);
-          }
-          updateDuration(id, 0);
-          updateDurationUnit(id, null);
-          updateStartDate(id, getTodayDate());
+      } else if (isSTAT) {
+        const immediateFrequency =
+          medicationConfig.frequencies.find(isImmediateFrequency);
+        if (immediateFrequency) {
+          updateFrequency(id, immediateFrequency);
         }
+        updateDuration(id, 0);
+        updateDurationUnit(id, null);
+        updateStartDate(id, getTodayDate());
       }
     }, [
       isSTAT,
@@ -170,40 +126,18 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
     ]);
 
     useEffect(() => {
-      applyDefaultDosage(attributes, dosage, id, updateDosage);
-      applyDefaultFrequency(
+      applyMountDefaults({
         attributes,
         medicationConfig,
-        frequency,
-        id,
+        entry,
+        updateDosageUnit,
+        updateDispenseUnit,
         updateFrequency,
-      );
-      applyDefaultInstruction(
-        attributes,
-        medicationConfig,
-        instruction,
-        id,
-        updateInstruction,
-      );
-      applyDefaultDurationUnit(
-        attributes,
-        durationUnit,
-        id,
         updateDurationUnit,
-      );
-    }, [
-      attributes,
-      medicationConfig,
-      dosage,
-      frequency,
-      instruction,
-      durationUnit,
-      id,
-      updateDosage,
-      updateFrequency,
-      updateInstruction,
-      updateDurationUnit,
-    ]);
+        updateInstruction,
+        updateRoute,
+      });
+    }, []);
 
     const medicationName = display.split('(')[0];
     const medicationDetails = display.includes('(')

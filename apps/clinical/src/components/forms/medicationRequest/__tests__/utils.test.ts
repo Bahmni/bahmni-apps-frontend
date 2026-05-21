@@ -1,23 +1,28 @@
 import { resolveComboBoxItems } from '@bahmni/services';
 import { MedicationRequest } from 'fhir/r4';
 import {
-  applyDefaultDosage,
+  applyDefaultDosageUnit,
   applyDefaultDurationUnit,
   applyDefaultFrequency,
   applyDefaultInstruction,
+  applyDefaultRoute,
+  applyMountDefaults,
   createMedicationRequestEntries,
   getDefaultDosingUnit,
   getDefaultRoute,
   getMedicationRequestComboBoxItems,
 } from '../utils';
 import {
+  mockEmptyMedicationEntry,
   mockEncounterReference,
   mockEncounterSubject,
   mockMedication,
   mockMedicationConfig,
+  mockMedicationConfigWithDrugFormDefaults,
   mockMedicationEntry,
   mockMedicationWithForm,
   mockPractitionerUUID,
+  mockSelectedMedication,
 } from './__mocks__/MedicationRequestFormMocks';
 
 jest.mock('@bahmni/services', () => ({
@@ -31,27 +36,6 @@ jest.mock('../../../../services/medicationService', () => ({
 
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
 globalThis.crypto.randomUUID = jest.fn().mockReturnValue(mockUUID);
-
-describe('applyDefaultDosage', () => {
-  it('applies default when dosage is 0', () => {
-    const updateDosage = jest.fn();
-    applyDefaultDosage([{ name: 'dosage', default: 5 }], 0, 'id', updateDosage);
-    expect(updateDosage).toHaveBeenCalledWith('id', 5);
-  });
-
-  it.each([
-    [
-      'does nothing when dosage is already non-zero',
-      2,
-      [{ name: 'dosage', default: 5 }],
-    ],
-    ['does nothing when no default configured', 0, [{ name: 'dosage' }]],
-  ])('%s', (_, dosage, attrs) => {
-    const updateDosage = jest.fn();
-    applyDefaultDosage(attrs, dosage as number, 'id', updateDosage);
-    expect(updateDosage).not.toHaveBeenCalled();
-  });
-});
 
 describe('applyDefaultFrequency', () => {
   it('applies default frequency when none is set and default matches a non-immediate frequency', () => {
@@ -180,6 +164,248 @@ describe('applyDefaultDurationUnit', () => {
     const updateDurationUnit = jest.fn();
     applyDefaultDurationUnit(attrs, durationUnit, 'id', updateDurationUnit);
     expect(updateDurationUnit).not.toHaveBeenCalled();
+  });
+});
+
+describe('applyDefaultDosageUnit', () => {
+  const drugFormDefaults = { Tablet: { doseUnits: 'mg' } };
+
+  it('applies attribute default when dosageUnit is null and name matches a doseUnit', () => {
+    const updateDosageUnit = jest.fn();
+    const updateDispenseUnit = jest.fn();
+    applyDefaultDosageUnit(
+      [{ name: 'dosageUnit', default: 'ml' }],
+      null,
+      mockMedication,
+      undefined,
+      mockMedicationConfig.doseUnits,
+      'id',
+      updateDosageUnit,
+      updateDispenseUnit,
+    );
+    expect(updateDosageUnit).toHaveBeenCalledWith('id', {
+      uuid: 'ml-uuid',
+      name: 'ml',
+    });
+    expect(updateDispenseUnit).toHaveBeenCalledWith('id', {
+      uuid: 'ml-uuid',
+      name: 'ml',
+    });
+  });
+
+  it('falls back to drugFormDefaults when no attribute default is configured', () => {
+    const updateDosageUnit = jest.fn();
+    const updateDispenseUnit = jest.fn();
+    applyDefaultDosageUnit(
+      [{ name: 'dosageUnit' }],
+      null,
+      mockMedicationWithForm,
+      drugFormDefaults,
+      mockMedicationConfig.doseUnits,
+      'id',
+      updateDosageUnit,
+      updateDispenseUnit,
+    );
+    expect(updateDosageUnit).toHaveBeenCalledWith('id', {
+      uuid: 'mg-uuid',
+      name: 'mg',
+    });
+    expect(updateDispenseUnit).toHaveBeenCalledWith('id', {
+      uuid: 'mg-uuid',
+      name: 'mg',
+    });
+  });
+
+  it.each([
+    [
+      'does nothing when dosageUnit is already set',
+      { uuid: 'mg-uuid', name: 'mg' },
+      [{ name: 'dosageUnit', default: 'ml' }],
+    ],
+    [
+      'does nothing when attribute default does not match and no drugFormDefaults',
+      null,
+      [{ name: 'dosageUnit', default: 'g' }],
+    ],
+  ])('%s', (_, dosageUnit, attrs) => {
+    const updateDosageUnit = jest.fn();
+    const updateDispenseUnit = jest.fn();
+    applyDefaultDosageUnit(
+      attrs,
+      dosageUnit as ReturnType<typeof jest.fn>,
+      mockMedication,
+      undefined,
+      mockMedicationConfig.doseUnits,
+      'id',
+      updateDosageUnit,
+      updateDispenseUnit,
+    );
+    expect(updateDosageUnit).not.toHaveBeenCalled();
+    expect(updateDispenseUnit).not.toHaveBeenCalled();
+  });
+});
+
+describe('applyDefaultRoute', () => {
+  const drugFormDefaults = { Tablet: { route: 'Oral' } };
+
+  it('applies attribute default when route is null and name matches a route', () => {
+    const updateRoute = jest.fn();
+    applyDefaultRoute(
+      [{ name: 'route', default: 'IV' }],
+      null,
+      mockMedication,
+      undefined,
+      mockMedicationConfig.routes,
+      'id',
+      updateRoute,
+    );
+    expect(updateRoute).toHaveBeenCalledWith('id', {
+      uuid: 'iv-uuid',
+      name: 'IV',
+    });
+  });
+
+  it('falls back to drugFormDefaults when no attribute default is configured', () => {
+    const updateRoute = jest.fn();
+    applyDefaultRoute(
+      [{ name: 'route' }],
+      null,
+      mockMedicationWithForm,
+      drugFormDefaults,
+      mockMedicationConfig.routes,
+      'id',
+      updateRoute,
+    );
+    expect(updateRoute).toHaveBeenCalledWith('id', {
+      uuid: 'oral-uuid',
+      name: 'Oral',
+    });
+  });
+
+  it.each([
+    [
+      'does nothing when route is already set',
+      { uuid: 'oral-uuid', name: 'Oral' },
+      [{ name: 'route', default: 'IV' }],
+    ],
+    [
+      'does nothing when attribute default does not match and no drugFormDefaults',
+      null,
+      [{ name: 'route', default: 'Unknown' }],
+    ],
+  ])('%s', (_, route, attrs) => {
+    const updateRoute = jest.fn();
+    applyDefaultRoute(
+      attrs,
+      route as ReturnType<typeof jest.fn>,
+      mockMedication,
+      undefined,
+      mockMedicationConfig.routes,
+      'id',
+      updateRoute,
+    );
+    expect(updateRoute).not.toHaveBeenCalled();
+  });
+});
+
+describe('applyMountDefaults', () => {
+  const makeUpdaters = () => ({
+    updateDosageUnit: jest.fn(),
+    updateDispenseUnit: jest.fn(),
+    updateFrequency: jest.fn(),
+    updateDurationUnit: jest.fn(),
+    updateInstruction: jest.fn(),
+    updateRoute: jest.fn(),
+  });
+
+  const fullAttributes = [
+    { name: 'dosage', default: 5 },
+    { name: 'dosageUnit', default: 'mg' },
+    { name: 'stat', default: true },
+    { name: 'prn', default: true },
+    { name: 'frequency', default: 'BD' },
+    { name: 'duration', default: 7 },
+    { name: 'durationUnit', default: 'd' },
+    { name: 'instruction', default: 'Before Food' },
+    { name: 'route', default: 'Oral' },
+    { name: 'note', default: 'Take with water' },
+  ];
+
+  it('applies dosageUnit, frequency, durationUnit, instruction, and route defaults when entry is empty', () => {
+    const updaters = makeUpdaters();
+    applyMountDefaults({
+      attributes: fullAttributes,
+      medicationConfig: mockMedicationConfig,
+      entry: mockEmptyMedicationEntry,
+      ...updaters,
+    });
+    expect(updaters.updateDosageUnit).toHaveBeenCalledWith('med-empty', {
+      uuid: 'mg-uuid',
+      name: 'mg',
+    });
+    expect(updaters.updateDispenseUnit).toHaveBeenCalledWith('med-empty', {
+      uuid: 'mg-uuid',
+      name: 'mg',
+    });
+    expect(updaters.updateFrequency).toHaveBeenCalledWith('med-empty', {
+      uuid: 'bd-uuid',
+      name: 'BD',
+      frequencyPerDay: 2,
+    });
+    expect(updaters.updateDurationUnit).toHaveBeenCalledWith('med-empty', {
+      code: 'd',
+      display: 'DURATION_UNIT_DAYS',
+      daysMultiplier: 1,
+    });
+    expect(updaters.updateInstruction).toHaveBeenCalledWith('med-empty', {
+      uuid: 'before-food-uuid',
+      name: 'Before Food',
+    });
+    expect(updaters.updateRoute).toHaveBeenCalledWith('med-empty', {
+      uuid: 'oral-uuid',
+      name: 'Oral',
+    });
+  });
+
+  it('does not override fields that are already set', () => {
+    const updaters = makeUpdaters();
+    const entryWithAllSet = {
+      ...mockSelectedMedication,
+      instruction: { uuid: 'before-food-uuid', name: 'Before Food' },
+    };
+    applyMountDefaults({
+      attributes: fullAttributes,
+      medicationConfig: mockMedicationConfig,
+      entry: entryWithAllSet,
+      ...updaters,
+    });
+    expect(updaters.updateDosageUnit).not.toHaveBeenCalled();
+    expect(updaters.updateFrequency).not.toHaveBeenCalled();
+    expect(updaters.updateDurationUnit).not.toHaveBeenCalled();
+    expect(updaters.updateInstruction).not.toHaveBeenCalled();
+    expect(updaters.updateRoute).not.toHaveBeenCalled();
+  });
+
+  it('uses drugFormDefaults fallback for dosageUnit and route when attribute default is not configured', () => {
+    const updaters = makeUpdaters();
+    applyMountDefaults({
+      attributes: [{ name: 'dosageUnit' }, { name: 'route' }],
+      medicationConfig: mockMedicationConfigWithDrugFormDefaults,
+      entry: mockEmptyMedicationEntry,
+      ...updaters,
+    });
+    expect(updaters.updateDosageUnit).toHaveBeenCalledWith('med-empty', {
+      uuid: 'mg-uuid',
+      name: 'mg',
+    });
+    expect(updaters.updateDispenseUnit).toHaveBeenCalledWith('med-empty', {
+      uuid: 'mg-uuid',
+      name: 'mg',
+    });
+    expect(updaters.updateRoute).toHaveBeenCalledWith('med-empty', {
+      uuid: 'oral-uuid',
+      name: 'Oral',
+    });
   });
 });
 
