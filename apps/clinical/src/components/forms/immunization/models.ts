@@ -33,6 +33,7 @@ export interface ImmunizationInputEntry {
   expiryDate: Date | null;
   manufacturer: string | null;
   batchNumber: string | null;
+  stockLocation: string | null;
   doseSequence: number | null;
   note?: string;
   basedOnReference?: string | null;
@@ -74,6 +75,7 @@ export interface CreateImmunizationBundleEntriesParams {
   encounterSubject: Reference;
   encounterReference: string;
   practitionerUUID: string;
+  isAdministration: boolean;
 }
 
 export interface ImmunizationHistoryState {
@@ -101,6 +103,7 @@ export interface ImmunizationHistoryState {
   updateExpiryDate: (id: string, value: Date | null) => void;
   updateManufacturer: (id: string, value: string) => void;
   updateBatchNumber: (id: string, value: string) => void;
+  updateStockLocation: (id: string, value: string | null) => void;
   updateDoseSequence: (id: string, value: number | null) => void;
   updateNote: (id: string, value: string) => void;
   validateAll: () => boolean;
