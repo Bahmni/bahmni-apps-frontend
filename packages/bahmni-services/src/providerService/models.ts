@@ -37,6 +37,30 @@ export interface Person {
   resourceVersion: string;
 }
 
+export interface ProviderAttributeType {
+  uuid: string;
+  display: string;
+}
+
+export interface LocationTag {
+  uuid?: string;
+  display: string;
+}
+
+export interface LocationAttributeValue {
+  uuid: string;
+  display: string;
+  tags?: LocationTag[];
+}
+
+export interface ProviderAttribute {
+  uuid: string;
+  display: string;
+  attributeType: ProviderAttributeType;
+  value: boolean | LocationAttributeValue;
+  voided: boolean;
+}
+
 /**
  * Interface representing OpenMRS Provider resource from REST API
  */
@@ -44,6 +68,7 @@ export interface Provider {
   uuid: string;
   display: string;
   person: Person;
+  attributes?: ProviderAttribute[];
 }
 
 /**

@@ -17,4 +17,5 @@ export {
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
+  convertTo24HourFormat,
 } from './utils';

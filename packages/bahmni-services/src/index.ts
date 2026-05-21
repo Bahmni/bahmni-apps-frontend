@@ -80,9 +80,13 @@ export {
   type AppointmentPage,
   getAllAppointmentServices,
   deleteAppointmentService,
+  getAppointmentUnavailabilities,
+  createAppointmentUnavailability,
   APPOINTMENT_STATUSES,
   APPOINTMENT_IDENTIFIER_SYSTEM,
   type AppointmentService,
+  type AppointmentUnavailability,
+  type CreateUnavailabilityRequest,
 } from './appointmentService';
 export { getFormattedError } from './errorHandling';
 export {
@@ -103,6 +107,7 @@ export {
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
+  convertTo24HourFormat,
 } from './utils';
 export {
   type FormatDateResult,
@@ -218,6 +223,8 @@ export {
 } from './observationService';
 export {
   getCurrentProvider,
+  getAllProviders,
+  getProviderLoginLocations,
   type Provider,
   type Person,
 } from './providerService';

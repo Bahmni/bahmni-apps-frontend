@@ -3,6 +3,7 @@ import { del, get, post } from '../api';
 import {
   ALL_APPOINTMENT_SERVICES_URL,
   APPOINTMENTS_SEARCH_URL,
+  APPOINTMENT_UNAVAILABILITY_URL,
   getAppointmentByIdUrl,
   getDeleteAppointmentServiceUrl,
   updateAppointmentStatusUrl,
@@ -11,7 +12,12 @@ import {
   getUpcomingAppointmentsPageUrl,
   getPastAppointmentsPageUrl,
 } from './constants';
-import { AppointmentPage, AppointmentService } from './models';
+import {
+  AppointmentPage,
+  AppointmentService,
+  AppointmentUnavailability,
+  CreateUnavailabilityRequest,
+} from './models';
 
 /**
  * Search for appointments by specified attributes.
@@ -144,3 +150,24 @@ export async function getPastAppointmentsPage(
   );
   return { bundle, total: bundle.total ?? bundle.entry?.length ?? 0 };
 }
+
+/**
+ * Fetches all appointment unavailabilities
+ * @returns A list of Appointment Unavailabilities
+ */
+export const getAppointmentUnavailabilities = async (): Promise<
+  AppointmentUnavailability[]
+> => {
+  return await get<AppointmentUnavailability[]>(APPOINTMENT_UNAVAILABILITY_URL);
+};
+
+/**
+ * Creates a new appointment unavailability
+ * @param data - The unavailability data to create
+ * @returns The created unavailability
+ */
+export const createAppointmentUnavailability = async (
+  data: CreateUnavailabilityRequest[],
+): Promise<void> => {
+  await post(APPOINTMENT_UNAVAILABILITY_URL, data);
+};
