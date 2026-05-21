@@ -7,7 +7,9 @@ export interface AllergyConceptMap {
 
 export interface InputControlAttributes {
   name: string;
-  required: boolean;
+  required?: boolean;
+  default?: string | number | boolean;
+  readOnly?: boolean;
 }
 
 export interface InputControl<

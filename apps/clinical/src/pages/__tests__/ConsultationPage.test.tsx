@@ -55,8 +55,20 @@ jest.mock('../../components/patientHeader/PatientHeader', () => ({
 jest.mock('../../components/dashboardContainer/DashboardContainer', () => ({
   __esModule: true,
   default: jest.fn(
-    ({ sections }: { sections: Array<{ id: string; name: string }> }) => (
-      <div data-testid="dashboard-container">
+    ({
+      sections,
+      activeItemId,
+      scrollTrigger,
+    }: {
+      sections: Array<{ id: string; name: string }>;
+      activeItemId?: string | null;
+      scrollTrigger?: number;
+    }) => (
+      <div
+        data-testid="dashboard-container"
+        data-active-item={activeItemId}
+        data-scroll-trigger={scrollTrigger}
+      >
         {sections.map((section) => (
           <article
             key={section.id}
@@ -110,38 +122,51 @@ jest.mock('@bahmni/design-system', () => ({
       </div>
     ),
   ),
-  Header: jest.fn(({ sideNavItems, activeSideNavItemId, globalActions }) => (
-    <div data-testid="mocked-header-component">
-      {globalActions?.map(
-        (action: { id: string; label: string; onClick: () => void }) => (
-          <button
-            key={action.id}
-            data-testid={`global-action-${action.id}`}
-            onClick={action.onClick}
-            tabIndex={0}
-          >
-            {action.label}
-          </button>
-        ),
-      )}
-      {sideNavItems.map(
-        (item: {
-          id: string;
-          icon: string;
-          label: string;
-          href?: string;
-          renderIcon?: ReactNode;
-        }) => (
-          <div key={item.id} data-testid={`sidenav-item-${item.id}`}>
-            {item.label}
-          </div>
-        ),
-      )}
-      <div data-testid="active-sidenav-item">
-        {activeSideNavItemId ?? 'none'}
+  Header: jest.fn(
+    ({
+      sideNavItems,
+      activeSideNavItemId,
+      globalActions,
+      onSideNavItemClick,
+    }) => (
+      <div data-testid="mocked-header-component">
+        {globalActions?.map(
+          (action: { id: string; label: string; onClick: () => void }) => (
+            <button
+              key={action.id}
+              data-testid={`global-action-${action.id}`}
+              onClick={action.onClick}
+              tabIndex={0}
+            >
+              {action.label}
+            </button>
+          ),
+        )}
+        {sideNavItems.map(
+          (item: {
+            id: string;
+            icon: string;
+            label: string;
+            href?: string;
+            renderIcon?: ReactNode;
+          }) => (
+            <div
+              key={item.id}
+              data-testid={`sidenav-item-${item.id}`}
+              onClick={() => onSideNavItemClick?.(item.id)}
+              role="button"
+              tabIndex={0}
+            >
+              {item.label}
+            </div>
+          ),
+        )}
+        <div data-testid="active-sidenav-item">
+          {activeSideNavItemId ?? 'none'}
+        </div>
       </div>
-    </div>
-  )),
+    ),
+  ),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -540,6 +565,47 @@ describe('ConsultationPage', () => {
       expect(
         screen.queryByTestId('sidenav-item-vitals'),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Scroll trigger on sidebar click', () => {
+    it('should increment scrollTrigger when sidebar item is clicked', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      const dashboardContainer = screen.getByTestId('dashboard-container');
+      expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '0');
+
+      const vitalsItem = screen.getByTestId('sidenav-item-vitals');
+      fireEvent.click(vitalsItem);
+
+      await waitFor(() => {
+        expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '1');
+      });
+    });
+
+    it('should increment scrollTrigger on repeated clicks of the same item', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      const dashboardContainer = screen.getByTestId('dashboard-container');
+      const vitalsItem = screen.getByTestId('sidenav-item-vitals');
+
+      fireEvent.click(vitalsItem);
+      await waitFor(() => {
+        expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '1');
+      });
+
+      fireEvent.click(vitalsItem);
+      await waitFor(() => {
+        expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '2');
+      });
     });
   });
 });
