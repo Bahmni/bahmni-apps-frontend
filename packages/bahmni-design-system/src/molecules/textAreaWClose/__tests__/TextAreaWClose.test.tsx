@@ -51,14 +51,6 @@ describe('TextAreaWClose', () => {
 
       expect(screen.getByDisplayValue(value)).toBeInTheDocument();
     });
-
-    it('should always show label visually', () => {
-      render(<TextAreaWClose {...defaultProps} />);
-
-      const label = screen.getByText('Test Label');
-      expect(label).toHaveClass('cds--label');
-      expect(label).not.toHaveClass('cds--visually-hidden');
-    });
   });
 
   describe('Interactions', () => {

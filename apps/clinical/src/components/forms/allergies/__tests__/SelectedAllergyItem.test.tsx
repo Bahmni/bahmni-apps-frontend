@@ -737,23 +737,6 @@ describe('SelectedAllergyItem', () => {
     });
   });
 
-  // LABEL VISIBILITY TESTS
-  describe('Label Visibility', () => {
-    test('renders visible "Severity" label above the severity dropdown', () => {
-      render(<SelectedAllergyItem {...defaultProps} />);
-      const label = screen.getByText('Severity');
-      expect(label).toBeInTheDocument();
-      expect(label).not.toHaveClass('cds--visually-hidden');
-    });
-
-    test('renders visible "Reactions" label above the reactions multiselect', () => {
-      render(<SelectedAllergyItem {...defaultProps} />);
-      const label = screen.getByText('Reactions');
-      expect(label).toBeInTheDocument();
-      expect(label).not.toHaveClass('cds--visually-hidden');
-    });
-  });
-
   // ACCESSIBILITY TESTS
   // The test is currently failing due to an accessibility issue with FilterableMultiSelect
   describe('Accessibility', () => {

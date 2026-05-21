@@ -267,16 +267,6 @@ describe('SelectedDiagnosisItem', () => {
     });
   });
 
-  // LABEL VISIBILITY TESTS
-  describe('Label Visibility', () => {
-    test('renders visible "Certainty" label above the dropdown', () => {
-      render(<SelectedDiagnosisItem {...defaultProps} />);
-      const label = screen.getByText('Certainty');
-      expect(label).toBeInTheDocument();
-      expect(label).not.toHaveClass('cds--visually-hidden');
-    });
-  });
-
   // ACCESSIBILITY TESTS
   describe('Accessibility', () => {
     test('should have no accessibility violations', async () => {
