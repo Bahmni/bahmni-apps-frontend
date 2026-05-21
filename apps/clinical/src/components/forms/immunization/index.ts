@@ -11,6 +11,8 @@ import { createImmunizationBundleEntries } from './utils';
 
 const registerImmunizationControl = (key: ImmunizationStoreKey) => {
   const store = () => getImmunizationStore(key);
+  const isAdministration =
+    key === IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY;
   registerInputControl({
     key,
     component: ImmunizationForm,
@@ -24,6 +26,7 @@ const registerImmunizationControl = (key: ImmunizationStoreKey) => {
         encounterSubject: ctx.encounterSubject,
         encounterReference: ctx.encounterReference,
         practitionerUUID: ctx.practitionerUUID,
+        isAdministration,
       }),
   });
 };

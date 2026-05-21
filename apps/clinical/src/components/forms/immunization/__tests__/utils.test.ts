@@ -3,6 +3,7 @@ import { getMedicationDisplay } from '../../../../services/medicationService';
 import {
   ADMINISTERED_PRODUCT_EXTENSION_URL,
   BASED_ON_EXTENSION_URL,
+  STOCK_LOCATION_EXTENSION_URL,
 } from '../constants';
 import {
   buildBasedOnImmunizationEntry,
@@ -53,6 +54,7 @@ const BASE_BUNDLE_PARAMS = {
   encounterSubject: mockEncounterSubject,
   encounterReference: 'Encounter/encounter-uuid',
   practitionerUUID: 'practitioner-uuid',
+  isAdministration: false,
 };
 
 describe('findAttr', () => {
@@ -584,6 +586,70 @@ describe('createImmunizationBundleEntries', () => {
     ]);
   });
 
+  it('includes stockLocation extension when stockLocation is set', () => {
+    const entryWithStockLocation = {
+      ...mockImmunizationEntry,
+      stockLocation: 'Nurse Station',
+    };
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [entryWithStockLocation],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.extension).toEqual([
+      {
+        url: STOCK_LOCATION_EXTENSION_URL,
+        valueString: 'Nurse Station',
+      },
+    ]);
+  });
+
+  it.each([
+    ['null', null],
+    ['empty string', ''],
+    ['whitespace', '   '],
+  ])('omits stockLocation extension when value is %s', (_, stockLocation) => {
+    const entry = {
+      ...mockImmunizationEntry,
+      stockLocation,
+    };
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [entry],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.extension).toBeUndefined();
+  });
+
+  it('appends stockLocation extension alongside administeredProduct and basedOn extensions', () => {
+    const entry = {
+      ...mockImmunizationEntryWithBasedOn,
+      stockLocation: 'Nurse Station',
+    };
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      selectedImmunizations: [entry],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.extension).toEqual([
+      {
+        url: ADMINISTERED_PRODUCT_EXTENSION_URL,
+        valueReference: {
+          reference: 'Medication/covid-drug-uuid',
+          display: 'COVID-19 Drug',
+        },
+      },
+      {
+        url: BASED_ON_EXTENSION_URL,
+        valueReference: { reference: 'MedicationRequest/med-request-uuid' },
+      },
+      {
+        url: STOCK_LOCATION_EXTENSION_URL,
+        valueString: 'Nurse Station',
+      },
+    ]);
+  });
+
   it('uses location.display when administeredLocation has no uuid (custom value)', () => {
     const entryWithCustomLocation = {
       ...mockImmunizationEntry,
@@ -628,6 +694,26 @@ describe('createImmunizationBundleEntries', () => {
       selectedImmunizations: [mockImmunizationEntry],
     });
     expect(result[0].request?.method).toBe('POST');
+  });
+
+  it('sets primarySource to false for immunization history', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      isAdministration: false,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.primarySource).toBe(false);
+  });
+
+  it('sets primarySource to true for immunization administration', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      isAdministration: true,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.primarySource).toBe(true);
   });
 });
 
