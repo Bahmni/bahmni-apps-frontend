@@ -1,4 +1,9 @@
-import { SortableDataTable, StatusTag, Tile } from '@bahmni/design-system';
+import {
+  Button,
+  SortableDataTable,
+  StatusTag,
+  Tile,
+} from '@bahmni/design-system';
 import {
   getConditionPage,
   markConditionAsInactive,
@@ -10,7 +15,6 @@ import {
   formatDateDistance,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
-import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ConfirmationModal from '../confirmationModal/ConfirmationModal';
@@ -196,21 +200,15 @@ const ConditionsTable: React.FC<WidgetProps> = ({
         const isActive = condition.status === ConditionStatus.Active;
         const isDisabled = !isActive || disableActions;
         return (
-          <OverflowMenu
+          <Button
+            kind="ghost"
             size="sm"
-            flipped
             disabled={isDisabled}
-            data-testid={`condition-actions-menu-${condition.code}`}
-            selectorPrimaryFocus=""
+            data-testid={`condition-mark-inactive-${condition.code}`}
+            onClick={() => !isDisabled && setConditionToMarkInactive(condition)}
           >
-            <OverflowMenuItem
-              itemText={MARK_AS_INACTIVE}
-              data-testid={`condition-mark-inactive-${condition.code}`}
-              onClick={() =>
-                !isDisabled && setConditionToMarkInactive(condition)
-              }
-            />
-          </OverflowMenu>
+            {MARK_AS_INACTIVE}
+          </Button>
         );
       }
       default:
