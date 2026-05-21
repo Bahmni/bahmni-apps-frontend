@@ -23,6 +23,13 @@
           }
         }
       }
+    },
+    "stopReasons": {
+      "type": "array",
+      "description": "Reasons for stopping a medication",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }
