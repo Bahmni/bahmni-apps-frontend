@@ -12,7 +12,6 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
-  PatientProfileResponse,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
@@ -204,28 +203,29 @@ const PatientRegister = () => {
 
     try {
       if (patientUuid) {
-        const response = (await updatePatientMutation.mutateAsync({
+        const response = await updatePatientMutation.mutateAsync({
           patientUuid,
           ...formData,
           additionalIdentifiersInitialData,
-        })) as PatientProfileResponse;
-        if (response?.patient?.uuid) {
+        });
+        if (response?.id) {
+          const displayName =
+            [response.name?.[0]?.given?.join(' '), response.name?.[0]?.family]
+              .filter(Boolean)
+              .join(' ') || '';
           setMetadata({
             ...metadata,
-            patientName: response.patient.person.display ?? '',
+            patientName: displayName,
           });
           patientRelationshipsRef.current?.removeDeletedRelationships();
-          return response.patient.uuid;
+          return response.id;
         }
       } else {
-        const response = (await createPatientMutation.mutateAsync(
-          formData,
-        )) as PatientProfileResponse;
-        if (response?.patient?.uuid) {
-          const newPatientUuid = response.patient.uuid;
-          setPatientUuid(newPatientUuid);
-          navigate(getPatientUrl(newPatientUuid));
-          return newPatientUuid;
+        const response = await createPatientMutation.mutateAsync(formData);
+        if (response?.id) {
+          setPatientUuid(response.id);
+          navigate(getPatientUrl(response.id));
+          return response.id;
         }
       }
       return null;
