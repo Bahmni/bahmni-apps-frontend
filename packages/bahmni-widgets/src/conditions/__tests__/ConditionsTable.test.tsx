@@ -1,6 +1,7 @@
 import {
   resetEncounterSession,
   setEncounterSessionDecision,
+  markConditionAsInactive,
 } from '@bahmni/services';
 import {
   QueryClient,
@@ -28,6 +29,7 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getConditions: jest.fn(),
+  markConditionAsInactive: jest.fn(),
 }));
 jest.mock('../../userPrivileges/useHasPrivilege');
 
@@ -310,6 +312,173 @@ describe('ConditionsTable', () => {
         const results = await axe(container);
         expect(results).toHaveNoViolations();
       });
+    });
+  });
+
+  describe('Actions column — Mark as inactive ghost button and ConfirmationModal', () => {
+    const actionsConfig = {
+      actions: [
+        {
+          label: 'Actions',
+          type: 'actions',
+          requiredPrivilege: ['Edit Conditions'],
+        },
+      ],
+    };
+
+    const activeCondition = buildCondition(1);
+    const inactiveCondition = { ...buildCondition(2), status: 'inactive' };
+
+    const setupWithConditions = (
+      conditions: ReturnType<typeof buildCondition>[],
+    ) => {
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { conditions, total: conditions.length },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+    };
+
+    it('"Mark as inactive" ghost button renders when showActions is true and condition is active', () => {
+      setupWithConditions([activeCondition]);
+      renderTable({ config: actionsConfig });
+
+      expect(
+        screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+      ).toBeInTheDocument();
+    });
+
+    it('"Mark as inactive" button is disabled when condition is inactive', () => {
+      setupWithConditions([inactiveCondition]);
+      renderTable({ config: actionsConfig });
+
+      expect(
+        screen.getByTestId(`condition-mark-inactive-${inactiveCondition.code}`),
+      ).toBeDisabled();
+    });
+
+    it('"Mark as inactive" button is disabled when disableActions is true', () => {
+      setupWithConditions([activeCondition]);
+      renderTable({ config: actionsConfig, disableActions: true });
+
+      expect(
+        screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+      ).toBeDisabled();
+    });
+
+    it('ConfirmationModal is not visible initially (Carbon modal is in DOM but lacks is-visible class)', () => {
+      setupWithConditions([activeCondition]);
+      renderTable({ config: actionsConfig });
+
+      // Carbon Modal always renders in DOM; open={false} means it lacks the is-visible class
+      const modal = screen.getByTestId('mark-inactive-confirm-modal');
+      expect(modal).not.toHaveClass('is-visible');
+    });
+
+    it('Clicking "Mark as inactive" button opens the ConfirmationModal', async () => {
+      const user = userEvent.setup();
+      setupWithConditions([activeCondition]);
+      renderTable({ config: actionsConfig });
+
+      // Modal is in DOM but not visible yet
+      expect(screen.getByTestId('mark-inactive-confirm-modal')).not.toHaveClass(
+        'is-visible',
+      );
+
+      await user.click(
+        screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+      );
+
+      // After click, modal should now be visible
+      expect(screen.getByTestId('mark-inactive-confirm-modal')).toHaveClass(
+        'is-visible',
+      );
+    });
+
+    it('markConditionAsInactive is called when user confirms in modal', async () => {
+      const user = userEvent.setup();
+      const rawFhirResource = {
+        resourceType: 'Condition' as const,
+        id: 'cond-1',
+        clinicalStatus: {
+          coding: [{ code: 'active' }],
+        },
+      };
+      const conditionWithRaw = {
+        ...activeCondition,
+        rawFhirResource,
+      };
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { conditions: [conditionWithRaw], total: 1 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+      (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
+        rawFhirResource,
+      );
+
+      renderTable({ config: actionsConfig });
+
+      // Open the modal
+      await user.click(
+        screen.getByTestId(`condition-mark-inactive-${conditionWithRaw.code}`),
+      );
+
+      // Click confirm (primary button in the modal)
+      const confirmButton = screen.getByRole('button', { name: /YES/i });
+      await user.click(confirmButton);
+
+      expect(markConditionAsInactive).toHaveBeenCalledWith(rawFhirResource);
+    });
+
+    it('Modal closes after confirmation', async () => {
+      const user = userEvent.setup();
+      const rawFhirResource = {
+        resourceType: 'Condition' as const,
+        id: 'cond-1',
+        clinicalStatus: {
+          coding: [{ code: 'active' }],
+        },
+      };
+      const conditionWithRaw = {
+        ...activeCondition,
+        rawFhirResource,
+      };
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { conditions: [conditionWithRaw], total: 1 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+      (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
+        rawFhirResource,
+      );
+
+      renderTable({ config: actionsConfig });
+
+      // Open modal by clicking button
+      await user.click(
+        screen.getByTestId(`condition-mark-inactive-${conditionWithRaw.code}`),
+      );
+      expect(screen.getByTestId('mark-inactive-confirm-modal')).toHaveClass(
+        'is-visible',
+      );
+
+      // Confirm the action
+      const confirmButton = screen.getByRole('button', { name: /YES/i });
+      await user.click(confirmButton);
+
+      // After async operation, modal should close (lose is-visible class)
+      await act(async () => {});
+
+      expect(screen.getByTestId('mark-inactive-confirm-modal')).not.toHaveClass(
+        'is-visible',
+      );
     });
   });
 });

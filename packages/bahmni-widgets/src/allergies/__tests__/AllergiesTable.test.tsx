@@ -422,4 +422,131 @@ describe('AllergiesTable', () => {
       });
     });
   });
+
+  describe('Actions column', () => {
+    const actionsConfig = {
+      actions: [
+        {
+          label: 'Edit',
+          type: 'edit',
+          requiredPrivilege: ['Edit Allergies'],
+        },
+      ],
+    };
+
+    it('Actions column NOT shown when config.actions is empty/undefined', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergy],
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      renderTable();
+
+      // No "ACTIONS" column header in the table
+      expect(screen.queryByText('ACTIONS')).not.toBeInTheDocument();
+    });
+
+    it('Actions column shown when config.actions has entries AND useHasPrivilege returns true', () => {
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergy],
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      renderTable({ config: actionsConfig });
+
+      expect(screen.getByText('ACTIONS')).toBeInTheDocument();
+    });
+
+    it('Actions column NOT shown when config.actions has entries but useHasPrivilege returns false', () => {
+      (useHasPrivilege as jest.Mock).mockReturnValue(false);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergy],
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      renderTable({ config: actionsConfig });
+
+      expect(screen.queryByText('ACTIONS')).not.toBeInTheDocument();
+    });
+
+    it('Edit icon button is rendered for each allergy row when showActions is true', () => {
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergy],
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      renderTable({ config: actionsConfig });
+
+      expect(
+        screen.getByTestId(`edit-allergy-${mockAllergy.id}`),
+      ).toBeInTheDocument();
+    });
+
+    it('Edit icon button calls onRowEditClick with allergy.resourceId when clicked', async () => {
+      const user = userEvent.setup();
+      const mockOnRowEditClick = jest.fn();
+      const allergyWithResourceId: FormattedAllergy = {
+        ...mockAllergy,
+        resourceId: 'resource-uuid-1',
+      };
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [allergyWithResourceId],
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      renderTable({
+        config: actionsConfig,
+        onRowEditClick: mockOnRowEditClick,
+      });
+
+      await user.click(
+        screen.getByTestId(`edit-allergy-${allergyWithResourceId.id}`),
+      );
+
+      expect(mockOnRowEditClick).toHaveBeenCalledWith('resource-uuid-1');
+    });
+
+    it('Edit icon button is disabled when disableActions prop is true', () => {
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergy],
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      renderTable({ config: actionsConfig, disableActions: true });
+
+      const editButton = screen.getByTestId(`edit-allergy-${mockAllergy.id}`);
+      expect(editButton).toBeDisabled();
+    });
+
+    it('Edit icon button is NOT disabled when disableActions is false', () => {
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [mockAllergy],
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      renderTable({ config: actionsConfig, disableActions: false });
+
+      const editButton = screen.getByTestId(`edit-allergy-${mockAllergy.id}`);
+      expect(editButton).not.toBeDisabled();
+    });
+  });
 });
