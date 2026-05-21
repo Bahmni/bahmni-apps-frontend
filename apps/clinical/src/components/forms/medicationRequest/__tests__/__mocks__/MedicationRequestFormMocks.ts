@@ -55,7 +55,7 @@ export const mockVaccination: Medication = {
       {
         code: 'covid-19-vaccine',
         display: 'COVID-19 Vaccine',
-        system: 'https://snomed.info/sct',
+        system: 'https://snomed.info/sct', // NOSONAR
       },
     ],
   },
