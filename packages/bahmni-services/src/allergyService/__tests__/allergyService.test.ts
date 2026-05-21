@@ -84,6 +84,66 @@ describe('allergyService', () => {
     });
   });
 
+  describe('formatAllergies — new BAH-4652 fields', () => {
+    it('maps resourceId from allergy.id (FHIR resource UUID)', () => {
+      const result = formatAllergies([mockAllergyIntolerance]);
+      expect(result[0].resourceId).toBe('allergy-123');
+    });
+
+    it('includes manifestationCodings with all codings from matched manifestation entries', () => {
+      const result = formatAllergies([mockAllergyIntolerance]);
+      expect(result[0].reactions?.[0].manifestationCodings).toEqual(
+        mockAllergyIntolerance.reaction?.[0].manifestation[0].coding,
+      );
+    });
+
+    it('preserves SNOMED codings (those with system field) in manifestationCodings', () => {
+      const result = formatAllergies([mockAllergyIntolerance]);
+      const codings = result[0].reactions?.[0].manifestationCodings ?? [];
+      expect(codings.length).toBeGreaterThan(0);
+      const snomedCoding = codings.find((c) => c.system?.includes('snomed'));
+      expect(snomedCoding).toBeDefined();
+    });
+
+    it('deduplicates manifestation entries by text within a reaction', () => {
+      const allergyWithDuplicateManifestations: AllergyIntolerance = {
+        ...mockAllergyIntolerance,
+        id: 'allergy-dup-manifestations',
+        reaction: [
+          {
+            manifestation: [
+              {
+                text: 'Hives',
+                coding: [{ code: '247472004', display: 'Hives' }],
+              },
+              {
+                text: 'Hives', // duplicate text — should be removed
+                coding: [{ code: '247472004', display: 'Hives' }],
+              },
+              {
+                text: 'Rash',
+                coding: [{ code: '271807003', display: 'Rash' }],
+              },
+            ],
+            severity: 'moderate',
+          },
+        ],
+      };
+
+      const result = formatAllergies([allergyWithDuplicateManifestations]);
+      expect(result[0].reactions?.[0].manifestation).toHaveLength(2);
+      expect(result[0].reactions?.[0].manifestation).toContain('Hives');
+      expect(result[0].reactions?.[0].manifestation).toContain('Rash');
+    });
+
+    it('getFormattedAllergies result carries resourceId through', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockAllergyIntoleranceBundle);
+      const { getFormattedAllergies } = await import('../allergyService');
+      const result = await getFormattedAllergies('patient-123');
+      expect(result[0].resourceId).toBe('allergy-123');
+    });
+  });
+
   describe('formatAllergies', () => {
     it('should format allergy data correctly', () => {
       const result = formatAllergies([mockAllergyIntolerance]);
