@@ -133,8 +133,9 @@ button.abnormal-button:disabled {
   max-width: 100% !important;
 }
 
-// Increase the Carbon ComboBox width for the chief complaint autocomplete.
+// ComboBox: fluid width capped at $obs-select-width so it fills the panel
+// but never exceeds the same cap used by other select controls in this file.
 .form-builder-row .obs-control-select-wrapper .cds--combo-box {
-  max-width: 35rem !important;
-  width: 35rem !important;
+  max-width: $obs-select-width !important;
+  width: 80% !important;
 }
