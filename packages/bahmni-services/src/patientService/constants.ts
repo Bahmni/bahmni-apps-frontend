@@ -122,6 +122,11 @@ export const CREATE_PATIENT_URL =
 export const UPDATE_PATIENT_URL = (patientUuid: string) =>
   OPENMRS_REST_V1 + `/bahmnicore/patientprofile/${patientUuid}`;
 
+export const FHIR_PATIENT_URL = OPENMRS_FHIR_R4 + '/Patient';
+
+export const GENERATE_IDENTIFIER_URL = (sourceUuid: string) =>
+  OPENMRS_REST_V1 + `/idgen/identifiersource/${sourceUuid}/identifier`;
+
 export const GET_PATIENT_PROFILE_URL = (patientUuid: string) =>
   OPENMRS_REST_V1 + `/patientprofile/${patientUuid}?v=full`;
 
