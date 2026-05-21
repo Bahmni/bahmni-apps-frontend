@@ -7,11 +7,11 @@
   margin-left: 0;
 }
 
-.medicationTitle {
+.itemTitle {
   @include type-style("heading-compact-02");
   margin-bottom: $spacing-04;
   margin-left: 0;
-  .medicineDetails {
+  .itemDetails {
     @include type-style("body-compact-02");
   }
   .doseForm {
@@ -22,7 +22,7 @@
   }
 }
 
-.medicationActions {
+.itemActions {
   display: flex !important;
   flex-direction: row !important;
   align-items: start !important;

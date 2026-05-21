@@ -12,7 +12,7 @@ import {
   getVaccinations,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
 import { MedicationJSONConfig } from '../../../models/medicationConfig';
@@ -42,6 +42,7 @@ const MedicationRequestForm: React.FC<{
   const {
     type: inputControlType = MEDICATIONS_INPUT_CONTROL_KEY,
     label = 'MEDICATIONS_INPUT_CONTROL_TITLE',
+    attributes = [],
   } = inputControlConfig ?? {};
 
   const isMedicationRequest =
@@ -89,8 +90,12 @@ const MedicationRequestForm: React.FC<{
     [vaccinationsBundle],
   );
 
-  const { selectedMedicationRequests, addItem, removeItem } =
+  const { selectedMedicationRequests, addItem, removeItem, setAttributes } =
     useMedicationRequestStore(inputControlType as MedicationRequestStoreKey);
+
+  useEffect(() => {
+    setAttributes(attributes);
+  }, []);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -209,6 +214,7 @@ const MedicationRequestForm: React.FC<{
                   inputControlType={
                     inputControlType as MedicationRequestStoreKey
                   }
+                  attributes={attributes}
                 />
               </SelectedItem>
             ))}

@@ -460,7 +460,7 @@ describe('MedicationRequestForm', () => {
         'medications',
         mockSelectedMedication,
         'Added Medications',
-        /Paracetamol 500mg/,
+        'Magnesium sulfate 500 mg/ml',
       ],
       [
         'vaccinations',

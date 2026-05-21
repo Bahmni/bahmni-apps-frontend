@@ -10,48 +10,38 @@ import {
   TextAreaWClose,
 } from '@bahmni/design-system';
 import { useTranslation, getTodayDate } from '@bahmni/services';
-import React, { useEffect, useCallback, useState } from 'react';
-import { DURATION_UNIT_OPTIONS } from '../../../constants/medications';
-import { Concept } from '../../../models/encounterConcepts';
+import React, { useEffect, useState } from 'react';
+import { MedicationInputEntry } from '../../../models/medication';
+import { MedicationConfig } from '../../../models/medicationConfig';
+import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import {
-  DurationUnitOption,
-  MedicationInputEntry,
-} from '../../../models/medication';
-import { Frequency, MedicationConfig } from '../../../models/medicationConfig';
+  DURATION_UNIT_OPTIONS,
+  MEDICATIONS_INPUT_CONTROL_KEY,
+} from './constants';
+import { MedicationRequestStoreKey, useMedicationRequestStore } from './store';
+import styles from './styles/SelectedMedicationRequestItem.module.scss';
 import {
+  applyDefaultDosage,
+  applyDefaultDurationUnit,
+  applyDefaultFrequency,
+  applyDefaultInstruction,
   calculateTotalQuantity,
+  findAttr,
   getDefaultDosingUnit,
   getDefaultRoute,
   isImmediateFrequency,
-} from '../../../services/medicationsValueCalculator';
-import styles from './styles/SelectedMedicationItem.module.scss';
+} from './utils';
 
-export interface SelectedMedicationItemProps {
-  medicationInputEntry: MedicationInputEntry;
+export interface SelectedMedicationRequestItemProps {
+  entry: MedicationInputEntry;
   medicationConfig: MedicationConfig;
-  updateDosage: (medicationId: string, dosage: number) => void;
-  updateDosageUnit: (medicationId: string, unit: Concept) => void;
-  updateFrequency: (medicationId: string, frequency: Frequency | null) => void;
-  updateRoute: (medicationId: string, route: Concept) => void;
-  updateDuration: (medicationId: string, duration: number) => void;
-  updateDurationUnit: (
-    medicationId: string,
-    unit: DurationUnitOption | null,
-  ) => void;
-  updateInstruction: (medicationId: string, instruction: Concept) => void;
-  updateisPRN: (medicationId: string, isPRN: boolean) => void;
-  updateisSTAT: (medicationId: string, isSTAT: boolean) => void;
-  updateStartDate: (medicationId: string, date: Date) => void;
-  updateDispenseQuantity: (medicationId: string, quantity: number) => void;
-  updateDispenseUnit: (medicationId: string, unit: Concept) => void;
-  updateNote: (medicationId: string, note: string) => void;
+  inputControlType: MedicationRequestStoreKey;
+  attributes: InputControlAttributes[];
 }
 
-const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
-  React.memo(
-    ({
-      medicationInputEntry,
-      medicationConfig,
+const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps> =
+  React.memo(({ entry, medicationConfig, inputControlType, attributes }) => {
+    const {
       updateDosage,
       updateDosageUnit,
       updateFrequency,
@@ -65,122 +55,83 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
       updateDispenseQuantity,
       updateDispenseUnit,
       updateNote,
-    }) => {
-      const { t } = useTranslation();
+    } = useMedicationRequestStore(inputControlType);
+    const { t } = useTranslation();
+    const isMedicationRequest =
+      inputControlType === MEDICATIONS_INPUT_CONTROL_KEY;
 
-      const {
-        id,
+    const {
+      id,
+      medication,
+      dosage,
+      dosageUnit,
+      frequency,
+      route,
+      duration,
+      durationUnit,
+      instruction,
+      display,
+      isSTAT,
+      isPRN,
+      dispenseQuantity,
+      dispenseUnit,
+      startDate,
+      doseForm,
+      note,
+      errors,
+    } = entry;
+
+    const [hasNote, setHasNote] = useState(!!note);
+    const noteRequired = findAttr('note', attributes)?.required;
+
+    useEffect(() => {
+      if (
+        !medicationConfig?.drugFormDefaults ||
+        !medicationConfig.routes ||
+        !medicationConfig.doseUnits
+      ) {
+        return;
+      }
+      const defaultRoute = getDefaultRoute(
         medication,
-        dosage,
-        dosageUnit,
-        frequency,
-        route,
-        duration,
-        durationUnit,
-        instruction,
-        display,
-        isSTAT,
-        isPRN,
-        dispenseQuantity,
-        dispenseUnit,
-        startDate,
-        doseForm,
-        note,
-        errors,
-      } = medicationInputEntry;
-
-      const [hasNote, setHasNote] = useState(!!note);
-
-      const setDefaultInstruction = useCallback(() => {
-        if (
-          !medicationConfig?.dosingInstructions ||
-          medicationConfig.dosingInstructions.length === 0 ||
-          !medicationConfig.defaultInstructions
-        ) {
-          return;
-        }
-        if (!instruction) {
-          const defaultInstruction = medicationConfig.dosingInstructions.find(
-            (item) => item.name === medicationConfig.defaultInstructions,
-          );
-          if (defaultInstruction) {
-            updateInstruction(id, defaultInstruction);
-          }
-        }
-      }, [medicationConfig, instruction, updateInstruction, id]);
-
-      const setDefaultDurationUnit = useCallback(() => {
-        if (
-          !medicationConfig?.durationUnits ||
-          medicationConfig.durationUnits.length === 0 ||
-          !medicationConfig.defaultDurationUnit
-        ) {
-          return;
-        }
-        if (!durationUnit) {
-          const defaultDurationUnit = DURATION_UNIT_OPTIONS.find(
-            (item) => item.code === medicationConfig.defaultDurationUnit,
-          );
-          if (defaultDurationUnit) {
-            updateDurationUnit(id, defaultDurationUnit);
-          }
-        }
-      }, [medicationConfig, durationUnit, updateDurationUnit, id]);
-
-      useEffect(() => {
-        if (
-          !medicationConfig?.drugFormDefaults ||
-          !medicationConfig.routes ||
-          !medicationConfig.doseUnits
-        ) {
-          return;
-        }
-        const defaultRoute = getDefaultRoute(
-          medication,
-          medicationConfig.drugFormDefaults,
-          medicationConfig.routes,
-        );
-        if (defaultRoute && !route) {
-          updateRoute(id, defaultRoute);
-        }
-        const defaultDosingUnit = getDefaultDosingUnit(
-          medication,
-          medicationConfig.drugFormDefaults,
-          medicationConfig.doseUnits,
-        );
-        if (defaultDosingUnit && !dosageUnit) {
-          updateDosageUnit(id, defaultDosingUnit);
-          updateDispenseUnit(id, defaultDosingUnit);
-        }
-      }, [
+        medicationConfig.drugFormDefaults,
+        medicationConfig.routes,
+      );
+      if (defaultRoute && !route) {
+        updateRoute(id, defaultRoute);
+      }
+      const defaultDosingUnit = getDefaultDosingUnit(
         medication,
-        medicationConfig,
-        route,
-        dosageUnit,
-        id,
-        updateRoute,
-        updateDosageUnit,
-        updateDispenseUnit,
-      ]);
+        medicationConfig.drugFormDefaults,
+        medicationConfig.doseUnits,
+      );
+      if (defaultDosingUnit && !dosageUnit) {
+        updateDosageUnit(id, defaultDosingUnit);
+        updateDispenseUnit(id, defaultDosingUnit);
+      }
+    }, [
+      medication,
+      medicationConfig,
+      route,
+      dosageUnit,
+      id,
+      updateRoute,
+      updateDosageUnit,
+      updateDispenseUnit,
+    ]);
 
-      useEffect(() => {
-        const totalQuantity = calculateTotalQuantity(
-          dosage,
-          frequency,
-          duration,
-          durationUnit,
-        );
-        updateDispenseQuantity(id, totalQuantity);
-      }, [
+    useEffect(() => {
+      const totalQuantity = calculateTotalQuantity(
         dosage,
         frequency,
         duration,
         durationUnit,
-        id,
-        updateDispenseQuantity,
-      ]);
+      );
+      updateDispenseQuantity(id, totalQuantity);
+    }, [dosage, frequency, duration, durationUnit, id, updateDispenseQuantity]);
 
-      useEffect(() => {
+    useEffect(() => {
+      if (isMedicationRequest) {
         if (isPRN || !isSTAT) {
           updateFrequency(id, null);
         }
@@ -194,104 +145,178 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
         if (isSTAT) {
           updateStartDate(id, getTodayDate());
         }
-      }, [
-        isSTAT,
-        isPRN,
+      } else {
+        if (isSTAT) {
+          const immediateFrequency =
+            medicationConfig.frequencies.find(isImmediateFrequency);
+          if (immediateFrequency) {
+            updateFrequency(id, immediateFrequency);
+          }
+          updateDuration(id, 0);
+          updateDurationUnit(id, null);
+          updateStartDate(id, getTodayDate());
+        }
+      }
+    }, [
+      isSTAT,
+      isPRN,
+      isMedicationRequest,
+      id,
+      medicationConfig.frequencies,
+      updateFrequency,
+      updateDuration,
+      updateDurationUnit,
+      updateStartDate,
+    ]);
+
+    useEffect(() => {
+      applyDefaultDosage(attributes, dosage, id, updateDosage);
+      applyDefaultFrequency(
+        attributes,
+        medicationConfig,
+        frequency,
         id,
-        medicationConfig.frequencies,
         updateFrequency,
-        updateDuration,
+      );
+      applyDefaultInstruction(
+        attributes,
+        medicationConfig,
+        instruction,
+        id,
+        updateInstruction,
+      );
+      applyDefaultDurationUnit(
+        attributes,
+        durationUnit,
+        id,
         updateDurationUnit,
-        updateStartDate,
-      ]);
+      );
+    }, [
+      attributes,
+      medicationConfig,
+      dosage,
+      frequency,
+      instruction,
+      durationUnit,
+      id,
+      updateDosage,
+      updateFrequency,
+      updateInstruction,
+      updateDurationUnit,
+    ]);
 
-      useEffect(() => {
-        setDefaultInstruction();
-        setDefaultDurationUnit();
-      }, [setDefaultInstruction, setDefaultDurationUnit]);
+    const medicationName = display.split('(')[0];
+    const medicationDetails = display.includes('(')
+      ? '(' + display.split('(').slice(1).join('(')
+      : '';
 
-      const medicineName = display.split('(')[0];
-      const medicineDetails = display.includes('(')
-        ? '(' + display.split('(').slice(1).join('(')
-        : '';
-
-      return (
-        <>
-          <Grid
-            condensed={false}
-            narrow={false}
-            data-testid={`selected-medication-item-grid-${id}`}
-          >
-            <Column sm={2} md={4} lg={8} className={styles.medicationTitle}>
-              <span data-testid={`medication-name-${id}`}>{medicineName}</span>
-              {medicineDetails && (
-                <span
-                  className={styles.medicineDetails}
-                  data-testid={`medication-details-${id}`}
-                >
-                  {medicineDetails}
-                </span>
-              )}
-              {doseForm && (
-                <span
-                  className={styles.doseForm}
-                  data-testid={`medication-dose-form-${id}`}
-                >
-                  {doseForm}
-                </span>
-              )}
-            </Column>
-            <Column sm={2} md={4} lg={8} className={styles.medicationActions}>
+    return (
+      <>
+        <Grid
+          condensed={false}
+          narrow={false}
+          id={`${inputControlType}-selected-item-${id}`}
+          data-testid={`${inputControlType}-selected-item-${id}-test-id`}
+          aria-label={`${inputControlType}-selected-item-${id}-aria-label`}
+        >
+          <Column sm={2} md={4} lg={8} className={styles.itemTitle}>
+            <span
+              id={`${inputControlType}-name-${id}`}
+              data-testid={`${inputControlType}-name-${id}-test-id`}
+              aria-label={`${inputControlType}-name-${id}-aria-label`}
+            >
+              {medicationName}
+            </span>
+            {medicationDetails && (
+              <span
+                id={`${inputControlType}-details-${id}`}
+                className={styles.itemDetails}
+                data-testid={`${inputControlType}-details-${id}-test-id`}
+                aria-label={`${inputControlType}-details-${id}-aria-label`}
+              >
+                {medicationDetails}
+              </span>
+            )}
+            {doseForm && (
+              <span
+                id={`${inputControlType}-dose-form-${id}`}
+                className={styles.doseForm}
+                data-testid={`${inputControlType}-dose-form-${id}-test-id`}
+                aria-label={`${inputControlType}-dose-form-${id}-aria-label`}
+              >
+                {doseForm}
+              </span>
+            )}
+          </Column>
+          <Column sm={2} md={4} lg={8} className={styles.itemActions}>
+            {findAttr('stat', attributes) && (
               <Checkbox
-                id={`stat-${id}`}
-                data-testid={`medication-stat-checkbox-${id}`}
-                labelText={t('MEDICATION_STAT')}
+                id={`${inputControlType}-stat-checkbox-${id}`}
+                data-testid={`${inputControlType}-stat-checkbox-${id}-test-id`}
+                labelText={t(`${inputControlType.toUpperCase()}_STAT`)}
                 aria-label="STAT"
                 checked={isSTAT}
                 onChange={(e) => updateisSTAT(id, e.target.checked)}
                 className={styles.statControl}
+                invalid={!!errors.stat}
+                invalidText={errors.stat ? t(errors.stat) : ''}
+                disabled={findAttr('stat', attributes)?.readOnly}
               />
+            )}
+            {isMedicationRequest && findAttr('prn', attributes) && (
               <Checkbox
-                id={`prn-${id}`}
-                data-testid={`medication-prn-checkbox-${id}`}
-                labelText={t('MEDICATION_PRN')}
+                id={`${inputControlType}-prn-checkbox-${id}`}
+                data-testid={`${inputControlType}-prn-checkbox-${id}-test-id`}
+                labelText={t(`${inputControlType.toUpperCase()}_PRN`)}
                 aria-label="PRN"
                 checked={isPRN}
                 onChange={(e) => updateisPRN(id, e.target.checked)}
+                invalid={!!errors.prn}
+                invalidText={errors.prn ? t(errors.prn) : ''}
+                disabled={findAttr('prn', attributes)?.readOnly}
               />
-            </Column>
+            )}
+          </Column>
 
-            <Column sm={2} md={3} lg={6} className={styles.dosageControls}>
+          <Column sm={2} md={3} lg={6} className={styles.dosageControls}>
+            {findAttr('dosage', attributes) && (
               <NumberInput
-                id={`dosage-unit-${id}`}
-                data-testid={`medication-dosage-input-${id}`}
+                id={`${inputControlType}-dosage-input-${id}`}
+                data-testid={`${inputControlType}-dosage-input-${id}-test-id`}
                 min={0}
-                size="sm"
                 step={1}
                 value={dosage}
-                label={t('MEDICATION_DOSAGE_INPUT_LABEL')}
+                label={t(
+                  `${inputControlType.toUpperCase()}_DOSAGE_INPUT_LABEL`,
+                )}
                 aria-label="Dosage"
                 className={styles.dosageInput}
                 hideLabel
+                type="number"
                 onChange={(_, { value }) => {
-                  const numericValue = parseFloat(value.toString());
-                  if (!isNaN(numericValue)) {
-                    updateDosage(id, numericValue);
-                  }
+                  updateDosage(
+                    id,
+                    Number.isNaN(value) ? 0 : Number.parseFloat(String(value)),
+                  );
                 }}
-                invalid={errors.dosage ? true : false}
-                invalidText={t(errors.dosage ?? '')}
+                invalid={!!errors.dosage}
+                invalidText={errors.dosage ? t(errors.dosage) : ''}
+                disabled={findAttr('dosage', attributes)?.readOnly}
               />
-
+            )}
+            {findAttr('dosageUnit', attributes) && (
               <Dropdown
-                id={`dosage-unit-${id}`}
-                data-testid={`medication-dosage-unit-dropdown-${id}`}
-                titleText={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
-                label={t('MEDICATION_DOSAGE_UNIT_INPUT_LABEL')}
+                id={`${inputControlType}-dosage-unit-dropdown-${id}`}
+                data-testid={`${inputControlType}-dosage-unit-dropdown-${id}-test-id`}
+                titleText={t(
+                  `${inputControlType.toUpperCase()}_DOSAGE_UNIT_INPUT_LABEL`,
+                )}
+                label={t(
+                  `${inputControlType.toUpperCase()}_DOSAGE_UNIT_INPUT_LABEL`,
+                )}
                 aria-label="Dosage Unit"
                 className={styles.dosageUnit}
                 hideLabel
-                size="sm"
                 items={medicationConfig.doseUnits ?? []}
                 itemToString={(item) => (item ? item.name : '')}
                 selectedItem={dosageUnit}
@@ -302,19 +327,25 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                   }
                 }}
                 autoAlign
-                invalid={errors.dosageUnit ? true : false}
-                invalidText={t(errors.dosageUnit ?? '')}
+                invalid={!!errors.dosageUnit}
+                invalidText={errors.dosageUnit ? t(errors.dosageUnit) : ''}
+                disabled={findAttr('dosageUnit', attributes)?.readOnly}
               />
-            </Column>
+            )}
+          </Column>
+          {findAttr('frequency', attributes) && (
             <Column sm={1} md={2} lg={4} className={styles.column}>
               <Dropdown
-                id={`frequency-${id}`}
-                data-testid={`medication-frequency-dropdown-${id}`}
-                titleText={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
-                label={t('MEDICATION_FREQUENCY_INPUT_LABEL')}
+                id={`${inputControlType}-frequency-dropdown-${id}`}
+                data-testid={`${inputControlType}-frequency-dropdown-${id}-test-id`}
+                titleText={t(
+                  `${inputControlType.toUpperCase()}_FREQUENCY_INPUT_LABEL`,
+                )}
+                label={t(
+                  `${inputControlType.toUpperCase()}_FREQUENCY_INPUT_LABEL`,
+                )}
                 aria-label="Frequency"
                 hideLabel
-                size="sm"
                 items={
                   medicationConfig.frequencies.filter(
                     (item) => !isImmediateFrequency(item),
@@ -323,174 +354,212 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
                 itemToString={(item) => (item ? item.name : '')}
                 selectedItem={frequency}
                 onChange={(e) => {
-                  if (e.selectedItem) {
-                    updateFrequency(id, e.selectedItem);
-                  }
+                  updateFrequency(id, e.selectedItem);
                 }}
                 autoAlign
-                invalid={errors.frequency ? true : false}
-                invalidText={t(errors.frequency ?? '')}
-                disabled={isSTAT && !isPRN}
+                invalid={!!errors.frequency}
+                invalidText={errors.frequency ? t(errors.frequency) : ''}
+                disabled={
+                  (isMedicationRequest ? isSTAT && !isPRN : isSTAT) ||
+                  !!findAttr('frequency', attributes)?.readOnly
+                }
               />
             </Column>
-            <Column sm={2} md={3} lg={6} className={styles.durationControls}>
+          )}
+
+          <Column sm={2} md={3} lg={6} className={styles.durationControls}>
+            {findAttr('duration', attributes) && (
               <NumberInput
-                id={`duration-${id}`}
-                data-testid={`medication-duration-input-${id}`}
-                label={t('MEDICATION_DURATION_INPUT_LABEL')}
+                id={`${inputControlType}-duration-input-${id}`}
+                data-testid={`${inputControlType}-duration-input-${id}-test-id`}
+                label={t(
+                  `${inputControlType.toUpperCase()}_DURATION_INPUT_LABEL`,
+                )}
                 aria-label="Duration"
                 className={styles.durationInput}
                 hideLabel
                 min={0}
-                size="sm"
                 step={1}
                 value={duration}
                 onChange={(_, { value }) => {
-                  const numericValue = parseFloat(value.toString());
-                  if (!isNaN(numericValue)) {
-                    updateDuration(id, numericValue);
-                  }
+                  updateDuration(
+                    id,
+                    Number.isNaN(value) ? 0 : Number.parseFloat(String(value)),
+                  );
                 }}
-                invalid={errors.duration ? true : false}
-                invalidText={t(errors.duration ?? '')}
-                disabled={isSTAT && !isPRN}
+                invalid={!!errors.duration}
+                invalidText={errors.duration ? t(errors.duration) : ''}
+                disabled={
+                  (isMedicationRequest ? isSTAT && !isPRN : isSTAT) ||
+                  !!findAttr('duration', attributes)?.readOnly
+                }
               />
+            )}
+            {findAttr('durationUnit', attributes) && (
               <Dropdown
-                id={`duration-unit-${id}`}
-                data-testid={`medication-duration-unit-dropdown-${id}`}
-                titleText={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
-                label={t('MEDICATION_DURATION_UNIT_INPUT_LABEL')}
+                id={`${inputControlType}-duration-unit-dropdown-${id}`}
+                data-testid={`${inputControlType}-duration-unit-dropdown-${id}-test-id`}
+                titleText={t(
+                  `${inputControlType.toUpperCase()}_DURATION_UNIT_INPUT_LABEL`,
+                )}
+                label={t(
+                  `${inputControlType.toUpperCase()}_DURATION_UNIT_INPUT_LABEL`,
+                )}
                 aria-label="Duration Unit"
                 className={styles.durationUnit}
                 hideLabel
-                size="sm"
                 items={DURATION_UNIT_OPTIONS}
                 itemToString={(item) =>
                   item ? t(item.display, { defaultValue: item.code }) : ''
                 }
                 selectedItem={durationUnit}
                 onChange={(e) => {
-                  if (e.selectedItem) {
-                    updateDurationUnit(id, e.selectedItem);
-                  }
+                  updateDurationUnit(id, e.selectedItem);
                 }}
                 autoAlign
-                invalid={errors.durationUnit ? true : false}
-                invalidText={t(errors.durationUnit ?? '')}
-                disabled={isSTAT && !isPRN}
+                invalid={!!errors.durationUnit}
+                invalidText={errors.durationUnit ? t(errors.durationUnit) : ''}
+                disabled={
+                  (isMedicationRequest ? isSTAT && !isPRN : isSTAT) ||
+                  !!findAttr('durationUnit', attributes)?.readOnly
+                }
               />
-            </Column>
+            )}
+          </Column>
 
+          {findAttr('instruction', attributes) && (
             <Column sm={1} md={2} lg={4} className={styles.column}>
               <Dropdown
-                id={`med-instructions-${id}`}
-                data-testid={`medication-instructions-dropdown-${id}`}
-                titleText={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
-                label={t('MEDICATION_INSTRUCTIONS_INPUT_LABEL')}
-                aria-label="Medication Instructions"
+                id={`${inputControlType}-instructions-dropdown-${id}`}
+                data-testid={`${inputControlType}-instructions-dropdown-${id}-test-id`}
+                titleText={t(
+                  `${inputControlType.toUpperCase()}_INSTRUCTIONS_INPUT_LABEL`,
+                )}
+                label={t(
+                  `${inputControlType.toUpperCase()}_INSTRUCTIONS_INPUT_LABEL`,
+                )}
                 hideLabel
-                size="sm"
                 items={medicationConfig.dosingInstructions ?? []}
                 itemToString={(item) => (item ? item.name : '')}
                 selectedItem={instruction}
                 onChange={(e) => {
-                  if (e.selectedItem) {
-                    updateInstruction(id, e.selectedItem);
-                  }
+                  updateInstruction(id, e.selectedItem!);
                 }}
                 autoAlign
+                invalid={!!errors.instruction}
+                invalidText={errors.instruction ? t(errors.instruction) : ''}
+                disabled={findAttr('instruction', attributes)?.readOnly}
               />
             </Column>
+          )}
 
+          {findAttr('route', attributes) && (
             <Column sm={1} md={2} lg={4} className={styles.column}>
               <Dropdown
-                id={`route-${id}`}
-                data-testid={`medication-route-dropdown-${id}`}
-                titleText={t('MEDICATION_ROUTE_INPUT_LABEL')}
-                label={t('MEDICATION_ROUTE_INPUT_LABEL')}
+                id={`${inputControlType}-route-dropdown-${id}`}
+                data-testid={`${inputControlType}-route-dropdown-${id}-test-id`}
+                titleText={t(
+                  `${inputControlType.toUpperCase()}_ROUTE_INPUT_LABEL`,
+                )}
+                label={t(`${inputControlType.toUpperCase()}_ROUTE_INPUT_LABEL`)}
                 aria-label="Route"
                 hideLabel
-                size="sm"
                 items={medicationConfig.routes ?? []}
                 itemToString={(item) => (item ? item.name : '')}
                 selectedItem={route}
                 onChange={(e) => {
-                  if (e.selectedItem) {
-                    updateRoute(id, e.selectedItem);
-                  }
+                  updateRoute(id, e.selectedItem!);
                 }}
                 autoAlign
-                invalid={errors.route ? true : false}
-                invalidText={t(errors.route ?? '')}
+                invalid={!!errors.route}
+                invalidText={errors.route ? t(errors.route) : ''}
+                disabled={findAttr('route', attributes)?.readOnly}
               />
             </Column>
+          )}
 
+          {findAttr('startDate', attributes) && (
             <Column sm={2} md={4} lg={8} className={styles.column}>
               <DatePicker
                 datePickerType="single"
-                data-testid={`medication-start-date-picker-${id}`}
+                data-testid={`${inputControlType}-start-date-picker-${id}-test-id`}
                 value={startDate}
                 minDate={getTodayDate()}
                 onChange={(date) => {
-                  if (date?.[0] && date[0] >= getTodayDate()) {
-                    updateStartDate(id, date[0]);
-                  }
+                  updateStartDate(id, date[0]);
                 }}
               >
                 <DatePickerInput
-                  id={`start-date-${id}`}
-                  data-testid={`medication-start-date-input-${id}`}
-                  labelText={t('MEDICATION_START_DATE_INPUT_LABEL')}
+                  id={`${inputControlType}-start-date-input-${id}`}
+                  data-testid={`${inputControlType}-start-date-input-${id}-test-id`}
+                  labelText={t(
+                    `${inputControlType.toUpperCase()}_START_DATE_INPUT_LABEL`,
+                  )}
                   aria-label="Start Date"
                   hideLabel
-                  size="sm"
-                  disabled={isSTAT}
+                  invalid={!!errors.startDate}
+                  invalidText={errors.startDate ? t(errors.startDate) : ''}
+                  disabled={
+                    isSTAT || findAttr('startDate', attributes)?.readOnly
+                  }
                 />
               </DatePicker>
             </Column>
-            <Column sm={4} md={8} lg={16} className={styles.footerRow}>
-              {!hasNote && (
-                <Link
-                  href="#"
-                  data-testid={`medication-add-note-link-${id}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setHasNote(true);
-                  }}
-                >
-                  {t('MEDICATION_ADD_NOTE')}
-                </Link>
-              )}
-              <span data-testid={`medication-total-quantity-${id}`}>
-                {t('MEDICATION_TOTAL_QUANTITY')} : {dispenseQuantity}{' '}
-                {dispenseUnit?.name ?? ''}
-              </span>
-            </Column>
-          </Grid>
-          {hasNote && (
-            <TextAreaWClose
-              id={`medication-note-${id}`}
-              data-testid={`medication-note-${id}`}
-              labelText={t('MEDICATION_ADD_NOTE')}
-              placeholder={t('MEDICATION_ADD_NOTE_PLACEHOLDER')}
-              value={note ?? ''}
-              onChange={(event) => {
-                const target = event.target;
-                updateNote(id, target.value);
-              }}
-              onClose={() => {
-                setHasNote(false);
-                updateNote(id, '');
-              }}
-              enableCounter
-              maxCount={1024}
-            />
           )}
-        </>
-      );
-    },
-  );
+          <Column sm={4} md={8} lg={16} className={styles.footerRow}>
+            {findAttr('note', attributes) && !hasNote && !noteRequired && (
+              <Link
+                href="#"
+                id={`${inputControlType}-add-note-link-${id}`}
+                data-testid={`${inputControlType}-add-note-link-${id}-test-id`}
+                aria-label={`${inputControlType}-add-note-link-${id}-aria-label`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setHasNote(true);
+                }}
+                disabled={findAttr('note', attributes)?.readOnly}
+              >
+                {t(`${inputControlType.toUpperCase()}_ADD_NOTE`)}
+              </Link>
+            )}
+            <span
+              id={`${inputControlType}-total-quantity-${id}`}
+              data-testid={`${inputControlType}-total-quantity-${id}-test-id`}
+              aria-label={`${inputControlType}-total-quantity-${id}-aria-label`}
+            >
+              {t(`${inputControlType.toUpperCase()}_TOTAL_QUANTITY`)} :{' '}
+              {dispenseQuantity} {dispenseUnit?.name ?? ''}
+            </span>
+          </Column>
+        </Grid>
+        {findAttr('note', attributes) && (hasNote || noteRequired) && (
+          <TextAreaWClose
+            id={`${inputControlType}-note-${id}`}
+            data-testid={`${inputControlType}-note-${id}-test-id`}
+            labelText={t(`${inputControlType.toUpperCase()}_ADD_NOTE`)}
+            placeholder={t(
+              `${inputControlType.toUpperCase()}_ADD_NOTE_PLACEHOLDER`,
+            )}
+            value={note ?? ''}
+            onChange={(event) => {
+              const target = event.target;
+              updateNote(id, target.value);
+            }}
+            onClose={() => {
+              setHasNote(false);
+              updateNote(id, '');
+            }}
+            enableCounter
+            maxCount={1024}
+            invalid={!!errors.note}
+            invalidText={errors.note ? t(errors.note) : ''}
+            disabled={findAttr('note', attributes)?.readOnly}
+          />
+        )}
+      </>
+    );
+  });
 
-SelectedMedicationItem.displayName = 'SelectedMedicationItem';
+SelectedMedicationRequestItem.displayName = 'SelectedMedicationRequestItem';
 
-export default SelectedMedicationItem;
+export default SelectedMedicationRequestItem;
