@@ -144,10 +144,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             labelText={t('NOTE_LABEL')}
             placeholder={t('ADD_ALLERGY_NOTE_PLACEHOLDER')}
             value={note ?? ''}
-            onChange={(event) => {
-              const target = event.target;
-              updateNote(id, target.value);
-            }}
+            onChange={(e) => updateNote(id, e.target.value)}
             onClose={() => {
               setHasNote(false);
               updateNote(id, '');

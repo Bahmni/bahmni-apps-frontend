@@ -466,10 +466,7 @@ const SelectedMedicationItem: React.FC<SelectedMedicationItemProps> =
               labelText={t('NOTE_LABEL')}
               placeholder={t('MEDICATION_ADD_NOTE_PLACEHOLDER')}
               value={note ?? ''}
-              onChange={(event) => {
-                const target = event.target;
-                updateNote(id, target.value);
-              }}
+              onChange={(e) => updateNote(id, e.target.value)}
               onClose={() => {
                 setHasNote(false);
                 updateNote(id, '');

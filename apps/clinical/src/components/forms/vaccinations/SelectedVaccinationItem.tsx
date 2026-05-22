@@ -451,10 +451,7 @@ const SelectedVaccinationItem: React.FC<SelectedVaccinationItemProps> =
               labelText={t('NOTE_LABEL')}
               placeholder={t('VACCINATION_ADD_NOTE_PLACEHOLDER')}
               value={note ?? ''}
-              onChange={(event) => {
-                const target = event.target;
-                updateNote(id, target.value);
-              }}
+              onChange={(e) => updateNote(id, e.target.value)}
               onClose={() => {
                 setHasNote(false);
                 updateNote(id, '');
