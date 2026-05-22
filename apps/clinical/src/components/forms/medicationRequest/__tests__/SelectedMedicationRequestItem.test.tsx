@@ -29,6 +29,7 @@ const mockUseMedicationRequestStore = jest.mocked(useMedicationRequestStore);
 describe('SelectedMedicationRequestItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.setItem('default_dateFormat', 'dd/MM/yyyy');
     mockUseMedicationRequestStore.mockReturnValue(makeMockStore());
   });
 
