@@ -205,9 +205,9 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               selectedItem={
                 immunization.drug
                   ? {
-                    code: immunization.drug.code ?? '',
-                    display: immunization.drug.display,
-                  }
+                      code: immunization.drug.code ?? '',
+                      display: immunization.drug.display,
+                    }
                   : null
               }
               onChange={({ selectedItem, inputValue }) => {
@@ -282,9 +282,9 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               selectedItem={
                 immunization.administeredLocation
                   ? {
-                    uuid: immunization.administeredLocation.uuid ?? '',
-                    display: immunization.administeredLocation.display,
-                  }
+                      uuid: immunization.administeredLocation.uuid ?? '',
+                      display: immunization.administeredLocation.display,
+                    }
                   : null
               }
               onChange={({ selectedItem, inputValue }) => {
@@ -416,10 +416,10 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                 ) ??
                 (immunization.batchNumber
                   ? {
-                    batchNumber: immunization.batchNumber,
-                    expiryDate: '',
-                    stockLocationName: '',
-                  }
+                      batchNumber: immunization.batchNumber,
+                      expiryDate: '',
+                      stockLocationName: '',
+                    }
                   : null)
               }
               onChange={handleBatchNumberChange}
@@ -467,10 +467,10 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               minDate={
                 immunization.administeredOn
                   ? new Date(
-                    immunization.administeredOn.getFullYear(),
-                    immunization.administeredOn.getMonth(),
-                    immunization.administeredOn.getDate() + 1,
-                  )
+                      immunization.administeredOn.getFullYear(),
+                      immunization.administeredOn.getMonth(),
+                      immunization.administeredOn.getDate() + 1,
+                    )
                   : undefined
               }
               className={styles.datePicker}
