@@ -5,7 +5,8 @@ import {
   VACCINATIONS_INPUT_CONTROL_KEY,
 } from './constants';
 import MedicationRequestForm from './MedicationRequestForm';
-import { getMedicationRequestStore, MedicationRequestStoreKey } from './store';
+import { MedicationRequestStoreKey } from './models';
+import { getMedicationRequestStore } from './store';
 import { createMedicationRequestEntries } from './utils';
 
 const registerMedicationRequestControl = (key: MedicationRequestStoreKey) => {

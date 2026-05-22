@@ -34,7 +34,7 @@ describe('SelectedMedicationRequestItem', () => {
 
   it('renders correctly with the configured set of attributes', async () => {
     const { id } = mockSelectedMedication;
-    const inputControlType = 'medications';
+    const inputControlType = 'medication';
 
     await act(async () => {
       render(
@@ -110,7 +110,7 @@ describe('SelectedMedicationRequestItem', () => {
 
   it('does not renders attributes that are not configured', async () => {
     const { id } = mockSelectedMedication;
-    const inputControlType = 'medications';
+    const inputControlType = 'medication';
 
     await act(async () => {
       render(
@@ -181,13 +181,13 @@ describe('SelectedMedicationRequestItem', () => {
         <SelectedMedicationRequestItem
           entry={mockSelectedMedication}
           medicationConfig={mockMedicationConfig}
-          inputControlType="vaccinations"
+          inputControlType="vaccination"
           attributes={attributes}
         />,
       );
     });
     expect(
-      screen.queryByTestId(`vaccinations-prn-checkbox-${id}-test-id`),
+      screen.queryByTestId(`vaccination-prn-checkbox-${id}-test-id`),
     ).not.toBeInTheDocument();
   });
 
@@ -197,14 +197,14 @@ describe('SelectedMedicationRequestItem', () => {
 
     const TestWrapper = () => {
       const { selectedMedicationRequests } =
-        useMedicationRequestStore('medications');
+        useMedicationRequestStore('medication');
       const entry = selectedMedicationRequests[0];
       if (!entry) return null;
       return (
         <SelectedMedicationRequestItem
           entry={entry}
           medicationConfig={mockMedicationConfig}
-          inputControlType="medications"
+          inputControlType="medication"
           attributes={mockFullMedicationAttributes}
         />
       );
@@ -216,7 +216,7 @@ describe('SelectedMedicationRequestItem', () => {
       mockUseMedicationRequestStore.mockImplementation(
         realUseMedicationRequestStore,
       );
-      store = getMedicationRequestStore('medications');
+      store = getMedicationRequestStore('medication');
       user = userEvent.setup();
     });
 
@@ -306,7 +306,7 @@ describe('SelectedMedicationRequestItem', () => {
       });
 
       await user.click(
-        screen.getByTestId(`medications-add-note-link-${id}-test-id`),
+        screen.getByTestId(`medication-add-note-link-${id}-test-id`),
       );
       await user.type(
         screen.getByRole('textbox', { name: 'Add Note' }),
@@ -329,7 +329,7 @@ describe('SelectedMedicationRequestItem', () => {
           <SelectedMedicationRequestItem
             entry={store.getState().selectedMedicationRequests[0]}
             medicationConfig={mockMedicationConfig}
-            inputControlType="medications"
+            inputControlType="medication"
             attributes={[{ name: 'frequency' }]}
           />,
         );
@@ -372,21 +372,21 @@ describe('SelectedMedicationRequestItem', () => {
 
       const VaccinationTestWrapper = () => {
         const { selectedMedicationRequests } =
-          useMedicationRequestStore('vaccinations');
+          useMedicationRequestStore('vaccination');
         const entry = selectedMedicationRequests[0];
         if (!entry) return null;
         return (
           <SelectedMedicationRequestItem
             entry={entry}
             medicationConfig={mockMedicationConfig}
-            inputControlType="vaccinations"
+            inputControlType="vaccination"
             attributes={[{ name: 'stat' }, { name: 'frequency' }]}
           />
         );
       };
 
       beforeEach(() => {
-        vacStore = getMedicationRequestStore('vaccinations');
+        vacStore = getMedicationRequestStore('vaccination');
       });
 
       afterEach(async () => {
@@ -413,7 +413,7 @@ describe('SelectedMedicationRequestItem', () => {
 
         await user.click(
           screen.getByTestId(
-            `vaccinations-stat-checkbox-${mockSelectedVaccination.id}-test-id`,
+            `vaccination-stat-checkbox-${mockSelectedVaccination.id}-test-id`,
           ),
         );
 
@@ -436,7 +436,7 @@ describe('SelectedMedicationRequestItem', () => {
         <SelectedMedicationRequestItem
           entry={mockMinimalMedicationEntryWithForm}
           medicationConfig={mockMedicationConfigWithDrugFormDefaults}
-          inputControlType="medications"
+          inputControlType="medication"
           attributes={[{ name: 'dosage', required: true }]}
         />,
       );
@@ -465,7 +465,7 @@ describe('SelectedMedicationRequestItem', () => {
         <SelectedMedicationRequestItem
           entry={mockMinimalMedicationEntry}
           medicationConfig={mockMedicationConfig}
-          inputControlType="medications"
+          inputControlType="medication"
           attributes={[
             { name: 'dosage', default: 5 },
             { name: 'frequency', default: 'BD' },
@@ -496,7 +496,7 @@ describe('SelectedMedicationRequestItem', () => {
         <SelectedMedicationRequestItem
           entry={{ ...mockSelectedMedication, note: 'existing note' }}
           medicationConfig={mockMedicationConfig}
-          inputControlType="medications"
+          inputControlType="medication"
           attributes={mockFullMedicationAttributesReadOnly}
         />,
       );
@@ -527,7 +527,7 @@ describe('SelectedMedicationRequestItem', () => {
         <SelectedMedicationRequestItem
           entry={mockSelectedMedicationWithAllErrors}
           medicationConfig={mockMedicationConfig}
-          inputControlType="medications"
+          inputControlType="medication"
           attributes={mockRequiredMedicationAttributes}
         />,
       );
@@ -552,7 +552,7 @@ describe('SelectedMedicationRequestItem', () => {
 
   describe('Snapshot', () => {
     it('matches snapshot with all attributes', async () => {
-      const inputControlType = 'medications';
+      const inputControlType = 'medication';
 
       await act(async () => {
         const { asFragment } = render(
@@ -571,7 +571,7 @@ describe('SelectedMedicationRequestItem', () => {
 
   describe('Accessibility', () => {
     it('should have no accessibility violations', async () => {
-      const inputControlType = 'medications';
+      const inputControlType = 'medication';
 
       await act(async () => {
         const { container } = render(

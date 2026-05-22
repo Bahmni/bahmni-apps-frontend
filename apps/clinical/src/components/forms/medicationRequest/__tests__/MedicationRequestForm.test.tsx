@@ -66,7 +66,7 @@ const defaultQueryMock = ({ queryKey }: { queryKey: readonly unknown[] }) => {
   if (queryKey[0] === 'medicationConfig') {
     return { data: mockMedicationConfig, isLoading: false, error: null };
   }
-  if (queryKey[0] === 'vaccinations') {
+  if (queryKey[0] === 'vaccination') {
     return { data: mockVaccinationBundle, isLoading: false, error: null };
   }
   return { data: null, isLoading: false, error: null };
@@ -84,7 +84,7 @@ const createWrapper = () => {
 };
 
 const vaccinationsConfig = {
-  type: 'vaccinations',
+  type: 'vaccination',
   label: 'VACCINATION_FORM_TITLE',
 } as any;
 
@@ -114,8 +114,8 @@ describe('MedicationRequestForm', () => {
 
   describe('Rendering', () => {
     it.each([
-      ['medications', undefined, 'medications', 'Medications'],
-      ['vaccinations', vaccinationsConfig, 'vaccinations', 'Vaccinations'],
+      ['medication', undefined, 'medication', 'Medications'],
+      ['vaccination', vaccinationsConfig, 'vaccination', 'Vaccinations'],
     ])(
       'renders form tile, title, and combobox for %s',
       (_, inputControlConfig, inputControlType, expectedTitle) => {
@@ -138,8 +138,8 @@ describe('MedicationRequestForm', () => {
 
   describe('Loading states', () => {
     it.each([
-      ['medications', undefined, 'medications'],
-      ['vaccinations', vaccinationsConfig, 'vaccinations'],
+      ['medication', undefined, 'medication'],
+      ['vaccination', vaccinationsConfig, 'vaccination'],
     ])(
       'shows loading skeleton and hides combobox when config is loading for %s',
       (_, inputControlConfig, inputControlType) => {
@@ -173,7 +173,7 @@ describe('MedicationRequestForm', () => {
       await waitFor(() => {
         expect(
           screen.getByRole('combobox', {
-            name: 'medications-search-combobox-aria-label',
+            name: 'medication-search-combobox-aria-label',
           }),
         ).toBeInTheDocument();
       });
@@ -185,15 +185,15 @@ describe('MedicationRequestForm', () => {
   describe('Error states', () => {
     it.each([
       [
-        'medications',
+        'medication',
         undefined,
-        'medications',
+        'medication',
         /error fetching medication configuration/i,
       ],
       [
-        'vaccinations',
+        'vaccination',
         vaccinationsConfig,
-        'vaccinations',
+        'vaccination',
         /error fetching vaccination configuration/i,
       ],
     ])(
@@ -252,7 +252,7 @@ describe('MedicationRequestForm', () => {
         renderForm();
         await user.type(
           screen.getByRole('combobox', {
-            name: 'medications-search-combobox-aria-label',
+            name: 'medication-search-combobox-aria-label',
           }),
           'test',
         );
@@ -283,13 +283,13 @@ describe('MedicationRequestForm', () => {
       async (_, queryResult, expectedText) => {
         const user = userEvent.setup();
         mockUseQuery.mockImplementation(({ queryKey }: any) => {
-          if (queryKey[0] === 'vaccinations') return queryResult;
+          if (queryKey[0] === 'vaccination') return queryResult;
           return defaultQueryMock({ queryKey }) as any;
         });
         renderForm(vaccinationsConfig);
         await user.type(
           screen.getByRole('combobox', {
-            name: 'vaccinations-search-combobox-aria-label',
+            name: 'vaccination-search-combobox-aria-label',
           }),
           'nonexistent',
         );
@@ -302,7 +302,7 @@ describe('MedicationRequestForm', () => {
     it('filters vaccination list client-side by search term', async () => {
       const user = userEvent.setup();
       mockUseQuery.mockImplementation(({ queryKey }: any) => {
-        if (queryKey[0] === 'vaccinations') {
+        if (queryKey[0] === 'vaccination') {
           return {
             data: mockTwoVaccinationBundle,
             isLoading: false,
@@ -314,7 +314,7 @@ describe('MedicationRequestForm', () => {
       renderForm(vaccinationsConfig);
       await user.type(
         screen.getByRole('combobox', {
-          name: 'vaccinations-search-combobox-aria-label',
+          name: 'vaccination-search-combobox-aria-label',
         }),
         'covid',
       );
@@ -342,7 +342,7 @@ describe('MedicationRequestForm', () => {
       renderForm();
       await user.type(
         screen.getByRole('combobox', {
-          name: 'medications-search-combobox-aria-label',
+          name: 'medication-search-combobox-aria-label',
         }),
         'paracetamol',
       );
@@ -362,17 +362,17 @@ describe('MedicationRequestForm', () => {
   describe('Selected items section', () => {
     it.each([
       [
-        'medications',
+        'medication',
         undefined,
-        'medications',
+        'medication',
         mockSelectedMedication,
         'Added Medications',
         'Magnesium sulfate 500 mg/ml',
       ],
       [
-        'vaccinations',
+        'vaccination',
         vaccinationsConfig,
-        'vaccinations',
+        'vaccination',
         mockSelectedVaccination,
         'Added Vaccinations',
         /COVID-19 Vaccine/,
@@ -402,8 +402,8 @@ describe('MedicationRequestForm', () => {
     );
 
     it.each([
-      ['medications', undefined, /added medications/i],
-      ['vaccinations', vaccinationsConfig, /added vaccinations/i],
+      ['medication', undefined, /added medications/i],
+      ['vaccination', vaccinationsConfig, /added vaccinations/i],
     ])(
       'does not show selected section when no items for %s',
       (_, inputControlConfig, sectionTitle) => {
@@ -413,8 +413,8 @@ describe('MedicationRequestForm', () => {
     );
 
     it.each([
-      ['medications', undefined, mockSelectedMedication],
-      ['vaccinations', vaccinationsConfig, mockSelectedVaccination],
+      ['medication', undefined, mockSelectedMedication],
+      ['vaccination', vaccinationsConfig, mockSelectedVaccination],
     ])(
       'removes item when close button is clicked for %s',
       async (_, inputControlConfig, selectedItem) => {

@@ -13,8 +13,8 @@ import {
   mockVaccination,
 } from './__mocks__/MedicationRequestFormMocks';
 
-const store = () => getMedicationRequestStore('medications').getState();
-const vacStore = () => getMedicationRequestStore('vaccinations').getState();
+const store = () => getMedicationRequestStore('medication').getState();
+const vacStore = () => getMedicationRequestStore('vaccination').getState();
 
 type FieldUpdateCase = [fieldName: string, actionName: string, value: unknown];
 
@@ -229,7 +229,7 @@ describe('useMedicationRequestStore', () => {
       store().addItem(mockMedication, 'Paracetamol 500mg');
       const id = store().selectedMedicationRequests[0].id;
 
-      getMedicationRequestStore('medications').setState({
+      getMedicationRequestStore('medication').setState({
         selectedMedicationRequests: [
           {
             ...store().selectedMedicationRequests[0],
@@ -257,7 +257,7 @@ describe('useMedicationRequestStore', () => {
       store().addItem(mockMedication, 'Paracetamol 500mg');
       const id = store().selectedMedicationRequests[0].id;
 
-      getMedicationRequestStore('medications').setState({
+      getMedicationRequestStore('medication').setState({
         selectedMedicationRequests: [
           {
             ...store().selectedMedicationRequests[0],
@@ -481,7 +481,7 @@ describe('useMedicationRequestStore', () => {
   });
 
   describe('useMedicationRequestStore', () => {
-    it.each(['medications', 'vaccinations'] as const)(
+    it.each(['medication', 'vaccination'] as const)(
       'returns the current store state for key "%s"',
       (key) => {
         const { result } = renderHook(() => useMedicationRequestStore(key));

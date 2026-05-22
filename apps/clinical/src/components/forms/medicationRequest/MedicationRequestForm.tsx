@@ -25,9 +25,10 @@ import {
   MEDICATIONS_CONFIG_URL,
   MEDICATIONS_INPUT_CONTROL_KEY,
 } from './constants';
+import { MedicationRequestStoreKey } from './models';
 import medicationConfigSchema from './schema.json';
 import SelectedMedicationRequestItem from './SelectedMedicationRequestItem';
-import { MedicationRequestStoreKey, useMedicationRequestStore } from './store';
+import { useMedicationRequestStore } from './store';
 import styles from './styles/MedicationRequestForm.module.scss';
 import {
   getMedicationRequestComboBoxItems,
@@ -79,7 +80,7 @@ const MedicationRequestForm: React.FC<{
     isLoading: vaccinationsBundleLoading,
     error: vaccinationsBundleError,
   } = useQuery({
-    queryKey: ['vaccinations'],
+    queryKey: ['vaccination'],
     queryFn: getVaccinations,
     enabled: !isMedicationRequest,
   });

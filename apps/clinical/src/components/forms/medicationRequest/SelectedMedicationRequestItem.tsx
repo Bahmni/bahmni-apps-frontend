@@ -18,7 +18,8 @@ import {
   DURATION_UNIT_OPTIONS,
   MEDICATIONS_INPUT_CONTROL_KEY,
 } from './constants';
-import { MedicationRequestStoreKey, useMedicationRequestStore } from './store';
+import { MedicationRequestStoreKey } from './models';
+import { useMedicationRequestStore } from './store';
 import styles from './styles/SelectedMedicationRequestItem.module.scss';
 import {
   applyMountDefaults,

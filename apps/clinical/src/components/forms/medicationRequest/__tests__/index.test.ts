@@ -41,7 +41,7 @@ describe('medicationRequest index registration', () => {
     mockGetStore.mockImplementation(() => makeStoreMock());
   });
 
-  it.each(['medications', 'vaccinations'] as const)(
+  it.each(['medication', 'vaccination'] as const)(
     'registers key "%s" pointing to MedicationRequestForm',
     (key) => {
       const entry = getRegisteredInputControls().find((e) => e.key === key);
@@ -50,7 +50,7 @@ describe('medicationRequest index registration', () => {
     },
   );
 
-  it.each(['medications', 'vaccinations'] as const)(
+  it.each(['medication', 'vaccination'] as const)(
     'delegates reset and validateAll to store for key "%s"',
     (key) => {
       const mockReset = jest.fn();
@@ -68,10 +68,10 @@ describe('medicationRequest index registration', () => {
   );
 
   it.each([
-    { key: 'medications' as const, count: 0, expected: false },
-    { key: 'medications' as const, count: 1, expected: true },
-    { key: 'vaccinations' as const, count: 0, expected: false },
-    { key: 'vaccinations' as const, count: 1, expected: true },
+    { key: 'medication' as const, count: 0, expected: false },
+    { key: 'medication' as const, count: 1, expected: true },
+    { key: 'vaccination' as const, count: 0, expected: false },
+    { key: 'vaccination' as const, count: 1, expected: true },
   ])(
     'hasData() returns $expected when selectedMedicationRequests has $count items for "$key"',
     ({ key, count, expected }) => {
@@ -85,7 +85,7 @@ describe('medicationRequest index registration', () => {
     },
   );
 
-  it.each(['medications', 'vaccinations'] as const)(
+  it.each(['medication', 'vaccination'] as const)(
     'subscribe() delegates to store for key "%s"',
     (key) => {
       const mockSubscribe = jest.fn();
@@ -100,7 +100,7 @@ describe('medicationRequest index registration', () => {
     },
   );
 
-  it.each(['medications', 'vaccinations'] as const)(
+  it.each(['medication', 'vaccination'] as const)(
     'createBundleEntries() calls service with correct args for key "%s"',
     (key) => {
       const selectedMedicationRequests = [{ id: `${key}-1` }];

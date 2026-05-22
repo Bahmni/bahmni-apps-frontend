@@ -3,16 +3,16 @@
 exports[`MedicationRequestForm Snapshots matches snapshot for medications form with no selected items 1`] = `
 <div>
   <div
-    aria-label="medications-form-tile-aria-label"
+    aria-label="medication-form-tile-aria-label"
     class="cds--tile form"
-    data-testid="medications-form-tile-test-id"
-    id="medications-form-tile"
+    data-testid="medication-form-tile-test-id"
+    id="medication-form-tile"
   >
     <div
-      aria-label="medications-form-title-aria-label"
+      aria-label="medication-form-title-aria-label"
       class="title"
-      data-testid="medications-form-title-test-id"
-      id="medications-form-title"
+      data-testid="medication-form-title-test-id"
+      id="medication-form-title"
     >
       Medications
     </div>
@@ -31,11 +31,11 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
             aria-controls="downshift-_r_25_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="medications-search-combobox-aria-label"
+            aria-label="medication-search-combobox-aria-label"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
-            data-testid="medications-search-combobox-test-id"
-            id="medications-search"
+            data-testid="medication-search-combobox-test-id"
+            id="medication-search"
             placeholder="Search to add Medication"
             role="combobox"
             tabindex="0"
@@ -85,16 +85,16 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
 exports[`MedicationRequestForm Snapshots matches snapshot for medications form with selected items 1`] = `
 <div>
   <div
-    aria-label="medications-form-tile-aria-label"
+    aria-label="medication-form-tile-aria-label"
     class="cds--tile form"
-    data-testid="medications-form-tile-test-id"
-    id="medications-form-tile"
+    data-testid="medication-form-tile-test-id"
+    id="medication-form-tile"
   >
     <div
-      aria-label="medications-form-title-aria-label"
+      aria-label="medication-form-title-aria-label"
       class="title"
-      data-testid="medications-form-title-test-id"
-      id="medications-form-title"
+      data-testid="medication-form-title-test-id"
+      id="medication-form-title"
     >
       Medications
     </div>
@@ -113,11 +113,11 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
             aria-controls="downshift-_r_28_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="medications-search-combobox-aria-label"
+            aria-label="medication-search-combobox-aria-label"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
-            data-testid="medications-search-combobox-test-id"
-            id="medications-search"
+            data-testid="medication-search-combobox-test-id"
+            id="medication-search"
             placeholder="Search to add Medication"
             role="combobox"
             tabindex="0"
@@ -182,34 +182,34 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
             class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
-              aria-label="medications-selected-item-test-medication-1-aria-label"
+              aria-label="medication-selected-item-test-medication-1-aria-label"
               class="cds--subgrid cds--subgrid--wide"
-              data-testid="medications-selected-item-test-medication-1-test-id"
-              id="medications-selected-item-test-medication-1"
+              data-testid="medication-selected-item-test-medication-1-test-id"
+              id="medication-selected-item-test-medication-1"
             >
               <div
                 class="itemTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
               >
                 <span
-                  aria-label="medications-name-test-medication-1-aria-label"
-                  data-testid="medications-name-test-medication-1-test-id"
-                  id="medications-name-test-medication-1"
+                  aria-label="medication-name-test-medication-1-aria-label"
+                  data-testid="medication-name-test-medication-1-test-id"
+                  id="medication-name-test-medication-1"
                 >
                   Magnesium sulfate 500 mg/ml 
                 </span>
                 <span
-                  aria-label="medications-details-test-medication-1-aria-label"
+                  aria-label="medication-details-test-medication-1-aria-label"
                   class="itemDetails"
-                  data-testid="medications-details-test-medication-1-test-id"
-                  id="medications-details-test-medication-1"
+                  data-testid="medication-details-test-medication-1-test-id"
+                  id="medication-details-test-medication-1"
                 >
                   (Injection)
                 </span>
                 <span
-                  aria-label="medications-dose-form-test-medication-1-aria-label"
+                  aria-label="medication-dose-form-test-medication-1-aria-label"
                   class="doseForm"
-                  data-testid="medications-dose-form-test-medication-1-test-id"
-                  id="medications-dose-form-test-medication-1"
+                  data-testid="medication-dose-form-test-medication-1-test-id"
+                  id="medication-dose-form-test-medication-1"
                 >
                   Injection
                 </span>
@@ -221,9 +221,9 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
                 class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
               >
                 <span
-                  aria-label="medications-total-quantity-test-medication-1-aria-label"
-                  data-testid="medications-total-quantity-test-medication-1-test-id"
-                  id="medications-total-quantity-test-medication-1"
+                  aria-label="medication-total-quantity-test-medication-1-aria-label"
+                  data-testid="medication-total-quantity-test-medication-1-test-id"
+                  id="medication-total-quantity-test-medication-1"
                 >
                   Total quantity
                    :
@@ -295,16 +295,16 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
 exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form with no selected items 1`] = `
 <div>
   <div
-    aria-label="vaccinations-form-tile-aria-label"
+    aria-label="vaccination-form-tile-aria-label"
     class="cds--tile form"
-    data-testid="vaccinations-form-tile-test-id"
-    id="vaccinations-form-tile"
+    data-testid="vaccination-form-tile-test-id"
+    id="vaccination-form-tile"
   >
     <div
-      aria-label="vaccinations-form-title-aria-label"
+      aria-label="vaccination-form-title-aria-label"
       class="title"
-      data-testid="vaccinations-form-title-test-id"
-      id="vaccinations-form-title"
+      data-testid="vaccination-form-title-test-id"
+      id="vaccination-form-title"
     >
       Vaccinations
     </div>
@@ -323,11 +323,11 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
             aria-controls="downshift-_r_2f_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="vaccinations-search-combobox-aria-label"
+            aria-label="vaccination-search-combobox-aria-label"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
-            data-testid="vaccinations-search-combobox-test-id"
-            id="vaccinations-search"
+            data-testid="vaccination-search-combobox-test-id"
+            id="vaccination-search"
             placeholder="Search to add Vaccination"
             role="combobox"
             tabindex="0"
@@ -377,16 +377,16 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
 exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form with selected items 1`] = `
 <div>
   <div
-    aria-label="vaccinations-form-tile-aria-label"
+    aria-label="vaccination-form-tile-aria-label"
     class="cds--tile form"
-    data-testid="vaccinations-form-tile-test-id"
-    id="vaccinations-form-tile"
+    data-testid="vaccination-form-tile-test-id"
+    id="vaccination-form-tile"
   >
     <div
-      aria-label="vaccinations-form-title-aria-label"
+      aria-label="vaccination-form-title-aria-label"
       class="title"
-      data-testid="vaccinations-form-title-test-id"
-      id="vaccinations-form-title"
+      data-testid="vaccination-form-title-test-id"
+      id="vaccination-form-title"
     >
       Vaccinations
     </div>
@@ -405,11 +405,11 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
             aria-controls="downshift-_r_2i_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="vaccinations-search-combobox-aria-label"
+            aria-label="vaccination-search-combobox-aria-label"
             autocomplete="off"
             class="cds--text-input cds--text-input--empty"
-            data-testid="vaccinations-search-combobox-test-id"
-            id="vaccinations-search"
+            data-testid="vaccination-search-combobox-test-id"
+            id="vaccination-search"
             placeholder="Search to add Vaccination"
             role="combobox"
             tabindex="0"
@@ -474,18 +474,18 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
             class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
           >
             <div
-              aria-label="vaccinations-selected-item-test-vaccination-1-aria-label"
+              aria-label="vaccination-selected-item-test-vaccination-1-aria-label"
               class="cds--subgrid cds--subgrid--wide"
-              data-testid="vaccinations-selected-item-test-vaccination-1-test-id"
-              id="vaccinations-selected-item-test-vaccination-1"
+              data-testid="vaccination-selected-item-test-vaccination-1-test-id"
+              id="vaccination-selected-item-test-vaccination-1"
             >
               <div
                 class="itemTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
               >
                 <span
-                  aria-label="vaccinations-name-test-vaccination-1-aria-label"
-                  data-testid="vaccinations-name-test-vaccination-1-test-id"
-                  id="vaccinations-name-test-vaccination-1"
+                  aria-label="vaccination-name-test-vaccination-1-aria-label"
+                  data-testid="vaccination-name-test-vaccination-1-test-id"
+                  id="vaccination-name-test-vaccination-1"
                 >
                   COVID-19 Vaccine
                 </span>
@@ -497,9 +497,9 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
                 class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
               >
                 <span
-                  aria-label="vaccinations-total-quantity-test-vaccination-1-aria-label"
-                  data-testid="vaccinations-total-quantity-test-vaccination-1-test-id"
-                  id="vaccinations-total-quantity-test-vaccination-1"
+                  aria-label="vaccination-total-quantity-test-vaccination-1-aria-label"
+                  data-testid="vaccination-total-quantity-test-vaccination-1-test-id"
+                  id="vaccination-total-quantity-test-vaccination-1"
                 >
                   Total Quantity
                    :

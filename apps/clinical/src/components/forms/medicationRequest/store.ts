@@ -13,9 +13,8 @@ import {
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import { extractDoseForm } from '../../../utils/fhir/medicationUtilities';
 import { MEDICATIONS_INPUT_CONTROL_KEY } from './constants';
+import { MedicationRequestStoreKey } from './models';
 import { findAttr } from './utils';
-
-export type MedicationRequestStoreKey = 'medications' | 'vaccinations';
 
 export interface MedicationRequestState {
   selectedMedicationRequests: MedicationInputEntry[];

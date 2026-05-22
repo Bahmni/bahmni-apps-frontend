@@ -71,7 +71,7 @@ const defaultQueryMock = ({ queryKey }: { queryKey: readonly unknown[] }) => {
   if (queryKey[0] === 'sitesConceptSet') {
     return { data: mockSitesValueSet, isLoading: false, error: null };
   }
-  if (queryKey[0] === 'vaccinations') {
+  if (queryKey[0] === 'vaccination') {
     return { data: mockVaccinationBundle, isLoading: false, error: null };
   }
   if (queryKey[0] === 'medication') {
@@ -375,7 +375,7 @@ describe('ImmunizationForm', () => {
         selectedImmunizations: [mockImmunizationEntry],
       });
       mockUseQuery.mockImplementation(({ queryKey: qk }: any) => {
-        if (qk[0] === 'vaccinations') return queryResult;
+        if (qk[0] === 'vaccination') return queryResult;
         return defaultQueryMock({ queryKey: qk }) as any;
       });
       render(
@@ -394,7 +394,7 @@ describe('ImmunizationForm', () => {
         selectedImmunizations: [mockImmunizationEntry],
       });
       mockUseQuery.mockImplementation(({ queryKey: qk }: any) => {
-        if (qk[0] === 'vaccinations') {
+        if (qk[0] === 'vaccination') {
           return {
             data: mockMixedVaccinationBundle,
             isLoading: false,
@@ -504,7 +504,7 @@ describe('ImmunizationForm', () => {
       mockUseQuery.mockImplementation(({ queryKey: qk }: any) => {
         if (qk[0] === 'medication')
           return { data: mockFetchedMedication, isLoading: false, error: null };
-        if (qk[0] === 'vaccinations')
+        if (qk[0] === 'vaccination')
           return { data: mockVaccinationBundle, isLoading: false, error: null };
         return defaultQueryMock({ queryKey: qk }) as any;
       });
