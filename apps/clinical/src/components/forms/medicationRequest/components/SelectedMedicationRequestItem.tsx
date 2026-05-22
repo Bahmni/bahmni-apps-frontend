@@ -11,22 +11,22 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation, getTodayDate } from '@bahmni/services';
 import React, { useEffect, useState } from 'react';
-import { MedicationInputEntry } from '../../../models/medication';
-import { MedicationConfig } from '../../../models/medicationConfig';
-import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
+import { MedicationInputEntry } from '../../../../models/medication';
+import { MedicationConfig } from '../../../../models/medicationConfig';
+import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
 import {
   DURATION_UNIT_OPTIONS,
   MEDICATIONS_INPUT_CONTROL_KEY,
-} from './constants';
-import { MedicationRequestStoreKey } from './models';
-import { useMedicationRequestStore } from './store';
-import styles from './styles/SelectedMedicationRequestItem.module.scss';
+} from '../constants';
+import { MedicationRequestStoreKey } from '../models';
+import { useMedicationRequestStore } from '../store';
+import styles from '../styles/SelectedMedicationRequestItem.module.scss';
 import {
   applyMountDefaults,
   calculateTotalQuantity,
   findAttr,
   isImmediateFrequency,
-} from './utils';
+} from '../utils';
 
 export interface SelectedMedicationRequestItemProps {
   entry: MedicationInputEntry;

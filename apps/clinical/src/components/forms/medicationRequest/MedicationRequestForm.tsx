@@ -21,13 +21,13 @@ import {
   getMedicationDisplay,
   getMedicationsFromBundle,
 } from '../../../services/medicationService';
+import SelectedMedicationRequestItem from './components/SelectedMedicationRequestItem';
 import {
   MEDICATIONS_CONFIG_URL,
   MEDICATIONS_INPUT_CONTROL_KEY,
 } from './constants';
 import { MedicationRequestStoreKey } from './models';
 import medicationConfigSchema from './schema.json';
-import SelectedMedicationRequestItem from './SelectedMedicationRequestItem';
 import { useMedicationRequestStore } from './store';
 import styles from './styles/MedicationRequestForm.module.scss';
 import {

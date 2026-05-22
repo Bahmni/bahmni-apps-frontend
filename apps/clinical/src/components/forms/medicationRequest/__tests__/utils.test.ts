@@ -530,7 +530,27 @@ describe('createMedicationRequestEntries', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].fullUrl).toBe(`urn:uuid:${mockUUID}`);
-    expect(result[0].resource?.resourceType).toBe('MedicationRequest');
+    expect(result[0].resource).toMatchObject({
+      resourceType: 'MedicationRequest',
+      status: 'active',
+      intent: 'order',
+      medicationReference: {
+        reference: 'Medication/med-123',
+        type: 'Medication',
+      },
+      subject: mockEncounterSubject,
+      encounter: { reference: mockEncounterReference },
+      requester: {
+        reference: `Practitioner/${mockPractitionerUUID}`,
+        type: 'Practitioner',
+      },
+      priority: 'routine',
+      dosageInstruction: [{ text: '{}', asNeededBoolean: false }],
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: { value: 14, code: undefined },
+      },
+    });
     expect(result[0].request).toEqual({
       method: 'POST',
       url: 'MedicationRequest',

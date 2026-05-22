@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import SelectedMedicationRequestItem from '../SelectedMedicationRequestItem';
+import SelectedMedicationRequestItem from '../components/SelectedMedicationRequestItem';
 import { getMedicationRequestStore, useMedicationRequestStore } from '../store';
 import {
   makeMockStore,
@@ -553,19 +553,20 @@ describe('SelectedMedicationRequestItem', () => {
   describe('Snapshot', () => {
     it('matches snapshot with all attributes', async () => {
       const inputControlType = 'medication';
+      let asFragment!: () => DocumentFragment;
 
       await act(async () => {
-        const { asFragment } = render(
+        ({ asFragment } = render(
           <SelectedMedicationRequestItem
             entry={mockSelectedMedication}
             medicationConfig={mockMedicationConfig}
             inputControlType={inputControlType}
             attributes={mockFullMedicationAttributes}
           />,
-        );
-
-        expect(asFragment()).toMatchSnapshot();
+        ));
       });
+
+      expect(asFragment()).toMatchSnapshot();
     });
   });
 
