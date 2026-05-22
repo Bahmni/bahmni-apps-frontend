@@ -404,9 +404,9 @@ describe('SelectedMedicationRequestItem', () => {
           render(<VaccinationTestWrapper />);
         });
 
-        expect(
-          vacStore.getState().selectedMedicationRequests[0].isSTAT,
-        ).toBe(true);
+        expect(vacStore.getState().selectedMedicationRequests[0].isSTAT).toBe(
+          true,
+        );
         expect(
           vacStore.getState().selectedMedicationRequests[0].frequency,
         ).toEqual({ uuid: '0', name: 'Immediately', frequencyPerDay: 1 });
@@ -417,9 +417,9 @@ describe('SelectedMedicationRequestItem', () => {
           ),
         );
 
-        expect(
-          vacStore.getState().selectedMedicationRequests[0].isSTAT,
-        ).toBe(false);
+        expect(vacStore.getState().selectedMedicationRequests[0].isSTAT).toBe(
+          false,
+        );
         expect(
           vacStore.getState().selectedMedicationRequests[0].frequency,
         ).toBeNull();
