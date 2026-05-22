@@ -14,6 +14,8 @@ import {
   getAppointmentById,
   getAllAppointmentServices,
   deleteAppointmentService,
+  getAppointmentUnavailabilities,
+  createAppointmentUnavailability,
 } from '../appointmentService';
 import {
   UPCOMING_APPOINTMENTS_URL,
@@ -25,7 +27,12 @@ import {
   getDeleteAppointmentServiceUrl,
   getUpcomingAppointmentsPageUrl,
   getPastAppointmentsPageUrl,
+  APPOINTMENT_UNAVAILABILITY_URL,
 } from '../constants';
+import {
+  AppointmentUnavailability,
+  CreateUnavailabilityRequest,
+} from '../models';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -325,6 +332,158 @@ describe('Appointment Service', () => {
       await expect(getPastAppointmentsPage(patientUUID)).rejects.toThrow(
         'API Error',
       );
+    });
+  });
+
+  describe('getAppointmentUnavailabilities', () => {
+    const mockUnavailabilities: AppointmentUnavailability[] = [
+      {
+        uuid: 'unavailability-uuid-1',
+        locationUuid: 'location-uuid-1',
+        locationName: 'General OPD',
+        appointmentServiceUuid: 'service-uuid-1',
+        appointmentServiceName: 'General Medicine',
+        providerUuid: 'provider-uuid-1',
+        providerName: 'Dr. Smith',
+        startDate: '2026-05-20',
+        startTime: '09:00',
+        endDate: '2026-05-20',
+        endTime: '12:00',
+        voided: false,
+        dateCreated: '2026-05-18T10:00:00Z',
+        creatorName: 'Admin User',
+      },
+      {
+        uuid: 'unavailability-uuid-2',
+        locationUuid: 'location-uuid-2',
+        locationName: 'ENT Ward',
+        appointmentServiceUuid: 'service-uuid-2',
+        appointmentServiceName: 'ENT Consultation',
+        providerUuid: null,
+        providerName: null,
+        startDate: '2026-05-22',
+        startTime: '14:00',
+        endDate: '2026-05-22',
+        endTime: '17:00',
+        voided: false,
+        dateCreated: '2026-05-19T08:00:00Z',
+        creatorName: 'Admin User',
+      },
+    ];
+
+    it('should fetch all appointment unavailabilities', async () => {
+      mockedGet.mockResolvedValue(mockUnavailabilities);
+
+      const result = await getAppointmentUnavailabilities();
+
+      expect(mockedGet).toHaveBeenCalledWith(APPOINTMENT_UNAVAILABILITY_URL);
+      expect(result).toEqual(mockUnavailabilities);
+      expect(result).toHaveLength(2);
+    });
+
+    it('should return empty array when no unavailabilities exist', async () => {
+      mockedGet.mockResolvedValue([]);
+
+      const result = await getAppointmentUnavailabilities();
+
+      expect(mockedGet).toHaveBeenCalledWith(APPOINTMENT_UNAVAILABILITY_URL);
+      expect(result).toEqual([]);
+    });
+
+    it('should propagate API errors', async () => {
+      mockedGet.mockRejectedValue(new Error('Unavailabilities API Error'));
+
+      await expect(getAppointmentUnavailabilities()).rejects.toThrow(
+        'Unavailabilities API Error',
+      );
+    });
+  });
+
+  describe('createAppointmentUnavailability', () => {
+    const mockCreateRequest: CreateUnavailabilityRequest[] = [
+      {
+        locationUuid: 'location-uuid-1',
+        appointmentServiceUuid: 'service-uuid-1',
+        providerUuid: 'provider-uuid-1',
+        startDate: '2026-05-25',
+        startTime: '09:00',
+        endDate: '2026-05-25',
+        endTime: '12:00',
+      },
+    ];
+
+    const mockCreateRequestWithoutOptionalFields: CreateUnavailabilityRequest[] =
+      [
+        {
+          locationUuid: 'location-uuid-1',
+          startDate: '2026-05-26',
+          startTime: '10:00',
+          endDate: '2026-05-26',
+          endTime: '15:00',
+        },
+      ];
+
+    it('should create appointment unavailability with all fields', async () => {
+      mockedPost.mockResolvedValue(undefined);
+
+      await createAppointmentUnavailability(mockCreateRequest);
+
+      expect(mockedPost).toHaveBeenCalledWith(
+        APPOINTMENT_UNAVAILABILITY_URL,
+        mockCreateRequest,
+      );
+    });
+
+    it('should create appointment unavailability without optional fields', async () => {
+      mockedPost.mockResolvedValue(undefined);
+
+      await createAppointmentUnavailability(
+        mockCreateRequestWithoutOptionalFields,
+      );
+
+      expect(mockedPost).toHaveBeenCalledWith(
+        APPOINTMENT_UNAVAILABILITY_URL,
+        mockCreateRequestWithoutOptionalFields,
+      );
+    });
+
+    it('should create multiple unavailabilities in a single request', async () => {
+      const multipleRequests: CreateUnavailabilityRequest[] = [
+        {
+          locationUuid: 'location-uuid-1',
+          appointmentServiceUuid: 'service-uuid-1',
+          startDate: '2026-05-25',
+          startTime: '09:00',
+          endDate: '2026-05-25',
+          endTime: '12:00',
+        },
+        {
+          locationUuid: 'location-uuid-1',
+          appointmentServiceUuid: 'service-uuid-2',
+          startDate: '2026-05-25',
+          startTime: '09:00',
+          endDate: '2026-05-25',
+          endTime: '12:00',
+        },
+      ];
+      mockedPost.mockResolvedValue(undefined);
+
+      await createAppointmentUnavailability(multipleRequests);
+
+      expect(mockedPost).toHaveBeenCalledWith(
+        APPOINTMENT_UNAVAILABILITY_URL,
+        multipleRequests,
+      );
+    });
+
+    it('should propagate API errors', async () => {
+      mockedPost.mockRejectedValue(
+        new Error('Create Unavailability API Error'),
+      );
+
+      await expect(
+        createAppointmentUnavailability(mockCreateRequest),
+      ).rejects.toThrow('Create Unavailability API Error');
     });
   });
 });

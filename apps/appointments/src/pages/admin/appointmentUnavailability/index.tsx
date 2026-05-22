@@ -8,23 +8,40 @@ import {
   BAHMNI_HOME_PATH,
   formatDateTime,
   getAppointmentUnavailabilities,
+  hasPrivilege,
   useTranslation,
   type AppointmentUnavailability,
 } from '@bahmni/services';
+import { useUserPrivilege } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
 import UnavailabilityForm from './components/UnavailabilityForm';
+import {
+  ADD_APPOINTMENT_UNAVAILABILITY_PRIVILEGE,
+  GET_APPOINTMENT_UNAVAILABILITY_PRIVILEGE,
+} from './constants';
 import styles from './styles/index.module.scss';
 import { formatTime } from './utils';
 
 const AppointmentUnavailabilityPage: React.FC = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { userPrivileges } = useUserPrivilege();
   const [isFormVisible, setIsFormVisible] = useState(false);
+
+  const canViewUnavailability = hasPrivilege(
+    userPrivileges,
+    GET_APPOINTMENT_UNAVAILABILITY_PRIVILEGE,
+  );
+  const canAddUnavailability = hasPrivilege(userPrivileges, [
+    ADD_APPOINTMENT_UNAVAILABILITY_PRIVILEGE,
+    GET_APPOINTMENT_UNAVAILABILITY_PRIVILEGE,
+  ]);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['appointmentUnavailabilities'],
     queryFn: getAppointmentUnavailabilities,
+    enabled: canViewUnavailability,
   });
 
   const breadcrumbs = [
@@ -98,7 +115,7 @@ const AppointmentUnavailabilityPage: React.FC = () => {
         >
           <div className={styles.header}>
             <h1 className={styles.title}>{t('ADMIN_UNAVAILABILITY_TITLE')}</h1>
-            {!isFormVisible && (
+            {!isFormVisible && canAddUnavailability && (
               <Button
                 id="add-unavailability-btn"
                 kind="primary"

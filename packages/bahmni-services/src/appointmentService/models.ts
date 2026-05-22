@@ -56,7 +56,7 @@ export interface AppointmentUnavailability {
 
 export interface CreateUnavailabilityRequest {
   locationUuid: string;
-  appointmentServiceUuid: string;
+  appointmentServiceUuid?: string;
   providerUuid?: string;
   startDate: string;
   startTime: string;

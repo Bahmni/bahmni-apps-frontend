@@ -3,6 +3,7 @@ import {
   DatePicker,
   DatePickerInput,
   Dropdown,
+  FilterableMultiSelect,
   TimePicker,
   TimePickerSelect,
 } from '@bahmni/design-system';
@@ -15,15 +16,15 @@ import {
   getUserLoginLocation,
   useTranslation,
   convertTo24HourFormat,
+  formatDateTime,
   type AppointmentService,
   type Location,
   type Provider,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
 import React, { useEffect, useMemo, useState } from 'react';
-import { PROVIDER_ATTRIBUTE_AVAILABLE } from '../constants';
+import { DATE_FORMAT, PROVIDER_ATTRIBUTE_AVAILABLE } from '../constants';
 import { getTimeInMinutes } from '../utils';
 import styles from './styles/UnavailabilityForm.module.scss';
 
@@ -32,16 +33,23 @@ interface UnavailabilityFormProps {
   onCancel: () => void;
 }
 
+interface SelectableItem {
+  id: string;
+  text: string;
+  isSelectAll?: boolean;
+  originalItem?: AppointmentService | Provider;
+}
+
 interface UnavailabilityFormData {
   locationUuid: string;
-  appointmentServiceUuid: string;
-  providerUuid?: string;
+  selectedServiceItems: SelectableItem[];
+  selectedProviderItems: SelectableItem[];
   startDate: Date | null;
   startTime: string;
-  startTimePeriod: 'AM' | 'PM'; //todo
+  startTimePeriod: 'AM' | 'PM';
   endDate: Date | null;
   endTime: string;
-  endTimePeriod: 'AM' | 'PM'; //todo
+  endTimePeriod: 'AM' | 'PM';
 }
 
 const getInitialLocationUuid = (): string => {
@@ -61,8 +69,8 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
 
   const [formData, setFormData] = useState<UnavailabilityFormData>({
     locationUuid: getInitialLocationUuid(),
-    appointmentServiceUuid: '',
-    providerUuid: undefined,
+    selectedServiceItems: [],
+    selectedProviderItems: [],
     startDate: null,
     startTime: '',
     startTimePeriod: 'AM',
@@ -73,6 +81,8 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [dateTimeError, setDateTimeError] = useState('');
+  const [servicesKey, setServicesKey] = useState(0);
+  const [providersKey, setProvidersKey] = useState(0);
 
   const todayAtMidnight = useMemo(() => {
     const today = new Date();
@@ -128,7 +138,58 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
     [providers],
   );
 
-  //todo
+  const serviceItems: SelectableItem[] = useMemo(() => {
+    const items: SelectableItem[] = filteredServices.map((service) => ({
+      id: service.uuid,
+      text: service.name ?? '',
+      originalItem: service,
+    }));
+    if (items.length > 0) {
+      items.push({
+        id: 'select-all-services',
+        text: t('ADMIN_UNAVAILABILITY_FORM_ALL_SERVICES'),
+        isSelectAll: true,
+      });
+    }
+    return items;
+  }, [filteredServices, t]);
+
+  const providerItems: SelectableItem[] = useMemo(() => {
+    const items: SelectableItem[] = availableProviders.map((provider) => ({
+      id: provider.uuid,
+      text: provider.person?.display ?? '',
+      originalItem: provider,
+    }));
+    if (items.length > 0) {
+      items.push({
+        id: 'select-all-providers',
+        text: t('ADMIN_UNAVAILABILITY_FORM_ALL_PROVIDERS'),
+        isSelectAll: true,
+      });
+    }
+    return items;
+  }, [availableProviders, t]);
+
+  useEffect(() => {
+    if (serviceItems.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        selectedServiceItems: serviceItems,
+      }));
+      setServicesKey((prev) => prev + 1);
+    }
+  }, [serviceItems]);
+
+  useEffect(() => {
+    if (providerItems.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        selectedProviderItems: providerItems,
+      }));
+      setProvidersKey((prev) => prev + 1);
+    }
+  }, [providerItems]);
+
   useEffect(() => {
     if (
       formData.startDate &&
@@ -189,21 +250,53 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      const requestData = {
+      const requestDataList: Array<{
+        locationUuid: string;
+        appointmentServiceUuid?: string;
+        providerUuid?: string;
+        startDate: string;
+        startTime: string;
+        endDate: string;
+        endTime: string;
+      }> = [];
+
+      const baseData = {
         locationUuid: formData.locationUuid,
-        appointmentServiceUuid: formData.appointmentServiceUuid,
-        providerUuid: formData.providerUuid,
-        startDate: format(formData.startDate, 'yyyy-MM-dd'), //todo
+        startDate: formatDateTime(formData.startDate, t, false, DATE_FORMAT)
+          .formattedResult, //todo
         startTime: convertTo24HourFormat(
           `${formData.startTime} ${formData.startTimePeriod}`,
         ),
-        endDate: format(formData.endDate, 'yyyy-MM-dd'), //todo
+        endDate: formatDateTime(formData.endDate, t, false, DATE_FORMAT)
+          .formattedResult, //todo
         endTime: convertTo24HourFormat(
           `${formData.endTime} ${formData.endTimePeriod}`,
         ),
       };
 
-      await createAppointmentUnavailability([requestData]);
+      const selectedServices = formData.selectedServiceItems
+        .filter((item) => !item.isSelectAll)
+        .map((item) => item.id);
+      const selectedProviders = formData.selectedProviderItems
+        .filter((item) => !item.isSelectAll)
+        .map((item) => item.id);
+
+      const serviceUuids =
+        selectedServices.length > 0 ? selectedServices : [undefined];
+      const providerUuids =
+        selectedProviders.length > 0 ? selectedProviders : [undefined];
+
+      for (const serviceUuid of serviceUuids) {
+        for (const providerUuid of providerUuids) {
+          requestDataList.push({
+            ...baseData,
+            appointmentServiceUuid: serviceUuid,
+            providerUuid: providerUuid,
+          });
+        }
+      }
+
+      await createAppointmentUnavailability(requestDataList);
       addNotification({
         title: t('ADMIN_UNAVAILABILITY_FORM_SUCCESS_TITLE'),
         message: t('ADMIN_UNAVAILABILITY_FORM_SUCCESS_MESSAGE'),
@@ -236,7 +329,7 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             setFormData({
               ...formData,
               locationUuid: e.selectedItem?.uuid ?? '',
-              appointmentServiceUuid: '',
+              selectedServiceItems: [],
             })
           }
           invalid={showValidation && !formData.locationUuid}
@@ -287,8 +380,8 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
               }
               value={formData.startTimePeriod}
             >
-              <option value="AM">AM</option> {/*//todo */}
-              <option value="PM">PM</option> {/*//todo */}
+              <option value="AM">{t('ADMIN_UNAVAILABILITY_AM')}</option>
+              <option value="PM">{t('ADMIN_UNAVAILABILITY_PM')}</option>
             </TimePickerSelect>
           </TimePicker>
         </div>
@@ -336,8 +429,8 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
               }
               value={formData.endTimePeriod}
             >
-              <option value="AM">AM</option> {/*//todo */}
-              <option value="PM">PM</option> {/*//todo */}
+              <option value="AM">{t('ADMIN_UNAVAILABILITY_AM')}</option>
+              <option value="PM">{t('ADMIN_UNAVAILABILITY_PM')}</option>
             </TimePickerSelect>
           </TimePicker>
         </div>
@@ -345,36 +438,35 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
 
       <div className={styles.providerServiceGrid}>
         <div className={styles.formField}>
-          <Dropdown
-            id="service-dropdown"
-            label={t('ADMIN_UNAVAILABILITY_FORM_SERVICE_LABEL')}
+          <FilterableMultiSelect
+            key={`services-${servicesKey}`}
+            id="service-multiselect"
             titleText={t('ADMIN_UNAVAILABILITY_FORM_SERVICE_LABEL')}
-            items={filteredServices}
-            itemToString={(item: AppointmentService) => item?.name ?? ''}
-            selectedItem={findItemByUuid(
-              services,
-              formData.appointmentServiceUuid,
-            )}
+            placeholder={t('ADMIN_UNAVAILABILITY_FORM_SERVICE_LABEL')}
+            items={serviceItems}
+            itemToString={(item: SelectableItem) => item?.text ?? ''}
+            initialSelectedItems={serviceItems}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                appointmentServiceUuid: e.selectedItem?.uuid ?? '',
+                selectedServiceItems: e.selectedItems as SelectableItem[],
               })
             }
           />
         </div>
         <div className={styles.formField}>
-          <Dropdown
-            id="provider-dropdown"
-            label={t('ADMIN_UNAVAILABILITY_FORM_PROVIDER_LABEL')}
+          <FilterableMultiSelect
+            key={`providers-${providersKey}`}
+            id="provider-multiselect"
             titleText={t('ADMIN_UNAVAILABILITY_FORM_PROVIDER_LABEL')}
-            items={availableProviders}
-            itemToString={(item: Provider) => item?.person?.display ?? ''}
-            selectedItem={findItemByUuid(providers, formData.providerUuid)}
+            placeholder={t('ADMIN_UNAVAILABILITY_FORM_PROVIDER_LABEL')}
+            items={providerItems}
+            itemToString={(item: SelectableItem) => item?.text ?? ''}
+            initialSelectedItems={providerItems}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                providerUuid: e.selectedItem?.uuid,
+                selectedProviderItems: e.selectedItems as SelectableItem[],
               })
             }
           />
