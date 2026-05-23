@@ -37,14 +37,14 @@ export const mockConsultationPadConfig: ConsultationPad = {
       metadata: {},
     },
     {
-      type: 'medications',
+      type: 'medication',
       encounterTypes: ['Consultation'],
       privileges: ['Medications'],
       attributes: [],
       metadata: {},
     },
     {
-      type: 'vaccinations',
+      type: 'vaccination',
       encounterTypes: ['Consultation'],
       privileges: ['Vaccinations'],
       attributes: [],

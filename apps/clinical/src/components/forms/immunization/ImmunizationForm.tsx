@@ -161,7 +161,7 @@ const ImmunizationForm = ({
     isLoading: vaccinationDrugsLoading,
     error: vaccinationDrugsError,
   } = useQuery({
-    queryKey: ['vaccinations'],
+    queryKey: ['vaccination'],
     queryFn: getVaccinations,
     staleTime: Infinity,
   });

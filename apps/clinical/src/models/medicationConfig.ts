@@ -10,7 +10,5 @@ export interface DrugFormDefault {
 }
 
 export interface MedicationJSONConfig {
-  defaultDurationUnit?: string;
-  defaultInstructions?: string;
   drugFormDefaults?: Record<string, DrugFormDefault>;
 }
