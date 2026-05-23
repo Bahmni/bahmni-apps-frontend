@@ -2,8 +2,7 @@ import './encounterDetails';
 import './allergies';
 import './investigations';
 import './conditionsAndDiagnoses';
-import './medications';
-import './vaccinations';
+import './medicationRequest';
 import './immunization';
 import './observations';
 
