@@ -23,6 +23,22 @@ export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
 
+// Command Palette
+export {
+  CommandPaletteProvider,
+  useCommandPalette,
+  type CommandPaletteContextType,
+  type CommandPaletteExtension,
+  type CommandPaletteAppConfig,
+  type HomeAppConfig,
+  type NavItem,
+  type PatientAction,
+  type PatientFieldKey,
+  type PatientFieldsConfig,
+  type SearchAnnotation,
+  type TriggerConfig,
+} from './commandPalette';
+
 // Notification System
 export {
   useNotification,

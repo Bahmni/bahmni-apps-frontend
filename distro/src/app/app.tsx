@@ -1,5 +1,5 @@
 import { Loading } from '@bahmni/design-system';
-import { AppContextProvider } from '@bahmni/widgets';
+import { AppContextProvider, CommandPaletteProvider } from '@bahmni/widgets';
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
@@ -27,7 +27,8 @@ const AppointmentsApp = lazy(() =>
 
 export function App() {
   return (
-    <AppContextProvider>
+<CommandPaletteProvider>    
+  <AppContextProvider>
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route index element={<Navigate to="/home/" replace />} />
@@ -39,6 +40,7 @@ export function App() {
         </Routes>
       </Suspense>
     </AppContextProvider>
+ </CommandPaletteProvider>
   );
 }
 
