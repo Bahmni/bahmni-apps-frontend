@@ -1,6 +1,7 @@
 import { Content, initFontAwesome, Loading } from '@bahmni/design-system';
 import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
+  CommandPaletteProvider,
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,
@@ -49,10 +50,12 @@ const ClinicalApp: React.FC = () => {
           <ClinicalConfigProvider>
             <UserPrivilegeProvider>
               <ActivePractitionerProvider>
-                <Routes>
-                  <Route path=":patientUuid" element={<ConsultationPage />} />
-                </Routes>
-                <ReactQueryDevtools initialIsOpen={false} />
+                <CommandPaletteProvider>
+                  <Routes>
+                    <Route path=":patientUuid" element={<ConsultationPage />} />
+                  </Routes>
+                  <ReactQueryDevtools initialIsOpen={false} />
+                </CommandPaletteProvider>
               </ActivePractitionerProvider>
             </UserPrivilegeProvider>
           </ClinicalConfigProvider>

@@ -1,6 +1,7 @@
 import { Content, Loading, initFontAwesome } from '@bahmni/design-system';
 import { initAppI18n } from '@bahmni/services';
 import {
+  CommandPaletteProvider,
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,
@@ -45,10 +46,12 @@ export function App() {
           <UserPrivilegeProvider>
             <NotificationServiceComponent />
             <AppointmentsConfigProvider>
-              <Suspense fallback={<Loading />}>
-                <Routes>{renderRoutes(routes)}</Routes>
-              </Suspense>
-              <ReactQueryDevtools initialIsOpen={false} />
+              <CommandPaletteProvider>
+                <Suspense fallback={<Loading />}>
+                  <Routes>{renderRoutes(routes)}</Routes>
+                </Suspense>
+                <ReactQueryDevtools initialIsOpen={false} />
+              </CommandPaletteProvider>
             </AppointmentsConfigProvider>
           </UserPrivilegeProvider>
         </NotificationProvider>
