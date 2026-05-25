@@ -4,15 +4,6 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "defaultDurationUnit": {
-      "type": "string",
-      "enum": ["min", "h", "d", "wk", "mo"],
-      "description": "Default unit for medication duration"
-    },
-    "defaultInstructions": {
-      "type": "string",
-      "description": "Default instructions for medication"
-    },
     "drugFormDefaults": {
       "type": "object",
       "description": "Default dose units and routes for different drug forms",

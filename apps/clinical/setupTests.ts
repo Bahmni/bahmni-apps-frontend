@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { TextEncoder, TextDecoder } from 'util';
+import { TextEncoder, TextDecoder } from 'node:util';
 import { initFontAwesome } from '@bahmni/design-system';
 // Import and initialize i18n for tests
 import './setupTests.i18n';
@@ -8,16 +8,18 @@ import './setupTests.i18n';
 initFontAwesome();
 
 // @ts-expect-error - Ignoring type issues with Node.js util TextEncoder
-global.TextEncoder = TextEncoder;
+globalThis.TextEncoder = TextEncoder;
 // @ts-expect-error - Ignoring type issues with Node.js util TextDecoder
-global.TextDecoder = TextDecoder;
+globalThis.TextDecoder = TextDecoder;
+
+globalThis.HTMLElement.prototype.scrollIntoView = jest.fn();
 
 // Polyfill crypto.randomUUID for jest/jsdom environment
-if (!global.crypto?.randomUUID) {
+if (!globalThis.crypto?.randomUUID) {
   let counter = 0;
-  Object.defineProperty(global, 'crypto', {
+  Object.defineProperty(globalThis, 'crypto', {
     value: {
-      ...global.crypto,
+      ...globalThis.crypto,
       randomUUID: () => {
         counter += 1;
         return `00000000-0000-0000-0000-${String(counter).padStart(12, '0')}`;
