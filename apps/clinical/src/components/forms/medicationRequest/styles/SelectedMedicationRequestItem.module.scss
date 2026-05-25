@@ -7,12 +7,11 @@
   margin-left: 0;
 }
 
-.vaccinationTitle {
+.itemTitle {
   @include type-style("heading-compact-02");
   margin-bottom: $spacing-04;
   margin-left: 0;
-
-  .vaccineDetails {
+  .itemDetails {
     @include type-style("body-compact-02");
   }
   .doseForm {
@@ -23,7 +22,7 @@
   }
 }
 
-.vaccinationActions {
+.itemActions {
   display: flex !important;
   flex-direction: row !important;
   align-items: start !important;
@@ -58,6 +57,11 @@
 
 .durationInput {
   width: 50%;
+  z-index: 1;
+
+  :global(.cds--number__control-btn.up-icon) {
+    order: unset !important;
+  }
 }
 
 .durationUnit {
@@ -73,3 +77,17 @@
 .statControl {
   padding-inline: 0.625rem;
 }
+
+.datePicker > div {
+    display: block;
+    min-inline-size: -webkit-fill-available !important;
+    > div {
+      display: block;
+      > div {
+        display: block;
+      }
+      input {
+        inline-size: -webkit-fill-available !important;
+      }
+    }
+  }
