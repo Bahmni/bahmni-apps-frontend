@@ -57,7 +57,7 @@ export {
   type DataTableFilterOption,
   type DataTableProps,
   type FilterType,
-} from './molecules/dataTable';
+} from './organisms/dataTable';
 export {
   SortableDataTable,
   type SortableDataTableProps,

@@ -1,5 +1,5 @@
 import type { Column } from '@tanstack/react-table';
-import { DatePicker, DatePickerInput } from '../../datePicker';
+import { DatePicker, DatePickerInput } from '../../../molecules/datePicker';
 import type { DateRangeFilterValue } from '../utils';
 
 interface DataTableDateRangeFilterProps<T> {
