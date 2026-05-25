@@ -662,7 +662,9 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-2-appointmentServiceName"
-                          />
+                          >
+                            All
+                          </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-2-providerName"
                           >
