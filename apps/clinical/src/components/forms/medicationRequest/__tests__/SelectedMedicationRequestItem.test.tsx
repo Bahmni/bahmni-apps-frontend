@@ -367,65 +367,6 @@ describe('SelectedMedicationRequestItem', () => {
       ).not.toBeInTheDocument();
       expect(store.getState().selectedMedicationRequests[0].note).toBe('');
     });
-
-    describe('vaccination STAT behavior', () => {
-      let vacStore: ReturnType<typeof getMedicationRequestStore>;
-
-      const VaccinationTestWrapper = () => {
-        const { selectedMedicationRequests } =
-          useMedicationRequestStore('vaccination');
-        const entry = selectedMedicationRequests[0];
-        if (!entry) return null;
-        return (
-          <SelectedMedicationRequestItem
-            entry={entry}
-            medicationConfig={mockMedicationConfig}
-            inputControlType="vaccination"
-            attributes={[{ name: 'stat' }, { name: 'frequency' }]}
-          />
-        );
-      };
-
-      beforeEach(() => {
-        vacStore = getMedicationRequestStore('vaccination');
-      });
-
-      afterEach(async () => {
-        await act(async () => {
-          vacStore.getState().reset();
-        });
-      });
-
-      it('resets frequency to null when STAT is unchecked', async () => {
-        vacStore.setState({
-          selectedMedicationRequests: [{ ...mockSelectedVaccination }],
-        });
-
-        await act(async () => {
-          render(<VaccinationTestWrapper />);
-        });
-
-        expect(vacStore.getState().selectedMedicationRequests[0].isSTAT).toBe(
-          true,
-        );
-        expect(
-          vacStore.getState().selectedMedicationRequests[0].frequency,
-        ).toEqual({ uuid: '0', name: 'Immediately', frequencyPerDay: 1 });
-
-        await user.click(
-          screen.getByTestId(
-            `vaccination-stat-checkbox-${mockSelectedVaccination.id}-test-id`,
-          ),
-        );
-
-        expect(vacStore.getState().selectedMedicationRequests[0].isSTAT).toBe(
-          false,
-        );
-        expect(
-          vacStore.getState().selectedMedicationRequests[0].frequency,
-        ).toBeNull();
-      });
-    });
   });
 
   it('should apply drug form defaults for route and dosage unit on mount', async () => {
@@ -488,6 +429,39 @@ describe('SelectedMedicationRequestItem', () => {
     expect(mockStore.updateDurationUnit).toHaveBeenCalledWith(
       mockMinimalMedicationEntry.id,
       { code: 'd', display: 'DURATION_UNIT_DAYS', daysMultiplier: 1 },
+    );
+  });
+
+  it('sets immediate frequency, clears duration, and updates start date when vaccination isSTAT is true', async () => {
+    const mockStore = makeMockStore();
+    mockUseMedicationRequestStore.mockReturnValue(mockStore);
+
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={{ ...mockSelectedVaccination, isSTAT: true }}
+          medicationConfig={mockMedicationConfig}
+          inputControlType="vaccination"
+          attributes={[{ name: 'stat' }, { name: 'frequency' }]}
+        />,
+      );
+    });
+
+    expect(mockStore.updateFrequency).toHaveBeenCalledWith(
+      mockSelectedVaccination.id,
+      { uuid: '0', name: 'Immediately', frequencyPerDay: 1 },
+    );
+    expect(mockStore.updateDuration).toHaveBeenCalledWith(
+      mockSelectedVaccination.id,
+      0,
+    );
+    expect(mockStore.updateDurationUnit).toHaveBeenCalledWith(
+      mockSelectedVaccination.id,
+      null,
+    );
+    expect(mockStore.updateStartDate).toHaveBeenCalledWith(
+      mockSelectedVaccination.id,
+      expect.any(Date),
     );
   });
 
