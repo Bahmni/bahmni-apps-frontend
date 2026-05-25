@@ -68,7 +68,7 @@ const renderCell = (row: Medication, key: string) => {
     const type = row.status === 'active' ? 'green' : 'gray';
     return <Tag type={type}>{row.status}</Tag>;
   }
-  return (row[key as keyof Medication] as string) ?? '—';
+  return row[key as keyof Medication] ?? '—';
 };
 
 const meta: Meta<typeof DataTable<Medication>> = {
@@ -530,7 +530,7 @@ const formatDate = (ms: number) =>
 
 const orderRenderCell = (row: Order, key: string) => {
   if (key === 'orderedAt') return formatDate(row.orderedAt);
-  return (row[key as keyof Order] as string | number).toString();
+  return row[key as keyof Order].toString();
 };
 
 export const WithDateRangeFilter: StoryObj<typeof DataTable<Order>> = {

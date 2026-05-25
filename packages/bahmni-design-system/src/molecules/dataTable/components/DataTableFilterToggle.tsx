@@ -17,11 +17,10 @@ export const DataTableFilterToggle = ({
   dataTestId,
 }: DataTableFilterToggleProps) => {
   const hasActiveFilters = activeFilterCount > 0;
+  const inactiveLabel = isOpen ? 'Hide filters' : 'Filters';
   const label = hasActiveFilters
     ? `Clear filters (${activeFilterCount})`
-    : isOpen
-      ? 'Hide filters'
-      : 'Filters';
+    : inactiveLabel;
 
   return (
     <IconButton
