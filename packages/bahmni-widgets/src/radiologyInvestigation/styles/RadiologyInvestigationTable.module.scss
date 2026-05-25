@@ -3,6 +3,24 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+:global([data-split-view] #main-display-area #radiology-investigations-table) {
+  div[id^="accordion-item"] {
+    overflow-x: auto;
+  }
+  div[id^="accordion-item"]:has(table td:nth-child(5)) {
+    padding-block-end: $spacing-05;
+  }
+  table:has(td:nth-child(5)) {
+    min-width: 62.5rem;
+    td, th {
+      min-width: 6.875rem;
+    }
+    td:first-child, th:first-child {
+      min-width: unset !important;
+    }
+  }
+}
+
 .investigationName {
   @include type-style("heading-compact-01");
   display: flex;

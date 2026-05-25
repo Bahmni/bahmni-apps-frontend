@@ -15,6 +15,9 @@
   }
 
   :global([data-split-view] #main-display-area) & {
+    div[id^="accordion-item"] {
+      overflow-x: auto;
+    }
     div[id^="accordion-item"] div[id^="accordion-item"] {
       overflow-x: visible;
     }
