@@ -49,16 +49,22 @@ export async function getProviderLoginLocations(
     return [];
   }
 
+  const isLocationAttributeValue = (
+    value: boolean | LocationAttributeValue,
+  ): value is LocationAttributeValue =>
+    typeof value === 'object' && value !== null;
+
   return provider.attributes
     .filter(
       (attr) =>
         !attr.voided &&
         attr.attributeType?.display === 'Login Locations' &&
-        (attr.value as LocationAttributeValue).tags?.some(
+        isLocationAttributeValue(attr.value) &&
+        attr.value.tags?.some(
           (tag) => tag.display === 'Appointment Location',
         ),
     )
-    .map((attr) => {
+
       const locationValue = attr.value as LocationAttributeValue;
       return {
         uuid: locationValue.uuid,
