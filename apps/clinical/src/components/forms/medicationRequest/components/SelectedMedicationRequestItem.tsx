@@ -113,8 +113,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
         updateDuration(id, 0);
         updateDurationUnit(id, null);
         updateStartDate(id, getTodayDate());
-      } else {
-        updateFrequency(id, null);
       }
     }, [
       isSTAT,
@@ -289,11 +287,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                 )}
                 aria-label="Frequency"
                 hideLabel
-                items={
-                  medicationConfig.frequencies.filter(
-                    (item) => !isImmediateFrequency(item),
-                  ) ?? []
-                }
+                items={medicationConfig.frequencies ?? []}
                 itemToString={(item) => (item ? item.name : '')}
                 selectedItem={frequency}
                 onChange={(e) => {

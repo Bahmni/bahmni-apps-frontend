@@ -14,7 +14,6 @@ import {
   mockRequiredMedicationAttributes,
   mockSelectedMedication,
   mockSelectedMedicationWithAllErrors,
-  mockSelectedVaccination,
 } from './__mocks__/MedicationRequestFormMocks';
 
 expect.extend(toHaveNoViolations);
@@ -366,65 +365,6 @@ describe('SelectedMedicationRequestItem', () => {
         screen.queryByRole('textbox', { name: 'Add Note' }),
       ).not.toBeInTheDocument();
       expect(store.getState().selectedMedicationRequests[0].note).toBe('');
-    });
-
-    describe('vaccination STAT behavior', () => {
-      let vacStore: ReturnType<typeof getMedicationRequestStore>;
-
-      const VaccinationTestWrapper = () => {
-        const { selectedMedicationRequests } =
-          useMedicationRequestStore('vaccination');
-        const entry = selectedMedicationRequests[0];
-        if (!entry) return null;
-        return (
-          <SelectedMedicationRequestItem
-            entry={entry}
-            medicationConfig={mockMedicationConfig}
-            inputControlType="vaccination"
-            attributes={[{ name: 'stat' }, { name: 'frequency' }]}
-          />
-        );
-      };
-
-      beforeEach(() => {
-        vacStore = getMedicationRequestStore('vaccination');
-      });
-
-      afterEach(async () => {
-        await act(async () => {
-          vacStore.getState().reset();
-        });
-      });
-
-      it('resets frequency to null when STAT is unchecked', async () => {
-        vacStore.setState({
-          selectedMedicationRequests: [{ ...mockSelectedVaccination }],
-        });
-
-        await act(async () => {
-          render(<VaccinationTestWrapper />);
-        });
-
-        expect(vacStore.getState().selectedMedicationRequests[0].isSTAT).toBe(
-          true,
-        );
-        expect(
-          vacStore.getState().selectedMedicationRequests[0].frequency,
-        ).toEqual({ uuid: '0', name: 'Immediately', frequencyPerDay: 1 });
-
-        await user.click(
-          screen.getByTestId(
-            `vaccination-stat-checkbox-${mockSelectedVaccination.id}-test-id`,
-          ),
-        );
-
-        expect(vacStore.getState().selectedMedicationRequests[0].isSTAT).toBe(
-          false,
-        );
-        expect(
-          vacStore.getState().selectedMedicationRequests[0].frequency,
-        ).toBeNull();
-      });
     });
   });
 

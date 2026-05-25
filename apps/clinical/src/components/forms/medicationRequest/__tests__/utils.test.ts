@@ -54,28 +54,24 @@ describe('applyDefaultFrequency', () => {
     });
   });
 
-  it.each([
-    [
-      'does nothing when frequency is already set',
-      { uuid: 'bd-uuid', name: 'BD', frequencyPerDay: 2 },
-      [{ name: 'frequency', default: 'BD' }],
-    ],
-    [
-      'does nothing when no default configured on the attribute',
-      null,
-      [{ name: 'frequency' }],
-    ],
-    [
-      'does nothing when default name matches an immediate frequency',
-      null,
-      [{ name: 'frequency', default: 'Immediately' }],
-    ],
-  ])('%s', (_, frequency, attrs) => {
+  it('does nothing when frequency is already set', () => {
     const updateFrequency = jest.fn();
     applyDefaultFrequency(
-      attrs,
+      [{ name: 'frequency', default: 'BD' }],
       mockMedicationConfig,
-      frequency,
+      { uuid: 'bd-uuid', name: 'BD', frequencyPerDay: 2 },
+      'id',
+      updateFrequency,
+    );
+    expect(updateFrequency).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when no default configured on the attribute', () => {
+    const updateFrequency = jest.fn();
+    applyDefaultFrequency(
+      [{ name: 'frequency' }],
+      mockMedicationConfig,
+      null,
       'id',
       updateFrequency,
     );
