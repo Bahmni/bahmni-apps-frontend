@@ -16,8 +16,18 @@ interface Medication {
 }
 
 const mockRows: Medication[] = [
-  { id: '1', name: 'Paracetamol 650 mg', status: 'active', orderedBy: 'Super Man' },
-  { id: '2', name: 'Acetylsalicylic acid', status: 'stopped', orderedBy: 'Dr Neha' },
+  {
+    id: '1',
+    name: 'Paracetamol 650 mg',
+    status: 'active',
+    orderedBy: 'Super Man',
+  },
+  {
+    id: '2',
+    name: 'Acetylsalicylic acid',
+    status: 'stopped',
+    orderedBy: 'Dr Neha',
+  },
   { id: '3', name: 'Oxygen', status: 'active', orderedBy: 'Dr John' },
 ];
 
@@ -99,9 +109,7 @@ describe('DataTable column filtering', () => {
       />,
     );
 
-    expect(
-      screen.getByTestId('data-table-filter-toggle'),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('data-table-filter-toggle')).toBeInTheDocument();
   });
 
   it('reveals the filter row on toggle click', async () => {
@@ -158,9 +166,7 @@ describe('DataTable column filtering', () => {
 
     const visibleRows = screen.getAllByTestId(/^table-row-/);
     expect(visibleRows).toHaveLength(2);
-    expect(
-      screen.queryByText('Acetylsalicylic acid'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Acetylsalicylic acid')).not.toBeInTheDocument();
   });
 
   it('narrows rows when a text filter is typed', async () => {

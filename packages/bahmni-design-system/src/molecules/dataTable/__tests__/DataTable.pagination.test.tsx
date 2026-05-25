@@ -111,7 +111,9 @@ describe('DataTable pagination', () => {
       />,
     );
 
-    const select = screen.getByLabelText(/items per page/i) as HTMLSelectElement;
+    const select = screen.getByLabelText(
+      /items per page/i,
+    ) as HTMLSelectElement;
     const optionValues = Array.from(select.options).map((o) => o.value);
     expect(optionValues).toContain('7');
     expect(optionValues.indexOf('7')).toBe(1);

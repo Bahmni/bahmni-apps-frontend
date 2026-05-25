@@ -19,8 +19,18 @@ interface Medication {
 }
 
 const mockRows: Medication[] = [
-  { id: '1', name: 'Paracetamol 650 mg', status: 'active', orderedBy: 'Super Man' },
-  { id: '2', name: 'Acetylsalicylic acid', status: 'stopped', orderedBy: 'Dr Neha' },
+  {
+    id: '1',
+    name: 'Paracetamol 650 mg',
+    status: 'active',
+    orderedBy: 'Super Man',
+  },
+  {
+    id: '2',
+    name: 'Acetylsalicylic acid',
+    status: 'stopped',
+    orderedBy: 'Dr Neha',
+  },
   { id: '3', name: 'Oxygen', status: 'active', orderedBy: 'Dr John' },
 ];
 

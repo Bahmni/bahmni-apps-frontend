@@ -1,4 +1,5 @@
 import type { Row } from '@tanstack/react-table';
+import type { DataTableColumn } from '../types';
 import {
   buildTanStackColumns,
   defaultRenderCell,
@@ -8,7 +9,6 @@ import {
   initialSortingState,
   type DateRangeFilterValue,
 } from '../utils';
-import type { DataTableColumn } from '../types';
 
 const makeRow = (value: unknown) =>
   ({

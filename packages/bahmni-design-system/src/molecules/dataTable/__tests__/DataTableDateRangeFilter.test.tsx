@@ -1,6 +1,6 @@
+import type { Column } from '@tanstack/react-table';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { Column } from '@tanstack/react-table';
 import { DataTableDateRangeFilter } from '../components/DataTableDateRangeFilter';
 import type { DateRangeFilterValue } from '../utils';
 import '@testing-library/jest-dom';
@@ -20,7 +20,7 @@ jest.mock('../../datePicker', () => ({
     <div data-testid={testId}>
       <span data-testid={`${testId}-value-count`}>{value.length}</span>
       {value.map((d, i) => (
-        <span key={i} data-testid={`${testId}-value-${i}`}>
+        <span key={d.getTime()} data-testid={`${testId}-value-${i}`}>
           {d.getTime()}
         </span>
       ))}
@@ -35,7 +35,10 @@ jest.mock('../../datePicker', () => ({
         type="button"
         data-testid={`${testId}-fire-range`}
         onClick={() =>
-          onChange([new Date(Date.UTC(2026, 0, 15)), new Date(Date.UTC(2026, 2, 1))])
+          onChange([
+            new Date(Date.UTC(2026, 0, 15)),
+            new Date(Date.UTC(2026, 2, 1)),
+          ])
         }
       >
         range
@@ -82,9 +85,9 @@ describe('DataTableDateRangeFilter', () => {
         dataTestId="t"
       />,
     );
-    expect(screen.getByTestId('t-filter-orderedAt-value-count')).toHaveTextContent(
-      '0',
-    );
+    expect(
+      screen.getByTestId('t-filter-orderedAt-value-count'),
+    ).toHaveTextContent('0');
   });
 
   it('renders one Date when only the start of the range is set', () => {
@@ -97,9 +100,9 @@ describe('DataTableDateRangeFilter', () => {
         dataTestId="t"
       />,
     );
-    expect(screen.getByTestId('t-filter-orderedAt-value-count')).toHaveTextContent(
-      '1',
-    );
+    expect(
+      screen.getByTestId('t-filter-orderedAt-value-count'),
+    ).toHaveTextContent('1');
     expect(screen.getByTestId('t-filter-orderedAt-value-0')).toHaveTextContent(
       String(start),
     );
@@ -115,9 +118,9 @@ describe('DataTableDateRangeFilter', () => {
         dataTestId="t"
       />,
     );
-    expect(screen.getByTestId('t-filter-orderedAt-value-count')).toHaveTextContent(
-      '1',
-    );
+    expect(
+      screen.getByTestId('t-filter-orderedAt-value-count'),
+    ).toHaveTextContent('1');
     expect(screen.getByTestId('t-filter-orderedAt-value-0')).toHaveTextContent(
       String(end),
     );
@@ -134,9 +137,9 @@ describe('DataTableDateRangeFilter', () => {
         dataTestId="t"
       />,
     );
-    expect(screen.getByTestId('t-filter-orderedAt-value-count')).toHaveTextContent(
-      '2',
-    );
+    expect(
+      screen.getByTestId('t-filter-orderedAt-value-count'),
+    ).toHaveTextContent('2');
   });
 
   it('clears the filter when the DatePicker fires an empty range', async () => {
