@@ -25,6 +25,7 @@ import {
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
   getPatientMedications,
+  useEncounterSessionStore,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import classNames from 'classnames';
@@ -242,66 +243,11 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     return [...activeMedications, ...scheduledMedications];
   }, [allMedications]);
 
-  const [editContext, setEditContext] = useState(() => {
-    const header = document.querySelector('[data-testid="patient-header"]');
-    return {
-      canEditEncounter:
-        header?.getAttribute('data-can-edit-encounter') === 'true',
-      activeEncounterUuid:
-        header?.getAttribute('data-active-encounter-uuid') ?? '',
-      activePractitionerUuid:
-        header?.getAttribute('data-active-practitioner-uuid') ?? '',
-    };
-  });
-
-  useEffect(() => {
-    const HEADER_SELECTOR = '[data-testid="patient-header"]';
-    const OBSERVED_ATTRS = [
-      'data-can-edit-encounter',
-      'data-active-encounter-uuid',
-      'data-active-practitioner-uuid',
-    ];
-
-    const readAttributes = () => {
-      const header = document.querySelector(HEADER_SELECTOR);
-      setEditContext({
-        canEditEncounter:
-          header?.getAttribute('data-can-edit-encounter') === 'true',
-        activeEncounterUuid:
-          header?.getAttribute('data-active-encounter-uuid') ?? '',
-        activePractitionerUuid:
-          header?.getAttribute('data-active-practitioner-uuid') ?? '',
-      });
-    };
-
-    readAttributes();
-
-    const header = document.querySelector(HEADER_SELECTOR);
-    if (!header) return;
-
-    const observer = new MutationObserver(readAttributes);
-    observer.observe(header, {
-      attributes: true,
-      attributeFilter: OBSERVED_ATTRS,
-    });
-    return () => observer.disconnect();
-  }, []);
-
-  // Re-read attributes when consultation is saved (header may update after refetch)
-  useSubscribeConsultationSaved(() => {
-    const header = document.querySelector('[data-testid="patient-header"]');
-    setEditContext({
-      canEditEncounter:
-        header?.getAttribute('data-can-edit-encounter') === 'true',
-      activeEncounterUuid:
-        header?.getAttribute('data-active-encounter-uuid') ?? '',
-      activePractitionerUuid:
-        header?.getAttribute('data-active-practitioner-uuid') ?? '',
-    });
-  }, []);
-
-  const { canEditEncounter, activeEncounterUuid, activePractitionerUuid } =
-    editContext;
+  const {
+    canEditOrCreate: canEditEncounter,
+    activeEncounterUuid,
+    activePractitionerUuid,
+  } = useEncounterSessionStore();
 
   const editableMedications = useMemo(() => {
     if (!canEdit || !canEditEncounter || !activeEncounterUuid) return [];
@@ -432,7 +378,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
       data-testid="medications-table"
       className={styles.medicationsTableWrapper}
     >
-      {editAction && (
+      {editAction && canEdit && (
         <div
           className={styles.widgetEditActions}
           data-testid="medications-widget-edit-actions"

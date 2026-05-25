@@ -2,13 +2,14 @@ import {
   useTranslation,
   useSubscribeConsultationSaved,
   CONSULTATION_ENCOUNTER_TYPE_UUID,
+  setEncounterSessionState,
 } from '@bahmni/services';
 import {
   PatientDetails,
   useActivePractitioner,
   usePatientUUID,
 } from '@bahmni/widgets';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
 import ConsultationActionButton from './ConsultationActionButton';
 import styles from './styles/PatientHeader.module.scss';
@@ -53,6 +54,17 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     },
     [patientUUID],
   );
+
+  // Publish encounter session state so widgets can read it without DOM queries.
+  useEffect(() => {
+    setEncounterSessionState({
+      canEditOrCreate: editActiveEncounter,
+      activeEncounterUuid:
+        editActiveEncounter && activeEncounter?.id ? activeEncounter.id : null,
+      activePractitionerUuid: practitioner?.uuid ?? null,
+      isLoading,
+    });
+  }, [editActiveEncounter, activeEncounter, practitioner, isLoading]);
 
   return (
     <div

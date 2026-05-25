@@ -290,6 +290,8 @@ export const mockDispenseUnit = { uuid: 'mg-uuid', name: 'mg' };
 export const makeMockStore = (overrides = {}) => ({
   selectedMedicationRequests: [],
   attributes: undefined,
+  originalEditIds: [],
+  pendingFhirEdits: [],
   setAttributes: jest.fn(),
   addItem: jest.fn(),
   removeItem: jest.fn(),
@@ -306,6 +308,9 @@ export const makeMockStore = (overrides = {}) => ({
   updateDispenseQuantity: jest.fn(),
   updateDispenseUnit: jest.fn(),
   updateNote: jest.fn(),
+  setPendingFhirEdits: jest.fn(),
+  loadMedicationsForEdit: jest.fn(),
+  hasEditChanges: jest.fn().mockReturnValue(false),
   validateAll: jest.fn().mockReturnValue(true),
   reset: jest.fn(),
   getState: jest.fn(),

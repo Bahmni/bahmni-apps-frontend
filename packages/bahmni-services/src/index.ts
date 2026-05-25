@@ -232,6 +232,10 @@ export {
   type MatchReasonCode,
   MATCH_REASON_MESSAGES,
   CONSULTATION_ENCOUNTER_TYPE_UUID,
+  useEncounterSessionStore,
+  setEncounterSessionState,
+  resetEncounterSession,
+  type EncounterSessionState,
 } from './encounterSessionService';
 
 export {

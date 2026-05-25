@@ -2,7 +2,10 @@ import {
   generateUUID,
   MedicationFrequency as Frequency,
 } from '@bahmni/services';
-import { Medication } from 'fhir/r4';
+import {
+  Medication,
+  MedicationRequest as FhirMedicationRequest,
+} from 'fhir/r4';
 import { useStore } from 'zustand';
 import { createStore } from 'zustand/vanilla';
 import { Concept } from '../../../models/encounterConcepts';
@@ -19,6 +22,8 @@ import { findAttr } from './utils';
 export interface MedicationRequestState {
   selectedMedicationRequests: MedicationInputEntry[];
   attributes: InputControlAttributes[] | undefined;
+  originalEditIds: string[];
+  pendingFhirEdits: FhirMedicationRequest[];
   setAttributes: (attrs: InputControlAttributes[]) => void;
   addItem: (medication: Medication, displayName: string) => void;
   removeItem: (id: string) => void;
@@ -35,6 +40,9 @@ export interface MedicationRequestState {
   updateDispenseQuantity: (id: string, quantity: number) => void;
   updateDispenseUnit: (id: string, unit: Concept) => void;
   updateNote: (id: string, note: string) => void;
+  setPendingFhirEdits: (resources: FhirMedicationRequest[]) => void;
+  loadMedicationsForEdit: (entries: MedicationInputEntry[]) => void;
+  hasEditChanges: () => boolean;
   validateAll: () => boolean;
   reset: () => void;
   getState: () => MedicationRequestState;
@@ -207,6 +215,10 @@ function applyDispenseUnitUpdate(
   return updated;
 }
 
+function withEditFlag(updated: MedicationInputEntry): MedicationInputEntry {
+  return updated.fhirResourceId ? { ...updated, isModified: true } : updated;
+}
+
 type FieldValidationConfig = {
   attr: string;
   key: keyof MedicationInputEntry['errors'];
@@ -309,6 +321,8 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
   return createStore<MedicationRequestState>((set, get) => ({
     selectedMedicationRequests: [],
     attributes: undefined,
+    originalEditIds: [],
+    pendingFhirEdits: [],
 
     setAttributes: (attrs: InputControlAttributes[]) => {
       set({ attributes: attrs });
@@ -361,7 +375,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateDosage: (id: string, dosage: number) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyDosageUpdate(item, dosage) : item;
+        item.id === id ? withEditFlag(applyDosageUpdate(item, dosage)) : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -370,7 +384,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateDosageUnit: (id: string, unit: Concept) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyDosageUnitUpdate(item, unit) : item;
+        item.id === id ? withEditFlag(applyDosageUnitUpdate(item, unit)) : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -379,7 +393,9 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateFrequency: (id: string, frequency: Frequency | null) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyFrequencyUpdate(item, frequency) : item;
+        item.id === id
+          ? withEditFlag(applyFrequencyUpdate(item, frequency))
+          : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -388,7 +404,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateRoute: (id: string, route: Concept) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyRouteUpdate(item, route) : item;
+        item.id === id ? withEditFlag(applyRouteUpdate(item, route)) : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -397,7 +413,9 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateDuration: (id: string, duration: number) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyDurationUpdate(item, duration) : item;
+        item.id === id
+          ? withEditFlag(applyDurationUpdate(item, duration))
+          : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -406,7 +424,9 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateDurationUnit: (id: string, unit: DurationUnitOption | null) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyDurationUnitUpdate(item, unit) : item;
+        item.id === id
+          ? withEditFlag(applyDurationUnitUpdate(item, unit))
+          : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -415,7 +435,9 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateInstruction: (id: string, instruction: Concept) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyInstructionUpdate(item, instruction) : item;
+        item.id === id
+          ? withEditFlag(applyInstructionUpdate(item, instruction))
+          : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -424,7 +446,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateIsPRN: (id: string, isPRN: boolean) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyIsPRNUpdate(item, isPRN) : item;
+        item.id === id ? withEditFlag(applyIsPRNUpdate(item, isPRN)) : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -436,11 +458,11 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
         selectedMedicationRequests: state.selectedMedicationRequests.map(
           (item) => {
             if (item.id !== id) return item;
-            const updated = applyIsSTATUpdate(item, isSTAT);
+            let updated = applyIsSTATUpdate(item, isSTAT);
             if (isSTAT && !isMedicationRequest) {
-              return { ...updated, duration: 0, durationUnit: null };
+              updated = { ...updated, duration: 0, durationUnit: null };
             }
-            return updated;
+            return withEditFlag(updated);
           },
         ),
       }));
@@ -448,7 +470,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateStartDate: (id: string, date: Date) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyStartDateUpdate(item, date) : item;
+        item.id === id ? withEditFlag(applyStartDateUpdate(item, date)) : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -457,7 +479,9 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateDispenseQuantity: (id: string, quantity: number) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyDispenseQuantityUpdate(item, quantity) : item;
+        item.id === id
+          ? withEditFlag(applyDispenseQuantityUpdate(item, quantity))
+          : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -466,7 +490,9 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateDispenseUnit: (id: string, unit: Concept) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyDispenseUnitUpdate(item, unit) : item;
+        item.id === id
+          ? withEditFlag(applyDispenseUnitUpdate(item, unit))
+          : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -475,7 +501,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
 
     updateNote: (id: string, note: string) => {
       const applyUpdate = (item: MedicationInputEntry) =>
-        item.id === id ? applyNoteUpdate(item, note) : item;
+        item.id === id ? withEditFlag(applyNoteUpdate(item, note)) : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),
@@ -497,8 +523,41 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
       return isValid;
     },
 
+    setPendingFhirEdits: (resources: FhirMedicationRequest[]) => {
+      set({ pendingFhirEdits: resources });
+    },
+
+    loadMedicationsForEdit: (entries: MedicationInputEntry[]) => {
+      const withFlags = entries.map((e) => ({
+        ...e,
+        isModified: false,
+      }));
+      set({
+        selectedMedicationRequests: withFlags,
+        originalEditIds: withFlags.map((e) => e.id),
+        pendingFhirEdits: [],
+      });
+    },
+
+    hasEditChanges: () => {
+      const { selectedMedicationRequests, originalEditIds } = get();
+      // New items added (no fhirResourceId)
+      if (selectedMedicationRequests.some((m) => !m.fhirResourceId))
+        return true;
+      // Any edited item modified
+      if (selectedMedicationRequests.some((m) => m.isModified)) return true;
+      // Any original item removed
+      const currentIds = new Set(selectedMedicationRequests.map((m) => m.id));
+      if (originalEditIds.some((id) => !currentIds.has(id))) return true;
+      return false;
+    },
+
     reset: () => {
-      set({ selectedMedicationRequests: [] });
+      set({
+        selectedMedicationRequests: [],
+        originalEditIds: [],
+        pendingFhirEdits: [],
+      });
     },
 
     getState: () => get(),

@@ -127,6 +127,9 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
     ]);
 
     useEffect(() => {
+      // Skip applying defaults for items loaded for edit — they already have
+      // their values populated from the FHIR resource.
+      if (entry.fhirResourceId) return;
       applyMountDefaults({
         attributes,
         medicationConfig,

@@ -351,6 +351,12 @@ export function createMedicationRequestEntries({
       statDurationInMilliseconds,
     );
 
+    if (medication.fhirResourceId) {
+      medicationResource.priorPrescription = {
+        reference: `MedicationRequest/${medication.fhirResourceId}`,
+      };
+    }
+
     const medicationRequestEntry = createBundleEntry(
       medicationResourceURL,
       medicationResource,

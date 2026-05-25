@@ -7,3 +7,9 @@ export {
   type MatchReasonCode,
   MATCH_REASON_MESSAGES,
 } from './encounterMatchDecisionMapper';
+export {
+  useEncounterSessionStore,
+  setEncounterSessionState,
+  resetEncounterSession,
+  type EncounterSessionState,
+} from './encounterSessionStore';

@@ -29,6 +29,7 @@ export interface MedicationInputEntry {
 
   // Edit support
   fhirResourceId?: string;
+  isModified?: boolean;
 
   errors: {
     stat?: string;

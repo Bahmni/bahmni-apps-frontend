@@ -8,7 +8,7 @@ import {
   useTranslation,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
-import type { Encounter } from 'fhir/r4';
+import type { Encounter, MedicationRequest } from 'fhir/r4';
 import React, {
   useCallback,
   useEffect,
@@ -25,6 +25,8 @@ import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
+import { MEDICATIONS_INPUT_CONTROL_KEY } from '../forms/medicationRequest/constants';
+import { getMedicationRequestStore } from '../forms/medicationRequest/store';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
 import { submitConsultation } from './services';
@@ -170,6 +172,18 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     removeForm,
   } = useObservationFormsStore();
 
+  // Seed medication store with FHIR resources for edit mode
+  useEffect(() => {
+    const editMedications = encounterSessionStartContext.editMedications as
+      | MedicationRequest[]
+      | undefined;
+    if (editMedications?.length) {
+      getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY)
+        .getState()
+        .setPendingFhirEdits(editMedications);
+    }
+  }, [encounterSessionStartContext.editMedications]);
+
   useEffect(() => {
     return () => activeEntries.forEach((entry) => entry.reset());
   }, []);
@@ -270,11 +284,23 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   })();
 
+  const isEditMode = !!editOnlyKey;
+  const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
+  const editChangesExist = useSyncExternalStore(
+    (cb) => medStore.subscribe(cb),
+    () => {
+      if (!isEditMode || editOnlyKey !== MEDICATIONS_INPUT_CONTROL_KEY)
+        return true;
+      return medStore.getState().hasEditChanges();
+    },
+  );
+
   const isPrimaryButtonDisabled =
     hasError ||
     !isEncounterDetailsFormReady ||
     isSubmitting ||
     !hasConsultationData ||
+    !editChangesExist ||
     editEncounterLoading;
   return (
     <>

@@ -12,7 +12,7 @@ import {
   getVaccinations,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
 import { MedicationJSONConfig } from '../../../models/medicationConfig';
@@ -21,6 +21,7 @@ import {
   getMedicationDisplay,
   getMedicationsFromBundle,
 } from '../../../services/medicationService';
+import { parseFhirToMedicationInputEntry } from '../../../utils/fhir/medicationRequestParser';
 import SelectedMedicationRequestItem from './components/SelectedMedicationRequestItem';
 import {
   MEDICATIONS_CONFIG_URL,
@@ -28,7 +29,7 @@ import {
 } from './constants';
 import { MedicationRequestStoreKey } from './models';
 import medicationConfigSchema from './schema.json';
-import { useMedicationRequestStore } from './store';
+import { getMedicationRequestStore, useMedicationRequestStore } from './store';
 import styles from './styles/MedicationRequestForm.module.scss';
 import {
   getMedicationRequestComboBoxItems,
@@ -91,12 +92,37 @@ const MedicationRequestForm: React.FC<{
     [vaccinationsBundle],
   );
 
-  const { selectedMedicationRequests, addItem, removeItem, setAttributes } =
-    useMedicationRequestStore(inputControlType as MedicationRequestStoreKey);
+  const {
+    selectedMedicationRequests,
+    addItem,
+    removeItem,
+    setAttributes,
+    pendingFhirEdits,
+  } = useMedicationRequestStore(inputControlType as MedicationRequestStoreKey);
+
+  const editLoadedRef = useRef(false);
+  const isEditMode = selectedMedicationRequests.some((m) => m.fhirResourceId);
 
   useEffect(() => {
     setAttributes(attributes);
   }, []);
+
+  // Parse pending FHIR edits once config is available
+  useEffect(() => {
+    if (
+      pendingFhirEdits.length > 0 &&
+      medicationConfig &&
+      !editLoadedRef.current
+    ) {
+      editLoadedRef.current = true;
+      const storeKey = inputControlType as MedicationRequestStoreKey;
+      const store = getMedicationRequestStore(storeKey);
+      const entries = pendingFhirEdits.map((fhir) =>
+        parseFhirToMedicationInputEntry(fhir, medicationConfig),
+      );
+      store.getState().loadMedicationsForEdit(entries);
+    }
+  }, [pendingFhirEdits, medicationConfig, inputControlType]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -180,7 +206,7 @@ const MedicationRequestForm: React.FC<{
           {t(`ERROR_FETCHING_${inputControlType.toUpperCase()}_CONFIG`)}
         </div>
       )}
-      {!medicationConfigLoading && !medicationConfigError && (
+      {!medicationConfigLoading && !medicationConfigError && !isEditMode && (
         <ComboBox
           id={`${inputControlType}-search`}
           data-testid={`${inputControlType}-search-combobox-test-id`}

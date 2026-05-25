@@ -39,7 +39,7 @@ export const handleEditAction = (
       detail: {
         encounterType,
         editMedications,
-        editOnly: 'medications',
+        editOnly: 'medication',
         editTitle: 'MEDICATIONS_EDIT_FORM_TITLE',
         editEncounterUuid,
       },
