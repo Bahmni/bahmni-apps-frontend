@@ -252,7 +252,7 @@ describe('getActiveEntries', () => {
       expect.arrayContaining(['encounterDetails', 'allergies']),
     );
     expect(result).toHaveLength(2);
-    expect(result.find((e) => e.key === 'medications')).toBeUndefined();
+    expect(result.find((e) => e.key === 'medication')).toBeUndefined();
     expect(result.find((e) => e.key === 'investigations')).toBeUndefined();
   });
 
@@ -276,13 +276,13 @@ describe('getActiveEntries', () => {
   });
 
   it('encounterDetails always passes the editOnlyKey filter when editOnlyKey is set', () => {
-    const result = getActiveEntries(registry, 'Consultation', 'medications');
+    const result = getActiveEntries(registry, 'Consultation', 'medication');
 
     const encounterDetailsEntry = result.find(
       (e) => e.key === 'encounterDetails',
     );
     expect(encounterDetailsEntry).toBeDefined();
-    expect(result.find((e) => e.key === 'medications')).toBeDefined();
+    expect(result.find((e) => e.key === 'medication')).toBeDefined();
     expect(result).toHaveLength(2);
   });
 });
