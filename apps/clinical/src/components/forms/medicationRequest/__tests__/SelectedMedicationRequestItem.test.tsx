@@ -14,6 +14,7 @@ import {
   mockRequiredMedicationAttributes,
   mockSelectedMedication,
   mockSelectedMedicationWithAllErrors,
+  mockSelectedVaccination,
 } from './__mocks__/MedicationRequestFormMocks';
 
 expect.extend(toHaveNoViolations);
@@ -428,6 +429,39 @@ describe('SelectedMedicationRequestItem', () => {
     expect(mockStore.updateDurationUnit).toHaveBeenCalledWith(
       mockMinimalMedicationEntry.id,
       { code: 'd', display: 'DURATION_UNIT_DAYS', daysMultiplier: 1 },
+    );
+  });
+
+  it('sets immediate frequency, clears duration, and updates start date when vaccination isSTAT is true', async () => {
+    const mockStore = makeMockStore();
+    mockUseMedicationRequestStore.mockReturnValue(mockStore);
+
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={{ ...mockSelectedVaccination, isSTAT: true }}
+          medicationConfig={mockMedicationConfig}
+          inputControlType="vaccination"
+          attributes={[{ name: 'stat' }, { name: 'frequency' }]}
+        />,
+      );
+    });
+
+    expect(mockStore.updateFrequency).toHaveBeenCalledWith(
+      mockSelectedVaccination.id,
+      { uuid: '0', name: 'Immediately', frequencyPerDay: 1 },
+    );
+    expect(mockStore.updateDuration).toHaveBeenCalledWith(
+      mockSelectedVaccination.id,
+      0,
+    );
+    expect(mockStore.updateDurationUnit).toHaveBeenCalledWith(
+      mockSelectedVaccination.id,
+      null,
+    );
+    expect(mockStore.updateStartDate).toHaveBeenCalledWith(
+      mockSelectedVaccination.id,
+      expect.any(Date),
     );
   });
 

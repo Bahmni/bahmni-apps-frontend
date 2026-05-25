@@ -287,7 +287,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                 )}
                 aria-label="Frequency"
                 hideLabel
-                items={medicationConfig.frequencies ?? []}
+                items={medicationConfig.frequencies}
                 itemToString={(item) => (item ? item.name : '')}
                 selectedItem={frequency}
                 onChange={(e) => {

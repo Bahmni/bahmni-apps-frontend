@@ -97,10 +97,22 @@ describe('useMedicationRequestStore', () => {
       });
     });
 
-    it('defaults isSTAT to false for medications key', () => {
-      store().addItem(mockMedication, 'Paracetamol 500mg');
-      expect(store().selectedMedicationRequests[0].isSTAT).toBe(false);
-    });
+    it.each(['medication', 'vaccination'] as const)(
+      'defaults isSTAT to false for "%s" key when no stat default is configured',
+      (key) => {
+        getMedicationRequestStore(key).getState().reset();
+        getMedicationRequestStore(key)
+          .getState()
+          .setAttributes(mockRequiredMedicationAttributes);
+        getMedicationRequestStore(key)
+          .getState()
+          .addItem(mockMedication, 'Paracetamol 500mg');
+        expect(
+          getMedicationRequestStore(key).getState()
+            .selectedMedicationRequests[0].isSTAT,
+        ).toBe(false);
+      },
+    );
 
     it('applies attribute defaults for dosage, stat, prn, and note on addItem', () => {
       store().reset();

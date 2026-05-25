@@ -77,6 +77,22 @@ describe('applyDefaultFrequency', () => {
     );
     expect(updateFrequency).not.toHaveBeenCalled();
   });
+
+  it('applies default frequency when default matches an immediate frequency', () => {
+    const updateFrequency = jest.fn();
+    applyDefaultFrequency(
+      [{ name: 'frequency', default: 'Immediately' }],
+      mockMedicationConfig,
+      null,
+      'id',
+      updateFrequency,
+    );
+    expect(updateFrequency).toHaveBeenCalledWith('id', {
+      uuid: '0',
+      name: 'Immediately',
+      frequencyPerDay: 1,
+    });
+  });
 });
 
 describe('applyDefaultInstruction', () => {

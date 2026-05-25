@@ -187,8 +187,8 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_3u_-toggle-button"
-          id="downshift-_r_3u_-label"
+          for="downshift-_r_42_-toggle-button"
+          id="downshift-_r_42_-label"
         >
           Dosage unit
         </label>
@@ -198,12 +198,12 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_3u_-menu"
+            aria-controls="downshift-_r_42_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Dosage Unit"
             class="cds--list-box__field"
-            id="downshift-_r_3u_-toggle-button"
+            id="downshift-_r_42_-toggle-button"
             role="combobox"
             tabindex="0"
             title="mg"
@@ -239,9 +239,9 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_3u_-label"
+            aria-labelledby="downshift-_r_42_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_3u_-menu"
+            id="downshift-_r_42_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px); width: 0px;"
           />
@@ -257,8 +257,8 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_41_-toggle-button"
-          id="downshift-_r_41_-label"
+          for="downshift-_r_45_-toggle-button"
+          id="downshift-_r_45_-label"
         >
           Frequency
         </label>
@@ -268,12 +268,12 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_41_-menu"
+            aria-controls="downshift-_r_45_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Frequency"
             class="cds--list-box__field"
-            id="downshift-_r_41_-toggle-button"
+            id="downshift-_r_45_-toggle-button"
             role="combobox"
             tabindex="0"
             title="BD"
@@ -309,9 +309,9 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_41_-label"
+            aria-labelledby="downshift-_r_45_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_41_-menu"
+            id="downshift-_r_45_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px); width: 0px;"
           />
@@ -414,8 +414,8 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_44_-toggle-button"
-          id="downshift-_r_44_-label"
+          for="downshift-_r_48_-toggle-button"
+          id="downshift-_r_48_-label"
         >
           Duration unit
         </label>
@@ -425,12 +425,12 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_44_-menu"
+            aria-controls="downshift-_r_48_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Duration Unit"
             class="cds--list-box__field"
-            id="downshift-_r_44_-toggle-button"
+            id="downshift-_r_48_-toggle-button"
             role="combobox"
             tabindex="0"
             title="d"
@@ -466,9 +466,9 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_44_-label"
+            aria-labelledby="downshift-_r_48_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_44_-menu"
+            id="downshift-_r_48_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px); width: 0px;"
           />
@@ -484,8 +484,8 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_47_-toggle-button"
-          id="downshift-_r_47_-label"
+          for="downshift-_r_4b_-toggle-button"
+          id="downshift-_r_4b_-label"
         >
           Instructions
         </label>
@@ -495,12 +495,12 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_47_-menu"
+            aria-controls="downshift-_r_4b_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-labelledby="downshift-_r_47_-label"
+            aria-labelledby="downshift-_r_4b_-label"
             class="cds--list-box__field"
-            id="downshift-_r_47_-toggle-button"
+            id="downshift-_r_4b_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Instructions"
@@ -536,9 +536,9 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_47_-label"
+            aria-labelledby="downshift-_r_4b_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_47_-menu"
+            id="downshift-_r_4b_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px); width: 0px;"
           />
@@ -554,8 +554,8 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
       >
         <label
           class="cds--label cds--visually-hidden"
-          for="downshift-_r_4a_-toggle-button"
-          id="downshift-_r_4a_-label"
+          for="downshift-_r_4e_-toggle-button"
+          id="downshift-_r_4e_-label"
         >
           Route
         </label>
@@ -565,12 +565,12 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_4a_-menu"
+            aria-controls="downshift-_r_4e_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="Route"
             class="cds--list-box__field"
-            id="downshift-_r_4a_-toggle-button"
+            id="downshift-_r_4e_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Oral"
@@ -606,9 +606,9 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_4a_-label"
+            aria-labelledby="downshift-_r_4e_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_4a_-menu"
+            id="downshift-_r_4e_-menu"
             role="listbox"
             style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px); width: 0px;"
           />
