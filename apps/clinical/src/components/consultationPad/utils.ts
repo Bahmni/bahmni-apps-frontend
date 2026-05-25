@@ -72,7 +72,7 @@ export function captureUpdatedResources(entries: InputControl[]) {
   return {
     conditions: hasData('conditionsAndDiagnoses'),
     allergies: hasData('allergies'),
-    medications: hasData('medications') || hasData('vaccinations'),
+    medications: hasData('medication') || hasData('vaccination'),
     immunizationHistory:
       hasData('immunizationHistory') || hasData('immunizationAdministration'),
     serviceRequests,
