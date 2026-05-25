@@ -18,6 +18,7 @@ import {
   convertTo24HourFormat,
   formatDateTime,
   type AppointmentService,
+  type CreateUnavailabilityRequest,
   type Location,
   type Provider,
 } from '@bahmni/services';
@@ -250,51 +251,37 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      const requestDataList: Array<{
-        locationUuid: string;
-        appointmentServiceUuid?: string;
-        providerUuid?: string;
-        startDate: string;
-        startTime: string;
-        endDate: string;
-        endTime: string;
-      }> = [];
-
       const baseData = {
         locationUuid: formData.locationUuid,
         startDate: formatDateTime(formData.startDate, t, false, DATE_FORMAT)
-          .formattedResult, //todo
+          .formattedResult,
         startTime: convertTo24HourFormat(
           `${formData.startTime} ${formData.startTimePeriod}`,
         ),
         endDate: formatDateTime(formData.endDate, t, false, DATE_FORMAT)
-          .formattedResult, //todo
+          .formattedResult,
         endTime: convertTo24HourFormat(
           `${formData.endTime} ${formData.endTimePeriod}`,
         ),
       };
 
-      const selectedServices = formData.selectedServiceItems
-        .filter((item) => !item.isSelectAll)
-        .map((item) => item.id);
-      const selectedProviders = formData.selectedProviderItems
-        .filter((item) => !item.isSelectAll)
-        .map((item) => item.id);
+      const getSelectedIds = (items: typeof formData.selectedServiceItems) =>
+        items.filter((item) => !item.isSelectAll).map((item) => item.id);
 
-      const serviceUuids =
-        selectedServices.length > 0 ? selectedServices : [undefined];
-      const providerUuids =
-        selectedProviders.length > 0 ? selectedProviders : [undefined];
+      const serviceUuids = getSelectedIds(formData.selectedServiceItems);
+      const providerUuids = getSelectedIds(formData.selectedProviderItems);
 
-      for (const serviceUuid of serviceUuids) {
-        for (const providerUuid of providerUuids) {
-          requestDataList.push({
+      const services = serviceUuids.length > 0 ? serviceUuids : [undefined];
+      const providers = providerUuids.length > 0 ? providerUuids : [undefined];
+
+      const requestDataList: CreateUnavailabilityRequest[] = services.flatMap(
+        (serviceUuid) =>
+          providers.map((providerUuid) => ({
             ...baseData,
             appointmentServiceUuid: serviceUuid,
             providerUuid: providerUuid,
-          });
-        }
-      }
+          })),
+      );
 
       await createAppointmentUnavailability(requestDataList);
       addNotification({
@@ -369,6 +356,9 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             }
             invalid={showValidation && !formData.startTime}
             invalidText={t('ADMIN_UNAVAILABILITY_FORM_REQUIRED')}
+            placeholder="hh:mm"
+            pattern="(1[012]|[0-9]):[0-5][0-9]"
+            use24HourFormat={false}
           >
             <TimePickerSelect
               id="time-picker-select-1"
@@ -418,6 +408,9 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             invalidText={
               dateTimeError || t('ADMIN_UNAVAILABILITY_FORM_REQUIRED')
             }
+            placeholder="hh:mm"
+            pattern="(1[012]|[0-9]):[0-5][0-9]"
+            use24HourFormat={false}
           >
             <TimePickerSelect
               id="time-picker-select-2"

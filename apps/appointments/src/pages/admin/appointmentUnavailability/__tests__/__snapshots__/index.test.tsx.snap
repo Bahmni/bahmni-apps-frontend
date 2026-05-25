@@ -109,7 +109,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
                   class="_sortableDataTableBodyEmpty_1w499_26"
                   data-testid="unavailability-table-sortable-data-table-test-id-empty"
                 >
-                  No unavailabilities found
+                  No Unavailabilities found
                 </p>
               </section>
             </div>
@@ -248,7 +248,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                               class="cds--table-sort__description"
                               id="table-sort-_r_2o_"
                             >
-                              Click to sort rows by Start date & time header in ascending order
+                              Click to sort rows by Start date and time header in ascending order
                             </div>
                             <button
                               aria-describedby="table-sort-_r_2o_"
@@ -262,7 +262,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                                 <div
                                   class="cds--table-header-label"
                                 >
-                                  Start date & time
+                                  Start date and time
                                 </div>
                                 <svg
                                   aria-hidden="true"

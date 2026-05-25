@@ -122,7 +122,7 @@ describe('AppointmentUnavailabilityPage', () => {
     {
       scenario: 'empty state when no unavailabilities exist',
       mockValues: { data: [], isError: false, isLoading: false },
-      expectedTexts: ['No unavailabilities found'],
+      expectedTexts: ['No Unavailabilities found'],
     },
   ])('should show $scenario', ({ mockValues, expectedTexts }) => {
     (useQuery as jest.Mock).mockReturnValue(mockValues);
@@ -210,7 +210,7 @@ describe('AppointmentUnavailabilityPage', () => {
       isLoading: false,
     });
     render(wrapper);
-    expect(screen.getByText('Start date & time')).toBeInTheDocument();
+    expect(screen.getByText('Start date and time')).toBeInTheDocument();
     expect(screen.getByText('End date and time')).toBeInTheDocument();
     expect(screen.getByText('Location')).toBeInTheDocument();
     expect(screen.getByText('Service unavailable')).toBeInTheDocument();
@@ -284,16 +284,16 @@ describe('AppointmentUnavailabilityPage', () => {
       await userEvent.click(screen.getByText('Add new'));
       expect(screen.getByText('Add unavailability')).toBeInTheDocument();
 
-      const startDateInput = screen.getByLabelText('Start date');
+      const startDateInput = screen.getByLabelText(/Start date/);
       await userEvent.type(startDateInput, '05/25/2026');
 
-      const startTimeInput = screen.getByLabelText('Start time');
+      const startTimeInput = screen.getByLabelText(/Start time/);
       await userEvent.type(startTimeInput, '09:00');
 
-      const endDateInput = screen.getByLabelText('End date');
+      const endDateInput = screen.getByLabelText(/End date/);
       await userEvent.type(endDateInput, '05/25/2026');
 
-      const endTimeInput = screen.getByLabelText('End time');
+      const endTimeInput = screen.getByLabelText(/End time/);
       await userEvent.type(endTimeInput, '10:00');
 
       await userEvent.click(screen.getByText('Add'));

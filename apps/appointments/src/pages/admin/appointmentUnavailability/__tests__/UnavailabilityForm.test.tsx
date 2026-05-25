@@ -144,11 +144,11 @@ describe('UnavailabilityForm', () => {
     it('should render all form fields', () => {
       setupMocksWithData();
       renderComponent();
-      expect(screen.getByText('Select location')).toBeInTheDocument();
-      expect(screen.getByText('Start date')).toBeInTheDocument();
-      expect(screen.getByText('Start time')).toBeInTheDocument();
-      expect(screen.getByText('End date')).toBeInTheDocument();
-      expect(screen.getByText('End time')).toBeInTheDocument();
+      expect(screen.getByText(/Select location/)).toBeInTheDocument();
+      expect(screen.getByText(/Start date/)).toBeInTheDocument();
+      expect(screen.getByText(/Start time/)).toBeInTheDocument();
+      expect(screen.getByText(/End date/)).toBeInTheDocument();
+      expect(screen.getByText(/End time/)).toBeInTheDocument();
       expect(screen.getByText('Select service')).toBeInTheDocument();
       expect(screen.getByText('Select provider')).toBeInTheDocument();
     });
@@ -191,7 +191,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
       expect(screen.getByText('General OPD')).toBeInTheDocument();
-      expect(screen.getByText('Select location')).toBeInTheDocument();
+      expect(screen.getByText(/Select location/)).toBeInTheDocument();
     });
   });
 
@@ -217,16 +217,16 @@ describe('UnavailabilityForm', () => {
       mockCreateAppointmentUnavailability.mockResolvedValue({});
       renderComponent();
 
-      const startDateInput = screen.getByLabelText('Start date');
+      const startDateInput = screen.getByLabelText(/Start date/);
       await userEvent.type(startDateInput, '05/25/2026');
 
-      const startTimeInput = screen.getByLabelText('Start time');
+      const startTimeInput = screen.getByLabelText(/Start time/);
       await userEvent.type(startTimeInput, '09:00');
 
-      const endDateInput = screen.getByLabelText('End date');
+      const endDateInput = screen.getByLabelText(/End date/);
       await userEvent.type(endDateInput, '05/25/2026');
 
-      const endTimeInput = screen.getByLabelText('End time');
+      const endTimeInput = screen.getByLabelText(/End time/);
       await userEvent.type(endTimeInput, '10:00');
 
       await userEvent.click(screen.getByText('Add'));
@@ -241,16 +241,16 @@ describe('UnavailabilityForm', () => {
       mockCreateAppointmentUnavailability.mockResolvedValue({});
       renderComponent();
 
-      const startDateInput = screen.getByLabelText('Start date');
+      const startDateInput = screen.getByLabelText(/Start date/);
       await userEvent.type(startDateInput, '05/25/2026');
 
-      const startTimeInput = screen.getByLabelText('Start time');
+      const startTimeInput = screen.getByLabelText(/Start time/);
       await userEvent.type(startTimeInput, '09:00');
 
-      const endDateInput = screen.getByLabelText('End date');
+      const endDateInput = screen.getByLabelText(/End date/);
       await userEvent.type(endDateInput, '05/25/2026');
 
-      const endTimeInput = screen.getByLabelText('End time');
+      const endTimeInput = screen.getByLabelText(/End time/);
       await userEvent.type(endTimeInput, '10:00');
 
       await userEvent.click(screen.getByText('Add'));
@@ -270,16 +270,16 @@ describe('UnavailabilityForm', () => {
       mockCreateAppointmentUnavailability.mockResolvedValue({});
       renderComponent();
 
-      const startDateInput = screen.getByLabelText('Start date');
+      const startDateInput = screen.getByLabelText(/Start date/);
       await userEvent.type(startDateInput, '05/25/2026');
 
-      const startTimeInput = screen.getByLabelText('Start time');
+      const startTimeInput = screen.getByLabelText(/Start time/);
       await userEvent.type(startTimeInput, '09:00');
 
-      const endDateInput = screen.getByLabelText('End date');
+      const endDateInput = screen.getByLabelText(/End date/);
       await userEvent.type(endDateInput, '05/25/2026');
 
-      const endTimeInput = screen.getByLabelText('End time');
+      const endTimeInput = screen.getByLabelText(/End time/);
       await userEvent.type(endTimeInput, '10:00');
 
       await userEvent.click(screen.getByText('Add'));
@@ -296,16 +296,16 @@ describe('UnavailabilityForm', () => {
       );
       renderComponent();
 
-      const startDateInput = screen.getByLabelText('Start date');
+      const startDateInput = screen.getByLabelText(/Start date/);
       await userEvent.type(startDateInput, '05/25/2026');
 
-      const startTimeInput = screen.getByLabelText('Start time');
+      const startTimeInput = screen.getByLabelText(/Start time/);
       await userEvent.type(startTimeInput, '09:00');
 
-      const endDateInput = screen.getByLabelText('End date');
+      const endDateInput = screen.getByLabelText(/End date/);
       await userEvent.type(endDateInput, '05/25/2026');
 
-      const endTimeInput = screen.getByLabelText('End time');
+      const endTimeInput = screen.getByLabelText(/End time/);
       await userEvent.type(endTimeInput, '10:00');
 
       await userEvent.click(screen.getByText('Add'));
@@ -326,16 +326,16 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const startDateInput = screen.getByLabelText('Start date');
+      const startDateInput = screen.getByLabelText(/Start date/);
       await userEvent.type(startDateInput, '05/25/2026');
 
-      const startTimeInput = screen.getByLabelText('Start time');
+      const startTimeInput = screen.getByLabelText(/Start time/);
       await userEvent.type(startTimeInput, '10:00');
 
-      const endDateInput = screen.getByLabelText('End date');
+      const endDateInput = screen.getByLabelText(/End date/);
       await userEvent.type(endDateInput, '05/25/2026');
 
-      const endTimeInput = screen.getByLabelText('End time');
+      const endTimeInput = screen.getByLabelText(/End time/);
       await userEvent.type(endTimeInput, '09:00');
 
       await userEvent.click(screen.getByText('Add'));
@@ -514,7 +514,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const startTimeInput = screen.getByLabelText('Start time');
+      const startTimeInput = screen.getByLabelText(/Start time/);
       await userEvent.type(startTimeInput, '09:00');
 
       const startTimePeriodSelect = document.getElementById(
@@ -528,7 +528,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const endTimeInput = screen.getByLabelText('End time');
+      const endTimeInput = screen.getByLabelText(/End time/);
       await userEvent.type(endTimeInput, '05:00');
 
       const endTimePeriodSelect = document.getElementById(
@@ -603,7 +603,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const startDateInput = screen.getByLabelText('Start date');
+      const startDateInput = screen.getByLabelText(/Start date/);
       await userEvent.type(startDateInput, '05/25/2026');
 
       expect(startDateInput).toHaveValue('05/25/2026');
@@ -613,7 +613,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const endDateInput = screen.getByLabelText('End date');
+      const endDateInput = screen.getByLabelText(/End date/);
       await userEvent.type(endDateInput, '05/26/2026');
 
       expect(endDateInput).toHaveValue('05/26/2026');
