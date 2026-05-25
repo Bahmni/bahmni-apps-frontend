@@ -123,7 +123,6 @@ const ConditionsTable: React.FC<WidgetProps> = ({
         patientUuid: patientUUID!,
         messageParams: { conditionDisplay: conditionToMarkInactive.display },
       });
-      await refetch();
     } catch {
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
@@ -134,6 +133,7 @@ const ConditionsTable: React.FC<WidgetProps> = ({
     } finally {
       setIsSubmitting(false);
       setConditionToMarkInactive(null);
+      await refetch();
     }
   };
 

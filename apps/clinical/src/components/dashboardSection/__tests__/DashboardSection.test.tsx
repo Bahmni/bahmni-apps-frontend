@@ -79,6 +79,8 @@ jest.mock('@bahmni/services', () => {
   };
 });
 
+const mockAddNotification = jest.fn();
+
 // Mock widget registry
 jest.mock('@bahmni/widgets', () => {
   const actual = jest.requireActual('@bahmni/widgets');
@@ -88,6 +90,7 @@ jest.mock('@bahmni/widgets', () => {
     registerWidget: jest.fn(),
     usePatientUUID: jest.fn(() => 'test-patient-uuid'),
     useHasPrivilege: jest.fn(() => false),
+    useNotification: jest.fn(() => ({ addNotification: mockAddNotification })),
     CONSULTATION_PAD_PRIVILEGES: { EDIT_ALLERGIES: ['Edit Allergies'] },
     useUserPrivilege: jest.fn(() => ({
       userPrivileges: [

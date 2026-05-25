@@ -7,6 +7,7 @@ import {
 import {
   getWidget,
   useHasPrivilege,
+  useNotification,
   CONSULTATION_PAD_PRIVILEGES,
   usePatientUUID,
 } from '@bahmni/widgets';
@@ -45,38 +46,51 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
+  const { addNotification } = useNotification();
 
   const handleEditAllergies = useCallback(async () => {
-    let preloadedAllergies: AllergyInputEntry[] | undefined;
-    if (patientUUID) {
-      const rawAllergies = await getAllergies(patientUUID);
-      preloadedAllergies = rawAllergies.map(mapAllergyToInputEntry);
-    }
-    dispatchConsultationStart({
-      editOnly: 'allergies',
-      editTitle: 'EDIT_ALLERGIES_TITLE',
-      preloadedAllergies,
-    });
-  }, [patientUUID]);
-
-  // Row-level edit: fetch only the specific allergy by its FHIR resource UUID.
-  const handleRowEditAllergy = useCallback(
-    async (resourceId: string) => {
+    try {
       let preloadedAllergies: AllergyInputEntry[] | undefined;
       if (patientUUID) {
         const rawAllergies = await getAllergies(patientUUID);
-        const target = rawAllergies.find((fhir) => fhir.id === resourceId);
-        if (target) {
-          preloadedAllergies = [mapAllergyToInputEntry(target)];
-        }
+        preloadedAllergies = rawAllergies.map(mapAllergyToInputEntry);
       }
       dispatchConsultationStart({
         editOnly: 'allergies',
         editTitle: 'EDIT_ALLERGIES_TITLE',
         preloadedAllergies,
       });
+    } catch {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('ERROR_LOADING_ALLERGIES'),
+        type: 'error',
+      });
+    }
+  }, [patientUUID, addNotification, t]);
+
+  // Row-level edit: fetch the specific allergy by its FHIR resource UUID.
+  const handleRowEditAllergy = useCallback(
+    async (resourceId: string) => {
+      try {
+        if (!patientUUID) return;
+        const rawAllergies = await getAllergies(patientUUID);
+        const target = rawAllergies.find((fhir) => fhir.id === resourceId);
+        if (!target) return;
+        dispatchConsultationStart({
+          editOnly: 'allergies',
+          editTitle: 'EDIT_ALLERGIES_TITLE',
+          preloadedAllergies: [mapAllergyToInputEntry(target)],
+        });
+      } catch {
+        addNotification({
+          title: t('ERROR_DEFAULT_TITLE'),
+          message: t('ERROR_LOADING_ALLERGIES'),
+          type: 'error',
+        });
+      }
     },
-    [patientUUID],
+    [patientUUID, addNotification, t],
   );
 
   const { matchReasons } = useEncounterSessionStore();

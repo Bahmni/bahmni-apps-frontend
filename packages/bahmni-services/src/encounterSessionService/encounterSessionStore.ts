@@ -15,7 +15,7 @@
  * Reset is called by PatientHeader on patient UUID change.
  */
 import type { Encounter } from 'fhir/r4';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import type { MatchReasonCode } from './constants';
 
 export interface EncounterSessionState {
@@ -98,22 +98,10 @@ export function resetEncounterSession(): void {
 /**
  * React hook that subscribes to the encounter session store and returns
  * the current state, re-rendering on every store update.
- *
- * Compatible down to React 17 (uses useState + useEffect instead of
- * useSyncExternalStore to avoid a peer-dep bump).
  */
 export function useEncounterSessionStore(): EncounterSessionState {
-  const [state, setState] = useState<EncounterSessionState>(
+  return useSyncExternalStore(
+    subscribeEncounterSession,
     getEncounterSessionSnapshot,
   );
-
-  useEffect(() => {
-    // Sync once on mount in case state changed between render and effect
-    setState(getEncounterSessionSnapshot());
-    return subscribeEncounterSession(() => {
-      setState(getEncounterSessionSnapshot());
-    });
-  }, []);
-
-  return state;
 }

@@ -179,6 +179,7 @@
   "ERROR_FETCHING_USER_DETAILS": "Error al obtener detalles del usuario",
   "ERROR_FETCHING_USER_LOCATION_DETAILS": "La ubicación de inicio de sesión no está disponible o no es válida. Vuelva a autenticarse",
   "ERROR_INVALID_PATIENT_UUID": "UUID de paciente inválido",
+  "ERROR_LOADING_ALLERGIES": "Error al cargar alergias",
   "ERROR_LOADING_DASHBOARD": "Error al cargar el panel",
   "ERROR_LOADING_IMMUNIZATION_DETAILS": "Error al cargar los detalles de la inmunización",
   "ERROR_LOADING_PINNED_FORMS": "Error al cargar Formularios Anclados",

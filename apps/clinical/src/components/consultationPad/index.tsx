@@ -37,15 +37,16 @@ import {
 
 interface ConsultationPadProps {
   encounterSessionStartContext: EncounterSessionStartContext;
-  preloadedAllergies?: AllergyInputEntry[];
   onClose: () => void;
 }
 
 const ConsultationPad: React.FC<ConsultationPadProps> = ({
   encounterSessionStartContext,
-  preloadedAllergies,
   onClose,
 }) => {
+  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies as
+    | AllergyInputEntry[]
+    | undefined;
   const encounterType = encounterSessionStartContext.encounterType;
   const { t } = useTranslation();
   const { addNotification } = useNotification();

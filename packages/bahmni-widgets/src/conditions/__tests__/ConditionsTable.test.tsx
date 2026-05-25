@@ -416,6 +416,7 @@ describe('ConditionsTable', () => {
         error: null,
         isError: false,
         isLoading: false,
+        refetch: jest.fn().mockResolvedValue(undefined),
       });
       (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
         rawFhirResource,
@@ -454,6 +455,7 @@ describe('ConditionsTable', () => {
         error: null,
         isError: false,
         isLoading: false,
+        refetch: jest.fn().mockResolvedValue(undefined),
       });
       (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
         rawFhirResource,

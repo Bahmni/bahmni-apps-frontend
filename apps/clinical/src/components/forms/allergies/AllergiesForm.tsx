@@ -43,6 +43,9 @@ const AllergiesForm: React.FC<{
   const canAddAllergies = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.ALLERGIES,
   );
+  const canEditAllergies = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.EDIT_ALLERGIES,
+  );
   const [searchAllergenTerm, setSearchAllergenTerm] = useState('');
   const [selectedAllergenItem, setSelectedAllergenItem] =
     useState<AllergenConcept | null>(null);
@@ -223,7 +226,7 @@ const AllergiesForm: React.FC<{
     t,
   ]);
 
-  if (!canAddAllergies) return null;
+  if (!canAddAllergies && !(isEditMode && canEditAllergies)) return null;
 
   return (
     <Tile

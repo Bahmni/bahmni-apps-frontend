@@ -487,8 +487,10 @@ describe('ConsultationPad', () => {
       ];
 
       renderComponent({
-        encounterSessionStartContext: { encounterType: 'Consultation' },
-        preloadedAllergies: mockAllergies as any,
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          preloadedAllergies: mockAllergies as any,
+        },
       });
 
       expect(preloadSpy).toHaveBeenCalledWith(mockAllergies);
