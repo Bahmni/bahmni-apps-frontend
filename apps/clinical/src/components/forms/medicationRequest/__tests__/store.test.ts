@@ -97,15 +97,22 @@ describe('useMedicationRequestStore', () => {
       });
     });
 
-    it('defaults isSTAT to false for medications key', () => {
-      store().addItem(mockMedication, 'Paracetamol 500mg');
-      expect(store().selectedMedicationRequests[0].isSTAT).toBe(false);
-    });
-
-    it('defaults isSTAT to true for vaccinations key', () => {
-      vacStore().addItem(mockVaccination, 'COVID-19 Vaccine');
-      expect(vacStore().selectedMedicationRequests[0].isSTAT).toBe(true);
-    });
+    it.each(['medication', 'vaccination'] as const)(
+      'defaults isSTAT to false for "%s" key when no stat default is configured',
+      (key) => {
+        getMedicationRequestStore(key).getState().reset();
+        getMedicationRequestStore(key)
+          .getState()
+          .setAttributes(mockRequiredMedicationAttributes);
+        getMedicationRequestStore(key)
+          .getState()
+          .addItem(mockMedication, 'Paracetamol 500mg');
+        expect(
+          getMedicationRequestStore(key).getState()
+            .selectedMedicationRequests[0].isSTAT,
+        ).toBe(false);
+      },
+    );
 
     it('applies attribute defaults for dosage, stat, prn, and note on addItem', () => {
       store().reset();
@@ -430,7 +437,12 @@ describe('useMedicationRequestStore', () => {
   });
 
   describe('validateAll - vaccinations', () => {
-    it('does not require duration or durationUnit for vaccinations', () => {
+    it('does not require duration or durationUnit for vaccinations when stat is defaulted to true', () => {
+      vacStore().setAttributes(
+        mockRequiredMedicationAttributes.map((a) =>
+          a.name === 'stat' ? { ...a, default: true } : a,
+        ),
+      );
       vacStore().addItem(mockVaccination, 'COVID-19 Vaccine');
 
       vacStore().validateAll();
