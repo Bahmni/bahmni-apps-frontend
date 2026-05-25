@@ -61,12 +61,14 @@ export interface CommandPaletteExtension {
   url?: string;
   newTab?: boolean;
   pathTemplate?: string;
+  appContext?: string;
 }
 
 export interface CommandPaletteAppConfig {
   trigger?: TriggerConfig;
   patientFields?: PatientFieldsConfig;
   searchAnnotations?: SearchAnnotation[];
+  extensionApps?: string[];
 }
 
 export interface HomeAppConfig {

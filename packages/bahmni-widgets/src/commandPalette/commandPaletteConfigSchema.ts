@@ -80,6 +80,7 @@ export const homeAppConfigSchema: Record<string, unknown> = {
         trigger: triggerSchema,
         patientFields: patientFieldsSchema,
         searchAnnotations: { type: 'array', items: searchAnnotationSchema },
+        extensionApps: { type: 'array', items: { type: 'string' } },
       },
     },
   },

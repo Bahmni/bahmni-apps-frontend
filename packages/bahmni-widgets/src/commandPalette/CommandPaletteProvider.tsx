@@ -27,7 +27,8 @@ import {
 } from './CommandPaletteContext';
 
 const HOME_APP_CONFIG_URL = '/bahmni_config/openmrs/apps/home/app.json';
-const HOME_EXTENSION_URL = '/bahmni_config/openmrs/apps/home/extension.json';
+const EXTENSION_BASE_URL = '/bahmni_config/openmrs/apps';
+const DEFAULT_EXTENSION_APPS = ['home'];
 
 const COMMAND_PALETTE_NAV_ITEM_POINT = 'org.bahmni.commandpalette.navItem';
 const COMMAND_PALETTE_PATIENT_ACTION_POINT =
@@ -40,6 +41,18 @@ const DEFAULT_PATIENT_FIELDS: PatientFieldsConfig = {
   primaryFields: ['name', 'identifier'],
   additionalFields: ['age', 'gender'],
 };
+
+const LEGACY_APP_MAP: Record<string, string> = {
+  bedmanagement: 'adt',
+};
+
+function detectCurrentApp(pathname: string): string {
+  const newMatch = pathname.match(/^\/bahmni-new\/([^/]+)/);
+  if (newMatch) return newMatch[1];
+  const legacyMatch = pathname.match(/^\/bahmni\/([^/]+)/);
+  if (legacyMatch) return LEGACY_APP_MAP[legacyMatch[1]] ?? legacyMatch[1];
+  return 'home';
+}
 
 function parseKeys(keys: string): {
   key: string;
@@ -107,60 +120,83 @@ const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
   const lastPressTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    Promise.allSettled([
-      getConfig<HomeAppConfig>(HOME_APP_CONFIG_URL, homeAppConfigSchema),
-      fetch(HOME_EXTENSION_URL).then((r) => {
-        if (!r.ok) throw new Error(`Failed to load extensions: ${r.status}`);
-        return r.json() as Promise<
-          CommandPaletteExtension[] | Record<string, CommandPaletteExtension>
-        >;
-      }),
-      getCurrentUserPrivileges(),
-    ]).then(([appConfigResult, extensionsResult, privilegesResult]) => {
+    (async () => {
+      const [appConfigResult, privilegesResult] = await Promise.allSettled([
+        getConfig<HomeAppConfig>(HOME_APP_CONFIG_URL, homeAppConfigSchema),
+        getCurrentUserPrivileges(),
+      ]);
+
+      const appConfig =
+        appConfigResult.status === 'fulfilled' ? appConfigResult.value : null;
       const userPrivileges =
         privilegesResult.status === 'fulfilled' ? privilegesResult.value : null;
 
-      if (appConfigResult.status === 'fulfilled') {
-        const cp = appConfigResult.value.commandPalette;
+      if (appConfig) {
+        const cp = appConfig.commandPalette;
         if (cp?.trigger) setTrigger(cp.trigger);
         if (cp?.patientFields) setPatientFieldsConfig(cp.patientFields);
         if (cp?.searchAnnotations) setSearchAnnotations(cp.searchAnnotations);
       }
 
-      if (extensionsResult.status === 'fulfilled') {
-        const extensions = toExtensionArray(extensionsResult.value);
+      const extensionApps =
+        appConfig?.commandPalette?.extensionApps ?? DEFAULT_EXTENSION_APPS;
+      const currentApp = detectCurrentApp(window.location.pathname);
 
-        const filterAndSort = (extensionPointId: string) =>
-          extensions
-            .filter((e) => e.extensionPointId === extensionPointId)
-            .filter(
-              (e) =>
-                !e.requiredPrivilege ||
-                hasPrivilege(userPrivileges, e.requiredPrivilege),
-            )
-            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      const extensionResults = await Promise.allSettled(
+        extensionApps.map((app) =>
+          fetch(`${EXTENSION_BASE_URL}/${app}/v2/extension.json`)
+            .then((r) => {
+              if (!r.ok)
+                throw new Error(
+                  `Failed to load extensions for ${app}: ${r.status}`,
+                );
+              return r.json() as Promise<
+                | CommandPaletteExtension[]
+                | Record<string, CommandPaletteExtension>
+              >;
+            })
+            .then(toExtensionArray),
+        ),
+      );
 
-        setNavItems(
-          filterAndSort(COMMAND_PALETTE_NAV_ITEM_POINT).map((e) => ({
-            id: e.id,
-            label: e.label,
-            path: e.url ?? '',
-            icon: e.icon,
-            newTab: e.newTab,
-          })),
-        );
+      const allExtensions = extensionResults
+        .filter(
+          (r): r is PromiseFulfilledResult<CommandPaletteExtension[]> =>
+            r.status === 'fulfilled',
+        )
+        .flatMap((r) => r.value);
 
-        setPatientActions(
-          filterAndSort(COMMAND_PALETTE_PATIENT_ACTION_POINT).map((e) => ({
-            id: e.id,
-            label: e.label,
-            icon: e.icon,
-            getPath: pathTemplateToGetPath(e.pathTemplate ?? ''),
-            basePath: basePathFromTemplate(e.pathTemplate ?? ''),
-          })),
-        );
-      }
-    });
+      const filterAndSort = (extensionPointId: string) =>
+        allExtensions
+          .filter((e) => e.extensionPointId === extensionPointId)
+          .filter((e) => !e.appContext || e.appContext === currentApp)
+          .filter(
+            (e) =>
+              !e.requiredPrivilege ||
+              hasPrivilege(userPrivileges, e.requiredPrivilege),
+          )
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+      setNavItems(
+        filterAndSort(COMMAND_PALETTE_NAV_ITEM_POINT).map((e) => ({
+          id: e.id,
+          label: e.label,
+          path: e.url ?? '',
+          icon: e.icon,
+          newTab: e.newTab,
+        })),
+      );
+
+      setPatientActions(
+        filterAndSort(COMMAND_PALETTE_PATIENT_ACTION_POINT).map((e) => ({
+          id: e.id,
+          label: e.label,
+          icon: e.icon,
+          getPath: pathTemplateToGetPath(e.pathTemplate ?? ''),
+          basePath: basePathFromTemplate(e.pathTemplate ?? ''),
+        })),
+      );
+    })();
   }, []);
 
   const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
