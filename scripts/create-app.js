@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const readline = require('node:readline');
+const { execSync } = require('node:child_process');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -366,9 +367,8 @@ function getConstantsAppTemplate(appConstantName, appNamespace) {
 `;
 }
 
-function getIndexTsTemplate() {
-  return `export { default } from './App';
-export { App } from './App';
+function getIndexTsTemplate(appNamePascal) {
+  return `export { ${appNamePascal}App } from './App';
 `;
 }
 
@@ -390,7 +390,7 @@ import { routes, renderRoutes } from './routes';
 
 const queryClient = new QueryClient(queryClientConfig);
 
-export function App() {
+export function ${appNamePascal}App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -426,7 +426,7 @@ export function App() {
   );
 }
 
-export default App;
+export default ${appNamePascal}App;
 `;
 }
 
@@ -453,7 +453,7 @@ export const queryClientConfig: QueryClientConfig = {
 }
 
 function getRouteModelTemplate() {
-  return `import { ComponentType, LazyExoticComponent } from "react";
+  return `import { ComponentType, LazyExoticComponent } from 'react';
 
 export interface RouteConfig {
   path: string;
@@ -505,6 +505,76 @@ function getIndexPageTemplate(appNamePascal) {
 `;
 }
 
+function patchDistroAppTsx(distroPath, appNameKebab, appNamePascal) {
+  const filePath = path.join(distroPath, 'src/app/app.tsx');
+  let content = fs.readFileSync(filePath, 'utf8');
+
+  const lazyImport = `const ${appNamePascal}App = lazy(() =>
+  import('@bahmni/${appNameKebab}-app').then((module) => ({
+    default: module.${appNamePascal}App,
+  })),
+);\n`;
+  content = content.replace('\nexport function App()', `\n${lazyImport}\nexport function App()`);
+
+  const route = `          <Route path="/${appNameKebab}/*" element={<${appNamePascal}App />} />\n`;
+  content = content.replace('          <Route path="*"', `${route}          <Route path="*"`);
+
+  fs.writeFileSync(filePath, content);
+}
+
+function patchDistroWebpackConfig(distroPath, appNameKebab) {
+  const filePath = path.join(distroPath, 'webpack.config.js');
+  let content = fs.readFileSync(filePath, 'utf8');
+
+  content = content.replace(
+    '      } : {},',
+    `        '@bahmni/${appNameKebab}-app': join(__dirname, '../apps/${appNameKebab}/src'),\n      } : {},`,
+  );
+
+  const newAsset = `          { input: isDevelopment ? '../apps/${appNameKebab}/public/locales' : '../apps/${appNameKebab}/dist/locales', glob: '**/*', output: '${appNameKebab}/locales' },`;
+  content = content.replace(
+    '\n        ],\n        styles:',
+    `\n${newAsset}\n        ],\n        styles:`,
+  );
+
+  fs.writeFileSync(filePath, content);
+}
+
+function patchDistroTsconfig(distroPath, appNameKebab) {
+  const filePath = path.join(distroPath, 'tsconfig.json');
+  const tsconfig = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+  const appRef = { path: `../apps/${appNameKebab}` };
+  const insertBeforeIndex = tsconfig.references.findIndex(
+    (ref) => ref.path === './tsconfig.app.json',
+  );
+
+  if (insertBeforeIndex === -1) {
+    tsconfig.references.push(appRef);
+  } else {
+    tsconfig.references.splice(insertBeforeIndex, 0, appRef);
+  }
+
+  fs.writeFileSync(filePath, JSON.stringify(tsconfig, null, 2) + '\n');
+}
+
+function patchDistroFiles(distroPath, appNameKebab, appNamePascal) {
+  const patches = [
+    ['distro/src/app/app.tsx', () => patchDistroAppTsx(distroPath, appNameKebab, appNamePascal)],
+    ['distro/webpack.config.js', () => patchDistroWebpackConfig(distroPath, appNameKebab)],
+    ['distro/tsconfig.json', () => patchDistroTsconfig(distroPath, appNameKebab)],
+  ];
+
+  for (const [fileName, patch] of patches) {
+    try {
+      patch();
+      console.log(`  ${colors.green}✔${colors.reset} ${fileName}`);
+    } catch (error) {
+      console.log(`  ${colors.red}✘${colors.reset} ${fileName} — ${error.message}`);
+    }
+  }
+}
+
 function createAllFiles(appPath, transforms) {
   const {
     appNameKebab,
@@ -535,7 +605,7 @@ function createAllFiles(appPath, transforms) {
       path: 'src/constants/app.ts',
       content: getConstantsAppTemplate(appConstantName, appNamespace),
     },
-    { path: 'src/index.ts', content: getIndexTsTemplate() },
+    { path: 'src/index.ts', content: getIndexTsTemplate(appNamePascal) },
     {
       path: 'src/App.tsx',
       content: getAppTsxTemplate(appConstantName, appNamePascal),
@@ -618,14 +688,31 @@ async function main() {
     appNamespace,
   });
 
+  const distroPath = path.join(process.cwd(), 'distro');
+  console.log('\nWiring up distro:');
+  patchDistroFiles(distroPath, appNameKebab, appNamePascal);
+
+  const rootDir = process.cwd();
+
+  console.log('\nInstalling dependencies...');
+  try {
+    execSync('yarn install --frozen-lockfile -W', { cwd: rootDir, stdio: 'inherit' });
+    console.log(`  ${colors.green}✔${colors.reset} yarn install`);
+  } catch (error) {
+    console.log(`  ${colors.red}✘${colors.reset} yarn install failed — ${error.message}`);
+  }
+
+  console.log('\nBuilding...');
+  try {
+    execSync('yarn build', { cwd: rootDir, stdio: 'inherit' });
+    console.log(`  ${colors.green}✔${colors.reset} yarn build`);
+  } catch (error) {
+    console.log(`  ${colors.red}✘${colors.reset} yarn build failed — ${error.message}`);
+  }
+
   console.log(
     `\n${colors.green}✔${colors.reset} Application created successfully\n`,
   );
-  console.log('Next steps:');
-  console.log(`  1. yarn install`);
-  console.log(`  2. yarn build`);
-  console.log(`  3. lazyload your app in your distro`);
-  console.log(`  4. setup routes in your distro\n`);
 
   rl.close();
 }
