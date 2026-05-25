@@ -332,7 +332,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
         route: null,
         duration: !statDefault && durationDefault ? Number(durationDefault) : 0,
         durationUnit: null,
-        isSTAT: statDefault === true || !isMedicationRequest,
+        isSTAT: statDefault === true,
         isPRN: prnDefault === true,
         startDate: new Date(),
         instruction: null,
