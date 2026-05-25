@@ -1,8 +1,9 @@
-import { getConfig } from '@bahmni/services';
+import { getConfig, getFormattedPatientById } from '@bahmni/services';
 import {
   useHasPrivilege,
   useNotification,
   useUserPrivilege,
+  usePatientUUID,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
@@ -55,8 +56,20 @@ jest.mock('../../components/patientHeader/PatientHeader', () => ({
 jest.mock('../../components/dashboardContainer/DashboardContainer', () => ({
   __esModule: true,
   default: jest.fn(
-    ({ sections }: { sections: Array<{ id: string; name: string }> }) => (
-      <div data-testid="dashboard-container">
+    ({
+      sections,
+      activeItemId,
+      scrollTrigger,
+    }: {
+      sections: Array<{ id: string; name: string }>;
+      activeItemId?: string | null;
+      scrollTrigger?: number;
+    }) => (
+      <div
+        data-testid="dashboard-container"
+        data-active-item={activeItemId}
+        data-scroll-trigger={scrollTrigger}
+      >
         {sections.map((section) => (
           <article
             key={section.id}
@@ -110,38 +123,64 @@ jest.mock('@bahmni/design-system', () => ({
       </div>
     ),
   ),
-  Header: jest.fn(({ sideNavItems, activeSideNavItemId, globalActions }) => (
-    <div data-testid="mocked-header-component">
-      {globalActions?.map(
-        (action: { id: string; label: string; onClick: () => void }) => (
-          <button
-            key={action.id}
-            data-testid={`global-action-${action.id}`}
-            onClick={action.onClick}
-            tabIndex={0}
-          >
-            {action.label}
-          </button>
-        ),
-      )}
-      {sideNavItems.map(
-        (item: {
-          id: string;
-          icon: string;
-          label: string;
-          href?: string;
-          renderIcon?: ReactNode;
-        }) => (
-          <div key={item.id} data-testid={`sidenav-item-${item.id}`}>
-            {item.label}
-          </div>
-        ),
-      )}
-      <div data-testid="active-sidenav-item">
-        {activeSideNavItemId ?? 'none'}
+  Header: jest.fn(
+    ({
+      sideNavItems,
+      activeSideNavItemId,
+      globalActions,
+      onSideNavItemClick,
+      breadcrumbItems,
+    }) => (
+      <div data-testid="mocked-header-component">
+        {globalActions?.map(
+          (action: { id: string; label: string; onClick: () => void }) => (
+            <button
+              key={action.id}
+              data-testid={`global-action-${action.id}`}
+              onClick={action.onClick}
+              tabIndex={0}
+            >
+              {action.label}
+            </button>
+          ),
+        )}
+        {sideNavItems.map(
+          (item: {
+            id: string;
+            icon: string;
+            label: string;
+            href?: string;
+            renderIcon?: ReactNode;
+          }) => (
+            <div
+              key={item.id}
+              data-testid={`sidenav-item-${item.id}`}
+              onClick={() => onSideNavItemClick?.(item.id)}
+              role="button"
+              tabIndex={0}
+            >
+              {item.label}
+            </div>
+          ),
+        )}
+        <div data-testid="active-sidenav-item">
+          {activeSideNavItemId ?? 'none'}
+        </div>
+        {breadcrumbItems?.map(
+          (item: {
+            id: string;
+            label: string;
+            href?: string;
+            isCurrentPage?: boolean;
+          }) => (
+            <div key={item.id} data-testid={`breadcrumb-item-${item.id}`}>
+              {item.label}
+            </div>
+          ),
+        )}
       </div>
-    </div>
-  )),
+    ),
+  ),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -149,11 +188,13 @@ jest.mock('@bahmni/widgets', () => ({
   useUserPrivilege: jest.fn(),
   useHasPrivilege: jest.fn(),
   useNotification: jest.fn(),
+  usePatientUUID: jest.fn(),
 }));
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getConfig: jest.fn(),
+  getFormattedPatientById: jest.fn(),
 }));
 
 const mockClinicalConfig = {
@@ -235,6 +276,9 @@ describe('ConsultationPage', () => {
     });
 
     (getConfig as jest.Mock).mockResolvedValue(mockDashboardConfig);
+
+    (usePatientUUID as jest.Mock).mockReturnValue(null);
+    (getFormattedPatientById as jest.Mock).mockResolvedValue(null);
   });
 
   afterEach(() => {
@@ -322,6 +366,71 @@ describe('ConsultationPage', () => {
         screen.getByTestId('error-no-default-dashboard-test-id'),
       ).toBeInTheDocument();
       expect(mockAddNotification).toHaveBeenCalled();
+    });
+  });
+
+  describe('Breadcrumb patient name', () => {
+    it('should show patient name in breadcrumb when patient data is available', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockResolvedValue({
+        fullName: 'John Doe',
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('breadcrumb-item-current')).toHaveTextContent(
+          'John Doe',
+        );
+      });
+    });
+
+    it('should show "Current Patient" fallback in breadcrumb when patient data is unavailable', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue(null);
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('breadcrumb-item-current')).toHaveTextContent(
+        'Current Patient',
+      );
+    });
+
+    it('should show "Current Patient" fallback in breadcrumb while patient data is loading', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockReturnValue(
+        new Promise(() => {}),
+      );
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('breadcrumb-item-current')).toHaveTextContent(
+        'Current Patient',
+      );
+    });
+
+    it('should show "Current Patient" fallback in breadcrumb when patient fetch fails', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        new Error('Network error'),
+      );
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('breadcrumb-item-current')).toHaveTextContent(
+        'Current Patient',
+      );
     });
   });
 
@@ -540,6 +649,47 @@ describe('ConsultationPage', () => {
       expect(
         screen.queryByTestId('sidenav-item-vitals'),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Scroll trigger on sidebar click', () => {
+    it('should increment scrollTrigger when sidebar item is clicked', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      const dashboardContainer = screen.getByTestId('dashboard-container');
+      expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '0');
+
+      const vitalsItem = screen.getByTestId('sidenav-item-vitals');
+      fireEvent.click(vitalsItem);
+
+      await waitFor(() => {
+        expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '1');
+      });
+    });
+
+    it('should increment scrollTrigger on repeated clicks of the same item', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      const dashboardContainer = screen.getByTestId('dashboard-container');
+      const vitalsItem = screen.getByTestId('sidenav-item-vitals');
+
+      fireEvent.click(vitalsItem);
+      await waitFor(() => {
+        expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '1');
+      });
+
+      fireEvent.click(vitalsItem);
+      await waitFor(() => {
+        expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '2');
+      });
     });
   });
 });

@@ -14,8 +14,8 @@ const EXPECTED_KEYS = [
   'allergies',
   'investigations',
   'conditionsAndDiagnoses',
-  'medications',
-  'vaccinations',
+  'medication',
+  'vaccination',
   'immunizationHistory',
   'observationForms',
 ] as const;
@@ -37,8 +37,8 @@ const mockStubs = [
   makeStub('allergies'),
   makeStub('investigations'),
   makeStub('conditionsAndDiagnoses'),
-  makeStub('medications'),
-  makeStub('vaccinations'),
+  makeStub('medication'),
+  makeStub('vaccination'),
   makeStub('immunizationHistory'),
   makeStub('observationForms'),
 ];
@@ -100,8 +100,8 @@ describe('loadEncounterInputControls', () => {
     'allergies',
     'investigations',
     'conditionsAndDiagnoses',
-    'medications',
-    'vaccinations',
+    'medication',
+    'vaccination',
     'observationForms',
   ] as const)(
     '%s is restricted to Consultation encounter type from config',
@@ -120,8 +120,8 @@ describe('loadEncounterInputControls', () => {
     'allergies',
     'investigations',
     'conditionsAndDiagnoses',
-    'medications',
-    'vaccinations',
+    'medication',
+    'vaccination',
     'immunizationHistory',
     'observationForms',
   ] as const)('%s has createBundleEntries', (key) => {
@@ -134,8 +134,8 @@ describe('loadEncounterInputControls', () => {
     'allergies',
     'investigations',
     'conditionsAndDiagnoses',
-    'medications',
-    'vaccinations',
+    'medication',
+    'vaccination',
     'observationForms',
   ] as const)('%s has the correct privilege from config', (key) => {
     const expectedPrivilege = mockConsultationPadConfig.inputControls.find(
@@ -169,8 +169,8 @@ describe('loadEncounterInputControls', () => {
       inputControls: [
         findControl('observationForms'),
         findControl('immunizationHistory'),
-        findControl('vaccinations'),
-        findControl('medications'),
+        findControl('vaccination'),
+        findControl('medication'),
         findControl('conditionsAndDiagnoses'),
         findControl('investigations'),
         findControl('allergies'),
@@ -182,8 +182,8 @@ describe('loadEncounterInputControls', () => {
       'encounterDetails',
       'observationForms',
       'immunizationHistory',
-      'vaccinations',
-      'medications',
+      'vaccination',
+      'medication',
       'conditionsAndDiagnoses',
       'investigations',
       'allergies',
@@ -211,11 +211,11 @@ describe('loadEncounterInputControls', () => {
     const result = loadEncounterInputControls({
       ...mockConsultationPadConfig,
       inputControls: mockConsultationPadConfig.inputControls.filter(
-        (c) => c.type !== 'allergies' && c.type !== 'medications',
+        (c) => c.type !== 'allergies' && c.type !== 'medication',
       ),
     });
     expect(result.find((e) => e.key === 'allergies')).toBeUndefined();
-    expect(result.find((e) => e.key === 'medications')).toBeUndefined();
+    expect(result.find((e) => e.key === 'medication')).toBeUndefined();
     expect(result.find((e) => e.key === 'investigations')).toBeDefined();
   });
 });
@@ -278,7 +278,7 @@ describe('captureUpdatedResources', () => {
 
   it('returns true for medications when medications hasData', () => {
     const entries = [
-      makeMockEntry('medications', {
+      makeMockEntry('medication', {
         hasData: jest.fn().mockReturnValue(true),
       }),
     ];
@@ -288,7 +288,7 @@ describe('captureUpdatedResources', () => {
 
   it('returns true for medications when vaccinations hasData', () => {
     const entries = [
-      makeMockEntry('vaccinations', {
+      makeMockEntry('vaccination', {
         hasData: jest.fn().mockReturnValue(true),
       }),
     ];

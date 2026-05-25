@@ -515,6 +515,54 @@ describe('SelectedImmunizationItem', () => {
           id,
           new Date('2026-12-31'),
         );
+        expect(
+          screen.getByTestId(`immunization-expiry-date-input-${id}`),
+        ).toBeDisabled();
+      });
+    });
+
+    it('calls updateStockLocation with the stock location when a batch is selected from the stock list', async () => {
+      const user = userEvent.setup();
+      render(<SelectedImmunizationItem {...defaultProps} />);
+      await user.click(screen.getByPlaceholderText('Enter batch number'));
+      await user.click(screen.getByText(/BATCH-001/));
+      await waitFor(() => {
+        expect(mockStore.updateStockLocation).toHaveBeenCalledWith(
+          id,
+          'Nurse Station',
+        );
+      });
+    });
+
+    it('calls updateStockLocation with null when a free-text batch is entered', async () => {
+      const user = userEvent.setup();
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          stockBatchesEnabled={false}
+        />,
+      );
+      await user.type(
+        screen.getByPlaceholderText('Enter batch number'),
+        'MY-CUSTOM-BATCH',
+      );
+      await user.keyboard('{Enter}');
+      await waitFor(() => {
+        expect(mockStore.updateStockLocation).toHaveBeenCalledWith(id, null);
+      });
+    });
+
+    it('calls updateStockLocation with null when the batch number input is cleared', async () => {
+      const user = userEvent.setup();
+      render(<SelectedImmunizationItem {...defaultProps} />);
+      await user.click(screen.getByPlaceholderText('Enter batch number'));
+      await user.click(screen.getByText(/BATCH-001/));
+      mockStore.updateStockLocation.mockClear();
+      await user.click(
+        screen.getByRole('button', { name: 'Clear selected item' }),
+      );
+      await waitFor(() => {
+        expect(mockStore.updateStockLocation).toHaveBeenCalledWith(id, null);
       });
     });
 
@@ -545,6 +593,9 @@ describe('SelectedImmunizationItem', () => {
           id,
           'BATCH-NO-EXPIRY',
         );
+        expect(
+          screen.getByTestId(`immunization-expiry-date-input-${id}`),
+        ).not.toBeDisabled();
       });
       expect(mockStore.updateExpiryDate).not.toHaveBeenCalled();
     });
@@ -567,6 +618,9 @@ describe('SelectedImmunizationItem', () => {
           id,
           'MY-CUSTOM-BATCH',
         );
+        expect(
+          screen.getByTestId(`immunization-expiry-date-input-${id}`),
+        ).not.toBeDisabled();
       });
       expect(mockStore.updateExpiryDate).not.toHaveBeenCalled();
     });
@@ -582,6 +636,9 @@ describe('SelectedImmunizationItem', () => {
       );
       await waitFor(() => {
         expect(mockStore.updateBatchNumber).toHaveBeenCalledWith(id, '');
+        expect(
+          screen.getByTestId(`immunization-expiry-date-input-${id}`),
+        ).not.toBeDisabled();
       });
     });
 

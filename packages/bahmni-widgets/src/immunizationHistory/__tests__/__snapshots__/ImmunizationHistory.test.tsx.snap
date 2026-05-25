@@ -35,6 +35,7 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
               aria-label="immunization-history-widget-add-icon"
               class="_bahmniIcon_1cg5e_1 _paddingXxsmall_1cg5e_4"
               id="immunization-history-widget-add-icon"
+              role="img"
             >
               <svg
                 aria-hidden="true"
@@ -301,6 +302,7 @@ exports[`ImmunizationHistory matches snapshot without tabs (status filter applie
               aria-label="immunization-history-widget-add-icon"
               class="_bahmniIcon_1cg5e_1 _paddingXxsmall_1cg5e_4"
               id="immunization-history-widget-add-icon"
+              role="img"
             >
               <svg
                 aria-hidden="true"

@@ -1,14 +1,12 @@
-import { getPatientImageAsDataUrl } from '@bahmni/services';
+import { getPatientPhotoDataUrl } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import { usePatientPhoto } from '../usePatientPhoto';
 
 jest.mock('@bahmni/services');
 
-const mockGetPatientImageAsDataUrl =
-  getPatientImageAsDataUrl as jest.MockedFunction<
-    typeof getPatientImageAsDataUrl
-  >;
+const mockGetPatientPhotoDataUrl =
+  getPatientPhotoDataUrl as jest.MockedFunction<typeof getPatientPhotoDataUrl>;
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -28,7 +26,7 @@ describe('usePatientPhoto', () => {
 
   it('should fetch patient photo when patientUuid is provided', async () => {
     const mockPhotoData = 'data:image/jpeg;base64,/9j/4AAQ';
-    mockGetPatientImageAsDataUrl.mockResolvedValue(mockPhotoData);
+    mockGetPatientPhotoDataUrl.mockResolvedValue(mockPhotoData);
 
     const { result } = renderHook(
       () =>
@@ -40,7 +38,7 @@ describe('usePatientPhoto', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(mockGetPatientImageAsDataUrl).toHaveBeenCalledWith('patient-123');
+    expect(mockGetPatientPhotoDataUrl).toHaveBeenCalledWith('patient-123');
     expect(result.current.patientPhoto).toBe(mockPhotoData);
   });
 
@@ -53,7 +51,7 @@ describe('usePatientPhoto', () => {
       { wrapper: createWrapper() },
     );
 
-    expect(mockGetPatientImageAsDataUrl).not.toHaveBeenCalled();
+    expect(mockGetPatientPhotoDataUrl).not.toHaveBeenCalled();
     expect(result.current.patientPhoto).toBeUndefined();
   });
 });
