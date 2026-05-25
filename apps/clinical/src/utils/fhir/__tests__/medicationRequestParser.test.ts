@@ -1,5 +1,5 @@
 import { MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
-import { DURATION_UNIT_OPTIONS } from '../../../constants/medications';
+import { DURATION_UNIT_OPTIONS } from '../../../components/forms/medicationRequest/constants';
 import { MedicationConfig } from '../../../models/medicationConfig';
 import { parseFhirToMedicationInputEntry } from '../medicationRequestParser';
 

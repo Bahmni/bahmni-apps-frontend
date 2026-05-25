@@ -11,11 +11,14 @@ import {
   BAHMNI_HOME_PATH,
   getConfig,
   generateId,
+  getFormattedPatientById,
+  capitalize,
 } from '@bahmni/services';
 import {
   ProgramDetails,
   useNotification,
   useUserPrivilege,
+  usePatientUUID,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, {
@@ -121,15 +124,27 @@ const ConsultationPage: React.FC = () => {
   );
   const viewingForm = useObservationFormsStore((state) => state.viewingForm);
 
-  const breadcrumbItems = [
-    { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
-    {
-      id: 'clinical',
-      label: 'Clinical',
-      href: BAHMNI_CLINICAL_PATH,
-    },
-    { id: 'current', label: t('CURRENT_PATIENT'), isCurrentPage: true },
-  ];
+  const patientUUID = usePatientUUID();
+  const { data: patient } = useQuery({
+    queryKey: ['patient', patientUUID],
+    queryFn: () => getFormattedPatientById(patientUUID!),
+    enabled: !!patientUUID,
+  });
+
+  const breadcrumbItems = useMemo(
+    () => [
+      { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
+      { id: 'clinical', label: 'Clinical', href: BAHMNI_CLINICAL_PATH },
+      {
+        id: 'current',
+        label: patient?.fullName
+          ? capitalize(patient.fullName)
+          : t('CURRENT_PATIENT'),
+        isCurrentPage: true,
+      },
+    ],
+    [patient?.fullName, t],
+  );
 
   const episodeUuids = useMemo(() => {
     const episodeUuid = searchParams.get(EPISODE_UUID_SEARCH_PARAMS_KEY);
@@ -196,7 +211,17 @@ const ConsultationPage: React.FC = () => {
     return getSidebarItems(filteredDashboardConfig, t);
   }, [filteredDashboardConfig, t]);
 
-  const { activeItemId, handleItemClick } = useSidebarNavigation(sidebarItems);
+  const [scrollTrigger, setScrollTrigger] = useState(0);
+  const { activeItemId, handleItemClick: originalHandleItemClick } =
+    useSidebarNavigation(sidebarItems);
+
+  const handleItemClick = useCallback(
+    (id: string) => {
+      originalHandleItemClick(id);
+      setScrollTrigger((v) => v + 1);
+    },
+    [originalHandleItemClick],
+  );
 
   if (clinicalConfigLoading) {
     return (
@@ -296,6 +321,7 @@ const ConsultationPage: React.FC = () => {
             <DashboardContainer
               sections={filteredDashboardConfig!.sections}
               activeItemId={activeItemId}
+              scrollTrigger={scrollTrigger}
             />
           </Suspense>
         }

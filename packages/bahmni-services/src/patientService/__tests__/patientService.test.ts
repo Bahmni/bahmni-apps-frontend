@@ -1123,6 +1123,7 @@ describe('Patient Service', () => {
           ['XYZ', 'source-2'],
         ]),
         primaryIdentifierTypeUuid: 'primary-uuid',
+        primaryIdentifierTypeName: 'Primary ID',
       });
     });
 
@@ -1139,6 +1140,7 @@ describe('Patient Service', () => {
         prefixes: [],
         sourcesByPrefix: new Map(),
         primaryIdentifierTypeUuid: null,
+        primaryIdentifierTypeName: null,
       });
     });
 
@@ -1166,6 +1168,7 @@ describe('Patient Service', () => {
         prefixes: [],
         sourcesByPrefix: new Map(),
         primaryIdentifierTypeUuid: 'primary-uuid',
+        primaryIdentifierTypeName: null,
       });
     });
 
@@ -1201,6 +1204,7 @@ describe('Patient Service', () => {
         prefixes: ['XYZ'],
         sourcesByPrefix: new Map([['XYZ', 'source-2']]),
         primaryIdentifierTypeUuid: 'primary-uuid',
+        primaryIdentifierTypeName: 'Primary ID',
       });
     });
 
@@ -1232,6 +1236,7 @@ describe('Patient Service', () => {
         prefixes: ['ABC'],
         sourcesByPrefix: new Map(),
         primaryIdentifierTypeUuid: 'primary-uuid',
+        primaryIdentifierTypeName: 'Primary ID',
       });
     });
   });

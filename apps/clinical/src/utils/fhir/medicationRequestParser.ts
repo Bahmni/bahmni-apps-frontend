@@ -2,7 +2,7 @@ import {
   MedicationRequest as FhirMedicationRequest,
   Medication,
 } from 'fhir/r4';
-import { DURATION_UNIT_OPTIONS } from '../../constants/medications';
+import { DURATION_UNIT_OPTIONS } from '../../components/forms/medicationRequest/constants';
 import { Concept } from '../../models/encounterConcepts';
 import {
   DurationUnitOption,
@@ -77,7 +77,7 @@ export function parseFhirToMedicationInputEntry(
       .join(' ') ?? '';
 
   const doseForm = extractDoseForm(
-    medication as Record<string, unknown>,
+    medication as unknown as Record<string, unknown>,
     displayName,
   );
 

@@ -32,6 +32,8 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
         </button>
         <div
           data-testid="sidenav-item-vitals"
+          role="button"
+          tabindex="0"
         >
           VITALS_SECTION
         </div>
@@ -39,6 +41,21 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
           data-testid="active-sidenav-item"
         >
           vitals
+        </div>
+        <div
+          data-testid="breadcrumb-item-home"
+        >
+          Home
+        </div>
+        <div
+          data-testid="breadcrumb-item-clinical"
+        >
+          Clinical
+        </div>
+        <div
+          data-testid="breadcrumb-item-current"
+        >
+          Current Patient
         </div>
       </div>
     </div>
@@ -63,6 +80,8 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
         />
       </div>
       <div
+        data-active-item="vitals"
+        data-scroll-trigger="0"
         data-testid="dashboard-container"
       >
         <article
