@@ -136,7 +136,10 @@ describe('buildFhirPatient', () => {
     });
     expect(updateResult.name![0].id).toBe('name-uuid-456');
 
-    const createResult = buildFhirPatient(baseInput);
+    const createResult = buildFhirPatient({
+      ...baseInput,
+      profile: { ...baseProfile, nameUuid: 'stale-name-uuid' },
+    });
     expect(createResult.name![0].id).toBeUndefined();
   });
 
