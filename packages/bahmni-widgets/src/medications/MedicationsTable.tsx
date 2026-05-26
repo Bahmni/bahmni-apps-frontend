@@ -128,15 +128,12 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     }
   }, [isError, error, addNotification]);
 
-  // Listen to consultation saved events and refetch if medications were updated
   useSubscribeConsultationSaved(
     (payload: ConsultationSavedEventPayload) => {
-      // Only refetch if:
-      // 1. Event is for the same patient
-      // 2. Medications were modified during consultation
       if (
         payload.patientUUID === patientUUID &&
-        payload.updatedResources.medications
+        (payload.updatedResources.medications ||
+          payload.updatedResources.immunizationHistory)
       ) {
         refetch();
       }
