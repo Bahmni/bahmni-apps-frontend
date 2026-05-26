@@ -15,16 +15,34 @@ const INITIAL_STATE: EncounterSessionState = {
 };
 
 type Listener = () => void;
-let currentState: EncounterSessionState = { ...INITIAL_STATE };
-const listeners = new Set<Listener>();
+
+// Use globalThis so the store is shared across separately-bundled packages
+// (e.g. @bahmni/clinical-app writes, @bahmni/widgets reads).
+const GLOBAL_KEY = '__bahmni_encounter_session__';
+
+interface GlobalStore {
+  state: EncounterSessionState;
+  listeners: Set<Listener>;
+}
+
+function getGlobalStore(): GlobalStore {
+  const g = globalThis as Record<string, unknown>;
+  g[GLOBAL_KEY] ??= {
+    state: { ...INITIAL_STATE },
+    listeners: new Set<Listener>(),
+  };
+  return g[GLOBAL_KEY] as GlobalStore;
+}
 
 function emitChange() {
+  const { listeners } = getGlobalStore();
   for (const listener of listeners) {
     listener();
   }
 }
 
 export function subscribeEncounterSession(listener: Listener): () => void {
+  const { listeners } = getGlobalStore();
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
@@ -32,18 +50,20 @@ export function subscribeEncounterSession(listener: Listener): () => void {
 }
 
 export function getEncounterSessionSnapshot(): EncounterSessionState {
-  return currentState;
+  return getGlobalStore().state;
 }
 
 export function setEncounterSessionState(
   state: Partial<EncounterSessionState>,
 ): void {
-  currentState = { ...currentState, ...state };
+  const store = getGlobalStore();
+  store.state = { ...store.state, ...state };
   emitChange();
 }
 
 export function resetEncounterSession(): void {
-  currentState = { ...INITIAL_STATE };
+  const store = getGlobalStore();
+  store.state = { ...INITIAL_STATE };
   emitChange();
 }
 
