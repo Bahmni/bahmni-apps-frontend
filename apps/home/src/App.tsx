@@ -1,10 +1,23 @@
 import { initFontAwesome, Loading } from '@bahmni/design-system';
 import { initAppI18n } from '@bahmni/services';
-import React, { useEffect, useState } from 'react';
-import { HomePage } from './components/HomePage';
+import {
+  ActivePractitionerProvider,
+  LocationProvider,
+  NotificationProvider,
+  NotificationServiceComponent,
+  UserPrivilegeProvider,
+} from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Suspense, useEffect, useState } from 'react';
+import { Routes } from 'react-router-dom';
+import { queryClientConfig } from './config/tanstackQuery';
 import { HOME_NAMESPACE } from './constants/app';
+import { routes, renderRoutes } from './routes';
 
-const HomeApp: React.FC = () => {
+const queryClient = new QueryClient(queryClientConfig);
+
+export function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -26,7 +39,23 @@ const HomeApp: React.FC = () => {
     return <Loading />;
   }
 
-  return <HomePage />;
-};
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ActivePractitionerProvider>
+        <UserPrivilegeProvider>
+          <NotificationProvider>
+            <LocationProvider>
+              <NotificationServiceComponent />
+              <Suspense fallback={<Loading />}>
+                <Routes>{renderRoutes(routes)}</Routes>
+              </Suspense>
+              <ReactQueryDevtools initialIsOpen={false} />
+            </LocationProvider>
+          </NotificationProvider>
+        </UserPrivilegeProvider>
+      </ActivePractitionerProvider>
+    </QueryClientProvider>
+  );
+}
 
-export { HomeApp };
+export default App;
