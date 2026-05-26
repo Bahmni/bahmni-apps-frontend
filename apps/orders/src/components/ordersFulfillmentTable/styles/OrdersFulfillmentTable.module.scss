@@ -1,4 +1,3 @@
-
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
@@ -49,7 +48,7 @@ $col-admitted: 36px;
   tbody tr td:nth-child(2) {
     width: $col-badge;
     min-width: 60px;
-    *{
+    * {
       justify-content: center;
     }
   }
@@ -75,7 +74,7 @@ $col-admitted: 36px;
   thead tr th:nth-child(6) {
     width: $col-priority;
     min-width: 70px;
-    *{
+    * {
       justify-content: center;
     }
   }
@@ -148,7 +147,7 @@ $col-admitted: 36px;
 .ordersTable :global(.cds--data-table) tbody tr td {
   height: $row-height !important;
 }
-.centerAlignText{
+.centerAlignText {
   text-align: center;
 }
 

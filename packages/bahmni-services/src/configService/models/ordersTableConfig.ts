@@ -19,6 +19,16 @@ export interface PatientDetailField {
 }
 
 /**
+ * Represents LMP configuration for displaying days since last menstrual period
+ */
+export interface LmpConfig {
+  lmpDateConcept: string;
+  isPatientMenstruatingConcept?: string;
+  threshold?: number;
+  tabLabels?: string[];
+}
+
+/**
  * Represents the orders table configuration from app.json
  * Contains table-specific settings like column configurations for default and drug orders
  */
@@ -29,4 +39,5 @@ export interface OrdersTableConfig {
   orderStatusesAvailable?: string[];
   orderStatusesPreSelected?: string[];
   fulfillmentEncounterTypeUuid?: string;
+  lmpConfig?: LmpConfig;
 }

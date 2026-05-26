@@ -18,7 +18,7 @@
   "STATUS_NEW": "Nuevo",
   "STATUS_ACKNOWLEDGED": "Reconocido",
   "STATUS_IN_PROGRESS": "En progreso",
-  "STATUS_COMPLETED": "Completado",  
+  "STATUS_COMPLETED": "Completado",
   "URGENT": "Urgente",
   "UNASSIGNED": "Sin Asignar",
   "NO_ORDERS_FOUND": "No se encontraron órdenes",
@@ -43,5 +43,7 @@
   "NOTES": "Notas",
   "ORDER_SAVE_SUCCESS": "Detalles de la orden actualizados correctamente",
   "ORDER_SAVE_ERROR": "Error al actualizar los detalles de la orden",
-  "DAYS_SINCE_LMP": "Días desde la FUM"
+  "DAYS_SINCE_LMP": "Días desde la FUM",
+  "OBSERVATION_NOT_RECORDED": "Fecha de FUM no registrada",
+  "NOT_YET_MENSTRUATING": "Aún no ha comenzado a menstruar"
 }

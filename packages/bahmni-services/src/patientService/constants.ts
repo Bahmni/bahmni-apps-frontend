@@ -161,10 +161,3 @@ export const UUID_PATTERN = /^[a-f0-9-]{36}$/i;
 export const PERSON_ATTRIBUTE_TYPES_URL =
   OPENMRS_REST_V1 +
   '/personattributetype?v=custom:(uuid,name,sortWeight,description,format,concept:(uuid,display,answers:(uuid,name)))';
-
-/**
- * UUID for the Last Menstrual Period (LMP) concept in OpenMRS
- * VERIFIED: This UUID is consistent across all environments (dev, staging, prod)
- * Using UUID (not concept name) because FHIR API requires code parameter in UUID format
- */
-export const LMP_CONCEPT_UUID = 'c45a7e4b-3f10-11e4-adec-0800271c1b75';

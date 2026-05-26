@@ -18,7 +18,7 @@
   "STATUS_NEW": "Nouveau",
   "STATUS_ACKNOWLEDGED": "Reconnu",
   "STATUS_IN_PROGRESS": "En cours",
-  "STATUS_COMPLETED": "Terminé",  
+  "STATUS_COMPLETED": "Terminé",
   "URGENT": "Urgent",
   "UNASSIGNED": "Non Assigné",
   "NO_ORDERS_FOUND": "Aucune ordonnance trouvée",
@@ -39,8 +39,11 @@
   "CANCEL": "Annuler",
   "SAVE": "Sauvegarder",
   "CHOOSE_AN_OPTION": "Choisir une option",
-  "ORDER_OWNER":  "Propriétaire de l'Ordonnance",
+  "ORDER_OWNER": "Propriétaire de l'Ordonnance",
   "NOTES": "Remarques",
   "ORDER_SAVE_SUCCESS": "Détails de l'ordonnance mis à jour avec succès",
-  "ORDER_SAVE_ERROR": "Échec de la mise à jour des détails de l'ordonnance"
+  "ORDER_SAVE_ERROR": "Échec de la mise à jour des détails de l'ordonnance",
+  "DAYS_SINCE_LMP": "Jours depuis les dernières règles",
+  "OBSERVATION_NOT_RECORDED": "Date des dernières règles non enregistrée",
+  "NOT_YET_MENSTRUATING": "N'a pas encore commencé à avoir ses règles"
 }
