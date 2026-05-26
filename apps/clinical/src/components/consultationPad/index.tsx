@@ -5,8 +5,11 @@ import {
   dispatchAuditEvent,
   dispatchConsultationSaved,
   useTranslation,
+  invokeCDSSRule,
+  type CDSSEventDetail,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
+import type { Bundle, BundleEntry } from 'fhir/r4';
 import React, {
   useCallback,
   useEffect,
@@ -23,6 +26,7 @@ import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
+import type { EncounterContext } from '../forms/models';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
 import { submitConsultation } from './services';
@@ -130,6 +134,97 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     return () => activeEntries.forEach((entry) => entry.reset());
   }, []);
 
+  const buildComprehensiveCDSSBundle = useCallback((): Bundle => {
+    const entries: BundleEntry[] = [];
+
+    activeEntries.forEach((entry) => {
+      if (entry.hasData() && entry.createBundleEntries) {
+        const ctx: EncounterContext = {
+          encounterSubject: {
+            reference: `Patient/${encounterSessionStartContext.patientUuid}`,
+          },
+          encounterReference: activeEncounter?.id ?? '',
+          practitionerUUID: practitioner?.uuid ?? '',
+          consultationDate: new Date(),
+          statDurationInMilliseconds,
+        };
+        const controlEntries = entry.createBundleEntries(ctx);
+        entries.push(...controlEntries);
+      }
+    });
+
+    return {
+      resourceType: 'Bundle',
+      type: 'collection',
+      entry: entries,
+    };
+  }, [
+    activeEntries,
+    encounterSessionStartContext,
+    activeEncounter,
+    practitioner,
+    statDurationInMilliseconds,
+  ]);
+
+  useEffect(() => {
+    const handleCDSSEvent = async (event: Event) => {
+      const customEvent = event as CustomEvent<CDSSEventDetail>;
+      const { controlKey, itemId, event: eventType } = customEvent.detail;
+
+      const entry = activeEntries.find((e) => e.key === controlKey);
+      if (!entry) return;
+
+      const cdssRules =
+        entry.inputControlConfig?.cdss?.filter(
+          (rule) => rule.event === eventType,
+        ) ?? [];
+      if (cdssRules.length === 0) return;
+
+      const dataBundle = buildComprehensiveCDSSBundle();
+
+      // Build base context from available data
+      const patientId =
+        encounterSessionStartContext.patientUuid ||
+        activeEncounter?.subject?.reference?.split('/')[1];
+
+      const visitId =
+        encounterSessionStartContext.visitUuid ||
+        activeEncounter?.partOf?.reference?.split('/')[1];
+
+      const episodeId =
+        encounterSessionStartContext.episodeUuid ||
+        (episodeOfCareUuids.length > 0 ? episodeOfCareUuids[0] : undefined);
+
+      const context = {
+        patientId: patientId as string,
+        visitId: visitId as string | undefined,
+        episodeId: episodeId as string | undefined,
+      };
+      const cardPromises = cdssRules.map((rule) =>
+        invokeCDSSRule(rule, context, dataBundle).catch((error) => {
+          console.error(`CDSS rule failed for ${rule.service}:`, error);
+          return [];
+        }),
+      );
+
+      const cardArrays = await Promise.all(cardPromises);
+      const cards = cardArrays.flat();
+
+      // Broadcast CDSS results - input controls will self-identify their cards
+      const resultsEvent = new CustomEvent('cdss-results', {
+        detail: {
+          cards,
+          triggerItemId: itemId, // Hint for which item triggered this check
+          controlKey,
+        },
+      });
+      globalThis.dispatchEvent(resultsEvent);
+    };
+
+    window.addEventListener('cdss-check', handleCDSSEvent);
+    return () => window.removeEventListener('cdss-check', handleCDSSEvent);
+  }, [activeEntries, buildComprehensiveCDSSBundle, encounterSessionStartContext]);
+
   const handleSubmit = async () => {
     const validationResults = activeEntries.map((entry) => ({
       key: entry.key,
@@ -149,6 +244,20 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     }
 
     if (!validationResults.every((r) => r.valid)) return;
+
+    const hasCriticalCDSCards = activeEntries.some(
+      (entry) => entry.hasCriticalCDSCards?.() === true,
+    );
+
+    if (hasCriticalCDSCards) {
+      addNotification({
+        title: t('CDSS_CRITICAL_ALERT_TITLE'),
+        message: t('CDSS_CRITICAL_ALERT_MESSAGE'),
+        type: 'error',
+        timeout: 5000,
+      });
+      return;
+    }
 
     try {
       setIsSubmitting(true);

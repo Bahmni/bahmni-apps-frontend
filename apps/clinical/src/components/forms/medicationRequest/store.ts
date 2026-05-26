@@ -1,6 +1,7 @@
 import {
   generateUUID,
   MedicationFrequency as Frequency,
+  type CDSCard,
 } from '@bahmni/services';
 import { Medication } from 'fhir/r4';
 import { useStore } from 'zustand';
@@ -20,7 +21,7 @@ export interface MedicationRequestState {
   selectedMedicationRequests: MedicationInputEntry[];
   attributes: InputControlAttributes[] | undefined;
   setAttributes: (attrs: InputControlAttributes[]) => void;
-  addItem: (medication: Medication, displayName: string) => void;
+  addItem: (medication: Medication, displayName: string) => string;
   removeItem: (id: string) => void;
   updateDosage: (id: string, dosage: number) => void;
   updateDosageUnit: (id: string, unit: Concept) => void;
@@ -36,6 +37,8 @@ export interface MedicationRequestState {
   updateDispenseUnit: (id: string, unit: Concept) => void;
   updateNote: (id: string, note: string) => void;
   validateAll: () => boolean;
+  updateItemCDSCards: (itemId: string, cards: CDSCard[]) => void;
+  hasCriticalCDSCards: () => boolean;
   reset: () => void;
   getState: () => MedicationRequestState;
 }
@@ -349,6 +352,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
           ...state.selectedMedicationRequests,
         ],
       }));
+      return newItem.id;
     },
 
     removeItem: (id: string) => {
@@ -495,6 +499,21 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
           state.selectedMedicationRequests.map(applyValidation),
       }));
       return isValid;
+    },
+
+    updateItemCDSCards: (itemId: string, cards: CDSCard[]) => {
+      set((state) => ({
+        selectedMedicationRequests: state.selectedMedicationRequests.map(
+          (item) => (item.id === itemId ? { ...item, cdsCards: cards } : item),
+        ),
+      }));
+    },
+
+    hasCriticalCDSCards: () => {
+      const { selectedMedicationRequests } = get();
+      return selectedMedicationRequests.some((item) =>
+        item.cdsCards?.some((card) => card.indicator === 'critical'),
+      );
     },
 
     reset: () => {

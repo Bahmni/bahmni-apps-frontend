@@ -10,9 +10,13 @@ import {
   fetchMedicationOrdersMetadata,
   useTranslation,
   getVaccinations,
+  type CDSSEventDetail,
+  type CDSCard,
+  filterCdsCardsForItems,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
+import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
 import { MedicationJSONConfig } from '../../../models/medicationConfig';
@@ -21,6 +25,7 @@ import {
   getMedicationDisplay,
   getMedicationsFromBundle,
 } from '../../../services/medicationService';
+import CDSCardAlert from '../../common/CDSCardAlert';
 import SelectedMedicationRequestItem from './components/SelectedMedicationRequestItem';
 import {
   MEDICATIONS_CONFIG_URL,
@@ -37,7 +42,8 @@ import {
 
 const MedicationRequestForm: React.FC<{
   inputControlConfig?: ClinicalInputControlConfig;
-}> = React.memo(({ inputControlConfig }) => {
+  encounterSessionStartContext?: EncounterSessionStartContext;
+}> = React.memo(({ inputControlConfig, encounterSessionStartContext }) => {
   const { t } = useTranslation();
 
   const {
@@ -91,12 +97,42 @@ const MedicationRequestForm: React.FC<{
     [vaccinationsBundle],
   );
 
-  const { selectedMedicationRequests, addItem, removeItem, setAttributes } =
-    useMedicationRequestStore(inputControlType as MedicationRequestStoreKey);
+  const {
+    selectedMedicationRequests,
+    addItem,
+    removeItem,
+    setAttributes,
+    updateItemCDSCards,
+  } = useMedicationRequestStore(inputControlType as MedicationRequestStoreKey);
 
   useEffect(() => {
     setAttributes(attributes);
   }, []);
+
+  // Listen for CDSS results and self-identify relevant cards
+  useEffect(() => {
+    const handleCDSSResults = (event: Event) => {
+      const customEvent = event as CustomEvent<{ cards: CDSCard[] }>;
+      const { cards } = customEvent.detail;
+
+      // Get all our item IDs
+      const ourItemIds = new Set(
+        selectedMedicationRequests.map((item) => item.id),
+      );
+
+      // Filter cards that are relevant to our items
+      const relevantCards = filterCdsCardsForItems(cards, ourItemIds);
+
+      // Update each item with its relevant cards
+      relevantCards.forEach(({ card, resourceId }) => {
+        updateItemCDSCards(resourceId, [card]);
+      });
+    };
+
+    globalThis.addEventListener('cdss-results', handleCDSSResults);
+    return () =>
+      globalThis.removeEventListener('cdss-results', handleCDSSResults);
+  }, [selectedMedicationRequests, updateItemCDSCards]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -105,7 +141,25 @@ const MedicationRequestForm: React.FC<{
   const handleOnChange = (selected: MedicationFilterResult) => {
     if (selected.medication) {
       const displayName = getMedicationDisplay(selected.medication);
-      addItem(selected.medication, displayName);
+
+      const itemId = addItem(selected.medication, displayName);
+
+      const cdssRules = inputControlConfig?.cdss ?? [];
+      const hasMatchingRule = cdssRules.some(
+        (rule) => rule.event === 'onSelect',
+      );
+
+      if (hasMatchingRule) {
+        const event = new CustomEvent<CDSSEventDetail>('cdss-check', {
+          detail: {
+            controlKey: inputControlType,
+            itemId,
+            event: 'onSelect',
+          },
+        });
+        globalThis.dispatchEvent(event);
+      }
+
       setSearchTerm('');
     }
   };
@@ -206,20 +260,26 @@ const MedicationRequestForm: React.FC<{
             className={styles.itemsBox}
           >
             {selectedMedicationRequests.map((item) => (
-              <SelectedItem
-                onClose={() => removeItem(item.id)}
-                className={styles.selectedItem}
-                key={item.id}
-              >
-                <SelectedMedicationRequestItem
-                  entry={item}
-                  medicationConfig={medicationConfig}
-                  inputControlType={
-                    inputControlType as MedicationRequestStoreKey
-                  }
-                  attributes={attributes}
-                />
-              </SelectedItem>
+              <div key={item.id}>
+                <SelectedItem
+                  onClose={() => removeItem(item.id)}
+                  className={styles.selectedItem}
+                >
+                  <SelectedMedicationRequestItem
+                    entry={item}
+                    medicationConfig={medicationConfig}
+                    inputControlType={
+                      inputControlType as MedicationRequestStoreKey
+                    }
+                    attributes={attributes}
+                  />
+                </SelectedItem>
+                {item.cdsCards?.map((card) => (
+                  <div key={card.summary} className={styles.cdsCardContainer}>
+                    <CDSCardAlert card={card} />
+                  </div>
+                ))}
+              </div>
             ))}
           </BoxWHeader>
         )}

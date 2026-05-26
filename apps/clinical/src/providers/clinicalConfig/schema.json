@@ -13,7 +13,13 @@
   "definitions": {
     "inputControl": {
       "type": "object",
-      "required": ["type", "metadata", "encounterTypes", "privileges", "attributes"],
+      "required": [
+        "type",
+        "metadata",
+        "encounterTypes",
+        "privileges",
+        "attributes"
+      ],
       "additionalProperties": true,
       "properties": {
         "type": {
@@ -65,6 +71,29 @@
               "readOnly": {
                 "type": "boolean",
                 "description": "Whether this field is non-editable by the user"
+              }
+            }
+          }
+        },
+        "cdss": {
+          "type": "array",
+          "description": "CDSS rules configuration for this input control",
+          "items": {
+            "type": "object",
+            "required": ["event", "server", "service"],
+            "additionalProperties": false,
+            "properties": {
+              "event": {
+                "type": "string",
+                "description": "Event name that triggers CDSS check (e.g., onSelect, onSave)"
+              },
+              "server": {
+                "type": "string",
+                "description": "CDSS server identifier"
+              },
+              "service": {
+                "type": "string",
+                "description": "CDSS service endpoint name"
               }
             }
           }
