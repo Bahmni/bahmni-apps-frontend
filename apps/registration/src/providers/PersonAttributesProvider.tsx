@@ -12,13 +12,6 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import React, {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
 import { PersonAttributesContext } from '../contexts/PersonAttributesContext';
 
 interface PersonAttributesProviderProps {
