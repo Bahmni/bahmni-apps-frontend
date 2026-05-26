@@ -4,7 +4,6 @@ import {
   Condition,
   AllergyIntolerance,
   ServiceRequest,
-  MedicationRequest,
   Coding,
   Observation,
 } from 'fhir/r4';
@@ -12,14 +11,12 @@ import { CONSULTATION_ERROR_MESSAGES } from '../../constants/errors';
 import { AllergyInputEntry } from '../../models/allergy';
 import { ConditionInputEntry } from '../../models/condition';
 import { FhirEncounter } from '../../models/encounter';
-import { MedicationInputEntry } from '../../models/medication';
 import { ServiceRequestInputEntry } from '../../models/serviceRequest';
 import {
   createDiagnosisBundleEntries,
   createAllergiesBundleEntries,
   createServiceRequestBundleEntries,
   createConditionsBundleEntries,
-  createMedicationRequestEntries,
   postConsultationBundle,
   createEncounterBundleEntry,
   getEncounterReference,
@@ -539,6 +536,223 @@ describe('consultationBundleService', () => {
             text: 'Patient says: "I get rash & swelling when taking <medication>"',
           },
         ]);
+      });
+    });
+
+    describe('Existing allergy (PUT) paths', () => {
+      const mockRawFhirResource: AllergyIntolerance = {
+        resourceType: 'AllergyIntolerance',
+        id: 'allergy-uuid-123',
+        clinicalStatus: {
+          coding: [
+            {
+              system:
+                'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical',
+              code: 'active',
+              display: 'Active',
+            },
+          ],
+        },
+        verificationStatus: {
+          coding: [
+            {
+              system:
+                'http://terminology.hl7.org/CodeSystem/allergyintolerance-verification',
+              code: 'confirmed',
+            },
+          ],
+        },
+        type: 'allergy',
+        category: ['medication' as const],
+        code: {
+          coding: [
+            {
+              code: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+              display: 'Penicillin',
+            },
+          ],
+          text: 'Penicillin',
+        },
+        patient: { reference: 'Patient/patient-123' },
+        reaction: [
+          {
+            manifestation: [
+              {
+                coding: [
+                  {
+                    code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                    display: 'Rash',
+                  },
+                  { system: 'http://snomed.info/sct', code: '271807003' },
+                ],
+                text: 'Rash',
+              },
+            ],
+            severity: 'moderate' as const,
+          },
+        ],
+      };
+
+      const mockExistingAllergy: AllergyInputEntry = {
+        ...mockValidAllergy,
+        resourceId: 'allergy-uuid-123',
+        isModified: true,
+        rawFhirResource: mockRawFhirResource,
+      };
+
+      it('should use PUT method and AllergyIntolerance/{uuid} URL for existing allergy', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockExistingAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect(result[0].fullUrl).toBe('AllergyIntolerance/allergy-uuid-123');
+        expect(
+          (result[0].request as { method: string; url: string }).method,
+        ).toBe('PUT');
+        expect((result[0].request as { method: string; url: string }).url).toBe(
+          'AllergyIntolerance/allergy-uuid-123',
+        );
+      });
+
+      it('should preserve all rawFhirResource fields (clinicalStatus, type, etc.) in PUT body', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockExistingAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const resource = result[0].resource as AllergyIntolerance;
+        expect(resource.clinicalStatus).toBeDefined();
+        expect(resource.type).toBe('allergy');
+        expect(resource.id).toBe('allergy-uuid-123');
+      });
+
+      it('should update severity from selectedSeverity in PUT body', () => {
+        const allergyWithNewSeverity: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          selectedSeverity: { code: 'severe', display: 'Severe' },
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithNewSeverity],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const resource = result[0].resource as AllergyIntolerance;
+        expect(resource.reaction?.[0].severity).toBe('severe');
+      });
+
+      it('should reuse existing FHIR manifestation structure for known reaction codes', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockExistingAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const resource = result[0].resource as AllergyIntolerance;
+        const manifestation = resource.reaction?.[0].manifestation?.[0];
+        // Should reuse full FHIR structure including SNOMED code
+        expect(manifestation?.coding?.length).toBeGreaterThan(1);
+        expect(manifestation?.text).toBe('Rash');
+      });
+
+      it('should build minimal coding for new reactions not in rawFhirResource', () => {
+        const allergyWithNewReaction: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          selectedReactions: [
+            { code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', display: 'Rash' }, // existing
+            { code: 'NEW_REACTION_CODE' }, // new
+          ],
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithNewReaction],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const resource = result[0].resource as AllergyIntolerance;
+        const manifestations = resource.reaction?.[0].manifestation ?? [];
+        expect(manifestations).toHaveLength(2);
+        // New reaction gets minimal coding
+        const newReactionManifest = manifestations.find(
+          (m) => m.coding?.[0]?.code === 'NEW_REACTION_CODE',
+        );
+        expect(newReactionManifest).toBeDefined();
+        expect(newReactionManifest?.coding).toHaveLength(1);
+      });
+
+      it('should skip existing allergy when isModified is false', () => {
+        const unmodifiedAllergy: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          isModified: false,
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [unmodifiedAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        // Unmodified existing allergy is skipped entirely
+        expect(result).toHaveLength(0);
+      });
+
+      it('should include modified existing allergy and skip unmodified one', () => {
+        const unmodifiedAllergy: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          id: 'allergen-A',
+          resourceId: 'uuid-A',
+          isModified: false,
+        };
+        const modifiedAllergy: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          id: 'allergen-B',
+          resourceId: 'uuid-B',
+          isModified: true,
+          rawFhirResource: {
+            ...mockRawFhirResource,
+            id: 'uuid-B',
+          } as AllergyIntolerance,
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [unmodifiedAllergy, modifiedAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect(result[0].fullUrl).toBe('AllergyIntolerance/uuid-B');
+      });
+
+      it('should POST (not PUT) for new allergy without resourceId', () => {
+        const newAllergy: AllergyInputEntry = {
+          ...mockValidAllergy,
+          resourceId: undefined,
+          rawFhirResource: undefined,
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [newAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect((result[0].request as { method: string }).method).toBe('POST');
+        expect(result[0].fullUrl).toMatch(/^urn:uuid:/);
       });
     });
 
@@ -1421,199 +1635,6 @@ describe('consultationBundleService', () => {
 
         expect(result).toHaveLength(1);
         expect(result[0].resource?.resourceType).toBe('Condition');
-      });
-    });
-  });
-
-  describe('createMedicationRequestEntries', () => {
-    const mockMedicationEntry: MedicationInputEntry = {
-      id: 'med-123',
-      medication: {
-        resourceType: 'Medication',
-        id: 'med-123',
-      },
-      display: 'Aspirin 100mg',
-      dosage: 100,
-      dosageUnit: null,
-      frequency: null,
-      instruction: null,
-      route: null,
-      duration: 7,
-      durationUnit: null,
-      isSTAT: false,
-      isPRN: false,
-      dispenseQuantity: 14,
-      dispenseUnit: null,
-      errors: {},
-      hasBeenValidated: true,
-    };
-
-    describe('Bundle Entry Creation', () => {
-      it('should create bundle entries with correct structure', () => {
-        const result = createMedicationRequestEntries({
-          selectedMedications: [mockMedicationEntry],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-        });
-
-        expect(result).toHaveLength(1);
-        expect(result[0].fullUrl).toBe(`urn:uuid:${mockUUID}`);
-        expect(result[0].resource?.resourceType).toBe('MedicationRequest');
-        expect(result[0].request).toEqual({
-          method: 'POST',
-          url: 'MedicationRequest',
-        });
-      });
-
-      it('should create multiple bundle entries for multiple medications', () => {
-        const medications = [
-          mockMedicationEntry,
-          { ...mockMedicationEntry, id: 'med-456' },
-          { ...mockMedicationEntry, id: 'med-789' },
-        ];
-
-        const result = createMedicationRequestEntries({
-          selectedMedications: medications,
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-        });
-
-        expect(result).toHaveLength(3);
-        result.forEach((entry) => {
-          expect(entry.resource?.resourceType).toBe('MedicationRequest');
-          expect(entry.request?.method).toBe('POST');
-        });
-      });
-
-      it('should return empty array for empty medications list', () => {
-        const result = createMedicationRequestEntries({
-          selectedMedications: [],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-        });
-
-        expect(result).toEqual([]);
-      });
-    });
-
-    describe('Parameter Validation', () => {
-      it('should throw error for null selectedMedications', () => {
-        expect(() =>
-          createMedicationRequestEntries({
-            selectedMedications: null as any,
-            encounterSubject: mockEncounterSubject,
-            encounterReference: mockEncounterReference,
-            practitionerUUID: mockPractitionerUUID,
-          }),
-        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
-      });
-
-      it('should throw error for non-array selectedMedications', () => {
-        expect(() =>
-          createMedicationRequestEntries({
-            selectedMedications: 'not-an-array' as any,
-            encounterSubject: mockEncounterSubject,
-            encounterReference: mockEncounterReference,
-            practitionerUUID: mockPractitionerUUID,
-          }),
-        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
-      });
-
-      it('should throw error for missing encounterSubject', () => {
-        expect(() =>
-          createMedicationRequestEntries({
-            selectedMedications: [mockMedicationEntry],
-
-            encounterSubject: null as any,
-            encounterReference: mockEncounterReference,
-            practitionerUUID: mockPractitionerUUID,
-          }),
-        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
-      });
-
-      it('should throw error for encounterSubject without reference', () => {
-        expect(() =>
-          createMedicationRequestEntries({
-            selectedMedications: [mockMedicationEntry],
-            encounterSubject: {} as Reference,
-            encounterReference: mockEncounterReference,
-            practitionerUUID: mockPractitionerUUID,
-          }),
-        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
-      });
-
-      it('should throw error for missing encounterReference', () => {
-        expect(() =>
-          createMedicationRequestEntries({
-            selectedMedications: [mockMedicationEntry],
-            encounterSubject: mockEncounterSubject,
-            encounterReference: '',
-            practitionerUUID: mockPractitionerUUID,
-          }),
-        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
-      });
-
-      it('should throw error for missing practitionerUUID', () => {
-        expect(() =>
-          createMedicationRequestEntries({
-            selectedMedications: [mockMedicationEntry],
-            encounterSubject: mockEncounterSubject,
-            encounterReference: mockEncounterReference,
-            practitionerUUID: '',
-          }),
-        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
-      });
-    });
-
-    describe('Reference Creation', () => {
-      it('should create proper references for encounter and practitioner', () => {
-        const result = createMedicationRequestEntries({
-          selectedMedications: [mockMedicationEntry],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-        });
-
-        const medicationRequest = result[0].resource as MedicationRequest;
-        expect(medicationRequest.subject).toEqual(mockEncounterSubject);
-        expect(medicationRequest.encounter?.reference).toBe(
-          mockEncounterReference,
-        );
-        expect(medicationRequest.requester?.reference).toBe(
-          `Practitioner/${mockPractitionerUUID}`,
-        );
-      });
-    });
-
-    describe('UUID Generation', () => {
-      it('should generate unique UUIDs for each medication entry', () => {
-        const medications = [
-          mockMedicationEntry,
-          { ...mockMedicationEntry, id: 'med-456' },
-        ];
-
-        // Mock different UUIDs for each call
-        let callCount = 0;
-        const uuids = ['uuid-1', 'uuid-2'];
-        (global.crypto.randomUUID as jest.Mock).mockImplementation(
-          () => uuids[callCount++],
-        );
-
-        const result = createMedicationRequestEntries({
-          selectedMedications: medications,
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-        });
-
-        expect(result[0].fullUrl).toBe('urn:uuid:uuid-1');
-        expect(result[1].fullUrl).toBe('urn:uuid:uuid-2');
-
-        // Reset mock
-        (global.crypto.randomUUID as jest.Mock).mockReturnValue(mockUUID);
       });
     });
   });

@@ -3,14 +3,17 @@ import {
   AllergyStatus,
   AllergySeverity,
   getFormattedAllergies,
+  resetEncounterSession,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { useNotification } from '../../notification';
+import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import AllergiesTable from '../AllergiesTable';
 
 jest.mock('../../notification');
+jest.mock('../../userPrivileges/useHasPrivilege');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedAllergies: jest.fn(),
@@ -98,9 +101,12 @@ describe('AllergiesTable Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    resetEncounterSession();
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
+    // Default to no privilege — keeps Edit button hidden in integration tests
+    (useHasPrivilege as jest.Mock).mockReturnValue(false);
   });
 
   afterEach(() => {

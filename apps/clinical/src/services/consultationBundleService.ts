@@ -10,7 +10,6 @@ import { CONSULTATION_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
 import { ConsultationBundle } from '../models/consultationBundle';
-import { MedicationInputEntry } from '../models/medication';
 import { ServiceRequestInputEntry } from '../models/serviceRequest';
 import { createEncounterAllergyResource } from '../utils/fhir/allergyResourceCreator';
 import {
@@ -18,7 +17,6 @@ import {
   createEncounterConditionResource,
 } from '../utils/fhir/conditionResourceCreator';
 import { createBundleEntry } from '../utils/fhir/consultationBundleCreator';
-import { createMedicationRequestResource } from '../utils/fhir/medicationRequestResourceCreator';
 import { createObservationResources } from '../utils/fhir/observationResourceCreator';
 import {
   createPractitionerReference,
@@ -54,14 +52,6 @@ interface CreateConditionsBundleEntriesParams {
   encounterReference: string;
   practitionerUUID: string;
   consultationDate: Date;
-}
-
-interface CreateMedicationRequestBundleEntriesParams {
-  selectedMedications: MedicationInputEntry[];
-  encounterSubject: Reference;
-  encounterReference: string;
-  practitionerUUID: string;
-  statDurationInMilliseconds?: number;
 }
 
 interface CreateObservationBundleEntriesParams {
@@ -173,36 +163,90 @@ export function createAllergiesBundleEntries({
       throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ALLERGY_PARAMS);
     }
 
-    const allergyResourceURL = `urn:uuid:${crypto.randomUUID()}`;
-    const allergyResource = createEncounterAllergyResource(
-      allergy.id,
-      [allergy.type] as Array<
-        'food' | 'medication' | 'environment' | 'biologic'
-      >,
-      [
-        {
-          manifestationUUIDs: allergy.selectedReactions
-            .filter(
-              (reaction): reaction is { code: string } =>
-                reaction.code !== undefined,
-            )
-            .map((reaction) => reaction.code),
-          severity: allergy.selectedSeverity.code as
-            | 'mild'
-            | 'moderate'
-            | 'severe',
-        },
-      ],
-      encounterSubject,
-      createEncounterReferenceFromString(encounterReference),
-      createPractitionerReference(practitionerUUID),
-      allergy.note,
-    );
+    const isExisting = !!allergy.resourceId && !!allergy.rawFhirResource;
+
+    // Skip existing allergies that the user did not change — sending PUT for
+    // unchanged allergies causes OpenMRS to append duplicate reactions.
+    if (isExisting && !allergy.isModified) continue;
+    const allergyResourceURL = isExisting
+      ? `AllergyIntolerance/${allergy.resourceId}`
+      : `urn:uuid:${crypto.randomUUID()}`;
+
+    const manifestationUUIDs = allergy.selectedReactions
+      .filter((r): r is { code: string } => r.code !== undefined)
+      .map((r) => r.code);
+    const severity = allergy.selectedSeverity.code as
+      | 'mild'
+      | 'moderate'
+      | 'severe';
+
+    let allergyResource: import('fhir/r4').AllergyIntolerance;
+
+    if (isExisting && allergy.rawFhirResource) {
+      // Build a lookup of deduplicated existing FHIR manifestation entries by their
+      // primary OpenMRS concept code (no system field). This lets us reuse the full
+      // FHIR structure (SNOMED codes + text) for reactions already on the backend,
+      // while still including any NEW reactions the user added.
+      const existingManifestationByCode = new Map<
+        string,
+        import('fhir/r4').CodeableConcept
+      >();
+      for (const r of allergy.rawFhirResource.reaction ?? []) {
+        for (const m of r.manifestation ?? []) {
+          const primaryCode = m.coding?.find((c) => !c.system)?.code;
+          if (primaryCode && !existingManifestationByCode.has(primaryCode)) {
+            existingManifestationByCode.set(primaryCode, m);
+          }
+        }
+      }
+
+      // Build the final manifestation list from the user's selectedReactions.
+      // Deduplicate by concept code; reuse existing FHIR entry when available so
+      // the full coding structure is preserved for already-stored reactions.
+      const seenCodes = new Set<string>();
+      const manifestations = manifestationUUIDs
+        .filter((code) => {
+          if (seenCodes.has(code)) return false;
+          seenCodes.add(code);
+          return true;
+        })
+        .map(
+          (code) =>
+            existingManifestationByCode.get(code) ?? {
+              coding: [{ code }],
+            },
+        );
+
+      allergyResource = {
+        ...allergy.rawFhirResource,
+        encounter: createEncounterReferenceFromString(encounterReference),
+        reaction: [
+          {
+            substance: allergy.rawFhirResource.code,
+            manifestation: manifestations,
+            severity,
+          },
+        ],
+      };
+    } else {
+      allergyResource = createEncounterAllergyResource(
+        allergy.id,
+        [allergy.type] as Array<
+          'food' | 'medication' | 'environment' | 'biologic'
+        >,
+        [{ manifestationUUIDs, severity }],
+        encounterSubject,
+        createEncounterReferenceFromString(encounterReference),
+        createPractitionerReference(practitionerUUID),
+        allergy.note,
+      );
+    }
 
     const allergyBundleEntry = createBundleEntry(
       allergyResourceURL,
       allergyResource,
-      'POST',
+      isExisting ? 'PUT' : 'POST',
+      isExisting ? allergyResourceURL : undefined,
     );
 
     allergyEntries.push(allergyBundleEntry);
@@ -327,50 +371,6 @@ export function createConditionsBundleEntries({
   }
 
   return conditionEntries;
-}
-
-export function createMedicationRequestEntries({
-  selectedMedications,
-  encounterSubject,
-  encounterReference,
-  practitionerUUID,
-  statDurationInMilliseconds,
-}: CreateMedicationRequestBundleEntriesParams): BundleEntry[] {
-  if (!selectedMedications || !Array.isArray(selectedMedications)) {
-    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
-  }
-
-  if (!encounterSubject?.reference) {
-    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
-  }
-
-  if (!encounterReference) {
-    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
-  }
-
-  if (!practitionerUUID) {
-    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
-  }
-  const medicationRequestEntries: BundleEntry[] = [];
-  for (const medication of selectedMedications) {
-    const medicationResourceURL = `urn:uuid:${crypto.randomUUID()}`;
-    const medicationResource = createMedicationRequestResource(
-      medication,
-      encounterSubject,
-      createEncounterReferenceFromString(encounterReference),
-      createPractitionerReference(practitionerUUID),
-      statDurationInMilliseconds,
-    );
-
-    const medicationRequestEntry = createBundleEntry(
-      medicationResourceURL,
-      medicationResource,
-      'POST',
-    );
-
-    medicationRequestEntries.push(medicationRequestEntry);
-  }
-  return medicationRequestEntries;
 }
 
 /**

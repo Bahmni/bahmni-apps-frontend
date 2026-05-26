@@ -1,6 +1,8 @@
 import { OPENMRS_FHIR_R4 } from '../constants/app';
 import { HL7_CONDITION_CATEGORY_CONDITION_CODE } from '../constants/fhir';
 
+export const CONDITION_RESOURCE_URL = OPENMRS_FHIR_R4 + '/Condition';
+
 // Used by getConditions() — fetches all records for consultation forms
 export const PATIENT_CONDITION_RESOURCE_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +

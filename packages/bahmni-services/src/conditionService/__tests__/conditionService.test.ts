@@ -1,4 +1,4 @@
-import { get } from '../../api';
+import { get, put } from '../../api';
 import {
   mockCondition,
   mockConditionBundle,
@@ -9,6 +9,7 @@ import {
   getConditions,
   getConditionsBundle,
   getConditionPage,
+  markConditionAsInactive,
 } from '../conditionService';
 
 jest.mock('../../api');
@@ -151,6 +152,65 @@ describe('conditionService', () => {
       (get as jest.Mock).mockRejectedValueOnce(error);
 
       await expect(getConditionPage(patientUUID)).rejects.toThrow(
+        'Network error',
+      );
+    });
+  });
+
+  describe('markConditionAsInactive', () => {
+    it('should PUT to the correct URL with clinicalStatus.code set to inactive', async () => {
+      const updatedCondition = {
+        ...mockCondition,
+        clinicalStatus: {
+          coding: [
+            {
+              system:
+                'http://terminology.hl7.org/CodeSystem/condition-clinical',
+              code: 'inactive',
+              display: 'Inactive',
+            },
+          ],
+          text: 'Inactive',
+        },
+      };
+      (put as jest.Mock).mockResolvedValueOnce(updatedCondition);
+
+      const result = await markConditionAsInactive(mockCondition);
+
+      expect(put).toHaveBeenCalledWith(
+        `/openmrs/ws/fhir2/R4/Condition/${mockCondition.id}`,
+        expect.objectContaining({
+          clinicalStatus: expect.objectContaining({
+            coding: expect.arrayContaining([
+              expect.objectContaining({ code: 'inactive' }),
+            ]),
+          }),
+        }),
+      );
+      expect(result).toEqual(updatedCondition);
+    });
+
+    it('should preserve all other fields from the original condition', async () => {
+      (put as jest.Mock).mockImplementationOnce((_, body) =>
+        Promise.resolve(body),
+      );
+
+      const result = await markConditionAsInactive(mockCondition);
+
+      expect(result.resourceType).toBe(mockCondition.resourceType);
+      expect(result.id).toBe(mockCondition.id);
+      expect(result.code).toEqual(mockCondition.code);
+      expect(result.subject).toEqual(mockCondition.subject);
+      expect(result.onsetDateTime).toBe(mockCondition.onsetDateTime);
+      expect(result.recordedDate).toBe(mockCondition.recordedDate);
+      expect(result.clinicalStatus?.coding?.[0]?.code).toBe('inactive');
+    });
+
+    it('should throw error when PUT fails', async () => {
+      const error = new Error('Network error');
+      (put as jest.Mock).mockRejectedValueOnce(error);
+
+      await expect(markConditionAsInactive(mockCondition)).rejects.toThrow(
         'Network error',
       );
     });

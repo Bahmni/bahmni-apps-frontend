@@ -137,6 +137,7 @@ export {
 export {
   getConditions,
   getConditionPage,
+  markConditionAsInactive,
   type ConditionPage,
   type ConditionInputEntry,
 } from './conditionService';
@@ -232,6 +233,13 @@ export {
   type MatchReasonCode,
   MATCH_REASON_MESSAGES,
   CONSULTATION_ENCOUNTER_TYPE_UUID,
+  useEncounterSessionStore,
+  setEncounterSessionDecision,
+  setEncounterSessionLoading,
+  resetEncounterSession,
+  subscribeEncounterSession,
+  getEncounterSessionSnapshot,
+  type EncounterSessionState,
 } from './encounterSessionService';
 
 export {

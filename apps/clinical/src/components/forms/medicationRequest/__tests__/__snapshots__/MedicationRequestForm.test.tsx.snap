@@ -1,0 +1,569 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MedicationRequestForm Snapshots matches snapshot for medications form with no selected items 1`] = `
+<div>
+  <div
+    aria-label="medication-form-tile-aria-label"
+    class="cds--tile form"
+    data-testid="medication-form-tile-test-id"
+    id="medication-form-tile"
+  >
+    <div
+      aria-label="medication-form-title-aria-label"
+      class="title"
+      data-testid="medication-form-title-test-id"
+      id="medication-form-title"
+    >
+      Medications
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-_r_25_-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="medication-search-combobox-aria-label"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            data-testid="medication-search-combobox-test-id"
+            id="medication-search"
+            placeholder="Search to add Medication"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-_r_25_-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-_r_25_-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-_r_25_-label"
+          class="cds--list-box__menu"
+          id="downshift-_r_25_-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`MedicationRequestForm Snapshots matches snapshot for medications form with selected items 1`] = `
+<div>
+  <div
+    aria-label="medication-form-tile-aria-label"
+    class="cds--tile form"
+    data-testid="medication-form-tile-test-id"
+    id="medication-form-tile"
+  >
+    <div
+      aria-label="medication-form-title-aria-label"
+      class="title"
+      data-testid="medication-form-title-test-id"
+      id="medication-form-title"
+    >
+      Medications
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-_r_28_-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="medication-search-combobox-aria-label"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            data-testid="medication-search-combobox-test-id"
+            id="medication-search"
+            placeholder="Search to add Medication"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-_r_28_-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-_r_28_-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-_r_28_-label"
+          class="cds--list-box__menu"
+          id="downshift-_r_28_-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+    <div
+      aria-label="Added Medications"
+      class="_box_1jr6a_1 itemsBox cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
+      data-testid="box-w-title"
+      role="region"
+    >
+      <div
+        class="_header_1jr6a_8 cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+      >
+        Added Medications
+      </div>
+      <div
+        class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+      >
+        <div
+          class="_grid_i0b21_1 selectedItem cds--subgrid cds--subgrid--narrow"
+          data-testid="selected-item"
+        >
+          <div
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+          >
+            <div
+              aria-label="medication-selected-item-test-medication-1-aria-label"
+              class="cds--subgrid cds--subgrid--wide"
+              data-testid="medication-selected-item-test-medication-1-test-id"
+              id="medication-selected-item-test-medication-1"
+            >
+              <div
+                class="itemTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+              >
+                <span
+                  aria-label="medication-name-test-medication-1-aria-label"
+                  data-testid="medication-name-test-medication-1-test-id"
+                  id="medication-name-test-medication-1"
+                >
+                  Magnesium sulfate 500 mg/ml 
+                </span>
+                <span
+                  aria-label="medication-details-test-medication-1-aria-label"
+                  class="itemDetails"
+                  data-testid="medication-details-test-medication-1-test-id"
+                  id="medication-details-test-medication-1"
+                >
+                  (Injection)
+                </span>
+                <span
+                  aria-label="medication-dose-form-test-medication-1-aria-label"
+                  class="doseForm"
+                  data-testid="medication-dose-form-test-medication-1-test-id"
+                  id="medication-dose-form-test-medication-1"
+                >
+                  Injection
+                </span>
+              </div>
+              <div
+                class="itemActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+              />
+              <div
+                class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+              >
+                <span
+                  aria-label="medication-total-quantity-test-medication-1-aria-label"
+                  data-testid="medication-total-quantity-test-medication-1-test-id"
+                  id="medication-total-quantity-test-medication-1"
+                >
+                  Total quantity
+                   :
+                   
+                  10
+                   
+                  mg
+                </span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+          >
+            <span
+              class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+            >
+              <div
+                class="cds--tooltip-trigger__wrapper"
+              >
+                <button
+                  aria-label="Close Selected Item"
+                  aria-labelledby="tooltip-_r_2a_"
+                  class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
+                  data-testid="selected-item-close-button"
+                  id="close-selected-item"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <span
+                aria-hidden="true"
+                class="cds--popover"
+                id="tooltip-_r_2a_"
+                role="tooltip"
+              >
+                <span
+                  class="cds--popover-content cds--tooltip-content"
+                >
+                  Close
+                </span>
+                <span
+                  class="cds--popover-caret"
+                />
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form with no selected items 1`] = `
+<div>
+  <div
+    aria-label="vaccination-form-tile-aria-label"
+    class="cds--tile form"
+    data-testid="vaccination-form-tile-test-id"
+    id="vaccination-form-tile"
+  >
+    <div
+      aria-label="vaccination-form-title-aria-label"
+      class="title"
+      data-testid="vaccination-form-title-test-id"
+      id="vaccination-form-title"
+    >
+      Vaccinations
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-_r_2f_-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="vaccination-search-combobox-aria-label"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            data-testid="vaccination-search-combobox-test-id"
+            id="vaccination-search"
+            placeholder="Search to add Vaccination"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-_r_2f_-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-_r_2f_-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-_r_2f_-label"
+          class="cds--list-box__menu"
+          id="downshift-_r_2f_-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form with selected items 1`] = `
+<div>
+  <div
+    aria-label="vaccination-form-tile-aria-label"
+    class="cds--tile form"
+    data-testid="vaccination-form-tile-test-id"
+    id="vaccination-form-tile"
+  >
+    <div
+      aria-label="vaccination-form-title-aria-label"
+      class="title"
+      data-testid="vaccination-form-title-test-id"
+      id="vaccination-form-title"
+    >
+      Vaccinations
+    </div>
+    <div
+      class="cds--list-box__wrapper"
+    >
+      <div
+        class="cds--combo-box cds--autoalign cds--list-box"
+      >
+        <div
+          class="cds--list-box__field"
+        >
+          <input
+            aria-activedescendant=""
+            aria-autocomplete="list"
+            aria-controls="downshift-_r_2i_-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="vaccination-search-combobox-aria-label"
+            autocomplete="off"
+            class="cds--text-input cds--text-input--empty"
+            data-testid="vaccination-search-combobox-test-id"
+            id="vaccination-search"
+            placeholder="Search to add Vaccination"
+            role="combobox"
+            tabindex="0"
+            title=""
+            type="text"
+            value=""
+          />
+          <button
+            aria-controls="downshift-_r_2i_-menu"
+            aria-expanded="false"
+            aria-label="Open"
+            class="cds--list-box__menu-icon"
+            id="downshift-_r_2i_-toggle-button"
+            tabindex="-1"
+            title="Open"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="currentColor"
+              focusable="false"
+              height="16"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+              />
+            </svg>
+          </button>
+        </div>
+        <ul
+          aria-labelledby="downshift-_r_2i_-label"
+          class="cds--list-box__menu"
+          id="downshift-_r_2i_-menu"
+          role="listbox"
+          style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+        />
+      </div>
+    </div>
+    <div
+      aria-label="Added Vaccinations"
+      class="_box_1jr6a_1 itemsBox cds--css-grid cds--css-grid--narrow cds--css-grid--full-width"
+      data-testid="box-w-title"
+      role="region"
+    >
+      <div
+        class="_header_1jr6a_8 cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+      >
+        Added Vaccinations
+      </div>
+      <div
+        class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
+      >
+        <div
+          class="_grid_i0b21_1 selectedItem cds--subgrid cds--subgrid--narrow"
+          data-testid="selected-item"
+        >
+          <div
+            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+          >
+            <div
+              aria-label="vaccination-selected-item-test-vaccination-1-aria-label"
+              class="cds--subgrid cds--subgrid--wide"
+              data-testid="vaccination-selected-item-test-vaccination-1-test-id"
+              id="vaccination-selected-item-test-vaccination-1"
+            >
+              <div
+                class="itemTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+              >
+                <span
+                  aria-label="vaccination-name-test-vaccination-1-aria-label"
+                  data-testid="vaccination-name-test-vaccination-1-test-id"
+                  id="vaccination-name-test-vaccination-1"
+                >
+                  COVID-19 Vaccine
+                </span>
+              </div>
+              <div
+                class="itemActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+              />
+              <div
+                class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+              >
+                <span
+                  aria-label="vaccination-total-quantity-test-vaccination-1-aria-label"
+                  data-testid="vaccination-total-quantity-test-vaccination-1-test-id"
+                  id="vaccination-total-quantity-test-vaccination-1"
+                >
+                  Total Quantity
+                   :
+                   
+                  1
+                   
+                  ml
+                </span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
+          >
+            <span
+              class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+            >
+              <div
+                class="cds--tooltip-trigger__wrapper"
+              >
+                <button
+                  aria-label="Close Selected Item"
+                  aria-labelledby="tooltip-_r_2k_"
+                  class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
+                  data-testid="selected-item-close-button"
+                  id="close-selected-item"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <span
+                aria-hidden="true"
+                class="cds--popover"
+                id="tooltip-_r_2k_"
+                role="tooltip"
+              >
+                <span
+                  class="cds--popover-content cds--tooltip-content"
+                >
+                  Close
+                </span>
+                <span
+                  class="cds--popover-caret"
+                />
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

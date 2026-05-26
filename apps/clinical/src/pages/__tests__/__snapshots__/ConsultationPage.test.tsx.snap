@@ -42,6 +42,21 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
         >
           vitals
         </div>
+        <div
+          data-testid="breadcrumb-item-home"
+        >
+          Home
+        </div>
+        <div
+          data-testid="breadcrumb-item-clinical"
+        >
+          Clinical
+        </div>
+        <div
+          data-testid="breadcrumb-item-current"
+        >
+          Current Patient
+        </div>
       </div>
     </div>
     <div

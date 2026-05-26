@@ -6,6 +6,7 @@ export interface AllergyState {
   selectedAllergies: AllergyInputEntry[];
 
   addAllergy: (allergy: AllergenConcept) => void;
+  preloadAllergies: (entries: AllergyInputEntry[]) => void;
   removeAllergy: (allergyId: string) => void;
   updateSeverity: (allergyId: string, severity: Coding | null) => void;
   updateReactions: (allergyId: string, reactions: Coding[]) => void;
@@ -18,6 +19,12 @@ export interface AllergyState {
 
 export const useAllergyStore = create<AllergyState>((set, get) => ({
   selectedAllergies: [],
+
+  preloadAllergies: (entries: AllergyInputEntry[]) => {
+    set({
+      selectedAllergies: entries.map((e) => ({ ...e, isModified: false })),
+    });
+  },
 
   addAllergy: (allergy: AllergenConcept) => {
     const newAllergy: AllergyInputEntry = {
@@ -51,6 +58,7 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
         const updatedAllergy = {
           ...allergy,
           selectedSeverity: severity,
+          isModified: true,
         };
 
         if (allergy.hasBeenValidated && severity) {
@@ -71,6 +79,7 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
         const updatedAllergy = {
           ...allergy,
           selectedReactions: reactions,
+          isModified: true,
         };
 
         if (allergy.hasBeenValidated && reactions.length > 0) {
@@ -90,6 +99,7 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
         const updatedAllergy = {
           ...allergy,
           note,
+          isModified: true,
         };
         return updatedAllergy;
       }),
