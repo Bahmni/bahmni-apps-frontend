@@ -10,6 +10,7 @@ import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
+import { useAllergyStore } from '../../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ConsultationPad from '../index';
@@ -149,7 +150,7 @@ beforeEach(() => {
   } as any);
   jest
     .mocked(useEncounterSession)
-    .mockReturnValue({ activeEncounter: null } as any);
+    .mockReturnValue({ activeEncounter: null, matchReason: [] } as any);
   jest
     .mocked(useClinicalConfig)
     .mockReturnValue({ clinicalConfig: null } as any);
@@ -422,6 +423,135 @@ describe('ConsultationPad', () => {
       await waitFor(() => {
         expect(submitConsultation).toHaveBeenCalledWith(
           expect.objectContaining(expectedArgs),
+        );
+      });
+    });
+  });
+
+  describe('editTitle and editOnly (BAH-4652)', () => {
+    it('shows editTitle translated value when encounterSessionStartContext.editTitle is set', () => {
+      renderComponent({
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          editTitle: 'EDIT_ALLERGIES_TITLE',
+        },
+      });
+
+      // i18n resolves 'EDIT_ALLERGIES_TITLE' → 'Edit Allergies' (from locale_en.json)
+      expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+        'Edit Allergies',
+      );
+    });
+
+    it('shows "New Consultation" when editTitle is not set', () => {
+      renderComponent({
+        encounterSessionStartContext: { encounterType: 'Consultation' },
+      });
+
+      // i18n resolves 'CONSULTATION_ACTION_NEW' → 'New Consultation'
+      expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+        'New Consultation',
+      );
+    });
+
+    it('calls getActiveEntries with editOnlyKey when encounterSessionStartContext.editOnly is set', () => {
+      renderComponent({
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          editOnly: 'allergies',
+        },
+      });
+
+      expect(getActiveEntries).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        'allergies',
+      );
+    });
+
+    it('seeds allergyStore when preloadedAllergies prop is provided', () => {
+      const preloadSpy = jest.spyOn(
+        useAllergyStore.getState(),
+        'preloadAllergies',
+      );
+      const mockAllergies = [
+        {
+          id: 'allergen-1',
+          display: 'Peanut',
+          type: 'food',
+          selectedSeverity: null,
+          selectedReactions: [],
+          errors: {},
+          hasBeenValidated: false,
+        },
+      ];
+
+      renderComponent({
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          preloadedAllergies: mockAllergies as any,
+        },
+      });
+
+      expect(preloadSpy).toHaveBeenCalledWith(mockAllergies);
+      preloadSpy.mockRestore();
+    });
+  });
+
+  describe('encounterForSubmission — MATCHED logic (BAH-4652)', () => {
+    const mockActiveEncounter = { uuid: 'enc-uuid-matched' };
+
+    const enableSubmit = () => {
+      (mockRegistry[0].hasData as jest.Mock).mockReturnValue(true);
+    };
+
+    it('passes activeEncounter to submitConsultation when matchReason includes MATCHED', async () => {
+      jest.mocked(useEncounterSession).mockReturnValue({
+        activeEncounter: mockActiveEncounter as any,
+        matchReason: ['MATCHED'],
+      } as any);
+      enableSubmit();
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(submitConsultation).toHaveBeenCalledWith(
+          expect.objectContaining({ activeEncounter: mockActiveEncounter }),
+        );
+      });
+    });
+
+    it('passes null to submitConsultation when matchReason is SESSION_EXPIRED', async () => {
+      jest.mocked(useEncounterSession).mockReturnValue({
+        activeEncounter: mockActiveEncounter as any,
+        matchReason: ['SESSION_EXPIRED'],
+      } as any);
+      enableSubmit();
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(submitConsultation).toHaveBeenCalledWith(
+          expect.objectContaining({ activeEncounter: null }),
+        );
+      });
+    });
+
+    it('passes null to submitConsultation when matchReason is PROVIDER_MISMATCH', async () => {
+      jest.mocked(useEncounterSession).mockReturnValue({
+        activeEncounter: mockActiveEncounter as any,
+        matchReason: ['PROVIDER_MISMATCH'],
+      } as any);
+      enableSubmit();
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(submitConsultation).toHaveBeenCalledWith(
+          expect.objectContaining({ activeEncounter: null }),
         );
       });
     });

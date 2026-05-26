@@ -17,6 +17,8 @@ export enum AllergySeverity {
 //TODO: Move to Bahmni Widgets
 export interface FormattedAllergy {
   readonly id: string;
+  /** FHIR AllergyIntolerance resource UUID — required for PUT (edit existing allergy). */
+  readonly resourceId?: string;
   readonly display: string;
   readonly category?: ReadonlyArray<string>;
   readonly criticality?: string;
@@ -25,6 +27,8 @@ export interface FormattedAllergy {
   readonly recorder?: string;
   readonly reactions?: ReadonlyArray<{
     readonly manifestation: string[];
+    /** FHIR Codings for each manifestation — needed to rebuild selectedReactions on edit. */
+    readonly manifestationCodings?: ReadonlyArray<Coding>;
     readonly severity?: AllergySeverity;
   }>;
   readonly severity?: AllergySeverity;

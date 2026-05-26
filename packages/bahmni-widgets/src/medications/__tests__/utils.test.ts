@@ -1,14 +1,10 @@
-import {
-  MedicationRequest,
-  MedicationStatus,
-  FormattedMedicationRequest,
-} from '@bahmni/services';
+import { MedicationRequest, MedicationStatus } from '@bahmni/services';
 import { differenceInDays, parseISO } from 'date-fns';
+import { FormattedMedicationRequest } from '../models';
 import {
   formatMedicationRequest,
   formatMedicationRequestDate,
   getMedicationStatusPriority,
-  getMedicationPriority,
   sortMedicationsByStatus,
   sortMedicationsByPriority,
   sortMedicationsByDateDistance,
@@ -73,8 +69,11 @@ describe('formatMedicationRequest', () => {
       orderedBy: 'Dr. Smith',
       quantity: '10 ml',
       status: 'active',
+      priority: 'stat',
       asNeeded: true,
       isImmediate: false,
+      note: undefined,
+      doseForm: undefined,
       fhirResource: fhirMedicationRequestMock,
     });
   });
@@ -85,7 +84,7 @@ describe('formatMedicationRequest', () => {
       name: 'Ibuprofen',
       status: MedicationStatus.OnHold,
       quantity: { value: 10, unit: 'ml' },
-      priority: '',
+      priority: 'routine',
       startDate: '',
       orderDate: '',
       orderedBy: '',
@@ -108,8 +107,11 @@ describe('formatMedicationRequest', () => {
       orderedBy: '',
       quantity: '10 ml',
       status: 'on-hold',
+      priority: 'routine',
       asNeeded: false,
       isImmediate: false,
+      note: undefined,
+      doseForm: undefined,
       fhirResource: fhirMedicationRequestMock,
     });
   });
@@ -120,7 +122,7 @@ describe('formatMedicationRequest', () => {
       name: 'Ciprofloxacin',
       quantity: { value: 20, unit: 'tablets' },
       status: MedicationStatus.Active,
-      priority: '',
+      priority: 'routine',
       startDate: '',
       orderDate: '',
       orderedBy: '',
@@ -143,8 +145,11 @@ describe('formatMedicationRequest', () => {
       orderedBy: '',
       quantity: '20 tablets',
       status: 'active',
+      priority: 'routine',
       asNeeded: true,
       isImmediate: false,
+      note: undefined,
+      doseForm: undefined,
       fhirResource: fhirMedicationRequestMock,
     });
   });
@@ -157,7 +162,7 @@ describe('formatMedicationRequest', () => {
       orderDate: '',
       status: MedicationStatus.Cancelled,
       quantity: { value: 10, unit: 'ml' },
-      priority: '',
+      priority: 'routine',
       orderedBy: '',
       instructions: '',
       asNeeded: false,
@@ -183,7 +188,7 @@ describe('formatMedicationRequest', () => {
       orderDate: undefined as any,
       status: MedicationStatus.Active,
       quantity: { value: 5, unit: 'tablets' },
-      priority: '',
+      priority: 'routine',
       orderedBy: '',
       instructions: '',
       asNeeded: false,
@@ -203,7 +208,7 @@ describe('formatMedicationRequest', () => {
       name: 'Metformin',
       status: MedicationStatus.Active,
       quantity: { value: 30, unit: 'tablets' },
-      priority: '',
+      priority: 'routine',
       startDate: '2025-01-01T00:00:00+00:00',
       orderDate: '2025-01-01T00:00:00+00:00',
       orderedBy: 'Dr. Johnson',
@@ -340,81 +345,6 @@ describe('sortMedicationsByStatus', () => {
       '1',
       '2',
     ]);
-  });
-});
-
-describe('getMedicationPriority', () => {
-  it('returns 0 only for immediate medications', () => {
-    const immediateMed: FormattedMedicationRequest = {
-      id: '1',
-      name: 'Immediate Med',
-      status: MedicationStatus.Active,
-      dosage: '',
-      dosageUnit: '',
-      quantity: '',
-      instruction: '',
-      startDate: '',
-      orderDate: '',
-      orderedBy: '',
-      asNeeded: false,
-      isImmediate: true,
-    };
-
-    expect(getMedicationPriority(immediateMed)).toBe(0);
-  });
-
-  it('returns 1 for all non-immediate medications (asNeeded and regular)', () => {
-    const asNeededMed: FormattedMedicationRequest = {
-      id: '1',
-      name: 'AsNeeded Med',
-      status: MedicationStatus.Active,
-      dosage: '',
-      dosageUnit: '',
-      quantity: '',
-      instruction: '',
-      startDate: '',
-      orderDate: '',
-      orderedBy: '',
-      asNeeded: true,
-      isImmediate: false,
-    };
-
-    const regularMed: FormattedMedicationRequest = {
-      id: '2',
-      name: 'Regular Med',
-      status: MedicationStatus.Active,
-      dosage: '',
-      dosageUnit: '',
-      quantity: '',
-      instruction: '',
-      startDate: '',
-      orderDate: '',
-      orderedBy: '',
-      asNeeded: false,
-      isImmediate: false,
-    };
-
-    expect(getMedicationPriority(asNeededMed)).toBe(1);
-    expect(getMedicationPriority(regularMed)).toBe(1);
-  });
-
-  it('returns 0 for immediate medications regardless of asNeeded flag', () => {
-    const immediateAsNeededMed: FormattedMedicationRequest = {
-      id: '1',
-      name: 'Immediate AsNeeded Med',
-      status: MedicationStatus.Active,
-      dosage: '',
-      dosageUnit: '',
-      quantity: '',
-      instruction: '',
-      startDate: '',
-      orderDate: '',
-      orderedBy: '',
-      asNeeded: true,
-      isImmediate: true,
-    };
-
-    expect(getMedicationPriority(immediateAsNeededMed)).toBe(0);
   });
 });
 

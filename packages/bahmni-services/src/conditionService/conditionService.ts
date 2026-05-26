@@ -1,6 +1,8 @@
 import { Condition, Bundle } from 'fhir/r4';
-import { get } from '../api';
+import { get, put } from '../api';
+import { HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM } from '../constants/fhir';
 import {
+  CONDITION_RESOURCE_URL,
   PATIENT_CONDITION_RESOURCE_URL,
   PATIENT_CONDITION_PAGE_URL,
 } from './constants';
@@ -61,4 +63,32 @@ export async function getConditionPage(
     conditions,
     total: bundle.total,
   };
+}
+
+/**
+ * Marks a condition as inactive via FHIR PUT.
+ * Preserves all existing fields from the raw resource; only clinicalStatus is changed.
+ * @param condition - The full raw FHIR Condition resource to update
+ * @returns Promise resolving to the updated Condition resource
+ */
+export async function markConditionAsInactive(
+  condition: Condition,
+): Promise<Condition> {
+  const updated: Condition = {
+    ...condition,
+    clinicalStatus: {
+      coding: [
+        {
+          system: HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM,
+          code: 'inactive',
+          display: 'Inactive',
+        },
+      ],
+      text: 'Inactive',
+    },
+  };
+  return put<Condition, Condition>(
+    `${CONDITION_RESOURCE_URL}/${condition.id}`,
+    updated,
+  );
 }
