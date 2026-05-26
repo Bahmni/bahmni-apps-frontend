@@ -28,6 +28,7 @@ interface UseDataTableArgs<T extends { id: string }> {
   columns: DataTableColumn<T>[];
   rows: T[];
   renderCell?: (row: T, columnKey: string) => ReactNode;
+  accessor?: (row: T, columnKey: string) => unknown;
   enablePagination?: boolean;
   pageSize?: number;
   page?: number;
@@ -43,6 +44,7 @@ export const useDataTable = <T extends { id: string }>({
   columns,
   rows,
   renderCell = defaultRenderCell,
+  accessor,
   enablePagination = false,
   pageSize,
   page,
@@ -66,8 +68,8 @@ export const useDataTable = <T extends { id: string }>({
   }));
 
   const tableColumns = useMemo(
-    () => buildTanStackColumns(columns, renderCell),
-    [columns, renderCell],
+    () => buildTanStackColumns(columns, renderCell, accessor),
+    [columns, renderCell, accessor],
   );
 
   return useReactTable({

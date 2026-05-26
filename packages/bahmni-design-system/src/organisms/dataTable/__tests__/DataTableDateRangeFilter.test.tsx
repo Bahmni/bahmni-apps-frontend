@@ -5,7 +5,7 @@ import { DataTableDateRangeFilter } from '../components/DataTableDateRangeFilter
 import type { DateRangeFilterValue } from '../utils';
 import '@testing-library/jest-dom';
 
-jest.mock('../../datePicker', () => ({
+jest.mock('../../../molecules/datePicker', () => ({
   DatePicker: ({
     value,
     onChange,

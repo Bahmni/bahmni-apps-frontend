@@ -25,7 +25,12 @@ const toTimestamp = (value: unknown): number | null => {
   return null;
 };
 
-export const inDateRangeFilterFn: FilterFn<unknown> = (
+// FilterFn<any> (not FilterFn<unknown>) — TanStack's Column<TData> is
+// invariant on TData, so FilterFn<unknown> won't structurally satisfy
+// FilterFn<T> for an arbitrary T. Using `any` here is a deliberate
+// bidirectional-compat choice for a generic filter.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const inDateRangeFilterFn: FilterFn<any> = (
   row: Row<unknown>,
   columnId: string,
   filterValue: DateRangeFilterValue,
@@ -60,13 +65,16 @@ const resolveFilterFn = (filterType: FilterType | undefined) => {
 export const buildTanStackColumns = <T extends { id: string }>(
   columns: DataTableColumn<T>[],
   renderCell: (row: T, columnKey: string) => ReactNode,
+  accessor?: (row: T, columnKey: string) => unknown,
 ): ColumnDef<T>[] =>
   columns.map((col) => ({
     id: col.key,
     accessorFn: (row: T) => {
-      const value = col.accessor
-        ? col.accessor(row)
-        : (row as Record<string, unknown>)[col.key];
+      const fromAccessor = accessor?.(row, col.key);
+      const value =
+        fromAccessor !== undefined
+          ? fromAccessor
+          : (row as Record<string, unknown>)[col.key];
       return value ?? '';
     },
     header: col.header,

@@ -12,8 +12,6 @@ export interface DataTableColumn<T> {
   key: string;
   header: string;
 
-  accessor?: (row: T) => unknown;
-
   // Sort
   enableSorting?: boolean;
   defaultSortDirection?: 'asc' | 'desc';
@@ -49,6 +47,7 @@ export interface DataTableProps<T extends { id: string }> {
   emptyStateMessage?: ReactNode;
   errorStateMessage?: ReactNode | null;
   renderCell?: (row: T, columnKey: string) => ReactNode;
+  accessor?: (row: T, columnKey: string) => unknown;
   className?: string;
   dataTestId?: string;
 

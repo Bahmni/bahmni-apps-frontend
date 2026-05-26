@@ -167,13 +167,26 @@ describe('buildTanStackColumns', () => {
     expect(accessorFn({ id: '1', name: 'Aspirin', qty: 1 })).toBe('Aspirin');
   });
 
-  it('uses col.accessor when provided to derive the sort/filter value', () => {
-    const columns: DataTableColumn<Item>[] = [
-      { key: 'name', header: 'Name', accessor: (row) => row.qty * 2 },
-    ];
-    const built = buildTanStackColumns<Item>(columns, () => null);
+  it('uses the table-level accessor when provided to derive the sort/filter value', () => {
+    const columns: DataTableColumn<Item>[] = [{ key: 'name', header: 'Name' }];
+    const built = buildTanStackColumns<Item>(
+      columns,
+      () => null,
+      (row, key) => (key === 'name' ? row.qty * 2 : undefined),
+    );
     const accessorFn = built[0].accessorFn as (row: Item) => unknown;
     expect(accessorFn({ id: '1', name: 'Aspirin', qty: 3 })).toBe(6);
+  });
+
+  it('falls back to row[key] when the table-level accessor returns undefined for a column', () => {
+    const columns: DataTableColumn<Item>[] = [{ key: 'name', header: 'Name' }];
+    const built = buildTanStackColumns<Item>(
+      columns,
+      () => null,
+      () => undefined,
+    );
+    const accessorFn = built[0].accessorFn as (row: Item) => unknown;
+    expect(accessorFn({ id: '1', name: 'Aspirin', qty: 3 })).toBe('Aspirin');
   });
 
   it('defaults missing values to empty string', () => {

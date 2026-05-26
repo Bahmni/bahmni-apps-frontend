@@ -169,9 +169,6 @@ export const WithAccessor: Story = {
         key: 'orderedBy',
         header: 'Ordered By (sorted by last word)',
         enableSorting: true,
-        // Accessor returns a derived value for sort/filter/group — independent
-        // of how the cell is rendered.
-        accessor: (row: Medication) => row.orderedBy.split(' ').pop() ?? '',
       },
       { key: 'name', header: 'Medication' },
       { key: 'status', header: 'Status' },
@@ -179,12 +176,14 @@ export const WithAccessor: Story = {
     rows,
     ariaLabel: 'Medications sorted by last name token',
     renderCell,
+    accessor: (row, key) =>
+      key === 'orderedBy' ? (row.orderedBy.split(' ').pop() ?? '') : undefined,
   },
   parameters: {
     docs: {
       description: {
         story:
-          '`column.accessor` decouples the value used for sort/filter/group/facet from the cell renderer. Here, the Ordered By column sorts by last name token while still displaying the full string.',
+          'The table-level `accessor(row, key)` decouples sort/filter/group/facet values from the cell renderer. Return `undefined` to fall back to `row[key]`. Here, only the Ordered By column overrides the value (sorting by last name token while still displaying the full string).',
       },
     },
   },

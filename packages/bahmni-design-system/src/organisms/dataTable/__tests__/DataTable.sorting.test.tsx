@@ -89,15 +89,10 @@ describe('DataTable sorting', () => {
     expect(afterClick).toEqual(originalOrder);
   });
 
-  it('uses column.accessor to derive sort values when provided', async () => {
+  it('uses the table-level accessor to derive sort values when provided', async () => {
     const user = userEvent.setup();
     const columns: DataTableColumn<Medication>[] = [
-      {
-        key: 'name',
-        header: 'Medication',
-        enableSorting: true,
-        accessor: (row) => row.orderedBy.split(' ').pop() ?? '',
-      },
+      { key: 'name', header: 'Medication', enableSorting: true },
     ];
 
     render(
@@ -105,6 +100,9 @@ describe('DataTable sorting', () => {
         columns={columns}
         rows={mockRows}
         renderCell={renderCell}
+        accessor={(row, key) =>
+          key === 'name' ? (row.orderedBy.split(' ').pop() ?? '') : undefined
+        }
         ariaLabel="Medications"
       />,
     );
