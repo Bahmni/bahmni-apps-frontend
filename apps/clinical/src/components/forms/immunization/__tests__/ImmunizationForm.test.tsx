@@ -84,12 +84,6 @@ describe('ImmunizationForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(useImmunizationHistoryStore).mockReturnValue(mockStore);
-    jest.mocked(getImmunizationStore).mockReturnValue({
-      getState: () => mockStore,
-      setState: jest.fn(),
-      subscribe: jest.fn(),
-      destroy: jest.fn(),
-    } as any);
     jest.mocked(useClinicalConfig).mockReturnValue(mockClinicalConfigContext);
     mockUseQuery.mockImplementation(defaultQueryMock as any);
     mockUseQueries.mockReturnValue([] as any);

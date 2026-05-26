@@ -326,7 +326,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
       const prnDefault = findAttr('prn', attributes)?.default;
       const noteDefault = findAttr('note', attributes)?.default;
       const newItem: MedicationInputEntry = {
-        id: `${medication.id}-${generateUUID()}`,
+        id: generateUUID(),
         display: displayName,
         medication,
         dosage: dosageDefault ? Number(dosageDefault) : 0,

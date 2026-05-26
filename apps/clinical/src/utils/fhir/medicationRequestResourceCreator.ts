@@ -18,6 +18,7 @@ interface OpenMRSDosingInstruction {
  * @param subjectReference - Reference to the patient
  * @param encounterReference - Reference to the encounter
  * @param requesterReference - Reference to the practitioner requesting the medication
+ * @param statDurationInMilliseconds - Duration in milliseconds for STAT orders
  * @returns FHIR MedicationRequest resource
  */
 export const createMedicationRequestResource = (

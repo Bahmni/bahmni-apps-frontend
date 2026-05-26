@@ -29,7 +29,7 @@ import {
   IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
 } from './constants';
 import { ImmunizationStoreKey } from './models';
-import { getImmunizationStore, useImmunizationHistoryStore } from './stores';
+import { useImmunizationHistoryStore } from './stores';
 import styles from './styles/ImmunizationForm.module.scss';
 import {
   buildBasedOnImmunizationEntry,
@@ -105,15 +105,19 @@ const ImmunizationForm = ({
     }
   }, [attributes, setAttributes]);
 
+  // Listen for CDSS results and self-identify relevant cards
   useEffect(() => {
     const handleCDSSResults = (event: Event) => {
       const customEvent = event as CustomEvent<{ cards: CDSCard[] }>;
       const { cards } = customEvent.detail;
 
+      // Get all our item IDs
       const ourItemIds = new Set(selectedImmunizations.map((item) => item.id));
 
+      // Filter cards that are relevant to our items
       const relevantCards = filterCdsCardsForItems(cards, ourItemIds);
 
+      // Update each item with its relevant cards
       relevantCards.forEach(({ card, resourceId }) => {
         updateItemCDSCards(resourceId, [card]);
       });
@@ -332,25 +336,21 @@ const ImmunizationForm = ({
           itemToString={(item) => item?.display ?? ''}
           onChange={({ selectedItem }) => {
             if (selectedItem?.code && selectedItem?.display) {
-              addImmunization({
+              const itemId = addImmunization({
                 code: selectedItem.code,
                 display: selectedItem.display,
               });
-
-              const { selectedImmunizations } =
-                getImmunizationStore(immunizationFormType).getState();
-              const newlyAddedImmunization = selectedImmunizations[0];
 
               const cdssRules = inputControlConfig?.cdss ?? [];
               const hasMatchingRule = cdssRules.some(
                 (rule) => rule.event === 'onSelect',
               );
 
-              if (hasMatchingRule && newlyAddedImmunization) {
+              if (hasMatchingRule) {
                 const event = new CustomEvent<CDSSEventDetail>('cdss-check', {
                   detail: {
                     controlKey: immunizationFormType,
-                    itemId: newlyAddedImmunization.id,
+                    itemId,
                     event: 'onSelect',
                   },
                 });

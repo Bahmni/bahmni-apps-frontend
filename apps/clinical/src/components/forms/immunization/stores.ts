@@ -1,4 +1,4 @@
-import { generateUUID } from '@bahmni/services';
+import { type CDSCard, generateUUID } from '@bahmni/services';
 import { useStore } from 'zustand';
 import { createStore } from 'zustand/vanilla';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
@@ -303,6 +303,7 @@ function createImmunizationHistoryStore() {
       set((state) => ({
         selectedImmunizations: [newEntry, ...state.selectedImmunizations],
       }));
+      return newEntry.id;
     },
 
     removeImmunization: (id: string) => {
@@ -420,6 +421,24 @@ function createImmunizationHistoryStore() {
         selectedImmunizations: state.selectedImmunizations.map(applyValidation),
       }));
       return isValid;
+    },
+
+    updateItemCDSCards: (itemId: string, cards: CDSCard[]) => {
+      set((state) => ({
+        selectedImmunizations: state.selectedImmunizations.map(
+          (immunization) =>
+            immunization.id === itemId
+              ? { ...immunization, cdsCards: cards }
+              : immunization,
+        ),
+      }));
+    },
+
+    hasCriticalCDSCards: () => {
+      const { selectedImmunizations } = get();
+      return selectedImmunizations.some((immunization) =>
+        immunization.cdsCards?.some((card) => card.indicator === 'critical'),
+      );
     },
 
     reset: () => {

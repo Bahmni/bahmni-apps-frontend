@@ -209,6 +209,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       // Build base context from available data
       const patientId =
         encounterSessionStartContext.patientUuid ??
+        encounterSessionStartContext.patientUuid ??
         activeEncounter?.subject?.reference?.split('/')[1];
 
       const visitId =
@@ -249,11 +250,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     window.addEventListener('cdss-check', handleCDSSEvent);
     return () => window.removeEventListener('cdss-check', handleCDSSEvent);
   }, [
-    activeEncounter?.partOf?.reference,
-    activeEncounter?.subject?.reference,
     activeEntries,
     buildComprehensiveCDSSBundle,
     encounterSessionStartContext,
+    activeEncounter,
     episodeOfCareUuids,
   ]);
 
