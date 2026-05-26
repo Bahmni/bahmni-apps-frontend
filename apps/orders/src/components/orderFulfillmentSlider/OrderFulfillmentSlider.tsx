@@ -4,17 +4,13 @@ import {
   Provider,
   createTask,
   getCurrentProvider,
-  getPatientLmpData,
-  LmpData,
+  getObservationByConceptName,
+  ObservationData,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { Close } from '@carbon/icons-react';
 import { ComboBox, TextArea } from '@carbon/react';
 import React, { useEffect, useState } from 'react';
-import {
-  RADIOLOGY_TAB_LABEL,
-  LMP_WARNING_DAYS_THRESHOLD,
-} from '../../constants/app';
 import {
   UI_STATUS_TO_FHIR_TASK_STATUS,
   DEFAULT_STATUS_FOR_NEW_ORDER,
@@ -27,6 +23,7 @@ import {
   OrderStatusConfig,
 } from '../../models/orderFulfillment';
 import useOrdersStore from '../../stores/ordersStore';
+import { parseAgeYears } from '../../utils/patientUtils';
 import styles from './styles/OrderFulfillmentSlider.module.scss';
 
 interface OrderFulfillmentSliderProps {
@@ -35,6 +32,8 @@ interface OrderFulfillmentSliderProps {
   isOpen: boolean;
   tabLabel?: string;
   onSaveSuccess?: () => void;
+  prefetchedLmpData?: ObservationData | null;
+  prefetchedMenstruatingStatus?: string | null;
 }
 
 export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
@@ -43,6 +42,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   isOpen,
   tabLabel = '',
   onSaveSuccess,
+  prefetchedLmpData,
+  prefetchedMenstruatingStatus,
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -54,9 +55,54 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [owner, setOwner] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
-  const [lmpData, setLmpData] = useState<LmpData | null>(null);
+  const [lmpData, setLmpData] = useState<ObservationData | null>(null);
+  const [menstruatingStatus, setMenstruatingStatus] = useState<string | null>(
+    null,
+  );
 
-  const isRadiologyTab = tabLabel === RADIOLOGY_TAB_LABEL;
+  const { lmpConfig } = ordersTableConfig ?? {};
+
+  const isLmpEligible = !!(
+    lmpConfig &&
+    order?.patient?.gender === 'F' &&
+    parseAgeYears(order?.patient?.age) >= 10 &&
+    (!lmpConfig.tabLabels?.length || lmpConfig.tabLabels.includes(tabLabel))
+  );
+
+  const getLmpDisplayInfo = () => {
+    if (!isLmpEligible) {
+      return { show: false };
+    }
+
+    if (lmpConfig?.isPatientMenstruatingConcept && menstruatingStatus) {
+      if (menstruatingStatus.toLowerCase() === 'no') {
+        return {
+          show: true,
+          message: t('NOT_YET_MENSTRUATING'),
+          className: styles.observationNotMenstruating,
+        };
+      }
+    }
+
+    if (lmpData?.daysSince !== undefined && lmpData.daysSince !== null) {
+      return {
+        show: true,
+        message: `${lmpData.daysSince}`,
+        className:
+          lmpData.daysSince > (lmpConfig?.threshold ?? 0)
+            ? styles.observationWarning
+            : '',
+      };
+    }
+
+    return {
+      show: true,
+      message: t('OBSERVATION_NOT_RECORDED'),
+      className: styles.observationNotRecorded,
+    };
+  };
+
+  const lmpDisplayInfo = getLmpDisplayInfo();
 
   const availableStatuses: OrderStatusConfig[] = (
     (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? []
@@ -93,21 +139,66 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   useEffect(() => {
     let isMounted = true;
 
-    if (isOpen && isRadiologyTab && order?.patientUuid) {
-      setLmpData(null);
-      getPatientLmpData(order.patientUuid).then((data) => {
-        if (isMounted) {
-          setLmpData(data);
+    if (isOpen && isLmpEligible && order?.patientUuid) {
+      if (prefetchedLmpData !== undefined) {
+        setLmpData(prefetchedLmpData);
+      }
+      if (prefetchedMenstruatingStatus !== undefined) {
+        setMenstruatingStatus(prefetchedMenstruatingStatus);
+      }
+
+      if (
+        prefetchedLmpData === undefined ||
+        prefetchedMenstruatingStatus === undefined
+      ) {
+        const conceptsToFetch = [lmpConfig!.lmpDateConcept];
+        if (lmpConfig!.isPatientMenstruatingConcept) {
+          conceptsToFetch.push(lmpConfig!.isPatientMenstruatingConcept);
         }
-      });
+
+        Promise.all(
+          conceptsToFetch.map((concept) =>
+            getObservationByConceptName(order.patientUuid, concept),
+          ),
+        )
+          .then((results) => {
+            if (isMounted) {
+              const [lmpResult, menstruatingResult] = results;
+              if (prefetchedLmpData === undefined) {
+                setLmpData(lmpResult as ObservationData | null);
+              }
+              if (prefetchedMenstruatingStatus === undefined) {
+                setMenstruatingStatus(menstruatingResult as string | null);
+              }
+            }
+          })
+          .catch(() => {
+            if (isMounted) {
+              if (prefetchedLmpData === undefined) {
+                setLmpData(null);
+              }
+              if (prefetchedMenstruatingStatus === undefined) {
+                setMenstruatingStatus(null);
+              }
+            }
+          });
+      }
     } else if (!isOpen) {
       setLmpData(null);
+      setMenstruatingStatus(null);
     }
 
     return () => {
       isMounted = false;
     };
-  }, [isOpen, isRadiologyTab, order?.patientUuid]);
+  }, [
+    isOpen,
+    order?.patientUuid,
+    isLmpEligible,
+    prefetchedLmpData,
+    prefetchedMenstruatingStatus,
+    lmpConfig,
+  ]);
 
   const getNestedValue = (obj: Order, key: string): string => {
     const keys = key.split('.');
@@ -207,8 +298,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           </section>
         )}
 
-        {(patientDetailFields.length > 0 ||
-          (isRadiologyTab && lmpData !== null)) && (
+        {(patientDetailFields.length > 0 || isLmpEligible) && (
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>{t('PATIENT_DETAILS')}</h3>
             <div className={styles.patientDetailsGrid}>
@@ -223,21 +313,17 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   </div>
                 );
               })}
-              {isRadiologyTab && lmpData && (
+              {lmpDisplayInfo.show && (
                 <div
                   className={styles.patientDetailItem}
-                  data-testid="lmp-days-display"
+                  data-testid="observation-days-display"
                 >
                   <span className={styles.label}>{t('DAYS_SINCE_LMP')}</span>
                   <span
-                    className={`${styles.value} ${
-                      lmpData.daysSinceLmp > LMP_WARNING_DAYS_THRESHOLD
-                        ? styles.lmpWarning
-                        : ''
-                    }`}
-                    data-testid="lmp-days-value"
+                    className={`${styles.value} ${lmpDisplayInfo.className}`}
+                    data-testid="observation-days-value"
                   >
-                    {lmpData.daysSinceLmp}
+                    {lmpDisplayInfo.message}
                   </span>
                 </div>
               )}

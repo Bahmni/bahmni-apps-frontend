@@ -9,7 +9,7 @@ import { OrderFulfillmentSlider } from '../OrderFulfillmentSlider';
 
 const mockCreateTask = jest.fn();
 const mockGetCurrentProvider = jest.fn();
-const mockGetPatientLmpData = jest.fn();
+const mockGetObservationByConceptName = jest.fn();
 
 jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
@@ -17,7 +17,8 @@ jest.mock('@bahmni/services', () => ({
   }),
   createTask: (...args: unknown[]) => mockCreateTask(...args),
   getCurrentProvider: (...args: unknown[]) => mockGetCurrentProvider(...args),
-  getPatientLmpData: (...args: unknown[]) => mockGetPatientLmpData(...args),
+  getObservationByConceptName: (...args: unknown[]) =>
+    mockGetObservationByConceptName(...args),
 }));
 
 const mockAddNotification = jest.fn();
@@ -84,6 +85,27 @@ const mockOrder: Order = {
   },
 };
 
+// Mock order for LMP tests - must be female and >= 10 years old
+const mockRadiologyOrderEligibleForLmp: Order = {
+  id: 'order-1',
+  patientUuid: 'patient-uuid-1',
+  orderName: 'CT Brain',
+  orderType: 'Radiology Order',
+  priority: ORDER_PRIORITY.STAT,
+  status: 'New',
+  provider: 'Dr. Jane Smith',
+  dateTime: '12 Nov 25 04:24 PM',
+  owner: null,
+  providerComments: 'CT scan for headache assessment',
+  patient: {
+    age: '15 years 6 months 3 days',
+    dateOfBirth: '09 May 2009',
+    gender: 'F',
+    address: '456 Nairobi Ave, Kenya',
+    phoneNumber: '+254 700 987 654',
+  },
+};
+
 describe('OrderFulfillmentSlider', () => {
   const mockOnClose = jest.fn();
   const mockFetchProviders = jest.fn();
@@ -98,7 +120,7 @@ describe('OrderFulfillmentSlider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetCurrentProvider.mockResolvedValue({ uuid: 'provider-uuid-1' });
-    (mockGetPatientLmpData as jest.Mock).mockResolvedValue(null);
+    (mockGetObservationByConceptName as jest.Mock).mockResolvedValue(null);
     (useOrdersStore as unknown as jest.Mock).mockReturnValue({
       fetchProviders: mockFetchProviders,
       providers: mockProviders,
@@ -150,6 +172,12 @@ describe('OrderFulfillmentSlider', () => {
           translationKey: 'STATUS_IN_PROGRESS',
         },
       ],
+      lmpConfig: {
+        lmpDateConcept: 'LMP Date',
+        isPatientMenstruatingConcept: 'Has the Patient begun Menstruating?',
+        threshold: 28,
+        tabLabels: ['Radiology Order'],
+      },
     },
   };
 
@@ -1375,16 +1403,18 @@ describe('OrderFulfillmentSlider', () => {
   });
 
   describe('LMP (Last Menstrual Period) Display', () => {
-    it('fetches LMP data when radiology slider opens', async () => {
+    it('fetches observation data when radiology slider opens with config', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2024-01-15',
-        daysSinceLmp: 30,
-      });
+      (mockGetObservationByConceptName as jest.Mock)
+        .mockResolvedValueOnce({
+          date: '2024-01-15',
+          daysSince: 30,
+        })
+        .mockResolvedValueOnce('yes');
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1392,11 +1422,18 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       await waitFor(() => {
-        expect(mockGetPatientLmpData).toHaveBeenCalledWith('patient-uuid-1');
+        expect(mockGetObservationByConceptName).toHaveBeenCalledWith(
+          'patient-uuid-1',
+          'LMP Date',
+        );
+        expect(mockGetObservationByConceptName).toHaveBeenCalledWith(
+          'patient-uuid-1',
+          'Has the Patient begun Menstruating?',
+        );
       });
     });
 
-    it('does not fetch LMP data for non-radiology tabs', async () => {
+    it('does not fetch observation data for non-radiology tabs', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
 
       renderWithIntl(
@@ -1409,130 +1446,173 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       await waitFor(() => {
-        expect(mockGetPatientLmpData).not.toHaveBeenCalled();
+        expect(mockGetObservationByConceptName).not.toHaveBeenCalled();
       });
     });
 
-    it('displays LMP days when lmpData is available for radiology tab', async () => {
+    it('displays observation days when data is available for radiology tab', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2024-01-15',
-        daysSinceLmp: 30,
-      });
+      const mockLmpData = {
+        date: '2024-01-15',
+        daysSince: 30,
+      };
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTestId('lmp-days-display')).toBeInTheDocument();
-        expect(screen.getByTestId('lmp-days-value')).toHaveTextContent('30');
-      });
-    });
-
-    it('applies red styling when daysSinceLmp > 28 (warning threshold)', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2024-01-10',
-        daysSinceLmp: 29,
-      });
-
-      renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        const lmpValue = screen.getByTestId('lmp-days-value');
-        expect(lmpValue).toHaveClass('lmpWarning');
-        expect(lmpValue).toHaveTextContent('29');
-      });
-    });
-
-    it('applies red styling when daysSinceLmp > 28', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2023-12-05',
-        daysSinceLmp: 40,
-      });
-
-      renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        const lmpValue = screen.getByTestId('lmp-days-value');
-        expect(lmpValue).toHaveClass('lmpWarning');
-      });
-    });
-
-    it('does not apply red styling when daysSinceLmp <= 28', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2024-02-10',
-        daysSinceLmp: 28,
-      });
-
-      renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        const lmpValue = screen.getByTestId('lmp-days-value');
-        expect(lmpValue).not.toHaveClass('lmpWarning');
-        expect(lmpValue).toHaveTextContent('28');
-      });
-    });
-
-    it('hides LMP section when lmpData is null (not captured)', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValue(null);
-
-      renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
+          prefetchedLmpData={mockLmpData}
+          prefetchedMenstruatingStatus="yes"
         />,
       );
 
       await waitFor(() => {
         expect(
-          screen.queryByTestId('lmp-days-display'),
-        ).not.toBeInTheDocument();
+          screen.getByTestId('observation-days-display'),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId('observation-days-value')).toHaveTextContent(
+          '30',
+        );
       });
     });
 
-    it('does not display LMP section for non-radiology orders even if lmpData exists', async () => {
+    it('applies red styling when daysSince > 28 (warning threshold)', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2024-01-15',
-        daysSinceLmp: 30,
+      const mockLmpData = {
+        date: '2024-01-10',
+        daysSince: 29,
+      };
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockRadiologyOrderEligibleForLmp}
+          onClose={mockOnClose}
+          isOpen
+          tabLabel="Radiology Order"
+          prefetchedLmpData={mockLmpData}
+          prefetchedMenstruatingStatus="yes"
+        />,
+      );
+
+      await waitFor(() => {
+        const obsValue = screen.getByTestId('observation-days-value');
+        expect(obsValue).toHaveClass('observationWarning');
+        expect(obsValue).toHaveTextContent('29');
+      });
+    });
+
+    it('does not apply red styling when daysSince <= 28', async () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      const mockLmpData = {
+        date: '2024-02-10',
+        daysSince: 28,
+      };
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockRadiologyOrderEligibleForLmp}
+          onClose={mockOnClose}
+          isOpen
+          tabLabel="Radiology Order"
+          prefetchedLmpData={mockLmpData}
+          prefetchedMenstruatingStatus="yes"
+        />,
+      );
+
+      await waitFor(() => {
+        const obsValue = screen.getByTestId('observation-days-value');
+        expect(obsValue).not.toHaveClass('observationWarning');
+        expect(obsValue).toHaveTextContent('28');
+      });
+    });
+
+    it('shows observation section with "not recorded" message when data is null', async () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockRadiologyOrderEligibleForLmp}
+          onClose={mockOnClose}
+          isOpen
+          tabLabel="Radiology Order"
+          prefetchedLmpData={null}
+          prefetchedMenstruatingStatus="yes"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('observation-days-display'),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId('observation-days-value')).toHaveTextContent(
+          'OBSERVATION_NOT_RECORDED',
+        );
+      });
+    });
+
+    it('displays "Not yet menstruating" message in black when menstruating status is "no"', async () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockRadiologyOrderEligibleForLmp}
+          onClose={mockOnClose}
+          isOpen
+          tabLabel="Radiology Order"
+          prefetchedLmpData={null}
+          prefetchedMenstruatingStatus="no"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('observation-days-display'),
+        ).toBeInTheDocument();
+        const obsValue = screen.getByTestId('observation-days-value');
+        expect(obsValue).toHaveTextContent('NOT_YET_MENSTRUATING');
+        expect(obsValue).toHaveClass('observationNotMenstruating');
+        expect(obsValue).not.toHaveClass('observationWarning');
+        expect(obsValue).not.toHaveClass('observationNotRecorded');
+      });
+    });
+
+    it('prioritizes menstruating status over LMP data when menstruating is "no"', async () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      const mockLmpData = {
+        date: '2024-01-15',
+        daysSince: 30,
+      };
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockRadiologyOrderEligibleForLmp}
+          onClose={mockOnClose}
+          isOpen
+          tabLabel="Radiology Order"
+          prefetchedLmpData={mockLmpData}
+          prefetchedMenstruatingStatus="no"
+        />,
+      );
+
+      await waitFor(() => {
+        const obsValue = screen.getByTestId('observation-days-value');
+        expect(obsValue).toHaveTextContent('NOT_YET_MENSTRUATING');
+        expect(obsValue).not.toHaveTextContent('30');
+      });
+    });
+
+    it('does not display observation section for non-radiology orders', async () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      (mockGetObservationByConceptName as jest.Mock).mockResolvedValue({
+        date: '2024-01-15',
+        daysSince: 30,
       });
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Lab Order"
@@ -1541,286 +1621,9 @@ describe('OrderFulfillmentSlider', () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByTestId('lmp-days-display'),
+          screen.queryByTestId('observation-days-display'),
         ).not.toBeInTheDocument();
-        expect(mockGetPatientLmpData).not.toHaveBeenCalled();
-      });
-    });
-
-    it('does not fetch LMP when patientUuid is missing', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      const orderWithoutPatientUuid: Order = {
-        ...mockOrder,
-        patientUuid: '',
-      };
-
-      renderWithIntl(
-        <OrderFulfillmentSlider
-          order={orderWithoutPatientUuid}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        expect(mockGetPatientLmpData).not.toHaveBeenCalled();
-      });
-    });
-
-    it('resets LMP data when slider closes', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2024-01-15',
-        daysSinceLmp: 30,
-      });
-
-      const { rerender } = renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTestId('lmp-days-display')).toBeInTheDocument();
-      });
-
-      // Close slider
-      rerender(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen={false}
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      // Slider should not render
-      expect(screen.queryByTestId('lmp-days-display')).not.toBeInTheDocument();
-    });
-
-    it('refetches LMP data when slider reopens for radiology tab', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValueOnce({
-        lmpDate: '2024-01-15',
-        daysSinceLmp: 30,
-      });
-
-      const { rerender } = renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        expect(mockGetPatientLmpData).toHaveBeenCalledTimes(1);
-      });
-
-      // Close slider
-      rerender(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen={false}
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      // Reopen with new LMP data
-      mockGetPatientLmpData.mockResolvedValueOnce({
-        lmpDate: '2024-01-10',
-        daysSinceLmp: 35,
-      });
-
-      rerender(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        expect(mockGetPatientLmpData).toHaveBeenCalledTimes(2);
-      });
-    });
-
-    it('displays DAYS_SINCE_LMP translation key correctly', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2024-01-15',
-        daysSinceLmp: 25,
-      });
-
-      renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('DAYS_SINCE_LMP')).toBeInTheDocument();
-      });
-    });
-
-    it('handles LMP fetch returning null gracefully', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetPatientLmpData as jest.Mock).mockResolvedValue(null);
-
-      renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        // Should not display LMP section when fetch returns null
-        expect(
-          screen.queryByTestId('lmp-days-display'),
-        ).not.toBeInTheDocument();
-      });
-    });
-
-    it('does refetch LMP when order patientUuid changes', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetPatientLmpData as jest.Mock).mockResolvedValueOnce({
-        lmpDate: '2024-01-15',
-        daysSinceLmp: 30,
-      });
-
-      const { rerender } = renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        expect(mockGetPatientLmpData).toHaveBeenCalledTimes(1);
-      });
-
-      // Change order with different patientUuid
-      const newOrder: Order = {
-        ...mockOrder,
-        id: 'order-2',
-        patientUuid: 'patient-uuid-2',
-        orderName: 'New X-ray',
-      };
-
-      (mockGetPatientLmpData as jest.Mock).mockResolvedValueOnce({
-        lmpDate: '2024-01-10',
-        daysSinceLmp: 35,
-      });
-
-      rerender(
-        <OrderFulfillmentSlider
-          order={newOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      // Should refetch since patientUuid dependency changed
-      await waitFor(() => {
-        expect(mockGetPatientLmpData).toHaveBeenCalledTimes(2);
-        expect(mockGetPatientLmpData).toHaveBeenLastCalledWith(
-          'patient-uuid-2',
-        );
-      });
-    });
-
-    it('uses correct LMP days value in red warning condition', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-
-      // Test boundary case: exactly at threshold (28 - should not show red, must be > 28)
-      (mockGetPatientLmpData as jest.Mock).mockResolvedValueOnce({
-        lmpDate: '2024-01-10',
-        daysSinceLmp: 28,
-      });
-
-      const { rerender } = renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTestId('lmp-days-value')).not.toHaveClass(
-          'lmpWarning',
-        );
-      });
-
-      // Change order to trigger refetch with just above threshold (29)
-      const newOrder: Order = {
-        ...mockOrder,
-        id: 'order-2',
-      };
-
-      (mockGetPatientLmpData as jest.Mock).mockResolvedValueOnce({
-        lmpDate: '2024-01-09',
-        daysSinceLmp: 29,
-      });
-
-      rerender(
-        <OrderFulfillmentSlider
-          order={newOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        const lmpValue = screen.getByTestId('lmp-days-value');
-        expect(lmpValue).toHaveClass('lmpWarning');
-        expect(lmpValue).toHaveTextContent('29');
-      });
-    });
-
-    it('shows LMP in patient details section when radiology tab and lmpData present', async () => {
-      useOrdersConfig.mockReturnValue(mockConfig);
-      mockGetPatientLmpData.mockResolvedValue({
-        lmpDate: '2024-01-15',
-        daysSinceLmp: 28,
-      });
-
-      renderWithIntl(
-        <OrderFulfillmentSlider
-          order={mockOrder}
-          onClose={mockOnClose}
-          isOpen
-          tabLabel="Radiology Order"
-        />,
-      );
-
-      await waitFor(() => {
-        // Should be in patient details section
-        const patientDetailsSection = screen.getByText('PATIENT_DETAILS');
-        expect(patientDetailsSection).toBeInTheDocument();
-        const lmpDisplay = screen.getByTestId('lmp-days-display');
-        expect(lmpDisplay).toBeInTheDocument();
-        // Verify LMP is within the patient details context
-        const lmpLabel = screen.getByText('DAYS_SINCE_LMP');
-        expect(lmpLabel).toBeInTheDocument();
+        expect(mockGetObservationByConceptName).not.toHaveBeenCalled();
       });
     });
   });

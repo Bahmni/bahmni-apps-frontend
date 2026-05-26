@@ -1,10 +1,10 @@
 import { del, get, post, put } from '../api';
 import { differenceInDays, parseISO } from 'date-fns';
-import { Patient, Bundle, Observation } from 'fhir/r4';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
 import { PATIENT_NOT_FOUND_ERROR_KEY } from '../errorHandling';
-import { OPENMRS_FHIR_R4 } from '../constants/app';
+import { Patient } from 'fhir/r4';
+import { OPENMRS_REST_V1 } from '../constants/app';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
 import {
@@ -507,6 +507,7 @@ export const getPersonAttributeTypes =
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
  * Parses the fhir2Extension.telecomAttributeTypeMap global property value into structured
  * mappings. Mirrors the backend's own parsing (OpenmrsAppContext#parseTelecomAttributeTypeMappings):
  * `;`-separated entries of the form `attributeTypeUuid:SYSTEM:USE:RANK`, where USE and RANK are
@@ -569,20 +570,17 @@ export const deleteRelatedPerson = async (uuid: string): Promise<void> =>
  * Build FHIR R4 URL to fetch the most recent LMP observation for a patient
  * @param patientUuid - The UUID of the patient
  * @returns URL string for FHIR Observation query
+=======
+ * Calculate the number of days between a date and today using date-fns
+ * @param dateStr - ISO date string (e.g. "2024-03-15")
+ * @returns Number of days since the date, or null if the date is invalid
+>>>>>>> fd738b71 (Banti | Hive-105552 | Refactored lmp days eligibility and cleanup the code (#39))
  */
-const getLmpObservationUrl = (patientUuid: string): string =>
-  `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&code=${encodeURIComponent(LMP_CONCEPT_UUID)}&_sort=-_lastUpdated&_count=1`;
-
-/**
- * Calculate the number of days between an LMP date and today using date-fns
- * @param lmpDateStr - ISO date string for the last menstrual period (e.g. "2024-03-15")
- * @returns Number of days since LMP, or null if the date is invalid
- */
-export const calculateDaysSinceLmp = (lmpDateStr: string): number | null => {
-  if (!lmpDateStr) return null;
+export const calculateDaysSince = (dateStr: string): number | null => {
+  if (!dateStr) return null;
   try {
-    const lmpDate = parseISO(lmpDateStr);
-    const daysDiff = differenceInDays(new Date(), lmpDate);
+    const date = parseISO(dateStr);
+    const daysDiff = differenceInDays(new Date(), date);
     return daysDiff >= 0 ? daysDiff : null;
   } catch {
     return null;
@@ -590,44 +588,42 @@ export const calculateDaysSinceLmp = (lmpDateStr: string): number | null => {
 };
 
 /**
- * Fetch the most recent LMP (Last Menstrual Period) observation for a patient
- * Uses FHIR R4 Observation API filtered by the LMP concept
+ * Fetch an observation by concept name from Bahmni
+ * Returns ObservationData for date observations or string for coded observations
  * @param patientUuid - The UUID of the patient
- * @returns Promise<LmpData | null> - LMP date and days since LMP, or null if not captured
+ * @param conceptName - The name of the concept to fetch
+ * @returns Promise<ObservationData | string | null> - The observation data or null if not found
  */
-export const getPatientLmpData = async (
+export const getObservationByConceptName = async (
   patientUuid: string,
-): Promise<LmpData | null> => {
-  if (!patientUuid || patientUuid.trim() === '') {
-    return null;
-  }
+  conceptName: string,
+): Promise<import('./models').ObservationData | string | null> => {
+  if (!patientUuid?.trim()) return null;
 
   try {
-    const bundle = await get<Bundle<Observation>>(
-      getLmpObservationUrl(patientUuid),
-    );
-    const observations =
-      bundle.entry
-        ?.filter((entry) => entry.resource?.resourceType === 'Observation')
-        .map((entry) => entry.resource as Observation) ?? [];
-
-    if (observations.length === 0) {
-      return null;
+    interface BahmniObservation {
+      value?: string | object | null;
+      valueAsString?: string | null;
     }
 
-    // Use the most recent observation (results are sorted by -_lastUpdated)
-    const lmpObs = observations[0];
-    const lmpDateStr =
-      lmpObs.valueDateTime ?? lmpObs.valueDate ?? lmpObs.valueString ?? null;
+    const url = `${OPENMRS_REST_V1}/bahmnicore/observations?patientUuid=${patientUuid}&concept=${encodeURIComponent(conceptName)}&scope=latest`;
+    const observations = await get<BahmniObservation[]>(url);
 
-    if (!lmpDateStr) return null;
+    if (!observations?.length) return null;
 
-    // Normalise to YYYY-MM-DD
-    const isoDateStr = lmpDateStr.split('T')[0];
-    const daysSinceLmp = calculateDaysSinceLmp(isoDateStr);
-    if (daysSinceLmp === null) return null;
+    const obs = observations[0];
 
-    return { lmpDate: isoDateStr, daysSinceLmp };
+    if (obs.value && typeof obs.value === 'string' && obs.value.includes('-')) {
+      const isoDate = obs.value.split('T')[0];
+      const daysSince = calculateDaysSince(isoDate);
+      return daysSince !== null ? { date: isoDate, daysSince } : null;
+    }
+
+    const textVal =
+      obs.value && typeof obs.value === 'object' && 'name' in obs.value
+        ? (obs.value as { name: string }).name
+        : (obs.valueAsString ?? null);
+    return textVal;
   } catch {
     return null;
   }

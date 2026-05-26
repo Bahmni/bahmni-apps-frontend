@@ -1,11 +1,10 @@
-
 // Global styles for the orders app
 // Import design system styles if needed
 
 // Center notifications horizontally for the orders app.
 // The NotificationContainer renders with aria-label="Notifications",
 // which lets us override its positioning without touching the shared design system.
-[aria-label='Notifications'] {
+[aria-label="Notifications"] {
   right: unset;
   left: 50%;
   transform: translateX(-50%);

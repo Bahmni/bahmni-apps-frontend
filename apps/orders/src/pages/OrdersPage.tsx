@@ -7,7 +7,7 @@ import {
   Loading,
   Search,
 } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, ObservationData } from '@bahmni/services';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { OrderFulfillmentSlider } from '../components/orderFulfillmentSlider';
 import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
@@ -29,6 +29,10 @@ interface OrdersTabContentProps {
     rows: PatientOrderRow[],
     tabLabel: string,
   ) => void;
+  onPatientExpand: (
+    patientUuid: string,
+    observations: Record<string, ObservationData | string | null>,
+  ) => void;
 }
 
 const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
@@ -37,6 +41,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
   contentScrollRef,
   isSliderOpen,
   onOrderClick,
+  onPatientExpand,
 }) => {
   const { t } = useTranslation();
   const { headers, isLoading, isCustomOrderTab } = useOrdersFulfillment(view);
@@ -126,6 +131,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
           contentScrollRef={contentScrollRef}
           onOrderClick={handleOrderClick}
           searchTerm={searchInput}
+          onPatientExpand={onPatientExpand}
         />
       </div>
     </div>
@@ -148,6 +154,27 @@ export const OrdersPage: React.FC = () => {
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [selectedTabLabel, setSelectedTabLabel] = useState<string>('');
   const contentScrollRef = useRef<HTMLDivElement>(null);
+  // Store prefetched observation data keyed by patientUuid — populated on row expand
+  const prefetchedObservations = useRef<
+    Record<
+      string,
+      {
+        lmpData: ObservationData | null;
+        menstruatingStatus: string | null;
+      }
+    >
+  >({});
+
+  const handlePatientExpand = (
+    patientUuid: string,
+    lmpData: ObservationData | null,
+    menstruatingStatus?: string | null,
+  ) => {
+    prefetchedObservations.current[patientUuid] = {
+      lmpData,
+      menstruatingStatus: menstruatingStatus ?? null,
+    };
+  };
 
   const handleOrderClick = (
     orderId: string,
@@ -166,12 +193,16 @@ export const OrdersPage: React.FC = () => {
   };
   useEffect(() => {
     fetchAllPendingOrders(tabs);
+    prefetchedObservations.current = {};
   }, [tabs, currentUser, fetchAllPendingOrders]);
   useEffect(() => {
     fetchOrdersForTab(selectedIndex);
     setIsSliderOpen(false);
     setSelectedOrder(null);
+    // Clear observation cache when switching tabs or fetching fresh orders
+    prefetchedObservations.current = {};
   }, [selectedIndex, fetchOrdersForTab]);
+
   const handleCloseSlider = () => {
     setIsSliderOpen(false);
     setSelectedOrder(null);
@@ -229,6 +260,7 @@ export const OrdersPage: React.FC = () => {
                         contentScrollRef={contentScrollRef}
                         isSliderOpen={isSliderOpen}
                         onOrderClick={handleOrderClick}
+                        onPatientExpand={handlePatientExpand}
                       />
                     )}
                   </TabPanel>
@@ -245,6 +277,18 @@ export const OrdersPage: React.FC = () => {
               onClose={handleCloseSlider}
               tabLabel={selectedTabLabel}
               onSaveSuccess={handleSaveSuccess}
+              prefetchedLmpData={
+                selectedOrder
+                  ? (prefetchedObservations.current[selectedOrder.patientUuid]
+                      ?.lmpData ?? null)
+                  : null
+              }
+              prefetchedMenstruatingStatus={
+                selectedOrder
+                  ? (prefetchedObservations.current[selectedOrder.patientUuid]
+                      ?.menstruatingStatus ?? null)
+                  : null
+              }
             />
           </div>
         )}
