@@ -313,7 +313,7 @@ export const makeMockStore = (overrides = {}) => ({
 });
 
 export const mockMedicationEntry: MedicationInputEntry = {
-  id: 'med-123',
+  id: 'uuid-med-123',
   medication: {
     resourceType: 'Medication',
     id: 'med-123',
@@ -332,4 +332,57 @@ export const mockMedicationEntry: MedicationInputEntry = {
   dispenseUnit: null,
   errors: {},
   hasBeenValidated: true,
+};
+
+export const mockCDSCard = {
+  summary: 'Drug interaction warning',
+  indicator: 'warning' as const,
+  source: { label: 'Test CDSS' },
+  suggestions: [
+    {
+      label: 'Consider alternative medication',
+      actions: [
+        {
+          type: 'update' as const,
+          resource: {
+            resourceType: 'MedicationRequest',
+            id: 'med-123',
+            status: 'active',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+export const mockCriticalCDSCard = {
+  summary: 'Critical drug allergy alert',
+  indicator: 'critical' as const,
+  source: { label: 'Test CDSS' },
+  suggestions: [
+    {
+      label: 'Do not prescribe',
+      actions: [
+        {
+          type: 'delete' as const,
+          resource: {
+            resourceType: 'MedicationRequest',
+            id: 'med-123',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+export const mockInputControlConfigWithCDSS = {
+  type: 'medication',
+  label: 'MEDICATION_REQUEST_FORM_TITLE',
+  cdss: [
+    {
+      server: 'test-cdss-server',
+      service: 'medication-prescribe',
+      event: 'onSelect',
+    },
+  ],
 };
