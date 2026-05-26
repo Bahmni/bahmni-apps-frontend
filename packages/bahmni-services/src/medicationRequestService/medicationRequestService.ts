@@ -326,9 +326,11 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       duration: getDuration(medication.dosageInstruction),
       status,
       priority: medication.priority ?? '',
-      isImmediate: isImmediateMedication(medication),
+      isImmediate:
+        isSTAT(medication) ||
+        medication.dosageInstruction?.[0]?.timing?.code?.text === 'Immediately',
       quantity: getQuantity(medication.dispenseRequest!),
-      startDate: isImmediateMedication(medication)
+      startDate: isSTAT(medication)
         ? medication.authoredOn!
         : (medication.dosageInstruction?.[0]?.timing?.event?.[0] ?? ''),
       orderDate: medication.authoredOn!,
@@ -344,12 +346,8 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
   });
 }
 
-const isImmediateMedication = (medication: FhirMedicationRequest): boolean => {
-  return (
-    medication.priority === 'stat' ||
-    medication.dosageInstruction?.[0]?.timing?.code?.text === 'Immediately' ||
-    false
-  );
+const isSTAT = (medication: FhirMedicationRequest): boolean => {
+  return medication.priority === 'stat';
 };
 
 /**

@@ -29,6 +29,7 @@ import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
 import Actions from './components/Actions';
+import { MEDICATION_REQUEST_PRIORITY } from './constants';
 import { MedicationAction } from './models';
 import styles from './styles/MedicationsTable.module.scss';
 import {
@@ -254,7 +255,9 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                 ? `${row.doseForm} | ${row.quantity}`
                 : row.quantity}
             </p>
-            {row.isImmediate && <Tag className={styles.STAT}>STAT</Tag>}
+            {row.priority === MEDICATION_REQUEST_PRIORITY.STAT && (
+              <Tag className={styles.STAT}>STAT</Tag>
+            )}
             {row.asNeeded && <Tag className={styles.PRN}>PRN</Tag>}
           </>
         );
