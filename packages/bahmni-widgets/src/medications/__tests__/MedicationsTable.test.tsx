@@ -1,8 +1,10 @@
 import {
+  ConsultationSavedEventPayload,
   formatDateTime,
   groupByDate,
   MedicationRequest,
   MedicationStatus,
+  useSubscribeConsultationSaved,
   useTranslation,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
@@ -83,6 +85,10 @@ const mockGroupByDate = groupByDate as jest.MockedFunction<typeof groupByDate>;
 const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
   typeof useUserPrivilege
 >;
+const mockUseSubscribeConsultationSaved =
+  useSubscribeConsultationSaved as jest.MockedFunction<
+    typeof useSubscribeConsultationSaved
+  >;
 
 const mockMedications: MedicationRequest[] = [
   {
@@ -769,5 +775,84 @@ describe('MedicationsTable', () => {
       expect(screen.getByText('STAT')).toBeInTheDocument();
       expect(screen.getByText('IV Injection | 1 vial')).toBeInTheDocument();
     });
+  });
+
+  describe('Consultation saved event subscription', () => {
+    it.each([
+      {
+        description: 'same patient with medications updated',
+        payload: {
+          patientUUID: 'patient-uuid-123',
+          updatedResources: { medications: true },
+        } as unknown as ConsultationSavedEventPayload,
+        expectedCallCount: 1,
+      },
+      {
+        description: 'same patient with immunizationHistory updated',
+        payload: {
+          patientUUID: 'patient-uuid-123',
+          updatedResources: { immunizationHistory: true },
+        } as unknown as ConsultationSavedEventPayload,
+        expectedCallCount: 1,
+      },
+      {
+        description:
+          'same patient with both medications and immunizationHistory updated',
+        payload: {
+          patientUUID: 'patient-uuid-123',
+          updatedResources: { medications: true, immunizationHistory: true },
+        } as unknown as ConsultationSavedEventPayload,
+        expectedCallCount: 1,
+      },
+      {
+        description:
+          'same patient with neither medications nor immunizationHistory updated',
+        payload: {
+          patientUUID: 'patient-uuid-123',
+          updatedResources: {
+            medications: false,
+            immunizationHistory: false,
+          },
+        } as unknown as ConsultationSavedEventPayload,
+        expectedCallCount: 0,
+      },
+      {
+        description: 'different patient with medications updated',
+        payload: {
+          patientUUID: 'other-uuid',
+          updatedResources: { medications: true },
+        } as unknown as ConsultationSavedEventPayload,
+        expectedCallCount: 0,
+      },
+      {
+        description: 'different patient with immunizationHistory updated',
+        payload: {
+          patientUUID: 'other-uuid',
+          updatedResources: { immunizationHistory: true },
+        } as unknown as ConsultationSavedEventPayload,
+        expectedCallCount: 0,
+      },
+    ])(
+      'ConsultationSaved — $description: refetch called $expectedCallCount time(s)',
+      ({ payload, expectedCallCount }) => {
+        const refetch = jest.fn();
+        mockUseQuery.mockReturnValue({
+          data: [],
+          isLoading: false,
+          isError: false,
+          error: null,
+          refetch,
+        } as any);
+        mockUseSubscribeConsultationSaved.mockImplementation(
+          (callback: (payload: ConsultationSavedEventPayload) => void) => {
+            callback(payload);
+          },
+        );
+
+        render(<MedicationsTable />);
+
+        expect(refetch).toHaveBeenCalledTimes(expectedCallCount);
+      },
+    );
   });
 });
