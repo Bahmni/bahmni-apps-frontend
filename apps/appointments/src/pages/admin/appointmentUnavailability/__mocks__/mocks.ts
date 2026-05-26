@@ -4,18 +4,38 @@ import type {
   Location,
   Provider,
 } from '@bahmni/services';
-import { PROVIDER_ATTRIBUTE_AVAILABLE } from '../constants';
+import {
+  APPOINTMENT_LOCATION_TAG,
+  PROVIDER_ATTRIBUTE_AVAILABLE,
+} from '../constants';
 
 export const mockLocations: Location[] = [
   {
     uuid: 'location-uuid-1',
     display: 'General OPD',
     childLocations: [],
+    tags: [{ display: APPOINTMENT_LOCATION_TAG }],
   },
   {
     uuid: 'location-uuid-2',
     display: 'ENT Ward',
     childLocations: [],
+    tags: [{ display: APPOINTMENT_LOCATION_TAG }],
+  },
+];
+
+export const mockNonAppointmentLocations: Location[] = [
+  {
+    uuid: 'location-uuid-3',
+    display: 'Admin Office',
+    childLocations: [],
+    tags: [{ display: 'Admin' }],
+  },
+  {
+    uuid: 'location-uuid-4',
+    display: 'Pharmacy',
+    childLocations: [],
+    tags: [{ display: 'Pharmacy' }],
   },
 ];
 
@@ -167,51 +187,63 @@ export const mockProviders: Provider[] = [
 export const mockAppointmentUnavailabilities: AppointmentUnavailability[] = [
   {
     uuid: 'unavailability-uuid-1',
+    location: {
+      uuid: 'location-uuid-1',
+      name: 'General OPD',
+    },
+    service: {
+      uuid: 'service-uuid-1',
+      name: 'General Medicine OPD Consultation',
+    },
+    provider: {
+      uuid: 'provider-uuid-1',
+      name: 'Dr. John Smith',
+    },
     startDate: '2026-05-22',
     startTime: '09:00',
     endDate: '2026-05-22',
     endTime: '17:00',
-    locationName: 'General OPD',
-    appointmentServiceName: 'General Medicine OPD Consultation',
-    providerName: 'Dr. John Smith',
-    locationUuid: '',
-    appointmentServiceUuid: '',
-    providerUuid: null,
     voided: false,
-    dateCreated: '',
-    creatorName: '',
+    dateCreated: '2026-05-22T09:00:00Z',
+    creatorName: 'admin',
   },
   {
     uuid: 'unavailability-uuid-2',
+    location: {
+      uuid: 'location-uuid-2',
+      name: 'ENT Ward',
+    },
+    service: {
+      uuid: 'service-uuid-2',
+      name: 'ENT Consultation',
+    },
+    provider: null,
     startDate: '2026-05-23',
     startTime: '10:00',
     endDate: '2026-05-23',
     endTime: '16:00',
-    locationName: 'ENT Ward',
-    appointmentServiceName: '',
-    providerName: null,
-    locationUuid: '',
-    appointmentServiceUuid: '',
-    providerUuid: null,
     voided: false,
-    dateCreated: '',
-    creatorName: '',
+    dateCreated: '2026-05-23T10:00:00Z',
+    creatorName: 'admin',
   },
   {
     uuid: 'unavailability-uuid-3',
+    location: {
+      uuid: 'location-uuid-1',
+      name: 'General OPD',
+    },
+    service: {
+      uuid: 'service-uuid-1',
+      name: 'General Medicine OPD Consultation',
+    },
+    provider: null,
     startDate: '2026-05-24',
     startTime: '08:00',
     endDate: '2026-05-25',
     endTime: '18:00',
-    locationName: 'General OPD',
-    appointmentServiceName: 'General Medicine OPD Consultation',
-    providerName: null,
-    locationUuid: '',
-    appointmentServiceUuid: '',
-    providerUuid: null,
     voided: false,
-    dateCreated: '',
-    creatorName: '',
+    dateCreated: '2026-05-24T08:00:00Z',
+    creatorName: 'admin',
   },
 ];
 

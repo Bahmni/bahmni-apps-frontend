@@ -1,5 +1,6 @@
 import {
   parseISO,
+  parse,
   isValid,
   differenceInYears,
   differenceInMonths,
@@ -512,4 +513,18 @@ export function sortByDate(
     const diff = dateA.getTime() - dateB.getTime();
     return ascending ? diff : -diff;
   });
+}
+
+/**
+ * Converts 12-hour time format (with AM/PM) to 24-hour format
+ * @param timeStr - Time string in 12-hour format (e.g., "02:30 PM", "11:45 AM")
+ * @returns Time string in 24-hour format (e.g., "14:30", "11:45"), or empty string if invalid
+ */
+export function convertTo24HourFormat(timeStr: string): string {
+  if (!timeStr) return '';
+
+  const parsed = parse(timeStr, 'hh:mm aa', new Date());
+  if (!isValid(parsed)) return timeStr;
+
+  return format(parsed, 'HH:mm');
 }

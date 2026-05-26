@@ -1,3 +1,5 @@
+import { Location } from '../locationService';
+
 /**
  * Interface representing a link to a resource
  */
@@ -42,22 +44,11 @@ export interface ProviderAttributeType {
   display: string;
 }
 
-export interface LocationTag {
-  uuid?: string;
-  display: string;
-}
-
-export interface LocationAttributeValue {
-  uuid: string;
-  display: string;
-  tags?: LocationTag[];
-}
-
 export interface ProviderAttribute {
   uuid: string;
   display: string;
   attributeType: ProviderAttributeType;
-  value: boolean | LocationAttributeValue;
+  value: boolean | Location;
   voided: boolean;
 }
 
@@ -76,4 +67,5 @@ export interface Provider {
  */
 export interface ProviderResponse {
   results: Provider[];
+  links?: Link[];
 }

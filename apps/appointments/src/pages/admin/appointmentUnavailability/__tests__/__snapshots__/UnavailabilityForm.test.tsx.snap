@@ -12,7 +12,7 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
       class="_title_1rrq1_16"
       id="action-area-title"
     >
-      Add unavailability
+      Add Unavailability
     </h2>
     <div
       aria-labelledby="action-area-title"
@@ -33,7 +33,7 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
               for="downshift-_r_86_-toggle-button"
               id="downshift-_r_86_-label"
             >
-              Select location*
+              Select Location*
             </label>
             <div
               class="cds--dropdown cds--list-box"
@@ -97,50 +97,46 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
             class="dateField"
           >
             <div
-              class="cds--form-item"
+              data-testid="mock-date-picker"
             >
               <div
-                class="cds--date-picker cds--date-picker--single"
+                class="cds--date-picker-container"
               >
-                <div
-                  class="cds--date-picker-container"
+                <label
+                  class="cds--label"
+                  dir="auto"
+                  for="start-date"
                 >
-                  <label
-                    class="cds--label"
-                    dir="auto"
-                    for="start-date"
-                  >
-                    Start date*
-                  </label>
-                  <div
-                    class="cds--date-picker-input__wrapper"
-                  >
-                    <span>
-                      <input
-                        class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
-                        id="start-date"
-                        pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                        placeholder="MM/dd/yyyy"
-                        type="text"
+                  Start Date*
+                </label>
+                <div
+                  class="cds--date-picker-input__wrapper"
+                >
+                  <span>
+                    <input
+                      class="cds--date-picker__input cds--date-picker__input--md"
+                      id="start-date"
+                      pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
+                      placeholder="MM/dd/yyyy"
+                      type="text"
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="cds--date-picker__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      role="img"
+                      viewBox="0 0 32 32"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
                       />
-                      <svg
-                        aria-hidden="true"
-                        class="cds--date-picker__icon"
-                        fill="currentColor"
-                        focusable="false"
-                        height="16"
-                        preserveAspectRatio="xMidYMid meet"
-                        role="img"
-                        viewBox="0 0 32 32"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
-                        />
-                      </svg>
-                    </span>
-                  </div>
+                    </svg>
+                  </span>
                 </div>
               </div>
             </div>
@@ -155,7 +151,7 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
                 class="cds--label"
                 for="start-time"
               >
-                Start time*
+                Start Time*
               </label>
               <div
                 class="cds--time-picker cds--time-picker--md"
@@ -215,50 +211,46 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
             class="dateField"
           >
             <div
-              class="cds--form-item"
+              data-testid="mock-date-picker"
             >
               <div
-                class="cds--date-picker cds--date-picker--single"
+                class="cds--date-picker-container"
               >
-                <div
-                  class="cds--date-picker-container"
+                <label
+                  class="cds--label"
+                  dir="auto"
+                  for="end-date"
                 >
-                  <label
-                    class="cds--label"
-                    dir="auto"
-                    for="end-date"
-                  >
-                    End date*
-                  </label>
-                  <div
-                    class="cds--date-picker-input__wrapper"
-                  >
-                    <span>
-                      <input
-                        class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
-                        id="end-date"
-                        pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                        placeholder="MM/dd/yyyy"
-                        type="text"
+                  End Date*
+                </label>
+                <div
+                  class="cds--date-picker-input__wrapper"
+                >
+                  <span>
+                    <input
+                      class="cds--date-picker__input cds--date-picker__input--md"
+                      id="end-date"
+                      pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
+                      placeholder="MM/dd/yyyy"
+                      type="text"
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="cds--date-picker__icon"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      role="img"
+                      viewBox="0 0 32 32"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
                       />
-                      <svg
-                        aria-hidden="true"
-                        class="cds--date-picker__icon"
-                        fill="currentColor"
-                        focusable="false"
-                        height="16"
-                        preserveAspectRatio="xMidYMid meet"
-                        role="img"
-                        viewBox="0 0 32 32"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
-                        />
-                      </svg>
-                    </span>
-                  </div>
+                    </svg>
+                  </span>
                 </div>
               </div>
             </div>
@@ -273,7 +265,7 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
                 class="cds--label"
                 for="end-time"
               >
-                End time*
+                End Time*
               </label>
               <div
                 class="cds--time-picker cds--time-picker--md"
@@ -344,7 +336,7 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
                 for="service-multiselect-input"
                 id="service-multiselect-label"
               >
-                Select service
+                Select Service
                 <span
                   class="cds--visually-hidden"
                 >
@@ -398,7 +390,7 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
                     autocomplete="off"
                     class="cds--text-input cds--text-input--empty"
                     id="service-multiselect-input"
-                    placeholder="Select service"
+                    placeholder="Select Service"
                     role="combobox"
                     value=""
                   />
@@ -448,7 +440,7 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
                 for="provider-multiselect-input"
                 id="provider-multiselect-label"
               >
-                Select provider
+                Select Provider
                 <span
                   class="cds--visually-hidden"
                 >
@@ -502,7 +494,7 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
                     autocomplete="off"
                     class="cds--text-input cds--text-input--empty"
                     id="provider-multiselect-input"
-                    placeholder="Select provider"
+                    placeholder="Select Provider"
                     role="combobox"
                     value=""
                   />

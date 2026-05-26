@@ -1,8 +1,15 @@
 import { del, get, post } from '../../api';
 import {
-  createMockAppointment,
   createEmptyBundle,
   createBundleWithAppointments,
+  FIXED_NOW,
+  patientUUID,
+  upcomingAppointment,
+  pastAppointment,
+  mockUnavailabilities,
+  mockCreateRequest,
+  mockCreateRequestWithoutOptionalFields,
+  multipleRequests,
 } from '../__mocks__/mocks';
 import {
   getUpcomingAppointments,
@@ -29,21 +36,13 @@ import {
   getPastAppointmentsPageUrl,
   APPOINTMENT_UNAVAILABILITY_URL,
 } from '../constants';
-import {
-  AppointmentUnavailability,
-  CreateUnavailabilityRequest,
-} from '../models';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
 const mockedPost = post as jest.MockedFunction<typeof post>;
 const mockedDel = del as jest.MockedFunction<typeof del>;
 
-const FIXED_NOW = new Date('2026-02-18T06:02:28.000Z');
-
 jest.useFakeTimers().setSystemTime(FIXED_NOW);
-
-const patientUUID = 'patient-uuid-123';
 
 const setupMockBundle = (appointments: any[]) => {
   const mockBundle = createBundleWithAppointments(appointments);
@@ -56,22 +55,6 @@ const setupEmptyBundle = () => {
   mockedGet.mockResolvedValue(mockBundle);
   return mockBundle;
 };
-
-const upcomingAppointment = createMockAppointment(
-  'appt-uuid-1',
-  'APT-001',
-  '2025-02-15T10:30:00Z',
-  'Dr. Smith',
-  'booked',
-);
-
-const pastAppointment = createMockAppointment(
-  'appt-uuid-past-1',
-  'APT-OLD-001',
-  '2025-01-10T10:30:00Z',
-  'Dr. Johnson',
-  'fulfilled',
-);
 
 describe('Appointment Service', () => {
   afterAll(() => {
@@ -336,41 +319,6 @@ describe('Appointment Service', () => {
   });
 
   describe('getAppointmentUnavailabilities', () => {
-    const mockUnavailabilities: AppointmentUnavailability[] = [
-      {
-        uuid: 'unavailability-uuid-1',
-        locationUuid: 'location-uuid-1',
-        locationName: 'General OPD',
-        appointmentServiceUuid: 'service-uuid-1',
-        appointmentServiceName: 'General Medicine',
-        providerUuid: 'provider-uuid-1',
-        providerName: 'Dr. Smith',
-        startDate: '2026-05-20',
-        startTime: '09:00',
-        endDate: '2026-05-20',
-        endTime: '12:00',
-        voided: false,
-        dateCreated: '2026-05-18T10:00:00Z',
-        creatorName: 'Admin User',
-      },
-      {
-        uuid: 'unavailability-uuid-2',
-        locationUuid: 'location-uuid-2',
-        locationName: 'ENT Ward',
-        appointmentServiceUuid: 'service-uuid-2',
-        appointmentServiceName: 'ENT Consultation',
-        providerUuid: null,
-        providerName: null,
-        startDate: '2026-05-22',
-        startTime: '14:00',
-        endDate: '2026-05-22',
-        endTime: '17:00',
-        voided: false,
-        dateCreated: '2026-05-19T08:00:00Z',
-        creatorName: 'Admin User',
-      },
-    ];
-
     it('should fetch all appointment unavailabilities', async () => {
       mockedGet.mockResolvedValue(mockUnavailabilities);
 
@@ -400,29 +348,6 @@ describe('Appointment Service', () => {
   });
 
   describe('createAppointmentUnavailability', () => {
-    const mockCreateRequest: CreateUnavailabilityRequest[] = [
-      {
-        locationUuid: 'location-uuid-1',
-        appointmentServiceUuid: 'service-uuid-1',
-        providerUuid: 'provider-uuid-1',
-        startDate: '2026-05-25',
-        startTime: '09:00',
-        endDate: '2026-05-25',
-        endTime: '12:00',
-      },
-    ];
-
-    const mockCreateRequestWithoutOptionalFields: CreateUnavailabilityRequest[] =
-      [
-        {
-          locationUuid: 'location-uuid-1',
-          startDate: '2026-05-26',
-          startTime: '10:00',
-          endDate: '2026-05-26',
-          endTime: '15:00',
-        },
-      ];
-
     it('should create appointment unavailability with all fields', async () => {
       mockedPost.mockResolvedValue(undefined);
 
@@ -448,24 +373,6 @@ describe('Appointment Service', () => {
     });
 
     it('should create multiple unavailabilities in a single request', async () => {
-      const multipleRequests: CreateUnavailabilityRequest[] = [
-        {
-          locationUuid: 'location-uuid-1',
-          appointmentServiceUuid: 'service-uuid-1',
-          startDate: '2026-05-25',
-          startTime: '09:00',
-          endDate: '2026-05-25',
-          endTime: '12:00',
-        },
-        {
-          locationUuid: 'location-uuid-1',
-          appointmentServiceUuid: 'service-uuid-2',
-          startDate: '2026-05-25',
-          startTime: '09:00',
-          endDate: '2026-05-25',
-          endTime: '12:00',
-        },
-      ];
       mockedPost.mockResolvedValue(undefined);
 
       await createAppointmentUnavailability(multipleRequests);

@@ -3,7 +3,13 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  act,
+  waitFor,
+  fireEvent,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import {
@@ -54,6 +60,11 @@ const mockGetProviderLoginLocations = jest.fn<
   [string]
 >(() => Promise.resolve(mockLocations));
 
+const mockGetFHIRLocationsByTag = jest.fn<
+  Promise<typeof mockLocations>,
+  [string]
+>(() => Promise.resolve(mockLocations));
+
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
   useQuery: jest.fn(),
@@ -64,6 +75,52 @@ jest.mock('@bahmni/widgets', () => ({
   useNotification: jest.fn(() => ({ addNotification: mockAddNotification })),
 }));
 
+jest.mock('@bahmni/design-system', () => {
+  const actual = jest.requireActual('@bahmni/design-system');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require('react');
+
+  const MockDatePicker = ({
+    children,
+    onChange,
+  }: {
+    children: React.ReactNode;
+    onChange?: (dates: Date[]) => void;
+  }) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (value && onChange) {
+        const parts = value.split('/');
+        if (parts.length === 3) {
+          const [month, day, year] = parts.map(Number);
+          const date = new Date(year, month - 1, day);
+          if (!isNaN(date.getTime())) {
+            onChange([date]);
+          }
+        }
+      }
+    };
+
+    return (
+      <div data-testid="mock-date-picker">
+        {React.Children.map(children, (child: React.ReactElement) => {
+          if (React.isValidElement(child)) {
+            return React.cloneElement(child, {
+              onChange: handleInputChange,
+            } as React.HTMLAttributes<HTMLInputElement>);
+          }
+          return child;
+        })}
+      </div>
+    );
+  };
+
+  return {
+    ...actual,
+    DatePicker: MockDatePicker,
+  };
+});
+
 const mockGetUserLoginLocation = jest.fn(() => ({ uuid: 'location-uuid-1' }));
 
 jest.mock('@bahmni/services', () => ({
@@ -71,8 +128,10 @@ jest.mock('@bahmni/services', () => ({
   createAppointmentUnavailability: (data: unknown) =>
     mockCreateAppointmentUnavailability(data),
   getAllAppointmentServices: jest.fn(),
-  getAllProviders: jest.fn(),
+  getPaginatedProviders: jest.fn(),
+  fetchAllProviders: jest.fn(),
   getCurrentUser: () => mockGetCurrentUser(),
+  getFHIRLocationsByTag: (tag: string) => mockGetFHIRLocationsByTag(tag),
   getProviderLoginLocations: (uuid: string) =>
     mockGetProviderLoginLocations(uuid),
   getUserLoginLocation: () => mockGetUserLoginLocation(),
@@ -138,19 +197,19 @@ describe('UnavailabilityForm', () => {
     it('should render the form title', () => {
       setupMocksWithData();
       renderComponent();
-      expect(screen.getByText('Add unavailability')).toBeInTheDocument();
+      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
     });
 
     it('should render all form fields', () => {
       setupMocksWithData();
       renderComponent();
-      expect(screen.getByText(/Select location/)).toBeInTheDocument();
-      expect(screen.getByText(/Start date/)).toBeInTheDocument();
-      expect(screen.getByText(/Start time/)).toBeInTheDocument();
-      expect(screen.getByText(/End date/)).toBeInTheDocument();
-      expect(screen.getByText(/End time/)).toBeInTheDocument();
-      expect(screen.getByText('Select service')).toBeInTheDocument();
-      expect(screen.getByText('Select provider')).toBeInTheDocument();
+      expect(screen.getByText(/Select Location/)).toBeInTheDocument();
+      expect(screen.getByText(/Start Date/)).toBeInTheDocument();
+      expect(screen.getByText(/Start Time/)).toBeInTheDocument();
+      expect(screen.getByText(/End Date/)).toBeInTheDocument();
+      expect(screen.getByText(/End Time/)).toBeInTheDocument();
+      expect(screen.getByText(/Select Service/)).toBeInTheDocument();
+      expect(screen.getByText(/Select Provider/)).toBeInTheDocument();
     });
 
     it('should render Add and Cancel buttons', () => {
@@ -191,7 +250,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
       expect(screen.getByText('General OPD')).toBeInTheDocument();
-      expect(screen.getByText(/Select location/)).toBeInTheDocument();
+      expect(screen.getByText(/Select Location/)).toBeInTheDocument();
     });
   });
 
@@ -199,7 +258,7 @@ describe('UnavailabilityForm', () => {
     it('should render provider multiselect with filtered providers', () => {
       setupMocksWithData();
       renderComponent();
-      expect(screen.getByText('Select provider')).toBeInTheDocument();
+      expect(screen.getByText(/Select Provider/)).toBeInTheDocument();
     });
   });
 
@@ -207,27 +266,33 @@ describe('UnavailabilityForm', () => {
     it('should render service multiselect for selected location', () => {
       setupMocksWithData();
       renderComponent();
-      expect(screen.getByText('Select service')).toBeInTheDocument();
+      expect(screen.getByText(/Select Service/)).toBeInTheDocument();
     });
   });
 
   describe('Form Submission', () => {
+    const fillFormFields = async () => {
+      const startDateInput = screen.getByLabelText(/Start Date/);
+      fireEvent.change(startDateInput, { target: { value: '05/25/2026' } });
+      fireEvent.blur(startDateInput);
+
+      const startTimeInput = screen.getByLabelText(/Start Time/);
+      fireEvent.change(startTimeInput, { target: { value: '09:00' } });
+
+      const endDateInput = screen.getByLabelText(/End Date/);
+      fireEvent.change(endDateInput, { target: { value: '05/25/2026' } });
+      fireEvent.blur(endDateInput);
+
+      const endTimeInput = screen.getByLabelText(/End Time/);
+      fireEvent.change(endTimeInput, { target: { value: '10:00' } });
+    };
+
     it('should call createAppointmentUnavailability on successful submission', async () => {
       setupMocksWithData();
       mockCreateAppointmentUnavailability.mockResolvedValue({});
       renderComponent();
 
-      const startDateInput = screen.getByLabelText(/Start date/);
-      await userEvent.type(startDateInput, '05/25/2026');
-
-      const startTimeInput = screen.getByLabelText(/Start time/);
-      await userEvent.type(startTimeInput, '09:00');
-
-      const endDateInput = screen.getByLabelText(/End date/);
-      await userEvent.type(endDateInput, '05/25/2026');
-
-      const endTimeInput = screen.getByLabelText(/End time/);
-      await userEvent.type(endTimeInput, '10:00');
+      await fillFormFields();
 
       await userEvent.click(screen.getByText('Add'));
 
@@ -241,17 +306,7 @@ describe('UnavailabilityForm', () => {
       mockCreateAppointmentUnavailability.mockResolvedValue({});
       renderComponent();
 
-      const startDateInput = screen.getByLabelText(/Start date/);
-      await userEvent.type(startDateInput, '05/25/2026');
-
-      const startTimeInput = screen.getByLabelText(/Start time/);
-      await userEvent.type(startTimeInput, '09:00');
-
-      const endDateInput = screen.getByLabelText(/End date/);
-      await userEvent.type(endDateInput, '05/25/2026');
-
-      const endTimeInput = screen.getByLabelText(/End time/);
-      await userEvent.type(endTimeInput, '10:00');
+      await fillFormFields();
 
       await userEvent.click(screen.getByText('Add'));
 
@@ -270,17 +325,7 @@ describe('UnavailabilityForm', () => {
       mockCreateAppointmentUnavailability.mockResolvedValue({});
       renderComponent();
 
-      const startDateInput = screen.getByLabelText(/Start date/);
-      await userEvent.type(startDateInput, '05/25/2026');
-
-      const startTimeInput = screen.getByLabelText(/Start time/);
-      await userEvent.type(startTimeInput, '09:00');
-
-      const endDateInput = screen.getByLabelText(/End date/);
-      await userEvent.type(endDateInput, '05/25/2026');
-
-      const endTimeInput = screen.getByLabelText(/End time/);
-      await userEvent.type(endTimeInput, '10:00');
+      await fillFormFields();
 
       await userEvent.click(screen.getByText('Add'));
 
@@ -296,17 +341,7 @@ describe('UnavailabilityForm', () => {
       );
       renderComponent();
 
-      const startDateInput = screen.getByLabelText(/Start date/);
-      await userEvent.type(startDateInput, '05/25/2026');
-
-      const startTimeInput = screen.getByLabelText(/Start time/);
-      await userEvent.type(startTimeInput, '09:00');
-
-      const endDateInput = screen.getByLabelText(/End date/);
-      await userEvent.type(endDateInput, '05/25/2026');
-
-      const endTimeInput = screen.getByLabelText(/End time/);
-      await userEvent.type(endTimeInput, '10:00');
+      await fillFormFields();
 
       await userEvent.click(screen.getByText('Add'));
 
@@ -326,25 +361,27 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const startDateInput = screen.getByLabelText(/Start date/);
+      const startDateInput = screen.getByLabelText(/Start Date/);
       await userEvent.type(startDateInput, '05/25/2026');
 
-      const startTimeInput = screen.getByLabelText(/Start time/);
+      const startTimeInput = screen.getByLabelText(/Start Time/);
       await userEvent.type(startTimeInput, '10:00');
 
-      const endDateInput = screen.getByLabelText(/End date/);
+      const endDateInput = screen.getByLabelText(/End Date/);
       await userEvent.type(endDateInput, '05/25/2026');
 
-      const endTimeInput = screen.getByLabelText(/End time/);
+      const endTimeInput = screen.getByLabelText(/End Time/);
       await userEvent.type(endTimeInput, '09:00');
 
       await userEvent.click(screen.getByText('Add'));
 
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'error',
-        }),
-      );
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'error',
+          }),
+        );
+      });
     });
   });
 
@@ -384,7 +421,7 @@ describe('UnavailabilityForm', () => {
       });
 
       renderComponent();
-      expect(screen.getByText('Add unavailability')).toBeInTheDocument();
+      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
       expect(capturedQueryFn).not.toBeNull();
 
       const result = await (
@@ -423,7 +460,7 @@ describe('UnavailabilityForm', () => {
       });
 
       renderComponent();
-      expect(screen.getByText('Add unavailability')).toBeInTheDocument();
+      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
       expect(capturedQueryFn).not.toBeNull();
 
       const result = await (
@@ -433,6 +470,51 @@ describe('UnavailabilityForm', () => {
       expect(mockGetCurrentUser).toHaveBeenCalled();
       expect(mockGetProviderLoginLocations).toHaveBeenCalledWith(
         mockCurrentUser.uuid,
+      );
+    });
+
+    it('should fallback to getFHIRLocationsByTag when provider locations are empty', async () => {
+      mockGetCurrentUser.mockResolvedValueOnce(mockCurrentUser);
+      mockGetProviderLoginLocations.mockResolvedValueOnce([]);
+      mockGetFHIRLocationsByTag.mockResolvedValueOnce(mockLocations);
+      let capturedQueryFn: (() => Promise<unknown>) | null = null;
+
+      (useQuery as jest.Mock).mockImplementation(({ queryKey, queryFn }) => {
+        if (queryKey[0] === 'providerLoginLocations') {
+          capturedQueryFn = queryFn;
+          return {
+            data: mockLocations,
+            isError: false,
+            isLoading: false,
+          };
+        }
+        if (queryKey[0] === 'appointmentServices') {
+          return {
+            data: mockAppointmentServices,
+            isError: false,
+            isLoading: false,
+          };
+        }
+        if (queryKey[0] === 'providers') {
+          return { data: mockProviders, isError: false, isLoading: false };
+        }
+        return { data: [], isError: false, isLoading: false };
+      });
+
+      renderComponent();
+      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
+      expect(capturedQueryFn).not.toBeNull();
+
+      const result = await (
+        capturedQueryFn as unknown as () => Promise<unknown>
+      )();
+      expect(result).toEqual(mockLocations);
+      expect(mockGetCurrentUser).toHaveBeenCalled();
+      expect(mockGetProviderLoginLocations).toHaveBeenCalledWith(
+        mockCurrentUser.uuid,
+      );
+      expect(mockGetFHIRLocationsByTag).toHaveBeenCalledWith(
+        'Appointment Location',
       );
     });
   });
@@ -455,7 +537,7 @@ describe('UnavailabilityForm', () => {
       });
       setupMocksWithData();
       renderComponent();
-      expect(screen.getByText('Add unavailability')).toBeInTheDocument();
+      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
     });
   });
 
@@ -483,7 +565,7 @@ describe('UnavailabilityForm', () => {
       });
 
       renderComponent();
-      expect(screen.getByText('Add unavailability')).toBeInTheDocument();
+      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
     });
   });
 
@@ -514,7 +596,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const startTimeInput = screen.getByLabelText(/Start time/);
+      const startTimeInput = screen.getByLabelText(/Start Time/);
       await userEvent.type(startTimeInput, '09:00');
 
       const startTimePeriodSelect = document.getElementById(
@@ -528,7 +610,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const endTimeInput = screen.getByLabelText(/End time/);
+      const endTimeInput = screen.getByLabelText(/End time/i);
       await userEvent.type(endTimeInput, '05:00');
 
       const endTimePeriodSelect = document.getElementById(
@@ -542,7 +624,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const serviceMultiselect = screen.getByPlaceholderText('Select service');
+      const serviceMultiselect = screen.getByPlaceholderText(/Select Service/);
       expect(serviceMultiselect).toBeInTheDocument();
 
       await userEvent.click(serviceMultiselect);
@@ -558,7 +640,7 @@ describe('UnavailabilityForm', () => {
       renderComponent();
 
       const providerMultiselect =
-        screen.getByPlaceholderText('Select provider');
+        screen.getByPlaceholderText(/Select Provider/);
       expect(providerMultiselect).toBeInTheDocument();
 
       await userEvent.click(providerMultiselect);
@@ -585,7 +667,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const serviceMultiselect = screen.getByText('Select service');
+      const serviceMultiselect = screen.getByText(/Select Service/);
       expect(serviceMultiselect).toBeInTheDocument();
     });
 
@@ -593,7 +675,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const providerMultiselect = screen.getByText('Select provider');
+      const providerMultiselect = screen.getByText(/Select Provider/);
       expect(providerMultiselect).toBeInTheDocument();
     });
   });
@@ -603,7 +685,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const startDateInput = screen.getByLabelText(/Start date/);
+      const startDateInput = screen.getByLabelText(/Start Date/);
       await userEvent.type(startDateInput, '05/25/2026');
 
       expect(startDateInput).toHaveValue('05/25/2026');
@@ -613,7 +695,7 @@ describe('UnavailabilityForm', () => {
       setupMocksWithData();
       renderComponent();
 
-      const endDateInput = screen.getByLabelText(/End date/);
+      const endDateInput = screen.getByLabelText(/End Date/);
       await userEvent.type(endDateInput, '05/26/2026');
 
       expect(endDateInput).toHaveValue('05/26/2026');

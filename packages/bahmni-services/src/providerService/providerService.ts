@@ -1,7 +1,7 @@
 import { get } from '../api';
 import { type Location } from '../locationService/models';
 import { ALL_PROVIDERS_URL, PROVIDER_RESOURCE_URL } from './constants';
-import { Provider, ProviderResponse, LocationAttributeValue } from './models';
+import { Link, Provider, ProviderResponse } from './models';
 
 /**
  * Fetches the current user's username from cookies and provider uuid fromREST endpoint
@@ -22,12 +22,38 @@ export async function getCurrentProvider(
 }
 
 /**
- * Fetches all providers from OpenMRS
+ * Fetches providers from OpenMRS (single page)
+ * @param url - Optional URL to fetch (defaults to ALL_PROVIDERS_URL)
  * @returns Promise resolving to an array of Provider objects
  */
-export async function getAllProviders(): Promise<Provider[]> {
-  const response = await get<ProviderResponse>(ALL_PROVIDERS_URL);
+export async function getPaginatedProviders(
+  url: string = ALL_PROVIDERS_URL,
+): Promise<Provider[]> {
+  const response = await get<ProviderResponse>(url);
   return response.results ?? [];
+}
+
+/**
+ * Fetches all providers from OpenMRS with pagination support
+ * Iterates through all pages until no "next" link is found
+ * @returns Promise resolving to an array of all Provider objects
+ */
+export async function fetchAllProviders(): Promise<Provider[]> {
+  const allProviders: Provider[] = [];
+  let nextUrl: string | null = ALL_PROVIDERS_URL;
+
+  while (nextUrl) {
+    const currentUrl = nextUrl;
+    const response: ProviderResponse = await get<ProviderResponse>(currentUrl);
+    allProviders.push(...(response.results ?? []));
+
+    const nextLink: Link | undefined = response.links?.find(
+      (link: Link) => link.rel === 'next',
+    );
+    nextUrl = nextLink?.uri ?? null;
+  }
+
+  return allProviders;
 }
 
 /**
@@ -52,18 +78,15 @@ export async function getProviderLoginLocations(
   return provider.attributes
     .filter(
       (attr) =>
-        !attr.voided &&
-        attr.attributeType?.display === 'Login Locations' &&
-        (attr.value as LocationAttributeValue).tags?.some(
-          (tag) => tag.display === 'Appointment Location',
-        ),
+        !attr.voided && attr.attributeType?.display === 'Login Locations',
     )
     .map((attr) => {
-      const locationValue = attr.value as LocationAttributeValue;
+      const locationValue = attr.value as Location;
       return {
         uuid: locationValue.uuid,
         display: locationValue.display,
         childLocations: [],
+        tags: locationValue.tags,
       };
     });
 }

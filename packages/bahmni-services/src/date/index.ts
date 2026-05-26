@@ -10,6 +10,7 @@ export {
   DURATION_UNIT_TO_DAYS,
   calculateEndDate,
   doDateRangesOverlap,
+  convertTo24HourFormat,
 } from './date';
 export {
   DEFAULT_DATE_FORMAT,

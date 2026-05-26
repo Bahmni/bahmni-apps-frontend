@@ -110,7 +110,6 @@ export {
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
-  convertTo24HourFormat,
 } from './utils';
 export {
   type FormatDateResult,
@@ -127,6 +126,7 @@ export {
   DURATION_UNIT_TO_DAYS,
   calculateEndDate,
   doDateRangesOverlap,
+  convertTo24HourFormat,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {
@@ -226,7 +226,8 @@ export {
 } from './observationService';
 export {
   getCurrentProvider,
-  getAllProviders,
+  getPaginatedProviders,
+  fetchAllProviders,
   getProviderLoginLocations,
   type Provider,
   type Person,
@@ -352,6 +353,7 @@ export {
 
 export {
   getLocationByTag,
+  getFHIRLocationsByTag,
   type Location,
   type ChildLocation,
 } from './locationService';

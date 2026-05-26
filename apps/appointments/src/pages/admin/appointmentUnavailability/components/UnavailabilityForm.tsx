@@ -8,24 +8,29 @@ import {
   TimePickerSelect,
 } from '@bahmni/design-system';
 import {
+  type AppointmentService,
+  convertTo24HourFormat,
   createAppointmentUnavailability,
+  type CreateUnavailabilityRequest,
+  fetchAllProviders,
+  formatDateTime,
   getAllAppointmentServices,
-  getAllProviders,
   getCurrentUser,
+  getFHIRLocationsByTag,
   getProviderLoginLocations,
   getUserLoginLocation,
-  useTranslation,
-  convertTo24HourFormat,
-  formatDateTime,
-  type AppointmentService,
-  type CreateUnavailabilityRequest,
   type Location,
   type Provider,
+  useTranslation,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
-import { DATE_FORMAT, PROVIDER_ATTRIBUTE_AVAILABLE } from '../constants';
+import {
+  APPOINTMENT_LOCATION_TAG,
+  DATE_FORMAT,
+  PROVIDER_ATTRIBUTE_AVAILABLE,
+} from '../constants';
 import { getTimeInMinutes } from '../utils';
 import styles from './styles/UnavailabilityForm.module.scss';
 
@@ -99,14 +104,24 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
     return items.find((item) => item.uuid === uuid) ?? null;
   };
 
-  const { data: locations = [] } = useQuery({
+  const { data: loginLocations = [] } = useQuery({
     queryKey: ['providerLoginLocations'],
     queryFn: async () => {
       const currentUser = await getCurrentUser();
       if (!currentUser) {
         return [];
       }
-      return getProviderLoginLocations(currentUser.uuid);
+      const providerLocations = await getProviderLoginLocations(
+        currentUser.uuid,
+      );
+
+      if (providerLocations.length === 0) {
+        return getFHIRLocationsByTag(APPOINTMENT_LOCATION_TAG);
+      }
+
+      return providerLocations.filter((location) =>
+        location.tags?.some((tag) => tag.display === APPOINTMENT_LOCATION_TAG),
+      );
     },
   });
 
@@ -117,7 +132,7 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
 
   const { data: providers = [] } = useQuery({
     queryKey: ['providers'],
-    queryFn: getAllProviders,
+    queryFn: fetchAllProviders,
   });
 
   const filteredServices = useMemo(
@@ -271,8 +286,19 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
       const serviceUuids = getSelectedIds(formData.selectedServiceItems);
       const providerUuids = getSelectedIds(formData.selectedProviderItems);
 
-      const services = serviceUuids.length > 0 ? serviceUuids : [undefined];
-      const providers = providerUuids.length > 0 ? providerUuids : [undefined];
+      const allServicesSelected =
+        serviceUuids.length === filteredServices.length;
+      const services =
+        allServicesSelected || serviceUuids.length === 0
+          ? [undefined]
+          : serviceUuids;
+
+      const allProvidersSelected =
+        providerUuids.length === availableProviders.length;
+      const providers =
+        allProvidersSelected || providerUuids.length === 0
+          ? [undefined]
+          : providerUuids;
 
       const requestDataList: CreateUnavailabilityRequest[] = services.flatMap(
         (serviceUuid) =>
@@ -309,9 +335,9 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
           id="location-dropdown"
           label={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_LABEL')}
           titleText={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_LABEL')}
-          items={locations}
+          items={loginLocations}
           itemToString={(item: Location) => item?.display ?? ''}
-          selectedItem={findItemByUuid(locations, formData.locationUuid)}
+          selectedItem={findItemByUuid(loginLocations, formData.locationUuid)}
           onChange={(e) =>
             setFormData({
               ...formData,

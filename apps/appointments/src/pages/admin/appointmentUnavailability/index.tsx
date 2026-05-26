@@ -84,10 +84,10 @@ const AppointmentUnavailabilityPage: React.FC = () => {
       id: item.uuid,
       startDateTime: `${formatDateTime(item.startDate).formattedResult}, ${formatTime(item.startTime)}`,
       endDateTime: `${formatDateTime(item.endDate).formattedResult}, ${formatTime(item.endTime)}`,
-      locationName: item.locationName,
+      locationName: item.location.name,
       appointmentServiceName:
-        item.appointmentServiceName ?? t('ADMIN_UNAVAILABILITY_ALL'),
-      providerName: item.providerName ?? t('ADMIN_UNAVAILABILITY_ALL'),
+        item.service?.name ?? t('ADMIN_UNAVAILABILITY_ALL'),
+      providerName: item.provider?.name ?? t('ADMIN_UNAVAILABILITY_ALL'),
     }));
   }, [data, t]);
 

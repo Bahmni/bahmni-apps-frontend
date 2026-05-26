@@ -1,201 +1,26 @@
 import { get } from '../../api';
+import {
+  mockUserUUID,
+  mockProviderResponse,
+  mockAllProvidersResponse,
+  mockProviderWithLoginLocations,
+  mockProviderPage1,
+  mockProviderPage2,
+  mockProviderPage3,
+  mockSinglePageResponse,
+  mockEmptyProvidersResponse,
+} from '../__mocks__/mocks';
 import { ALL_PROVIDERS_URL, PROVIDER_RESOURCE_URL } from '../constants';
 import {
+  fetchAllProviders,
   getCurrentProvider,
-  getAllProviders,
+  getPaginatedProviders,
   getProviderLoginLocations,
 } from '../providerService';
 
 jest.mock('../../api');
 
 describe('providerService', () => {
-  const mockUserUUID = 'd7a669e7-5e07-11ef-8f7c-0242ac120002';
-
-  const mockProviderResponse = {
-    results: [
-      {
-        uuid: 'provider-uuid-123',
-        display: 'Superman - Clinician',
-        person: {
-          uuid: 'person-uuid-456',
-          display: 'Superman',
-          gender: 'M',
-          age: 35,
-          birthdate: '1987-01-01T00:00:00.000+0000',
-          birthdateEstimated: false,
-          dead: false,
-          deathDate: null,
-          causeOfDeath: null,
-          preferredName: {
-            uuid: 'name-uuid-789',
-            display: 'Superman',
-            links: [],
-          },
-          preferredAddress: null,
-          attributes: [],
-          voided: false,
-          birthtime: null,
-          deathdateEstimated: false,
-          links: [],
-          resourceVersion: '1.9',
-        },
-      },
-    ],
-  };
-
-  const mockAllProvidersResponse = {
-    results: [
-      {
-        uuid: 'provider-uuid-1',
-        display: 'Dr. John Smith - Clinician',
-        person: {
-          uuid: 'person-uuid-1',
-          display: 'Dr. John Smith',
-          gender: 'M',
-          age: 45,
-          birthdate: '1979-05-15T00:00:00.000+0000',
-          birthdateEstimated: false,
-          dead: false,
-          deathDate: null,
-          causeOfDeath: null,
-          preferredName: {
-            uuid: 'name-uuid-1',
-            display: 'Dr. John Smith',
-            links: [],
-          },
-          voided: false,
-          birthtime: null,
-          deathdateEstimated: false,
-          links: [],
-          resourceVersion: '1.9',
-        },
-      },
-      {
-        uuid: 'provider-uuid-2',
-        display: 'Dr. Jane Doe - Surgeon',
-        person: {
-          uuid: 'person-uuid-2',
-          display: 'Dr. Jane Doe',
-          gender: 'F',
-          age: 38,
-          birthdate: '1986-08-22T00:00:00.000+0000',
-          birthdateEstimated: false,
-          dead: false,
-          deathDate: null,
-          causeOfDeath: null,
-          preferredName: {
-            uuid: 'name-uuid-2',
-            display: 'Dr. Jane Doe',
-            links: [],
-          },
-          voided: false,
-          birthtime: null,
-          deathdateEstimated: false,
-          links: [],
-          resourceVersion: '1.9',
-        },
-      },
-    ],
-  };
-
-  const mockProviderWithLoginLocations = {
-    results: [
-      {
-        uuid: 'provider-uuid-123',
-        display: 'Superman - Clinician',
-        person: {
-          uuid: 'person-uuid-456',
-          display: 'Superman',
-          gender: 'M',
-          age: 35,
-          birthdate: '1987-01-01T00:00:00.000+0000',
-          birthdateEstimated: false,
-          dead: false,
-          deathDate: null,
-          causeOfDeath: null,
-          preferredName: {
-            uuid: 'name-uuid-789',
-            display: 'Superman',
-            links: [],
-          },
-          voided: false,
-          birthtime: null,
-          deathdateEstimated: false,
-          links: [],
-          resourceVersion: '1.9',
-        },
-        attributes: [
-          {
-            uuid: 'attr-uuid-1',
-            display: 'Login Locations: General OPD',
-            attributeType: {
-              uuid: 'attr-type-uuid-1',
-              display: 'Login Locations',
-            },
-            value: {
-              uuid: 'location-uuid-1',
-              display: 'General OPD',
-              tags: [{ display: 'Appointment Location' }],
-            },
-            voided: false,
-          },
-          {
-            uuid: 'attr-uuid-2',
-            display: 'Login Locations: ENT Ward',
-            attributeType: {
-              uuid: 'attr-type-uuid-2',
-              display: 'Login Locations',
-            },
-            value: {
-              uuid: 'location-uuid-2',
-              display: 'ENT Ward',
-              tags: [{ display: 'Appointment Location' }],
-            },
-            voided: false,
-          },
-          {
-            uuid: 'attr-uuid-3',
-            display: 'Login Locations: Non-Appointment Location',
-            attributeType: {
-              uuid: 'attr-type-uuid-3',
-              display: 'Login Locations',
-            },
-            value: {
-              uuid: 'location-uuid-3',
-              display: 'Admin Office',
-              tags: [{ display: 'Admin' }],
-            },
-            voided: false,
-          },
-          {
-            uuid: 'attr-uuid-4',
-            display: 'Other Attribute',
-            attributeType: {
-              uuid: 'attr-type-uuid-4',
-              display: 'Other Attribute',
-            },
-            value: true,
-            voided: false,
-          },
-          {
-            uuid: 'attr-uuid-5',
-            display: 'Login Locations: Voided Location',
-            attributeType: {
-              uuid: 'attr-type-uuid-5',
-              display: 'Login Locations',
-            },
-            value: {
-              uuid: 'location-uuid-4',
-              display: 'Voided Location',
-              tags: [{ display: 'Appointment Location' }],
-            },
-            voided: true,
-          },
-        ],
-      },
-    ],
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
     (get as jest.Mock).mockReset();
@@ -240,11 +65,11 @@ describe('providerService', () => {
     });
   });
 
-  describe('getAllProviders', () => {
-    it('should fetch all providers', async () => {
+  describe('getPaginatedProviders', () => {
+    it('should fetch providers page', async () => {
       (get as jest.Mock).mockResolvedValueOnce(mockAllProvidersResponse);
 
-      const result = await getAllProviders();
+      const result = await getPaginatedProviders();
 
       expect(get).toHaveBeenCalledWith(ALL_PROVIDERS_URL);
       expect(result).toEqual(mockAllProvidersResponse.results);
@@ -254,17 +79,17 @@ describe('providerService', () => {
     it('should return empty array when no providers exist', async () => {
       (get as jest.Mock).mockResolvedValueOnce({ results: [] });
 
-      const result = await getAllProviders();
+      const result = await getPaginatedProviders();
 
       expect(get).toHaveBeenCalledWith(ALL_PROVIDERS_URL);
       expect(result).toEqual([]);
     });
 
-    it('should throw error if getAllProviders API call fails', async () => {
+    it('should throw error if getPaginatedProviders API call fails', async () => {
       const mockError = new Error('All Providers API Error');
       (get as jest.Mock).mockRejectedValueOnce(mockError);
 
-      await expect(getAllProviders()).rejects.toThrow(
+      await expect(getPaginatedProviders()).rejects.toThrow(
         'All Providers API Error',
       );
       expect(get).toHaveBeenCalledWith(ALL_PROVIDERS_URL);
@@ -272,22 +97,30 @@ describe('providerService', () => {
   });
 
   describe('getProviderLoginLocations', () => {
-    it('should fetch login locations with Appointment Location tag', async () => {
+    it('should fetch all login locations with their tags', async () => {
       (get as jest.Mock).mockResolvedValueOnce(mockProviderWithLoginLocations);
 
       const result = await getProviderLoginLocations(mockUserUUID);
 
       expect(get).toHaveBeenCalledWith(PROVIDER_RESOURCE_URL(mockUserUUID));
-      expect(result).toHaveLength(2);
+      expect(result).toHaveLength(3);
       expect(result[0]).toEqual({
         uuid: 'location-uuid-1',
         display: 'General OPD',
         childLocations: [],
+        tags: [{ display: 'Appointment Location' }],
       });
       expect(result[1]).toEqual({
         uuid: 'location-uuid-2',
         display: 'ENT Ward',
         childLocations: [],
+        tags: [{ display: 'Appointment Location' }],
+      });
+      expect(result[2]).toEqual({
+        uuid: 'location-uuid-3',
+        display: 'Admin Office',
+        childLocations: [],
+        tags: [{ display: 'Admin' }],
       });
     });
 
@@ -330,7 +163,7 @@ describe('providerService', () => {
       expect(voidedLocation).toBeUndefined();
     });
 
-    it('should filter out locations without Appointment Location tag', async () => {
+    it('should return all login locations with their tags', async () => {
       (get as jest.Mock).mockResolvedValueOnce(mockProviderWithLoginLocations);
 
       const result = await getProviderLoginLocations(mockUserUUID);
@@ -338,7 +171,13 @@ describe('providerService', () => {
       const adminLocation = result.find(
         (loc) => loc.display === 'Admin Office',
       );
-      expect(adminLocation).toBeUndefined();
+      expect(adminLocation).toBeDefined();
+      expect(adminLocation).toEqual({
+        uuid: 'location-uuid-3',
+        display: 'Admin Office',
+        childLocations: [],
+        tags: [{ display: 'Admin' }],
+      });
     });
 
     it('should throw error if getProviderLoginLocations API call fails', async () => {
@@ -348,6 +187,133 @@ describe('providerService', () => {
       await expect(getProviderLoginLocations(mockUserUUID)).rejects.toThrow(
         'Provider Login Locations API Error',
       );
+    });
+  });
+
+  describe('fetchAllProviders', () => {
+    it('should fetch all providers from multiple pages', async () => {
+      (get as jest.Mock)
+        .mockResolvedValueOnce(mockProviderPage1)
+        .mockResolvedValueOnce(mockProviderPage2)
+        .mockResolvedValueOnce(mockProviderPage3);
+
+      const result = await fetchAllProviders();
+
+      expect(get).toHaveBeenCalledTimes(3);
+      expect(get).toHaveBeenNthCalledWith(1, ALL_PROVIDERS_URL);
+      expect(get).toHaveBeenNthCalledWith(
+        2,
+        'http://localhost/openmrs/ws/rest/v1/provider?startIndex=1',
+      );
+      expect(get).toHaveBeenNthCalledWith(
+        3,
+        'http://localhost/openmrs/ws/rest/v1/provider?startIndex=2',
+      );
+      expect(result).toHaveLength(3);
+      expect(result[0].uuid).toBe('provider-uuid-1');
+      expect(result[1].uuid).toBe('provider-uuid-2');
+      expect(result[2].uuid).toBe('provider-uuid-3');
+    });
+
+    it('should return providers from single page when no next link', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockSinglePageResponse);
+
+      const result = await fetchAllProviders();
+
+      expect(get).toHaveBeenCalledTimes(1);
+      expect(get).toHaveBeenCalledWith(ALL_PROVIDERS_URL);
+      expect(result).toHaveLength(1);
+      expect(result[0].uuid).toBe('provider-uuid-1');
+    });
+
+    it('should return empty array when no providers exist', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockEmptyProvidersResponse);
+
+      const result = await fetchAllProviders();
+
+      expect(get).toHaveBeenCalledTimes(1);
+      expect(get).toHaveBeenCalledWith(ALL_PROVIDERS_URL);
+      expect(result).toEqual([]);
+    });
+
+    it('should handle response with undefined results', async () => {
+      (get as jest.Mock).mockResolvedValueOnce({ results: undefined });
+
+      const result = await fetchAllProviders();
+
+      expect(get).toHaveBeenCalledTimes(1);
+      expect(result).toEqual([]);
+    });
+
+    it('should handle response with undefined links', async () => {
+      const responseWithoutLinks = {
+        results: mockProviderPage1.results,
+      };
+      (get as jest.Mock).mockResolvedValueOnce(responseWithoutLinks);
+
+      const result = await fetchAllProviders();
+
+      expect(get).toHaveBeenCalledTimes(1);
+      expect(result).toHaveLength(1);
+    });
+
+    it('should handle response with empty links array', async () => {
+      const responseWithEmptyLinks = {
+        results: mockProviderPage1.results,
+        links: [],
+      };
+      (get as jest.Mock).mockResolvedValueOnce(responseWithEmptyLinks);
+
+      const result = await fetchAllProviders();
+
+      expect(get).toHaveBeenCalledTimes(1);
+      expect(result).toHaveLength(1);
+    });
+
+    it('should ignore non-next links', async () => {
+      const responseWithOtherLinks = {
+        results: mockProviderPage1.results,
+        links: [
+          {
+            rel: 'self',
+            uri: 'http://localhost/openmrs/ws/rest/v1/provider',
+            resourceAlias: 'provider',
+          },
+          {
+            rel: 'prev',
+            uri: 'http://localhost/openmrs/ws/rest/v1/provider?startIndex=0',
+            resourceAlias: 'provider',
+          },
+        ],
+      };
+      (get as jest.Mock).mockResolvedValueOnce(responseWithOtherLinks);
+
+      const result = await fetchAllProviders();
+
+      expect(get).toHaveBeenCalledTimes(1);
+      expect(result).toHaveLength(1);
+    });
+
+    it('should throw error if API call fails on first page', async () => {
+      const mockError = new Error('Fetch All Providers API Error');
+      (get as jest.Mock).mockRejectedValueOnce(mockError);
+
+      await expect(fetchAllProviders()).rejects.toThrow(
+        'Fetch All Providers API Error',
+      );
+      expect(get).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw error if API call fails on subsequent page', async () => {
+      const mockError = new Error('Fetch All Providers Page 2 Error');
+      (get as jest.Mock)
+        .mockResolvedValueOnce(mockProviderPage1)
+        .mockRejectedValueOnce(mockError);
+
+      await expect(fetchAllProviders()).rejects.toThrow(
+        'Fetch All Providers Page 2 Error',
+      );
+      expect(get).toHaveBeenCalledTimes(2);
     });
   });
 });

@@ -39,12 +39,18 @@ export interface AppointmentService {
 
 export interface AppointmentUnavailability {
   uuid: string;
-  locationUuid: string;
-  locationName: string;
-  appointmentServiceUuid: string;
-  appointmentServiceName: string;
-  providerUuid: string | null;
-  providerName: string | null;
+  location: {
+    uuid: string;
+    name: string;
+  };
+  service: {
+    uuid: string;
+    name: string;
+  };
+  provider: {
+    uuid: string;
+    name: string;
+  } | null;
   startDate: string;
   startTime: string;
   endDate: string;

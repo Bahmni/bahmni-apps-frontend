@@ -3,7 +3,13 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  act,
+  waitFor,
+  fireEvent,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import {
@@ -64,6 +70,52 @@ jest.mock('@bahmni/widgets', () => ({
   })),
 }));
 
+jest.mock('@bahmni/design-system', () => {
+  const actual = jest.requireActual('@bahmni/design-system');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require('react');
+
+  const MockDatePicker = ({
+    children,
+    onChange,
+  }: {
+    children: React.ReactNode;
+    onChange?: (dates: Date[]) => void;
+  }) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (value && onChange) {
+        const parts = value.split('/');
+        if (parts.length === 3) {
+          const [month, day, year] = parts.map(Number);
+          const date = new Date(year, month - 1, day);
+          if (!isNaN(date.getTime())) {
+            onChange([date]);
+          }
+        }
+      }
+    };
+
+    return (
+      <div data-testid="mock-date-picker">
+        {React.Children.map(children, (child: React.ReactElement) => {
+          if (React.isValidElement(child)) {
+            return React.cloneElement(child, {
+              onChange: handleInputChange,
+            } as React.HTMLAttributes<HTMLInputElement>);
+          }
+          return child;
+        })}
+      </div>
+    );
+  };
+
+  return {
+    ...actual,
+    DatePicker: MockDatePicker,
+  };
+});
+
 const mockCreateAppointmentUnavailability = jest.fn();
 
 jest.mock('@bahmni/services', () => ({
@@ -116,13 +168,13 @@ describe('AppointmentUnavailabilityPage', () => {
       scenario: 'error state when fetching unavailabilities fails',
       mockValues: { data: null, isError: true, isLoading: false },
       expectedTexts: [
-        'Failed to load unavailability periods. Please try again.',
+        'Failed to load Unavailability periods. Please try again.',
       ],
     },
     {
       scenario: 'empty state when no unavailabilities exist',
       mockValues: { data: [], isError: false, isLoading: false },
-      expectedTexts: ['No Unavailabilities found'],
+      expectedTexts: ['No Service Unavailabilities found'],
     },
   ])('should show $scenario', ({ mockValues, expectedTexts }) => {
     (useQuery as jest.Mock).mockReturnValue(mockValues);
@@ -142,7 +194,7 @@ describe('AppointmentUnavailabilityPage', () => {
       isLoading: false,
     });
     render(wrapper);
-    expect(screen.getByText('Unavailability')).toBeInTheDocument();
+    expect(screen.getByText('Service Unavailability')).toBeInTheDocument();
   });
 
   it('should render Add new button when form is not visible', () => {
@@ -152,7 +204,7 @@ describe('AppointmentUnavailabilityPage', () => {
       isLoading: false,
     });
     render(wrapper);
-    expect(screen.getByText('Add new')).toBeInTheDocument();
+    expect(screen.getByText('Add New')).toBeInTheDocument();
   });
 
   it('should render all unavailabilities in the table', () => {
@@ -188,8 +240,8 @@ describe('AppointmentUnavailabilityPage', () => {
       isLoading: false,
     });
     render(wrapper);
-    await userEvent.click(screen.getByText('Add new'));
-    expect(screen.getByText('Add unavailability')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Add New'));
+    expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
   });
 
   it('should hide Add new button when form is visible', async () => {
@@ -199,7 +251,7 @@ describe('AppointmentUnavailabilityPage', () => {
       isLoading: false,
     });
     render(wrapper);
-    await userEvent.click(screen.getByText('Add new'));
+    await userEvent.click(screen.getByText('Add New'));
     expect(screen.queryByText('Add new')).not.toBeInTheDocument();
   });
 
@@ -210,11 +262,11 @@ describe('AppointmentUnavailabilityPage', () => {
       isLoading: false,
     });
     render(wrapper);
-    expect(screen.getByText('Start date and time')).toBeInTheDocument();
-    expect(screen.getByText('End date and time')).toBeInTheDocument();
+    expect(screen.getByText('Start Date and Time')).toBeInTheDocument();
+    expect(screen.getByText('End Date and Time')).toBeInTheDocument();
     expect(screen.getByText('Location')).toBeInTheDocument();
-    expect(screen.getByText('Service unavailable')).toBeInTheDocument();
-    expect(screen.getByText('Provider unavailable')).toBeInTheDocument();
+    expect(screen.getByText('Service Unavailable')).toBeInTheDocument();
+    expect(screen.getByText('Provider Unavailable')).toBeInTheDocument();
   });
 
   describe('Snapshot', () => {
@@ -269,11 +321,11 @@ describe('AppointmentUnavailabilityPage', () => {
         isLoading: false,
       });
       render(wrapper);
-      await userEvent.click(screen.getByText('Add new'));
-      expect(screen.getByText('Add unavailability')).toBeInTheDocument();
+      await userEvent.click(screen.getByText('Add New'));
+      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
       await userEvent.click(screen.getByText('Cancel'));
-      expect(screen.queryByText('Add unavailability')).not.toBeInTheDocument();
-      expect(screen.getByText('Add new')).toBeInTheDocument();
+      expect(screen.queryByText('Add Unavailability')).not.toBeInTheDocument();
+      expect(screen.getByText('Add New')).toBeInTheDocument();
     });
 
     it('should hide form and invalidate queries on successful form submission', async () => {
@@ -281,20 +333,22 @@ describe('AppointmentUnavailabilityPage', () => {
       mockCreateAppointmentUnavailability.mockResolvedValue({});
       render(wrapper);
 
-      await userEvent.click(screen.getByText('Add new'));
-      expect(screen.getByText('Add unavailability')).toBeInTheDocument();
+      await userEvent.click(screen.getByText('Add New'));
+      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
 
-      const startDateInput = screen.getByLabelText(/Start date/);
-      await userEvent.type(startDateInput, '05/25/2026');
+      const startDateInput = screen.getByLabelText(/Start Date/);
+      fireEvent.change(startDateInput, { target: { value: '05/25/2026' } });
+      fireEvent.blur(startDateInput);
 
-      const startTimeInput = screen.getByLabelText(/Start time/);
-      await userEvent.type(startTimeInput, '09:00');
+      const startTimeInput = screen.getByLabelText(/Start Time/);
+      fireEvent.change(startTimeInput, { target: { value: '09:00' } });
 
-      const endDateInput = screen.getByLabelText(/End date/);
-      await userEvent.type(endDateInput, '05/25/2026');
+      const endDateInput = screen.getByLabelText(/End Date/);
+      fireEvent.change(endDateInput, { target: { value: '05/25/2026' } });
+      fireEvent.blur(endDateInput);
 
-      const endTimeInput = screen.getByLabelText(/End time/);
-      await userEvent.type(endTimeInput, '10:00');
+      const endTimeInput = screen.getByLabelText(/End Time/);
+      fireEvent.change(endTimeInput, { target: { value: '10:00' } });
 
       await userEvent.click(screen.getByText('Add'));
 
@@ -310,11 +364,13 @@ describe('AppointmentUnavailabilityPage', () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText('Add unavailability'),
+          screen.queryByText('Add Unavailability'),
         ).not.toBeInTheDocument();
       });
 
-      expect(screen.getByText('Add new')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Add New')).toBeInTheDocument();
+      });
     });
   });
 

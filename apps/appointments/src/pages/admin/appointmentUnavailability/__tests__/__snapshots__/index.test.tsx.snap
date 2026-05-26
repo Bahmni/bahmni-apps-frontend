@@ -89,14 +89,14 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
                 <h1
                   class="title"
                 >
-                  Unavailability
+                  Service Unavailability
                 </h1>
                 <button
                   class="addBtn cds--btn cds--btn--primary"
                   id="add-unavailability-btn"
                   type="button"
                 >
-                  Add new
+                  Add New
                 </button>
               </div>
               <section
@@ -109,7 +109,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
                   class="_sortableDataTableBodyEmpty_1w499_26"
                   data-testid="unavailability-table-sortable-data-table-test-id-empty"
                 >
-                  No Unavailabilities found
+                  No Service Unavailabilities found
                 </p>
               </section>
             </div>
@@ -210,14 +210,14 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                 <h1
                   class="title"
                 >
-                  Unavailability
+                  Service Unavailability
                 </h1>
                 <button
                   class="addBtn cds--btn cds--btn--primary"
                   id="add-unavailability-btn"
                   type="button"
                 >
-                  Add new
+                  Add New
                 </button>
               </div>
               <section
@@ -248,7 +248,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                               class="cds--table-sort__description"
                               id="table-sort-_r_2o_"
                             >
-                              Click to sort rows by Start date and time header in ascending order
+                              Click to sort rows by Start Date and Time header in ascending order
                             </div>
                             <button
                               aria-describedby="table-sort-_r_2o_"
@@ -262,7 +262,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                                 <div
                                   class="cds--table-header-label"
                                 >
-                                  Start date and time
+                                  Start Date and Time
                                 </div>
                                 <svg
                                   aria-hidden="true"
@@ -309,7 +309,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                               class="cds--table-sort__description"
                               id="table-sort-_r_2p_"
                             >
-                              Click to sort rows by End date and time header in ascending order
+                              Click to sort rows by End Date and Time header in ascending order
                             </div>
                             <button
                               aria-describedby="table-sort-_r_2p_"
@@ -323,7 +323,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                                 <div
                                   class="cds--table-header-label"
                                 >
-                                  End date and time
+                                  End Date and Time
                                 </div>
                                 <svg
                                   aria-hidden="true"
@@ -431,7 +431,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                               class="cds--table-sort__description"
                               id="table-sort-_r_2r_"
                             >
-                              Click to sort rows by Service unavailable header in ascending order
+                              Click to sort rows by Service Unavailable header in ascending order
                             </div>
                             <button
                               aria-describedby="table-sort-_r_2r_"
@@ -445,7 +445,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                                 <div
                                   class="cds--table-header-label"
                                 >
-                                  Service unavailable
+                                  Service Unavailable
                                 </div>
                                 <svg
                                   aria-hidden="true"
@@ -492,7 +492,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                               class="cds--table-sort__description"
                               id="table-sort-_r_2s_"
                             >
-                              Click to sort rows by Provider unavailable header in ascending order
+                              Click to sort rows by Provider Unavailable header in ascending order
                             </div>
                             <button
                               aria-describedby="table-sort-_r_2s_"
@@ -506,7 +506,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                                 <div
                                   class="cds--table-header-label"
                                 >
-                                  Provider unavailable
+                                  Provider Unavailable
                                 </div>
                                 <svg
                                   aria-hidden="true"
@@ -662,7 +662,9 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-2-appointmentServiceName"
-                          />
+                          >
+                            ENT Consultation
+                          </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-2-providerName"
                           >

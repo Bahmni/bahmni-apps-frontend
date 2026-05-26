@@ -401,27 +401,3 @@ export function convertToSentenceCase(str: string): string {
     .toLowerCase()
     .replace(/^./, (char) => char.toUpperCase());
 }
-
-/**
- * Converts 12-hour time format (with AM/PM) to 24-hour format
- * @param timeStr - Time string in 12-hour format (e.g., "02:30 PM", "11:45 AM")
- * @returns Time string in 24-hour format (e.g., "14:30", "11:45"), or empty string if invalid
- */
-export function convertTo24HourFormat(timeStr: string): string {
-  if (!timeStr) return '';
-
-  const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-  if (!timeMatch) return timeStr;
-
-  let hours = parseInt(timeMatch[1], 10);
-  const minutes = parseInt(timeMatch[2], 10);
-  const meridiem = timeMatch[3]?.toUpperCase();
-
-  if (meridiem === 'PM' && hours !== 12) {
-    hours += 12;
-  } else if (meridiem === 'AM' && hours === 12) {
-    hours = 0;
-  }
-
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-}
