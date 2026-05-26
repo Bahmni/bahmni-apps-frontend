@@ -12,13 +12,15 @@ import {
   getVaccinations,
   searchFHIRConcepts,
   useTranslation,
-  type CDSSEventDetail,
-  type CDSCard,
   filterCdsCardsForItems,
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Medication, MedicationRequest } from 'fhir/r4';
 import { useEffect, useMemo, useState } from 'react';
+import {
+  dispatchCDSSCheck,
+  useCDSSResultsListener,
+} from '../../../events/cdssEvents';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
@@ -72,7 +74,7 @@ const ImmunizationForm = ({
     isError: basedOnMedicationError,
   } = useQuery({
     queryKey: ['medication', medicationUuid],
-    queryFn: () => getMedicationByUuid(medicationUuid),
+    queryFn: () => getMedicationByUuid(medicationUuid!),
     enabled: !!basedOn && !!medicationUuid,
     staleTime: Infinity,
   });
@@ -105,28 +107,19 @@ const ImmunizationForm = ({
     }
   }, [attributes, setAttributes]);
 
-  // Listen for CDSS results and self-identify relevant cards
-  useEffect(() => {
-    const handleCDSSResults = (event: Event) => {
-      const customEvent = event as CustomEvent<{ cards: CDSCard[] }>;
-      const { cards } = customEvent.detail;
+  useCDSSResultsListener((detail) => {
+    const { cards } = detail;
 
-      // Get all our item IDs
-      const ourItemIds = new Set(selectedImmunizations.map((item) => item.id));
+    const selectedItemIds = new Set(
+      selectedImmunizations.map((item) => item.id),
+    );
 
-      // Filter cards that are relevant to our items
-      const relevantCards = filterCdsCardsForItems(cards, ourItemIds);
+    const relevantCards = filterCdsCardsForItems(cards, selectedItemIds);
 
-      // Update each item with its relevant cards
-      relevantCards.forEach(({ card, resourceId }) => {
-        updateItemCDSCards(resourceId, [card]);
-      });
-    };
-
-    globalThis.addEventListener('cdss-results', handleCDSSResults);
-    return () =>
-      globalThis.removeEventListener('cdss-results', handleCDSSResults);
-  }, [selectedImmunizations, updateItemCDSCards]);
+    relevantCards.forEach(({ card, resourceId }) => {
+      updateItemCDSCards(resourceId, [card]);
+    });
+  });
 
   const {
     data: vaccineCodeConceptSet,
@@ -134,7 +127,7 @@ const ImmunizationForm = ({
     error: vaccineCodeConceptSetError,
   } = useQuery({
     queryKey: ['vaccineConceptSetUuid', vaccineConceptSetUuid],
-    queryFn: () => searchFHIRConcepts(vaccineConceptSetUuid),
+    queryFn: () => searchFHIRConcepts(vaccineConceptSetUuid!),
     enabled: !!vaccineConceptSetUuid && !isConfigLoading && !configError,
     staleTime: Infinity,
   });
@@ -145,7 +138,7 @@ const ImmunizationForm = ({
     error: administeredLocationTagError,
   } = useQuery({
     queryKey: ['administeredLocationTag', administeredLocationTag],
-    queryFn: () => getLocationByTag(administeredLocationTag),
+    queryFn: () => getLocationByTag(administeredLocationTag!),
     enabled:
       !!administeredLocationTag &&
       !isConfigLoading &&
@@ -160,7 +153,7 @@ const ImmunizationForm = ({
     error: routesConceptSetError,
   } = useQuery({
     queryKey: ['routesConceptSet', routeConceptUuid],
-    queryFn: () => searchFHIRConcepts(routeConceptUuid),
+    queryFn: () => searchFHIRConcepts(routeConceptUuid!),
     enabled:
       !!routeConceptUuid &&
       !isConfigLoading &&
@@ -175,7 +168,7 @@ const ImmunizationForm = ({
     error: sitesConceptSetError,
   } = useQuery({
     queryKey: ['sitesConceptSet', siteConceptUuid],
-    queryFn: () => searchFHIRConcepts(siteConceptUuid),
+    queryFn: () => searchFHIRConcepts(siteConceptUuid!),
     enabled:
       !!siteConceptUuid &&
       !isConfigLoading &&
@@ -314,6 +307,33 @@ const ImmunizationForm = ({
       vaccinationDrugsLoading
     );
 
+  const handleVaccineSelection = (
+    selectedItem: {
+      code?: string;
+      display?: string;
+    } | null,
+  ) => {
+    if (selectedItem?.code && selectedItem?.display) {
+      const itemId = addImmunization({
+        code: selectedItem.code,
+        display: selectedItem.display,
+      });
+
+      const cdssRules = inputControlConfig?.cdss ?? [];
+      const hasMatchingRule = cdssRules.some(
+        (rule) => rule.event === 'onSelect',
+      );
+
+      if (hasMatchingRule) {
+        dispatchCDSSCheck({
+          controlKey: immunizationFormType,
+          itemId,
+          event: 'onSelect',
+        });
+      }
+    }
+  };
+
   return (
     <div
       id="immunization-history-form"
@@ -334,30 +354,7 @@ const ImmunizationForm = ({
           placeholder={t('IMMUNIZATION_INPUT_CONTROL_SEARCH_PLACEHOLDER')}
           items={vaccineCodeComboBoxItems}
           itemToString={(item) => item?.display ?? ''}
-          onChange={({ selectedItem }) => {
-            if (selectedItem?.code && selectedItem?.display) {
-              const itemId = addImmunization({
-                code: selectedItem.code,
-                display: selectedItem.display,
-              });
-
-              const cdssRules = inputControlConfig?.cdss ?? [];
-              const hasMatchingRule = cdssRules.some(
-                (rule) => rule.event === 'onSelect',
-              );
-
-              if (hasMatchingRule) {
-                const event = new CustomEvent<CDSSEventDetail>('cdss-check', {
-                  detail: {
-                    controlKey: immunizationFormType,
-                    itemId,
-                    event: 'onSelect',
-                  },
-                });
-                globalThis.dispatchEvent(event);
-              }
-            }
-          }}
+          onChange={({ selectedItem }) => handleVaccineSelection(selectedItem)}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           clearSelectedOnChange
           size="md"

@@ -10,12 +10,14 @@ import {
   fetchMedicationOrdersMetadata,
   useTranslation,
   getVaccinations,
-  type CDSSEventDetail,
-  type CDSCard,
   filterCdsCardsForItems,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
+import {
+  dispatchCDSSCheck,
+  useCDSSResultsListener,
+} from '../../../events/cdssEvents';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
@@ -109,30 +111,19 @@ const MedicationRequestForm: React.FC<{
     setAttributes(attributes);
   }, []);
 
-  // Listen for CDSS results and self-identify relevant cards
-  useEffect(() => {
-    const handleCDSSResults = (event: Event) => {
-      const customEvent = event as CustomEvent<{ cards: CDSCard[] }>;
-      const { cards } = customEvent.detail;
+  useCDSSResultsListener((detail) => {
+    const { cards } = detail;
 
-      // Get all our item IDs
-      const ourItemIds = new Set(
-        selectedMedicationRequests.map((item) => item.id),
-      );
+    const selectedItemIds = new Set(
+      selectedMedicationRequests.map((item) => item.id),
+    );
 
-      // Filter cards that are relevant to our items
-      const relevantCards = filterCdsCardsForItems(cards, ourItemIds);
+    const relevantCards = filterCdsCardsForItems(cards, selectedItemIds);
 
-      // Update each item with its relevant cards
-      relevantCards.forEach(({ card, resourceId }) => {
-        updateItemCDSCards(resourceId, [card]);
-      });
-    };
-
-    globalThis.addEventListener('cdss-results', handleCDSSResults);
-    return () =>
-      globalThis.removeEventListener('cdss-results', handleCDSSResults);
-  }, [selectedMedicationRequests, updateItemCDSCards]);
+    relevantCards.forEach(({ card, resourceId }) => {
+      updateItemCDSCards(resourceId, [card]);
+    });
+  });
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -150,14 +141,11 @@ const MedicationRequestForm: React.FC<{
       );
 
       if (hasMatchingRule) {
-        const event = new CustomEvent<CDSSEventDetail>('cdss-check', {
-          detail: {
-            controlKey: inputControlType,
-            itemId,
-            event: 'onSelect',
-          },
+        dispatchCDSSCheck({
+          controlKey: inputControlType,
+          itemId,
+          event: 'onSelect',
         });
-        globalThis.dispatchEvent(event);
       }
 
       setSearchTerm('');

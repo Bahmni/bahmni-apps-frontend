@@ -6,7 +6,6 @@ import {
   dispatchConsultationSaved,
   useTranslation,
   invokeCDSSRule,
-  type CDSSEventDetail,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import type { Bundle, BundleEntry } from 'fhir/r4';
@@ -18,6 +17,11 @@ import React, {
   useState,
 } from 'react';
 import { ERROR_TITLES } from '../../constants/errors';
+import {
+  dispatchCDSSResults,
+  useCDSSCheckListener,
+  type CDSSCheckEventDetail,
+} from '../../events/cdssEvents';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
@@ -48,9 +52,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   encounterSessionStartContext,
   onClose,
 }) => {
-  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies as
-    | AllergyInputEntry[]
-    | undefined;
+  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies;
   const encounterType = encounterSessionStartContext.encounterType;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -85,12 +87,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   }, [encounterType, clinicalConfig]);
 
-  const editOnlyKey = encounterSessionStartContext.editOnly as
-    | string
-    | undefined;
-  const editTitle = encounterSessionStartContext.editTitle as
-    | string
-    | undefined;
+  const editOnlyKey = encounterSessionStartContext.editOnly;
+  const editTitle = encounterSessionStartContext.editTitle;
 
   const activeEntries = useMemo(
     () => getActiveEntries(registry, resolvedEncounterType!, editOnlyKey),
@@ -190,10 +188,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     statDurationInMilliseconds,
   ]);
 
-  useEffect(() => {
-    const handleCDSSEvent = async (event: Event) => {
-      const customEvent = event as CustomEvent<CDSSEventDetail>;
-      const { controlKey, itemId, event: eventType } = customEvent.detail;
+  const handleCDSSCheck = useCallback(
+    async (detail: CDSSCheckEventDetail) => {
+      const { controlKey, itemId, event: eventType } = detail;
 
       const entry = activeEntries.find((e) => e.key === controlKey);
       if (!entry) return;
@@ -206,9 +203,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
       const dataBundle = buildComprehensiveCDSSBundle();
 
-      // Build base context from available data
       const patientId =
-        encounterSessionStartContext.patientUuid ??
         encounterSessionStartContext.patientUuid ??
         activeEncounter?.subject?.reference?.split('/')[1];
 
@@ -236,26 +231,22 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       const cardArrays = await Promise.all(cardPromises);
       const cards = cardArrays.flat();
 
-      // Broadcast CDSS results - input controls will self-identify their cards
-      const resultsEvent = new CustomEvent('cdss-results', {
-        detail: {
-          cards,
-          triggerItemId: itemId, // Hint for which item triggered this check
-          controlKey,
-        },
+      dispatchCDSSResults({
+        cards,
+        triggerItemId: itemId,
+        controlKey,
       });
-      globalThis.dispatchEvent(resultsEvent);
-    };
+    },
+    [
+      activeEntries,
+      buildComprehensiveCDSSBundle,
+      encounterSessionStartContext,
+      activeEncounter,
+      episodeOfCareUuids,
+    ],
+  );
 
-    window.addEventListener('cdss-check', handleCDSSEvent);
-    return () => window.removeEventListener('cdss-check', handleCDSSEvent);
-  }, [
-    activeEntries,
-    buildComprehensiveCDSSBundle,
-    encounterSessionStartContext,
-    activeEncounter,
-    episodeOfCareUuids,
-  ]);
+  useCDSSCheckListener(handleCDSSCheck);
 
   const handleSubmit = async () => {
     const validationResults = activeEntries.map((entry) => ({
