@@ -165,7 +165,6 @@ export {
   fetchMedicationOrdersMetadata,
   searchMedications,
   getVaccinations,
-  type FormattedMedicationRequest,
   type MedicationRequest,
   MedicationStatus,
   type MedicationOrdersMetadataResponse,
