@@ -370,3 +370,11 @@ export {
   getAvailableStocks,
   type AvailableStockResponse,
 } from './inventoryService';
+
+export {
+  invokeCDSSRule,
+  filterCdsCardsForItems,
+  type CDSSRule,
+  type CDSCard,
+  type CDSSEventDetail,
+} from './cdssService';
