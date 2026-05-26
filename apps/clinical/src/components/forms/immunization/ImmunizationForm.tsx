@@ -12,6 +12,9 @@ import {
   getVaccinations,
   searchFHIRConcepts,
   useTranslation,
+  type CDSSEventDetail,
+  type CDSCard,
+  filterCdsCardsForItems,
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Medication, MedicationRequest } from 'fhir/r4';
@@ -19,13 +22,14 @@ import { useEffect, useMemo, useState } from 'react';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
+import CDSCardAlert from '../../common/CDSCardAlert';
 import SelectedImmunizationItem from './components/SelectedImmunizationItem';
 import {
   IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,
   IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
 } from './constants';
 import { ImmunizationStoreKey } from './models';
-import { useImmunizationHistoryStore } from './stores';
+import { getImmunizationStore, useImmunizationHistoryStore } from './stores';
 import styles from './styles/ImmunizationForm.module.scss';
 import {
   buildBasedOnImmunizationEntry,
@@ -49,6 +53,7 @@ const ImmunizationForm = ({
     removeImmunization,
     selectedImmunizations,
     setAttributes,
+    updateItemCDSCards,
   } = useImmunizationHistoryStore(immunizationFormType);
 
   const basedOn =
@@ -99,6 +104,25 @@ const ImmunizationForm = ({
       setAttributes(attributes);
     }
   }, [attributes, setAttributes]);
+
+  useEffect(() => {
+    const handleCDSSResults = (event: Event) => {
+      const customEvent = event as CustomEvent<{ cards: CDSCard[] }>;
+      const { cards } = customEvent.detail;
+
+      const ourItemIds = new Set(selectedImmunizations.map((item) => item.id));
+
+      const relevantCards = filterCdsCardsForItems(cards, ourItemIds);
+
+      relevantCards.forEach(({ card, resourceId }) => {
+        updateItemCDSCards(resourceId, [card]);
+      });
+    };
+
+    globalThis.addEventListener('cdss-results', handleCDSSResults);
+    return () =>
+      globalThis.removeEventListener('cdss-results', handleCDSSResults);
+  }, [selectedImmunizations, updateItemCDSCards]);
 
   const {
     data: vaccineCodeConceptSet,
@@ -312,6 +336,26 @@ const ImmunizationForm = ({
                 code: selectedItem.code,
                 display: selectedItem.display,
               });
+
+              const { selectedImmunizations } =
+                getImmunizationStore(immunizationFormType).getState();
+              const newlyAddedImmunization = selectedImmunizations[0];
+
+              const cdssRules = inputControlConfig?.cdss ?? [];
+              const hasMatchingRule = cdssRules.some(
+                (rule) => rule.event === 'onSelect',
+              );
+
+              if (hasMatchingRule && newlyAddedImmunization) {
+                const event = new CustomEvent<CDSSEventDetail>('cdss-check', {
+                  detail: {
+                    controlKey: immunizationFormType,
+                    itemId: newlyAddedImmunization.id,
+                    event: 'onSelect',
+                  },
+                });
+                globalThis.dispatchEvent(event);
+              }
             }
           }}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
@@ -341,24 +385,32 @@ const ImmunizationForm = ({
       {showSelectedImmunizations && (
         <BoxWHeader title={t('IMMUNIZATION_INPUT_CONTROL_ADDED_ITEMS')}>
           {selectedImmunizations.map((immunization, immunizationIndex) => (
-            <SelectedItem
-              key={immunization.id}
-              className={styles.selectedItem}
-              onClose={() => removeImmunization(immunization.id)}
-            >
-              <SelectedImmunizationItem
-                immunization={immunization}
-                routes={routesConceptSet}
-                sites={sitesConceptSet}
-                attributes={attributes}
-                administeredLocationTag={administeredLocationTagData}
-                vaccineDrugs={vaccineMedications}
-                storeKey={immunizationFormType}
-                availableStocks={stockQueries[immunizationIndex]?.data}
-                stocksError={stockQueries[immunizationIndex]?.isError ?? false}
-                stockBatchesEnabled={!!fetchStockBatches}
-              />
-            </SelectedItem>
+            <div key={immunization.id}>
+              <SelectedItem
+                className={styles.selectedItem}
+                onClose={() => removeImmunization(immunization.id)}
+              >
+                <SelectedImmunizationItem
+                  immunization={immunization}
+                  routes={routesConceptSet}
+                  sites={sitesConceptSet}
+                  attributes={attributes}
+                  administeredLocationTag={administeredLocationTagData}
+                  vaccineDrugs={vaccineMedications}
+                  storeKey={immunizationFormType}
+                  availableStocks={stockQueries[immunizationIndex]?.data}
+                  stocksError={
+                    stockQueries[immunizationIndex]?.isError ?? false
+                  }
+                  stockBatchesEnabled={!!fetchStockBatches}
+                />
+              </SelectedItem>
+              {immunization.cdsCards?.map((card) => (
+                <div key={card.summary} className={styles.cdsCardContainer}>
+                  <CDSCardAlert card={card} />
+                </div>
+              ))}
+            </div>
           ))}
         </BoxWHeader>
       )}

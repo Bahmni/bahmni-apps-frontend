@@ -22,7 +22,9 @@ import type { EncounterSessionStartContext } from '../../events/startConsultatio
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
+import type { AllergyInputEntry } from '../../models/allergy';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
+import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
@@ -46,6 +48,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   encounterSessionStartContext,
   onClose,
 }) => {
+  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies as
+    | AllergyInputEntry[]
+    | undefined;
   const encounterType = encounterSessionStartContext.encounterType;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -80,9 +85,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   }, [encounterType, clinicalConfig]);
 
+  const editOnlyKey = encounterSessionStartContext.editOnly as
+    | string
+    | undefined;
+  const editTitle = encounterSessionStartContext.editTitle as
+    | string
+    | undefined;
+
   const activeEntries = useMemo(
-    () => getActiveEntries(registry, resolvedEncounterType!),
-    [registry, resolvedEncounterType],
+    () => getActiveEntries(registry, resolvedEncounterType!, editOnlyKey),
+    [registry, resolvedEncounterType, editOnlyKey],
   );
 
   const subscribeAll = useCallback(
@@ -112,10 +124,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   }, [resolvedEncounterType]);
 
   const { practitioner } = useActivePractitioner();
-  const { activeEncounter } = useEncounterSession({
+  const { activeEncounter, matchReason } = useEncounterSession({
     practitioner,
     encounterTypeUUID: selectedEncounterType?.uuid,
   });
+
+  // Only resume the existing encounter on an exact MATCHED case.
+  // SESSION_EXPIRED, LOCATION_MISMATCH, PROVIDER_MISMATCH all silently create a new encounter.
+  const encounterForSubmission = matchReason.includes('MATCHED')
+    ? activeEncounter
+    : null;
   const { episodeOfCare } = useClinicalAppData();
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
@@ -133,6 +151,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   useEffect(() => {
     return () => activeEntries.forEach((entry) => entry.reset());
   }, []);
+
+  useEffect(() => {
+    if (preloadedAllergies?.length) {
+      useAllergyStore.getState().preloadAllergies(preloadedAllergies);
+    }
+  }, [preloadedAllergies]);
 
   const buildComprehensiveCDSSBundle = useCallback((): Bundle => {
     const entries: BundleEntry[] = [];
@@ -184,15 +208,15 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
       // Build base context from available data
       const patientId =
-        encounterSessionStartContext.patientUuid ||
+        encounterSessionStartContext.patientUuid ??
         activeEncounter?.subject?.reference?.split('/')[1];
 
       const visitId =
-        encounterSessionStartContext.visitUuid ||
+        encounterSessionStartContext.visitUuid ??
         activeEncounter?.partOf?.reference?.split('/')[1];
 
       const episodeId =
-        encounterSessionStartContext.episodeUuid ||
+        encounterSessionStartContext.episodeUuid ??
         (episodeOfCareUuids.length > 0 ? episodeOfCareUuids[0] : undefined);
 
       const context = {
@@ -202,8 +226,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       };
       const cardPromises = cdssRules.map((rule) =>
         invokeCDSSRule(rule, context, dataBundle).catch((error) => {
-          console.error(`CDSS rule failed for ${rule.service}:`, error);
-          return [];
+          throw new Error(
+            `CDSS rule invocation failed for control ${controlKey} on event ${eventType}: ${error instanceof Error ? error.message : String(error)}`,
+          );
         }),
       );
 
@@ -223,7 +248,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
     window.addEventListener('cdss-check', handleCDSSEvent);
     return () => window.removeEventListener('cdss-check', handleCDSSEvent);
-  }, [activeEntries, buildComprehensiveCDSSBundle, encounterSessionStartContext]);
+  }, [
+    activeEncounter?.partOf?.reference,
+    activeEncounter?.subject?.reference,
+    activeEntries,
+    buildComprehensiveCDSSBundle,
+    encounterSessionStartContext,
+    episodeOfCareUuids,
+  ]);
 
   const handleSubmit = async () => {
     const validationResults = activeEntries.map((entry) => ({
@@ -262,7 +294,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     try {
       setIsSubmitting(true);
       const result = await submitConsultation({
-        activeEncounter,
+        activeEncounter: encounterForSubmission,
         episodeOfCareUuids,
         statDurationInMilliseconds,
         activeEntries,
@@ -323,7 +355,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       );
     return (
       <div className={styles.formList}>
-        {registry.map((entry) => (
+        {activeEntries.map((entry) => (
           <InputControlRenderer
             key={entry.key}
             entry={entry}
@@ -347,7 +379,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     <>
       <ActionArea
         data-testid="consultation-pad-action-area"
-        title={hasError ? '' : t('CONSULTATION_ACTION_NEW')}
+        title={
+          hasError
+            ? ''
+            : editTitle
+              ? t(editTitle)
+              : t('CONSULTATION_ACTION_NEW')
+        }
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
         onPrimaryButtonClick={handleSubmit}
         isPrimaryButtonDisabled={enablePrimaryButton}

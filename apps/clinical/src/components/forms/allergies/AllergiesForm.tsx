@@ -14,6 +14,7 @@ import {
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import useAllergenSearch from '../../../hooks/useAllergenSearch';
 import { AllergenConcept } from '../../../models/allergy';
 import { useAllergyStore } from '../../../stores/allergyStore';
@@ -31,12 +32,19 @@ const allergiesQueryKeys = (patientUUID: string) =>
  * A component that displays a search interface for allergies and a list of selected allergies.
  * It allows users to search for allergies, select them, and specify severity and reactions.
  */
-const AllergiesForm: React.FC = React.memo(() => {
+const AllergiesForm: React.FC<{
+  encounterSessionStartContext?: EncounterSessionStartContext;
+}> = React.memo(({ encounterSessionStartContext }) => {
+  // True when opened via the row/section edit button — search to add new allergy is hidden.
+  const isEditMode = !!encounterSessionStartContext?.preloadedAllergies;
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const canAddAllergies = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.ALLERGIES,
+  );
+  const canEditAllergies = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.EDIT_ALLERGIES,
   );
   const [searchAllergenTerm, setSearchAllergenTerm] = useState('');
   const [selectedAllergenItem, setSelectedAllergenItem] =
@@ -218,7 +226,7 @@ const AllergiesForm: React.FC = React.memo(() => {
     t,
   ]);
 
-  if (!canAddAllergies) return null;
+  if (!canAddAllergies && !(isEditMode && canEditAllergies)) return null;
 
   return (
     <Tile
@@ -229,32 +237,36 @@ const AllergiesForm: React.FC = React.memo(() => {
         className={styles.allergiesFormTitle}
         data-testid="allergies-form-title"
       >
-        {t('ALLERGIES_FORM_TITLE')}
+        {isEditMode
+          ? t('EDIT_ALLERGIES_FORM_TITLE')
+          : t('ALLERGIES_FORM_TITLE')}
       </div>
-      <ComboBox
-        id="allergies-search"
-        data-testid="allergies-search-combobox"
-        placeholder={t('ALLERGIES_SEARCH_PLACEHOLDER')}
-        items={filteredSearchResults}
-        itemToString={(item) => {
-          const allergenItem = item as AllergenConcept;
-          return allergenItem?.type
-            ? `${allergenItem.display} [${t(getCategoryDisplayName(allergenItem.type))}]`
-            : allergenItem
-              ? `${allergenItem.display}`
-              : '';
-        }}
-        onChange={(data) =>
-          handleOnChange(data.selectedItem as AllergenConcept | null)
-        }
-        onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
-        selectedItem={selectedAllergenItem}
-        clearSelectedOnChange
-        size="md"
-        allowCustomValue
-        autoAlign
-        aria-label={t('ALLERGIES_SEARCH_ARIA_LABEL')}
-      />
+      {!isEditMode && (
+        <ComboBox
+          id="allergies-search"
+          data-testid="allergies-search-combobox"
+          placeholder={t('ALLERGIES_SEARCH_PLACEHOLDER')}
+          items={filteredSearchResults}
+          itemToString={(item) => {
+            const allergenItem = item as AllergenConcept;
+            return allergenItem?.type
+              ? `${allergenItem.display} [${t(getCategoryDisplayName(allergenItem.type))}]`
+              : allergenItem
+                ? `${allergenItem.display}`
+                : '';
+          }}
+          onChange={(data) =>
+            handleOnChange(data.selectedItem as AllergenConcept | null)
+          }
+          onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
+          selectedItem={selectedAllergenItem}
+          clearSelectedOnChange
+          size="md"
+          allowCustomValue
+          autoAlign
+          aria-label={t('ALLERGIES_SEARCH_ARIA_LABEL')}
+        />
+      )}
       {showDuplicateNotification && (
         <InlineNotification
           kind="error"

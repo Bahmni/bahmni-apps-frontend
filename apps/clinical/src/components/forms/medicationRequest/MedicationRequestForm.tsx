@@ -43,7 +43,7 @@ import {
 const MedicationRequestForm: React.FC<{
   inputControlConfig?: ClinicalInputControlConfig;
   encounterSessionStartContext?: EncounterSessionStartContext;
-}> = React.memo(({ inputControlConfig, encounterSessionStartContext }) => {
+}> = React.memo(({ inputControlConfig }) => {
   const { t } = useTranslation();
 
   const {

@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalConfig } from '../../../../providers/clinicalConfig';
 import ImmunizationForm from '../ImmunizationForm';
-import { useImmunizationHistoryStore } from '../stores';
+import { getImmunizationStore, useImmunizationHistoryStore } from '../stores';
 import {
   mockAdministrationInputControlConfig,
   mockAdministrationInputControlConfigAllowed,
@@ -84,6 +84,12 @@ describe('ImmunizationForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(useImmunizationHistoryStore).mockReturnValue(mockStore);
+    jest.mocked(getImmunizationStore).mockReturnValue({
+      getState: () => mockStore,
+      setState: jest.fn(),
+      subscribe: jest.fn(),
+      destroy: jest.fn(),
+    } as any);
     jest.mocked(useClinicalConfig).mockReturnValue(mockClinicalConfigContext);
     mockUseQuery.mockImplementation(defaultQueryMock as any);
     mockUseQueries.mockReturnValue([] as any);
