@@ -326,7 +326,9 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       duration: getDuration(medication.dosageInstruction),
       status,
       priority: medication.priority ?? '',
-      isImmediate: isSTAT(medication),
+      isImmediate:
+        isSTAT(medication) ||
+        medication.dosageInstruction?.[0]?.timing?.code?.text === 'Immediately',
       quantity: getQuantity(medication.dispenseRequest!),
       startDate: isSTAT(medication)
         ? medication.authoredOn!

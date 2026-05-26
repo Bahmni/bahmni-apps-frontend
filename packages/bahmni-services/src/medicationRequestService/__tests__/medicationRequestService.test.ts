@@ -484,7 +484,7 @@ describe('medicationRequestService', () => {
               },
             ],
           },
-          expectedIsImmediate: false,
+          expectedIsImmediate: true,
         },
       ])(
         'should set isImmediate=$expectedIsImmediate when $description',
