@@ -1,5 +1,10 @@
 import '@bahmni/design-system/styles';
 
+export {
+  default as ConfirmationModal,
+  type ConfirmationModalProps,
+} from './confirmationModal/ConfirmationModal';
+
 // Widget Components
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
