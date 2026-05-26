@@ -206,7 +206,9 @@ const mockConditionWithNeitherCodedNorNonCoded: Condition[] = [
 
 describe('createConditionViewModels', () => {
   it('should convert valid coded FHIR conditions to view models', () => {
-    expect(createConditionViewModels(mockValidConditions)).toStrictEqual([
+    // toMatchObject used instead of toStrictEqual because rawFhirResource is
+    // also present in each view model (used for PUT on mark-as-inactive).
+    expect(createConditionViewModels(mockValidConditions)).toMatchObject([
       {
         code: '73211009',
         codeDisplay: 'Diabetes mellitus',
@@ -258,7 +260,7 @@ describe('createConditionViewModels', () => {
     const result = createConditionViewModels(mockNonCodedCondition);
 
     expect(result).toHaveLength(1);
-    expect(result[0]).toStrictEqual({
+    expect(result[0]).toMatchObject({
       id: 'condition-non-coded',
       display: 'Headache after eating',
       status: 'active',

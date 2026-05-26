@@ -1,6 +1,15 @@
-import { SortableDataTable, StatusTag, Tile } from '@bahmni/design-system';
+import {
+  Button,
+  SortableDataTable,
+  StatusTag,
+  Tile,
+} from '@bahmni/design-system';
 import {
   getConditionPage,
+  markConditionAsInactive,
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  type AuditEventType,
   useTranslation,
   FormatDateResult,
   formatDateDistance,
@@ -8,18 +17,20 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import ConfirmationModal from '../confirmationModal/ConfirmationModal';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
-import { WidgetProps } from '../registry/model';
+import { WidgetActionConfig, WidgetProps } from '../registry/model';
+import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import { ConditionViewModel, ConditionStatus } from './models';
 import styles from './styles/ConditionsTable.module.scss';
 import { createConditionViewModels } from './utils';
 
 // TODO: Take UUID As A Prop
-/**
- * Component to display patient conditions using SortableDataTable
- */
-const ConditionsTable: React.FC<WidgetProps> = ({ config }) => {
+const ConditionsTable: React.FC<WidgetProps> = ({
+  config,
+  disableActions = false,
+}) => {
   // Number() safely handles non-numeric config values (NaN → falsy → fallback 10)
   const configPageSize = Number(config?.pageSize) || 5;
   const patientUUID = usePatientUUID();
@@ -28,6 +39,24 @@ const ConditionsTable: React.FC<WidgetProps> = ({ config }) => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);
+  const [conditionToMarkInactive, setConditionToMarkInactive] =
+    useState<ConditionViewModel | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const configActions = useMemo(
+    () => (config?.actions as WidgetActionConfig[] | undefined) ?? [],
+    [config?.actions],
+  );
+  const actionPrivileges = useMemo(
+    () => configActions.flatMap((a) => a.requiredPrivilege ?? []),
+    [configActions],
+  );
+  const hasActionPrivilege = useHasPrivilege(
+    actionPrivileges.length > 0 ? actionPrivileges : undefined,
+  );
+  const showActions =
+    configActions.length > 0 &&
+    (actionPrivileges.length === 0 || hasActionPrivilege);
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['conditions', patientUUID!, currentPage, selectedPageSize],
@@ -46,12 +75,8 @@ const ConditionsTable: React.FC<WidgetProps> = ({ config }) => {
     },
   });
 
-  // Listen to consultation saved events and refetch if conditions were updated
   useSubscribeConsultationSaved(
     (payload) => {
-      // Only refetch if:
-      // 1. Event is for the same patient
-      // 2. Conditions were modified during consultation
       if (
         payload.patientUUID === patientUUID &&
         payload.updatedResources.conditions
@@ -62,7 +87,6 @@ const ConditionsTable: React.FC<WidgetProps> = ({ config }) => {
     [patientUUID, refetch],
   );
 
-  // Reset pagination when patient changes
   useEffect(() => {
     setCurrentPage(1);
   }, [patientUUID]);
@@ -79,27 +103,52 @@ const ConditionsTable: React.FC<WidgetProps> = ({ config }) => {
   const handlePageChange = useCallback(
     (newPage: number, newPageSize: number) => {
       if (newPageSize !== selectedPageSize) {
-        // Page size changed: reset to page 1, re-fetch with new _count
         setSelectedPageSize(newPageSize);
         setCurrentPage(1);
       } else {
-        // Offset-based pagination: any page can be fetched directly via
-        // _getpagesoffset = (page - 1) * _count — no cursor cache needed
         setCurrentPage(newPage);
       }
     },
     [selectedPageSize],
   );
 
-  const headers = useMemo(
-    () => [
+  const handleConfirmMarkInactive = async () => {
+    if (!conditionToMarkInactive?.rawFhirResource) return;
+    setIsSubmitting(true);
+    try {
+      await markConditionAsInactive(conditionToMarkInactive.rawFhirResource);
+      dispatchAuditEvent({
+        eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
+          .eventType as AuditEventType,
+        patientUuid: patientUUID!,
+        messageParams: { conditionDisplay: conditionToMarkInactive.display },
+      });
+    } catch {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('CONDITION_MARK_INACTIVE_ERROR'),
+        type: 'error',
+        timeout: 5000,
+      });
+    } finally {
+      setIsSubmitting(false);
+      setConditionToMarkInactive(null);
+      await refetch();
+    }
+  };
+
+  const headers = useMemo(() => {
+    const base = [
       { key: 'display', header: t('CONDITION_LIST_CONDITION') },
       { key: 'onsetDate', header: t('CONDITION_TABLE_DURATION') },
       { key: 'recorder', header: t('CONDITION_TABLE_RECORDED_BY') },
       { key: 'status', header: t('CONDITION_LIST_STATUS') },
-    ],
-    [t],
-  );
+    ];
+    if (showActions) {
+      base.push({ key: 'actions', header: t('ACTIONS') });
+    }
+    return base;
+  }, [t, showActions]);
 
   const renderCell = (condition: ConditionViewModel, cellId: string) => {
     switch (cellId) {
@@ -137,6 +186,23 @@ const ConditionsTable: React.FC<WidgetProps> = ({ config }) => {
       }
       case 'recorder':
         return condition.recorder;
+      case 'actions': {
+        const isActive = condition.status === ConditionStatus.Active;
+        const isDisabled = !isActive || disableActions;
+        return (
+          <Button
+            kind="ghost"
+            size="sm"
+            disabled={isDisabled}
+            data-testid={`condition-mark-inactive-${condition.code}`}
+            onClick={() => !isDisabled && setConditionToMarkInactive(condition)}
+          >
+            {t('CONDITION_MARK_AS_INACTIVE')}
+          </Button>
+        );
+      }
+      default:
+        return undefined;
     }
   };
 
@@ -167,6 +233,18 @@ const ConditionsTable: React.FC<WidgetProps> = ({ config }) => {
           onPageChange={handlePageChange}
         />
       </div>
+
+      <ConfirmationModal
+        open={!!conditionToMarkInactive}
+        heading={t('CONDITION_MARK_INACTIVE_CONFIRM_TITLE')}
+        body={t('CONDITION_MARK_INACTIVE_CONFIRM_BODY')}
+        confirmLabel={t('YES')}
+        cancelLabel={t('NO')}
+        isSubmitting={isSubmitting}
+        testId="mark-inactive-confirm-modal"
+        onConfirm={handleConfirmMarkInactive}
+        onCancel={() => setConditionToMarkInactive(null)}
+      />
     </>
   );
 };

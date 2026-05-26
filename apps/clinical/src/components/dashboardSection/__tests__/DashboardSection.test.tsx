@@ -1,6 +1,7 @@
 import { Loading } from '@bahmni/design-system';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React, { Suspense } from 'react';
 import { DashboardSectionConfig } from '../../../pages/models';
 import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
@@ -10,6 +11,22 @@ jest.mock('../../../providers/ClinicalAppProvider', () => ({
   ClinicalAppProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="mock-clinical-apps-provider">{children}</div>
   ),
+}));
+
+jest.mock('../../../events/startConsultation', () => ({
+  dispatchConsultationStart: jest.fn(),
+}));
+
+jest.mock('../../../models/allergy', () => ({
+  mapAllergyToInputEntry: jest.fn((fhir: any) => ({
+    id: fhir.id,
+    display: fhir.id,
+    type: 'food',
+    selectedSeverity: null,
+    selectedReactions: [],
+    errors: {},
+    hasBeenValidated: false,
+  })),
 }));
 
 jest.mock('../../../hooks/useClinicalAppData', () => ({
@@ -30,6 +47,10 @@ jest.mock('@bahmni/design-system', () => ({
     </div>
   )),
   Loading: jest.fn(() => <div data-testid="loading" />),
+  IconButton: jest.fn(({ testId, onClick }) => (
+    <button data-testid={testId} onClick={onClick} />
+  )),
+  Edit: jest.fn(),
 }));
 
 // Mock the translation hook from @bahmni/services
@@ -49,8 +70,16 @@ jest.mock('@bahmni/services', () => {
         return translations[key] || key;
       }),
     }),
+    getAllergies: jest.fn().mockResolvedValue([]),
+    useEncounterSessionStore: jest.fn(() => ({
+      canEditOrCreate: false,
+      isLoading: false,
+      matchReasons: [],
+    })),
   };
 });
+
+const mockAddNotification = jest.fn();
 
 // Mock widget registry
 jest.mock('@bahmni/widgets', () => {
@@ -59,6 +88,10 @@ jest.mock('@bahmni/widgets', () => {
     ...actual,
     getWidget: jest.fn(),
     registerWidget: jest.fn(),
+    usePatientUUID: jest.fn(() => 'test-patient-uuid'),
+    useHasPrivilege: jest.fn(() => false),
+    useNotification: jest.fn(() => ({ addNotification: mockAddNotification })),
+    CONSULTATION_PAD_PRIVILEGES: { EDIT_ALLERGIES: ['Edit Allergies'] },
     useUserPrivilege: jest.fn(() => ({
       userPrivileges: [
         { name: 'View Observations' },
@@ -70,6 +103,23 @@ jest.mock('@bahmni/widgets', () => {
 
 const mockGetWidget = jest.mocked(
   jest.requireMock('@bahmni/widgets').getWidget,
+);
+
+const mockDispatchConsultationStart = jest.mocked(
+  jest.requireMock('../../../events/startConsultation')
+    .dispatchConsultationStart,
+);
+
+const mockGetAllergies = jest.mocked(
+  jest.requireMock('@bahmni/services').getAllergies,
+);
+
+const mockUseEncounterSessionStore = jest.mocked(
+  jest.requireMock('@bahmni/services').useEncounterSessionStore,
+);
+
+const mockUseHasPrivilege = jest.mocked(
+  jest.requireMock('@bahmni/widgets').useHasPrivilege,
 );
 
 // Create mock widget components
@@ -648,6 +698,222 @@ describe('DashboardSection Component', () => {
       });
 
       expect(screen.queryByText('Loading widget...')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Section edit button (showSectionEditButton)', () => {
+    const allergiesSection: DashboardSectionConfig = {
+      id: 'allergies-section',
+      name: 'Allergies',
+      icon: 'test-icon',
+      controls: [{ type: 'allergies', name: '', config: {} }],
+    };
+
+    const nonAllergiesSection: DashboardSectionConfig = {
+      id: 'conditions-section',
+      name: 'Conditions',
+      icon: 'test-icon',
+      controls: [{ type: 'conditions', name: '', config: {} }],
+    };
+
+    beforeEach(() => {
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: MockAllergiesWidget })),
+      );
+    });
+
+    it('renders section edit button when user can edit allergies, active visit exists, and section has allergies control', () => {
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: [],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      renderDashboardSectionWithProvider(allergiesSection, mockRef);
+
+      expect(screen.getByTestId('edit-section-Allergies')).toBeInTheDocument();
+    });
+
+    it('does not render section edit button when matchReasons includes NO_ACTIVE_VISIT', () => {
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: ['NO_ACTIVE_VISIT'],
+        canEditOrCreate: false,
+        isLoading: false,
+      });
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      renderDashboardSectionWithProvider(allergiesSection, mockRef);
+
+      expect(
+        screen.queryByTestId('edit-section-Allergies'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not render section edit button when user lacks Edit Allergies privilege', () => {
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: [],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+      mockUseHasPrivilege.mockReturnValue(false);
+
+      renderDashboardSectionWithProvider(allergiesSection, mockRef);
+
+      expect(
+        screen.queryByTestId('edit-section-Allergies'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not render section edit button when section has no allergies control', () => {
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: [],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      renderDashboardSectionWithProvider(nonAllergiesSection, mockRef);
+
+      expect(
+        screen.queryByTestId('edit-section-Conditions'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('calls dispatchConsultationStart with correct payload when section edit button is clicked', async () => {
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: [],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+      mockUseHasPrivilege.mockReturnValue(true);
+      mockGetAllergies.mockResolvedValue([]);
+
+      renderDashboardSectionWithProvider(allergiesSection, mockRef);
+
+      await userEvent.click(screen.getByTestId('edit-section-Allergies'));
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationStart).toHaveBeenCalledWith(
+          expect.objectContaining({
+            editOnly: 'allergies',
+            editTitle: 'EDIT_ALLERGIES_TITLE',
+          }),
+        );
+      });
+    });
+  });
+
+  describe('disableActions prop (disableRowActions)', () => {
+    const allergiesSection: DashboardSectionConfig = {
+      id: 'allergies-section',
+      name: 'Allergies',
+      icon: 'test-icon',
+      controls: [{ type: 'allergies', name: '', config: {} }],
+    };
+
+    it('passes disableActions=true to widget when matchReasons includes NO_ACTIVE_VISIT', async () => {
+      const capturedProps: Record<string, unknown>[] = [];
+      const ProbeWidget = (props: Record<string, unknown>) => {
+        capturedProps.push(props);
+        return <div data-testid="probe-widget" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: ['NO_ACTIVE_VISIT'],
+        canEditOrCreate: false,
+        isLoading: false,
+      });
+      mockUseHasPrivilege.mockReturnValue(false);
+
+      renderDashboardSectionWithProvider(allergiesSection, mockRef);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('probe-widget')).toBeInTheDocument();
+      });
+
+      expect(capturedProps[0].disableActions).toBe(true);
+    });
+
+    it('passes disableActions=false to widget when matchReasons is empty', async () => {
+      const capturedProps: Record<string, unknown>[] = [];
+      const ProbeWidget = (props: Record<string, unknown>) => {
+        capturedProps.push(props);
+        return <div data-testid="probe-widget-active" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: [],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+      mockUseHasPrivilege.mockReturnValue(false);
+
+      renderDashboardSectionWithProvider(allergiesSection, mockRef);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('probe-widget-active')).toBeInTheDocument();
+      });
+
+      expect(capturedProps[0].disableActions).toBe(false);
+    });
+  });
+
+  describe('handleRowEditAllergy', () => {
+    it('fetches allergies and dispatches consultationStart with single allergy when onRowEditClick is called', async () => {
+      const mockFhirAllergy = {
+        id: 'allergy-fhir-uuid',
+        code: { coding: [{ code: 'peanut-code' }], text: 'Peanut' },
+        category: ['food'],
+      };
+      mockGetAllergies.mockResolvedValue([mockFhirAllergy as any]);
+
+      let capturedOnRowEditClick: ((id: string) => void) | undefined;
+      const ProbeWidget = (props: any) => {
+        capturedOnRowEditClick = props.onRowEditClick;
+        return <div data-testid="probe-row-edit-widget" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: [],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+      mockUseHasPrivilege.mockReturnValue(false);
+
+      const section: DashboardSectionConfig = {
+        id: 'allergies-section',
+        name: 'Allergies',
+        icon: 'test-icon',
+        controls: [{ type: 'allergies', name: '', config: {} }],
+      };
+
+      renderDashboardSectionWithProvider(section, mockRef);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('probe-row-edit-widget')).toBeInTheDocument();
+      });
+
+      expect(capturedOnRowEditClick).toBeDefined();
+      await capturedOnRowEditClick!('allergy-fhir-uuid');
+
+      await waitFor(() => {
+        expect(mockDispatchConsultationStart).toHaveBeenCalledWith(
+          expect.objectContaining({
+            editOnly: 'allergies',
+            editTitle: 'EDIT_ALLERGIES_TITLE',
+            preloadedAllergies: expect.arrayContaining([
+              expect.objectContaining({ id: 'allergy-fhir-uuid' }),
+            ]),
+          }),
+        );
+      });
     });
   });
 });
