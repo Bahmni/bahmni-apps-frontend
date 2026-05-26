@@ -36,30 +36,12 @@ export interface MedicationRequest {
     readonly unit: string;
   };
   readonly status: MedicationStatus;
-  readonly priority: string;
+  readonly priority: FhirMedicationRequest['priority'];
   readonly startDate: string;
   readonly orderDate: string;
   readonly orderedBy: string;
   readonly instructions: string;
   readonly additionalInstructions?: string;
-  readonly asNeeded: boolean;
-  readonly isImmediate: boolean;
-  readonly note?: string;
-  readonly doseForm?: string;
-  readonly fhirResource: FhirMedicationRequest;
-}
-
-export interface FormattedMedicationRequest {
-  readonly id: string;
-  readonly name: string;
-  readonly dosage: string;
-  readonly dosageUnit: string;
-  readonly quantity: string;
-  readonly instruction: string;
-  readonly startDate: string;
-  readonly orderDate: string;
-  readonly orderedBy: string;
-  readonly status: MedicationStatus;
   readonly asNeeded: boolean;
   readonly isImmediate: boolean;
   readonly note?: string;

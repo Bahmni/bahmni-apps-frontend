@@ -6,7 +6,7 @@ export {
   type BahmniThemeConfig,
 } from './utils/applyTheme';
 
-export { Close, TrashCan } from '@carbon/icons-react';
+export { Close, Edit, TrashCan } from '@carbon/icons-react';
 
 export { ArrowRight, type ArrowRightProps } from './atoms/arrowRight';
 

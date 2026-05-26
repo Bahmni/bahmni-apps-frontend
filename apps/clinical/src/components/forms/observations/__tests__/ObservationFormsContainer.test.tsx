@@ -43,7 +43,7 @@ jest.mock('@bahmni/form2-controls', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mockReact = require('react');
   return {
-    Container: mockReact.forwardRef((props: any, ref: any) => {
+    CarbonContainer: mockReact.forwardRef((props: any, ref: any) => {
       mockReact.useImperativeHandle(ref, () => ({
         getValue: mockGetValue,
         state: mockContainerState,
