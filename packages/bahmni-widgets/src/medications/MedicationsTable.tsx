@@ -136,7 +136,8 @@ const MedicationsTable: React.FC<WidgetProps> = ({
       // 2. Medications were modified during consultation
       if (
         payload.patientUUID === patientUUID &&
-        payload.updatedResources.medications
+        (payload.updatedResources.medications ||
+          payload.updatedResources.immunizationHistory)
       ) {
         refetch();
       }
