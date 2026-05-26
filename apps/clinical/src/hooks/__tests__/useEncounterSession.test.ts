@@ -51,13 +51,12 @@ beforeEach(() => {
 
 describe('useEncounterSession', () => {
   describe('early return — missing required values', () => {
-    it('returns empty state when patientUUID is null', async () => {
+    it('returns loading state when patientUUID is null', async () => {
       mockUsePatientUUID.mockReturnValue(null);
 
       const { result } = renderHook(() => useEncounterSession(defaultOptions));
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
-
+      expect(result.current.isLoading).toBe(true);
       expect(result.current.hasActiveSession).toBe(false);
       expect(result.current.activeEncounter).toBeNull();
       expect(result.current.matchReason).toEqual([]);
@@ -65,7 +64,7 @@ describe('useEncounterSession', () => {
       expect(mockResolveEncounterMatchDecision).not.toHaveBeenCalled();
     });
 
-    it('returns empty state when practitioner is null', async () => {
+    it('returns loading state when practitioner is null', async () => {
       const { result } = renderHook(() =>
         useEncounterSession({
           practitioner: null,
@@ -73,20 +72,18 @@ describe('useEncounterSession', () => {
         }),
       );
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
-
+      expect(result.current.isLoading).toBe(true);
       expect(result.current.hasActiveSession).toBe(false);
       expect(result.current.matchReason).toEqual([]);
       expect(mockResolveEncounterMatchDecision).not.toHaveBeenCalled();
     });
 
-    it('returns empty state when encounterTypeUUID is undefined — prevents unfiltered search', async () => {
+    it('returns loading state when encounterTypeUUID is undefined — prevents unfiltered search', async () => {
       const { result } = renderHook(() =>
         useEncounterSession({ practitioner: mockPractitioner }),
       );
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
-
+      expect(result.current.isLoading).toBe(true);
       expect(result.current.matchReason).toEqual([]);
       expect(result.current.editActiveEncounter).toBe(false);
       expect(mockResolveEncounterMatchDecision).not.toHaveBeenCalled();
