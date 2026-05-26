@@ -27,13 +27,6 @@ export const handleEditAction = (
   const encounterRef = editMedications[0]?.encounter?.reference;
   const editEncounterUuid = encounterRef?.split('/').pop() ?? undefined;
 
-  if (!editEncounterUuid) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      '[handleEditAction] No encounter reference on medication; falling back to session encounter.',
-    );
-  }
-
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
