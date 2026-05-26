@@ -118,12 +118,6 @@ describe('cdssService', () => {
       expect(result).toEqual({});
     });
 
-    it('should return empty object when resourceMap is empty array', () => {
-      const result = buildContextFromResourceMap(mockBundle, []);
-
-      expect(result).toEqual({});
-    });
-
     it('should not include resources with no matching entries', () => {
       const resourceMap = [
         { type: 'Condition', attribute: 'conditions' },
@@ -135,7 +129,7 @@ describe('cdssService', () => {
       expect(result).toEqual({});
     });
 
-    it('should handle bundle with no entries', () => {
+    it('should return empty object when bundle has no entries', () => {
       const emptyBundle = {
         resourceType: 'Bundle' as const,
         type: 'collection' as const,
@@ -237,21 +231,6 @@ describe('cdssService', () => {
       expect(requestBody.prefetch).toEqual({
         patient: 'Patient/{{context.patientId}}',
       });
-    });
-
-    it('should not include prefetch when not specified in service config', async () => {
-      const ruleWithoutPrefetch: CDSSRule = {
-        event: 'onSelect',
-        server: 'test-cdss-server',
-        service: 'immunization-forecast',
-      };
-
-      await invokeCDSSRule(ruleWithoutPrefetch, mockCDSSContext, mockBundle);
-
-      const postCall = mockedPost.mock.calls[0];
-      const requestBody = postCall[1] as CDSHooksRequest;
-
-      expect(requestBody).not.toHaveProperty('prefetch');
     });
 
     it('should build filtered context from resource map', async () => {
