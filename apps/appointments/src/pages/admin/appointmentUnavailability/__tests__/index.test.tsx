@@ -252,7 +252,7 @@ describe('AppointmentUnavailabilityPage', () => {
     });
     render(wrapper);
     await userEvent.click(screen.getByText('Add New'));
-    expect(screen.queryByText('Add new')).not.toBeInTheDocument();
+    expect(screen.queryByText('Add New')).not.toBeInTheDocument();
   });
 
   it('should render table headers correctly', () => {

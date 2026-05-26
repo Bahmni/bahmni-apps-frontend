@@ -521,10 +521,10 @@ export function sortByDate(
  * @returns Time string in 24-hour format (e.g., "14:30", "11:45"), or empty string if invalid
  */
 export function convertTo24HourFormat(timeStr: string): string {
-  if (!timeStr) return '';
+  if (!timeStr?.trim()) return '';
 
   const parsed = parse(timeStr, 'hh:mm aa', new Date());
-  if (!isValid(parsed)) return timeStr;
+  if (!isValid(parsed)) return '';
 
   return format(parsed, 'HH:mm');
 }

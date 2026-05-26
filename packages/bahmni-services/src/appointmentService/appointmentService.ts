@@ -164,7 +164,7 @@ export const getAppointmentUnavailabilities = async (): Promise<
 /**
  * Creates a new appointment unavailability
  * @param data - The unavailability data to create
- * @returns` Resolves when creation completes
+ * @returns Resolves when creation completes
  */
 export const createAppointmentUnavailability = async (
   data: CreateUnavailabilityRequest[],
