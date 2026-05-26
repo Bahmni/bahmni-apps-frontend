@@ -10,7 +10,6 @@ import { CONSULTATION_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
 import { ConsultationBundle } from '../models/consultationBundle';
-import { MedicationInputEntry } from '../models/medication';
 import { ServiceRequestInputEntry } from '../models/serviceRequest';
 import { createEncounterAllergyResource } from '../utils/fhir/allergyResourceCreator';
 import {
@@ -18,7 +17,6 @@ import {
   createEncounterConditionResource,
 } from '../utils/fhir/conditionResourceCreator';
 import { createBundleEntry } from '../utils/fhir/consultationBundleCreator';
-import { createMedicationRequestResource } from '../utils/fhir/medicationRequestResourceCreator';
 import { createObservationResources } from '../utils/fhir/observationResourceCreator';
 import {
   createPractitionerReference,
@@ -54,14 +52,6 @@ interface CreateConditionsBundleEntriesParams {
   encounterReference: string;
   practitionerUUID: string;
   consultationDate: Date;
-}
-
-interface CreateMedicationRequestBundleEntriesParams {
-  selectedMedications: MedicationInputEntry[];
-  encounterSubject: Reference;
-  encounterReference: string;
-  practitionerUUID: string;
-  statDurationInMilliseconds?: number;
 }
 
 interface CreateObservationBundleEntriesParams {
@@ -327,50 +317,6 @@ export function createConditionsBundleEntries({
   }
 
   return conditionEntries;
-}
-
-export function createMedicationRequestEntries({
-  selectedMedications,
-  encounterSubject,
-  encounterReference,
-  practitionerUUID,
-  statDurationInMilliseconds,
-}: CreateMedicationRequestBundleEntriesParams): BundleEntry[] {
-  if (!selectedMedications || !Array.isArray(selectedMedications)) {
-    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
-  }
-
-  if (!encounterSubject?.reference) {
-    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_SUBJECT);
-  }
-
-  if (!encounterReference) {
-    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ENCOUNTER_REFERENCE);
-  }
-
-  if (!practitionerUUID) {
-    throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
-  }
-  const medicationRequestEntries: BundleEntry[] = [];
-  for (const medication of selectedMedications) {
-    const medicationResourceURL = `urn:uuid:${crypto.randomUUID()}`;
-    const medicationResource = createMedicationRequestResource(
-      medication,
-      encounterSubject,
-      createEncounterReferenceFromString(encounterReference),
-      createPractitionerReference(practitionerUUID),
-      statDurationInMilliseconds,
-    );
-
-    const medicationRequestEntry = createBundleEntry(
-      medicationResourceURL,
-      medicationResource,
-      'POST',
-    );
-
-    medicationRequestEntries.push(medicationRequestEntry);
-  }
-  return medicationRequestEntries;
 }
 
 /**

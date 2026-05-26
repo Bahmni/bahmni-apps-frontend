@@ -10,7 +10,7 @@ export const mockRegistry: InputControl[] = [
     subscribe: jest.fn(),
   },
   {
-    key: 'medications',
+    key: 'medication',
     component: () => null,
     reset: jest.fn(),
     validate: jest.fn(),

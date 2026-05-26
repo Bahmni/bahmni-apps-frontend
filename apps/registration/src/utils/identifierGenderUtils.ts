@@ -27,10 +27,16 @@ export const useIdentifierData = () => {
     [identifierData?.primaryIdentifierTypeUuid],
   );
 
+  const primaryIdentifierTypeName = useMemo(
+    () => identifierData?.primaryIdentifierTypeName,
+    [identifierData?.primaryIdentifierTypeName],
+  );
+
   return {
     identifierPrefixes,
     identifierSources,
     primaryIdentifierType,
+    primaryIdentifierTypeName,
   };
 };
 
