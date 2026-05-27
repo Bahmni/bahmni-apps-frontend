@@ -178,9 +178,11 @@ describe('useMedicationRequestStore', () => {
         const targetId = store().selectedMedicationRequests[0].id;
         const otherEntryBefore = store().selectedMedicationRequests[1];
 
-        store()[actionName](targetId, value);
+        (store() as any)[actionName](targetId, value);
 
-        expect(store().selectedMedicationRequests[0][fieldName]).toEqual(value);
+        expect(
+          (store().selectedMedicationRequests[0] as any)[fieldName],
+        ).toEqual(value);
         expect(store().selectedMedicationRequests[1]).toEqual(otherEntryBefore);
       },
     );
@@ -191,7 +193,7 @@ describe('useMedicationRequestStore', () => {
         store().addItem(mockMedication, 'Paracetamol 500mg');
         const before = [...store().selectedMedicationRequests];
 
-        store()[actionName]('non-existent-id', value);
+        (store() as any)[actionName]('non-existent-id', value);
 
         expect(store().selectedMedicationRequests).toEqual(before);
       },
@@ -205,13 +207,13 @@ describe('useMedicationRequestStore', () => {
 
         store().validateAll();
         expect(
-          store().selectedMedicationRequests[0].errors[fieldName],
+          (store().selectedMedicationRequests[0].errors as any)[fieldName],
         ).toBeDefined();
 
-        store()[actionName](id, validValue);
+        (store() as any)[actionName](id, validValue);
 
         expect(
-          store().selectedMedicationRequests[0].errors[fieldName],
+          (store().selectedMedicationRequests[0].errors as any)[fieldName],
         ).toBeUndefined();
       },
     );
@@ -223,10 +225,10 @@ describe('useMedicationRequestStore', () => {
         const id = store().selectedMedicationRequests[0].id;
 
         store().validateAll();
-        store()[actionName](id, invalidValue);
+        (store() as any)[actionName](id, invalidValue);
 
         expect(
-          store().selectedMedicationRequests[0].errors[fieldName],
+          (store().selectedMedicationRequests[0].errors as any)[fieldName],
         ).toBeDefined();
       },
     );
