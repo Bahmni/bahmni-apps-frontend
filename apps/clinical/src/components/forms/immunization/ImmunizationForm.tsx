@@ -16,7 +16,7 @@ import {
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Medication, MedicationRequest } from 'fhir/r4';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   dispatchCDSSCheck,
   useCDSSResultsListener,
@@ -100,6 +100,8 @@ const ImmunizationForm = ({
   const disableAdditionalAdministrations =
     metadata?.disableAdditionalAdministrations as boolean | undefined;
   const fetchStockBatches = metadata?.fetchStockBatches as boolean | undefined;
+
+  const processedBasedOnRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (attributes) {
@@ -208,6 +210,11 @@ const ImmunizationForm = ({
     }),
   });
 
+  const cdssRules = inputControlConfig?.cdss ?? [];
+  const hasCDSSRuleForOnLoad = cdssRules.some(
+    (rule) => rule.event === 'onLoad',
+  );
+
   useEffect(() => {
     if (!basedOn || !basedOnMedication || !vaccinationDrugs) return;
     const { vaccineCode, defaults } = buildBasedOnImmunizationEntry(
@@ -217,26 +224,14 @@ const ImmunizationForm = ({
     );
     const itemId = addImmunization(vaccineCode, defaults);
 
-    const cdssRules = inputControlConfig?.cdss ?? [];
-    const hasMatchingRule = cdssRules.some((rule) => rule.event === 'onLoad');
-
-    if (hasMatchingRule) {
+    if (hasCDSSRuleForOnLoad) {
       dispatchCDSSCheck({
         controlKey: immunizationFormType,
         itemId,
         event: 'onLoad',
       });
     }
-  }, [
-    basedOn,
-    basedOnMedication,
-    vaccinationDrugs,
-    basedOnReference,
-    addImmunization,
-    immunizationFormType,
-    inputControlConfig?.cdss,
-    loginLocation,
-  ]);
+  }, [basedOn, basedOnMedication, vaccinationDrugs, basedOnReference]);
 
   const vaccineCodeComboBoxItems = useMemo(
     () =>
@@ -327,33 +322,6 @@ const ImmunizationForm = ({
       vaccinationDrugsLoading
     );
 
-  const handleVaccineSelection = (
-    selectedItem: {
-      code?: string;
-      display?: string;
-    } | null,
-  ) => {
-    if (selectedItem?.code && selectedItem?.display) {
-      const itemId = addImmunization({
-        code: selectedItem.code,
-        display: selectedItem.display,
-      });
-
-      const cdssRules = inputControlConfig?.cdss ?? [];
-      const hasMatchingRule = cdssRules.some(
-        (rule) => rule.event === 'onSelect',
-      );
-
-      if (hasMatchingRule) {
-        dispatchCDSSCheck({
-          controlKey: immunizationFormType,
-          itemId,
-          event: 'onSelect',
-        });
-      }
-    }
-  };
-
   return (
     <div
       id="immunization-history-form"
@@ -374,7 +342,14 @@ const ImmunizationForm = ({
           placeholder={t('IMMUNIZATION_INPUT_CONTROL_SEARCH_PLACEHOLDER')}
           items={vaccineCodeComboBoxItems}
           itemToString={(item) => item?.display ?? ''}
-          onChange={({ selectedItem }) => handleVaccineSelection(selectedItem)}
+          onChange={({ selectedItem }) => {
+            if (selectedItem?.code && selectedItem?.display) {
+              addImmunization({
+                code: selectedItem.code,
+                display: selectedItem.display,
+              });
+            }
+          }}
           onInputChange={(searchQuery: string) => handleSearch(searchQuery)}
           clearSelectedOnChange
           size="md"
