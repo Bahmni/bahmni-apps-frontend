@@ -11,9 +11,11 @@ export {
   calculateEndDate,
   doDateRangesOverlap,
   convertTo24HourFormat,
+  getTimeInMinutes,
 } from './date';
 export {
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
   DEFAULT_TIME_FORMAT,
+  ISO_DATE_FORMAT,
 } from './constants';

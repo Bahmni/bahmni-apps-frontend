@@ -121,12 +121,14 @@ export {
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
   DEFAULT_TIME_FORMAT,
+  ISO_DATE_FORMAT,
   getTodayDate,
   getFormattedAge,
   DURATION_UNIT_TO_DAYS,
   calculateEndDate,
   doDateRangesOverlap,
   convertTo24HourFormat,
+  getTimeInMinutes,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {
@@ -363,6 +365,7 @@ export {
   getFHIRLocationsByTag,
   type Location,
   type ChildLocation,
+  type FHIRBundle,
 } from './locationService';
 export { getPatientImmunizations } from './immunizationService';
 export type { ImmunizationStatus } from './immunizationService';

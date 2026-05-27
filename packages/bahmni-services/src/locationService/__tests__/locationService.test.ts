@@ -51,7 +51,7 @@ describe('locationService', () => {
   });
 
   describe('getFHIRLocationsByTag', () => {
-    it('should fetch locations from FHIR API and map to Location format', async () => {
+    it('should fetch locations from FHIR API and return FHIRBundle', async () => {
       (get as jest.Mock).mockResolvedValueOnce(mockFHIRLocationBundle);
 
       const result = await getFHIRLocationsByTag('Appointment Location');
@@ -59,40 +59,30 @@ describe('locationService', () => {
       expect(get).toHaveBeenCalledWith(
         FHIR_LOCATION_BY_TAG_URL('Appointment Location'),
       );
-      expect(result).toEqual([
-        {
-          uuid: '7672b695-1872-40de-9ae8-a2bb38038208',
-          display: 'IOM MHAC NAIROBI',
-          childLocations: [],
-        },
-        {
-          uuid: 'c8ef048d-4e31-43fa-8518-ee0d6cc32dfc',
-          display: 'IOM MHAC MAKATI',
-          childLocations: [],
-        },
-      ]);
+      expect(result).toEqual(mockFHIRLocationBundle);
     });
 
-    it('should return empty array when FHIR bundle has no entries', async () => {
+    it('should return empty FHIR bundle when no entries exist', async () => {
       (get as jest.Mock).mockResolvedValueOnce(mockEmptyFHIRLocationBundle);
 
       const result = await getFHIRLocationsByTag('Appointment Location');
 
-      expect(result).toEqual([]);
+      expect(result).toEqual(mockEmptyFHIRLocationBundle);
     });
 
-    it('should return empty array when FHIR bundle entry is undefined', async () => {
-      (get as jest.Mock).mockResolvedValueOnce({
+    it('should return FHIR bundle with undefined entry when entry is undefined', async () => {
+      const bundleWithUndefinedEntry = {
         resourceType: 'Bundle',
         id: 'test-bundle',
         type: 'searchset',
         total: 0,
         entry: undefined,
-      });
+      };
+      (get as jest.Mock).mockResolvedValueOnce(bundleWithUndefinedEntry);
 
       const result = await getFHIRLocationsByTag('Appointment Location');
 
-      expect(result).toEqual([]);
+      expect(result).toEqual(bundleWithUndefinedEntry);
     });
 
     it('should throw when FHIR API call fails', async () => {

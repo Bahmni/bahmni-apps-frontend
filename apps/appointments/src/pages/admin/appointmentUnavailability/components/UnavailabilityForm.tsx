@@ -9,34 +9,32 @@ import {
 } from '@bahmni/design-system';
 import {
   type AppointmentService,
-  convertTo24HourFormat,
-  createAppointmentUnavailability,
   type CreateUnavailabilityRequest,
   fetchAllProviders,
-  formatDateTime,
   getAllAppointmentServices,
   getCurrentUser,
   getFHIRLocationsByTag,
   getProviderLoginLocations,
+  getTimeInMinutes,
+  getTodayDate,
   getUserLoginLocation,
   type Location,
   type Provider,
   useTranslation,
 } from '@bahmni/services';
-import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   APPOINTMENT_LOCATION_TAG,
-  DATE_FORMAT,
   PROVIDER_ATTRIBUTE_AVAILABLE,
 } from '../constants';
-import { getTimeInMinutes } from '../utils';
+import { createBaseData, mapFHIRBundleToLocations } from '../utils';
 import styles from './styles/UnavailabilityForm.module.scss';
 
 interface UnavailabilityFormProps {
-  onSuccess: () => void;
+  onSubmit: (data: CreateUnavailabilityRequest[]) => Promise<void>;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
 interface SelectableItem {
@@ -67,11 +65,11 @@ const getInitialLocationUuid = (): string => {
 };
 
 const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
-  onSuccess,
+  onSubmit,
   onCancel,
+  isSubmitting = false,
 }) => {
   const { t } = useTranslation();
-  const { addNotification } = useNotification();
 
   const [formData, setFormData] = useState<UnavailabilityFormData>({
     locationUuid: getInitialLocationUuid(),
@@ -84,45 +82,35 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
     endTime: '',
     endTimePeriod: 'AM',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [dateTimeError, setDateTimeError] = useState('');
   const [servicesKey, setServicesKey] = useState(0);
   const [providersKey, setProvidersKey] = useState(0);
 
-  const todayAtMidnight = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return today;
-  }, []);
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: getCurrentUser,
+  });
 
-  const findItemByUuid = <T extends { uuid: string }>(
-    items: T[],
-    uuid: string | undefined,
-  ): T | null => {
-    if (!uuid) return null;
-    return items.find((item) => item.uuid === uuid) ?? null;
-  };
-
-  const { data: loginLocations = [] } = useQuery({
-    queryKey: ['providerLoginLocations'],
-    queryFn: async () => {
-      const currentUser = await getCurrentUser();
-      if (!currentUser) {
-        return [];
-      }
+  const { data: loginLocations = [] } = useQuery<Location[]>({
+    queryKey: ['providerLoginLocations', currentUser?.uuid],
+    queryFn: async (): Promise<Location[]> => {
       const providerLocations = await getProviderLoginLocations(
-        currentUser.uuid,
+        currentUser!.uuid,
       );
 
       if (providerLocations.length === 0) {
-        return getFHIRLocationsByTag(APPOINTMENT_LOCATION_TAG);
+        const fhirResponse = await getFHIRLocationsByTag(
+          APPOINTMENT_LOCATION_TAG,
+        );
+        return mapFHIRBundleToLocations(fhirResponse);
       }
 
       return providerLocations.filter((location) =>
         location.tags?.some((tag) => tag.display === APPOINTMENT_LOCATION_TAG),
       );
     },
+    enabled: !!currentUser?.uuid,
   });
 
   const { data: services = [] } = useQuery({
@@ -142,14 +130,12 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
 
   const availableProviders = useMemo(
     () =>
-      providers.filter(
-        (p) =>
-          !p.person?.voided &&
-          p.attributes?.some(
-            (attr) =>
-              attr.attributeType?.display === PROVIDER_ATTRIBUTE_AVAILABLE &&
-              attr.value === true,
-          ),
+      providers.filter((p) =>
+        p.attributes?.some(
+          (attr) =>
+            attr.attributeType?.display === PROVIDER_ATTRIBUTE_AVAILABLE &&
+            attr.value === true,
+        ),
       ),
     [providers],
   );
@@ -254,90 +240,74 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
       !formData.endTime ||
       dateTimeError
     ) {
-      addNotification({
-        title: t('ADMIN_UNAVAILABILITY_FORM_VALIDATION_ERROR_TITLE'),
-        message:
-          dateTimeError ||
-          t('ADMIN_UNAVAILABILITY_FORM_VALIDATION_ERROR_MESSAGE'),
-        type: 'error',
-      });
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const baseData = {
+    const baseData = createBaseData(
+      {
         locationUuid: formData.locationUuid,
-        startDate: formatDateTime(formData.startDate, t, false, DATE_FORMAT)
-          .formattedResult,
-        startTime: convertTo24HourFormat(
-          `${formData.startTime} ${formData.startTimePeriod}`,
-        ),
-        endDate: formatDateTime(formData.endDate, t, false, DATE_FORMAT)
-          .formattedResult,
-        endTime: convertTo24HourFormat(
-          `${formData.endTime} ${formData.endTimePeriod}`,
-        ),
-      };
+        startDate: formData.startDate,
+        startTime: formData.startTime,
+        startTimePeriod: formData.startTimePeriod,
+        endDate: formData.endDate,
+        endTime: formData.endTime,
+        endTimePeriod: formData.endTimePeriod,
+      },
+      t,
+    );
 
-      const getSelectedIds = (items: typeof formData.selectedServiceItems) =>
-        items.filter((item) => !item.isSelectAll).map((item) => item.id);
+    const getSelectedIds = (items: typeof formData.selectedServiceItems) =>
+      items.filter((item) => !item.isSelectAll).map((item) => item.id);
 
-      const serviceUuids = getSelectedIds(formData.selectedServiceItems);
-      const providerUuids = getSelectedIds(formData.selectedProviderItems);
+    const serviceUuids = getSelectedIds(formData.selectedServiceItems);
+    const providerUuids = getSelectedIds(formData.selectedProviderItems);
 
-      const allServicesSelected =
-        serviceUuids.length === filteredServices.length;
-      const services =
-        allServicesSelected || serviceUuids.length === 0
-          ? [undefined]
-          : serviceUuids;
+    const allServicesSelected = serviceUuids.length === filteredServices.length;
+    const services =
+      allServicesSelected || serviceUuids.length === 0
+        ? [undefined]
+        : serviceUuids;
 
-      const allProvidersSelected =
-        providerUuids.length === availableProviders.length;
-      const providers =
-        allProvidersSelected || providerUuids.length === 0
-          ? [undefined]
-          : providerUuids;
+    const allProvidersSelected =
+      providerUuids.length === availableProviders.length;
+    const providers =
+      allProvidersSelected || providerUuids.length === 0
+        ? [undefined]
+        : providerUuids;
 
-      const requestDataList: CreateUnavailabilityRequest[] = services.flatMap(
-        (serviceUuid) =>
-          providers.map((providerUuid) => ({
-            ...baseData,
-            appointmentServiceUuid: serviceUuid,
-            providerUuid: providerUuid,
-          })),
-      );
+    const requestDataList: CreateUnavailabilityRequest[] = services.flatMap(
+      (serviceUuid) =>
+        providers.map((providerUuid) => ({
+          ...baseData,
+          appointmentServiceUuid: serviceUuid,
+          providerUuid: providerUuid,
+        })),
+    );
 
-      await createAppointmentUnavailability(requestDataList);
-      addNotification({
-        title: t('ADMIN_UNAVAILABILITY_FORM_SUCCESS_TITLE'),
-        message: t('ADMIN_UNAVAILABILITY_FORM_SUCCESS_MESSAGE'),
-        type: 'success',
-        timeout: 5000,
-      });
-      onSuccess();
-    } catch {
-      addNotification({
-        title: t('ADMIN_UNAVAILABILITY_FORM_ERROR_TITLE'),
-        message: t('ADMIN_UNAVAILABILITY_FORM_ERROR_MESSAGE'),
-        type: 'error',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await onSubmit(requestDataList);
   };
 
   const formContent = (
-    <div className={styles.formContent}>
-      <div className={styles.formField}>
+    <div
+      id="unavailability-form-content"
+      data-testid="unavailability-form-content"
+      className={styles.formContent}
+    >
+      <div data-testid="location-field" className={styles.formField}>
         <Dropdown
           id="location-dropdown"
+          data-testid="location-dropdown"
           label={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_LABEL')}
           titleText={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_LABEL')}
           items={loginLocations}
           itemToString={(item: Location) => item?.display ?? ''}
-          selectedItem={findItemByUuid(loginLocations, formData.locationUuid)}
+          selectedItem={
+            formData.locationUuid
+              ? (loginLocations.find(
+                  (item) => item.uuid === formData.locationUuid,
+                ) ?? null)
+              : null
+          }
           onChange={(e) =>
             setFormData({
               ...formData,
@@ -350,116 +320,135 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
         />
       </div>
 
-      <div className={styles.fullDateTimeGrid}>
-        <div className={styles.dateField}>
-          <DatePicker
-            datePickerType="single"
-            minDate={todayAtMidnight}
-            value={formData.startDate ?? undefined}
-            onChange={(dates) => {
-              if (dates[0]) {
-                setFormData({
-                  ...formData,
-                  startDate: dates[0],
-                });
-              }
-            }}
-          >
-            <DatePickerInput
-              id="start-date"
-              labelText={t('ADMIN_UNAVAILABILITY_FORM_START_DATE_LABEL')}
-              invalid={showValidation && !formData.startDate}
-              invalidText={t('ADMIN_UNAVAILABILITY_FORM_REQUIRED')}
-            />
-          </DatePicker>
-        </div>
-        <div className={styles.timeField}>
-          <TimePicker
-            id="start-time"
-            labelText={t('ADMIN_UNAVAILABILITY_FORM_START_TIME_LABEL')}
-            onChange={(e) =>
-              setFormData({ ...formData, startTime: e.target.value })
-            }
-            invalid={showValidation && !formData.startTime}
-            invalidText={t('ADMIN_UNAVAILABILITY_FORM_REQUIRED')}
-            placeholder="hh:mm"
-            pattern="(1[012]|[0-9]):[0-5][0-9]"
-            use24HourFormat={false}
-          >
-            <TimePickerSelect
-              id="time-picker-select-1"
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  startTimePeriod: e.target.value as 'AM' | 'PM',
-                })
-              }
-              value={formData.startTimePeriod}
+      <div
+        id="date-time-grid"
+        data-testid="date-time-grid"
+        className={styles.fullDateTimeGrid}
+      >
+        <div className={styles.dateTimeGroup}>
+          <div data-testid="start-date-field" className={styles.dateField}>
+            <DatePicker
+              datePickerType="single"
+              minDate={getTodayDate()}
+              value={formData.startDate ?? undefined}
+              onChange={(dates) => {
+                if (dates[0]) {
+                  setFormData({
+                    ...formData,
+                    startDate: dates[0],
+                  });
+                }
+              }}
             >
-              <option value="AM">{t('ADMIN_UNAVAILABILITY_AM')}</option>
-              <option value="PM">{t('ADMIN_UNAVAILABILITY_PM')}</option>
-            </TimePickerSelect>
-          </TimePicker>
-        </div>
-        <div className={styles.dateField}>
-          <DatePicker
-            datePickerType="single"
-            minDate={formData.startDate ?? todayAtMidnight}
-            value={formData.endDate ?? undefined}
-            onChange={(dates) => {
-              if (dates[0]) {
-                setFormData({
-                  ...formData,
-                  endDate: dates[0],
-                });
-              }
-            }}
-          >
-            <DatePickerInput
-              id="end-date"
-              labelText={t('ADMIN_UNAVAILABILITY_FORM_END_DATE_LABEL')}
-              invalid={showValidation && !formData.endDate}
-              invalidText={t('ADMIN_UNAVAILABILITY_FORM_REQUIRED')}
-            />
-          </DatePicker>
-        </div>
-        <div className={styles.timeField}>
-          <TimePicker
-            id="end-time"
-            labelText={t('ADMIN_UNAVAILABILITY_FORM_END_TIME_LABEL')}
-            onChange={(e) =>
-              setFormData({ ...formData, endTime: e.target.value })
-            }
-            invalid={showValidation && (!formData.endTime || !!dateTimeError)}
-            invalidText={
-              dateTimeError || t('ADMIN_UNAVAILABILITY_FORM_REQUIRED')
-            }
-            placeholder="hh:mm"
-            pattern="(1[012]|[0-9]):[0-5][0-9]"
-            use24HourFormat={false}
-          >
-            <TimePickerSelect
-              id="time-picker-select-2"
+              <DatePickerInput
+                id="start-date"
+                data-testid="start-date-input"
+                labelText={t('ADMIN_UNAVAILABILITY_FORM_START_DATE_LABEL')}
+                invalid={showValidation && !formData.startDate}
+                invalidText={t('ADMIN_UNAVAILABILITY_FORM_REQUIRED')}
+              />
+            </DatePicker>
+          </div>
+          <div data-testid="start-time-field" className={styles.timeField}>
+            <TimePicker
+              id="start-time"
+              data-testid="start-time-input"
+              labelText={t('ADMIN_UNAVAILABILITY_FORM_START_TIME_LABEL')}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  endTimePeriod: e.target.value as 'AM' | 'PM',
-                })
+                setFormData({ ...formData, startTime: e.target.value })
               }
-              value={formData.endTimePeriod}
+              invalid={showValidation && !formData.startTime}
+              invalidText={t('ADMIN_UNAVAILABILITY_FORM_REQUIRED')}
+              placeholder="hh:mm"
+              pattern="(1[012]|[0-9]):[0-5][0-9]"
+              use24HourFormat={false}
             >
-              <option value="AM">{t('ADMIN_UNAVAILABILITY_AM')}</option>
-              <option value="PM">{t('ADMIN_UNAVAILABILITY_PM')}</option>
-            </TimePickerSelect>
-          </TimePicker>
+              <TimePickerSelect
+                id="start-time-period"
+                data-testid="start-time-period-select"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    startTimePeriod: e.target.value as 'AM' | 'PM',
+                  })
+                }
+                value={formData.startTimePeriod}
+              >
+                <option value="AM">{t('ADMIN_UNAVAILABILITY_AM')}</option>
+                <option value="PM">{t('ADMIN_UNAVAILABILITY_PM')}</option>
+              </TimePickerSelect>
+            </TimePicker>
+          </div>
+        </div>
+        <div className={styles.dateTimeGroup}>
+          <div data-testid="end-date-field" className={styles.dateField}>
+            <DatePicker
+              datePickerType="single"
+              minDate={formData.startDate ?? getTodayDate()}
+              value={formData.endDate ?? undefined}
+              onChange={(dates) => {
+                if (dates[0]) {
+                  setFormData({
+                    ...formData,
+                    endDate: dates[0],
+                  });
+                }
+              }}
+            >
+              <DatePickerInput
+                id="end-date"
+                data-testid="end-date-input"
+                labelText={t('ADMIN_UNAVAILABILITY_FORM_END_DATE_LABEL')}
+                invalid={showValidation && !formData.endDate}
+                invalidText={t('ADMIN_UNAVAILABILITY_FORM_REQUIRED')}
+              />
+            </DatePicker>
+          </div>
+          <div data-testid="end-time-field" className={styles.timeField}>
+            <TimePicker
+              id="end-time"
+              data-testid="end-time-input"
+              labelText={t('ADMIN_UNAVAILABILITY_FORM_END_TIME_LABEL')}
+              onChange={(e) =>
+                setFormData({ ...formData, endTime: e.target.value })
+              }
+              invalid={showValidation && (!formData.endTime || !!dateTimeError)}
+              invalidText={
+                dateTimeError || t('ADMIN_UNAVAILABILITY_FORM_REQUIRED')
+              }
+              placeholder="hh:mm"
+              pattern="(1[012]|[0-9]):[0-5][0-9]"
+              use24HourFormat={false}
+            >
+              <TimePickerSelect
+                id="end-time-period"
+                data-testid="end-time-period-select"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    endTimePeriod: e.target.value as 'AM' | 'PM',
+                  })
+                }
+                value={formData.endTimePeriod}
+              >
+                <option value="AM">{t('ADMIN_UNAVAILABILITY_AM')}</option>
+                <option value="PM">{t('ADMIN_UNAVAILABILITY_PM')}</option>
+              </TimePickerSelect>
+            </TimePicker>
+          </div>
         </div>
       </div>
 
-      <div className={styles.providerServiceGrid}>
-        <div className={styles.formField}>
+      <div
+        id="provider-service-grid"
+        data-testid="provider-service-grid"
+        className={styles.providerServiceGrid}
+      >
+        <div data-testid="service-field" className={styles.formField}>
           <FilterableMultiSelect
             key={`services-${servicesKey}`}
             id="service-multiselect"
+            data-testid="service-multiselect"
             titleText={t('ADMIN_UNAVAILABILITY_FORM_SERVICE_LABEL')}
             placeholder={t('ADMIN_UNAVAILABILITY_FORM_SERVICE_LABEL')}
             items={serviceItems}
@@ -473,10 +462,11 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             }
           />
         </div>
-        <div className={styles.formField}>
+        <div data-testid="provider-field" className={styles.formField}>
           <FilterableMultiSelect
             key={`providers-${providersKey}`}
             id="provider-multiselect"
+            data-testid="provider-multiselect"
             titleText={t('ADMIN_UNAVAILABILITY_FORM_PROVIDER_LABEL')}
             placeholder={t('ADMIN_UNAVAILABILITY_FORM_PROVIDER_LABEL')}
             items={providerItems}

@@ -53,7 +53,7 @@ export async function fetchAllProviders(): Promise<Provider[]> {
     nextUrl = nextLink?.uri ?? null;
   }
 
-  return allProviders;
+  return allProviders.filter((p) => !p.person?.voided);
 }
 
 /**

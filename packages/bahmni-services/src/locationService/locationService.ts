@@ -15,18 +15,8 @@ export async function getLocationByTag(tag: string): Promise<Location[]> {
 /**
  * Fetches locations from FHIR API filtered by a given tag
  * @param tag - The location tag to filter by (e.g. "Appointment Location")
- * @returns Promise resolving to an array of Location objects
+ * @returns Promise resolving to the raw FHIR Bundle response
  */
-export async function getFHIRLocationsByTag(tag: string): Promise<Location[]> {
-  const response = await get<FHIRBundle>(FHIR_LOCATION_BY_TAG_URL(tag));
-
-  if (!response.entry || response.entry.length === 0) {
-    return [];
-  }
-
-  return response.entry.map((entry) => ({
-    uuid: entry.resource.id,
-    display: entry.resource.name,
-    childLocations: [],
-  }));
+export async function getFHIRLocationsByTag(tag: string): Promise<FHIRBundle> {
+  return await get<FHIRBundle>(FHIR_LOCATION_BY_TAG_URL(tag));
 }

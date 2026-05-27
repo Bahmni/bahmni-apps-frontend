@@ -1,2 +1,2 @@
 export { getLocationByTag, getFHIRLocationsByTag } from './locationService';
-export { type Location, type ChildLocation } from './models';
+export { type Location, type ChildLocation, type FHIRBundle } from './models';

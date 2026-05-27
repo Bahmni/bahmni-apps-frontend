@@ -327,3 +327,31 @@ export const mockEmptyProvidersResponse = {
 export const mockResponseWithNullResults = {
   results: null,
 };
+
+export const mockProvidersWithVoided = {
+  results: [
+    {
+      uuid: 'provider-uuid-active',
+      display: 'Dr. Active - Clinician',
+      person: {
+        uuid: 'person-uuid-active',
+        display: 'Dr. Active',
+        voided: false,
+      },
+    },
+    {
+      uuid: 'provider-uuid-voided',
+      display: 'Dr. Voided - Retired',
+      person: {
+        uuid: 'person-uuid-voided',
+        display: 'Dr. Voided',
+        voided: true,
+      },
+    },
+    {
+      uuid: 'provider-uuid-no-person',
+      display: 'Provider Without Person',
+      person: null,
+    },
+  ],
+};

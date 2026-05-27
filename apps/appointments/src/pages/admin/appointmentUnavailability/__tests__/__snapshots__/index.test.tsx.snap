@@ -83,28 +83,40 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
               data-testid="appointment-unavailability-page-test-id"
               id="appointment-unavailability-page"
             >
-              <div
-                class="header"
-              >
-                <h1
-                  class="title"
-                >
-                  Service Unavailability
-                </h1>
-                <button
-                  class="addBtn cds--btn cds--btn--primary"
-                  id="add-unavailability-btn"
-                  type="button"
-                >
-                  Add New
-                </button>
-              </div>
               <section
                 aria-label="unavailability-table-action-data-table-aria-label"
                 class="table _actionDataTableBody_1aqtw_1 cds--data-table-container"
                 data-testid="unavailability-table-action-data-table-test-id"
                 id="unavailability-table-action-data-table"
               >
+                <div
+                  class="cds--data-table-header"
+                >
+                  <h2
+                    class="cds--data-table-header__title"
+                    id="tc-_r_30_-title"
+                  >
+                    Service Unavailability
+                  </h2>
+                </div>
+                <section
+                  aria-label="data table toolbar"
+                  class="cds--table-toolbar"
+                >
+                  <div
+                    class="cds--toolbar-content"
+                  >
+                    <button
+                      aria-label="unavailability-table-action-data-table-action-button-aria-label"
+                      class="cds--btn cds--btn--primary"
+                      data-testid="unavailability-table-action-data-table-action-button-test-id"
+                      id="unavailability-table-action-data-table-action-button"
+                      type="button"
+                    >
+                      Add New
+                    </button>
+                  </div>
+                </section>
                 <p
                   class="_sortableDataTableBodyEmpty_1w499_26"
                   data-testid="unavailability-table-sortable-data-table-test-id-empty"
@@ -204,28 +216,40 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
               data-testid="appointment-unavailability-page-test-id"
               id="appointment-unavailability-page"
             >
-              <div
-                class="header"
-              >
-                <h1
-                  class="title"
-                >
-                  Service Unavailability
-                </h1>
-                <button
-                  class="addBtn cds--btn cds--btn--primary"
-                  id="add-unavailability-btn"
-                  type="button"
-                >
-                  Add New
-                </button>
-              </div>
               <section
                 aria-label="unavailability-table-action-data-table-aria-label"
                 class="table _actionDataTableBody_1aqtw_1 cds--data-table-container"
                 data-testid="unavailability-table-action-data-table-test-id"
                 id="unavailability-table-action-data-table"
               >
+                <div
+                  class="cds--data-table-header"
+                >
+                  <h2
+                    class="cds--data-table-header__title"
+                    id="tc-_r_2m_-title"
+                  >
+                    Service Unavailability
+                  </h2>
+                </div>
+                <section
+                  aria-label="data table toolbar"
+                  class="cds--table-toolbar"
+                >
+                  <div
+                    class="cds--toolbar-content"
+                  >
+                    <button
+                      aria-label="unavailability-table-action-data-table-action-button-aria-label"
+                      class="cds--btn cds--btn--primary"
+                      data-testid="unavailability-table-action-data-table-action-button-test-id"
+                      id="unavailability-table-action-data-table-action-button"
+                      type="button"
+                    >
+                      Add New
+                    </button>
+                  </div>
+                </section>
                 <div
                   class="sortable-data-table _sortableDataTableBody_1w499_1"
                   data-testid="unavailability-table-sortable-data-table-test-id"
@@ -235,6 +259,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                   >
                     <table
                       aria-label="unavailability-table"
+                      aria-labelledby="tc-_r_2m_-title"
                       class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
                     >
                       <thead>
@@ -616,12 +641,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           <td
                             data-testid="table-cell-unavailability-uuid-1-startDateTime"
                           >
-                            2026-05-22, 09:00 AM
+                            2026-05-22 09:00
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-1-endDateTime"
                           >
-                            2026-05-22, 05:00 PM
+                            2026-05-22 17:00
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-1-locationName"
@@ -648,12 +673,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           <td
                             data-testid="table-cell-unavailability-uuid-2-startDateTime"
                           >
-                            2026-05-23, 10:00 AM
+                            2026-05-23 10:00
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-2-endDateTime"
                           >
-                            2026-05-23, 04:00 PM
+                            2026-05-23 16:00
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-2-locationName"
@@ -680,12 +705,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           <td
                             data-testid="table-cell-unavailability-uuid-3-startDateTime"
                           >
-                            2026-05-24, 08:00 AM
+                            2026-05-24 08:00
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-3-endDateTime"
                           >
-                            2026-05-25, 06:00 PM
+                            2026-05-25 18:00
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-3-locationName"

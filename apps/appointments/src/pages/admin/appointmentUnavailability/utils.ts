@@ -1,20 +1,57 @@
-import { convertTo24HourFormat } from '@bahmni/services';
+import {
+  convertTo24HourFormat,
+  type FHIRBundle,
+  formatDateTime,
+  ISO_DATE_FORMAT,
+  type Location,
+  useTranslation,
+} from '@bahmni/services';
 
-export const formatTime = (time: string): string => {
-  const [hours, minutes] = time.split(':');
-  const dateObj = new Date();
-  dateObj.setHours(parseInt(hours), parseInt(minutes));
+type TranslationFunction = ReturnType<typeof useTranslation>['t'];
 
-  return dateObj.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
-};
+interface BaseDataParams {
+  locationUuid: string;
+  startDate: Date;
+  startTime: string;
+  startTimePeriod: 'AM' | 'PM';
+  endDate: Date;
+  endTime: string;
+  endTimePeriod: 'AM' | 'PM';
+}
 
-export const getTimeInMinutes = (timeStr: string): number | null => {
-  const time24 = convertTo24HourFormat(timeStr);
-  if (!time24) return null;
-  const [hours, minutes] = time24.split(':').map(Number);
-  return hours * 60 + minutes;
+interface BaseData {
+  locationUuid: string;
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
+}
+
+export const createBaseData = (
+  params: BaseDataParams,
+  t: TranslationFunction,
+): BaseData => ({
+  locationUuid: params.locationUuid,
+  startDate: formatDateTime(params.startDate, t, false, ISO_DATE_FORMAT)
+    .formattedResult,
+  startTime: convertTo24HourFormat(
+    `${params.startTime} ${params.startTimePeriod}`,
+  ),
+  endDate: formatDateTime(params.endDate, t, false, ISO_DATE_FORMAT)
+    .formattedResult,
+  endTime: convertTo24HourFormat(`${params.endTime} ${params.endTimePeriod}`),
+});
+
+export const mapFHIRBundleToLocations = (
+  fhirBundle: FHIRBundle,
+): Location[] => {
+  if (!fhirBundle.entry || fhirBundle.entry.length === 0) {
+    return [];
+  }
+
+  return fhirBundle.entry.map((entry) => ({
+    uuid: entry.resource.id,
+    display: entry.resource.name,
+    childLocations: [],
+  }));
 };

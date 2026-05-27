@@ -16,12 +16,27 @@
 
 .fullDateTimeGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: $spacing-03;
   align-items: start;
 
   @include breakpoint('md') {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.dateTimeGroup {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+
+  .dateField {
+    flex: 0 0 auto;
+    width: 12rem;
+  }
+
+  .timeField {
+    flex: 0 0 auto;
   }
 }
 

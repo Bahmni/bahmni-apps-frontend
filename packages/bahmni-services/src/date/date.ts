@@ -528,3 +528,20 @@ export function convertTo24HourFormat(timeStr: string): string {
 
   return format(parsed, 'HH:mm');
 }
+
+/**
+ * Converts a time string in 12-hour format (with AM/PM) to total minutes since midnight.
+ * Useful for time comparisons and calculations.
+ * @param timeStr - Time string in 12-hour format (e.g., "09:00 AM", "02:30 PM")
+ * @returns Total minutes since midnight, or null if the input is invalid
+ * @example
+ * getTimeInMinutes("09:00 AM") // 540 (9 * 60)
+ * getTimeInMinutes("02:30 PM") // 870 (14 * 60 + 30)
+ * getTimeInMinutes("invalid") // null
+ */
+export function getTimeInMinutes(timeStr: string): number | null {
+  const time24 = convertTo24HourFormat(timeStr);
+  if (!time24) return null;
+  const [hours, minutes] = time24.split(':').map(Number);
+  return hours * 60 + minutes;
+}

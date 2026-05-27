@@ -1,18 +1,19 @@
 import {
   ActionAreaLayout,
   ActionDataTable,
-  Button,
   Header,
 } from '@bahmni/design-system';
 import {
   BAHMNI_HOME_PATH,
+  createAppointmentUnavailability,
+  type CreateUnavailabilityRequest,
   formatDateTime,
   getAppointmentUnavailabilities,
   hasPrivilege,
   useTranslation,
   type AppointmentUnavailability,
 } from '@bahmni/services';
-import { useUserPrivilege } from '@bahmni/widgets';
+import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
 import UnavailabilityForm from './components/UnavailabilityForm';
@@ -21,13 +22,14 @@ import {
   GET_APPOINTMENT_UNAVAILABILITY_PRIVILEGE,
 } from './constants';
 import styles from './styles/index.module.scss';
-import { formatTime } from './utils';
 
 const AppointmentUnavailabilityPage: React.FC = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { userPrivileges } = useUserPrivilege();
+  const { addNotification } = useNotification();
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const canViewUnavailability = hasPrivilege(
     userPrivileges,
@@ -82,8 +84,13 @@ const AppointmentUnavailabilityPage: React.FC = () => {
 
     return data.map((item: AppointmentUnavailability) => ({
       id: item.uuid,
-      startDateTime: `${formatDateTime(item.startDate).formattedResult}, ${formatTime(item.startTime)}`,
-      endDateTime: `${formatDateTime(item.endDate).formattedResult}, ${formatTime(item.endTime)}`,
+      startDateTime: formatDateTime(
+        `${item.startDate}T${item.startTime}`,
+        t,
+        true,
+      ).formattedResult,
+      endDateTime: formatDateTime(`${item.endDate}T${item.endTime}`, t, true)
+        .formattedResult,
       locationName: item.location.name,
       appointmentServiceName:
         item.service?.name ?? t('ADMIN_UNAVAILABILITY_ALL'),
@@ -91,12 +98,33 @@ const AppointmentUnavailabilityPage: React.FC = () => {
     }));
   }, [data, t]);
 
-  const handleFormSuccess = useCallback(() => {
-    setIsFormVisible(false);
-    queryClient.invalidateQueries({
-      queryKey: ['appointmentUnavailabilities'],
-    });
-  }, [queryClient]);
+  const handleFormSubmit = useCallback(
+    async (data: CreateUnavailabilityRequest[]) => {
+      setIsSubmitting(true);
+      try {
+        await createAppointmentUnavailability(data);
+        addNotification({
+          title: t('ADMIN_UNAVAILABILITY_FORM_SUCCESS_TITLE'),
+          message: t('ADMIN_UNAVAILABILITY_FORM_SUCCESS_MESSAGE'),
+          type: 'success',
+          timeout: 5000,
+        });
+        setIsFormVisible(false);
+        queryClient.invalidateQueries({
+          queryKey: ['appointmentUnavailabilities'],
+        });
+      } catch {
+        addNotification({
+          title: t('ADMIN_UNAVAILABILITY_FORM_ERROR_TITLE'),
+          message: t('ADMIN_UNAVAILABILITY_FORM_ERROR_MESSAGE'),
+          type: 'error',
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [addNotification, queryClient, t],
+  );
 
   const handleFormCancel = useCallback(() => {
     setIsFormVisible(false);
@@ -113,22 +141,9 @@ const AppointmentUnavailabilityPage: React.FC = () => {
           aria-label="appointment-unavailability-page-aria-label"
           className={styles.page}
         >
-          <div className={styles.header}>
-            <h1 className={styles.title}>{t('ADMIN_UNAVAILABILITY_TITLE')}</h1>
-            {!isFormVisible && canAddUnavailability && (
-              <Button
-                id="add-unavailability-btn"
-                kind="primary"
-                className={styles.addBtn}
-                onClick={() => setIsFormVisible(true)}
-              >
-                {t('ADMIN_UNAVAILABILITY_ADD_BUTTON')}
-              </Button>
-            )}
-          </div>
           <ActionDataTable
             id="unavailability-table"
-            title=""
+            title={t('ADMIN_UNAVAILABILITY_TITLE')}
             headers={headers}
             rows={rows}
             ariaLabel="unavailability-table"
@@ -138,14 +153,24 @@ const AppointmentUnavailabilityPage: React.FC = () => {
             }
             emptyStateMessage={t('ADMIN_UNAVAILABILITY_EMPTY_MESSAGE')}
             className={styles.table}
+            actionButton={
+              !isFormVisible && canAddUnavailability
+                ? {
+                    label: t('ADMIN_UNAVAILABILITY_ADD_BUTTON'),
+                    onClick: () => setIsFormVisible(true),
+                    props: { id: 'add-unavailability-btn', kind: 'primary' },
+                  }
+                : undefined
+            }
           />
         </div>
       }
       actionArea={
         isFormVisible && (
           <UnavailabilityForm
-            onSuccess={handleFormSuccess}
+            onSubmit={handleFormSubmit}
             onCancel={handleFormCancel}
+            isSubmitting={isSubmitting}
           />
         )
       }

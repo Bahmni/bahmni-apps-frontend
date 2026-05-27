@@ -9,6 +9,7 @@ import {
   mockProviderPage3,
   mockSinglePageResponse,
   mockEmptyProvidersResponse,
+  mockProvidersWithVoided,
 } from '../__mocks__/mocks';
 import { ALL_PROVIDERS_URL, PROVIDER_RESOURCE_URL } from '../constants';
 import {
@@ -314,6 +315,23 @@ describe('providerService', () => {
         'Fetch All Providers Page 2 Error',
       );
       expect(get).toHaveBeenCalledTimes(2);
+    });
+
+    it('should filter out voided providers', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockProvidersWithVoided);
+
+      const result = await fetchAllProviders();
+
+      expect(result).toHaveLength(2);
+      expect(
+        result.find((p) => p.uuid === 'provider-uuid-active'),
+      ).toBeDefined();
+      expect(
+        result.find((p) => p.uuid === 'provider-uuid-no-person'),
+      ).toBeDefined();
+      expect(
+        result.find((p) => p.uuid === 'provider-uuid-voided'),
+      ).toBeUndefined();
     });
   });
 });
