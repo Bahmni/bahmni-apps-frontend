@@ -16,7 +16,7 @@ import {
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Medication, MedicationRequest } from 'fhir/r4';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   dispatchCDSSCheck,
   useCDSSResultsListener,
