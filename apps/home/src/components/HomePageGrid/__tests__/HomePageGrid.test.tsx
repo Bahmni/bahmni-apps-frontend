@@ -2,6 +2,7 @@ import { getVisibleModules } from '@bahmni/services';
 import { useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { HomePageGrid } from '../HomePageGrid';
 import {
@@ -196,6 +197,29 @@ describe('HomePageGrid', () => {
     expect(
       screen.getByText('Failed to load home page configuration'),
     ).toBeInTheDocument();
+  });
+
+  it('calls refetch when error notification is closed', async () => {
+    const user = userEvent.setup();
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    mockGetVisibleModules.mockRejectedValue(new Error('Network error'));
+
+    renderHomePageGrid();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('home-error')).toBeInTheDocument();
+    });
+
+    const closeButton = screen.getByRole('button', { name: /close/i });
+    await user.click(closeButton);
+
+    await waitFor(() => {
+      expect(mockGetVisibleModules).toHaveBeenCalledTimes(2);
+    });
+
+    consoleSpy.mockRestore();
   });
 
   it('has no accessibility violations in normal state', async () => {
