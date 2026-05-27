@@ -64,3 +64,11 @@ export {
   resetWidgetRegistry,
   type WidgetConfig,
 } from './registry';
+
+// Location
+export {
+  LocationContext,
+  useLocation,
+  LocationProvider,
+  LocationSelector,
+} from './location';
