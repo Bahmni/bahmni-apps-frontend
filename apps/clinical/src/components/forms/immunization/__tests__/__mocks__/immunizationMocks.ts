@@ -81,6 +81,17 @@ export const mockImmunizationInputControlConfigWithFetchStockBatches = {
   },
 };
 
+export const mockImmunizationInputControlConfigWithCDSS = {
+  ...mockImmunizationInputControlConfig,
+  cdss: [
+    {
+      server: 'test-cdss-server',
+      service: 'immunization-history',
+      event: 'onSelect',
+    },
+  ],
+};
+
 export const mockClinicalConfigContext = {
   clinicalConfig: {
     consultationPad: {
@@ -129,21 +140,6 @@ export const mockLocationsWithChildren: Location[] = [
     childLocations: [{ uuid: 'child-uuid', display: 'Ward A', retired: false }],
   },
 ];
-
-export const mockVaccinationBundle = {
-  resourceType: 'Bundle',
-  type: 'searchset',
-  entry: [],
-};
-
-export const mockMixedVaccinationBundle = {
-  resourceType: 'Bundle',
-  type: 'searchset',
-  entry: [
-    buildMedicationEntry('Paracetamol', 'Medication', 'covid-19'),
-    buildMedicationEntry('ShouldBeExcluded', 'Observation'),
-  ],
-};
 
 export const mockImmunizationEntry: ImmunizationInputEntry = {
   id: 'test-id-1',
@@ -242,7 +238,39 @@ export const mockCovid19VaccineDrug: Medication = {
   code: { coding: [{ code: 'covid-19' }] },
 };
 
+export const mockInfluenzaVaccineDrug: Medication = {
+  resourceType: 'Medication',
+  id: 'flu-drug-uuid',
+  extension: [
+    {
+      url: MEDICINE_EXTENSION_URL,
+      extension: [
+        { url: MEDICINE_DRUG_NAME_EXTENSION_URL, valueString: 'Influenza Drug' },
+      ],
+    },
+  ],
+  code: { coding: [{ code: 'flu' }] },
+};
+
 export const mockCovid19VaccineDrugs: Medication[] = [mockCovid19VaccineDrug];
+
+export const mockVaccinationBundle = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    { resource: mockCovid19VaccineDrug },
+    { resource: mockInfluenzaVaccineDrug },
+  ],
+};
+
+export const mockMixedVaccinationBundle = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    buildMedicationEntry('Paracetamol', 'Medication', 'covid-19'),
+    buildMedicationEntry('ShouldBeExcluded', 'Observation'),
+  ],
+};
 
 export const mockEncounterSubject: Reference = {
   reference: 'Patient/patient-uuid',
@@ -403,4 +431,47 @@ export const mockStore = {
   validateAll: jest.fn(),
   reset: jest.fn(),
   getState: jest.fn(),
+  updateItemCDSCards: jest.fn(),
+  hasCriticalCDSCards: jest.fn().mockReturnValue(false),
+};
+
+export const mockCDSCard = {
+  summary: 'Vaccine interaction warning',
+  indicator: 'warning' as const,
+  source: { label: 'Test CDSS' },
+  suggestions: [
+    {
+      label: 'Consider alternative vaccine',
+      actions: [
+        {
+          type: 'update' as const,
+          resource: {
+            resourceType: 'Immunization',
+            id: 'imm-123',
+            status: 'completed',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+export const mockCriticalCDSCard = {
+  summary: 'Critical vaccine allergy alert',
+  indicator: 'critical' as const,
+  source: { label: 'Test CDSS' },
+  suggestions: [
+    {
+      label: 'Do not administer',
+      actions: [
+        {
+          type: 'delete' as const,
+          resource: {
+            resourceType: 'Immunization',
+            id: 'imm-123',
+          },
+        },
+      ],
+    },
+  ],
 };
