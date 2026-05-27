@@ -12,14 +12,6 @@ import {
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('../../AppTile', () => ({
-  AppTile: ({ id, label }: any) => (
-    <div data-testid={`app-tile-${id}`}>
-      <span>{label}</span>
-    </div>
-  ),
-}));
-
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getVisibleModules: jest.fn(),
