@@ -138,7 +138,7 @@ describe('UserProfileMenu', () => {
     await user.click(changePasswordBtn);
 
     expect(window.location.href).toBe(
-      '/bahmni/home/index.html#/changePassword',
+      '/bahmni/v1/home/index.html#/changePassword',
     );
   });
 
@@ -155,7 +155,7 @@ describe('UserProfileMenu', () => {
       expect(mockLogout).toHaveBeenCalled();
     });
 
-    expect(window.location.href).toBe('/bahmni/home/index.html#/login');
+    expect(window.location.href).toBe('/bahmni/v1/home/index.html#/login');
   });
 
   it('disables logout button while logging out', async () => {

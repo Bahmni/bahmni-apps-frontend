@@ -25,7 +25,10 @@ describe('privilegeService', () => {
         { name: 'Add Orders' },
       ];
 
-      mockedGet.mockResolvedValue({ user: { privileges: mockPrivileges } });
+      mockedGet.mockResolvedValue({
+        authenticated: true,
+        user: { privileges: mockPrivileges },
+      });
 
       const result = await getCurrentUserPrivileges();
 
@@ -38,7 +41,10 @@ describe('privilegeService', () => {
     it('should return single privilege when user has only one privilege', async () => {
       const mockPrivileges = [{ name: 'Add Encounters' }];
 
-      mockedGet.mockResolvedValue({ user: { privileges: mockPrivileges } });
+      mockedGet.mockResolvedValue({
+        authenticated: true,
+        user: { privileges: mockPrivileges },
+      });
 
       const result = await getCurrentUserPrivileges();
 
@@ -56,7 +62,10 @@ describe('privilegeService', () => {
         { name: 'app:clinical:consultationPad:access' },
       ];
 
-      mockedGet.mockResolvedValue({ user: { privileges: mockPrivileges } });
+      mockedGet.mockResolvedValue({
+        authenticated: true,
+        user: { privileges: mockPrivileges },
+      });
 
       const result = await getCurrentUserPrivileges();
 
@@ -86,7 +95,10 @@ describe('privilegeService', () => {
     });
 
     it('should handle response with no privileges array', async () => {
-      mockedGet.mockResolvedValue({ user: { privileges: [] } });
+      mockedGet.mockResolvedValue({
+        authenticated: true,
+        user: { privileges: [] },
+      });
 
       const result = await getCurrentUserPrivileges();
 
@@ -95,7 +107,10 @@ describe('privilegeService', () => {
     });
 
     it('should handle response with null privileges', async () => {
-      mockedGet.mockResolvedValue({ user: { privileges: null } });
+      mockedGet.mockResolvedValue({
+        authenticated: true,
+        user: { privileges: null },
+      });
 
       const result = await getCurrentUserPrivileges();
 

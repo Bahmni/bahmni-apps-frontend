@@ -1,2 +1,6 @@
-export { getCurrentUserPrivileges, hasPrivilege } from './privilegeService';
+export {
+  checkSession,
+  getCurrentUserPrivileges,
+  hasPrivilege,
+} from './privilegeService';
 export { type UserPrivilege, type SessionResponse } from './models';

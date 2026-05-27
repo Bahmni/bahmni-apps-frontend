@@ -25,6 +25,25 @@ declare global {
 window.React = React;
 window.ReactDOM = ReactDOMModule;
 
+// Migration cleanup: unregister any service workers left over from the bahmni-new/ path.
+// Remove this block once it's safe to assume all active users have cycled through the new path.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((r) => r.unregister());
+  });
+}
+
+// Redirect old Angular clinical hash URLs to React equivalent.
+// e.g. /bahmni/clinical/#/default/patient/uuid/dashboard → /bahmni/clinical/uuid
+const UUID_PATTERN =
+  /^#\/[^/]+\/patient\/([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})/i;
+if (window.location.pathname.includes('/clinical')) {
+  const match = window.location.hash.match(UUID_PATTERN);
+  if (match) {
+    window.location.replace(`${PUBLIC_PATH}clinical/${match[1]}`);
+  }
+}
+
 applyBahmniTheme(BAHMNI_DEFAULT_THEME);
 initFontAwesome();
 

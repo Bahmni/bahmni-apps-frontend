@@ -171,7 +171,9 @@ describe('Axios Client', () => {
         await expect(() =>
           responseInterceptor.rejected(mockError),
         ).rejects.toBe(mockError);
-        expect(globalThis.location.href).toBe('/bahmni/home/index.html#/login');
+        expect(globalThis.location.href).toBe(
+          '/bahmni/v1/home/index.html#/login',
+        );
       });
 
       it('should handle non-401 Axios errors', async () => {

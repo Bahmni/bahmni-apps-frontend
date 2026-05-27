@@ -1,5 +1,5 @@
 import { Loading } from '@bahmni/design-system';
-import { AppContextProvider } from '@bahmni/widgets';
+import { AppContextProvider, SessionGate } from '@bahmni/widgets';
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
@@ -28,16 +28,18 @@ const AppointmentsApp = lazy(() =>
 export function App() {
   return (
     <AppContextProvider>
-      <Suspense fallback={<Loading />}>
-        <Routes>
-          <Route index element={<Navigate to="/home/" replace />} />
-          <Route path="/home/*" element={<HomeApp />} />
-          <Route path="/clinical/*" element={<ClinicalApp />} />
-          <Route path="/registration/*" element={<RegistrationApp />} />
-          <Route path="/appointments/*" element={<AppointmentsApp />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Suspense>
+      <SessionGate>
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            <Route index element={<Navigate to="/home/" replace />} />
+            <Route path="/home/*" element={<HomeApp />} />
+            <Route path="/clinical/*" element={<ClinicalApp />} />
+            <Route path="/registration/*" element={<RegistrationApp />} />
+            <Route path="/appointments/*" element={<AppointmentsApp />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </SessionGate>
     </AppContextProvider>
   );
 }
