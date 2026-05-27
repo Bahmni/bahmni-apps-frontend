@@ -1,10 +1,15 @@
 import { SkeletonPlaceholder } from '@bahmni/design-system';
-import { useTranslation, logout, getFormattedError } from '@bahmni/services';
+import {
+  useTranslation,
+  logout,
+  getFormattedError,
+  LOGIN_PATH,
+} from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { UserAvatar } from '@carbon/icons-react';
 import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
 import React, { useState } from 'react';
-import { LOGIN_PATH, CHANGE_PASSWORD_PATH } from '../../constants/app';
+import { CHANGE_PASSWORD_PATH } from '../../constants/app';
 import styles from './styles/UserProfileMenu.module.scss';
 
 export const UserProfileMenu: React.FC = () => {

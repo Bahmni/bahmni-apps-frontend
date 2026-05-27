@@ -42,6 +42,9 @@ export { CONSULTATION_PAD_PRIVILEGES } from './userPrivileges/consultationPadPri
 // App Context
 export { AppContextProvider } from './appContext';
 
+// Session Gate
+export { SessionGate } from './sessionGate';
+
 // Active Practitioner
 export {
   ActivePractitionerProvider,

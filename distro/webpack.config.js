@@ -1,13 +1,22 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { NxReactWebpackPlugin } = require('@nx/react/webpack-plugin');
-const { InjectManifest } = require('workbox-webpack-plugin');
 const webpack = require('webpack');
 const { join } = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+// NxAppWebpackPlugin creates MiniCssExtractPlugin internally without adding it to
+// compiler.options.plugins, so the thisCompilation hook approach cannot find it.
+// Patching the prototype here forces static/ output for every instance, regardless
+// of how NxAppWebpackPlugin wires it up internally.
+const _origMiniCssApply = MiniCssExtractPlugin.prototype.apply;
+MiniCssExtractPlugin.prototype.apply = function(compiler) {
+  this.options.filename = 'static/[name].[contenthash].css';
+  this.options.chunkFilename = 'static/[name].[contenthash].chunk.css';
+  _origMiniCssApply.call(this, compiler);
+};
 
 module.exports = (env, argv) => {
-  //TODO to read this from docker compose
-  //TODO should we hardcode?
-  const publicPath = env.PUBLIC_PATH || process.env.PUBLIC_PATH || '/bahmni-new/';
+  const publicPath = env.PUBLIC_PATH || process.env.PUBLIC_PATH || '/bahmni/';
   const isDevelopment = argv.mode !== 'production';
 
   return {
@@ -15,6 +24,8 @@ module.exports = (env, argv) => {
       path: join(__dirname, 'dist'),
       publicPath: publicPath,
       clean: true,
+      filename: 'static/[name].[contenthash].js',
+      chunkFilename: 'static/[name].[contenthash].chunk.js',
     },
     resolve: {
       alias: isDevelopment ? {
@@ -27,7 +38,7 @@ module.exports = (env, argv) => {
     devServer: {
       port: 3000,
       historyApiFallback: {
-        index: '/bahmni-new/index.html',
+        index: '/bahmni/index.html',
         disableDotRule: true,
         htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
       },
@@ -69,14 +80,6 @@ module.exports = (env, argv) => {
         // See: https://react-svgr.com/
         // svgr: false
       }),
-      ...(!isDevelopment ? [
-        new InjectManifest({
-          swSrc: join(__dirname, 'src/service-worker.ts'),
-          swDest: 'service-worker.js',
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-          exclude: [/\.map$/, /^manifest.*\.js$/],
-        }),
-      ] : []),
     ],
   };
 };
