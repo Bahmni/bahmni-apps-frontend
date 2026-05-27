@@ -215,8 +215,28 @@ const ImmunizationForm = ({
       basedOnMedication,
       loginLocation,
     );
-    addImmunization(vaccineCode, defaults);
-  }, [basedOn, basedOnMedication, vaccinationDrugs, basedOnReference]);
+    const itemId = addImmunization(vaccineCode, defaults);
+
+    const cdssRules = inputControlConfig?.cdss ?? [];
+    const hasMatchingRule = cdssRules.some((rule) => rule.event === 'onLoad');
+
+    if (hasMatchingRule) {
+      dispatchCDSSCheck({
+        controlKey: immunizationFormType,
+        itemId,
+        event: 'onLoad',
+      });
+    }
+  }, [
+    basedOn,
+    basedOnMedication,
+    vaccinationDrugs,
+    basedOnReference,
+    addImmunization,
+    immunizationFormType,
+    inputControlConfig?.cdss,
+    loginLocation,
+  ]);
 
   const vaccineCodeComboBoxItems = useMemo(
     () =>

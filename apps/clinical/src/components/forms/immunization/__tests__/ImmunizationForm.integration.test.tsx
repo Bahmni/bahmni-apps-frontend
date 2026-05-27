@@ -363,14 +363,16 @@ describe('ImmunizationForm Integration Tests', () => {
 
     it('dispatches CDSS check event and handles results in end-to-end flow', async () => {
       const user = userEvent.setup();
-      (useClinicalConfig as jest.Mock).mockReturnValue({
-        ...mockClinicalConfigContext,
-        inputControlConfig: mockImmunizationInputControlConfigWithCDSS,
-      });
 
-      render(<ImmunizationForm encounterSessionStartContext={{}} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockImmunizationInputControlConfigWithCDSS}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(
@@ -409,9 +411,45 @@ describe('ImmunizationForm Integration Tests', () => {
       const handler = (globalThis as any).__cdssResultsHandler;
       expect(handler).toBeDefined();
 
+      const cardWithCorrectId = {
+        ...mockCDSCard,
+        suggestions: [
+          {
+            ...mockCDSCard.suggestions[0],
+            actions: [
+              {
+                ...mockCDSCard.suggestions[0].actions[0],
+                resource: {
+                  ...mockCDSCard.suggestions[0].actions[0].resource,
+                  id: immunizationId,
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const criticalCardWithCorrectId = {
+        ...mockCriticalCDSCard,
+        suggestions: [
+          {
+            ...mockCriticalCDSCard.suggestions[0],
+            actions: [
+              {
+                ...mockCriticalCDSCard.suggestions[0].actions[0],
+                resource: {
+                  ...mockCriticalCDSCard.suggestions[0].actions[0].resource,
+                  id: immunizationId,
+                },
+              },
+            ],
+          },
+        ],
+      };
+
       await act(async () => {
         handler({
-          cards: [mockCDSCard, mockCriticalCDSCard],
+          cards: [cardWithCorrectId],
           triggerItemId: immunizationId,
           controlKey: 'immunizationHistory',
         });
@@ -424,13 +462,13 @@ describe('ImmunizationForm Integration Tests', () => {
         (i) => i.id === immunizationId,
       );
 
-      expect(updatedImmunization?.cdsCards).toEqual([mockCDSCard]);
+      expect(updatedImmunization?.cdsCards).toEqual([cardWithCorrectId]);
 
       expect(updatedState.hasCriticalCDSCards()).toBe(false);
 
       await act(async () => {
         handler({
-          cards: [mockCriticalCDSCard],
+          cards: [criticalCardWithCorrectId],
           triggerItemId: immunizationId,
           controlKey: 'immunizationHistory',
         });
@@ -442,13 +480,16 @@ describe('ImmunizationForm Integration Tests', () => {
 
     it('does not dispatch CDSS check when no CDSS rules are configured', async () => {
       const user = userEvent.setup();
-      (useClinicalConfig as jest.Mock).mockReturnValue(
-        mockClinicalConfigContext,
-      );
 
-      render(<ImmunizationForm encounterSessionStartContext={{}} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockImmunizationInputControlConfig}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(
@@ -474,14 +515,16 @@ describe('ImmunizationForm Integration Tests', () => {
 
     it('handles CDSS results for multiple immunizations independently', async () => {
       const user = userEvent.setup();
-      (useClinicalConfig as jest.Mock).mockReturnValue({
-        ...mockClinicalConfigContext,
-        inputControlConfig: mockImmunizationInputControlConfigWithCDSS,
-      });
 
-      render(<ImmunizationForm encounterSessionStartContext={{}} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockImmunizationInputControlConfigWithCDSS}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(
@@ -505,10 +548,11 @@ describe('ImmunizationForm Integration Tests', () => {
       const firstId = getImmunizationStore('immunizationHistory').getState()
         .selectedImmunizations[0].id;
 
-      await user.type(
-        screen.getByRole('combobox', { name: /search to add immunization/i }),
-        'flu',
-      );
+      const combobox = screen.getByRole('combobox', {
+        name: /search to add immunization/i,
+      });
+      await user.clear(combobox);
+      await user.type(combobox, 'flu');
       await waitFor(() => {
         expect(screen.getByText('Influenza Vaccine')).toBeInTheDocument();
       });
@@ -525,9 +569,45 @@ describe('ImmunizationForm Integration Tests', () => {
 
       const handler = (globalThis as any).__cdssResultsHandler;
 
+      const criticalCardForFirst = {
+        ...mockCriticalCDSCard,
+        suggestions: [
+          {
+            ...mockCriticalCDSCard.suggestions[0],
+            actions: [
+              {
+                ...mockCriticalCDSCard.suggestions[0].actions[0],
+                resource: {
+                  ...mockCriticalCDSCard.suggestions[0].actions[0].resource,
+                  id: firstId,
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const cardForSecond = {
+        ...mockCDSCard,
+        suggestions: [
+          {
+            ...mockCDSCard.suggestions[0],
+            actions: [
+              {
+                ...mockCDSCard.suggestions[0].actions[0],
+                resource: {
+                  ...mockCDSCard.suggestions[0].actions[0].resource,
+                  id: secondId,
+                },
+              },
+            ],
+          },
+        ],
+      };
+
       await act(async () => {
         handler({
-          cards: [mockCriticalCDSCard],
+          cards: [criticalCardForFirst],
           triggerItemId: firstId,
           controlKey: 'immunizationHistory',
         });
@@ -535,7 +615,7 @@ describe('ImmunizationForm Integration Tests', () => {
 
       await act(async () => {
         handler({
-          cards: [mockCDSCard],
+          cards: [cardForSecond],
           triggerItemId: secondId,
           controlKey: 'immunizationHistory',
         });
@@ -549,8 +629,8 @@ describe('ImmunizationForm Integration Tests', () => {
         (i) => i.id === secondId,
       );
 
-      expect(firstImm?.cdsCards).toEqual([mockCriticalCDSCard]);
-      expect(secondImm?.cdsCards).toEqual([mockCDSCard]);
+      expect(firstImm?.cdsCards).toEqual([criticalCardForFirst]);
+      expect(secondImm?.cdsCards).toEqual([cardForSecond]);
       expect(finalState.hasCriticalCDSCards()).toBe(true);
     });
   });
