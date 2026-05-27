@@ -463,41 +463,42 @@ describe('medicationRequestService', () => {
         expect(result[0].quantity).toEqual({ value: 60, unit: 'capsules' });
       });
 
-      it('should detect immediate timing correctly', async () => {
-        const mockMedication = createMockMedicationRequest({
-          id: 'immediate-test',
-          dosageInstruction: [
-            {
-              timing: {
-                code: {
-                  text: 'Immediately',
+      it.each([
+        {
+          description: 'priority is stat',
+          override: { id: 'immediate-test', priority: 'stat' as const },
+          expectedIsImmediate: true,
+        },
+        {
+          description:
+            'timing code text is Immediately but priority is not stat',
+          override: {
+            id: 'immediate-test',
+            dosageInstruction: [
+              {
+                timing: {
+                  code: {
+                    text: 'Immediately',
+                  },
                 },
               },
-            },
-          ],
-        });
-        const mockBundle = createMockBundle([mockMedication]);
+            ],
+          },
+          expectedIsImmediate: true,
+        },
+      ])(
+        'should set isImmediate=$expectedIsImmediate when $description',
+        async ({ override, expectedIsImmediate }) => {
+          const mockMedication = createMockMedicationRequest(override);
+          const mockBundle = createMockBundle([mockMedication]);
 
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+          (get as jest.Mock).mockResolvedValueOnce(mockBundle);
 
-        const result = await getPatientMedications(patientUUID);
+          const result = await getPatientMedications(patientUUID);
 
-        expect(result[0].isImmediate).toBe(true);
-      });
-
-      it('should detect immediate timing correctly when priority is stat', async () => {
-        const mockMedication = createMockMedicationRequest({
-          id: 'immediate-test',
-          priority: 'stat',
-        });
-        const mockBundle = createMockBundle([mockMedication]);
-
-        (get as jest.Mock).mockResolvedValueOnce(mockBundle);
-
-        const result = await getPatientMedications(patientUUID);
-
-        expect(result[0].isImmediate).toBe(true);
-      });
+          expect(result[0].isImmediate).toBe(expectedIsImmediate);
+        },
+      );
 
       it('should set authoredOn date as start date for immediate medication', async () => {
         const mockMedication = createMockMedicationRequest({

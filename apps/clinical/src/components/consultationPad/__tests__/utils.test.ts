@@ -244,6 +244,47 @@ describe('getActiveEntries', () => {
     expect(result).toHaveLength(unrestricted.length);
     result.forEach((entry) => expect(entry.encounterTypes).toBeUndefined());
   });
+
+  it('returns only allergies + encounterDetails when editOnlyKey is "allergies"', () => {
+    const result = getActiveEntries(registry, 'Consultation', 'allergies');
+
+    expect(result.map((e) => e.key)).toEqual(
+      expect.arrayContaining(['encounterDetails', 'allergies']),
+    );
+    expect(result).toHaveLength(2);
+    expect(result.find((e) => e.key === 'medication')).toBeUndefined();
+    expect(result.find((e) => e.key === 'investigations')).toBeUndefined();
+  });
+
+  it('returns all matching entries (existing behaviour) when editOnlyKey is undefined', () => {
+    const withoutEditOnly = getActiveEntries(
+      registry,
+      'Consultation',
+      undefined,
+    );
+    const withoutArg = getActiveEntries(registry, 'Consultation');
+
+    expect(withoutEditOnly).toEqual(withoutArg);
+    expect(withoutEditOnly.length).toBeGreaterThan(2);
+  });
+
+  it('returns only encounterDetails when editOnlyKey does not match any entry key', () => {
+    const result = getActiveEntries(registry, 'Consultation', 'nonExistentKey');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].key).toBe('encounterDetails');
+  });
+
+  it('encounterDetails always passes the editOnlyKey filter when editOnlyKey is set', () => {
+    const result = getActiveEntries(registry, 'Consultation', 'medication');
+
+    const encounterDetailsEntry = result.find(
+      (e) => e.key === 'encounterDetails',
+    );
+    expect(encounterDetailsEntry).toBeDefined();
+    expect(result.find((e) => e.key === 'medication')).toBeDefined();
+    expect(result).toHaveLength(2);
+  });
 });
 
 describe('captureUpdatedResources', () => {

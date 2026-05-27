@@ -29,6 +29,7 @@ import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
 import Actions from './components/Actions';
+import { MEDICATION_REQUEST_PRIORITY } from './constants';
 import { MedicationAction } from './models';
 import styles from './styles/MedicationsTable.module.scss';
 import {
@@ -128,15 +129,12 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     }
   }, [isError, error, addNotification]);
 
-  // Listen to consultation saved events and refetch if medications were updated
   useSubscribeConsultationSaved(
     (payload: ConsultationSavedEventPayload) => {
-      // Only refetch if:
-      // 1. Event is for the same patient
-      // 2. Medications were modified during consultation
       if (
         payload.patientUUID === patientUUID &&
-        payload.updatedResources.medications
+        (payload.updatedResources.medications ||
+          payload.updatedResources.immunizationHistory)
       ) {
         refetch();
       }
@@ -257,7 +255,9 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                 ? `${row.doseForm} | ${row.quantity}`
                 : row.quantity}
             </p>
-            {row.isImmediate && <Tag className={styles.STAT}>STAT</Tag>}
+            {row.priority === MEDICATION_REQUEST_PRIORITY.STAT && (
+              <Tag className={styles.STAT}>STAT</Tag>
+            )}
             {row.asNeeded && <Tag className={styles.PRN}>PRN</Tag>}
           </>
         );

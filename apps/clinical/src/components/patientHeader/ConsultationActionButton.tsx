@@ -1,4 +1,4 @@
-import { Button } from '@bahmni/design-system';
+import { Button, SkeletonPlaceholder } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
 import React from 'react';
@@ -24,11 +24,21 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
   if (!canAddEncounter) {
     return null;
   }
+
+  if (isLoading) {
+    return (
+      <SkeletonPlaceholder
+        className={styles.newConsultationButtonSkeleton}
+        testId="consultation-action-button-skeleton"
+      />
+    );
+  }
+
   return (
     <Button
       className={styles.newConsultationButton}
       size="md"
-      disabled={isActionAreaVisible || isLoading}
+      disabled={isActionAreaVisible}
       onClick={() => dispatchConsultationStart({})}
       data-testid="consultation-action-button"
     >

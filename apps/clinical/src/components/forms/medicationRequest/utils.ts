@@ -82,7 +82,7 @@ export function applyDefaultFrequency(
   if (!medicationConfig?.frequencies?.length || !defaultValue || frequency)
     return;
   const defaultFrequency = medicationConfig.frequencies.find(
-    (item) => item.name === defaultValue && !isImmediateFrequency(item),
+    (item) => item.name === defaultValue,
   );
   if (defaultFrequency) updateFrequency(id, defaultFrequency);
 }
