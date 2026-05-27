@@ -19,4 +19,5 @@ export interface ConditionViewModel {
   readonly code: string;
   readonly codeDisplay: string;
   readonly note?: string[];
+  readonly rawFhirResource?: import('fhir/r4').Condition;
 }
