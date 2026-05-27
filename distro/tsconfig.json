@@ -3,9 +3,6 @@
   "include": [],
   "references": [
     {
-      "path": "../packages/bahmni-services"
-    },
-    {
       "path": "../apps/appointments"
     },
     {
@@ -19,6 +16,9 @@
     },
     {
       "path": "../packages/bahmni-design-system"
+    },
+    {
+      "path": "../apps/home"
     },
     {
       "path": "./tsconfig.app.json"
