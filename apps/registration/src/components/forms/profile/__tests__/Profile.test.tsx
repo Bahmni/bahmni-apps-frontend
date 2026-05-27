@@ -1056,4 +1056,28 @@ describe('Profile', () => {
       expect(incorrectMinYear - correctMinYear).toBe(1);
     });
   });
+
+  describe('Data Persistence', () => {
+    it('should not reset edited data when parent re-renders (accordion toggle)', async () => {
+      const initialData = createBasicInfoData();
+
+      const { rerender } = render(
+        <Profile ref={ref} initialData={initialData} />,
+      );
+
+      const firstNameInput = screen.getByLabelText(
+        /First Name/,
+      ) as HTMLInputElement;
+      fireEvent.change(firstNameInput, { target: { value: 'Updated' } });
+      expect(firstNameInput.value).toBe('Updated');
+
+      // Simulate parent re-render (same initialData reference, as happens after getGenderDisplay fix)
+      rerender(<Profile ref={ref} initialData={initialData} />);
+
+      const firstNameAfter = screen.getByLabelText(
+        /First Name/,
+      ) as HTMLInputElement;
+      expect(firstNameAfter.value).toBe('Updated');
+    });
+  });
 });

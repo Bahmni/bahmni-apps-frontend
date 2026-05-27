@@ -70,6 +70,7 @@ export function createConditionViewModels(
       code: coding?.code ?? '',
       codeDisplay: coding?.display ?? nonCodedDisplay ?? '',
       note: condition.note?.map((note) => note.text).filter(Boolean),
+      rawFhirResource: condition,
     };
   });
 }
