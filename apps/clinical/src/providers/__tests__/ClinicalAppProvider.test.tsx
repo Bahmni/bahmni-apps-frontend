@@ -67,7 +67,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']} patientId="patient-1">
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -88,7 +91,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']} patientId="patient-1">
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -104,7 +110,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']} patientId="patient-1">
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -142,7 +151,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']} patientId="patient-1">
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -174,7 +186,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']} patientId="patient-1">
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,

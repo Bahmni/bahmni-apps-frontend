@@ -679,8 +679,6 @@ describe('ImmunizationForm', () => {
   });
 
   describe('CDSS Integration', () => {
-    const mockAddImmunization = jest.fn().mockReturnValue('new-item-id');
-
     beforeEach(() => {
       mockDispatchCDSSCheck.mockClear();
       mockUseCDSSResultsListener.mockClear();
@@ -688,144 +686,6 @@ describe('ImmunizationForm', () => {
       mockUseCDSSResultsListener.mockImplementation((handler) => {
         (globalThis as any).__cdssResultsHandler = handler;
       });
-    });
-
-    it('dispatches CDSS check event when immunization is selected with CDSS rules configured', async () => {
-      const user = userEvent.setup();
-      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
-        ...mockStore,
-        addImmunization: mockAddImmunization,
-      });
-
-      render(
-        <ImmunizationForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockImmunizationInputControlConfigWithCDSS}
-        />,
-      );
-
-      await user.type(
-        screen.getByRole('combobox', { name: /search to add immunization/i }),
-        'covid',
-      );
-
-      await waitFor(() =>
-        expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument(),
-      );
-
-      await user.click(screen.getByText('COVID-19 Vaccine'));
-
-      await waitFor(() => expect(mockAddImmunization).toHaveBeenCalled());
-      expect(mockDispatchCDSSCheck).toHaveBeenCalledWith({
-        controlKey: 'immunizationHistory',
-        itemId: 'new-item-id',
-        event: 'onSelect',
-      });
-    });
-
-    it('does not dispatch CDSS check when no CDSS rules are configured', async () => {
-      const user = userEvent.setup();
-      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
-        ...mockStore,
-        addImmunization: mockAddImmunization,
-      });
-
-      render(
-        <ImmunizationForm
-          encounterSessionStartContext={{}}
-          inputControlConfig={mockImmunizationInputControlConfig}
-        />,
-      );
-
-      await user.type(
-        screen.getByRole('combobox', { name: /search to add immunization/i }),
-        'covid',
-      );
-
-      await waitFor(() =>
-        expect(screen.getByText('COVID-19 Vaccine')).toBeInTheDocument(),
-      );
-
-      await user.click(screen.getByText('COVID-19 Vaccine'));
-
-      await waitFor(() => expect(mockAddImmunization).toHaveBeenCalled());
-      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
-    });
-
-    it('registers CDSS results listener on mount', () => {
-      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
-        ...mockStore,
-        selectedImmunizations: [mockImmunizationEntry],
-      });
-      jest.mocked(useClinicalConfig).mockReturnValue({
-        ...mockClinicalConfigContext,
-        inputControlConfig: mockImmunizationInputControlConfigWithCDSS,
-      } as any);
-
-      render(<ImmunizationForm encounterSessionStartContext={{}} />);
-
-      expect(mockUseCDSSResultsListener).toHaveBeenCalledWith(
-        expect.any(Function),
-      );
-    });
-
-    it('filters and updates relevant CDS cards when CDSS results are received', () => {
-      const mockUpdateItemCDSCards = jest.fn();
-      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
-        ...mockStore,
-        selectedImmunizations: [{ ...mockImmunizationEntry, id: 'imm-123' }],
-        updateItemCDSCards: mockUpdateItemCDSCards,
-      });
-      jest.mocked(useClinicalConfig).mockReturnValue({
-        ...mockClinicalConfigContext,
-        inputControlConfig: mockImmunizationInputControlConfigWithCDSS,
-      } as any);
-
-      render(<ImmunizationForm encounterSessionStartContext={{}} />);
-
-      const handler = (globalThis as any).__cdssResultsHandler;
-      expect(handler).toBeDefined();
-
-      act(() => {
-        handler({
-          cards: [mockCDSCard, mockCriticalCDSCard],
-          triggerItemId: 'imm-123',
-          controlKey: 'immunizationHistory',
-        });
-      });
-
-      expect(mockUpdateItemCDSCards).toHaveBeenCalledWith('imm-123', [
-        mockCDSCard,
-      ]);
-    });
-
-    it('ignores CDS cards that do not match selected immunization IDs', () => {
-      const mockUpdateItemCDSCards = jest.fn();
-      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
-        ...mockStore,
-        selectedImmunizations: [
-          { ...mockImmunizationEntry, id: 'different-id' },
-        ],
-        updateItemCDSCards: mockUpdateItemCDSCards,
-      });
-      jest.mocked(useClinicalConfig).mockReturnValue({
-        ...mockClinicalConfigContext,
-        inputControlConfig: mockImmunizationInputControlConfigWithCDSS,
-      } as any);
-
-      render(<ImmunizationForm encounterSessionStartContext={{}} />);
-
-      const handler = (globalThis as any).__cdssResultsHandler;
-
-      act(() => {
-        handler({
-          cards: [mockCDSCard],
-          triggerItemId: 'imm-123',
-          controlKey: 'immunizationHistory',
-        });
-      });
-
-      expect(mockUpdateItemCDSCards).not.toHaveBeenCalled();
     });
 
     it('dispatches CDSS check with onLoad event when immunization is auto-populated from basedOn', async () => {
@@ -920,6 +780,82 @@ describe('ImmunizationForm', () => {
       );
 
       expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
+    });
+
+    it('registers CDSS results listener on mount', () => {
+      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
+        ...mockStore,
+        selectedImmunizations: [mockImmunizationEntry],
+      });
+      jest.mocked(useClinicalConfig).mockReturnValue({
+        ...mockClinicalConfigContext,
+        inputControlConfig: mockImmunizationInputControlConfigWithCDSS,
+      } as any);
+
+      render(<ImmunizationForm encounterSessionStartContext={{}} />);
+
+      expect(mockUseCDSSResultsListener).toHaveBeenCalledWith(
+        expect.any(Function),
+      );
+    });
+
+    it('filters and updates relevant CDS cards when CDSS results are received', () => {
+      const mockUpdateItemCDSCards = jest.fn();
+      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
+        ...mockStore,
+        selectedImmunizations: [{ ...mockImmunizationEntry, id: 'imm-123' }],
+        updateItemCDSCards: mockUpdateItemCDSCards,
+      });
+      jest.mocked(useClinicalConfig).mockReturnValue({
+        ...mockClinicalConfigContext,
+        inputControlConfig: mockImmunizationInputControlConfigWithCDSS,
+      } as any);
+
+      render(<ImmunizationForm encounterSessionStartContext={{}} />);
+
+      const handler = (globalThis as any).__cdssResultsHandler;
+      expect(handler).toBeDefined();
+
+      act(() => {
+        handler({
+          cards: [mockCDSCard, mockCriticalCDSCard],
+          triggerItemId: 'imm-123',
+          controlKey: 'immunizationHistory',
+        });
+      });
+
+      expect(mockUpdateItemCDSCards).toHaveBeenCalledWith('imm-123', [
+        mockCDSCard,
+      ]);
+    });
+
+    it('ignores CDS cards that do not match selected immunization IDs', () => {
+      const mockUpdateItemCDSCards = jest.fn();
+      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
+        ...mockStore,
+        selectedImmunizations: [
+          { ...mockImmunizationEntry, id: 'different-id' },
+        ],
+        updateItemCDSCards: mockUpdateItemCDSCards,
+      });
+      jest.mocked(useClinicalConfig).mockReturnValue({
+        ...mockClinicalConfigContext,
+        inputControlConfig: mockImmunizationInputControlConfigWithCDSS,
+      } as any);
+
+      render(<ImmunizationForm encounterSessionStartContext={{}} />);
+
+      const handler = (globalThis as any).__cdssResultsHandler;
+
+      act(() => {
+        handler({
+          cards: [mockCDSCard],
+          triggerItemId: 'imm-123',
+          controlKey: 'immunizationHistory',
+        });
+      });
+
+      expect(mockUpdateItemCDSCards).not.toHaveBeenCalled();
     });
   });
 

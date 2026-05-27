@@ -101,8 +101,6 @@ const ImmunizationForm = ({
     metadata?.disableAdditionalAdministrations as boolean | undefined;
   const fetchStockBatches = metadata?.fetchStockBatches as boolean | undefined;
 
-  const processedBasedOnRef = useRef<string | null>(null);
-
   useEffect(() => {
     if (attributes) {
       setAttributes(attributes);

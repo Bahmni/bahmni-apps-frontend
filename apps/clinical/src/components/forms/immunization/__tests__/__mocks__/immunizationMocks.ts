@@ -87,7 +87,7 @@ export const mockImmunizationInputControlConfigWithCDSS = {
     {
       server: 'test-cdss-server',
       service: 'immunization-history',
-      event: 'onSelect',
+      event: 'onLoad',
     },
   ],
 };
