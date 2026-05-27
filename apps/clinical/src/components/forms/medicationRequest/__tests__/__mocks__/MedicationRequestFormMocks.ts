@@ -2,7 +2,7 @@ import { Medication } from 'fhir/r4';
 import {
   createMockCDSCard,
   createMockCriticalCDSCard,
-} from '../../../../../../__mocks__/cdssMocks';
+} from '../../../../../__mocks__/cdssMocks';
 import { MedicationInputEntry } from '../../../../../models/medication';
 import { MedicationConfig } from '../../../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';

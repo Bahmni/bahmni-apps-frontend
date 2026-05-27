@@ -3,7 +3,7 @@ import { Medication, MedicationRequest, Reference } from 'fhir/r4';
 import {
   createMockCDSCard,
   createMockCriticalCDSCard,
-} from '../../../../../../__mocks__/cdssMocks';
+} from '../../../../../__mocks__/cdssMocks';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../../models';
 
