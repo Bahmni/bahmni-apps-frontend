@@ -3,6 +3,7 @@ import {
   useSubscribeConsultationSaved,
   CONSULTATION_ENCOUNTER_TYPE_UUID,
   setEncounterSessionState,
+  resetEncounterSession,
 } from '@bahmni/services';
 import {
   PatientDetails,
@@ -65,6 +66,12 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
       isLoading,
     });
   }, [editActiveEncounter, activeEncounter, practitioner, isLoading]);
+
+  useEffect(() => {
+    return () => {
+      resetEncounterSession();
+    };
+  }, []);
 
   return (
     <div

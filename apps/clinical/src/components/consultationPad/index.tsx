@@ -177,11 +177,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     const editMedications = encounterSessionStartContext.editMedications as
       | MedicationRequest[]
       | undefined;
-    if (editMedications?.length) {
-      getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY)
-        .getState()
-        .setPendingFhirEdits(editMedications);
-    }
+    const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
+    medStore
+      .getState()
+      .setPendingFhirEdits(editMedications?.length ? editMedications : []);
   }, [encounterSessionStartContext.editMedications]);
 
   useEffect(() => {

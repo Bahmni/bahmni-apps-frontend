@@ -90,6 +90,9 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
     }, [dosage, frequency, duration, durationUnit, id, updateDispenseQuantity]);
 
     useEffect(() => {
+      // Skip STAT/frequency normalization for edit rows — they already have
+      // their values populated from the FHIR resource.
+      if (entry.fhirResourceId) return;
       if (isMedicationRequest) {
         if (isPRN || !isSTAT) {
           updateFrequency(id, null);

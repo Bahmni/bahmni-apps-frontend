@@ -12,7 +12,7 @@ import {
   getVaccinations,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
 import { MedicationJSONConfig } from '../../../models/medicationConfig';
@@ -100,7 +100,6 @@ const MedicationRequestForm: React.FC<{
     pendingFhirEdits,
   } = useMedicationRequestStore(inputControlType as MedicationRequestStoreKey);
 
-  const editLoadedRef = useRef(false);
   const isEditMode = selectedMedicationRequests.some((m) => m.fhirResourceId);
 
   useEffect(() => {
@@ -109,12 +108,7 @@ const MedicationRequestForm: React.FC<{
 
   // Parse pending FHIR edits once config is available
   useEffect(() => {
-    if (
-      pendingFhirEdits.length > 0 &&
-      medicationConfig &&
-      !editLoadedRef.current
-    ) {
-      editLoadedRef.current = true;
+    if (pendingFhirEdits.length > 0 && medicationConfig) {
       const storeKey = inputControlType as MedicationRequestStoreKey;
       const store = getMedicationRequestStore(storeKey);
       const entries = pendingFhirEdits.map((fhir) =>
