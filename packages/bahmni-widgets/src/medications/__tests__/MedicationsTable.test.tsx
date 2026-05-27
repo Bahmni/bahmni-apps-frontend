@@ -32,11 +32,18 @@ expect.extend(toHaveNoViolations);
 
 jest.mock('../../hooks/usePatientUUID');
 jest.mock('../../notification');
+const mockEncounterSessionState = {
+  matchReasons: [],
+  activeEncounter: null,
+  canEditOrCreate: false,
+  isLoading: false,
+};
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   formatDateTime: jest.fn(),
   groupByDate: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
+  useEncounterSessionStore: () => mockEncounterSessionState,
 }));
 
 jest.mock('@tanstack/react-query', () => ({
@@ -530,81 +537,51 @@ describe('MedicationsTable', () => {
       } as any);
     };
 
-    const setPatientHeaderAttribute = (
-      matchReason: string | null,
-      canEdit: string | null,
+    const setEncounterSessionState = (
+      canEditOrCreate: boolean,
       encounterUuid: string | null = 'enc-uuid-123',
     ) => {
-      const header = document.createElement('div');
-      header.setAttribute('data-testid', 'patient-header');
-      if (matchReason) header.setAttribute('data-match-reason', matchReason);
-      if (canEdit) header.setAttribute('data-can-edit-encounter', canEdit);
-      if (encounterUuid)
-        header.setAttribute('data-active-encounter-uuid', encounterUuid);
-      document.body.appendChild(header);
-      return header;
+      mockEncounterSessionState.canEditOrCreate = canEditOrCreate;
+      mockEncounterSessionState.activeEncounter = encounterUuid
+        ? ({ id: encounterUuid } as any)
+        : null;
     };
 
     afterEach(() => {
-      document
-        .querySelectorAll('[data-testid="patient-header"]')
-        .forEach((el) => el.remove());
+      mockEncounterSessionState.canEditOrCreate = false;
+      mockEncounterSessionState.activeEncounter = null;
+      mockEncounterSessionState.matchReasons = [];
+      mockEncounterSessionState.isLoading = false;
     });
 
-    it('shows actions overflow menu when encounter is matched', () => {
+    it('shows edit action when encounter session allows editing', async () => {
       setupWithActiveMeds();
-      setPatientHeaderAttribute('MATCHED', 'true');
+      setEncounterSessionState(true);
 
       render(<MedicationsTable config={editConfig} />);
 
+      const menu = screen.getByTestId('medication-actions-menu-1');
+      expect(menu).toBeInTheDocument();
+      await userEvent.click(menu);
       expect(
-        screen.getByTestId('medication-actions-menu-1'),
+        screen.getByTestId('medication-action-edit-1'),
       ).toBeInTheDocument();
     });
 
-    it('shows actions overflow menu when location mismatch but can-edit-encounter is true', () => {
+    it('hides edit action when encounter session does not allow editing', () => {
       setupWithActiveMeds();
-      setPatientHeaderAttribute('LOCATION_MISMATCH', 'true');
-
-      render(<MedicationsTable config={editConfig} />);
-
-      expect(
-        screen.getByTestId('medication-actions-menu-1'),
-      ).toBeInTheDocument();
-    });
-
-    it('disables overflow menu when session expired and edit is the only action', () => {
-      setupWithActiveMeds();
-      setPatientHeaderAttribute('SESSION_EXPIRED', null, null);
+      setEncounterSessionState(false, null);
 
       render(<MedicationsTable config={editConfig} />);
 
       const menu = screen.getByTestId('medication-actions-menu-1');
       expect(menu).toBeInTheDocument();
+      // Menu exists but edit action should be hidden
     });
 
-    it('disables overflow menu when provider mismatch and edit is the only action', () => {
+    it('hides edit action when encounter UUID does not match medication encounter', () => {
       setupWithActiveMeds();
-      setPatientHeaderAttribute('PROVIDER_MISMATCH', null, null);
-
-      render(<MedicationsTable config={editConfig} />);
-
-      const menu = screen.getByTestId('medication-actions-menu-1');
-      expect(menu).toBeInTheDocument();
-    });
-
-    it('disables overflow menu when no patient header and edit is the only action', () => {
-      setupWithActiveMeds();
-
-      render(<MedicationsTable config={editConfig} />);
-
-      const menu = screen.getByTestId('medication-actions-menu-1');
-      expect(menu).toBeInTheDocument();
-    });
-
-    it('disables overflow menu when different encounter and edit is the only action', () => {
-      setupWithActiveMeds();
-      setPatientHeaderAttribute('MATCHED', 'true', 'different-encounter-uuid');
+      setEncounterSessionState(true, 'different-encounter-uuid');
 
       render(<MedicationsTable config={editConfig} />);
 
