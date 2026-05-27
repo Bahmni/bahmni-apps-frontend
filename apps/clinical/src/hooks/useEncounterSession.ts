@@ -36,7 +36,7 @@ export function useEncounterSession(
   );
   const [isPractitionerMatch, setIsPractitionerMatch] =
     useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [matchReason, setMatchReason] = useState<MatchReasonCode[]>([]);
 
@@ -50,7 +50,6 @@ export function useEncounterSession(
       setIsPractitionerMatch(false);
       setMatchReason([]);
       setError(null);
-      setIsLoading(false);
       return;
     }
 
