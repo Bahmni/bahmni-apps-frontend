@@ -30,11 +30,33 @@ export const NOT_ADMINISTERED_COLUMN_FIELDS: string[] = [
 ];
 
 export const ADMINISTERED_COLUMN_SORTABILITY: Record<string, boolean> = {
-  code: true,
+  code: false,
   doseSequence: false,
-  drugName: false,
+  drugName: true,
   administeredOn: true,
   administeredLocation: true,
+};
+
+export const ADMINISTERED_COLUMN_FILTERABILITY: Record<string, boolean> = {
+  code: true,
+  doseSequence: false,
+  drugName: true,
+  administeredOn: true,
+  administeredLocation: true,
+};
+
+export const ADMINISTERED_COLUMN_FILTER_TYPE: Record<
+  string,
+  'text' | 'select' | 'dateRange'
+> = {
+  administeredOn: 'dateRange',
+  administeredLocation: 'select',
+  code: 'select',
+};
+
+export const ADMINISTERED_COLUMN_GROUPABILITY: Record<string, boolean> = {
+  administeredLocation: true,
+  code: true,
 };
 
 export const NOT_ADMINISTERED_COLUMN_SORTABILITY: Record<string, boolean> = {

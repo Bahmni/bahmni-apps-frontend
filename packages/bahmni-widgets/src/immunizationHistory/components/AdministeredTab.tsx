@@ -1,7 +1,8 @@
 import {
-  ExpandableDataTable,
+  DataTable,
   TableExpandedRow,
   TooltipIcon,
+  type DataTableColumn,
 } from '@bahmni/design-system';
 import {
   ConsultationSavedEventPayload,
@@ -12,17 +13,18 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
-import { ADMINISTERED_COLUMN_SORTABILITY } from '../constants';
+import {
+  ADMINISTERED_COLUMN_FILTERABILITY,
+  ADMINISTERED_COLUMN_FILTER_TYPE,
+  ADMINISTERED_COLUMN_GROUPABILITY,
+  ADMINISTERED_COLUMN_SORTABILITY,
+} from '../constants';
 import {
   AdministeredImmunizationViewModel,
   AdministeredTabConfig,
 } from '../model';
 import styles from '../styles/Immunizations.module.scss';
-import {
-  createAdministeredImmunizationViewModel,
-  createColumnSortConfig,
-  createImmunizationHeaders,
-} from '../utils';
+import { createAdministeredImmunizationViewModel } from '../utils';
 
 interface AdministeredTabProps {
   patientUUID: string;
@@ -35,6 +37,30 @@ const fetchAdministeredImmunizations = async (
   const immunizations = await getPatientImmunizations(patientUUID, 'completed');
   return immunizations.map(createAdministeredImmunizationViewModel);
 };
+
+const isoToTimestamp = (value: string | null): number | null =>
+  value ? new Date(value).getTime() : null;
+
+const buildColumns = (
+  fields: string[],
+  t: (key: string) => string,
+): DataTableColumn<AdministeredImmunizationViewModel>[] =>
+  fields.map((field) => {
+    const filterType = ADMINISTERED_COLUMN_FILTER_TYPE[field];
+    return {
+      key: field,
+      header: t(
+        `IMMUNIZATION_HISTORY_WIDGET_COL_${field
+          .replace(/([a-z])([A-Z])/g, '$1_$2')
+          .toUpperCase()}`,
+      ),
+      enableSorting: ADMINISTERED_COLUMN_SORTABILITY[field] ?? false,
+      enableFiltering: ADMINISTERED_COLUMN_FILTERABILITY[field] ?? false,
+      filterType,
+      enableGrouping: ADMINISTERED_COLUMN_GROUPABILITY[field] ?? false,
+      defaultSortDirection: field === 'administeredOn' ? 'desc' : undefined,
+    };
+  });
 
 const AdministeredTab: React.FC<AdministeredTabProps> = ({
   patientUUID,
@@ -59,15 +85,9 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({
     [patientUUID, refetch],
   );
 
-  const headers = useMemo(
-    () => createImmunizationHeaders(config.columns, t),
+  const columns = useMemo(
+    () => buildColumns(config.columns, t),
     [config.columns, t],
-  );
-
-  const sortable = useMemo(
-    () =>
-      createColumnSortConfig(config.columns, ADMINISTERED_COLUMN_SORTABILITY),
-    [config.columns],
   );
 
   const renderCell = (row: AdministeredImmunizationViewModel, key: string) => {
@@ -93,6 +113,12 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({
     return row[key as keyof AdministeredImmunizationViewModel] ?? '-';
   };
 
+  const accessor = (row: AdministeredImmunizationViewModel, key: string) => {
+    if (key === 'administeredOn') {
+      return isoToTimestamp(row.administeredOn);
+    }
+    return row[key as keyof AdministeredImmunizationViewModel] ?? null;
+  }
   const renderExpandedContent = (row: AdministeredImmunizationViewModel) => {
     if (!row.hasDetails) return null;
 
@@ -116,7 +142,9 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({
         },
         expiryDate: {
           label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_EXPIRY_DATE'),
-          value: formatDateTime(row.expiryDate!, t).formattedResult,
+          value: row.expiryDate
+            ? formatDateTime(row.expiryDate, t).formattedResult
+            : null,
         },
         recordedBy: {
           label: t('IMMUNIZATION_HISTORY_WIDGET_DETAIL_RECORDED_BY'),
@@ -133,7 +161,7 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({
       .filter((d): d is { label: string; value: string } => Boolean(d?.value));
 
     return (
-      <TableExpandedRow colSpan={headers.length + 1}>
+      <TableExpandedRow colSpan={config.columns.length + 1}>
         <div
           id={`immunization-expanded-row-${row.id}`}
           data-testid={`immunization-expanded-row-${row.id}-test-id`}
@@ -163,11 +191,10 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({
       id="immunization-administered-tab"
       data-testid="immunization-administered-tab-test-id"
     >
-      <ExpandableDataTable
-        headers={headers}
-        rows={data}
+      <DataTable
+        columns={columns}
+        rows={data ?? []}
         dataTestId="administered-immunizations-table"
-        sortable={sortable}
         ariaLabel={t('IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TABLE_ARIA')}
         loading={isLoading}
         errorStateMessage={
@@ -177,8 +204,20 @@ const AdministeredTab: React.FC<AdministeredTabProps> = ({
           'IMMUNIZATION_HISTORY_WIDGET_NO_IMMUNIZATIONS_RECORDED',
         )}
         renderCell={renderCell}
+        accessor={accessor}
         className={styles.table}
         renderExpandedContent={renderExpandedContent}
+        shouldRowBeExpandable={(row) => row.hasDetails}
+        enableGlobalSearch
+        globalSearchPlaceholder="Search immunizations"
+        enablePagination
+        pageSize={10}
+        actionButton={{
+          label: "Add Immunization",
+          onClick: () => {
+            console.log('Add Immunization clicked');
+          }
+        }}
       />
     </div>
   );
