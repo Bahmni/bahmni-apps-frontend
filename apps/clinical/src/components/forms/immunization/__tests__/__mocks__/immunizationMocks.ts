@@ -1,5 +1,9 @@
 import { Location, type AvailableStockResponse } from '@bahmni/services';
 import { Medication, MedicationRequest, Reference } from 'fhir/r4';
+import {
+  createMockCDSCard,
+  createMockCriticalCDSCard,
+} from '../../../../../../__mocks__/cdssMocks';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../../models';
 
@@ -438,43 +442,16 @@ export const mockStore = {
   hasCriticalCDSCards: jest.fn().mockReturnValue(false),
 };
 
-export const mockCDSCard = {
-  summary: 'Vaccine interaction warning',
-  indicator: 'warning' as const,
-  source: { label: 'Test CDSS' },
-  suggestions: [
-    {
-      label: 'Consider alternative vaccine',
-      actions: [
-        {
-          type: 'update' as const,
-          resource: {
-            resourceType: 'Immunization',
-            id: 'imm-123',
-            status: 'completed',
-          },
-        },
-      ],
-    },
-  ],
-};
+export const mockCDSCard = createMockCDSCard(
+  'Immunization',
+  'imm-123',
+  'Vaccine interaction warning',
+  'Consider alternative vaccine',
+);
 
-export const mockCriticalCDSCard = {
-  summary: 'Critical vaccine allergy alert',
-  indicator: 'critical' as const,
-  source: { label: 'Test CDSS' },
-  suggestions: [
-    {
-      label: 'Do not administer',
-      actions: [
-        {
-          type: 'delete' as const,
-          resource: {
-            resourceType: 'Immunization',
-            id: 'imm-123',
-          },
-        },
-      ],
-    },
-  ],
-};
+export const mockCriticalCDSCard = createMockCriticalCDSCard(
+  'Immunization',
+  'imm-123',
+  'Critical vaccine allergy alert',
+  'Do not administer',
+);

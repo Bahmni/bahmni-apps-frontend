@@ -1,4 +1,8 @@
 import { Medication } from 'fhir/r4';
+import {
+  createMockCDSCard,
+  createMockCriticalCDSCard,
+} from '../../../../../../__mocks__/cdssMocks';
 import { MedicationInputEntry } from '../../../../../models/medication';
 import { MedicationConfig } from '../../../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
@@ -334,46 +338,19 @@ export const mockMedicationEntry: MedicationInputEntry = {
   hasBeenValidated: true,
 };
 
-export const mockCDSCard = {
-  summary: 'Drug interaction warning',
-  indicator: 'warning' as const,
-  source: { label: 'Test CDSS' },
-  suggestions: [
-    {
-      label: 'Consider alternative medication',
-      actions: [
-        {
-          type: 'update' as const,
-          resource: {
-            resourceType: 'MedicationRequest',
-            id: 'med-123',
-            status: 'active',
-          },
-        },
-      ],
-    },
-  ],
-};
+export const mockCDSCard = createMockCDSCard(
+  'MedicationRequest',
+  'med-123',
+  'Drug interaction warning',
+  'Consider alternative medication',
+);
 
-export const mockCriticalCDSCard = {
-  summary: 'Critical drug allergy alert',
-  indicator: 'critical' as const,
-  source: { label: 'Test CDSS' },
-  suggestions: [
-    {
-      label: 'Do not prescribe',
-      actions: [
-        {
-          type: 'delete' as const,
-          resource: {
-            resourceType: 'MedicationRequest',
-            id: 'med-123',
-          },
-        },
-      ],
-    },
-  ],
-};
+export const mockCriticalCDSCard = createMockCriticalCDSCard(
+  'MedicationRequest',
+  'med-123',
+  'Critical drug allergy alert',
+  'Do not prescribe',
+);
 
 export const mockInputControlConfigWithCDSS = {
   type: 'medication',
