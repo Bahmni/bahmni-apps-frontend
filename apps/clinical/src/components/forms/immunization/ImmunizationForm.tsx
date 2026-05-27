@@ -24,7 +24,7 @@ import {
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
-import CDSCardAlert from '../../common/CDSCardAlert';
+import CDSCardAlert from '../../cdsCardAlert/CDSCardAlert';
 import SelectedImmunizationItem from './components/SelectedImmunizationItem';
 import {
   IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,

@@ -27,7 +27,7 @@ import {
   getMedicationDisplay,
   getMedicationsFromBundle,
 } from '../../../services/medicationService';
-import CDSCardAlert from '../../common/CDSCardAlert';
+import CDSCardAlert from '../../cdsCardAlert/CDSCardAlert';
 import SelectedMedicationRequestItem from './components/SelectedMedicationRequestItem';
 import {
   MEDICATIONS_CONFIG_URL,

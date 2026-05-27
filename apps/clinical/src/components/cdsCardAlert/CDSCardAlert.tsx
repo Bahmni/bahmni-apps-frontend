@@ -26,7 +26,6 @@ const CDSCardAlert: React.FC<CDSCardAlertProps> = ({ card }) => {
     <InlineNotification
       kind={getNotificationKind(card.indicator)}
       title={card.summary}
-      subtitle={card.source?.label}
       lowContrast
       hideCloseButton
     />
