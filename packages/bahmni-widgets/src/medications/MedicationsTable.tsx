@@ -36,6 +36,7 @@ import { WidgetProps } from '../registry/model';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { handleEditAction } from './components/actionHandlers';
 import Actions from './components/Actions';
+import { MEDICATION_REQUEST_PRIORITY } from './constants';
 import { MedicationAction } from './models';
 import styles from './styles/MedicationsTable.module.scss';
 import {
@@ -139,15 +140,12 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     }
   }, [isError, error, addNotification]);
 
-  // Listen to consultation saved events and refetch if medications were updated
   useSubscribeConsultationSaved(
     (payload: ConsultationSavedEventPayload) => {
-      // Only refetch if:
-      // 1. Event is for the same patient
-      // 2. Medications were modified during consultation
       if (
         payload.patientUUID === patientUUID &&
-        payload.updatedResources.medications
+        (payload.updatedResources.medications ||
+          payload.updatedResources.immunizationHistory)
       ) {
         refetch();
       }
@@ -243,29 +241,22 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     return [...activeMedications, ...scheduledMedications];
   }, [allMedications]);
 
-  const {
-    canEditOrCreate: canEditEncounter,
-    activeEncounterUuid,
-    activePractitionerUuid,
-  } = useEncounterSessionStore();
+  const { canEditOrCreate: canEditEncounter, activeEncounter } =
+    useEncounterSessionStore();
+  const activeEncounterUuid = activeEncounter?.id ?? null;
 
   const editableMedications = useMemo(() => {
     if (!canEdit || !canEditEncounter || !activeEncounterUuid) return [];
     return activeAndScheduledMedications.filter(
       (m) =>
         (m.status === 'active' || m.status === 'on-hold') &&
-        m.fhirResource?.encounter?.reference?.endsWith(activeEncounterUuid) &&
-        (!activePractitionerUuid ||
-          m.fhirResource?.requester?.reference?.endsWith(
-            activePractitionerUuid,
-          )),
+        m.fhirResource?.encounter?.reference?.endsWith(activeEncounterUuid),
     );
   }, [
     activeAndScheduledMedications,
     canEdit,
     canEditEncounter,
     activeEncounterUuid,
-    activePractitionerUuid,
   ]);
 
   const isEditable = useCallback(
@@ -307,7 +298,9 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                 ? `${row.doseForm} | ${row.quantity}`
                 : row.quantity}
             </p>
-            {row.isImmediate && <Tag className={styles.STAT}>STAT</Tag>}
+            {row.priority === MEDICATION_REQUEST_PRIORITY.STAT && (
+              <Tag className={styles.STAT}>STAT</Tag>
+            )}
             {row.asNeeded && <Tag className={styles.PRN}>PRN</Tag>}
           </>
         );

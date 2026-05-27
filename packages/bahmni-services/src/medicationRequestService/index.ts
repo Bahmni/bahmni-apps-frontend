@@ -1,5 +1,4 @@
 export {
-  type FormattedMedicationRequest,
   type MedicationRequest,
   MedicationStatus,
   type MedicationOrdersMetadataResponse,

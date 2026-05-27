@@ -128,6 +128,21 @@ describe('buildFhirPatient', () => {
     expect(buildFhirPatient(baseInput).id).toBeUndefined();
   });
 
+  it('should include nameUuid in name for update, omit for create', () => {
+    const updateResult = buildFhirPatient({
+      ...baseInput,
+      patientUuid: 'uuid-123',
+      profile: { ...baseProfile, nameUuid: 'name-uuid-456' },
+    });
+    expect(updateResult.name![0].id).toBe('name-uuid-456');
+
+    const createResult = buildFhirPatient({
+      ...baseInput,
+      profile: { ...baseProfile, nameUuid: 'stale-name-uuid' },
+    });
+    expect(createResult.name![0].id).toBeUndefined();
+  });
+
   it('should include primary identifier with type text and location', () => {
     const result = buildFhirPatient({
       ...baseInput,

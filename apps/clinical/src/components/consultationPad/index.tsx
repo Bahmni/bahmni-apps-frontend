@@ -21,7 +21,9 @@ import type { EncounterSessionStartContext } from '../../events/startConsultatio
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
+import type { AllergyInputEntry } from '../../models/allergy';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
+import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
@@ -46,6 +48,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   encounterSessionStartContext,
   onClose,
 }) => {
+  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies as
+    | AllergyInputEntry[]
+    | undefined;
   const encounterType = encounterSessionStartContext.encounterType;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -119,10 +124,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   }, [resolvedEncounterType]);
 
   const { practitioner } = useActivePractitioner();
-  const { activeEncounter: sessionEncounter } = useEncounterSession({
-    practitioner,
-    encounterTypeUUID: selectedEncounterType?.uuid,
-  });
+  const { activeEncounter: sessionEncounter, matchReason } =
+    useEncounterSession({
+      practitioner,
+      encounterTypeUUID: selectedEncounterType?.uuid,
+    });
 
   const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
     | string
@@ -158,6 +164,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   const activeEncounter = editEncounterUuid ? editEncounter : sessionEncounter;
 
+  // Only resume the existing encounter on an exact MATCHED case.
+  // SESSION_EXPIRED, LOCATION_MISMATCH, PROVIDER_MISMATCH all silently create a new encounter.
+  const encounterForSubmission = matchReason.includes('MATCHED')
+    ? activeEncounter
+    : null;
   const { episodeOfCare } = useClinicalAppData();
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
@@ -187,6 +198,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     return () => activeEntries.forEach((entry) => entry.reset());
   }, []);
 
+  useEffect(() => {
+    if (preloadedAllergies?.length) {
+      useAllergyStore.getState().preloadAllergies(preloadedAllergies);
+    }
+  }, [preloadedAllergies]);
+
   const handleSubmit = async () => {
     const validationResults = activeEntries.map((entry) => ({
       key: entry.key,
@@ -210,7 +227,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     try {
       setIsSubmitting(true);
       const result = await submitConsultation({
-        activeEncounter,
+        activeEncounter: encounterForSubmission,
         episodeOfCareUuids,
         statDurationInMilliseconds,
         activeEntries,

@@ -9,7 +9,10 @@ export {
 } from './encounterMatchDecisionMapper';
 export {
   useEncounterSessionStore,
-  setEncounterSessionState,
+  setEncounterSessionDecision,
+  setEncounterSessionLoading,
   resetEncounterSession,
+  subscribeEncounterSession,
+  getEncounterSessionSnapshot,
   type EncounterSessionState,
 } from './encounterSessionStore';

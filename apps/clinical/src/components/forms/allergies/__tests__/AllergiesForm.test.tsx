@@ -136,13 +136,18 @@ const mockAllergenSearch = {
 };
 
 // Test utilities
-const renderAllergiesForm = (overrides = {}) => {
+const renderAllergiesForm = (
+  overrides = {},
+  props: Record<string, unknown> = {},
+) => {
   const mockStore = { ...mockAllergyStore, ...overrides };
   (
     useAllergyStore as jest.MockedFunction<typeof useAllergyStore>
   ).mockReturnValue(mockStore);
 
-  return render(<AllergiesForm />, { wrapper: createWrapper() });
+  return render(<AllergiesForm {...(props as any)} />, {
+    wrapper: createWrapper(),
+  });
 };
 
 const mockAllergenSearchHook = (overrides = {}) => {
@@ -816,6 +821,78 @@ describe('AllergiesForm', () => {
     it('renders form when user has Add Allergies privilege', () => {
       renderAllergiesForm();
       expect(screen.getByTestId('allergies-form-tile')).toBeInTheDocument();
+    });
+  });
+
+  describe('Edit mode (encounterSessionStartContext)', () => {
+    const preloadedAllergies = [
+      {
+        id: 'pre-allergy-1',
+        display: 'Shellfish',
+        type: 'food',
+        selectedSeverity: null,
+        selectedReactions: [],
+        errors: {},
+        hasBeenValidated: false,
+        isModified: false as boolean | undefined,
+      },
+    ];
+
+    it('isEditMode is true when encounterSessionStartContext has preloadedAllergies', () => {
+      renderAllergiesForm(
+        {},
+        { encounterSessionStartContext: { preloadedAllergies } },
+      );
+
+      // In edit mode the search combobox should be absent
+      expect(
+        screen.queryByTestId('allergies-search-combobox'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('search ComboBox is NOT rendered when isEditMode is true', () => {
+      renderAllergiesForm(
+        {},
+        { encounterSessionStartContext: { preloadedAllergies } },
+      );
+
+      expect(
+        screen.queryByRole('combobox', { name: /search for allergies/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('search ComboBox IS rendered when isEditMode is false (no context)', () => {
+      renderAllergiesForm();
+
+      expect(getSearchCombobox()).toBeInTheDocument();
+    });
+
+    it('search ComboBox IS rendered when encounterSessionStartContext has no preloadedAllergies', () => {
+      renderAllergiesForm(
+        {},
+        { encounterSessionStartContext: { encounterType: 'Consultation' } },
+      );
+
+      expect(getSearchCombobox()).toBeInTheDocument();
+    });
+
+    it('title shows EDIT_ALLERGIES_FORM_TITLE translation key when isEditMode is true', () => {
+      renderAllergiesForm(
+        {},
+        { encounterSessionStartContext: { preloadedAllergies } },
+      );
+
+      expect(screen.getByTestId('allergies-form-title')).toHaveTextContent(
+        'EDIT_ALLERGIES_FORM_TITLE',
+      );
+    });
+
+    it('title shows ALLERGIES_FORM_TITLE translation key when isEditMode is false', () => {
+      renderAllergiesForm();
+
+      expect(screen.getByTestId('allergies-form-title')).toHaveTextContent(
+        'Allergies',
+      );
     });
   });
 });

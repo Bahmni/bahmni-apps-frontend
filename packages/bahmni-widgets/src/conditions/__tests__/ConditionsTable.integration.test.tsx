@@ -1,6 +1,7 @@
 import {
   getConditionPage,
   useSubscribeConsultationSaved,
+  resetEncounterSession,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, waitFor } from '@testing-library/react';
@@ -8,9 +9,11 @@ import userEvent from '@testing-library/user-event';
 import { Condition } from 'fhir/r4';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
+import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import ConditionsTable from '../ConditionsTable';
 
 jest.mock('../../notification');
+jest.mock('../../userPrivileges/useHasPrivilege');
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
@@ -107,9 +110,12 @@ describe('ConditionsTable Integration', () => {
       },
     });
     jest.clearAllMocks();
+    resetEncounterSession();
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
+    // Default to no privilege — keeps Edit button hidden in integration tests
+    (useHasPrivilege as jest.Mock).mockReturnValue(false);
   });
 
   afterEach(() => {
