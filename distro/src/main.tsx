@@ -1,6 +1,6 @@
 import {
   initFontAwesome,
-  applyBahmniTheme,
+  applyWhiteLabel,
   BAHMNI_DEFAULT_THEME,
 } from '@bahmni/design-system';
 import { initAppI18n } from '@bahmni/services';
@@ -26,7 +26,7 @@ declare global {
 window.React = React;
 window.ReactDOM = ReactDOMModule;
 
-applyBahmniTheme(BAHMNI_DEFAULT_THEME);
+applyWhiteLabel(BAHMNI_DEFAULT_THEME);
 
 initFontAwesome();
 initAppI18n('home')

@@ -1,7 +1,13 @@
 import { Loading } from '@bahmni/design-system';
-import { AppContextProvider } from '@bahmni/widgets';
-import { lazy, Suspense } from 'react';
+import {
+  AppContextProvider,
+  WhiteLabelProvider,
+  NotificationProvider,
+} from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { lazy, Suspense, useRef } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import { LocationProvider } from './context';
 
 const IndexPage = lazy(() =>
   import('./IndexPage').then((module) => ({ default: module.IndexPage })),
@@ -26,18 +32,39 @@ const AppointmentsApp = lazy(() =>
 );
 
 export function App() {
+  const queryClient = useRef(
+    new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+          refetchOnMount: false,
+          refetchOnReconnect: false,
+          refetchOnWindowFocus: false,
+        },
+      },
+    }),
+  );
+
   return (
-    <AppContextProvider>
-      <Suspense fallback={<Loading />}>
-        <Routes>
-          <Route index element={<IndexPage />} />
-          <Route path="/clinical/*" element={<ClinicalApp />} />
-          <Route path="/registration/*" element={<RegistrationApp />} />
-          <Route path="/appointments/*" element={<AppointmentsApp />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Suspense>
-    </AppContextProvider>
+    <LocationProvider>
+      <QueryClientProvider client={queryClient.current}>
+        <NotificationProvider>
+          <WhiteLabelProvider>
+            <AppContextProvider>
+              <Suspense fallback={<Loading />}>
+                <Routes>
+                  <Route index element={<IndexPage />} />
+                  <Route path="/clinical/*" element={<ClinicalApp />} />
+                  <Route path="/registration/*" element={<RegistrationApp />} />
+                  <Route path="/appointments/*" element={<AppointmentsApp />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Suspense>
+            </AppContextProvider>
+          </WhiteLabelProvider>
+        </NotificationProvider>
+      </QueryClientProvider>
+    </LocationProvider>
   );
 }
 

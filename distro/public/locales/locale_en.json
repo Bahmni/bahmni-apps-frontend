@@ -1,4 +1,6 @@
 {
+  "ERROR_CONFIG_TITLE": "{{config}} Error",
+  "ERROR_CONFIG_GENERIC_MESSAGE": "Unable to load {{config}}. Please check your configuration file and try refreshing the page.",
   "HOME_CHANGE_PASSWORD": "Change Password",
   "HOME_ERROR_FETCH_CONFIG": "Failed to load home page configuration",
   "HOME_ERROR_LOCATION_SYNC_FAILED": "Location change saved locally but failed to sync to server.",

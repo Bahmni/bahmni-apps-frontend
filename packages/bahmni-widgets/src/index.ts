@@ -53,6 +53,16 @@ export {
 // Config Provider Factories
 export { createConfigProvider, createConfigHook } from './configProvider';
 
+// Brand Theme
+export {
+  WhiteLabelProvider,
+  useWhiteLabel,
+  WhiteLabelContext,
+  WHITE_LABEL_URL,
+  type WhiteLabelContextType,
+  type WhiteLabelConfig,
+} from './whiteLabel';
+
 // Widget Registry
 export {
   registerWidget,

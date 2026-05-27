@@ -2,6 +2,7 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "../../styles/serviceRequestStatus";
 
 .requestName {
   @include type-style("heading-compact-01");
@@ -25,6 +26,7 @@
   background-color: $yellow-20 !important;
   color: $yellow-70 !important;
 }
+
 
 .customAccordianItem {
   background-color: $layer-01;

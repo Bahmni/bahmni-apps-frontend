@@ -1,10 +1,10 @@
 import '@carbon/styles/css/styles.css';
 
 export {
-  applyBahmniTheme,
+  applyWhiteLabel,
   BAHMNI_DEFAULT_THEME,
-  type BahmniThemeConfig,
-} from './utils/applyTheme';
+  type WhiteLabelConfig,
+} from './utils/applyWhiteLabel';
 
 export { Close, Edit, TrashCan } from '@carbon/icons-react';
 
