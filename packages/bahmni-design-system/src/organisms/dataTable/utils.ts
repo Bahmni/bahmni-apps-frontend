@@ -72,9 +72,9 @@ export const buildTanStackColumns = <T extends { id: string }>(
     accessorFn: (row: T) => {
       const fromAccessor = accessor?.(row, col.key);
       const value =
-        fromAccessor !== undefined
-          ? fromAccessor
-          : (row as Record<string, unknown>)[col.key];
+        fromAccessor === undefined
+          ? (row as Record<string, unknown>)[col.key]
+          : fromAccessor;
       return value ?? '';
     },
     header: col.header,
