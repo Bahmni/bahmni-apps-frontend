@@ -245,7 +245,10 @@ export const mockInfluenzaVaccineDrug: Medication = {
     {
       url: MEDICINE_EXTENSION_URL,
       extension: [
-        { url: MEDICINE_DRUG_NAME_EXTENSION_URL, valueString: 'Influenza Drug' },
+        {
+          url: MEDICINE_DRUG_NAME_EXTENSION_URL,
+          valueString: 'Influenza Drug',
+        },
       ],
     },
   ],
