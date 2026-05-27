@@ -633,4 +633,31 @@ describe('createMedicationRequestEntries', () => {
 
     (globalThis.crypto.randomUUID as jest.Mock).mockReturnValue(mockUUID);
   });
+
+  it('should set priorPrescription when entry has fhirResourceId', () => {
+    const entryWithFhirId = {
+      ...mockMedicationEntry,
+      fhirResourceId: 'existing-fhir-123',
+    };
+
+    const result = createMedicationRequestEntries({
+      selectedMedicationRequests: [entryWithFhirId],
+      ...mockCreateParams,
+    });
+
+    const medicationRequest = result[0].resource as MedicationRequest;
+    expect(medicationRequest.priorPrescription).toEqual({
+      reference: 'MedicationRequest/existing-fhir-123',
+    });
+  });
+
+  it('should not set priorPrescription when entry has no fhirResourceId', () => {
+    const result = createMedicationRequestEntries({
+      selectedMedicationRequests: [mockMedicationEntry],
+      ...mockCreateParams,
+    });
+
+    const medicationRequest = result[0].resource as MedicationRequest;
+    expect(medicationRequest.priorPrescription).toBeUndefined();
+  });
 });
