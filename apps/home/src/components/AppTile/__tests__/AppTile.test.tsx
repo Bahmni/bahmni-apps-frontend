@@ -13,7 +13,7 @@ describe('AppTile', () => {
     expect(
       screen.getByRole('img', { name: 'registration' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Registration')).toBeInTheDocument();
+    expect(screen.getByText('HOME_MODULE_REGISTRATION')).toBeInTheDocument();
   });
 
   it('passes url as href to ClickableTile', () => {
