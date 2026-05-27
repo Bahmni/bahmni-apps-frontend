@@ -131,7 +131,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const encounterForSubmission = matchReason.includes('MATCHED')
     ? activeEncounter
     : null;
-  const { episodeOfCare } = useClinicalAppData();
+
+  const { episodeOfCare, patientId, activeVisitId, activeEpisodeId } =
+    useClinicalAppData();
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
@@ -202,22 +204,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
       const dataBundle = buildComprehensiveCDSSBundle();
 
-      const patientId =
-        encounterSessionStartContext.patientUuid ??
-        activeEncounter?.subject?.reference?.split('/')[1];
+      const resolvedPatientId = patientId;
 
-      const visitId =
-        encounterSessionStartContext.visitUuid ??
-        activeEncounter?.partOf?.reference?.split('/')[1];
+      const resolvedVisitId =
+        activeVisitId ?? activeEncounter?.partOf?.reference?.split('/')[1];
 
-      const episodeId =
-        encounterSessionStartContext.episodeUuid ??
-        (episodeOfCareUuids.length > 0 ? episodeOfCareUuids[0] : undefined);
+      const resolvedEpisodeId = activeEpisodeId;
 
       const context = {
-        patientId: patientId as string,
-        visitId: visitId as string | undefined,
-        episodeId: episodeId as string | undefined,
+        patientId: resolvedPatientId as string,
+        visitId: resolvedVisitId as string | undefined,
+        episodeId: resolvedEpisodeId as string | undefined,
       };
       const cardPromises = cdssRules.map((rule) =>
         invokeCDSSRule(rule, context, dataBundle).catch((error) => {
@@ -241,7 +238,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       buildComprehensiveCDSSBundle,
       encounterSessionStartContext,
       activeEncounter,
-      episodeOfCareUuids,
+      patientId,
+      activeVisitId,
+      activeEpisodeId,
     ],
   );
 

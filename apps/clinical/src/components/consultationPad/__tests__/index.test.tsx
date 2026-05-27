@@ -141,7 +141,12 @@ beforeEach(() => {
   jest
     .mocked(useNotification)
     .mockReturnValue({ addNotification: mockAddNotification } as any);
-  jest.mocked(useClinicalAppData).mockReturnValue({ episodeOfCare: [] } as any);
+  jest.mocked(useClinicalAppData).mockReturnValue({
+    episodeOfCare: [],
+    patientId: 'patient-123',
+    activeVisitId: 'visit-123',
+    activeEpisodeId: null,
+  } as any);
   jest.mocked(useEncounterConcepts).mockReturnValue({
     encounterConcepts: mockEncounterConcepts,
     loading: false,
@@ -400,6 +405,9 @@ describe('ConsultationPad', () => {
         () =>
           jest.mocked(useClinicalAppData).mockReturnValue({
             episodeOfCare: [{ uuid: 'eoc-1' }, { uuid: 'eoc-2' }],
+            patientId: 'patient-123',
+            activeVisitId: 'visit-123',
+            activeEpisodeId: 'eoc-1',
           } as any),
         { episodeOfCareUuids: ['eoc-1', 'eoc-2'] },
       ],
