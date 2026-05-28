@@ -43,7 +43,6 @@ interface OrdersFulfillmentTableProps {
   onPatientExpand?: (
     patientUuid: string,
     lmpData: ObservationData | null,
-    menstruatingStatus?: string | null,
   ) => void;
 }
 
@@ -349,6 +348,8 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
 
   const renderExpandedContent = (row: PatientOrderRow) => {
     const { lmpConfig } = ordersTableConfig ?? {};
+    const lmpDateConcept = lmpConfig?.lmpDateConcept;
+    const lmpTabLabels = lmpConfig?.tabLabels;
     const patientUuid = row.orders[0]?.patientUuid;
     const patient = row.orders[0]?.patient;
     const currentTabLabel = tabs?.[selectedIndex]?.label;
@@ -357,8 +358,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       lmpConfig &&
       patient?.gender === 'F' &&
       parseAgeYears(patient?.age) >= 10 &&
-      (!lmpConfig.tabLabels?.length ||
-        lmpConfig.tabLabels.includes(currentTabLabel)) &&
+      (!lmpTabLabels?.length || lmpTabLabels.includes(currentTabLabel)) &&
       patientUuid
     );
 
@@ -366,27 +366,12 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       if (!fetchedPatientUuids.current.has(patientUuid!)) {
         fetchedPatientUuids.current.add(patientUuid!);
         setTimeout(() => {
-          // Fetch both LMP Date and Menstruating status
-          const conceptsToFetch = [lmpConfig!.lmpDateConcept];
-          if (lmpConfig!.isPatientMenstruatingConcept) {
-            conceptsToFetch.push(lmpConfig!.isPatientMenstruatingConcept);
-          }
-
-          Promise.all(
-            conceptsToFetch.map((concept) =>
-              getObservationByConceptName(patientUuid!, concept),
-            ),
-          )
-            .then((results) => {
-              const [lmpData, menstruatingData] = results;
-              onPatientExpand?.(
-                patientUuid!,
-                lmpData as ObservationData | null,
-                menstruatingData as string | null,
-              );
+          getObservationByConceptName(patientUuid!, lmpDateConcept!)
+            .then((result) => {
+              onPatientExpand?.(patientUuid!, result as ObservationData | null);
             })
             .catch(() => {
-              onPatientExpand?.(patientUuid!, null, null);
+              onPatientExpand?.(patientUuid!, null);
             });
         }, 0);
       }

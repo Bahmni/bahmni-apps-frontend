@@ -33,7 +33,6 @@ interface OrderFulfillmentSliderProps {
   tabLabel?: string;
   onSaveSuccess?: () => void;
   prefetchedLmpData?: ObservationData | null;
-  prefetchedMenstruatingStatus?: string | null;
 }
 
 export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
@@ -43,7 +42,6 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   tabLabel = '',
   onSaveSuccess,
   prefetchedLmpData,
-  prefetchedMenstruatingStatus,
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -56,17 +54,16 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
   const [lmpData, setLmpData] = useState<ObservationData | null>(null);
-  const [menstruatingStatus, setMenstruatingStatus] = useState<string | null>(
-    null,
-  );
-
   const { lmpConfig } = ordersTableConfig ?? {};
+  const lmpThreshold = lmpConfig?.threshold ?? 0;
+  const lmpDateConcept = lmpConfig?.lmpDateConcept;
+  const lmpTabLabels = lmpConfig?.tabLabels;
 
   const isLmpEligible = !!(
     lmpConfig &&
     order?.patient?.gender === 'F' &&
     parseAgeYears(order?.patient?.age) >= 10 &&
-    (!lmpConfig.tabLabels?.length || lmpConfig.tabLabels.includes(tabLabel))
+    (!lmpTabLabels?.length || lmpTabLabels.includes(tabLabel))
   );
 
   const getLmpDisplayInfo = () => {
@@ -74,24 +71,12 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
       return { show: false };
     }
 
-    if (lmpConfig?.isPatientMenstruatingConcept && menstruatingStatus) {
-      if (menstruatingStatus.toLowerCase() === 'no') {
-        return {
-          show: true,
-          message: t('NOT_YET_MENSTRUATING'),
-          className: styles.observationNotMenstruating,
-        };
-      }
-    }
-
     if (lmpData?.daysSince !== undefined && lmpData.daysSince !== null) {
       return {
         show: true,
         message: `${lmpData.daysSince}`,
         className:
-          lmpData.daysSince > (lmpConfig?.threshold ?? 0)
-            ? styles.observationWarning
-            : '',
+          lmpData.daysSince > lmpThreshold ? styles.observationWarning : '',
       };
     }
 
@@ -142,50 +127,21 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     if (isOpen && isLmpEligible && order?.patientUuid) {
       if (prefetchedLmpData !== undefined) {
         setLmpData(prefetchedLmpData);
-      }
-      if (prefetchedMenstruatingStatus !== undefined) {
-        setMenstruatingStatus(prefetchedMenstruatingStatus);
-      }
-
-      if (
-        prefetchedLmpData === undefined ||
-        prefetchedMenstruatingStatus === undefined
-      ) {
-        const conceptsToFetch = [lmpConfig!.lmpDateConcept];
-        if (lmpConfig!.isPatientMenstruatingConcept) {
-          conceptsToFetch.push(lmpConfig!.isPatientMenstruatingConcept);
-        }
-
-        Promise.all(
-          conceptsToFetch.map((concept) =>
-            getObservationByConceptName(order.patientUuid, concept),
-          ),
-        )
-          .then((results) => {
+      } else {
+        getObservationByConceptName(order.patientUuid, lmpDateConcept!)
+          .then((result) => {
             if (isMounted) {
-              const [lmpResult, menstruatingResult] = results;
-              if (prefetchedLmpData === undefined) {
-                setLmpData(lmpResult as ObservationData | null);
-              }
-              if (prefetchedMenstruatingStatus === undefined) {
-                setMenstruatingStatus(menstruatingResult as string | null);
-              }
+              setLmpData(result as ObservationData | null);
             }
           })
           .catch(() => {
             if (isMounted) {
-              if (prefetchedLmpData === undefined) {
-                setLmpData(null);
-              }
-              if (prefetchedMenstruatingStatus === undefined) {
-                setMenstruatingStatus(null);
-              }
+              setLmpData(null);
             }
           });
       }
     } else if (!isOpen) {
       setLmpData(null);
-      setMenstruatingStatus(null);
     }
 
     return () => {
@@ -196,8 +152,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     order?.patientUuid,
     isLmpEligible,
     prefetchedLmpData,
-    prefetchedMenstruatingStatus,
     lmpConfig,
+    lmpDateConcept,
   ]);
 
   const getNestedValue = (obj: Order, key: string): string => {
