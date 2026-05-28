@@ -1,6 +1,7 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { NxReactWebpackPlugin } = require('@nx/react/webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const { join } = require('path');
 
@@ -67,6 +68,18 @@ module.exports = (env, argv) => {
         // Uncomment this line if you don't want to use SVGR
         // See: https://react-svgr.com/
         // svgr: false
+      }),
+      // command-palette.js + command-palette.css are built by
+      // `@bahmni/widgets build` into dist-standalone/ and copied here
+      // so they are served at /bahmni-new/ alongside the React distro.
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: join(__dirname, '../packages/bahmni-widgets/dist-standalone'),
+            to: join(__dirname, 'dist'),
+            noErrorOnMissing: true,
+          },
+        ],
       }),
       ...(!isDevelopment ? [
         new InjectManifest({

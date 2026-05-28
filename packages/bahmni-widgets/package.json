@@ -22,7 +22,7 @@
     "directory": "bahmni-apps-frontend/packages/bahmni-widgets"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && vite build --config vite.standalone.config.ts",
     "prepublishOnly": "yarn run build"
   },
   "dependencies": {
