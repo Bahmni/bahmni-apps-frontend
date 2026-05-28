@@ -71,3 +71,54 @@ export const mockUpdatedResources = {
   immunizationHistory: false,
   serviceRequests: {} as Record<string, boolean>,
 };
+
+export const mockCDSSServerConfig = [
+  {
+    server: 'test-cdss-server',
+    url: 'http://test-cdss.example.com',
+    services: [
+      {
+        name: 'medication-prescribe',
+        description: 'Medication prescribing decision support',
+        contextResourceMap: [
+          { type: 'MedicationRequest', attribute: 'draftOrders' },
+          { type: 'Observation', attribute: 'observations' },
+        ],
+        prefetch: {
+          patient: 'Patient/{{context.patientId}}',
+        },
+      },
+    ],
+  },
+];
+
+export const mockCDSSCards = [
+  {
+    summary: 'Drug interaction warning',
+    indicator: 'warning',
+    source: { label: 'Test CDSS' },
+    suggestions: [
+      {
+        label: 'Consider alternative medication',
+        actions: [
+          {
+            type: 'update',
+            resource: {
+              id: 'med-123',
+              resourceType: 'MedicationRequest',
+              status: 'active',
+            },
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const mockEmptyCDSSConfig: any[] = [];
+
+export const mockCDSSCheckEvent = {
+  controlKey: 'medications',
+  itemId: 'item-123',
+  event: 'onSelect',
+};
