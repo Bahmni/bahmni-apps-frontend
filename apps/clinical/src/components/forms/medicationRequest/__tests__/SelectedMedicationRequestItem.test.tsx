@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { dispatchCDSSCheck } from '../../../../events/cdssEvents';
 import SelectedMedicationRequestItem from '../components/SelectedMedicationRequestItem';
 import { getMedicationRequestStore, useMedicationRequestStore } from '../store';
 import {
@@ -31,8 +32,6 @@ jest.mock('../../../../events/cdssEvents/event', () => ({
 
 const mockUseMedicationRequestStore = jest.mocked(useMedicationRequestStore);
 
-// Import after mocking
-const { dispatchCDSSCheck } = require('../../../../events/cdssEvents/event');
 const mockDispatchCDSSCheck = jest.mocked(dispatchCDSSCheck);
 
 describe('SelectedMedicationRequestItem', () => {

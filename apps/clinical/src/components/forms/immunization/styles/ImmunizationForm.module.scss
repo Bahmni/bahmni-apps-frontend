@@ -62,15 +62,15 @@
 }
 
 .datePicker > div {
+  display: block;
+  min-inline-size: -webkit-fill-available !important;
+  > div {
     display: block;
-    min-inline-size: -webkit-fill-available !important;
     > div {
       display: block;
-      > div {
-        display: block;
-      }
-      input {
-        inline-size: -webkit-fill-available !important;
-      }
+    }
+    input {
+      inline-size: -webkit-fill-available !important;
     }
   }
+}
