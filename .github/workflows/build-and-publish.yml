@@ -45,13 +45,13 @@ jobs:
       - name: Run tests for registration
         run: yarn nx test @bahmni/registration-app
         
-      - name: Run tests for distribution
+      - name: Run tests for appointments
         run: yarn nx test @bahmni/appointments-app
 
       - name: Run tests for home
         run: yarn nx test @bahmni/home-app
 
-      - name: Run tests for reports
+      - name: Run tests for distro
         run: yarn nx test @bahmni/distro
 
       - name: Run tests for clinical
