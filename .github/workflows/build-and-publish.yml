@@ -33,29 +33,8 @@ jobs:
       # - name: Lint styles
       #   run: yarn lint:styles
 
-      - name: Run tests for design system
-        run: yarn nx test @bahmni/design-system
-
-      - name: Run tests for widgets
-        run: yarn nx test @bahmni/widgets
-      
-      - name: Run tests for services
-        run: yarn nx test @bahmni/services
-
-      - name: Run tests for registration
-        run: yarn nx test @bahmni/registration-app
-        
-      - name: Run tests for appointments
-        run: yarn nx test @bahmni/appointments-app
-
-      - name: Run tests for home
-        run: yarn nx test @bahmni/home-app
-
-      - name: Run tests for distro
-        run: yarn nx test @bahmni/distro
-
-      - name: Run tests for clinical
-        run: yarn nx test @bahmni/clinical-app
+      - name: Run tests
+        run: yarn nx run-many --target=test --all --parallel=1
 
       - name: Merge lcov reports
         run: |
