@@ -12,10 +12,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ReactNode } from 'react';
-import {
-  dispatchCDSSCheck,
-  useCDSSResultsListener,
-} from '../../../../events/cdssEvents';
+import { useCDSSResultsListener } from '../../../../events/cdssEvents';
 import { useMedicationSearch } from '../../../../hooks/useMedicationSearch';
 import MedicationRequestForm from '../MedicationRequestForm';
 import { useMedicationRequestStore } from '../store';
@@ -29,7 +26,6 @@ import {
   mockVaccinationBundle,
   mockCDSCard,
   mockCriticalCDSCard,
-  mockInputControlConfigWithCDSS,
 } from './__mocks__/MedicationRequestFormMocks';
 
 expect.extend(toHaveNoViolations);
@@ -68,7 +64,6 @@ jest.mock('../../../../events/cdssEvents');
 const mockUseQuery = jest.mocked(useQuery);
 const mockUseMedicationRequestStore = jest.mocked(useMedicationRequestStore);
 const mockUseMedicationSearch = jest.mocked(useMedicationSearch);
-const mockDispatchCDSSCheck = jest.mocked(dispatchCDSSCheck);
 const mockUseCDSSResultsListener = jest.mocked(useCDSSResultsListener);
 
 Element.prototype.scrollIntoView = jest.fn();
@@ -473,10 +468,7 @@ describe('MedicationRequestForm', () => {
   });
 
   describe('CDSS Integration', () => {
-    const mockAddItem = jest.fn().mockReturnValue('new-item-id');
-
     beforeEach(() => {
-      mockDispatchCDSSCheck.mockClear();
       mockUseCDSSResultsListener.mockClear();
       delete (globalThis as any).__cdssResultsHandler;
       mockUseCDSSResultsListener.mockImplementation((handler) => {
@@ -490,72 +482,6 @@ describe('MedicationRequestForm', () => {
       mockUseQuery.mockImplementation(defaultQueryMock as any);
     });
 
-    it('dispatches CDSS check event when medication is selected with CDSS rules configured', async () => {
-      const user = userEvent.setup();
-      mockUseMedicationRequestStore.mockReturnValue(
-        makeMockStore({ addItem: mockAddItem }) as any,
-      );
-      mockUseMedicationSearch.mockReturnValue({
-        searchResults: [mockMedication],
-        loading: false,
-        error: null,
-      });
-
-      renderForm(mockInputControlConfigWithCDSS);
-
-      const combobox = await waitFor(() =>
-        screen.getByRole('combobox', {
-          name: 'medication-search-combobox-aria-label',
-        }),
-      );
-
-      await user.type(combobox, 'paracetamol');
-      await waitFor(() =>
-        expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument(),
-      );
-      await user.click(screen.getByText('Paracetamol 500mg'));
-
-      await waitFor(() =>
-        expect(mockAddItem).toHaveBeenCalledWith(
-          mockMedication,
-          'Paracetamol 500mg',
-        ),
-      );
-      expect(mockDispatchCDSSCheck).toHaveBeenCalledWith({
-        controlKey: 'medication',
-        itemId: 'new-item-id',
-        event: 'onSelect',
-      });
-    });
-
-    it('does not dispatch CDSS check when no CDSS rules are configured', async () => {
-      const user = userEvent.setup();
-      mockUseMedicationRequestStore.mockReturnValue(
-        makeMockStore({ addItem: mockAddItem }) as any,
-      );
-      mockUseMedicationSearch.mockReturnValue({
-        searchResults: [mockMedication],
-        loading: false,
-        error: null,
-      });
-
-      renderForm();
-
-      await user.type(
-        screen.getByRole('combobox', {
-          name: 'medication-search-combobox-aria-label',
-        }),
-        'paracetamol',
-      );
-      await waitFor(() =>
-        expect(screen.getByText('Paracetamol 500mg')).toBeInTheDocument(),
-      );
-      await user.click(screen.getByText('Paracetamol 500mg'));
-
-      await waitFor(() => expect(mockAddItem).toHaveBeenCalled());
-      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
-    });
-
     it('registers CDSS results listener on mount', () => {
       mockUseMedicationRequestStore.mockReturnValue(
         makeMockStore({
@@ -563,7 +489,7 @@ describe('MedicationRequestForm', () => {
         }) as any,
       );
 
-      renderForm(mockInputControlConfigWithCDSS);
+      renderForm();
 
       expect(mockUseCDSSResultsListener).toHaveBeenCalledWith(
         expect.any(Function),
@@ -581,7 +507,7 @@ describe('MedicationRequestForm', () => {
         }) as any,
       );
 
-      renderForm(mockInputControlConfigWithCDSS);
+      renderForm();
 
       const handler = (globalThis as any).__cdssResultsHandler;
       expect(handler).toBeDefined();
@@ -610,7 +536,7 @@ describe('MedicationRequestForm', () => {
         }) as any,
       );
 
-      renderForm(mockInputControlConfigWithCDSS);
+      renderForm();
 
       const handler = (globalThis as any).__cdssResultsHandler;
 

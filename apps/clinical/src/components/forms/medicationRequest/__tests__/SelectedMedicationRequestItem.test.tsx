@@ -15,6 +15,7 @@ import {
   mockSelectedMedication,
   mockSelectedMedicationWithAllErrors,
   mockSelectedVaccination,
+  mockInputControlConfigWithCDSS,
 } from './__mocks__/MedicationRequestFormMocks';
 
 expect.extend(toHaveNoViolations);
@@ -24,7 +25,15 @@ jest.mock('../store', () => ({
   useMedicationRequestStore: jest.fn(),
 }));
 
+jest.mock('../../../../events/cdssEvents/event', () => ({
+  dispatchCDSSCheck: jest.fn(),
+}));
+
 const mockUseMedicationRequestStore = jest.mocked(useMedicationRequestStore);
+
+// Import after mocking
+const { dispatchCDSSCheck } = require('../../../../events/cdssEvents/event');
+const mockDispatchCDSSCheck = jest.mocked(dispatchCDSSCheck);
 
 describe('SelectedMedicationRequestItem', () => {
   beforeEach(() => {
@@ -44,6 +53,7 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType={inputControlType}
           attributes={mockFullMedicationAttributes}
+          inputControlConfig={{}}
         />,
       );
     });
@@ -120,6 +130,7 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType={inputControlType}
           attributes={[]}
+          inputControlConfig={{}}
         />,
       );
     });
@@ -184,6 +195,7 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType="vaccination"
           attributes={attributes}
+          inputControlConfig={{}}
         />,
       );
     });
@@ -207,6 +219,7 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType="medication"
           attributes={mockFullMedicationAttributes}
+          inputControlConfig={{}}
         />
       );
     };
@@ -332,6 +345,7 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType="medication"
             attributes={[{ name: 'frequency' }]}
+            inputControlConfig={{}}
           />,
         );
       });
@@ -380,6 +394,7 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfigWithDrugFormDefaults}
           inputControlType="medication"
           attributes={[{ name: 'dosage', required: true }]}
+          inputControlConfig={{}}
         />,
       );
     });
@@ -414,6 +429,7 @@ describe('SelectedMedicationRequestItem', () => {
             { name: 'instruction', default: 'Before Food' },
             { name: 'durationUnit', default: 'd' },
           ]}
+          inputControlConfig={{}}
         />,
       );
     });
@@ -443,6 +459,7 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType="vaccination"
           attributes={[{ name: 'stat' }, { name: 'frequency' }]}
+          inputControlConfig={{}}
         />,
       );
     });
@@ -473,6 +490,7 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType="medication"
           attributes={mockFullMedicationAttributesReadOnly}
+          inputControlConfig={{}}
         />,
       );
     });
@@ -504,6 +522,7 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType="medication"
           attributes={mockRequiredMedicationAttributes}
+          inputControlConfig={{}}
         />,
       );
     });
@@ -537,6 +556,7 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType={inputControlType}
             attributes={mockFullMedicationAttributes}
+            inputControlConfig={{}}
           />,
         ));
       });
@@ -556,12 +576,114 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType={inputControlType}
             attributes={mockFullMedicationAttributes}
+            inputControlConfig={{}}
           />,
         );
 
         const results = await axe(container);
         expect(results).toHaveNoViolations();
       });
+    });
+  });
+
+  describe('CDSS Integration', () => {
+    beforeEach(() => {
+      mockDispatchCDSSCheck.mockClear();
+    });
+
+    it('dispatches CDSS check event on mount when CDSS rules are configured for onSelect event', async () => {
+      await act(async () => {
+        render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+            inputControlConfig={mockInputControlConfigWithCDSS}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledWith({
+        controlKey: 'medication',
+        itemId: mockSelectedMedication.id,
+        event: 'onSelect',
+      });
+    });
+
+    it('does not dispatch CDSS check when no CDSS rules are configured', async () => {
+      await act(async () => {
+        render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+            inputControlConfig={{}}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
+    });
+
+    it('does not dispatch CDSS check when CDSS rules exist but not for onSelect event', async () => {
+      const configWithDifferentEvent = {
+        type: 'medication',
+        label: 'MEDICATION_REQUEST_FORM_TITLE',
+        cdss: [
+          {
+            server: 'test-cdss-server',
+            service: 'medication-prescribe',
+            event: 'onSave',
+          },
+        ],
+      };
+
+      await act(async () => {
+        render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+            inputControlConfig={configWithDifferentEvent}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
+    });
+
+    it('dispatches CDSS check only once on mount, not on re-renders', async () => {
+      const { rerender } = await act(async () =>
+        render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+            inputControlConfig={mockInputControlConfigWithCDSS}
+          />,
+        ),
+      );
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        rerender(
+          <SelectedMedicationRequestItem
+            entry={{ ...mockSelectedMedication, dosage: 10 }}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+            inputControlConfig={mockInputControlConfigWithCDSS}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
     });
   });
 });

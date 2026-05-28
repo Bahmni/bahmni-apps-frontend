@@ -13,7 +13,10 @@ import { useTranslation, getTodayDate } from '@bahmni/services';
 import React, { useEffect, useState } from 'react';
 import { MedicationInputEntry } from '../../../../models/medication';
 import { MedicationConfig } from '../../../../models/medicationConfig';
-import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
+import {
+  InputControlAttributes,
+  InputControlConfig,
+} from '../../../../providers/clinicalConfig/models';
 import {
   DURATION_UNIT_OPTIONS,
   MEDICATIONS_INPUT_CONTROL_KEY,
@@ -27,16 +30,25 @@ import {
   findAttr,
   isImmediateFrequency,
 } from '../utils';
+import { dispatchCDSSCheck } from '../../../../events/cdssEvents/event';
 
 export interface SelectedMedicationRequestItemProps {
   entry: MedicationInputEntry;
   medicationConfig: MedicationConfig;
   inputControlType: MedicationRequestStoreKey;
   attributes: InputControlAttributes[];
+  inputControlConfig: InputControlConfig;
 }
 
 const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps> =
-  React.memo(({ entry, medicationConfig, inputControlType, attributes }) => {
+  React.memo(
+    ({
+      entry,
+      medicationConfig,
+      inputControlType,
+      attributes,
+      inputControlConfig,
+    }) => {
     const {
       updateDosage,
       updateDosageUnit,
@@ -138,6 +150,21 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
         updateInstruction,
         updateRoute,
       });
+    }, []);
+
+    useEffect(() => {
+      const cdssRules = inputControlConfig?.cdss ?? [];
+      const hasMatchingRule = cdssRules.some(
+        (rule) => rule.event === 'onSelect',
+      );
+
+      if (hasMatchingRule) {
+        dispatchCDSSCheck({
+          controlKey: inputControlType,
+          itemId: id,
+          event: 'onSelect',
+        });
+      }
     }, []);
 
     const medicationName = display.split('(')[0];
@@ -503,7 +530,8 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
         )}
       </>
     );
-  });
+  },
+  );
 
 SelectedMedicationRequestItem.displayName = 'SelectedMedicationRequestItem';
 

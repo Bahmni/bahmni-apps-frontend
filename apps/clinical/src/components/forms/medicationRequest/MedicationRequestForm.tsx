@@ -14,10 +14,7 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
-import {
-  dispatchCDSSCheck,
-  useCDSSResultsListener,
-} from '../../../events/cdssEvents';
+import { useCDSSResultsListener } from '../../../events/cdssEvents';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
@@ -133,20 +130,7 @@ const MedicationRequestForm: React.FC<{
     if (selected.medication) {
       const displayName = getMedicationDisplay(selected.medication);
 
-      const itemId = addItem(selected.medication, displayName);
-
-      const cdssRules = inputControlConfig?.cdss ?? [];
-      const hasMatchingRule = cdssRules.some(
-        (rule) => rule.event === 'onSelect',
-      );
-
-      if (hasMatchingRule) {
-        dispatchCDSSCheck({
-          controlKey: inputControlType,
-          itemId,
-          event: 'onSelect',
-        });
-      }
+      addItem(selected.medication, displayName);
 
       setSearchTerm('');
     }
@@ -260,6 +244,7 @@ const MedicationRequestForm: React.FC<{
                       inputControlType as MedicationRequestStoreKey
                     }
                     attributes={attributes}
+                    inputControlConfig={inputControlConfig}
                   />
                 </SelectedItem>
                 {item.cdsCards?.map((card) => (
