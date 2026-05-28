@@ -250,7 +250,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
       const cardPromises = cdssRules.map((rule) =>
         invokeCDSSRule(cdssServerConfig, rule, context, dataBundle).catch(
-          (error) => {
+          () => {
             addNotification({
               title: t('ERROR_DEFAULT_TITLE'),
               message: t('CDSS_RULE_INVOCATION_ERROR', {
