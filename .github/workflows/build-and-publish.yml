@@ -34,7 +34,7 @@ jobs:
       #   run: yarn lint:styles
 
       - name: Run tests
-        run: yarn nx run-many --target=test --all --parallel=1
+        run: yarn test:coverage
 
       - name: Merge lcov reports
         run: |
