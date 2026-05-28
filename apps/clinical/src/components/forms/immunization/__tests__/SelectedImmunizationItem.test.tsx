@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { dispatchCDSSCheck } from '../../../../events/cdssEvents';
 import SelectedImmunizationItem from '../components/SelectedImmunizationItem';
 import { IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY } from '../constants';
 import { useImmunizationHistoryStore } from '../stores';
@@ -25,6 +26,12 @@ import {
 
 jest.mock('../stores');
 
+jest.mock('../../../../events/cdssEvents', () => ({
+  dispatchCDSSCheck: jest.fn(),
+}));
+
+const mockDispatchCDSSCheck = jest.mocked(dispatchCDSSCheck);
+
 expect.extend(toHaveNoViolations);
 
 Element.prototype.scrollIntoView = jest.fn();
@@ -42,6 +49,7 @@ const defaultProps = {
   availableStocks: mockAvailableStockResponse,
   stocksError: false,
   stockBatchesEnabled: true,
+  inputControlConfig: {},
 };
 
 describe('SelectedImmunizationItem', () => {
@@ -798,6 +806,117 @@ describe('SelectedImmunizationItem', () => {
       const { container } = render(<SelectedImmunizationItem {...props} />);
       await act(async () => {});
       expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('CDSS Integration', () => {
+    beforeEach(() => {
+      mockDispatchCDSSCheck.mockClear();
+    });
+
+    it('dispatches CDSS check event on mount when CDSS rules are configured for onSelect event', async () => {
+      const configWithOnSelectCDSS = {
+        type: 'immunizationHistory',
+        cdss: [
+          {
+            server: 'test-cdss-server',
+            service: 'vaccine-order-select',
+            event: 'onSelect',
+          },
+        ],
+      };
+
+      await act(async () => {
+        render(
+          <SelectedImmunizationItem
+            {...defaultProps}
+            inputControlConfig={configWithOnSelectCDSS}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledWith({
+        controlKey: IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
+        itemId: mockImmunizationEntry.id,
+        event: 'onSelect',
+      });
+    });
+
+    it('does not dispatch CDSS check when no CDSS rules are configured', async () => {
+      await act(async () => {
+        render(
+          <SelectedImmunizationItem
+            {...defaultProps}
+            inputControlConfig={{}}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
+    });
+
+    it('does not dispatch CDSS check when CDSS rules exist but not for onSelect event', async () => {
+      const configWithOnLoadOnly = {
+        type: 'immunizationAdministration',
+        cdss: [
+          {
+            server: 'test-cdss-server',
+            service: 'vaccine-administration-check',
+            event: 'onLoad',
+          },
+        ],
+      };
+
+      await act(async () => {
+        render(
+          <SelectedImmunizationItem
+            {...defaultProps}
+            inputControlConfig={configWithOnLoadOnly}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
+    });
+
+    it('dispatches CDSS check only once on mount, not on re-renders', async () => {
+      const configWithOnSelectCDSS = {
+        type: 'immunizationHistory',
+        cdss: [
+          {
+            server: 'test-cdss-server',
+            service: 'vaccine-order-select',
+            event: 'onSelect',
+          },
+        ],
+      };
+
+      const { rerender } = await act(async () =>
+        render(
+          <SelectedImmunizationItem
+            {...defaultProps}
+            inputControlConfig={configWithOnSelectCDSS}
+          />,
+        ),
+      );
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        rerender(
+          <SelectedImmunizationItem
+            {...defaultProps}
+            immunization={{
+              ...mockImmunizationEntry,
+              doseSequence: 2,
+            }}
+            inputControlConfig={configWithOnSelectCDSS}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
     });
   });
 });

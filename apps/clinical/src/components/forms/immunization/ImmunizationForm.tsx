@@ -17,10 +17,7 @@ import {
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Medication, MedicationRequest } from 'fhir/r4';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  dispatchCDSSCheck,
-  useCDSSResultsListener,
-} from '../../../events/cdssEvents';
+import { useCDSSResultsListener } from '../../../events/cdssEvents';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
@@ -208,11 +205,6 @@ const ImmunizationForm = ({
     }),
   });
 
-  const cdssRules = inputControlConfig?.cdss ?? [];
-  const hasCDSSRuleForOnLoad = cdssRules.some(
-    (rule) => rule.event === 'onLoad',
-  );
-
   useEffect(() => {
     if (!basedOn || !basedOnMedication || !vaccinationDrugs) return;
     const { vaccineCode, defaults } = buildBasedOnImmunizationEntry(
@@ -220,15 +212,7 @@ const ImmunizationForm = ({
       basedOnMedication,
       loginLocation,
     );
-    const itemId = addImmunization(vaccineCode, defaults);
-
-    if (hasCDSSRuleForOnLoad) {
-      dispatchCDSSCheck({
-        controlKey: immunizationFormType,
-        itemId,
-        event: 'onLoad',
-      });
-    }
+    addImmunization(vaccineCode, defaults);
   }, [basedOn, basedOnMedication, vaccinationDrugs, basedOnReference]);
 
   const vaccineCodeComboBoxItems = useMemo(
@@ -393,6 +377,7 @@ const ImmunizationForm = ({
                     stockQueries[immunizationIndex]?.isError ?? false
                   }
                   stockBatchesEnabled={!!fetchStockBatches}
+                  inputControlConfig={inputControlConfig}
                 />
               </SelectedItem>
               {immunization.cdsCards?.map((card) => (

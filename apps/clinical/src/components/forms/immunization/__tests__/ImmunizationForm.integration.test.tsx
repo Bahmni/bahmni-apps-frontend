@@ -367,7 +367,7 @@ describe('ImmunizationForm Integration Tests', () => {
           {
             server: 'test-cdss-server',
             service: 'immunization-administration',
-            event: 'onLoad',
+            event: 'onSelect',
           },
         ],
       };
@@ -388,17 +388,15 @@ describe('ImmunizationForm Integration Tests', () => {
         ).not.toBeInTheDocument();
       });
 
-      // Wait for the basedOn immunization to be added
       await waitFor(() => {
         expect(screen.getByText('Added Immunization')).toBeInTheDocument();
       });
 
-      // Verify CDSS check was dispatched with onLoad event
       await waitFor(() => {
         expect(mockDispatchCDSSCheck).toHaveBeenCalledWith(
           expect.objectContaining({
             controlKey: 'immunizationAdministration',
-            event: 'onLoad',
+            event: 'onSelect',
           }),
         );
       });

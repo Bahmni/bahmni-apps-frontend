@@ -8,10 +8,7 @@ import {
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import {
-  dispatchCDSSCheck,
-  useCDSSResultsListener,
-} from '../../../../events/cdssEvents';
+import { useCDSSResultsListener } from '../../../../events/cdssEvents';
 import { useClinicalConfig } from '../../../../providers/clinicalConfig';
 import ImmunizationForm from '../ImmunizationForm';
 import { useImmunizationHistoryStore } from '../stores';
@@ -58,7 +55,6 @@ jest.mock('../../../../events/cdssEvents');
 
 const mockGetAvailableStocks = jest.mocked(getAvailableStocks);
 const mockGetUserLoginLocation = jest.mocked(getUserLoginLocation);
-const mockDispatchCDSSCheck = jest.mocked(dispatchCDSSCheck);
 const mockUseCDSSResultsListener = jest.mocked(useCDSSResultsListener);
 
 expect.extend(toHaveNoViolations);
@@ -102,7 +98,6 @@ describe('ImmunizationForm', () => {
       display: 'Login Location',
       name: 'Login Location',
     });
-    mockDispatchCDSSCheck.mockClear();
     mockUseCDSSResultsListener.mockClear();
   });
 
@@ -680,106 +675,11 @@ describe('ImmunizationForm', () => {
 
   describe('CDSS Integration', () => {
     beforeEach(() => {
-      mockDispatchCDSSCheck.mockClear();
       mockUseCDSSResultsListener.mockClear();
       delete (globalThis as any).__cdssResultsHandler;
       mockUseCDSSResultsListener.mockImplementation((handler) => {
         (globalThis as any).__cdssResultsHandler = handler;
       });
-    });
-
-    it('dispatches CDSS check with onLoad event when immunization is auto-populated from basedOn', async () => {
-      const mockAddImmunizationWithId = jest
-        .fn()
-        .mockReturnValue('auto-populated-id');
-      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
-        ...mockStore,
-        addImmunization: mockAddImmunizationWithId,
-      });
-
-      const configWithOnLoadCDSS = {
-        ...mockAdministrationInputControlConfig,
-        cdss: [
-          {
-            server: 'test-cdss-server',
-            service: 'vaccine-administration-check',
-            event: 'onLoad',
-          },
-        ],
-      };
-
-      mockUseQuery.mockImplementation(({ queryKey: qk }: any) => {
-        if (qk[0] === 'medication')
-          return { data: mockFetchedMedication, isLoading: false, error: null };
-        return defaultQueryMock({ queryKey: qk }) as any;
-      });
-
-      render(
-        <ImmunizationForm
-          encounterSessionStartContext={{ basedOn: mockMedicationRequest }}
-          inputControlConfig={configWithOnLoadCDSS}
-        />,
-      );
-
-      await waitFor(() =>
-        expect(mockAddImmunizationWithId).toHaveBeenCalledWith(
-          { code: 'covid-19', display: 'COVID-19 Drug' },
-          expect.objectContaining({
-            drug: { code: 'covid-drug-uuid', display: 'COVID-19 Drug' },
-          }),
-        ),
-      );
-
-      expect(mockDispatchCDSSCheck).toHaveBeenCalledWith({
-        controlKey: 'immunizationAdministration',
-        itemId: 'auto-populated-id',
-        event: 'onLoad',
-      });
-    });
-
-    it('does not dispatch CDSS check when auto-populated but no onLoad CDSS rules configured', async () => {
-      const mockAddImmunizationWithId = jest
-        .fn()
-        .mockReturnValue('auto-populated-id');
-      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
-        ...mockStore,
-        addImmunization: mockAddImmunizationWithId,
-      });
-
-      const configWithOnSelectOnly = {
-        ...mockAdministrationInputControlConfig,
-        cdss: [
-          {
-            server: 'test-cdss-server',
-            service: 'vaccine-order-select',
-            event: 'onSelect',
-          },
-        ],
-      };
-
-      mockUseQuery.mockImplementation(({ queryKey: qk }: any) => {
-        if (qk[0] === 'medication')
-          return { data: mockFetchedMedication, isLoading: false, error: null };
-        return defaultQueryMock({ queryKey: qk }) as any;
-      });
-
-      render(
-        <ImmunizationForm
-          encounterSessionStartContext={{ basedOn: mockMedicationRequest }}
-          inputControlConfig={configWithOnSelectOnly}
-        />,
-      );
-
-      await waitFor(() =>
-        expect(mockAddImmunizationWithId).toHaveBeenCalledWith(
-          { code: 'covid-19', display: 'COVID-19 Drug' },
-          expect.objectContaining({
-            drug: { code: 'covid-drug-uuid', display: 'COVID-19 Drug' },
-          }),
-        ),
-      );
-
-      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
     });
 
     it('registers CDSS results listener on mount', () => {
