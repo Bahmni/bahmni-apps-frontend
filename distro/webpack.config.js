@@ -1,5 +1,6 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { NxReactWebpackPlugin } = require('@nx/react/webpack-plugin');
+const { InjectManifest } = require('workbox-webpack-plugin');
 const webpack = require('webpack');
 const { join } = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -80,6 +81,14 @@ module.exports = (env, argv) => {
         // See: https://react-svgr.com/
         // svgr: false
       }),
+      ...(!isDevelopment ? [
+        new InjectManifest({
+          swSrc: join(__dirname, 'src/service-worker.ts'),
+          swDest: 'service-worker.js',
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+          exclude: [/\.map$/, /^manifest.*\.js$/],
+        }),
+      ] : []),
     ],
   };
 };

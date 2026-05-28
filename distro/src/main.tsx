@@ -33,16 +33,17 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Redirect old Angular clinical hash URLs to React equivalent.
+// Migration cleanup: redirect old Angular clinical hash URLs to React equivalent.
 // e.g. /bahmni/clinical/#/default/patient/uuid/dashboard → /bahmni/clinical/uuid
-const UUID_PATTERN =
-  /^#\/[^/]+\/patient\/([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})/i;
-if (window.location.pathname.includes('/clinical')) {
+// Remove once all clients have migrated away from old Angular clinical URLs.
+function redirectLegacyClinicalUrl() {
+  const UUID_PATTERN =
+    /^#\/[^/]+\/patient\/([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})/i;
+  if (!window.location.pathname.includes('/clinical')) return;
   const match = window.location.hash.match(UUID_PATTERN);
-  if (match) {
-    window.location.replace(`${PUBLIC_PATH}clinical/${match[1]}`);
-  }
+  if (match) window.location.replace(`${PUBLIC_PATH}clinical/${match[1]}`);
 }
+redirectLegacyClinicalUrl();
 
 applyBahmniTheme(BAHMNI_DEFAULT_THEME);
 initFontAwesome();
