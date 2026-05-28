@@ -16,7 +16,7 @@ import { MedicationInputEntry } from '../../../../models/medication';
 import { MedicationConfig } from '../../../../models/medicationConfig';
 import {
   InputControlAttributes,
-  InputControlConfig,
+  InputControl,
 } from '../../../../providers/clinicalConfig/models';
 import {
   DURATION_UNIT_OPTIONS,
@@ -37,7 +37,7 @@ export interface SelectedMedicationRequestItemProps {
   medicationConfig: MedicationConfig;
   inputControlType: MedicationRequestStoreKey;
   attributes: InputControlAttributes[];
-  inputControlConfig: InputControlConfig;
+  inputControlConfig?: InputControl;
 }
 
 const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps> =
