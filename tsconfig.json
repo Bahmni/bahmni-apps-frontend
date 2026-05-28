@@ -7,6 +7,9 @@
       "path": "./apps/clinical"
     },
     {
+      "path": "./apps/home"
+    },
+    {
       "path": "./packages/bahmni-services"
     },
     {
