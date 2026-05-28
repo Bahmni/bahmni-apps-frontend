@@ -58,14 +58,14 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
     <div
       class="_panelGroup_vvtyi_161"
       data-group="true"
-      data-testid="_r_2u_"
-      id="_r_2u_"
+      data-testid="_r_27_"
+      id="_r_27_"
       style="height: 100%; width: 100%; overflow: hidden; display: flex; flex-direction: row; flex-wrap: nowrap;"
     >
       <div
         data-panel="true"
-        data-testid="_r_2v_"
-        id="_r_2v_"
+        data-testid="_r_28_"
+        id="_r_28_"
         style="min-height: 0; max-height: 100%; height: auto; min-width: 0; max-width: 100%; width: auto; border-width: 0px; padding: 0px; margin: 0px; display: flex; flex-basis: 0px; flex-shrink: 1; overflow: hidden; flex-grow: 100;"
       >
         <div
@@ -94,7 +94,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
                 >
                   <h2
                     class="cds--data-table-header__title"
-                    id="tc-_r_30_-title"
+                    id="tc-_r_29_-title"
                   >
                     Service Unavailability
                   </h2>
@@ -191,14 +191,14 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
     <div
       class="_panelGroup_vvtyi_161"
       data-group="true"
-      data-testid="_r_2k_"
-      id="_r_2k_"
+      data-testid="_r_1t_"
+      id="_r_1t_"
       style="height: 100%; width: 100%; overflow: hidden; display: flex; flex-direction: row; flex-wrap: nowrap;"
     >
       <div
         data-panel="true"
-        data-testid="_r_2l_"
-        id="_r_2l_"
+        data-testid="_r_1u_"
+        id="_r_1u_"
         style="min-height: 0; max-height: 100%; height: auto; min-width: 0; max-width: 100%; width: auto; border-width: 0px; padding: 0px; margin: 0px; display: flex; flex-basis: 0px; flex-shrink: 1; overflow: hidden; flex-grow: 100;"
       >
         <div
@@ -227,7 +227,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                 >
                   <h2
                     class="cds--data-table-header__title"
-                    id="tc-_r_2m_-title"
+                    id="tc-_r_1v_-title"
                   >
                     Service Unavailability
                   </h2>
@@ -259,7 +259,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                   >
                     <table
                       aria-label="unavailability-table"
-                      aria-labelledby="tc-_r_2m_-title"
+                      aria-labelledby="tc-_r_1v_-title"
                       class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
                     >
                       <thead>
@@ -271,12 +271,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           >
                             <div
                               class="cds--table-sort__description"
-                              id="table-sort-_r_2o_"
+                              id="table-sort-_r_21_"
                             >
                               Click to sort rows by Start Date and Time header in ascending order
                             </div>
                             <button
-                              aria-describedby="table-sort-_r_2o_"
+                              aria-describedby="table-sort-_r_21_"
                               class="cds--table-sort"
                               data-testid="table-header-startDateTime"
                               type="button"
@@ -332,12 +332,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           >
                             <div
                               class="cds--table-sort__description"
-                              id="table-sort-_r_2p_"
+                              id="table-sort-_r_22_"
                             >
                               Click to sort rows by End Date and Time header in ascending order
                             </div>
                             <button
-                              aria-describedby="table-sort-_r_2p_"
+                              aria-describedby="table-sort-_r_22_"
                               class="cds--table-sort"
                               data-testid="table-header-endDateTime"
                               type="button"
@@ -393,12 +393,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           >
                             <div
                               class="cds--table-sort__description"
-                              id="table-sort-_r_2q_"
+                              id="table-sort-_r_23_"
                             >
                               Click to sort rows by Location header in ascending order
                             </div>
                             <button
-                              aria-describedby="table-sort-_r_2q_"
+                              aria-describedby="table-sort-_r_23_"
                               class="cds--table-sort"
                               data-testid="table-header-locationName"
                               type="button"
@@ -454,12 +454,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           >
                             <div
                               class="cds--table-sort__description"
-                              id="table-sort-_r_2r_"
+                              id="table-sort-_r_24_"
                             >
                               Click to sort rows by Service Unavailable header in ascending order
                             </div>
                             <button
-                              aria-describedby="table-sort-_r_2r_"
+                              aria-describedby="table-sort-_r_24_"
                               class="cds--table-sort"
                               data-testid="table-header-appointmentServiceName"
                               type="button"
@@ -515,12 +515,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           >
                             <div
                               class="cds--table-sort__description"
-                              id="table-sort-_r_2s_"
+                              id="table-sort-_r_25_"
                             >
                               Click to sort rows by Provider Unavailable header in ascending order
                             </div>
                             <button
-                              aria-describedby="table-sort-_r_2s_"
+                              aria-describedby="table-sort-_r_25_"
                               class="cds--table-sort"
                               data-testid="table-header-providerName"
                               type="button"
@@ -576,12 +576,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           >
                             <div
                               class="cds--table-sort__description"
-                              id="table-sort-_r_2t_"
+                              id="table-sort-_r_26_"
                             >
                               Click to sort rows by Actions header in ascending order
                             </div>
                             <button
-                              aria-describedby="table-sort-_r_2t_"
+                              aria-describedby="table-sort-_r_26_"
                               class="cds--table-sort"
                               data-testid="table-header-actions"
                               type="button"

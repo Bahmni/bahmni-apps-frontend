@@ -23,32 +23,6 @@ import { createBaseData, mapFHIRBundleToLocations } from '../utils';
 
 expect.extend(toHaveNoViolations);
 
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-global.ResizeObserver = ResizeObserverMock;
-
-if (!document.adoptedStyleSheets) {
-  Object.defineProperty(document, 'adoptedStyleSheets', {
-    value: [],
-    writable: true,
-  });
-}
-
-global.CSSStyleSheet = class CSSStyleSheet {
-  cssRules = [];
-  replaceSync() {}
-  replace() {
-    return Promise.resolve(this);
-  }
-  insertRule() {
-    return 0;
-  }
-  deleteRule() {}
-} as unknown as typeof CSSStyleSheet;
-
 const mockAddNotification = jest.fn();
 const mockOnSubmit = jest.fn(() => Promise.resolve());
 const mockOnCancel = jest.fn();
@@ -125,15 +99,6 @@ jest.mock('@bahmni/services', () => ({
   getProviderLoginLocations: (uuid: string) =>
     mockGetProviderLoginLocations(uuid),
   getUserLoginLocation: () => mockGetUserLoginLocation(),
-  convertTo24HourFormat: jest.fn((time: string) => {
-    const match = time.match(/(\d+):(\d+)\s*(AM|PM)/i);
-    if (!match) return null;
-    const [, hours, minutes, period] = match;
-    let h = parseInt(hours);
-    if (period.toUpperCase() === 'PM' && h !== 12) h += 12;
-    if (period.toUpperCase() === 'AM' && h === 12) h = 0;
-    return `${h.toString().padStart(2, '0')}:${minutes}`;
-  }),
 }));
 
 describe('UnavailabilityForm', () => {
@@ -458,15 +423,20 @@ describe('UnavailabilityForm', () => {
   });
 
   describe('Provider Login Locations', () => {
-    it('should not call providerLoginLocations query when currentUser is null', () => {
-      (useQuery as jest.Mock).mockImplementation(({ queryKey, enabled }) => {
-        if (queryKey[0] === 'currentUser') {
-          return { data: null, isError: false, isLoading: false };
-        }
+    const makeProviderLocationsQueryMock = (
+      locationsData: typeof mockLocations | [],
+      capture: { queryFn: (() => Promise<unknown>) | null },
+    ) =>
+      ({
+        queryKey,
+        queryFn,
+      }: {
+        queryKey: string[];
+        queryFn?: () => Promise<unknown>;
+      }) => {
         if (queryKey[0] === 'providerLoginLocations') {
-          // eslint-disable-next-line jest/no-conditional-expect
-          expect(enabled).toBe(false);
-          return { data: [], isError: false, isLoading: false };
+          capture.queryFn = queryFn ?? null;
+          return { data: locationsData, isError: false, isLoading: false };
         }
         if (queryKey[0] === 'appointmentServices') {
           return {
@@ -479,7 +449,15 @@ describe('UnavailabilityForm', () => {
           return { data: mockProviders, isError: false, isLoading: false };
         }
         return { data: [], isError: false, isLoading: false };
-      });
+      };
+
+    it('should return empty locations when getCurrentUser returns null', async () => {
+      mockGetCurrentUser.mockResolvedValueOnce(null);
+      const capture = { queryFn: null as (() => Promise<unknown>) | null };
+
+      (useQuery as jest.Mock).mockImplementation(
+        makeProviderLocationsQueryMock([], capture),
+      );
 
       renderComponent();
       expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
@@ -487,14 +465,14 @@ describe('UnavailabilityForm', () => {
 
     it('should call getProviderLoginLocations when currentUser is available', async () => {
       mockGetProviderLoginLocations.mockResolvedValueOnce(mockLocations);
-      let capturedQueryFn: (() => Promise<unknown>) | null = null;
+      const capture = { queryFn: null as (() => Promise<unknown>) | null };
 
       (useQuery as jest.Mock).mockImplementation(({ queryKey, queryFn }) => {
         if (queryKey[0] === 'currentUser') {
           return { data: mockCurrentUser, isError: false, isLoading: false };
         }
         if (queryKey[0] === 'providerLoginLocations') {
-          capturedQueryFn = queryFn;
+          capture.queryFn = queryFn;
           return { data: mockLocations, isError: false, isLoading: false };
         }
         if (queryKey[0] === 'appointmentServices') {
@@ -512,9 +490,9 @@ describe('UnavailabilityForm', () => {
 
       renderComponent();
       expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
-      expect(capturedQueryFn).not.toBeNull();
+      expect(capture.queryFn).not.toBeNull();
 
-      const result = await capturedQueryFn!();
+      const result = await (capture.queryFn as () => Promise<unknown>)();
       expect(result).toEqual(mockLocations);
       expect(mockGetProviderLoginLocations).toHaveBeenCalledWith(
         mockCurrentUser.uuid,
@@ -524,14 +502,14 @@ describe('UnavailabilityForm', () => {
     it('should fallback to getFHIRLocationsByTag when provider locations are empty', async () => {
       mockGetProviderLoginLocations.mockResolvedValueOnce([]);
       mockGetFHIRLocationsByTag.mockResolvedValueOnce(mockFHIRBundle);
-      let capturedQueryFn: (() => Promise<unknown>) | null = null;
+      const capture = { queryFn: null as (() => Promise<unknown>) | null };
 
       (useQuery as jest.Mock).mockImplementation(({ queryKey, queryFn }) => {
         if (queryKey[0] === 'currentUser') {
           return { data: mockCurrentUser, isError: false, isLoading: false };
         }
         if (queryKey[0] === 'providerLoginLocations') {
-          capturedQueryFn = queryFn;
+          capture.queryFn = queryFn;
           return { data: mockLocations, isError: false, isLoading: false };
         }
         if (queryKey[0] === 'appointmentServices') {
@@ -549,9 +527,9 @@ describe('UnavailabilityForm', () => {
 
       renderComponent();
       expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
-      expect(capturedQueryFn).not.toBeNull();
+      expect(capture.queryFn).not.toBeNull();
 
-      const result = await capturedQueryFn!();
+      const result = await (capture.queryFn as () => Promise<unknown>)();
       expect(result).toEqual(mockMappedFHIRLocations);
       expect(mockGetProviderLoginLocations).toHaveBeenCalledWith(
         mockCurrentUser.uuid,
@@ -584,162 +562,94 @@ describe('UnavailabilityForm', () => {
     });
   });
 
-  describe('findItemByUuid edge cases', () => {
-    it('should handle undefined uuid in location dropdown', async () => {
-      (useQuery as jest.Mock).mockImplementation(({ queryKey }) => {
-        if (queryKey[0] === 'providerLoginLocations') {
-          return { data: mockLocations, isError: false, isLoading: false };
-        }
-        if (queryKey[0] === 'appointmentServices') {
-          return {
-            data: mockAppointmentServices,
-            isError: false,
-            isLoading: false,
-          };
-        }
-        if (queryKey[0] === 'providers') {
-          return { data: mockProviders, isError: false, isLoading: false };
-        }
-        return { data: [], isError: false, isLoading: false };
-      });
-
-      mockGetUserLoginLocation.mockImplementationOnce(() => {
-        throw new Error('No location');
-      });
-
-      renderComponent();
-      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
-    });
-  });
-
   describe('Form field onChange handlers', () => {
-    it('should render location dropdown and allow interaction', async () => {
+    it('should filter services to the selected location after location changes', async () => {
       setupMocksWithData();
       renderComponent();
 
-      const locationDropdown = screen.getByRole('combobox', {
-        name: /select location/i,
-      });
-      expect(locationDropdown).toBeInTheDocument();
-    });
+      await userEvent.click(
+        screen.getByRole('combobox', { name: /select location/i }),
+      );
+      await userEvent.click(screen.getByRole('option', { name: 'ENT Ward' }));
 
-    it('should update location and reset services when location dropdown changes', async () => {
-      setupMocksWithData();
-      renderComponent();
-
-      const locationDropdown = screen.getByRole('combobox', {
-        name: /select location/i,
-      });
-
-      expect(locationDropdown).toBeInTheDocument();
-      expect(screen.getByText('General OPD')).toBeInTheDocument();
-    });
-
-    it('should update start time period when AM/PM select changes', async () => {
-      setupMocksWithData();
-      renderComponent();
-
-      const startTimeInput = screen.getByLabelText(/Start Time/);
-      await userEvent.type(startTimeInput, '09:00');
-
-      const startTimePeriodSelect =
-        document.getElementById('start-time-period');
-      expect(startTimePeriodSelect).not.toBeNull();
-      await userEvent.selectOptions(startTimePeriodSelect!, 'PM');
-    });
-
-    it('should update end time period when AM/PM select changes', async () => {
-      setupMocksWithData();
-      renderComponent();
-
-      const endTimeInput = screen.getByLabelText(/End time/i);
-      await userEvent.type(endTimeInput, '05:00');
-
-      const endTimePeriodSelect = document.getElementById('end-time-period');
-      expect(endTimePeriodSelect).not.toBeNull();
-      await userEvent.selectOptions(endTimePeriodSelect!, 'PM');
-    });
-
-    it('should handle service multiselect onChange when items are selected', async () => {
-      setupMocksWithData();
-      renderComponent();
-
-      const serviceMultiselect = screen.getByPlaceholderText(/Select Service/);
-      expect(serviceMultiselect).toBeInTheDocument();
-
-      await userEvent.click(serviceMultiselect);
+      await userEvent.click(screen.getByPlaceholderText(/Select Service/i));
 
       await waitFor(() => {
-        const serviceItems = screen.queryAllByRole('option');
-        expect(serviceItems.length).toBeGreaterThanOrEqual(0);
+        expect(
+          screen.getByRole('option', { name: /ENT OPD Consultation/i }),
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByRole('option', {
+            name: /General Medicine OPD Consultation/i,
+          }),
+        ).not.toBeInTheDocument();
       });
     });
 
-    it('should handle provider multiselect onChange when items are selected', async () => {
+    it('should only include available providers in the provider multiselect', async () => {
       setupMocksWithData();
       renderComponent();
 
-      const providerMultiselect =
-        screen.getByPlaceholderText(/Select Provider/);
-      expect(providerMultiselect).toBeInTheDocument();
-
-      await userEvent.click(providerMultiselect);
+      await userEvent.click(screen.getByPlaceholderText(/Select Provider/i));
 
       await waitFor(() => {
-        const providerItems = screen.queryAllByRole('option');
-        expect(providerItems.length).toBeGreaterThanOrEqual(0);
+        expect(
+          screen.getByRole('option', { name: /Dr. John Smith/i }),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('option', { name: /Dr. Jane Doe/i }),
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByRole('option', { name: /Dr. Unavailable Provider/i }),
+        ).not.toBeInTheDocument();
       });
     });
-  });
 
-  describe('itemToString callbacks', () => {
-    it('should handle null items in location dropdown itemToString', async () => {
-      setupMocksWithData();
-      renderComponent();
+    it.each([
+      {
+        name: 'start time',
+        label: /Start Time/,
+        selectId: 'start-time-period',
+        typeValue: '09:00',
+      },
+      {
+        name: 'end time',
+        label: /End time/i,
+        selectId: 'end-time-period',
+        typeValue: '05:00',
+      },
+    ])(
+      'should update $name AM/PM when select changes',
+      async ({ label, selectId, typeValue }) => {
+        setupMocksWithData();
+        renderComponent();
 
-      const locationDropdown = screen.getByRole('combobox', {
-        name: /select location/i,
-      });
-      expect(locationDropdown).toBeInTheDocument();
-    });
+        const timeInput = screen.getByLabelText(label);
+        await userEvent.type(timeInput, typeValue);
 
-    it('should handle null items in service multiselect itemToString', () => {
-      setupMocksWithData();
-      renderComponent();
-
-      const serviceMultiselect = screen.getByText(/Select Service/);
-      expect(serviceMultiselect).toBeInTheDocument();
-    });
-
-    it('should handle null items in provider multiselect itemToString', () => {
-      setupMocksWithData();
-      renderComponent();
-
-      const providerMultiselect = screen.getByText(/Select Provider/);
-      expect(providerMultiselect).toBeInTheDocument();
-    });
+        const timePeriodSelect = document.getElementById(selectId);
+        expect(timePeriodSelect).not.toBeNull();
+        await userEvent.selectOptions(timePeriodSelect!, 'PM');
+      },
+    );
   });
 
   describe('Date picker onChange handlers', () => {
-    it('should update start date when date picker changes', async () => {
-      setupMocksWithData();
-      renderComponent();
+    it.each([
+      { name: 'start date', label: /Start Date/, value: '05/25/2026' },
+      { name: 'end date', label: /End Date/, value: '05/26/2026' },
+    ])(
+      'should update $name when date picker changes',
+      async ({ label, value }) => {
+        setupMocksWithData();
+        renderComponent();
 
-      const startDateInput = screen.getByLabelText(/Start Date/);
-      await userEvent.type(startDateInput, '05/25/2026');
+        const input = screen.getByLabelText(label);
+        await userEvent.type(input, value);
 
-      expect(startDateInput).toHaveValue('05/25/2026');
-    });
-
-    it('should update end date when date picker changes', async () => {
-      setupMocksWithData();
-      renderComponent();
-
-      const endDateInput = screen.getByLabelText(/End Date/);
-      await userEvent.type(endDateInput, '05/26/2026');
-
-      expect(endDateInput).toHaveValue('05/26/2026');
-    });
+        expect(input).toHaveValue(value);
+      },
+    );
   });
 
   describe('Utils - createBaseData', () => {

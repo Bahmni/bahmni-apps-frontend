@@ -17,32 +17,6 @@ import AppointmentUnavailabilityPage from '../index';
 
 expect.extend(toHaveNoViolations);
 
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-global.ResizeObserver = ResizeObserverMock;
-
-if (!document.adoptedStyleSheets) {
-  Object.defineProperty(document, 'adoptedStyleSheets', {
-    value: [],
-    writable: true,
-  });
-}
-
-global.CSSStyleSheet = class CSSStyleSheet {
-  cssRules = [];
-  replaceSync() {}
-  replace() {
-    return Promise.resolve(this);
-  }
-  insertRule() {
-    return 0;
-  }
-  deleteRule() {}
-} as unknown as typeof CSSStyleSheet;
-
 const mockInvalidateQueries = jest.fn();
 
 jest.mock('@tanstack/react-query', () => ({
@@ -83,15 +57,6 @@ jest.mock('@bahmni/services', () => ({
   getCurrentUser: jest.fn(() => Promise.resolve(mockCurrentUser)),
   getProviderLoginLocations: jest.fn(() => Promise.resolve(mockLocations)),
   getUserLoginLocation: jest.fn(() => ({ uuid: 'location-uuid-1' })),
-  convertTo24HourFormat: jest.fn((time: string) => {
-    const match = time.match(/(\d+):(\d+)\s*(AM|PM)/i);
-    if (!match) return null;
-    const [, hours, minutes, period] = match;
-    let h = parseInt(hours);
-    if (period.toUpperCase() === 'PM' && h !== 12) h += 12;
-    if (period.toUpperCase() === 'AM' && h === 12) h = 0;
-    return `${h.toString().padStart(2, '0')}:${minutes}`;
-  }),
   hasPrivilege: jest.fn(() => true),
   BAHMNI_HOME_PATH: '/bahmni/home',
 }));
@@ -139,7 +104,7 @@ describe('AppointmentUnavailabilityPage', () => {
     );
   });
 
-  it('should render the page title correctly', () => {
+  it('should render page title and Add New button', () => {
     (useQuery as jest.Mock).mockReturnValue({
       data: [],
       isError: false,
@@ -147,15 +112,6 @@ describe('AppointmentUnavailabilityPage', () => {
     });
     render(wrapper);
     expect(screen.getByText('Service Unavailability')).toBeInTheDocument();
-  });
-
-  it('should render Add new button when form is not visible', () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: [],
-      isError: false,
-      isLoading: false,
-    });
-    render(wrapper);
     expect(screen.getByText('Add New')).toBeInTheDocument();
   });
 
@@ -185,7 +141,7 @@ describe('AppointmentUnavailabilityPage', () => {
     expect(allTexts.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('should show form when Add new button is clicked', async () => {
+  it('should show form and hide Add New button when Add New is clicked', async () => {
     (useQuery as jest.Mock).mockReturnValue({
       data: [],
       isError: false,
@@ -194,16 +150,6 @@ describe('AppointmentUnavailabilityPage', () => {
     render(wrapper);
     await userEvent.click(screen.getByText('Add New'));
     expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
-  });
-
-  it('should hide Add new button when form is visible', async () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: [],
-      isError: false,
-      isLoading: false,
-    });
-    render(wrapper);
-    await userEvent.click(screen.getByText('Add New'));
     expect(screen.queryByText('Add New')).not.toBeInTheDocument();
   });
 
@@ -295,22 +241,15 @@ describe('AppointmentUnavailabilityPage', () => {
   });
 
   describe('Accessibility', () => {
-    it('passes accessibility tests with unavailabilities data', async () => {
-      (useQuery as jest.Mock).mockReturnValue({
+    it.each([
+      {
+        scenario: 'with unavailabilities data',
         data: mockAppointmentUnavailabilities,
-        isError: false,
-        isLoading: false,
-      });
-      const { container } = render(wrapper);
-      await act(async () => {
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
-      });
-    });
-
-    it('passes accessibility tests with empty state', async () => {
+      },
+      { scenario: 'with empty state', data: [] },
+    ])('passes accessibility tests $scenario', async ({ data }) => {
       (useQuery as jest.Mock).mockReturnValue({
-        data: [],
+        data,
         isError: false,
         isLoading: false,
       });

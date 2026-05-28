@@ -131,7 +131,7 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
                           data-testid="start-date-input"
                           id="start-date"
                           pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                          placeholder="MM/dd/yyyy"
+                          placeholder="dd/MM/yyyy"
                           type="text"
                         />
                         <svg
@@ -256,7 +256,7 @@ exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
                           data-testid="end-date-input"
                           id="end-date"
                           pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                          placeholder="MM/dd/yyyy"
+                          placeholder="dd/MM/yyyy"
                           type="text"
                         />
                         <svg
