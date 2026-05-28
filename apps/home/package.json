@@ -1,0 +1,31 @@
+{
+  "name": "@bahmni/home-app",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles": "./dist/index.css",
+    "./locales/*": "./dist/locales/*"
+  },
+  "author": "Thoughtworks Inc.",
+  "license": "MPLv2",
+  "description": "Home page module for Bahmni, built with React and Bahmni Design System.",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.12.0"
+  }
+}
