@@ -1,6 +1,13 @@
-import { useTranslation, CONSULTATION_SAVED_EVENT } from '@bahmni/services';
+import {
+  useTranslation,
+  CONSULTATION_SAVED_EVENT,
+  resetEncounterSession,
+  setEncounterSessionDecision,
+  getEncounterSessionSnapshot,
+} from '@bahmni/services';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import { dispatchConsultationStart } from '../../../events/startConsultation';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import PatientHeader from '../PatientHeader';
@@ -11,6 +18,7 @@ expect.extend(toHaveNoViolations);
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
+  // Let the real store functions through so we can assert on them
 }));
 
 jest.mock('../../../events/startConsultation', () => ({
@@ -77,6 +85,8 @@ describe('PatientHeader Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset shared store so each test starts from a clean slate
+    resetEncounterSession();
     mockedUseTranslation.mockReturnValue({ t: mockTranslate } as any);
     mockedUseEncounterSession.mockReturnValue({
       hasActiveSession: false,
@@ -195,6 +205,79 @@ describe('PatientHeader Component', () => {
         'NO_ACTIVE_ENCOUNTER',
       );
       expect(header).not.toHaveAttribute('data-can-edit-encounter');
+    });
+  });
+
+  describe('Shared encounter session store writes (BAH-4652)', () => {
+    test('writes MATCHED decision to shared store when session resolves', async () => {
+      const mockEncounter = {
+        resourceType: 'Encounter',
+        id: 'enc-1',
+        status: 'in-progress',
+      } as any;
+      mockedUseEncounterSession.mockReturnValue({
+        hasActiveSession: true,
+        activeEncounter: mockEncounter,
+        isPractitionerMatch: true,
+        matchReason: ['MATCHED'],
+        editActiveEncounter: true,
+        isLoading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      await act(async () => {
+        renderComponent();
+      });
+
+      const storeState = getEncounterSessionSnapshot();
+      expect(storeState.canEditOrCreate).toBe(true);
+      expect(storeState.matchReasons).toEqual(['MATCHED']);
+      expect(storeState.activeEncounter).toEqual(mockEncounter);
+    });
+
+    test('writes NO_ACTIVE_ENCOUNTER decision to shared store', async () => {
+      mockedUseEncounterSession.mockReturnValue({
+        hasActiveSession: false,
+        activeEncounter: null,
+        isPractitionerMatch: false,
+        matchReason: ['NO_ACTIVE_ENCOUNTER'],
+        editActiveEncounter: false,
+        isLoading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      await act(async () => {
+        renderComponent();
+      });
+
+      const storeState = getEncounterSessionSnapshot();
+      expect(storeState.canEditOrCreate).toBe(false);
+      expect(storeState.activeEncounter).toBeNull();
+    });
+
+    test('resets shared store when patient UUID changes', async () => {
+      // Pre-populate store
+      setEncounterSessionDecision({
+        reasons: ['MATCHED'],
+        encounter: {
+          resourceType: 'Encounter',
+          id: 'old-enc',
+          status: 'in-progress',
+        } as any,
+      });
+      expect(getEncounterSessionSnapshot().canEditOrCreate).toBe(true);
+
+      // Simulate patient change by re-rendering with different patientUUID
+      const { unmount } = await act(async () =>
+        render(<PatientHeader isActionAreaVisible={false} />),
+      );
+
+      // The component should call resetEncounterSession on mount when patient changes
+      // Since usePatientUUID is mocked to 'patient-uuid' and prevRef starts null, reset fires
+      expect(getEncounterSessionSnapshot().matchReasons).toEqual([]);
+      unmount();
     });
   });
 

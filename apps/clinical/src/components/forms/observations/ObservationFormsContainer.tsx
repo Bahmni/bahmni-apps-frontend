@@ -6,7 +6,7 @@ import {
   SkeletonText,
 } from '@bahmni/design-system';
 import {
-  Container,
+  CarbonContainer,
   FormMetadata as Form2FormMetadata, // Aliased to disambiguate from FormMetadata type exported by @bahmni/services
 } from '@bahmni/form2-controls';
 import '@bahmni/form2-controls/dist/bundle.css';
@@ -82,9 +82,9 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const [validationErrorMessage, setValidationErrorMessage] = useState<
     string | null
   >(null);
-  const formContainerRef = useRef<React.ComponentRef<typeof Container> | null>(
-    null,
-  );
+  const formContainerRef = useRef<React.ComponentRef<
+    typeof CarbonContainer
+  > | null>(null);
 
   const {
     observations,
@@ -363,7 +363,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         ) : error ? (
           <div>{error.message}</div>
         ) : formMetadata && patientUUID ? (
-          <Container
+          <CarbonContainer
             ref={formContainerRef}
             metadata={{
               ...(formMetadata.schema as Form2FormMetadata),
@@ -430,7 +430,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
 const extractAndAppendNotesFromFormData = (
   formContainerRef: React.RefObject<React.ComponentRef<
-    typeof Container
+    typeof CarbonContainer
   > | null>,
   transformedObservations: Form2Observation[],
 ): void => {

@@ -1,9 +1,8 @@
+import { MedicationRequest } from '@bahmni/services';
 import { parseISO } from 'date-fns';
-import {
-  MedicationRequest,
-  FormattedMedicationRequest,
-} from '../../../bahmni-services/src/medicationRequestService/models';
 import { getPriorityByOrder } from '../../../bahmni-services/src/utils';
+import { MEDICATION_REQUEST_PRIORITY } from './constants';
+import { FormattedMedicationRequest } from './models';
 
 /**
  * Priority order for medication status levels (case insensitive)
@@ -52,23 +51,17 @@ export const sortMedicationsByStatus = (
   });
 };
 
-/**
- * Gets the priority value for medication based only on isImmediate flag.
- * Lower values indicate higher priority.
- *
- * @param medication - The FormattedMedicationRequest object to get priority for.
- * @returns A numeric priority value (0 = immediate medications, 1 = all other medications).
- */
-export const getMedicationPriority = (
+const getMedicationPriority = (
   medication: FormattedMedicationRequest,
 ): number => {
-  if (medication.isImmediate) return 0; // Immediate medications (STAT)
-  return 1; // All other medications (asNeeded, regular, etc.)
+  if (medication.priority === MEDICATION_REQUEST_PRIORITY.STAT) return 0;
+  if (medication.isImmediate) return 1;
+  return 2; // All other medications (asNeeded, regular, etc.)
 };
 
 /**
- * Sorts an array of medication requests by priority based only on isImmediate flag.
- * Priority order: immediate medications → all other medications (asNeeded, regular, etc.).
+ * Sorts an array of medication requests by priority based priority.
+ * Priority order: STAT medications → all other medications (asNeeded, regular, etc.).
  * Stable sort ensures original order is preserved within the same priority group.
  *
  * @param medications - The array of FormattedMedicationRequest objects to be sorted.
@@ -133,6 +126,7 @@ export function formatMedicationRequest(
     additionalInstructions,
     status,
     asNeeded,
+    priority,
     isImmediate,
     note,
     doseForm,
@@ -175,6 +169,7 @@ export function formatMedicationRequest(
     startDate: startDate ?? '',
     orderDate: orderDate ?? '',
     orderedBy,
+    priority,
     quantity,
     status,
     asNeeded,

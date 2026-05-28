@@ -444,4 +444,169 @@ describe('useAllergyStore', () => {
       expect(state.selectedAllergies).toEqual(result.current.selectedAllergies);
     });
   });
+
+  // PRELOAD ALLERGIES TESTS
+  describe('preloadAllergies', () => {
+    const preloadedEntry = {
+      id: 'preloaded-1',
+      display: 'Shellfish',
+      type: 'food',
+      selectedSeverity: null,
+      selectedReactions: [],
+      errors: {},
+      hasBeenValidated: false,
+    };
+
+    test('preloadAllergies sets all entries with isModified: false', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.preloadAllergies([preloadedEntry]);
+      });
+
+      expect(result.current.selectedAllergies).toHaveLength(1);
+      expect(result.current.selectedAllergies[0].isModified).toBe(false);
+    });
+
+    test('preloadAllergies replaces existing selectedAllergies', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+      expect(result.current.selectedAllergies).toHaveLength(1);
+
+      act(() => {
+        result.current.preloadAllergies([preloadedEntry]);
+      });
+
+      expect(result.current.selectedAllergies).toHaveLength(1);
+      expect(result.current.selectedAllergies[0].id).toBe('preloaded-1');
+    });
+  });
+
+  // ISMODIFIED TRACKING TESTS
+  describe('isModified tracking', () => {
+    const preloadedEntry = {
+      id: 'preloaded-1',
+      display: 'Shellfish',
+      type: 'food',
+      selectedSeverity: null,
+      selectedReactions: [],
+      errors: {},
+      hasBeenValidated: false,
+    };
+
+    test('updateSeverity sets isModified: true on the modified allergy', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.preloadAllergies([preloadedEntry]);
+      });
+      expect(result.current.selectedAllergies[0].isModified).toBe(false);
+
+      act(() => {
+        result.current.updateSeverity(
+          'preloaded-1',
+          ALLERGY_SEVERITY_CONCEPTS[0],
+        );
+      });
+
+      expect(result.current.selectedAllergies[0].isModified).toBe(true);
+    });
+
+    test('updateReactions sets isModified: true on the modified allergy', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.preloadAllergies([preloadedEntry]);
+      });
+      expect(result.current.selectedAllergies[0].isModified).toBe(false);
+
+      act(() => {
+        result.current.updateReactions('preloaded-1', [mockReactions[0]]);
+      });
+
+      expect(result.current.selectedAllergies[0].isModified).toBe(true);
+    });
+
+    test('updateNote sets isModified: true on the modified allergy', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.preloadAllergies([preloadedEntry]);
+      });
+      expect(result.current.selectedAllergies[0].isModified).toBe(false);
+
+      act(() => {
+        result.current.updateNote('preloaded-1', 'Some note');
+      });
+
+      expect(result.current.selectedAllergies[0].isModified).toBe(true);
+    });
+
+    test('addAllergy creates entry without isModified (undefined, not false)', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+
+      expect(result.current.selectedAllergies[0].isModified).toBeUndefined();
+    });
+  });
+
+  // HASDATA FUNCTION TESTS
+  // hasData is defined in the index.ts registration as:
+  // () => useAllergyStore.getState().selectedAllergies.some((a) => a.isModified !== false)
+  describe('hasData logic (via store state)', () => {
+    const preloadedEntry = {
+      id: 'preloaded-1',
+      display: 'Shellfish',
+      type: 'food',
+      selectedSeverity: null,
+      selectedReactions: [],
+      errors: {},
+      hasBeenValidated: false,
+    };
+
+    const hasData = () =>
+      useAllergyStore
+        .getState()
+        .selectedAllergies.some((a) => a.isModified !== false);
+
+    test('hasData returns false when all allergies have isModified: false (preloaded, unchanged)', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.preloadAllergies([preloadedEntry]);
+      });
+
+      expect(hasData()).toBe(false);
+    });
+
+    test('hasData returns true when at least one allergy has isModified: true', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.preloadAllergies([preloadedEntry]);
+        result.current.updateSeverity(
+          'preloaded-1',
+          ALLERGY_SEVERITY_CONCEPTS[0],
+        );
+      });
+
+      expect(hasData()).toBe(true);
+    });
+
+    test('hasData returns true when allergy has isModified: undefined (new allergy)', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+
+      expect(hasData()).toBe(true);
+    });
+  });
 });
