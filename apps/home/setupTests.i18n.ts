@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import enTranslations from '../apps/home/public/locales/locale_en.json';
+import enTranslations from './public/locales/locale_en.json';
 
 const initTestI18n = () => {
   i18n.use(initReactI18next).init({
@@ -12,14 +12,9 @@ const initTestI18n = () => {
     resources: {
       en: { home: enTranslations },
     },
-    interpolation: {
-      escapeValue: false,
-    },
-    react: {
-      useSuspense: false,
-    },
+    interpolation: { escapeValue: false },
+    react: { useSuspense: false },
   });
-
   return i18n;
 };
 
