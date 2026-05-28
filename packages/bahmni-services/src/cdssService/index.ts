@@ -1,5 +1,4 @@
 export {
-  loadCDSSServersConfig,
   findCdsServiceConfig,
   buildContextFromResourceMap,
   invokeCDSSRule,

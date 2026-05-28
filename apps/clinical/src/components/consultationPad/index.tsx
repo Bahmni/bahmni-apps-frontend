@@ -6,8 +6,11 @@ import {
   dispatchConsultationSaved,
   useTranslation,
   invokeCDSSRule,
+  getConfig,
+  type CDSSServerConfig,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
+import { useQuery } from '@tanstack/react-query';
 import type { Bundle, BundleEntry } from 'fhir/r4';
 import React, {
   useCallback,
@@ -16,6 +19,7 @@ import React, {
   useSyncExternalStore,
   useState,
 } from 'react';
+import { CDSS_SERVER_CONFIG_URL } from '../../constants/app';
 import { ERROR_TITLES } from '../../constants/errors';
 import {
   dispatchCDSSResults,
@@ -33,6 +37,7 @@ import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
 import type { EncounterContext } from '../forms/models';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
+import cdssConfigSchema from './cdssConfigSchema.json';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
 import { submitConsultation } from './services';
 import styles from './styles/index.module.scss';
@@ -62,6 +67,28 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     () => loadEncounterInputControls(clinicalConfig?.consultationPad),
     [clinicalConfig],
   );
+
+  const {
+    data: cdssServerConfig,
+    isLoading: isCdssServerConfigLoading,
+    error: cdssServerConfigError,
+  } = useQuery({
+    queryKey: ['cdssConfig'],
+    queryFn: () =>
+      getConfig<CDSSServerConfig[]>(CDSS_SERVER_CONFIG_URL, cdssConfigSchema),
+  });
+
+  useEffect(() => {
+    if (cdssServerConfigError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('CDSS_CONFIG_LOAD_ERROR', {
+          errorMessage: cdssServerConfigError.message,
+        }),
+        type: 'error',
+      });
+    }
+  }, [cdssServerConfigError, addNotification, t]);
 
   const {
     encounterConcepts,
@@ -193,6 +220,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     async (detail: CDSSCheckEventDetail) => {
       const { controlKey, itemId, event: eventType } = detail;
 
+      if (isCdssServerConfigLoading || !cdssServerConfig) {
+        return;
+      }
+
       const entry = activeEntries.find((e) => e.key === controlKey);
       if (!entry) return;
 
@@ -216,12 +247,21 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         visitId: resolvedVisitId as string | undefined,
         episodeId: resolvedEpisodeId as string | undefined,
       };
+
       const cardPromises = cdssRules.map((rule) =>
-        invokeCDSSRule(rule, context, dataBundle).catch((error) => {
-          throw new Error(
-            `CDSS rule invocation failed for control ${controlKey} on event ${eventType}: ${error instanceof Error ? error.message : String(error)}`,
-          );
-        }),
+        invokeCDSSRule(cdssServerConfig, rule, context, dataBundle).catch(
+          (error) => {
+            addNotification({
+              title: t('ERROR_DEFAULT_TITLE'),
+              message: t('CDSS_RULE_INVOCATION_ERROR', {
+                controlKey,
+                eventType,
+              }),
+              type: 'error',
+            });
+            return [];
+          },
+        ),
       );
 
       const cardArrays = await Promise.all(cardPromises);
@@ -234,13 +274,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       });
     },
     [
+      cdssServerConfig,
+      isCdssServerConfigLoading,
       activeEntries,
       buildComprehensiveCDSSBundle,
-      encounterSessionStartContext,
       activeEncounter,
       patientId,
       activeVisitId,
       activeEpisodeId,
+      addNotification,
+      t,
     ],
   );
 

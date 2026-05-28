@@ -1,10 +1,8 @@
 import { get, post } from '../../api';
 import {
-  loadCDSSServersConfig,
   findCdsServiceConfig,
   buildContextFromResourceMap,
   invokeCDSSRule,
-  clearCDSSConfigCache,
 } from '../cdssService';
 import { CDSSRule, CDSHooksRequest } from '../models';
 import {
@@ -22,41 +20,12 @@ const mockedPost = post as jest.MockedFunction<typeof post>;
 describe('cdssService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    clearCDSSConfigCache();
-  });
-
-  describe('loadCDSSServersConfig', () => {
-    it('should fetch and return CDSS servers configuration', async () => {
-      mockedGet.mockResolvedValueOnce(mockCDSSServerConfig);
-
-      const result = await loadCDSSServersConfig();
-
-      expect(mockedGet).toHaveBeenCalledWith(
-        '/bahmni_config/openmrs/apps/clinical/v2/cdss-servers.json',
-      );
-      expect(result).toEqual(mockCDSSServerConfig);
-    });
-
-    it('should throw error when get fails', async () => {
-      mockedGet.mockRejectedValueOnce(new Error('Not Found'));
-
-      await expect(loadCDSSServersConfig()).rejects.toThrow('Not Found');
-    });
-
-    it('should throw error when get throws', async () => {
-      mockedGet.mockRejectedValueOnce(new Error('Network error'));
-
-      await expect(loadCDSSServersConfig()).rejects.toThrow('Network error');
-    });
   });
 
   describe('findCdsServiceConfig', () => {
-    beforeEach(() => {
-      mockedGet.mockResolvedValue(mockCDSSServerConfig);
-    });
-
-    it('should return server and service config when both exist', async () => {
-      const result = await findCdsServiceConfig(
+    it('should return server and service config when both exist', () => {
+      const result = findCdsServiceConfig(
+        mockCDSSServerConfig,
         'test-cdss-server',
         'medication-prescribe',
       );
@@ -66,24 +35,31 @@ describe('cdssService', () => {
       expect(result.serviceConfig.name).toBe('medication-prescribe');
     });
 
-    it('should throw error when server is not found', async () => {
-      await expect(
-        findCdsServiceConfig('non-existent-server', 'medication-prescribe'),
-      ).rejects.toThrow(
-        'CDSS server "non-existent-server" not found in configuration',
-      );
+    it('should throw error when server is not found', () => {
+      expect(() =>
+        findCdsServiceConfig(
+          mockCDSSServerConfig,
+          'non-existent-server',
+          'medication-prescribe',
+        ),
+      ).toThrow('CDSS server "non-existent-server" not found in configuration');
     });
 
-    it('should throw error when service is not found in server', async () => {
-      await expect(
-        findCdsServiceConfig('test-cdss-server', 'non-existent-service'),
-      ).rejects.toThrow(
+    it('should throw error when service is not found in server', () => {
+      expect(() =>
+        findCdsServiceConfig(
+          mockCDSSServerConfig,
+          'test-cdss-server',
+          'non-existent-service',
+        ),
+      ).toThrow(
         'CDSS service "non-existent-service" not found in server "test-cdss-server"',
       );
     });
 
-    it('should find service in different server', async () => {
-      const result = await findCdsServiceConfig(
+    it('should find service in different server', () => {
+      const result = findCdsServiceConfig(
+        mockCDSSServerConfig,
         'another-server',
         'other-service',
       );
@@ -166,24 +142,28 @@ describe('cdssService', () => {
     };
 
     beforeEach(() => {
-      mockedGet.mockResolvedValueOnce(mockCDSSServerConfig);
       mockedPost.mockResolvedValueOnce(mockCDSHooksResponse);
     });
 
     it('should invoke CDSS rule and return cards', async () => {
       const result = await invokeCDSSRule(
+        mockCDSSServerConfig,
         mockRule,
         mockCDSSContext,
         mockBundle,
       );
 
       expect(result).toEqual(mockCDSHooksResponse.cards);
-      expect(mockedGet).toHaveBeenCalledTimes(1); // config loading
       expect(mockedPost).toHaveBeenCalledTimes(1); // API call
     });
 
     it('should include patientId in context', async () => {
-      await invokeCDSSRule(mockRule, mockCDSSContext, mockBundle);
+      await invokeCDSSRule(
+        mockCDSSServerConfig,
+        mockRule,
+        mockCDSSContext,
+        mockBundle,
+      );
 
       const postCall = mockedPost.mock.calls[0];
       const requestBody = postCall[1] as CDSHooksRequest;
@@ -192,7 +172,12 @@ describe('cdssService', () => {
     });
 
     it('should include visitId when provided', async () => {
-      await invokeCDSSRule(mockRule, mockCDSSContext, mockBundle);
+      await invokeCDSSRule(
+        mockCDSSServerConfig,
+        mockRule,
+        mockCDSSContext,
+        mockBundle,
+      );
 
       const postCall = mockedPost.mock.calls[0];
       const requestBody = postCall[1] as CDSHooksRequest;
@@ -201,7 +186,12 @@ describe('cdssService', () => {
     });
 
     it('should include episodeId when provided', async () => {
-      await invokeCDSSRule(mockRule, mockCDSSContext, mockBundle);
+      await invokeCDSSRule(
+        mockCDSSServerConfig,
+        mockRule,
+        mockCDSSContext,
+        mockBundle,
+      );
 
       const postCall = mockedPost.mock.calls[0];
       const requestBody = postCall[1] as CDSHooksRequest;
@@ -214,7 +204,12 @@ describe('cdssService', () => {
         patientId: 'patient-123',
       };
 
-      await invokeCDSSRule(mockRule, contextWithoutVisit, mockBundle);
+      await invokeCDSSRule(
+        mockCDSSServerConfig,
+        mockRule,
+        contextWithoutVisit,
+        mockBundle,
+      );
 
       const postCall = mockedPost.mock.calls[0];
       const requestBody = postCall[1] as CDSHooksRequest;
@@ -223,7 +218,12 @@ describe('cdssService', () => {
     });
 
     it('should include prefetch when specified in service config', async () => {
-      await invokeCDSSRule(mockRule, mockCDSSContext, mockBundle);
+      await invokeCDSSRule(
+        mockCDSSServerConfig,
+        mockRule,
+        mockCDSSContext,
+        mockBundle,
+      );
 
       const postCall = mockedPost.mock.calls[0];
       const requestBody = postCall[1] as CDSHooksRequest;
@@ -234,7 +234,12 @@ describe('cdssService', () => {
     });
 
     it('should build filtered context from resource map', async () => {
-      await invokeCDSSRule(mockRule, mockCDSSContext, mockBundle);
+      await invokeCDSSRule(
+        mockCDSSServerConfig,
+        mockRule,
+        mockCDSSContext,
+        mockBundle,
+      );
 
       const postCall = mockedPost.mock.calls[0];
       const requestBody = postCall[1] as CDSHooksRequest;
@@ -244,7 +249,12 @@ describe('cdssService', () => {
     });
 
     it('should use correct API endpoint', async () => {
-      await invokeCDSSRule(mockRule, mockCDSSContext, mockBundle);
+      await invokeCDSSRule(
+        mockCDSSServerConfig,
+        mockRule,
+        mockCDSSContext,
+        mockBundle,
+      );
 
       const postCall = mockedPost.mock.calls[0];
 
@@ -254,7 +264,12 @@ describe('cdssService', () => {
     });
 
     it('should call post with correct request body structure', async () => {
-      await invokeCDSSRule(mockRule, mockCDSSContext, mockBundle);
+      await invokeCDSSRule(
+        mockCDSSServerConfig,
+        mockRule,
+        mockCDSSContext,
+        mockBundle,
+      );
 
       expect(mockedPost).toHaveBeenCalledWith(
         'http://test-cdss.example.com/medication-prescribe',
@@ -267,7 +282,12 @@ describe('cdssService', () => {
     });
 
     it('should include hookInstance as UUID', async () => {
-      await invokeCDSSRule(mockRule, mockCDSSContext, mockBundle);
+      await invokeCDSSRule(
+        mockCDSSServerConfig,
+        mockRule,
+        mockCDSSContext,
+        mockBundle,
+      );
 
       const postCall = mockedPost.mock.calls[0];
       const requestBody = postCall[1] as CDSHooksRequest;
@@ -284,6 +304,7 @@ describe('cdssService', () => {
       mockedPost.mockResolvedValueOnce(mockEmptyCDSHooksResponse);
 
       const result = await invokeCDSSRule(
+        mockCDSSServerConfig,
         mockRule,
         mockCDSSContext,
         mockBundle,
@@ -297,7 +318,12 @@ describe('cdssService', () => {
       mockedPost.mockRejectedValueOnce(new Error('Internal Server Error'));
 
       await expect(
-        invokeCDSSRule(mockRule, mockCDSSContext, mockBundle),
+        invokeCDSSRule(
+          mockCDSSServerConfig,
+          mockRule,
+          mockCDSSContext,
+          mockBundle,
+        ),
       ).rejects.toThrow('Internal Server Error');
     });
 
@@ -309,7 +335,12 @@ describe('cdssService', () => {
       };
 
       await expect(
-        invokeCDSSRule(invalidRule, mockCDSSContext, mockBundle),
+        invokeCDSSRule(
+          mockCDSSServerConfig,
+          invalidRule,
+          mockCDSSContext,
+          mockBundle,
+        ),
       ).rejects.toThrow(
         'CDSS server "invalid-server" not found in configuration',
       );

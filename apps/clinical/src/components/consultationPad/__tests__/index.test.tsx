@@ -3,6 +3,7 @@ import {
   dispatchConsultationSaved,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -100,18 +101,30 @@ const defaultEncounterDetailsState = {
 
 const mockAddNotification = jest.fn();
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
+
 const renderComponent = (
   props: Partial<React.ComponentProps<typeof ConsultationPad>> = {},
 ) =>
   render(
-    <ConsultationPad
-      encounterSessionStartContext={{ encounterType: 'Consultation' }}
-      onClose={jest.fn()}
-      {...props}
-    />,
+    <QueryClientProvider client={queryClient}>
+      <ConsultationPad
+        encounterSessionStartContext={{ encounterType: 'Consultation' }}
+        onClose={jest.fn()}
+        {...props}
+      />
+    </QueryClientProvider>,
   );
 
 beforeEach(() => {
+  queryClient.clear();
+
   mockRegistry.forEach((entry) => {
     (entry.validate as jest.Mock).mockReturnValue(true);
     (entry.hasData as jest.Mock).mockReturnValue(false);

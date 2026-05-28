@@ -384,4 +384,5 @@ export {
   type CDSSRule,
   type CDSCard,
   type CDSSEventDetail,
+  type CDSSServerConfig,
 } from './cdssService';

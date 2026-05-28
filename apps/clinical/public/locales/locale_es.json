@@ -52,6 +52,8 @@
   "BODY_POSITION_UNKNOWN": "Desconocido",
   "CERTAINITY_CONFIRMED": "Confirmado",
   "CERTAINITY_PROVISIONAL": "Provisorio",
+  "CDSS_CONFIG_LOAD_ERROR": "Error al cargar la configuración del CDSS: {{errorMessage}}",
+  "CDSS_RULE_INVOCATION_ERROR": "Error al invocar la regla CDSS para el control {{controlKey}} en el evento {{eventType}}",
   "CLINICAL_DATA_RECORDED_BY": "Grabado Por",
   "COMPLETED_STATUS": "Completado",
   "CONDITIONS_ADD_AS_CONDITION": "Agregar como Condición",

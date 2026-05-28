@@ -1,5 +1,5 @@
 import { Bundle } from 'fhir/r4';
-import { get, post } from '../api';
+import { post } from '../api';
 import { generateUUID } from '../utils/utils';
 import {
   CDSSServerConfig,
@@ -12,33 +12,14 @@ import {
   ContextResourceMap,
 } from './models';
 
-let cdssServersConfigCache: CDSSServerConfig[] | null = null;
-
-// For testing purposes only
-export const clearCDSSConfigCache = (): void => {
-  cdssServersConfigCache = null;
-};
-
-export const loadCDSSServersConfig = async (): Promise<CDSSServerConfig[]> => {
-  if (cdssServersConfigCache) {
-    return cdssServersConfigCache;
-  }
-
-  const config = await get<CDSSServerConfig[]>(
-    '/bahmni_config/openmrs/apps/clinical/v2/cdss-servers.json',
-  );
-  cdssServersConfigCache = config;
-  return config;
-};
-
-export const findCdsServiceConfig = async (
+export const findCdsServiceConfig = (
+  serversConfig: CDSSServerConfig[],
   serverName: string,
   serviceName: string,
-): Promise<{
+): {
   serverConfig: CDSSServerConfig;
   serviceConfig: CDSSServiceConfig;
-}> => {
-  const serversConfig = await loadCDSSServersConfig();
+} => {
   const serverConfig = serversConfig.find((s) => s.server === serverName);
 
   if (!serverConfig) {
@@ -87,11 +68,12 @@ export const buildContextFromResourceMap = (
 };
 
 export const invokeCDSSRule = async (
+  serversConfig: CDSSServerConfig[],
   rule: CDSSRule,
   context: CDSSContext,
   dataBundle: Bundle,
 ): Promise<CDSCard[]> => {
-  const config = await findCdsServiceConfig(rule.server, rule.service);
+  const config = findCdsServiceConfig(serversConfig, rule.server, rule.service);
 
   const { serverConfig, serviceConfig } = config;
 
