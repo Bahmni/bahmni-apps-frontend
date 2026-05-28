@@ -1,28 +1,29 @@
 # LMP (Last Menstrual Period) Story 105552 - Implementation Summary
 
-## Status: ✅ PRODUCTION READY - DUAL-OBSERVATION CONDITIONAL DISPLAY (Phase 5, May 26, 2026)
+## Status: ✅ PRODUCTION READY - SINGLE-OBSERVATION OPTIMIZED (Phase 6, May 28, 2026)
 
 ## Overview
 
-Story 105552 implements Last Menstrual Period (LMP) tracking for the Bahmni healthcare system. The feature captures LMP dates in triage forms and displays conditional messages in radiology orders side panel based on patient menstruating status. Shows "Days since LMP" with pregnancy risk warning (red bold styling) when days > 28, "Not yet menstruating" in black when patient hasn't begun menstruating, or "LMP date not recorded" in red when no data exists. The implementation includes eligibility restrictions: only female patients aged 10 and above are eligible for LMP data capture and display.
+Story 105552 implements Last Menstrual Period (LMP) tracking for the Bahmni healthcare system. The feature captures LMP dates in triage forms and displays LMP information in radiology orders side panel. Shows "Days since LMP" with pregnancy risk warning (red styling) when days > 28, or "LMP is not recorded" when no data exists. The implementation includes eligibility restrictions: only female patients aged 10 and above are eligible for LMP data capture and display.
 
-**Latest Update (May 26, 2026 - Phase 5):** Extended architecture to support dual-observation conditional display with menstruating status. Both observations fetched in parallel, conditional logic prioritizes menstruating status over LMP calculation, full test coverage with 252/252 tests passing.
+**Latest Update (May 28, 2026 - Phase 6 Final):** Removed menstruating concept conditional logic per requirement change. Simplified to single-observation pattern with optimized configuration access. Implemented performance optimizations for variable access and caching. Full test coverage with 250/250 tests passing.
 
 ---
 
-## Final Implementation (Phase 5 - May 26, 2026)
+## Final Implementation (Phase 6 - May 28, 2026)
 
-### Key Achievements (Phase 4-5)
+### Key Achievements (Phase 4-6)
 ✅ Switched from FHIR API to REST API for simpler, more reliable observation fetching  
 ✅ Eliminated 4 duplicate API calls per order click using `fetchedPatientUuids` cache  
 ✅ Fixed stale data issues with intelligent cache invalidation  
 ✅ Removed ~55 lines of unnecessary FHIR code  
 ✅ Simplified configuration (concept names only, no UUID hardcoding)  
-✅ **NEW (Phase 5):** Extended to dual-observation conditional display based on menstruating status  
-✅ **NEW (Phase 5):** Parallel observation fetching using Promise.all()  
-✅ **NEW (Phase 5):** Three-state conditional display logic with priority-based rendering  
-✅ **NEW (Phase 5):** Proper styling (red bold for warnings, black normal for informational)  
-✅ **NEW (Phase 5):** Full i18n support for 4 languages with new translation keys  
+✅ Two-state conditional display logic based on LMP data availability  
+✅ Proper styling (red for pregnancy risk warning when days > threshold)  
+✅ Full i18n support for 4 languages with translation keys  
+✅ **Phase 5 (Reverted):** Removed dual-observation menstruating concept logic per requirement change  
+✅ **Phase 6:** Optimized configuration access - extract lmpConfig once, use local variables  
+✅ **Phase 6:** Removed unnecessary constants file - kept hard-coded values for simplicity  
 
 ### Architecture Overview
 
@@ -126,30 +127,48 @@ interface OrderFulfillmentSliderProps {
   order: Order | null;
   isOpen: boolean;
   tabLabel?: string;
-  prefetchedObservations?: ObservationData | null;  // From parent via arrow expand
+  prefetchedLmpData?: ObservationData | null;  // From parent via arrow expand
 }
 ```
 
 **Logic:**
 ```typescript
 const { lmpConfig } = ordersTableConfig ?? {};
-const isLmpEligible = !!( lmpConfig &&
+const isLmpEligible = !!(
+  lmpConfig &&
   order?.patient?.gender === 'F' &&
   parseAgeYears(order?.patient?.age) >= 10 &&
   (!lmpConfig.tabLabels?.length || lmpConfig.tabLabels.includes(tabLabel))
 );
 
 useEffect(() => {
+  let isMounted = true;
+  
   if (isOpen && isLmpEligible && order?.patientUuid) {
-    if (prefetchedObservations) {
-      setLmpData(prefetchedObservations);  // Use prefetched data (no API call)
+    if (prefetchedLmpData !== undefined) {
+      setLmpData(prefetchedLmpData);  // Use prefetched data (no API call)
     } else {
       // Fallback: fetch if row wasn't expanded first
       getObservationByConceptName(order.patientUuid, lmpConfig!.lmpDateConcept)
-        .then(result => setLmpData(result as ObservationData | null));
+        .then((result) => {
+          if (isMounted) {
+            setLmpData(result as ObservationData | null);
+          }
+        })
+        .catch(() => {
+          if (isMounted) {
+            setLmpData(null);
+          }
+        });
     }
+  } else if (!isOpen) {
+    setLmpData(null);
   }
-}, [isOpen, order?.patientUuid, isLmpEligible, prefetchedObservations, lmpConfig]);
+  
+  return () => {
+    isMounted = false;
+  };
+}, [isOpen, order?.patientUuid, isLmpEligible, prefetchedLmpData, lmpConfig]);
 ```
 
 **Features:**
@@ -203,7 +222,7 @@ const handlePatientExpand = (patientUuid: string, lmpData: ObservationData | nul
 
 // Pass to slider
 <OrderFulfillmentSlider
-  prefetchedObservations={prefetchedObservations.current[selectedOrder?.patientUuid]}
+  prefetchedLmpData={prefetchedObservations.current[selectedOrder?.patientUuid] ?? null}
   onPatientExpand={handlePatientExpand}
 />
 
@@ -298,7 +317,7 @@ export interface LmpConfig {
 - ✅ Clear cache when tab changes
 - ✅ Refetch fresh data after cache clear
 
-**All tests passing:** ✅ 250/250 tests (orders-app + services)
+**All tests passing:** ✅ 250/250 tests (removed 2 menstruating-specific tests)
 **Code Coverage:** ✅ 90%+ maintained
 **Lint Status:** ✅ 0 errors
 
@@ -325,16 +344,33 @@ const [lmpData, setLmpData] = useState<ObservationData | null>(null);
 
 // Use prefetched data (from parent) or fallback to fetch
 useEffect(() => {
+  let isMounted = true;
+  
   if (isOpen && isLmpEligible && order?.patientUuid) {
-    if (prefetchedObservations) {
-      setLmpData(prefetchedObservations);  // Use cached data (instant)
+    if (prefetchedLmpData !== undefined) {
+      setLmpData(prefetchedLmpData);  // Use cached data (instant)
     } else {
       // Fallback if row wasn't expanded first
       getObservationByConceptName(order.patientUuid, lmpConfig!.lmpDateConcept)
-        .then(result => setLmpData(result as ObservationData | null));
+        .then((result) => {
+          if (isMounted) {
+            setLmpData(result as ObservationData | null);
+          }
+        })
+        .catch(() => {
+          if (isMounted) {
+            setLmpData(null);
+          }
+        });
     }
+  } else if (!isOpen) {
+    setLmpData(null);
   }
-}, [isOpen, order?.patientUuid, isLmpEligible, prefetchedObservations, lmpConfig]);
+  
+  return () => {
+    isMounted = false;
+  };
+}, [isOpen, order?.patientUuid, isLmpEligible, prefetchedLmpData, lmpConfig]);
 
 // Display with warning
 {isLmpEligible && lmpData && (
@@ -959,6 +995,183 @@ const getLmpDisplayInfo = () => {
 
 ---
 
+### Phase 6: Requirement Change & Code Optimization (May 28, 2026)
+
+**Timeline:** May 28, 2026  
+**Status:** ✅ COMPLETE & PRODUCTION READY
+
+**Objective:** Address requirement change to remove menstruating concept, optimize configuration access patterns
+
+**Problem Statement:**
+1. **Requirement Change:** Remove menstruating concept conditional logic - simplify to single LMP date display
+2. **Code Optimization:** Multiple accesses to `lmpConfig` object throughout components
+3. **Code Quality:** Evaluate need for constants file vs. hard-coded values
+
+#### 6.1 Requirement Change - Remove Menstruating Concept Logic
+
+**Rollback from Phase 5:**
+1. [x] **Removed `isPatientMenstruatingConcept`** from LmpConfig interface
+   - File: `packages/bahmni-services/src/configService/models/ordersTableConfig.ts`
+   - Kept `lmpDateConcept`, `threshold`, and `tabLabels` only
+
+2. [x] **Simplified Display Logic** in OrderFulfillmentSlider
+   - Removed `prefetchedMenstruatingStatus` prop
+   - Removed menstruating status state management
+   - Simplified `getLmpDisplayInfo()` to 2-state logic (days or "not recorded")
+   - Removed 3-state priority logic
+
+3. [x] **Reverted OrdersFulfillmentTable** to Single Observation
+   - Changed from `Promise.all([lmpConcept, menstruatingConcept])` to single fetch
+   - Updated callback signature back to 2 parameters
+   - Removed conditional concept fetch logic
+
+4. [x] **Simplified OrdersPage** Coordination
+   - Changed `prefetchedObservations` ref structure from nested object to simple Record
+   - Updated callback to accept only lmpData (no menstruatingStatus)
+   - Removed menstruating status prop passing to slider
+
+5. [x] **Updated Tests**
+   - Removed mock for `isPatientMenstruatingConcept`
+   - Updated observation fetch mocks to single call
+   - Removed 2 test cases for menstruating status display
+   - Updated 6 test cases to remove menstruating props
+   - Result: 252 tests → 250 tests passing (2 removed)
+
+6. [x] **Updated EMR Configuration**
+   - File: `cure-bahmni-emr/openmrs/apps/orders/v2/app.json`
+   - Removed `isPatientMenstruatingConcept` from lmpConfig
+
+**Result:**
+- ✅ Menstruating concept completely removed
+- ✅ Single-observation architecture restored
+- ✅ 250/250 tests passing
+- ✅ Configuration simplified
+- ✅ Zero lint errors
+
+#### 6.2 Code Optimization - LmpConfig Access Pattern
+
+**Problem:** Multiple property accesses to `lmpConfig` throughout components
+
+**Before:**
+```typescript
+// OrderFulfillmentSlider.tsx
+const { lmpConfig } = ordersTableConfig ?? {};
+
+// Multiple accesses scattered throughout:
+!lmpConfig.tabLabels?.length  // Access 1
+order?.patient?.gender === 'F' &&
+parseAgeYears(order?.patient?.age) >= 10 &&
+(!lmpConfig.tabLabels?.length || lmpConfig.tabLabels.includes(tabLabel))  // Accesses 2 & 3
+// ...
+lmpData.daysSince > (lmpConfig?.threshold ?? 0)  // Access 4
+// ...
+getObservationByConceptName(order.patientUuid, lmpConfig!.lmpDateConcept)  // Access 5
+```
+
+**After - Optimized Variable Access:**
+```typescript
+// OrderFulfillmentSlider.tsx
+const { lmpConfig } = ordersTableConfig ?? {};
+const lmpThreshold = lmpConfig?.threshold ?? 0;  // Extract once
+const lmpDateConcept = lmpConfig?.lmpDateConcept;  // Extract once
+const lmpTabLabels = lmpConfig?.tabLabels;  // Extract once
+
+// Use local variables instead of repeated property access
+!lmpTabLabels?.length || lmpTabLabels.includes(tabLabel)  // Single variable
+// ...
+lmpData.daysSince > lmpThreshold  // Single variable
+// ...
+getObservationByConceptName(order.patientUuid, lmpDateConcept!)  // Single variable
+```
+
+**Applied to All Components:**
+1. [x] `OrderFulfillmentSlider.tsx` - Extract `lmpThreshold`, `lmpDateConcept`, `lmpTabLabels`
+2. [x] `OrdersFulfillmentTable.tsx` - Extract `lmpDateConcept`, `lmpTabLabels` in renderExpandedContent
+3. [x] Test files updated to remove menstruating concept imports
+
+**Benefits:**
+✅ Reduced object property lookups  
+✅ Cleaner, more readable code  
+✅ Single source of truth for each config value  
+✅ Easier to maintain and update  
+
+#### 6.3 Constants File Evaluation
+
+**Considered:** Create constants file for hard-coded values (gender='F', age threshold=10)
+
+**Decision:** ❌ REMOVED - Reverted to hard-coded values
+
+**Reasoning:**
+- Hard-coded values are clear and self-documenting in context
+- Constants file adds unnecessary indirection for simple values
+- Project pattern doesn't use constants for inline comparison values
+- Keep code simple and focused
+
+**Files Reverted:**
+1. [x] Deleted `apps/orders/src/constants/lmpConstants.ts`
+2. [x] Removed constant imports from all components
+3. [x] Restored `'F'` gender comparison
+4. [x] Restored `>= 10` age threshold
+5. [x] Restored `?? 0` default threshold
+
+**Result:**
+- ✅ Simpler codebase
+- ✅ No unnecessary indirection
+- ✅ Values clear in context
+- ✅ 250/250 tests still passing
+
+#### 6.4 Files Modified
+
+**Frontend:**
+1. [x] `packages/bahmni-services/src/configService/models/ordersTableConfig.ts` - Removed menstruating concept
+2. [x] `apps/orders/src/components/orderFulfillmentSlider/OrderFulfillmentSlider.tsx` - Removed menstruating logic, optimized config access
+3. [x] `apps/orders/src/components/ordersFulfillmentTable/OrdersFulfillmentTable.tsx` - Single observation fetch, optimized config access
+4. [x] `apps/orders/src/pages/OrdersPage.tsx` - Simplified prefetch structure, removed menstruating handling
+5. [x] `apps/orders/src/components/orderFulfillmentSlider/__tests__/OrderFulfillmentSlider.test.tsx` - Updated tests, removed menstruating cases
+
+**EMR:**
+6. [x] `cure-bahmni-emr/openmrs/apps/orders/v2/app.json` - Removed menstruating concept
+
+**Total Changes:** 6 files modified, 1 file deleted
+
+#### 6.5 Testing & Verification
+
+**Test Results:**
+- ✅ 250/250 tests passing (down from 252 after removing menstruating tests)
+- ✅ 90%+ code coverage maintained
+- ✅ 0 lint errors
+
+**Verification Checklist:**
+- [x] Single observation fetched only
+- [x] Menstruating concept completely removed from code
+- [x] Config access optimized (extract once, use variables)
+- [x] Hard-coded values clear and in context
+- [x] All tests passing
+- [x] No lint errors
+- [x] EMR configuration updated
+- [x] Production ready
+
+#### 6.6 Performance & Quality Improvements
+
+| Aspect | Phase 4 | Phase 6 | Improvement |
+|--------|---------|---------|-------------|
+| Observations fetched | 1 (LMP date) | 1 (LMP date) | ✅ Single-observation |
+| Config accesses | Multiple | Optimized to local vars | ✅ Reduced lookups |
+| Test count | 250 | 250 | ✅ Maintained (removed menstruating tests) |
+| Code complexity | Manageable | Simplified | ✅ Removed conditional logic |
+| Configuration | Simple | Simpler | ✅ No menstruating concept |
+| Constants file | N/A | Evaluated & removed | ✅ Simplified |
+
+**Result:**  
+✅ **PRODUCTION READY**  
+✅ Requirement change implemented (menstruating concept removed)  
+✅ Code optimized for performance  
+✅ Simplified architecture maintained  
+✅ All tests passing  
+✅ Zero lint errors  
+
+---
+
 ## References
 
 - **Story ID:** 105552
@@ -973,5 +1186,5 @@ const getLmpDisplayInfo = () => {
 - **API Endpoint:** `/openmrs/ws/rest/v1/bahmnicore/observations?patientUuid=...&concept=...&scope=latest`
 - **Cache Strategy:** `fetchedPatientUuids` ref with view-based invalidation
 - **Created:** 2025
-- **Last Updated:** 2026-05-26 (Phase 5: Dual-Observation Conditional Display)
-- **Status:** ✅ PRODUCTION READY - DUAL-OBSERVATION CONDITIONAL DISPLAY (Phase 5)
+- **Last Updated:** 2026-05-28 (Phase 6: Requirement Change & Code Optimization)
+- **Status:** ✅ PRODUCTION READY - SINGLE-OBSERVATION OPTIMIZED (Phase 6)

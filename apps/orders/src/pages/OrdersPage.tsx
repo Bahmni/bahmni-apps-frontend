@@ -155,25 +155,15 @@ export const OrdersPage: React.FC = () => {
   const [selectedTabLabel, setSelectedTabLabel] = useState<string>('');
   const contentScrollRef = useRef<HTMLDivElement>(null);
   // Store prefetched observation data keyed by patientUuid — populated on row expand
-  const prefetchedObservations = useRef<
-    Record<
-      string,
-      {
-        lmpData: ObservationData | null;
-        menstruatingStatus: string | null;
-      }
-    >
-  >({});
+  const prefetchedObservations = useRef<Record<string, ObservationData | null>>(
+    {},
+  );
 
   const handlePatientExpand = (
     patientUuid: string,
     lmpData: ObservationData | null,
-    menstruatingStatus?: string | null,
   ) => {
-    prefetchedObservations.current[patientUuid] = {
-      lmpData,
-      menstruatingStatus: menstruatingStatus ?? null,
-    };
+    prefetchedObservations.current[patientUuid] = lmpData;
   };
 
   const handleOrderClick = (
@@ -279,14 +269,9 @@ export const OrdersPage: React.FC = () => {
               onSaveSuccess={handleSaveSuccess}
               prefetchedLmpData={
                 selectedOrder
-                  ? (prefetchedObservations.current[selectedOrder.patientUuid]
-                      ?.lmpData ?? null)
-                  : null
-              }
-              prefetchedMenstruatingStatus={
-                selectedOrder
-                  ? (prefetchedObservations.current[selectedOrder.patientUuid]
-                      ?.menstruatingStatus ?? null)
+                  ? (prefetchedObservations.current[
+                      selectedOrder.patientUuid
+                    ] ?? null)
                   : null
               }
             />
