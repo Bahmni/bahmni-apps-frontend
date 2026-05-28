@@ -3,15 +3,6 @@ import { SESSION_URL } from '../constants/app';
 import { getFormattedError } from '../errorHandling';
 import { UserPrivilege, SessionResponse } from './models';
 
-export const checkSession = async (): Promise<boolean> => {
-  try {
-    const session = await get<SessionResponse>(SESSION_URL);
-    return session.authenticated === true;
-  } catch {
-    return false;
-  }
-};
-
 /**
  * Fetches current user privileges from session API
  * @returns Promise that resolves to array of user privileges or null if failed
@@ -22,10 +13,6 @@ export const getCurrentUserPrivileges = async (): Promise<
 > => {
   try {
     const session = await get<SessionResponse>(SESSION_URL);
-
-    if (!session.authenticated || !session.user) {
-      return null;
-    }
 
     return session.user.privileges;
   } catch (error) {

@@ -289,7 +289,6 @@ export {
   LOGIN_PATH,
 } from './constants/app';
 export {
-  checkSession,
   getCurrentUserPrivileges,
   hasPrivilege,
   type UserPrivilege,

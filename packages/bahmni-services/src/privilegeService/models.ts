@@ -8,8 +8,7 @@ export interface UserPrivilege {
 }
 
 export interface SessionResponse {
-  authenticated: boolean;
-  user?: {
+  user: {
     privileges: UserPrivilege[];
   };
 }
