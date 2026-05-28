@@ -152,7 +152,6 @@ const AppointmentUnavailabilityPage: React.FC = () => {
               isError ? t('ADMIN_UNAVAILABILITY_ERROR_MESSAGE') : null
             }
             emptyStateMessage={t('ADMIN_UNAVAILABILITY_EMPTY_MESSAGE')}
-            className={styles.table}
             actionButton={
               !isFormVisible && canAddUnavailability
                 ? {
