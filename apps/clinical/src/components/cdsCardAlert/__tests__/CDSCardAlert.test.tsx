@@ -34,6 +34,14 @@ const mockCardWithEmptySource: CDSCard = {
   suggestions: [],
 };
 
+const mockCardWithInvalidIndicator: CDSCard = {
+  summary: 'Card with invalid indicator',
+  // @ts-expect-error Testing invalid indicator
+  indicator: 'unknown',
+  source: { label: 'Test Service' },
+  suggestions: [],
+};
+
 describe('CDSCardAlert', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -77,6 +85,29 @@ describe('CDSCardAlert', () => {
         ).not.toBeInTheDocument();
       },
     );
+
+    it('renders with default info indicator when invalid indicator is provided', () => {
+      render(<CDSCardAlert card={mockCardWithInvalidIndicator} />);
+
+      const notification = screen.getByRole('status');
+      expect(notification).toBeInTheDocument();
+      expect(notification).toHaveClass('cds--inline-notification--info');
+      expect(
+        screen.getByText('Card with invalid indicator'),
+      ).toBeInTheDocument();
+    });
+
+    it('always renders with low contrast and without close button', () => {
+      render(<CDSCardAlert card={mockInfoCard} />);
+
+      const notification = screen.getByRole('status');
+      expect(notification).toHaveClass(
+        'cds--inline-notification--low-contrast',
+      );
+      expect(
+        screen.queryByRole('button', { name: /close/i }),
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Accessibility', () => {
