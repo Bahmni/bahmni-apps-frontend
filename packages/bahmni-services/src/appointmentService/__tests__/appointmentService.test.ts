@@ -14,6 +14,10 @@ import {
   getAppointmentById,
   getAllAppointmentServices,
   deleteAppointmentService,
+  createAppointmentService,
+  getServiceAttributeTypes,
+  getAppointmentLocations,
+  getAppointmentSpecialities,
 } from '../appointmentService';
 import {
   UPCOMING_APPOINTMENTS_URL,
@@ -23,6 +27,10 @@ import {
   updateAppointmentStatusUrl,
   ALL_APPOINTMENT_SERVICES_URL,
   getDeleteAppointmentServiceUrl,
+  CREATE_APPOINTMENT_SERVICE_URL,
+  APPOINTMENT_SERVICE_ATTRIBUTE_TYPES_URL,
+  APPOINTMENT_LOCATIONS_URL,
+  APPOINTMENT_SPECIALITIES_URL,
   getUpcomingAppointmentsPageUrl,
   getPastAppointmentsPageUrl,
 } from '../constants';
@@ -96,6 +104,21 @@ describe('Appointment Service', () => {
       () => getAllAppointmentServices(),
       ALL_APPOINTMENT_SERVICES_URL,
     ],
+    [
+      'getServiceAttributeTypes',
+      () => getServiceAttributeTypes(),
+      APPOINTMENT_SERVICE_ATTRIBUTE_TYPES_URL,
+    ],
+    [
+      'getAppointmentLocations',
+      () => getAppointmentLocations(),
+      APPOINTMENT_LOCATIONS_URL,
+    ],
+    [
+      'getAppointmentSpecialities',
+      () => getAppointmentSpecialities(),
+      APPOINTMENT_SPECIALITIES_URL,
+    ],
   ])(
     '%s should call GET with correct endpoint and return result',
     async (_, fn, expectedUrl) => {
@@ -132,6 +155,24 @@ describe('Appointment Service', () => {
       searchParam,
     );
     expect(result).toEqual(mockBundle);
+  });
+
+  it('createAppointmentService should call POST with correct endpoint and body and return result', async () => {
+    const request = { name: 'Cardiology', description: 'Heart care' };
+    const mockService = {
+      appointmentServiceId: 1,
+      uuid: 'svc-uuid-1',
+      name: 'Cardiology',
+    };
+    mockedPost.mockResolvedValue(mockService);
+
+    const result = await createAppointmentService(request);
+
+    expect(mockedPost).toHaveBeenCalledWith(
+      CREATE_APPOINTMENT_SERVICE_URL,
+      request,
+    );
+    expect(result).toEqual(mockService);
   });
 
   it('deleteAppointmentService should call DELETE with correct endpoint', async () => {
@@ -184,6 +225,18 @@ describe('Appointment Service', () => {
       'deleteAppointmentService',
       () => deleteAppointmentService('service-uuid-1'),
       mockedDel,
+    ],
+    [
+      'createAppointmentService',
+      () => createAppointmentService({ name: 'Cardiology' }),
+      mockedPost,
+    ],
+    ['getServiceAttributeTypes', () => getServiceAttributeTypes(), mockedGet],
+    ['getAppointmentLocations', () => getAppointmentLocations(), mockedGet],
+    [
+      'getAppointmentSpecialities',
+      () => getAppointmentSpecialities(),
+      mockedGet,
     ],
   ])('%s should propagate API errors', async (_, fn, mockedFn) => {
     mockedFn.mockRejectedValue(new Error('API Error'));

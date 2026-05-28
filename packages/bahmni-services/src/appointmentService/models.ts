@@ -36,3 +36,41 @@ export interface AppointmentService {
   color: string;
   initialAppointmentStatus: string | null;
 }
+
+export interface AppointmentServiceAttributeType {
+  uuid: string;
+  name: string;
+  description: string | null;
+  format: string | null;
+  datatype: string;
+  minOccurs: number | null;
+  maxOccurs: number | null;
+  retired: boolean;
+}
+
+export interface AppointmentLocation {
+  uuid: string;
+  display: string;
+}
+
+export interface AppointmentSpeciality {
+  uuid: string;
+  name: string;
+}
+
+export interface CreateServiceWeeklyAvailability {
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  maxAppointmentsLimit: number | null;
+}
+
+export interface CreateAppointmentServiceRequest {
+  name: string;
+  description?: string;
+  specialityUuid?: string;
+  locationUuid?: string;
+  duration?: string;
+  attributes?: { attributeTypeUuid: string; value: string }[];
+  weeklyAvailability?: CreateServiceWeeklyAvailability[];
+}

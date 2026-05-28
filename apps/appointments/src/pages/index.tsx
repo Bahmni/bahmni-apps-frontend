@@ -1,10 +1,12 @@
 import React from 'react';
 
-export const IndexPage: React.FC = () => {
+const IndexPage: React.FC = () => {
   return (
-    <div>
+    <div data-testid="index-page-test-id">
       <h1>Welcome to Appointments</h1>
       <p>Appointments application for Bahmni</p>
     </div>
   );
 };
+
+export default IndexPage;

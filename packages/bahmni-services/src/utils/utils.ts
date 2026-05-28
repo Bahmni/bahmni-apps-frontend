@@ -361,13 +361,14 @@ export function camelToScreamingSnakeCase(str: string): string {
 }
 
 /**
- * Resolves ComboBox items based on loading, error, and empty states
- * Returns a single disabled sentinel item for loading/error/empty states, or the actual items
+ * Resolves the items array for a ComboBox based on the current query state.
+ * Returns a single disabled sentinel item for loading, error, or empty states,
+ * otherwise returns the actual items.
  *
  * @param isLoading - Whether the data is currently loading
- * @param isError - Whether an error occurred
- * @param items - The actual items to display
- * @param toSentinel - Factory function that builds a shape-compatible placeholder from a message
+ * @param isError - Whether the query encountered an error
+ * @param items - The actual data items to display when available
+ * @param toSentinel - Factory that creates a sentinel item of type T from a message string
  * @param messages - The translated message strings for each state
  */
 export function resolveComboBoxItems<T extends object>(

@@ -362,6 +362,45 @@ export function formatDateDistance(
   return { formattedResult };
 }
 
+/**
+ * Converts a 12-hour time string and meridiem to total minutes since midnight.
+ * @param time - Time string in HH:MM format (e.g., '09:30', '12:00')
+ * @param meridiem - 'AM' or 'PM'
+ * @returns Total minutes since midnight
+ */
+export const timeToMinutes = (time: string, meridiem: 'AM' | 'PM'): number => {
+  const [hoursStr, minutesStr] = time.split(':');
+  let hours = Number.parseInt(hoursStr, 10);
+  const minutes = Number.parseInt(minutesStr, 10);
+  if (meridiem === 'AM') {
+    if (hours === 12) hours = 0;
+  } else if (hours !== 12) hours += 12;
+  return hours * 60 + minutes;
+};
+
+/**
+ * Adds minutes to a 12-hour time string, returning the resulting time and meridiem.
+ * Handles noon/midnight crossings and wraps around past midnight.
+ * @param time - Time string in HH:MM format (e.g., '09:30', '12:00')
+ * @param meridiem - 'AM' or 'PM'
+ * @param mins - Number of minutes to add
+ * @returns Object with the resulting time string and meridiem
+ */
+export const addMinutesToTime = (
+  time: string,
+  meridiem: 'AM' | 'PM',
+  mins: number,
+): { time: string; meridiem: 'AM' | 'PM' } => {
+  const totalMinutes = (timeToMinutes(time, meridiem) + mins) % (24 * 60);
+  const hours24 = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const hours12 = hours24 % 12 || 12;
+  return {
+    time: `${String(hours12).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`,
+    meridiem: hours24 < 12 ? 'AM' : 'PM',
+  };
+};
+
 export const getTodayDate = (): Date => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

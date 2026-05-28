@@ -11,6 +11,8 @@ import {
   DURATION_UNIT_TO_DAYS,
   calculateEndDate,
   doDateRangesOverlap,
+  timeToMinutes,
+  addMinutesToTime,
   getBrowserLocaleDateFormat,
 } from '../date';
 
@@ -724,6 +726,67 @@ describe('doDateRangesOverlap', () => {
 
     expect(doDateRangesOverlap(start1, end1, start2, end2)).toBe(true);
   });
+});
+
+describe('timeToMinutes', () => {
+  it.each([
+    { time: '09:30', meridiem: 'AM' as const, expected: 570 },
+    { time: '12:00', meridiem: 'AM' as const, expected: 0 },
+    { time: '12:00', meridiem: 'PM' as const, expected: 720 },
+    { time: '02:30', meridiem: 'PM' as const, expected: 870 },
+    { time: '11:59', meridiem: 'PM' as const, expected: 1439 },
+  ])(
+    'converts $time $meridiem to $expected minutes',
+    ({ time, meridiem, expected }) => {
+      expect(timeToMinutes(time, meridiem)).toBe(expected);
+    },
+  );
+});
+
+describe('addMinutesToTime', () => {
+  it.each([
+    {
+      time: '09:00',
+      meridiem: 'AM' as const,
+      mins: 30,
+      expected: { time: '09:30', meridiem: 'AM' },
+    },
+    {
+      time: '11:30',
+      meridiem: 'AM' as const,
+      mins: 60,
+      expected: { time: '12:30', meridiem: 'PM' },
+    },
+    {
+      time: '11:30',
+      meridiem: 'PM' as const,
+      mins: 60,
+      expected: { time: '12:30', meridiem: 'AM' },
+    },
+    {
+      time: '12:00',
+      meridiem: 'AM' as const,
+      mins: 30,
+      expected: { time: '12:30', meridiem: 'AM' },
+    },
+    {
+      time: '12:00',
+      meridiem: 'PM' as const,
+      mins: 30,
+      expected: { time: '12:30', meridiem: 'PM' },
+    },
+    {
+      time: '09:00',
+      meridiem: 'AM' as const,
+      mins: 0,
+      expected: { time: '09:00', meridiem: 'AM' },
+    },
+  ])(
+    'adds $mins mins to $time $meridiem',
+    ({ time, meridiem, mins, expected }) => {
+      expect(addMinutesToTime(time, meridiem, mins)).toEqual(expected);
+    },
+  );
 });
 
 describe('calculateEndDate', () => {

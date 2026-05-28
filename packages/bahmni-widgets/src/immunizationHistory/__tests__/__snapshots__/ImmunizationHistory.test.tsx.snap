@@ -256,7 +256,7 @@ exports[`ImmunizationHistory matches snapshot with tabs (default config) 1`] = `
         id="immunization-not-administered-tab"
       >
         <p
-          class="_sortableDataTableBodyEmpty_1w499_26"
+          class="_sortableDataTableBodyEmpty_my1j8_32"
           data-testid="not-administered-immunizations-table-empty"
         >
           IMMUNIZATION_HISTORY_WIDGET_NO_IMMUNIZATIONS_RECORDED

@@ -2,7 +2,11 @@ import type { Appointment, Bundle } from 'fhir/r4';
 import { del, get, post } from '../api';
 import {
   ALL_APPOINTMENT_SERVICES_URL,
+  APPOINTMENT_LOCATIONS_URL,
+  APPOINTMENT_SERVICE_ATTRIBUTE_TYPES_URL,
+  APPOINTMENT_SPECIALITIES_URL,
   APPOINTMENTS_SEARCH_URL,
+  CREATE_APPOINTMENT_SERVICE_URL,
   getAppointmentByIdUrl,
   getDeleteAppointmentServiceUrl,
   updateAppointmentStatusUrl,
@@ -11,7 +15,14 @@ import {
   getUpcomingAppointmentsPageUrl,
   getPastAppointmentsPageUrl,
 } from './constants';
-import { AppointmentPage, AppointmentService } from './models';
+import {
+  AppointmentLocation,
+  AppointmentServiceAttributeType,
+  AppointmentSpeciality,
+  CreateAppointmentServiceRequest,
+  AppointmentPage,
+  AppointmentService,
+} from './models';
 
 /**
  * Search for appointments by specified attributes.
@@ -105,6 +116,62 @@ export const getAllAppointmentServices = async (): Promise<
  */
 export const deleteAppointmentService = async (uuid: string): Promise<void> => {
   await del(getDeleteAppointmentServiceUrl(uuid));
+};
+
+/**
+ * Creates a new appointment service definition.
+ *
+ * @param request - The service definition data
+ * @returns The created appointment service
+ * @throws Error if the API request fails
+ */
+export const createAppointmentService = async (
+  request: CreateAppointmentServiceRequest,
+): Promise<AppointmentService> => {
+  return await post<AppointmentService>(
+    CREATE_APPOINTMENT_SERVICE_URL,
+    request,
+  );
+};
+
+/**
+ * Fetches all appointment service attribute types.
+ *
+ * @returns A list of attribute types
+ * @throws Error if the API request fails
+ */
+export const getServiceAttributeTypes = async (): Promise<
+  AppointmentServiceAttributeType[]
+> => {
+  return await get<AppointmentServiceAttributeType[]>(
+    APPOINTMENT_SERVICE_ATTRIBUTE_TYPES_URL,
+  );
+};
+
+/**
+ * Fetches all appointment locations.
+ *
+ * @returns An object with a results array of locations
+ * @throws Error if the API request fails
+ */
+export const getAppointmentLocations = async (): Promise<{
+  results: AppointmentLocation[];
+}> => {
+  return await get<{ results: AppointmentLocation[] }>(
+    APPOINTMENT_LOCATIONS_URL,
+  );
+};
+
+/**
+ * Fetches all appointment specialities.
+ *
+ * @returns A list of specialities
+ * @throws Error if the API request fails
+ */
+export const getAppointmentSpecialities = async (): Promise<
+  AppointmentSpeciality[]
+> => {
+  return await get<AppointmentSpeciality[]>(APPOINTMENT_SPECIALITIES_URL);
 };
 
 /**

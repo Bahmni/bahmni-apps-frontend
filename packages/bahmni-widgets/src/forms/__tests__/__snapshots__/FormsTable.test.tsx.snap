@@ -6,7 +6,7 @@ exports[`FormsTable Snapshots should match snapshot in empty state 1`] = `
     data-testid="forms-table"
   >
     <p
-      class="_sortableDataTableBodyEmpty_1w499_26"
+      class="_sortableDataTableBodyEmpty_my1j8_32"
       data-testid="forms-table-empty"
     >
       No forms available
@@ -28,7 +28,7 @@ exports[`FormsTable Snapshots should match snapshot in loading state 1`] = `
         class="cds--skeleton cds--data-table-container"
       >
         <table
-          class="_sortableDataTableSkeleton_1w499_21 cds--skeleton cds--data-table cds--data-table--compact"
+          class="_sortableDataTableSkeleton_my1j8_27 cds--skeleton cds--data-table cds--data-table--compact"
         >
           <thead>
             <tr>
@@ -137,7 +137,7 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
             id="accordion-item-_r_3c_"
           >
             <div
-              class="formsTableBody _sortableDataTableBody_1w499_1"
+              class="formsTableBody _sortableDataTableBody_my1j8_1"
               data-testid="forms-table-History Form"
             >
               <div
@@ -341,7 +341,7 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
             id="accordion-item-_r_3f_"
           >
             <div
-              class="formsTableBody _sortableDataTableBody_1w499_1"
+              class="formsTableBody _sortableDataTableBody_my1j8_1"
               data-testid="forms-table-Vitals Form"
             >
               <div
