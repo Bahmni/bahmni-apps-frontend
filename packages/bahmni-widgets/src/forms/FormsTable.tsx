@@ -33,6 +33,7 @@ import { extractFormFieldPath } from './utils';
 interface FormsTableConfig {
   numberOfVisits?: number;
   hideThumbnail?: boolean;
+  forms?: string[];
 }
 
 /**
@@ -49,8 +50,11 @@ const FormsTable: React.FC<WidgetProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] =
     useState<FormRecordViewModel | null>(null);
-  const { numberOfVisits, hideThumbnail = false } = (config ??
-    {}) as FormsTableConfig;
+  const {
+    numberOfVisits,
+    hideThumbnail = false,
+    forms,
+  } = (config ?? {}) as FormsTableConfig;
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -73,13 +77,17 @@ const FormsTable: React.FC<WidgetProps> = ({
 
   // Filter forms data by encounterUuids if provided
   const filteredFormsData = useMemo(() => {
-    if (!encounterUuids || encounterUuids.length === 0) {
-      return formsData;
+    let result = formsData;
+    if (encounterUuids && encounterUuids.length > 0) {
+      result = result.filter((form) =>
+        encounterUuids.includes(form.encounterUuid),
+      );
     }
-    return formsData.filter((form) =>
-      encounterUuids.includes(form.encounterUuid),
-    );
-  }, [formsData, encounterUuids]);
+    if (Array.isArray(forms) && forms.length > 0) {
+      result = result.filter((entry) => forms.includes(entry.formName));
+    }
+    return result;
+  }, [formsData, encounterUuids, forms]);
 
   // Fetch published forms to get form UUIDs
   const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
