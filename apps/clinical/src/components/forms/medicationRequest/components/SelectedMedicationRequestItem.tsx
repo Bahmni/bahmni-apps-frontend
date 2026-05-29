@@ -9,15 +9,12 @@ import {
   Link,
   TextAreaWClose,
 } from '@bahmni/design-system';
-import { useTranslation, getTodayDate } from '@bahmni/services';
+import { useTranslation, getTodayDate, type CDSSRule } from '@bahmni/services';
 import React, { useEffect, useState } from 'react';
 import { dispatchCDSSCheck } from '../../../../events/cdssEvents/event';
 import { MedicationInputEntry } from '../../../../models/medication';
 import { MedicationConfig } from '../../../../models/medicationConfig';
-import {
-  InputControlAttributes,
-  InputControl,
-} from '../../../../providers/clinicalConfig/models';
+import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
 import {
   DURATION_UNIT_OPTIONS,
   MEDICATIONS_INPUT_CONTROL_KEY,
@@ -37,18 +34,12 @@ export interface SelectedMedicationRequestItemProps {
   medicationConfig: MedicationConfig;
   inputControlType: MedicationRequestStoreKey;
   attributes: InputControlAttributes[];
-  inputControlConfig?: InputControl;
+  cdssRules?: CDSSRule[];
 }
 
 const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps> =
   React.memo(
-    ({
-      entry,
-      medicationConfig,
-      inputControlType,
-      attributes,
-      inputControlConfig,
-    }) => {
+    ({ entry, medicationConfig, inputControlType, attributes, cdssRules }) => {
       const {
         updateDosage,
         updateDosageUnit,
@@ -160,8 +151,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
       }, []);
 
       useEffect(() => {
-        const cdssRules = inputControlConfig?.cdss ?? [];
-        const hasMatchingRule = cdssRules.some(
+        const hasMatchingRule = cdssRules?.some(
           (rule) => rule.event === 'onSelect',
         );
 

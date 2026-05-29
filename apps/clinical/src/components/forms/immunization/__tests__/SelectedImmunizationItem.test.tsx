@@ -49,7 +49,7 @@ const defaultProps = {
   availableStocks: mockAvailableStockResponse,
   stocksError: false,
   stockBatchesEnabled: true,
-  inputControlConfig: {},
+  cdssRules: [],
 };
 
 describe('SelectedImmunizationItem', () => {
@@ -830,7 +830,7 @@ describe('SelectedImmunizationItem', () => {
         render(
           <SelectedImmunizationItem
             {...defaultProps}
-            inputControlConfig={configWithOnSelectCDSS}
+            cdssRules={configWithOnSelectCDSS.cdss}
           />,
         );
       });
@@ -845,12 +845,7 @@ describe('SelectedImmunizationItem', () => {
 
     it('does not dispatch CDSS check when no CDSS rules are configured', async () => {
       await act(async () => {
-        render(
-          <SelectedImmunizationItem
-            {...defaultProps}
-            inputControlConfig={{}}
-          />,
-        );
+        render(<SelectedImmunizationItem {...defaultProps} cdssRules={[]} />);
       });
 
       expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
@@ -872,7 +867,7 @@ describe('SelectedImmunizationItem', () => {
         render(
           <SelectedImmunizationItem
             {...defaultProps}
-            inputControlConfig={configWithOnLoadOnly}
+            cdssRules={configWithOnLoadOnly.cdss}
           />,
         );
       });
@@ -896,7 +891,7 @@ describe('SelectedImmunizationItem', () => {
         render(
           <SelectedImmunizationItem
             {...defaultProps}
-            inputControlConfig={configWithOnSelectCDSS}
+            cdssRules={configWithOnSelectCDSS.cdss}
           />,
         ),
       );
@@ -911,7 +906,7 @@ describe('SelectedImmunizationItem', () => {
               ...mockImmunizationEntry,
               doseSequence: 2,
             }}
-            inputControlConfig={configWithOnSelectCDSS}
+            cdssRules={configWithOnSelectCDSS.cdss}
           />,
         );
       });

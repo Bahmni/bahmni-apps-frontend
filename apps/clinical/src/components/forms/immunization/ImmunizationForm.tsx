@@ -84,6 +84,7 @@ const ImmunizationForm = ({
     metadata,
     attributes,
     label = 'IMMUNIZATION_INPUT_CONTROL_FORM_TITLE',
+    cdss: cdssRules = [],
   } = inputControlConfig ?? {};
   const vaccineConceptSetUuid = metadata?.vaccineConceptSetUuid as
     | string
@@ -377,7 +378,7 @@ const ImmunizationForm = ({
                     stockQueries[immunizationIndex]?.isError ?? false
                   }
                   stockBatchesEnabled={!!fetchStockBatches}
-                  inputControlConfig={inputControlConfig}
+                  cdssRules={cdssRules}
                 />
               </SelectedItem>
               {immunization.cdsCards?.map((card) => (

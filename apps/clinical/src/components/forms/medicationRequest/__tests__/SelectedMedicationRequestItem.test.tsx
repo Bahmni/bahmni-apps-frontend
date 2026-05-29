@@ -52,7 +52,6 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType={inputControlType}
           attributes={mockFullMedicationAttributes}
-          inputControlConfig={{}}
         />,
       );
     });
@@ -129,7 +128,6 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType={inputControlType}
           attributes={[]}
-          inputControlConfig={{}}
         />,
       );
     });
@@ -194,7 +192,6 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType="vaccination"
           attributes={attributes}
-          inputControlConfig={{}}
         />,
       );
     });
@@ -218,7 +215,6 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType="medication"
           attributes={mockFullMedicationAttributes}
-          inputControlConfig={{}}
         />
       );
     };
@@ -344,7 +340,6 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType="medication"
             attributes={[{ name: 'frequency' }]}
-            inputControlConfig={{}}
           />,
         );
       });
@@ -393,7 +388,6 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfigWithDrugFormDefaults}
           inputControlType="medication"
           attributes={[{ name: 'dosage', required: true }]}
-          inputControlConfig={{}}
         />,
       );
     });
@@ -428,7 +422,6 @@ describe('SelectedMedicationRequestItem', () => {
             { name: 'instruction', default: 'Before Food' },
             { name: 'durationUnit', default: 'd' },
           ]}
-          inputControlConfig={{}}
         />,
       );
     });
@@ -458,7 +451,6 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType="vaccination"
           attributes={[{ name: 'stat' }, { name: 'frequency' }]}
-          inputControlConfig={{}}
         />,
       );
     });
@@ -489,7 +481,6 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType="medication"
           attributes={mockFullMedicationAttributesReadOnly}
-          inputControlConfig={{}}
         />,
       );
     });
@@ -521,7 +512,6 @@ describe('SelectedMedicationRequestItem', () => {
           medicationConfig={mockMedicationConfig}
           inputControlType="medication"
           attributes={mockRequiredMedicationAttributes}
-          inputControlConfig={{}}
         />,
       );
     });
@@ -555,7 +545,6 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType={inputControlType}
             attributes={mockFullMedicationAttributes}
-            inputControlConfig={{}}
           />,
         ));
       });
@@ -575,7 +564,6 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType={inputControlType}
             attributes={mockFullMedicationAttributes}
-            inputControlConfig={{}}
           />,
         );
 
@@ -598,7 +586,7 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType="medication"
             attributes={mockFullMedicationAttributes}
-            inputControlConfig={mockInputControlConfigWithCDSS}
+            cdssRules={mockInputControlConfigWithCDSS.cdss}
           />,
         );
       });
@@ -619,7 +607,7 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType="medication"
             attributes={mockFullMedicationAttributes}
-            inputControlConfig={{}}
+            cdssRules={[]}
           />,
         );
       });
@@ -647,7 +635,7 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType="medication"
             attributes={mockFullMedicationAttributes}
-            inputControlConfig={configWithDifferentEvent}
+            cdssRules={configWithDifferentEvent.cdss}
           />,
         );
       });
@@ -663,7 +651,7 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType="medication"
             attributes={mockFullMedicationAttributes}
-            inputControlConfig={mockInputControlConfigWithCDSS}
+            cdssRules={mockInputControlConfigWithCDSS.cdss}
           />,
         ),
       );
@@ -677,7 +665,7 @@ describe('SelectedMedicationRequestItem', () => {
             medicationConfig={mockMedicationConfig}
             inputControlType="medication"
             attributes={mockFullMedicationAttributes}
-            inputControlConfig={mockInputControlConfigWithCDSS}
+            cdssRules={mockInputControlConfigWithCDSS.cdss}
           />,
         );
       });

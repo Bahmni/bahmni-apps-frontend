@@ -15,7 +15,6 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useCDSSResultsListener } from '../../../events/cdssEvents';
-import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
 import { MedicationJSONConfig } from '../../../models/medicationConfig';
@@ -41,7 +40,6 @@ import {
 
 const MedicationRequestForm: React.FC<{
   inputControlConfig?: ClinicalInputControlConfig;
-  encounterSessionStartContext?: EncounterSessionStartContext;
 }> = React.memo(({ inputControlConfig }) => {
   const { t } = useTranslation();
 
@@ -49,6 +47,7 @@ const MedicationRequestForm: React.FC<{
     type: inputControlType = MEDICATIONS_INPUT_CONTROL_KEY,
     label = 'MEDICATIONS_INPUT_CONTROL_TITLE',
     attributes = [],
+    cdss: cdssRules = [],
   } = inputControlConfig ?? {};
 
   const isMedicationRequest =
@@ -244,7 +243,7 @@ const MedicationRequestForm: React.FC<{
                       inputControlType as MedicationRequestStoreKey
                     }
                     attributes={attributes}
-                    inputControlConfig={inputControlConfig}
+                    cdssRules={cdssRules}
                   />
                 </SelectedItem>
                 {item.cdsCards?.map((card) => (

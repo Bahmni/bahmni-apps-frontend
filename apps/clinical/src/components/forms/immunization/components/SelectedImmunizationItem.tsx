@@ -13,14 +13,12 @@ import {
   useTranslation,
   Location,
   type AvailableStockResponse,
+  type CDSSRule,
 } from '@bahmni/services';
 import { Medication, ValueSet } from 'fhir/r4';
 import React, { useEffect, useMemo, useState } from 'react';
 import { dispatchCDSSCheck } from '../../../../events/cdssEvents';
-import {
-  InputControlAttributes,
-  InputControl,
-} from '../../../../providers/clinicalConfig/models';
+import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
 import {
   ImmunizationInputEntry,
   ImmunizationStoreKey,
@@ -48,7 +46,7 @@ interface SelectedImmunizationItemProps {
   availableStocks: AvailableStockResponse | undefined;
   stocksError: boolean;
   stockBatchesEnabled: boolean;
-  inputControlConfig?: InputControl;
+  cdssRules?: CDSSRule[];
 }
 
 export interface BatchNumberChangeData {
@@ -67,7 +65,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   availableStocks,
   stocksError,
   stockBatchesEnabled,
-  inputControlConfig,
+  cdssRules,
 }) => {
   const { t } = useTranslation();
   const {
@@ -96,8 +94,9 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   const [isExpiryDateFromBatch, setIsExpiryDateFromBatch] = useState(false);
 
   useEffect(() => {
-    const cdssRules = inputControlConfig?.cdss ?? [];
-    const hasMatchingRule = cdssRules.some((rule) => rule.event === 'onSelect');
+    const hasMatchingRule = cdssRules?.some(
+      (rule) => rule.event === 'onSelect',
+    );
 
     if (hasMatchingRule) {
       dispatchCDSSCheck({
