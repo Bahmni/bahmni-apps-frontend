@@ -80,6 +80,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
     const noteRequired = findAttr('note', attributes)?.required;
 
     useEffect(() => {
+      if (entry.fhirResourceId) return;
       const totalQuantity = calculateTotalQuantity(
         dosage,
         frequency,

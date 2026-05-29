@@ -2,7 +2,7 @@ import {
   MedicationRequest as FhirMedicationRequest,
   Medication,
 } from 'fhir/r4';
-import { DURATION_UNIT_OPTIONS } from '../../components/forms/medicationRequest/constants';
+import { DURATION_UNIT_OPTIONS } from '../../constants/medications';
 import { Concept } from '../../models/encounterConcepts';
 import {
   DurationUnitOption,

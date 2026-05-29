@@ -1,3 +1,4 @@
+import { MEDICATIONS_INPUT_CONTROL_KEY } from '@bahmni/services';
 import { MedicationRequest } from 'fhir/r4';
 import { MedicationAction } from '../models';
 
@@ -32,7 +33,7 @@ export const handleEditAction = (
       detail: {
         encounterType,
         editMedications,
-        editOnly: 'medication',
+        editOnly: MEDICATIONS_INPUT_CONTROL_KEY,
         editTitle: 'MEDICATIONS_EDIT_FORM_TITLE',
         editEncounterUuid,
       },

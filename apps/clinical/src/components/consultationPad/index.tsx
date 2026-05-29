@@ -4,7 +4,7 @@ import {
   type AuditEventType,
   dispatchAuditEvent,
   dispatchConsultationSaved,
-  get,
+  getEncounterByUuid,
   useTranslation,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
@@ -17,6 +17,7 @@ import React, {
   useState,
 } from 'react';
 import { ERROR_TITLES } from '../../constants/errors';
+import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
@@ -27,7 +28,6 @@ import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
-import { MEDICATIONS_INPUT_CONTROL_KEY } from '../forms/medicationRequest/constants';
 import { getMedicationRequestStore } from '../forms/medicationRequest/store';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
@@ -137,14 +137,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const [editEncounterLoading, setEditEncounterLoading] = useState(false);
   useEffect(() => {
     if (!editEncounterUuid) return;
-    let cancelled = false;
+    const abortController = new AbortController();
     setEditEncounterLoading(true);
-    get<Encounter>(`/openmrs/ws/fhir2/R4/Encounter/${editEncounterUuid}`)
+    getEncounterByUuid(editEncounterUuid, { signal: abortController.signal })
       .then((enc) => {
-        if (!cancelled) setEditEncounter(enc);
+        if (!abortController.signal.aborted) setEditEncounter(enc);
       })
       .catch(() => {
-        if (!cancelled) {
+        if (!abortController.signal.aborted) {
           setEditEncounter(null);
           addNotification({
             title: t('ERROR_DEFAULT_TITLE'),
@@ -155,10 +155,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         }
       })
       .finally(() => {
-        if (!cancelled) setEditEncounterLoading(false);
+        if (!abortController.signal.aborted) setEditEncounterLoading(false);
       });
     return () => {
-      cancelled = true;
+      abortController.abort();
     };
   }, [editEncounterUuid, addNotification, t]);
 

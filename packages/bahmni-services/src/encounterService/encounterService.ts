@@ -43,6 +43,22 @@ export async function getActiveVisit(
 }
 
 /**
+ * Fetches a single encounter by its UUID from the FHIR R4 endpoint
+ * @param encounterUUID - The UUID of the encounter
+ * @param options - Optional Axios request config (e.g. for AbortController signal)
+ * @returns Promise resolving to the Encounter resource
+ */
+export async function getEncounterByUuid(
+  encounterUUID: string,
+  options?: import('axios').AxiosRequestConfig,
+): Promise<Encounter> {
+  return await get<Encounter>(
+    `/openmrs/ws/fhir2/R4/Encounter/${encounterUUID}`,
+    options,
+  );
+}
+
+/**
  * Fetch observations by encounter UUID from FHIR API
  * @param encounterUUID - Encounter UUID
  * @returns Promise resolving to FHIR observation bundle

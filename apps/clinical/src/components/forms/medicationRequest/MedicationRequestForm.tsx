@@ -102,21 +102,21 @@ const MedicationRequestForm: React.FC<{
 
   const isEditMode = selectedMedicationRequests.some((m) => m.fhirResourceId);
 
+  const parsedEditEntries = useMemo(() => {
+    if (pendingFhirEdits.length === 0 || !medicationConfig) return null;
+    return pendingFhirEdits.map((fhir) =>
+      parseFhirToMedicationInputEntry(fhir, medicationConfig),
+    );
+  }, [pendingFhirEdits, medicationConfig]);
+
   useEffect(() => {
     setAttributes(attributes);
-  }, []);
-
-  // Parse pending FHIR edits once config is available
-  useEffect(() => {
-    if (pendingFhirEdits.length > 0 && medicationConfig) {
+    if (parsedEditEntries) {
       const storeKey = inputControlType as MedicationRequestStoreKey;
       const store = getMedicationRequestStore(storeKey);
-      const entries = pendingFhirEdits.map((fhir) =>
-        parseFhirToMedicationInputEntry(fhir, medicationConfig),
-      );
-      store.getState().loadMedicationsForEdit(entries);
+      store.getState().loadMedicationsForEdit(parsedEditEntries);
     }
-  }, [pendingFhirEdits, medicationConfig, inputControlType]);
+  }, [parsedEditEntries, inputControlType]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
