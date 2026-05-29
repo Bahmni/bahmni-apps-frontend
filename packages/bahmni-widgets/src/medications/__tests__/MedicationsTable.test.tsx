@@ -32,18 +32,11 @@ expect.extend(toHaveNoViolations);
 
 jest.mock('../../hooks/usePatientUUID');
 jest.mock('../../notification');
-const mockEncounterSessionState = {
-  matchReasons: [],
-  activeEncounter: null,
-  canEditOrCreate: false,
-  isLoading: false,
-};
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   formatDateTime: jest.fn(),
   groupByDate: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
-  useEncounterSessionStore: () => mockEncounterSessionState,
 }));
 
 jest.mock('@tanstack/react-query', () => ({
@@ -537,28 +530,16 @@ describe('MedicationsTable', () => {
       } as any);
     };
 
-    const setEncounterSessionState = (
-      canEditOrCreate: boolean,
-      encounterUuid: string | null = 'enc-uuid-123',
-    ) => {
-      mockEncounterSessionState.canEditOrCreate = canEditOrCreate;
-      mockEncounterSessionState.activeEncounter = encounterUuid
-        ? ({ id: encounterUuid } as any)
-        : null;
-    };
-
-    afterEach(() => {
-      mockEncounterSessionState.canEditOrCreate = false;
-      mockEncounterSessionState.activeEncounter = null;
-      mockEncounterSessionState.matchReasons = [];
-      mockEncounterSessionState.isLoading = false;
-    });
-
     it('shows edit action when encounter session allows editing', async () => {
       setupWithActiveMeds();
-      setEncounterSessionState(true);
 
-      render(<MedicationsTable config={editConfig} />);
+      render(
+        <MedicationsTable
+          config={editConfig}
+          canEditOrCreate
+          activeEncounterUuid="enc-uuid-123"
+        />,
+      );
 
       const menu = screen.getByTestId('medication-actions-menu-1');
       expect(menu).toBeInTheDocument();
@@ -570,9 +551,14 @@ describe('MedicationsTable', () => {
 
     it('hides edit action when encounter session does not allow editing', () => {
       setupWithActiveMeds();
-      setEncounterSessionState(false, null);
 
-      render(<MedicationsTable config={editConfig} />);
+      render(
+        <MedicationsTable
+          config={editConfig}
+          canEditOrCreate={false}
+          activeEncounterUuid={null}
+        />,
+      );
 
       const menu = screen.getByTestId('medication-actions-menu-1');
       expect(menu).toBeInTheDocument();
@@ -581,9 +567,14 @@ describe('MedicationsTable', () => {
 
     it('hides edit action when encounter UUID does not match medication encounter', () => {
       setupWithActiveMeds();
-      setEncounterSessionState(true, 'different-encounter-uuid');
 
-      render(<MedicationsTable config={editConfig} />);
+      render(
+        <MedicationsTable
+          config={editConfig}
+          canEditOrCreate
+          activeEncounterUuid="different-encounter-uuid"
+        />,
+      );
 
       const menu = screen.getByTestId('medication-actions-menu-1');
       expect(menu).toBeInTheDocument();

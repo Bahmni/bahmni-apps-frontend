@@ -25,7 +25,6 @@ import {
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
   getPatientMedications,
-  useEncounterSessionStore,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import classNames from 'classnames';
@@ -101,6 +100,8 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   config,
   episodeOfCareUuids,
   encounterUuids,
+  canEditOrCreate: canEditEncounter = false,
+  activeEncounterUuid = null,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
@@ -240,10 +241,6 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     );
     return [...activeMedications, ...scheduledMedications];
   }, [allMedications]);
-
-  const { canEditOrCreate: canEditEncounter, activeEncounter } =
-    useEncounterSessionStore();
-  const activeEncounterUuid = activeEncounter?.id ?? null;
 
   const editableMedications = useMemo(() => {
     if (!canEdit || !canEditEncounter || !activeEncounterUuid) return [];

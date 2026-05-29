@@ -7,8 +7,12 @@
  * PatientHeader writes the decision once via setDecision(); widgets read via
  * useEncounterSessionStore() — zero additional FHIR calls per widget.
  *
- * Uses globalThis so the store is shared across separately-bundled packages
- * (e.g. @bahmni/clinical-app writes, @bahmni/widgets reads).
+ * canEditOrCreate covers:
+ *   - MATCHED (full match)
+ *   - LOCATION_MISMATCH (provider matches, location differs — AC 4)
+ *   - PROVIDER_MISMATCH (another provider is active — AC 4)
+ *
+ * Reset is called by PatientHeader on patient UUID change.
  */
 import type { Encounter } from 'fhir/r4';
 import { useSyncExternalStore } from 'react';
@@ -38,30 +42,19 @@ const EDIT_ELIGIBLE_REASONS: MatchReasonCode[] = [
   'PROVIDER_MISMATCH',
 ];
 
-const GLOBAL_KEY = '__bahmni_encounter_session__';
-
-interface GlobalStore {
-  state: EncounterSessionState;
-  listeners: Set<Listener>;
-}
-
-function getGlobalStore(): GlobalStore {
-  const g = globalThis as Record<string, unknown>;
-  g[GLOBAL_KEY] ??= {
-    state: { ...INITIAL_STATE },
-    listeners: new Set<Listener>(),
-  };
-  return g[GLOBAL_KEY] as GlobalStore;
-}
+/**
+ * Internal singleton state container.
+ * Exported only so tests can reset it between cases.
+ */
+let currentState: EncounterSessionState = { ...INITIAL_STATE };
+const listeners = new Set<Listener>();
 
 function notify() {
-  const { listeners } = getGlobalStore();
   listeners.forEach((l) => l());
 }
 
 /** Subscribe to store changes — compatible with useSyncExternalStore. */
 export function subscribeEncounterSession(listener: Listener): () => void {
-  const { listeners } = getGlobalStore();
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
@@ -70,7 +63,7 @@ export function subscribeEncounterSession(listener: Listener): () => void {
 
 /** Read current snapshot — compatible with useSyncExternalStore. */
 export function getEncounterSessionSnapshot(): EncounterSessionState {
-  return getGlobalStore().state;
+  return currentState;
 }
 
 /** Write encounter match decision into the store (called by PatientHeader). */
@@ -81,8 +74,7 @@ export function setEncounterSessionDecision(decision: {
   const canEditOrCreate = decision.reasons.some((r) =>
     EDIT_ELIGIBLE_REASONS.includes(r),
   );
-  const store = getGlobalStore();
-  store.state = {
+  currentState = {
     matchReasons: decision.reasons,
     activeEncounter: decision.encounter,
     canEditOrCreate,
@@ -93,15 +85,13 @@ export function setEncounterSessionDecision(decision: {
 
 /** Mark as loading while encounter session is being resolved. */
 export function setEncounterSessionLoading(isLoading: boolean): void {
-  const store = getGlobalStore();
-  store.state = { ...store.state, isLoading };
+  currentState = { ...currentState, isLoading };
   notify();
 }
 
 /** Reset to initial state — called by PatientHeader on patient UUID change. */
 export function resetEncounterSession(): void {
-  const store = getGlobalStore();
-  store.state = { ...INITIAL_STATE };
+  currentState = { ...INITIAL_STATE };
   notify();
 }
 

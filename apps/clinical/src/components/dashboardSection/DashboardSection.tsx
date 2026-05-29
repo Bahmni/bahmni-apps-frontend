@@ -93,8 +93,10 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
     [patientUUID, addNotification, t],
   );
 
-  const { matchReasons } = useEncounterSessionStore();
+  const { matchReasons, canEditOrCreate, activeEncounter } =
+    useEncounterSessionStore();
   const noActiveVisit = matchReasons.includes('NO_ACTIVE_VISIT');
+  const activeEncounterUuid = activeEncounter?.id ?? null;
   // Row actions are disabled ONLY when there is no active visit.
   // Every other state (including NO_ACTIVE_ENCOUNTER and session loading) keeps them enabled.
   const disableRowActions = noActiveVisit;
@@ -146,6 +148,8 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
             encounterUuids={encounterUuids}
             visitUuids={visitUuids}
             disableActions={disableRowActions}
+            canEditOrCreate={canEditOrCreate}
+            activeEncounterUuid={activeEncounterUuid}
             onRowEditClick={
               control.type === 'allergies' ? handleRowEditAllergy : undefined
             }

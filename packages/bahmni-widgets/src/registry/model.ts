@@ -13,6 +13,10 @@ export interface WidgetProps {
   visitUuids?: string[];
   onEditClick?: () => void;
   disableActions?: boolean;
+  /** Whether the encounter session allows editing/creating resources. */
+  canEditOrCreate?: boolean;
+  /** UUID of the active encounter (from the encounter session store). */
+  activeEncounterUuid?: string | null;
   /** Row-level edit callback — passes the FHIR resource UUID of the row being edited. */
   onRowEditClick?: (resourceId: string) => void;
 }
