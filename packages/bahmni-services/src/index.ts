@@ -4,6 +4,7 @@ export {
   useTranslation,
   normalizeTranslationKey,
   getUserPreferredLocale,
+  getMergedTranslations,
 } from './i18n';
 export { useCamera } from './cameraService';
 export {

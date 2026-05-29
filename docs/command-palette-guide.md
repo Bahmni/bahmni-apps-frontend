@@ -216,6 +216,36 @@ Each app contributes its own Command Palette items via its `v2/extension.json`. 
 
 ---
 
+### Translation Keys
+
+Command Palette extension items support two ways to provide a display text:
+
+- **`translationKey`** _(recommended)_ — a `SCREAMING_SNAKE_CASE` key resolved to the display text at runtime via the app's i18n files.
+- **`label`** _(fallback)_ — a hard-coded string used directly when `translationKey` is absent. Useful for quick local setups or items that don't need translation.
+
+If both are present, `translationKey` takes precedence.
+
+**Naming convention:** `COMMAND_PALETTE_{TYPE}_{DESCRIPTOR}`
+
+| Segment | Values |
+|---|---|
+| `{TYPE}` | `NAV` for navigation links, `ACTION` for patient action buttons |
+| `{DESCRIPTOR}` | Uppercase words describing the item, e.g. `REGISTRATION`, `BED_MANAGEMENT` |
+
+**You must add the English value to `openmrs/i18n/{appName}/locale_en.json`:**
+
+```json
+{
+  "COMMAND_PALETTE_NAV_REGISTRATION": "Go to Registration"
+}
+```
+
+For other locales, add the same key to the corresponding `locale_{code}.json` file. If the key is missing from a locale file, the raw key string is shown as a fallback.
+
+> **Note:** `searchAnnotations` items (in `home/app.json`) still use a `label` field — those are UI badge strings, not extension items, and are not affected by this convention.
+
+---
+
 ### Navigation Item
 
 A link that appears in the Command Palette list. Selecting it navigates to the specified URL.
@@ -224,7 +254,7 @@ A link that appears in the Command Palette list. Selecting it navigates to the s
 {
   "id": "org.bahmni.commandpalette.nav.registration",
   "extensionPointId": "org.bahmni.commandpalette.navItem",
-  "label": "Go to Registration",
+  "translationKey": "COMMAND_PALETTE_NAV_REGISTRATION",
   "url": "/bahmni-new/registration/search",
   "icon": "fa-registered",
   "order": 1,
@@ -237,13 +267,16 @@ A link that appears in the Command Palette list. Selecting it navigates to the s
 |---|---|---|---|
 | `id` | Yes | string | Unique identifier across all extensions |
 | `extensionPointId` | Yes | string | Must be `org.bahmni.commandpalette.navItem` |
-| `label` | Yes | string | Text shown in the palette |
+| `translationKey` | No* | string | i18n key resolved to the display text shown in the palette (recommended) |
+| `label` | No* | string | Hard-coded display text — used as fallback when `translationKey` is absent |
 | `url` | Yes | string | Destination path or full URL |
 | `order` | No | number | Sort position (lower = higher up) |
 | `icon` | No | string | FontAwesome icon class (e.g. `fa-user`) |
 | `newTab` | No | boolean | Open in a new browser tab. Defaults to `false`. External URLs (`https://...`) always open in a new tab regardless of this field. |
 | `requiredPrivilege` | No | string | OpenMRS privilege required to see this item |
 | `appContext` | No | string | Restrict this item to a specific app only |
+
+_\* At least one of `translationKey` or `label` must be provided._
 
 ---
 
@@ -255,7 +288,7 @@ A button that appears after selecting a patient in search results. Navigates to 
 {
   "id": "org.bahmni.commandpalette.action.clinical",
   "extensionPointId": "org.bahmni.commandpalette.patientAction",
-  "label": "Clinical",
+  "translationKey": "COMMAND_PALETTE_ACTION_CLINICAL",
   "icon": "fa-stethoscope",
   "pathTemplate": "/bahmni-new/clinical/{{patientUuid}}",
   "order": 2,
@@ -267,12 +300,15 @@ A button that appears after selecting a patient in search results. Navigates to 
 |---|---|---|---|
 | `id` | Yes | string | Unique identifier across all extensions |
 | `extensionPointId` | Yes | string | Must be `org.bahmni.commandpalette.patientAction` |
-| `label` | Yes | string | Button label shown after patient selection |
+| `translationKey` | No* | string | i18n key resolved to the button label shown after patient selection (recommended) |
+| `label` | No* | string | Hard-coded button label — used as fallback when `translationKey` is absent |
 | `pathTemplate` | Yes | string | URL template — use `{{patientUuid}}` and/or `{{patientIdentifier}}` as placeholders |
 | `order` | No | number | Sort position of the action button |
 | `icon` | No | string | FontAwesome icon class |
 | `requiredPrivilege` | No | string | OpenMRS privilege required to see this button |
 | `appContext` | No | string | Restrict this button to a specific app only |
+
+_\* At least one of `translationKey` or `label` must be provided._
 
 ![Patient action buttons after patient selected](images/command-palette/patient-actions.png)
 
@@ -309,7 +345,7 @@ By default, a Command Palette item appears in every Bahmni app. Use `appContext`
 {
   "id": "org.bahmni.commandpalette.nav.adt.transfer",
   "extensionPointId": "org.bahmni.commandpalette.navItem",
-  "label": "Transfer Patient",
+  "translationKey": "COMMAND_PALETTE_NAV_ADT_TRANSFER",
   "url": "/bahmni/bedmanagement/transfer",
   "appContext": "adt"
 }
@@ -332,22 +368,22 @@ This item only appears when the user is in the ADT (Bed Management) app.
 
 ### Navigation Items
 
-| Label | App | Order | Privilege |
-|---|---|---|---|
-| Go to Registration | registration | 1 | `app:registration` |
-| Go to Appointments | appointments | 2 | `app:appointments` |
-| Create New Patient | registration | 3 | `app:registration` |
-| Bed Management | adt | 4 | `app:adt` |
-| Operating Theatre | ot | 5 | `app:ot` |
-| OpenMRS | home | 6 | `app:admin` |
-| Bahmni Wiki | home | 7 | _(none — public)_ |
+| Translation Key | Display Value | App | Order | Privilege |
+|---|---|---|---|---|
+| `COMMAND_PALETTE_NAV_REGISTRATION` | Go to Registration | registration | 1 | `app:registration` |
+| `COMMAND_PALETTE_NAV_APPOINTMENTS` | Go to Appointments | appointments | 2 | `app:appointments` |
+| `COMMAND_PALETTE_NAV_CREATE_PATIENT` | Create New Patient | registration | 3 | `app:registration` |
+| `COMMAND_PALETTE_NAV_BED_MANAGEMENT` | Bed Management | adt | 4 | `app:adt` |
+| `COMMAND_PALETTE_NAV_OT` | Operating Theatre | ot | 5 | `app:ot` |
+| `COMMAND_PALETTE_NAV_OPENMRS` | OpenMRS | home | 6 | `app:admin` |
+| `COMMAND_PALETTE_NAV_BAHMNI_WIKI` | Bahmni Wiki | home | 7 | _(none — public)_ |
 
 ### Patient Action Buttons
 
-| Label | App | Order | Privilege |
-|---|---|---|---|
-| Registration | registration | 1 | `app:registration` |
-| Clinical | clinical | 2 | `app:clinical` |
+| Translation Key | Display Value | App | Order | Privilege |
+|---|---|---|---|---|
+| `COMMAND_PALETTE_ACTION_REGISTRATION` | Registration | registration | 1 | `app:registration` |
+| `COMMAND_PALETTE_ACTION_CLINICAL` | Clinical | clinical | 2 | `app:clinical` |
 
 ---
 
@@ -362,7 +398,7 @@ In `openmrs/apps/registration/v2/extension.json`:
   "cmdPaletteNavRegistration": {
     "id": "org.bahmni.commandpalette.nav.registration",
     "extensionPointId": "org.bahmni.commandpalette.navItem",
-    "label": "Go to Registration",
+    "translationKey": "COMMAND_PALETTE_NAV_REGISTRATION",
     "url": "/bahmni-new/registration/search",
     "icon": "fa-registered",
     "order": 1,
@@ -388,7 +424,7 @@ In `openmrs/apps/clinical/v2/extension.json`:
   "cmdPaletteActionClinical": {
     "id": "org.bahmni.commandpalette.action.clinical",
     "extensionPointId": "org.bahmni.commandpalette.patientAction",
-    "label": "Clinical",
+    "translationKey": "COMMAND_PALETTE_ACTION_CLINICAL",
     "icon": "fa-stethoscope",
     "pathTemplate": "/bahmni-new/clinical/{{patientUuid}}",
     "order": 2,
@@ -410,7 +446,7 @@ In `openmrs/apps/registration/v2/extension.json`:
   "cmdPaletteNavRegisterNewPatient": {
     "id": "org.bahmni.commandpalette.nav.registration.new",
     "extensionPointId": "org.bahmni.commandpalette.navItem",
-    "label": "Register New Patient",
+    "translationKey": "COMMAND_PALETTE_NAV_REGISTRATION_NEW",
     "url": "/bahmni-new/registration/patient/new",
     "icon": "fa-user-plus",
     "order": 10,
@@ -453,6 +489,7 @@ The user types `@altphone ` followed by the number to search by alternate phone.
 
 ## Notes and Limitations
 
+- **`translationKey` is preferred over `label`** — when `translationKey` is set, the English value must exist in the app's `openmrs/i18n/{appName}/locale_en.json`; if the key is missing from a locale file, the raw key string is displayed. Use `label` as a simpler fallback for items that don't need translation.
 - **`extensionApps` is the source of truth** — any app not listed there is silently ignored even if its `v2/extension.json` has Command Palette items.
 - **Config is loaded once on page load** — changes to JSON files take effect after a browser refresh.
 - **Items without `requiredPrivilege` are visible to all users** — add one if access should be restricted.

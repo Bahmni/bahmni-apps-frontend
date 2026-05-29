@@ -10,6 +10,8 @@ import { useCommandPalette } from '../CommandPaletteContext';
 import { CommandPaletteProvider } from '../CommandPaletteProvider';
 
 jest.mock('@bahmni/services', () => ({
+  getMergedTranslations: jest.fn().mockResolvedValue({}),
+  getUserPreferredLocale: jest.fn().mockReturnValue('en'),
   getConfig: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   hasPrivilege: jest.fn(),
