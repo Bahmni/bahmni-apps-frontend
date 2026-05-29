@@ -14,10 +14,10 @@ import {
   Location,
   type AvailableStockResponse,
   type CDSSRule,
+  dispatchCDSSCheck,
 } from '@bahmni/services';
 import { Medication, ValueSet } from 'fhir/r4';
 import React, { useEffect, useMemo, useState } from 'react';
-import { dispatchCDSSCheck } from '../../../../events/cdssEvents';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
 import {
   ImmunizationInputEntry,

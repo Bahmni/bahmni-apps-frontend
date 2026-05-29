@@ -2,6 +2,7 @@ import {
   getConfig,
   fetchMedicationOrdersMetadata,
   getVaccinations,
+  useCDSSResultsListener,
 } from '@bahmni/services';
 import {
   QueryClient,
@@ -12,7 +13,6 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ReactNode } from 'react';
-import { useCDSSResultsListener } from '../../../../events/cdssEvents';
 import { useMedicationSearch } from '../../../../hooks/useMedicationSearch';
 import MedicationRequestForm from '../MedicationRequestForm';
 import { useMedicationRequestStore } from '../store';
@@ -59,7 +59,13 @@ jest.mock('../../../../services/medicationService', () => ({
   ),
 }));
 
-jest.mock('../../../../events/cdssEvents');
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  fetchMedicationOrdersMetadata: jest.fn(),
+  getConfig: jest.fn(),
+  getVaccinations: jest.fn(),
+  useCDSSResultsListener: jest.fn(),
+}));
 
 const mockUseQuery = jest.mocked(useQuery);
 const mockUseMedicationRequestStore = jest.mocked(useMedicationRequestStore);

@@ -1,7 +1,7 @@
+import { dispatchCDSSCheck } from '@bahmni/services';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { dispatchCDSSCheck } from '../../../../events/cdssEvents';
 import SelectedMedicationRequestItem from '../components/SelectedMedicationRequestItem';
 import { getMedicationRequestStore, useMedicationRequestStore } from '../store';
 import {
@@ -26,7 +26,8 @@ jest.mock('../store', () => ({
   useMedicationRequestStore: jest.fn(),
 }));
 
-jest.mock('../../../../events/cdssEvents/event', () => ({
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   dispatchCDSSCheck: jest.fn(),
 }));
 

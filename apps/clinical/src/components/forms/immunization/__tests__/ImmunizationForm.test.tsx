@@ -1,4 +1,8 @@
-import { getAvailableStocks, getUserLoginLocation } from '@bahmni/services';
+import {
+  getAvailableStocks,
+  getUserLoginLocation,
+  useCDSSResultsListener,
+} from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
@@ -8,7 +12,6 @@ import {
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { useCDSSResultsListener } from '../../../../events/cdssEvents';
 import { useClinicalConfig } from '../../../../providers/clinicalConfig';
 import ImmunizationForm from '../ImmunizationForm';
 import { useImmunizationHistoryStore } from '../stores';
@@ -51,7 +54,12 @@ jest.mock('@tanstack/react-query', () => ({
   useQuery: jest.fn(),
   useQueries: jest.fn(),
 }));
-jest.mock('../../../../events/cdssEvents');
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  getAvailableStocks: jest.fn(),
+  getUserLoginLocation: jest.fn(),
+  useCDSSResultsListener: jest.fn(),
+}));
 
 const mockGetAvailableStocks = jest.mocked(getAvailableStocks);
 const mockGetUserLoginLocation = jest.mocked(getUserLoginLocation);
@@ -640,7 +648,7 @@ describe('ImmunizationForm', () => {
           screen.getByText('BATCH-001 [31 Dec 2026] - Nurse Station'),
         ).toBeInTheDocument();
         expect(
-          screen.getByText('BATCH-002 [31 Dec 2026] - Nurse Station'),
+          screen.getByText('BATCH-002 [30 Jun 2027] - Nurse Station'),
         ).toBeInTheDocument();
       });
     });

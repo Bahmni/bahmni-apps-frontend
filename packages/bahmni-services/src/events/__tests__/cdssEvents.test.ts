@@ -1,5 +1,5 @@
-import type { CDSCard } from '@bahmni/services';
 import { renderHook } from '@testing-library/react';
+import type { CDSCard } from '../../cdssService';
 import {
   dispatchCDSSCheck,
   dispatchCDSSResults,
@@ -7,8 +7,9 @@ import {
   useCDSSResultsListener,
   CDSS_CHECK_EVENT,
   CDSS_RESULTS_EVENT,
-} from '..';
-import type { CDSSCheckEventDetail, CDSSResultsEventDetail } from '../models';
+  type CDSSCheckEventDetail,
+  type CDSSResultsEventDetail,
+} from '../cdssEvents';
 
 describe('cdssEvents', () => {
   describe('dispatchCDSSCheck', () => {

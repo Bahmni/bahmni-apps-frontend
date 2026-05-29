@@ -11,10 +11,10 @@ import {
   useTranslation,
   getVaccinations,
   filterCdsCardsForItems,
+  useCDSSResultsListener,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
-import { useCDSSResultsListener } from '../../../events/cdssEvents';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
 import { MedicationFilterResult } from '../../../models/medication';
 import { MedicationJSONConfig } from '../../../models/medicationConfig';

@@ -1,7 +1,7 @@
+import { dispatchCDSSCheck } from '@bahmni/services';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { dispatchCDSSCheck } from '../../../../events/cdssEvents';
 import SelectedImmunizationItem from '../components/SelectedImmunizationItem';
 import { IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY } from '../constants';
 import { useImmunizationHistoryStore } from '../stores';
@@ -26,7 +26,8 @@ import {
 
 jest.mock('../stores');
 
-jest.mock('../../../../events/cdssEvents', () => ({
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   dispatchCDSSCheck: jest.fn(),
 }));
 

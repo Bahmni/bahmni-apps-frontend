@@ -13,11 +13,11 @@ import {
   searchFHIRConcepts,
   useTranslation,
   filterCdsCardsForItems,
+  useCDSSResultsListener,
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Medication, MedicationRequest } from 'fhir/r4';
 import { useEffect, useMemo, useState } from 'react';
-import { useCDSSResultsListener } from '../../../events/cdssEvents';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';

@@ -4,10 +4,13 @@ import {
   type AuditEventType,
   dispatchAuditEvent,
   dispatchConsultationSaved,
-  useTranslation,
-  invokeCDSSRule,
+  dispatchCDSSResults,
   getConfig,
+  invokeCDSSRule,
+  type CDSSCheckEventDetail,
   type CDSSServerConfig,
+  useCDSSCheckListener,
+  useTranslation,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -16,16 +19,12 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useSyncExternalStore,
   useState,
 } from 'react';
 import { CDSS_SERVER_CONFIG_URL } from '../../constants/app';
 import { ERROR_TITLES } from '../../constants/errors';
-import {
-  dispatchCDSSResults,
-  useCDSSCheckListener,
-  type CDSSCheckEventDetail,
-} from '../../events/cdssEvents';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
@@ -61,6 +60,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldLoadCDSSConfig, setShouldLoadCDSSConfig] = useState(false);
+  const pendingCDSSCheckRef = useRef<CDSSCheckEventDetail | null>(null);
 
   const { clinicalConfig } = useClinicalConfig();
   const registry = useMemo(
@@ -76,6 +77,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     queryKey: ['cdssConfig'],
     queryFn: () =>
       getConfig<CDSSServerConfig[]>(CDSS_SERVER_CONFIG_URL, cdssConfigSchema),
+    enabled: shouldLoadCDSSConfig,
   });
 
   useEffect(() => {
@@ -87,6 +89,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         }),
         type: 'error',
       });
+      pendingCDSSCheckRef.current = null;
     }
   }, [cdssServerConfigError, addNotification, t]);
 
@@ -216,15 +219,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     statDurationInMilliseconds,
   ]);
 
-  const handleCDSSCheck = useCallback(
+  const processCDSSCheck = useCallback(
     async (detail: CDSSCheckEventDetail) => {
       const { controlKey, itemId, rules } = detail;
 
-      if (isCdssServerConfigLoading || !cdssServerConfig) {
+      if (!cdssServerConfig) {
         return;
       }
-
-      if (!rules || rules.length === 0) return;
 
       const dataBundle = buildComprehensiveCDSSBundle();
 
@@ -261,11 +262,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         triggerItemId: itemId,
         controlKey,
       });
+
+      pendingCDSSCheckRef.current = null;
     },
     [
       cdssServerConfig,
-      isCdssServerConfigLoading,
-      activeEntries,
       buildComprehensiveCDSSBundle,
       activeEncounter,
       patientId,
@@ -273,6 +274,42 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       activeEpisodeId,
       addNotification,
       t,
+    ],
+  );
+
+  // Process pending CDSS check when config becomes available
+  useEffect(() => {
+    if (
+      cdssServerConfig &&
+      !isCdssServerConfigLoading &&
+      pendingCDSSCheckRef.current
+    ) {
+      processCDSSCheck(pendingCDSSCheckRef.current);
+    }
+  }, [cdssServerConfig, isCdssServerConfigLoading, processCDSSCheck]);
+
+  const handleCDSSCheck = useCallback(
+    async (detail: CDSSCheckEventDetail) => {
+      const { rules } = detail;
+
+      if (!rules || rules.length === 0) return;
+
+      // Store the pending check to trigger config loading
+      pendingCDSSCheckRef.current = detail;
+
+      // If config is already loaded and not loading, process immediately
+      if (cdssServerConfig && !isCdssServerConfigLoading) {
+        await processCDSSCheck(detail);
+      } else if (!shouldLoadCDSSConfig) {
+        // Trigger config loading
+        setShouldLoadCDSSConfig(true);
+      }
+    },
+    [
+      cdssServerConfig,
+      isCdssServerConfigLoading,
+      processCDSSCheck,
+      shouldLoadCDSSConfig,
     ],
   );
 

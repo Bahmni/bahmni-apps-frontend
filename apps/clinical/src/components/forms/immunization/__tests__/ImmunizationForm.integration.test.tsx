@@ -4,16 +4,14 @@ import {
   getUserLoginLocation,
   getVaccinations,
   searchFHIRConcepts,
+  dispatchCDSSCheck,
+  useCDSSResultsListener,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Immunization } from 'fhir/r4';
 import React from 'react';
-import {
-  dispatchCDSSCheck,
-  useCDSSResultsListener,
-} from '../../../../events/cdssEvents';
 import { useClinicalConfig } from '../../../../providers/clinicalConfig';
 import ImmunizationForm from '../ImmunizationForm';
 import { getImmunizationStore } from '../stores';
@@ -50,7 +48,16 @@ jest.mock('../../../../providers/clinicalConfig', () => ({
   useClinicalConfig: jest.fn(),
 }));
 
-jest.mock('../../../../events/cdssEvents');
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  dispatchCDSSCheck: jest.fn(),
+  getLocationByTag: jest.fn(),
+  getMedicationByUuid: jest.fn(),
+  getUserLoginLocation: jest.fn(),
+  getVaccinations: jest.fn(),
+  searchFHIRConcepts: jest.fn(),
+  useCDSSResultsListener: jest.fn(),
+}));
 
 const mockDispatchCDSSCheck = jest.mocked(dispatchCDSSCheck);
 const mockUseCDSSResultsListener = jest.mocked(useCDSSResultsListener);

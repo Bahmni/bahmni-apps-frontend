@@ -10,8 +10,8 @@ import {
   TextAreaWClose,
 } from '@bahmni/design-system';
 import { useTranslation, getTodayDate, type CDSSRule } from '@bahmni/services';
+import { dispatchCDSSCheck } from '@bahmni/services';
 import React, { useEffect, useState } from 'react';
-import { dispatchCDSSCheck } from '../../../../events/cdssEvents/event';
 import { MedicationInputEntry } from '../../../../models/medication';
 import { MedicationConfig } from '../../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
