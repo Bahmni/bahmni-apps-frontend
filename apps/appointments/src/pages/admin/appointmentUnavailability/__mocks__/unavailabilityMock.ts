@@ -72,181 +72,132 @@ export const mockAppointmentServices: AppointmentService[] = [
   },
 ];
 
+const createMockProvider = (
+  providerUuid: string,
+  displayName: string,
+  personUuid: string,
+  nameUuid: string,
+  available: boolean,
+): Provider => ({
+  uuid: providerUuid,
+  display: displayName,
+  person: {
+    uuid: personUuid,
+    display: displayName,
+    voided: false,
+    gender: '',
+    age: null,
+    birthdate: null,
+    birthdateEstimated: false,
+    dead: false,
+    deathDate: null,
+    causeOfDeath: null,
+    preferredName: { uuid: nameUuid, display: displayName, links: [] },
+    birthtime: null,
+    deathdateEstimated: false,
+    links: [],
+    resourceVersion: '',
+  },
+  attributes: [
+    {
+      attributeType: {
+        display: PROVIDER_ATTRIBUTE_AVAILABLE_FOR_APPOINTMENT,
+        uuid: '',
+      },
+      value: available,
+      uuid: '',
+      display: '',
+      voided: false,
+    },
+  ],
+});
+
 export const mockProviders: Provider[] = [
-  {
-    uuid: 'provider-uuid-1',
-    display: 'Dr. John Smith',
-    person: {
-      uuid: 'person-uuid-1',
-      display: 'Dr. John Smith',
-      voided: false,
-      gender: '',
-      age: null,
-      birthdate: null,
-      birthdateEstimated: false,
-      dead: false,
-      deathDate: null,
-      causeOfDeath: null,
-      preferredName: {
-        uuid: 'name-uuid-1',
-        display: 'Dr. John Smith',
-        links: [],
-      },
-      birthtime: null,
-      deathdateEstimated: false,
-      links: [],
-      resourceVersion: '',
-    },
-    attributes: [
-      {
-        attributeType: {
-          display: PROVIDER_ATTRIBUTE_AVAILABLE_FOR_APPOINTMENT,
-          uuid: '',
-        },
-        value: true,
-        uuid: '',
-        display: '',
-        voided: false,
-      },
-    ],
-  },
-  {
-    uuid: 'provider-uuid-2',
-    display: 'Dr. Jane Doe',
-    person: {
-      uuid: 'person-uuid-2',
-      display: 'Dr. Jane Doe',
-      voided: false,
-      gender: '',
-      age: null,
-      birthdate: null,
-      birthdateEstimated: false,
-      dead: false,
-      deathDate: null,
-      causeOfDeath: null,
-      preferredName: {
-        uuid: 'name-uuid-2',
-        display: 'Dr. Jane Doe',
-        links: [],
-      },
-      birthtime: null,
-      deathdateEstimated: false,
-      links: [],
-      resourceVersion: '',
-    },
-    attributes: [
-      {
-        attributeType: {
-          display: PROVIDER_ATTRIBUTE_AVAILABLE_FOR_APPOINTMENT,
-          uuid: '',
-        },
-        value: true,
-        uuid: '',
-        display: '',
-        voided: false,
-      },
-    ],
-  },
-  {
-    uuid: 'provider-uuid-3',
-    display: 'Dr. Unavailable Provider',
-    person: {
-      uuid: 'person-uuid-3',
-      display: 'Dr. Unavailable Provider',
-      voided: false,
-      gender: '',
-      age: null,
-      birthdate: null,
-      birthdateEstimated: false,
-      dead: false,
-      deathDate: null,
-      causeOfDeath: null,
-      birthtime: null,
-      deathdateEstimated: false,
-      links: [],
-      resourceVersion: '',
-      preferredName: {
-        uuid: 'name-uuid-3',
-        display: 'Dr. Unavailable Provider',
-        links: [],
-      },
-    },
-    attributes: [
-      {
-        attributeType: {
-          display: PROVIDER_ATTRIBUTE_AVAILABLE_FOR_APPOINTMENT,
-          uuid: '',
-        },
-        value: false,
-        uuid: '',
-        display: '',
-        voided: false,
-      },
-    ],
-  },
+  createMockProvider(
+    'provider-uuid-1',
+    'Dr. John Smith',
+    'person-uuid-1',
+    'name-uuid-1',
+    true,
+  ),
+  createMockProvider(
+    'provider-uuid-2',
+    'Dr. Jane Doe',
+    'person-uuid-2',
+    'name-uuid-2',
+    true,
+  ),
+  createMockProvider(
+    'provider-uuid-3',
+    'Dr. Unavailable Provider',
+    'person-uuid-3',
+    'name-uuid-3',
+    false,
+  ),
 ];
 
+const toUnavailability = (
+  uuid: string,
+  location: { uuid: string; name: string },
+  service: { uuid: string; name: string } | null,
+  provider: { uuid: string; name: string } | null,
+  startDate: string,
+  startTime: string,
+  endDate: string,
+  endTime: string,
+  dateCreated: string,
+  creatorName: string,
+): AppointmentUnavailability => ({
+  uuid,
+  location,
+  service,
+  provider,
+  startDate,
+  startTime,
+  endDate,
+  endTime,
+  voided: false,
+  dateCreated,
+  creatorName,
+});
+
 export const mockAppointmentUnavailabilities: AppointmentUnavailability[] = [
-  {
-    uuid: 'unavailability-uuid-1',
-    location: {
-      uuid: 'location-uuid-1',
-      name: 'General OPD',
-    },
-    service: {
-      uuid: 'service-uuid-1',
-      name: 'General Medicine OPD Consultation',
-    },
-    provider: {
-      uuid: 'provider-uuid-1',
-      name: 'Dr. John Smith',
-    },
-    startDate: '2026-05-22',
-    startTime: '09:00',
-    endDate: '2026-05-22',
-    endTime: '17:00',
-    voided: false,
-    dateCreated: '2026-05-22T09:00:00Z',
-    creatorName: 'admin',
-  },
-  {
-    uuid: 'unavailability-uuid-2',
-    location: {
-      uuid: 'location-uuid-2',
-      name: 'ENT Ward',
-    },
-    service: {
-      uuid: 'service-uuid-2',
-      name: 'ENT Consultation',
-    },
-    provider: null,
-    startDate: '2026-05-23',
-    startTime: '10:00',
-    endDate: '2026-05-23',
-    endTime: '16:00',
-    voided: false,
-    dateCreated: '2026-05-23T10:00:00Z',
-    creatorName: 'admin',
-  },
-  {
-    uuid: 'unavailability-uuid-3',
-    location: {
-      uuid: 'location-uuid-1',
-      name: 'General OPD',
-    },
-    service: {
-      uuid: 'service-uuid-1',
-      name: 'General Medicine OPD Consultation',
-    },
-    provider: null,
-    startDate: '2026-05-24',
-    startTime: '08:00',
-    endDate: '2026-05-25',
-    endTime: '18:00',
-    voided: false,
-    dateCreated: '2026-05-24T08:00:00Z',
-    creatorName: 'admin',
-  },
+  toUnavailability(
+    'unavailability-uuid-1',
+    { uuid: 'location-uuid-1', name: 'General OPD' },
+    { uuid: 'service-uuid-1', name: 'General Medicine OPD Consultation' },
+    { uuid: 'provider-uuid-1', name: 'Dr. John Smith' },
+    '2026-05-22',
+    '09:00',
+    '2026-05-22',
+    '17:00',
+    '2026-05-22T09:00:00Z',
+    'admin',
+  ),
+  toUnavailability(
+    'unavailability-uuid-2',
+    { uuid: 'location-uuid-2', name: 'ENT Ward' },
+    { uuid: 'service-uuid-2', name: 'ENT Consultation' },
+    null,
+    '2026-05-23',
+    '10:00',
+    '2026-05-23',
+    '16:00',
+    '2026-05-23T10:00:00Z',
+    'admin',
+  ),
+  toUnavailability(
+    'unavailability-uuid-3',
+    { uuid: 'location-uuid-1', name: 'General OPD' },
+    { uuid: 'service-uuid-1', name: 'General Medicine OPD Consultation' },
+    null,
+    '2026-05-24',
+    '08:00',
+    '2026-05-25',
+    '18:00',
+    '2026-05-24T08:00:00Z',
+    'admin',
+  ),
 ];
 
 export const mockCurrentUser = {
@@ -262,7 +213,7 @@ export const mockFHIRBundle: FHIRBundle = {
   total: 2,
   entry: [
     {
-      fullUrl: 'http://test/Location/location-uuid-1',
+      fullUrl: 'http://test/Location/location-uuid-1', // NOSONAR
       resource: {
         resourceType: 'Location',
         id: 'location-uuid-1',
@@ -270,7 +221,7 @@ export const mockFHIRBundle: FHIRBundle = {
       },
     },
     {
-      fullUrl: 'http://test/Location/location-uuid-2',
+      fullUrl: 'http://test/Location/location-uuid-2', // NOSONAR
       resource: {
         resourceType: 'Location',
         id: 'location-uuid-2',
@@ -304,16 +255,15 @@ export const mockRequests = [
 ];
 
 export const mockUnavailabilityNoServiceNoProvider: AppointmentUnavailability =
-  {
-    uuid: 'unavailability-uuid-4',
-    location: { uuid: 'location-uuid-1', name: 'General OPD' },
-    service: null,
-    provider: null,
-    startDate: '2026-05-25',
-    startTime: '09:00',
-    endDate: '2026-05-25',
-    endTime: '17:00',
-    voided: false,
-    dateCreated: '2026-05-25T09:00:00Z',
-    creatorName: 'admin',
-  };
+  toUnavailability(
+    'unavailability-uuid-4',
+    { uuid: 'location-uuid-1', name: 'General OPD' },
+    null,
+    null,
+    '2026-05-25',
+    '09:00',
+    '2026-05-25',
+    '17:00',
+    '2026-05-25T09:00:00Z',
+    'admin',
+  );
