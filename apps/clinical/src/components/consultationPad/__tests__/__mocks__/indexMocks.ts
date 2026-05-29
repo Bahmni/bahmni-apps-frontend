@@ -1,3 +1,4 @@
+import { createMockCDSCard } from '../../../../__mocks__/cdssMocks';
 import type { InputControl } from '../../../forms';
 
 export const mockRegistry: InputControl[] = [
@@ -93,26 +94,12 @@ export const mockCDSSServerConfig = [
 ];
 
 export const mockCDSSCards = [
-  {
-    summary: 'Drug interaction warning',
-    indicator: 'warning',
-    source: { label: 'Test CDSS' },
-    suggestions: [
-      {
-        label: 'Consider alternative medication',
-        actions: [
-          {
-            type: 'update',
-            resource: {
-              id: 'med-123',
-              resourceType: 'MedicationRequest',
-              status: 'active',
-            },
-          },
-        ],
-      },
-    ],
-  },
+  createMockCDSCard(
+    'MedicationRequest',
+    'med-123',
+    'Drug interaction warning',
+    'Consider alternative medication',
+  ),
 ];
 
 export const mockEmptyCDSSConfig: any[] = [];

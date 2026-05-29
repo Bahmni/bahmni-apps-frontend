@@ -1,8 +1,5 @@
 import { Medication } from 'fhir/r4';
-import {
-  createMockCDSCard,
-  createMockCriticalCDSCard,
-} from '../../../../../__mocks__/cdssMocks';
+import { createMockCDSCard } from '../../../../../__mocks__/cdssMocks';
 import { MedicationInputEntry } from '../../../../../models/medication';
 import { MedicationConfig } from '../../../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
@@ -345,11 +342,12 @@ export const mockCDSCard = createMockCDSCard(
   'Consider alternative medication',
 );
 
-export const mockCriticalCDSCard = createMockCriticalCDSCard(
+export const mockCriticalCDSCard = createMockCDSCard(
   'MedicationRequest',
   'med-123',
   'Critical drug allergy alert',
   'Do not prescribe',
+  'critical',
 );
 
 export const mockInputControlConfigWithCDSS = {

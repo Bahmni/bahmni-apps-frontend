@@ -1,9 +1,6 @@
 import { Location, type AvailableStockResponse } from '@bahmni/services';
 import { Medication, MedicationRequest, Reference } from 'fhir/r4';
-import {
-  createMockCDSCard,
-  createMockCriticalCDSCard,
-} from '../../../../../__mocks__/cdssMocks';
+import { createMockCDSCard } from '../../../../../__mocks__/cdssMocks';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../../models';
 
@@ -449,9 +446,10 @@ export const mockCDSCard = createMockCDSCard(
   'Consider alternative vaccine',
 );
 
-export const mockCriticalCDSCard = createMockCriticalCDSCard(
+export const mockCriticalCDSCard = createMockCDSCard(
   'Immunization',
   'imm-123',
   'Critical vaccine allergy alert',
   'Do not administer',
+  'critical',
 );
