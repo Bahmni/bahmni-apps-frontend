@@ -1,6 +1,7 @@
 import type {
   AppointmentService,
   AppointmentUnavailability,
+  FHIRBundle,
   Location,
   Provider,
 } from '@bahmni/services';
@@ -8,6 +9,7 @@ import {
   APPOINTMENT_LOCATION_TAG,
   PROVIDER_ATTRIBUTE_AVAILABLE,
 } from '../constants';
+import type { UnavailabilityFormData } from '../models';
 
 export const mockLocations: Location[] = [
   {
@@ -252,3 +254,57 @@ export const mockCurrentUser = {
   username: 'admin',
   display: 'Admin User',
 };
+
+export const mockFHIRBundle: FHIRBundle = {
+  resourceType: 'Bundle',
+  id: 'test-bundle',
+  type: 'searchset',
+  total: 2,
+  entry: [
+    {
+      fullUrl: 'http://test/Location/location-uuid-1',
+      resource: {
+        resourceType: 'Location',
+        id: 'location-uuid-1',
+        name: 'General OPD',
+      },
+    },
+    {
+      fullUrl: 'http://test/Location/location-uuid-2',
+      resource: {
+        resourceType: 'Location',
+        id: 'location-uuid-2',
+        name: 'ENT Ward',
+      },
+    },
+  ],
+};
+
+export const mockUnavailabilityFormData: UnavailabilityFormData = {
+  locationUuid: 'location-uuid-1',
+  selectedServiceItems: [],
+  selectedProviderItems: [],
+  startDate: new Date('2026-05-25'),
+  startTime: '09:00',
+  startTimePeriod: 'AM',
+  endDate: new Date('2026-05-25'),
+  endTime: '05:00',
+  endTimePeriod: 'PM',
+  filteredServicesCount: 0,
+  availableProvidersCount: 0,
+};
+
+export const mockUnavailabilityNoServiceNoProvider: AppointmentUnavailability =
+  {
+    uuid: 'unavailability-uuid-4',
+    location: { uuid: 'location-uuid-1', name: 'General OPD' },
+    service: null,
+    provider: null,
+    startDate: '2026-05-25',
+    startTime: '09:00',
+    endDate: '2026-05-25',
+    endTime: '17:00',
+    voided: false,
+    dateCreated: '2026-05-25T09:00:00Z',
+    creatorName: 'admin',
+  };
