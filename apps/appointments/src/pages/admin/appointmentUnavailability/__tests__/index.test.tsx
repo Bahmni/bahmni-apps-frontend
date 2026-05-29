@@ -28,6 +28,7 @@ jest.mock('@bahmni/services', () => ({
   createAppointmentUnavailability: jest.fn(),
   hasPrivilege: jest.fn(),
   getUserLoginLocation: jest.fn(),
+  formatDateTime: jest.fn(() => ({ formattedResult: 'formatted-datetime' })),
 }));
 
 jest.mock('../hook', () => ({

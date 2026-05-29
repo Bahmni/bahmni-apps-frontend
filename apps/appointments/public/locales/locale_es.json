@@ -34,6 +34,7 @@
   "ADMIN_UNAVAILABILITY_FORM_ALL_PROVIDERS": "Todos los proveedores",
   "ADMIN_UNAVAILABILITY_FORM_ALL_SERVICES": "Todos los servicios",
   "ADMIN_UNAVAILABILITY_FORM_CANCEL": "Cancelar",
+  "ADMIN_UNAVAILABILITY_FORM_DATE_PLACEHOLDER": "dd/MM/yyyy",
   "ADMIN_UNAVAILABILITY_FORM_END_DATE_LABEL": "Fecha de finalización*",
   "ADMIN_UNAVAILABILITY_FORM_END_TIME_LABEL": "Hora de finalización*",
   "ADMIN_UNAVAILABILITY_FORM_ERROR_MESSAGE": "Error al agregar indisponibilidad. Por favor, inténtelo de nuevo.",

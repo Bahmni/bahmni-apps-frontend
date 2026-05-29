@@ -29,6 +29,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getUserLoginLocation: jest.fn(),
   getTodayDate: jest.fn(),
+  formatDateTime: jest.fn(() => ({ formattedResult: 'formatted-datetime' })),
 }));
 
 expect.extend(toHaveNoViolations);

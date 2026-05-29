@@ -580,12 +580,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           <td
                             data-testid="table-cell-unavailability-uuid-1-startDateTime"
                           >
-                            22/05/2026 9:00 AM
+                            formatted-datetime
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-1-endDateTime"
                           >
-                            22/05/2026 5:00 PM
+                            formatted-datetime
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-1-locationName"
@@ -609,12 +609,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           <td
                             data-testid="table-cell-unavailability-uuid-2-startDateTime"
                           >
-                            23/05/2026 10:00 AM
+                            formatted-datetime
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-2-endDateTime"
                           >
-                            23/05/2026 4:00 PM
+                            formatted-datetime
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-2-locationName"
@@ -638,12 +638,12 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                           <td
                             data-testid="table-cell-unavailability-uuid-3-startDateTime"
                           >
-                            24/05/2026 8:00 AM
+                            formatted-datetime
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-3-endDateTime"
                           >
-                            25/05/2026 6:00 PM
+                            formatted-datetime
                           </td>
                           <td
                             data-testid="table-cell-unavailability-uuid-3-locationName"

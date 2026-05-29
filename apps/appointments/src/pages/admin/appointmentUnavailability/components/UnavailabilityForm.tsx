@@ -234,6 +234,7 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
               id="start-date"
               data-testid="start-date-input"
               labelText={t('ADMIN_UNAVAILABILITY_FORM_START_DATE_LABEL')}
+              placeholder={t('ADMIN_UNAVAILABILITY_FORM_DATE_PLACEHOLDER')}
               invalid={!!errors.startDate}
               invalidText={errors.startDate}
             />
@@ -295,6 +296,7 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
               id="end-date"
               data-testid="end-date-input"
               labelText={t('ADMIN_UNAVAILABILITY_FORM_END_DATE_LABEL')}
+              placeholder={t('ADMIN_UNAVAILABILITY_FORM_DATE_PLACEHOLDER')}
               invalid={!!errors.endDate}
               invalidText={errors.endDate}
             />
