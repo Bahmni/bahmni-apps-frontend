@@ -790,7 +790,10 @@ describe('ConsultationPad', () => {
           expect(getConfig).toHaveBeenCalled();
         });
 
-        dispatchCDSSCheck(mockCDSSCheckEvent);
+        dispatchCDSSCheck({
+          ...mockCDSSCheckEvent,
+          rules: [],
+        });
 
         await waitFor(() => {
           expect(invokeCDSSRule).not.toHaveBeenCalled();

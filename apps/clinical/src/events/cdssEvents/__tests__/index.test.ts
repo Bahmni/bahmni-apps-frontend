@@ -17,24 +17,24 @@ describe('cdssEvents', () => {
         {
           controlKey: 'immunizationHistory',
           itemId: 'item-123',
-          event: 'onLoad',
+          rules: [{ event: 'onLoad', hook: 'test-hook' }],
         },
         {
           controlKey: 'immunizationHistory',
           itemId: 'item-123',
-          event: 'onLoad',
+          rules: [{ event: 'onLoad', hook: 'test-hook' }],
         },
       ],
       [
         {
           controlKey: 'medication',
           itemId: 'med-456',
-          event: 'onSelect',
+          rules: [{ event: 'onSelect', hook: 'test-hook' }],
         },
         {
           controlKey: 'medication',
           itemId: 'med-456',
-          event: 'onSelect',
+          rules: [{ event: 'onSelect', hook: 'test-hook' }],
         },
       ],
     ])('should dispatch event with payload %o', (payload, expected) => {
@@ -123,7 +123,7 @@ describe('cdssEvents', () => {
       const payload: CDSSCheckEventDetail = {
         controlKey: 'immunizationHistory',
         itemId: 'item-123',
-        event: 'onLoad',
+        rules: [{ event: 'onLoad', hook: 'test-hook' }],
       };
 
       renderHook(() => useCDSSCheckListener(callback));

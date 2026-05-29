@@ -839,7 +839,13 @@ describe('SelectedImmunizationItem', () => {
       expect(mockDispatchCDSSCheck).toHaveBeenCalledWith({
         controlKey: IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
         itemId: mockImmunizationEntry.id,
-        event: 'onSelect',
+        rules: [
+          {
+            event: 'onSelect',
+            server: 'test-cdss-server',
+            service: 'vaccine-order-select',
+          },
+        ],
       });
     });
 

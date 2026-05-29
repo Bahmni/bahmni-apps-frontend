@@ -151,15 +151,14 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
       }, []);
 
       useEffect(() => {
-        const hasMatchingRule = cdssRules?.some(
-          (rule) => rule.event === 'onSelect',
-        );
+        const rulesForThisEvent =
+          cdssRules?.filter((rule) => rule.event === 'onSelect') ?? [];
 
-        if (hasMatchingRule) {
+        if (rulesForThisEvent.length > 0) {
           dispatchCDSSCheck({
             controlKey: inputControlType,
             itemId: id,
-            event: 'onSelect',
+            rules: rulesForThisEvent,
           });
         }
       }, []);

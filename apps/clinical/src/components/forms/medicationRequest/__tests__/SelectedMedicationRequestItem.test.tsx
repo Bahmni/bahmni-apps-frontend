@@ -595,7 +595,13 @@ describe('SelectedMedicationRequestItem', () => {
       expect(mockDispatchCDSSCheck).toHaveBeenCalledWith({
         controlKey: 'medication',
         itemId: mockSelectedMedication.id,
-        event: 'onSelect',
+        rules: [
+          {
+            event: 'onSelect',
+            server: 'test-cdss-server',
+            service: 'medication-prescribe',
+          },
+        ],
       });
     });
 

@@ -94,15 +94,14 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   const [isExpiryDateFromBatch, setIsExpiryDateFromBatch] = useState(false);
 
   useEffect(() => {
-    const hasMatchingRule = cdssRules?.some(
-      (rule) => rule.event === 'onSelect',
-    );
+    const rulesForThisEvent =
+      cdssRules?.filter((rule) => rule.event === 'onSelect') ?? [];
 
-    if (hasMatchingRule) {
+    if (rulesForThisEvent.length > 0) {
       dispatchCDSSCheck({
         controlKey: storeKey,
         itemId: id,
-        event: 'onSelect',
+        rules: rulesForThisEvent,
       });
     }
   }, []);

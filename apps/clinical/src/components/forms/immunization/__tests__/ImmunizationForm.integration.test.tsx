@@ -396,7 +396,9 @@ describe('ImmunizationForm Integration Tests', () => {
         expect(mockDispatchCDSSCheck).toHaveBeenCalledWith(
           expect.objectContaining({
             controlKey: 'immunizationAdministration',
-            event: 'onSelect',
+            rules: expect.arrayContaining([
+              expect.objectContaining({ event: 'onSelect' }),
+            ]),
           }),
         );
       });

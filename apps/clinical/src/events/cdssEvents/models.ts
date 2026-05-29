@@ -1,9 +1,9 @@
-import type { CDSCard } from '@bahmni/services';
+import type { CDSCard, CDSSRule } from '@bahmni/services';
 
 export interface CDSSCheckEventDetail {
   controlKey: string;
   itemId: string;
-  event: string;
+  rules: CDSSRule[];
 }
 
 export interface CDSSResultsEventDetail {

@@ -218,44 +218,33 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   const handleCDSSCheck = useCallback(
     async (detail: CDSSCheckEventDetail) => {
-      const { controlKey, itemId, event: eventType } = detail;
+      const { controlKey, itemId, rules } = detail;
 
       if (isCdssServerConfigLoading || !cdssServerConfig) {
         return;
       }
 
-      const entry = activeEntries.find((e) => e.key === controlKey);
-      if (!entry) return;
-
-      const cdssRules =
-        entry.inputControlConfig?.cdss?.filter(
-          (rule) => rule.event === eventType,
-        ) ?? [];
-      if (cdssRules.length === 0) return;
+      if (!rules || rules.length === 0) return;
 
       const dataBundle = buildComprehensiveCDSSBundle();
-
-      const resolvedPatientId = patientId;
 
       const resolvedVisitId =
         activeVisitId ?? activeEncounter?.partOf?.reference?.split('/')[1];
 
-      const resolvedEpisodeId = activeEpisodeId;
-
       const context = {
-        patientId: resolvedPatientId as string,
-        visitId: resolvedVisitId as string | undefined,
-        episodeId: resolvedEpisodeId as string | undefined,
+        patientId: patientId!,
+        visitId: resolvedVisitId,
+        episodeId: activeEpisodeId ?? undefined,
       };
 
-      const cardPromises = cdssRules.map((rule) =>
+      const cardPromises = rules.map((rule) =>
         invokeCDSSRule(cdssServerConfig, rule, context, dataBundle).catch(
           () => {
             addNotification({
               title: t('ERROR_DEFAULT_TITLE'),
               message: t('CDSS_RULE_INVOCATION_ERROR', {
                 controlKey,
-                eventType,
+                eventType: rule.event,
               }),
               type: 'error',
             });

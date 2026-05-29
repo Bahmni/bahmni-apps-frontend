@@ -120,5 +120,11 @@ export const mockEmptyCDSSConfig: any[] = [];
 export const mockCDSSCheckEvent = {
   controlKey: 'medications',
   itemId: 'item-123',
-  event: 'onSelect',
+  rules: [
+    {
+      event: 'onSelect',
+      server: 'test-cdss-server',
+      service: 'medication-prescribe',
+    },
+  ],
 };
