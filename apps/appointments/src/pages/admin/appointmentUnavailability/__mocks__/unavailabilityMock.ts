@@ -294,6 +294,10 @@ export const mockUnavailabilityFormData: UnavailabilityFormData = {
   availableProvidersCount: 0,
 };
 
+export const mockRequests = [
+  { locationUuid: 'location-uuid-1', startTime: '09:00', endTime: '17:00' },
+];
+
 export const mockUnavailabilityNoServiceNoProvider: AppointmentUnavailability =
   {
     uuid: 'unavailability-uuid-4',
