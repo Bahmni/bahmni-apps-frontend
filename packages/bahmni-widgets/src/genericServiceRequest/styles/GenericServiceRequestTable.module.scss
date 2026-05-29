@@ -3,6 +3,12 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+:global([data-split-view] #main-display-area #generic-service-request-table) {
+  div[id^="accordion-item"] {
+    overflow-x: auto;
+  }
+}
+
 .requestName {
   @include type-style("heading-compact-01");
   color: $text-primary;
