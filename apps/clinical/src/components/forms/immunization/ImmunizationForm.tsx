@@ -361,6 +361,11 @@ const ImmunizationForm = ({
         <BoxWHeader title={t('IMMUNIZATION_INPUT_CONTROL_ADDED_ITEMS')}>
           {selectedImmunizations.map((immunization, immunizationIndex) => (
             <div key={immunization.id}>
+              {immunization.cdsCards?.map((card) => (
+                <div key={card.summary} className={styles.cdsCardContainer}>
+                  <CDSCardAlert card={card} className={styles.cdsCard} />
+                </div>
+              ))}
               <SelectedItem
                 className={styles.selectedItem}
                 onClose={() => removeImmunization(immunization.id)}
@@ -381,11 +386,6 @@ const ImmunizationForm = ({
                   cdssRules={cdssRules}
                 />
               </SelectedItem>
-              {immunization.cdsCards?.map((card) => (
-                <div key={card.summary} className={styles.cdsCardContainer}>
-                  <CDSCardAlert card={card} />
-                </div>
-              ))}
             </div>
           ))}
         </BoxWHeader>

@@ -4,9 +4,10 @@ import React from 'react';
 
 interface CDSCardAlertProps {
   card: CDSCard;
+  className?: string;
 }
 
-const CDSCardAlert: React.FC<CDSCardAlertProps> = ({ card }) => {
+const CDSCardAlert: React.FC<CDSCardAlertProps> = ({ card, className }) => {
   const getNotificationKind = (
     indicator: 'info' | 'warning' | 'critical',
   ): 'info' | 'warning' | 'error' => {
@@ -28,6 +29,7 @@ const CDSCardAlert: React.FC<CDSCardAlertProps> = ({ card }) => {
       title={card.summary}
       lowContrast
       hideCloseButton
+      className={className}
     />
   );
 };

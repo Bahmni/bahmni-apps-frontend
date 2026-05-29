@@ -232,6 +232,11 @@ const MedicationRequestForm: React.FC<{
           >
             {selectedMedicationRequests.map((item) => (
               <div key={item.id}>
+                {item.cdsCards?.map((card) => (
+                  <div key={card.summary} className={styles.cdsCardContainer}>
+                    <CDSCardAlert card={card} className={styles.cdsCard} />
+                  </div>
+                ))}
                 <SelectedItem
                   onClose={() => removeItem(item.id)}
                   className={styles.selectedItem}
@@ -246,11 +251,6 @@ const MedicationRequestForm: React.FC<{
                     cdssRules={cdssRules}
                   />
                 </SelectedItem>
-                {item.cdsCards?.map((card) => (
-                  <div key={card.summary} className={styles.cdsCardContainer}>
-                    <CDSCardAlert card={card} />
-                  </div>
-                ))}
               </div>
             ))}
           </BoxWHeader>

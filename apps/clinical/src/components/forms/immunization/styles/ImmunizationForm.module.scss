@@ -74,3 +74,12 @@
     }
   }
 }
+
+.cdsCardContainer {
+  width: calc(100% + $spacing-05);
+  margin-top: $spacing-04;
+}
+
+.cdsCard {
+  min-width: 100%;
+}
