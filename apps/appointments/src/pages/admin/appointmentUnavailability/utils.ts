@@ -1,22 +1,82 @@
 import {
   convertTo24HourFormat,
+  type AppointmentService,
   type AppointmentUnavailability,
   type CreateUnavailabilityRequest,
   type FHIRBundle,
   formatDateTime,
   getTimeInMinutes,
+  getUserLoginLocation,
   ISO_DATE_FORMAT,
   type Location,
+  type Provider,
   useTranslation,
 } from '@bahmni/services';
 import type {
   BaseData,
   BaseDataParams,
+  SelectableItem,
   UnavailabilityFormData,
   UnavailabilityFormErrors,
 } from './models';
 
 type TranslationFunction = ReturnType<typeof useTranslation>['t'];
+
+export const getInitialLocationUuid = (): string => {
+  try {
+    return getUserLoginLocation().uuid;
+  } catch {
+    return '';
+  }
+};
+
+export const toSelectableItemSentinel = (message: string): SelectableItem => ({
+  id: '',
+  text: message,
+});
+
+export const toLocationSentinel = (message: string): Location => ({
+  display: message,
+  uuid: '',
+});
+
+export const buildServiceItems = (
+  services: AppointmentService[],
+  allServicesLabel: string,
+): SelectableItem[] => {
+  const items: SelectableItem[] = services.map((service) => ({
+    id: service.uuid,
+    text: service.name,
+    originalItem: service,
+  }));
+  if (items.length > 0) {
+    items.push({
+      id: 'select-all-services',
+      text: allServicesLabel,
+      isSelectAll: true,
+    });
+  }
+  return items;
+};
+
+export const buildProviderItems = (
+  providers: Provider[],
+  allProvidersLabel: string,
+): SelectableItem[] => {
+  const items: SelectableItem[] = providers.map((provider) => ({
+    id: provider.uuid,
+    text: provider.person?.display,
+    originalItem: provider,
+  }));
+  if (items.length > 0) {
+    items.push({
+      id: 'select-all-providers',
+      text: allProvidersLabel,
+      isSelectAll: true,
+    });
+  }
+  return items;
+};
 
 export const createBaseData = (
   params: BaseDataParams,

@@ -1,14 +1,22 @@
 import {
+  mockAppointmentServices,
   mockAppointmentUnavailabilities,
   mockFHIRBundle,
+  mockLocations,
+  mockProviders,
   mockUnavailabilityFormData,
   mockUnavailabilityNoServiceNoProvider,
 } from '../__mocks__/unavailabilityMock';
 import {
+  buildProviderItems,
+  buildServiceItems,
   buildUnavailabilityRequests,
   createBaseData,
   createUnavailabilityViewModel,
+  getInitialLocationUuid,
   mapFHIRBundleToLocations,
+  toLocationSentinel,
+  toSelectableItemSentinel,
   validateUnavailabilityForm,
 } from '../utils';
 
@@ -17,9 +25,10 @@ jest.mock('@bahmni/services', () => ({
   formatDateTime: jest.fn(() => ({ formattedResult: 'formatted-datetime' })),
   convertTo24HourFormat: jest.fn(),
   getTimeInMinutes: jest.fn(),
+  getUserLoginLocation: jest.fn(),
 }));
 
-const { convertTo24HourFormat, getTimeInMinutes } =
+const { convertTo24HourFormat, getTimeInMinutes, getUserLoginLocation } =
   jest.requireMock('@bahmni/services');
 
 const t = jest.fn((key: string) => key);
@@ -356,6 +365,133 @@ describe('utils', () => {
         'provider-uuid-2',
       ]);
     });
+  });
+
+  describe('getInitialLocationUuid', () => {
+    it.each([
+      {
+        scenario: 'getUserLoginLocation succeeds',
+        setup: () => getUserLoginLocation.mockReturnValue(mockLocations[0]),
+        expected: 'location-uuid-1',
+      },
+      {
+        scenario: 'getUserLoginLocation throws',
+        setup: () =>
+          getUserLoginLocation.mockImplementation(() => {
+            throw new Error('not found');
+          }),
+        expected: '',
+      },
+    ])('should return "$expected" when $scenario', ({ setup, expected }) => {
+      setup();
+      expect(getInitialLocationUuid()).toBe(expected);
+    });
+  });
+
+  describe('sentinel factories', () => {
+    it.each([
+      {
+        name: 'toSelectableItemSentinel',
+        fn: toSelectableItemSentinel,
+        message: 'No services available',
+        expected: { id: '', text: 'No services available' },
+      },
+      {
+        name: 'toLocationSentinel',
+        fn: toLocationSentinel,
+        message: 'No locations available',
+        expected: { uuid: '', display: 'No locations available' },
+      },
+    ])(
+      '$name should embed the message in the sentinel',
+      ({ fn, message, expected }) => {
+        expect(fn(message)).toMatchObject(expected);
+      },
+    );
+  });
+
+  describe('buildServiceItems and buildProviderItems', () => {
+    const availableProviders = mockProviders.slice(0, 2);
+
+    it.each([
+      {
+        label: 'All Services',
+        buildFn: buildServiceItems as (
+          items: unknown[],
+          label: string,
+        ) => unknown[],
+        input: mockAppointmentServices,
+        expectedItems: [
+          {
+            id: 'service-uuid-1',
+            text: 'General Medicine OPD Consultation',
+            originalItem: mockAppointmentServices[0],
+          },
+          {
+            id: 'service-uuid-2',
+            text: 'ENT OPD Consultation',
+            originalItem: mockAppointmentServices[1],
+          },
+          {
+            id: 'select-all-services',
+            text: 'All Services',
+            isSelectAll: true,
+          },
+        ],
+      },
+      {
+        label: 'All Providers',
+        buildFn: buildProviderItems as (
+          items: unknown[],
+          label: string,
+        ) => unknown[],
+        input: availableProviders,
+        expectedItems: [
+          {
+            id: 'provider-uuid-1',
+            text: 'Dr. John Smith',
+            originalItem: availableProviders[0],
+          },
+          {
+            id: 'provider-uuid-2',
+            text: 'Dr. Jane Doe',
+            originalItem: availableProviders[1],
+          },
+          {
+            id: 'select-all-providers',
+            text: 'All Providers',
+            isSelectAll: true,
+          },
+        ],
+      },
+    ])(
+      'should map items and append select-all entry ($label)',
+      ({ buildFn, input, label, expectedItems }) => {
+        expect(buildFn(input, label)).toEqual(expectedItems);
+      },
+    );
+
+    it.each([
+      {
+        buildFn: buildServiceItems as (
+          items: unknown[],
+          label: string,
+        ) => unknown[],
+        label: 'All Services',
+      },
+      {
+        buildFn: buildProviderItems as (
+          items: unknown[],
+          label: string,
+        ) => unknown[],
+        label: 'All Providers',
+      },
+    ])(
+      'should return empty array for empty input ($label)',
+      ({ buildFn, label }) => {
+        expect(buildFn([], label)).toEqual([]);
+      },
+    );
   });
 
   describe('mapFHIRBundleToLocations', () => {

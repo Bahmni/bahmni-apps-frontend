@@ -14,7 +14,7 @@ import {
 } from '@bahmni/services';
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import UnavailabilityForm from './components/UnavailabilityForm';
 import {
   ADD_APPOINTMENT_UNAVAILABILITY_PRIVILEGE,
@@ -38,7 +38,7 @@ const AppointmentUnavailabilityPage: React.FC = () => {
   const { addNotification } = useNotification();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<UnavailabilityFormData | null>(null);
+  const formDataRef = useRef<UnavailabilityFormData | null>(null);
   const [formErrors, setFormErrors] = useState<UnavailabilityFormErrors>({});
 
   const canViewUnavailability = hasPrivilege(
@@ -82,10 +82,6 @@ const AppointmentUnavailabilityPage: React.FC = () => {
         key: 'providerName',
         header: t('ADMIN_UNAVAILABILITY_COLUMN_PROVIDER'),
       },
-      {
-        key: 'actions',
-        header: t('ADMIN_UNAVAILABILITY_COLUMN_ACTIONS'),
-      },
     ];
   }, [t]);
 
@@ -124,17 +120,17 @@ const AppointmentUnavailabilityPage: React.FC = () => {
   );
 
   const handlePrimaryButtonClick = useCallback(async () => {
-    if (!formData) return;
-    const errors = validateUnavailabilityForm(formData, t);
+    if (!formDataRef.current) return;
+    const errors = validateUnavailabilityForm(formDataRef.current, t);
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
-    await handleFormSubmit(buildUnavailabilityRequests(formData, t));
-  }, [formData, t, handleFormSubmit]);
+    await handleFormSubmit(buildUnavailabilityRequests(formDataRef.current, t));
+  }, [t, handleFormSubmit]);
 
   const handleFormCancel = useCallback(() => {
     setIsFormVisible(false);
-    setFormData(null);
+    formDataRef.current = null;
     setFormErrors({});
   }, []);
 
@@ -189,7 +185,7 @@ const AppointmentUnavailabilityPage: React.FC = () => {
             content={
               <UnavailabilityForm
                 errors={formErrors}
-                onFormDataChange={setFormData}
+                formDataRef={formDataRef}
               />
             }
           />

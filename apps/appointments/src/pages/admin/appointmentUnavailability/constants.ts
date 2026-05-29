@@ -1,4 +1,5 @@
-export const PROVIDER_ATTRIBUTE_AVAILABLE = 'Available for appointments';
+export const PROVIDER_ATTRIBUTE_AVAILABLE_FOR_APPOINTMENT =
+  'Available for appointments';
 export const GET_APPOINTMENT_UNAVAILABILITY_PRIVILEGE =
   'Get Appointment Unavailability';
 export const ADD_APPOINTMENT_UNAVAILABILITY_PRIVILEGE =

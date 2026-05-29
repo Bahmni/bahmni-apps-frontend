@@ -1,67 +1,76 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/theme" as *;
-@use "@carbon/react/scss/breakpoint" as *;
 
 .formContent {
   display: flex;
   flex-direction: column;
-  gap: $spacing-06;
-  padding: $spacing-05;
+  padding: $spacing-06;
 }
 
 .formField {
   width: 100%;
+  padding-inline-end: $spacing-05;
 }
 
-.fullDateTimeGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: $spacing-03;
-  align-items: start;
 
-  @include breakpoint('md') {
-    grid-template-columns: 1fr 1fr;
-  }
+.loading {
+  max-inline-size: 100% !important;
 }
 
-.dateTimeGroup {
+.error {
+  @include type-style("body-compact-02");
+  color: $text-error;
+  padding: $spacing-07;
+  justify-self: center;
+  font-style: italic;
+}
+
+.grid {
+  padding-inline: 0;
+}
+
+.column {
+  margin-top: $spacing-04;
+  margin-left: 0;
+}
+
+.dateTimeColumn {
   display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-
-  .dateField {
-    flex: 0 0 auto;
-    width: 12rem;
-  }
-
-  .timeField {
-    flex: 0 0 auto;
-  }
+  gap: $spacing-02;
 }
 
-.dateField {
-  min-width: 0;
-  max-width: 100%;
 
-  > div {
-    max-width: 100%;
-
-    input {
-      inline-size: 100% !important;
-      max-width: 100%;
+.datePicker > div {
+    display: block;
+    min-inline-size: -webkit-fill-available !important;
+    > div {
+      display: block;
+      > div {
+        display: block;
+      }
+      input {
+        inline-size: -webkit-fill-available !important;
+      }
     }
   }
-}
 
-.timeField {
-  min-width: 0;
-  max-width: 100%;
-}
+  .timePicker > div {
+    display: flex;
+    min-inline-size: -webkit-fill-available !important;
+    > div {
+      display: block;
+      min-inline-size: max-content;
+      > div {
+        display: block;
+        min-inline-size: max-content;
+      }
+      input {
+        inline-size: -webkit-fill-available !important;
+      }
+      select {
+        inline-size: -webkit-fill-available !important;
+      }
+    }
+  }
 
-.providerServiceGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: $spacing-05;
-  align-items: start;
-}

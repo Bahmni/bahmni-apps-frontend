@@ -7,7 +7,7 @@ import type {
 } from '@bahmni/services';
 import {
   APPOINTMENT_LOCATION_TAG,
-  PROVIDER_ATTRIBUTE_AVAILABLE,
+  PROVIDER_ATTRIBUTE_AVAILABLE_FOR_APPOINTMENT,
 } from '../constants';
 import type { UnavailabilityFormData } from '../models';
 
@@ -100,7 +100,7 @@ export const mockProviders: Provider[] = [
     attributes: [
       {
         attributeType: {
-          display: PROVIDER_ATTRIBUTE_AVAILABLE,
+          display: PROVIDER_ATTRIBUTE_AVAILABLE_FOR_APPOINTMENT,
           uuid: '',
         },
         value: true,
@@ -137,7 +137,7 @@ export const mockProviders: Provider[] = [
     attributes: [
       {
         attributeType: {
-          display: PROVIDER_ATTRIBUTE_AVAILABLE,
+          display: PROVIDER_ATTRIBUTE_AVAILABLE_FOR_APPOINTMENT,
           uuid: '',
         },
         value: true,
@@ -174,7 +174,7 @@ export const mockProviders: Provider[] = [
     attributes: [
       {
         attributeType: {
-          display: PROVIDER_ATTRIBUTE_AVAILABLE,
+          display: PROVIDER_ATTRIBUTE_AVAILABLE_FOR_APPOINTMENT,
           uuid: '',
         },
         value: false,
@@ -293,6 +293,11 @@ export const mockUnavailabilityFormData: UnavailabilityFormData = {
   filteredServicesCount: 0,
   availableProvidersCount: 0,
 };
+
+export const mockUnavailableProviders: Provider[] = mockProviders.map((p) => ({
+  ...p,
+  attributes: p.attributes?.map((a) => ({ ...a, value: false })) ?? [],
+}));
 
 export const mockRequests = [
   { locationUuid: 'location-uuid-1', startTime: '09:00', endTime: '17:00' },

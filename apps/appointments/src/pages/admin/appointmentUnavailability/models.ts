@@ -3,6 +3,7 @@ import { type AppointmentService, type Provider } from '@bahmni/services';
 export interface SelectableItem {
   id: string;
   text: string;
+  disabled?: boolean;
   isSelectAll?: boolean;
   originalItem?: AppointmentService | Provider;
 }

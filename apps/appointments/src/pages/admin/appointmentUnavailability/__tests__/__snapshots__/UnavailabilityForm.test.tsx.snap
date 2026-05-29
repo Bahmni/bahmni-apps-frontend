@@ -1,593 +1,571 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`UnavailabilityForm Snapshot should match snapshot 1`] = `
+exports[`UnavailabilityForm Snapshot matches snapshot for error state 1`] = `
 <div>
   <div
-    aria-hidden="false"
-    aria-label="Action Area"
-    class="_actionArea_1rrq1_1"
-    role="region"
+    class="error"
+    data-testid="unavailability-form-error"
+    id="unavailability-form-error"
   >
-    <h2
-      class="_title_1rrq1_16"
-      id="action-area-title"
-    >
-      Add Unavailability
-    </h2>
+    Failed to load form data. Please try again.
+  </div>
+</div>
+`;
+
+exports[`UnavailabilityForm Snapshot matches snapshot for loading state 1`] = `
+<div>
+  <div
+    class="formContent"
+    data-testid="unavailability-form-skeleton"
+  >
     <div
-      aria-labelledby="action-area-title"
-      class="_content_1rrq1_25"
-      role="region"
+      class="loading cds--snippet cds--skeleton cds--snippet--multi"
     >
       <div
-        class="formContent"
-        data-testid="unavailability-form-content"
-        id="unavailability-form-content"
+        class="cds--snippet-container"
       >
-        <div
-          class="formField"
-          data-testid="location-field"
+        <span />
+        <span />
+        <span />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`UnavailabilityForm Snapshot matches snapshot for normal state 1`] = `
+<div>
+  <div
+    aria-label="unavailability-form-content-aria-label"
+    class="formContent"
+    data-testid="unavailability-form-content-test-id"
+    id="unavailability-form-content"
+  >
+    <div
+      class="formField"
+    >
+      <div
+        class="cds--dropdown__wrapper cds--list-box__wrapper"
+        data-testid="location-dropdown"
+      >
+        <label
+          class="cds--label"
+          for="downshift-_r_7e_-toggle-button"
+          id="downshift-_r_7e_-label"
         >
-          <div
-            class="cds--dropdown__wrapper cds--list-box__wrapper"
-            data-testid="location-dropdown"
-          >
-            <label
-              class="cds--label"
-              for="downshift-_r_8p_-toggle-button"
-              id="downshift-_r_8p_-label"
-            >
-              Select Location*
-            </label>
-            <div
-              class="cds--dropdown cds--list-box"
-              id="location-dropdown"
-            >
-              <button
-                aria-activedescendant=""
-                aria-controls="downshift-_r_8p_-menu"
-                aria-expanded="false"
-                aria-haspopup="listbox"
-                aria-labelledby="downshift-_r_8p_-label"
-                class="cds--list-box__field"
-                id="downshift-_r_8p_-toggle-button"
-                role="combobox"
-                tabindex="0"
-                title="General OPD"
-                type="button"
-              >
-                <span
-                  class="cds--list-box__label"
-                >
-                  General OPD
-                </span>
-                <div
-                  class="cds--list-box__menu-icon"
-                >
-                  <svg
-                    aria-label="Open menu"
-                    fill="currentColor"
-                    focusable="false"
-                    height="16"
-                    name="chevron--down"
-                    preserveAspectRatio="xMidYMid meet"
-                    role="img"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                    />
-                    <title>
-                      Open menu
-                    </title>
-                  </svg>
-                </div>
-              </button>
-              <ul
-                aria-labelledby="downshift-_r_8p_-label"
-                class="cds--list-box__menu"
-                id="downshift-_r_8p_-menu"
-                role="listbox"
-              />
-            </div>
-          </div>
-        </div>
+          Select Location*
+        </label>
         <div
-          class="fullDateTimeGrid"
-          data-testid="date-time-grid"
-          id="date-time-grid"
+          class="cds--dropdown cds--list-box"
+          id="location-dropdown"
         >
-          <div
-            class="dateTimeGroup"
+          <button
+            aria-activedescendant=""
+            aria-controls="downshift-_r_7e_-menu"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-labelledby="downshift-_r_7e_-label"
+            class="cds--list-box__field"
+            id="downshift-_r_7e_-toggle-button"
+            role="combobox"
+            tabindex="0"
+            title="General OPD"
+            type="button"
           >
-            <div
-              class="dateField"
-              data-testid="start-date-field"
+            <span
+              class="cds--list-box__label"
             >
-              <div
-                class="cds--form-item"
-              >
-                <div
-                  class="cds--date-picker cds--date-picker--single"
-                >
-                  <div
-                    class="cds--date-picker-container"
-                  >
-                    <label
-                      class="cds--label"
-                      dir="auto"
-                      for="start-date"
-                    >
-                      Start Date*
-                    </label>
-                    <div
-                      class="cds--date-picker-input__wrapper"
-                    >
-                      <span>
-                        <input
-                          class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
-                          data-testid="start-date-input"
-                          id="start-date"
-                          pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                          placeholder="dd/MM/yyyy"
-                          type="text"
-                        />
-                        <svg
-                          aria-hidden="true"
-                          class="cds--date-picker__icon"
-                          fill="currentColor"
-                          focusable="false"
-                          height="16"
-                          preserveAspectRatio="xMidYMid meet"
-                          role="img"
-                          viewBox="0 0 32 32"
-                          width="16"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              General OPD
+            </span>
             <div
-              class="timeField"
-              data-testid="start-time-field"
+              class="cds--list-box__menu-icon"
             >
-              <div
-                class="cds--form-item"
+              <svg
+                aria-label="Open menu"
+                fill="currentColor"
+                focusable="false"
+                height="16"
+                name="chevron--down"
+                preserveAspectRatio="xMidYMid meet"
+                role="img"
+                viewBox="0 0 16 16"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <label
-                  class="cds--label"
-                  for="start-time"
-                >
-                  Start Time*
-                </label>
-                <div
-                  class="cds--time-picker cds--time-picker--md"
-                >
-                  <div
-                    class="cds--time-picker__input"
-                  >
-                    <input
-                      class="cds--time-picker__input-field cds--text-input"
-                      id="start-time"
-                      maxlength="5"
-                      pattern="(1[012]|[0-9]):[0-5][0-9]"
-                      placeholder="hh:mm"
-                      type="text"
-                      value=""
-                    />
-                  </div>
-                  <div
-                    class="cds--select cds--time-picker__select"
-                  >
-                    <select
-                      aria-label="open list of options"
-                      class="cds--select-input"
-                      id="start-time-period"
-                    >
-                      <option
-                        value="AM"
-                      >
-                        AM
-                      </option>
-                      <option
-                        value="PM"
-                      >
-                        PM
-                      </option>
-                    </select>
-                    <svg
-                      aria-hidden="true"
-                      class="cds--select__arrow"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      preserveAspectRatio="xMidYMid meet"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            class="dateTimeGroup"
-          >
-            <div
-              class="dateField"
-              data-testid="end-date-field"
-            >
-              <div
-                class="cds--form-item"
-              >
-                <div
-                  class="cds--date-picker cds--date-picker--single"
-                >
-                  <div
-                    class="cds--date-picker-container"
-                  >
-                    <label
-                      class="cds--label"
-                      dir="auto"
-                      for="end-date"
-                    >
-                      End Date*
-                    </label>
-                    <div
-                      class="cds--date-picker-input__wrapper"
-                    >
-                      <span>
-                        <input
-                          class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
-                          data-testid="end-date-input"
-                          id="end-date"
-                          pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
-                          placeholder="dd/MM/yyyy"
-                          type="text"
-                        />
-                        <svg
-                          aria-hidden="true"
-                          class="cds--date-picker__icon"
-                          fill="currentColor"
-                          focusable="false"
-                          height="16"
-                          preserveAspectRatio="xMidYMid meet"
-                          role="img"
-                          viewBox="0 0 32 32"
-                          width="16"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="timeField"
-              data-testid="end-time-field"
-            >
-              <div
-                class="cds--form-item"
-              >
-                <label
-                  class="cds--label"
-                  for="end-time"
-                >
-                  End Time*
-                </label>
-                <div
-                  class="cds--time-picker cds--time-picker--md"
-                >
-                  <div
-                    class="cds--time-picker__input"
-                  >
-                    <input
-                      class="cds--time-picker__input-field cds--text-input"
-                      id="end-time"
-                      maxlength="5"
-                      pattern="(1[012]|[0-9]):[0-5][0-9]"
-                      placeholder="hh:mm"
-                      type="text"
-                      value=""
-                    />
-                  </div>
-                  <div
-                    class="cds--select cds--time-picker__select"
-                  >
-                    <select
-                      aria-label="open list of options"
-                      class="cds--select-input"
-                      id="end-time-period"
-                    >
-                      <option
-                        value="AM"
-                      >
-                        AM
-                      </option>
-                      <option
-                        value="PM"
-                      >
-                        PM
-                      </option>
-                    </select>
-                    <svg
-                      aria-hidden="true"
-                      class="cds--select__arrow"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      preserveAspectRatio="xMidYMid meet"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          class="providerServiceGrid"
-          data-testid="provider-service-grid"
-          id="provider-service-grid"
-        >
-          <div
-            class="formField"
-            data-testid="service-field"
-          >
-            <div
-              class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper"
-            >
-              <label
-                class="cds--label"
-                for="service-multiselect-input"
-                id="service-multiselect-label"
-              >
-                Select Service
-                <span
-                  class="cds--visually-hidden"
-                >
-                  Total items selected:  2. To clear selection, press Delete or Backspace.
-                </span>
-              </label>
-              <div
-                class="cds--multi-select cds--combo-box cds--multi-select--filterable cds--multi-select--selected cds--multi-select--selectall cds--list-box"
-                id="service-multiselect"
-              >
-                <div
-                  class="cds--list-box__field"
-                >
-                  <div
-                    class="cds--tag cds--tag--filter cds--tag--high-contrast"
-                  >
-                    <span
-                      class="cds--tag__label"
-                      title="1"
-                    >
-                      1
-                    </span>
-                    <button
-                      aria-label="Clear all selected items"
-                      class="cds--tag__close-icon"
-                      tabindex="-1"
-                      title="Clear all selected items"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        fill="currentColor"
-                        focusable="false"
-                        height="16"
-                        preserveAspectRatio="xMidYMid meet"
-                        viewBox="0 0 32 32"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                  <input
-                    aria-activedescendant=""
-                    aria-autocomplete="list"
-                    aria-expanded="false"
-                    aria-haspopup="listbox"
-                    autocomplete="off"
-                    class="cds--text-input cds--text-input--empty"
-                    id="service-multiselect-input"
-                    placeholder="Select Service"
-                    role="combobox"
-                    value=""
-                  />
-                  <button
-                    aria-controls="service-multiselect__menu"
-                    aria-expanded="false"
-                    aria-label="Open"
-                    class="cds--list-box__menu-icon"
-                    id="service-multiselect-toggle-button"
-                    tabindex="-1"
-                    title="Open"
-                    type="button"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      preserveAspectRatio="xMidYMid meet"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                <ul
-                  aria-labelledby="service-multiselect-label"
-                  class="cds--list-box__menu"
-                  id="service-multiselect__menu"
-                  role="listbox"
+                <path
+                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
                 />
-              </div>
+                <title>
+                  Open menu
+                </title>
+              </svg>
             </div>
-          </div>
-          <div
-            class="formField"
-            data-testid="provider-field"
-          >
-            <div
-              class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper"
-            >
-              <label
-                class="cds--label"
-                for="provider-multiselect-input"
-                id="provider-multiselect-label"
-              >
-                Select Provider
-                <span
-                  class="cds--visually-hidden"
-                >
-                  Total items selected:  3. To clear selection, press Delete or Backspace.
-                </span>
-              </label>
-              <div
-                class="cds--multi-select cds--combo-box cds--multi-select--filterable cds--multi-select--selected cds--multi-select--selectall cds--list-box"
-                id="provider-multiselect"
-              >
-                <div
-                  class="cds--list-box__field"
-                >
-                  <div
-                    class="cds--tag cds--tag--filter cds--tag--high-contrast"
-                  >
-                    <span
-                      class="cds--tag__label"
-                      title="2"
-                    >
-                      2
-                    </span>
-                    <button
-                      aria-label="Clear all selected items"
-                      class="cds--tag__close-icon"
-                      tabindex="-1"
-                      title="Clear all selected items"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        fill="currentColor"
-                        focusable="false"
-                        height="16"
-                        preserveAspectRatio="xMidYMid meet"
-                        viewBox="0 0 32 32"
-                        width="16"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                  <input
-                    aria-activedescendant=""
-                    aria-autocomplete="list"
-                    aria-expanded="false"
-                    aria-haspopup="listbox"
-                    autocomplete="off"
-                    class="cds--text-input cds--text-input--empty"
-                    id="provider-multiselect-input"
-                    placeholder="Select Provider"
-                    role="combobox"
-                    value=""
-                  />
-                  <button
-                    aria-controls="provider-multiselect__menu"
-                    aria-expanded="false"
-                    aria-label="Open"
-                    class="cds--list-box__menu-icon"
-                    id="provider-multiselect-toggle-button"
-                    tabindex="-1"
-                    title="Open"
-                    type="button"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      fill="currentColor"
-                      focusable="false"
-                      height="16"
-                      preserveAspectRatio="xMidYMid meet"
-                      viewBox="0 0 16 16"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                <ul
-                  aria-labelledby="provider-multiselect-label"
-                  class="cds--list-box__menu"
-                  id="provider-multiselect__menu"
-                  role="listbox"
-                />
-              </div>
-            </div>
-          </div>
+          </button>
+          <ul
+            aria-labelledby="downshift-_r_7e_-label"
+            class="cds--list-box__menu"
+            id="downshift-_r_7e_-menu"
+            role="listbox"
+          />
         </div>
       </div>
     </div>
     <div
-      aria-label="Action buttons"
-      class="_buttonSet_1rrq1_30 cds--btn-set"
+      aria-label="unavailability-form-grid-aria-label"
+      class="grid cds--css-grid"
+      data-testid="unavailability-form-grid-test-id"
+      id="unavailability-form-grid"
     >
-      <button
-        aria-label="Cancel"
-        class="_twoButtons_1rrq1_36 cds--btn cds--btn--secondary"
-        data-testid="action-area-secondary-button"
-        type="button"
+      <div
+        aria-label="unavailability-form-start-date-time-aria-label"
+        class="column dateTimeColumn cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+        data-testid="unavailability-form-start-date-time-test-id"
+        id="unavailability-form-start-date-time"
       >
-        Cancel
-      </button>
-      <button
-        aria-label="Add"
-        class="_twoButtons_1rrq1_36 cds--btn cds--btn--primary"
-        data-testid="action-area-primary-button"
-        type="button"
+        <div
+          class="cds--form-item datePicker"
+        >
+          <div
+            class="cds--date-picker cds--date-picker--single"
+          >
+            <div
+              class="cds--date-picker-container"
+            >
+              <label
+                class="cds--label"
+                dir="auto"
+                for="start-date"
+              >
+                Start Date*
+              </label>
+              <div
+                class="cds--date-picker-input__wrapper"
+              >
+                <span>
+                  <input
+                    class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
+                    data-testid="start-date-input"
+                    id="start-date"
+                    pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
+                    placeholder="dd/MM/yyyy"
+                    type="text"
+                  />
+                  <svg
+                    aria-hidden="true"
+                    class="cds--date-picker__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    role="img"
+                    viewBox="0 0 32 32"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
+                    />
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="cds--form-item timePicker"
+        >
+          <label
+            class="cds--label"
+            for="start-time"
+          >
+            Start Time*
+          </label>
+          <div
+            class="cds--time-picker cds--time-picker--md"
+          >
+            <div
+              class="cds--time-picker__input"
+            >
+              <input
+                class="cds--time-picker__input-field cds--text-input"
+                id="start-time"
+                maxlength="5"
+                pattern="(1[012]|[0-9]):[0-5][0-9]"
+                placeholder="hh:mm"
+                type="text"
+                value=""
+              />
+            </div>
+            <div
+              class="cds--select cds--time-picker__select"
+            >
+              <select
+                aria-label="open list of options"
+                class="cds--select-input"
+                id="start-time-period"
+              >
+                <option
+                  value="AM"
+                >
+                  AM
+                </option>
+                <option
+                  value="PM"
+                >
+                  PM
+                </option>
+              </select>
+              <svg
+                aria-hidden="true"
+                class="cds--select__arrow"
+                fill="currentColor"
+                focusable="false"
+                height="16"
+                preserveAspectRatio="xMidYMid meet"
+                viewBox="0 0 16 16"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-label="unavailability-form-end-date-time-aria-label"
+        class="column dateTimeColumn cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+        data-testid="unavailability-form-end-date-time-test-id"
+        id="unavailability-form-end-date-time"
       >
-        Add
-      </button>
+        <div
+          class="cds--form-item datePicker"
+        >
+          <div
+            class="cds--date-picker cds--date-picker--single"
+          >
+            <div
+              class="cds--date-picker-container"
+            >
+              <label
+                class="cds--label"
+                dir="auto"
+                for="end-date"
+              >
+                End Date*
+              </label>
+              <div
+                class="cds--date-picker-input__wrapper"
+              >
+                <span>
+                  <input
+                    class="cds--date-picker__input cds--date-picker__input--md flatpickr-input"
+                    data-testid="end-date-input"
+                    id="end-date"
+                    pattern="\\d{1,2}\\/\\d{1,2}\\/\\d{4}"
+                    placeholder="dd/MM/yyyy"
+                    type="text"
+                  />
+                  <svg
+                    aria-hidden="true"
+                    class="cds--date-picker__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    role="img"
+                    viewBox="0 0 32 32"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M26,4h-4V2h-2v2h-8V2h-2v2H6C4.9,4,4,4.9,4,6v20c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2V6C28,4.9,27.1,4,26,4z M26,26H6V12h20 V26z M26,10H6V6h4v2h2V6h8v2h2V6h4V10z"
+                    />
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="cds--form-item timePicker"
+        >
+          <label
+            class="cds--label"
+            for="end-time"
+          >
+            End Time*
+          </label>
+          <div
+            class="cds--time-picker cds--time-picker--md"
+          >
+            <div
+              class="cds--time-picker__input"
+            >
+              <input
+                class="cds--time-picker__input-field cds--text-input"
+                id="end-time"
+                maxlength="5"
+                pattern="(1[012]|[0-9]):[0-5][0-9]"
+                placeholder="hh:mm"
+                type="text"
+                value=""
+              />
+            </div>
+            <div
+              class="cds--select cds--time-picker__select"
+            >
+              <select
+                aria-label="open list of options"
+                class="cds--select-input"
+                id="end-time-period"
+              >
+                <option
+                  value="AM"
+                >
+                  AM
+                </option>
+                <option
+                  value="PM"
+                >
+                  PM
+                </option>
+              </select>
+              <svg
+                aria-hidden="true"
+                class="cds--select__arrow"
+                fill="currentColor"
+                focusable="false"
+                height="16"
+                preserveAspectRatio="xMidYMid meet"
+                viewBox="0 0 16 16"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-label="unavailability-form-service-aria-label"
+        class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+        data-testid="unavailability-form-service-test-id"
+        id="unavailability-form-service"
+      >
+        <div
+          class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper"
+        >
+          <label
+            class="cds--label"
+            for="service-multiselect-input"
+            id="service-multiselect-label"
+          >
+            Select Service
+            <span
+              class="cds--visually-hidden"
+            >
+              Total items selected:  2. To clear selection, press Delete or Backspace.
+            </span>
+          </label>
+          <div
+            class="cds--multi-select cds--combo-box cds--multi-select--filterable cds--multi-select--selected cds--multi-select--selectall cds--list-box"
+            id="service-multiselect"
+          >
+            <div
+              class="cds--list-box__field"
+            >
+              <div
+                class="cds--tag cds--tag--filter cds--tag--high-contrast"
+              >
+                <span
+                  class="cds--tag__label"
+                  title="1"
+                >
+                  1
+                </span>
+                <button
+                  aria-label="Clear all selected items"
+                  class="cds--tag__close-icon"
+                  tabindex="-1"
+                  title="Clear all selected items"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <input
+                aria-activedescendant=""
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-haspopup="listbox"
+                autocomplete="off"
+                class="cds--text-input cds--text-input--empty"
+                id="service-multiselect-input"
+                placeholder="Select Service"
+                role="combobox"
+                value=""
+              />
+              <button
+                aria-controls="service-multiselect__menu"
+                aria-expanded="false"
+                aria-label="Open"
+                class="cds--list-box__menu-icon"
+                id="service-multiselect-toggle-button"
+                tabindex="-1"
+                title="Open"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  />
+                </svg>
+              </button>
+            </div>
+            <ul
+              aria-labelledby="service-multiselect-label"
+              class="cds--list-box__menu"
+              id="service-multiselect__menu"
+              role="listbox"
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        aria-label="unavailability-form-provider-aria-label"
+        class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+        data-testid="unavailability-form-provider-test-id"
+        id="unavailability-form-provider"
+      >
+        <div
+          class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper"
+        >
+          <label
+            class="cds--label"
+            for="provider-multiselect-input"
+            id="provider-multiselect-label"
+          >
+            Select Provider
+            <span
+              class="cds--visually-hidden"
+            >
+              Total items selected:  3. To clear selection, press Delete or Backspace.
+            </span>
+          </label>
+          <div
+            class="cds--multi-select cds--combo-box cds--multi-select--filterable cds--multi-select--selected cds--multi-select--selectall cds--list-box"
+            id="provider-multiselect"
+          >
+            <div
+              class="cds--list-box__field"
+            >
+              <div
+                class="cds--tag cds--tag--filter cds--tag--high-contrast"
+              >
+                <span
+                  class="cds--tag__label"
+                  title="2"
+                >
+                  2
+                </span>
+                <button
+                  aria-label="Clear all selected items"
+                  class="cds--tag__close-icon"
+                  tabindex="-1"
+                  title="Clear all selected items"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="currentColor"
+                    focusable="false"
+                    height="16"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <input
+                aria-activedescendant=""
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-haspopup="listbox"
+                autocomplete="off"
+                class="cds--text-input cds--text-input--empty"
+                id="provider-multiselect-input"
+                placeholder="Select Provider"
+                role="combobox"
+                value=""
+              />
+              <button
+                aria-controls="provider-multiselect__menu"
+                aria-expanded="false"
+                aria-label="Open"
+                class="cds--list-box__menu-icon"
+                id="provider-multiselect-toggle-button"
+                tabindex="-1"
+                title="Open"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"
+                  />
+                </svg>
+              </button>
+            </div>
+            <ul
+              aria-labelledby="provider-multiselect-label"
+              class="cds--list-box__menu"
+              id="provider-multiselect__menu"
+              role="listbox"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -1,716 +1,396 @@
 import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from '@tanstack/react-query';
-import {
+  act,
+  fireEvent,
   render,
   screen,
-  act,
   waitFor,
-  fireEvent,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React from 'react';
 import {
-  mockLocations,
   mockAppointmentServices,
+  mockLocations,
   mockProviders,
-  mockCurrentUser,
+  mockUnavailableProviders,
 } from '../__mocks__/unavailabilityMock';
 import UnavailabilityForm from '../components/UnavailabilityForm';
-import { createBaseData, mapFHIRBundleToLocations } from '../utils';
+import type {
+  UnavailabilityFormData,
+  UnavailabilityFormErrors,
+} from '../models';
 
-expect.extend(toHaveNoViolations);
-
-const mockAddNotification = jest.fn();
-const mockOnSubmit = jest.fn(() => Promise.resolve());
-const mockOnCancel = jest.fn();
-const mockGetCurrentUser = jest.fn<Promise<typeof mockCurrentUser | null>, []>(
-  () => Promise.resolve(mockCurrentUser),
-);
-const mockGetProviderLoginLocations = jest.fn<
-  Promise<typeof mockLocations>,
-  [string]
->(() => Promise.resolve(mockLocations));
-
-const mockFHIRBundle = {
-  resourceType: 'Bundle' as const,
-  id: 'test-bundle',
-  type: 'searchset',
-  total: 2,
-  entry: [
-    {
-      fullUrl: 'http://test/Location/location-uuid-1',
-      resource: {
-        resourceType: 'Location' as const,
-        id: 'location-uuid-1',
-        name: 'General OPD',
-      },
-    },
-    {
-      fullUrl: 'http://test/Location/location-uuid-2',
-      resource: {
-        resourceType: 'Location' as const,
-        id: 'location-uuid-2',
-        name: 'ENT Ward',
-      },
-    },
-  ],
-};
-
-const mockMappedFHIRLocations = [
-  {
-    uuid: 'location-uuid-1',
-    display: 'General OPD',
-    childLocations: [],
-  },
-  {
-    uuid: 'location-uuid-2',
-    display: 'ENT Ward',
-    childLocations: [],
-  },
-];
-
-const mockGetFHIRLocationsByTag = jest.fn<
-  Promise<typeof mockFHIRBundle>,
-  [string]
->(() => Promise.resolve(mockFHIRBundle));
-
-jest.mock('@tanstack/react-query', () => ({
-  ...jest.requireActual('@tanstack/react-query'),
-  useQuery: jest.fn(),
+jest.mock('../hook', () => ({
+  __esModule: true,
+  default: jest.fn(),
 }));
-
-jest.mock('@bahmni/widgets', () => ({
-  ...jest.requireActual('@bahmni/widgets'),
-  useNotification: jest.fn(() => ({ addNotification: mockAddNotification })),
-}));
-
-const mockGetUserLoginLocation = jest.fn(() => ({ uuid: 'location-uuid-1' }));
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  getAllAppointmentServices: jest.fn(),
-  getPaginatedProviders: jest.fn(),
-  fetchAllProviders: jest.fn(),
-  getCurrentUser: () => mockGetCurrentUser(),
-  getFHIRLocationsByTag: (tag: string) => mockGetFHIRLocationsByTag(tag),
-  getProviderLoginLocations: (uuid: string) =>
-    mockGetProviderLoginLocations(uuid),
-  getUserLoginLocation: () => mockGetUserLoginLocation(),
+  getUserLoginLocation: jest.fn(),
+  getTodayDate: jest.fn(),
 }));
 
-describe('UnavailabilityForm', () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
+expect.extend(toHaveNoViolations);
+
+const useUnavailabilityFormData = jest.requireMock('../hook').default;
+const { getUserLoginLocation, getTodayDate } =
+  jest.requireMock('@bahmni/services');
+
+const defaultHookReturn = {
+  loginLocations: mockLocations,
+  services: mockAppointmentServices,
+  providers: mockProviders,
+  isLoading: false,
+  isError: false,
+};
+
+type HookOverride = Partial<typeof defaultHookReturn>;
+
+const setupMocks = (hookOverride: HookOverride = {}) => {
+  useUnavailabilityFormData.mockReturnValue({
+    ...defaultHookReturn,
+    ...hookOverride,
   });
+  getUserLoginLocation.mockReturnValue({ uuid: 'location-uuid-1' });
+  getTodayDate.mockReturnValue('05/29/2026');
+};
 
-  const renderComponent = () =>
-    render(
-      <QueryClientProvider client={queryClient}>
-        <UnavailabilityForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
-      </QueryClientProvider>,
-    );
+const renderComponent = (errors: UnavailabilityFormErrors = {}) => {
+  const formDataRef = React.createRef<UnavailabilityFormData | null>();
+  const { container } = render(
+    <UnavailabilityForm errors={errors} formDataRef={formDataRef} />,
+  );
+  return { formDataRef, container };
+};
 
-  const setupMocksWithData = () => {
-    (useQuery as jest.Mock).mockImplementation(({ queryKey }) => {
-      if (queryKey[0] === 'currentUser') {
-        return { data: mockCurrentUser, isError: false, isLoading: false };
-      }
-      if (queryKey[0] === 'providerLoginLocations') {
-        return { data: mockLocations, isError: false, isLoading: false };
-      }
-      if (queryKey[0] === 'appointmentServices') {
-        return {
-          data: mockAppointmentServices,
-          isError: false,
-          isLoading: false,
-        };
-      }
-      if (queryKey[0] === 'providers') {
-        return { data: mockProviders, isError: false, isLoading: false };
-      }
-      return { data: [], isError: false, isLoading: false };
-    });
-  };
+describe('UnavailabilityForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    queryClient.clear();
-  });
-
-  describe('Form Rendering', () => {
-    it('should render the form title', () => {
-      setupMocksWithData();
-      renderComponent();
-      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
-    });
-
-    it('should render all form fields', () => {
-      setupMocksWithData();
-      renderComponent();
-      expect(screen.getByText(/Select Location/)).toBeInTheDocument();
-      expect(screen.getByText(/Start Date/)).toBeInTheDocument();
-      expect(screen.getByText(/Start Time/)).toBeInTheDocument();
-      expect(screen.getByText(/End Date/)).toBeInTheDocument();
-      expect(screen.getByText(/End Time/)).toBeInTheDocument();
-      expect(screen.getByText(/Select Service/)).toBeInTheDocument();
-      expect(screen.getByText(/Select Provider/)).toBeInTheDocument();
-    });
-
-    it('should render Add and Cancel buttons', () => {
-      setupMocksWithData();
-      renderComponent();
-      expect(screen.getByText('Add')).toBeInTheDocument();
-      expect(screen.getByText('Cancel')).toBeInTheDocument();
-    });
-
-    it('should render location dropdown with options', () => {
-      setupMocksWithData();
-      renderComponent();
-      expect(screen.getByText('General OPD')).toBeInTheDocument();
-    });
-  });
-
-  describe('Form Interactions', () => {
-    it('should call onCancel when Cancel button is clicked', async () => {
-      setupMocksWithData();
-      renderComponent();
-      await userEvent.click(screen.getByText('Cancel'));
-      expect(mockOnCancel).toHaveBeenCalled();
-    });
-
-    it('should update location when a different location is selected', async () => {
-      setupMocksWithData();
-      renderComponent();
-      expect(screen.getByText('General OPD')).toBeInTheDocument();
-      expect(screen.getByText(/Select Location/)).toBeInTheDocument();
-    });
-  });
-
-  describe('Form Validation', () => {
-    const validationTestCases = [
+  describe('Loading and error states', () => {
+    it.each([
       {
-        description: 'empty form is submitted',
-        setupMocks: () => {
-          (useQuery as jest.Mock).mockReturnValue({
-            data: [],
-            isError: false,
-            isLoading: false,
-          });
+        scenario: 'loading',
+        hookOverride: {
+          isLoading: true,
+          loginLocations: [],
+          services: [],
+          providers: [],
         },
-        fillFields: () => {},
+        expectedTestId: 'unavailability-form-skeleton',
       },
       {
-        description: 'start date is missing',
-        setupMocks: () => {
-          (useQuery as jest.Mock).mockImplementation(({ queryKey }) => {
-            if (queryKey[0] === 'providerLoginLocations') {
-              return { data: mockLocations, isError: false, isLoading: false };
-            }
-            if (queryKey[0] === 'appointmentServices') {
-              return {
-                data: mockAppointmentServices,
-                isError: false,
-                isLoading: false,
-              };
-            }
-            if (queryKey[0] === 'providers') {
-              return { data: mockProviders, isError: false, isLoading: false };
-            }
-            return { data: [], isError: false, isLoading: false };
-          });
+        scenario: 'error',
+        hookOverride: {
+          isError: true,
+          loginLocations: [],
+          services: [],
+          providers: [],
         },
-        fillFields: async () => {
-          const startTimeInput = screen.getByLabelText(/Start Time/);
-          fireEvent.change(startTimeInput, { target: { value: '09:00' } });
-
-          const endDateInput = screen.getByLabelText(/End Date/);
-          fireEvent.change(endDateInput, { target: { value: '05/25/2026' } });
-          fireEvent.blur(endDateInput);
-
-          const endTimeInput = screen.getByLabelText(/End Time/);
-          fireEvent.change(endTimeInput, { target: { value: '10:00' } });
-        },
+        expectedTestId: 'unavailability-form-error',
       },
-      {
-        description: 'start time is missing',
-        setupMocks: () => {
-          (useQuery as jest.Mock).mockImplementation(({ queryKey }) => {
-            if (queryKey[0] === 'providerLoginLocations') {
-              return { data: mockLocations, isError: false, isLoading: false };
-            }
-            if (queryKey[0] === 'appointmentServices') {
-              return {
-                data: mockAppointmentServices,
-                isError: false,
-                isLoading: false,
-              };
-            }
-            if (queryKey[0] === 'providers') {
-              return { data: mockProviders, isError: false, isLoading: false };
-            }
-            return { data: [], isError: false, isLoading: false };
-          });
-        },
-        fillFields: async () => {
-          const startDateInput = screen.getByLabelText(/Start Date/);
-          fireEvent.change(startDateInput, { target: { value: '05/25/2026' } });
-          fireEvent.blur(startDateInput);
-
-          const endDateInput = screen.getByLabelText(/End Date/);
-          fireEvent.change(endDateInput, { target: { value: '05/25/2026' } });
-          fireEvent.blur(endDateInput);
-
-          const endTimeInput = screen.getByLabelText(/End Time/);
-          fireEvent.change(endTimeInput, { target: { value: '10:00' } });
-        },
-      },
-      {
-        description: 'end date is missing',
-        setupMocks: () => {
-          (useQuery as jest.Mock).mockImplementation(({ queryKey }) => {
-            if (queryKey[0] === 'providerLoginLocations') {
-              return { data: mockLocations, isError: false, isLoading: false };
-            }
-            if (queryKey[0] === 'appointmentServices') {
-              return {
-                data: mockAppointmentServices,
-                isError: false,
-                isLoading: false,
-              };
-            }
-            if (queryKey[0] === 'providers') {
-              return { data: mockProviders, isError: false, isLoading: false };
-            }
-            return { data: [], isError: false, isLoading: false };
-          });
-        },
-        fillFields: async () => {
-          const startDateInput = screen.getByLabelText(/Start Date/);
-          fireEvent.change(startDateInput, { target: { value: '05/25/2026' } });
-          fireEvent.blur(startDateInput);
-
-          const startTimeInput = screen.getByLabelText(/Start Time/);
-          fireEvent.change(startTimeInput, { target: { value: '09:00' } });
-
-          const endTimeInput = screen.getByLabelText(/End Time/);
-          fireEvent.change(endTimeInput, { target: { value: '10:00' } });
-        },
-      },
-      {
-        description: 'end time is missing',
-        setupMocks: () => {
-          (useQuery as jest.Mock).mockImplementation(({ queryKey }) => {
-            if (queryKey[0] === 'providerLoginLocations') {
-              return { data: mockLocations, isError: false, isLoading: false };
-            }
-            if (queryKey[0] === 'appointmentServices') {
-              return {
-                data: mockAppointmentServices,
-                isError: false,
-                isLoading: false,
-              };
-            }
-            if (queryKey[0] === 'providers') {
-              return { data: mockProviders, isError: false, isLoading: false };
-            }
-            return { data: [], isError: false, isLoading: false };
-          });
-        },
-        fillFields: async () => {
-          const startDateInput = screen.getByLabelText(/Start Date/);
-          fireEvent.change(startDateInput, { target: { value: '05/25/2026' } });
-          fireEvent.blur(startDateInput);
-
-          const startTimeInput = screen.getByLabelText(/Start Time/);
-          fireEvent.change(startTimeInput, { target: { value: '09:00' } });
-
-          const endDateInput = screen.getByLabelText(/End Date/);
-          fireEvent.change(endDateInput, { target: { value: '05/25/2026' } });
-          fireEvent.blur(endDateInput);
-        },
-      },
-      {
-        description: 'end time is before start time on same day',
-        setupMocks: () => {
-          (useQuery as jest.Mock).mockImplementation(({ queryKey }) => {
-            if (queryKey[0] === 'providerLoginLocations') {
-              return { data: mockLocations, isError: false, isLoading: false };
-            }
-            if (queryKey[0] === 'appointmentServices') {
-              return {
-                data: mockAppointmentServices,
-                isError: false,
-                isLoading: false,
-              };
-            }
-            if (queryKey[0] === 'providers') {
-              return { data: mockProviders, isError: false, isLoading: false };
-            }
-            return { data: [], isError: false, isLoading: false };
-          });
-        },
-        fillFields: async () => {
-          const startDateInput = screen.getByLabelText(/Start Date/);
-          await userEvent.type(startDateInput, '05/25/2026');
-
-          const startTimeInput = screen.getByLabelText(/Start Time/);
-          await userEvent.type(startTimeInput, '10:00');
-
-          const endDateInput = screen.getByLabelText(/End Date/);
-          await userEvent.type(endDateInput, '05/25/2026');
-
-          const endTimeInput = screen.getByLabelText(/End Time/);
-          await userEvent.type(endTimeInput, '09:00');
-        },
-      },
-    ];
-
-    it.each(validationTestCases)(
-      'should not submit when $description',
-      async ({ setupMocks, fillFields }) => {
-        setupMocks();
+    ])(
+      'renders $scenario indicator and hides form content',
+      ({ hookOverride, expectedTestId }) => {
+        setupMocks(hookOverride);
         renderComponent();
-
-        await fillFields();
-        await userEvent.click(screen.getByText('Add'));
-
-        await waitFor(() => {
-          expect(mockOnSubmit).not.toHaveBeenCalled();
-        });
+        expect(screen.getByTestId(expectedTestId)).toBeInTheDocument();
+        expect(
+          screen.queryByTestId('unavailability-form-content-test-id'),
+        ).not.toBeInTheDocument();
       },
     );
-  });
 
-  describe('Provider Filtering', () => {
-    it('should render provider multiselect with filtered providers', () => {
-      setupMocksWithData();
+    it('displays error message text when data fails to load', () => {
+      setupMocks({
+        isError: true,
+        loginLocations: [],
+        services: [],
+        providers: [],
+      });
       renderComponent();
-      expect(screen.getByText(/Select Provider/)).toBeInTheDocument();
+      expect(
+        screen.getByText('Failed to load form data. Please try again.'),
+      ).toBeInTheDocument();
     });
   });
 
-  describe('Service Filtering', () => {
-    it('should render service multiselect for selected location', () => {
-      setupMocksWithData();
+  describe('Form field rendering', () => {
+    it('renders all form fields', () => {
+      setupMocks();
       renderComponent();
-      expect(screen.getByText(/Select Service/)).toBeInTheDocument();
+      expect(
+        screen.getByTestId('unavailability-form-content-test-id'),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('location-dropdown')).toBeInTheDocument();
+      expect(screen.getByTestId('start-date-input')).toBeInTheDocument();
+      expect(screen.getByLabelText('Start Time*')).toBeInTheDocument();
+      expect(screen.getByTestId('end-date-input')).toBeInTheDocument();
+      expect(screen.getByLabelText('End Time*')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('unavailability-form-service-test-id'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('unavailability-form-provider-test-id'),
+      ).toBeInTheDocument();
     });
   });
 
-  describe('Form Submission', () => {
-    it('should render Add button', () => {
-      setupMocksWithData();
-      renderComponent();
-      expect(screen.getByText('Add')).toBeInTheDocument();
+  describe('Field validation error display', () => {
+    it.each([
+      { field: 'location', errors: { location: 'Required field' } },
+      { field: 'startDate', errors: { startDate: 'Required field' } },
+      { field: 'startTime', errors: { startTime: 'Required field' } },
+      { field: 'endDate', errors: { endDate: 'Required field' } },
+      { field: 'endTime', errors: { endTime: 'Required field' } },
+      {
+        field: 'dateTime',
+        errors: { dateTime: 'End time must be after start time' },
+      },
+    ])('displays error text for $field field', ({ errors }) => {
+      setupMocks();
+      renderComponent(errors);
+      const errorText = Object.values(errors)[0];
+      expect(screen.getByText(errorText)).toBeInTheDocument();
+    });
+  });
+
+  describe('formDataRef population', () => {
+    it('populates formDataRef with initial form state', () => {
+      setupMocks();
+      const { formDataRef } = renderComponent();
+      expect(formDataRef.current).toMatchObject({
+        locationUuid: 'location-uuid-1',
+        startDate: null,
+        startTime: '',
+        startTimePeriod: 'AM',
+        endDate: null,
+        endTime: '',
+        endTimePeriod: 'AM',
+        filteredServicesCount: 1,
+        availableProvidersCount: 2,
+      });
+    });
+  });
+
+  describe('Service auto-selection', () => {
+    it('auto-selects all service items when services exist for the location', async () => {
+      setupMocks();
+      const { formDataRef } = renderComponent();
+      await waitFor(() => {
+        expect(formDataRef.current?.selectedServiceItems).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ id: 'service-uuid-1' }),
+            expect.objectContaining({ id: 'select-all-services' }),
+          ]),
+        );
+      });
     });
 
-    it('should have onSubmit mock configured', () => {
-      expect(mockOnSubmit).toBeDefined();
+    it('does not auto-select services when no services exist for the location', async () => {
+      useUnavailabilityFormData.mockReturnValue({ ...defaultHookReturn });
+      getUserLoginLocation.mockReturnValue({ uuid: 'location-uuid-unknown' });
+      getTodayDate.mockReturnValue('05/29/2026');
+      const { formDataRef } = renderComponent();
+      await waitFor(() => {
+        expect(formDataRef.current?.selectedServiceItems).toEqual([]);
+      });
+    });
+  });
+
+  describe('Provider auto-selection', () => {
+    it('auto-selects all provider items when available providers exist', async () => {
+      setupMocks();
+      const { formDataRef } = renderComponent();
+      await waitFor(() => {
+        expect(formDataRef.current?.selectedProviderItems).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ id: 'provider-uuid-1' }),
+            expect.objectContaining({ id: 'provider-uuid-2' }),
+            expect.objectContaining({ id: 'select-all-providers' }),
+          ]),
+        );
+      });
+    });
+
+    it('does not auto-select providers when no available providers exist', async () => {
+      setupMocks({ providers: mockUnavailableProviders });
+      const { formDataRef } = renderComponent();
+      await waitFor(() => {
+        expect(formDataRef.current?.selectedProviderItems).toEqual([]);
+      });
+    });
+  });
+
+  describe('Filtering', () => {
+    it('sets filteredServicesCount to services matching the selected location', () => {
+      setupMocks();
+      const { formDataRef } = renderComponent();
+      expect(formDataRef.current?.filteredServicesCount).toBe(1);
+    });
+
+    it('excludes providers without availability attribute from availableProvidersCount', () => {
+      setupMocks();
+      const { formDataRef } = renderComponent();
+      expect(formDataRef.current?.availableProvidersCount).toBe(2);
+    });
+  });
+
+  describe('User interactions', () => {
+    it('updates locationUuid and switches service selection to new location when location changes', async () => {
+      setupMocks();
+      const { formDataRef } = renderComponent();
+
+      await userEvent.click(
+        screen.getByRole('combobox', { name: 'Select Location*' }),
+      );
+      await userEvent.click(await screen.findByText('ENT Ward'));
+
+      await waitFor(() => {
+        expect(formDataRef.current?.locationUuid).toBe('location-uuid-2');
+        const serviceIds =
+          formDataRef.current?.selectedServiceItems.map((i) => i.id) ?? [];
+        expect(serviceIds).not.toContain('service-uuid-1');
+        expect(serviceIds).toContain('service-uuid-2');
+      });
+    });
+
+    it.each([
+      { label: 'Start Time*', value: '10:00', field: 'startTime' as const },
+      { label: 'End Time*', value: '12:00', field: 'endTime' as const },
+    ])(
+      'updates $field in formDataRef when time input changes',
+      ({ label, value, field }) => {
+        setupMocks();
+        const { formDataRef } = renderComponent();
+        fireEvent.change(screen.getByLabelText(label), { target: { value } });
+        expect(formDataRef.current?.[field]).toBe(value);
+      },
+    );
+
+    it.each([
+      { scenario: 'start', index: 0, field: 'startTimePeriod' as const },
+      { scenario: 'end', index: 1, field: 'endTimePeriod' as const },
+    ])(
+      'updates $scenario time period to PM in formDataRef',
+      ({ index, field }) => {
+        setupMocks();
+        const { formDataRef } = renderComponent();
+        fireEvent.change(
+          screen.getAllByLabelText('open list of options')[index],
+          {
+            target: { value: 'PM' },
+          },
+        );
+        expect(formDataRef.current?.[field]).toBe('PM');
+      },
+    );
+
+    it('updates selectedServiceItems when service selection changes', async () => {
+      setupMocks();
+      const { formDataRef } = renderComponent();
+
+      await waitFor(() => {
+        expect(
+          formDataRef.current?.selectedServiceItems.length,
+        ).toBeGreaterThan(0);
+      });
+
+      await userEvent.click(
+        screen.getByRole('combobox', { name: /Select Service/i }),
+      );
+      await userEvent.click(
+        await screen.findByRole('option', {
+          name: /General Medicine OPD Consultation/i,
+        }),
+      );
+
+      const serviceIds =
+        formDataRef.current?.selectedServiceItems.map((item) => item.id) ?? [];
+      expect(serviceIds).not.toContain('service-uuid-1');
+    });
+
+    it('updates selectedProviderItems when provider selection changes', async () => {
+      setupMocks();
+      const { formDataRef } = renderComponent();
+
+      await waitFor(() => {
+        expect(
+          formDataRef.current?.selectedProviderItems.length,
+        ).toBeGreaterThan(0);
+      });
+
+      await userEvent.click(
+        screen.getByRole('combobox', { name: /Select Provider/i }),
+      );
+      await userEvent.click(
+        await screen.findByRole('option', { name: /Dr. John Smith/i }),
+      );
+
+      const providerIds =
+        formDataRef.current?.selectedProviderItems.map((item) => item.id) ?? [];
+      expect(providerIds).not.toContain('provider-uuid-1');
     });
   });
 
   describe('Snapshot', () => {
-    it('should match snapshot', () => {
-      setupMocksWithData();
+    it.each([
+      { scenario: 'normal state', hookOverride: {} as HookOverride },
+      {
+        scenario: 'loading state',
+        hookOverride: {
+          isLoading: true,
+          loginLocations: [],
+          services: [],
+          providers: [],
+        },
+      },
+      {
+        scenario: 'error state',
+        hookOverride: {
+          isError: true,
+          loginLocations: [],
+          services: [],
+          providers: [],
+        },
+      },
+    ])('matches snapshot for $scenario', ({ hookOverride }) => {
+      setupMocks(hookOverride);
       const { container } = renderComponent();
       expect(container).toMatchSnapshot();
     });
   });
 
-  describe('Provider Login Locations', () => {
-    const makeProviderLocationsQueryMock = (
-      locationsData: typeof mockLocations | [],
-      capture: { queryFn: (() => Promise<unknown>) | null },
-    ) =>
-      ({
-        queryKey,
-        queryFn,
-      }: {
-        queryKey: string[];
-        queryFn?: () => Promise<unknown>;
-      }) => {
-        if (queryKey[0] === 'providerLoginLocations') {
-          capture.queryFn = queryFn ?? null;
-          return { data: locationsData, isError: false, isLoading: false };
-        }
-        if (queryKey[0] === 'appointmentServices') {
-          return {
-            data: mockAppointmentServices,
-            isError: false,
-            isLoading: false,
-          };
-        }
-        if (queryKey[0] === 'providers') {
-          return { data: mockProviders, isError: false, isLoading: false };
-        }
-        return { data: [], isError: false, isLoading: false };
-      };
-
-    it('should return empty locations when getCurrentUser returns null', async () => {
-      mockGetCurrentUser.mockResolvedValueOnce(null);
-      const capture = { queryFn: null as (() => Promise<unknown>) | null };
-
-      (useQuery as jest.Mock).mockImplementation(
-        makeProviderLocationsQueryMock([], capture),
-      );
-
-      renderComponent();
-      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
-    });
-
-    it('should call getProviderLoginLocations when currentUser is available', async () => {
-      mockGetProviderLoginLocations.mockResolvedValueOnce(mockLocations);
-      const capture = { queryFn: null as (() => Promise<unknown>) | null };
-
-      (useQuery as jest.Mock).mockImplementation(({ queryKey, queryFn }) => {
-        if (queryKey[0] === 'currentUser') {
-          return { data: mockCurrentUser, isError: false, isLoading: false };
-        }
-        if (queryKey[0] === 'providerLoginLocations') {
-          capture.queryFn = queryFn;
-          return { data: mockLocations, isError: false, isLoading: false };
-        }
-        if (queryKey[0] === 'appointmentServices') {
-          return {
-            data: mockAppointmentServices,
-            isError: false,
-            isLoading: false,
-          };
-        }
-        if (queryKey[0] === 'providers') {
-          return { data: mockProviders, isError: false, isLoading: false };
-        }
-        return { data: [], isError: false, isLoading: false };
-      });
-
-      renderComponent();
-      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
-      expect(capture.queryFn).not.toBeNull();
-
-      const result = await (capture.queryFn as () => Promise<unknown>)();
-      expect(result).toEqual(mockLocations);
-      expect(mockGetProviderLoginLocations).toHaveBeenCalledWith(
-        mockCurrentUser.uuid,
-      );
-    });
-
-    it('should fallback to getFHIRLocationsByTag when provider locations are empty', async () => {
-      mockGetProviderLoginLocations.mockResolvedValueOnce([]);
-      mockGetFHIRLocationsByTag.mockResolvedValueOnce(mockFHIRBundle);
-      const capture = { queryFn: null as (() => Promise<unknown>) | null };
-
-      (useQuery as jest.Mock).mockImplementation(({ queryKey, queryFn }) => {
-        if (queryKey[0] === 'currentUser') {
-          return { data: mockCurrentUser, isError: false, isLoading: false };
-        }
-        if (queryKey[0] === 'providerLoginLocations') {
-          capture.queryFn = queryFn;
-          return { data: mockLocations, isError: false, isLoading: false };
-        }
-        if (queryKey[0] === 'appointmentServices') {
-          return {
-            data: mockAppointmentServices,
-            isError: false,
-            isLoading: false,
-          };
-        }
-        if (queryKey[0] === 'providers') {
-          return { data: mockProviders, isError: false, isLoading: false };
-        }
-        return { data: [], isError: false, isLoading: false };
-      });
-
-      renderComponent();
-      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
-      expect(capture.queryFn).not.toBeNull();
-
-      const result = await (capture.queryFn as () => Promise<unknown>)();
-      expect(result).toEqual(mockMappedFHIRLocations);
-      expect(mockGetProviderLoginLocations).toHaveBeenCalledWith(
-        mockCurrentUser.uuid,
-      );
-      expect(mockGetFHIRLocationsByTag).toHaveBeenCalledWith(
-        'Appointment Location',
-      );
-    });
-  });
-
   describe('Accessibility', () => {
-    it('passes accessibility tests', async () => {
-      setupMocksWithData();
+    it.each([
+      { scenario: 'normal state', hookOverride: {} as HookOverride },
+      {
+        scenario: 'loading state',
+        hookOverride: {
+          isLoading: true,
+          loginLocations: [],
+          services: [],
+          providers: [],
+        },
+      },
+      {
+        scenario: 'error state',
+        hookOverride: {
+          isError: true,
+          loginLocations: [],
+          services: [],
+          providers: [],
+        },
+      },
+    ])('passes accessibility tests for $scenario', async ({ hookOverride }) => {
+      setupMocks(hookOverride);
       const { container } = renderComponent();
       await act(async () => {
         const results = await axe(container);
         expect(results).toHaveNoViolations();
       });
-    });
-  });
-
-  describe('getInitialLocationUuid', () => {
-    it('should return empty string when getUserLoginLocation throws an error', () => {
-      mockGetUserLoginLocation.mockImplementationOnce(() => {
-        throw new Error('No login location');
-      });
-      setupMocksWithData();
-      renderComponent();
-      expect(screen.getByText('Add Unavailability')).toBeInTheDocument();
-    });
-  });
-
-  describe('Form field onChange handlers', () => {
-    it('should filter services to the selected location after location changes', async () => {
-      setupMocksWithData();
-      renderComponent();
-
-      await userEvent.click(
-        screen.getByRole('combobox', { name: /select location/i }),
-      );
-      await userEvent.click(screen.getByRole('option', { name: 'ENT Ward' }));
-
-      await userEvent.click(screen.getByPlaceholderText(/Select Service/i));
-
-      await waitFor(() => {
-        expect(
-          screen.getByRole('option', { name: /ENT OPD Consultation/i }),
-        ).toBeInTheDocument();
-        expect(
-          screen.queryByRole('option', {
-            name: /General Medicine OPD Consultation/i,
-          }),
-        ).not.toBeInTheDocument();
-      });
-    });
-
-    it('should only include available providers in the provider multiselect', async () => {
-      setupMocksWithData();
-      renderComponent();
-
-      await userEvent.click(screen.getByPlaceholderText(/Select Provider/i));
-
-      await waitFor(() => {
-        expect(
-          screen.getByRole('option', { name: /Dr. John Smith/i }),
-        ).toBeInTheDocument();
-        expect(
-          screen.getByRole('option', { name: /Dr. Jane Doe/i }),
-        ).toBeInTheDocument();
-        expect(
-          screen.queryByRole('option', { name: /Dr. Unavailable Provider/i }),
-        ).not.toBeInTheDocument();
-      });
-    });
-
-    it.each([
-      {
-        name: 'start time',
-        label: /Start Time/,
-        selectId: 'start-time-period',
-        typeValue: '09:00',
-      },
-      {
-        name: 'end time',
-        label: /End time/i,
-        selectId: 'end-time-period',
-        typeValue: '05:00',
-      },
-    ])(
-      'should update $name AM/PM when select changes',
-      async ({ label, selectId, typeValue }) => {
-        setupMocksWithData();
-        renderComponent();
-
-        const timeInput = screen.getByLabelText(label);
-        await userEvent.type(timeInput, typeValue);
-
-        const timePeriodSelect = document.getElementById(selectId);
-        expect(timePeriodSelect).not.toBeNull();
-        await userEvent.selectOptions(timePeriodSelect!, 'PM');
-      },
-    );
-  });
-
-  describe('Date picker onChange handlers', () => {
-    it.each([
-      { name: 'start date', label: /Start Date/, value: '05/25/2026' },
-      { name: 'end date', label: /End Date/, value: '05/26/2026' },
-    ])(
-      'should update $name when date picker changes',
-      async ({ label, value }) => {
-        setupMocksWithData();
-        renderComponent();
-
-        const input = screen.getByLabelText(label);
-        await userEvent.type(input, value);
-
-        expect(input).toHaveValue(value);
-      },
-    );
-  });
-
-  describe('Utils - createBaseData', () => {
-    const mockTranslation = jest.fn(
-      (key: string) => key,
-    ) as unknown as ReturnType<
-      typeof import('@bahmni/services').useTranslation
-    >['t'];
-
-    it('should create base data with formatted dates and times', () => {
-      const params = {
-        locationUuid: 'location-123',
-        startDate: new Date('2024-01-15'),
-        startTime: '09:00',
-        startTimePeriod: 'AM' as const,
-        endDate: new Date('2024-01-15'),
-        endTime: '05:00',
-        endTimePeriod: 'PM' as const,
-      };
-
-      const result = createBaseData(params, mockTranslation);
-
-      expect(result.locationUuid).toBe('location-123');
-      expect(result.startTime).toBe('09:00');
-      expect(result.endTime).toBe('17:00');
-    });
-  });
-
-  describe('Utils - mapFHIRBundleToLocations', () => {
-    it('should map FHIR bundle entries to Location format', () => {
-      const result = mapFHIRBundleToLocations(mockFHIRBundle);
-
-      expect(result).toEqual(mockMappedFHIRLocations);
-    });
-
-    it('should return empty array when FHIR bundle has no entries', () => {
-      const emptyBundle = {
-        resourceType: 'Bundle' as const,
-        id: 'empty-bundle',
-        type: 'searchset',
-        total: 0,
-        entry: [],
-      };
-
-      const result = mapFHIRBundleToLocations(emptyBundle);
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return empty array when FHIR bundle entry is undefined', () => {
-      const bundleWithUndefinedEntry = {
-        resourceType: 'Bundle' as const,
-        id: 'bundle-no-entry',
-        type: 'searchset',
-        total: 0,
-        entry: undefined,
-      };
-
-      const result = mapFHIRBundleToLocations(bundleWithUndefinedEntry as any);
-
-      expect(result).toEqual([]);
     });
   });
 });
