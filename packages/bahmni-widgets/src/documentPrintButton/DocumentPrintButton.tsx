@@ -9,6 +9,7 @@ export interface PrintOption {
   translationKey: string;
   templateId: string;
   shortcutKey?: string;
+  privileges?: string[];
 }
 
 interface DocumentPrintButtonProps {

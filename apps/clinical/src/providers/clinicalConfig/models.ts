@@ -39,6 +39,7 @@ export interface Dashboard {
   requiredPrivileges: string[];
   icon?: string;
   default?: boolean;
+  printOptions?: PrintOption[];
 }
 
 export interface ProgramConfig {
@@ -65,7 +66,6 @@ export interface ClinicalConfig {
   actions: Array<unknown>;
   dashboards: Array<Dashboard>;
   consultationPad: ConsultationPad;
-  printOptions?: PrintOption[];
 }
 
 export interface ClinicalConfigContextType {

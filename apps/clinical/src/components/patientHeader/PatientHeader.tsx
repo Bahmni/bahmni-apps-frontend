@@ -14,14 +14,14 @@ import {
   type PrintOption,
 } from '@bahmni/widgets';
 import React, { useEffect, useRef } from 'react';
-import { usePatientVisit } from '../../hooks/usePatientVisit';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
-import { useClinicalConfig } from '../../providers/clinicalConfig';
+import { usePatientVisit } from '../../hooks/usePatientVisit';
 import ConsultationActionButton from './ConsultationActionButton';
 import styles from './styles/PatientHeader.module.scss';
 
 interface PatientHeaderProps {
   isActionAreaVisible: boolean;
+  printOptions?: PrintOption[];
 }
 
 /**
@@ -33,6 +33,7 @@ interface PatientHeaderProps {
  */
 const PatientHeader: React.FC<PatientHeaderProps> = ({
   isActionAreaVisible,
+  printOptions,
 }) => {
   const { t } = useTranslation();
   const { practitioner } = useActivePractitioner();
@@ -87,9 +88,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     [patientUUID],
   );
 
- 
   const { activeVisit, lastVisit } = usePatientVisit(patientUUID);
-  const { clinicalConfig } = useClinicalConfig();
 
   const visitUuid = activeVisit?.id ?? lastVisit?.id;
 
@@ -97,8 +96,6 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     ...(patientUUID && { patientUUID }),
     ...(visitUuid && { visitUuid }),
   };
-
-  const printOptions: PrintOption[] = clinicalConfig?.printOptions ?? [];
 
   return (
     <div
@@ -112,11 +109,11 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     >
       <PatientDetails />
       <div className={styles.actionButtons}>
-       <ConsultationActionButton
-        isActionAreaVisible={isActionAreaVisible}
-        editActiveEncounter={editActiveEncounter}
-        isLoading={isLoading}
-      />
+        <ConsultationActionButton
+          isActionAreaVisible={isActionAreaVisible}
+          editActiveEncounter={editActiveEncounter}
+          isLoading={isLoading}
+        />
         <DocumentPrintButton
           printOptions={printOptions}
           renderContext={renderContext}
