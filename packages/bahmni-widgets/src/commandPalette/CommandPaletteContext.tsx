@@ -54,7 +54,8 @@ export type TriggerConfig =
 export interface CommandPaletteExtension {
   id: string;
   extensionPointId: string;
-  label: string;
+  label?: string;
+  translationKey?: string;
   icon?: string;
   order?: number;
   requiredPrivilege?: string;

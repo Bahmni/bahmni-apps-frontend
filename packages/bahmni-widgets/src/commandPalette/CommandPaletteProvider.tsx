@@ -1,5 +1,6 @@
 import {
-  formatUrl,
+  getMergedTranslations,
+  getUserPreferredLocale,
   getConfig,
   getCurrentUserPrivileges,
   hasPrivilege,
@@ -20,86 +21,26 @@ import {
   type HomeAppConfig,
   type NavItem,
   type PatientAction,
-  type PatientActionContext,
   type PatientFieldsConfig,
   type TriggerConfig,
   type SearchAnnotation,
 } from './CommandPaletteContext';
-
-const HOME_APP_CONFIG_URL = '/bahmni_config/openmrs/apps/home/app.json';
-const EXTENSION_BASE_URL = '/bahmni_config/openmrs/apps';
-const DEFAULT_EXTENSION_APPS = ['home'];
-
-const COMMAND_PALETTE_NAV_ITEM_POINT = 'org.bahmni.commandpalette.navItem';
-const COMMAND_PALETTE_PATIENT_ACTION_POINT =
-  'org.bahmni.commandpalette.patientAction';
-
-const DEFAULT_TRIGGER: TriggerConfig = { type: 'combination', keys: 'meta+k' };
-const DEFAULT_DOUBLE_INTERVAL = 350;
-
-const DEFAULT_PATIENT_FIELDS: PatientFieldsConfig = {
-  primaryFields: ['name', 'identifier'],
-  additionalFields: ['age', 'gender'],
-};
-
-const LEGACY_APP_MAP: Record<string, string> = {
-  bedmanagement: 'adt',
-};
-
-function detectCurrentApp(pathname: string): string {
-  const newMatch = pathname.match(/^\/bahmni-new\/([^/]+)/);
-  if (newMatch) return newMatch[1];
-  const legacyMatch = pathname.match(/^\/bahmni\/([^/]+)/);
-  if (legacyMatch) return LEGACY_APP_MAP[legacyMatch[1]] ?? legacyMatch[1];
-  return 'home';
-}
-
-function parseKeys(keys: string): {
-  key: string;
-  meta: boolean;
-  ctrl: boolean;
-  shift: boolean;
-  alt: boolean;
-} {
-  const parts = keys.toLowerCase().split('+');
-  const key = parts[parts.length - 1];
-  const mods = new Set(parts.slice(0, -1));
-  return {
-    key,
-    meta: mods.has('meta') || mods.has('cmd'),
-    ctrl: mods.has('ctrl'),
-    shift: mods.has('shift'),
-    alt: mods.has('alt'),
-  };
-}
-
-function matchesKeys(e: KeyboardEvent, keys: string): boolean {
-  const p = parseKeys(keys);
-  return (
-    e.key.toLowerCase() === p.key &&
-    e.metaKey === p.meta &&
-    e.ctrlKey === p.ctrl &&
-    e.shiftKey === p.shift &&
-    e.altKey === p.alt
-  );
-}
-
-function toExtensionArray(
-  data: CommandPaletteExtension[] | Record<string, CommandPaletteExtension>,
-): CommandPaletteExtension[] {
-  return Array.isArray(data) ? data : Object.values(data);
-}
-
-function basePathFromTemplate(template: string): string {
-  return template.split('{{')[0].replace(/\/$/, '');
-}
-
-function pathTemplateToGetPath(
-  template: string,
-): (context: PatientActionContext) => string {
-  return ({ patientUuid, patientIdentifier = '' }) =>
-    formatUrl(template, { patientUuid, patientIdentifier });
-}
+import {
+  HOME_APP_CONFIG_URL,
+  EXTENSION_BASE_URL,
+  DEFAULT_EXTENSION_APPS,
+  COMMAND_PALETTE_NAV_ITEM_POINT,
+  COMMAND_PALETTE_PATIENT_ACTION_POINT,
+  DEFAULT_TRIGGER,
+  DEFAULT_DOUBLE_INTERVAL,
+  DEFAULT_PATIENT_FIELDS,
+  detectCurrentApp,
+  matchesKeys,
+  toExtensionArray,
+  basePathFromTemplate,
+  pathTemplateToGetPath,
+  resolveLabel,
+} from './utils';
 
 interface CommandPaletteProviderProps {
   children?: ReactNode;
@@ -166,6 +107,15 @@ const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
         )
         .flatMap((r) => r.value);
 
+      const lang = getUserPreferredLocale();
+      const translationResults = await Promise.allSettled(
+        extensionApps.map((app) => getMergedTranslations(app, lang)),
+      );
+      const translations: Record<string, string> = {};
+      translationResults.forEach((r) => {
+        if (r.status === 'fulfilled') Object.assign(translations, r.value);
+      });
+
       const filterAndSort = (extensionPointId: string) =>
         allExtensions
           .filter((e) => e.extensionPointId === extensionPointId)
@@ -180,7 +130,7 @@ const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
       setNavItems(
         filterAndSort(COMMAND_PALETTE_NAV_ITEM_POINT).map((e) => ({
           id: e.id,
-          label: e.label,
+          label: resolveLabel(e, translations),
           path: e.url ?? '',
           icon: e.icon,
           newTab: e.newTab,
@@ -190,7 +140,7 @@ const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
       setPatientActions(
         filterAndSort(COMMAND_PALETTE_PATIENT_ACTION_POINT).map((e) => ({
           id: e.id,
-          label: e.label,
+          label: resolveLabel(e, translations),
           icon: e.icon,
           getPath: pathTemplateToGetPath(e.pathTemplate ?? ''),
           basePath: basePathFromTemplate(e.pathTemplate ?? ''),
@@ -262,7 +212,7 @@ export const CommandPaletteProvider: React.FC<CommandPaletteProviderProps> = ({
   children,
 }) => {
   const parent = useContext(CommandPaletteContext);
-  if (parent) return <>{children}</>;
+  if (parent) return children as React.ReactElement;
   return <CommandPaletteProviderInner>{children}</CommandPaletteProviderInner>;
 };
 
