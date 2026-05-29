@@ -53,6 +53,8 @@
   "CERTAINITY_CONFIRMED": "Confirmed",
   "CERTAINITY_PROVISIONAL": "Provisional",
   "CDSS_CONFIG_LOAD_ERROR": "Failed to load CDSS server configuration: {{errorMessage}}",
+  "CDSS_CRITICAL_ALERT_TITLE": "CDSS error",
+  "CDSS_CRITICAL_ALERT_MESSAGE": "There are critical alerts that must be addressed before completing the consultation. Please review and resolve all critical alerts.",
   "CDSS_RULE_INVOCATION_ERROR": "CDSS rule invocation failed for control {{controlKey}} on event {{eventType}}",
   "CLINICAL_DATA_RECORDED_BY": "Recorded By",
   "COMPLETED_STATUS": "Completed",

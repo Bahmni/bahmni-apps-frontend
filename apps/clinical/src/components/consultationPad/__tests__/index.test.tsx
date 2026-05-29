@@ -402,6 +402,31 @@ describe('ConsultationPad', () => {
       expect(submitConsultation).not.toHaveBeenCalled();
     });
 
+    it('shows critical CDSS alert and does not submit when there are critical CDS cards', async () => {
+      const mockEntryWithCriticalCards = {
+        ...mockRegistry[0],
+        hasCriticalCDSCards: jest.fn().mockReturnValue(true),
+      };
+      (mockEntryWithCriticalCards.hasData as jest.Mock).mockReturnValue(true);
+
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([mockEntryWithCriticalCards] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'error',
+          title: expect.stringContaining('CDSS error'),
+          message: expect.stringContaining('critical alerts'),
+          timeout: 5000,
+        }),
+      );
+      expect(submitConsultation).not.toHaveBeenCalled();
+    });
+
     it.each([
       ['Error instance', new Error('Server error'), 'Server error'],
       [
@@ -598,10 +623,10 @@ describe('ConsultationPad', () => {
   describe('CDSS', () => {
     describe('configuration loading', () => {
       it.each([
-        ['with valid config', mockCDSSServerConfig, false],
-        ['with empty config', mockEmptyCDSSConfig, false],
-        ['with error (falls back to empty)', new Error('Config error'), false],
-      ])('loads successfully %s', async (_, configOrError, shouldShowError) => {
+        ['with valid config', mockCDSSServerConfig],
+        ['with empty config', mockEmptyCDSSConfig],
+        ['with error (falls back to empty)', new Error('Config error')],
+      ])('loads successfully %s', async (_, configOrError) => {
         jest.mocked(getConfig).mockImplementation(() => {
           if (configOrError instanceof Error) {
             return Promise.reject(configOrError);
@@ -615,11 +640,7 @@ describe('ConsultationPad', () => {
           expect(screen.getByTestId('action-area')).toBeInTheDocument();
         });
 
-        if (shouldShowError) {
-          expect(mockAddNotification).toHaveBeenCalledWith(
-            expect.objectContaining({ type: 'error' }),
-          );
-        }
+        expect(mockAddNotification).not.toHaveBeenCalled();
       });
     });
 
