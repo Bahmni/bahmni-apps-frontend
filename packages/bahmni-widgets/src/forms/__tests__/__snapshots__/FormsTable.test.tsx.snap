@@ -4,6 +4,7 @@ exports[`FormsTable Snapshots should match snapshot in empty state 1`] = `
 <div>
   <div
     data-testid="forms-table"
+    id="forms-table"
   >
     <p
       class="_sortableDataTableBodyEmpty_1w499_26"
@@ -19,6 +20,7 @@ exports[`FormsTable Snapshots should match snapshot in loading state 1`] = `
 <div>
   <div
     data-testid="forms-table"
+    id="forms-table"
   >
     <div
       class="formsTableBody"
@@ -93,6 +95,7 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
 <div>
   <div
     data-testid="forms-table"
+    id="forms-table"
   >
     <ul
       class="cds--accordion cds--accordion--start"
