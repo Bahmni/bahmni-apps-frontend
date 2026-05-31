@@ -281,7 +281,7 @@ const ConsultationPage: React.FC = () => {
   };
 
   return (
-    <ClinicalAppProvider episodeUuids={episodeUuids}>
+    <ClinicalAppProvider episodeUuids={episodeUuids} patientId={patientUUID}>
       {/* Rendered outside ActionAreaLayout: uses position:fixed to overlay the header area.
           Placed here (inside ClinicalAppProvider) so it has access to clinical context. */}
       <PatientSearch isOpen={isSearchOpen} onClose={handleSearchClose} />

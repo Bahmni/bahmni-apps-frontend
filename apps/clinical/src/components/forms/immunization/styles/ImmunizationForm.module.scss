@@ -9,7 +9,7 @@
   gap: $spacing-05;
   margin: $spacing-03;
   padding: $spacing-05;
-  background-color: $background
+  background-color: $background;
 }
 
 .title {
@@ -62,15 +62,24 @@
 }
 
 .datePicker > div {
+  display: block;
+  min-inline-size: -webkit-fill-available !important;
+  > div {
     display: block;
-    min-inline-size: -webkit-fill-available !important;
     > div {
       display: block;
-      > div {
-        display: block;
-      }
-      input {
-        inline-size: -webkit-fill-available !important;
-      }
+    }
+    input {
+      inline-size: -webkit-fill-available !important;
     }
   }
+}
+
+.cdsCardContainer {
+  width: calc(100% + $spacing-05);
+  margin-top: $spacing-04;
+}
+
+.cdsCard {
+  min-width: 100%;
+}

@@ -1,9 +1,14 @@
 import {
   dispatchAuditEvent,
+  dispatchCDSSCheck,
+  dispatchCDSSResults,
   dispatchConsultationSaved,
+  getConfig,
+  invokeCDSSRule,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
-import { render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
@@ -26,6 +31,10 @@ import {
   mockRegistry,
   mockSubmitResult,
   mockUpdatedResources,
+  mockCDSSServerConfig,
+  mockCDSSCards,
+  mockEmptyCDSSConfig,
+  mockCDSSCheckEvent,
 } from './__mocks__/indexMocks';
 
 expect.extend(toHaveNoViolations);
@@ -61,6 +70,9 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
   dispatchConsultationSaved: jest.fn(),
+  dispatchCDSSResults: jest.fn(),
+  invokeCDSSRule: jest.fn(),
+  getConfig: jest.fn(),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -100,18 +112,30 @@ const defaultEncounterDetailsState = {
 
 const mockAddNotification = jest.fn();
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
+
 const renderComponent = (
   props: Partial<React.ComponentProps<typeof ConsultationPad>> = {},
 ) =>
   render(
-    <ConsultationPad
-      encounterSessionStartContext={{ encounterType: 'Consultation' }}
-      onClose={jest.fn()}
-      {...props}
-    />,
+    <QueryClientProvider client={queryClient}>
+      <ConsultationPad
+        encounterSessionStartContext={{ encounterType: 'Consultation' }}
+        onClose={jest.fn()}
+        {...props}
+      />
+    </QueryClientProvider>,
   );
 
 beforeEach(() => {
+  queryClient.clear();
+
   mockRegistry.forEach((entry) => {
     (entry.validate as jest.Mock).mockReturnValue(true);
     (entry.hasData as jest.Mock).mockReturnValue(false);
@@ -141,7 +165,12 @@ beforeEach(() => {
   jest
     .mocked(useNotification)
     .mockReturnValue({ addNotification: mockAddNotification } as any);
-  jest.mocked(useClinicalAppData).mockReturnValue({ episodeOfCare: [] } as any);
+  jest.mocked(useClinicalAppData).mockReturnValue({
+    episodeOfCare: [],
+    patientId: 'patient-123',
+    activeVisitId: 'visit-123',
+    activeEpisodeId: null,
+  } as any);
   jest.mocked(useEncounterConcepts).mockReturnValue({
     encounterConcepts: mockEncounterConcepts,
     loading: false,
@@ -367,6 +396,31 @@ describe('ConsultationPad', () => {
       expect(submitConsultation).not.toHaveBeenCalled();
     });
 
+    it('shows critical CDSS alert and does not submit when there are critical CDS cards', async () => {
+      const mockEntryWithCriticalCards = {
+        ...mockRegistry[0],
+        hasCriticalCDSCards: jest.fn().mockReturnValue(true),
+      };
+      (mockEntryWithCriticalCards.hasData as jest.Mock).mockReturnValue(true);
+
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([mockEntryWithCriticalCards] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'error',
+          title: expect.stringContaining('CDSS error'),
+          message: expect.stringContaining('critical alerts'),
+          timeout: 5000,
+        }),
+      );
+      expect(submitConsultation).not.toHaveBeenCalled();
+    });
+
     it.each([
       ['Error instance', new Error('Server error'), 'Server error'],
       [
@@ -400,6 +454,9 @@ describe('ConsultationPad', () => {
         () =>
           jest.mocked(useClinicalAppData).mockReturnValue({
             episodeOfCare: [{ uuid: 'eoc-1' }, { uuid: 'eoc-2' }],
+            patientId: 'patient-123',
+            activeVisitId: 'visit-123',
+            activeEpisodeId: 'eoc-1',
           } as any),
         { episodeOfCareUuids: ['eoc-1', 'eoc-2'] },
       ],
@@ -553,6 +610,276 @@ describe('ConsultationPad', () => {
         expect(submitConsultation).toHaveBeenCalledWith(
           expect.objectContaining({ activeEncounter: null }),
         );
+      });
+    });
+  });
+
+  describe('CDSS', () => {
+    describe('configuration loading', () => {
+      it.each([
+        ['with valid config', mockCDSSServerConfig],
+        ['with empty config', mockEmptyCDSSConfig],
+        ['with error (falls back to empty)', new Error('Config error')],
+      ])('loads successfully %s', async (_, configOrError) => {
+        jest.mocked(getConfig).mockImplementation(() => {
+          if (configOrError instanceof Error) {
+            return Promise.reject(configOrError);
+          }
+          return Promise.resolve(configOrError);
+        });
+
+        renderComponent();
+
+        await waitFor(() => {
+          expect(screen.getByTestId('action-area')).toBeInTheDocument();
+        });
+
+        expect(mockAddNotification).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('event handling', () => {
+      beforeEach(() => {
+        jest.mocked(getConfig).mockResolvedValue(mockCDSSServerConfig);
+        jest.mocked(invokeCDSSRule).mockResolvedValue(mockCDSSCards);
+      });
+
+      it('invokes CDSS rule when config is loaded and event is dispatched from inputControl', async () => {
+        const mockEntryWithCDSS = {
+          ...mockRegistry[0],
+          key: 'medications',
+          inputControlConfig: {
+            cdss: [
+              {
+                event: 'onSelect',
+                server: 'test-cdss-server',
+                service: 'medication-prescribe',
+              },
+            ],
+          },
+        };
+
+        jest.mocked(getActiveEntries).mockReturnValue([mockEntryWithCDSS]);
+
+        renderComponent();
+
+        await waitFor(
+          () => {
+            expect(screen.getByTestId('action-area')).toBeInTheDocument();
+          },
+          { timeout: 3000 },
+        );
+
+        act(() => {
+          dispatchCDSSCheck(mockCDSSCheckEvent);
+        });
+
+        await waitFor(
+          () => {
+            expect(getConfig).toHaveBeenCalled();
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(
+          () => {
+            expect(invokeCDSSRule).toHaveBeenCalledWith(
+              mockCDSSServerConfig,
+              expect.objectContaining({
+                event: 'onSelect',
+                server: 'test-cdss-server',
+                service: 'medication-prescribe',
+              }),
+              expect.any(Object),
+              expect.any(Object),
+            );
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(() => {
+          expect(dispatchCDSSResults).toHaveBeenCalledWith({
+            cards: mockCDSSCards,
+            triggerItemId: 'item-123',
+            controlKey: 'medications',
+          });
+        });
+      });
+
+      it('dispatches CDSS results event with correct data after successful rule invocation', async () => {
+        const mockEntryWithCDSS = {
+          ...mockRegistry[0],
+          key: 'medications',
+          inputControlConfig: {
+            cdss: [
+              {
+                event: 'onSelect',
+                server: 'test-cdss-server',
+                service: 'medication-prescribe',
+              },
+            ],
+          },
+        };
+
+        jest.mocked(getActiveEntries).mockReturnValue([mockEntryWithCDSS]);
+
+        renderComponent();
+
+        await waitFor(
+          () => {
+            expect(screen.getByTestId('action-area')).toBeInTheDocument();
+          },
+          { timeout: 3000 },
+        );
+
+        act(() => {
+          dispatchCDSSCheck(mockCDSSCheckEvent);
+        });
+
+        await waitFor(
+          () => {
+            expect(getConfig).toHaveBeenCalled();
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(
+          () => {
+            expect(dispatchCDSSResults).toHaveBeenCalledWith({
+              cards: mockCDSSCards,
+              triggerItemId: 'item-123',
+              controlKey: 'medications',
+            });
+          },
+          { timeout: 5000 },
+        );
+      });
+
+      it.each([
+        ['config is loading', true, mockCDSSServerConfig],
+        ['config is undefined', false, undefined],
+      ])('does not invoke CDSS rule when %s', async (_, isLoading, config) => {
+        jest
+          .mocked(getConfig)
+          .mockReturnValue(
+            isLoading ? new Promise(() => {}) : Promise.resolve(config),
+          );
+
+        renderComponent();
+
+        dispatchCDSSCheck(mockCDSSCheckEvent);
+
+        await waitFor(() => {
+          expect(invokeCDSSRule).not.toHaveBeenCalled();
+        });
+      });
+
+      it('does not invoke CDSS rule when no matching control is found', async () => {
+        jest.mocked(getActiveEntries).mockReturnValue(mockRegistry);
+
+        renderComponent();
+
+        await waitFor(() => {
+          expect(screen.getByTestId('action-area')).toBeInTheDocument();
+        });
+
+        act(() => {
+          dispatchCDSSCheck({
+            ...mockCDSSCheckEvent,
+            controlKey: 'non-existent-control',
+          });
+        });
+
+        await waitFor(
+          () => {
+            expect(getConfig).toHaveBeenCalled();
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(() => {
+          expect(invokeCDSSRule).not.toHaveBeenCalled();
+        });
+      });
+
+      it('should not load config and hence does not invoke CDSS rule when control has no CDSS rules', async () => {
+        jest.mocked(getActiveEntries).mockReturnValue(mockRegistry);
+
+        renderComponent();
+
+        await waitFor(() => {
+          expect(screen.getByTestId('action-area')).toBeInTheDocument();
+        });
+
+        act(() => {
+          dispatchCDSSCheck({
+            ...mockCDSSCheckEvent,
+            rules: [],
+          });
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(getConfig).not.toHaveBeenCalled();
+        expect(invokeCDSSRule).not.toHaveBeenCalled();
+      });
+
+      it('shows error notification when CDSS rule invocation fails', async () => {
+        const mockEntryWithCDSS = {
+          ...mockRegistry[0],
+          key: 'medications',
+          inputControlConfig: {
+            cdss: [
+              {
+                event: 'onSelect',
+                server: 'test-cdss-server',
+                service: 'medication-prescribe',
+              },
+            ],
+          },
+        };
+
+        jest.mocked(getActiveEntries).mockReturnValue([mockEntryWithCDSS]);
+        jest.mocked(invokeCDSSRule).mockReset();
+        jest
+          .mocked(invokeCDSSRule)
+          .mockRejectedValue(new Error('CDSS invocation failed'));
+
+        renderComponent();
+
+        await waitFor(
+          () => {
+            expect(screen.getByTestId('action-area')).toBeInTheDocument();
+          },
+          { timeout: 3000 },
+        );
+
+        act(() => {
+          dispatchCDSSCheck(mockCDSSCheckEvent);
+        });
+
+        await waitFor(
+          () => {
+            expect(getConfig).toHaveBeenCalled();
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(
+          () => {
+            expect(invokeCDSSRule).toHaveBeenCalled();
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(() => {
+          expect(mockAddNotification).toHaveBeenCalledWith(
+            expect.objectContaining({
+              type: 'error',
+              message: expect.stringContaining('medications'),
+            }),
+          );
+        });
       });
     });
   });

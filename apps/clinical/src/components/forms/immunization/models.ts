@@ -1,3 +1,4 @@
+import { type CDSCard } from '@bahmni/services';
 import { Reference } from 'fhir/r4';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import {
@@ -37,6 +38,7 @@ export interface ImmunizationInputEntry {
   doseSequence: number | null;
   note?: string;
   basedOnReference?: string | null;
+  cdsCards?: CDSCard[];
   errors: {
     drug?: string;
     administeredOn?: string;
@@ -89,7 +91,7 @@ export interface ImmunizationHistoryState {
       administeredOn?: Date | null;
       administeredLocation?: ImmunizationLocation | null;
     },
-  ) => void;
+  ) => string;
   removeImmunization: (id: string) => void;
   setAttributes: (attrs: InputControlAttributes[]) => void;
   updateAdministeredOn: (id: string, value: Date | null) => void;
@@ -107,6 +109,8 @@ export interface ImmunizationHistoryState {
   updateDoseSequence: (id: string, value: number | null) => void;
   updateNote: (id: string, value: string) => void;
   validateAll: () => boolean;
+  updateItemCDSCards: (itemId: string, cards: CDSCard[]) => void;
+  hasCriticalCDSCards: () => boolean;
   reset: () => void;
   getState: () => ImmunizationHistoryState;
 }
