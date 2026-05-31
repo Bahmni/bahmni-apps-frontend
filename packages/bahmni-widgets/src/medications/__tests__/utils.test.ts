@@ -226,6 +226,94 @@ describe('formatMedicationRequest', () => {
       'oral | Take with meals | Monitor blood sugar levels',
     );
   });
+
+  it('shows route only with no pipe when instructions and additionalInstructions are absent', () => {
+    const input: MedicationRequest = {
+      id: '1001',
+      name: 'Aspirin',
+      status: MedicationStatus.Active,
+      quantity: { value: 10, unit: 'tablets' },
+      priority: '',
+      startDate: '',
+      orderDate: '',
+      orderedBy: '',
+      instructions: '',
+      route: 'oral',
+      asNeeded: false,
+      isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
+    };
+
+    const result = formatMedicationRequest(input);
+
+    expect(result.instruction).toBe('oral');
+  });
+
+  it('shows instructions only with no pipe when route and additionalInstructions are absent', () => {
+    const input: MedicationRequest = {
+      id: '1002',
+      name: 'Aspirin',
+      status: MedicationStatus.Active,
+      quantity: { value: 10, unit: 'tablets' },
+      priority: '',
+      startDate: '',
+      orderDate: '',
+      orderedBy: '',
+      instructions: 'Take with food',
+      asNeeded: false,
+      isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
+    };
+
+    const result = formatMedicationRequest(input);
+
+    expect(result.instruction).toBe('Take with food');
+  });
+
+  it('shows additionalInstructions only with no pipe when route and instructions are absent', () => {
+    const input: MedicationRequest = {
+      id: '1003',
+      name: 'Aspirin',
+      status: MedicationStatus.Active,
+      quantity: { value: 10, unit: 'tablets' },
+      priority: '',
+      startDate: '',
+      orderDate: '',
+      orderedBy: '',
+      instructions: '',
+      additionalInstructions: 'Monitor blood sugar levels',
+      asNeeded: false,
+      isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
+    };
+
+    const result = formatMedicationRequest(input);
+
+    expect(result.instruction).toBe('Monitor blood sugar levels');
+  });
+
+  it('joins route and additionalInstructions with single pipe when instructions is empty', () => {
+    const input: MedicationRequest = {
+      id: '1004',
+      name: 'Aspirin',
+      status: MedicationStatus.Active,
+      quantity: { value: 10, unit: 'tablets' },
+      priority: '',
+      startDate: '',
+      orderDate: '',
+      orderedBy: '',
+      instructions: '',
+      route: 'oral',
+      additionalInstructions: 'Monitor blood sugar levels',
+      asNeeded: false,
+      isImmediate: false,
+      fhirResource: fhirMedicationRequestMock,
+    };
+
+    const result = formatMedicationRequest(input);
+
+    expect(result.instruction).toBe('oral | Monitor blood sugar levels');
+  });
 });
 
 describe('getMedicationStatusPriority', () => {

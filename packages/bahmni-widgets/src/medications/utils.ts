@@ -153,7 +153,9 @@ export function formatMedicationRequest(
   if (route) {
     instructionParts.push(route);
   }
-  instructionParts.push(instructions);
+  if (instructions) {
+    instructionParts.push(instructions);
+  }
   if (additionalInstructions) {
     instructionParts.push(additionalInstructions);
   }
