@@ -230,7 +230,10 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
   );
 
   return (
-    <div data-testid="generic-service-request-table">
+    <div
+      id="generic-service-request-table"
+      data-testid="generic-service-request-table"
+    >
       {isLoading ||
       !!isError ||
       processedServiceRequests.length === 0 ||
