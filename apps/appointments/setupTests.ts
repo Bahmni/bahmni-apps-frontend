@@ -18,7 +18,7 @@ class ResizeObserverMock {
   unobserve() {}
   disconnect() {}
 }
-global.ResizeObserver = ResizeObserverMock;
+globalThis.ResizeObserver = ResizeObserverMock;
 
 if (!document.adoptedStyleSheets) {
   Object.defineProperty(document, 'adoptedStyleSheets', {
@@ -27,7 +27,7 @@ if (!document.adoptedStyleSheets) {
   });
 }
 
-global.CSSStyleSheet = class CSSStyleSheet {
+globalThis.CSSStyleSheet = class CSSStyleSheet {
   cssRules = [];
   replaceSync() {}
   replace() {
