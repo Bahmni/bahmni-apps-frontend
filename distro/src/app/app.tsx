@@ -1,7 +1,7 @@
 import { Loading } from '@bahmni/design-system';
 import { AppContextProvider } from '@bahmni/widgets';
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 
 const HomeApp = lazy(() =>
   import('@bahmni/home-app').then((module) => ({ default: module.HomeApp })),
@@ -24,13 +24,16 @@ const AppointmentsApp = lazy(() =>
     default: module.AppointmentsApp,
   })),
 );
+const IndexPage = lazy(() =>
+  import('./IndexPage').then((module) => ({ default: module.IndexPage })),
+);
 
 export function App() {
   return (
     <AppContextProvider>
       <Suspense fallback={<Loading />}>
         <Routes>
-          <Route index element={<Navigate to="/home/" replace />} />
+          <Route index element={<IndexPage />} />
           <Route path="/home/*" element={<HomeApp />} />
           <Route path="/clinical/*" element={<ClinicalApp />} />
           <Route path="/registration/*" element={<RegistrationApp />} />
