@@ -2,6 +2,8 @@ import { getImmunizationStore } from '../stores';
 import {
   mockAllRequiredAttributes,
   mockAttributesWithOptionalAdministered,
+  mockCDSCard,
+  mockCriticalCDSCard,
   mockFullAttributes,
   mockImmunizationEntryWithErrors,
   mockVaccineCode,
@@ -523,6 +525,87 @@ describe('useImmunizationHistoryStore', () => {
       const state = store().getState();
       expect(state.selectedImmunizations).toHaveLength(1);
       expect(state.attributes).toEqual(mockFullAttributes);
+    });
+  });
+
+  describe('CDSS functionality', () => {
+    beforeEach(() => {
+      store().reset();
+      store().setAttributes(mockAllRequiredAttributes);
+    });
+
+    describe('updateItemCDSCards', () => {
+      it('updates CDS cards for specific item', () => {
+        const itemId = store().addImmunization(mockVaccineCode);
+        store().updateItemCDSCards(itemId, [mockCDSCard]);
+
+        const item = store().selectedImmunizations.find((i) => i.id === itemId);
+        expect(item?.cdsCards).toEqual([mockCDSCard]);
+      });
+
+      it('updates only the specified item', () => {
+        const itemId1 = store().addImmunization(mockVaccineCode);
+        const itemId2 = store().addImmunization(secondVaccineCode);
+
+        store().updateItemCDSCards(itemId1, [mockCDSCard]);
+
+        const item1 = store().selectedImmunizations.find(
+          (i) => i.id === itemId1,
+        );
+        const item2 = store().selectedImmunizations.find(
+          (i) => i.id === itemId2,
+        );
+
+        expect(item1?.cdsCards).toEqual([mockCDSCard]);
+        expect(item2?.cdsCards).toBeUndefined();
+      });
+
+      it('replaces existing CDS cards', () => {
+        const itemId = store().addImmunization(mockVaccineCode);
+        store().updateItemCDSCards(itemId, [mockCDSCard]);
+        store().updateItemCDSCards(itemId, [mockCriticalCDSCard]);
+
+        const item = store().selectedImmunizations.find((i) => i.id === itemId);
+        expect(item?.cdsCards).toEqual([mockCriticalCDSCard]);
+      });
+    });
+
+    describe('hasCriticalCDSCards', () => {
+      it('returns false when no items have cards', () => {
+        store().addImmunization(mockVaccineCode);
+        expect(store().hasCriticalCDSCards()).toBe(false);
+      });
+
+      it('returns false when items only have non-critical cards', () => {
+        const itemId = store().addImmunization(mockVaccineCode);
+        store().updateItemCDSCards(itemId, [mockCDSCard]);
+
+        expect(store().hasCriticalCDSCards()).toBe(false);
+      });
+
+      it('returns true when at least one item has a critical card', () => {
+        const itemId = store().addImmunization(mockVaccineCode);
+        store().updateItemCDSCards(itemId, [mockCriticalCDSCard]);
+
+        expect(store().hasCriticalCDSCards()).toBe(true);
+      });
+
+      it('returns true when one of multiple items has a critical card', () => {
+        const itemId1 = store().addImmunization(mockVaccineCode);
+        const itemId2 = store().addImmunization(secondVaccineCode);
+
+        store().updateItemCDSCards(itemId1, [mockCDSCard]);
+        store().updateItemCDSCards(itemId2, [mockCriticalCDSCard]);
+
+        expect(store().hasCriticalCDSCards()).toBe(true);
+      });
+
+      it('returns true when item has both critical and non-critical cards', () => {
+        const itemId = store().addImmunization(mockVaccineCode);
+        store().updateItemCDSCards(itemId, [mockCDSCard, mockCriticalCDSCard]);
+
+        expect(store().hasCriticalCDSCards()).toBe(true);
+      });
     });
   });
 });

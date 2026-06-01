@@ -253,7 +253,7 @@ const FormsTable: React.FC<WidgetProps> = ({
 
   return (
     <>
-      <div data-testid="forms-table">
+      <div id="forms-table" data-testid="forms-table">
         {loading ||
         !!isError ||
         processedForms.length === 0 ||

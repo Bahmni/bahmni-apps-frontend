@@ -4,6 +4,7 @@ import {
   Accordion,
   AccordionItem,
   Tag,
+  StatusTag,
 } from '@bahmni/design-system';
 import {
   getFormattedError,
@@ -29,6 +30,7 @@ import {
 import styles from './styles/GenericServiceRequestTable.module.scss';
 import {
   filterServiceRequestReplacementEntries,
+  getStatusDotClassName,
   mapServiceRequest,
   sortServiceRequestsByPriority,
 } from './utils';
@@ -215,11 +217,13 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
           return request.orderedBy;
         case 'status':
           return (
-            <Tag type="outline">
-              {t(
+            <StatusTag
+              label={t(
                 STATUS_TRANSLATION_MAP[request.status as ServiceRequestStatus],
               )}
-            </Tag>
+              dotClassName={getStatusDotClassName(request.status, styles)}
+              testId={`${request.id}-status`}
+            />
           );
 
         default:
@@ -230,7 +234,10 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
   );
 
   return (
-    <div data-testid="generic-service-request-table">
+    <div
+      id="generic-service-request-table"
+      data-testid="generic-service-request-table"
+    >
       {isLoading ||
       !!isError ||
       processedServiceRequests.length === 0 ||

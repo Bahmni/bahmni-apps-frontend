@@ -1,3 +1,4 @@
+import { dispatchCDSSCheck } from '@bahmni/services';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -15,6 +16,7 @@ import {
   mockSelectedMedication,
   mockSelectedMedicationWithAllErrors,
   mockSelectedVaccination,
+  mockInputControlConfigWithCDSS,
 } from './__mocks__/MedicationRequestFormMocks';
 
 expect.extend(toHaveNoViolations);
@@ -24,7 +26,14 @@ jest.mock('../store', () => ({
   useMedicationRequestStore: jest.fn(),
 }));
 
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  dispatchCDSSCheck: jest.fn(),
+}));
+
 const mockUseMedicationRequestStore = jest.mocked(useMedicationRequestStore);
+
+const mockDispatchCDSSCheck = jest.mocked(dispatchCDSSCheck);
 
 describe('SelectedMedicationRequestItem', () => {
   beforeEach(() => {
@@ -562,6 +571,113 @@ describe('SelectedMedicationRequestItem', () => {
         const results = await axe(container);
         expect(results).toHaveNoViolations();
       });
+    });
+  });
+
+  describe('CDSS Integration', () => {
+    beforeEach(() => {
+      mockDispatchCDSSCheck.mockClear();
+    });
+
+    it('dispatches CDSS check event on mount when CDSS rules are configured for onSelect event', async () => {
+      await act(async () => {
+        render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+            cdssRules={mockInputControlConfigWithCDSS.cdss}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledWith({
+        controlKey: 'medication',
+        itemId: mockSelectedMedication.id,
+        rules: [
+          {
+            event: 'onSelect',
+            server: 'test-cdss-server',
+            service: 'medication-prescribe',
+          },
+        ],
+      });
+    });
+
+    it('does not dispatch CDSS check when no CDSS rules are configured', async () => {
+      await act(async () => {
+        render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+            cdssRules={[]}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
+    });
+
+    it('does not dispatch CDSS check when CDSS rules exist but not for onSelect event', async () => {
+      const configWithDifferentEvent = {
+        type: 'medication',
+        label: 'MEDICATION_REQUEST_FORM_TITLE',
+        cdss: [
+          {
+            server: 'test-cdss-server',
+            service: 'medication-prescribe',
+            event: 'onSave',
+          },
+        ],
+      };
+
+      await act(async () => {
+        render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+            cdssRules={configWithDifferentEvent.cdss}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
+    });
+
+    it('dispatches CDSS check only once on mount, not on re-renders', async () => {
+      const { rerender } = await act(async () =>
+        render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+            cdssRules={mockInputControlConfigWithCDSS.cdss}
+          />,
+        ),
+      );
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        rerender(
+          <SelectedMedicationRequestItem
+            entry={{ ...mockSelectedMedication, dosage: 10 }}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+            cdssRules={mockInputControlConfigWithCDSS.cdss}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
     });
   });
 

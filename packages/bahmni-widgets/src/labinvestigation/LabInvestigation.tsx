@@ -216,38 +216,42 @@ const LabInvestigation: React.FC<WidgetProps> = ({
   }
 
   return (
-    <Accordion align="start">
-      {updatedLabInvestigations.map((group: LabInvestigationsByDate, index) => (
-        <AccordionItem
-          key={group.date}
-          className={styles.accordionItem}
-          open={openAccordionIndices.has(index)}
-          onHeadingClick={() => {
-            setOpenAccordionIndices((prev) => {
-              const newSet = new Set(prev);
-              if (newSet.has(index)) {
-                newSet.delete(index);
-              } else {
-                newSet.add(index);
-                setCurrentOpenedAccordionIndex(index);
-              }
-              return newSet;
-            });
-          }}
-          title={group.date}
-        >
-          {group.tests?.map((test) => (
-            <LabInvestigationItem
-              key={test.id ?? `${group.date}-${test.testName}`}
-              test={test}
-              isOpen={openAccordionIndices.has(index)}
-              hasProcessedReport={!!test.reportId}
-              reportId={test.reportId}
-            />
-          ))}
-        </AccordionItem>
-      ))}
-    </Accordion>
+    <div id="lab-investigations">
+      <Accordion align="start">
+        {updatedLabInvestigations.map(
+          (group: LabInvestigationsByDate, index) => (
+            <AccordionItem
+              key={group.date}
+              className={styles.accordionItem}
+              open={openAccordionIndices.has(index)}
+              onHeadingClick={() => {
+                setOpenAccordionIndices((prev) => {
+                  const newSet = new Set(prev);
+                  if (newSet.has(index)) {
+                    newSet.delete(index);
+                  } else {
+                    newSet.add(index);
+                    setCurrentOpenedAccordionIndex(index);
+                  }
+                  return newSet;
+                });
+              }}
+              title={group.date}
+            >
+              {group.tests?.map((test) => (
+                <LabInvestigationItem
+                  key={test.id ?? `${group.date}-${test.testName}`}
+                  test={test}
+                  isOpen={openAccordionIndices.has(index)}
+                  hasProcessedReport={!!test.reportId}
+                  reportId={test.reportId}
+                />
+              ))}
+            </AccordionItem>
+          ),
+        )}
+      </Accordion>
+    </div>
   );
 };
 
