@@ -5,6 +5,7 @@ import {
   Link,
   Modal,
   SortableDataTable,
+  StatusTag,
   Tag,
   TooltipIcon,
 } from '@bahmni/design-system';
@@ -29,6 +30,7 @@ import {
   ServiceRequestStatus,
   STATUS_TRANSLATION_MAP,
 } from '../genericServiceRequest/models';
+import { getStatusDotClassName } from '../genericServiceRequest/utils';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { RadiologyInvestigationReport } from '../radiologyInvestigationReport';
@@ -425,18 +427,15 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
         );
       case 'status':
         return (
-          <span
-            id={`${investigation.id}-status`}
-            data-testid={`${investigation.id}-status-test-id`}
-          >
-            <Tag type="outline">
-              {t(
-                STATUS_TRANSLATION_MAP[
-                  investigation.status as ServiceRequestStatus
-                ],
-              )}
-            </Tag>
-          </span>
+          <StatusTag
+            label={t(
+              STATUS_TRANSLATION_MAP[
+                investigation.status as ServiceRequestStatus
+              ],
+            )}
+            dotClassName={getStatusDotClassName(investigation.status, styles)}
+            testId={`${investigation.id}-status`}
+          />
         );
       default:
         return null;
