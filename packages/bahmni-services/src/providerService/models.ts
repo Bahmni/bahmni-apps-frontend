@@ -1,3 +1,5 @@
+import { Location } from '../locationService';
+
 /**
  * Interface representing a link to a resource
  */
@@ -37,6 +39,19 @@ export interface Person {
   resourceVersion: string;
 }
 
+export interface ProviderAttributeType {
+  uuid: string;
+  display: string;
+}
+
+export interface ProviderAttribute {
+  uuid: string;
+  display: string;
+  attributeType: ProviderAttributeType;
+  value: boolean | Location;
+  voided: boolean;
+}
+
 /**
  * Interface representing OpenMRS Provider resource from REST API
  */
@@ -44,11 +59,13 @@ export interface Provider {
   uuid: string;
   display: string;
   person: Person;
+  attributes?: ProviderAttribute[];
 }
 
 /**
  * Interface representing Provider response from REST API
  */
 export interface ProviderResponse {
-  results: Provider[];
+  results: Provider[] | null;
+  links?: Link[];
 }

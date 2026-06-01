@@ -36,3 +36,36 @@ export interface AppointmentService {
   color: string;
   initialAppointmentStatus: string | null;
 }
+
+export interface AppointmentUnavailability {
+  uuid: string;
+  location: {
+    uuid: string;
+    name: string;
+  };
+  service: {
+    uuid: string;
+    name: string;
+  };
+  provider: {
+    uuid: string;
+    name: string;
+  } | null;
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
+  voided: boolean;
+  dateCreated: string;
+  creatorName: string;
+}
+
+export interface CreateUnavailabilityRequest {
+  locationUuid: string;
+  appointmentServiceUuid?: string;
+  providerUuid?: string;
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
+}

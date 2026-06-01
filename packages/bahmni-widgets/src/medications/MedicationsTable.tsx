@@ -318,7 +318,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   }
 
   return (
-    <div data-testid="medications-table">
+    <div id="medications-table" data-testid="medications-table">
       <Tabs
         selectedIndex={selectedIndex}
         onChange={(state) => handleTabChange(state.selectedIndex)}

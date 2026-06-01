@@ -27,6 +27,9 @@ const registerMedicationRequestControl = (key: MedicationRequestStoreKey) => {
         practitionerUUID: ctx.practitionerUUID,
         statDurationInMilliseconds: ctx.statDurationInMilliseconds,
       }),
+    updateItemCDSCards: (itemId: string, cards) =>
+      store().getState().updateItemCDSCards(itemId, cards),
+    hasCriticalCDSCards: () => store().getState().hasCriticalCDSCards(),
   });
 };
 

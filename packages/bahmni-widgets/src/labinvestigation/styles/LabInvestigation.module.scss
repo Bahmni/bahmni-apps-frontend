@@ -3,6 +3,12 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
+:global([data-split-view] #main-display-area #lab-investigations) {
+  div[id^="accordion-item"] {
+    overflow-x: auto;
+  }
+}
+
 .labSkeleton {
   max-inline-size: 100% !important;
 }

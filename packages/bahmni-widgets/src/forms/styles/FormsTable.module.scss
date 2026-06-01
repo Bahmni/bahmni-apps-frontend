@@ -3,6 +3,12 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+:global([data-split-view] #main-display-area #forms-table) {
+  div[id^="accordion-item"] {
+    overflow-x: auto;
+  }
+}
+
 .formsTableBody {
   td {
     width: 50%;
