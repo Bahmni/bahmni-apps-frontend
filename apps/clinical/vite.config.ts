@@ -49,6 +49,7 @@ export default defineConfig(() => ({
         'react-dom',
         'react/jsx-runtime',
         'react-router-dom',
+        '@tanstack/react-query',
         /^@carbon\/styles/
       ],
     },
