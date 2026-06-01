@@ -71,7 +71,7 @@ const mockFhirPatient = {
       valueString: 'john@test.com',
     },
     {
-      url: 'http://fhir.bahmni.org/ext/patient/date-created',
+      url: 'http://fhir.bahmni.org/ext/patient-record/date-created',
       valueDateTime: '2026-05-04T11:53:11+00:00',
     },
   ],

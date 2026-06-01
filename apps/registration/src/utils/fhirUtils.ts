@@ -4,8 +4,8 @@ export const BIRTH_TIME_EXT_URL =
   'http://hl7.org/fhir/StructureDefinition/patient-birthTime'; // NOSONAR
 export const IDENTIFIER_LOCATION_EXT_URL =
   'http://fhir.openmrs.org/ext/patient/identifier#location'; // NOSONAR
-export const DATE_CREATED_EXT_URL = PATIENT_ATTRIBUTE_PREFIX + 'date-created';
-
+export const DATE_CREATED_EXT_URL =
+  'http://fhir.bahmni.org/ext/patient-record/date-created'; // NOSONAR
 export function toSlugCase(str: string): string {
   return str
     .replace(/\s+/g, '-')

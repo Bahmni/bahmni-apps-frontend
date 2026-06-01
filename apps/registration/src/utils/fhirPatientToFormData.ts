@@ -78,8 +78,6 @@ export function convertFhirToPersonAttributes(
   for (const ext of patient.extension ?? []) {
     if (!ext.url?.startsWith(PATIENT_ATTRIBUTE_PREFIX)) continue;
     const slug = ext.url.substring(PATIENT_ATTRIBUTE_PREFIX.length);
-    if (slug === 'date-created') continue;
-
     const attrName = slugToName[slug];
     if (!attrName) continue;
 

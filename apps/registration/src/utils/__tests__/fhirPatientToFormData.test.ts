@@ -59,7 +59,7 @@ const baseFhirPatient: Patient = {
     },
     { url: 'http://fhir.bahmni.org/ext/patient/email', valueString: 'j@t.com' },
     {
-      url: 'http://fhir.bahmni.org/ext/patient/date-created',
+      url: 'http://fhir.bahmni.org/ext/patient-record/date-created',
       valueDateTime: '2026-05-04T11:53:11+00:00',
     },
   ],
@@ -161,7 +161,7 @@ describe('convertFhirToPersonAttributes', () => {
       ...baseFhirPatient,
       extension: [
         {
-          url: 'http://fhir.bahmni.org/ext/patient/date-created',
+          url: 'http://fhir.bahmni.org/ext/patient-record/date-created',
           valueDateTime: '2026-01-01',
         },
         {
@@ -225,6 +225,36 @@ describe('extractMetadata', () => {
     expect(result.patientIdentifier).toBe('ABC100');
     expect(result.patientName).toBe('John Michael Doe');
     expect(result.registerDate).toBe('04 May 2026');
+  });
+
+  it('should return empty registerDate when no date-created extension', () => {
+    const patient: Patient = {
+      ...baseFhirPatient,
+      extension: [],
+    };
+    const t = (key: string) => key;
+    const result = extractMetadata(patient, t);
+    expect(result.registerDate).toBe('');
+  });
+
+  it('should return empty patientIdentifier when no identifier', () => {
+    const patient: Patient = {
+      ...baseFhirPatient,
+      identifier: undefined,
+    };
+    const t = (key: string) => key;
+    const result = extractMetadata(patient, t);
+    expect(result.patientIdentifier).toBe('');
+  });
+
+  it('should return empty patientName when no name', () => {
+    const patient: Patient = {
+      ...baseFhirPatient,
+      name: undefined,
+    };
+    const t = (key: string) => key;
+    const result = extractMetadata(patient, t);
+    expect(result.patientName).toBe('');
   });
 });
 
