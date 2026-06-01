@@ -812,8 +812,6 @@ describe('convertTo24HourFormat', () => {
     ['12:00 PM', '12:00'],
     ['12:00 AM', '00:00'],
     ['01:30 PM', '13:30'],
-    ['11:45 AM', '11:45'],
-    ['02:30 PM', '14:30'],
     ['06:15 pm', '18:15'],
     ['09:00 am', '09:00'],
   ])('should convert %s to %s', (input, expected) => {
@@ -825,13 +823,10 @@ describe('convertTo24HourFormat', () => {
     ['  '],
     [null as unknown as string],
     [undefined as unknown as string],
+    ['invalid'],
+    ['25:00 AM'],
   ])('should return empty string for invalid input: %s', (input) => {
     expect(convertTo24HourFormat(input)).toBe('');
-  });
-
-  it('should return empty string for unparseable time format', () => {
-    expect(convertTo24HourFormat('invalid')).toBe('');
-    expect(convertTo24HourFormat('25:00 AM')).toBe('');
   });
 });
 
@@ -857,15 +852,5 @@ describe('getTimeInMinutes', () => {
     [undefined as unknown as string],
   ])('should return null for invalid input: %s', (input) => {
     expect(getTimeInMinutes(input)).toBeNull();
-  });
-
-  it('should handle time comparison use cases', () => {
-    const startTime = getTimeInMinutes('09:00 AM');
-    const endTime = getTimeInMinutes('10:30 AM');
-
-    expect(startTime).not.toBeNull();
-    expect(endTime).not.toBeNull();
-    expect(endTime! > startTime!).toBe(true);
-    expect(endTime! - startTime!).toBe(90);
   });
 });

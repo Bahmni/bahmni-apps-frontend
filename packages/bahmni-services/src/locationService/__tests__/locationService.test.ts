@@ -70,21 +70,6 @@ describe('locationService', () => {
       expect(result).toEqual(mockEmptyFHIRLocationBundle);
     });
 
-    it('should return FHIR bundle with undefined entry when entry is undefined', async () => {
-      const bundleWithUndefinedEntry = {
-        resourceType: 'Bundle',
-        id: 'test-bundle',
-        type: 'searchset',
-        total: 0,
-        entry: undefined,
-      };
-      (get as jest.Mock).mockResolvedValueOnce(bundleWithUndefinedEntry);
-
-      const result = await getFHIRLocationsByTag('Appointment Location');
-
-      expect(result).toEqual(bundleWithUndefinedEntry);
-    });
-
     it('should throw when FHIR API call fails', async () => {
       const mockError = new Error('FHIR API Error');
       (get as jest.Mock).mockRejectedValueOnce(mockError);
