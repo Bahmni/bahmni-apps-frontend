@@ -1,5 +1,3 @@
-import '@carbon/styles/css/styles.css';
-
 export {
   applyBahmniTheme,
   BAHMNI_DEFAULT_THEME,
