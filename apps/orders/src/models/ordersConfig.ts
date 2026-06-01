@@ -32,7 +32,7 @@ export interface OrderItem {
   providerName: string;
   providerComments: string;
   orderName: string;
-  fulfillerStatus?: string;
+  taskStatus?: string;
   ownerName?: string;
   ownerUuid?: string;
   notes?: string;

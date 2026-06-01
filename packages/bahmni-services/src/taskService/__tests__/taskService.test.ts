@@ -173,6 +173,20 @@ describe('taskService', () => {
       expect(payload.encounter).toBeUndefined();
     });
 
+    it('creates a task with draft status for New order', async () => {
+      (post as jest.Mock).mockResolvedValueOnce({});
+
+      await createTask('order-uuid', 'draft', { patientUuid: 'patient-uuid' });
+
+      expect(post).toHaveBeenCalledWith(FHIR_TASK_URL, {
+        resourceType: 'Task',
+        intent: 'order',
+        status: 'draft',
+        basedOn: [{ reference: 'ServiceRequest/order-uuid' }],
+        for: { reference: 'Patient/patient-uuid' },
+      });
+    });
+
     it('propagates errors from the API', async () => {
       (post as jest.Mock).mockRejectedValueOnce(new Error('API Error'));
 
