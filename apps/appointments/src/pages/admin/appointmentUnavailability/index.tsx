@@ -128,6 +128,17 @@ const AppointmentUnavailabilityPage: React.FC = () => {
     await handleFormSubmit(buildUnavailabilityRequests(formDataRef.current, t));
   }, [t, handleFormSubmit]);
 
+  const handleClearErrors = useCallback(
+    (keys: Array<keyof UnavailabilityFormErrors>) => {
+      setFormErrors((prev) => {
+        const next = { ...prev };
+        keys.forEach((k) => delete next[k]);
+        return next;
+      });
+    },
+    [],
+  );
+
   const handleFormCancel = useCallback(() => {
     setIsFormVisible(false);
     formDataRef.current = null;
@@ -186,6 +197,7 @@ const AppointmentUnavailabilityPage: React.FC = () => {
               <UnavailabilityForm
                 errors={formErrors}
                 formDataRef={formDataRef}
+                onClearErrors={handleClearErrors}
               />
             }
           />

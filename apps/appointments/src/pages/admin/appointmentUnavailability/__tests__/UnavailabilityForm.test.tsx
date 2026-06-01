@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -57,12 +58,19 @@ const setupMocks = (hookOverride: HookOverride = {}) => {
   getTodayDate.mockReturnValue('05/29/2026');
 };
 
-const renderComponent = (errors: UnavailabilityFormErrors = {}) => {
+const renderComponent = (
+  errors: UnavailabilityFormErrors = {},
+  onClearErrors = jest.fn(),
+) => {
   const formDataRef = React.createRef<UnavailabilityFormData | null>();
   const { container } = render(
-    <UnavailabilityForm errors={errors} formDataRef={formDataRef} />,
+    <UnavailabilityForm
+      errors={errors}
+      formDataRef={formDataRef}
+      onClearErrors={onClearErrors}
+    />,
   );
-  return { formDataRef, container };
+  return { formDataRef, container, onClearErrors };
 };
 
 describe('UnavailabilityForm', () => {
@@ -156,6 +164,97 @@ describe('UnavailabilityForm', () => {
       const errorText = Object.values(errors)[0];
       expect(screen.getByText(errorText)).toBeInTheDocument();
     });
+  });
+
+  describe('Error clearing on field change', () => {
+    it.each([
+      {
+        field: 'location',
+        errors: { location: 'Required field' },
+        interact: async () => {
+          await userEvent.click(
+            screen.getByRole('combobox', { name: 'Select Location*' }),
+          );
+          await userEvent.click(await screen.findByText('ENT Ward'));
+        },
+        expectedKeys: ['location'],
+      },
+      {
+        field: 'startTime',
+        errors: { startTime: 'Required field' },
+        interact: async () => {
+          fireEvent.change(screen.getByLabelText('Start Time*'), {
+            target: { value: '10:00' },
+          });
+        },
+        expectedKeys: ['startTime', 'dateTime'],
+      },
+      {
+        field: 'endTime',
+        errors: { endTime: 'Required field' },
+        interact: async () => {
+          fireEvent.change(screen.getByLabelText('End Time*'), {
+            target: { value: '12:00' },
+          });
+        },
+        expectedKeys: ['endTime', 'dateTime'],
+      },
+      {
+        field: 'startDate',
+        errors: { startDate: 'Required field' },
+        interact: async () => {
+          await userEvent.click(screen.getByTestId('start-date-input'));
+          const [startCalendar] = screen.getAllByRole('application', {
+            name: 'calendar-container',
+          });
+          await userEvent.click(within(startCalendar).getByText('29'));
+        },
+        expectedKeys: ['startDate', 'dateTime'],
+      },
+      {
+        field: 'endDate',
+        errors: { endDate: 'Required field' },
+        interact: async () => {
+          await userEvent.click(screen.getByTestId('end-date-input'));
+          const [, endCalendar] = screen.getAllByRole('application', {
+            name: 'calendar-container',
+          });
+          await userEvent.click(within(endCalendar).getByText('29'));
+        },
+        expectedKeys: ['endDate', 'dateTime'],
+      },
+      {
+        field: 'startTimePeriod',
+        errors: { dateTime: 'End time must be after start time' },
+        interact: async () => {
+          fireEvent.change(
+            screen.getAllByLabelText('open list of options')[0],
+            { target: { value: 'PM' } },
+          );
+        },
+        expectedKeys: ['dateTime'],
+      },
+      {
+        field: 'endTimePeriod',
+        errors: { dateTime: 'End time must be after start time' },
+        interact: async () => {
+          fireEvent.change(
+            screen.getAllByLabelText('open list of options')[1],
+            { target: { value: 'PM' } },
+          );
+        },
+        expectedKeys: ['dateTime'],
+      },
+    ])(
+      'calls onClearErrors with $expectedKeys when $field changes',
+      async ({ errors, interact, expectedKeys }) => {
+        setupMocks();
+        const onClearErrors = jest.fn();
+        renderComponent(errors, onClearErrors);
+        await interact();
+        expect(onClearErrors).toHaveBeenCalledWith(expectedKeys);
+      },
+    );
   });
 
   describe('formDataRef population', () => {

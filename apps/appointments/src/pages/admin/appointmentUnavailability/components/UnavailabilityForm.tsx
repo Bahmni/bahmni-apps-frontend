@@ -34,11 +34,13 @@ import styles from './styles/UnavailabilityForm.module.scss';
 interface UnavailabilityFormProps {
   errors: UnavailabilityFormErrors;
   formDataRef: React.RefObject<UnavailabilityFormData | null>;
+  onClearErrors: (keys: Array<keyof UnavailabilityFormErrors>) => void;
 }
 
 const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
   errors,
   formDataRef,
+  onClearErrors,
 }) => {
   const { t } = useTranslation();
   const { loginLocations, services, providers, isLoading, isError } =
@@ -190,13 +192,14 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
                 ) ?? null)
               : null
           }
-          onChange={(e) =>
+          onChange={(e) => {
+            onClearErrors(['location']);
             setFormData({
               ...formData,
               locationUuid: e.selectedItem?.uuid ?? '',
               selectedServiceItems: [],
-            })
-          }
+            });
+          }}
           invalid={!!errors.location}
           invalidText={errors.location}
         />
@@ -222,6 +225,7 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             value={formData.startDate ?? undefined}
             onChange={(dates) => {
               if (dates[0]) {
+                onClearErrors(['startDate', 'dateTime']);
                 setFormData({
                   ...formData,
                   startDate: dates[0],
@@ -243,9 +247,10 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             id="start-time"
             data-testid="start-time-input"
             labelText={t('ADMIN_UNAVAILABILITY_FORM_START_TIME_LABEL')}
-            onChange={(e) =>
-              setFormData({ ...formData, startTime: e.target.value })
-            }
+            onChange={(e) => {
+              onClearErrors(['startTime', 'dateTime']);
+              setFormData({ ...formData, startTime: e.target.value });
+            }}
             invalid={!!errors.startTime}
             invalidText={errors.startTime}
             placeholder="hh:mm"
@@ -256,12 +261,13 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             <TimePickerSelect
               id="start-time-period"
               data-testid="start-time-period-select"
-              onChange={(e) =>
+              onChange={(e) => {
+                onClearErrors(['dateTime']);
                 setFormData({
                   ...formData,
                   startTimePeriod: e.target.value as 'AM' | 'PM',
-                })
-              }
+                });
+              }}
               value={formData.startTimePeriod}
             >
               <option value="AM">{t('ADMIN_UNAVAILABILITY_AM')}</option>
@@ -284,6 +290,7 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             value={formData.endDate ?? undefined}
             onChange={(dates) => {
               if (dates[0]) {
+                onClearErrors(['endDate', 'dateTime']);
                 setFormData({
                   ...formData,
                   endDate: dates[0],
@@ -305,9 +312,10 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             id="end-time"
             data-testid="end-time-input"
             labelText={t('ADMIN_UNAVAILABILITY_FORM_END_TIME_LABEL')}
-            onChange={(e) =>
-              setFormData({ ...formData, endTime: e.target.value })
-            }
+            onChange={(e) => {
+              onClearErrors(['endTime', 'dateTime']);
+              setFormData({ ...formData, endTime: e.target.value });
+            }}
             invalid={!!(errors.endTime ?? errors.dateTime)}
             invalidText={errors.dateTime ?? errors.endTime}
             placeholder="hh:mm"
@@ -318,12 +326,13 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             <TimePickerSelect
               id="end-time-period"
               data-testid="end-time-period-select"
-              onChange={(e) =>
+              onChange={(e) => {
+                onClearErrors(['dateTime']);
                 setFormData({
                   ...formData,
                   endTimePeriod: e.target.value as 'AM' | 'PM',
-                })
-              }
+                });
+              }}
               value={formData.endTimePeriod}
             >
               <option value="AM">{t('ADMIN_UNAVAILABILITY_AM')}</option>

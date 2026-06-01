@@ -1,5 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  act,
+  waitFor,
+  fireEvent,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import {
@@ -198,6 +204,49 @@ describe('AppointmentUnavailabilityPage', () => {
         );
       });
     });
+  });
+
+  describe('handleClearErrors', () => {
+    it.each([
+      {
+        field: 'startTime',
+        errorKey: 'startTime',
+        errorMessage: 'Start time is required',
+        interact: () => {
+          fireEvent.change(screen.getByLabelText('Start Time*'), {
+            target: { value: '10:00' },
+          });
+        },
+      },
+      {
+        field: 'endTime',
+        errorKey: 'endTime',
+        errorMessage: 'End time is required',
+        interact: () => {
+          fireEvent.change(screen.getByLabelText('End Time*'), {
+            target: { value: '12:00' },
+          });
+        },
+      },
+    ])(
+      'clears $field error when the field value changes',
+      async ({ errorKey, errorMessage, interact }) => {
+        setupDefaultMocks();
+        validateUnavailabilityForm.mockReturnValue({
+          [errorKey]: errorMessage,
+        });
+        renderComponent();
+        await userEvent.click(screen.getByText('Add New'));
+        await userEvent.click(screen.getByRole('button', { name: /^add$/i }));
+        expect(screen.getByText(errorMessage)).toBeInTheDocument();
+
+        interact();
+
+        await waitFor(() => {
+          expect(screen.queryByText(errorMessage)).not.toBeInTheDocument();
+        });
+      },
+    );
   });
 
   describe('Snapshot', () => {
