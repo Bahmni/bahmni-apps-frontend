@@ -79,3 +79,6 @@ export const getPastAppointmentsPageUrl = (
   count: number = 10,
   offset: number = 0,
 ): string => getAppointmentsUrl(patientUUID, 'past', count, offset);
+
+export const APPOINTMENT_UNAVAILABILITY_URL =
+  OPENMRS_REST_V1 + '/appointmentUnavailability';

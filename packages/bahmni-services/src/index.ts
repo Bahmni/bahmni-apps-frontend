@@ -83,9 +83,13 @@ export {
   type AppointmentPage,
   getAllAppointmentServices,
   deleteAppointmentService,
+  getAppointmentUnavailabilities,
+  createAppointmentUnavailability,
   APPOINTMENT_STATUSES,
   APPOINTMENT_IDENTIFIER_SYSTEM,
   type AppointmentService,
+  type AppointmentUnavailability,
+  type CreateUnavailabilityRequest,
 } from './appointmentService';
 export { getFormattedError } from './errorHandling';
 export {
@@ -117,11 +121,14 @@ export {
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
   DEFAULT_TIME_FORMAT,
+  ISO_DATE_FORMAT,
   getTodayDate,
   getFormattedAge,
   DURATION_UNIT_TO_DAYS,
   calculateEndDate,
   doDateRangesOverlap,
+  convertTo24HourFormat,
+  getTimeInMinutes,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {
@@ -221,6 +228,8 @@ export {
 } from './observationService';
 export {
   getCurrentProvider,
+  fetchAllProviders,
+  getProviderLoginLocations,
   type Provider,
   type Person,
 } from './providerService';
@@ -360,6 +369,7 @@ export {
 
 export {
   getLocationByTag,
+  getFHIRLocationsByTag,
   type Location,
   type ChildLocation,
 } from './locationService';

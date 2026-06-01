@@ -49,7 +49,6 @@ export const useCDSSCheckListener = (
     return () => {
       globalThis.removeEventListener(CDSS_CHECK_EVENT, handler);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };
 
@@ -72,6 +71,5 @@ export const useCDSSResultsListener = (
     return () => {
       globalThis.removeEventListener(CDSS_RESULTS_EVENT, handler);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };
