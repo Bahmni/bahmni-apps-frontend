@@ -2,6 +2,7 @@ import {
   getConfig,
   fetchMedicationOrdersMetadata,
   getVaccinations,
+  useCDSSResultsListener,
 } from '@bahmni/services';
 import {
   QueryClient,
@@ -23,6 +24,8 @@ import {
   mockSelectedVaccination,
   mockTwoVaccinationBundle,
   mockVaccinationBundle,
+  mockCDSCard,
+  mockCriticalCDSCard,
 } from './__mocks__/MedicationRequestFormMocks';
 
 expect.extend(toHaveNoViolations);
@@ -56,9 +59,18 @@ jest.mock('../../../../services/medicationService', () => ({
   ),
 }));
 
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  fetchMedicationOrdersMetadata: jest.fn(),
+  getConfig: jest.fn(),
+  getVaccinations: jest.fn(),
+  useCDSSResultsListener: jest.fn(),
+}));
+
 const mockUseQuery = jest.mocked(useQuery);
 const mockUseMedicationRequestStore = jest.mocked(useMedicationRequestStore);
 const mockUseMedicationSearch = jest.mocked(useMedicationSearch);
+const mockUseCDSSResultsListener = jest.mocked(useCDSSResultsListener);
 
 Element.prototype.scrollIntoView = jest.fn();
 
@@ -459,6 +471,91 @@ describe('MedicationRequestForm', () => {
         expect(container).toMatchSnapshot();
       },
     );
+  });
+
+  describe('CDSS Integration', () => {
+    beforeEach(() => {
+      mockUseCDSSResultsListener.mockClear();
+      delete (globalThis as any).__cdssResultsHandler;
+      mockUseCDSSResultsListener.mockImplementation((handler) => {
+        (globalThis as any).__cdssResultsHandler = handler;
+      });
+      mockUseMedicationSearch.mockReturnValue({
+        searchResults: [],
+        loading: false,
+        error: null,
+      });
+      mockUseQuery.mockImplementation(defaultQueryMock as any);
+    });
+
+    it('registers CDSS results listener on mount', () => {
+      mockUseMedicationRequestStore.mockReturnValue(
+        makeMockStore({
+          selectedMedicationRequests: [mockSelectedMedication],
+        }) as any,
+      );
+
+      renderForm();
+
+      expect(mockUseCDSSResultsListener).toHaveBeenCalledWith(
+        expect.any(Function),
+      );
+    });
+
+    it('filters and updates relevant CDS cards when CDSS results are received', () => {
+      const mockUpdateItemCDSCards = jest.fn();
+      mockUseMedicationRequestStore.mockReturnValue(
+        makeMockStore({
+          selectedMedicationRequests: [
+            { ...mockSelectedMedication, id: 'med-123' },
+          ],
+          updateItemCDSCards: mockUpdateItemCDSCards,
+        }) as any,
+      );
+
+      renderForm();
+
+      const handler = (globalThis as any).__cdssResultsHandler;
+      expect(handler).toBeDefined();
+
+      act(() => {
+        handler({
+          cards: [mockCDSCard, mockCriticalCDSCard],
+          triggerItemId: 'med-123',
+          controlKey: 'medicationRequest',
+        });
+      });
+
+      expect(mockUpdateItemCDSCards).toHaveBeenCalledWith('med-123', [
+        mockCDSCard,
+      ]);
+    });
+
+    it('ignores CDS cards that do not match selected medication IDs', () => {
+      const mockUpdateItemCDSCards = jest.fn();
+      mockUseMedicationRequestStore.mockReturnValue(
+        makeMockStore({
+          selectedMedicationRequests: [
+            { ...mockSelectedMedication, id: 'different-id' },
+          ],
+          updateItemCDSCards: mockUpdateItemCDSCards,
+        }) as any,
+      );
+
+      renderForm();
+
+      const handler = (globalThis as any).__cdssResultsHandler;
+
+      act(() => {
+        handler({
+          cards: [mockCDSCard],
+          triggerItemId: 'med-123',
+          controlKey: 'medicationRequest',
+        });
+      });
+
+      expect(mockUpdateItemCDSCards).not.toHaveBeenCalled();
+    });
   });
 
   describe('Accessibility', () => {

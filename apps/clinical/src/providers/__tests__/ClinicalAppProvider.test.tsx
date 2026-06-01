@@ -1,6 +1,7 @@
 import * as services from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import { useActiveVisit } from '../../hooks/useActiveVisit';
 import { ClinicalAppProvider } from '../ClinicalAppProvider';
 
 // Mock the services
@@ -19,6 +20,8 @@ jest.mock('@bahmni/services', () => ({
   }),
 }));
 
+jest.mock('../../hooks/useActiveVisit');
+
 const mockGetEncountersAndVisitsForEOC =
   services.getEncountersAndVisitsForEOC as jest.MockedFunction<
     typeof services.getEncountersAndVisitsForEOC
@@ -28,6 +31,10 @@ const mockUseSubscribeConsultationSaved =
   services.useSubscribeConsultationSaved as jest.MockedFunction<
     typeof services.useSubscribeConsultationSaved
   >;
+
+const mockUseActiveVisit = useActiveVisit as jest.MockedFunction<
+  typeof useActiveVisit
+>;
 
 describe('ClinicalAppProvider', () => {
   let queryClient: QueryClient;
@@ -40,6 +47,11 @@ describe('ClinicalAppProvider', () => {
       },
     });
     mockUseSubscribeConsultationSaved.mockImplementation(() => {});
+    mockUseActiveVisit.mockReturnValue({
+      activeVisit: { id: 'active-visit-1' },
+      isLoading: false,
+      error: null,
+    });
   });
 
   afterEach(() => {
@@ -55,7 +67,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -76,7 +91,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -92,7 +110,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -108,7 +129,7 @@ describe('ClinicalAppProvider', () => {
     it('should render children without loading when episodeUuids is empty', () => {
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={[]}>
+          <ClinicalAppProvider episodeUuids={[]} patientId="patient-1">
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -130,7 +151,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -162,7 +186,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,

@@ -21,6 +21,9 @@ export interface ClinicalAppContextType {
   encounter: Encounter[];
   isLoading: boolean;
   error: Error | null;
+  patientId: string | null;
+  activeVisitId: string | null;
+  activeEpisodeId: string | null;
 }
 
 export const ClinicalAppContext = createContext<

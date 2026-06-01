@@ -12,6 +12,8 @@ import {
   getVaccinations,
   searchFHIRConcepts,
   useTranslation,
+  filterCdsCardsForItems,
+  useCDSSResultsListener,
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Medication, MedicationRequest } from 'fhir/r4';
@@ -19,6 +21,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
+import CDSCardAlert from '../../cdsCardAlert/CDSCardAlert';
 import SelectedImmunizationItem from './components/SelectedImmunizationItem';
 import {
   IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,
@@ -49,6 +52,7 @@ const ImmunizationForm = ({
     removeImmunization,
     selectedImmunizations,
     setAttributes,
+    updateItemCDSCards,
   } = useImmunizationHistoryStore(immunizationFormType);
 
   const basedOn =
@@ -67,7 +71,7 @@ const ImmunizationForm = ({
     isError: basedOnMedicationError,
   } = useQuery({
     queryKey: ['medication', medicationUuid],
-    queryFn: () => getMedicationByUuid(medicationUuid),
+    queryFn: () => getMedicationByUuid(medicationUuid!),
     enabled: !!basedOn && !!medicationUuid,
     staleTime: Infinity,
   });
@@ -80,6 +84,7 @@ const ImmunizationForm = ({
     metadata,
     attributes,
     label = 'IMMUNIZATION_INPUT_CONTROL_FORM_TITLE',
+    cdss: cdssRules = [],
   } = inputControlConfig ?? {};
   const vaccineConceptSetUuid = metadata?.vaccineConceptSetUuid as
     | string
@@ -100,13 +105,27 @@ const ImmunizationForm = ({
     }
   }, [attributes, setAttributes]);
 
+  useCDSSResultsListener((detail) => {
+    const { cards } = detail;
+
+    const selectedItemIds = new Set(
+      selectedImmunizations.map((item) => item.id),
+    );
+
+    const relevantCards = filterCdsCardsForItems(cards, selectedItemIds);
+
+    relevantCards.forEach(({ card, resourceId }) => {
+      updateItemCDSCards(resourceId, [card]);
+    });
+  });
+
   const {
     data: vaccineCodeConceptSet,
     isLoading: vaccineCodeConceptSetLoading,
     error: vaccineCodeConceptSetError,
   } = useQuery({
     queryKey: ['vaccineConceptSetUuid', vaccineConceptSetUuid],
-    queryFn: () => searchFHIRConcepts(vaccineConceptSetUuid),
+    queryFn: () => searchFHIRConcepts(vaccineConceptSetUuid!),
     enabled: !!vaccineConceptSetUuid && !isConfigLoading && !configError,
     staleTime: Infinity,
   });
@@ -117,7 +136,7 @@ const ImmunizationForm = ({
     error: administeredLocationTagError,
   } = useQuery({
     queryKey: ['administeredLocationTag', administeredLocationTag],
-    queryFn: () => getLocationByTag(administeredLocationTag),
+    queryFn: () => getLocationByTag(administeredLocationTag!),
     enabled:
       !!administeredLocationTag &&
       !isConfigLoading &&
@@ -132,7 +151,7 @@ const ImmunizationForm = ({
     error: routesConceptSetError,
   } = useQuery({
     queryKey: ['routesConceptSet', routeConceptUuid],
-    queryFn: () => searchFHIRConcepts(routeConceptUuid),
+    queryFn: () => searchFHIRConcepts(routeConceptUuid!),
     enabled:
       !!routeConceptUuid &&
       !isConfigLoading &&
@@ -147,7 +166,7 @@ const ImmunizationForm = ({
     error: sitesConceptSetError,
   } = useQuery({
     queryKey: ['sitesConceptSet', siteConceptUuid],
-    queryFn: () => searchFHIRConcepts(siteConceptUuid),
+    queryFn: () => searchFHIRConcepts(siteConceptUuid!),
     enabled:
       !!siteConceptUuid &&
       !isConfigLoading &&
@@ -341,24 +360,33 @@ const ImmunizationForm = ({
       {showSelectedImmunizations && (
         <BoxWHeader title={t('IMMUNIZATION_INPUT_CONTROL_ADDED_ITEMS')}>
           {selectedImmunizations.map((immunization, immunizationIndex) => (
-            <SelectedItem
-              key={immunization.id}
-              className={styles.selectedItem}
-              onClose={() => removeImmunization(immunization.id)}
-            >
-              <SelectedImmunizationItem
-                immunization={immunization}
-                routes={routesConceptSet}
-                sites={sitesConceptSet}
-                attributes={attributes}
-                administeredLocationTag={administeredLocationTagData}
-                vaccineDrugs={vaccineMedications}
-                storeKey={immunizationFormType}
-                availableStocks={stockQueries[immunizationIndex]?.data}
-                stocksError={stockQueries[immunizationIndex]?.isError ?? false}
-                stockBatchesEnabled={!!fetchStockBatches}
-              />
-            </SelectedItem>
+            <div key={immunization.id}>
+              {immunization.cdsCards?.map((card) => (
+                <div key={card.summary} className={styles.cdsCardContainer}>
+                  <CDSCardAlert card={card} className={styles.cdsCard} />
+                </div>
+              ))}
+              <SelectedItem
+                className={styles.selectedItem}
+                onClose={() => removeImmunization(immunization.id)}
+              >
+                <SelectedImmunizationItem
+                  immunization={immunization}
+                  routes={routesConceptSet}
+                  sites={sitesConceptSet}
+                  attributes={attributes}
+                  administeredLocationTag={administeredLocationTagData}
+                  vaccineDrugs={vaccineMedications}
+                  storeKey={immunizationFormType}
+                  availableStocks={stockQueries[immunizationIndex]?.data}
+                  stocksError={
+                    stockQueries[immunizationIndex]?.isError ?? false
+                  }
+                  stockBatchesEnabled={!!fetchStockBatches}
+                  cdssRules={cdssRules}
+                />
+              </SelectedItem>
+            </div>
           ))}
         </BoxWHeader>
       )}

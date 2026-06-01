@@ -349,7 +349,15 @@ export {
   useSubscribeConsultationSaved,
   CONSULTATION_SAVED_EVENT,
   type ConsultationSavedEventPayload,
-} from './events/consultationEvents';
+  dispatchCDSSCheck,
+  dispatchCDSSResults,
+  useCDSSCheckListener,
+  useCDSSResultsListener,
+  CDSS_CHECK_EVENT,
+  CDSS_RESULTS_EVENT,
+  type CDSSCheckEventDetail,
+  type CDSSResultsEventDetail,
+} from './events';
 
 export {
   getDocumentReferences,
@@ -389,3 +397,12 @@ export {
   getAvailableStocks,
   type AvailableStockResponse,
 } from './inventoryService';
+
+export {
+  invokeCDSSRule,
+  filterCdsCardsForItems,
+  type CDSSRule,
+  type CDSCard,
+  type CDSSEventDetail,
+  type CDSSServerConfig,
+} from './cdssService';
