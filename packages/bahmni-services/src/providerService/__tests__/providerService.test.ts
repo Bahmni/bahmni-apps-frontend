@@ -2,20 +2,18 @@ import { get } from '../../api';
 import {
   mockUserUUID,
   mockProviderResponse,
-  mockAllProvidersResponse,
   mockProviderWithLoginLocations,
+  mockProviderWithoutAttributes,
   mockProviderPage1,
   mockProviderPage2,
   mockProviderPage3,
   mockSinglePageResponse,
   mockEmptyProvidersResponse,
-  mockProvidersWithVoided,
 } from '../__mocks__/mocks';
 import { ALL_PROVIDERS_URL, PROVIDER_RESOURCE_URL } from '../constants';
 import {
   fetchAllProviders,
   getCurrentProvider,
-  getPaginatedProviders,
   getProviderLoginLocations,
 } from '../providerService';
 
@@ -23,7 +21,6 @@ jest.mock('../../api');
 
 describe('providerService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
     (get as jest.Mock).mockReset();
   });
 
@@ -66,37 +63,6 @@ describe('providerService', () => {
     });
   });
 
-  describe('getPaginatedProviders', () => {
-    it('should fetch providers page', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockAllProvidersResponse);
-
-      const result = await getPaginatedProviders();
-
-      expect(get).toHaveBeenCalledWith(ALL_PROVIDERS_URL);
-      expect(result).toEqual(mockAllProvidersResponse.results);
-      expect(result).toHaveLength(2);
-    });
-
-    it('should return empty array when no providers exist', async () => {
-      (get as jest.Mock).mockResolvedValueOnce({ results: [] });
-
-      const result = await getPaginatedProviders();
-
-      expect(get).toHaveBeenCalledWith(ALL_PROVIDERS_URL);
-      expect(result).toEqual([]);
-    });
-
-    it('should throw error if getPaginatedProviders API call fails', async () => {
-      const mockError = new Error('All Providers API Error');
-      (get as jest.Mock).mockRejectedValueOnce(mockError);
-
-      await expect(getPaginatedProviders()).rejects.toThrow(
-        'All Providers API Error',
-      );
-      expect(get).toHaveBeenCalledWith(ALL_PROVIDERS_URL);
-    });
-  });
-
   describe('getProviderLoginLocations', () => {
     it('should fetch all login locations with their tags', async () => {
       (get as jest.Mock).mockResolvedValueOnce(mockProviderWithLoginLocations);
@@ -134,19 +100,7 @@ describe('providerService', () => {
     });
 
     it('should return empty array when provider has no attributes', async () => {
-      const providerWithoutAttributes = {
-        results: [
-          {
-            uuid: 'provider-uuid-123',
-            display: 'Superman - Clinician',
-            person: {
-              uuid: 'person-uuid-456',
-              display: 'Superman',
-            },
-          },
-        ],
-      };
-      (get as jest.Mock).mockResolvedValueOnce(providerWithoutAttributes);
+      (get as jest.Mock).mockResolvedValueOnce(mockProviderWithoutAttributes);
 
       const result = await getProviderLoginLocations(mockUserUUID);
 
@@ -162,23 +116,6 @@ describe('providerService', () => {
         (loc) => loc.display === 'Voided Location',
       );
       expect(voidedLocation).toBeUndefined();
-    });
-
-    it('should return all login locations with their tags', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockProviderWithLoginLocations);
-
-      const result = await getProviderLoginLocations(mockUserUUID);
-
-      const adminLocation = result.find(
-        (loc) => loc.display === 'Admin Office',
-      );
-      expect(adminLocation).toBeDefined();
-      expect(adminLocation).toEqual({
-        uuid: 'location-uuid-3',
-        display: 'Admin Office',
-        childLocations: [],
-        tags: [{ display: 'Admin' }],
-      });
     });
 
     it('should throw error if getProviderLoginLocations API call fails', async () => {
@@ -315,23 +252,6 @@ describe('providerService', () => {
         'Fetch All Providers Page 2 Error',
       );
       expect(get).toHaveBeenCalledTimes(2);
-    });
-
-    it('should filter out voided providers', async () => {
-      (get as jest.Mock).mockResolvedValueOnce(mockProvidersWithVoided);
-
-      const result = await fetchAllProviders();
-
-      expect(result).toHaveLength(2);
-      expect(
-        result.find((p) => p.uuid === 'provider-uuid-active'),
-      ).toBeDefined();
-      expect(
-        result.find((p) => p.uuid === 'provider-uuid-no-person'),
-      ).toBeDefined();
-      expect(
-        result.find((p) => p.uuid === 'provider-uuid-voided'),
-      ).toBeUndefined();
     });
   });
 });

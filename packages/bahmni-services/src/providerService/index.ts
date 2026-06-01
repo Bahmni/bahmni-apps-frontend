@@ -1,6 +1,5 @@
 export {
   getCurrentProvider,
-  getPaginatedProviders,
   fetchAllProviders,
   getProviderLoginLocations,
 } from './providerService';

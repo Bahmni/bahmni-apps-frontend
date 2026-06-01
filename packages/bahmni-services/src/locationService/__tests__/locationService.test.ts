@@ -51,7 +51,7 @@ describe('locationService', () => {
   });
 
   describe('getFHIRLocationsByTag', () => {
-    it('should fetch locations from FHIR API and return FHIRBundle', async () => {
+    it('should fetch locations from FHIR API and return FHIR Location Bundle', async () => {
       (get as jest.Mock).mockResolvedValueOnce(mockFHIRLocationBundle);
 
       const result = await getFHIRLocationsByTag('Appointment Location');

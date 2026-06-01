@@ -1,4 +1,5 @@
-import { Location, LocationResponse, FHIRBundle } from '../../models';
+import type { Bundle, Location as FHIRLocation } from 'fhir/r4';
+import { Location, LocationResponse } from '../../models';
 
 export const mockLocation: Location = {
   uuid: 'location-uuid-1',
@@ -23,7 +24,7 @@ export const mockEmptyLocationResponse: LocationResponse = {
   results: [],
 };
 
-export const mockFHIRLocationBundle: FHIRBundle = {
+export const mockFHIRLocationBundle: Bundle<FHIRLocation> = {
   resourceType: 'Bundle',
   id: '1df63687-28b5-49b6-a204-eee03a8bf2ea',
   type: 'searchset',
@@ -52,7 +53,7 @@ export const mockFHIRLocationBundle: FHIRBundle = {
   ],
 };
 
-export const mockEmptyFHIRLocationBundle: FHIRBundle = {
+export const mockEmptyFHIRLocationBundle: Bundle<FHIRLocation> = {
   resourceType: 'Bundle',
   id: 'empty-bundle',
   type: 'searchset',

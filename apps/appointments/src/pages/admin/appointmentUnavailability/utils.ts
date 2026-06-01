@@ -3,7 +3,6 @@ import {
   type AppointmentService,
   type AppointmentUnavailability,
   type CreateUnavailabilityRequest,
-  type FHIRBundle,
   formatDateTime,
   getTimeInMinutes,
   getUserLoginLocation,
@@ -12,6 +11,7 @@ import {
   type Provider,
   useTranslation,
 } from '@bahmni/services';
+import type { Bundle, Location as FHIRLocation } from 'fhir/r4';
 import type {
   BaseData,
   BaseDataParams,
@@ -193,15 +193,15 @@ export const buildUnavailabilityRequests = (
 };
 
 export const mapFHIRBundleToLocations = (
-  fhirBundle: FHIRBundle,
+  fhirBundle: Bundle<FHIRLocation>,
 ): Location[] => {
   if (!fhirBundle.entry || fhirBundle.entry.length === 0) {
     return [];
   }
 
   return fhirBundle.entry.map((entry) => ({
-    uuid: entry.resource.id,
-    display: entry.resource.name,
+    uuid: entry.resource?.id ?? '',
+    display: entry.resource?.name ?? '',
     childLocations: [],
   }));
 };

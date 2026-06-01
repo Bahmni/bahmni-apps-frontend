@@ -228,7 +228,6 @@ export {
 } from './observationService';
 export {
   getCurrentProvider,
-  getPaginatedProviders,
   fetchAllProviders,
   getProviderLoginLocations,
   type Provider,
@@ -373,7 +372,6 @@ export {
   getFHIRLocationsByTag,
   type Location,
   type ChildLocation,
-  type FHIRBundle,
 } from './locationService';
 export { getPatientImmunizations } from './immunizationService';
 export type { ImmunizationStatus } from './immunizationService';

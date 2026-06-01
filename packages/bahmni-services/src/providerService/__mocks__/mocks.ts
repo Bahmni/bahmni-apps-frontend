@@ -41,7 +41,7 @@ const drJohnSmithPerson = createPersonEntry(
   '1979-05-15T00:00:00.000+0000',
   'name-uuid-1',
 );
-const drJaneDoeP = createPersonEntry(
+const drJaneDoePerson = createPersonEntry(
   'person-uuid-2',
   'Dr. Jane Doe',
   'F',
@@ -68,21 +68,6 @@ export const mockProviderResponse = {
   ],
 };
 
-export const mockAllProvidersResponse = {
-  results: [
-    {
-      uuid: 'provider-uuid-1',
-      display: 'Dr. John Smith - Clinician',
-      person: drJohnSmithPerson,
-    },
-    {
-      uuid: 'provider-uuid-2',
-      display: 'Dr. Jane Doe - Surgeon',
-      person: drJaneDoeP,
-    },
-  ],
-};
-
 const toLoginLocationAttr = (
   uuid: string,
   attrTypeUuid: string,
@@ -97,6 +82,7 @@ const toLoginLocationAttr = (
   value: {
     uuid: locationUuid,
     display: locationDisplay,
+    childLocations: [],
     tags: [{ display: locationTag }],
   },
   voided,
@@ -178,7 +164,7 @@ export const mockProviderPage2 = {
     {
       uuid: 'provider-uuid-2',
       display: 'Dr. Jane Doe - Surgeon',
-      person: drJaneDoeP,
+      person: drJaneDoePerson,
     },
   ],
   links: [
@@ -198,7 +184,7 @@ export const mockProviderPage3 = {
       person: drBobWilsonPerson,
     },
   ],
-  links: [], // No next link - last page
+  links: [],
 };
 
 export const mockSinglePageResponse = {
@@ -215,34 +201,15 @@ export const mockEmptyProvidersResponse = {
   results: [],
 };
 
-export const mockResponseWithNullResults = {
-  results: null,
-};
-
-export const mockProvidersWithVoided = {
+export const mockProviderWithoutAttributes = {
   results: [
     {
-      uuid: 'provider-uuid-active',
-      display: 'Dr. Active - Clinician',
+      uuid: 'provider-uuid-123',
+      display: 'Superman - Clinician',
       person: {
-        uuid: 'person-uuid-active',
-        display: 'Dr. Active',
-        voided: false,
+        uuid: 'person-uuid-456',
+        display: 'Superman',
       },
-    },
-    {
-      uuid: 'provider-uuid-voided',
-      display: 'Dr. Voided - Retired',
-      person: {
-        uuid: 'person-uuid-voided',
-        display: 'Dr. Voided',
-        voided: true,
-      },
-    },
-    {
-      uuid: 'provider-uuid-no-person',
-      display: 'Provider Without Person',
-      person: null,
     },
   ],
 };

@@ -1,10 +1,10 @@
 import type {
   AppointmentService,
   AppointmentUnavailability,
-  FHIRBundle,
   Location,
   Provider,
 } from '@bahmni/services';
+import type { Bundle, Location as FHIRLocation } from 'fhir/r4';
 import {
   APPOINTMENT_LOCATION_TAG,
   PROVIDER_ATTRIBUTE_AVAILABLE_FOR_APPOINTMENT,
@@ -206,7 +206,7 @@ export const mockCurrentUser = {
   display: 'Admin User',
 };
 
-export const mockFHIRBundle: FHIRBundle = {
+export const mockFHIRBundle: Bundle<FHIRLocation> = {
   resourceType: 'Bundle',
   id: 'test-bundle',
   type: 'searchset',

@@ -66,6 +66,6 @@ export interface Provider {
  * Interface representing Provider response from REST API
  */
 export interface ProviderResponse {
-  results: Provider[];
+  results: Provider[] | null;
   links?: Link[];
 }

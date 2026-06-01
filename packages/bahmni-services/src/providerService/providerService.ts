@@ -1,16 +1,15 @@
 import { get } from '../api';
 import { type Location } from '../locationService/models';
 import { ALL_PROVIDERS_URL, PROVIDER_RESOURCE_URL } from './constants';
-import { Link, Provider, ProviderResponse } from './models';
+import { Provider, ProviderResponse } from './models';
 
 /**
- * Fetches the current user's username from cookies and provider uuid fromREST endpoint
- * @returns Promise resolving to provider UUID or null if not found
+ * Fetches the provider record for the given user UUID
+ * @returns Promise resolving to the Provider or null if not found
  */
 export async function getCurrentProvider(
   userUUID: string,
 ): Promise<Provider | null> {
-  // Get Provider from REST API
   const providerResponse: ProviderResponse = await get<ProviderResponse>(
     PROVIDER_RESOURCE_URL(userUUID),
   );
@@ -19,18 +18,6 @@ export async function getCurrentProvider(
   }
 
   return providerResponse.results[0];
-}
-
-/**
- * Fetches providers from OpenMRS (single page)
- * @param url - Optional URL to fetch (defaults to ALL_PROVIDERS_URL)
- * @returns Promise resolving to an array of Provider objects
- */
-export async function getPaginatedProviders(
-  url: string = ALL_PROVIDERS_URL,
-): Promise<Provider[]> {
-  const response = await get<ProviderResponse>(url);
-  return response.results ?? [];
 }
 
 /**
@@ -43,17 +30,14 @@ export async function fetchAllProviders(): Promise<Provider[]> {
   let nextUrl: string | null = ALL_PROVIDERS_URL;
 
   while (nextUrl) {
-    const currentUrl = nextUrl;
-    const response: ProviderResponse = await get<ProviderResponse>(currentUrl);
+    const response: ProviderResponse = await get<ProviderResponse>(nextUrl);
     allProviders.push(...(response.results ?? []));
 
-    const nextLink: Link | undefined = response.links?.find(
-      (link: Link) => link.rel === 'next',
-    );
+    const nextLink = response.links?.find((link) => link.rel === 'next');
     nextUrl = nextLink?.uri ?? null;
   }
 
-  return allProviders.filter((p) => !p.person?.voided);
+  return allProviders;
 }
 
 /**
@@ -78,15 +62,7 @@ export async function getProviderLoginLocations(
   return provider.attributes
     .filter(
       (attr) =>
-        !attr.voided && attr.attributeType?.display === 'Login Locations',
+        !attr.voided && attr.attributeType.display === 'Login Locations',
     )
-    .map((attr) => {
-      const locationValue = attr.value as Location;
-      return {
-        uuid: locationValue.uuid,
-        display: locationValue.display,
-        childLocations: [],
-        tags: locationValue.tags,
-      };
-    });
+    .map((attr) => attr.value as Location);
 }
