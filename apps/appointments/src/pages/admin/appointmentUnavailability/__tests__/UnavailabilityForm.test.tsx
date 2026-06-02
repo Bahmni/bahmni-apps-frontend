@@ -275,6 +275,34 @@ describe('UnavailabilityForm', () => {
     });
   });
 
+  describe('Location reconciliation', () => {
+    it('keeps locationUuid when cookie location is present in loginLocations', async () => {
+      setupMocks();
+      const { formDataRef } = renderComponent();
+      await waitFor(() => {
+        expect(formDataRef.current?.locationUuid).toBe('location-uuid-1');
+      });
+    });
+
+    it('clears locationUuid when cookie location is not in loginLocations', async () => {
+      useUnavailabilityFormData.mockReturnValue({ ...defaultHookReturn });
+      getUserLoginLocation.mockReturnValue({ uuid: 'location-uuid-unknown' });
+      getTodayDate.mockReturnValue('05/29/2026');
+      const { formDataRef } = renderComponent();
+      await waitFor(() => {
+        expect(formDataRef.current?.locationUuid).toBe('');
+      });
+    });
+
+    it('leaves locationUuid empty when loginLocations is empty', async () => {
+      setupMocks({ loginLocations: [] });
+      const { formDataRef } = renderComponent();
+      await waitFor(() => {
+        expect(formDataRef.current?.locationUuid).toBe('');
+      });
+    });
+  });
+
   describe('Service auto-selection', () => {
     it('auto-selects all service items when services exist for the location', async () => {
       setupMocks();

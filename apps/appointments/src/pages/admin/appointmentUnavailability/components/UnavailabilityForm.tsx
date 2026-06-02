@@ -47,7 +47,7 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
     useUnavailabilityFormData();
 
   const [formData, setFormData] = useState({
-    locationUuid: getInitialLocationUuid(),
+    locationUuid: '',
     selectedServiceItems: [] as SelectableItem[],
     selectedProviderItems: [] as SelectableItem[],
     startDate: null as Date | null,
@@ -124,6 +124,16 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
   );
 
   useEffect(() => {
+    if (loginLocations.length === 0) return;
+    const loggedinUuid = getInitialLocationUuid();
+    const isValid = loginLocations.some((l) => l.uuid === loggedinUuid);
+    setFormData((prev) => ({
+      ...prev,
+      locationUuid: isValid ? loggedinUuid : '',
+    }));
+  }, [loginLocations]);
+
+  useEffect(() => {
     if (filteredServices.length > 0) {
       setFormData((prev) => ({
         ...prev,
@@ -181,7 +191,7 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
         <Dropdown
           id="location-dropdown"
           data-testid="location-dropdown"
-          label={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_LABEL')}
+          label={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_PLACEHOLDER')}
           titleText={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_LABEL')}
           items={locationItems}
           itemToString={(item) => item?.display ?? ''}

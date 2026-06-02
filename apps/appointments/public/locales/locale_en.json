@@ -41,6 +41,7 @@
   "ADMIN_UNAVAILABILITY_FORM_ERROR_TITLE": "Add Failed",
   "ADMIN_UNAVAILABILITY_FORM_LOAD_ERROR_MESSAGE": "Failed to load form data. Please try again.",
   "ADMIN_UNAVAILABILITY_FORM_LOCATION_LABEL": "Select Location*",
+  "ADMIN_UNAVAILABILITY_FORM_LOCATION_PLACEHOLDER": "Select Location",
   "ADMIN_UNAVAILABILITY_FORM_NO_LOCATIONS": "No locations available",
   "ADMIN_UNAVAILABILITY_FORM_NO_PROVIDERS": "No providers available",
   "ADMIN_UNAVAILABILITY_FORM_NO_SERVICES": "No services available for the selected location",
