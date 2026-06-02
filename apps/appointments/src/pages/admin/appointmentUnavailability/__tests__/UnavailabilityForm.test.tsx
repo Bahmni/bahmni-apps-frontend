@@ -276,31 +276,36 @@ describe('UnavailabilityForm', () => {
   });
 
   describe('Location reconciliation', () => {
-    it('keeps locationUuid when cookie location is present in loginLocations', async () => {
-      setupMocks();
-      const { formDataRef } = renderComponent();
-      await waitFor(() => {
-        expect(formDataRef.current?.locationUuid).toBe('location-uuid-1');
-      });
-    });
-
-    it('clears locationUuid when cookie location is not in loginLocations', async () => {
-      useUnavailabilityFormData.mockReturnValue({ ...defaultHookReturn });
-      getUserLoginLocation.mockReturnValue({ uuid: 'location-uuid-unknown' });
-      getTodayDate.mockReturnValue('05/29/2026');
-      const { formDataRef } = renderComponent();
-      await waitFor(() => {
-        expect(formDataRef.current?.locationUuid).toBe('');
-      });
-    });
-
-    it('leaves locationUuid empty when loginLocations is empty', async () => {
-      setupMocks({ loginLocations: [] });
-      const { formDataRef } = renderComponent();
-      await waitFor(() => {
-        expect(formDataRef.current?.locationUuid).toBe('');
-      });
-    });
+    it.each([
+      {
+        scenario: 'cookie location is present in loginLocations',
+        cookieUuid: 'location-uuid-1',
+        hookOverride: {} as HookOverride,
+        expectedUuid: 'location-uuid-1',
+      },
+      {
+        scenario: 'cookie location is not in loginLocations',
+        cookieUuid: 'location-uuid-unknown',
+        hookOverride: {} as HookOverride,
+        expectedUuid: '',
+      },
+      {
+        scenario: 'loginLocations is empty',
+        cookieUuid: 'location-uuid-1',
+        hookOverride: { loginLocations: [] } as HookOverride,
+        expectedUuid: '',
+      },
+    ])(
+      'sets locationUuid to "$expectedUuid" when $scenario',
+      async ({ cookieUuid, hookOverride, expectedUuid }) => {
+        setupMocks(hookOverride);
+        getUserLoginLocation.mockReturnValue({ uuid: cookieUuid });
+        const { formDataRef } = renderComponent();
+        await waitFor(() => {
+          expect(formDataRef.current?.locationUuid).toBe(expectedUuid);
+        });
+      },
+    );
   });
 
   describe('Service auto-selection', () => {
