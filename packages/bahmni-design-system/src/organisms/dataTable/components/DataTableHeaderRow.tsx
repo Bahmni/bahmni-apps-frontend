@@ -33,7 +33,7 @@ export const DataTableHeaderRow = <T extends { id: string }>({
   const widthByKey = new Map(
     columns
       .filter((col) => col.width)
-      .map((col) => [col.key, col.width as string]),
+      .map((col) => [col.key, col.width]),
   );
 
   return (
