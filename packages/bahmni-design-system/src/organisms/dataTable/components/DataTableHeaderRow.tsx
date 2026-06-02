@@ -6,8 +6,8 @@ import {
 } from '@carbon/react';
 import { flexRender, type Table } from '@tanstack/react-table';
 import type { ReactNode } from 'react';
-import type { DataTableColumn } from '../types';
 import styles from '../styles/DataTable.module.scss';
+import type { DataTableColumn } from '../types';
 
 interface DataTableHeaderRowProps<T extends { id: string }> {
   table: Table<T>;
@@ -31,9 +31,7 @@ export const DataTableHeaderRow = <T extends { id: string }>({
   children,
 }: DataTableHeaderRowProps<T>) => {
   const widthByKey = new Map(
-    columns
-      .filter((col) => col.width)
-      .map((col) => [col.key, col.width]),
+    columns.filter((col) => col.width).map((col) => [col.key, col.width]),
   );
 
   return (
