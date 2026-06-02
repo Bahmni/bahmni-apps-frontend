@@ -11,13 +11,6 @@
   margin-block-end: $spacing-05;
   display: flex !important;
   position: relative;
-  :global {
-    .cds--text-area__label-wrapper {
-      justify-content: flex-end;
-      position: absolute;
-      bottom: calc($spacing-06 + $spacing-02) * -1;
-    }
-  }
 }
 
 .textAreaWCloseContainerWInvalid {
@@ -26,19 +19,12 @@
   margin-inline-start: 0rem;
   display: flex !important;
   position: relative;
-  :global {
-    .cds--text-area__label-wrapper {
-      justify-content: flex-end;
-      position: absolute;
-      bottom: -$spacing-03;
-    }
-  }
 }
 
 .closeButton {
   margin: 0 !important;
   position: absolute !important;
-  top: 2px;
+  top: $spacing-06;
   right: 2px;
   background-color: $field-01 !important;
 
@@ -46,4 +32,8 @@
     background-color: $field-01 !important;
     color: $icon-primary !important;
   }
+}
+
+:global(.cds--text-area) {
+  padding-right: $spacing-09 !important;
 }

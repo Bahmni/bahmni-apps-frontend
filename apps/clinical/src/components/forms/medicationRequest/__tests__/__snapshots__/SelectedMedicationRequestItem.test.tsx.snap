@@ -98,10 +98,10 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         class="cds--form-item dosageInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--md"
+          class="cds--number cds--number--helpertext cds--number--md"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="medication-dosage-input-test-medication-1"
           >
@@ -186,11 +186,11 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         data-testid="medication-dosage-unit-dropdown-test-medication-1-test-id"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_42_-toggle-button"
           id="downshift-_r_42_-label"
         >
-          Dosage unit
+          Dosage Unit
         </label>
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
@@ -256,7 +256,7 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         data-testid="medication-frequency-dropdown-test-medication-1-test-id"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_45_-toggle-button"
           id="downshift-_r_45_-label"
         >
@@ -325,10 +325,10 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         class="cds--form-item durationInput"
       >
         <div
-          class="cds--number cds--number--helpertext cds--number--nolabel cds--number--md"
+          class="cds--number cds--number--helpertext cds--number--md"
         >
           <label
-            class="cds--label cds--visually-hidden"
+            class="cds--label"
             dir="auto"
             for="medication-duration-input-test-medication-1"
           >
@@ -413,11 +413,11 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         data-testid="medication-duration-unit-dropdown-test-medication-1-test-id"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_48_-toggle-button"
           id="downshift-_r_48_-label"
         >
-          Duration unit
+          Duration Unit
         </label>
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
@@ -483,7 +483,7 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         data-testid="medication-instructions-dropdown-test-medication-1-test-id"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_4b_-toggle-button"
           id="downshift-_r_4b_-label"
         >
@@ -553,7 +553,7 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
         data-testid="medication-route-dropdown-test-medication-1-test-id"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_4e_-toggle-button"
           id="downshift-_r_4e_-label"
         >
@@ -629,7 +629,7 @@ exports[`SelectedMedicationRequestItem Snapshot matches snapshot with all attrib
             class="cds--date-picker-container"
           >
             <label
-              class="cds--label cds--visually-hidden"
+              class="cds--label"
               dir="auto"
               for="medication-start-date-input-test-medication-1"
             >

@@ -67,14 +67,12 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
             invalid={hasDurationValueError}
             invalidText={hasDurationValueError ? t(errors.durationValue!) : ''}
             size="sm"
-            hideLabel
             className={styles.selectedConditionDurationValue}
           />
           <Dropdown
             id={`condition-duration-unit-${id}`}
             titleText={t('CONDITIONS_DURATION_UNIT_LABEL')}
             label={t('CONDITIONS_DURATION_UNIT_LABEL')}
-            hideLabel
             items={DURATION_UNITS}
             selectedItem={
               DURATION_UNITS.find((unit) => unit.id === durationUnit) ?? null

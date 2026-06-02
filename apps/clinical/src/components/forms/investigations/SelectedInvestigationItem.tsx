@@ -76,7 +76,7 @@ const SelectedInvestigationItem: React.FC<SelectedInvestigationItemProps> =
           <TextAreaWClose
             id={`investigation-note-${id}`}
             data-testid={`investigation-note-${id}`}
-            labelText={t('INVESTIGATION_ADD_NOTE')}
+            labelText={t('NOTE_LABEL')}
             placeholder={t('INVESTIGATION_ADD_NOTE_PLACEHOLDER')}
             value={note ?? ''}
             onChange={(event) => {
