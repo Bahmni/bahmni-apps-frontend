@@ -7,6 +7,7 @@ import {
 import { flexRender, type Table } from '@tanstack/react-table';
 import type { ReactNode } from 'react';
 import type { DataTableColumn } from '../types';
+import styles from '../styles/DataTable.module.scss';
 
 interface DataTableHeaderRowProps<T extends { id: string }> {
   table: Table<T>;
@@ -41,6 +42,7 @@ export const DataTableHeaderRow = <T extends { id: string }>({
         <TableRow key={headerGroup.id}>
           {expandable && (
             <TableExpandHeader>
+              <span className={styles.visuallyHidden}>Expansion Header</span>
             </TableExpandHeader>
           )}
           {headerGroup.headers.map((header) => {
