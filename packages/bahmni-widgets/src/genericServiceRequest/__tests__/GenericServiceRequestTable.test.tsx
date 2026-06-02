@@ -40,6 +40,7 @@ jest.mock('@bahmni/services', () => ({
 
 jest.mock('../utils', () => ({
   filterServiceRequestReplacementEntries: jest.fn(),
+  getStatusDotClassName: jest.fn().mockReturnValue(''),
   mapServiceRequest: jest.fn(),
   sortServiceRequestsByPriority: jest.fn(),
 }));
