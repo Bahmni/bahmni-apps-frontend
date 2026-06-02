@@ -104,9 +104,9 @@ describe('DocumentsTable Integration', () => {
     fields: [
       'documentIdentifier',
       'documentType',
+      'action',
       'uploadedOn',
       'uploadedBy',
-      'action',
     ],
   };
 

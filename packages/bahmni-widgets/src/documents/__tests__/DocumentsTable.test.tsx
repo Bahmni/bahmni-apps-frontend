@@ -132,9 +132,9 @@ const defaultConfig = {
   fields: [
     'documentIdentifier',
     'documentType',
+    'action',
     'uploadedOn',
     'uploadedBy',
-    'action',
   ],
 };
 
@@ -233,13 +233,13 @@ describe('DocumentsTable', () => {
       expect(screen.getByText('DOCUMENTS_ACTION')).toBeInTheDocument();
     });
 
-    it('renders the Action column header as last column', () => {
+    it('renders the Action column header as 3rd column', () => {
       (useQuery as jest.Mock).mockReturnValue(mockQueryData());
       renderComponent({ config: defaultConfig });
 
       const headers = screen.getAllByRole('columnheader');
       const headerTexts = headers.map((h) => h.textContent?.trim());
-      expect(headerTexts[headerTexts.length - 1]).toBe('DOCUMENTS_ACTION');
+      expect(headerTexts[2]).toBe('DOCUMENTS_ACTION');
     });
 
     it('displays document identifier as plain text (no icon, no button)', () => {

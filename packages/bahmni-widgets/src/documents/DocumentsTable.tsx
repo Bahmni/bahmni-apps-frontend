@@ -16,9 +16,9 @@ import { buildDocumentUrl, createDocumentHeaders } from './utils';
 const DEFAULT_DOCUMENT_FIELDS = [
   'documentIdentifier',
   'documentType',
+  'action',
   'uploadedOn',
   'uploadedBy',
-  'action',
 ];
 
 const IMAGE_EXTENSIONS_RE = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i;
