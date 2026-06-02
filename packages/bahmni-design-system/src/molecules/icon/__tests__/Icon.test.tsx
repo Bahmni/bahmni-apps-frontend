@@ -8,13 +8,14 @@ expect.extend(toHaveNoViolations);
 
 // Mock FontAwesomeIcon and pass props to the rendered element
 jest.mock('@fortawesome/react-fontawesome', () => ({
-  FontAwesomeIcon: ({ icon, size, color, ...props }: any) => (
+  FontAwesomeIcon: ({ icon, size, color, fixedWidth, ...props }: any) => (
     <svg
       data-testid={props['data-testid']}
       data-icon={icon[1]}
       data-prefix={icon[0]}
       data-size={size}
       data-color={color}
+      data-fixed-width={fixedWidth}
       {...props}
     />
   ),
@@ -79,6 +80,18 @@ describe('Icon Component', () => {
       <BahmniIcon name="invalid-name-format" id="invalid-icon" />,
     );
     expect(icon.container).toBeEmptyDOMElement();
+  });
+
+  it('forwards fixedWidth prop to FontAwesomeIcon', () => {
+    render(<BahmniIcon name="fa-home" id="fw-icon" fixedWidth />);
+    const icon = screen.getByTestId('fw-icon');
+    expect(icon).toHaveAttribute('data-fixed-width', 'true');
+  });
+
+  it('does not set data-fixed-width when fixedWidth is not passed', () => {
+    render(<BahmniIcon name="fa-home" id="no-fw-icon" />);
+    const icon = screen.getByTestId('no-fw-icon');
+    expect(icon).not.toHaveAttribute('data-fixed-width', 'true');
   });
 
   describe('Accessibility', () => {
