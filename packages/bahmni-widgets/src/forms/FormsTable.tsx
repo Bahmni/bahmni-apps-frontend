@@ -85,9 +85,7 @@ const FormsTable: React.FC<WidgetProps> = ({
     }
     if (Array.isArray(forms) && forms.length > 0) {
       result = result.filter((entry) =>
-        forms.some(
-          (f) => f.toLowerCase() === entry.formName.toLowerCase(),
-        ),
+        forms.some((f) => f.toLowerCase() === entry.formName.toLowerCase()),
       );
     }
     return result;
