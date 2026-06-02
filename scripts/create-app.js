@@ -283,6 +283,11 @@ export default defineConfig(() => ({
     }),
   ],
   publicDir: 'public',
+  css: {
+    modules: {
+      generateScopedName: '[name]_[local]__[hash:base64:5]',
+    },
+  },
   build: {
     outDir: './dist',
     emptyOutDir: true,
@@ -298,7 +303,13 @@ export default defineConfig(() => ({
       formats: ['es' as const],
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'react/jsx-runtime', 'react-router-dom'],
+      external: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react-router-dom',
+        /^@carbon\/styles/
+      ],
     },
   },
 }));
