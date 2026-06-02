@@ -33,11 +33,11 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
         data-testid="allergy-severity-dropdown-test-allergy-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_7p_-toggle-button"
           id="downshift-_r_7p_-label"
         >
-          Select Severity
+          Severity
         </label>
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
@@ -102,11 +102,11 @@ exports[`SelectedAllergyItem Snapshot Tests default rendering matches snapshot 1
         class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper cds--autoalign"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="allergy-reactions-multiselect-test-allergy-1-input"
           id="allergy-reactions-multiselect-test-allergy-1-label"
         >
-          Select Reactions
+          Reactions
           <span
             class="cds--visually-hidden"
           >
@@ -237,11 +237,11 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
         data-testid="allergy-severity-dropdown-test-allergy-1"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="downshift-_r_7v_-toggle-button"
           id="downshift-_r_7v_-label"
         >
-          Select Severity
+          Severity
         </label>
         <div
           class="cds--dropdown cds--dropdown--invalid cds--autoalign cds--list-box cds--list-box--invalid"
@@ -332,11 +332,11 @@ exports[`SelectedAllergyItem Snapshot Tests rendering with validation errors mat
         class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper cds--autoalign"
       >
         <label
-          class="cds--label cds--visually-hidden"
+          class="cds--label"
           for="allergy-reactions-multiselect-test-allergy-1-input"
           id="allergy-reactions-multiselect-test-allergy-1-label"
         >
-          Select Reactions
+          Reactions
           <span
             class="cds--visually-hidden"
           >
