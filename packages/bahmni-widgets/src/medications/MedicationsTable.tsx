@@ -2,6 +2,7 @@ import {
   SortableDataTable,
   Accordion,
   AccordionItem,
+  Edit,
   IconButton,
   Tab,
   TabList,
@@ -11,8 +12,6 @@ import {
   Tag,
   StatusTag,
   TooltipIcon,
-  Icon,
-  ICON_SIZE,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -382,11 +381,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             onClick={handleEditAll}
             testId="medications-edit-all-button"
           >
-            <Icon
-              id="edit-all-medication-icon"
-              name="fa-pen-to-square"
-              size={ICON_SIZE.SM}
-            />
+            <Edit />
           </IconButton>
         </div>
       )}

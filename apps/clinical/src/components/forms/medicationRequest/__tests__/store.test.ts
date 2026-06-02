@@ -507,7 +507,7 @@ describe('useMedicationRequestStore', () => {
   });
 
   describe('loadMedicationsForEdit', () => {
-    it('loads entries with isModified=false and captures originalEditIds', () => {
+    it('loads entries, captures originalEditIds and originalEditSnapshots', () => {
       const entries = [
         { ...mockMedicationEntry, id: 'edit-1', fhirResourceId: 'fhir-1' },
         { ...mockMedicationEntry, id: 'edit-2', fhirResourceId: 'fhir-2' },
@@ -516,10 +516,9 @@ describe('useMedicationRequestStore', () => {
       store().loadMedicationsForEdit(entries);
 
       expect(store().selectedMedicationRequests).toHaveLength(2);
-      store().selectedMedicationRequests.forEach((entry) => {
-        expect(entry.isModified).toBe(false);
-      });
       expect(store().originalEditIds).toEqual(['edit-1', 'edit-2']);
+      expect(store().originalEditSnapshots.size).toBe(2);
+      expect(store().originalEditSnapshots.get('edit-1')).toBeDefined();
       expect(store().pendingFhirEdits).toEqual([]);
     });
   });
@@ -569,25 +568,39 @@ describe('useMedicationRequestStore', () => {
     });
   });
 
-  describe('withEditFlag via update methods', () => {
-    it('sets isModified=true when updating a field on an entry with fhirResourceId', () => {
+  describe('snapshot-based change detection', () => {
+    it('detects change when field differs from original snapshot', () => {
       const entries = [
-        { ...mockMedicationEntry, id: 'edit-1', fhirResourceId: 'fhir-123' },
+        {
+          ...mockMedicationEntry,
+          id: 'edit-1',
+          fhirResourceId: 'fhir-123',
+          dosage: 5,
+        },
       ];
       store().loadMedicationsForEdit(entries);
 
       store().updateDosage('edit-1', 10);
 
-      expect(store().selectedMedicationRequests[0].isModified).toBe(true);
+      expect(store().hasEditChanges()).toBe(true);
     });
 
-    it('does not set isModified on an entry without fhirResourceId', () => {
-      store().addItem(mockMedication, 'Paracetamol 500mg');
-      const id = store().selectedMedicationRequests[0].id;
+    it('returns false when value is reverted to original', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-1',
+          fhirResourceId: 'fhir-123',
+          dosage: 5,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
 
-      store().updateDosage(id, 10);
+      store().updateDosage('edit-1', 10);
+      expect(store().hasEditChanges()).toBe(true);
 
-      expect(store().selectedMedicationRequests[0].isModified).toBeUndefined();
+      store().updateDosage('edit-1', 5);
+      expect(store().hasEditChanges()).toBe(false);
     });
   });
 
