@@ -41,7 +41,6 @@ export const DataTableHeaderRow = <T extends { id: string }>({
         <TableRow key={headerGroup.id}>
           {expandable && (
             <TableExpandHeader>
-              <span className="cds--visually-hidden">Row expansion</span>
             </TableExpandHeader>
           )}
           {headerGroup.headers.map((header) => {
