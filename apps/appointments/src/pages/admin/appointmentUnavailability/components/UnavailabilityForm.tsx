@@ -191,8 +191,8 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
         <Dropdown
           id="location-dropdown"
           data-testid="location-dropdown"
-          label={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_PLACEHOLDER')}
-          titleText={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_LABEL')}
+          label={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_LABEL')}
+          titleText={t('ADMIN_UNAVAILABILITY_FORM_LOCATION_TITLE')}
           items={locationItems}
           itemToString={(item) => item?.display ?? ''}
           selectedItem={
