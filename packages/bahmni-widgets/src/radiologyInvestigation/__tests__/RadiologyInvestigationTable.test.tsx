@@ -31,6 +31,10 @@ jest.mock('@bahmni/services', () => ({
   useSubscribeConsultationSaved: jest.fn(),
 }));
 
+jest.mock('../../genericServiceRequest/utils', () => ({
+  getStatusDotClassName: jest.fn().mockReturnValue(''),
+}));
+
 jest.mock('../../notification', () => ({
   useNotification: jest.fn(),
 }));

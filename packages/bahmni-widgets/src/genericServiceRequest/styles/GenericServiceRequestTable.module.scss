@@ -9,6 +9,22 @@
   }
 }
 
+.inProgressStatus {
+  color: $yellow-70;
+}
+
+.completedStatus {
+  color: $green-50;
+}
+
+.revokedStatus {
+  color: $cool-gray-20;
+}
+
+.unknownStatus {
+  color: $cool-gray-20;
+}
+
 .requestName {
   @include type-style("heading-compact-01");
   color: $text-primary;
@@ -31,6 +47,7 @@
   background-color: $yellow-20 !important;
   color: $yellow-70 !important;
 }
+
 
 .customAccordianItem {
   background-color: $layer-01;

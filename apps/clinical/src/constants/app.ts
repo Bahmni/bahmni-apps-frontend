@@ -21,3 +21,5 @@ export const CLINICAL_NAMESPACE = 'clinical';
 
 export const CLINICAL_V2_CONFIG_BASE_URL =
   '/bahmni_config/openmrs/apps/clinical/v2';
+
+export const CDSS_SERVER_CONFIG_URL = `${CLINICAL_V2_CONFIG_BASE_URL}/cdss-servers.json`;

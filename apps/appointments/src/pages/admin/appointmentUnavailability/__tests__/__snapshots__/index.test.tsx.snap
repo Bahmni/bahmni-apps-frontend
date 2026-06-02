@@ -1,0 +1,676 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty state 1`] = `
+<div>
+  <div
+    aria-label="action-area-layout-aria-label"
+    class="_layout_vvtyi_85"
+    data-testid="action-area-layout-test-id"
+    id="action-area-layout"
+  >
+    <header
+      aria-label="Header"
+      class="cds--header"
+      data-testid="header"
+    >
+      <nav
+        aria-label="Breadcrumb"
+        class="_breadcrumb_fbh29_74"
+        data-testid="breadcrumb"
+      >
+        <ol
+          class="cds--breadcrumb cds--breadcrumb--no-trailing-slash"
+        >
+          <li
+            class="cds--breadcrumb-item"
+          >
+            <a
+              class="cds--link"
+              href="/bahmni/home/index.html"
+            >
+              Home
+            </a>
+          </li>
+          <li
+            class="cds--breadcrumb-item"
+          >
+            <a
+              class="cds--link"
+              href="/appointments"
+            >
+              Appointments
+            </a>
+          </li>
+          <li
+            class="cds--breadcrumb-item cds--breadcrumb-item--current"
+          >
+            <span
+              aria-current="true"
+              class="cds--link"
+              dir="auto"
+            >
+              Admin
+            </span>
+          </li>
+        </ol>
+      </nav>
+    </header>
+    <div
+      class="_panelGroup_vvtyi_161"
+      data-group="true"
+      data-testid="_r_4p_"
+      id="_r_4p_"
+      style="height: 100%; width: 100%; overflow: hidden; display: flex; flex-direction: row; flex-wrap: nowrap;"
+    >
+      <div
+        data-panel="true"
+        data-testid="_r_4q_"
+        id="_r_4q_"
+        style="min-height: 0; max-height: 100%; height: auto; min-width: 0; max-width: 100%; width: auto; border-width: 0px; padding: 0px; margin: 0px; display: flex; flex-basis: 0px; flex-shrink: 1; overflow: hidden; flex-grow: 100;"
+      >
+        <div
+          style="max-height: 100%; max-width: 100%; flex-grow: 1;"
+        >
+          <div
+            aria-label="main-display-area-aria-label"
+            class="_mainDisplay_vvtyi_108"
+            data-testid="main-display-area-test-id"
+            id="main-display-area"
+          >
+            <div
+              aria-label="appointment-unavailability-page-aria-label"
+              class="page"
+              data-testid="appointment-unavailability-page-test-id"
+              id="appointment-unavailability-page"
+            >
+              <section
+                aria-label="appointment-unavailability-actions-table-action-data-table-aria-label"
+                class="_actionDataTableBody_mn1ph_1 cds--data-table-container"
+                data-testid="appointment-unavailability-actions-table-action-data-table-test-id"
+                id="appointment-unavailability-actions-table-action-data-table"
+              >
+                <div
+                  class="cds--data-table-header"
+                >
+                  <h2
+                    class="cds--data-table-header__title"
+                    id="tc-_r_4r_-title"
+                  >
+                    Service Unavailability
+                  </h2>
+                </div>
+                <section
+                  aria-label="data table toolbar"
+                  class="cds--table-toolbar"
+                >
+                  <div
+                    class="cds--toolbar-content"
+                  >
+                    <button
+                      aria-label="appointment-unavailability-actions-table-action-data-table-action-button-aria-label"
+                      class="cds--btn cds--btn--primary"
+                      data-testid="appointment-unavailability-actions-table-action-data-table-action-button-test-id"
+                      id="appointment-unavailability-actions-table-action-data-table-action-button"
+                      type="button"
+                    >
+                      Add New
+                    </button>
+                  </div>
+                </section>
+                <p
+                  class="_sortableDataTableBodyEmpty_1w499_26"
+                  data-testid="appointment-unavailability-actions-table-sortable-data-table-test-id-empty"
+                >
+                  No Service Unavailabilities found
+                </p>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unavailabilities data 1`] = `
+<div>
+  <div
+    aria-label="action-area-layout-aria-label"
+    class="_layout_vvtyi_85"
+    data-testid="action-area-layout-test-id"
+    id="action-area-layout"
+  >
+    <header
+      aria-label="Header"
+      class="cds--header"
+      data-testid="header"
+    >
+      <nav
+        aria-label="Breadcrumb"
+        class="_breadcrumb_fbh29_74"
+        data-testid="breadcrumb"
+      >
+        <ol
+          class="cds--breadcrumb cds--breadcrumb--no-trailing-slash"
+        >
+          <li
+            class="cds--breadcrumb-item"
+          >
+            <a
+              class="cds--link"
+              href="/bahmni/home/index.html"
+            >
+              Home
+            </a>
+          </li>
+          <li
+            class="cds--breadcrumb-item"
+          >
+            <a
+              class="cds--link"
+              href="/appointments"
+            >
+              Appointments
+            </a>
+          </li>
+          <li
+            class="cds--breadcrumb-item cds--breadcrumb-item--current"
+          >
+            <span
+              aria-current="true"
+              class="cds--link"
+              dir="auto"
+            >
+              Admin
+            </span>
+          </li>
+        </ol>
+      </nav>
+    </header>
+    <div
+      class="_panelGroup_vvtyi_161"
+      data-group="true"
+      data-testid="_r_4g_"
+      id="_r_4g_"
+      style="height: 100%; width: 100%; overflow: hidden; display: flex; flex-direction: row; flex-wrap: nowrap;"
+    >
+      <div
+        data-panel="true"
+        data-testid="_r_4h_"
+        id="_r_4h_"
+        style="min-height: 0; max-height: 100%; height: auto; min-width: 0; max-width: 100%; width: auto; border-width: 0px; padding: 0px; margin: 0px; display: flex; flex-basis: 0px; flex-shrink: 1; overflow: hidden; flex-grow: 100;"
+      >
+        <div
+          style="max-height: 100%; max-width: 100%; flex-grow: 1;"
+        >
+          <div
+            aria-label="main-display-area-aria-label"
+            class="_mainDisplay_vvtyi_108"
+            data-testid="main-display-area-test-id"
+            id="main-display-area"
+          >
+            <div
+              aria-label="appointment-unavailability-page-aria-label"
+              class="page"
+              data-testid="appointment-unavailability-page-test-id"
+              id="appointment-unavailability-page"
+            >
+              <section
+                aria-label="appointment-unavailability-actions-table-action-data-table-aria-label"
+                class="_actionDataTableBody_mn1ph_1 cds--data-table-container"
+                data-testid="appointment-unavailability-actions-table-action-data-table-test-id"
+                id="appointment-unavailability-actions-table-action-data-table"
+              >
+                <div
+                  class="cds--data-table-header"
+                >
+                  <h2
+                    class="cds--data-table-header__title"
+                    id="tc-_r_4i_-title"
+                  >
+                    Service Unavailability
+                  </h2>
+                </div>
+                <section
+                  aria-label="data table toolbar"
+                  class="cds--table-toolbar"
+                >
+                  <div
+                    class="cds--toolbar-content"
+                  >
+                    <button
+                      aria-label="appointment-unavailability-actions-table-action-data-table-action-button-aria-label"
+                      class="cds--btn cds--btn--primary"
+                      data-testid="appointment-unavailability-actions-table-action-data-table-action-button-test-id"
+                      id="appointment-unavailability-actions-table-action-data-table-action-button"
+                      type="button"
+                    >
+                      Add New
+                    </button>
+                  </div>
+                </section>
+                <div
+                  class="sortable-data-table _sortableDataTableBody_1w499_1"
+                  data-testid="appointment-unavailability-actions-table-sortable-data-table-test-id"
+                >
+                  <div
+                    class="cds--data-table-content"
+                  >
+                    <table
+                      aria-label="unavailability-table"
+                      aria-labelledby="tc-_r_4i_-title"
+                      class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+                    >
+                      <thead>
+                        <tr>
+                          <th
+                            aria-sort="none"
+                            class="cds--table-sort__header"
+                            scope="col"
+                          >
+                            <div
+                              class="cds--table-sort__description"
+                              id="table-sort-_r_4k_"
+                            >
+                              Click to sort rows by Start Date and Time header in ascending order
+                            </div>
+                            <button
+                              aria-describedby="table-sort-_r_4k_"
+                              class="cds--table-sort"
+                              data-testid="table-header-startDateTime"
+                              type="button"
+                            >
+                              <span
+                                class="cds--table-sort__flex"
+                              >
+                                <div
+                                  class="cds--table-header-label"
+                                >
+                                  Start Date and Time
+                                </div>
+                                <svg
+                                  aria-hidden="true"
+                                  class="cds--table-sort__icon"
+                                  fill="currentColor"
+                                  focusable="false"
+                                  height="20"
+                                  preserveAspectRatio="xMidYMid meet"
+                                  viewBox="0 0 32 32"
+                                  width="20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                                  />
+                                </svg>
+                                <svg
+                                  aria-hidden="true"
+                                  class="cds--table-sort__icon-unsorted"
+                                  fill="currentColor"
+                                  focusable="false"
+                                  height="20"
+                                  preserveAspectRatio="xMidYMid meet"
+                                  viewBox="0 0 32 32"
+                                  width="20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                                  />
+                                </svg>
+                                <div
+                                  class="cds--table-header-label--decorator-inner"
+                                />
+                              </span>
+                            </button>
+                          </th>
+                          <th
+                            aria-sort="none"
+                            class="cds--table-sort__header"
+                            scope="col"
+                          >
+                            <div
+                              class="cds--table-sort__description"
+                              id="table-sort-_r_4l_"
+                            >
+                              Click to sort rows by End Date and Time header in ascending order
+                            </div>
+                            <button
+                              aria-describedby="table-sort-_r_4l_"
+                              class="cds--table-sort"
+                              data-testid="table-header-endDateTime"
+                              type="button"
+                            >
+                              <span
+                                class="cds--table-sort__flex"
+                              >
+                                <div
+                                  class="cds--table-header-label"
+                                >
+                                  End Date and Time
+                                </div>
+                                <svg
+                                  aria-hidden="true"
+                                  class="cds--table-sort__icon"
+                                  fill="currentColor"
+                                  focusable="false"
+                                  height="20"
+                                  preserveAspectRatio="xMidYMid meet"
+                                  viewBox="0 0 32 32"
+                                  width="20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                                  />
+                                </svg>
+                                <svg
+                                  aria-hidden="true"
+                                  class="cds--table-sort__icon-unsorted"
+                                  fill="currentColor"
+                                  focusable="false"
+                                  height="20"
+                                  preserveAspectRatio="xMidYMid meet"
+                                  viewBox="0 0 32 32"
+                                  width="20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                                  />
+                                </svg>
+                                <div
+                                  class="cds--table-header-label--decorator-inner"
+                                />
+                              </span>
+                            </button>
+                          </th>
+                          <th
+                            aria-sort="none"
+                            class="cds--table-sort__header"
+                            scope="col"
+                          >
+                            <div
+                              class="cds--table-sort__description"
+                              id="table-sort-_r_4m_"
+                            >
+                              Click to sort rows by Location header in ascending order
+                            </div>
+                            <button
+                              aria-describedby="table-sort-_r_4m_"
+                              class="cds--table-sort"
+                              data-testid="table-header-locationName"
+                              type="button"
+                            >
+                              <span
+                                class="cds--table-sort__flex"
+                              >
+                                <div
+                                  class="cds--table-header-label"
+                                >
+                                  Location
+                                </div>
+                                <svg
+                                  aria-hidden="true"
+                                  class="cds--table-sort__icon"
+                                  fill="currentColor"
+                                  focusable="false"
+                                  height="20"
+                                  preserveAspectRatio="xMidYMid meet"
+                                  viewBox="0 0 32 32"
+                                  width="20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                                  />
+                                </svg>
+                                <svg
+                                  aria-hidden="true"
+                                  class="cds--table-sort__icon-unsorted"
+                                  fill="currentColor"
+                                  focusable="false"
+                                  height="20"
+                                  preserveAspectRatio="xMidYMid meet"
+                                  viewBox="0 0 32 32"
+                                  width="20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                                  />
+                                </svg>
+                                <div
+                                  class="cds--table-header-label--decorator-inner"
+                                />
+                              </span>
+                            </button>
+                          </th>
+                          <th
+                            aria-sort="none"
+                            class="cds--table-sort__header"
+                            scope="col"
+                          >
+                            <div
+                              class="cds--table-sort__description"
+                              id="table-sort-_r_4n_"
+                            >
+                              Click to sort rows by Service Unavailable header in ascending order
+                            </div>
+                            <button
+                              aria-describedby="table-sort-_r_4n_"
+                              class="cds--table-sort"
+                              data-testid="table-header-appointmentServiceName"
+                              type="button"
+                            >
+                              <span
+                                class="cds--table-sort__flex"
+                              >
+                                <div
+                                  class="cds--table-header-label"
+                                >
+                                  Service Unavailable
+                                </div>
+                                <svg
+                                  aria-hidden="true"
+                                  class="cds--table-sort__icon"
+                                  fill="currentColor"
+                                  focusable="false"
+                                  height="20"
+                                  preserveAspectRatio="xMidYMid meet"
+                                  viewBox="0 0 32 32"
+                                  width="20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                                  />
+                                </svg>
+                                <svg
+                                  aria-hidden="true"
+                                  class="cds--table-sort__icon-unsorted"
+                                  fill="currentColor"
+                                  focusable="false"
+                                  height="20"
+                                  preserveAspectRatio="xMidYMid meet"
+                                  viewBox="0 0 32 32"
+                                  width="20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                                  />
+                                </svg>
+                                <div
+                                  class="cds--table-header-label--decorator-inner"
+                                />
+                              </span>
+                            </button>
+                          </th>
+                          <th
+                            aria-sort="none"
+                            class="cds--table-sort__header"
+                            scope="col"
+                          >
+                            <div
+                              class="cds--table-sort__description"
+                              id="table-sort-_r_4o_"
+                            >
+                              Click to sort rows by Provider Unavailable header in ascending order
+                            </div>
+                            <button
+                              aria-describedby="table-sort-_r_4o_"
+                              class="cds--table-sort"
+                              data-testid="table-header-providerName"
+                              type="button"
+                            >
+                              <span
+                                class="cds--table-sort__flex"
+                              >
+                                <div
+                                  class="cds--table-header-label"
+                                >
+                                  Provider Unavailable
+                                </div>
+                                <svg
+                                  aria-hidden="true"
+                                  class="cds--table-sort__icon"
+                                  fill="currentColor"
+                                  focusable="false"
+                                  height="20"
+                                  preserveAspectRatio="xMidYMid meet"
+                                  viewBox="0 0 32 32"
+                                  width="20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                                  />
+                                </svg>
+                                <svg
+                                  aria-hidden="true"
+                                  class="cds--table-sort__icon-unsorted"
+                                  fill="currentColor"
+                                  focusable="false"
+                                  height="20"
+                                  preserveAspectRatio="xMidYMid meet"
+                                  viewBox="0 0 32 32"
+                                  width="20"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                                  />
+                                </svg>
+                                <div
+                                  class="cds--table-header-label--decorator-inner"
+                                />
+                              </span>
+                            </button>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody
+                        aria-live="polite"
+                      >
+                        <tr
+                          data-testid="table-row-unavailability-uuid-1"
+                        >
+                          <td
+                            data-testid="table-cell-unavailability-uuid-1-startDateTime"
+                          >
+                            formatted-datetime
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-1-endDateTime"
+                          >
+                            formatted-datetime
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-1-locationName"
+                          >
+                            General OPD
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-1-appointmentServiceName"
+                          >
+                            General Medicine OPD Consultation
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-1-providerName"
+                          >
+                            Dr. John Smith
+                          </td>
+                        </tr>
+                        <tr
+                          data-testid="table-row-unavailability-uuid-2"
+                        >
+                          <td
+                            data-testid="table-cell-unavailability-uuid-2-startDateTime"
+                          >
+                            formatted-datetime
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-2-endDateTime"
+                          >
+                            formatted-datetime
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-2-locationName"
+                          >
+                            ENT Ward
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-2-appointmentServiceName"
+                          >
+                            ENT Consultation
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-2-providerName"
+                          >
+                            All
+                          </td>
+                        </tr>
+                        <tr
+                          data-testid="table-row-unavailability-uuid-3"
+                        >
+                          <td
+                            data-testid="table-cell-unavailability-uuid-3-startDateTime"
+                          >
+                            formatted-datetime
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-3-endDateTime"
+                          >
+                            formatted-datetime
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-3-locationName"
+                          >
+                            General OPD
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-3-appointmentServiceName"
+                          >
+                            General Medicine OPD Consultation
+                          </td>
+                          <td
+                            data-testid="table-cell-unavailability-uuid-3-providerName"
+                          >
+                            All
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

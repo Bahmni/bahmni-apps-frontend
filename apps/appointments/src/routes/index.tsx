@@ -12,6 +12,12 @@ const AllServicesPage = lazy(() =>
   })),
 );
 
+const AppointmentUnavailabilityPage = lazy(() =>
+  import('../pages/admin/appointmentUnavailability').then((module) => ({
+    default: module.default,
+  })),
+);
+
 export const routes: Routes = [
   {
     path: '/',
@@ -22,6 +28,11 @@ export const routes: Routes = [
     path: '/admin/services',
     component: AllServicesPage,
     name: 'AdminAllServices',
+  },
+  {
+    path: '/admin/unavailability',
+    component: AppointmentUnavailabilityPage,
+    name: 'AdminAppointmentUnavailability',
   },
 ];
 

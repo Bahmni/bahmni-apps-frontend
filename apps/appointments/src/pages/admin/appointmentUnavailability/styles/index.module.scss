@@ -1,0 +1,11 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.page {
+  overflow-y: auto;
+  margin: 0 auto;
+  margin-block: $spacing-10;
+  margin-inline: calc($spacing-12 + $spacing-05);
+  box-shadow: 0px 2px 6px 0px $shadow;
+}
+
