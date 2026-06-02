@@ -1,6 +1,6 @@
 import { Loading } from '@bahmni/design-system';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import React, { Suspense } from 'react';
 import { DashboardSectionConfig } from '../../../pages/models';
 import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
@@ -126,7 +126,7 @@ describe('DashboardSection Component', () => {
   const mockRef = React.createRef<HTMLDivElement>();
 
   beforeEach(() => {
-    mockGetWidget.mockClear();
+    mockGetWidget.mockReset();
     mockUseEncounterSessionStore.mockReturnValue({
       matchReasons: [],
       canEditOrCreate: false,
@@ -181,14 +181,15 @@ describe('DashboardSection Component', () => {
       expect(screen.queryByText('Test Section')).not.toBeInTheDocument();
     });
 
-    it('renders no edit button in the tile header', () => {
+    it('renders no button in the tile header', () => {
       renderSection({
         id: 'allergies-section',
         name: 'Allergies',
         icon: 'test-icon',
         controls: [{ type: 'allergies', name: '', config: {} }],
       });
-      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      const tile = screen.getByTestId('dashboard-section-tile-Allergies');
+      expect(within(tile).queryByRole('button')).not.toBeInTheDocument();
     });
   });
 

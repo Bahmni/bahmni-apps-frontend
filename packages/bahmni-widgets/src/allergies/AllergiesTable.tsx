@@ -263,7 +263,7 @@ const AllergiesTable: React.FC<WidgetProps> = ({
             kind="ghost"
             size="sm"
             align="left"
-            disabled={allergies.length === 0}
+            disabled={allergies.length === 0 || disableActions}
             onClick={handleEditAll}
             testId="edit-all-allergies-button"
           >
