@@ -623,6 +623,23 @@ describe('FormsTable', () => {
       expect(screen.queryByText('Discharge Summary')).not.toBeInTheDocument();
     });
 
+    it('filters forms case-insensitively', async () => {
+      mockGetPatientFormData.mockResolvedValue(
+        mockFormResponseDataWithThreeForms,
+      );
+
+      const config = { forms: ['vitals form', 'DISCHARGE SUMMARY'] };
+      renderFormsTable({ config });
+
+      await waitFor(() => {
+        expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+      expect(screen.getByText('Discharge Summary')).toBeInTheDocument();
+      expect(screen.queryByText('History Form')).not.toBeInTheDocument();
+    });
+
     it.each([
       ['empty array', { forms: [] }],
       ['null value', { forms: null as any }],
