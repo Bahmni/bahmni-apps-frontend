@@ -30,6 +30,7 @@
   "CREATE_PATIENT_GENDER_FEMALE": "Femenino",
   "CREATE_PATIENT_GENDER_MALE": "Masculino",
   "CREATE_PATIENT_GENDER_OTHER": "Otro",
+  "CREATE_PATIENT_GENDER_UNDISCLOSED": "No revelado",
   "CREATE_PATIENT_HEADER_TITLE": "Nuevo Paciente",
   "CREATE_PATIENT_HOUSE_NUMBER": "Número de Casa / Número de Apartamento",
   "CREATE_PATIENT_LAST_NAME": "Apellido",
