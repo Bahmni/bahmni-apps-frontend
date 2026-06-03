@@ -265,6 +265,39 @@ describe('usePinnedObservationForms', () => {
     });
   });
 
+  describe('Refetch', () => {
+    it('should re-fetch pinned forms from backend when refetch is called', async () => {
+      mockLoadPinnedForms.mockResolvedValue(['Vitals']);
+
+      const { result } = renderHook(() =>
+        usePinnedObservationForms(mockForms, { userUuid: mockUserUuid }),
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(mockLoadPinnedForms).toHaveBeenCalledTimes(1);
+
+      // Update backend data
+      mockLoadPinnedForms.mockResolvedValue(['Vitals', 'Progress Notes']);
+
+      // Call refetch
+      act(() => {
+        result.current.refetch();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(mockLoadPinnedForms).toHaveBeenCalledTimes(2);
+      expect(result.current.pinnedForms).toHaveLength(2);
+      expect(result.current.pinnedForms[0].name).toBe('Vitals');
+      expect(result.current.pinnedForms[1].name).toBe('Progress Notes');
+    });
+  });
+
   describe('Loading Only Once', () => {
     it('should only load pinned forms once when forms finish loading', async () => {
       mockLoadPinnedForms.mockResolvedValue(['Vitals']);
