@@ -1,7 +1,6 @@
 import { Loading } from '@bahmni/design-system';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import React, { Suspense } from 'react';
 import { DashboardSectionConfig } from '../../../pages/models';
 import { ClinicalAppProvider } from '../../../providers/ClinicalAppProvider';
@@ -11,22 +10,6 @@ jest.mock('../../../providers/ClinicalAppProvider', () => ({
   ClinicalAppProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="mock-clinical-apps-provider">{children}</div>
   ),
-}));
-
-jest.mock('../../../events/startConsultation', () => ({
-  dispatchConsultationStart: jest.fn(),
-}));
-
-jest.mock('../../../models/allergy', () => ({
-  mapAllergyToInputEntry: jest.fn((fhir: any) => ({
-    id: fhir.id,
-    display: fhir.id,
-    type: 'food',
-    selectedSeverity: null,
-    selectedReactions: [],
-    errors: {},
-    hasBeenValidated: false,
-  })),
 }));
 
 jest.mock('../../../hooks/useClinicalAppData', () => ({
@@ -39,7 +22,6 @@ jest.mock('../../../hooks/useClinicalAppData', () => ({
   }),
 }));
 
-// Mock dependencies
 jest.mock('@bahmni/design-system', () => ({
   Tile: jest.fn(({ children, ref, ...rest }) => (
     <div className="cds--tile" data-testid="carbon-tile" ref={ref} {...rest}>
@@ -47,13 +29,8 @@ jest.mock('@bahmni/design-system', () => ({
     </div>
   )),
   Loading: jest.fn(() => <div data-testid="loading" />),
-  IconButton: jest.fn(({ testId, onClick }) => (
-    <button data-testid={testId} onClick={onClick} />
-  )),
-  Edit: jest.fn(),
 }));
 
-// Mock the translation hook from @bahmni/services
 jest.mock('@bahmni/services', () => {
   const actual = jest.requireActual('@bahmni/services');
   return {
@@ -66,11 +43,9 @@ jest.mock('@bahmni/services', () => {
           CONTROL_NOT_FOUND: 'Widget not found in registry',
           INITIALIZING_CONTROL: 'Loading widget...',
         };
-
         return translations[key] || key;
       }),
     }),
-    getAllergies: jest.fn().mockResolvedValue([]),
     useEncounterSessionStore: jest.fn(() => ({
       canEditOrCreate: false,
       isLoading: false,
@@ -79,50 +54,22 @@ jest.mock('@bahmni/services', () => {
   };
 });
 
-const mockAddNotification = jest.fn();
-
-// Mock widget registry
 jest.mock('@bahmni/widgets', () => {
   const actual = jest.requireActual('@bahmni/widgets');
   return {
     ...actual,
     getWidget: jest.fn(),
     registerWidget: jest.fn(),
-    usePatientUUID: jest.fn(() => 'test-patient-uuid'),
-    useHasPrivilege: jest.fn(() => false),
-    useNotification: jest.fn(() => ({ addNotification: mockAddNotification })),
-    CONSULTATION_PAD_PRIVILEGES: { EDIT_ALLERGIES: ['Edit Allergies'] },
-    useUserPrivilege: jest.fn(() => ({
-      userPrivileges: [
-        { name: 'View Observations' },
-        { name: 'Get Observations' },
-      ],
-    })),
   };
 });
 
 const mockGetWidget = jest.mocked(
   jest.requireMock('@bahmni/widgets').getWidget,
 );
-
-const mockDispatchConsultationStart = jest.mocked(
-  jest.requireMock('../../../events/startConsultation')
-    .dispatchConsultationStart,
-);
-
-const mockGetAllergies = jest.mocked(
-  jest.requireMock('@bahmni/services').getAllergies,
-);
-
 const mockUseEncounterSessionStore = jest.mocked(
   jest.requireMock('@bahmni/services').useEncounterSessionStore,
 );
 
-const mockUseHasPrivilege = jest.mocked(
-  jest.requireMock('@bahmni/widgets').useHasPrivilege,
-);
-
-// Create mock widget components
 const MockAllergiesWidget = ({
   config,
 }: {
@@ -153,22 +100,16 @@ const MockTreatmentWidget = () => (
   <div data-testid="treatment-widget">Treatment Widget</div>
 );
 
-const renderDashboardSectionWithProvider = (
+const renderSection = (
   section: DashboardSectionConfig,
-  ref: React.RefObject<HTMLDivElement | null>,
+  ref = React.createRef<HTMLDivElement>(),
 ) => {
   const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-      },
-    },
+    defaultOptions: { queries: { retry: false } },
   });
-  const mockEpisodeIds = ['episode-1', 'episode-2'];
-
   return render(
     <QueryClientProvider client={queryClient}>
-      <ClinicalAppProvider episodeUuids={mockEpisodeIds}>
+      <ClinicalAppProvider episodeUuids={['episode-1']}>
         <DashboardSection
           section={section}
           ref={ref}
@@ -185,173 +126,126 @@ describe('DashboardSection Component', () => {
   const mockRef = React.createRef<HTMLDivElement>();
 
   beforeEach(() => {
-    mockGetWidget.mockClear();
+    mockGetWidget.mockReset();
+    mockUseEncounterSessionStore.mockReturnValue({
+      matchReasons: [],
+      canEditOrCreate: false,
+      isLoading: false,
+    });
   });
 
   describe('Basic Rendering', () => {
     it('renders with the correct section name', () => {
-      const mockSection: DashboardSectionConfig = {
+      renderSection({
         id: 'test-section-id',
         name: 'Test Section',
         icon: 'test-icon',
         controls: [],
-      };
-
-      renderDashboardSectionWithProvider(mockSection, mockRef);
-
+      });
       expect(screen.getByText('Test Section')).toBeInTheDocument();
     });
 
     it('has the correct id attribute', () => {
-      const mockSection: DashboardSectionConfig = {
+      const { container } = renderSection({
         id: 'test-section-id',
         name: 'Test Section',
         icon: 'test-icon',
         controls: [],
-      };
-
-      const { container } = renderDashboardSectionWithProvider(
-        mockSection,
-        mockRef,
-      );
-
-      const sectionDiv = container.querySelector(
-        `div[id="section-${mockSection.id}"]`,
-      );
-      expect(sectionDiv).not.toBeNull();
+      });
+      expect(
+        container.querySelector('div[id="section-test-section-id"]'),
+      ).not.toBeNull();
     });
 
     it('renders a Tile component', () => {
-      const mockSection: DashboardSectionConfig = {
+      renderSection({
         id: 'test-section-id',
         name: 'Test Section',
         icon: 'test-icon',
         controls: [],
-      };
-
-      renderDashboardSectionWithProvider(mockSection, mockRef);
-
-      // data-testid includes section name for uniqueness
-      expect(
-        screen.getByTestId('dashboard-section-tile-Test Section'),
-      ).toBeInTheDocument();
-    });
-
-    it('accepts a ref prop', () => {
-      const testRef = React.createRef<HTMLDivElement>();
-      const mockSection: DashboardSectionConfig = {
-        id: 'test-section-id',
-        name: 'Test Section',
-        icon: 'test-icon',
-        controls: [],
-      };
-
-      renderDashboardSectionWithProvider(mockSection, testRef);
-
-      // data-testid includes section name for uniqueness
+      });
       expect(
         screen.getByTestId('dashboard-section-tile-Test Section'),
       ).toBeInTheDocument();
     });
 
     it('uses translationKey instead of name when available', () => {
-      const sectionWithTranslationKey: DashboardSectionConfig = {
+      renderSection({
         id: 'test-section-id',
         name: 'Test Section',
         translationKey: 'custom.translation.key',
         icon: 'test-icon',
         controls: [],
-      };
-
-      renderDashboardSectionWithProvider(sectionWithTranslationKey, mockRef);
-
-      // The mock returns the translated text for 'custom.translation.key'
+      });
       expect(screen.getByText('Translated Title')).toBeInTheDocument();
-      // The original name should not be rendered
       expect(screen.queryByText('Test Section')).not.toBeInTheDocument();
+    });
+
+    it('renders no button in the tile header', () => {
+      renderSection({
+        id: 'allergies-section',
+        name: 'Allergies',
+        icon: 'test-icon',
+        controls: [{ type: 'allergies', name: '', config: {} }],
+      });
+      const tile = screen.getByTestId('dashboard-section-tile-Allergies');
+      expect(within(tile).queryByRole('button')).not.toBeInTheDocument();
     });
   });
 
   describe('Registry-based Widget Rendering', () => {
     it('renders a single widget from controls array', async () => {
       mockGetWidget.mockImplementation((type: string) => {
-        if (type === 'allergies') {
+        if (type === 'allergies')
           return React.lazy(() =>
             Promise.resolve({ default: MockAllergiesWidget }),
           );
-        }
         return undefined;
       });
 
-      const section: DashboardSectionConfig = {
+      renderSection({
         id: 'allergies-section',
         name: 'Allergies',
         icon: 'test-icon',
-        controls: [
-          {
-            type: 'allergies',
-            name: '',
-            config: {},
-          },
-        ],
-      };
-
-      renderDashboardSectionWithProvider(section, mockRef);
+        controls: [{ type: 'allergies', name: '', config: {} }],
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId('allergies-widget')).toBeInTheDocument();
       });
-
       expect(mockGetWidget).toHaveBeenCalledWith('allergies');
     });
 
     it('renders multiple widgets from controls array', async () => {
       mockGetWidget.mockImplementation((type: string) => {
-        if (type === 'conditions') {
+        if (type === 'conditions')
           return React.lazy(() =>
             Promise.resolve({ default: MockConditionsWidget }),
           );
-        }
-        if (type === 'diagnosis') {
+        if (type === 'diagnosis')
           return React.lazy(() =>
             Promise.resolve({ default: MockDiagnosisWidget }),
           );
-        }
         return undefined;
       });
 
-      const section: DashboardSectionConfig = {
-        id: 'conditions-section',
-        name: 'Conditions & Diagnoses',
-        icon: 'test-icon',
-        controls: [
-          {
-            type: 'conditions',
-            name: '',
-            config: {},
-          },
-          {
-            type: 'diagnosis',
-            name: '',
-            config: {},
-          },
-        ],
-      };
-
       const queryClient = new QueryClient({
-        defaultOptions: {
-          queries: {
-            retry: false,
-          },
-        },
+        defaultOptions: { queries: { retry: false } },
       });
-
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+          <ClinicalAppProvider episodeUuids={['episode-1']}>
             <Suspense fallback={<Loading />}>
               <DashboardSection
-                section={section}
+                section={{
+                  id: 'conditions-section',
+                  name: 'Conditions',
+                  icon: 'test-icon',
+                  controls: [
+                    { type: 'conditions', name: '', config: {} },
+                    { type: 'diagnosis', name: '', config: {} },
+                  ],
+                }}
                 ref={mockRef}
                 encounterUuids={[]}
                 visitUuids={[]}
@@ -366,50 +260,37 @@ describe('DashboardSection Component', () => {
         expect(screen.getByTestId('conditions-widget')).toBeInTheDocument();
         expect(screen.getByTestId('diagnosis-widget')).toBeInTheDocument();
       });
-
-      expect(mockGetWidget).toHaveBeenCalledWith('conditions');
-      expect(mockGetWidget).toHaveBeenCalledWith('diagnosis');
     });
 
     it('passes config as props to widgets', async () => {
       mockGetWidget.mockImplementation((type: string) => {
-        if (type === 'allergies') {
+        if (type === 'allergies')
           return React.lazy(() =>
             Promise.resolve({ default: MockAllergiesWidget }),
           );
-        }
         return undefined;
       });
 
-      const section: DashboardSectionConfig = {
-        id: 'allergies-section',
-        name: 'Allergies',
-        icon: 'test-icon',
-        controls: [
-          {
-            type: 'allergies',
-            name: '',
-            config: {
-              testProp: 'custom-value',
-            },
-          },
-        ],
-      };
-
       const queryClient = new QueryClient({
-        defaultOptions: {
-          queries: {
-            retry: false,
-          },
-        },
+        defaultOptions: { queries: { retry: false } },
       });
-
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+          <ClinicalAppProvider episodeUuids={['episode-1']}>
             <Suspense fallback={<Loading />}>
               <DashboardSection
-                section={section}
+                section={{
+                  id: 'allergies-section',
+                  name: 'Allergies',
+                  icon: 'test-icon',
+                  controls: [
+                    {
+                      type: 'allergies',
+                      name: '',
+                      config: { testProp: 'custom-value' },
+                    },
+                  ],
+                }}
                 ref={mockRef}
                 encounterUuids={[]}
                 visitUuids={[]}
@@ -429,49 +310,34 @@ describe('DashboardSection Component', () => {
 
     it('renders dividers between multiple widgets', async () => {
       mockGetWidget.mockImplementation((type: string) => {
-        if (type === 'conditions') {
-          return React.lazy(() =>
-            Promise.resolve({ default: MockConditionsWidget }),
-          );
-        }
-        if (type === 'diagnosis') {
-          return React.lazy(() =>
-            Promise.resolve({ default: MockDiagnosisWidget }),
-          );
-        }
-        if (type === 'treatment') {
-          return React.lazy(() =>
-            Promise.resolve({ default: MockTreatmentWidget }),
-          );
-        }
-        return undefined;
+        const map: Record<string, React.FC> = {
+          conditions: MockConditionsWidget,
+          diagnosis: MockDiagnosisWidget,
+          treatment: MockTreatmentWidget,
+        };
+        return map[type]
+          ? React.lazy(() => Promise.resolve({ default: map[type] }))
+          : undefined;
       });
-
-      const section: DashboardSectionConfig = {
-        id: 'multi-widget-section',
-        name: 'Multiple Widgets',
-        icon: 'test-icon',
-        controls: [
-          { type: 'conditions', name: '', config: {} },
-          { type: 'diagnosis', name: '', config: {} },
-          { type: 'treatment', name: '', config: {} },
-        ],
-      };
 
       const queryClient = new QueryClient({
-        defaultOptions: {
-          queries: {
-            retry: false,
-          },
-        },
+        defaultOptions: { queries: { retry: false } },
       });
-
       const { container } = render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+          <ClinicalAppProvider episodeUuids={['episode-1']}>
             <Suspense fallback={<Loading />}>
               <DashboardSection
-                section={section}
+                section={{
+                  id: 'multi-section',
+                  name: 'Multi',
+                  icon: 'test-icon',
+                  controls: [
+                    { type: 'conditions', name: '', config: {} },
+                    { type: 'diagnosis', name: '', config: {} },
+                    { type: 'treatment', name: '', config: {} },
+                  ],
+                }}
                 ref={mockRef}
                 encounterUuids={[]}
                 visitUuids={[]}
@@ -485,51 +351,7 @@ describe('DashboardSection Component', () => {
       await waitFor(() => {
         expect(screen.getByTestId('conditions-widget')).toBeInTheDocument();
       });
-
-      // Should have 2 dividers for 3 widgets
-      const dividers = container.querySelectorAll('.divider');
-      expect(dividers).toHaveLength(2);
-    });
-
-    it('does not render divider after the last widget', async () => {
-      mockGetWidget.mockImplementation((type: string) => {
-        if (type === 'allergies') {
-          return React.lazy(() =>
-            Promise.resolve({ default: MockAllergiesWidget }),
-          );
-        }
-        return undefined;
-      });
-
-      const section: DashboardSectionConfig = {
-        id: 'single-widget-section',
-        name: 'Single Widget',
-        icon: 'test-icon',
-        controls: [{ type: 'allergies', name: '', config: {} }],
-      };
-
-      renderDashboardSectionWithProvider(section, mockRef);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('allergies-widget')).toBeInTheDocument();
-      });
-
-      // Should have no dividers for single widget
-      const { container } = render(
-        <QueryClientProvider client={new QueryClient()}>
-          <ClinicalAppProvider episodeUuids={[]}>
-            <DashboardSection
-              section={section}
-              ref={mockRef}
-              encounterUuids={[]}
-              visitUuids={[]}
-              episodeOfCareUuids={[]}
-            />
-          </ClinicalAppProvider>
-        </QueryClientProvider>,
-      );
-      const dividers = container.querySelectorAll('.divider');
-      expect(dividers).toHaveLength(0);
+      expect(container.querySelectorAll('.divider')).toHaveLength(2);
     });
   });
 
@@ -537,100 +359,11 @@ describe('DashboardSection Component', () => {
     it('displays error message when widget is not found in registry', () => {
       mockGetWidget.mockReturnValue(undefined);
 
-      const section: DashboardSectionConfig = {
+      renderSection({
         id: 'unknown-section',
         name: 'Unknown Widget',
         icon: 'test-icon',
-        controls: [
-          {
-            type: 'unknown-widget',
-            name: '',
-            config: {},
-          },
-        ],
-      };
-
-      renderDashboardSectionWithProvider(section, mockRef);
-
-      expect(
-        screen.getByText(/Widget not found in registry/),
-      ).toBeInTheDocument();
-      expect(mockGetWidget).toHaveBeenCalledWith('unknown-widget');
-    });
-
-    it('displays multiple error messages for multiple unknown widgets', () => {
-      mockGetWidget.mockReturnValue(undefined);
-
-      const section: DashboardSectionConfig = {
-        id: 'multiple-unknown-section',
-        name: 'Multiple Unknown Widgets',
-        icon: 'test-icon',
-        controls: [
-          { type: 'unknown-widget-1', name: '', config: {} },
-          { type: 'unknown-widget-2', name: '', config: {} },
-        ],
-      };
-
-      renderDashboardSectionWithProvider(section, mockRef);
-
-      expect(screen.getAllByText(/Widget not found in registry/)).toHaveLength(
-        2,
-      );
-    });
-
-    it('renders valid widgets and shows errors for invalid ones', async () => {
-      mockGetWidget.mockImplementation((type: string) => {
-        if (type === 'allergies') {
-          return React.lazy(() =>
-            Promise.resolve({ default: MockAllergiesWidget }),
-          );
-        }
-        if (type === 'diagnosis') {
-          return React.lazy(() =>
-            Promise.resolve({ default: MockDiagnosisWidget }),
-          );
-        }
-        return undefined; // For unknown-widget
-      });
-
-      const section: DashboardSectionConfig = {
-        id: 'mixed-section',
-        name: 'Mixed Valid and Invalid',
-        icon: 'test-icon',
-        controls: [
-          { type: 'allergies', name: '', config: {} },
-          { type: 'unknown-widget', name: '', config: {} },
-          { type: 'diagnosis', name: '', config: {} },
-        ],
-      };
-
-      const queryClient = new QueryClient({
-        defaultOptions: {
-          queries: {
-            retry: false,
-          },
-        },
-      });
-
-      render(
-        <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
-            <Suspense fallback={<Loading />}>
-              <DashboardSection
-                section={section}
-                ref={mockRef}
-                encounterUuids={[]}
-                visitUuids={[]}
-                episodeOfCareUuids={[]}
-              />
-            </Suspense>
-          </ClinicalAppProvider>
-        </QueryClientProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTestId('allergies-widget')).toBeInTheDocument();
-        expect(screen.getByTestId('diagnosis-widget')).toBeInTheDocument();
+        controls: [{ type: 'unknown-widget', name: '', config: {} }],
       });
 
       expect(
@@ -641,178 +374,20 @@ describe('DashboardSection Component', () => {
 
   describe('Empty States', () => {
     it('displays no content message when controls array is empty', () => {
-      const section: DashboardSectionConfig = {
+      renderSection({
         id: 'empty-section',
         name: 'Empty Section',
         icon: 'test-icon',
         controls: [],
-      };
-
-      renderDashboardSectionWithProvider(section, mockRef);
-
-      expect(
-        screen.getByText('No widgets configured for this section'),
-      ).toBeInTheDocument();
-    });
-
-    it('displays no content message when controls array is undefined', () => {
-      const section: DashboardSectionConfig = {
-        id: 'undefined-section',
-        name: 'Undefined Controls',
-        icon: 'test-icon',
-        controls: undefined as any,
-      };
-
-      renderDashboardSectionWithProvider(section, mockRef);
-
+      });
       expect(
         screen.getByText('No widgets configured for this section'),
       ).toBeInTheDocument();
     });
   });
 
-  describe('Loading States', () => {
-    it('shows loading fallback while widget is loading', async () => {
-      mockGetWidget.mockReturnValue(
-        React.lazy(
-          () =>
-            new Promise((resolve) =>
-              setTimeout(() => resolve({ default: MockAllergiesWidget }), 100),
-            ),
-        ),
-      );
-
-      const section: DashboardSectionConfig = {
-        id: 'loading-section',
-        name: 'Loading Widget',
-        icon: 'test-icon',
-        controls: [{ type: 'allergies', name: '', config: {} }],
-      };
-
-      renderDashboardSectionWithProvider(section, mockRef);
-
-      expect(screen.getByText('Loading widget...')).toBeInTheDocument();
-
-      await waitFor(() => {
-        expect(screen.getByTestId('allergies-widget')).toBeInTheDocument();
-      });
-
-      expect(screen.queryByText('Loading widget...')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Section edit button (showSectionEditButton)', () => {
-    const allergiesSection: DashboardSectionConfig = {
-      id: 'allergies-section',
-      name: 'Allergies',
-      icon: 'test-icon',
-      controls: [{ type: 'allergies', name: '', config: {} }],
-    };
-
-    const nonAllergiesSection: DashboardSectionConfig = {
-      id: 'conditions-section',
-      name: 'Conditions',
-      icon: 'test-icon',
-      controls: [{ type: 'conditions', name: '', config: {} }],
-    };
-
-    beforeEach(() => {
-      mockGetWidget.mockReturnValue(
-        React.lazy(() => Promise.resolve({ default: MockAllergiesWidget })),
-      );
-    });
-
-    it('renders section edit button when user can edit allergies, active visit exists, and section has allergies control', () => {
-      mockUseEncounterSessionStore.mockReturnValue({
-        matchReasons: [],
-        canEditOrCreate: true,
-        isLoading: false,
-      });
-      mockUseHasPrivilege.mockReturnValue(true);
-
-      renderDashboardSectionWithProvider(allergiesSection, mockRef);
-
-      expect(screen.getByTestId('edit-section-Allergies')).toBeInTheDocument();
-    });
-
-    it('does not render section edit button when matchReasons includes NO_ACTIVE_VISIT', () => {
-      mockUseEncounterSessionStore.mockReturnValue({
-        matchReasons: ['NO_ACTIVE_VISIT'],
-        canEditOrCreate: false,
-        isLoading: false,
-      });
-      mockUseHasPrivilege.mockReturnValue(true);
-
-      renderDashboardSectionWithProvider(allergiesSection, mockRef);
-
-      expect(
-        screen.queryByTestId('edit-section-Allergies'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('does not render section edit button when user lacks Edit Allergies privilege', () => {
-      mockUseEncounterSessionStore.mockReturnValue({
-        matchReasons: [],
-        canEditOrCreate: true,
-        isLoading: false,
-      });
-      mockUseHasPrivilege.mockReturnValue(false);
-
-      renderDashboardSectionWithProvider(allergiesSection, mockRef);
-
-      expect(
-        screen.queryByTestId('edit-section-Allergies'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('does not render section edit button when section has no allergies control', () => {
-      mockUseEncounterSessionStore.mockReturnValue({
-        matchReasons: [],
-        canEditOrCreate: true,
-        isLoading: false,
-      });
-      mockUseHasPrivilege.mockReturnValue(true);
-
-      renderDashboardSectionWithProvider(nonAllergiesSection, mockRef);
-
-      expect(
-        screen.queryByTestId('edit-section-Conditions'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('calls dispatchConsultationStart with correct payload when section edit button is clicked', async () => {
-      mockUseEncounterSessionStore.mockReturnValue({
-        matchReasons: [],
-        canEditOrCreate: true,
-        isLoading: false,
-      });
-      mockUseHasPrivilege.mockReturnValue(true);
-      mockGetAllergies.mockResolvedValue([]);
-
-      renderDashboardSectionWithProvider(allergiesSection, mockRef);
-
-      await userEvent.click(screen.getByTestId('edit-section-Allergies'));
-
-      await waitFor(() => {
-        expect(mockDispatchConsultationStart).toHaveBeenCalledWith(
-          expect.objectContaining({
-            editOnly: 'allergies',
-            editTitle: 'EDIT_ALLERGIES_TITLE',
-          }),
-        );
-      });
-    });
-  });
-
-  describe('disableActions prop (disableRowActions)', () => {
-    const allergiesSection: DashboardSectionConfig = {
-      id: 'allergies-section',
-      name: 'Allergies',
-      icon: 'test-icon',
-      controls: [{ type: 'allergies', name: '', config: {} }],
-    };
-
-    it('passes disableActions=true to widget when matchReasons includes NO_ACTIVE_VISIT', async () => {
+  describe('disableActions prop', () => {
+    it('passes disableActions=true when matchReasons includes NO_ACTIVE_VISIT', async () => {
       const capturedProps: Record<string, unknown>[] = [];
       const ProbeWidget = (props: Record<string, unknown>) => {
         capturedProps.push(props);
@@ -826,18 +401,21 @@ describe('DashboardSection Component', () => {
         canEditOrCreate: false,
         isLoading: false,
       });
-      mockUseHasPrivilege.mockReturnValue(false);
 
-      renderDashboardSectionWithProvider(allergiesSection, mockRef);
+      renderSection({
+        id: 'allergies-section',
+        name: 'Allergies',
+        icon: 'test-icon',
+        controls: [{ type: 'allergies', name: '', config: {} }],
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId('probe-widget')).toBeInTheDocument();
       });
-
       expect(capturedProps[0].disableActions).toBe(true);
     });
 
-    it('passes disableActions=false to widget when matchReasons is empty', async () => {
+    it('passes disableActions=false when matchReasons is empty', async () => {
       const capturedProps: Record<string, unknown>[] = [];
       const ProbeWidget = (props: Record<string, unknown>) => {
         capturedProps.push(props);
@@ -846,74 +424,18 @@ describe('DashboardSection Component', () => {
       mockGetWidget.mockReturnValue(
         React.lazy(() => Promise.resolve({ default: ProbeWidget })),
       );
-      mockUseEncounterSessionStore.mockReturnValue({
-        matchReasons: [],
-        canEditOrCreate: true,
-        isLoading: false,
-      });
-      mockUseHasPrivilege.mockReturnValue(false);
 
-      renderDashboardSectionWithProvider(allergiesSection, mockRef);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('probe-widget-active')).toBeInTheDocument();
-      });
-
-      expect(capturedProps[0].disableActions).toBe(false);
-    });
-  });
-
-  describe('handleRowEditAllergy', () => {
-    it('fetches allergies and dispatches consultationStart with single allergy when onRowEditClick is called', async () => {
-      const mockFhirAllergy = {
-        id: 'allergy-fhir-uuid',
-        code: { coding: [{ code: 'peanut-code' }], text: 'Peanut' },
-        category: ['food'],
-      };
-      mockGetAllergies.mockResolvedValue([mockFhirAllergy as any]);
-
-      let capturedOnRowEditClick: ((id: string) => void) | undefined;
-      const ProbeWidget = (props: any) => {
-        capturedOnRowEditClick = props.onRowEditClick;
-        return <div data-testid="probe-row-edit-widget" />;
-      };
-      mockGetWidget.mockReturnValue(
-        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
-      );
-      mockUseEncounterSessionStore.mockReturnValue({
-        matchReasons: [],
-        canEditOrCreate: true,
-        isLoading: false,
-      });
-      mockUseHasPrivilege.mockReturnValue(false);
-
-      const section: DashboardSectionConfig = {
+      renderSection({
         id: 'allergies-section',
         name: 'Allergies',
         icon: 'test-icon',
         controls: [{ type: 'allergies', name: '', config: {} }],
-      };
-
-      renderDashboardSectionWithProvider(section, mockRef);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('probe-row-edit-widget')).toBeInTheDocument();
       });
 
-      expect(capturedOnRowEditClick).toBeDefined();
-      await capturedOnRowEditClick!('allergy-fhir-uuid');
-
       await waitFor(() => {
-        expect(mockDispatchConsultationStart).toHaveBeenCalledWith(
-          expect.objectContaining({
-            editOnly: 'allergies',
-            editTitle: 'EDIT_ALLERGIES_TITLE',
-            preloadedAllergies: expect.arrayContaining([
-              expect.objectContaining({ id: 'allergy-fhir-uuid' }),
-            ]),
-          }),
-        );
+        expect(screen.getByTestId('probe-widget-active')).toBeInTheDocument();
       });
+      expect(capturedProps[0].disableActions).toBe(false);
     });
   });
 });

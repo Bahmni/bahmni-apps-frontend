@@ -9,4 +9,7 @@ export {
   AllergyStatus,
   AllergySeverity,
   type AllergenType,
+  type AllergyInputEntry,
+  type AllergenConcept,
+  mapAllergyToInputEntry,
 } from './models';
