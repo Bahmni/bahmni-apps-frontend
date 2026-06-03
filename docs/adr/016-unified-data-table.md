@@ -4,7 +4,7 @@
 |---|---|
 | **Status** | Proposed |
 | **Date** | 2026-05-26 |
-| **Authors** | Frontend / Design System |
+| **Authors** | Mohankumar Thangavel |
 
 ## Context
 
