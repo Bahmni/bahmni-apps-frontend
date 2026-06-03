@@ -737,6 +737,84 @@ describe('useMedicationRequestStore', () => {
     });
   });
 
+  describe('hasMedicationChanged field-by-field detection', () => {
+    it('detects dosageUnit change and reverts cleanly', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-du',
+          fhirResourceId: 'fhir-du',
+          dosageUnit: mockDosageUnit,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateDosageUnit('edit-du', { uuid: 'ml-uuid', name: 'ml' });
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateDosageUnit('edit-du', mockDosageUnit);
+      expect(store().hasEditChanges()).toBe(false);
+    });
+
+    it('detects frequency change and reverts cleanly', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-fr',
+          fhirResourceId: 'fhir-fr',
+          frequency: mockFrequency,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateFrequency('edit-fr', {
+        uuid: '0',
+        name: 'Immediately',
+        frequencyPerDay: 1,
+      });
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateFrequency('edit-fr', mockFrequency);
+      expect(store().hasEditChanges()).toBe(false);
+    });
+
+    it('detects note change and reverts cleanly', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-note',
+          fhirResourceId: 'fhir-note',
+          note: 'original note',
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateNote('edit-note', 'changed note');
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateNote('edit-note', 'original note');
+      expect(store().hasEditChanges()).toBe(false);
+    });
+
+    it('detects isPRN change and reverts cleanly', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-prn',
+          fhirResourceId: 'fhir-prn',
+          isPRN: false,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateIsPRN('edit-prn', true);
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateIsPRN('edit-prn', false);
+      expect(store().hasEditChanges()).toBe(false);
+    });
+  });
+
   describe('setPendingFhirEdits', () => {
     it('sets pending FHIR edits', () => {
       const mockFhirResources = [
