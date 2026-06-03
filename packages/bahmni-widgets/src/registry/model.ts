@@ -13,8 +13,6 @@ export interface WidgetProps {
   visitUuids?: string[];
   onEditClick?: () => void;
   disableActions?: boolean;
-  /** Row-level edit callback — passes the FHIR resource UUID of the row being edited. */
-  onRowEditClick?: (resourceId: string) => void;
 }
 export interface WidgetConfig {
   type: string;
