@@ -23,7 +23,6 @@ export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
 
-// Command Palette
 export {
   CommandPaletteProvider,
   useCommandPalette,

@@ -1,4 +1,7 @@
 import { createContext, useContext } from 'react';
+import type { PatientFieldKey } from './commandPaletteConfigSchema';
+
+export type { PatientFieldKey };
 
 export interface NavItem {
   id: string;
@@ -21,17 +24,6 @@ export interface PatientAction {
   basePath: string;
 }
 
-export type PatientFieldKey =
-  | 'name'
-  | 'identifier'
-  | 'age'
-  | 'gender'
-  | 'birthDate'
-  | 'addressFieldValue'
-  | 'extraIdentifiers'
-  | 'customAttribute'
-  | 'activeVisitUuid';
-
 export interface PatientFieldsConfig {
   primaryFields: PatientFieldKey[];
   additionalFields: PatientFieldKey[];
@@ -51,32 +43,6 @@ export type TriggerConfig =
   | { type: 'combination'; keys: string }
   | { type: 'double'; key: string; interval?: number };
 
-export interface CommandPaletteExtension {
-  id: string;
-  extensionPointId: string;
-  label?: string;
-  translationKey?: string;
-  icon?: string;
-  order?: number;
-  requiredPrivilege?: string;
-  url?: string;
-  newTab?: boolean;
-  pathTemplate?: string;
-  appContext?: string | string[];
-}
-
-export interface CommandPaletteAppConfig {
-  trigger?: TriggerConfig;
-  patientFields?: PatientFieldsConfig;
-  searchAnnotations?: SearchAnnotation[];
-  extensionApps?: string[];
-}
-
-export interface HomeAppConfig {
-  id: string;
-  commandPalette?: CommandPaletteAppConfig;
-}
-
 export interface CommandPaletteContextType {
   isOpen: boolean;
   toggle: () => void;
@@ -85,6 +51,7 @@ export interface CommandPaletteContextType {
   patientActions: PatientAction[];
   patientFieldsConfig: PatientFieldsConfig;
   searchAnnotations: SearchAnnotation[];
+  t: (key: string, opts?: Record<string, string>) => string;
 }
 
 export const CommandPaletteContext =

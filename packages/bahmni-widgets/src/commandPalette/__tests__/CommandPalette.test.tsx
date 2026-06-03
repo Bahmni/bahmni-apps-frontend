@@ -21,67 +21,7 @@ jest.mock('react-dom', () => ({
   createPortal: (node: React.ReactNode) => node,
 }));
 
-jest.mock('cmdk', () => ({
-  Command: Object.assign(
-    ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="cmdk-root">{children}</div>
-    ),
-    {
-      Input: ({
-        onValueChange,
-        value,
-        placeholder,
-        onKeyDown,
-        ...rest
-      }: {
-        onValueChange?: (v: string) => void;
-        value?: string;
-        placeholder?: string;
-        onKeyDown?: React.KeyboardEventHandler;
-        [key: string]: unknown;
-      }) => (
-        <input
-          data-testid="cmdk-input"
-          placeholder={placeholder}
-          onChange={(e) => onValueChange?.(e.target.value)}
-          onKeyDown={onKeyDown}
-          value={value ?? ''}
-          {...(rest as object)}
-        />
-      ),
-      List: ({ children }: { children: React.ReactNode }) => (
-        <div data-testid="cmdk-list">{children}</div>
-      ),
-      Empty: ({ children }: { children: React.ReactNode }) => (
-        <div data-testid="cmdk-empty">{children}</div>
-      ),
-      Group: ({
-        children,
-        heading,
-      }: {
-        children: React.ReactNode;
-        heading?: string;
-      }) => (
-        <div data-testid="cmdk-group" data-heading={heading}>
-          {children}
-        </div>
-      ),
-      Item: ({
-        children,
-        onSelect,
-        value,
-      }: {
-        children: React.ReactNode;
-        onSelect?: () => void;
-        value?: string;
-      }) => (
-        <div data-testid="cmdk-item" data-value={value} onClick={onSelect}>
-          {children}
-        </div>
-      ),
-    },
-  ),
-}));
+jest.mock('cmdk');
 
 jest.mock('../CommandPaletteContext', () => ({
   ...jest.requireActual('../CommandPaletteContext'),
@@ -120,6 +60,16 @@ const mockPatient = {
   gender: 'M',
 };
 
+const mockT = (key: string, opts?: Record<string, string>) => {
+  if (opts) {
+    return Object.entries(opts).reduce(
+      (str, [k, v]) => str.replace(`{{${k}}}`, v),
+      key,
+    );
+  }
+  return key;
+};
+
 const defaultContextValue = {
   isOpen: false,
   setOpen: jest.fn(),
@@ -131,6 +81,7 @@ const defaultContextValue = {
     additionalFields: ['age', 'gender'] as const,
   },
   searchAnnotations: [phoneAnnotation],
+  t: mockT,
 };
 
 beforeEach(() => {
@@ -179,7 +130,10 @@ describe('CommandPalette', () => {
     render(<CommandPalette />);
 
     const navGroup = screen.getByTestId('cmdk-group');
-    expect(navGroup).toHaveAttribute('data-heading', 'Navigation');
+    expect(navGroup).toHaveAttribute(
+      'data-heading',
+      'COMMAND_PALETTE_GROUP_NAVIGATION',
+    );
     expect(screen.getByText('Go to Registration')).toBeInTheDocument();
   });
 
@@ -218,7 +172,7 @@ describe('CommandPalette', () => {
     await user.type(input, 'jo');
 
     expect(
-      screen.getByText('Search failed. Please try again.'),
+      screen.getByText('COMMAND_PALETTE_SEARCH_ERROR'),
     ).toBeInTheDocument();
   });
 

@@ -1,4 +1,10 @@
-const PATIENT_FIELD_ENUM = [
+import type {
+  PatientFieldsConfig,
+  SearchAnnotation,
+  TriggerConfig,
+} from './CommandPaletteContext';
+
+export const PATIENT_FIELD_KEYS = [
   'name',
   'identifier',
   'age',
@@ -8,7 +14,9 @@ const PATIENT_FIELD_ENUM = [
   'extraIdentifiers',
   'customAttribute',
   'activeVisitUuid',
-];
+] as const;
+
+export type PatientFieldKey = (typeof PATIENT_FIELD_KEYS)[number];
 
 const triggerSchema = {
   type: 'object',
@@ -67,18 +75,41 @@ const patientFieldsSchema = {
   properties: {
     primaryFields: {
       type: 'array',
-      items: { type: 'string', enum: PATIENT_FIELD_ENUM },
+      items: { type: 'string', enum: PATIENT_FIELD_KEYS },
     },
     additionalFields: {
       type: 'array',
-      items: { type: 'string', enum: PATIENT_FIELD_ENUM },
+      items: { type: 'string', enum: PATIENT_FIELD_KEYS },
     },
   },
 };
 
-// Validates home/app.json — only the fields the palette cares about.
-// additionalProperties is intentionally absent at the top level because
-// app.json carries other fields (extensionPoints, etc.) that we do not own.
+export interface CommandPaletteExtension {
+  id: string;
+  extensionPointId: string;
+  label?: string;
+  translationKey?: string;
+  icon?: string;
+  order?: number;
+  requiredPrivilege?: string;
+  url?: string;
+  newTab?: boolean;
+  pathTemplate?: string;
+  appContext?: string | string[];
+}
+
+export interface CommandPaletteAppConfig {
+  trigger?: TriggerConfig;
+  patientFields?: PatientFieldsConfig;
+  searchAnnotations?: SearchAnnotation[];
+  extensionApps?: string[];
+}
+
+export interface HomeAppConfig {
+  id: string;
+  commandPalette?: CommandPaletteAppConfig;
+}
+
 export const homeAppConfigSchema: Record<string, unknown> = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   title: 'Home App Configuration',

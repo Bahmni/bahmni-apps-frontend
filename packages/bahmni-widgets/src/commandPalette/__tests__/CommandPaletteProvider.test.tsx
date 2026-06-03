@@ -28,61 +28,7 @@ jest.mock('react-dom', () => ({
   createPortal: (node: React.ReactNode) => node,
 }));
 
-jest.mock('cmdk', () => ({
-  Command: Object.assign(
-    ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="cmdk-root">{children}</div>
-    ),
-    {
-      Input: ({
-        onValueChange,
-        value,
-        ...rest
-      }: {
-        onValueChange?: (v: string) => void;
-        value?: string;
-        [key: string]: unknown;
-      }) => (
-        <input
-          data-testid="cmdk-input"
-          onChange={(e) => onValueChange?.(e.target.value)}
-          value={value ?? ''}
-          {...(rest as object)}
-        />
-      ),
-      List: ({ children }: { children: React.ReactNode }) => (
-        <div data-testid="cmdk-list">{children}</div>
-      ),
-      Empty: ({ children }: { children: React.ReactNode }) => (
-        <div>{children}</div>
-      ),
-      Group: ({
-        children,
-        heading,
-      }: {
-        children: React.ReactNode;
-        heading?: string;
-      }) => (
-        <div data-testid="cmdk-group" data-heading={heading}>
-          {children}
-        </div>
-      ),
-      Item: ({
-        children,
-        onSelect,
-        value,
-      }: {
-        children: React.ReactNode;
-        onSelect?: () => void;
-        value?: string;
-      }) => (
-        <div data-testid="cmdk-item" data-value={value} onClick={onSelect}>
-          {children}
-        </div>
-      ),
-    },
-  ),
-}));
+jest.mock('cmdk');
 
 const mockGetConfig = getConfig as jest.Mock;
 const mockGetCurrentUserPrivileges = getCurrentUserPrivileges as jest.Mock;

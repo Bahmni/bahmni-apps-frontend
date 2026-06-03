@@ -45,10 +45,8 @@ export function useCommandPaletteSearch(
     setLoading(true);
     setError(null);
 
-    const searchType = activeAnnotation?.searchType ?? 'patientAttribute';
-
     const searchPromise =
-      !activeAnnotation || searchType === 'patientNameOrId'
+      !activeAnnotation || activeAnnotation.searchType === 'patientNameOrId'
         ? searchPatientByNameOrId(debouncedTerm)
         : searchPatientByCustomAttribute(
             debouncedTerm,
@@ -66,10 +64,8 @@ export function useCommandPaletteSearch(
       })
       .catch((err: Error) => {
         if (requestId !== latestRequestIdRef.current) return;
-        if (err.name !== 'AbortError') {
-          setError(err.message);
-          setLoading(false);
-        }
+        setError(err.message);
+        setLoading(false);
       });
 
     return () => {

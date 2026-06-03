@@ -14,46 +14,46 @@ import styles from './styles/CommandPalette.module.scss';
 import { useCommandPaletteSearch } from './useCommandPaletteSearch';
 
 interface FieldDef {
-  label: string;
+  labelKey: string;
   getValue: (p: PatientSearchResult) => string | null | undefined;
 }
 
 const PATIENT_FIELD_MAP: Record<PatientFieldKey, FieldDef> = {
   name: {
-    label: 'Name',
+    labelKey: 'COMMAND_PALETTE_FIELD_NAME',
     getValue: (p) =>
       [p.givenName, p.middleName, p.familyName].filter(Boolean).join(' '),
   },
   identifier: {
-    label: 'ID',
+    labelKey: 'COMMAND_PALETTE_FIELD_ID',
     getValue: (p) => p.identifier,
   },
   age: {
-    label: 'Age',
+    labelKey: 'COMMAND_PALETTE_FIELD_AGE',
     getValue: (p) => p.age,
   },
   gender: {
-    label: 'Gender',
+    labelKey: 'COMMAND_PALETTE_FIELD_GENDER',
     getValue: (p) => p.gender,
   },
   birthDate: {
-    label: 'DOB',
+    labelKey: 'COMMAND_PALETTE_FIELD_DOB',
     getValue: (p) => (p.birthDate ? String(p.birthDate) : null),
   },
   addressFieldValue: {
-    label: 'Address',
+    labelKey: 'COMMAND_PALETTE_FIELD_ADDRESS',
     getValue: (p) => p.addressFieldValue,
   },
   extraIdentifiers: {
-    label: 'Extra IDs',
+    labelKey: 'COMMAND_PALETTE_FIELD_EXTRA_IDS',
     getValue: (p) => p.extraIdentifiers,
   },
   customAttribute: {
-    label: 'Attribute',
+    labelKey: 'COMMAND_PALETTE_FIELD_ATTRIBUTE',
     getValue: (p) => p.customAttribute,
   },
   activeVisitUuid: {
-    label: 'Active Visit',
+    labelKey: 'COMMAND_PALETTE_FIELD_ACTIVE_VISIT',
     getValue: (p) => (p.activeVisitUuid ? 'Active' : null),
   },
 };
@@ -89,40 +89,38 @@ const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
   activeActionIndex,
   onNavigate,
 }) => {
+  const { t } = useCommandPalette();
   const [isExpanded, setIsExpanded] = useState(false);
   const activeAction = patientActions[activeActionIndex];
 
-  const fullName = [patient.givenName, patient.middleName, patient.familyName]
-    .filter(Boolean)
-    .join(' ');
+  const fullName = PATIENT_FIELD_MAP.name.getValue(patient) ?? '';
   const initials = getInitials(patient.givenName, patient.familyName);
-
   const primaryText = buildPrimaryText(
     patient,
     patientFieldsConfig.primaryFields,
   );
+  const patientCtx: PatientActionContext = {
+    patientUuid: patient.uuid,
+    patientIdentifier: patient.identifier ?? '',
+  };
 
   const additionalFields = patientFieldsConfig.additionalFields
     .map((key) => ({
-      label: PATIENT_FIELD_MAP[key].label,
+      label: t(PATIENT_FIELD_MAP[key].labelKey),
       value: PATIENT_FIELD_MAP[key].getValue(patient),
     }))
     .filter((f) => f.value);
 
   const hasAdditional = additionalFields.length > 0;
 
-  const handleChevronClick = (e: React.MouseEvent) => {
+  const toggleExpanded = (e: React.SyntheticEvent) => {
     e.stopPropagation();
     e.preventDefault();
     setIsExpanded((prev) => !prev);
   };
 
   const handleChevronKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.stopPropagation();
-      e.preventDefault();
-      setIsExpanded((prev) => !prev);
-    }
+    if (e.key === ' ' || e.key === 'Enter') toggleExpanded(e);
   };
 
   return (
@@ -133,11 +131,7 @@ const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
       data-patient-uuid={patient.uuid}
       onSelect={() => {
         if (!activeAction) return;
-        const ctx: PatientActionContext = {
-          patientUuid: patient.uuid,
-          patientIdentifier: patient.identifier ?? '',
-        };
-        onNavigate(activeAction.getPath(ctx));
+        onNavigate(activeAction.getPath(patientCtx));
       }}
     >
       <span className={styles.avatar} aria-hidden="true">
@@ -160,9 +154,13 @@ const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
       {hasAdditional && (
         <button
           className={styles.chevronButton}
-          onClick={handleChevronClick}
+          onClick={toggleExpanded}
           onKeyDown={handleChevronKeyDown}
-          aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+          aria-label={
+            isExpanded
+              ? t('COMMAND_PALETTE_COLLAPSE_DETAILS')
+              : t('COMMAND_PALETTE_EXPAND_DETAILS')
+          }
           aria-expanded={isExpanded}
           tabIndex={0}
           type="button"
@@ -181,13 +179,15 @@ const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
                 className={`${styles.actionButton} ${isActive ? styles.actionButtonDefault : ''}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  const ctx: PatientActionContext = {
-                    patientUuid: patient.uuid,
-                    patientIdentifier: patient.identifier ?? '',
-                  };
-                  onNavigate(action.getPath(ctx));
+                  onNavigate(action.getPath(patientCtx));
                 }}
-                title={isActive ? `${action.label} (Enter)` : action.label}
+                title={
+                  isActive
+                    ? t('COMMAND_PALETTE_ACTION_ENTER_HINT', {
+                        label: action.label,
+                      })
+                    : action.label
+                }
                 type="button"
               >
                 <span className={styles.actionButtonLabel}>{action.label}</span>
@@ -209,6 +209,7 @@ export const CommandPalette: React.FC = () => {
     patientActions,
     patientFieldsConfig,
     searchAnnotations,
+    t,
   } = useCommandPalette();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAnnotation, setSelectedAnnotation] =
@@ -283,7 +284,7 @@ export const CommandPalette: React.FC = () => {
         );
       }
     },
-    [searchTerm, selectedAnnotation, patientActions.length],
+    [searchTerm, selectedAnnotation, patientActions],
   );
 
   const close = useCallback(() => {
@@ -321,6 +322,9 @@ export const CommandPalette: React.FC = () => {
 
   if (!isOpen) return null;
 
+  const isAnnotationMode = searchTerm.startsWith('@');
+  const isSearchActive = searchTerm.length >= 2 && !isAnnotationMode;
+
   return createPortal(
     <>
       <div className={styles.overlay} onClick={close} aria-hidden="true" />
@@ -328,15 +332,13 @@ export const CommandPalette: React.FC = () => {
         className={styles.dialog}
         role="dialog"
         aria-modal="true"
-        aria-label="Command palette"
+        aria-label={t('COMMAND_PALETTE_ARIA_LABEL')}
       >
         <Command
-          label="Command palette"
+          label={t('COMMAND_PALETTE_ARIA_LABEL')}
           onValueChange={handleCmdValueChange}
           filter={(value, search) => {
-            // Patient items are always filtered server-side — never hide them
             if (value.startsWith('patient:')) return 1;
-            // Nav items and annotation suggestions use standard substring match
             return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
           }}
         >
@@ -371,10 +373,12 @@ export const CommandPalette: React.FC = () => {
               className={styles.input}
               placeholder={
                 selectedAnnotation
-                  ? `Search by ${selectedAnnotation.label.toLowerCase()}...`
+                  ? t('COMMAND_PALETTE_SEARCH_BY_ANNOTATION', {
+                      annotation: selectedAnnotation.label.toLowerCase(),
+                    })
                   : searchAnnotations.length > 0
-                    ? `Search or type @ for filters...`
-                    : 'Search patients or navigate...'
+                    ? t('COMMAND_PALETTE_SEARCH_WITH_FILTERS')
+                    : t('COMMAND_PALETTE_SEARCH_DEFAULT')
               }
               value={searchTerm}
               onValueChange={handleSearchChange}
@@ -386,14 +390,14 @@ export const CommandPalette: React.FC = () => {
 
           <Command.List className={styles.list}>
             <Command.Empty className={styles.empty}>
-              No results found.
+              {t('COMMAND_PALETTE_NO_RESULTS')}
             </Command.Empty>
 
             {!selectedAnnotation &&
-              searchTerm.startsWith('@') &&
+              isAnnotationMode &&
               searchAnnotations.length > 0 && (
                 <Command.Group
-                  heading="Search filters"
+                  heading={t('COMMAND_PALETTE_GROUP_SEARCH_FILTERS')}
                   className={styles.group}
                 >
                   {searchAnnotations
@@ -417,8 +421,11 @@ export const CommandPalette: React.FC = () => {
                 </Command.Group>
               )}
 
-            {!searchTerm.startsWith('@') && navItems.length > 0 && (
-              <Command.Group heading="Navigation" className={styles.group}>
+            {!isAnnotationMode && navItems.length > 0 && (
+              <Command.Group
+                heading={t('COMMAND_PALETTE_GROUP_NAVIGATION')}
+                className={styles.group}
+              >
                 {navItems.map((item) => (
                   <Command.Item
                     key={item.id}
@@ -438,69 +445,68 @@ export const CommandPalette: React.FC = () => {
               </Command.Group>
             )}
 
-            {searchTerm.length >= 2 &&
-              !searchTerm.startsWith('@') &&
-              loading && (
-                <div className={styles.loading}>
-                  <svg
-                    className={styles.ekgLine}
-                    viewBox="0 0 80 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path
-                      className={styles.ekgPath}
-                      d="M 0,10 L 12,10 L 14,8 L 16,10 L 20,10 L 22,2 L 25,18 L 28,10 L 36,10 L 39,5 L 42,10 L 52,10 L 54,8 L 56,10 L 60,10 L 62,2 L 65,18 L 68,10 L 76,10 L 79,5 L 80,8"
-                    />
-                  </svg>
-                  Searching patients...
-                </div>
-              )}
+            {isSearchActive && loading && (
+              <div className={styles.loading}>
+                <svg
+                  className={styles.ekgLine}
+                  viewBox="0 0 80 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    className={styles.ekgPath}
+                    d="M 0,10 L 12,10 L 14,8 L 16,10 L 20,10 L 22,2 L 25,18 L 28,10 L 36,10 L 39,5 L 42,10 L 52,10 L 54,8 L 56,10 L 60,10 L 62,2 L 65,18 L 68,10 L 76,10 L 79,5 L 80,8"
+                  />
+                </svg>
+                {t('COMMAND_PALETTE_SEARCHING')}
+              </div>
+            )}
 
-            {searchTerm.length >= 2 &&
-              !searchTerm.startsWith('@') &&
-              !loading &&
-              error && (
-                <div className={styles.empty}>
-                  Search failed. Please try again.
-                </div>
-              )}
+            {isSearchActive && !loading && error && (
+              <div className={styles.empty}>
+                {t('COMMAND_PALETTE_SEARCH_ERROR')}
+              </div>
+            )}
 
-            {searchTerm.length >= 2 &&
-              !searchTerm.startsWith('@') &&
-              !loading &&
-              !error && (
-                <Command.Group heading="Patients" className={styles.group}>
-                  {patients.map((patient) => (
-                    <PatientCommandItem
-                      key={patient.uuid}
-                      patient={patient}
-                      patientFieldsConfig={patientFieldsConfig}
-                      patientActions={patientActions}
-                      activeActionIndex={
-                        patient.uuid === selectedPatientUuid
-                          ? activeActionIndex
-                          : getDefaultActionIndex()
-                      }
-                      onNavigate={handleSelect}
-                    />
-                  ))}
-                </Command.Group>
-              )}
+            {isSearchActive && !loading && !error && (
+              <Command.Group
+                heading={t('COMMAND_PALETTE_GROUP_PATIENTS')}
+                className={styles.group}
+              >
+                {patients.map((patient) => (
+                  <PatientCommandItem
+                    key={patient.uuid}
+                    patient={patient}
+                    patientFieldsConfig={patientFieldsConfig}
+                    patientActions={patientActions}
+                    activeActionIndex={
+                      patient.uuid === selectedPatientUuid
+                        ? activeActionIndex
+                        : getDefaultActionIndex()
+                    }
+                    onNavigate={handleSelect}
+                  />
+                ))}
+              </Command.Group>
+            )}
           </Command.List>
 
           <div className={styles.footer}>
             <span className={styles.shortcutHint}>
-              <kbd className={styles.kbd}>↑↓</kbd> navigate
+              <kbd className={styles.kbd}>↑↓</kbd>{' '}
+              {t('COMMAND_PALETTE_HINT_NAVIGATE')}
             </span>
             <span className={styles.shortcutHint}>
-              <kbd className={styles.kbd}>←→</kbd> switch action
+              <kbd className={styles.kbd}>←→</kbd>{' '}
+              {t('COMMAND_PALETTE_HINT_SWITCH_ACTION')}
             </span>
             <span className={styles.shortcutHint}>
-              <kbd className={styles.kbd}>↵</kbd> select
+              <kbd className={styles.kbd}>↵</kbd>{' '}
+              {t('COMMAND_PALETTE_HINT_SELECT')}
             </span>
             <span className={styles.shortcutHint}>
-              <kbd className={styles.kbd}>Esc</kbd> close
+              <kbd className={styles.kbd}>Esc</kbd>{' '}
+              {t('COMMAND_PALETTE_HINT_CLOSE')}
             </span>
           </div>
         </Command>

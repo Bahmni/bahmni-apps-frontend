@@ -1,6 +1,6 @@
 import { formatUrl } from '@bahmni/services';
+import type { CommandPaletteExtension } from './commandPaletteConfigSchema';
 import type {
-  CommandPaletteExtension,
   PatientActionContext,
   PatientFieldsConfig,
   TriggerConfig,
@@ -8,7 +8,7 @@ import type {
 
 export const HOME_APP_CONFIG_URL = '/bahmni_config/openmrs/apps/home/app.json';
 export const EXTENSION_BASE_URL = '/bahmni_config/openmrs/apps';
-export const DEFAULT_EXTENSION_APPS = ['home'];
+export const DEFAULT_EXTENSION_APPS = ['commandPalette', 'home'];
 
 export const COMMAND_PALETTE_NAV_ITEM_POINT =
   'org.bahmni.commandpalette.navItem';
@@ -25,7 +25,6 @@ export const DEFAULT_PATIENT_FIELDS: PatientFieldsConfig = {
   primaryFields: ['name', 'identifier'],
   additionalFields: ['age', 'gender'],
 };
-
 
 function parseKeys(keys: string): {
   key: string;
