@@ -13,6 +13,8 @@ export const PATIENT_CONDITION_PAGE_URL = (
   patientUUID: string,
   count: number = 10,
   offset: number = 0,
+  clinicalStatus?: 'active' | 'inactive',
 ) =>
   OPENMRS_FHIR_R4 +
-  `/Condition?category=${HL7_CONDITION_CATEGORY_CONDITION_CODE}&patient=${patientUUID}&_count=${count}&_getpagesoffset=${offset}&_sort=-_lastUpdated`;
+  `/Condition?category=${HL7_CONDITION_CATEGORY_CONDITION_CODE}&patient=${patientUUID}&_count=${count}&_getpagesoffset=${offset}&_sort=-_lastUpdated` +
+  (clinicalStatus ? `&clinical-status=${clinicalStatus}` : '');

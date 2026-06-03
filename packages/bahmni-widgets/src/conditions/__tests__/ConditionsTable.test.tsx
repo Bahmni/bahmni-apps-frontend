@@ -35,6 +35,21 @@ jest.mock('../../userPrivileges/useHasPrivilege');
 
 const mockAddNotification = jest.fn();
 
+/** Build a mock useQuery return value for both tabs */
+const makeQueryReturn = (activeReturn: object, inactiveReturn: object) =>
+  (useQuery as jest.Mock).mockImplementation((opts: { queryKey: unknown[] }) =>
+    opts.queryKey[2] === 'active' ? activeReturn : inactiveReturn,
+  );
+
+/** Default empty returns for both tabs */
+const emptyReturn = {
+  data: { conditions: [], total: 0 },
+  error: null,
+  isError: false,
+  isLoading: false,
+  refetch: jest.fn().mockResolvedValue(undefined),
+};
+
 describe('ConditionsTable', () => {
   const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
@@ -52,6 +67,8 @@ describe('ConditionsTable', () => {
     });
     // Default: no privilege
     (useHasPrivilege as jest.Mock).mockReturnValue(false);
+    // Default: both tabs return empty
+    makeQueryReturn(emptyReturn, emptyReturn);
   });
   afterEach(() => {
     queryClient.clear();
@@ -90,27 +107,45 @@ describe('ConditionsTable', () => {
   });
 
   it('should show loading state when data is loading', () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: null,
-      error: null,
-      isError: null,
-      isLoading: true,
-    });
+    makeQueryReturn(
+      {
+        data: null,
+        error: null,
+        isError: null,
+        isLoading: true,
+        refetch: jest.fn(),
+      },
+      {
+        data: null,
+        error: null,
+        isError: null,
+        isLoading: false,
+        refetch: jest.fn(),
+      },
+    );
     renderTable();
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByTestId('conditions-table-skeleton')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('conditions-active-table-skeleton'),
+    ).toBeInTheDocument();
   });
 
   it('should show error state when an error occurs', () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: null,
-      error: new Error('An unexpected error occured'),
-      isError: true,
-      isLoading: false,
-    });
+    makeQueryReturn(
+      {
+        data: null,
+        error: new Error('An unexpected error occured'),
+        isError: true,
+        isLoading: false,
+        refetch: jest.fn(),
+      },
+      emptyReturn,
+    );
     renderTable();
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByTestId('conditions-table-error')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('conditions-active-table-error'),
+    ).toBeInTheDocument();
     expect(mockAddNotification).toHaveBeenCalledWith({
       type: 'error',
       title: 'ERROR_DEFAULT_TITLE',
@@ -118,145 +153,18 @@ describe('ConditionsTable', () => {
     });
   });
 
-  it('should show empty state when an there is no data', () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: { conditions: [], total: 0 },
-      error: null,
-      isError: false,
-      isLoading: false,
-    });
+  it('should show empty state when there is no data', () => {
+    makeQueryReturn(emptyReturn, emptyReturn);
     renderTable();
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByTestId('conditions-table-empty')).toBeInTheDocument();
-  });
-
-  it('should show conditions table when an there patient has conditions marked', () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: {
-        conditions: [
-          {
-            code: '73211009',
-            codeDisplay: 'Diabetes mellitus',
-            display: 'Diabetes mellitus',
-            id: 'condition-active-diabetes',
-            note: [
-              'Patient diagnosed with Type 2 diabetes',
-              'Requires regular blood sugar monitoring',
-            ],
-            onsetDate: '2023-01-15T10:30:00.000+00:00',
-            recordedDate: '2023-01-15T10:30:00.000+00:00',
-            recorder: 'Dr. Smith',
-            status: 'active',
-          },
-          {
-            code: '73211008',
-            codeDisplay: 'High blood pressure',
-            display: 'High blood pressure',
-            id: 'condition-inactive-hypertension',
-            note: undefined,
-            recordedDate: '2022-06-10T08:15:00.000+00:00',
-            recorder: 'Dr. Johnson',
-            status: 'inactive',
-          },
-        ],
-        total: 2,
-      },
-      error: null,
-      isError: false,
-      isLoading: false,
-    });
-    renderTable();
-    expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
-    const activeStatusTag = screen.getByTestId('condition-status-73211009');
-    expect(activeStatusTag).toHaveTextContent('CONDITION_LIST_ACTIVE');
     expect(
-      screen.getByText('CONDITION_ONSET_SINCE_FORMAT'),
-    ).toBeInTheDocument();
-    expect(screen.getByText('High blood pressure')).toBeInTheDocument();
-    const inactiveStatusTag = screen.getByTestId('condition-status-73211008');
-    expect(inactiveStatusTag).toHaveTextContent('CONDITION_LIST_INACTIVE');
-    expect(
-      screen.getByText('CONDITION_TABLE_NOT_AVAILABLE'),
+      screen.getByTestId('conditions-active-table-empty'),
     ).toBeInTheDocument();
   });
 
-  describe('Pagination', () => {
-    const manyConditions = Array.from({ length: 3 }, (_, i) =>
-      buildCondition(i + 1),
-    );
-
-    it('renders pagination when server total exceeds pageSize', () => {
-      (useQuery as jest.Mock).mockReturnValue({
-        data: { conditions: manyConditions, total: 5 },
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-      render(
-        <QueryClientProvider client={queryClient}>
-          <ConditionsTable config={{ pageSize: 1 }} />
-        </QueryClientProvider>,
-      );
-      expect(
-        screen.getByRole('button', { name: /next page/i }),
-      ).toBeInTheDocument();
-    });
-
-    it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', () => {
-      (useQuery as jest.Mock).mockReturnValue({
-        data: { conditions: manyConditions, total: 3 },
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-      render(
-        <QueryClientProvider client={queryClient}>
-          <ConditionsTable config={{ pageSize: 10 }} />
-        </QueryClientProvider>,
-      );
-      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
-    });
-
-    it('displays the current page of conditions returned by the server', () => {
-      (useQuery as jest.Mock).mockReturnValue({
-        data: { conditions: manyConditions.slice(0, 2), total: 3 },
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-      render(
-        <QueryClientProvider client={queryClient}>
-          <ConditionsTable config={{ pageSize: 2 }} />
-        </QueryClientProvider>,
-      );
-      expect(screen.getByText('Condition 1')).toBeInTheDocument();
-      expect(screen.getByText('Condition 2')).toBeInTheDocument();
-      expect(screen.queryByText('Condition 3')).not.toBeInTheDocument();
-    });
-  });
-
-  // ── BAH-4652: Edit button moved to DashboardSection Tile header ─────────────
-  // ConditionsTable no longer renders an edit button; it lives in DashboardSection.
-
-  it('does not render an edit button (button lives in DashboardSection header)', () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: { conditions: [], total: 0 },
-      error: null,
-      isError: false,
-      isLoading: false,
-    });
-
-    renderTable();
-
-    expect(
-      screen.queryByTestId('edit-conditions-button'),
-    ).not.toBeInTheDocument();
-  });
-
-  describe('Accessibility', () => {
-    it('passes accessibility tests with data', async () => {
-      (useQuery as jest.Mock).mockReturnValue({
+  it('should show conditions table when patient has active conditions', () => {
+    makeQueryReturn(
+      {
         data: {
           conditions: [
             {
@@ -273,23 +181,295 @@ describe('ConditionsTable', () => {
               recorder: 'Dr. Smith',
               status: 'active',
             },
-            {
-              code: '73211008',
-              codeDisplay: 'High blood pressure',
-              display: 'High blood pressure',
-              id: 'condition-inactive-hypertension',
-              note: undefined,
-              recordedDate: '2022-06-10T08:15:00.000+00:00',
-              recorder: 'Dr. Johnson',
-              status: 'inactive',
-            },
           ],
-          total: 2,
+          total: 1,
         },
         error: null,
         isError: false,
         isLoading: false,
-      });
+        refetch: jest.fn(),
+      },
+      emptyReturn,
+    );
+    renderTable();
+    expect(screen.getByTestId('condition-table')).toBeInTheDocument();
+    expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
+    const activeStatusTag = screen.getByTestId('condition-status-73211009');
+    expect(activeStatusTag).toHaveTextContent('CONDITION_LIST_ACTIVE');
+    expect(
+      screen.getByText('CONDITION_ONSET_SINCE_FORMAT'),
+    ).toBeInTheDocument();
+  });
+
+  it('should show inactive conditions in inactive tab', async () => {
+    const user = userEvent.setup();
+    makeQueryReturn(emptyReturn, {
+      data: {
+        conditions: [
+          {
+            code: '73211008',
+            codeDisplay: 'High blood pressure',
+            display: 'High blood pressure',
+            id: 'condition-inactive-hypertension',
+            note: undefined,
+            recordedDate: '2022-06-10T08:15:00.000+00:00',
+            recorder: 'Dr. Johnson',
+            status: 'inactive',
+          },
+        ],
+        total: 1,
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+      refetch: jest.fn(),
+    });
+    renderTable();
+
+    // Switch to inactive tab
+    const inactiveTab = screen.getByText('CONDITION_TAB_INACTIVE');
+    await user.click(inactiveTab);
+
+    expect(screen.getByText('High blood pressure')).toBeInTheDocument();
+    const inactiveStatusTag = screen.getByTestId('condition-status-73211008');
+    expect(inactiveStatusTag).toHaveTextContent('CONDITION_LIST_INACTIVE');
+    expect(
+      screen.getByText('CONDITION_TABLE_NOT_AVAILABLE'),
+    ).toBeInTheDocument();
+  });
+
+  describe('Tab behaviour', () => {
+    it('Default tab is Active: active table is visible and active tab is selected', () => {
+      makeQueryReturn(
+        {
+          data: { conditions: [buildCondition(1)], total: 1 },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn(),
+        },
+        emptyReturn,
+      );
+      renderTable();
+
+      // Active table should be rendered
+      expect(screen.getByTestId('conditions-active-table')).toBeInTheDocument();
+      // Active tab label visible
+      expect(screen.getByText('CONDITION_TAB_ACTIVE')).toBeInTheDocument();
+    });
+
+    it('Switch to Inactive tab: inactive table data appears', async () => {
+      const user = userEvent.setup();
+      makeQueryReturn(
+        {
+          data: { conditions: [buildCondition(1)], total: 1 },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn(),
+        },
+        {
+          data: {
+            conditions: [{ ...buildCondition(2), status: 'inactive' }],
+            total: 1,
+          },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn(),
+        },
+      );
+      renderTable();
+
+      const inactiveTab = screen.getByText('CONDITION_TAB_INACTIVE');
+      await user.click(inactiveTab);
+
+      expect(
+        screen.getByTestId('conditions-inactive-table'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Condition 2')).toBeInTheDocument();
+    });
+
+    it('Empty inactive state: switching to Inactive tab shows the inactive empty-state message', async () => {
+      const user = userEvent.setup();
+      makeQueryReturn(emptyReturn, emptyReturn);
+      renderTable();
+
+      const inactiveTab = screen.getByText('CONDITION_TAB_INACTIVE');
+      await user.click(inactiveTab);
+
+      expect(
+        screen.getByTestId('conditions-inactive-table-empty'),
+      ).toBeInTheDocument();
+      // The empty-state message key for inactive tab
+      expect(
+        screen.getByText('CONDITION_LIST_NO_INACTIVE_CONDITIONS'),
+      ).toBeInTheDocument();
+    });
+
+    // Pagination independence: each tab has its own page state (state is internal
+    // React state, so we can't directly assert page values via mock). We assert
+    // that each tab renders its own SortableDataTable with its own dataTestId.
+    it('Each tab renders its own SortableDataTable with independent test IDs', () => {
+      makeQueryReturn(
+        {
+          data: { conditions: [buildCondition(1)], total: 5 },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn(),
+        },
+        {
+          data: {
+            conditions: [{ ...buildCondition(2), status: 'inactive' }],
+            total: 3,
+          },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn(),
+        },
+      );
+      renderTable();
+
+      // Both tables are in the DOM (Carbon Tabs renders all panels but only shows the active one visually)
+      expect(screen.getByTestId('conditions-active-table')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('conditions-inactive-table'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('Pagination', () => {
+    const manyConditions = Array.from({ length: 3 }, (_, i) =>
+      buildCondition(i + 1),
+    );
+
+    it('renders pagination when server total exceeds pageSize', () => {
+      makeQueryReturn(
+        {
+          data: { conditions: manyConditions, total: 5 },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn(),
+        },
+        emptyReturn,
+      );
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ConditionsTable config={{ pageSize: 1 }} />
+        </QueryClientProvider>,
+      );
+      expect(
+        screen.getByRole('button', { name: /next page/i }),
+      ).toBeInTheDocument();
+    });
+
+    it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', () => {
+      makeQueryReturn(
+        {
+          data: { conditions: manyConditions, total: 3 },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn(),
+        },
+        emptyReturn,
+      );
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ConditionsTable config={{ pageSize: 10 }} />
+        </QueryClientProvider>,
+      );
+      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
+    });
+
+    it('displays the current page of conditions returned by the server', () => {
+      makeQueryReturn(
+        {
+          data: { conditions: manyConditions.slice(0, 2), total: 3 },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn(),
+        },
+        emptyReturn,
+      );
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ConditionsTable config={{ pageSize: 2 }} />
+        </QueryClientProvider>,
+      );
+      expect(screen.getByText('Condition 1')).toBeInTheDocument();
+      expect(screen.getByText('Condition 2')).toBeInTheDocument();
+      expect(screen.queryByText('Condition 3')).not.toBeInTheDocument();
+    });
+  });
+
+  // ── BAH-4652: Edit button moved to DashboardSection Tile header ─────────────
+  // ConditionsTable no longer renders an edit button; it lives in DashboardSection.
+
+  it('does not render an edit button (button lives in DashboardSection header)', () => {
+    makeQueryReturn(emptyReturn, emptyReturn);
+
+    renderTable();
+
+    expect(
+      screen.queryByTestId('edit-conditions-button'),
+    ).not.toBeInTheDocument();
+  });
+
+  describe('Accessibility', () => {
+    it('passes accessibility tests with data', async () => {
+      makeQueryReturn(
+        {
+          data: {
+            conditions: [
+              {
+                code: '73211009',
+                codeDisplay: 'Diabetes mellitus',
+                display: 'Diabetes mellitus',
+                id: 'condition-active-diabetes',
+                note: [
+                  'Patient diagnosed with Type 2 diabetes',
+                  'Requires regular blood sugar monitoring',
+                ],
+                onsetDate: '2023-01-15T10:30:00.000+00:00',
+                recordedDate: '2023-01-15T10:30:00.000+00:00',
+                recorder: 'Dr. Smith',
+                status: 'active',
+              },
+            ],
+            total: 1,
+          },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn(),
+        },
+        {
+          data: {
+            conditions: [
+              {
+                code: '73211008',
+                codeDisplay: 'High blood pressure',
+                display: 'High blood pressure',
+                id: 'condition-inactive-hypertension',
+                note: undefined,
+                recordedDate: '2022-06-10T08:15:00.000+00:00',
+                recorder: 'Dr. Johnson',
+                status: 'inactive',
+              },
+            ],
+            total: 1,
+          },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn(),
+        },
+      );
       const { container } = renderTable();
       await act(async () => {
         const results = await axe(container);
@@ -299,12 +479,7 @@ describe('ConditionsTable', () => {
 
     it('passes accessibility tests with Edit button visible', async () => {
       setupEditEnabled();
-      (useQuery as jest.Mock).mockReturnValue({
-        data: { conditions: [], total: 0 },
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
+      makeQueryReturn(emptyReturn, emptyReturn);
 
       const { container } = renderTable({ onEditClick: jest.fn() });
 
@@ -333,12 +508,16 @@ describe('ConditionsTable', () => {
       conditions: ReturnType<typeof buildCondition>[],
     ) => {
       (useHasPrivilege as jest.Mock).mockReturnValue(true);
-      (useQuery as jest.Mock).mockReturnValue({
-        data: { conditions, total: conditions.length },
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
+      makeQueryReturn(
+        {
+          data: { conditions, total: conditions.length },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn().mockResolvedValue(undefined),
+        },
+        emptyReturn,
+      );
     };
 
     it('"Mark as inactive" ghost button renders when showActions is true and condition is active', () => {
@@ -411,13 +590,16 @@ describe('ConditionsTable', () => {
         rawFhirResource,
       };
       (useHasPrivilege as jest.Mock).mockReturnValue(true);
-      (useQuery as jest.Mock).mockReturnValue({
-        data: { conditions: [conditionWithRaw], total: 1 },
-        error: null,
-        isError: false,
-        isLoading: false,
-        refetch: jest.fn().mockResolvedValue(undefined),
-      });
+      makeQueryReturn(
+        {
+          data: { conditions: [conditionWithRaw], total: 1 },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn().mockResolvedValue(undefined),
+        },
+        emptyReturn,
+      );
       (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
         rawFhirResource,
       );
@@ -450,13 +632,16 @@ describe('ConditionsTable', () => {
         rawFhirResource,
       };
       (useHasPrivilege as jest.Mock).mockReturnValue(true);
-      (useQuery as jest.Mock).mockReturnValue({
-        data: { conditions: [conditionWithRaw], total: 1 },
-        error: null,
-        isError: false,
-        isLoading: false,
-        refetch: jest.fn().mockResolvedValue(undefined),
-      });
+      makeQueryReturn(
+        {
+          data: { conditions: [conditionWithRaw], total: 1 },
+          error: null,
+          isError: false,
+          isLoading: false,
+          refetch: jest.fn().mockResolvedValue(undefined),
+        },
+        emptyReturn,
+      );
       (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
         rawFhirResource,
       );

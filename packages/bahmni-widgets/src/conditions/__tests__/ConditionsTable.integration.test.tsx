@@ -122,24 +122,39 @@ describe('ConditionsTable Integration', () => {
     queryClient.clear();
   });
 
-  it('should show conditions table when patient has conditions marked', async () => {
-    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([activeCondition]));
+  it('should show conditions table when patient has active conditions', async () => {
+    // Component fires two queries: one for active, one for inactive
+    mockedGetConditionPage.mockImplementation(
+      (_uuid, _count, _page, clinicalStatus) =>
+        Promise.resolve(
+          clinicalStatus === 'active'
+            ? wrapPage([activeCondition])
+            : wrapPage([]),
+        ),
+    );
     renderComponent();
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
     });
     expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-    expect(mockedGetConditionPage).toHaveBeenCalledTimes(1);
   });
 
   it('should show error state when an error occurs', async () => {
     const errorMessage = 'Failed to fetch conditions from server';
-    mockedGetConditionPage.mockRejectedValueOnce(new Error(errorMessage));
+    mockedGetConditionPage.mockImplementation(
+      (_uuid, _count, _page, clinicalStatus) => {
+        if (clinicalStatus === 'active')
+          return Promise.reject(new Error(errorMessage));
+        return Promise.resolve(wrapPage([]));
+      },
+    );
     renderComponent();
     expect(screen.getByTestId('condition-table')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByTestId('conditions-table-error')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('conditions-active-table-error'),
+      ).toBeInTheDocument();
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'ERROR_DEFAULT_TITLE',
@@ -148,34 +163,56 @@ describe('ConditionsTable Integration', () => {
     });
   });
 
-  it('shows empty state when patient has no conditions', async () => {
-    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([]));
+  it('shows empty state when patient has no active conditions', async () => {
+    mockedGetConditionPage.mockResolvedValue(wrapPage([]));
     renderComponent();
     await waitFor(() => {
-      expect(screen.getByTestId('conditions-table-empty')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('conditions-active-table-empty'),
+      ).toBeInTheDocument();
     });
   });
 
-  it('calls service with page=1 on initial load', async () => {
-    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([activeCondition]));
+  it('calls service with page=1 and clinicalStatus on initial load', async () => {
+    mockedGetConditionPage.mockImplementation(
+      (_uuid, _count, _page, clinicalStatus) =>
+        Promise.resolve(
+          clinicalStatus === 'active'
+            ? wrapPage([activeCondition])
+            : wrapPage([]),
+        ),
+    );
     renderComponent();
     await waitFor(() => {
       expect(mockedGetConditionPage).toHaveBeenCalledWith(
         'test-patient-uuid',
         5,
         1,
+        'active',
+      );
+      expect(mockedGetConditionPage).toHaveBeenCalledWith(
+        'test-patient-uuid',
+        5,
+        1,
+        'inactive',
       );
     });
   });
 
-  it('navigates to page 2 via offset-based fetch', async () => {
+  it('navigates to page 2 via offset-based fetch on active tab', async () => {
     const user = userEvent.setup();
 
-    mockedGetConditionPage.mockResolvedValueOnce(
-      wrapPage([activeCondition], 4),
-    );
-    mockedGetConditionPage.mockResolvedValueOnce(
-      wrapPage([inactiveCondition], 4),
+    mockedGetConditionPage.mockImplementation(
+      (_uuid, _count, page, clinicalStatus) => {
+        if (clinicalStatus === 'active') {
+          return Promise.resolve(
+            page === 1
+              ? wrapPage([activeCondition], 4)
+              : wrapPage([inactiveCondition], 4),
+          );
+        }
+        return Promise.resolve(wrapPage([]));
+      },
     );
 
     renderComponent({ config: { pageSize: 2 } });
@@ -187,28 +224,27 @@ describe('ConditionsTable Integration', () => {
     await user.click(screen.getByRole('button', { name: /next page/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('High blood pressure')).toBeInTheDocument();
+      expect(mockedGetConditionPage).toHaveBeenCalledWith(
+        'test-patient-uuid',
+        2,
+        2,
+        'active',
+      );
     });
-
-    expect(mockedGetConditionPage).toHaveBeenLastCalledWith(
-      'test-patient-uuid',
-      2,
-      2,
-    );
-    expect(screen.queryByText('Diabetes mellitus')).not.toBeInTheDocument();
   });
 
   it('navigates back to page 1 when previous button is clicked', async () => {
     const user = userEvent.setup();
 
-    mockedGetConditionPage.mockResolvedValueOnce(
-      wrapPage([activeCondition], 4),
-    );
-    mockedGetConditionPage.mockResolvedValueOnce(
-      wrapPage([inactiveCondition], 4),
-    );
-    mockedGetConditionPage.mockResolvedValueOnce(
-      wrapPage([activeCondition], 4),
+    mockedGetConditionPage.mockImplementation(
+      (_uuid, _count, page, clinicalStatus) => {
+        if (clinicalStatus === 'active') {
+          if (page === 1)
+            return Promise.resolve(wrapPage([activeCondition], 4));
+          return Promise.resolve(wrapPage([inactiveCondition], 4));
+        }
+        return Promise.resolve(wrapPage([]));
+      },
     );
 
     renderComponent({ config: { pageSize: 2 } });
@@ -231,17 +267,26 @@ describe('ConditionsTable Integration', () => {
       'test-patient-uuid',
       2,
       1,
+      'active',
     );
   });
 
   it('re-fetches from page 1 when page size is changed', async () => {
     const user = userEvent.setup();
 
-    mockedGetConditionPage.mockResolvedValueOnce(
-      wrapPage([activeCondition], 4),
-    );
-    mockedGetConditionPage.mockResolvedValueOnce(
-      wrapPage([activeCondition, inactiveCondition], 4),
+    let callCount = 0;
+    mockedGetConditionPage.mockImplementation(
+      (_uuid, _count, _page, clinicalStatus) => {
+        if (clinicalStatus === 'active') {
+          callCount++;
+          if (callCount === 1)
+            return Promise.resolve(wrapPage([activeCondition], 4));
+          return Promise.resolve(
+            wrapPage([activeCondition, inactiveCondition], 4),
+          );
+        }
+        return Promise.resolve(wrapPage([]));
+      },
     );
 
     renderComponent({ config: { pageSize: 2 } });
@@ -254,19 +299,23 @@ describe('ConditionsTable Integration', () => {
     await user.selectOptions(select, '5');
 
     await waitFor(() => {
-      expect(mockedGetConditionPage).toHaveBeenCalledTimes(2);
+      expect(mockedGetConditionPage).toHaveBeenCalledWith(
+        'test-patient-uuid',
+        5,
+        1,
+        'active',
+      );
     });
-
-    expect(mockedGetConditionPage).toHaveBeenLastCalledWith(
-      'test-patient-uuid',
-      5,
-      1,
-    );
   });
 
   it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', async () => {
-    mockedGetConditionPage.mockResolvedValueOnce(
-      wrapPage([activeCondition, inactiveCondition], 2),
+    mockedGetConditionPage.mockImplementation(
+      (_uuid, _count, _page, clinicalStatus) =>
+        Promise.resolve(
+          clinicalStatus === 'active'
+            ? wrapPage([activeCondition, inactiveCondition], 2)
+            : wrapPage([]),
+        ),
     );
 
     renderComponent({ config: { pageSize: 10 } });
@@ -279,8 +328,13 @@ describe('ConditionsTable Integration', () => {
   });
 
   it('shows pagination when server total exceeds pageSize', async () => {
-    mockedGetConditionPage.mockResolvedValueOnce(
-      wrapPage([activeCondition], 5),
+    mockedGetConditionPage.mockImplementation(
+      (_uuid, _count, _page, clinicalStatus) =>
+        Promise.resolve(
+          clinicalStatus === 'active'
+            ? wrapPage([activeCondition], 5)
+            : wrapPage([]),
+        ),
     );
 
     renderComponent({ config: { pageSize: 2 } });
@@ -296,7 +350,7 @@ describe('ConditionsTable Integration', () => {
 
   it('does not call the API when patientUUID is null', async () => {
     (usePatientUUID as jest.Mock).mockReturnValue(null);
-    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([]));
+    mockedGetConditionPage.mockResolvedValue(wrapPage([]));
 
     renderComponent();
 

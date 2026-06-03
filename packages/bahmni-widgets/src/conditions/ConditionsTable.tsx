@@ -2,7 +2,11 @@ import {
   Button,
   SortableDataTable,
   StatusTag,
-  Tile,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
 } from '@bahmni/design-system';
 import {
   getConditionPage,
@@ -37,8 +41,14 @@ const ConditionsTable: React.FC<WidgetProps> = ({
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const [activeCurrentPage, setActiveCurrentPage] = useState(1);
+  const [activePageSize, setActivePageSize] = useState(configPageSize);
+
+  const [inactiveCurrentPage, setInactiveCurrentPage] = useState(1);
+  const [inactivePageSize, setInactivePageSize] = useState(configPageSize);
+
   const [conditionToMarkInactive, setConditionToMarkInactive] =
     useState<ConditionViewModel | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,15 +68,58 @@ const ConditionsTable: React.FC<WidgetProps> = ({
     configActions.length > 0 &&
     (actionPrivileges.length === 0 || hasActionPrivilege);
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['conditions', patientUUID!, currentPage, selectedPageSize],
+  const {
+    data: activeData,
+    isLoading: activeIsLoading,
+    isError: activeIsError,
+    error: activeError,
+    refetch: activeRefetch,
+  } = useQuery({
+    queryKey: [
+      'conditions',
+      patientUUID!,
+      'active',
+      activeCurrentPage,
+      activePageSize,
+    ],
     enabled: !!patientUUID,
     placeholderData: (prev) => prev,
     queryFn: async () => {
       const page = await getConditionPage(
         patientUUID!,
-        selectedPageSize,
-        currentPage,
+        activePageSize,
+        activeCurrentPage,
+        'active',
+      );
+      return {
+        conditions: createConditionViewModels(page.conditions),
+        total: page.total,
+      };
+    },
+  });
+
+  const {
+    data: inactiveData,
+    isLoading: inactiveIsLoading,
+    isError: inactiveIsError,
+    error: inactiveError,
+    refetch: inactiveRefetch,
+  } = useQuery({
+    queryKey: [
+      'conditions',
+      patientUUID!,
+      'inactive',
+      inactiveCurrentPage,
+      inactivePageSize,
+    ],
+    enabled: !!patientUUID,
+    placeholderData: (prev) => prev,
+    queryFn: async () => {
+      const page = await getConditionPage(
+        patientUUID!,
+        inactivePageSize,
+        inactiveCurrentPage,
+        'inactive',
       );
       return {
         conditions: createConditionViewModels(page.conditions),
@@ -81,35 +134,58 @@ const ConditionsTable: React.FC<WidgetProps> = ({
         payload.patientUUID === patientUUID &&
         payload.updatedResources.conditions
       ) {
-        refetch();
+        activeRefetch();
+        inactiveRefetch();
       }
     },
-    [patientUUID, refetch],
+    [patientUUID, activeRefetch, inactiveRefetch],
   );
 
   useEffect(() => {
-    setCurrentPage(1);
+    setActiveCurrentPage(1);
+    setInactiveCurrentPage(1);
   }, [patientUUID]);
 
   useEffect(() => {
-    if (isError)
+    const isError = activeIsError || inactiveIsError;
+    const error = activeIsError ? activeError : inactiveError;
+    if (isError && error)
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
         message: error.message,
         type: 'error',
       });
-  }, [isError, error, addNotification, t]);
+  }, [
+    activeIsError,
+    activeError,
+    inactiveIsError,
+    inactiveError,
+    addNotification,
+    t,
+  ]);
 
-  const handlePageChange = useCallback(
+  const handleActivePageChange = useCallback(
     (newPage: number, newPageSize: number) => {
-      if (newPageSize !== selectedPageSize) {
-        setSelectedPageSize(newPageSize);
-        setCurrentPage(1);
+      if (newPageSize !== activePageSize) {
+        setActivePageSize(newPageSize);
+        setActiveCurrentPage(1);
       } else {
-        setCurrentPage(newPage);
+        setActiveCurrentPage(newPage);
       }
     },
-    [selectedPageSize],
+    [activePageSize],
+  );
+
+  const handleInactivePageChange = useCallback(
+    (newPage: number, newPageSize: number) => {
+      if (newPageSize !== inactivePageSize) {
+        setInactivePageSize(newPageSize);
+        setInactiveCurrentPage(1);
+      } else {
+        setInactiveCurrentPage(newPage);
+      }
+    },
+    [inactivePageSize],
   );
 
   const handleConfirmMarkInactive = async () => {
@@ -133,7 +209,8 @@ const ConditionsTable: React.FC<WidgetProps> = ({
     } finally {
       setIsSubmitting(false);
       setConditionToMarkInactive(null);
-      await refetch();
+      await activeRefetch();
+      await inactiveRefetch();
     }
   };
 
@@ -208,30 +285,54 @@ const ConditionsTable: React.FC<WidgetProps> = ({
 
   return (
     <>
-      {/* Recent and all Tabs will come inplace of Tile */}
-      <Tile
-        title={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
-        data-testid="conditions-title"
-        className={styles.conditionsTableTitle}
-      >
-        <p>{t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}</p>
-      </Tile>
       <div data-testid="condition-table">
-        <SortableDataTable
-          headers={headers}
-          ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
-          rows={data?.conditions ?? []}
-          loading={isLoading}
-          errorStateMessage={isError ? error.message : null}
-          emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}
-          renderCell={renderCell}
-          className={styles.conditionsTableBody}
-          dataTestId="conditions-table"
-          pageSize={selectedPageSize}
-          totalItems={data?.total}
-          page={currentPage}
-          onPageChange={handlePageChange}
-        />
+        <Tabs
+          selectedIndex={tabIndex}
+          onChange={(state) => setTabIndex(state.selectedIndex)}
+        >
+          <TabList aria-label={t('CONDITION_TAB_LIST_ARIA_LABEL')}>
+            <Tab>{t('CONDITION_TAB_ACTIVE')}</Tab>
+            <Tab>{t('CONDITION_TAB_INACTIVE')}</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <SortableDataTable
+                headers={headers}
+                ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
+                rows={activeData?.conditions ?? []}
+                loading={activeIsLoading}
+                errorStateMessage={activeIsError ? activeError.message : null}
+                emptyStateMessage={t('CONDITION_LIST_NO_ACTIVE_CONDITIONS')}
+                renderCell={renderCell}
+                className={styles.conditionsTableBody}
+                dataTestId="conditions-active-table"
+                pageSize={activePageSize}
+                totalItems={activeData?.total}
+                page={activeCurrentPage}
+                onPageChange={handleActivePageChange}
+              />
+            </TabPanel>
+            <TabPanel>
+              <SortableDataTable
+                headers={headers}
+                ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
+                rows={inactiveData?.conditions ?? []}
+                loading={inactiveIsLoading}
+                errorStateMessage={
+                  inactiveIsError ? inactiveError.message : null
+                }
+                emptyStateMessage={t('CONDITION_LIST_NO_INACTIVE_CONDITIONS')}
+                renderCell={renderCell}
+                className={styles.conditionsTableBody}
+                dataTestId="conditions-inactive-table"
+                pageSize={inactivePageSize}
+                totalItems={inactiveData?.total}
+                page={inactiveCurrentPage}
+                onPageChange={handleInactivePageChange}
+              />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </div>
 
       <ConfirmationModal
