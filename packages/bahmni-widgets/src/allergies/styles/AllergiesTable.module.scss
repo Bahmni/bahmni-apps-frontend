@@ -52,6 +52,12 @@
   color: $cool-gray-20;
 }
 
+.widgetToolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 $spacing-03;
+}
+
 .allergiesTableBody {
   td {
     width: 25%;
@@ -59,4 +65,15 @@
   td:nth-child(4) {
     padding-inline: 0 !important;
   }
+}
+
+.allergiesTableWrapper {
+  position: relative;
+}
+
+.widgetEditActions {
+  position: absolute;
+  inset-block-start: -$spacing-08;
+  inset-inline-end: $spacing-03;
+  z-index: 1;
 }
