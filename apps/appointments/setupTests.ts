@@ -12,3 +12,31 @@ initFontAwesome();
 globalThis.TextEncoder = TextEncoder;
 // @ts-expect-error - Ignoring type issues with Node.js util TextDecoder
 globalThis.TextDecoder = TextDecoder;
+
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver = ResizeObserverMock;
+
+if (!document.adoptedStyleSheets) {
+  Object.defineProperty(document, 'adoptedStyleSheets', {
+    value: [],
+    writable: true,
+  });
+}
+
+globalThis.CSSStyleSheet = class CSSStyleSheet {
+  cssRules = [];
+  replaceSync() {}
+  replace() {
+    return Promise.resolve(this);
+  }
+  insertRule() {
+    return 0;
+  }
+  deleteRule() {}
+} as unknown as typeof CSSStyleSheet;
+
+Element.prototype.scrollIntoView = jest.fn();

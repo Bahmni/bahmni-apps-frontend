@@ -12,6 +12,8 @@ import {
   calculateEndDate,
   doDateRangesOverlap,
   getBrowserLocaleDateFormat,
+  convertTo24HourFormat,
+  getTimeInMinutes,
 } from '../date';
 
 const mockT = (key: string, options?: { count?: number }) => {
@@ -801,5 +803,54 @@ describe('getBrowserLocaleDateFormat', () => {
     });
 
     expect(getBrowserLocaleDateFormat()).toBe(DEFAULT_DATE_FORMAT);
+  });
+});
+
+describe('convertTo24HourFormat', () => {
+  it.each([
+    ['09:00 AM', '09:00'],
+    ['12:00 PM', '12:00'],
+    ['12:00 AM', '00:00'],
+    ['01:30 PM', '13:30'],
+    ['06:15 pm', '18:15'],
+    ['09:00 am', '09:00'],
+  ])('should convert %s to %s', (input, expected) => {
+    expect(convertTo24HourFormat(input)).toBe(expected);
+  });
+
+  it.each([
+    [''],
+    ['  '],
+    [null as unknown as string],
+    [undefined as unknown as string],
+    ['invalid'],
+    ['25:00 AM'],
+  ])('should return empty string for invalid input: %s', (input) => {
+    expect(convertTo24HourFormat(input)).toBe('');
+  });
+});
+
+describe('getTimeInMinutes', () => {
+  it.each([
+    ['09:00 AM', 540],
+    ['12:00 PM', 720],
+    ['12:00 AM', 0],
+    ['01:30 PM', 810],
+    ['11:45 AM', 705],
+    ['02:30 PM', 870],
+    ['06:15 PM', 1095],
+    ['11:59 PM', 1439],
+  ])('should convert %s to %d minutes', (input, expected) => {
+    expect(getTimeInMinutes(input)).toBe(expected);
+  });
+
+  it.each([
+    [''],
+    ['  '],
+    ['invalid'],
+    [null as unknown as string],
+    [undefined as unknown as string],
+  ])('should return null for invalid input: %s', (input) => {
+    expect(getTimeInMinutes(input)).toBeNull();
   });
 });

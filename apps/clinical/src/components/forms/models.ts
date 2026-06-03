@@ -1,3 +1,4 @@
+import { type CDSCard } from '@bahmni/services';
 import type { BundleEntry, Reference } from 'fhir/r4';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import type { InputControl as ClinicalInputControlConfig } from '../../providers/clinicalConfig/models';
@@ -16,6 +17,8 @@ export interface InputControl {
   hasData: () => boolean;
   subscribe: (cb: () => void) => () => void;
   createBundleEntries?: (ctx: EncounterContext) => BundleEntry[];
+  updateItemCDSCards?: (itemId: string, cards: CDSCard[]) => void;
+  hasCriticalCDSCards?: () => boolean;
 }
 
 export interface EncounterContext {

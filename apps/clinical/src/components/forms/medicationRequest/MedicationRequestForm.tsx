@@ -10,6 +10,8 @@ import {
   fetchMedicationOrdersMetadata,
   useTranslation,
   getVaccinations,
+  filterCdsCardsForItems,
+  useCDSSResultsListener,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -22,6 +24,7 @@ import {
   getMedicationsFromBundle,
 } from '../../../services/medicationService';
 import { parseFhirToMedicationInputEntry } from '../../../utils/fhir/medicationRequestParser';
+import CDSCardAlert from '../../cdsCardAlert/CDSCardAlert';
 import SelectedMedicationRequestItem from './components/SelectedMedicationRequestItem';
 import {
   MEDICATIONS_CONFIG_URL,
@@ -45,6 +48,7 @@ const MedicationRequestForm: React.FC<{
     type: inputControlType = MEDICATIONS_INPUT_CONTROL_KEY,
     label = 'MEDICATIONS_INPUT_CONTROL_TITLE',
     attributes = [],
+    cdss: cdssRules = [],
   } = inputControlConfig ?? {};
 
   const isMedicationRequest =
@@ -98,6 +102,7 @@ const MedicationRequestForm: React.FC<{
     removeItem,
     setAttributes,
     pendingFhirEdits,
+    updateItemCDSCards,
   } = useMedicationRequestStore(inputControlType as MedicationRequestStoreKey);
 
   const isEditMode = selectedMedicationRequests.some((m) => m.fhirResourceId);
@@ -118,6 +123,20 @@ const MedicationRequestForm: React.FC<{
     }
   }, [parsedEditEntries, inputControlType]);
 
+  useCDSSResultsListener((detail) => {
+    const { cards } = detail;
+
+    const selectedItemIds = new Set(
+      selectedMedicationRequests.map((item) => item.id),
+    );
+
+    const relevantCards = filterCdsCardsForItems(cards, selectedItemIds);
+
+    relevantCards.forEach(({ card, resourceId }) => {
+      updateItemCDSCards(resourceId, [card]);
+    });
+  });
+
   const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
@@ -125,7 +144,9 @@ const MedicationRequestForm: React.FC<{
   const handleOnChange = (selected: MedicationFilterResult) => {
     if (selected.medication) {
       const displayName = getMedicationDisplay(selected.medication);
+
       addItem(selected.medication, displayName);
+
       setSearchTerm('');
     }
   };
@@ -226,20 +247,27 @@ const MedicationRequestForm: React.FC<{
             className={styles.itemsBox}
           >
             {selectedMedicationRequests.map((item) => (
-              <SelectedItem
-                onClose={() => removeItem(item.id)}
-                className={styles.selectedItem}
-                key={item.id}
-              >
-                <SelectedMedicationRequestItem
-                  entry={item}
-                  medicationConfig={medicationConfig}
-                  inputControlType={
-                    inputControlType as MedicationRequestStoreKey
-                  }
-                  attributes={attributes}
-                />
-              </SelectedItem>
+              <div key={item.id}>
+                {item.cdsCards?.map((card) => (
+                  <div key={card.summary} className={styles.cdsCardContainer}>
+                    <CDSCardAlert card={card} className={styles.cdsCard} />
+                  </div>
+                ))}
+                <SelectedItem
+                  onClose={() => removeItem(item.id)}
+                  className={styles.selectedItem}
+                >
+                  <SelectedMedicationRequestItem
+                    entry={item}
+                    medicationConfig={medicationConfig}
+                    inputControlType={
+                      inputControlType as MedicationRequestStoreKey
+                    }
+                    attributes={attributes}
+                    cdssRules={cdssRules}
+                  />
+                </SelectedItem>
+              </div>
             ))}
           </BoxWHeader>
         )}

@@ -1,5 +1,4 @@
 import {
-  generateUUID,
   resolveComboBoxItems,
   formatDateTime,
   Location,
@@ -261,6 +260,7 @@ export function createImmunizationBundleEntries({
     ];
     const resource: Immunization = {
       resourceType: 'Immunization',
+      id: entry.id,
       status: 'completed',
       vaccineCode: {
         coding: [
@@ -311,6 +311,6 @@ export function createImmunizationBundleEntries({
       ],
     };
 
-    return createBundleEntry(`urn:uuid:${generateUUID()}`, resource, 'POST');
+    return createBundleEntry(`urn:uuid:${entry.id}`, resource, 'POST');
   });
 }

@@ -28,6 +28,9 @@ const registerImmunizationControl = (key: ImmunizationStoreKey) => {
         practitionerUUID: ctx.practitionerUUID,
         isAdministration,
       }),
+    updateItemCDSCards: (itemId: string, cards) =>
+      store().getState().updateItemCDSCards(itemId, cards),
+    hasCriticalCDSCards: () => store().getState().hasCriticalCDSCards(),
   });
 };
 

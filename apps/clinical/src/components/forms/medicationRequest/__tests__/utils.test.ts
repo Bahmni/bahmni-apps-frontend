@@ -1,4 +1,4 @@
-import { resolveComboBoxItems } from '@bahmni/services';
+import { generateUUID, resolveComboBoxItems } from '@bahmni/services';
 import { MedicationRequest } from 'fhir/r4';
 import {
   applyDefaultDosageUnit,
@@ -25,17 +25,19 @@ import {
   mockSelectedMedication,
 } from './__mocks__/MedicationRequestFormMocks';
 
+const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
+
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   resolveComboBoxItems: jest.fn(),
+  generateUUID: jest.fn(() => mockUUID),
 }));
 
 jest.mock('../../../../services/medicationService', () => ({
   getMedicationDisplay: jest.fn((m) => m?.code?.text ?? 'Unknown'),
 }));
 
-const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
-globalThis.crypto.randomUUID = jest.fn().mockReturnValue(mockUUID);
+const mockGenerateUUID = generateUUID as jest.Mock;
 
 describe('applyDefaultFrequency', () => {
   it('applies default frequency when none is set and default matches a non-immediate frequency', () => {
@@ -541,7 +543,7 @@ describe('createMedicationRequestEntries', () => {
     });
 
     expect(result).toHaveLength(1);
-    expect(result[0].fullUrl).toBe(`urn:uuid:${mockUUID}`);
+    expect(result[0].fullUrl).toBe(`urn:uuid:uuid-med-123`);
     expect(result[0].resource).toMatchObject({
       resourceType: 'MedicationRequest',
       status: 'active',
@@ -614,24 +616,22 @@ describe('createMedicationRequestEntries', () => {
   it('should generate unique UUIDs for each medication entry', () => {
     const medications = [
       mockMedicationEntry,
-      { ...mockMedicationEntry, id: 'med-456' },
+      { ...mockMedicationEntry, id: 'uuid-med-456' },
     ];
 
     let callCount = 0;
     const uuids = ['uuid-1', 'uuid-2'];
-    (globalThis.crypto.randomUUID as jest.Mock).mockImplementation(
-      () => uuids[callCount++],
-    );
+    mockGenerateUUID.mockImplementation(() => uuids[callCount++]);
 
     const result = createMedicationRequestEntries({
       selectedMedicationRequests: medications,
       ...mockCreateParams,
     });
 
-    expect(result[0].fullUrl).toBe('urn:uuid:uuid-1');
-    expect(result[1].fullUrl).toBe('urn:uuid:uuid-2');
+    expect(result[0].fullUrl).toBe('urn:uuid:uuid-med-123');
+    expect(result[1].fullUrl).toBe('urn:uuid:uuid-med-456');
 
-    (globalThis.crypto.randomUUID as jest.Mock).mockReturnValue(mockUUID);
+    mockGenerateUUID.mockReturnValue(mockUUID);
   });
 
   it('should set priorPrescription when entry has fhirResourceId', () => {

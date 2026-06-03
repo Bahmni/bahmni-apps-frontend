@@ -364,6 +364,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
 
   return (
     <div
+      id="medications-table"
       data-testid="medications-table"
       className={styles.medicationsTableWrapper}
     >

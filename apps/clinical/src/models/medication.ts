@@ -1,4 +1,7 @@
-import { MedicationFrequency as Frequency } from '@bahmni/services';
+import {
+  MedicationFrequency as Frequency,
+  type CDSCard,
+} from '@bahmni/services';
 import { Medication } from 'fhir/r4';
 import { Concept } from './encounterConcepts';
 
@@ -30,6 +33,8 @@ export interface MedicationInputEntry {
   // Edit support
   fhirResourceId?: string;
   isModified?: boolean;
+
+  cdsCards?: CDSCard[];
 
   errors: {
     stat?: string;

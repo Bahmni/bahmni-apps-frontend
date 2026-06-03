@@ -1,5 +1,6 @@
 import { Location, type AvailableStockResponse } from '@bahmni/services';
 import { Medication, MedicationRequest, Reference } from 'fhir/r4';
+import { createMockCDSCard } from '../../../../../__mocks__/cdssMocks';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
 import { ImmunizationInputEntry } from '../../models';
 
@@ -81,6 +82,17 @@ export const mockImmunizationInputControlConfigWithFetchStockBatches = {
   },
 };
 
+export const mockImmunizationInputControlConfigWithCDSS = {
+  ...mockImmunizationInputControlConfig,
+  cdss: [
+    {
+      server: 'test-cdss-server',
+      service: 'immunization-history',
+      event: 'onSelect',
+    },
+  ],
+};
+
 export const mockClinicalConfigContext = {
   clinicalConfig: {
     consultationPad: {
@@ -129,21 +141,6 @@ export const mockLocationsWithChildren: Location[] = [
     childLocations: [{ uuid: 'child-uuid', display: 'Ward A', retired: false }],
   },
 ];
-
-export const mockVaccinationBundle = {
-  resourceType: 'Bundle',
-  type: 'searchset',
-  entry: [],
-};
-
-export const mockMixedVaccinationBundle = {
-  resourceType: 'Bundle',
-  type: 'searchset',
-  entry: [
-    buildMedicationEntry('Paracetamol', 'Medication', 'covid-19'),
-    buildMedicationEntry('ShouldBeExcluded', 'Observation'),
-  ],
-};
 
 export const mockImmunizationEntry: ImmunizationInputEntry = {
   id: 'test-id-1',
@@ -242,7 +239,42 @@ export const mockCovid19VaccineDrug: Medication = {
   code: { coding: [{ code: 'covid-19' }] },
 };
 
+export const mockInfluenzaVaccineDrug: Medication = {
+  resourceType: 'Medication',
+  id: 'flu-drug-uuid',
+  extension: [
+    {
+      url: MEDICINE_EXTENSION_URL,
+      extension: [
+        {
+          url: MEDICINE_DRUG_NAME_EXTENSION_URL,
+          valueString: 'Influenza Drug',
+        },
+      ],
+    },
+  ],
+  code: { coding: [{ code: 'flu' }] },
+};
+
 export const mockCovid19VaccineDrugs: Medication[] = [mockCovid19VaccineDrug];
+
+export const mockVaccinationBundle = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    { resource: mockCovid19VaccineDrug },
+    { resource: mockInfluenzaVaccineDrug },
+  ],
+};
+
+export const mockMixedVaccinationBundle = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  entry: [
+    buildMedicationEntry('Paracetamol', 'Medication', 'covid-19'),
+    buildMedicationEntry('ShouldBeExcluded', 'Observation'),
+  ],
+};
 
 export const mockEncounterSubject: Reference = {
   reference: 'Patient/patient-uuid',
@@ -403,4 +435,21 @@ export const mockStore = {
   validateAll: jest.fn(),
   reset: jest.fn(),
   getState: jest.fn(),
+  updateItemCDSCards: jest.fn(),
+  hasCriticalCDSCards: jest.fn().mockReturnValue(false),
 };
+
+export const mockCDSCard = createMockCDSCard(
+  'Immunization',
+  'imm-123',
+  'Vaccine interaction warning',
+  'Consider alternative vaccine',
+);
+
+export const mockCriticalCDSCard = createMockCDSCard(
+  'Immunization',
+  'imm-123',
+  'Critical vaccine allergy alert',
+  'Do not administer',
+  'critical',
+);

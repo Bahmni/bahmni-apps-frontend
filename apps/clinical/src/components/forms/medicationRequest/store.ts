@@ -1,6 +1,7 @@
 import {
   generateUUID,
   MedicationFrequency as Frequency,
+  type CDSCard,
 } from '@bahmni/services';
 import {
   Medication,
@@ -26,7 +27,7 @@ export interface MedicationRequestState {
   originalEditSnapshots: Map<string, MedicationInputEntry>;
   pendingFhirEdits: FhirMedicationRequest[];
   setAttributes: (attrs: InputControlAttributes[]) => void;
-  addItem: (medication: Medication, displayName: string) => void;
+  addItem: (medication: Medication, displayName: string) => string;
   removeItem: (id: string) => void;
   updateDosage: (id: string, dosage: number) => void;
   updateDosageUnit: (id: string, unit: Concept) => void;
@@ -45,6 +46,8 @@ export interface MedicationRequestState {
   loadMedicationsForEdit: (entries: MedicationInputEntry[]) => void;
   hasEditChanges: () => boolean;
   validateAll: () => boolean;
+  updateItemCDSCards: (itemId: string, cards: CDSCard[]) => void;
+  hasCriticalCDSCards: () => boolean;
   reset: () => void;
   getState: () => MedicationRequestState;
 }
@@ -359,7 +362,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
       const prnDefault = findAttr('prn', attributes)?.default;
       const noteDefault = findAttr('note', attributes)?.default;
       const newItem: MedicationInputEntry = {
-        id: `${medication.id}-${generateUUID()}`,
+        id: generateUUID(),
         display: displayName,
         medication,
         dosage: dosageDefault ? Number(dosageDefault) : 0,
@@ -385,6 +388,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
           ...state.selectedMedicationRequests,
         ],
       }));
+      return newItem.id;
     },
 
     removeItem: (id: string) => {
@@ -566,6 +570,21 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
         if (!original) return true;
         return hasMedicationChanged(m, original);
       });
+    },
+
+    updateItemCDSCards: (itemId: string, cards: CDSCard[]) => {
+      set((state) => ({
+        selectedMedicationRequests: state.selectedMedicationRequests.map(
+          (item) => (item.id === itemId ? { ...item, cdsCards: cards } : item),
+        ),
+      }));
+    },
+
+    hasCriticalCDSCards: () => {
+      const { selectedMedicationRequests } = get();
+      return selectedMedicationRequests.some((item) =>
+        item.cdsCards?.some((card) => card.indicator === 'critical'),
+      );
     },
 
     reset: () => {

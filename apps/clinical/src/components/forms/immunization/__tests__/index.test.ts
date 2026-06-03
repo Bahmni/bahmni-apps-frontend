@@ -39,6 +39,8 @@ describe('immunizationHistory index registration', () => {
       reset: mockReset,
       validateAll: mockValidateAll,
       selectedImmunizations: [],
+      updateItemCDSCards: jest.fn(),
+      hasCriticalCDSCards: jest.fn().mockReturnValue(false),
     });
     mockGetImmunizationStore.mockReturnValue({
       getState: mockGetState,
@@ -128,6 +130,50 @@ describe('immunizationHistory index registration', () => {
         practitionerUUID: ctx.practitionerUUID,
         isAdministration: ctx.isAdministration,
       });
+    },
+  );
+
+  it.each([
+    [IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY],
+    [IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY],
+  ])('updateItemCDSCards() delegates to store for %s', (key) => {
+    const mockUpdateItemCDSCards = jest.fn();
+    mockGetState.mockReturnValue({
+      updateItemCDSCards: mockUpdateItemCDSCards,
+    });
+
+    const mockCards = [
+      {
+        summary: 'Test card',
+        indicator: 'warning' as const,
+        source: { label: 'Test' },
+      },
+    ];
+
+    getEntry(key).updateItemCDSCards?.('item-123', mockCards);
+
+    expect(mockGetImmunizationStore).toHaveBeenCalledWith(key);
+    expect(mockUpdateItemCDSCards).toHaveBeenCalledWith('item-123', mockCards);
+  });
+
+  it.each([
+    { key: IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY, hasCritical: false },
+    { key: IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY, hasCritical: true },
+    { key: IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY, hasCritical: false },
+    { key: IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY, hasCritical: true },
+  ])(
+    'hasCriticalCDSCards() returns $hasCritical for $key',
+    ({ key, hasCritical }) => {
+      const mockHasCriticalCDSCards = jest.fn().mockReturnValue(hasCritical);
+      mockGetState.mockReturnValue({
+        hasCriticalCDSCards: mockHasCriticalCDSCards,
+      });
+
+      const result = getEntry(key).hasCriticalCDSCards?.();
+
+      expect(mockGetImmunizationStore).toHaveBeenCalledWith(key);
+      expect(mockHasCriticalCDSCards).toHaveBeenCalledTimes(1);
+      expect(result).toBe(hasCritical);
     },
   );
 });

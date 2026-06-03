@@ -4,32 +4,47 @@ import {
   type AuditEventType,
   dispatchAuditEvent,
   dispatchConsultationSaved,
+  dispatchCDSSResults,
+  getConfig,
   getEncounterByUuid,
+  invokeCDSSRule,
+  type CDSSCheckEventDetail,
+  type CDSSServerConfig,
+  useCDSSCheckListener,
   useTranslation,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
-import type { Encounter, MedicationRequest } from 'fhir/r4';
+import { useQuery } from '@tanstack/react-query';
+import type {
+  Bundle,
+  BundleEntry,
+  Encounter,
+  MedicationRequest,
+} from 'fhir/r4';
 import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useSyncExternalStore,
   useState,
 } from 'react';
+import { CDSS_SERVER_CONFIG_URL } from '../../constants/app';
 import { ERROR_TITLES } from '../../constants/errors';
 import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
-import type { AllergyInputEntry } from '../../models/allergy';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
 import { getMedicationRequestStore } from '../forms/medicationRequest/store';
+import type { EncounterContext } from '../forms/models';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
+import cdssConfigSchema from './cdssConfigSchema.json';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
 import { submitConsultation } from './services';
 import styles from './styles/index.module.scss';
@@ -48,19 +63,43 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   encounterSessionStartContext,
   onClose,
 }) => {
-  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies as
-    | AllergyInputEntry[]
-    | undefined;
+  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies;
   const encounterType = encounterSessionStartContext.encounterType;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldLoadCDSSConfig, setShouldLoadCDSSConfig] = useState(false);
+  const pendingCDSSCheckRef = useRef<CDSSCheckEventDetail | null>(null);
 
   const { clinicalConfig } = useClinicalConfig();
   const registry = useMemo(
     () => loadEncounterInputControls(clinicalConfig?.consultationPad),
     [clinicalConfig],
   );
+
+  const {
+    data: cdssServerConfig,
+    isLoading: isCdssServerConfigLoading,
+    error: cdssServerConfigError,
+  } = useQuery({
+    queryKey: ['cdssConfig'],
+    queryFn: () =>
+      getConfig<CDSSServerConfig[]>(CDSS_SERVER_CONFIG_URL, cdssConfigSchema),
+    enabled: shouldLoadCDSSConfig,
+  });
+
+  useEffect(() => {
+    if (cdssServerConfigError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('CDSS_CONFIG_LOAD_ERROR', {
+          errorMessage: cdssServerConfigError.message,
+        }),
+        type: 'error',
+      });
+      pendingCDSSCheckRef.current = null;
+    }
+  }, [cdssServerConfigError, addNotification, t]);
 
   const {
     encounterConcepts,
@@ -85,12 +124,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   }, [encounterType, clinicalConfig]);
 
-  const editOnlyKey = encounterSessionStartContext.editOnly as
-    | string
-    | undefined;
-  const editTitle = encounterSessionStartContext.editTitle as
-    | string
-    | undefined;
+  const editOnlyKey = encounterSessionStartContext.editOnly;
+  const editTitle = encounterSessionStartContext.editTitle;
 
   const activeEntries = useMemo(
     () => getActiveEntries(registry, resolvedEncounterType!, editOnlyKey),
@@ -169,7 +204,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const encounterForSubmission = matchReason.includes('MATCHED')
     ? activeEncounter
     : null;
-  const { episodeOfCare } = useClinicalAppData();
+
+  const { episodeOfCare, patientId, activeVisitId, activeEpisodeId } =
+    useClinicalAppData();
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
@@ -204,6 +241,134 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     }
   }, [preloadedAllergies]);
 
+  const buildComprehensiveCDSSBundle = useCallback((): Bundle => {
+    const entries: BundleEntry[] = [];
+
+    activeEntries.forEach((entry) => {
+      if (entry.hasData() && entry.createBundleEntries) {
+        const ctx: EncounterContext = {
+          encounterSubject: {
+            reference: `Patient/${encounterSessionStartContext.patientUuid}`,
+          },
+          encounterReference: activeEncounter?.id ?? '',
+          practitionerUUID: practitioner?.uuid ?? '',
+          consultationDate: new Date(),
+          statDurationInMilliseconds,
+        };
+        const controlEntries = entry.createBundleEntries(ctx);
+        entries.push(...controlEntries);
+      }
+    });
+
+    return {
+      resourceType: 'Bundle',
+      type: 'collection',
+      entry: entries,
+    };
+  }, [
+    activeEntries,
+    encounterSessionStartContext,
+    activeEncounter,
+    practitioner,
+    statDurationInMilliseconds,
+  ]);
+
+  const processCDSSCheck = useCallback(
+    async (detail: CDSSCheckEventDetail) => {
+      const { controlKey, itemId, rules } = detail;
+
+      if (!cdssServerConfig) {
+        return;
+      }
+
+      const dataBundle = buildComprehensiveCDSSBundle();
+
+      const resolvedVisitId =
+        activeVisitId ?? activeEncounter?.partOf?.reference?.split('/')[1];
+
+      const context = {
+        patientId: patientId!,
+        visitId: resolvedVisitId,
+        episodeId: activeEpisodeId ?? undefined,
+      };
+
+      const cardPromises = rules.map((rule) =>
+        invokeCDSSRule(cdssServerConfig, rule, context, dataBundle).catch(
+          () => {
+            addNotification({
+              title: t('ERROR_DEFAULT_TITLE'),
+              message: t('CDSS_RULE_INVOCATION_ERROR', {
+                controlKey,
+                eventType: rule.event,
+              }),
+              type: 'error',
+            });
+            return [];
+          },
+        ),
+      );
+
+      const cardArrays = await Promise.all(cardPromises);
+      const cards = cardArrays.flat();
+
+      dispatchCDSSResults({
+        cards,
+        triggerItemId: itemId,
+        controlKey,
+      });
+
+      pendingCDSSCheckRef.current = null;
+    },
+    [
+      cdssServerConfig,
+      buildComprehensiveCDSSBundle,
+      activeEncounter,
+      patientId,
+      activeVisitId,
+      activeEpisodeId,
+      addNotification,
+      t,
+    ],
+  );
+
+  // Process pending CDSS check when config becomes available
+  useEffect(() => {
+    if (
+      cdssServerConfig &&
+      !isCdssServerConfigLoading &&
+      pendingCDSSCheckRef.current
+    ) {
+      processCDSSCheck(pendingCDSSCheckRef.current);
+    }
+  }, [cdssServerConfig, isCdssServerConfigLoading, processCDSSCheck]);
+
+  const handleCDSSCheck = useCallback(
+    async (detail: CDSSCheckEventDetail) => {
+      const { rules } = detail;
+
+      if (!rules || rules.length === 0) return;
+
+      // Store the pending check to trigger config loading
+      pendingCDSSCheckRef.current = detail;
+
+      // If config is already loaded and not loading, process immediately
+      if (cdssServerConfig && !isCdssServerConfigLoading) {
+        await processCDSSCheck(detail);
+      } else if (!shouldLoadCDSSConfig) {
+        // Trigger config loading
+        setShouldLoadCDSSConfig(true);
+      }
+    },
+    [
+      cdssServerConfig,
+      isCdssServerConfigLoading,
+      processCDSSCheck,
+      shouldLoadCDSSConfig,
+    ],
+  );
+
+  useCDSSCheckListener(handleCDSSCheck);
+
   const handleSubmit = async () => {
     const validationResults = activeEntries.map((entry) => ({
       key: entry.key,
@@ -223,6 +388,20 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     }
 
     if (!validationResults.every((r) => r.valid)) return;
+
+    const hasCriticalCDSCards = activeEntries.some(
+      (entry) => entry.hasCriticalCDSCards?.() === true,
+    );
+
+    if (hasCriticalCDSCards) {
+      addNotification({
+        title: t('CDSS_CRITICAL_ALERT_TITLE'),
+        message: t('CDSS_CRITICAL_ALERT_MESSAGE'),
+        type: 'error',
+        timeout: 5000,
+      });
+      return;
+    }
 
     try {
       setIsSubmitting(true);

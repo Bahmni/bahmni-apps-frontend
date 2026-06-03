@@ -443,7 +443,7 @@ describe('createImmunizationBundleEntries', () => {
       ...BASE_BUNDLE_PARAMS,
       selectedImmunizations: [mockImmunizationEntry],
     });
-    expect(result[0].fullUrl).toBe('urn:uuid:mock-uuid');
+    expect(result[0].fullUrl).toBe('urn:uuid:test-id-1');
   });
 
   it('constructs the core immunization resource correctly for a minimal entry', () => {

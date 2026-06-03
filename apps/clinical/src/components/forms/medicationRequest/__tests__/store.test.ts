@@ -1,6 +1,8 @@
 import { renderHook } from '@testing-library/react';
 import { getMedicationRequestStore, useMedicationRequestStore } from '../store';
 import {
+  mockCDSCard,
+  mockCriticalCDSCard,
   mockDispenseUnit,
   mockDosageUnit,
   mockDurationUnit,
@@ -493,6 +495,137 @@ describe('useMedicationRequestStore', () => {
     expect(state.selectedMedicationRequests[0].display).toBe(
       'Paracetamol 500mg',
     );
+  });
+
+  describe('CDSS functionality', () => {
+    describe('updateItemCDSCards', () => {
+      it.each(['medication', 'vaccination'] as const)(
+        'updates CDS cards for specific item in %s store',
+        (key) => {
+          const testStore = () => getMedicationRequestStore(key).getState();
+          testStore().reset();
+
+          const itemId = testStore().addItem(mockMedication, 'Test Med');
+          testStore().updateItemCDSCards(itemId, [mockCDSCard]);
+
+          const item = testStore().selectedMedicationRequests.find(
+            (i) => i.id === itemId,
+          );
+          expect(item?.cdsCards).toEqual([mockCDSCard]);
+        },
+      );
+
+      it.each(['medication', 'vaccination'] as const)(
+        'updates only the specified item in %s store',
+        (key) => {
+          const testStore = () => getMedicationRequestStore(key).getState();
+          testStore().reset();
+
+          const itemId1 = testStore().addItem(mockMedication, 'Med 1');
+          const itemId2 = testStore().addItem(mockVaccination, 'Med 2');
+
+          testStore().updateItemCDSCards(itemId1, [mockCDSCard]);
+
+          const item1 = testStore().selectedMedicationRequests.find(
+            (i) => i.id === itemId1,
+          );
+          const item2 = testStore().selectedMedicationRequests.find(
+            (i) => i.id === itemId2,
+          );
+
+          expect(item1?.cdsCards).toEqual([mockCDSCard]);
+          expect(item2?.cdsCards).toBeUndefined();
+        },
+      );
+
+      it.each(['medication', 'vaccination'] as const)(
+        'replaces existing CDS cards in %s store',
+        (key) => {
+          const testStore = () => getMedicationRequestStore(key).getState();
+          testStore().reset();
+
+          const itemId = testStore().addItem(mockMedication, 'Test Med');
+          testStore().updateItemCDSCards(itemId, [mockCDSCard]);
+          testStore().updateItemCDSCards(itemId, [mockCriticalCDSCard]);
+
+          const item = testStore().selectedMedicationRequests.find(
+            (i) => i.id === itemId,
+          );
+          expect(item?.cdsCards).toEqual([mockCriticalCDSCard]);
+        },
+      );
+    });
+
+    describe('hasCriticalCDSCards', () => {
+      it.each(['medication', 'vaccination'] as const)(
+        'returns false when no items have cards in %s store',
+        (key) => {
+          const testStore = () => getMedicationRequestStore(key).getState();
+          testStore().reset();
+          testStore().addItem(mockMedication, 'Test Med');
+
+          expect(testStore().hasCriticalCDSCards()).toBe(false);
+        },
+      );
+
+      it.each(['medication', 'vaccination'] as const)(
+        'returns false when items only have non-critical cards in %s store',
+        (key) => {
+          const testStore = () => getMedicationRequestStore(key).getState();
+          testStore().reset();
+
+          const itemId = testStore().addItem(mockMedication, 'Test Med');
+          testStore().updateItemCDSCards(itemId, [mockCDSCard]);
+
+          expect(testStore().hasCriticalCDSCards()).toBe(false);
+        },
+      );
+
+      it.each(['medication', 'vaccination'] as const)(
+        'returns true when at least one item has a critical card in %s store',
+        (key) => {
+          const testStore = () => getMedicationRequestStore(key).getState();
+          testStore().reset();
+
+          const itemId = testStore().addItem(mockMedication, 'Test Med');
+          testStore().updateItemCDSCards(itemId, [mockCriticalCDSCard]);
+
+          expect(testStore().hasCriticalCDSCards()).toBe(true);
+        },
+      );
+
+      it.each(['medication', 'vaccination'] as const)(
+        'returns true when one of multiple items has a critical card in %s store',
+        (key) => {
+          const testStore = () => getMedicationRequestStore(key).getState();
+          testStore().reset();
+
+          const itemId1 = testStore().addItem(mockMedication, 'Med 1');
+          const itemId2 = testStore().addItem(mockVaccination, 'Med 2');
+
+          testStore().updateItemCDSCards(itemId1, [mockCDSCard]);
+          testStore().updateItemCDSCards(itemId2, [mockCriticalCDSCard]);
+
+          expect(testStore().hasCriticalCDSCards()).toBe(true);
+        },
+      );
+
+      it.each(['medication', 'vaccination'] as const)(
+        'returns true when item has both critical and non-critical cards in %s store',
+        (key) => {
+          const testStore = () => getMedicationRequestStore(key).getState();
+          testStore().reset();
+
+          const itemId = testStore().addItem(mockMedication, 'Test Med');
+          testStore().updateItemCDSCards(itemId, [
+            mockCDSCard,
+            mockCriticalCDSCard,
+          ]);
+
+          expect(testStore().hasCriticalCDSCards()).toBe(true);
+        },
+      );
+    });
   });
 
   describe('useMedicationRequestStore', () => {

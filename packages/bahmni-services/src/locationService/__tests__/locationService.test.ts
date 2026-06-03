@@ -1,9 +1,11 @@
 import { get } from '../../api';
-import { LOCATION_BY_TAG_URL } from '../constants';
-import { getLocationByTag } from '../locationService';
+import { LOCATION_BY_TAG_URL, FHIR_LOCATION_BY_TAG_URL } from '../constants';
+import { getLocationByTag, getFHIRLocationsByTag } from '../locationService';
 import {
   mockLocationResponse,
   mockEmptyLocationResponse,
+  mockFHIRLocationBundle,
+  mockEmptyFHIRLocationBundle,
 } from './__mocks__/mocks';
 
 jest.mock('../../api');
@@ -45,6 +47,39 @@ describe('locationService', () => {
         'API Error',
       );
       expect(get).toHaveBeenCalledWith(LOCATION_BY_TAG_URL('Login Location'));
+    });
+  });
+
+  describe('getFHIRLocationsByTag', () => {
+    it('should fetch locations from FHIR API and return FHIR Location Bundle', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockFHIRLocationBundle);
+
+      const result = await getFHIRLocationsByTag('Appointment Location');
+
+      expect(get).toHaveBeenCalledWith(
+        FHIR_LOCATION_BY_TAG_URL('Appointment Location'),
+      );
+      expect(result).toEqual(mockFHIRLocationBundle);
+    });
+
+    it('should return empty FHIR bundle when no entries exist', async () => {
+      (get as jest.Mock).mockResolvedValueOnce(mockEmptyFHIRLocationBundle);
+
+      const result = await getFHIRLocationsByTag('Appointment Location');
+
+      expect(result).toEqual(mockEmptyFHIRLocationBundle);
+    });
+
+    it('should throw when FHIR API call fails', async () => {
+      const mockError = new Error('FHIR API Error');
+      (get as jest.Mock).mockRejectedValueOnce(mockError);
+
+      await expect(
+        getFHIRLocationsByTag('Appointment Location'),
+      ).rejects.toThrow('FHIR API Error');
+      expect(get).toHaveBeenCalledWith(
+        FHIR_LOCATION_BY_TAG_URL('Appointment Location'),
+      );
     });
   });
 });
