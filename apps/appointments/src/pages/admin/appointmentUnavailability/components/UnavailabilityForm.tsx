@@ -126,10 +126,12 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
   useEffect(() => {
     if (loginLocations.length === 0) return;
     const loggedinUuid = getInitialLocationUuid();
-    const isValid = loginLocations.some((l) => l.uuid === loggedinUuid);
+    const isLoggedInLocationAllowed = loginLocations.some(
+      (l) => l.uuid === loggedinUuid,
+    );
     setFormData((prev) => ({
       ...prev,
-      locationUuid: isValid ? loggedinUuid : '',
+      locationUuid: isLoggedInLocationAllowed ? loggedinUuid : '',
     }));
   }, [loginLocations]);
 
