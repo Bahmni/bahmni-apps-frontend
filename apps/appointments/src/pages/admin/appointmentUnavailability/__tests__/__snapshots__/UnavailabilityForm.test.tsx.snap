@@ -50,8 +50,8 @@ exports[`UnavailabilityForm Snapshot matches snapshot for normal state 1`] = `
       >
         <label
           class="cds--label"
-          for="downshift-_r_9r_-toggle-button"
-          id="downshift-_r_9r_-label"
+          for="downshift-_r_as_-toggle-button"
+          id="downshift-_r_as_-label"
         >
           Select Location*
         </label>
@@ -61,12 +61,12 @@ exports[`UnavailabilityForm Snapshot matches snapshot for normal state 1`] = `
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_9r_-menu"
+            aria-controls="downshift-_r_as_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-labelledby="downshift-_r_9r_-label"
+            aria-labelledby="downshift-_r_as_-label"
             class="cds--list-box__field"
-            id="downshift-_r_9r_-toggle-button"
+            id="downshift-_r_as_-toggle-button"
             role="combobox"
             tabindex="0"
             title="General OPD"
@@ -102,9 +102,9 @@ exports[`UnavailabilityForm Snapshot matches snapshot for normal state 1`] = `
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_9r_-label"
+            aria-labelledby="downshift-_r_as_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_9r_-menu"
+            id="downshift-_r_as_-menu"
             role="listbox"
           />
         </div>
