@@ -17,8 +17,6 @@ export interface WidgetProps {
   canEditOrCreate?: boolean;
   /** UUID of the active encounter (from the encounter session store). */
   activeEncounterUuid?: string | null;
-  /** Row-level edit callback — passes the FHIR resource UUID of the row being edited. */
-  onRowEditClick?: (resourceId: string) => void;
 }
 export interface WidgetConfig {
   type: string;
