@@ -844,7 +844,6 @@ describe('AllergiesForm', () => {
         { encounterSessionStartContext: { preloadedAllergies } },
       );
 
-      // In edit mode the search combobox should be absent
       expect(
         screen.queryByTestId('allergies-search-combobox'),
       ).not.toBeInTheDocument();

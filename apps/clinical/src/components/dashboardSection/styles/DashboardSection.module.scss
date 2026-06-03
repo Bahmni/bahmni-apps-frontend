@@ -17,17 +17,6 @@
   }
 }
 
-.sectionNameWithEdit {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  min-block-size: fit-content !important;
-  p {
-    @include type-style("heading-compact-02");
-    color: $text-primary;
-  }
-}
-
 .divider {
   display: none;
 }

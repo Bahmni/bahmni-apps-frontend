@@ -1,6 +1,6 @@
 import type { ObservationForm } from '@bahmni/services';
 import { useActivePractitioner } from '@bahmni/widgets';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
@@ -22,12 +22,22 @@ const ObservationFormsPanel: React.FC = () => {
     pinnedForms,
     updatePinnedForms,
     isLoading: isPinnedFormsLoading,
+    refetch: refetchPinnedForms,
   } = usePinnedObservationForms(allForms, {
     userUuid: user?.uuid,
     isFormsLoading: isAllFormsLoading,
   });
 
-  const { selectedForms, addForm, removeForm } = useObservationFormsStore();
+  const { selectedForms, addForm, removeForm, viewingForm } =
+    useObservationFormsStore();
+
+  const prevViewingFormRef = useRef(viewingForm);
+  useEffect(() => {
+    if (prevViewingFormRef.current && !viewingForm) {
+      refetchPinnedForms();
+    }
+    prevViewingFormRef.current = viewingForm;
+  }, [viewingForm, refetchPinnedForms]);
 
   const handleFormSelect = (form: ObservationForm) => {
     addForm(form);
