@@ -1,3 +1,3 @@
-export const LOGIN_PATH = '/bahmni/home/index.html#/login';
+export { LOGIN_PATH } from '../constants/app';
 
 export const BINARY_RESPONSE_TYPES = ['blob'];
