@@ -10,15 +10,19 @@ import {
   AllergySeverity,
   AllergyStatus,
   FormattedAllergy,
+  getAllergies,
   getFormattedAllergies,
+  mapAllergyToInputEntry,
   useTranslation,
   useSubscribeConsultationSaved,
+  useEncounterSessionStore,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetActionConfig, WidgetProps } from '../registry/model';
+import { CONSULTATION_PAD_PRIVILEGES } from '../userPrivileges/consultationPadPrivileges';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './styles/AllergiesTable.module.scss';
 import {
@@ -27,9 +31,11 @@ import {
   sortAllergiesBySeverity,
 } from './utils';
 
-const EDIT_ALLERGY_LABEL = 'EDIT_ALLERGY';
+const CONSULTATION_START_EVENT = 'startConsultation';
 
-// Helper function to get severity CSS class
+const EDIT_ALLERGY_LABEL = 'EDIT_ALLERGY';
+const EDIT_ALL_ALLERGIES_LABEL = 'EDIT_ALL_ALLERGIES';
+
 const getSeverityClassName = (severity: string): string | undefined => {
   switch (severity?.toLowerCase()) {
     case AllergySeverity.mild:
@@ -47,14 +53,12 @@ const getSeverityClassName = (severity: string): string | undefined => {
 const AllergiesTable: React.FC<WidgetProps> = ({
   config,
   disableActions = false,
-  onRowEditClick,
 }) => {
   const [allergies, setAllergies] = useState<FormattedAllergy[]>([]);
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
-  // Actions column: config-driven, same pattern as ConditionsTable
   const configActions = useMemo(
     () => (config?.actions as WidgetActionConfig[] | undefined) ?? [],
     [config?.actions],
@@ -69,18 +73,71 @@ const AllergiesTable: React.FC<WidgetProps> = ({
   const showActions =
     configActions.length > 0 &&
     (actionPrivileges.length === 0 || hasActionPrivilege);
+
+  const canEditAllergies = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.EDIT_ALLERGIES,
+  );
+  const { matchReasons } = useEncounterSessionStore();
+  const noActiveVisit = matchReasons.includes('NO_ACTIVE_VISIT');
+  const showEditAllButton = canEditAllergies && !noActiveVisit;
+
+  const handleEditAll = useCallback(async () => {
+    try {
+      if (!patientUUID) return;
+      const rawAllergies = await getAllergies(patientUUID);
+      globalThis.dispatchEvent(
+        new CustomEvent(CONSULTATION_START_EVENT, {
+          detail: {
+            editOnly: 'allergies',
+            editTitle: 'EDIT_ALLERGIES_TITLE',
+            preloadedAllergies: rawAllergies.map(mapAllergyToInputEntry),
+          },
+        }),
+      );
+    } catch {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('ERROR_LOADING_ALLERGIES'),
+        type: 'error',
+      });
+    }
+  }, [patientUUID, addNotification, t]);
+
+  const handleRowEdit = useCallback(
+    async (resourceId: string) => {
+      try {
+        if (!patientUUID) return;
+        const rawAllergies = await getAllergies(patientUUID);
+        const target = rawAllergies.find((fhir) => fhir.id === resourceId);
+        if (!target) return;
+        globalThis.dispatchEvent(
+          new CustomEvent(CONSULTATION_START_EVENT, {
+            detail: {
+              editOnly: 'allergies',
+              editTitle: 'EDIT_ALLERGIES_TITLE',
+              preloadedAllergies: [mapAllergyToInputEntry(target)],
+            },
+          }),
+        );
+      } catch {
+        addNotification({
+          title: t('ERROR_DEFAULT_TITLE'),
+          message: t('ERROR_LOADING_ALLERGIES'),
+          type: 'error',
+        });
+      }
+    },
+    [patientUUID, addNotification, t],
+  );
+
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['allergies', patientUUID!],
     enabled: !!patientUUID,
     queryFn: () => getFormattedAllergies(patientUUID!),
   });
 
-  // Listen to consultation saved events and refetch if allergies were updated
   useSubscribeConsultationSaved(
     (payload) => {
-      // Only refetch if:
-      // 1. Event is for the same patient
-      // 2. Allergies were modified during consultation
       if (
         payload.patientUUID === patientUUID &&
         payload.updatedResources.allergies
@@ -101,7 +158,6 @@ const AllergiesTable: React.FC<WidgetProps> = ({
     if (data) setAllergies(data);
   }, [data, isLoading, isError, error, addNotification, t]);
 
-  // Define table headers
   const headers = useMemo(() => {
     const base = [
       { key: 'display', header: t('ALLERGEN') },
@@ -123,12 +179,11 @@ const AllergiesTable: React.FC<WidgetProps> = ({
     [],
   );
 
-  // Format and sort allergies for display
-  const displayAllergies = useMemo(() => {
-    return sortAllergiesBySeverity(allergies);
-  }, [allergies]);
+  const displayAllergies = useMemo(
+    () => sortAllergiesBySeverity(allergies),
+    [allergies],
+  );
 
-  // Function to render cell content based on the cell ID
   const renderCell = (allergy: FormattedAllergy, cellId: string) => {
     switch (cellId) {
       case 'display':
@@ -185,8 +240,7 @@ const AllergiesTable: React.FC<WidgetProps> = ({
             disabled={disableActions}
             testId={`edit-allergy-${allergy.id}`}
             onClick={() =>
-              !disableActions &&
-              onRowEditClick?.(allergy.resourceId ?? allergy.id)
+              !disableActions && handleRowEdit(allergy.resourceId ?? allergy.id)
             }
           >
             <Edit />
@@ -198,7 +252,25 @@ const AllergiesTable: React.FC<WidgetProps> = ({
   };
 
   return (
-    <div data-testid="allergy-table">
+    <div data-testid="allergy-table" className={styles.allergiesTableWrapper}>
+      {showEditAllButton && (
+        <div
+          className={styles.widgetEditActions}
+          data-testid="allergies-widget-edit-actions"
+        >
+          <IconButton
+            label={t(EDIT_ALL_ALLERGIES_LABEL)}
+            kind="ghost"
+            size="sm"
+            align="left"
+            disabled={allergies.length === 0 || disableActions}
+            onClick={handleEditAll}
+            testId="edit-all-allergies-button"
+          >
+            <Edit />
+          </IconButton>
+        </div>
+      )}
       <SortableDataTable
         headers={headers}
         ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
