@@ -1,6 +1,6 @@
 import { type PatientSearchResult } from '@bahmni/services';
 import { Command } from 'cmdk';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   useCommandPalette,
@@ -164,7 +164,7 @@ const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
           onKeyDown={handleChevronKeyDown}
           aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
           aria-expanded={isExpanded}
-          tabIndex={-1}
+          tabIndex={0}
           type="button"
         >
           <span className={styles.chevronIcon}>{isExpanded ? '▲' : '▼'}</span>
@@ -219,9 +219,10 @@ export const CommandPalette: React.FC = () => {
     selectedAnnotation,
   );
 
-  const defaultActionIndex = useMemo(() => {
+  const getDefaultActionIndex = useCallback(() => {
+    const pathname = window.location.pathname;
     const idx = patientActions.findIndex(
-      (a) => a.basePath && window.location.pathname.startsWith(a.basePath),
+      (a) => a.basePath && pathname.startsWith(a.basePath),
     );
     return idx >= 0 ? idx : 0;
   }, [patientActions]);
@@ -232,13 +233,13 @@ export const CommandPalette: React.FC = () => {
 
   const handleCmdValueChange = useCallback(
     (_val: string) => {
-      setActiveActionIndex(defaultActionIndex);
+      setActiveActionIndex(getDefaultActionIndex());
       const el = document.querySelector<HTMLElement>(
         '[data-patient-uuid][data-selected="true"]',
       );
       setSelectedPatientUuid(el?.dataset.patientUuid ?? null);
     },
-    [defaultActionIndex],
+    [getDefaultActionIndex],
   );
 
   const handleSearchChange = useCallback(
@@ -291,16 +292,31 @@ export const CommandPalette: React.FC = () => {
     setSelectedAnnotation(null);
   }, [setOpen]);
 
-  const handleSelect = useCallback(
-    (path: string) => {
-      close();
-      if (/^https?:\/\//.test(path)) {
+  const navigateToPath = useCallback(
+    (rawPath: string, preferNewTab = false) => {
+      const path = rawPath.trim();
+      if (!path) return;
+      if (/^(javascript|data):/i.test(path)) return;
+
+      const isHttp = /^https?:\/\//i.test(path);
+      const isRelative = path.startsWith('/');
+      if (!isHttp && !isRelative) return;
+
+      if (preferNewTab || isHttp) {
         window.open(path, '_blank', 'noopener,noreferrer');
       } else {
         window.location.href = path;
       }
     },
-    [close],
+    [],
+  );
+
+  const handleSelect = useCallback(
+    (path: string) => {
+      close();
+      navigateToPath(path);
+    },
+    [close, navigateToPath],
   );
 
   if (!isOpen) return null;
@@ -410,11 +426,7 @@ export const CommandPalette: React.FC = () => {
                     className={styles.item}
                     onSelect={() => {
                       close();
-                      if (item.newTab || /^https?:\/\//.test(item.path)) {
-                        window.open(item.path, '_blank', 'noopener,noreferrer');
-                      } else {
-                        window.location.href = item.path;
-                      }
+                      navigateToPath(item.path, item.newTab);
                     }}
                   >
                     <span className={styles.navIcon} aria-hidden="true">
@@ -468,7 +480,7 @@ export const CommandPalette: React.FC = () => {
                       activeActionIndex={
                         patient.uuid === selectedPatientUuid
                           ? activeActionIndex
-                          : defaultActionIndex
+                          : getDefaultActionIndex()
                       }
                       onNavigate={handleSelect}
                     />

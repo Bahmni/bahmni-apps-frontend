@@ -20,6 +20,19 @@ const triggerSchema = {
     key: { type: 'string' },
     interval: { type: 'number' },
   },
+  allOf: [
+    {
+      if: {
+        properties: { type: { const: 'combination' } },
+        required: ['type'],
+      },
+      then: { required: ['keys'] },
+    },
+    {
+      if: { properties: { type: { const: 'double' } }, required: ['type'] },
+      then: { required: ['key'] },
+    },
+  ],
 };
 
 const searchAnnotationSchema = {

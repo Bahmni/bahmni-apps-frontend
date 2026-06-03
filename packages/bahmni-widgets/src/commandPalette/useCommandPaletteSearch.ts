@@ -21,7 +21,7 @@ export function useCommandPaletteSearch(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const debouncedTerm = useDebounce(searchTerm, 300);
-  const abortRef = useRef<AbortController | null>(null);
+  const latestRequestIdRef = useRef(0);
 
   useEffect(() => {
     if (searchTerm.length >= 2) {
@@ -36,11 +36,11 @@ export function useCommandPaletteSearch(
     if (debouncedTerm.length < 2) {
       setPatients([]);
       setLoading(false);
+      setError(null);
       return;
     }
 
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
+    const requestId = ++latestRequestIdRef.current;
 
     setLoading(true);
     setError(null);
@@ -60,10 +60,12 @@ export function useCommandPaletteSearch(
 
     searchPromise
       .then((result) => {
+        if (requestId !== latestRequestIdRef.current) return;
         setPatients(result.pageOfResults as PatientSearchResult[]);
         setLoading(false);
       })
       .catch((err: Error) => {
+        if (requestId !== latestRequestIdRef.current) return;
         if (err.name !== 'AbortError') {
           setError(err.message);
           setLoading(false);
@@ -71,7 +73,9 @@ export function useCommandPaletteSearch(
       });
 
     return () => {
-      abortRef.current?.abort();
+      if (latestRequestIdRef.current === requestId) {
+        latestRequestIdRef.current++;
+      }
     };
   }, [debouncedTerm, activeAnnotation]);
 

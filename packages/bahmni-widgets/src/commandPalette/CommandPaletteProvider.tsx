@@ -34,7 +34,6 @@ import {
   DEFAULT_TRIGGER,
   DEFAULT_DOUBLE_INTERVAL,
   DEFAULT_PATIENT_FIELDS,
-  detectCurrentApp,
   matchesKeys,
   toExtensionArray,
   basePathFromTemplate,
@@ -81,7 +80,7 @@ const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
 
       const extensionApps =
         appConfig?.commandPalette?.extensionApps ?? DEFAULT_EXTENSION_APPS;
-      const currentApp = detectCurrentApp(window.location.pathname);
+      const currentPath = window.location.pathname;
 
       const extensionResults = await Promise.allSettled(
         extensionApps.map((app) =>
@@ -119,7 +118,13 @@ const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
       const filterAndSort = (extensionPointId: string) =>
         allExtensions
           .filter((e) => e.extensionPointId === extensionPointId)
-          .filter((e) => !e.appContext || e.appContext === currentApp)
+          .filter((e) => {
+            if (!e.appContext) return true;
+            const paths = Array.isArray(e.appContext)
+              ? e.appContext
+              : [e.appContext];
+            return paths.some((p) => currentPath.startsWith(p));
+          })
           .filter(
             (e) =>
               !e.requiredPrivilege ||

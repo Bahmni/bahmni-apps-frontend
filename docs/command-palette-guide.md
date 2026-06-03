@@ -274,7 +274,7 @@ A link that appears in the Command Palette list. Selecting it navigates to the s
 | `icon` | No | string | FontAwesome icon class (e.g. `fa-user`) |
 | `newTab` | No | boolean | Open in a new browser tab. Defaults to `false`. External URLs (`https://...`) always open in a new tab regardless of this field. |
 | `requiredPrivilege` | No | string | OpenMRS privilege required to see this item |
-| `appContext` | No | string | Restrict this item to a specific app only |
+| `appContext` | No | string \| string[] | Restrict this item to pages whose path starts with the given prefix(es). Omit to show everywhere. |
 
 _\* At least one of `translationKey` or `label` must be provided._
 
@@ -306,7 +306,7 @@ A button that appears after selecting a patient in search results. Navigates to 
 | `order` | No | number | Sort position of the action button |
 | `icon` | No | string | FontAwesome icon class |
 | `requiredPrivilege` | No | string | OpenMRS privilege required to see this button |
-| `appContext` | No | string | Restrict this button to a specific app only |
+| `appContext` | No | string \| string[] | Restrict this button to pages whose path starts with the given prefix(es). Omit to show everywhere. |
 
 _\* At least one of `translationKey` or `label` must be provided._
 
@@ -339,7 +339,11 @@ Items with no `requiredPrivilege` are visible to all logged-in users.
 
 ## App Context Filtering (`appContext`)
 
-By default, a Command Palette item appears in every Bahmni app. Use `appContext` to restrict an item to a specific app.
+By default, a Command Palette item appears on every page. Use `appContext` to restrict an item to specific pages by matching against `window.location.pathname` using a `startsWith` check.
+
+`appContext` accepts a **single path string** or an **array of path strings** — useful when the same feature is accessible via both a legacy Angular route and a new React route.
+
+**Single path — show only on the Bed Management page:**
 
 ```json
 {
@@ -347,20 +351,23 @@ By default, a Command Palette item appears in every Bahmni app. Use `appContext`
   "extensionPointId": "org.bahmni.commandpalette.navItem",
   "translationKey": "COMMAND_PALETTE_NAV_ADT_TRANSFER",
   "url": "/bahmni/bedmanagement/transfer",
-  "appContext": "adt"
+  "appContext": "/bahmni/bedmanagement"
 }
 ```
 
-This item only appears when the user is in the ADT (Bed Management) app.
+**Array of paths — show on both legacy and new routes for the same app:**
 
-| App | `appContext` value |
-|---|---|
-| Home | `home` |
-| Registration | `registration` |
-| Clinical | `clinical` |
-| Appointments | `appointments` |
-| Bed Management / ADT | `adt` |
-| Operating Theatre | `ot` |
+```json
+{
+  "id": "org.bahmni.commandpalette.nav.clinical.worklist",
+  "extensionPointId": "org.bahmni.commandpalette.navItem",
+  "translationKey": "COMMAND_PALETTE_NAV_CLINICAL_WORKLIST",
+  "url": "/bahmni-new/clinical/worklist",
+  "appContext": ["/bahmni/clinical", "/bahmni-new/clinical"]
+}
+```
+
+Items with no `appContext` are always visible regardless of the current page.
 
 ---
 
@@ -451,12 +458,16 @@ In `openmrs/apps/registration/v2/extension.json`:
     "icon": "fa-user-plus",
     "order": 10,
     "requiredPrivilege": "app:registration",
-    "appContext": "registration"
+    "appContext": "/bahmni-new/registration"
   }
 }
 ```
 
-This item only appears when the user is inside the Registration app.
+This item only appears when the user is on a Registration page. To also show it on the legacy Angular registration route, use an array:
+
+```json
+"appContext": ["/bahmni-new/registration", "/bahmni/registration"]
+```
 
 ---
 
@@ -493,7 +504,7 @@ The user types `@altphone ` followed by the number to search by alternate phone.
 - **`extensionApps` is the source of truth** — any app not listed there is silently ignored even if its `v2/extension.json` has Command Palette items.
 - **Config is loaded once on page load** — changes to JSON files take effect after a browser refresh.
 - **Items without `requiredPrivilege` are visible to all users** — add one if access should be restricted.
-- **Items without `appContext` appear everywhere** — add one if the item is only relevant in a specific app.
+- **Items without `appContext` appear everywhere** — add one if the item is only relevant on specific pages. The value is matched as a URL path prefix against `window.location.pathname`. Use an array to match multiple routes (e.g. legacy Angular + new React routes for the same feature).
 - **External URLs** (starting with `http://` or `https://`) always open in a new tab, regardless of the `newTab` field.
 - **`order` values are global** — items from all apps are sorted together, so coordinate `order` values across apps to get the desired sequence.
 - **Double-tap trigger does not fire inside input fields** — this is intentional to avoid conflicts while typing.

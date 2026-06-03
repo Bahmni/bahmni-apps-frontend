@@ -62,7 +62,7 @@ export interface CommandPaletteExtension {
   url?: string;
   newTab?: boolean;
   pathTemplate?: string;
-  appContext?: string;
+  appContext?: string | string[];
 }
 
 export interface CommandPaletteAppConfig {

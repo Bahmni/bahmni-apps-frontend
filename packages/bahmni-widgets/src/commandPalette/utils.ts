@@ -26,17 +26,6 @@ export const DEFAULT_PATIENT_FIELDS: PatientFieldsConfig = {
   additionalFields: ['age', 'gender'],
 };
 
-const LEGACY_APP_MAP: Record<string, string> = {
-  bedmanagement: 'adt',
-};
-
-export function detectCurrentApp(pathname: string): string {
-  const newMatch = pathname.match(/^\/bahmni-new\/([^/]+)/);
-  if (newMatch) return newMatch[1];
-  const legacyMatch = pathname.match(/^\/bahmni\/([^/]+)/);
-  if (legacyMatch) return LEGACY_APP_MAP[legacyMatch[1]] ?? legacyMatch[1];
-  return 'home';
-}
 
 function parseKeys(keys: string): {
   key: string;
