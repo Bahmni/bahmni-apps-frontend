@@ -680,4 +680,67 @@ describe('SelectedMedicationRequestItem', () => {
       expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('Label Visibility (BAH-4705)', () => {
+    it('should display visible labels for all form fields', async () => {
+      await act(async () => {
+        render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedMedication}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="medication"
+            attributes={mockFullMedicationAttributes}
+          />,
+        );
+      });
+
+      expect(
+        screen.getByRole('spinbutton', { name: 'Dosage' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('combobox', { name: 'Dosage Unit' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('combobox', { name: 'Frequency' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('spinbutton', { name: 'Duration' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('combobox', { name: 'Duration Unit' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('combobox', { name: 'Instructions' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('combobox', { name: 'Route' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('textbox', { name: 'Start Date' }),
+      ).toBeInTheDocument();
+    });
+
+    it('should have accessible labels for all form fields in vaccination mode', async () => {
+      await act(async () => {
+        render(
+          <SelectedMedicationRequestItem
+            entry={mockSelectedVaccination}
+            medicationConfig={mockMedicationConfig}
+            inputControlType="vaccination"
+            attributes={mockFullMedicationAttributes}
+          />,
+        );
+      });
+
+      expect(
+        screen.getByRole('spinbutton', { name: 'Dosage' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('combobox', { name: 'Dosage Unit' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('combobox', { name: 'Frequency' }),
+      ).toBeInTheDocument();
+    });
+  });
 });
