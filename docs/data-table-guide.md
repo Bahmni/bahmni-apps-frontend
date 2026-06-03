@@ -88,7 +88,7 @@ fields. Everything else is opt-in.
 | `id`                      | `string`                                                                                | Prefix for nested element ids and test ids.                |
 | `title`                   | `string`                                                                                | Heading above the table (Carbon `TableContainer.title`).   |
 | `description`             | `string`                                                                                | Sub-heading.                                               |
-| `actionButton`            | `{ label, disabled?, onClick?, props? }`                                                | Optional toolbar action button (mirrors `ActionDataTable`). |
+| `actionButtons`           | `{ label, disabled?, onClick?, props? }[]`                                              | Optional toolbar action buttons. Renders with a 1 px gap between each button. |
 | `enableGlobalSearch`      | `boolean`                                                                               | Adds a toolbar search box that filters across all columns. |
 | `globalSearchPlaceholder` | `string`                                                                                | Placeholder text. Defaults to `'Search'`.                  |
 
@@ -340,25 +340,62 @@ The parent fetches the right page; DataTable doesn't slice.
 
 ---
 
-## Toolbar header and action button
+## Toolbar header and action buttons
 
 ```tsx
+import { Add } from '@carbon/icons-react';
+
 <DataTable
   ...
   id="orders"
   title="Recent Orders"
   description="Last 30 days"
-  actionButton={{
-    label: "Add order",
-    onClick: () => openAddDialog(),
-  }}
+  actionButtons={[
+    {
+      label: "Add order",
+      onClick: () => openAddDialog(),
+      props: { renderIcon: Add },          // optional icon
+    },
+    {
+      label: "Export",
+      onClick: () => exportData(),
+      props: { kind: "tertiary" },         // outlined style for secondary actions
+    },
+  ]}
 />
 ```
 
 `title` renders an `<h4>` above the table (Carbon's `TableContainer.title`).
-`description` is the subtext. `id` is used as a prefix for the toolbar's
-action-button id / data-testid / aria-label so multiple tables on one page
-stay unique.
+`description` is the subtext. `id` is used as a prefix for each action button's
+id / data-testid so multiple tables on one page stay unique.
+
+`actionButtons` accepts any number of buttons. Each button's `props` field takes
+`Partial<ButtonProps>` (Carbon button props), so you can control `kind`, `renderIcon`,
+`iconDescription`, `hasIconOnly`, and so on:
+
+| `kind`        | appearance                              |
+| ------------- | --------------------------------------- |
+| `"primary"` (default) | solid filled (theme primary colour) |
+| `"secondary"` | solid dark fill                         |
+| `"tertiary"`  | outlined, transparent background        |
+| `"ghost"`     | no background — use for icon-only buttons |
+
+Icon-only toolbar button example:
+
+```tsx
+import { TrashCan } from '@carbon/icons-react';
+
+{
+  label: "Delete",
+  onClick: () => deleteSelected(),
+  props: {
+    kind: "ghost",
+    hasIconOnly: true,
+    iconDescription: "Delete selected",
+    renderIcon: TrashCan,
+  },
+}
+```
 
 ---
 
@@ -421,7 +458,7 @@ Equivalent configurations for the older tables:
 | `SimpleDataTable`          | Bare `<DataTable columns rows ariaLabel />`.                                  |
 | `SortableDataTable`        | Add per-column `enableSorting` and (if needed) `enablePagination` props.      |
 | `ExpandableDataTable`      | Pass `renderExpandedContent` (and optionally `shouldRowBeExpandable`).        |
-| `ActionDataTable`          | Add `id`, `title`, `description`, `actionButton` — sort/pagination inline.    |
+| `ActionDataTable`          | Add `id`, `title`, `description`, `actionButtons` — sort/pagination inline.   |
 
 The older components remain exported. There's no forced migration; consumers
 move when they need filtering, grouping, search, or want a single component

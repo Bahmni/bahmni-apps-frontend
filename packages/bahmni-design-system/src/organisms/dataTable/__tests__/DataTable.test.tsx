@@ -164,7 +164,7 @@ describe('DataTable toolbar', () => {
     expect(screen.getByText('Last 30 days')).toBeInTheDocument();
   });
 
-  it('renders an action button when provided and fires onClick', async () => {
+  it('renders action buttons when provided and fires onClick', async () => {
     const user = userEvent.setup();
     const onClick = jest.fn();
     render(
@@ -175,7 +175,7 @@ describe('DataTable toolbar', () => {
         ariaLabel="Medications"
         id="orders"
         title="Orders"
-        actionButton={{ label: 'Add order', onClick }}
+        actionButtons={[{ label: 'Add order', onClick }]}
       />,
     );
 
@@ -186,7 +186,7 @@ describe('DataTable toolbar', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
-  it('disables the action button when actionButton.disabled is true', () => {
+  it('renders multiple action buttons', () => {
     render(
       <DataTable
         columns={baseColumns}
@@ -194,7 +194,26 @@ describe('DataTable toolbar', () => {
         renderCell={renderCell}
         ariaLabel="Medications"
         id="orders"
-        actionButton={{ label: 'Add', disabled: true, onClick: jest.fn() }}
+        actionButtons={[
+          { label: 'Export', onClick: jest.fn() },
+          { label: 'Add', onClick: jest.fn() },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Export' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
+  });
+
+  it('disables an action button when disabled is true', () => {
+    render(
+      <DataTable
+        columns={baseColumns}
+        rows={mockRows}
+        renderCell={renderCell}
+        ariaLabel="Medications"
+        id="orders"
+        actionButtons={[{ label: 'Add', disabled: true, onClick: jest.fn() }]}
       />,
     );
 
@@ -227,7 +246,7 @@ describe('DataTable accessibility', () => {
         id="orders"
         title="Recent Orders"
         description="Last 30 days"
-        actionButton={{ label: 'Add', onClick: jest.fn() }}
+        actionButtons={[{ label: 'Add', onClick: jest.fn() }]}
         enablePagination
         pageSize={5}
         renderExpandedContent={(row) => (

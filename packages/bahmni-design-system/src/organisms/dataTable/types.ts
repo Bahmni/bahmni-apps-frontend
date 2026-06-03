@@ -54,5 +54,5 @@ export interface DataTableProps<T extends { id: string }> {
   id?: string;
   title?: string;
   description?: string;
-  actionButton?: DataTableActionButton;
+  actionButtons?: DataTableActionButton[];
 }

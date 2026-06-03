@@ -102,6 +102,11 @@
   }
 }
 
+.actionButtons {
+  display: flex;
+  gap: 1px;
+}
+
 .visuallyHidden {
   position: absolute;
   width: 1px;

@@ -41,7 +41,7 @@ export const DataTable = <T extends { id: string }>({
   id,
   title,
   description,
-  actionButton,
+  actionButtons,
 }: DataTableProps<T>) => {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -101,7 +101,7 @@ export const DataTable = <T extends { id: string }>({
         table={table}
         id={id}
         dataTestId={dataTestId}
-        actionButton={actionButton}
+        actionButtons={actionButtons}
         enableGlobalSearch={enableGlobalSearch}
         globalSearchPlaceholder={globalSearchPlaceholder}
         hasFilterableColumns={filterableColumnCount > 0}

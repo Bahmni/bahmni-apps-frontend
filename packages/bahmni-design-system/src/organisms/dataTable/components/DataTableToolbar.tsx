@@ -1,5 +1,6 @@
 import { TableToolbar, TableToolbarContent } from '@carbon/react';
 import type { Table } from '@tanstack/react-table';
+import styles from '../styles/DataTable.module.scss';
 import type {
   DataTableActionButton as DataTableActionButtonConfig,
   DataTableColumn,
@@ -13,7 +14,7 @@ interface DataTableToolbarProps<T extends { id: string }> {
   table: Table<T>;
   id?: string;
   dataTestId: string;
-  actionButton?: DataTableActionButtonConfig;
+  actionButtons?: DataTableActionButtonConfig[];
   enableGlobalSearch: boolean;
   globalSearchPlaceholder?: string;
   hasFilterableColumns: boolean;
@@ -26,7 +27,7 @@ export const DataTableToolbar = <T extends { id: string }>({
   table,
   id,
   dataTestId,
-  actionButton,
+  actionButtons,
   enableGlobalSearch,
   globalSearchPlaceholder,
   hasFilterableColumns,
@@ -36,7 +37,10 @@ export const DataTableToolbar = <T extends { id: string }>({
 }: DataTableToolbarProps<T>) => {
   const hasGrouping = groupableColumns.length > 0;
   const hasAnyControl =
-    enableGlobalSearch || hasFilterableColumns || hasGrouping || !!actionButton;
+    enableGlobalSearch ||
+    hasFilterableColumns ||
+    hasGrouping ||
+    !!actionButtons?.length;
 
   if (!hasAnyControl) return null;
 
@@ -72,8 +76,16 @@ export const DataTableToolbar = <T extends { id: string }>({
             dataTestId={dataTestId}
           />
         )}
-        {actionButton && (
-          <DataTableActionButton config={actionButton} idPrefix={idPrefix} />
+        {actionButtons && actionButtons.length > 0 && (
+          <div className={styles.actionButtons}>
+            {actionButtons.map((btn, i) => (
+              <DataTableActionButton
+                key={btn.label}
+                config={btn}
+                idPrefix={`${idPrefix}-${i}`}
+              />
+            ))}
+          </div>
         )}
       </TableToolbarContent>
     </TableToolbar>
