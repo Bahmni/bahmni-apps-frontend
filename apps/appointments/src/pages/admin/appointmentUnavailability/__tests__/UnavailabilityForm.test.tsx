@@ -275,6 +275,39 @@ describe('UnavailabilityForm', () => {
     });
   });
 
+  describe('Location reconciliation', () => {
+    it.each([
+      {
+        scenario: 'cookie location is present in loginLocations',
+        cookieUuid: 'location-uuid-1',
+        hookOverride: {} as HookOverride,
+        expectedUuid: 'location-uuid-1',
+      },
+      {
+        scenario: 'cookie location is not in loginLocations',
+        cookieUuid: 'location-uuid-unknown',
+        hookOverride: {} as HookOverride,
+        expectedUuid: '',
+      },
+      {
+        scenario: 'loginLocations is empty',
+        cookieUuid: 'location-uuid-1',
+        hookOverride: { loginLocations: [] } as HookOverride,
+        expectedUuid: '',
+      },
+    ])(
+      'sets locationUuid to "$expectedUuid" when $scenario',
+      async ({ cookieUuid, hookOverride, expectedUuid }) => {
+        setupMocks(hookOverride);
+        getUserLoginLocation.mockReturnValue({ uuid: cookieUuid });
+        const { formDataRef } = renderComponent();
+        await waitFor(() => {
+          expect(formDataRef.current?.locationUuid).toBe(expectedUuid);
+        });
+      },
+    );
+  });
+
   describe('Service auto-selection', () => {
     it('auto-selects all service items when services exist for the location', async () => {
       setupMocks();
