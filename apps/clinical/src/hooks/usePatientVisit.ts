@@ -46,11 +46,14 @@ export const usePatientVisit = (
           .filter((v) => v.period?.end && v.period?.start)
           .sort(
             (a, b) =>
-              new Date(b.period!.start!).getTime() -
-              new Date(a.period!.start!).getTime(),
+              new Date(b.period!.end!).getTime() -
+              new Date(a.period!.end!).getTime(),
           );
-        setLastVisit(ended[0] ?? null);
-        setError(new Error(t('ERROR_NO_ACTIVE_VISIT_FOUND')));
+        const mostRecentEnded = ended[0] ?? null;
+        setLastVisit(mostRecentEnded);
+        setError(
+          mostRecentEnded ? null : new Error(t('ERROR_NO_ACTIVE_VISIT_FOUND')),
+        );
       }
     } catch (err) {
       const { message } = getFormattedError(err);

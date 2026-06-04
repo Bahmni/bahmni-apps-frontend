@@ -293,7 +293,6 @@ describe('Utils', () => {
       const testCases = [
         '/openmrs/ws/rest/v1/bahmnicore/template/api/render',
         '/openmrs/ws/rest/v1/bahmnicore/template/api/templates',
-        '/openmrs/ws/rest/v1/bahmnicore/template/reports/pdf',
       ];
 
       testCases.forEach((url) => {

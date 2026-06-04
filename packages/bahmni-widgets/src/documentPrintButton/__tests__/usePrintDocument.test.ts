@@ -75,6 +75,7 @@ const buildMockIframe = (mockImages: MockImg[] = []) => {
   return {
     _isMockIframe: true,
     style: { cssText: '' },
+    setAttribute: jest.fn(),
     contentDocument: mockContentDoc,
     contentWindow: mockContentWindow,
   };
@@ -118,8 +119,8 @@ afterEach(() => {
 });
 
 describe('usePrintDocument', () => {
+  const templateId = 'REG_CARD_V1';
   const options = {
-    templateId: 'REG_CARD_V1',
     context: { patientUuid: 'patient-uuid-123' },
   };
 
@@ -146,7 +147,7 @@ describe('usePrintDocument', () => {
     });
 
     act(() => {
-      result.current.triggerPrint();
+      result.current.triggerPrint(templateId);
     });
 
     expect(result.current.isPrinting).toBe(true);
@@ -170,7 +171,7 @@ describe('usePrintDocument', () => {
     });
 
     act(() => {
-      result.current.triggerPrint();
+      result.current.triggerPrint(templateId);
     });
 
     await waitFor(() => expect(mockPrint).toHaveBeenCalled());
@@ -195,7 +196,7 @@ describe('usePrintDocument', () => {
     });
 
     act(() => {
-      result.current.triggerPrint();
+      result.current.triggerPrint(templateId);
     });
 
     await waitFor(() => expect(mockPrint).toHaveBeenCalled());
@@ -216,7 +217,7 @@ describe('usePrintDocument', () => {
     });
 
     act(() => {
-      result.current.triggerPrint();
+      result.current.triggerPrint(templateId);
     });
 
     await waitFor(() =>
@@ -254,7 +255,7 @@ describe('usePrintDocument', () => {
     });
 
     act(() => {
-      result.current.triggerPrint();
+      result.current.triggerPrint(templateId);
     });
 
     await waitFor(() =>
@@ -289,7 +290,7 @@ describe('usePrintDocument', () => {
     });
 
     act(() => {
-      result.current.triggerPrint();
+      result.current.triggerPrint(templateId);
     });
 
     await waitFor(() =>
@@ -316,7 +317,7 @@ describe('usePrintDocument', () => {
     });
 
     act(() => {
-      result.current.triggerPrint();
+      result.current.triggerPrint(templateId);
     });
 
     await waitFor(() => expect(result.current.isPrinting).toBe(false));
@@ -345,12 +346,12 @@ describe('usePrintDocument', () => {
     });
 
     act(() => {
-      result.current.triggerPrint();
+      result.current.triggerPrint(templateId);
     });
     await waitFor(() => expect(mockPrint).toHaveBeenCalledTimes(1));
 
     queryClient.setQueryData(
-      renderTemplateQueryKey(options.templateId, options.context, 'en'),
+      renderTemplateQueryKey(templateId, options.context, 'en'),
       firstHtml,
     );
 
@@ -367,7 +368,7 @@ describe('usePrintDocument', () => {
     doc.write.mockClear();
 
     act(() => {
-      result.current.triggerPrint();
+      result.current.triggerPrint(templateId);
     });
 
     expect(mockPrint).not.toHaveBeenCalled();
@@ -391,7 +392,7 @@ describe('usePrintDocument', () => {
     });
 
     act(() => {
-      result.current.triggerPrint();
+      result.current.triggerPrint(templateId);
     });
 
     await waitFor(() => expect(mockRenderAsHtml).toHaveBeenCalled());

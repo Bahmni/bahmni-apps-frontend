@@ -154,7 +154,6 @@
   "NOTIFICATION_PATIENT_UPDATE_FAILED": "Failed to update patient",
   "NOTIFICATION_VALIDATION_ERRORS": "Please fill the mandatory fields",
   "PATIENT_DASHBOARD_REDIRECT": "Patient Dashboard",
-  "PRINT_MODAL_PREPARING_DOCUMENT": "Preparing document…",
   "NOTIFICATION_UNABLE_TO_GET_PATIENT_DATA": "Unable to get patient data",
   "NOTIFICATION_UNABLE_TO_GET_ADDRESS_DATA": "Unable to get patient address data",
   "NOTIFICATION_UNABLE_TO_GET_CONTACT_DATA": "Unable to get patient contact data",

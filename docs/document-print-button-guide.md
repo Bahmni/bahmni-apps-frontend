@@ -57,7 +57,7 @@ In your app's configuration JSON (e.g., `clinicalConfig.json`):
 ```tsx
 <DocumentPrintButton
   printOptions={printOptions}
-  renderContext={{ patientUuid, visitUuid }}
+  renderContext={{ patientUUID, visitUuid }}
   data-testid="print-prescription"
 />
 ```
@@ -67,7 +67,7 @@ In your app's configuration JSON (e.g., `clinicalConfig.json`):
 | Prop | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `printOptions` | `PrintOption[]` | No | `[]` | List of print options. Renders nothing when empty or undefined. |
-| `renderContext` | `Record<string, string>` | Yes | — | Key-value context forwarded to the template render API. Common keys: `patientUuid`, `visitUuid`, `encounterUuid`. |
+| `renderContext` | `Record<string, string>` | Yes | — | Key-value context forwarded to the template render API. Common keys: `patientUUID`, `visitUuid`, `encounterUuid`. |
 | `renderData` | `Record<string, unknown>` | No | `undefined` | Additional arbitrary data sent to the render API under the `data` field. Use for structured payloads that don't fit as string key-value pairs. |
 | `size` | `'sm' \| 'md' \| 'lg'` | No | `'lg'` (dropdown) | Button size passed directly to Carbon `Button` / `Dropdown`. |
 | `data-testid` | `string` | No | — | Test ID applied to the primary action button. |
@@ -155,7 +155,7 @@ const { clinicalConfig } = useClinicalConfig();
 const printOptions: PrintOption[] = clinicalConfig?.printOptions ?? [];
 
 const renderContext: Record<string, string> = {
-  ...(patientUuid && { patientUuid }),
+  ...(patientUUID && { patientUUID }),
   ...(visitUuid && { visitUuid }),
 };
 
@@ -217,7 +217,7 @@ Common context keys:
 
 | Key | When to use |
 |---|---|
-| `patientUuid` | All patient-scoped templates |
+| `patientUUID` | All patient-scoped templates |
 | `visitUuid` | Visit-scoped templates |
 | `encounterUuid` | Encounter-specific templates |
 | `visitType` | When output varies by visit type |
@@ -236,7 +236,7 @@ Called on each button click. `staleTime: 0` and `gcTime: 0` — always fetches f
   "format": "html",
   "locale": "en",
   "context": {
-    "patientUuid": "abc-123",
+    "patientUUID": "abc-123",
     "visitUuid": "def-456"
   },
   "data": {}

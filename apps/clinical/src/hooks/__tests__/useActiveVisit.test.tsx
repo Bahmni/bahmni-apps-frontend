@@ -26,7 +26,7 @@ const mockGetFormattedError = getFormattedError as jest.MockedFunction<
 const mockedGetVisits = getVisits as jest.MockedFunction<typeof getVisits>;
 
 const allVisits = mockVisitBundle.entry.map((e) => e.resource);
-// entry[2] has the latest period.start among ended visits (2025-03-24)
+// entry[2] has the latest period.end among ended visits (2025-04-08)
 const mostRecentEndedVisit = mockVisitBundle.entry[2].resource;
 
 describe('usePatientVisit', () => {
@@ -82,7 +82,7 @@ describe('usePatientVisit', () => {
 
     expect(result.current.activeVisit).toBeNull();
     expect(result.current.lastVisit).toEqual(mostRecentEndedVisit);
-    expect(result.current.error?.message).toBe('No active visit found');
+    expect(result.current.error).toBeNull();
   });
 
   it('should set lastVisit to null when there are no visits at all', async () => {

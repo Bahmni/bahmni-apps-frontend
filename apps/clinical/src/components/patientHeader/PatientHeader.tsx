@@ -13,7 +13,7 @@ import {
   usePatientUUID,
   type PrintOption,
 } from '@bahmni/widgets';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
 import { usePatientVisit } from '../../hooks/usePatientVisit';
 import ConsultationActionButton from './ConsultationActionButton';
@@ -88,14 +88,21 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     [patientUUID],
   );
 
-  const { activeVisit, lastVisit } = usePatientVisit(patientUUID);
+  const {
+    activeVisit,
+    lastVisit,
+    loading: visitLoading,
+  } = usePatientVisit(patientUUID);
 
   const visitUuid = activeVisit?.id ?? lastVisit?.id;
 
-  const renderContext: Record<string, string> = {
-    ...(patientUUID && { patientUUID }),
-    ...(visitUuid && { visitUuid }),
-  };
+  const renderContext = useMemo(
+    () => ({
+      ...(patientUUID && { patientUUID }),
+      ...(visitUuid && { visitUuid }),
+    }),
+    [patientUUID, visitUuid],
+  );
 
   return (
     <div
@@ -117,6 +124,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
         <DocumentPrintButton
           printOptions={printOptions}
           renderContext={renderContext}
+          disabled={visitLoading}
           data-testid="print-clinical-card"
           size="md"
         />

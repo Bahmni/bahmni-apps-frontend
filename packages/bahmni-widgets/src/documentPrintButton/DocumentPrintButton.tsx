@@ -1,13 +1,13 @@
 import { Button, Dropdown } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { InlineLoading } from '@carbon/react';
-import { useState } from 'react';
 import styles from './DocumentPrintButton.module.scss';
 import { usePrintDocument } from './usePrintDocument';
 
 export interface PrintOption {
   translationKey: string;
   templateId: string;
+  // TODO: shortcutKey is reserved for keyboard shortcut support — not yet implemented
   shortcutKey?: string;
   privileges?: string[];
 }
@@ -17,6 +17,7 @@ interface DocumentPrintButtonProps {
   renderContext: Record<string, string>;
   renderData?: Record<string, unknown>;
   size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
   'data-testid'?: string;
 }
 
@@ -25,16 +26,14 @@ export const DocumentPrintButton = ({
   renderContext,
   renderData,
   size,
+  disabled,
   'data-testid': dataTestId,
 }: DocumentPrintButtonProps) => {
   const { t } = useTranslation();
-  const [activeOption, setActiveOption] = useState<PrintOption | null>(null);
 
   const items = printOptions ?? [];
-  const resolvedOption = activeOption ?? items[0] ?? null;
 
   const { triggerPrint, isPrinting } = usePrintDocument({
-    templateId: resolvedOption?.templateId ?? '',
     context: renderContext,
     data: renderData,
   });
@@ -46,8 +45,7 @@ export const DocumentPrintButton = ({
   }
 
   const handlePrint = (option: PrintOption) => {
-    setActiveOption(option);
-    triggerPrint();
+    triggerPrint(option.templateId);
   };
 
   return items.length === 1 ? (
@@ -55,6 +53,7 @@ export const DocumentPrintButton = ({
       <Button
         kind="ghost"
         size={size}
+        disabled={disabled}
         data-testid={dataTestId}
         onClick={() => handlePrint(items[0])}
       >
@@ -66,6 +65,7 @@ export const DocumentPrintButton = ({
       <Button
         kind="tertiary"
         size={size}
+        disabled={disabled}
         className={styles.printButton}
         data-testid={dataTestId}
         onClick={() => handlePrint(items[0])}
@@ -75,6 +75,7 @@ export const DocumentPrintButton = ({
       <Dropdown
         id={`print-dropdown-${dataTestId ?? 'default'}`}
         className={styles.printDropdown}
+        disabled={disabled}
         items={items.slice(1)}
         itemToString={(item) => (item ? t(item.translationKey) : '')}
         onChange={({ selectedItem }) => {
@@ -83,7 +84,7 @@ export const DocumentPrintButton = ({
         label=""
         type="inline"
         size={size ?? 'lg'}
-        titleText=""
+        titleText={t('PRINT_MORE_OPTIONS')}
         selectedItem={null}
       />
     </div>

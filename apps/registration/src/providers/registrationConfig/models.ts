@@ -1,5 +1,4 @@
 import { AppointmentSearchField, PatientSearchField } from '@bahmni/services';
-import type { PrintOption } from '@bahmni/widgets';
 
 export interface PatientSearchConfig {
   customAttributes: PatientSearchField[];
@@ -110,7 +109,6 @@ export interface RegistrationConfig {
   registrationForm?: RegistrationFormConfig;
   extensionPoints?: ExtensionPoint[];
   registrationAppExtensions?: AppExtensionConfig[];
-  printOptions?: PrintOption[];
 }
 
 export interface RegistrationConfigContextType {

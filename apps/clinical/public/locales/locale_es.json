@@ -498,5 +498,6 @@
   "VITAL_SIGNS_TEMPERATURE": "Temperatura",
   "YEARS_one": " año",
   "YEARS_other": " años",
-  "PRINT_MODAL_PREPARING_DOCUMENT": "Preparando documento…"
+  "PRINT_MODAL_PREPARING_DOCUMENT": "Preparando documento…",
+  "PRINT_MORE_OPTIONS": "Más opciones de impresión"
 }

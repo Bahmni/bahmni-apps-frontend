@@ -6,17 +6,16 @@ import {
 } from '@bahmni/services';
 import type { RenderRequest } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface UsePrintDocumentOptions {
-  templateId: string;
   context: Record<string, string>;
   data?: Record<string, unknown>;
 }
 
 interface UsePrintDocumentResult {
   isPrinting: boolean;
-  triggerPrint: () => void;
+  triggerPrint: (templateId: string) => void;
 }
 
 export const renderTemplateQueryKey = (
@@ -27,13 +26,14 @@ export const renderTemplateQueryKey = (
 ) => ['renderTemplate', templateId, 'html', context, locale, data] as const;
 
 export function usePrintDocument({
-  templateId,
   context,
   data,
 }: UsePrintDocumentOptions): UsePrintDocumentResult {
   const [triggered, setTriggered] = useState(false);
+  const templateIdRef = useRef<string>('');
 
   const locale = getUserPreferredLocale();
+  const templateId = templateIdRef.current;
 
   const renderRequest: RenderRequest = {
     templateId,
@@ -63,6 +63,10 @@ export function usePrintDocument({
     iframe.style.cssText =
       'position:fixed;top:0;left:0;width:100%;height:100%;' +
       'border:none;opacity:0;pointer-events:none;z-index:-1;';
+    // allow-same-origin: parent can access contentDocument/contentWindow
+    // allow-modals: required for window.print() dialog to open
+    // omitting allow-scripts prevents <script> tags in the HTML from executing
+    iframe.setAttribute('sandbox', 'allow-same-origin allow-modals');
 
     document.body.appendChild(iframe);
 
@@ -137,6 +141,9 @@ export function usePrintDocument({
 
   return {
     isPrinting: triggered,
-    triggerPrint: () => setTriggered(true),
+    triggerPrint: (id: string) => {
+      templateIdRef.current = id;
+      setTriggered(true);
+    },
   };
 }
