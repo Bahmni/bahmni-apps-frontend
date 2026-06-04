@@ -29,6 +29,7 @@ applyBahmniTheme(BAHMNI_DEFAULT_THEME);
 initFontAwesome();
 
 const root = createRoot(document.getElementById('root') as HTMLElement);
+
 root.render(
   <StrictMode>
     <BrowserRouter basename={PUBLIC_PATH ?? '/'}>
