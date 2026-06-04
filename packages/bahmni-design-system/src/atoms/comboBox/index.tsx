@@ -24,18 +24,17 @@ export const ComboBox = <T,>({
 
   useEffect(() => {
     setDisplayItem((externalSelectedItem as T) ?? null);
-
-    if (clearSelectedOnChange && externalSelectedItem) {
-      queueMicrotask(() => {
-        setDisplayItem(null);
-      });
-    }
-  }, [externalSelectedItem, clearSelectedOnChange]);
+  }, [externalSelectedItem]);
 
   const handleChange = (
     event: Parameters<NonNullable<CarbonComboBoxProps<T>['onChange']>>[0],
   ) => {
+    setDisplayItem((event.selectedItem as T) ?? null);
     onChange?.(event);
+
+    if (clearSelectedOnChange && event.selectedItem) {
+      queueMicrotask(() => setDisplayItem(null));
+    }
   };
 
   return (
