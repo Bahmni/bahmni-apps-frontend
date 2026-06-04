@@ -32,7 +32,7 @@ export const ComboBox = <T,>({
     setDisplayItem((event.selectedItem as T) ?? null);
     onChange?.(event);
 
-    if (clearSelectedOnChange && event.selectedItem) {
+    if (clearSelectedOnChange && event.selectedItem != null) {
       queueMicrotask(() => setDisplayItem(null));
     }
   };
