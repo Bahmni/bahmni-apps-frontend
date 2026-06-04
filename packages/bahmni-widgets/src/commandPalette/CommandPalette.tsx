@@ -2,6 +2,7 @@ import { type PatientSearchResult } from '@bahmni/services';
 import { Command } from 'cmdk';
 import React, { useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import {
   useCommandPalette,
   type PatientAction,
@@ -18,45 +19,80 @@ interface FieldDef {
   getValue: (p: PatientSearchResult) => string | null | undefined;
 }
 
+const FIELD_LABEL_KEYS = {
+  name: 'COMMAND_PALETTE_FIELD_NAME',
+  identifier: 'COMMAND_PALETTE_FIELD_ID',
+  age: 'COMMAND_PALETTE_FIELD_AGE',
+  gender: 'COMMAND_PALETTE_FIELD_GENDER',
+  birthDate: 'COMMAND_PALETTE_FIELD_DOB',
+  addressFieldValue: 'COMMAND_PALETTE_FIELD_ADDRESS',
+  extraIdentifiers: 'COMMAND_PALETTE_FIELD_EXTRA_IDS',
+  customAttribute: 'COMMAND_PALETTE_FIELD_ATTRIBUTE',
+  activeVisitUuid: 'COMMAND_PALETTE_FIELD_ACTIVE_VISIT',
+} as const satisfies Record<PatientFieldKey, string>;
+
 const PATIENT_FIELD_MAP: Record<PatientFieldKey, FieldDef> = {
   name: {
-    labelKey: 'COMMAND_PALETTE_FIELD_NAME',
+    labelKey: FIELD_LABEL_KEYS.name,
     getValue: (p) =>
       [p.givenName, p.middleName, p.familyName].filter(Boolean).join(' '),
   },
   identifier: {
-    labelKey: 'COMMAND_PALETTE_FIELD_ID',
+    labelKey: FIELD_LABEL_KEYS.identifier,
     getValue: (p) => p.identifier,
   },
   age: {
-    labelKey: 'COMMAND_PALETTE_FIELD_AGE',
+    labelKey: FIELD_LABEL_KEYS.age,
     getValue: (p) => p.age,
   },
   gender: {
-    labelKey: 'COMMAND_PALETTE_FIELD_GENDER',
+    labelKey: FIELD_LABEL_KEYS.gender,
     getValue: (p) => p.gender,
   },
   birthDate: {
-    labelKey: 'COMMAND_PALETTE_FIELD_DOB',
+    labelKey: FIELD_LABEL_KEYS.birthDate,
     getValue: (p) => (p.birthDate ? String(p.birthDate) : null),
   },
   addressFieldValue: {
-    labelKey: 'COMMAND_PALETTE_FIELD_ADDRESS',
+    labelKey: FIELD_LABEL_KEYS.addressFieldValue,
     getValue: (p) => p.addressFieldValue,
   },
   extraIdentifiers: {
-    labelKey: 'COMMAND_PALETTE_FIELD_EXTRA_IDS',
+    labelKey: FIELD_LABEL_KEYS.extraIdentifiers,
     getValue: (p) => p.extraIdentifiers,
   },
   customAttribute: {
-    labelKey: 'COMMAND_PALETTE_FIELD_ATTRIBUTE',
+    labelKey: FIELD_LABEL_KEYS.customAttribute,
     getValue: (p) => p.customAttribute,
   },
   activeVisitUuid: {
-    labelKey: 'COMMAND_PALETTE_FIELD_ACTIVE_VISIT',
+    labelKey: FIELD_LABEL_KEYS.activeVisitUuid,
     getValue: (p) => (p.activeVisitUuid ? 'Active' : null),
   },
 };
+
+const filterItems = (value: string, search: string): number => {
+  if (value.startsWith('patient:')) return 1;
+  return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
+};
+
+const SearchIcon: React.FC = () => (
+  <svg
+    className={styles.searchIcon}
+    aria-hidden="true"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.5" />
+    <path
+      d="M13.5 13.5L17 17"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+  </svg>
+);
 
 function getInitials(givenName: string, familyName: string): string {
   const first = givenName?.[0] ?? '';
@@ -89,7 +125,7 @@ const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
   activeActionIndex,
   onNavigate,
 }) => {
-  const { t } = useCommandPalette();
+  const { t } = useTranslation('command-palette');
   const [isExpanded, setIsExpanded] = useState(false);
   const activeAction = patientActions[activeActionIndex];
 
@@ -125,8 +161,7 @@ const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
 
   return (
     <Command.Item
-      key={patient.uuid}
-      value={`patient:${fullName} ${patient.identifier}`}
+      value={`patient:${patient.uuid}:${fullName} ${patient.identifier}`}
       className={styles.item}
       data-patient-uuid={patient.uuid}
       onSelect={() => {
@@ -184,13 +219,15 @@ const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
                 title={
                   isActive
                     ? t('COMMAND_PALETTE_ACTION_ENTER_HINT', {
-                        label: action.label,
+                        label: t(action.label, { defaultValue: action.label }),
                       })
-                    : action.label
+                    : t(action.label, { defaultValue: action.label })
                 }
                 type="button"
               >
-                <span className={styles.actionButtonLabel}>{action.label}</span>
+                <span className={styles.actionButtonLabel}>
+                  {t(action.label, { defaultValue: action.label })}
+                </span>
                 {isActive && <kbd className={styles.actionEnterHint}>↵</kbd>}
               </button>
             );
@@ -202,6 +239,7 @@ const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
 };
 
 export const CommandPalette: React.FC = () => {
+  const { t } = useTranslation('command-palette');
   const {
     isOpen,
     setOpen,
@@ -209,7 +247,6 @@ export const CommandPalette: React.FC = () => {
     patientActions,
     patientFieldsConfig,
     searchAnnotations,
-    t,
   } = useCommandPalette();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAnnotation, setSelectedAnnotation] =
@@ -228,17 +265,17 @@ export const CommandPalette: React.FC = () => {
     return idx >= 0 ? idx : 0;
   }, [patientActions]);
 
+  const defaultActionIndex = getDefaultActionIndex();
+
   const [selectedPatientUuid, setSelectedPatientUuid] = useState<string | null>(
     null,
   );
 
   const handleCmdValueChange = useCallback(
-    (_val: string) => {
+    (val: string) => {
       setActiveActionIndex(getDefaultActionIndex());
-      const el = document.querySelector<HTMLElement>(
-        '[data-patient-uuid][data-selected="true"]',
-      );
-      setSelectedPatientUuid(el?.dataset.patientUuid ?? null);
+      const match = val.match(/^patient:([^:]+):/);
+      setSelectedPatientUuid(match?.[1] ?? null);
     },
     [getDefaultActionIndex],
   );
@@ -322,8 +359,8 @@ export const CommandPalette: React.FC = () => {
 
   if (!isOpen) return null;
 
-  const isAnnotationMode = searchTerm.startsWith('@');
-  const isSearchActive = searchTerm.length >= 2 && !isAnnotationMode;
+  const isTypingAnnotationPrefix = searchTerm.startsWith('@');
+  const isSearchActive = searchTerm.length >= 2 && !isTypingAnnotationPrefix;
 
   return createPortal(
     <>
@@ -337,33 +374,10 @@ export const CommandPalette: React.FC = () => {
         <Command
           label={t('COMMAND_PALETTE_ARIA_LABEL')}
           onValueChange={handleCmdValueChange}
-          filter={(value, search) => {
-            if (value.startsWith('patient:')) return 1;
-            return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
-          }}
+          filter={filterItems}
         >
           <div className={styles.inputWrapper}>
-            <svg
-              className={styles.searchIcon}
-              aria-hidden="true"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="9"
-                cy="9"
-                r="6"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M13.5 13.5L17 17"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <SearchIcon />
             {selectedAnnotation && (
               <span className={styles.annotationBadge}>
                 {selectedAnnotation.label}
@@ -394,7 +408,7 @@ export const CommandPalette: React.FC = () => {
             </Command.Empty>
 
             {!selectedAnnotation &&
-              isAnnotationMode &&
+              isTypingAnnotationPrefix &&
               searchAnnotations.length > 0 && (
                 <Command.Group
                   heading={t('COMMAND_PALETTE_GROUP_SEARCH_FILTERS')}
@@ -421,7 +435,7 @@ export const CommandPalette: React.FC = () => {
                 </Command.Group>
               )}
 
-            {!isAnnotationMode && navItems.length > 0 && (
+            {!isTypingAnnotationPrefix && navItems.length > 0 && (
               <Command.Group
                 heading={t('COMMAND_PALETTE_GROUP_NAVIGATION')}
                 className={styles.group}
@@ -439,7 +453,9 @@ export const CommandPalette: React.FC = () => {
                     <span className={styles.navIcon} aria-hidden="true">
                       ↗
                     </span>
-                    <span className={styles.itemLabel}>{item.label}</span>
+                    <span className={styles.itemLabel}>
+                      {t(item.label, { defaultValue: item.label })}
+                    </span>
                   </Command.Item>
                 ))}
               </Command.Group>
@@ -482,7 +498,7 @@ export const CommandPalette: React.FC = () => {
                     activeActionIndex={
                       patient.uuid === selectedPatientUuid
                         ? activeActionIndex
-                        : getDefaultActionIndex()
+                        : defaultActionIndex
                     }
                     onNavigate={handleSelect}
                   />

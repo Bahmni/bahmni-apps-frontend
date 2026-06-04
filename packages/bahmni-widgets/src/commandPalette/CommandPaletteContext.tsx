@@ -51,7 +51,6 @@ export interface CommandPaletteContextType {
   patientActions: PatientAction[];
   patientFieldsConfig: PatientFieldsConfig;
   searchAnnotations: SearchAnnotation[];
-  t: (key: string, opts?: Record<string, string>) => string;
 }
 
 export const CommandPaletteContext =

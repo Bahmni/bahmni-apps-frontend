@@ -1,7 +1,7 @@
+import { CommandPaletteProvider } from '@bahmni/command-palette';
 import { Content, Loading, initFontAwesome } from '@bahmni/design-system';
 import { initAppI18n } from '@bahmni/services';
 import {
-  CommandPaletteProvider,
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,

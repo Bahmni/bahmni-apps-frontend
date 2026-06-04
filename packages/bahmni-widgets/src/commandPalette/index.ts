@@ -1,4 +1,5 @@
 export { CommandPaletteProvider } from './CommandPaletteProvider';
+export type { CommandPaletteProviderProps } from './CommandPaletteProvider';
 export { useCommandPalette } from './CommandPaletteContext';
 export type {
   AnnotationSearchType,
@@ -10,10 +11,5 @@ export type {
   SearchAnnotation,
   TriggerConfig,
 } from './CommandPaletteContext';
-export type {
-  CommandPaletteAppConfig,
-  CommandPaletteExtension,
-  HomeAppConfig,
-  PatientFieldKey,
-} from './commandPaletteConfigSchema';
 export { PATIENT_FIELD_KEYS } from './commandPaletteConfigSchema';
+export type { PatientFieldKey } from './commandPaletteConfigSchema';

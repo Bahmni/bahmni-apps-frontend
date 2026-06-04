@@ -23,6 +23,7 @@ export function useCommandPaletteSearch(
   const debouncedTerm = useDebounce(searchTerm, 300);
   const latestRequestIdRef = useRef(0);
 
+  // Set loading immediately (before debounce) so the UI doesn't flicker "no results" during the 300ms window.
   useEffect(() => {
     if (searchTerm.length >= 2) {
       setLoading(true);
@@ -42,7 +43,6 @@ export function useCommandPaletteSearch(
 
     const requestId = ++latestRequestIdRef.current;
 
-    setLoading(true);
     setError(null);
 
     const searchPromise =
