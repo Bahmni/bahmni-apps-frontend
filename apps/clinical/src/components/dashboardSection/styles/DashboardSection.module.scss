@@ -1,4 +1,5 @@
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
@@ -18,7 +19,7 @@
 }
 
 .divider {
-  display: none;
+  background-color: $layer-01;
 }
 
 .widgetLoading {
