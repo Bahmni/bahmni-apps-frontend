@@ -2,8 +2,6 @@ import {
   SortableDataTable,
   Accordion,
   AccordionItem,
-  Edit,
-  IconButton,
   Tab,
   TabList,
   TabPanel,
@@ -32,7 +30,6 @@ import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
-import { handleEditAction } from './components/actionHandlers';
 import Actions from './components/Actions';
 import { MEDICATION_REQUEST_PRIORITY } from './constants';
 import { MedicationAction } from './models';
@@ -261,14 +258,6 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     [editableMedications],
   );
 
-  const hasEditableMedications = editableMedications.length > 0;
-  const editEncounterType = editAction?.encounterType ?? 'Consultation';
-
-  const handleEditAll = useCallback(() => {
-    const fhirResources = editableMedications.map((m) => m.fhirResource);
-    handleEditAction(fhirResources, editEncounterType);
-  }, [editableMedications, editEncounterType]);
-
   // Process medications for date grouping (only for All medications tab)
   const processedAllMedications = useMemo(() => {
     return processGroupedMedications(allMedications);
@@ -344,7 +333,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           <Actions
             actions={actions}
             medication={row.fhirResource}
-            hiddenActionTypes={isEditable(row) ? [] : ['edit']}
+            disabledActionTypes={isEditable(row) ? [] : ['edit']}
           />
         );
       default:
@@ -368,24 +357,6 @@ const MedicationsTable: React.FC<WidgetProps> = ({
       data-testid="medications-table"
       className={styles.medicationsTableWrapper}
     >
-      {editAction && canEdit && (
-        <div
-          className={styles.widgetEditActions}
-          data-testid="medications-widget-edit-actions"
-        >
-          <IconButton
-            label={t('MEDICATIONS_EDIT_ALL')}
-            kind="ghost"
-            size="sm"
-            align="left"
-            disabled={!hasEditableMedications}
-            onClick={handleEditAll}
-            testId="medications-edit-all-button"
-          >
-            <Edit />
-          </IconButton>
-        </div>
-      )}
       <Tabs
         selectedIndex={selectedIndex}
         onChange={(state) => handleTabChange(state.selectedIndex)}

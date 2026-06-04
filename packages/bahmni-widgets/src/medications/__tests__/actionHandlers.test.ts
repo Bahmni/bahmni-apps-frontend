@@ -1,5 +1,5 @@
 import { MedicationRequest as FhirMedicationRequest } from 'fhir/r4';
-import { handleAction, handleEditAction } from '../components/actionHandlers';
+import { handleAction } from '../components/actionHandlers';
 import {
   multipleActionsMock,
   singleActionMock,
@@ -36,7 +36,7 @@ describe('handleAction', () => {
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
-  it('routes to handleEditAction for edit type', () => {
+  it('dispatches edit event with editMedications and encounter UUID', () => {
     const medWithEncounter: FhirMedicationRequest = {
       ...fhirMedicationRequestMock,
       encounter: { reference: 'Encounter/enc-uuid-1' },
@@ -57,84 +57,37 @@ describe('handleAction', () => {
           encounterType: 'Consultation',
           editMedications: [medWithEncounter],
           editOnly: 'medication',
+          editTitle: 'MEDICATIONS_EDIT_FORM_TITLE',
+          editEncounterUuid: 'enc-uuid-1',
         }),
       }),
     );
   });
-});
 
-describe('handleEditAction', () => {
-  let dispatchSpy: jest.SpyInstance;
+  it('handles missing encounter reference for edit action', () => {
+    const editAction = {
+      label: 'Edit',
+      type: 'edit' as const,
+      encounterType: 'Consultation',
+      requiredPrivilege: ['privilege1'],
+    };
 
-  beforeEach(() => {
-    dispatchSpy = jest.spyOn(globalThis, 'dispatchEvent');
-  });
-
-  afterEach(() => {
-    dispatchSpy.mockRestore();
-  });
-
-  it('dispatches startConsultation event with correct detail', () => {
-    const medications: FhirMedicationRequest[] = [
-      {
-        ...fhirMedicationRequestMock,
-        encounter: { reference: 'Encounter/enc-uuid-1' },
-      },
-    ];
-
-    handleEditAction(medications, 'Consultation');
-
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'startConsultation',
-        detail: {
-          encounterType: 'Consultation',
-          editMedications: medications,
-          editOnly: 'medication',
-          editTitle: 'MEDICATIONS_EDIT_FORM_TITLE',
-          editEncounterUuid: 'enc-uuid-1',
-        },
-      }),
-    );
-  });
-
-  it('extracts encounter UUID from first medication reference', () => {
-    const medications: FhirMedicationRequest[] = [
-      {
-        ...fhirMedicationRequestMock,
-        encounter: { reference: 'Encounter/first-enc-uuid' },
-      },
-      {
-        ...fhirMedicationRequestMock,
-        encounter: { reference: 'Encounter/second-enc-uuid' },
-      },
-    ];
-
-    handleEditAction(medications, 'Consultation');
-
-    const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
-    expect(event.detail.editEncounterUuid).toBe('first-enc-uuid');
-  });
-
-  it('handles missing encounter reference', () => {
-    const medications: FhirMedicationRequest[] = [
-      { ...fhirMedicationRequestMock },
-    ];
-
-    handleEditAction(medications, 'Consultation');
+    handleAction(editAction, fhirMedicationRequestMock);
 
     const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
     expect(event.detail.editEncounterUuid).toBeUndefined();
   });
 
-  it('uses MEDICATIONS_INPUT_CONTROL_KEY for editOnly', () => {
-    const medications: FhirMedicationRequest[] = [
-      { ...fhirMedicationRequestMock },
-    ];
+  it('does not dispatch edit event without fhirResource', () => {
+    const editAction = {
+      label: 'Edit',
+      type: 'edit' as const,
+      encounterType: 'Consultation',
+      requiredPrivilege: ['privilege1'],
+    };
 
-    handleEditAction(medications, 'Consultation');
+    handleAction(editAction, undefined);
 
-    const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
-    expect(event.detail.editOnly).toBe('medication');
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 });

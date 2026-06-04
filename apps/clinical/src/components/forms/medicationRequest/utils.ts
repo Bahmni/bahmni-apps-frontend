@@ -355,6 +355,7 @@ export function createMedicationRequestEntries({
       medicationResource.priorPrescription = {
         reference: `MedicationRequest/${medication.fhirResourceId}`,
       };
+      delete medicationResource.id;
     }
 
     const medicationRequestEntry = createBundleEntry(

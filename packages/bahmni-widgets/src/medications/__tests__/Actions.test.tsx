@@ -21,10 +21,12 @@ const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
 describe('Actions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseUserPrivilege.mockReturnValue({ userPrivileges: [] } as any);
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [{ uuid: 'u1', name: 'privilege1' }],
+    } as any);
   });
 
-  it('renders an overflow menu for a single action', () => {
+  it('renders a direct icon button for a single action', () => {
     render(
       <Actions
         actions={singleActionMock}
@@ -33,8 +35,11 @@ describe('Actions', () => {
     );
 
     expect(
-      screen.getByTestId('medication-actions-menu-test-med-id'),
+      screen.getByTestId('medication-action-administer-test-med-id'),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('medication-actions-menu-test-med-id'),
+    ).not.toBeInTheDocument();
   });
 
   it('renders an overflow menu for multiple actions', () => {
@@ -58,23 +63,80 @@ describe('Actions', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('disables the overflow menu when all actions are hidden', () => {
+  it('disables the icon button when action type is in disabledActionTypes', () => {
     render(
       <Actions
         actions={singleActionMock}
         medication={fhirMedicationRequestMock}
-        hiddenActionTypes={['administer']}
+        disabledActionTypes={['administer']}
       />,
     );
 
-    const menu = screen.getByTestId('medication-actions-menu-test-med-id');
-    expect(menu).toBeInTheDocument();
+    const button = screen.getByTestId(
+      'medication-action-administer-test-med-id',
+    );
+    expect(button).toBeInTheDocument();
+    expect(button).toBeDisabled();
+  });
+
+  it('renders disabled overflow menu item when action type is in disabledActionTypes', async () => {
+    render(
+      <Actions
+        actions={multipleActionsMock}
+        medication={fhirMedicationRequestMock}
+        disabledActionTypes={['administer']}
+      />,
+    );
+
+    await userEvent.click(
+      screen.getByTestId('medication-actions-menu-test-med-id'),
+    );
+
+    const administerItem = screen.getByTestId(
+      'medication-action-administer-test-med-id',
+    );
+    expect(administerItem).toBeInTheDocument();
+    // Carbon OverflowMenuItem renders disabled items as non-interactive buttons
+    expect(administerItem.closest('button')).toBeDisabled();
+  });
+
+  it('disables action when user lacks required privilege', () => {
+    mockUseUserPrivilege.mockReturnValue({ userPrivileges: [] } as any);
+
+    render(
+      <Actions
+        actions={singleActionMock}
+        medication={fhirMedicationRequestMock}
+      />,
+    );
+
+    const button = screen.getByTestId(
+      'medication-action-administer-test-med-id',
+    );
+    expect(button).toBeDisabled();
+  });
+
+  it('calls handleAction when a single action icon button is clicked', async () => {
+    const handleActionSpy = jest.spyOn(actionHandlers, 'handleAction');
+
+    render(
+      <Actions
+        actions={singleActionMock}
+        medication={fhirMedicationRequestMock}
+      />,
+    );
+
+    await userEvent.click(
+      screen.getByTestId('medication-action-administer-test-med-id'),
+    );
+
+    expect(handleActionSpy).toHaveBeenCalledWith(
+      singleActionMock[0],
+      fhirMedicationRequestMock,
+    );
   });
 
   it('calls handleAction when an overflow menu item is clicked', async () => {
-    mockUseUserPrivilege.mockReturnValue({
-      userPrivileges: [{ uuid: 'u1', name: 'privilege1' }],
-    } as any);
     const handleActionSpy = jest.spyOn(actionHandlers, 'handleAction');
 
     render(

@@ -530,7 +530,7 @@ describe('MedicationsTable', () => {
       } as any);
     };
 
-    it('shows edit action when encounter session allows editing', async () => {
+    it('shows enabled edit button when encounter session allows editing', () => {
       setupWithActiveMeds();
 
       render(
@@ -541,15 +541,12 @@ describe('MedicationsTable', () => {
         />,
       );
 
-      const menu = screen.getByTestId('medication-actions-menu-1');
-      expect(menu).toBeInTheDocument();
-      await userEvent.click(menu);
-      expect(
-        screen.getByTestId('medication-action-edit-1'),
-      ).toBeInTheDocument();
+      const editButton = screen.getByTestId('medication-action-edit-1');
+      expect(editButton).toBeInTheDocument();
+      expect(editButton).not.toBeDisabled();
     });
 
-    it('hides edit action when encounter session does not allow editing', () => {
+    it('shows disabled edit button when encounter session does not allow editing', () => {
       setupWithActiveMeds();
 
       render(
@@ -560,12 +557,12 @@ describe('MedicationsTable', () => {
         />,
       );
 
-      const menu = screen.getByTestId('medication-actions-menu-1');
-      expect(menu).toBeInTheDocument();
-      // Menu exists but edit action should be hidden
+      const editButton = screen.getByTestId('medication-action-edit-1');
+      expect(editButton).toBeInTheDocument();
+      expect(editButton).toBeDisabled();
     });
 
-    it('hides edit action when encounter UUID does not match medication encounter', () => {
+    it('shows disabled edit button when encounter UUID does not match medication encounter', () => {
       setupWithActiveMeds();
 
       render(
@@ -576,8 +573,9 @@ describe('MedicationsTable', () => {
         />,
       );
 
-      const menu = screen.getByTestId('medication-actions-menu-1');
-      expect(menu).toBeInTheDocument();
+      const editButton = screen.getByTestId('medication-action-edit-1');
+      expect(editButton).toBeInTheDocument();
+      expect(editButton).toBeDisabled();
     });
   });
 

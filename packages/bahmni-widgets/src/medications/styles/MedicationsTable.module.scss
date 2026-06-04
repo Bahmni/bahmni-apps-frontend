@@ -88,13 +88,6 @@
   position: relative;
 }
 
-.widgetEditActions {
-  position: absolute;
-  inset-block-start: -$spacing-08;
-  inset-inline-end: $spacing-03;
-  z-index: 1;
-}
-
 .customAccordianItem {
   background-color: $layer-01;
   :global(.cds--accordion__content) {
