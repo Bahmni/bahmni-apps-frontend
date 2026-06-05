@@ -235,6 +235,7 @@ export {
 } from './providerService';
 export {
   findActiveEncounterInSession,
+  searchEncounters,
   resolveEncounterMatchDecision,
   canResumeOwnInSessionEncounter,
   type EncounterMatchDecision,
@@ -254,6 +255,8 @@ export {
   getActiveVisit,
   shouldEnableEncounterFilter,
   getObservationsBundleByEncounterUuid,
+  createFhirEncounter,
+  updateFhirEncounter,
   type FormsEncounter,
 } from './encounterService';
 

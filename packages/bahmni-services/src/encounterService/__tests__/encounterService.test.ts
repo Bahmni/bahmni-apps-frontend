@@ -1,9 +1,11 @@
-import { get } from '../../api';
+import { get, post, put } from '../../api';
 import {
   getPatientVisits,
   getVisits,
   getActiveVisit,
   getObservationsBundleByEncounterUuid,
+  createFhirEncounter,
+  updateFhirEncounter,
 } from '../../encounterService';
 import {
   mockVisitBundle,
@@ -13,10 +15,13 @@ import {
 import {
   PATIENT_VISITS_URL,
   FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
+  FHIR_ENCOUNTER_URL,
 } from '../constants';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
+const mockedPost = post as jest.MockedFunction<typeof post>;
+const mockedPut = put as jest.MockedFunction<typeof put>;
 
 describe('encounterService', () => {
   const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
@@ -123,6 +128,94 @@ describe('encounterService', () => {
       await expect(
         getObservationsBundleByEncounterUuid(encounterUUID),
       ).rejects.toThrow('Network failure');
+    });
+  });
+
+  describe('createFhirEncounter', () => {
+    const mockEncounterPayload = {
+      resourceType: 'Encounter' as const,
+      status: 'in-progress' as const,
+      class: {
+        system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+        code: 'AMB',
+        display: 'ambulatory',
+      },
+      subject: { reference: 'Patient/patient-uuid-123' },
+    };
+
+    const mockCreatedEncounter = {
+      ...mockEncounterPayload,
+      id: 'encounter-uuid-456',
+    };
+
+    it('should call post with the correct URL and payload', async () => {
+      mockedPost.mockResolvedValueOnce(mockCreatedEncounter);
+
+      await createFhirEncounter(mockEncounterPayload);
+
+      expect(mockedPost).toHaveBeenCalledWith(
+        FHIR_ENCOUNTER_URL,
+        mockEncounterPayload,
+      );
+    });
+
+    it('should return the created encounter', async () => {
+      mockedPost.mockResolvedValueOnce(mockCreatedEncounter);
+
+      const result = await createFhirEncounter(mockEncounterPayload);
+
+      expect(result).toEqual(mockCreatedEncounter);
+    });
+
+    it('should propagate errors when post fails', async () => {
+      mockedPost.mockRejectedValueOnce(new Error('Creation failed'));
+
+      await expect(createFhirEncounter(mockEncounterPayload)).rejects.toThrow(
+        'Creation failed',
+      );
+    });
+  });
+
+  describe('updateFhirEncounter', () => {
+    const encounterUUID = 'encounter-uuid-456';
+    const mockEncounterUpdate = {
+      resourceType: 'Encounter' as const,
+      id: encounterUUID,
+      status: 'in-progress' as const,
+      class: {
+        system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+        code: 'AMB',
+        display: 'ambulatory',
+      },
+      partOf: { reference: 'Encounter/visit-uuid-789' },
+      subject: { reference: 'Patient/patient-uuid-123' },
+    };
+
+    it('should call put with the correct URL and payload', async () => {
+      mockedPut.mockResolvedValueOnce(mockEncounterUpdate);
+
+      await updateFhirEncounter(encounterUUID, mockEncounterUpdate);
+
+      expect(mockedPut).toHaveBeenCalledWith(
+        `${FHIR_ENCOUNTER_URL}/${encounterUUID}`,
+        mockEncounterUpdate,
+      );
+    });
+
+    it('should return the updated encounter', async () => {
+      mockedPut.mockResolvedValueOnce(mockEncounterUpdate);
+
+      const result = await updateFhirEncounter(encounterUUID, mockEncounterUpdate);
+
+      expect(result).toEqual(mockEncounterUpdate);
+    });
+
+    it('should propagate errors when put fails', async () => {
+      mockedPut.mockRejectedValueOnce(new Error('Update failed'));
+
+      await expect(
+        updateFhirEncounter(encounterUUID, mockEncounterUpdate),
+      ).rejects.toThrow('Update failed');
     });
   });
 });

@@ -3,6 +3,8 @@ export {
   getPatientVisits,
   getVisits,
   getObservationsBundleByEncounterUuid,
+  createFhirEncounter,
+  updateFhirEncounter,
 } from './encounterService';
 
 export { shouldEnableEncounterFilter } from './encounterFilterUtils';
