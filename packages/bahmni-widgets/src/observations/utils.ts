@@ -23,7 +23,7 @@ export const formatObservationValue = (
   observation: ExtractedObservation,
   t?: (key: string) => string,
 ): string => {
-  if (!observation.observationValue?.value) {
+  if (observation.observationValue?.value == null) {
     return '';
   }
   const { value, unit, type } = observation.observationValue;

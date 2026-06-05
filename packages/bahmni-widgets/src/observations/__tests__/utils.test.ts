@@ -563,6 +563,32 @@ describe('observationUtils', () => {
       expect(formatObservationValue(observation)).toBe('');
     });
 
+    it('should format boolean true value as true', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-true',
+        display: 'Is Smoker',
+        observationValue: {
+          value: true,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('true');
+    });
+
+    it('should format boolean false value as false', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-false',
+        display: 'Is Smoker',
+        observationValue: {
+          value: false,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('false');
+    });
+
     it('should format dateTime value using formatDateTime', () => {
       const mockFormatDateTime = services.formatDateTime as jest.MockedFunction<
         typeof services.formatDateTime
