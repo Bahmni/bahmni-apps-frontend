@@ -205,7 +205,10 @@ describe('encounterService', () => {
     it('should return the updated encounter', async () => {
       mockedPut.mockResolvedValueOnce(mockEncounterUpdate);
 
-      const result = await updateFhirEncounter(encounterUUID, mockEncounterUpdate);
+      const result = await updateFhirEncounter(
+        encounterUUID,
+        mockEncounterUpdate,
+      );
 
       expect(result).toEqual(mockEncounterUpdate);
     });
