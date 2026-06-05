@@ -1,6 +1,9 @@
 import {
   createFhirPatient,
+  createFhirEncounter,
   generateIdentifier,
+  getCurrentUser,
+  getCurrentProvider,
   PatientIdentifier,
   PatientAddress,
   AUDIT_LOG_EVENT_DETAILS,
@@ -8,10 +11,11 @@ import {
   dispatchAuditEvent,
   getUserLoginLocation,
   useTranslation,
+  FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
-import type { Patient } from 'fhir/r4';
+import type { Encounter, Patient } from 'fhir/r4';
 import { useNavigate } from 'react-router-dom';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import {
@@ -19,6 +23,7 @@ import {
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
+import { useRegistrationConfig } from '../providers/registrationConfig';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
@@ -52,6 +57,80 @@ export const useCreatePatient = () => {
   const navigate = useNavigate();
   const { personAttributes } = usePersonAttributes();
   const { data: identifierTypes } = useIdentifierTypes();
+  const { registrationConfig } = useRegistrationConfig();
+
+  const createRegistrationEncounter = async (patientUuid: string) => {
+    const encounterTypeUuid = registrationConfig?.registrationEncounterTypeUuid;
+    if (!encounterTypeUuid) return;
+
+    try {
+      const locationUuid = getUserLoginLocation().uuid;
+      const user = await getCurrentUser();
+      const provider = user ? await getCurrentProvider(user.uuid) : null;
+
+      const encounter: Encounter = {
+        resourceType: 'Encounter',
+        status: 'in-progress',
+        class: {
+          system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+          code: 'AMB',
+          display: 'ambulatory',
+        },
+        meta: {
+          tag: [
+            {
+              system: 'http://fhir.openmrs.org/ext/encounter-tag',
+              code: 'encounter',
+              display: 'Encounter',
+            },
+          ],
+        },
+        type: [
+          {
+            coding: [
+              {
+                system: FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
+                code: encounterTypeUuid,
+              },
+            ],
+          },
+        ],
+        subject: { reference: `Patient/${patientUuid}` },
+        location: [{ location: { reference: `Location/${locationUuid}` } }],
+        ...(provider && {
+          participant: [
+            {
+              individual: {
+                reference: `Practitioner/${provider.uuid}`,
+                type: 'Practitioner',
+              },
+            },
+          ],
+        }),
+        period: { start: new Date().toISOString() },
+      };
+
+      const createdEncounter = await createFhirEncounter(encounter);
+
+      dispatchAuditEvent({
+        eventType: AUDIT_LOG_EVENT_DETAILS.CREATE_ENCOUNTER
+          .eventType as AuditEventType,
+        patientUuid,
+        messageParams: {
+          encounterUuid: createdEncounter.id,
+          encounterType: encounterTypeUuid,
+        },
+        module: AUDIT_LOG_EVENT_DETAILS.CREATE_ENCOUNTER.module,
+      });
+    } catch (error) {
+      addNotification({
+        type: 'error',
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: error instanceof Error ? error.message : String(error),
+        timeout: 5000,
+      });
+    }
+  };
 
   const mutation = useMutation({
     mutationFn: async (formData: CreatePatientFormData) => {
@@ -99,6 +178,9 @@ export const useCreatePatient = () => {
           patientUuid,
           module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
         });
+
+        // Fire and forget — encounter creation failure must not block navigation
+        createRegistrationEncounter(patientUuid);
 
         const patientDisplay =
           [response.name?.[0]?.given?.join(' '), response.name?.[0]?.family]
