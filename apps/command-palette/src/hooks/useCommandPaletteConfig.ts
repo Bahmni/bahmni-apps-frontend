@@ -51,14 +51,16 @@ export function useCommandPaletteConfig(): CommandPaletteConfig {
     const controller = new AbortController();
 
     (async () => {
-      const [, appConfigResult, privilegesResult] = await Promise.allSettled([
-        initAppI18n(BAHMNI_COMMAND_PALETTE_NAMESPACE),
-        getConfig<CommandPaletteAppJson>(
-          COMMAND_PALETTE_APP_CONFIG_URL,
-          commandPaletteAppJsonSchema,
-        ),
-        getCurrentUserPrivileges(),
-      ]);
+      const [, appConfigResult, privilegesResult, extensionsResult] =
+        await Promise.allSettled([
+          initAppI18n(BAHMNI_COMMAND_PALETTE_NAMESPACE),
+          getConfig<CommandPaletteAppJson>(
+            COMMAND_PALETTE_APP_CONFIG_URL,
+            commandPaletteAppJsonSchema,
+          ),
+          getCurrentUserPrivileges(),
+          fetchExtensions('command-palette', controller.signal),
+        ]);
 
       if (controller.signal.aborted) return;
 
@@ -66,6 +68,8 @@ export function useCommandPaletteConfig(): CommandPaletteConfig {
         appConfigResult.status === 'fulfilled' ? appConfigResult.value : null;
       const userPrivileges =
         privilegesResult.status === 'fulfilled' ? privilegesResult.value : null;
+      const allExtensions: CommandPaletteExtension[] =
+        extensionsResult.status === 'fulfilled' ? extensionsResult.value : [];
 
       if (appConfig) {
         const cp = appConfig.commandPalette;
@@ -75,18 +79,6 @@ export function useCommandPaletteConfig(): CommandPaletteConfig {
       }
 
       const currentPath = window.location.pathname;
-
-      let allExtensions: CommandPaletteExtension[] = [];
-      try {
-        allExtensions = await fetchExtensions(
-          'command-palette',
-          controller.signal,
-        );
-      } catch {
-        // Extension fetch failed; palette opens with no nav items or patient actions.
-      }
-
-      if (controller.signal.aborted) return;
 
       const filterAndSort = (extensionPointId: string) =>
         allExtensions
