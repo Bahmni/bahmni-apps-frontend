@@ -1,22 +1,7 @@
-import { Edit, IconButton, Tile } from '@bahmni/design-system';
-import {
-  useTranslation,
-  getAllergies,
-  useEncounterSessionStore,
-} from '@bahmni/services';
-import {
-  getWidget,
-  useHasPrivilege,
-  useNotification,
-  CONSULTATION_PAD_PRIVILEGES,
-  usePatientUUID,
-} from '@bahmni/widgets';
-import React, { Suspense, useCallback } from 'react';
-import { dispatchConsultationStart } from '../../events/startConsultation';
-import {
-  AllergyInputEntry,
-  mapAllergyToInputEntry,
-} from '../../models/allergy';
+import { Tile } from '@bahmni/design-system';
+import { useTranslation, useEncounterSessionStore } from '@bahmni/services';
+import { getWidget } from '@bahmni/widgets';
+import React, { Suspense } from 'react';
 import { ControlConfig, DashboardSectionConfig } from '../../pages/models';
 import styles from './styles/DashboardSection.module.scss';
 
@@ -28,15 +13,6 @@ export interface DashboardSectionProps {
   visitUuids: string[];
 }
 
-const EDIT_SUPPORTED_WIDGET_TYPES = new Set(['allergies']);
-const EDIT_ALL_ALLERGIES_LABEL = 'EDIT_ALL_ALLERGIES';
-
-/**
- * DashboardSection component that renders a single dashboard section as a Carbon Tile
- *
- * @param {DashboardSectionProps} props - Component props
- * @returns {React.ReactElement} The rendered component
- */
 const DashboardSection: React.FC<DashboardSectionProps> = ({
   section,
   ref,
@@ -45,75 +21,8 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   visitUuids,
 }) => {
   const { t } = useTranslation();
-  const patientUUID = usePatientUUID();
-  const { addNotification } = useNotification();
-
-  const handleEditAllergies = useCallback(async () => {
-    try {
-      let preloadedAllergies: AllergyInputEntry[] | undefined;
-      if (patientUUID) {
-        const rawAllergies = await getAllergies(patientUUID);
-        preloadedAllergies = rawAllergies.map(mapAllergyToInputEntry);
-      }
-      dispatchConsultationStart({
-        editOnly: 'allergies',
-        editTitle: 'EDIT_ALLERGIES_TITLE',
-        preloadedAllergies,
-      });
-    } catch {
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: t('ERROR_LOADING_ALLERGIES'),
-        type: 'error',
-      });
-    }
-  }, [patientUUID, addNotification, t]);
-
-  // Row-level edit: fetch the specific allergy by its FHIR resource UUID.
-  const handleRowEditAllergy = useCallback(
-    async (resourceId: string) => {
-      try {
-        if (!patientUUID) return;
-        const rawAllergies = await getAllergies(patientUUID);
-        const target = rawAllergies.find((fhir) => fhir.id === resourceId);
-        if (!target) return;
-        dispatchConsultationStart({
-          editOnly: 'allergies',
-          editTitle: 'EDIT_ALLERGIES_TITLE',
-          preloadedAllergies: [mapAllergyToInputEntry(target)],
-        });
-      } catch {
-        addNotification({
-          title: t('ERROR_DEFAULT_TITLE'),
-          message: t('ERROR_LOADING_ALLERGIES'),
-          type: 'error',
-        });
-      }
-    },
-    [patientUUID, addNotification, t],
-  );
-
   const { matchReasons } = useEncounterSessionStore();
   const noActiveVisit = matchReasons.includes('NO_ACTIVE_VISIT');
-  // Row actions are disabled ONLY when there is no active visit.
-  // Every other state (including NO_ACTIVE_ENCOUNTER and session loading) keeps them enabled.
-  const disableRowActions = noActiveVisit;
-  const canEditAllergies = useHasPrivilege(
-    CONSULTATION_PAD_PRIVILEGES.EDIT_ALLERGIES,
-  );
-
-  const getSectionEditHandler = (controls: ControlConfig[]) => {
-    const hasEditable = controls.some((c) =>
-      EDIT_SUPPORTED_WIDGET_TYPES.has(c.type),
-    );
-    if (!hasEditable) return undefined;
-    return handleEditAllergies;
-  };
-
-  const showSectionEditButton = (controls: ControlConfig[]) =>
-    !noActiveVisit &&
-    canEditAllergies &&
-    controls.some((c) => EDIT_SUPPORTED_WIDGET_TYPES.has(c.type));
 
   const renderControl = (
     control: ControlConfig,
@@ -145,10 +54,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
             episodeOfCareUuids={episodeOfCareUuids}
             encounterUuids={encounterUuids}
             visitUuids={visitUuids}
-            disableActions={disableRowActions}
-            onRowEditClick={
-              control.type === 'allergies' ? handleRowEditAllergy : undefined
-            }
+            disableActions={noActiveVisit}
           />
         </Suspense>
         {showDivider && <div className={styles.divider} />}
@@ -162,7 +68,6 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
         <div className={styles.noContent}>{t('NO_CONFIGURED_CONTROLS')}</div>
       );
     }
-
     return (
       <>
         {section.controls.map((control, index) =>
@@ -181,25 +86,10 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
     >
       <Tile
         id={`section-${section.id}`}
-        className={
-          showSectionEditButton(section.controls ?? [])
-            ? styles.sectionNameWithEdit
-            : styles.sectionName
-        }
+        className={styles.sectionName}
         data-testid={`dashboard-section-tile-${section.name}`}
       >
         <p>{t(section.translationKey ?? section.name)}</p>
-        {showSectionEditButton(section.controls ?? []) && (
-          <IconButton
-            label={t(EDIT_ALL_ALLERGIES_LABEL)}
-            kind="ghost"
-            size="sm"
-            testId={`edit-section-${section.name}`}
-            onClick={getSectionEditHandler(section.controls ?? [])}
-          >
-            <Edit />
-          </IconButton>
-        )}
       </Tile>
       {renderSectionContent(section)}
     </div>

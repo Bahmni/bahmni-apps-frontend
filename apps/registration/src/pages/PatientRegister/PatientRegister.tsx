@@ -67,7 +67,6 @@ const PatientRegister = () => {
     personAttributesInitialData,
     addressInitialData,
     additionalIdentifiersInitialData,
-    relationshipsInitialData,
     initialDobEstimated,
     metadata: initialMetadata,
   } = usePatientDetails({
@@ -253,7 +252,6 @@ const PatientRegister = () => {
       addressInitialData,
       personAttributesInitialData,
       additionalIdentifiersInitialData,
-      relationshipsInitialData,
       initialDobEstimated,
       patientPhoto: patientPhoto ?? undefined,
     }),
@@ -262,7 +260,6 @@ const PatientRegister = () => {
       addressInitialData,
       personAttributesInitialData,
       additionalIdentifiersInitialData,
-      relationshipsInitialData,
       initialDobEstimated,
       patientPhoto,
     ],

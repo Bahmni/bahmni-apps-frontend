@@ -251,7 +251,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                     )}
                     aria-label="Dosage"
                     className={styles.dosageInput}
-                    hideLabel
                     type="number"
                     onChange={(_, { value }) => {
                       updateDosage(
@@ -278,7 +277,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                     )}
                     aria-label="Dosage Unit"
                     className={styles.dosageUnit}
-                    hideLabel
                     items={medicationConfig.doseUnits ?? []}
                     itemToString={(item) => (item ? item.name : '')}
                     selectedItem={dosageUnit}
@@ -309,7 +307,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                     `${inputControlType.toUpperCase()}_FREQUENCY_INPUT_LABEL`,
                   )}
                   aria-label="Frequency"
-                  hideLabel
                   items={medicationConfig.frequencies}
                   itemToString={(item) => (item ? item.name : '')}
                   selectedItem={frequency}
@@ -339,7 +336,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                     )}
                     aria-label="Duration"
                     className={styles.durationInput}
-                    hideLabel
                     min={0}
                     step={1}
                     value={duration}
@@ -371,7 +367,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                     )}
                     aria-label="Duration Unit"
                     className={styles.durationUnit}
-                    hideLabel
                     items={DURATION_UNIT_OPTIONS}
                     itemToString={(item) =>
                       item ? t(item.display, { defaultValue: item.code }) : ''
@@ -405,7 +400,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                   label={t(
                     `${inputControlType.toUpperCase()}_INSTRUCTIONS_INPUT_LABEL`,
                   )}
-                  hideLabel
                   items={medicationConfig.dosingInstructions ?? []}
                   itemToString={(item) => (item ? item.name : '')}
                   selectedItem={instruction}
@@ -432,7 +426,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                     `${inputControlType.toUpperCase()}_ROUTE_INPUT_LABEL`,
                   )}
                   aria-label="Route"
-                  hideLabel
                   items={medicationConfig.routes ?? []}
                   itemToString={(item) => (item ? item.name : '')}
                   selectedItem={route}
@@ -466,7 +459,6 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                       `${inputControlType.toUpperCase()}_START_DATE_INPUT_LABEL`,
                     )}
                     aria-label="Start Date"
-                    hideLabel
                     invalid={!!errors.startDate}
                     invalidText={errors.startDate ? t(errors.startDate) : ''}
                     disabled={
