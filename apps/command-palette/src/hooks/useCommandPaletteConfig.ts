@@ -1,6 +1,7 @@
 import {
   getConfig,
   getCurrentUserPrivileges,
+  fetchModuleExtensions,
   hasPrivilege,
   initAppI18n,
 } from '@bahmni/services';
@@ -22,18 +23,17 @@ import {
   COMMAND_PALETTE_NAV_ITEM_POINT,
   COMMAND_PALETTE_PATIENT_ACTION_POINT,
 } from '../constants/extensionPoints';
-import { commandPaletteAppJsonSchema } from '../services/configSchema';
-import {
-  fetchExtensions,
-  basePathFromTemplate,
-  pathTemplateToGetPath,
-  resolveLabel,
-} from '../services/extensionService';
 import type {
   CommandPaletteConfig,
   CommandPaletteExtension,
   CommandPaletteAppJson,
-} from '../types/commandPaletteConfig';
+} from '../models/commandPaletteConfig';
+import {
+  basePathFromTemplate,
+  pathTemplateToGetPath,
+  resolveLabel,
+} from '../utils/extensionUtils';
+import commandPaletteAppJsonSchema from './schema.json';
 
 export type { CommandPaletteConfig };
 
@@ -59,7 +59,7 @@ export function useCommandPaletteConfig(): CommandPaletteConfig {
             commandPaletteAppJsonSchema,
           ),
           getCurrentUserPrivileges(),
-          fetchExtensions('command-palette', controller.signal),
+          fetchModuleExtensions('command-palette'),
         ]);
 
       if (controller.signal.aborted) return;
@@ -69,7 +69,9 @@ export function useCommandPaletteConfig(): CommandPaletteConfig {
       const userPrivileges =
         privilegesResult.status === 'fulfilled' ? privilegesResult.value : null;
       const allExtensions: CommandPaletteExtension[] =
-        extensionsResult.status === 'fulfilled' ? extensionsResult.value : [];
+        extensionsResult.status === 'fulfilled'
+          ? (extensionsResult.value as unknown as CommandPaletteExtension[])
+          : [];
 
       if (appConfig) {
         const cp = appConfig.commandPalette;

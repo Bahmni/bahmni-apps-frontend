@@ -29,8 +29,6 @@ export { ProgramDetails } from './programDetails';
 export {
   CommandPaletteProvider,
   useCommandPalette,
-  PATIENT_FIELD_KEYS,
-  type CommandPaletteProviderProps,
   type CommandPaletteContextType,
   type AnnotationSearchType,
   type NavItem,

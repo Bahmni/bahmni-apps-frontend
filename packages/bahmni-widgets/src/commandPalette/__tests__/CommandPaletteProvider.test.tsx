@@ -1,9 +1,8 @@
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { useCommandPalette } from '../CommandPaletteContext';
 import { CommandPaletteProvider } from '../CommandPaletteProvider';
-import type { CommandPaletteProviderProps } from '../CommandPaletteProvider';
+import { useCommandPalette } from '../useCommandPalette';
 
 jest.mock('react-dom', () => ({
   ...jest.requireActual('react-dom'),
@@ -12,7 +11,7 @@ jest.mock('react-dom', () => ({
 
 jest.mock('cmdk');
 
-const defaultProps: CommandPaletteProviderProps = {
+const defaultProps: React.ComponentProps<typeof CommandPaletteProvider> = {
   navItems: [],
   patientActions: [],
   patientFieldsConfig: {

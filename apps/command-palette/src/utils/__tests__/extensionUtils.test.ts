@@ -1,10 +1,9 @@
-import type { CommandPaletteExtension } from '../../types/commandPaletteConfig';
+import type { CommandPaletteExtension } from '../../models/commandPaletteConfig';
 import {
-  toExtensionArray,
   basePathFromTemplate,
   pathTemplateToGetPath,
   resolveLabel,
-} from '../extensionService';
+} from '../extensionUtils';
 
 const ext = (
   overrides: Partial<CommandPaletteExtension> = {},
@@ -14,21 +13,11 @@ const ext = (
   ...overrides,
 });
 
-describe('toExtensionArray', () => {
-  it('returns array unchanged', () => {
-    const input = [ext({ id: 'a' }), ext({ id: 'b' })];
-    expect(toExtensionArray(input)).toEqual(input);
-  });
-
-  it('converts object to array of values', () => {
-    const result = toExtensionArray({
-      a: ext({ id: 'a' }),
-      b: ext({ id: 'b' }),
-    });
-    expect(result).toHaveLength(2);
-    expect(result.map((e) => e.id)).toEqual(expect.arrayContaining(['a', 'b']));
-  });
-});
+jest.mock('@bahmni/services', () => ({
+  formatUrl: jest.fn((url: string, opts: Record<string, string>) =>
+    url.replace(/{{(\w+)}}/g, (_, key) => opts[key] ?? ''),
+  ),
+}));
 
 describe('basePathFromTemplate', () => {
   it('strips template variable and trailing slash', () => {

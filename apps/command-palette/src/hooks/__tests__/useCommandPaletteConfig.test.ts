@@ -1,6 +1,7 @@
 import {
   getConfig,
   getCurrentUserPrivileges,
+  fetchModuleExtensions,
   hasPrivilege,
   initAppI18n,
 } from '@bahmni/services';
@@ -15,6 +16,7 @@ import { useCommandPaletteConfig } from '../useCommandPaletteConfig';
 jest.mock('@bahmni/services', () => ({
   getConfig: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
+  fetchModuleExtensions: jest.fn(),
   hasPrivilege: jest.fn(),
   initAppI18n: jest.fn(),
   formatUrl: jest.fn((url: string, opts: Record<string, string>) =>
@@ -22,8 +24,7 @@ jest.mock('@bahmni/services', () => ({
   ),
 }));
 
-jest.mock('../../services/extensionService', () => ({
-  fetchExtensions: jest.fn(),
+jest.mock('../../utils/extensionUtils', () => ({
   basePathFromTemplate: jest.fn((t: string) =>
     t.split('{{')[0].replace(/\/$/, ''),
   ),
@@ -42,10 +43,9 @@ const mockHasPrivilege = hasPrivilege as jest.MockedFunction<
   typeof hasPrivilege
 >;
 const mockInitAppI18n = initAppI18n as jest.MockedFunction<typeof initAppI18n>;
-
-const { fetchExtensions: mockFetchExtensions } = jest.requireMock(
-  '../../services/extensionService',
-);
+const mockFetchModuleExtensions = fetchModuleExtensions as jest.MockedFunction<
+  typeof fetchModuleExtensions
+>;
 
 const navExt = (overrides = {}) => ({
   id: 'nav-1',
@@ -71,7 +71,7 @@ describe('useCommandPaletteConfig', () => {
     mockInitAppI18n.mockResolvedValue(undefined);
     mockGetConfig.mockResolvedValue(null);
     mockGetCurrentUserPrivileges.mockResolvedValue([]);
-    mockFetchExtensions.mockResolvedValue([]);
+    mockFetchModuleExtensions.mockResolvedValue([]);
     mockHasPrivilege.mockReturnValue(true);
   });
 
@@ -85,7 +85,7 @@ describe('useCommandPaletteConfig', () => {
   });
 
   it('populates navItems from extensions', async () => {
-    mockFetchExtensions.mockResolvedValue([navExt()]);
+    mockFetchModuleExtensions.mockResolvedValue([navExt()]);
 
     const { result } = renderHook(() => useCommandPaletteConfig());
 
@@ -98,7 +98,7 @@ describe('useCommandPaletteConfig', () => {
   });
 
   it('populates patientActions from extensions', async () => {
-    mockFetchExtensions.mockResolvedValue([patientActionExt()]);
+    mockFetchModuleExtensions.mockResolvedValue([patientActionExt()]);
 
     const { result } = renderHook(() => useCommandPaletteConfig());
 
@@ -129,14 +129,14 @@ describe('useCommandPaletteConfig', () => {
   });
 
   it('excludes extensions the user lacks privilege for', async () => {
-    mockFetchExtensions.mockResolvedValue([
+    mockFetchModuleExtensions.mockResolvedValue([
       navExt({ requiredPrivilege: 'View Clinical' }),
     ]);
     mockHasPrivilege.mockReturnValue(false);
 
     const { result } = renderHook(() => useCommandPaletteConfig());
 
-    await waitFor(() => expect(mockFetchExtensions).toHaveBeenCalled());
+    await waitFor(() => expect(mockFetchModuleExtensions).toHaveBeenCalled());
     expect(result.current.navItems).toHaveLength(0);
   });
 
@@ -146,13 +146,13 @@ describe('useCommandPaletteConfig', () => {
       writable: true,
     });
 
-    mockFetchExtensions.mockResolvedValue([
+    mockFetchModuleExtensions.mockResolvedValue([
       navExt({ appContext: '/clinical' }),
     ]);
 
     const { result } = renderHook(() => useCommandPaletteConfig());
 
-    await waitFor(() => expect(mockFetchExtensions).toHaveBeenCalled());
+    await waitFor(() => expect(mockFetchModuleExtensions).toHaveBeenCalled());
     expect(result.current.navItems).toHaveLength(0);
   });
 });

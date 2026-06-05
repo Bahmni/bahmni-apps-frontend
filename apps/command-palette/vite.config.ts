@@ -2,7 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
-import * as path from 'path';
+import * as path from 'node:path';
 
 export default defineConfig(() => ({
   root: __dirname,
@@ -16,7 +16,7 @@ export default defineConfig(() => ({
   ],
   publicDir: 'public',
   css: {
-    modules: {
+    modules: process.env['VITEST'] ? {} : {
       generateScopedName: '[name]_[local]__[hash:base64:5]',
     },
   },

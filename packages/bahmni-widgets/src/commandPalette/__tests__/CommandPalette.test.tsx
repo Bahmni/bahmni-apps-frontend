@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { CommandPalette } from '../CommandPalette';
-import type { SearchAnnotation } from '../CommandPaletteContext';
+import type { SearchAnnotation } from '../models';
 
-import { useCommandPalette } from '../CommandPaletteContext';
+import { useCommandPalette } from '../useCommandPalette';
 import { useCommandPaletteSearch } from '../useCommandPaletteSearch';
 
 jest.mock('@bahmni/services', () => ({
@@ -23,8 +23,7 @@ jest.mock('react-dom', () => ({
 
 jest.mock('cmdk');
 
-jest.mock('../CommandPaletteContext', () => ({
-  ...jest.requireActual('../CommandPaletteContext'),
+jest.mock('../useCommandPalette', () => ({
   useCommandPalette: jest.fn(),
 }));
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { type TriggerConfig } from './CommandPaletteContext';
+import { type TriggerConfig } from './models';
 import { DEFAULT_DOUBLE_INTERVAL, matchesKeys } from './utils';
 
 export function useCommandPaletteKeyboard(

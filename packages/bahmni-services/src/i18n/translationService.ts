@@ -51,7 +51,7 @@ export const getTranslationFile = async (
  * @returns A promise that resolves to a merged translations object where config translations override bundled ones
  * @throws Will not throw errors, but will log warnings for failed fetches
  */
-export const getMergedTranslations = async (
+const getMergedTranslations = async (
   namespace: string,
   lang: string,
 ): Promise<Record<string, string>> => {

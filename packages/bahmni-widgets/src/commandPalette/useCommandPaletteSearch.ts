@@ -5,7 +5,7 @@ import {
   type PatientSearchResult,
 } from '@bahmni/services';
 import { useEffect, useRef, useState } from 'react';
-import { type SearchAnnotation } from './CommandPaletteContext';
+import { type SearchAnnotation } from './models';
 import { useDebounce } from './useDebounce';
 
 interface CommandPaletteSearchState {

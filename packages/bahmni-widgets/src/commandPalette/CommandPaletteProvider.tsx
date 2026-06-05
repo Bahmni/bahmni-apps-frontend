@@ -12,10 +12,10 @@ import type {
   PatientFieldsConfig,
   SearchAnnotation,
   TriggerConfig,
-} from './CommandPaletteContext';
+} from './models';
 import { useCommandPaletteKeyboard } from './useCommandPaletteKeyboard';
 
-export interface CommandPaletteProviderProps {
+interface CommandPaletteProviderProps {
   children?: ReactNode;
   navItems: NavItem[];
   patientActions: PatientAction[];

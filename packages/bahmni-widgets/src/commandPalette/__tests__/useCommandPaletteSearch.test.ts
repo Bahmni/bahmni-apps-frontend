@@ -3,7 +3,7 @@ import {
   searchPatientByCustomAttribute,
 } from '@bahmni/services';
 import { renderHook, act } from '@testing-library/react';
-import type { SearchAnnotation } from '../CommandPaletteContext';
+import type { SearchAnnotation } from '../models';
 import { useCommandPaletteSearch } from '../useCommandPaletteSearch';
 
 jest.mock('@bahmni/services', () => ({
