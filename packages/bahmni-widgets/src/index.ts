@@ -1,5 +1,9 @@
 import '@bahmni/design-system/styles';
 
+export type { BahmniControlsSdk } from './sdk';
+export { ControlErrorBoundary } from './custom/ControlErrorBoundary';
+export { default as CustomControl } from './custom/CustomControl';
+
 export {
   default as ConfirmationModal,
   type ConfirmationModalProps,

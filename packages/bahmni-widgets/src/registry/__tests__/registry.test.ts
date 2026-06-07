@@ -258,6 +258,7 @@ describe('Widget Registry', () => {
         'allergies',
         'appointments',
         'conditions',
+        'custom',
         'diagnoses',
         'flowSheet',
         'forms',
@@ -398,7 +399,7 @@ describe('Widget Registry', () => {
       resetWidgetRegistry();
       const countAfterReset = getAllWidgetTypes().length;
 
-      expect(countAfterReset).toBe(14); // Only built-in widgets
+      expect(countAfterReset).toBe(15); // Only built-in widgets
       expect(countWithCustom).toBeGreaterThan(countAfterReset);
     });
   });

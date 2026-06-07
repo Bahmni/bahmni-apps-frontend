@@ -1,0 +1,19 @@
+@use '@carbon/react/scss/spacing' as *;
+@use '@carbon/react/scss/type' as *;
+@use '@carbon/react/scss/colors' as *;
+@use '@carbon/react/scss/theme' as *;
+
+.widgetLoading {
+  padding: $spacing-05;
+  color: $text-secondary;
+  @include type-style('body-compact-01');
+  text-align: center;
+}
+
+.widgetError {
+  padding: $spacing-05;
+  color: $support-error;
+  @include type-style('body-compact-01');
+  font-style: italic;
+  text-align: center;
+}
