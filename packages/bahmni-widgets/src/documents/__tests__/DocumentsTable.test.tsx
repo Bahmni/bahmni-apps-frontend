@@ -132,9 +132,9 @@ const defaultConfig = {
   fields: [
     'documentIdentifier',
     'documentType',
+    'attachments',
     'uploadedOn',
     'uploadedBy',
-    'action',
   ],
 };
 
@@ -216,7 +216,7 @@ describe('DocumentsTable', () => {
   });
 
   describe('Table Headers and Data Display', () => {
-    it('renders table with configured fields including Action column', () => {
+    it('renders table with configured fields including Attachments column', () => {
       (useQuery as jest.Mock).mockReturnValue(mockQueryData());
       renderComponent({ config: defaultConfig });
 
@@ -230,16 +230,16 @@ describe('DocumentsTable', () => {
       expect(screen.getByText('DOCUMENTS_TYPE')).toBeInTheDocument();
       expect(screen.getByText('DOCUMENTS_UPLOADED_ON')).toBeInTheDocument();
       expect(screen.getByText('DOCUMENTS_UPLOADED_BY')).toBeInTheDocument();
-      expect(screen.getByText('DOCUMENTS_ACTION')).toBeInTheDocument();
+      expect(screen.getByText('DOCUMENTS_ATTACHMENTS')).toBeInTheDocument();
     });
 
-    it('renders the Action column header as last column', () => {
+    it('renders the Attachments column header as 3rd column', () => {
       (useQuery as jest.Mock).mockReturnValue(mockQueryData());
       renderComponent({ config: defaultConfig });
 
       const headers = screen.getAllByRole('columnheader');
       const headerTexts = headers.map((h) => h.textContent?.trim());
-      expect(headerTexts[headerTexts.length - 1]).toBe('DOCUMENTS_ACTION');
+      expect(headerTexts[2]).toBe('DOCUMENTS_ATTACHMENTS');
     });
 
     it('displays document identifier as plain text (no icon, no button)', () => {
@@ -297,7 +297,7 @@ describe('DocumentsTable', () => {
     });
   });
 
-  describe('Action Column', () => {
+  describe('Attachments Column', () => {
     it('renders "View attachment/s" link for documents with attachments', () => {
       (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
       renderComponent({ config: defaultConfig });
@@ -322,7 +322,7 @@ describe('DocumentsTable', () => {
       ).toBeInTheDocument();
     });
 
-    it('renders "--" in action column when document has no attachments and no URL', () => {
+    it('renders "--" in attachments column when document has no attachments and no URL', () => {
       (useQuery as jest.Mock).mockReturnValue(
         mockQueryData([mockDocumentNoUrl]),
       );
@@ -776,7 +776,7 @@ describe('DocumentsTable', () => {
 
     it('renders with custom field configuration', () => {
       const customConfig = {
-        fields: ['documentIdentifier', 'action'],
+        fields: ['documentIdentifier', 'attachments'],
       };
       (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
       renderComponent({ config: customConfig });
