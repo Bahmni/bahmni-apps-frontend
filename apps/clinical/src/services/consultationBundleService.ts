@@ -120,11 +120,6 @@ export function createDiagnosisBundleEntries({
 }
 
 /**
- * Posts a consultation bundle to the FHIR R4 endpoint
- * @param consultationBundle - The consultation bundle payload
- * @returns Promise resolving to the response data
- */
-/**
  * Creates bundle entries for allergies as part of consultation bundle
  * @param params - Parameters required for creating allergy bundle entries
  * @returns Array of BundleEntry for allergies
@@ -165,7 +160,6 @@ export function createAllergiesBundleEntries({
 
     const isExisting = !!allergy.resourceId && !!allergy.rawFhirResource;
 
-    // Skip existing allergies that the user did not change.
     if (isExisting && !allergy.isModified) continue;
 
     const manifestationUUIDs = allergy.selectedReactions
@@ -177,20 +171,11 @@ export function createAllergiesBundleEntries({
       | 'severe';
 
     if (isExisting && allergy.rawFhirResource) {
-      // Determine if the allergy belongs to the current encounter session.
-      // encounterReference is the raw UUID (e.g. 'abc-123'); the server stores
-      // the reference as 'Encounter/abc-123'. When no encounter is recorded on the
-      // resource (legacy data), default to same-session to avoid unintended voids.
       const allergyEncounterRef = allergy.rawFhirResource.encounter?.reference;
-      // encounterReference is already in 'Encounter/uuid' format (from getEncounterReference)
-      // or a urn:uuid: placeholder for a brand-new encounter.
       const isSameSession =
         !allergyEncounterRef || allergyEncounterRef === encounterReference;
 
       if (isSameSession) {
-        // Same session: PUT to update the existing resource in place.
-        // Rebuild manifestations, preserving the full FHIR structure (SNOMED codes
-        // + text) for existing reactions and using minimal coding for new ones.
         const existingManifestationByCode = new Map<
           string,
           import('fhir/r4').CodeableConcept
@@ -232,8 +217,6 @@ export function createAllergiesBundleEntries({
           createBundleEntry(putURL, putResource, 'PUT', putURL),
         );
       } else {
-        // Cross-session: the allergy belongs to a previous encounter.
-        // Void the old resource and create a fresh one in the current session.
         const deleteURL = `AllergyIntolerance/${allergy.resourceId}`;
         allergyEntries.push(
           createBundleEntry(
@@ -264,7 +247,6 @@ export function createAllergiesBundleEntries({
         );
       }
     } else {
-      // New allergy: POST.
       const newResource = createEncounterAllergyResource(
         allergy.id,
         [allergy.type] as Array<
