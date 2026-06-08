@@ -756,6 +756,165 @@ describe('consultationBundleService', () => {
       });
     });
 
+    describe('Cross-session allergy (DELETE + POST) paths', () => {
+      const mockRawFhirWithOldEncounter: AllergyIntolerance = {
+        resourceType: 'AllergyIntolerance',
+        id: 'allergy-uuid-old',
+        clinicalStatus: {
+          coding: [{ system: 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical', code: 'active' }],
+        },
+        code: { coding: [{ code: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' }], text: 'Penicillin' },
+        patient: { reference: 'Patient/patient-123' },
+        encounter: { reference: 'Encounter/old-encounter-uuid' },
+        reaction: [
+          {
+            manifestation: [{ coding: [{ code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', display: 'Rash' }] }],
+            severity: 'moderate' as const,
+          },
+        ],
+      };
+
+      const mockCrossSessionAllergy: AllergyInputEntry = {
+        id: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        display: 'Penicillin',
+        type: 'medication',
+        selectedSeverity: { code: 'mild', display: 'Mild' },
+        selectedReactions: [{ code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', display: 'Rash' }],
+        errors: {},
+        hasBeenValidated: true,
+        resourceId: 'allergy-uuid-old',
+        isModified: true,
+        rawFhirResource: mockRawFhirWithOldEncounter,
+      };
+
+      // mockEncounterReference = 'urn:uuid:12345'
+      // allergy encounter = 'Encounter/old-encounter-uuid'
+      // 'Encounter/old-encounter-uuid' !== 'Encounter/urn:uuid:12345' → cross-session
+
+      it('produces exactly two entries: DELETE first, POST second', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockCrossSessionAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+      });
+
+      it('first entry is DELETE with correct URL for the old allergy', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockCrossSessionAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect((result[0].request as { method: string; url: string }).method).toBe('DELETE');
+        expect((result[0].request as { method: string; url: string }).url).toBe('AllergyIntolerance/allergy-uuid-old');
+        expect(result[0].fullUrl).toBe('AllergyIntolerance/allergy-uuid-old');
+      });
+
+      it('second entry is POST with a new urn:uuid URL', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockCrossSessionAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect((result[1].request as { method: string; url: string }).method).toBe('POST');
+        expect(result[1].fullUrl).toMatch(/^urn:uuid:/);
+      });
+
+      it('POST resource carries the current encounter reference', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockCrossSessionAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const postResource = result[1].resource as AllergyIntolerance;
+        expect(postResource.encounter?.reference).toBe(mockEncounterReference);
+      });
+
+      it('POST resource carries the user-edited severity', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockCrossSessionAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const postResource = result[1].resource as AllergyIntolerance;
+        expect(postResource.reaction?.[0].severity).toBe('mild');
+      });
+
+      it('skips cross-session allergy when isModified is false', () => {
+        const unmodified: AllergyInputEntry = { ...mockCrossSessionAllergy, isModified: false };
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [unmodified],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(0);
+      });
+
+      it('uses PUT when encounterReference is Encounter/uuid format matching the allergy encounter', () => {
+        // encounterReference from getEncounterReference() is already 'Encounter/uuid'
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [
+            {
+              ...mockCrossSessionAllergy,
+              // allergy encounter matches current — same session
+              rawFhirResource: {
+                ...mockRawFhirWithOldEncounter,
+                encounter: { reference: 'Encounter/current-enc' },
+              } as AllergyIntolerance,
+            },
+          ],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: 'Encounter/current-enc', // full format, same as allergy
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect((result[0].request as { method: string }).method).toBe('PUT');
+      });
+
+      it('uses DELETE+POST when encounterReference is Encounter/uuid format differing from allergy encounter', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockCrossSessionAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: 'Encounter/current-enc', // full format, different from allergy
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+        expect((result[0].request as { method: string }).method).toBe('DELETE');
+        expect((result[1].request as { method: string }).method).toBe('POST');
+      });
+
+      it('defaults to PUT when rawFhirResource has no encounter (legacy data)', () => {
+        const legacyAllergy: AllergyInputEntry = {
+          ...mockCrossSessionAllergy,
+          rawFhirResource: { ...mockRawFhirWithOldEncounter, encounter: undefined },
+        };
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [legacyAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect((result[0].request as { method: string }).method).toBe('PUT');
+      });
+    });
+
     describe('createEncounterBundleEntry', () => {
       const mockEncounterResource = {
         resourceType: 'Encounter',

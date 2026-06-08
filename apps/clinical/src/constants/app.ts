@@ -15,6 +15,7 @@ export const USER_RESOURCE_URL = (username: string) =>
 
 export const CONSULTATION_BUNDLE_URL = OPENMRS_FHIR_R4 + '/ConsultationBundle';
 export const ENCOUNTER_SEARCH_URL = OPENMRS_FHIR_R4 + '/Encounter';
+export const ALLERGY_INTOLERANCE_URL = OPENMRS_FHIR_R4 + '/AllergyIntolerance';
 export const OBSERVATION_FORMS_URL =
   OPENMRS_REST_V1 + '/bahmniie/form/latestPublishedForms';
 export const CLINICAL_NAMESPACE = 'clinical';
