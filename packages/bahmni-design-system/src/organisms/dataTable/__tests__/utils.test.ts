@@ -138,6 +138,58 @@ describe('inDateRangeFilterFn', () => {
       ),
     ).toBe(true);
   });
+
+  it('includes all timestamps within a single day when start and end are the same date', () => {
+    const singleDay = Date.UTC(2026, 0, 15); // Jan 15, 2026 at 00:00:00
+
+    // Test various times throughout the day
+    expect(
+      inDateRangeFilterFn(
+        makeRow(Date.UTC(2026, 0, 15, 0, 0, 0)), // Midnight
+        'col',
+        [singleDay, singleDay],
+        noopAddMeta,
+      ),
+    ).toBe(true);
+
+    expect(
+      inDateRangeFilterFn(
+        makeRow(Date.UTC(2026, 0, 15, 12, 30, 0)), // Noon
+        'col',
+        [singleDay, singleDay],
+        noopAddMeta,
+      ),
+    ).toBe(true);
+
+    expect(
+      inDateRangeFilterFn(
+        makeRow(Date.UTC(2026, 0, 15, 23, 59, 59)), // End of day
+        'col',
+        [singleDay, singleDay],
+        noopAddMeta,
+      ),
+    ).toBe(true);
+
+    // Test that next day is excluded
+    expect(
+      inDateRangeFilterFn(
+        makeRow(Date.UTC(2026, 0, 16, 0, 0, 0)), // Next day midnight
+        'col',
+        [singleDay, singleDay],
+        noopAddMeta,
+      ),
+    ).toBe(false);
+
+    // Test that previous day is excluded
+    expect(
+      inDateRangeFilterFn(
+        makeRow(Date.UTC(2026, 0, 14, 23, 59, 59)), // Previous day end
+        'col',
+        [singleDay, singleDay],
+        noopAddMeta,
+      ),
+    ).toBe(false);
+  });
 });
 
 describe('defaultRenderCell', () => {

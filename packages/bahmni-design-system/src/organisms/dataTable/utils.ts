@@ -25,6 +25,15 @@ const toTimestamp = (value: unknown): number | null => {
   return null;
 };
 
+// Helper function to get end of day timestamp in UTC
+const getEndOfDay = (timestamp: number): number => {
+  const date = new Date(timestamp);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  const day = date.getUTCDate();
+  return Date.UTC(year, month, day, 23, 59, 59, 999);
+};
+
 // FilterFn<any> (not FilterFn<unknown>) — TanStack's Column<TData> is
 // invariant on TData, so FilterFn<unknown> won't structurally satisfy
 // FilterFn<T> for an arbitrary T. Using `any` here is a deliberate
@@ -41,7 +50,13 @@ export const inDateRangeFilterFn: FilterFn<any> = (
   const cellValue = toTimestamp(row.getValue(columnId));
   if (cellValue == null) return false;
   if (start != null && cellValue < start) return false;
-  if (end != null && cellValue > end) return false;
+  // Make the end date inclusive by adjusting it to end of day (23:59:59.999)
+  // This ensures that when filtering for a single day (start = end),
+  // all timestamps within that day are included
+  if (end != null) {
+    const adjustedEnd = getEndOfDay(end);
+    if (cellValue > adjustedEnd) return false;
+  }
   return true;
 };
 
