@@ -3,9 +3,7 @@ import {
   createEncounterBundleEntry,
   getEncounterReference,
   postConsultationBundle,
-  submitAllergyChanges,
 } from '../../services/consultationBundleService';
-import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { extractConceptsFromResponseBundle } from '../../utils/fhir/conceptExtractor';
 import { createConsultationBundle } from '../../utils/fhir/consultationBundleCreator';
@@ -69,8 +67,6 @@ export async function submitConsultation(
     statDurationInMilliseconds: deps.statDurationInMilliseconds,
   };
 
-  // New allergies go through the bundle (createBundleEntries filters to !resourceId).
-  // Existing modified allergies are handled via standalone calls after the bundle.
   const formEntries = deps.activeEntries
     .filter((entry) => entry.hasData() && entry.createBundleEntries)
     .flatMap((entry) => entry.createBundleEntries!(ctx));
@@ -83,44 +79,9 @@ export async function submitConsultation(
   const responseBundle =
     await postConsultationBundle<Bundle>(consultationBundle);
 
-  // Derive the resolved encounter reference for standalone allergy calls.
-  // For a new encounter (placeholder), extract its UUID from the bundle response.
-  // For an existing encounter, encounterReference already has the Encounter/uuid format.
-  const resolvedEncounterReference = resolveEncounterReferenceFromResponse(
-    responseBundle,
-    encounterReference,
-  );
-
-  // Submit allergy changes via standalone FHIR endpoints.
-  const allergiesEntry = deps.activeEntries.find((e) => e.key === 'allergies');
-  if (allergiesEntry?.hasData()) {
-    await submitAllergyChanges({
-      selectedAllergies: useAllergyStore.getState().selectedAllergies,
-      encounterReference: resolvedEncounterReference,
-      encounterSubject: ctx.encounterSubject,
-      practitionerUUID: ctx.practitionerUUID,
-    });
-  }
-
   return {
     updatedConcepts: extractConceptsFromResponseBundle(responseBundle),
     patientUUID: patientUUID!,
     encounterTypeName: selectedEncounterType!.name,
   };
-}
-
-/**
- * Finds the encounter in the bundle response and returns its reference in
- * 'Encounter/uuid' format. Falls back to the original encounterReference
- * (already in the right format) if the encounter cannot be located.
- */
-function resolveEncounterReferenceFromResponse(
-  responseBundle: Bundle,
-  fallback: string,
-): string {
-  const encounterEntry = responseBundle.entry?.find(
-    (e) => e.resource?.resourceType === 'Encounter',
-  );
-  const encounterId = encounterEntry?.resource?.id;
-  return encounterId ? `Encounter/${encounterId}` : fallback;
 }

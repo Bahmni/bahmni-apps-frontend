@@ -16,14 +16,9 @@ registerInputControl({
       .getState()
       .selectedAllergies.some((a) => a.isModified !== false),
   subscribe: (cb) => useAllergyStore.subscribe(cb),
-  // New allergies (no resourceId) go through the ConsultationBundle for atomicity
-  // with the encounter and other resources. Existing modified allergies are handled
-  // via standalone FHIR calls in submitConsultation to avoid transaction issues.
   createBundleEntries: (ctx) =>
     createAllergiesBundleEntries({
-      selectedAllergies: useAllergyStore
-        .getState()
-        .selectedAllergies.filter((a) => !a.resourceId),
+      selectedAllergies: useAllergyStore.getState().selectedAllergies,
       encounterSubject: ctx.encounterSubject,
       encounterReference: ctx.encounterReference,
       practitionerUUID: ctx.practitionerUUID,
