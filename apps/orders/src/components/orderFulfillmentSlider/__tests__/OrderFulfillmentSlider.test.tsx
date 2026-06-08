@@ -163,6 +163,11 @@ describe('OrderFulfillmentSlider', () => {
           label: 'Completed',
           translationKey: 'STATUS_COMPLETED',
         },
+        {
+          value: 'On Hold',
+          label: 'On Hold',
+          translationKey: 'STATUS_ON_HOLD',
+        },
       ],
       orderStatusesPreSelected: [
         { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
