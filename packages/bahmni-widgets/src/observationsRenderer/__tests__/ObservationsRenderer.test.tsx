@@ -123,7 +123,7 @@ describe('ObservationsRenderer', () => {
 
       expect(
         screen.getByTestId('observation-value-Is Smoker-0'),
-      ).toHaveTextContent('true');
+      ).toHaveTextContent('YES');
     });
 
     it('should render boolean false value as false', () => {
@@ -141,7 +141,7 @@ describe('ObservationsRenderer', () => {
 
       expect(
         screen.getByTestId('observation-value-Is Smoker-0'),
-      ).toHaveTextContent('false');
+      ).toHaveTextContent('NO');
     });
   });
 
