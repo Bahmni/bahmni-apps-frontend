@@ -1,4 +1,4 @@
-import { Edit, IconButton } from '@bahmni/design-system';
+import { Button, Edit, IconButton } from '@bahmni/design-system';
 import { hasPrivilege, useTranslation } from '@bahmni/services';
 import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
 import { MedicationRequest } from 'fhir/r4';
@@ -34,17 +34,34 @@ const Actions: React.FC<ActionsProps> = ({
   if (actions.length === 1) {
     const action = actions[0];
     const disabled = isActionDisabled(action);
+    const icon = ACTION_ICONS[action.type];
+
+    if (icon) {
+      return (
+        <IconButton
+          label={t(action.label)}
+          kind="ghost"
+          size="sm"
+          disabled={disabled}
+          onClick={() => !disabled && handleAction(action, medication)}
+          testId={`medication-action-${action.type}-${medication.id}`}
+        >
+          {icon}
+        </IconButton>
+      );
+    }
+
     return (
-      <IconButton
-        label={t(action.label)}
+      <Button
+        id={`medication-action-${action.type}-button`}
+        data-testid={`medication-action-${action.type}-${medication.id}`}
+        aria-label={t(action.label)}
         kind="ghost"
-        size="sm"
         disabled={disabled}
-        onClick={() => !disabled && handleAction(action, medication)}
-        testId={`medication-action-${action.type}-${medication.id}`}
+        onClick={() => handleAction(action, medication)}
       >
-        {ACTION_ICONS[action.type] ?? <Edit />}
-      </IconButton>
+        {t(action.label)}
+      </Button>
     );
   }
 

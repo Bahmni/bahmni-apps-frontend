@@ -237,6 +237,8 @@ function hasMedicationChanged(
   if (current.instruction?.uuid !== original.instruction?.uuid) return true;
   if (current.isSTAT !== original.isSTAT) return true;
   if (current.isPRN !== original.isPRN) return true;
+  if (current.startDate?.toDateString() !== original.startDate?.toDateString())
+    return true;
   if (current.dispenseQuantity !== original.dispenseQuantity) return true;
   if (current.dispenseUnit?.uuid !== original.dispenseUnit?.uuid) return true;
   if ((current.note ?? '') !== (original.note ?? '')) return true;

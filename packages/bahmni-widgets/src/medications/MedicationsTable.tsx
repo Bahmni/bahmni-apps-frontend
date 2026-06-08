@@ -165,10 +165,14 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         return formatDateTime(medication.orderDate, t).formattedResult;
       });
 
-      // Sort by date descending (most recent first)
-      const sortedGroups = grouped.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      );
+      // Sort by date descending (most recent first) using the raw orderDate
+      // from the first item in each group, since group.date is a formatted
+      // display string (e.g. "Today") that cannot be parsed by new Date().
+      const sortedGroups = grouped.sort((a, b) => {
+        const dateA = new Date(a.items[0]?.orderDate ?? 0).getTime();
+        const dateB = new Date(b.items[0]?.orderDate ?? 0).getTime();
+        return dateB - dateA;
+      });
 
       // Sort medications within each group by priority
       sortedGroups.forEach((group) => {
