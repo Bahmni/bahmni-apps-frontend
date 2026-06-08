@@ -25,13 +25,16 @@ const toTimestamp = (value: unknown): number | null => {
   return null;
 };
 
-// Helper function to get end of day timestamp in UTC
-const getEndOfDay = (timestamp: number): number => {
+// Helper function to normalize a timestamp to start of day (date only)
+// This strips the time component for date-only comparison
+const normalizeToDateOnly = (timestamp: number): number => {
   const date = new Date(timestamp);
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth();
-  const day = date.getUTCDate();
-  return Date.UTC(year, month, day, 23, 59, 59, 999);
+  // Create a new date at start of day (00:00:00.000) in local timezone
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  ).getTime();
 };
 
 // FilterFn<any> (not FilterFn<unknown>) — TanStack's Column<TData> is
@@ -49,14 +52,21 @@ export const inDateRangeFilterFn: FilterFn<any> = (
   if (start == null && end == null) return true;
   const cellValue = toTimestamp(row.getValue(columnId));
   if (cellValue == null) return false;
-  if (start != null && cellValue < start) return false;
-  // Make the end date inclusive by adjusting it to end of day (23:59:59.999)
-  // This ensures that when filtering for a single day (start = end),
-  // all timestamps within that day are included
-  if (end != null) {
-    const adjustedEnd = getEndOfDay(end);
-    if (cellValue > adjustedEnd) return false;
+
+  // Normalize all dates to start of day for date-only comparison
+  // This makes the filter inclusive of the entire end date
+  const cellDate = normalizeToDateOnly(cellValue);
+
+  if (start != null) {
+    const startDate = normalizeToDateOnly(start);
+    if (cellDate < startDate) return false;
   }
+
+  if (end != null) {
+    const endDate = normalizeToDateOnly(end);
+    if (cellDate > endDate) return false;
+  }
+
   return true;
 };
 
