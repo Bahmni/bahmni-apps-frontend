@@ -11,7 +11,7 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation, getTodayDate, type CDSSRule } from '@bahmni/services';
 import { dispatchCDSSCheck } from '@bahmni/services';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MedicationInputEntry } from '../../../../models/medication';
 import { MedicationConfig } from '../../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
@@ -81,9 +81,13 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
 
       const [hasNote, setHasNote] = useState(!!note);
       const noteRequired = findAttr('note', attributes)?.required;
+      const initialEditMountRef = useRef(!!entry.fhirResourceId);
 
       useEffect(() => {
-        if (entry.fhirResourceId) return;
+        if (initialEditMountRef.current) {
+          initialEditMountRef.current = false;
+          return;
+        }
         const totalQuantity = calculateTotalQuantity(
           dosage,
           frequency,
