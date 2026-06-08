@@ -32,6 +32,19 @@ export const formatObservationValue = (
     return formatDateTime(String(value), t).formattedResult;
   }
 
+  if (type === 'boolean') {
+    const formatBoolToken = (token: boolean | string) => {
+      const isTrue = token === true || token === 'true';
+      return isTrue ? (t ? t('YES') : 'Yes') : t ? t('NO') : 'No';
+    };
+    // After multi-select grouping, booleans are concatenated into a string
+    // e.g. true + ', ' + false → "true, false". Handle both cases.
+    if (typeof value === 'boolean') {
+      return formatBoolToken(value);
+    }
+    return String(value).split(', ').map(formatBoolToken).join(', ');
+  }
+
   const baseValue = unit ? `${value} ${unit}` : String(value);
   return baseValue;
 };
