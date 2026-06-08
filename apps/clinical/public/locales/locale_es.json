@@ -134,7 +134,7 @@
   "DIAGNOSIS_LIST_RECORDED_BY": "Grabado Por",
   "DIAGNOSIS_RECORDED_DATE": "Fecha de grabación",
   "DIAGNOSIS_TABLE_NOT_AVAILABLE": "No disponible",
-  "DOCUMENTS_ACTION": "Acción",
+  "DOCUMENTS_ATTACHMENTS": "Adjuntos",
   "DOCUMENTS_DOCUMENT_IDENTIFIER": "Identificador de Documento",
   "DOCUMENTS_ERROR_LOADING_ATTACHMENT": "No se puede cargar el adjunto. La URL del documento puede estar dañada o no encontrada.",
   "DOCUMENTS_NOT_AVAILABLE": "No disponible",
