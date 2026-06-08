@@ -12,7 +12,7 @@
     "typecheck:affected": "nx affected --target=typecheck",
     "test": "nx run-many --target=test --all --parallel=1",
     "test:affected": "nx affected --target=test --parallel=1",
-    "test:coverage": "nx run-many --target=test --coverage --parallel=1 && node scripts/merge-coverage-reports.js",
+    "test:coverage": "nx run-many --target=test --coverage --parallel=1 --exclude=distro && node scripts/merge-coverage-reports.js",
     "test:watch": "nx run-many --target=test --coverage --watch",
     "build": "nx run-many --target=build --all",
     "build:affected": "nx affected --target=build",

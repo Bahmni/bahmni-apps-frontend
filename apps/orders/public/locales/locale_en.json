@@ -19,6 +19,7 @@
   "STATUS_ACKNOWLEDGED": "Acknowledged",
   "STATUS_IN_PROGRESS": "In Progress",
   "STATUS_COMPLETED": "Completed",
+  "STATUS_ON_HOLD": "On Hold",
   "URGENT": "Urgent",
   "UNASSIGNED": "Unassigned",
   "NO_ORDERS_FOUND": "No orders found",
