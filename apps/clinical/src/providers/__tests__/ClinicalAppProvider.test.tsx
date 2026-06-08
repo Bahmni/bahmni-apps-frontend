@@ -1,7 +1,7 @@
 import * as services from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
-import { useActiveVisit } from '../../hooks/useActiveVisit';
+import { usePatientVisit } from '../../hooks/usePatientVisit';
 import { ClinicalAppProvider } from '../ClinicalAppProvider';
 
 // Mock the services
@@ -20,7 +20,7 @@ jest.mock('@bahmni/services', () => ({
   }),
 }));
 
-jest.mock('../../hooks/useActiveVisit');
+jest.mock('../../hooks/usePatientVisit');
 
 const mockGetEncountersAndVisitsForEOC =
   services.getEncountersAndVisitsForEOC as jest.MockedFunction<
@@ -32,8 +32,8 @@ const mockUseSubscribeConsultationSaved =
     typeof services.useSubscribeConsultationSaved
   >;
 
-const mockUseActiveVisit = useActiveVisit as jest.MockedFunction<
-  typeof useActiveVisit
+const mockUsePatientVisit = usePatientVisit as jest.MockedFunction<
+  typeof usePatientVisit
 >;
 
 describe('ClinicalAppProvider', () => {
@@ -47,10 +47,12 @@ describe('ClinicalAppProvider', () => {
       },
     });
     mockUseSubscribeConsultationSaved.mockImplementation(() => {});
-    mockUseActiveVisit.mockReturnValue({
-      activeVisit: { id: 'active-visit-1' },
-      isLoading: false,
+    mockUsePatientVisit.mockReturnValue({
+      activeVisit: { id: 'active-visit-1' } as any,
+      lastVisit: null,
+      loading: false,
       error: null,
+      refetch: jest.fn(),
     });
   });
 
