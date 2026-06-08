@@ -3,9 +3,6 @@
   "include": [],
   "references": [
     {
-      "path": "../packages/bahmni-services"
-    },
-    {
       "path": "../apps/appointments"
     },
     {

@@ -1,6 +1,7 @@
 import '@bahmni/design-system/styles';
 
 export type { BahmniControlsSdk } from './sdk';
+export { installControlsSdk } from './installControlsSdk';
 export { ControlErrorBoundary } from './custom/ControlErrorBoundary';
 export { default as CustomControl } from './custom/CustomControl';
 

@@ -49,6 +49,8 @@ export default defineConfig(() => ({
         'react-router-dom',
         'react-i18next',
         '@tanstack/react-query',
+        '@bahmni/services',
+        '@bahmni/design-system',
         /^@carbon\/styles/,
       ],
     },

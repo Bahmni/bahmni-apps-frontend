@@ -25,11 +25,9 @@
     "build": "vite build",
     "prepublishOnly": "yarn run build"
   },
-  "dependencies": {
-    "@bahmni/design-system": "^0.0.1-0",
-    "@bahmni/services": "^0.0.1-0"
-  },
   "peerDependencies": {
+    "@bahmni/design-system": "^0.0.1-0",
+    "@bahmni/services": "^0.0.1-0",
     "@tanstack/react-query": "^5.85.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
