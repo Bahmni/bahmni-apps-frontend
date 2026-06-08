@@ -26,10 +26,10 @@
   position: absolute !important;
   top: $spacing-06;
   right: 2px;
-  background-color: $field-01 !important;
+  background-color: transparent !important;
 
   :global(.cds--btn--icon-only) {
-    background-color: $field-01 !important;
+    background-color: transparent !important;
     color: $icon-primary !important;
   }
 }
