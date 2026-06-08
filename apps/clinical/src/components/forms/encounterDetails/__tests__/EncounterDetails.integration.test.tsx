@@ -1,7 +1,7 @@
 import {
   getCookieByName,
   getFormattedError,
-  getActiveVisit,
+  getVisits,
   getCurrentUser,
   getCurrentProvider,
 } from '@bahmni/services';
@@ -16,7 +16,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getCookieByName: jest.fn(),
   getFormattedError: jest.fn(),
-  getActiveVisit: jest.fn(),
+  getVisits: jest.fn(),
   getCurrentUser: jest.fn(),
   getCurrentProvider: jest.fn(),
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
@@ -146,7 +146,7 @@ describe('BasicForm Integration Tests', () => {
     );
     (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (getCurrentProvider as jest.Mock).mockResolvedValue(mockProvider);
-    (getActiveVisit as jest.Mock).mockResolvedValue(mockActiveVisit);
+    (getVisits as jest.Mock).mockResolvedValue([mockActiveVisit]);
     (getLocations as jest.Mock).mockResolvedValue([mockLocationData]);
 
     (useActivePractitioner as jest.Mock).mockReturnValue({
@@ -175,7 +175,7 @@ describe('BasicForm Integration Tests', () => {
     renderBasicForm();
 
     // Wait for all API calls to complete and form to be ready.
-    // Real hooks (useLocations, useEncounterConcepts, useActiveVisit) each trigger
+    // Real hooks (useLocations, useEncounterConcepts, usePatientVisit) each trigger
     // async render cycles, so we allow up to 10 s for the cascade to settle.
     await waitFor(
       () => {
@@ -288,7 +288,7 @@ describe('BasicForm Integration Tests', () => {
   });
 
   test('handles active visit API error', async () => {
-    (getActiveVisit as jest.Mock).mockRejectedValue(
+    (getVisits as jest.Mock).mockRejectedValue(
       new Error('Active visit API error'),
     );
 
@@ -320,7 +320,7 @@ describe('BasicForm Integration Tests', () => {
       ],
     };
 
-    (getActiveVisit as jest.Mock).mockResolvedValue(mockActiveVisitNoType);
+    (getVisits as jest.Mock).mockResolvedValue([mockActiveVisitNoType]);
 
     renderBasicForm();
 
@@ -372,7 +372,7 @@ describe('BasicForm Integration Tests', () => {
     );
     (getCurrentUser as jest.Mock).mockRejectedValue(new Error('API Error'));
     (getCurrentProvider as jest.Mock).mockRejectedValue(new Error('API Error'));
-    (getActiveVisit as jest.Mock).mockRejectedValue(new Error('API Error'));
+    (getVisits as jest.Mock).mockRejectedValue(new Error('API Error'));
     (getLocations as jest.Mock).mockRejectedValue(new Error('API Error'));
     (getCookieByName as jest.Mock).mockImplementation(() => {
       throw new Error('Cookie error');

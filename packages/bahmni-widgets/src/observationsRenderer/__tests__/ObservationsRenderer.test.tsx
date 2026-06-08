@@ -107,6 +107,44 @@ describe('ObservationsRenderer', () => {
     });
   });
 
+  describe('Boolean Observations', () => {
+    it('should render boolean true value as true', () => {
+      const mockObservation: Observation = {
+        resourceType: 'Observation',
+        id: 'obs-bool-true',
+        status: 'final',
+        code: {
+          text: 'Is Smoker',
+        },
+        valueBoolean: true,
+      };
+
+      render(<ObservationsRenderer observations={[mockObservation]} />);
+
+      expect(
+        screen.getByTestId('observation-value-Is Smoker-0'),
+      ).toHaveTextContent('YES');
+    });
+
+    it('should render boolean false value as false', () => {
+      const mockObservation: Observation = {
+        resourceType: 'Observation',
+        id: 'obs-bool-false',
+        status: 'final',
+        code: {
+          text: 'Is Smoker',
+        },
+        valueBoolean: false,
+      };
+
+      render(<ObservationsRenderer observations={[mockObservation]} />);
+
+      expect(
+        screen.getByTestId('observation-value-Is Smoker-0'),
+      ).toHaveTextContent('NO');
+    });
+  });
+
   describe('Reference Ranges', () => {
     it('should render observation with low and high reference range', () => {
       const mockObservation: Observation = {
