@@ -25,6 +25,18 @@ const toTimestamp = (value: unknown): number | null => {
   return null;
 };
 
+// Helper function to normalize a timestamp to start of day (date only)
+// This strips the time component for date-only comparison
+const normalizeToDateOnly = (timestamp: number): number => {
+  const date = new Date(timestamp);
+  // Create a new date at start of day (00:00:00.000) in local timezone
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  ).getTime();
+};
+
 // FilterFn<any> (not FilterFn<unknown>) — TanStack's Column<TData> is
 // invariant on TData, so FilterFn<unknown> won't structurally satisfy
 // FilterFn<T> for an arbitrary T. Using `any` here is a deliberate
@@ -40,8 +52,21 @@ export const inDateRangeFilterFn: FilterFn<any> = (
   if (start == null && end == null) return true;
   const cellValue = toTimestamp(row.getValue(columnId));
   if (cellValue == null) return false;
-  if (start != null && cellValue < start) return false;
-  if (end != null && cellValue > end) return false;
+
+  // Normalize all dates to start of day for date-only comparison
+  // This makes the filter inclusive of the entire end date
+  const cellDate = normalizeToDateOnly(cellValue);
+
+  if (start != null) {
+    const startDate = normalizeToDateOnly(start);
+    if (cellDate < startDate) return false;
+  }
+
+  if (end != null) {
+    const endDate = normalizeToDateOnly(end);
+    if (cellDate > endDate) return false;
+  }
+
   return true;
 };
 
