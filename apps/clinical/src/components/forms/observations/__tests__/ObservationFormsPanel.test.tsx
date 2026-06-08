@@ -27,6 +27,7 @@ const mockForm2: ObservationForm = {
 const mockAddForm = jest.fn();
 const mockRemoveForm = jest.fn();
 const mockUpdatePinnedForms = jest.fn();
+const mockRefetchPinnedForms = jest.fn();
 
 jest.mock('@bahmni/widgets', () => ({
   useActivePractitioner: jest.fn(),
@@ -76,12 +77,14 @@ beforeEach(() => {
     updatePinnedForms: mockUpdatePinnedForms,
     isLoading: false,
     error: null,
+    refetch: mockRefetchPinnedForms,
   });
 
   jest.mocked(useObservationFormsStore).mockReturnValue({
     selectedForms: [mockForm2],
     addForm: mockAddForm,
     removeForm: mockRemoveForm,
+    viewingForm: null,
   } as ReturnType<typeof useObservationFormsStore>);
 });
 
@@ -139,6 +142,34 @@ describe('ObservationFormsPanel', () => {
     onRemoveForm!('form-uuid-1');
 
     expect(mockRemoveForm).toHaveBeenCalledWith('form-uuid-1');
+  });
+
+  it('refetches pinned forms when viewingForm changes from non-null to null', () => {
+    jest.mocked(useObservationFormsStore).mockReturnValue({
+      selectedForms: [mockForm2],
+      addForm: mockAddForm,
+      removeForm: mockRemoveForm,
+      viewingForm: mockForm1,
+    } as ReturnType<typeof useObservationFormsStore>);
+
+    const { rerender } = render(<ObservationFormsPanel />);
+    expect(mockRefetchPinnedForms).not.toHaveBeenCalled();
+
+    // Simulate form close: viewingForm goes from mockForm1 to null
+    jest.mocked(useObservationFormsStore).mockReturnValue({
+      selectedForms: [mockForm2],
+      addForm: mockAddForm,
+      removeForm: mockRemoveForm,
+      viewingForm: null,
+    } as ReturnType<typeof useObservationFormsStore>);
+
+    rerender(<ObservationFormsPanel />);
+    expect(mockRefetchPinnedForms).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not refetch pinned forms when viewingForm is null on initial render', () => {
+    render(<ObservationFormsPanel />);
+    expect(mockRefetchPinnedForms).not.toHaveBeenCalled();
   });
 
   it('matches snapshot', () => {
