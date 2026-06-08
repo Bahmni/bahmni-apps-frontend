@@ -10,7 +10,7 @@ import {
   ClinicalAppContext,
   EpisodeOfCare,
 } from '../contexts/ClinicalAppContext';
-import { useActiveVisit } from '../hooks/useActiveVisit';
+import { usePatientVisit } from '../hooks/usePatientVisit';
 
 interface ClinicalAppDataProviderProps {
   children: ReactNode;
@@ -35,7 +35,7 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
     enabled: episodeUuids.length > 0,
   });
 
-  const { activeVisit } = useActiveVisit(patientId);
+  const { activeVisit } = usePatientVisit(patientId);
 
   useSubscribeConsultationSaved(() => {
     if (episodeUuids.length > 0) {

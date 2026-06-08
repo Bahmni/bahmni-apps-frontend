@@ -134,7 +134,7 @@
   "DIAGNOSIS_LIST_RECORDED_BY": "Recorded By",
   "DIAGNOSIS_RECORDED_DATE": "Recorded Date",
   "DIAGNOSIS_TABLE_NOT_AVAILABLE": "Not available",
-  "DOCUMENTS_ACTION": "Action",
+  "DOCUMENTS_ATTACHMENTS": "Attachments",
   "DOCUMENTS_DOCUMENT_IDENTIFIER": "Document Identifier",
   "DOCUMENTS_ERROR_LOADING_ATTACHMENT": "Unable to load attachment. The document URL may be corrupt or not found.",
   "DOCUMENTS_NOT_AVAILABLE": "Not available",
@@ -497,5 +497,7 @@
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Systolic Blood Pressure",
   "VITAL_SIGNS_TEMPERATURE": "Temperature",
   "YEARS_one": " year",
-  "YEARS_other": " years"
+  "YEARS_other": " years",
+  "PRINT_MODAL_PREPARING_DOCUMENT": "Preparing document…",
+  "PRINT_MORE_OPTIONS": "More print options"
 }
