@@ -182,7 +182,7 @@ export const createDateAgeHandlers = <
         if (age.years > 0 || age.months > 0 || age.days > 0) {
           const birthISO = AgeUtils.calculateBirthDate(age);
           updated.dateOfBirth = birthISO;
-          setDobEstimated(true);
+          setDobEstimated(field === 'ageYears');
 
           const maxAgeDate = new Date();
           maxAgeDate.setFullYear(
