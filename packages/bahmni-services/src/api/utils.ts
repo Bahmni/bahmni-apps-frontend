@@ -1,5 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
 import { decode } from 'html-entities';
+import { TEMPLATE_SERVICE_BASE } from '../templateService/constants';
 
 /**
  * Recursively decodes HTML entities in response data
@@ -32,6 +33,10 @@ export const decodeHtmlEntities = (data: unknown): unknown => {
  */
 export const isOpenMRSWebServiceApi = (url: string): boolean => {
   return url.includes('/openmrs/ws');
+};
+
+export const isTemplateServiceApi = (url: string): boolean => {
+  return url.includes(TEMPLATE_SERVICE_BASE);
 };
 
 /**

@@ -1,4 +1,4 @@
-import { Button } from '@bahmni/design-system';
+import { Button, Edit, IconButton } from '@bahmni/design-system';
 import { hasPrivilege, useTranslation } from '@bahmni/services';
 import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
 import { MedicationRequest } from 'fhir/r4';
@@ -7,24 +7,57 @@ import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import { MedicationAction } from '../models';
 import { handleAction } from './actionHandlers';
 
+const ACTION_ICONS: Record<string, React.ReactNode> = {
+  edit: <Edit />,
+};
+
 type ActionsProps = {
   actions: MedicationAction[];
   medication: MedicationRequest;
+  disabledActionTypes?: string[];
 };
 
-const Actions: React.FC<ActionsProps> = ({ actions, medication }) => {
+const Actions: React.FC<ActionsProps> = ({
+  actions,
+  medication,
+  disabledActionTypes = [],
+}) => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
 
+  if (actions.length === 0) return null;
+
+  const isActionDisabled = (action: MedicationAction) =>
+    disabledActionTypes.includes(action.type) ||
+    !hasPrivilege(userPrivileges, action.requiredPrivilege);
+
   if (actions.length === 1) {
     const action = actions[0];
+    const disabled = isActionDisabled(action);
+    const icon = ACTION_ICONS[action.type];
+
+    if (icon) {
+      return (
+        <IconButton
+          label={t(action.label)}
+          kind="ghost"
+          size="sm"
+          disabled={disabled}
+          onClick={() => !disabled && handleAction(action, medication)}
+          testId={`medication-action-${action.type}-${medication.id}`}
+        >
+          {icon}
+        </IconButton>
+      );
+    }
+
     return (
       <Button
         id={`medication-action-${action.type}-button`}
-        data-testid={`medication-action-${action.type}-button`}
+        data-testid={`medication-action-${action.type}-${medication.id}`}
         aria-label={t(action.label)}
         kind="ghost"
-        disabled={!hasPrivilege(userPrivileges, action.requiredPrivilege)}
+        disabled={disabled}
         onClick={() => handleAction(action, medication)}
       >
         {t(action.label)}
@@ -34,19 +67,19 @@ const Actions: React.FC<ActionsProps> = ({ actions, medication }) => {
 
   return (
     <OverflowMenu
-      id="medication-actions-overflow-menu"
-      data-testid="medication-actions-overflow-menu"
-      aria-label="medication-actions-overflow-menu-aria-label"
+      id={`medication-actions-menu-${medication.id}`}
+      data-testid={`medication-actions-menu-${medication.id}`}
+      aria-label={t('MEDICATIONS_ACTIONS_MENU_LABEL')}
       flipped
+      size="sm"
     >
       {actions.map((action) => (
         <OverflowMenuItem
-          id={`medication-action-${action.type}-item`}
-          data-testid={`medication-action-${action.type}-item`}
-          aria-label={t(action.label)}
+          id={`medication-action-${action.type}-${medication.id}`}
+          data-testid={`medication-action-${action.type}-${medication.id}`}
           key={action.type}
           itemText={t(action.label)}
-          disabled={!hasPrivilege(userPrivileges, action.requiredPrivilege)}
+          disabled={isActionDisabled(action)}
           onClick={() => handleAction(action, medication)}
         />
       ))}

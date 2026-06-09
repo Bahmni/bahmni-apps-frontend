@@ -82,7 +82,6 @@
   "CONDITION_TABLE_NOT_AVAILABLE": "Not available",
   "CONDITION_TABLE_RECORDED_BY": "Recorded By",
   "ACTIONS": "Actions",
-  "EDIT_ALL_ALLERGIES": "Edit All Allergies",
   "EDIT_ALLERGY": "Edit Allergy",
   "EDIT_ALLERGIES_TITLE": "Edit Allergies",
   "EDIT_ALLERGIES_FORM_TITLE": "Edit Allergies",
@@ -134,7 +133,7 @@
   "DIAGNOSIS_LIST_RECORDED_BY": "Recorded By",
   "DIAGNOSIS_RECORDED_DATE": "Recorded Date",
   "DIAGNOSIS_TABLE_NOT_AVAILABLE": "Not available",
-  "DOCUMENTS_ACTION": "Action",
+  "DOCUMENTS_ATTACHMENTS": "Attachments",
   "DOCUMENTS_DOCUMENT_IDENTIFIER": "Document Identifier",
   "DOCUMENTS_ERROR_LOADING_ATTACHMENT": "Unable to load attachment. The document URL may be corrupt or not found.",
   "DOCUMENTS_NOT_AVAILABLE": "Not available",
@@ -312,6 +311,9 @@
   "MEDICATIONS_DISPLAY_CONTROL_HEADING": "Medications",
   "MEDICATIONS_DOSAGE": "Dosage",
   "MEDICATIONS_ERROR_FETCHING": "Error fetching medications",
+  "MEDICATIONS_EDIT_ACTION": "Edit",
+  "MEDICATIONS_ACTIONS_MENU_LABEL": "Medication actions",
+  "MEDICATIONS_EDIT_FORM_TITLE": "Edit Medications",
   "MEDICATIONS_INPUT_CONTROL_TITLE": "Medications",
   "MEDICATIONS_INSTRUCTIONS": "Instructions",
   "MEDICATIONS_MEDICINE_NAME": "Medicine",
@@ -497,5 +499,7 @@
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Systolic Blood Pressure",
   "VITAL_SIGNS_TEMPERATURE": "Temperature",
   "YEARS_one": " year",
-  "YEARS_other": " years"
+  "YEARS_other": " years",
+  "PRINT_MODAL_PREPARING_DOCUMENT": "Preparing document…",
+  "PRINT_MORE_OPTIONS": "More print options"
 }

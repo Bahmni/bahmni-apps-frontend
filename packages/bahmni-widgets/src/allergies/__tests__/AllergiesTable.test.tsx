@@ -2,15 +2,13 @@ import {
   FormattedAllergy,
   AllergySeverity,
   AllergyStatus,
-  resetEncounterSession,
-  setEncounterSessionDecision,
 } from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { render, screen, act, waitFor, within } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
@@ -41,7 +39,6 @@ jest.mock('@bahmni/services', () => ({
     errors: {},
     hasBeenValidated: false,
   })),
-  useEncounterSessionStore: jest.fn(() => ({ matchReasons: [] })),
 }));
 jest.mock('@bahmni/design-system', () => ({
   ...jest.requireActual('@bahmni/design-system'),
@@ -132,9 +129,6 @@ describe('AllergiesTable', () => {
   const mockGetAllergies = jest.mocked(
     jest.requireMock('@bahmni/services').getAllergies,
   );
-  const mockUseEncounterSessionStore = jest.mocked(
-    jest.requireMock('@bahmni/services').useEncounterSessionStore,
-  );
 
   // Widget dispatches a raw CustomEvent — capture it on globalThis.
   let capturedStartEvent: CustomEvent | null = null;
@@ -146,12 +140,10 @@ describe('AllergiesTable', () => {
     jest.clearAllMocks();
     capturedStartEvent = null;
     globalThis.addEventListener('startConsultation', startConsultationListener);
-    resetEncounterSession();
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
     (useHasPrivilege as jest.Mock).mockReturnValue(false);
-    mockUseEncounterSessionStore.mockReturnValue({ matchReasons: [] });
   });
 
   afterEach(() => {
@@ -168,18 +160,6 @@ describe('AllergiesTable', () => {
         <AllergiesTable {...props} />
       </QueryClientProvider>,
     );
-
-  const setupEditEnabled = () => {
-    setEncounterSessionDecision({
-      reasons: ['MATCHED'],
-      encounter: {
-        resourceType: 'Encounter',
-        id: 'enc-1',
-        status: 'in-progress',
-      } as any,
-    });
-    (useHasPrivilege as jest.Mock).mockReturnValue(true);
-  };
 
   describe('Component States', () => {
     it('displays loading state', () => {
@@ -371,139 +351,6 @@ describe('AllergiesTable', () => {
     });
   });
 
-  describe('Edit All button', () => {
-    const editAllBtn = () =>
-      screen.queryByRole('button', { name: 'EDIT_ALL_ALLERGIES' });
-
-    it('is NOT shown when user lacks Edit Allergies privilege', () => {
-      (useHasPrivilege as jest.Mock).mockReturnValue(false);
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockAllergy],
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-
-      renderTable();
-
-      expect(editAllBtn()).not.toBeInTheDocument();
-    });
-
-    it('is NOT shown when NO_ACTIVE_VISIT', () => {
-      (useHasPrivilege as jest.Mock).mockReturnValue(true);
-      mockUseEncounterSessionStore.mockReturnValue({
-        matchReasons: ['NO_ACTIVE_VISIT'],
-      });
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockAllergy],
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-
-      renderTable();
-
-      expect(editAllBtn()).not.toBeInTheDocument();
-    });
-
-    it('is shown and enabled when user has privilege, active visit exists, and allergies exist', () => {
-      setupEditEnabled();
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockAllergy],
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-
-      renderTable();
-
-      expect(editAllBtn()).toBeInTheDocument();
-      expect(editAllBtn()).not.toBeDisabled();
-    });
-
-    it('is shown but disabled when disableActions prop is true', () => {
-      setupEditEnabled();
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockAllergy],
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-
-      renderTable({ disableActions: true });
-
-      expect(editAllBtn()).toBeDisabled();
-    });
-
-    it('is shown but disabled when no allergies exist', () => {
-      setupEditEnabled();
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [],
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-
-      renderTable();
-
-      expect(editAllBtn()).toBeDisabled();
-    });
-
-    it('fetches all allergies and dispatches startConsultation when clicked', async () => {
-      const user = userEvent.setup();
-      setupEditEnabled();
-      const fhirAllergy = { id: 'fhir-1', code: { text: 'Peanut' } };
-      mockGetAllergies.mockResolvedValue([fhirAllergy]);
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockAllergy],
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-
-      renderTable();
-
-      await user.click(editAllBtn()!);
-
-      await waitFor(() => {
-        expect(capturedStartEvent).not.toBeNull();
-        expect(capturedStartEvent!.detail).toMatchObject({
-          editOnly: 'allergies',
-          editTitle: 'EDIT_ALLERGIES_TITLE',
-          preloadedAllergies: expect.arrayContaining([
-            expect.objectContaining({ id: 'fhir-1' }),
-          ]),
-        });
-      });
-    });
-
-    it('shows ERROR_LOADING_ALLERGIES notification and fires no event when getAllergies rejects', async () => {
-      const user = userEvent.setup();
-      setupEditEnabled();
-      mockGetAllergies.mockRejectedValue(new Error('network failure'));
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockAllergy],
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-
-      renderTable();
-
-      await user.click(editAllBtn()!);
-
-      await waitFor(() => {
-        expect(mockAddNotification).toHaveBeenCalledWith(
-          expect.objectContaining({
-            type: 'error',
-            message: 'ERROR_LOADING_ALLERGIES',
-          }),
-        );
-      });
-      expect(capturedStartEvent).toBeNull();
-    });
-  });
-
   describe('Accessibility', () => {
     it('passes accessibility tests with data', async () => {
       (useQuery as jest.Mock).mockReturnValue({
@@ -524,23 +371,6 @@ describe('AllergiesTable', () => {
     it('passes accessibility tests in empty state', async () => {
       (useQuery as jest.Mock).mockReturnValue({
         data: [],
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
-
-      const { container } = renderTable();
-
-      await act(async () => {
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
-      });
-    });
-
-    it('passes accessibility tests with edit privilege active', async () => {
-      setupEditEnabled();
-      (useQuery as jest.Mock).mockReturnValue({
-        data: [mockAllergy],
         error: null,
         isError: false,
         isLoading: false,

@@ -7,17 +7,21 @@ import {
   resetEncounterSession,
 } from '@bahmni/services';
 import {
+  DocumentPrintButton,
   PatientDetails,
   useActivePractitioner,
   usePatientUUID,
+  type PrintOption,
 } from '@bahmni/widgets';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
+import { usePatientVisit } from '../../hooks/usePatientVisit';
 import ConsultationActionButton from './ConsultationActionButton';
 import styles from './styles/PatientHeader.module.scss';
 
 interface PatientHeaderProps {
   isActionAreaVisible: boolean;
+  printOptions?: PrintOption[];
 }
 
 /**
@@ -29,6 +33,7 @@ interface PatientHeaderProps {
  */
 const PatientHeader: React.FC<PatientHeaderProps> = ({
   isActionAreaVisible,
+  printOptions,
 }) => {
   const { t } = useTranslation();
   const { practitioner } = useActivePractitioner();
@@ -41,8 +46,8 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   const {
     matchReason,
     editActiveEncounter,
-    isLoading,
     activeEncounter,
+    isLoading,
     refetch,
   } = useEncounterSession({
     practitioner,
@@ -83,6 +88,22 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     [patientUUID],
   );
 
+  const {
+    activeVisit,
+    lastVisit,
+    loading: visitLoading,
+  } = usePatientVisit(patientUUID);
+
+  const visitUuid = activeVisit?.id ?? lastVisit?.id;
+
+  const renderContext = useMemo(
+    () => ({
+      ...(patientUUID && { patientUUID }),
+      ...(visitUuid && { visitUuid }),
+    }),
+    [patientUUID, visitUuid],
+  );
+
   return (
     <div
       aria-label={t('PATIENT_HEADER_LABEL')}
@@ -92,13 +113,28 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
         matchReason.length > 0 ? matchReason.join(',') : undefined
       }
       data-can-edit-encounter={editActiveEncounter ? 'true' : undefined}
+      data-active-encounter-uuid={
+        editActiveEncounter && activeEncounter?.id
+          ? activeEncounter.id
+          : undefined
+      }
+      data-active-practitioner-uuid={practitioner?.uuid ?? undefined}
     >
       <PatientDetails />
-      <ConsultationActionButton
-        isActionAreaVisible={isActionAreaVisible}
-        editActiveEncounter={editActiveEncounter}
-        isLoading={isLoading}
-      />
+      <div className={styles.actionButtons}>
+        <ConsultationActionButton
+          isActionAreaVisible={isActionAreaVisible}
+          editActiveEncounter={editActiveEncounter}
+          isLoading={isLoading}
+        />
+        <DocumentPrintButton
+          printOptions={printOptions}
+          renderContext={renderContext}
+          disabled={visitLoading}
+          data-testid="print-clinical-card"
+          size="md"
+        />
+      </div>
     </div>
   );
 };

@@ -482,6 +482,103 @@ describe('MedicationsTable', () => {
     });
   });
 
+  describe('Edit button encounter gating', () => {
+    const editConfig = {
+      actions: [
+        {
+          label: 'Edit',
+          type: 'edit',
+          encounterType: 'Consultation',
+          requiredPrivilege: ['Edit Orders'],
+        },
+      ],
+    };
+
+    const setupWithActiveMeds = () => {
+      mockUseUserPrivilege.mockReturnValue({
+        userPrivileges: [{ name: 'Edit Orders' }],
+      } as any);
+
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) => ({
+          id: med.id,
+          name: med.name,
+          dosage: `${med.dose?.value} ${med.dose?.unit}`,
+          dosageUnit: med.dose?.unit ?? '',
+          quantity: `${med.quantity.value} ${med.quantity.unit}`,
+          instruction: med.instructions,
+          startDate: med.startDate,
+          orderDate: med.orderDate,
+          orderedBy: med.orderedBy,
+          status: med.status,
+          asNeeded: med.asNeeded,
+          isImmediate: med.isImmediate,
+          fhirResource: {
+            resourceType: 'MedicationRequest',
+            id: med.id,
+            encounter: { reference: 'Encounter/enc-uuid-123' },
+          },
+        }),
+      );
+
+      mockUseQuery.mockReturnValue({
+        data: [mockMedications[0]],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+    };
+
+    it('shows enabled edit button when encounter session allows editing', () => {
+      setupWithActiveMeds();
+
+      render(
+        <MedicationsTable
+          config={editConfig}
+          canEditOrCreate
+          activeEncounterUuid="enc-uuid-123"
+        />,
+      );
+
+      const editButton = screen.getByTestId('medication-action-edit-1');
+      expect(editButton).toBeInTheDocument();
+      expect(editButton).not.toBeDisabled();
+    });
+
+    it('shows disabled edit button when encounter session does not allow editing', () => {
+      setupWithActiveMeds();
+
+      render(
+        <MedicationsTable
+          config={editConfig}
+          canEditOrCreate={false}
+          activeEncounterUuid={null}
+        />,
+      );
+
+      const editButton = screen.getByTestId('medication-action-edit-1');
+      expect(editButton).toBeInTheDocument();
+      expect(editButton).toBeDisabled();
+    });
+
+    it('shows disabled edit button when encounter UUID does not match medication encounter', () => {
+      setupWithActiveMeds();
+
+      render(
+        <MedicationsTable
+          config={editConfig}
+          canEditOrCreate
+          activeEncounterUuid="different-encounter-uuid"
+        />,
+      );
+
+      const editButton = screen.getByTestId('medication-action-edit-1');
+      expect(editButton).toBeInTheDocument();
+      expect(editButton).toBeDisabled();
+    });
+  });
+
   describe('Consultation saved event subscription', () => {
     it.each([
       {
