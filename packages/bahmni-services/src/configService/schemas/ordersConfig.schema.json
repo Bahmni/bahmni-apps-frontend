@@ -68,6 +68,34 @@
             "targetedTab": {
               "type": "string",
               "description": "Optional targeted tab name"
+            },
+            "tabStatuses": {
+              "type": "object",
+              "description": "Tab-specific status overrides",
+              "properties": {
+                "available": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "value": { "type": "string" },
+                      "label": { "type": "string" },
+                      "translationKey": { "type": "string" }
+                    }
+                  }
+                },
+                "preSelected": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "value": { "type": "string" },
+                      "label": { "type": "string" },
+                      "translationKey": { "type": "string" }
+                    }
+                  }
+                }
+              }
             }
           }
         },

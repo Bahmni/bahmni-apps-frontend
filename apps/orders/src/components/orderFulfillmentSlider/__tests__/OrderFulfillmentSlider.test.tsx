@@ -1301,6 +1301,94 @@ describe('OrderFulfillmentSlider', () => {
     });
   });
 
+  describe('tabStatuses prop', () => {
+    const poTabStatuses = {
+      available: [
+        {
+          value: 'Acknowledged',
+          label: 'Acknowledged',
+          translationKey: 'STATUS_ACKNOWLEDGED',
+        },
+        {
+          value: 'In Progress',
+          label: 'In Progress',
+          translationKey: 'STATUS_IN_PROGRESS',
+        },
+        {
+          value: 'Ready for Pickup',
+          label: 'Ready for Pickup',
+          translationKey: 'STATUS_READY_FOR_PICKUP',
+        },
+        {
+          value: 'Completed',
+          label: 'Completed',
+          translationKey: 'STATUS_COMPLETED',
+        },
+      ],
+      preSelected: [
+        {
+          value: 'Acknowledged',
+          label: 'Acknowledged',
+          translationKey: 'STATUS_ACKNOWLEDGED',
+        },
+        {
+          value: 'Ready for Pickup',
+          label: 'Ready for Pickup',
+          translationKey: 'STATUS_READY_FOR_PICKUP',
+        },
+      ],
+    };
+
+    it('shows tab-specific statuses in dropdown when tabStatuses prop is provided', () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen
+          tabStatuses={poTabStatuses}
+        />,
+      );
+      const statusInput = screen.getByTestId('order-status-select');
+      fireEvent.click(statusInput);
+      expect(screen.getByText('STATUS_READY_FOR_PICKUP')).toBeInTheDocument();
+    });
+
+    it('does not show Ready for Pickup when tabStatuses is not provided', () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      const statusInput = screen.getByTestId('order-status-select');
+      fireEvent.click(statusInput);
+      expect(
+        screen.queryByText('STATUS_READY_FOR_PICKUP'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('falls back to global statuses when tabStatuses is undefined', () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockOrder}
+          onClose={mockOnClose}
+          isOpen
+          tabStatuses={undefined}
+        />,
+      );
+      const statusInput = screen.getByTestId('order-status-select');
+      fireEvent.click(statusInput);
+      expect(screen.getByText('STATUS_ACKNOWLEDGED')).toBeInTheDocument();
+      expect(
+        screen.queryByText('STATUS_READY_FOR_PICKUP'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   describe('SAVE and CANCEL Button States', () => {
     it('SAVE is enabled immediately on open for a New order (auto-acknowledged)', () => {
       useOrdersConfig.mockReturnValue(mockConfig);

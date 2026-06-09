@@ -567,4 +567,61 @@ describe('OrdersFulfillmentTable', () => {
       expect(screen.getByText('Samuel Mensah')).toBeInTheDocument();
     });
   });
+
+  describe('tabStatuses prop', () => {
+    const poTabStatuses = {
+      available: [
+        {
+          value: 'Acknowledged',
+          label: 'Acknowledged',
+          translationKey: 'STATUS_ACKNOWLEDGED',
+        },
+        {
+          value: 'In Progress',
+          label: 'In Progress',
+          translationKey: 'STATUS_IN_PROGRESS',
+        },
+        {
+          value: 'Ready for Pickup',
+          label: 'Ready for Pickup',
+          translationKey: 'STATUS_READY_FOR_PICKUP',
+        },
+        {
+          value: 'Completed',
+          label: 'Completed',
+          translationKey: 'STATUS_COMPLETED',
+        },
+      ],
+      preSelected: [
+        {
+          value: 'Acknowledged',
+          label: 'Acknowledged',
+          translationKey: 'STATUS_ACKNOWLEDGED',
+        },
+        {
+          value: 'Ready for Pickup',
+          label: 'Ready for Pickup',
+          translationKey: 'STATUS_READY_FOR_PICKUP',
+        },
+      ],
+    };
+
+    it('renders without errors when tabStatuses prop is provided', () => {
+      const { container } = render(
+        <OrdersFulfillmentTable
+          rows={mockRows}
+          headers={mockHeaders}
+          tabStatuses={poTabStatuses}
+        />,
+      );
+      expect(container).toBeInTheDocument();
+    });
+
+    it('renders without errors when tabStatuses is not provided', () => {
+      const { container } = render(
+        <OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />,
+      );
+      expect(container).toBeInTheDocument();
+    });
+  });
 });

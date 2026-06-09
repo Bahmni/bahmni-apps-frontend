@@ -6,6 +6,7 @@ import {
   getCurrentProvider,
   getObservationByConceptName,
   ObservationData,
+  TabStatus,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { Close } from '@carbon/icons-react';
@@ -31,6 +32,7 @@ interface OrderFulfillmentSliderProps {
   onClose: () => void;
   isOpen: boolean;
   tabLabel?: string;
+  tabStatuses?: TabStatus;
   onSaveSuccess?: () => void;
   prefetchedLmpData?: ObservationData | null;
 }
@@ -40,6 +42,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   onClose,
   isOpen,
   tabLabel = '',
+  tabStatuses,
   onSaveSuccess,
   prefetchedLmpData,
 }) => {
@@ -89,8 +92,9 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
 
   const lmpDisplayInfo = getLmpDisplayInfo();
 
-  const availableStatuses: OrderStatusConfig[] =
-    (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? [];
+  const availableStatuses: OrderStatusConfig[] = (tabStatuses?.available ??
+    ordersTableConfig?.orderStatusesAvailable ??
+    []) as OrderStatusConfig[];
 
   const patientDetailFields =
     ordersTableConfig?.manageOrdersPanelPatientDetails ?? [];
