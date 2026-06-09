@@ -645,6 +645,89 @@ describe('ObservationsRenderer', () => {
       );
       expect(fileTile).toBeInTheDocument();
     });
+
+    it('should render all images when multiple images have same conceptId', () => {
+      const obs1: Observation = {
+        resourceType: 'Observation',
+        id: 'obs-img-1',
+        status: 'final',
+        code: {
+          text: 'Patient Photo',
+          coding: [{ code: 'photo-concept' }],
+        },
+        valueString: 'https://example.com/photo1.jpg',
+      };
+
+      const obs2: Observation = {
+        resourceType: 'Observation',
+        id: 'obs-img-2',
+        status: 'final',
+        code: {
+          text: 'Patient Photo',
+          coding: [{ code: 'photo-concept' }],
+        },
+        valueString: 'https://example.com/photo2.jpg',
+      };
+
+      render(<ObservationsRenderer observations={[obs1, obs2]} />);
+
+      expect(
+        screen.getByTestId('https://example.com/photo1.jpg-img-test-id'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('https://example.com/photo2.jpg-img-test-id'),
+      ).toBeInTheDocument();
+    });
+
+    it('should render all images when multiple images are members of a group', () => {
+      const groupObservation: Observation = {
+        resourceType: 'Observation',
+        id: 'group-img',
+        status: 'final',
+        code: {
+          text: 'Image Group',
+        },
+        hasMember: [
+          { reference: 'Observation/img-member-1' },
+          { reference: 'Observation/img-member-2' },
+        ],
+      };
+
+      const imgMember1: Observation = {
+        resourceType: 'Observation',
+        id: 'img-member-1',
+        status: 'final',
+        code: {
+          text: 'Scan Image',
+          coding: [{ code: 'scan-concept' }],
+        },
+        valueString: 'https://example.com/scan1.png',
+      };
+
+      const imgMember2: Observation = {
+        resourceType: 'Observation',
+        id: 'img-member-2',
+        status: 'final',
+        code: {
+          text: 'Scan Image',
+          coding: [{ code: 'scan-concept' }],
+        },
+        valueString: 'https://example.com/scan2.png',
+      };
+
+      render(
+        <ObservationsRenderer
+          observations={[groupObservation, imgMember1, imgMember2]}
+        />,
+      );
+
+      expect(
+        screen.getByTestId('https://example.com/scan1.png-img-test-id'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('https://example.com/scan2.png-img-test-id'),
+      ).toBeInTheDocument();
+    });
   });
 
   describe('Test ID Prefix', () => {

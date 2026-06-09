@@ -41,6 +41,26 @@ const renderValueWithMedia = (
   valueAsString: string,
   hideThumbnail = false,
 ): React.ReactNode => {
+  if (valueAsString.includes(', ')) {
+    const parts = valueAsString.split(', ');
+    const hasMediaPart = parts.some((part) => {
+      const type = getValueType(part);
+      return type === 'Image' || type === 'Video' || type === 'PDF';
+    });
+
+    if (hasMediaPart) {
+      return (
+        <div className={styles.mediaGroup}>
+          {parts.map((part, index) => (
+            <React.Fragment key={index}>
+              {renderValueWithMedia(part, hideThumbnail)}
+            </React.Fragment>
+          ))}
+        </div>
+      );
+    }
+  }
+
   const valueType = getValueType(valueAsString);
 
   if (valueType === 'Image') {
