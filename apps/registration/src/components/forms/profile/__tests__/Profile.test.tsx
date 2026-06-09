@@ -423,18 +423,24 @@ describe('Profile', () => {
     });
 
     it('should set dobEstimated only when years field is changed, not months or days', () => {
-      const { unmount } = render(<Profile ref={ref} initialDobEstimated={false} />);
+      const { unmount } = render(
+        <Profile ref={ref} initialDobEstimated={false} />,
+      );
 
       // Verify initial state
       expect(ref.current?.getData()?.dobEstimated).toBe(false);
 
       // Type in months — should NOT set estimated
-      const monthsInput = screen.getByLabelText(/Months\(Age\)/) as HTMLInputElement;
+      const monthsInput = screen.getByLabelText(
+        /Months\(Age\)/,
+      ) as HTMLInputElement;
       fireEvent.change(monthsInput, { target: { value: '6' } });
       expect(ref.current?.getData()?.dobEstimated).toBe(false);
 
       // Type in days — should NOT set estimated
-      const daysInput = screen.getByLabelText(/Days\(Age\)/) as HTMLInputElement;
+      const daysInput = screen.getByLabelText(
+        /Days\(Age\)/,
+      ) as HTMLInputElement;
       fireEvent.change(daysInput, { target: { value: '15' } });
       expect(ref.current?.getData()?.dobEstimated).toBe(false);
 

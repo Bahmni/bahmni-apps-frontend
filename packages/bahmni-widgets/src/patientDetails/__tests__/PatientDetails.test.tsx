@@ -119,7 +119,9 @@ describe('PatientDetails Component', () => {
     it('does not fetch photo when user lacks privilege', () => {
       mockUseHasPrivilege.mockReturnValue(false);
       mockPatientQuery({
-        data: createMockPatient({ photoUrl: '/openmrs/ws/fhir2/R4/Patient/test-uuid/$photo' }),
+        data: createMockPatient({
+          photoUrl: '/openmrs/ws/fhir2/R4/Patient/test-uuid/$photo',
+        }),
         isLoading: false,
         error: null,
       });
