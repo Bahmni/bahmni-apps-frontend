@@ -94,11 +94,15 @@ const makeExpiredEncounter = (overrides: Partial<Encounter> = {}): Encounter =>
   });
 
 describe('createRegistrationEncounterForPatient', () => {
-  const mockDispatchAuditEvent = jest.requireMock('@bahmni/services').dispatchAuditEvent;
+  const mockDispatchAuditEvent =
+    jest.requireMock('@bahmni/services').dispatchAuditEvent;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetUserLoginLocation.mockReturnValue({ uuid: 'location-uuid', name: 'Test Location' });
+    mockGetUserLoginLocation.mockReturnValue({
+      uuid: 'location-uuid',
+      name: 'Test Location',
+    });
     mockGetCurrentUser.mockResolvedValue({
       uuid: 'user-uuid',
       display: 'Test User',
@@ -113,7 +117,9 @@ describe('createRegistrationEncounterForPatient', () => {
       display: 'Test Provider',
       person: { uuid: 'person-uuid', display: 'Test Provider' },
     });
-    mockCreateFhirEncounter.mockResolvedValue(makeEncounter({ id: 'new-enc-uuid' }));
+    mockCreateFhirEncounter.mockResolvedValue(
+      makeEncounter({ id: 'new-enc-uuid' }),
+    );
   });
 
   it('should fetch location, user and provider then create and return the encounter', async () => {
@@ -132,7 +138,10 @@ describe('createRegistrationEncounterForPatient', () => {
   it('should not call getCurrentProvider when user is null', async () => {
     mockGetCurrentUser.mockResolvedValue(null);
 
-    await createRegistrationEncounterForPatient(PATIENT_UUID, ENCOUNTER_TYPE_UUID);
+    await createRegistrationEncounterForPatient(
+      PATIENT_UUID,
+      ENCOUNTER_TYPE_UUID,
+    );
 
     expect(mockGetCurrentProvider).not.toHaveBeenCalled();
   });
@@ -141,11 +150,16 @@ describe('createRegistrationEncounterForPatient', () => {
     mockCreateFhirEncounter.mockResolvedValue(
       makeEncounter({
         id: 'new-enc-uuid',
-        type: [{ coding: [{ display: 'Registration', code: ENCOUNTER_TYPE_UUID }] }],
+        type: [
+          { coding: [{ display: 'Registration', code: ENCOUNTER_TYPE_UUID }] },
+        ],
       }),
     );
 
-    await createRegistrationEncounterForPatient(PATIENT_UUID, ENCOUNTER_TYPE_UUID);
+    await createRegistrationEncounterForPatient(
+      PATIENT_UUID,
+      ENCOUNTER_TYPE_UUID,
+    );
 
     expect(mockDispatchAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -155,7 +169,10 @@ describe('createRegistrationEncounterForPatient', () => {
   });
 
   it('should fall back to encounterTypeUuid in audit event when no display name in response', async () => {
-    await createRegistrationEncounterForPatient(PATIENT_UUID, ENCOUNTER_TYPE_UUID);
+    await createRegistrationEncounterForPatient(
+      PATIENT_UUID,
+      ENCOUNTER_TYPE_UUID,
+    );
 
     expect(mockDispatchAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({
