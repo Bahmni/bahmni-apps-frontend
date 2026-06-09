@@ -52,8 +52,29 @@ jest.mock('../../../hooks/usePatientVisit', () => ({
 
 jest.mock('../../../providers/clinicalConfig', () => ({
   useClinicalConfig: jest.fn(() => ({
-    clinicalConfig: null,
+    clinicalConfig: {
+      consultationPad: {
+        inputControls: [
+          {
+            type: 'encounterDetails',
+            metadata: { defaultEncounterType: 'Consultation' },
+          },
+        ],
+      },
+    },
     isLoading: false,
+    error: null,
+  })),
+}));
+
+jest.mock('../../../hooks/useEncounterConcepts', () => ({
+  useEncounterConcepts: jest.fn(() => ({
+    encounterConcepts: {
+      encounterTypes: [
+        { name: 'Consultation', uuid: 'consultation-encounter-type-uuid' },
+      ],
+    },
+    loading: false,
     error: null,
   })),
 }));
