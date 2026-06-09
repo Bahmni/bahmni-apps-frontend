@@ -63,6 +63,7 @@ const PatientRegister = () => {
     useRef<AdditionalIdentifiersRef>(null);
 
   const {
+    patientDetails,
     profileInitialData,
     personAttributesInitialData,
     addressInitialData,
@@ -75,9 +76,8 @@ const PatientRegister = () => {
 
   const [metadata, setMetadata] = useState(initialMetadata);
 
-  const { patientPhoto } = usePatientPhoto({
-    patientUuid: metadata?.patientUuid,
-  });
+  const photoUrl = patientDetails?.photo?.[0]?.url;
+  const { patientPhoto } = usePatientPhoto({ photoUrl });
 
   useEffect(() => {
     if (initialMetadata) {
