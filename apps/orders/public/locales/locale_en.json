@@ -19,6 +19,8 @@
   "STATUS_ACKNOWLEDGED": "Acknowledged",
   "STATUS_IN_PROGRESS": "In Progress",
   "STATUS_COMPLETED": "Completed",
+
+  "STATUS_READY_FOR_PICKUP": "Ready for Pickup",
   "STATUS_ON_HOLD": "On Hold",
   "URGENT": "Urgent",
   "UNASSIGNED": "Unassigned",

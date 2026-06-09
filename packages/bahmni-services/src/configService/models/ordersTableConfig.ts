@@ -1,3 +1,14 @@
+export interface OrderStatusOption {
+  value: string;
+  label: string;
+  translationKey: string;
+}
+
+export interface TabStatus {
+  available: OrderStatusOption[];
+  preSelected: OrderStatusOption[];
+}
+
 /**
  * Represents a single column configuration
  */
@@ -35,8 +46,8 @@ export interface OrdersTableConfig {
   ordersTableColumnHeadersGeneric: OrderColumnConfig[];
   ordersTableColumnHeadersCustom: OrderColumnConfig[];
   manageOrdersPanelPatientDetails?: PatientDetailField[];
-  orderStatusesAvailable?: string[];
-  orderStatusesPreSelected?: string[];
+  orderStatusesAvailable?: OrderStatusOption[];
+  orderStatusesPreSelected?: OrderStatusOption[];
   fulfillmentEncounterTypeUuid?: string;
   lmpConfig?: LmpConfig;
 }

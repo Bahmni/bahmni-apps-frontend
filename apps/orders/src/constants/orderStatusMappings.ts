@@ -11,6 +11,7 @@ export const UI_STATUS_TO_FHIR_TASK_STATUS: Partial<
   Acknowledged: 'requested',
   'In Progress': 'accepted',
   Completed: 'completed',
+  'Ready for Pickup': 'ready',
   'On Hold': 'on-hold',
 };
 
@@ -23,6 +24,8 @@ export const FHIR_TASK_STATUS_TO_UI_STATUS: Record<string, OrderStatus> = {
   requested: 'Acknowledged',
   accepted: 'In Progress',
   completed: 'Completed',
+  rejected: 'New',
+  ready: 'Ready for Pickup',
   onhold: 'On Hold',
 };
 

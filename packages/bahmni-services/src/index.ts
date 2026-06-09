@@ -232,6 +232,8 @@ export {
   type OrderExtensionParams,
   type OrdersTableConfig,
   type OrderColumnConfig,
+  type OrderStatusOption,
+  type TabStatus,
 } from './configService';
 
 export {
