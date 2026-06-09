@@ -421,6 +421,39 @@ describe('Profile', () => {
 
       expect(checkbox.checked).toBe(true);
     });
+
+    it('should have dobEstimated true when initialized with age years', async () => {
+      await act(async () => {
+        render(
+          <Profile
+            ref={ref}
+            initialData={createBasicInfoData({ ageYears: '30' })}
+            initialDobEstimated
+          />,
+        );
+      });
+
+      const data = ref.current?.getData();
+      expect(data?.dobEstimated).toBe(true);
+    });
+
+    it('should not set dobEstimated when only months or days are changed', () => {
+      render(<Profile ref={ref} initialDobEstimated={false} />);
+
+      expect(ref.current?.getData()?.dobEstimated).toBe(false);
+
+      const monthsInput = screen.getByLabelText(
+        /Months\(Age\)/,
+      ) as HTMLInputElement;
+      fireEvent.change(monthsInput, { target: { value: '6' } });
+      expect(ref.current?.getData()?.dobEstimated).toBe(false);
+
+      const daysInput = screen.getByLabelText(
+        /Days\(Age\)/,
+      ) as HTMLInputElement;
+      fireEvent.change(daysInput, { target: { value: '15' } });
+      expect(ref.current?.getData()?.dobEstimated).toBe(false);
+    });
   });
 
   describe('Patient ID Format Selection', () => {
