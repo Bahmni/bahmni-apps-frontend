@@ -1,7 +1,7 @@
 import {
   FormattedPatientData,
   getFormattedPatientById,
-  getPatientPhotoDataUrl,
+  fetchPatientPhotoFromUrl,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -12,15 +12,20 @@ import { mockFullPatient } from './__mocks__/patientDetailsMocks';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedPatientById: jest.fn(),
-  getPatientPhotoDataUrl: jest.fn(),
+  fetchPatientPhotoFromUrl: jest.fn(),
+}));
+jest.mock('../../userPrivileges/useHasPrivilege', () => ({
+  useHasPrivilege: jest.fn(() => true),
 }));
 
 const mockedGetFormattedPatientById =
   getFormattedPatientById as jest.MockedFunction<
     typeof getFormattedPatientById
   >;
-const mockedGetPatientPhotoDataUrl =
-  getPatientPhotoDataUrl as jest.MockedFunction<typeof getPatientPhotoDataUrl>;
+const mockedFetchPatientPhotoFromUrl =
+  fetchPatientPhotoFromUrl as jest.MockedFunction<
+    typeof fetchPatientPhotoFromUrl
+  >;
 
 const createQueryClient = () =>
   new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -44,7 +49,7 @@ describe('PatientDetails Integration', () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2025-03-16'));
     queryClient = createQueryClient();
-    mockedGetPatientPhotoDataUrl.mockResolvedValue(
+    mockedFetchPatientPhotoFromUrl.mockResolvedValue(
       'data:image/jpeg;base64,/9j/photo==',
     );
   });
@@ -83,7 +88,7 @@ describe('PatientDetails Integration', () => {
 
   it('does not render photo when photo query fails', async () => {
     mockedGetFormattedPatientById.mockResolvedValue(mockFullPatient);
-    mockedGetPatientPhotoDataUrl.mockRejectedValue(new Error('No photo'));
+    mockedFetchPatientPhotoFromUrl.mockRejectedValue(new Error('No photo'));
 
     renderPatientDetails(queryClient);
 
@@ -125,6 +130,7 @@ describe('PatientDetails Integration', () => {
       formattedAddress: null,
       formattedContact: null,
       identifiers: new Map([['ID', 'ID123']]),
+      photoUrl: undefined,
     };
 
     mockedGetFormattedPatientById.mockResolvedValue(mockPatient);

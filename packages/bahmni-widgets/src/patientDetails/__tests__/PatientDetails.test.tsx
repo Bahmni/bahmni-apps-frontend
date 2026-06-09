@@ -2,12 +2,20 @@ import { FormattedPatientData, formatDateTime } from '@bahmni/services';
 import { UseQueryResult, useQuery } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import PatientDetails from '../PatientDetails';
 
 expect.extend(toHaveNoViolations);
 
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
+>;
+
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-uuid'),
+}));
+jest.mock('../../userPrivileges/useHasPrivilege', () => ({
+  useHasPrivilege: jest.fn(() => true),
 }));
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
@@ -106,6 +114,23 @@ describe('PatientDetails Component', () => {
         'src',
         photoDataUrl,
       );
+    });
+
+    it('does not fetch photo when user lacks privilege', () => {
+      mockUseHasPrivilege.mockReturnValue(false);
+      mockPatientQuery({
+        data: createMockPatient({
+          photoUrl: '/openmrs/ws/fhir2/R4/Patient/test-uuid/$photo',
+        }),
+        isLoading: false,
+        error: null,
+      });
+
+      render(<PatientDetails />);
+
+      expect(
+        screen.queryByTestId('patient-photo-test-id'),
+      ).not.toBeInTheDocument();
     });
   });
 
