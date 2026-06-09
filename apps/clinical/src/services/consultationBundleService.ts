@@ -5,13 +5,17 @@ import {
   post,
   Form2Observation,
 } from '@bahmni/services';
-import { BundleEntry, Reference, Encounter } from 'fhir/r4';
+import { BundleEntry, Reference, Encounter, CodeableConcept } from 'fhir/r4';
 import { CONSULTATION_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
 import { ConsultationBundle } from '../models/consultationBundle';
 import { ServiceRequestInputEntry } from '../models/serviceRequest';
-import { createEncounterAllergyResource } from '../utils/fhir/allergyResourceCreator';
+import {
+  createDeleteAllergyResource,
+  createEncounterAllergyResource,
+  updateEncounterAllergyResource,
+} from '../utils/fhir/allergyResourceCreator';
 import {
   createEncounterDiagnosisResource,
   createEncounterConditionResource,
@@ -176,10 +180,7 @@ export function createAllergiesBundleEntries({
         !allergyEncounterRef || allergyEncounterRef === encounterReference;
 
       if (isSameSession) {
-        const existingManifestationByCode = new Map<
-          string,
-          import('fhir/r4').CodeableConcept
-        >();
+        const existingManifestationByCode = new Map<string, CodeableConcept>();
         for (const r of allergy.rawFhirResource.reaction ?? []) {
           for (const m of r.manifestation ?? []) {
             const primaryCode = m.coding?.find((c) => !c.system)?.code;
@@ -201,17 +202,13 @@ export function createAllergiesBundleEntries({
               existingManifestationByCode.get(code) ?? { coding: [{ code }] },
           );
 
-        const putResource: import('fhir/r4').AllergyIntolerance = {
-          ...allergy.rawFhirResource,
-          encounter: createEncounterReferenceFromString(encounterReference),
-          reaction: [
-            {
-              substance: allergy.rawFhirResource.code,
-              manifestation: manifestations,
-              severity,
-            },
-          ],
-        };
+        const putResource = updateEncounterAllergyResource(
+          allergy.rawFhirResource,
+          manifestations,
+          severity,
+          createEncounterReferenceFromString(encounterReference),
+          allergy.note,
+        );
         const putURL = `AllergyIntolerance/${allergy.resourceId}`;
         allergyEntries.push(
           createBundleEntry(putURL, putResource, 'PUT', putURL),
@@ -221,7 +218,7 @@ export function createAllergiesBundleEntries({
         allergyEntries.push(
           createBundleEntry(
             deleteURL,
-            allergy.rawFhirResource,
+            createDeleteAllergyResource(allergy.resourceId!),
             'DELETE',
             deleteURL,
           ),
