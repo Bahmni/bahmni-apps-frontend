@@ -30,6 +30,10 @@ export interface MedicationInputEntry {
   doseForm?: string;
   note?: string;
 
+  // Edit support
+  fhirResourceId?: string;
+  isModified?: boolean;
+
   cdsCards?: CDSCard[];
 
   errors: {

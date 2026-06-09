@@ -2,6 +2,7 @@ export {
   getActiveVisit,
   getPatientVisits,
   getVisits,
+  getEncounterByUuid,
   getObservationsBundleByEncounterUuid,
   createFhirEncounter,
   updateFhirEncounter,

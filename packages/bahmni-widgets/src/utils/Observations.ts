@@ -197,6 +197,9 @@ export function groupMultiSelectObservations(
           matchedObs.observationValue.value +
           ', ' +
           observation.observationValue.value;
+        if (!matchedObs.comment && observation.comment) {
+          matchedObs.comment = observation.comment;
+        }
       } else {
         valueGroupedObs.push(observation);
       }
