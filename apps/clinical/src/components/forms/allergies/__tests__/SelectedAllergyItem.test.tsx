@@ -605,7 +605,6 @@ describe('SelectedAllergyItem', () => {
         );
       });
 
-      // The key prop change should trigger a remount, effectively clearing the input
       // We verify this by checking that the component still renders correctly
       expect(multiselect).toBeInTheDocument();
     });
