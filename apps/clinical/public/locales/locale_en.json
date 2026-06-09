@@ -372,6 +372,7 @@
   "STOP_MEDICATION_REASON_REQUIRED": "Stop reason is required",
   "STOP_MEDICATION_DATE_REQUIRED": "Stop date is required",
   "STOP_MEDICATION_NOTE_REQUIRED": "Note is required",
+  "STOP_MEDICATION_MESSAGE": "Stopped a medication for patient",
   "MONTHS_one": " month",
   "MONTHS_other": " months",
   "NETWORK_ERROR": "A network error occurred",

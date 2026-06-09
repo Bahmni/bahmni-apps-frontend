@@ -185,63 +185,6 @@ const createDispenseRequest = (medicationEntry: MedicationInputEntry) => {
 };
 
 /**
- * Creates a FHIR MedicationRequest resource for stopping an existing medication
- * @param originalMedication - The original MedicationRequest being stopped
- * @param stopDate - The date the medication should be stopped
- * @param stopReason - The reason for stopping the medication
- * @param note - Optional note about stopping
- * @param subjectReference - Reference to the patient
- * @param encounterReference - Reference to the encounter
- * @param requesterReference - Reference to the practitioner
- * @returns FHIR MedicationRequest resource with status 'stopped'
- */
-export const createStopMedicationRequestResource = (
-  originalMedication: MedicationRequest,
-  stopDate: Date,
-  stopReason: string,
-  note: string | undefined,
-  subjectReference: Reference,
-  encounterReference: Reference,
-  requesterReference: Reference,
-): MedicationRequest => {
-  const medicationRequest: MedicationRequest = {
-    resourceType: 'MedicationRequest',
-    status: 'stopped',
-    intent: 'order',
-    medicationReference: originalMedication.medicationReference,
-    subject: subjectReference,
-    encounter: encounterReference,
-    requester: requesterReference,
-    priorPrescription: {
-      reference: `MedicationRequest/${originalMedication.id}`,
-    },
-    statusReason: {
-      coding: [],
-      text: stopReason,
-    },
-  };
-
-  // Set dosage with stop date timing
-  if (originalMedication.dosageInstruction?.[0]) {
-    medicationRequest.dosageInstruction = [
-      {
-        ...originalMedication.dosageInstruction[0],
-        timing: {
-          ...originalMedication.dosageInstruction[0].timing,
-          event: [stopDate.toISOString()],
-        },
-      },
-    ];
-  }
-
-  if (note) {
-    medicationRequest.note = [{ text: note }];
-  }
-
-  return medicationRequest;
-};
-
-/**
  * Creates multiple MedicationRequest resources from an array of medication entries
  * @param medicationEntries - Array of medication input entries
  * @param subjectReference - Reference to the patient

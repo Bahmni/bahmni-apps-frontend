@@ -5,7 +5,7 @@ import {
   post,
   Form2Observation,
 } from '@bahmni/services';
-import { BundleEntry, CodeableConcept, Encounter, MedicationRequest, Reference } from 'fhir/r4';
+import { BundleEntry, CodeableConcept, Encounter, Reference } from 'fhir/r4';
 import { CONSULTATION_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
@@ -21,10 +21,6 @@ import {
   createEncounterConditionResource,
 } from '../utils/fhir/conditionResourceCreator';
 import { createBundleEntry } from '../utils/fhir/consultationBundleCreator';
-import {
-  createMedicationRequestResource,
-  createStopMedicationRequestResource,
-} from '../utils/fhir/medicationRequestResourceCreator';
 import { createObservationResources } from '../utils/fhir/observationResourceCreator';
 import {
   createPractitionerReference,
@@ -495,46 +491,6 @@ export function getEncounterReference(
   return activeEncounter
     ? `Encounter/${activeEncounter.id}`
     : placeholderReference;
-}
-
-interface CreateStopMedicationBundleEntriesParams {
-  stopMedicationState: {
-    medicationToStop: MedicationRequest | null;
-    stopDate: Date;
-    stopReason: string | null;
-    note: string;
-  };
-  encounterSubject: Reference;
-  encounterReference: string;
-  practitionerUUID: string;
-}
-
-export function createStopMedicationBundleEntries({
-  stopMedicationState,
-  encounterSubject,
-  encounterReference,
-  practitionerUUID,
-}: CreateStopMedicationBundleEntriesParams): BundleEntry[] {
-  if (
-    !stopMedicationState.medicationToStop ||
-    !stopMedicationState.stopReason
-  ) {
-    return [];
-  }
-
-  const resource = createStopMedicationRequestResource(
-    stopMedicationState.medicationToStop,
-    stopMedicationState.stopDate,
-    stopMedicationState.stopReason,
-    stopMedicationState.note || undefined,
-    encounterSubject,
-    createEncounterReferenceFromString(encounterReference),
-    createPractitionerReference(practitionerUUID),
-  );
-
-  return [
-    createBundleEntry(`urn:uuid:${crypto.randomUUID()}`, resource, 'POST'),
-  ];
 }
 
 export async function postConsultationBundle<T>(

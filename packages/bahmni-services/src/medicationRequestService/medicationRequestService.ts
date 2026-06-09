@@ -341,8 +341,12 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       ),
       note: getNote(medication.note),
       doseForm: doseForm,
+      statusReason:
+        medication.statusReason?.text ??
+        medication.statusReason?.coding?.[0]?.display ??
+        undefined,
       fhirResource: medication,
-    };
+    } as MedicationRequest;
   });
 }
 

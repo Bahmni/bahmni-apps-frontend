@@ -1,3 +1,8 @@
+import {
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+} from '@bahmni/services';
 import { stopMedication } from '../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../stores/stopMedicationsStore';
 import { registerInputControl } from '../registry';
@@ -18,6 +23,13 @@ registerInputControl({
       reason: state.stopReason,
       effectiveDate: state.stopDate,
       note: state.note || undefined,
+    });
+    dispatchAuditEvent({
+      eventType: AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION
+        .eventType as AuditEventType,
+      patientUuid:
+        state.medicationToStop.subject?.reference?.split('/').pop() ?? '',
+      messageParams: {},
     });
   },
 });

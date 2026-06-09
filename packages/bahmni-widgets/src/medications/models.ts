@@ -24,5 +24,6 @@ export interface FormattedMedicationRequest {
   readonly isImmediate: boolean;
   readonly note?: string;
   readonly doseForm?: string;
+  readonly stopReason?: string;
   readonly fhirResource: MedicationRequest;
 }

@@ -16,7 +16,6 @@ import {
   groupByDate,
   formatDateTime,
   hasPrivilege,
-  FormattedMedicationRequest,
   MedicationRequest,
   shouldEnableEncounterFilter,
   useSubscribeConsultationSaved,
@@ -32,7 +31,7 @@ import { WidgetProps } from '../registry/model';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import Actions from './components/Actions';
 import { MEDICATION_REQUEST_PRIORITY } from './constants';
-import { MedicationAction } from './models';
+import { FormattedMedicationRequest, MedicationAction } from './models';
 import styles from './styles/MedicationsTable.module.scss';
 import {
   formatMedicationRequest,
@@ -273,7 +272,13 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         return (
           <>
             <div className={styles.medicationName}>
-              <span>{row.name}</span>
+              <span
+                className={
+                  row.status === 'stopped' ? styles.strikethrough : undefined
+                }
+              >
+                {row.name}
+              </span>
               {row.note && (
                 <TooltipIcon
                   iconName="fa-file-lines"
@@ -294,8 +299,11 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           </>
         );
       case 'dosage': {
+        const dosageClassName = classNames(styles.columnDataBold, {
+          [styles.strikethrough]: row.status === 'stopped',
+        });
         if (typeof row.dosage === 'string') {
-          return <p className={styles.columnDataBold}>{row.dosage}</p>;
+          return <p className={dosageClassName}>{row.dosage}</p>;
         }
         if (
           row.dosage &&
@@ -305,19 +313,23 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         ) {
           const dosage = row.dosage as { value: number; unit: string };
           return (
-            <p className={styles.columnDataBold}>
+            <p className={dosageClassName}>
               {dosage.value} {dosage.unit}
             </p>
           );
         }
         return (
-          <p className={styles.columnDataBold}>
+          <p className={dosageClassName}>
             {t('MEDICATIONS_TABLE_NOT_AVAILABLE')}
           </p>
         );
       }
       case 'instruction':
-        return row.instruction;
+        return row.status === 'stopped' ? (
+          <span className={styles.strikethrough}>{row.instruction}</span>
+        ) : (
+          row.instruction
+        );
       case 'startDate':
         return formatDateTime(row.startDate, t).formattedResult;
       case 'orderedBy':
@@ -326,18 +338,26 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         return formatDateTime(row.orderDate, t).formattedResult;
       case 'status':
         return (
-          <StatusTag
-            testId={`medication-status-${row.id}`}
-            label={t(getMedicationStatusKey(row.status))}
-            dotClassName={getMedicationStatusClassName(row.status)}
-          />
+          <>
+            <StatusTag
+              testId={`medication-status-${row.id}`}
+              label={t(getMedicationStatusKey(row.status))}
+              dotClassName={getMedicationStatusClassName(row.status)}
+            />
+            {row.status === 'stopped' && row.stopReason && (
+              <span className={styles.stopReasonText}>{row.stopReason}</span>
+            )}
+          </>
         );
       case 'actions':
         return (
           <Actions
             actions={actions}
             medication={row.fhirResource}
-            disabledActionTypes={isEditable(row) ? [] : ['edit']}
+            disabledActionTypes={[
+              ...(isEditable(row) ? [] : ['edit']),
+              ...(!['active', 'on-hold'].includes(row.status) ? ['stop'] : []),
+            ]}
           />
         );
       default:
