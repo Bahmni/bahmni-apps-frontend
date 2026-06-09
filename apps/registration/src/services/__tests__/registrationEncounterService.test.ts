@@ -10,6 +10,7 @@ import {
 } from '@bahmni/services';
 import type { Encounter } from 'fhir/r4';
 import {
+  createRegistrationEncounterForPatient,
   findValidRegistrationEncounterInSession,
   linkRegistrationEncounterToVisit,
 } from '../registrationEncounterService';
@@ -91,6 +92,78 @@ const makeExpiredEncounter = (overrides: Partial<Encounter> = {}): Encounter =>
     },
     ...overrides,
   });
+
+describe('createRegistrationEncounterForPatient', () => {
+  const mockDispatchAuditEvent = jest.requireMock('@bahmni/services').dispatchAuditEvent;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetUserLoginLocation.mockReturnValue({ uuid: 'location-uuid', name: 'Test Location' });
+    mockGetCurrentUser.mockResolvedValue({
+      uuid: 'user-uuid',
+      display: 'Test User',
+      systemId: 'admin',
+      userProperties: {},
+      person: { uuid: 'person-uuid' },
+      roles: [],
+      privileges: [],
+    });
+    mockGetCurrentProvider.mockResolvedValue({
+      uuid: 'provider-uuid',
+      display: 'Test Provider',
+      person: { uuid: 'person-uuid', display: 'Test Provider' },
+    });
+    mockCreateFhirEncounter.mockResolvedValue(makeEncounter({ id: 'new-enc-uuid' }));
+  });
+
+  it('should fetch location, user and provider then create and return the encounter', async () => {
+    const result = await createRegistrationEncounterForPatient(
+      PATIENT_UUID,
+      ENCOUNTER_TYPE_UUID,
+    );
+
+    expect(mockGetUserLoginLocation).toHaveBeenCalled();
+    expect(mockGetCurrentUser).toHaveBeenCalled();
+    expect(mockGetCurrentProvider).toHaveBeenCalledWith('user-uuid');
+    expect(mockCreateFhirEncounter).toHaveBeenCalled();
+    expect(result.id).toBe('new-enc-uuid');
+  });
+
+  it('should not call getCurrentProvider when user is null', async () => {
+    mockGetCurrentUser.mockResolvedValue(null);
+
+    await createRegistrationEncounterForPatient(PATIENT_UUID, ENCOUNTER_TYPE_UUID);
+
+    expect(mockGetCurrentProvider).not.toHaveBeenCalled();
+  });
+
+  it('should dispatch audit event with encounter type display name from FHIR response', async () => {
+    mockCreateFhirEncounter.mockResolvedValue(
+      makeEncounter({
+        id: 'new-enc-uuid',
+        type: [{ coding: [{ display: 'Registration', code: ENCOUNTER_TYPE_UUID }] }],
+      }),
+    );
+
+    await createRegistrationEncounterForPatient(PATIENT_UUID, ENCOUNTER_TYPE_UUID);
+
+    expect(mockDispatchAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        messageParams: { encounterType: 'Registration' },
+      }),
+    );
+  });
+
+  it('should fall back to encounterTypeUuid in audit event when no display name in response', async () => {
+    await createRegistrationEncounterForPatient(PATIENT_UUID, ENCOUNTER_TYPE_UUID);
+
+    expect(mockDispatchAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        messageParams: { encounterType: ENCOUNTER_TYPE_UUID },
+      }),
+    );
+  });
+});
 
 describe('findValidRegistrationEncounterInSession', () => {
   beforeEach(() => {
