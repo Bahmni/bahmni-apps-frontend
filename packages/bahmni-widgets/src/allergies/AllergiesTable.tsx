@@ -15,14 +15,12 @@ import {
   mapAllergyToInputEntry,
   useTranslation,
   useSubscribeConsultationSaved,
-  useEncounterSessionStore,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetActionConfig, WidgetProps } from '../registry/model';
-import { CONSULTATION_PAD_PRIVILEGES } from '../userPrivileges/consultationPadPrivileges';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './styles/AllergiesTable.module.scss';
 import {
@@ -34,7 +32,6 @@ import {
 const CONSULTATION_START_EVENT = 'startConsultation';
 
 const EDIT_ALLERGY_LABEL = 'EDIT_ALLERGY';
-const EDIT_ALL_ALLERGIES_LABEL = 'EDIT_ALL_ALLERGIES';
 
 const getSeverityClassName = (severity: string): string | undefined => {
   switch (severity?.toLowerCase()) {
@@ -73,35 +70,6 @@ const AllergiesTable: React.FC<WidgetProps> = ({
   const showActions =
     configActions.length > 0 &&
     (actionPrivileges.length === 0 || hasActionPrivilege);
-
-  const canEditAllergies = useHasPrivilege(
-    CONSULTATION_PAD_PRIVILEGES.EDIT_ALLERGIES,
-  );
-  const { matchReasons } = useEncounterSessionStore();
-  const noActiveVisit = matchReasons.includes('NO_ACTIVE_VISIT');
-  const showEditAllButton = canEditAllergies && !noActiveVisit;
-
-  const handleEditAll = useCallback(async () => {
-    try {
-      if (!patientUUID) return;
-      const rawAllergies = await getAllergies(patientUUID);
-      globalThis.dispatchEvent(
-        new CustomEvent(CONSULTATION_START_EVENT, {
-          detail: {
-            editOnly: 'allergies',
-            editTitle: 'EDIT_ALLERGIES_TITLE',
-            preloadedAllergies: rawAllergies.map(mapAllergyToInputEntry),
-          },
-        }),
-      );
-    } catch {
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: t('ERROR_LOADING_ALLERGIES'),
-        type: 'error',
-      });
-    }
-  }, [patientUUID, addNotification, t]);
 
   const handleRowEdit = useCallback(
     async (resourceId: string) => {
@@ -253,24 +221,6 @@ const AllergiesTable: React.FC<WidgetProps> = ({
 
   return (
     <div data-testid="allergy-table" className={styles.allergiesTableWrapper}>
-      {showEditAllButton && (
-        <div
-          className={styles.widgetEditActions}
-          data-testid="allergies-widget-edit-actions"
-        >
-          <IconButton
-            label={t(EDIT_ALL_ALLERGIES_LABEL)}
-            kind="ghost"
-            size="sm"
-            align="left"
-            disabled={allergies.length === 0 || disableActions}
-            onClick={handleEditAll}
-            testId="edit-all-allergies-button"
-          >
-            <Edit />
-          </IconButton>
-        </div>
-      )}
       <SortableDataTable
         headers={headers}
         ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}
