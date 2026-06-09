@@ -11,6 +11,7 @@ export const mockFullPatient: FormattedPatientData = {
     ['MRN', 'MRN123456'],
     ['OpenMRS ID', 'OP789'],
   ]),
+  photoUrl: '/openmrs/ws/fhir2/R4/Patient/test-uuid/$photo',
 };
 
 export const mockMinimalPatient: FormattedPatientData = {
@@ -21,4 +22,5 @@ export const mockMinimalPatient: FormattedPatientData = {
   formattedAddress: null,
   formattedContact: null,
   identifiers: new Map(),
+  photoUrl: undefined,
 };

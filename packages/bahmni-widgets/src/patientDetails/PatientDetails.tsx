@@ -1,19 +1,22 @@
 import { Icon, ICON_SIZE } from '@bahmni/design-system';
 import {
+  fetchPatientPhotoFromUrl,
   getFormattedPatientById,
-  getPatientPhotoDataUrl,
 } from '@bahmni/services';
 import { SkeletonText } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePatientUUID } from '../hooks/usePatientUUID';
+import { GET_PATIENT_PHOTO_PRIVILEGE } from '../userPrivileges/patientPhotoPrivileges';
+import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './__styles__/PatientDetails.module.scss';
 import { createPatientDetailsViewModel } from './utils';
 
 const PatientDetails: React.FC = () => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
+  const hasPhotoPrivilege = useHasPrivilege(GET_PATIENT_PHOTO_PRIVILEGE);
   const {
     data: patient,
     isLoading,
@@ -24,10 +27,11 @@ const PatientDetails: React.FC = () => {
     enabled: !!patientUUID,
   });
 
+  const photoUrl = patient?.photoUrl;
   const { data: photoDataUrl } = useQuery({
-    queryKey: ['patientPhoto', patientUUID],
-    queryFn: () => getPatientPhotoDataUrl(patientUUID!),
-    enabled: !!patientUUID,
+    queryKey: ['patientPhoto', photoUrl],
+    queryFn: () => fetchPatientPhotoFromUrl(photoUrl!),
+    enabled: !!photoUrl && hasPhotoPrivilege,
   });
 
   if (isLoading || error || !patient) {

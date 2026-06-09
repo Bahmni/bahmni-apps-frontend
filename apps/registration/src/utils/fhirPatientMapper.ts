@@ -42,6 +42,7 @@ interface MapperInput {
   profile: BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
+    image?: string;
   };
   address: PatientAddress;
   contact: PersonAttributesData;
@@ -213,6 +214,9 @@ export function buildFhirPatient(input: MapperInput): Patient {
     }),
     ...(extensions.length > 0 && { extension: extensions }),
     ...(fhirAddresses.length > 0 && { address: fhirAddresses }),
+    photo: profile.image
+      ? [{ contentType: 'image/jpeg', data: profile.image }]
+      : [],
   };
 
   return patient;
