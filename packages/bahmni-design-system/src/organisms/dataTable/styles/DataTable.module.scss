@@ -1,0 +1,133 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.dataTableBody {
+  td {
+    @include type-style("body-compact-01");
+    background-color: $background !important;
+    color: $text-primary !important;
+    height: $spacing-10;
+    align-content: start;
+  }
+
+  tr > td:first-child:has(button) {
+    button {
+      align-items: flex-start !important;
+      padding: $spacing-02 $spacing-03 !important;
+    }
+  }
+
+  th,
+  th * {
+    background-color: $background !important;
+    font-weight: normal;
+    color: $text-secondary;
+  }
+  th {
+    border-block: 1px solid $border-subtle !important;
+  }
+}
+
+.skeleton {
+  td,
+  th {
+    background-color: $background !important;
+  }
+}
+
+.statePlaceholder {
+  @include type-style("body-compact-01");
+  background-color: $background;
+  padding: $spacing-06 $spacing-05;
+  text-align: center;
+  border-top: 1px solid $border-subtle-02;
+}
+
+.emptyStateCell {
+  @include type-style("body-compact-01");
+  background-color: $background;
+  padding: $spacing-06 !important;
+  text-align: center !important;
+  color: $text-secondary;
+}
+
+.pagination {
+  background-color: $background;
+  border-top: 1px solid $border-subtle;
+}
+
+.filterRow {
+  background-color: $layer-accent-01;
+}
+
+.filterCell {
+  padding: $spacing-02 $spacing-04;
+  vertical-align: middle;
+}
+
+.filterPlaceholderCell {
+  padding: $spacing-02 $spacing-04;
+  background-color: $layer-accent-01;
+}
+
+.groupRow {
+  background-color: $layer-accent-01;
+}
+
+.groupCell {
+  padding: $spacing-03 $spacing-05;
+}
+
+.groupToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-03;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: $spacing-02 0;
+  @include type-style("heading-compact-01");
+}
+
+.groupCount {
+  color: $text-secondary;
+  font-weight: 400;
+}
+
+.groupByDropdown {
+  :global(.cds--list-box__menu) {
+    right: 0;
+    left: auto;
+  }
+}
+
+.actionButtons {
+  display: flex;
+  gap: 1px;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.selectFilter {
+  min-width: calc($spacing-12 + $spacing-05);
+}
+
+.dateRangeFilter{
+  div:first-child {
+    display:flex;
+    flex-direction: column !important;
+    gap: $spacing-02
+  }
+}
+

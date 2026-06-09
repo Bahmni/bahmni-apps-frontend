@@ -101,6 +101,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
                     name={item.icon}
                     id={`sidebar-icon-${item.id}`}
                     size={ICON_SIZE.LG}
+                    fixedWidth
                   />
                 )}
                 href={item.href ?? '#'}

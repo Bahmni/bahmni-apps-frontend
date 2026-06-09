@@ -84,6 +84,10 @@
   }
 }
 
+.medicationsTableWrapper {
+  position: relative;
+}
+
 .customAccordianItem {
   background-color: $layer-01;
   :global(.cds--accordion__content) {

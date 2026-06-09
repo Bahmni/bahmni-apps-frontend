@@ -37,19 +37,6 @@ import {
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  getLocationByTag: jest.fn(),
-  getMedicationByUuid: jest.fn(),
-  getUserLoginLocation: jest.fn(),
-  getVaccinations: jest.fn(),
-  searchFHIRConcepts: jest.fn(),
-}));
-
-jest.mock('../../../../providers/clinicalConfig', () => ({
-  useClinicalConfig: jest.fn(),
-}));
-
-jest.mock('@bahmni/services', () => ({
-  ...jest.requireActual('@bahmni/services'),
   dispatchCDSSCheck: jest.fn(),
   getLocationByTag: jest.fn(),
   getMedicationByUuid: jest.fn(),
@@ -57,6 +44,10 @@ jest.mock('@bahmni/services', () => ({
   getVaccinations: jest.fn(),
   searchFHIRConcepts: jest.fn(),
   useCDSSResultsListener: jest.fn(),
+}));
+
+jest.mock('../../../../providers/clinicalConfig', () => ({
+  useClinicalConfig: jest.fn(),
 }));
 
 const mockDispatchCDSSCheck = jest.mocked(dispatchCDSSCheck);

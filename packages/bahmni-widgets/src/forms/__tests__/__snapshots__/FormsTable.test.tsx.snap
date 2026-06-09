@@ -105,7 +105,7 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
         data-testid="accordian-title-History Form"
       >
         <button
-          aria-controls="accordion-item-_r_3c_"
+          aria-controls="accordion-item-_r_4l_"
           aria-expanded="true"
           class="cds--accordion__heading"
           type="button"
@@ -137,7 +137,7 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
         >
           <div
             class="cds--accordion__content"
-            id="accordion-item-_r_3c_"
+            id="accordion-item-_r_4l_"
           >
             <div
               class="formsTableBody _sortableDataTableBody_1w499_1"
@@ -159,12 +159,12 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
                       >
                         <div
                           class="cds--table-sort__description"
-                          id="table-sort-_r_3d_"
+                          id="table-sort-_r_4m_"
                         >
                           Click to sort rows by Recorded On header in ascending order
                         </div>
                         <button
-                          aria-describedby="table-sort-_r_3d_"
+                          aria-describedby="table-sort-_r_4m_"
                           class="cds--table-sort"
                           data-testid="table-header-recordedOn"
                           type="button"
@@ -220,12 +220,12 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
                       >
                         <div
                           class="cds--table-sort__description"
-                          id="table-sort-_r_3e_"
+                          id="table-sort-_r_4n_"
                         >
                           Click to sort rows by Recorded By header in ascending order
                         </div>
                         <button
-                          aria-describedby="table-sort-_r_3e_"
+                          aria-describedby="table-sort-_r_4n_"
                           class="cds--table-sort"
                           data-testid="table-header-recordedBy"
                           type="button"
@@ -309,7 +309,7 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
         data-testid="accordian-title-Vitals Form"
       >
         <button
-          aria-controls="accordion-item-_r_3f_"
+          aria-controls="accordion-item-_r_4o_"
           aria-expanded="false"
           class="cds--accordion__heading"
           type="button"
@@ -341,7 +341,7 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
         >
           <div
             class="cds--accordion__content"
-            id="accordion-item-_r_3f_"
+            id="accordion-item-_r_4o_"
           >
             <div
               class="formsTableBody _sortableDataTableBody_1w499_1"
@@ -363,12 +363,12 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
                       >
                         <div
                           class="cds--table-sort__description"
-                          id="table-sort-_r_3g_"
+                          id="table-sort-_r_4p_"
                         >
                           Click to sort rows by Recorded On header in ascending order
                         </div>
                         <button
-                          aria-describedby="table-sort-_r_3g_"
+                          aria-describedby="table-sort-_r_4p_"
                           class="cds--table-sort"
                           data-testid="table-header-recordedOn"
                           type="button"
@@ -424,12 +424,12 @@ exports[`FormsTable Snapshots should match snapshot with form data 1`] = `
                       >
                         <div
                           class="cds--table-sort__description"
-                          id="table-sort-_r_3h_"
+                          id="table-sort-_r_4q_"
                         >
                           Click to sort rows by Recorded By header in ascending order
                         </div>
                         <button
-                          aria-describedby="table-sort-_r_3h_"
+                          aria-describedby="table-sort-_r_4q_"
                           class="cds--table-sort"
                           data-testid="table-header-recordedBy"
                           type="button"

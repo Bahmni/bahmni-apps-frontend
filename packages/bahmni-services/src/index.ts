@@ -136,6 +136,9 @@ export {
   AllergyStatus,
   AllergySeverity,
   type AllergenType,
+  type AllergyInputEntry,
+  type AllergenConcept,
+  mapAllergyToInputEntry,
   getAllergies,
   getFormattedAllergies,
   fetchAndFormatAllergenConcepts,
@@ -177,6 +180,7 @@ export {
   type MedicationOrdersMetadataResponse,
   type Frequency as MedicationFrequency,
   type OrderAttribute,
+  MEDICATIONS_INPUT_CONTROL_KEY,
 } from './medicationRequestService';
 export { getMedicationByUuid } from './medicationService';
 export {
@@ -252,6 +256,8 @@ export {
 
 export {
   getActiveVisit,
+  getEncounterByUuid,
+  getVisits,
   shouldEnableEncounterFilter,
   getObservationsBundleByEncounterUuid,
   type FormsEncounter,
@@ -404,3 +410,10 @@ export {
   type CDSSEventDetail,
   type CDSSServerConfig,
 } from './cdssService';
+export { getTemplates, renderAsHtml } from './templateService';
+export type {
+  TemplateInfo,
+  TemplateTrigger,
+  RenderRequest,
+  TemplateListResponse,
+} from './templateService';

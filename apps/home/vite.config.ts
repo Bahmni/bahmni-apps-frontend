@@ -8,6 +8,11 @@ export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/home',
   publicDir: 'public',
+  css: {
+    modules: process.env['VITEST'] ? {} : {
+      generateScopedName: '[name]_[local]__[hash:base64:5]',
+    },
+  },
   plugins: [
     react(),
     dts({
@@ -28,7 +33,14 @@ export default defineConfig(() => ({
       formats: ['es' as const],
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'react/jsx-runtime', 'react-router-dom', '@tanstack/react-query'],
+      external: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react-router-dom',
+        '@tanstack/react-query',
+        /^@carbon\/styles/
+      ],
     },
   },
 }));
