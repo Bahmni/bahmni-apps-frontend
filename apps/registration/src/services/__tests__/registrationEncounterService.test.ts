@@ -228,6 +228,27 @@ describe('findValidRegistrationEncounterInSession', () => {
 
     expect(result).toBeNull();
   });
+
+  it('should return the most recent valid encounter when multiple exist in session', async () => {
+    const olderEncounter = makeEncounter({
+      id: 'enc-older',
+      period: { start: new Date(Date.now() - 10 * 60 * 1000).toISOString() },
+    });
+    const newerEncounter = makeEncounter({
+      id: 'enc-newer',
+      period: { start: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
+    });
+
+    // Server returns older first — sort should return newer
+    mockSearchEncounters.mockResolvedValue([olderEncounter, newerEncounter]);
+
+    const result = await findValidRegistrationEncounterInSession(
+      PATIENT_UUID,
+      ENCOUNTER_TYPE_UUID,
+    );
+
+    expect(result?.id).toBe('enc-newer');
+  });
 });
 
 describe('linkRegistrationEncounterToVisit', () => {
@@ -324,16 +345,23 @@ describe('linkRegistrationEncounterToVisit', () => {
     expect(mockCreateFhirEncounter).not.toHaveBeenCalled();
   });
 
-  it('should link the first valid unlinked encounter when multiple exist in session', async () => {
-    const encounter1 = makeEncounter({ id: 'enc-1' });
-    const encounter2 = makeEncounter({ id: 'enc-2' });
+  it('should link the most recent unlinked encounter when multiple exist in session', async () => {
+    const olderEncounter = makeEncounter({
+      id: 'enc-older',
+      period: { start: new Date(Date.now() - 10 * 60 * 1000).toISOString() },
+    });
+    const newerEncounter = makeEncounter({
+      id: 'enc-newer',
+      period: { start: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
+    });
 
-    mockSearchEncounters.mockResolvedValue([encounter1, encounter2]);
+    // Server returns older first — sort should pick newer
+    mockSearchEncounters.mockResolvedValue([olderEncounter, newerEncounter]);
 
     await linkRegistrationEncounterToVisit(PATIENT_UUID, ENCOUNTER_TYPE_UUID);
 
     expect(mockUpdateFhirEncounter).toHaveBeenCalledWith(
-      'enc-1',
+      'enc-newer',
       expect.objectContaining({
         partOf: { reference: `Encounter/${VISIT_UUID}` },
       }),

@@ -61,6 +61,14 @@ function isEncounterInSession(
   );
 }
 
+function sortByMostRecent(encounters: Encounter[]): Encounter[] {
+  return [...encounters].sort((a, b) => {
+    const dateA = new Date(a.period?.start ?? 0).getTime();
+    const dateB = new Date(b.period?.start ?? 0).getTime();
+    return dateB - dateA;
+  });
+}
+
 /**
  * Returns the first registration encounter whose session is still valid
  * (period.start + sessionDuration > now), or null if none exists.
@@ -83,7 +91,9 @@ export async function findValidRegistrationEncounterInSession(
   });
 
   return (
-    candidates.find((e) => isEncounterInSession(e, sessionDurationMs)) ?? null
+    sortByMostRecent(candidates).find((e) =>
+      isEncounterInSession(e, sessionDurationMs),
+    ) ?? null
   );
 }
 
@@ -114,8 +124,8 @@ export async function linkRegistrationEncounterToVisit(
     _lastUpdated: `ge${sessionStartTime.toISOString()}`,
   });
 
-  const validEncounters = candidates.filter((e) =>
-    isEncounterInSession(e, sessionDurationMs),
+  const validEncounters = sortByMostRecent(
+    candidates.filter((e) => isEncounterInSession(e, sessionDurationMs)),
   );
 
   const unlinkedEncounter = validEncounters.find((e) => !e.partOf);
