@@ -1,9 +1,6 @@
 import {
   createFhirPatient,
-  createFhirEncounter,
   dispatchAuditEvent,
-  getCurrentUser,
-  getCurrentProvider,
   PersonAttributeType,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
@@ -21,9 +18,6 @@ jest.mock('../../providers/registrationConfig', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   createFhirPatient: jest.fn(),
-  createFhirEncounter: jest.fn(),
-  getCurrentUser: jest.fn(),
-  getCurrentProvider: jest.fn(),
   generateIdentifier: jest.fn(),
   dispatchAuditEvent: jest.fn(),
   getUserLoginLocation: () => ({ uuid: 'loc-uuid', name: 'Test Location' }),
@@ -32,13 +26,13 @@ jest.mock('@bahmni/services', () => ({
       eventType: 'REGISTER_NEW_PATIENT',
       module: 'registration',
     },
-    CREATE_ENCOUNTER: {
-      eventType: 'CREATE_ENCOUNTER',
-      module: 'registration',
-    },
   },
-  FHIR_ENCOUNTER_TYPE_CODE_SYSTEM:
-    'http://fhir.openmrs.org/code-system/encounter-type',
+}));
+
+const mockCreateRegistrationEncounterForPatient = jest.fn();
+jest.mock('../../services/registrationEncounterService', () => ({
+  createRegistrationEncounterForPatient: (...args: unknown[]) =>
+    mockCreateRegistrationEncounterForPatient(...args),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -59,9 +53,6 @@ jest.mock('../useAdditionalIdentifiers', () => ({
 }));
 
 const mockCreateFhirPatient = createFhirPatient as jest.Mock;
-const mockCreateFhirEncounter = createFhirEncounter as jest.Mock;
-const mockGetCurrentUser = getCurrentUser as jest.Mock;
-const mockGetCurrentProvider = getCurrentProvider as jest.Mock;
 const mockUseNotification = useNotification as jest.Mock;
 const mockAddNotification = jest.fn();
 
@@ -144,9 +135,7 @@ describe('useCreatePatient', () => {
       addNotification: mockAddNotification,
     });
     mockUseRegistrationConfig.mockReturnValue({ registrationConfig: null });
-    mockGetCurrentUser.mockResolvedValue({ uuid: 'user-uuid-123' });
-    mockGetCurrentProvider.mockResolvedValue({ uuid: 'provider-uuid-456' });
-    mockCreateFhirEncounter.mockResolvedValue({ id: 'encounter-uuid-789' });
+    mockCreateRegistrationEncounterForPatient.mockResolvedValue(undefined);
     window.history.replaceState = jest.fn();
   });
 
@@ -273,7 +262,7 @@ describe('useCreatePatient', () => {
     );
   });
 
-  it('should create registration encounter when registrationEncounterTypeUuid is configured', async () => {
+  it('should create a registration encounter after patient is saved when encounter type is configured', async () => {
     mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
     mockUseRegistrationConfig.mockReturnValue({
       registrationConfig: {
@@ -287,26 +276,18 @@ describe('useCreatePatient', () => {
     result.current.mutate(mockFormData);
 
     await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
-    });
-
-    await waitFor(() => {
-      expect(mockCreateFhirEncounter).toHaveBeenCalledWith(
-        expect.objectContaining({
-          resourceType: 'Encounter',
-          status: 'in-progress',
-          subject: { reference: 'Patient/patient-uuid-123' },
-          location: [{ location: { reference: 'Location/loc-uuid' } }],
-        }),
+      expect(mockCreateRegistrationEncounterForPatient).toHaveBeenCalledWith(
+        'patient-uuid-123',
+        'reg-encounter-type-uuid',
       );
     });
   });
 
-  it('should dispatch CREATE_ENCOUNTER audit event after encounter creation', async () => {
+  it('should not create a registration encounter when encounter type is not configured', async () => {
     mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
     mockUseRegistrationConfig.mockReturnValue({
       registrationConfig: {
-        registrationEncounterTypeUuid: 'reg-encounter-type-uuid',
+        registrationEncounterTypeUuid: undefined,
       },
     });
 
@@ -316,39 +297,13 @@ describe('useCreatePatient', () => {
     result.current.mutate(mockFormData);
 
     await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
+      expect(mockAddNotification).toHaveBeenCalled();
     });
 
-    await waitFor(() => {
-      expect(dispatchAuditEvent).toHaveBeenCalledWith(
-        expect.objectContaining({
-          eventType: 'CREATE_ENCOUNTER',
-          patientUuid: 'patient-uuid-123',
-          module: 'registration',
-        }),
-      );
-    });
-  });
-
-  it('should not create encounter when registrationEncounterTypeUuid is not configured', async () => {
-    mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {},
-    });
-
-    const { result } = renderHook(() => useCreatePatient(), {
-      wrapper: createWrapper(),
-    });
-    result.current.mutate(mockFormData);
-
-    await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
-    });
-
-    // Give time for any async fire-and-forget calls to settle
+    // Give time for fire-and-forget to settle
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    expect(mockCreateFhirEncounter).not.toHaveBeenCalled();
+    expect(mockCreateRegistrationEncounterForPatient).not.toHaveBeenCalled();
   });
 
   it('should show error notification and not block patient save when encounter creation fails', async () => {
@@ -358,7 +313,7 @@ describe('useCreatePatient', () => {
         registrationEncounterTypeUuid: 'reg-encounter-type-uuid',
       },
     });
-    mockCreateFhirEncounter.mockRejectedValue(
+    mockCreateRegistrationEncounterForPatient.mockRejectedValue(
       new Error('Encounter creation failed'),
     );
 

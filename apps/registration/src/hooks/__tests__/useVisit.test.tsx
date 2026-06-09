@@ -7,14 +7,25 @@ import { useActiveVisit, useCreateVisit, useVisitTypes } from '../useVisit';
 const mockCheckIfActiveVisitExists = jest.fn();
 const mockCreateVisitForPatient = jest.fn();
 const mockGetVisitTypes = jest.fn();
-const mockGetActiveVisitByPatient = jest.fn();
-const mockSearchEncounters = jest.fn();
-const mockUpdateFhirEncounter = jest.fn();
 const mockAddNotification = jest.fn();
+const mockFindValidRegistrationEncounterInSession = jest.fn();
+const mockCreateRegistrationEncounterForPatient = jest.fn();
 
 const mockUseRegistrationConfig = jest.fn();
 jest.mock('../../providers/registrationConfig', () => ({
   useRegistrationConfig: () => mockUseRegistrationConfig(),
+}));
+
+const mockLinkRegistrationEncounterToVisit = jest.fn();
+jest.mock('../../services/registrationEncounterService', () => ({
+  findValidRegistrationEncounterInSession: (...args: unknown[]) =>
+    mockFindValidRegistrationEncounterInSession(...args),
+
+  createRegistrationEncounterForPatient: (...args: unknown[]) =>
+    mockCreateRegistrationEncounterForPatient(...args),
+
+  linkRegistrationEncounterToVisit: (...args: unknown[]) =>
+    mockLinkRegistrationEncounterToVisit(...args),
 }));
 
 jest.mock('@bahmni/services', () => ({
@@ -24,11 +35,6 @@ jest.mock('@bahmni/services', () => ({
   createVisitForPatient: (patientUuid: string, visitType: any) =>
     mockCreateVisitForPatient(patientUuid, visitType),
   getVisitTypes: () => mockGetVisitTypes(),
-  getActiveVisitByPatient: (patientUuid: string) =>
-    mockGetActiveVisitByPatient(patientUuid),
-  searchEncounters: (params: any) => mockSearchEncounters(params),
-  updateFhirEncounter: (uuid: string, encounter: any) =>
-    mockUpdateFhirEncounter(uuid, encounter),
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -104,25 +110,7 @@ describe('useVisit', () => {
       mockCheckIfActiveVisitExists.mockResolvedValue(false);
       mockCreateVisitForPatient.mockResolvedValue({});
       mockUseRegistrationConfig.mockReturnValue({ registrationConfig: null });
-      mockGetActiveVisitByPatient.mockResolvedValue({
-        results: [
-          {
-            uuid: 'visit-uuid-789',
-            visitType: { uuid: 'vt-uuid', name: 'OPD' },
-            startDatetime: '2026-06-05T00:00:00.000+00:00',
-            stopDatetime: null,
-          },
-        ],
-      });
-      mockSearchEncounters.mockResolvedValue([
-        {
-          id: 'encounter-uuid-456',
-          resourceType: 'Encounter',
-          status: 'in-progress',
-          // no partOf — unlinked
-        },
-      ]);
-      mockUpdateFhirEncounter.mockResolvedValue({});
+      mockLinkRegistrationEncounterToVisit.mockResolvedValue(undefined);
     });
 
     it('should create visit when no active visit exists', async () => {
@@ -156,11 +144,15 @@ describe('useVisit', () => {
       });
     });
 
-    it('should link unlinked registration encounter to visit after visit creation', async () => {
+    it('should link registration encounter to visit after visit creation when encounter type is configured', async () => {
       mockUseRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationEncounterTypeUuid: 'reg-encounter-type-uuid',
         },
+      });
+
+      mockFindValidRegistrationEncounterInSession.mockResolvedValue({
+        id: 'enc-123',
       });
 
       const { result } = renderHook(() => useCreateVisit(), { wrapper });
@@ -168,51 +160,62 @@ describe('useVisit', () => {
       await result.current.createVisit(patientUuid, mockVisitType);
 
       await waitFor(() => {
-        expect(mockSearchEncounters).toHaveBeenCalledWith({
-          patient: patientUuid,
-          type: 'reg-encounter-type-uuid',
-        });
-      });
-
-      await waitFor(() => {
-        expect(mockUpdateFhirEncounter).toHaveBeenCalledWith(
-          'encounter-uuid-456',
-          expect.objectContaining({
-            period: { start: '2026-06-05T00:00:00.000Z' },
-            partOf: { reference: 'Encounter/visit-uuid-789' },
-          }),
+        expect(
+          mockCreateRegistrationEncounterForPatient,
+        ).not.toHaveBeenCalled();
+        expect(mockLinkRegistrationEncounterToVisit).toHaveBeenCalledWith(
+          patientUuid,
+          'reg-encounter-type-uuid',
         );
       });
     });
 
-    it('should not link encounter when no unlinked encounter is found', async () => {
+    it('should create a registration encounter when none exists and link it to visit', async () => {
       mockUseRegistrationConfig.mockReturnValue({
         registrationConfig: {
           registrationEncounterTypeUuid: 'reg-encounter-type-uuid',
         },
       });
-      // Return an already-linked encounter
-      mockSearchEncounters.mockResolvedValue([
-        {
-          id: 'encounter-uuid-456',
-          resourceType: 'Encounter',
-          status: 'in-progress',
-          partOf: { reference: 'Encounter/some-visit-uuid' },
+
+      mockFindValidRegistrationEncounterInSession.mockResolvedValue(null);
+      mockCreateRegistrationEncounterForPatient.mockResolvedValue({
+        id: 'new-encounter-id',
+      });
+
+      const { result } = renderHook(() => useCreateVisit(), { wrapper });
+
+      await result.current.createVisit(patientUuid, mockVisitType);
+      expect(mockCreateRegistrationEncounterForPatient).toHaveBeenCalledWith(
+        patientUuid,
+        'reg-encounter-type-uuid',
+      );
+      expect(mockLinkRegistrationEncounterToVisit).toHaveBeenCalledWith(
+        patientUuid,
+        'reg-encounter-type-uuid',
+      );
+    });
+
+    it('should show error notification when encounter linkage fails', async () => {
+      const error = new Error('Failed to link encounter');
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationEncounterTypeUuid: 'reg-encounter-type-uuid',
         },
-      ]);
+      });
+      mockLinkRegistrationEncounterToVisit.mockRejectedValue(error);
 
       const { result } = renderHook(() => useCreateVisit(), { wrapper });
 
       await result.current.createVisit(patientUuid, mockVisitType);
 
       await waitFor(() => {
-        expect(mockCreateVisitForPatient).toHaveBeenCalled();
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ERROR_DEFAULT_TITLE',
+          message: error.message,
+          type: 'error',
+          timeout: 5000,
+        });
       });
-
-      // Give time for async linkage logic to settle
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      expect(mockUpdateFhirEncounter).not.toHaveBeenCalled();
     });
 
     it('should skip encounter linkage when registrationEncounterTypeUuid is not configured', async () => {
@@ -228,8 +231,7 @@ describe('useVisit', () => {
         expect(mockCreateVisitForPatient).toHaveBeenCalled();
       });
 
-      expect(mockSearchEncounters).not.toHaveBeenCalled();
-      expect(mockUpdateFhirEncounter).not.toHaveBeenCalled();
+      expect(mockLinkRegistrationEncounterToVisit).not.toHaveBeenCalled();
     });
   });
 

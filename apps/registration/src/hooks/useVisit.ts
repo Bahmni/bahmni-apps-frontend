@@ -2,9 +2,6 @@ import {
   getVisitTypes,
   checkIfActiveVisitExists,
   createVisitForPatient,
-  getActiveVisitByPatient,
-  searchEncounters,
-  updateFhirEncounter,
   useTranslation,
   type VisitType,
 } from '@bahmni/services';
@@ -12,6 +9,11 @@ import { useNotification } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { useRegistrationConfig } from '../providers/registrationConfig';
+import {
+  linkRegistrationEncounterToVisit,
+  findValidRegistrationEncounterInSession,
+  createRegistrationEncounterForPatient,
+} from '../services/registrationEncounterService';
 
 export const useVisitTypes = () => {
   const { data: visitTypes, isLoading } = useQuery({
@@ -53,35 +55,34 @@ export const useCreateVisit = () => {
         return;
       }
       await createVisitForPatient(patientUuid, visitType);
-      await queryClient.invalidateQueries({
-        queryKey: ['hasActiveVisit', patientUuid],
-      });
+      queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
 
       const encounterTypeUuid =
         registrationConfig?.registrationEncounterTypeUuid;
       if (encounterTypeUuid) {
         try {
-          const activeVisit = await getActiveVisitByPatient(patientUuid);
-          const visitResult = activeVisit?.results?.[0];
-          const visitUuid = visitResult?.uuid;
-          if (!visitUuid) return;
-
-          const encounters = await searchEncounters({
-            patient: patientUuid,
-            type: encounterTypeUuid,
+          const existingEncounter =
+            await findValidRegistrationEncounterInSession(
+              patientUuid,
+              encounterTypeUuid,
+            );
+          if (!existingEncounter) {
+            await createRegistrationEncounterForPatient(
+              patientUuid,
+              encounterTypeUuid,
+            );
+          }
+          await linkRegistrationEncounterToVisit(
+            patientUuid,
+            encounterTypeUuid,
+          );
+        } catch (error) {
+          addNotification({
+            title: t('ERROR_DEFAULT_TITLE'),
+            message: error instanceof Error ? error.message : String(error),
+            type: 'error',
+            timeout: 5000,
           });
-          const unlinkedEncounter = encounters.find((e) => !e.partOf);
-          if (!unlinkedEncounter?.id) return;
-
-          await updateFhirEncounter(unlinkedEncounter.id, {
-            ...unlinkedEncounter,
-            period: {
-              start: new Date(visitResult.startDatetime).toISOString(),
-            },
-            partOf: { reference: `Encounter/${visitUuid}` },
-          });
-        } catch {
-          // Silently fail — encounter-visit linkage failure should not disrupt visit creation
         }
       }
     } catch (error) {

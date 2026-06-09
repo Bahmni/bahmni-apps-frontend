@@ -239,6 +239,7 @@ export {
 export {
   findActiveEncounterInSession,
   searchEncounters,
+  getEncounterSessionDuration,
   resolveEncounterMatchDecision,
   canResumeOwnInSessionEncounter,
   type EncounterMatchDecision,
@@ -283,6 +284,8 @@ export {
   HL7_CONDITION_CATEGORY_CONDITION_CODE,
   HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE,
   FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
+  FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
+  FHIR_ENCOUNTER_TAG_SYSTEM,
   FHIR_OBSERVATION_INTERPRETATION_SYSTEM,
   FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
   FHIR_OBSERVATION_VALUE_ATTACHMENT_URL,
