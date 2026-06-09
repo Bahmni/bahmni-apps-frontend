@@ -556,6 +556,54 @@ describe('Observations Utils', () => {
       expect(grouped).toHaveLength(1);
       expect(grouped[0].comment).toBe('First note');
     });
+
+    it('should not merge group observations (those with members) even when they share conceptId', () => {
+      const obs1: ExtractedObservation = {
+        id: 'bp-1',
+        display: 'Blood Pressure',
+        conceptId: 'bp-concept',
+        observationValue: { value: '120, 80', type: 'string' },
+        members: [
+          {
+            id: 'systolic-1',
+            display: 'Systolic',
+            observationValue: { value: 120, type: 'quantity' },
+          },
+          {
+            id: 'diastolic-1',
+            display: 'Diastolic',
+            observationValue: { value: 80, type: 'quantity' },
+          },
+        ],
+      };
+
+      const obs2: ExtractedObservation = {
+        id: 'bp-2',
+        display: 'Blood Pressure',
+        conceptId: 'bp-concept',
+        observationValue: { value: '130, 90', type: 'string' },
+        members: [
+          {
+            id: 'systolic-2',
+            display: 'Systolic',
+            observationValue: { value: 130, type: 'quantity' },
+          },
+          {
+            id: 'diastolic-2',
+            display: 'Diastolic',
+            observationValue: { value: 90, type: 'quantity' },
+          },
+        ],
+      };
+
+      const grouped = groupMultiSelectObservations([obs1, obs2]);
+
+      expect(grouped).toHaveLength(2);
+      expect(grouped[0].id).toBe('bp-1');
+      expect(grouped[1].id).toBe('bp-2');
+      expect(grouped[0].members).toHaveLength(2);
+      expect(grouped[1].members).toHaveLength(2);
+    });
   });
 
   describe('transformObservations', () => {

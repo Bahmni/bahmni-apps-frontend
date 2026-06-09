@@ -192,7 +192,14 @@ export function groupMultiSelectObservations(
           )
         : undefined;
 
-      if (matchedObs?.observationValue && observation.observationValue) {
+      // Only merge scalar observations. 
+      // Group observations (those with members) must not be merged — merging would discard the members of subsequent groups.
+      if (
+        matchedObs?.observationValue &&
+        observation.observationValue &&
+        !matchedObs.members &&
+        !observation.members
+      ) {
         matchedObs.observationValue.value =
           matchedObs.observationValue.value +
           ', ' +
