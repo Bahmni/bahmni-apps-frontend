@@ -36,14 +36,16 @@ export async function createRegistrationEncounterForPatient(
 
   const createdEncounter = await createFhirEncounter(encounter);
 
+  const encounterTypeName =
+    createdEncounter.type?.[0]?.coding?.[0]?.display ??
+    createdEncounter.type?.[0]?.text ??
+    encounterTypeUuid;
+
   dispatchAuditEvent({
     eventType: AUDIT_LOG_EVENT_DETAILS.CREATE_ENCOUNTER
       .eventType as AuditEventType,
     patientUuid,
-    messageParams: {
-      encounterUuid: createdEncounter.id,
-      encounterType: encounterTypeUuid,
-    },
+    messageParams: { encounterType: encounterTypeName },
     module: AUDIT_LOG_EVENT_DETAILS.CREATE_ENCOUNTER.module,
   });
   return createdEncounter;
