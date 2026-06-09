@@ -202,17 +202,55 @@ export function createAllergiesBundleEntries({
               existingManifestationByCode.get(code) ?? { coding: [{ code }] },
           );
 
-        const putResource = updateEncounterAllergyResource(
-          allergy.rawFhirResource,
-          manifestations,
-          severity,
-          createEncounterReferenceFromString(encounterReference),
-          allergy.note,
+        // OpenMRS FHIR2 appends reactions on PUT rather than replacing them,
+        // so PUT cannot remove a reaction. Fall through to DELETE+POST when
+        // the user has removed one or more reactions.
+        const manifestationUUIDSet = new Set(manifestationUUIDs);
+        const reactionsRemoved = [...existingManifestationByCode.keys()].some(
+          (code) => !manifestationUUIDSet.has(code),
         );
-        const putURL = `AllergyIntolerance/${allergy.resourceId}`;
-        allergyEntries.push(
-          createBundleEntry(putURL, putResource, 'PUT', putURL),
-        );
+
+        if (!reactionsRemoved) {
+          const putResource = updateEncounterAllergyResource(
+            allergy.rawFhirResource,
+            manifestations,
+            severity,
+            createEncounterReferenceFromString(encounterReference),
+            allergy.note,
+          );
+          const putURL = `AllergyIntolerance/${allergy.resourceId}`;
+          allergyEntries.push(
+            createBundleEntry(putURL, putResource, 'PUT', putURL),
+          );
+        } else {
+          const deleteURL = `AllergyIntolerance/${allergy.resourceId}`;
+          allergyEntries.push(
+            createBundleEntry(
+              deleteURL,
+              createDeleteAllergyResource(allergy.resourceId!),
+              'DELETE',
+              deleteURL,
+            ),
+          );
+          const newResource = createEncounterAllergyResource(
+            allergy.id,
+            [allergy.type] as Array<
+              'food' | 'medication' | 'environment' | 'biologic'
+            >,
+            [{ manifestationUUIDs, severity }],
+            encounterSubject,
+            createEncounterReferenceFromString(encounterReference),
+            createPractitionerReference(practitionerUUID),
+            allergy.note,
+          );
+          allergyEntries.push(
+            createBundleEntry(
+              `urn:uuid:${crypto.randomUUID()}`,
+              newResource,
+              'POST',
+            ),
+          );
+        }
       } else {
         const deleteURL = `AllergyIntolerance/${allergy.resourceId}`;
         allergyEntries.push(
