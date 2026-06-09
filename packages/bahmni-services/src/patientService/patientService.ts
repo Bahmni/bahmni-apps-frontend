@@ -192,6 +192,9 @@ export const getFormattedPatientById = async (
 export const fetchPatientPhotoFromUrl = async (
   photoUrl: string,
 ): Promise<string> => {
+  if (!photoUrl.startsWith('/')) {
+    throw new Error('Photo URL must be a relative path');
+  }
   const blob = await get<Blob>(photoUrl, {
     responseType: 'blob',
   });

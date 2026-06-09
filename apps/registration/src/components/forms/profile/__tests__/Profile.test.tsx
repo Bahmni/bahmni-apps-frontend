@@ -422,29 +422,37 @@ describe('Profile', () => {
       expect(checkbox.checked).toBe(true);
     });
 
-    it('should set dobEstimated only when years field is changed, not months or days', () => {
-      const { unmount } = render(
-        <Profile ref={ref} initialDobEstimated={false} />,
-      );
+    it('should have dobEstimated true when initialized with age years', async () => {
+      await act(async () => {
+        render(
+          <Profile
+            ref={ref}
+            initialData={createBasicInfoData({ ageYears: '30' })}
+            initialDobEstimated
+          />,
+        );
+      });
 
-      // Verify initial state
+      const data = ref.current?.getData();
+      expect(data?.dobEstimated).toBe(true);
+    });
+
+    it('should not set dobEstimated when only months or days are changed', () => {
+      render(<Profile ref={ref} initialDobEstimated={false} />);
+
       expect(ref.current?.getData()?.dobEstimated).toBe(false);
 
-      // Type in months — should NOT set estimated
       const monthsInput = screen.getByLabelText(
         /Months\(Age\)/,
       ) as HTMLInputElement;
       fireEvent.change(monthsInput, { target: { value: '6' } });
       expect(ref.current?.getData()?.dobEstimated).toBe(false);
 
-      // Type in days — should NOT set estimated
       const daysInput = screen.getByLabelText(
         /Days\(Age\)/,
       ) as HTMLInputElement;
       fireEvent.change(daysInput, { target: { value: '15' } });
       expect(ref.current?.getData()?.dobEstimated).toBe(false);
-
-      unmount();
     });
   });
 

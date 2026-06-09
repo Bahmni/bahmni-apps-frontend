@@ -1,8 +1,6 @@
 import { fetchPatientPhotoFromUrl } from '@bahmni/services';
-import { useHasPrivilege } from '@bahmni/widgets';
+import { GET_PATIENT_PHOTO_PRIVILEGE, useHasPrivilege } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-
-const GET_PATIENT_PHOTO_PRIVILEGE = 'Get Patient Photo';
 
 interface UsePatientPhotoProps {
   photoUrl: string | undefined;

@@ -8,11 +8,10 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePatientUUID } from '../hooks/usePatientUUID';
+import { GET_PATIENT_PHOTO_PRIVILEGE } from '../userPrivileges/patientPhotoPrivileges';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './__styles__/PatientDetails.module.scss';
 import { createPatientDetailsViewModel } from './utils';
-
-const GET_PATIENT_PHOTO_PRIVILEGE = 'Get Patient Photo';
 
 const PatientDetails: React.FC = () => {
   const { t } = useTranslation();

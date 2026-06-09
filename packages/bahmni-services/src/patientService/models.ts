@@ -12,7 +12,7 @@ export interface FormattedPatientData {
   formattedAddress: string | null;
   formattedContact: string | null;
   identifiers: Map<string, string>;
-  photoUrl: string | undefined;
+  photoUrl?: string;
 }
 
 export interface PatientSearchResult {
