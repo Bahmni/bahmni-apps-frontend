@@ -180,6 +180,7 @@ export {
   type MedicationOrdersMetadataResponse,
   type Frequency as MedicationFrequency,
   type OrderAttribute,
+  MEDICATIONS_INPUT_CONTROL_KEY,
 } from './medicationRequestService';
 export { getMedicationByUuid } from './medicationService';
 export {
@@ -255,6 +256,7 @@ export {
 
 export {
   getActiveVisit,
+  getEncounterByUuid,
   getVisits,
   shouldEnableEncounterFilter,
   getObservationsBundleByEncounterUuid,

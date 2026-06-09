@@ -46,8 +46,8 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   const {
     matchReason,
     editActiveEncounter,
-    isLoading,
     activeEncounter,
+    isLoading,
     refetch,
   } = useEncounterSession({
     practitioner,
@@ -113,6 +113,12 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
         matchReason.length > 0 ? matchReason.join(',') : undefined
       }
       data-can-edit-encounter={editActiveEncounter ? 'true' : undefined}
+      data-active-encounter-uuid={
+        editActiveEncounter && activeEncounter?.id
+          ? activeEncounter.id
+          : undefined
+      }
+      data-active-practitioner-uuid={practitioner?.uuid ?? undefined}
     >
       <PatientDetails />
       <div className={styles.actionButtons}>

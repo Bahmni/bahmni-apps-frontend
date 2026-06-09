@@ -3,6 +3,7 @@ import {
   getPatientVisits,
   getVisits,
   getActiveVisit,
+  getEncounterByUuid,
   getObservationsBundleByEncounterUuid,
 } from '../../encounterService';
 import {
@@ -92,6 +93,47 @@ describe('encounterService', () => {
       const activeVisit = await getActiveVisit(patientUUID);
 
       expect(activeVisit).toBeNull();
+    });
+  });
+
+  describe('getEncounterByUuid', () => {
+    const encounterUUID = 'abc-123-def-456';
+    const mockEncounter = {
+      resourceType: 'Encounter',
+      id: encounterUUID,
+      status: 'finished',
+    };
+
+    it('should fetch encounter from the correct FHIR endpoint', async () => {
+      mockedGet.mockResolvedValueOnce(mockEncounter);
+
+      await getEncounterByUuid(encounterUUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        `/openmrs/ws/fhir2/R4/Encounter/${encounterUUID}`,
+        undefined,
+      );
+    });
+
+    it('should return encounter data', async () => {
+      mockedGet.mockResolvedValueOnce(mockEncounter);
+
+      const result = await getEncounterByUuid(encounterUUID);
+
+      expect(result).toEqual(mockEncounter);
+    });
+
+    it('should pass options to the API call', async () => {
+      const controller = new AbortController();
+      const options = { signal: controller.signal };
+      mockedGet.mockResolvedValueOnce(mockEncounter);
+
+      await getEncounterByUuid(encounterUUID, options);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        `/openmrs/ws/fhir2/R4/Encounter/${encounterUUID}`,
+        options,
+      );
     });
   });
 

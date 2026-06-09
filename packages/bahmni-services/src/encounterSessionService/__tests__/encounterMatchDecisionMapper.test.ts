@@ -157,8 +157,8 @@ describe('resolveEncounterMatchDecision', () => {
     });
   });
 
-  describe('MULTIPLE_ENCOUNTERS_FOUND', () => {
-    it('returns MULTIPLE_ENCOUNTERS_FOUND when more than one in-session own encounter found', async () => {
+  describe('Multiple encounters by same practitioner', () => {
+    it('returns MATCHED with most recent encounter when multiple in-session encounters at same location', async () => {
       const enc1 = createEncounter('enc-1', LOCATION_UUID);
       const enc2 = createEncounter('enc-2', LOCATION_UUID);
       mockGetActiveVisit.mockResolvedValue(createActiveVisit());
@@ -172,9 +172,29 @@ describe('resolveEncounterMatchDecision', () => {
       );
 
       expect(result).toEqual({
+        matched: true,
+        encounter: enc1,
+        reasons: ['MATCHED'],
+      });
+    });
+
+    it('returns LOCATION_MISMATCH when multiple in-session encounters at different location', async () => {
+      const enc1 = createEncounter('enc-1', 'other-location');
+      const enc2 = createEncounter('enc-2', 'other-location');
+      mockGetActiveVisit.mockResolvedValue(createActiveVisit());
+      mockSearches([enc1, enc2], [enc1, enc2]);
+
+      const result = await resolveEncounterMatchDecision(
+        PATIENT_UUID,
+        PRACTITIONER_UUID,
+        LOCATION_UUID,
+        ENCOUNTER_TYPE_UUID,
+      );
+
+      expect(result).toEqual({
         matched: false,
         encounter: enc1,
-        reasons: ['MULTIPLE_ENCOUNTERS_FOUND'],
+        reasons: ['LOCATION_MISMATCH'],
       });
     });
   });
