@@ -34,14 +34,16 @@
 .dosageControls {
   display: flex !important;
   flex-direction: row !important;
-  align-items: flex-end !important;
+  align-items: baseline !important;
+  flex-wrap: nowrap;
   margin-bottom: $spacing-04;
   margin-left: 0;
 }
 
 .dosageInput {
-  width: 50%;
-  margin-right: 1px;
+  flex: 0 0 calc(50% - $spacing-01) !important;
+  min-width: 0;
+  margin-right: $spacing-01;
 
   :global(.cds--number__control-btn.up-icon) {
     order: unset !important;
@@ -49,20 +51,23 @@
 }
 
 .dosageUnit {
-  width: 50%;
+  flex: 0 0 50%;
+  min-width: 0;
 }
 
 .durationControls {
   display: flex !important;
   flex-direction: row !important;
-  align-items: flex-end !important;
+  align-items: baseline !important;
+  flex-wrap: nowrap;
   margin-bottom: $spacing-04;
   margin-left: 0;
 }
 
 .durationInput {
-  width: 50%;
-  margin-right: 1px;
+  flex: 0 0 calc(50% - $spacing-01) !important;
+  min-width: 0;
+  margin-right: $spacing-01;
 
   :global(.cds--number__control-btn.up-icon) {
     order: unset !important;
@@ -70,7 +75,8 @@
 }
 
 .durationUnit {
-  width: 50%;
+  flex: 0 0 50%;
+  min-width: 0;
 }
 
 .footerRow {
