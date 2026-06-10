@@ -4,6 +4,8 @@ export {
   getVisits,
   getEncounterByUuid,
   getObservationsBundleByEncounterUuid,
+  createFhirEncounter,
+  updateFhirEncounter,
 } from './encounterService';
 
 export { shouldEnableEncounterFilter } from './encounterFilterUtils';

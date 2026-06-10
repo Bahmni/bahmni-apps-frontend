@@ -49,6 +49,11 @@ export const AUDIT_LOG_EVENT_DETAILS = {
     eventType: 'STOP_MEDICATION',
     message: 'STOP_MEDICATION_MESSAGE',
   },
+  CREATE_ENCOUNTER: {
+    eventType: 'CREATE_ENCOUNTER',
+    message: 'CREATE_ENCOUNTER_MESSAGE',
+    module: MODULE_LABELS.REGISTRATION,
+  },
 };
 
 export const AUDIT_LOG_URL = OPENMRS_REST_V1 + '/auditlog';
