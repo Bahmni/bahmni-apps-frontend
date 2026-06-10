@@ -196,12 +196,17 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
 
           {isNoteVisible && (
             <Column sm={4} md={8} lg={16} className={styles.column}>
-              <label
-                htmlFor="stop-medication-note"
-                className={styles.fieldLabel}
-              >
-                {t('STOP_MEDICATION_NOTE_LABEL')}
-              </label>
+              <div className={styles.noteLabelRow}>
+                <label
+                  htmlFor="stop-medication-note"
+                  className={styles.fieldLabel}
+                >
+                  {t('STOP_MEDICATION_NOTE_LABEL')}
+                </label>
+                <span className={styles.noteCounter}>
+                  {note.length}/100
+                </span>
+              </div>
               <TextArea
                 id="stop-medication-note"
                 data-testid="stop-medication-note"
@@ -209,10 +214,10 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                 placeholder={t('STOP_MEDICATION_NOTE_PLACEHOLDER')}
                 value={note}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                  setNote(e.target.value);
+                  if (e.target.value.length <= 100) {
+                    setNote(e.target.value);
+                  }
                 }}
-                maxCount={100}
-                enableCounter
                 rows={3}
               />
             </Column>
