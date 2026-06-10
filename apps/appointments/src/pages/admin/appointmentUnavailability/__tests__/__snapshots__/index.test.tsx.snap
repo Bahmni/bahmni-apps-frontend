@@ -26,7 +26,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
           >
             <a
               class="cds--link"
-              href="/bahmni/home/index.html"
+              href="/bahmni-v2/home"
             >
               Home
             </a>
@@ -159,7 +159,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
           >
             <a
               class="cds--link"
-              href="/bahmni/home/index.html"
+              href="/bahmni-v2/home"
             >
               Home
             </a>
