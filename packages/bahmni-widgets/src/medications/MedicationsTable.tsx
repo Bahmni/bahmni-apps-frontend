@@ -15,6 +15,7 @@ import {
   useTranslation,
   groupByDate,
   formatDateTime,
+  hasPrivilege,
   FormattedMedicationRequest,
   MedicationRequest,
   shouldEnableEncounterFilter,
@@ -28,6 +29,7 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
+import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import Actions from './components/Actions';
 import { MEDICATION_REQUEST_PRIORITY } from './constants';
 import { MedicationAction } from './models';
@@ -94,13 +96,19 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   config,
   episodeOfCareUuids,
   encounterUuids,
+  canEditOrCreate: canEditEncounter = false,
+  activeEncounterUuid = null,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
+  const { userPrivileges } = useUserPrivilege();
   const code = (config?.code as string[]) || [];
   const actions = (config?.actions as MedicationAction[]) ?? [];
   const hasActions = actions.length > 0;
+  const editAction = actions.find((a) => a.type === 'edit');
+  const canEdit =
+    !!editAction && hasPrivilege(userPrivileges, editAction.requiredPrivilege);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -157,10 +165,14 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         return formatDateTime(medication.orderDate, t).formattedResult;
       });
 
-      // Sort by date descending (most recent first)
-      const sortedGroups = grouped.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      );
+      // Sort by date descending (most recent first) using the raw orderDate
+      // from the first item in each group, since group.date is a formatted
+      // display string (e.g. "Today") that cannot be parsed by new Date().
+      const sortedGroups = grouped.sort((a, b) => {
+        const dateA = new Date(a.items[0]?.orderDate ?? 0).getTime();
+        const dateB = new Date(b.items[0]?.orderDate ?? 0).getTime();
+        return dateB - dateA;
+      });
 
       // Sort medications within each group by priority
       sortedGroups.forEach((group) => {
@@ -229,6 +241,26 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     );
     return [...activeMedications, ...scheduledMedications];
   }, [allMedications]);
+
+  const editableMedications = useMemo(() => {
+    if (!canEdit || !canEditEncounter || !activeEncounterUuid) return [];
+    return activeAndScheduledMedications.filter(
+      (m) =>
+        (m.status === 'active' || m.status === 'on-hold') &&
+        m.fhirResource?.encounter?.reference?.endsWith(activeEncounterUuid),
+    );
+  }, [
+    activeAndScheduledMedications,
+    canEdit,
+    canEditEncounter,
+    activeEncounterUuid,
+  ]);
+
+  const isEditable = useCallback(
+    (medication: FormattedMedicationRequest) =>
+      editableMedications.some((m) => m.id === medication.id),
+    [editableMedications],
+  );
 
   // Process medications for date grouping (only for All medications tab)
   const processedAllMedications = useMemo(() => {
@@ -301,7 +333,13 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           />
         );
       case 'actions':
-        return <Actions actions={actions} medication={row.fhirResource} />;
+        return (
+          <Actions
+            actions={actions}
+            medication={row.fhirResource}
+            disabledActionTypes={isEditable(row) ? [] : ['edit']}
+          />
+        );
       default:
         return null;
     }
@@ -318,7 +356,11 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   }
 
   return (
-    <div id="medications-table" data-testid="medications-table">
+    <div
+      id="medications-table"
+      data-testid="medications-table"
+      className={styles.medicationsTableWrapper}
+    >
       <Tabs
         selectedIndex={selectedIndex}
         onChange={(state) => handleTabChange(state.selectedIndex)}

@@ -82,7 +82,6 @@
   "CONDITION_TABLE_NOT_AVAILABLE": "No disponible",
   "CONDITION_TABLE_RECORDED_BY": "Grabado Por",
   "ACTIONS": "Acciones",
-  "EDIT_ALL_ALLERGIES": "Editar Todas las Alergias",
   "EDIT_ALLERGY": "Editar Alergia",
   "EDIT_ALLERGIES_TITLE": "Editar Alergias",
   "EDIT_ALLERGIES_FORM_TITLE": "Editar Alergias",
@@ -134,7 +133,7 @@
   "DIAGNOSIS_LIST_RECORDED_BY": "Grabado Por",
   "DIAGNOSIS_RECORDED_DATE": "Fecha de grabación",
   "DIAGNOSIS_TABLE_NOT_AVAILABLE": "No disponible",
-  "DOCUMENTS_ACTION": "Acción",
+  "DOCUMENTS_ATTACHMENTS": "Adjuntos",
   "DOCUMENTS_DOCUMENT_IDENTIFIER": "Identificador de Documento",
   "DOCUMENTS_ERROR_LOADING_ATTACHMENT": "No se puede cargar el adjunto. La URL del documento puede estar dañada o no encontrada.",
   "DOCUMENTS_NOT_AVAILABLE": "No disponible",
@@ -311,6 +310,9 @@
   "MEDICATIONS_ALREADY_ADDED": "Ya agregado",
   "MEDICATIONS_DISPLAY_CONTROL_HEADING": "Medicamentos",
   "MEDICATIONS_DOSAGE": "Dosificación",
+  "MEDICATIONS_EDIT_ACTION": "Editar",
+  "MEDICATIONS_EDIT_FORM_TITLE": "Editar medicamentos",
+  "MEDICATIONS_ACTIONS_MENU_LABEL": "Acciones de medicamento",
   "MEDICATIONS_ERROR_FETCHING": "Error al obtener medicamentos",
   "MEDICATIONS_INPUT_CONTROL_TITLE": "Prescribir medicamento",
   "MEDICATIONS_INSTRUCTIONS": "Instrucciones",
@@ -497,5 +499,7 @@
   "VITAL_SIGNS_SYSTOLIC_BLOOD_PRESSURE": "Presión Arterial Sistólica",
   "VITAL_SIGNS_TEMPERATURE": "Temperatura",
   "YEARS_one": " año",
-  "YEARS_other": " años"
+  "YEARS_other": " años",
+  "PRINT_MODAL_PREPARING_DOCUMENT": "Preparando documento…",
+  "PRINT_MORE_OPTIONS": "Más opciones de impresión"
 }

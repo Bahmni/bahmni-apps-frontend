@@ -563,6 +563,87 @@ describe('observationUtils', () => {
       expect(formatObservationValue(observation)).toBe('');
     });
 
+    it('should format boolean true value as Yes', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-true',
+        display: 'Is Smoker',
+        observationValue: {
+          value: true,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('Yes');
+    });
+
+    it('should format boolean false value as No', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-false',
+        display: 'Is Smoker',
+        observationValue: {
+          value: false,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('No');
+    });
+
+    it('should format boolean true value using t function', () => {
+      const mockT = (key: string) => key;
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-true-t',
+        display: 'Is Smoker',
+        observationValue: {
+          value: true,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation, mockT)).toBe('YES');
+    });
+
+    it('should format boolean false value using t function', () => {
+      const mockT = (key: string) => key;
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-false-t',
+        display: 'Is Smoker',
+        observationValue: {
+          value: false,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation, mockT)).toBe('NO');
+    });
+
+    it('should format concatenated boolean string from multi-select grouping', () => {
+      // After groupMultiSelectObservations, true + ', ' + false becomes "true, false"
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-multi',
+        display: 'Low birth-weight baby',
+        observationValue: {
+          value: 'true, false' as unknown as boolean,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('Yes, No');
+    });
+
+    it('should format concatenated false-only boolean string from multi-select grouping', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-multi-false',
+        display: 'Low birth-weight baby',
+        observationValue: {
+          value: 'false, false' as unknown as boolean,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('No, No');
+    });
+
     it('should format dateTime value using formatDateTime', () => {
       const mockFormatDateTime = services.formatDateTime as jest.MockedFunction<
         typeof services.formatDateTime

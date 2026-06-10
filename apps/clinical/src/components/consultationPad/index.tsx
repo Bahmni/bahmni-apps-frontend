@@ -6,6 +6,7 @@ import {
   dispatchConsultationSaved,
   dispatchCDSSResults,
   getConfig,
+  getEncounterByUuid,
   invokeCDSSRule,
   type CDSSCheckEventDetail,
   type CDSSServerConfig,
@@ -14,7 +15,12 @@ import {
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import type { Bundle, BundleEntry } from 'fhir/r4';
+import type {
+  Bundle,
+  BundleEntry,
+  Encounter,
+  MedicationRequest,
+} from 'fhir/r4';
 import React, {
   useCallback,
   useEffect,
@@ -25,6 +31,7 @@ import React, {
 } from 'react';
 import { CDSS_SERVER_CONFIG_URL } from '../../constants/app';
 import { ERROR_TITLES } from '../../constants/errors';
+import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
@@ -34,6 +41,7 @@ import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
+import { getMedicationRequestStore } from '../forms/medicationRequest/store';
 import type { EncounterContext } from '../forms/models';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
 import cdssConfigSchema from './cdssConfigSchema.json';
@@ -151,10 +159,45 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   }, [resolvedEncounterType]);
 
   const { practitioner } = useActivePractitioner();
-  const { activeEncounter, matchReason } = useEncounterSession({
-    practitioner,
-    encounterTypeUUID: selectedEncounterType?.uuid,
-  });
+  const { activeEncounter: sessionEncounter, matchReason } =
+    useEncounterSession({
+      practitioner,
+      encounterTypeUUID: selectedEncounterType?.uuid,
+    });
+
+  const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
+    | string
+    | undefined;
+  const [editEncounter, setEditEncounter] = useState<Encounter | null>(null);
+  const [editEncounterLoading, setEditEncounterLoading] = useState(false);
+  useEffect(() => {
+    if (!editEncounterUuid) return;
+    const abortController = new AbortController();
+    setEditEncounterLoading(true);
+    getEncounterByUuid(editEncounterUuid, { signal: abortController.signal })
+      .then((enc) => {
+        if (!abortController.signal.aborted) setEditEncounter(enc);
+      })
+      .catch(() => {
+        if (!abortController.signal.aborted) {
+          setEditEncounter(null);
+          addNotification({
+            title: t('ERROR_DEFAULT_TITLE'),
+            message: t('CONSULTATION_ERROR_GENERIC'),
+            type: 'error',
+            timeout: 5000,
+          });
+        }
+      })
+      .finally(() => {
+        if (!abortController.signal.aborted) setEditEncounterLoading(false);
+      });
+    return () => {
+      abortController.abort();
+    };
+  }, [editEncounterUuid, addNotification, t]);
+
+  const activeEncounter = editEncounterUuid ? editEncounter : sessionEncounter;
 
   // Only resume the existing encounter on an exact MATCHED case.
   // SESSION_EXPIRED, LOCATION_MISMATCH, PROVIDER_MISMATCH all silently create a new encounter.
@@ -176,6 +219,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     getFormData,
     removeForm,
   } = useObservationFormsStore();
+
+  // Seed medication store with FHIR resources for edit mode
+  useEffect(() => {
+    const editMedications = encounterSessionStartContext.editMedications as
+      | MedicationRequest[]
+      | undefined;
+    const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
+    medStore
+      .getState()
+      .setPendingFhirEdits(editMedications?.length ? editMedications : []);
+  }, [encounterSessionStartContext.editMedications]);
 
   useEffect(() => {
     return () => activeEntries.forEach((entry) => entry.reset());
@@ -425,14 +479,24 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   })();
 
-  const enablePrimaryButton = useMemo(
-    () =>
-      hasError ||
-      !isEncounterDetailsFormReady ||
-      isSubmitting ||
-      !hasConsultationData,
-    [hasError, isEncounterDetailsFormReady, isSubmitting, hasConsultationData],
+  const isEditMode = !!editOnlyKey;
+  const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
+  const editChangesExist = useSyncExternalStore(
+    (cb) => medStore.subscribe(cb),
+    () => {
+      if (!isEditMode || editOnlyKey !== MEDICATIONS_INPUT_CONTROL_KEY)
+        return true;
+      return medStore.getState().hasEditChanges();
+    },
   );
+
+  const isPrimaryButtonDisabled =
+    hasError ||
+    !isEncounterDetailsFormReady ||
+    isSubmitting ||
+    !hasConsultationData ||
+    !editChangesExist ||
+    editEncounterLoading;
   return (
     <>
       <ActionArea
@@ -446,7 +510,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         }
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
         onPrimaryButtonClick={handleSubmit}
-        isPrimaryButtonDisabled={enablePrimaryButton}
+        isPrimaryButtonDisabled={isPrimaryButtonDisabled}
         hidden={!!viewingForm}
         secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
         onSecondaryButtonClick={handleCancel}

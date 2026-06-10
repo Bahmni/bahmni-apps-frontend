@@ -231,16 +231,14 @@ const renderObservation = (
         )}
       </div>
       {observation.comment && (
-        <div
+        <p
           className={styles.commentSection}
           data-testid={`${prefix}observation-comment-${observation.display}-${index}`}
         >
-          <span className={styles.commentText}>
-            {observation.comment}
-            {observation.encounter?.provider &&
-              ` - by ${observation.encounter.provider}`}
-          </span>
-        </div>
+          {observation.comment}
+          {observation.encounter?.provider &&
+            ` - by ${observation.encounter.provider}`}
+        </p>
       )}
     </div>
   );

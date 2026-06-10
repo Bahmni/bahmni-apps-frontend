@@ -13,6 +13,10 @@ export interface WidgetProps {
   visitUuids?: string[];
   onEditClick?: () => void;
   disableActions?: boolean;
+  /** Whether the encounter session allows editing/creating resources. */
+  canEditOrCreate?: boolean;
+  /** UUID of the active encounter (from the encounter session store). */
+  activeEncounterUuid?: string | null;
 }
 export interface WidgetConfig {
   type: string;
