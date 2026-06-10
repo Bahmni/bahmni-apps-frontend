@@ -70,7 +70,7 @@ function sortByMostRecent(encounters: Encounter[]): Encounter[] {
 }
 
 /**
- * Returns the first registration encounter whose session is still valid
+ * Returns the recent registration encounter whose session is still valid
  * (period.start + sessionDuration > now), or null if none exists.
  * Uses _lastUpdated as a loose server-side pre-filter to reduce result size,
  * then validates period.start client-side for correctness.
@@ -99,10 +99,6 @@ export async function findValidRegistrationEncounterInSession(
 
 /**
  * Links a registration encounter to the patient's newly created active visit.
- * If an unlinked in-session encounter exists, links it to the visit.
- * If the session has expired (or no encounter was found), creates a fresh encounter
- * linked directly to the visit.
- * Silently no-ops when there is no active visit or all in-session encounters are already linked.
  * Throws on unexpected API failures — callers decide how to handle errors.
  */
 export async function linkRegistrationEncounterToVisit(
@@ -128,11 +124,11 @@ export async function linkRegistrationEncounterToVisit(
     candidates.filter((e) => isEncounterInSession(e, sessionDurationMs)),
   );
 
-  const unlinkedEncounter = validEncounters.find((e) => !e.partOf);
+  const encounterToLink = validEncounters[0];
 
-  if (unlinkedEncounter?.id) {
-    await updateFhirEncounter(unlinkedEncounter.id, {
-      ...unlinkedEncounter,
+  if (encounterToLink?.id) {
+    await updateFhirEncounter(encounterToLink.id, {
+      ...encounterToLink,
       period: { start: new Date(visitResult.startDatetime).toISOString() },
       partOf: { reference: `Encounter/${visitUuid}` },
     });

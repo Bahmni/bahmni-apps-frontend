@@ -323,16 +323,23 @@ describe('linkRegistrationEncounterToVisit', () => {
     expect(mockUpdateFhirEncounter).not.toHaveBeenCalled();
   });
 
-  it('should not link when all in-session encounters are already linked to a visit', async () => {
+  it('should relink the most recent valid encounter to the active visit even when already linked', async () => {
     const linkedEncounter = makeEncounter({
       id: 'enc-uuid-002',
-      partOf: { reference: 'Encounter/other-visit' },
+      partOf: { reference: 'Encounter/old-visit' },
     });
+
     mockSearchEncounters.mockResolvedValue([linkedEncounter]);
 
     await linkRegistrationEncounterToVisit(PATIENT_UUID, ENCOUNTER_TYPE_UUID);
 
-    expect(mockUpdateFhirEncounter).not.toHaveBeenCalled();
+    expect(mockUpdateFhirEncounter).toHaveBeenCalledWith(
+      'enc-uuid-002',
+      expect.objectContaining({
+        partOf: { reference: `Encounter/${VISIT_UUID}` },
+      }),
+    );
+
     expect(mockCreateFhirEncounter).not.toHaveBeenCalled();
   });
 
