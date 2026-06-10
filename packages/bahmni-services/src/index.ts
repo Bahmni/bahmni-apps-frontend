@@ -246,7 +246,6 @@ export {
   type EncounterMatchDecision,
   type MatchReasonCode,
   MATCH_REASON_MESSAGES,
-  CONSULTATION_ENCOUNTER_TYPE_UUID,
   useEncounterSessionStore,
   setEncounterSessionDecision,
   setEncounterSessionLoading,

@@ -1,6 +1,8 @@
 import { Coding } from 'fhir/r4';
 import { AllergenType } from '../models/allergy';
 
+export const ALLERGY_INTOLERANCE_RESOURCE_TYPE = 'AllergyIntolerance';
+
 export const ALLERGY_SEVERITY_CONCEPTS: Coding[] = [
   {
     code: 'mild',
