@@ -10,5 +10,5 @@ export interface UserPrivilege {
 export interface SessionResponse {
   user: {
     privileges: UserPrivilege[];
-  };
+  } | null;
 }
