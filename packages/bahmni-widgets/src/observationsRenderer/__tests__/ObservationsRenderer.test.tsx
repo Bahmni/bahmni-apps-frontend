@@ -930,10 +930,7 @@ describe('ObservationsRenderer', () => {
       const sectionMap = { '30': 'MySection' };
 
       render(
-        <ObservationsRenderer
-          observations={[obs]}
-          sectionMap={sectionMap}
-        />,
+        <ObservationsRenderer observations={[obs]} sectionMap={sectionMap} />,
       );
 
       expect(screen.getByTestId('section-label-MySection')).toHaveTextContent(

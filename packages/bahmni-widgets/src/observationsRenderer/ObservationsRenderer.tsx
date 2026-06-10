@@ -353,8 +353,12 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
     const sectionName = sectionMap?.[controlId] ?? null;
 
     if (sectionName) {
-      if (!currentSectionGroup || currentSectionGroup.name !== sectionName) {
-        currentSectionGroup = { kind: 'section', name: sectionName, members: [] };
+      if (currentSectionGroup?.name !== sectionName) {
+        currentSectionGroup = {
+          kind: 'section',
+          name: sectionName,
+          members: [],
+        };
         renderGroups.push(currentSectionGroup);
       }
       currentSectionGroup.members.push({ obs, index });
