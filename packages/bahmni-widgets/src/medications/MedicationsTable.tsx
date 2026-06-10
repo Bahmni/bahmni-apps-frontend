@@ -278,13 +278,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         return (
           <>
             <div className={styles.medicationName}>
-              <span
-                className={
-                  row.status === 'stopped' ? styles.strikethrough : undefined
-                }
-              >
-                {row.name}
-              </span>
+              <span>{row.name}</span>
               {row.note && (
                 <TooltipIcon
                   iconName="fa-file-lines"
@@ -305,9 +299,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           </>
         );
       case 'dosage': {
-        const dosageClassName = classNames(styles.columnDataBold, {
-          [styles.strikethrough]: row.status === 'stopped',
-        });
+        const dosageClassName = styles.columnDataBold;
         if (typeof row.dosage === 'string') {
           return <p className={dosageClassName}>{row.dosage}</p>;
         }
@@ -331,11 +323,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         );
       }
       case 'instruction':
-        return row.status === 'stopped' ? (
-          <span className={styles.strikethrough}>{row.instruction}</span>
-        ) : (
-          row.instruction
-        );
+        return row.instruction;
       case 'startDate':
         return formatDateTime(row.startDate, t).formattedResult;
       case 'orderedBy':

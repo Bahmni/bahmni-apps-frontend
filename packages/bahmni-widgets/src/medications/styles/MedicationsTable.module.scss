@@ -69,10 +69,6 @@
   color: $cool-gray-20;
 }
 
-.strikethrough {
-  text-decoration: line-through;
-}
-
 .stopReasonText {
   @include type-style("helper-text-01");
   color: $text-secondary;
