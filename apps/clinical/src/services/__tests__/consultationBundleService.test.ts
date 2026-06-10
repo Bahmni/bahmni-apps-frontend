@@ -947,6 +947,176 @@ describe('consultationBundleService', () => {
       });
     });
 
+    describe('Same-session reaction removal (DELETE+POST) paths', () => {
+      const mockRawFhirWithTwoReactions: AllergyIntolerance = {
+        resourceType: 'AllergyIntolerance',
+        id: 'allergy-same-session',
+        clinicalStatus: {
+          coding: [
+            {
+              system:
+                'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical',
+              code: 'active',
+            },
+          ],
+        },
+        code: {
+          coding: [
+            {
+              code: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+              display: 'Penicillin',
+            },
+          ],
+          text: 'Penicillin',
+        },
+        patient: { reference: 'Patient/patient-123' },
+        encounter: { reference: mockEncounterReference },
+        reaction: [
+          {
+            manifestation: [
+              {
+                coding: [
+                  {
+                    code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                    display: 'Rash',
+                  },
+                ],
+                text: 'Rash',
+              },
+            ],
+            severity: 'moderate' as const,
+          },
+          {
+            manifestation: [
+              {
+                coding: [
+                  {
+                    code: '121629AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                    display: 'Anaemia',
+                  },
+                ],
+                text: 'Anaemia',
+              },
+            ],
+            severity: 'moderate' as const,
+          },
+        ],
+      };
+
+      const mockSameSessionAllergyWithReactionRemoved: AllergyInputEntry = {
+        id: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        display: 'Penicillin',
+        type: 'medication',
+        selectedSeverity: { code: 'mild', display: 'Mild' },
+        selectedReactions: [
+          { code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', display: 'Rash' },
+        ],
+        errors: {},
+        hasBeenValidated: true,
+        resourceId: 'allergy-same-session',
+        isModified: true,
+        rawFhirResource: mockRawFhirWithTwoReactions,
+      };
+
+      it('produces DELETE+POST when a reaction is removed in same session', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockSameSessionAllergyWithReactionRemoved],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+        expect((result[0].request as { method: string }).method).toBe('DELETE');
+        expect((result[1].request as { method: string }).method).toBe('POST');
+      });
+
+      it('DELETE entry targets the existing allergy UUID', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockSameSessionAllergyWithReactionRemoved],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect((result[0].request as { url: string }).url).toBe(
+          'AllergyIntolerance/allergy-same-session',
+        );
+        expect(result[0].fullUrl).toBe(
+          'AllergyIntolerance/allergy-same-session',
+        );
+      });
+
+      it('POST entry has only the remaining reaction, not the removed one', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockSameSessionAllergyWithReactionRemoved],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const postResource = result[1].resource as AllergyIntolerance;
+        const manifestationCodes =
+          postResource.reaction?.[0].manifestation.flatMap(
+            (m) => m.coding?.map((c) => c.code) ?? [],
+          );
+        expect(manifestationCodes).toContain(
+          '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        );
+        expect(manifestationCodes).not.toContain(
+          '121629AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        );
+      });
+
+      it('POST entry carries the updated severity', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockSameSessionAllergyWithReactionRemoved],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(
+          (result[1].resource as AllergyIntolerance).reaction?.[0].severity,
+        ).toBe('mild');
+      });
+
+      it('POST entry has a new urn:uuid URL', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockSameSessionAllergyWithReactionRemoved],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result[1].fullUrl).toMatch(/^urn:uuid:/);
+      });
+
+      it('uses PUT when reactions are only added or unchanged in same session', () => {
+        const allergyWithReactionAdded: AllergyInputEntry = {
+          ...mockSameSessionAllergyWithReactionRemoved,
+          selectedReactions: [
+            { code: '121677AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', display: 'Rash' },
+            {
+              code: '121629AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+              display: 'Anaemia',
+            },
+            { code: '143264AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', display: 'Cough' },
+          ],
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithReactionAdded],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect((result[0].request as { method: string }).method).toBe('PUT');
+      });
+    });
+
     describe('createEncounterBundleEntry', () => {
       const mockEncounterResource = {
         resourceType: 'Encounter',

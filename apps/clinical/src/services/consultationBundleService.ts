@@ -6,6 +6,7 @@ import {
   Form2Observation,
 } from '@bahmni/services';
 import { BundleEntry, Reference, Encounter, CodeableConcept } from 'fhir/r4';
+import { ALLERGY_INTOLERANCE_RESOURCE_TYPE } from '../constants/allergy';
 import { CONSULTATION_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
@@ -218,12 +219,12 @@ export function createAllergiesBundleEntries({
             createEncounterReferenceFromString(encounterReference),
             allergy.note,
           );
-          const putURL = `AllergyIntolerance/${allergy.resourceId}`;
+          const putURL = `${ALLERGY_INTOLERANCE_RESOURCE_TYPE}/${allergy.resourceId}`;
           allergyEntries.push(
             createBundleEntry(putURL, putResource, 'PUT', putURL),
           );
         } else {
-          const deleteURL = `AllergyIntolerance/${allergy.resourceId}`;
+          const deleteURL = `${ALLERGY_INTOLERANCE_RESOURCE_TYPE}/${allergy.resourceId}`;
           allergyEntries.push(
             createBundleEntry(
               deleteURL,
@@ -252,7 +253,7 @@ export function createAllergiesBundleEntries({
           );
         }
       } else {
-        const deleteURL = `AllergyIntolerance/${allergy.resourceId}`;
+        const deleteURL = `${ALLERGY_INTOLERANCE_RESOURCE_TYPE}/${allergy.resourceId}`;
         allergyEntries.push(
           createBundleEntry(
             deleteURL,
