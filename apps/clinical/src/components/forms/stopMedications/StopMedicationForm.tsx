@@ -212,6 +212,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                   setNote(e.target.value);
                 }}
                 maxCount={100}
+                enableCounter
                 rows={3}
               />
             </Column>

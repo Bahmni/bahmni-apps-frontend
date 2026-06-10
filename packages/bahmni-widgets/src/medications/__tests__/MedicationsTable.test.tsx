@@ -679,7 +679,9 @@ describe('MedicationsTable', () => {
       const allTab = screen.getByRole('tab', { name: 'MEDICATIONS_TAB_ALL' });
       await userEvent.click(allTab);
 
-      expect(screen.getByText('Adverse reaction')).toBeInTheDocument();
+      expect(
+        screen.getByText((content) => content.includes('Adverse reaction')),
+      ).toBeInTheDocument();
     });
 
     it('disables stop action for completed medications', () => {

@@ -131,6 +131,7 @@ export function formatMedicationRequest(
     note,
     doseForm,
     statusReason,
+    dateStopped,
     fhirResource,
   } = medication;
 
@@ -178,6 +179,7 @@ export function formatMedicationRequest(
     note,
     doseForm,
     stopReason: statusReason,
+    dateStopped,
     fhirResource,
   };
 }

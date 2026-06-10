@@ -47,6 +47,7 @@ export interface MedicationRequest {
   readonly note?: string;
   readonly doseForm?: string;
   readonly statusReason?: string;
+  readonly dateStopped?: string;
   readonly fhirResource: FhirMedicationRequest;
 }
 

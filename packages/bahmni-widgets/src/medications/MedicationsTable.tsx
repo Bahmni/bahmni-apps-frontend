@@ -350,8 +350,20 @@ const MedicationsTable: React.FC<WidgetProps> = ({
               label={t(getMedicationStatusKey(row.status))}
               dotClassName={getMedicationStatusClassName(row.status)}
             />
-            {row.status === 'stopped' && row.stopReason && (
-              <span className={styles.stopReasonText}>{row.stopReason}</span>
+            {(row.status === 'stopped' || row.status === 'cancelled') && (
+              <div className={styles.stopDetails}>
+                {row.dateStopped && (
+                  <span className={styles.stopReasonText}>
+                    {t('MEDICATIONS_STOPPED_ON')}{' '}
+                    {formatDateTime(row.dateStopped, t).formattedResult}
+                  </span>
+                )}
+                {row.stopReason && (
+                  <span className={styles.stopReasonText}>
+                    {t('MEDICATIONS_STOPPED_DUE_TO')} {row.stopReason}
+                  </span>
+                )}
+              </div>
             )}
           </>
         );

@@ -360,8 +360,6 @@
   "MEDICATION_STAT": "STAT",
   "MEDICATION_TOTAL_QUANTITY": "Total quantity",
   "NOTE_LABEL": "Note",
-  "MEDICATION_ADD_NOTE": "Add Note",
-  "MEDICATION_ADD_NOTE_PLACEHOLDER": "Add notes for the Medication",
   "STOP_ACTION_LABEL": "Stop",
   "STOP_MEDICATION_FORM_TITLE": "Stop Medication",
   "STOP_MEDICATION_NAME_LABEL": "Medication name",
@@ -512,5 +510,7 @@
   "YEARS_one": " year",
   "YEARS_other": " years",
   "PRINT_MODAL_PREPARING_DOCUMENT": "Preparing document…",
-  "PRINT_MORE_OPTIONS": "More print options"
+  "PRINT_MORE_OPTIONS": "More print options",
+  "MEDICATIONS_STOPPED_ON": "Stopped on",
+  "MEDICATIONS_STOPPED_DUE_TO": "due to"
 }

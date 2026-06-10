@@ -128,3 +128,14 @@
     }
   }
 }
+
+.stopDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.stopReasonText {
+  font-size: 0.75rem;
+  color: $text-secondary;
+}

@@ -345,6 +345,13 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
         medication.statusReason?.text ??
         medication.statusReason?.coding?.[0]?.display ??
         undefined,
+      dateStopped: medication.extension
+        ?.find(
+          (ext) =>
+            ext.url ===
+            'http://fhir.bahmni.org/ext/medicationRequest/dateStopped',
+        )
+        ?.valueDateTime as string | undefined,
       fhirResource: medication,
     } as MedicationRequest;
   });
