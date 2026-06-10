@@ -26,8 +26,8 @@ import {
   StopReason,
 } from '../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../stores/stopMedicationsStore';
-import { MEDICATIONS_CONFIG_URL } from '../medications/constants';
-import medicationConfigSchema from '../medications/schema.json';
+import { MEDICATIONS_CONFIG_URL } from '../medicationRequest/constants';
+import medicationConfigSchema from '../medicationRequest/schema.json';
 import styles from './styles/StopMedicationForm.module.scss';
 
 interface StopMedicationFormProps {
