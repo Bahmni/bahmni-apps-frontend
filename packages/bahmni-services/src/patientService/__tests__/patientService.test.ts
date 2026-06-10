@@ -12,7 +12,6 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   ADDRESS_HIERARCHY_URL,
-  PATIENT_IMAGE_URL,
 } from '../constants';
 import {
   getPatientById,
@@ -29,7 +28,7 @@ import {
   getGenders,
   getAddressHierarchyEntries,
   getPatientProfile,
-  getPatientPhotoDataUrl,
+  fetchPatientPhotoFromUrl,
 } from '../patientService';
 
 jest.mock('../../api');
@@ -1447,17 +1446,17 @@ describe('Patient Service', () => {
     });
   });
 
-  describe('getPatientPhotoDataUrl', () => {
-    const PATIENT_UUID = '12345678-1234-1234-1234-123456789abc';
+  describe('fetchPatientPhotoFromUrl', () => {
+    const PHOTO_URL = '/openmrs/ws/fhir2/R4/Patient/test-uuid/$photo';
 
-    it('calls get with the correct URL and blob responseType', async () => {
+    it('calls get with the photo URL and blob responseType', async () => {
       const mockBlob = new Blob(['image-data'], { type: 'image/jpeg' });
       mockedGet.mockResolvedValueOnce(mockBlob as any);
       mockedBlobToDataUrl.mockResolvedValueOnce('data:image/jpeg;base64,abc');
 
-      await getPatientPhotoDataUrl(PATIENT_UUID);
+      await fetchPatientPhotoFromUrl(PHOTO_URL);
 
-      expect(mockedGet).toHaveBeenCalledWith(PATIENT_IMAGE_URL(PATIENT_UUID), {
+      expect(mockedGet).toHaveBeenCalledWith(PHOTO_URL, {
         responseType: 'blob',
       });
     });
@@ -1468,7 +1467,7 @@ describe('Patient Service', () => {
       mockedGet.mockResolvedValueOnce(mockBlob as any);
       mockedBlobToDataUrl.mockResolvedValueOnce(mockDataUrl);
 
-      const result = await getPatientPhotoDataUrl(PATIENT_UUID);
+      const result = await fetchPatientPhotoFromUrl(PHOTO_URL);
 
       expect(result).toBe(mockDataUrl);
     });
@@ -1476,7 +1475,7 @@ describe('Patient Service', () => {
     it('propagates errors from the API', async () => {
       mockedGet.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(getPatientPhotoDataUrl(PATIENT_UUID)).rejects.toThrow(
+      await expect(fetchPatientPhotoFromUrl(PHOTO_URL)).rejects.toThrow(
         'Network error',
       );
     });
