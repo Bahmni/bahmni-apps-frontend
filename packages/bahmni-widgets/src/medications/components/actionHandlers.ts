@@ -5,6 +5,7 @@ import { MedicationAction } from '../models';
 const handleStopAction = (
   action: MedicationAction,
   fhirResource?: MedicationRequest,
+  startDate?: string,
 ): void => {
   if (!fhirResource) return;
 
@@ -15,6 +16,7 @@ const handleStopAction = (
       detail: {
         encounterType: action.encounterType,
         stopMedication: fhirResource,
+        stopMedicationStartDate: startDate,
         editOnly: 'stopMedications',
         editTitle: 'STOP_MEDICATION_FORM_TITLE',
         editEncounterUuid: encounterUuid,
@@ -26,9 +28,10 @@ const handleStopAction = (
 export const handleAction = (
   action: MedicationAction,
   fhirResource?: MedicationRequest,
+  startDate?: string,
 ): void => {
   if (action.type === 'stop') {
-    handleStopAction(action, fhirResource);
+    handleStopAction(action, fhirResource, startDate);
     return;
   }
 

@@ -104,10 +104,16 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   const { userPrivileges } = useUserPrivilege();
   const code = (config?.code as string[]) || [];
   const actions = (config?.actions as MedicationAction[]) ?? [];
-  const hasActions = actions.length > 0;
-  const editAction = actions.find((a) => a.type === 'edit');
-  const canEdit =
-    !!editAction && hasPrivilege(userPrivileges, editAction.requiredPrivilege);
+  const permittedActions = useMemo(
+    () =>
+      actions.filter((action) =>
+        hasPrivilege(userPrivileges, action.requiredPrivilege),
+      ),
+    [actions, userPrivileges],
+  );
+  const hasActions = permittedActions.length > 0;
+  const editAction = permittedActions.find((a) => a.type === 'edit');
+  const canEdit = !!editAction;
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -354,6 +360,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           <Actions
             actions={actions}
             medication={row.fhirResource}
+            startDate={row.startDate}
             disabledActionTypes={[
               ...(isEditable(row) ? [] : ['edit']),
               ...(!['active', 'on-hold'].includes(row.status) ? ['stop'] : []),

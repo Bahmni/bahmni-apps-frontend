@@ -8,6 +8,7 @@ import {
   Tile,
 } from '@bahmni/design-system';
 import {
+  get,
   getConfig,
   fetchMedicationOrdersMetadata,
   useTranslation,
@@ -40,7 +41,6 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
     const stopMedication = encounterSessionStartContext?.stopMedication as
       | MedicationRequest
       | undefined;
-
     const {
       stopDate,
       stopReason,
@@ -85,28 +85,28 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       }
     }, [medicationConfig?.stopMedicationFields, setFieldConfig]);
 
+    const { data: orderDates } = useQuery({
+      queryKey: ['orderDates', stopMedication?.id],
+      queryFn: () =>
+        get<{ effectiveStartDate: string; effectiveStopDate: string }>(
+          `/openmrs/ws/rest/v1/order/${stopMedication!.id}?v=custom:(effectiveStartDate,effectiveStopDate)`,
+        ),
+      enabled: !!stopMedication?.id,
+    });
+
     if (!stopMedication) {
       return null;
     }
 
     const medicationName = stopMedication.medicationReference?.display ?? '';
 
-    // Extract the medication's valid date range from FHIR boundsPeriod
-    const boundsPeriod =
-      stopMedication.dosageInstruction?.[0]?.timing?.repeat?.boundsPeriod;
-    const medStartDate = boundsPeriod?.start
-      ? new Date(boundsPeriod.start).toISOString().split('T')[0]
+    // min = effectiveStartDate (medication start), max = today (can't stop in the future)
+    const minStopDate = orderDates?.effectiveStartDate
+      ? new Date(orderDates.effectiveStartDate)
       : undefined;
-    const medEndDate = boundsPeriod?.end
-      ? new Date(boundsPeriod.end).toISOString().split('T')[0]
-      : undefined;
-
-    // Stop date min: medication start date or today (whichever is later)
-    const today = new Date().toISOString().split('T')[0];
-    const minStopDate =
-      medStartDate && medStartDate > today ? medStartDate : today;
-    // Stop date max: medication end date (if set)
-    const maxStopDate = medEndDate;
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    const maxStopDate = today;
 
     // Use concept-based reasons from API; fall back to config-based strings
     const stopReasons: StopReason[] =
@@ -148,6 +148,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                     setStopDate(dates[0]);
                   }
                 }}
+                allowInput={false}
               >
                 <DatePickerInput
                   id="stop-medication-date"
