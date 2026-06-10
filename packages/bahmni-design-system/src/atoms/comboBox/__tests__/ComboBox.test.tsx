@@ -122,6 +122,32 @@ describe('ComboBox', () => {
         expect(screen.getByRole('combobox')).toHaveValue('');
       });
     });
+
+    it('should clear input after user clicks an item without controlled selectedItem', async () => {
+      const user = userEvent.setup();
+      const onChange = jest.fn();
+
+      render(
+        <ComboBox
+          {...defaultProps}
+          clearSelectedOnChange
+          onChange={onChange}
+        />,
+      );
+
+      await user.click(screen.getByRole('combobox'));
+      await user.click(
+        await screen.findByRole('option', { name: 'Hypertension' }),
+      );
+
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({ selectedItem: items[0] }),
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('combobox')).toHaveValue('');
+      });
+    });
   });
 
   describe('onChange forwarding', () => {
