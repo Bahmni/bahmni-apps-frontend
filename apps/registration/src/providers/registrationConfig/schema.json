@@ -193,6 +193,10 @@
       "type": "string",
       "description": "Default visit type for patient registration"
     },
+    "registrationEncounterTypeUuid": {
+      "type": "string",
+      "description": "UUID of the encounter type to create automatically on patient registration"
+    },
     "patientInformation": {
       "type": "object",
       "description": "Patient name related fields configuration",

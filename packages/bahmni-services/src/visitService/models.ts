@@ -17,6 +17,13 @@ export interface VisitLocationResponse {
   uuid: string;
 }
 
+export interface ActiveVisitResult {
+  uuid: string;
+  visitType: { uuid: string; name: string };
+  startDatetime: string;
+  stopDatetime: string | null;
+}
+
 export interface ActiveVisit {
-  results: string[];
+  results: ActiveVisitResult[];
 }
