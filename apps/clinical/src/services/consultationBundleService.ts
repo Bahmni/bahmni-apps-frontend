@@ -124,6 +124,35 @@ export function createDiagnosisBundleEntries({
   return diagnosisEntries;
 }
 
+function createDeleteAndPostAllergyEntries(
+  allergy: AllergyInputEntry,
+  manifestationUUIDs: string[],
+  severity: 'mild' | 'moderate' | 'severe',
+  encounterSubject: Reference,
+  encounterReference: string,
+  practitionerUUID: string,
+): BundleEntry[] {
+  const deleteURL = `${ALLERGY_INTOLERANCE_RESOURCE_TYPE}/${allergy.resourceId}`;
+  const newResource = createEncounterAllergyResource(
+    allergy.id,
+    [allergy.type] as Array<'food' | 'medication' | 'environment' | 'biologic'>,
+    [{ manifestationUUIDs, severity }],
+    encounterSubject,
+    createEncounterReferenceFromString(encounterReference),
+    createPractitionerReference(practitionerUUID),
+    allergy.note,
+  );
+  return [
+    createBundleEntry(
+      deleteURL,
+      createDeleteAllergyResource(allergy.resourceId!),
+      'DELETE',
+      deleteURL,
+    ),
+    createBundleEntry(`urn:uuid:${crypto.randomUUID()}`, newResource, 'POST'),
+  ];
+}
+
 /**
  * Creates bundle entries for allergies as part of consultation bundle
  * @param params - Parameters required for creating allergy bundle entries
@@ -224,61 +253,26 @@ export function createAllergiesBundleEntries({
             createBundleEntry(putURL, putResource, 'PUT', putURL),
           );
         } else {
-          const deleteURL = `${ALLERGY_INTOLERANCE_RESOURCE_TYPE}/${allergy.resourceId}`;
           allergyEntries.push(
-            createBundleEntry(
-              deleteURL,
-              createDeleteAllergyResource(allergy.resourceId!),
-              'DELETE',
-              deleteURL,
-            ),
-          );
-          const newResource = createEncounterAllergyResource(
-            allergy.id,
-            [allergy.type] as Array<
-              'food' | 'medication' | 'environment' | 'biologic'
-            >,
-            [{ manifestationUUIDs, severity }],
-            encounterSubject,
-            createEncounterReferenceFromString(encounterReference),
-            createPractitionerReference(practitionerUUID),
-            allergy.note,
-          );
-          allergyEntries.push(
-            createBundleEntry(
-              `urn:uuid:${crypto.randomUUID()}`,
-              newResource,
-              'POST',
+            ...createDeleteAndPostAllergyEntries(
+              allergy,
+              manifestationUUIDs,
+              severity,
+              encounterSubject,
+              encounterReference,
+              practitionerUUID,
             ),
           );
         }
       } else {
-        const deleteURL = `${ALLERGY_INTOLERANCE_RESOURCE_TYPE}/${allergy.resourceId}`;
         allergyEntries.push(
-          createBundleEntry(
-            deleteURL,
-            createDeleteAllergyResource(allergy.resourceId!),
-            'DELETE',
-            deleteURL,
-          ),
-        );
-
-        const newResource = createEncounterAllergyResource(
-          allergy.id,
-          [allergy.type] as Array<
-            'food' | 'medication' | 'environment' | 'biologic'
-          >,
-          [{ manifestationUUIDs, severity }],
-          encounterSubject,
-          createEncounterReferenceFromString(encounterReference),
-          createPractitionerReference(practitionerUUID),
-          allergy.note,
-        );
-        allergyEntries.push(
-          createBundleEntry(
-            `urn:uuid:${crypto.randomUUID()}`,
-            newResource,
-            'POST',
+          ...createDeleteAndPostAllergyEntries(
+            allergy,
+            manifestationUUIDs,
+            severity,
+            encounterSubject,
+            encounterReference,
+            practitionerUUID,
           ),
         );
       }

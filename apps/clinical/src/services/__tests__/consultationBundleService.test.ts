@@ -737,6 +737,62 @@ describe('consultationBundleService', () => {
         expect(result[0].fullUrl).toBe('AllergyIntolerance/uuid-B');
       });
 
+      it('should not include server-generated text field in PUT body', () => {
+        const allergyWithText: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          rawFhirResource: {
+            ...mockRawFhirResource,
+            text: {
+              status: 'generated',
+              div: '<div xmlns="http://www.w3.org/1999/xhtml">Common Types &amp; Triggers</div>',
+            },
+          },
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithText],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect((result[0].resource as AllergyIntolerance).text).toBeUndefined();
+      });
+
+      it('should use note from form state in PUT body', () => {
+        const allergyWithNote: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          note: 'Updated note from form',
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithNote],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect((result[0].resource as AllergyIntolerance).note).toEqual([
+          { text: 'Updated note from form' },
+        ]);
+      });
+
+      it('should clear note in PUT body when form note is empty', () => {
+        const allergyWithClearedNote: AllergyInputEntry = {
+          ...mockExistingAllergy,
+          note: '',
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithClearedNote],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect((result[0].resource as AllergyIntolerance).note).toBeUndefined();
+      });
+
       it('should POST (not PUT) for new allergy without resourceId', () => {
         const newAllergy: AllergyInputEntry = {
           ...mockValidAllergy,
@@ -875,6 +931,24 @@ describe('consultationBundleService', () => {
 
         const postResource = result[1].resource as AllergyIntolerance;
         expect(postResource.reaction?.[0].severity).toBe('mild');
+      });
+
+      it('POST resource carries the note from the allergy entry', () => {
+        const allergyWithNote: AllergyInputEntry = {
+          ...mockCrossSessionAllergy,
+          note: 'Cross-session allergy note',
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithNote],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect((result[1].resource as AllergyIntolerance).note).toEqual([
+          { text: 'Cross-session allergy note' },
+        ]);
       });
 
       it('skips cross-session allergy when isModified is false', () => {
@@ -1090,6 +1164,36 @@ describe('consultationBundleService', () => {
         });
 
         expect(result[1].fullUrl).toMatch(/^urn:uuid:/);
+      });
+
+      it('POST entry carries the current encounter reference', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockSameSessionAllergyWithReactionRemoved],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        const postResource = result[1].resource as AllergyIntolerance;
+        expect(postResource.encounter?.reference).toBe(mockEncounterReference);
+      });
+
+      it('POST entry carries the note from the allergy entry', () => {
+        const allergyWithNote: AllergyInputEntry = {
+          ...mockSameSessionAllergyWithReactionRemoved,
+          note: 'Reaction note for same session',
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [allergyWithNote],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect((result[1].resource as AllergyIntolerance).note).toEqual([
+          { text: 'Reaction note for same session' },
+        ]);
       });
 
       it('uses PUT when reactions are only added or unchanged in same session', () => {
