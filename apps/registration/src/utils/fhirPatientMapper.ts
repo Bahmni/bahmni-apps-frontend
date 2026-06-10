@@ -10,10 +10,12 @@ import {
   AdditionalIdentifiersData,
 } from '../models/patient';
 import { convertTimeToISODateTime } from './dateTimeUtils';
-
-const PATIENT_ATTRIBUTE_EXT_PREFIX = 'http://fhir.bahmni.org/ext/patient/'; // NOSONAR
-const IDENTIFIER_LOCATION_EXT_URL =
-  'http://fhir.openmrs.org/ext/patient/identifier#location'; // NOSONAR
+import {
+  PATIENT_ATTRIBUTE_PREFIX,
+  IDENTIFIER_LOCATION_EXT_URL,
+  toSlugCase,
+  mapGenderToFhir,
+} from './fhirUtils';
 
 function buildLocationExtension(
   locationUuid?: string,
@@ -25,22 +27,6 @@ function buildLocationExtension(
       valueReference: { reference: `Location/${locationUuid}` },
     },
   ];
-}
-
-function toSlugCase(str: string): string {
-  return str
-    .replace(/\s+/g, '-')
-    .replace(/[^a-zA-Z0-9-]/g, '')
-    .replace(/-{2,}/g, '-')
-    .toLowerCase();
-}
-
-function mapGender(gender: string): 'male' | 'female' | 'other' | 'unknown' {
-  const char = (gender ?? '').charAt(0).toUpperCase();
-  if (char === 'M') return 'male';
-  if (char === 'F') return 'female';
-  if (char === 'O') return 'other';
-  return 'unknown';
 }
 
 function buildBirthDate(
@@ -56,6 +42,7 @@ interface MapperInput {
   profile: BasicInfoData & {
     dobEstimated: boolean;
     patientIdentifier: PatientIdentifier;
+    image?: string;
   };
   address: PatientAddress;
   contact: PersonAttributesData;
@@ -135,7 +122,7 @@ export function buildFhirPatient(input: MapperInput): Patient {
 
     const value = allAttributes[attrType.name];
     const slug = toSlugCase(attrType.name);
-    const url = PATIENT_ATTRIBUTE_EXT_PREFIX + slug;
+    const url = PATIENT_ATTRIBUTE_PREFIX + slug;
 
     if (value !== undefined && value !== null && String(value).trim() !== '') {
       if (typeof value === 'boolean') {
@@ -213,7 +200,7 @@ export function buildFhirPatient(input: MapperInput): Patient {
         family: profile.lastName,
       },
     ],
-    gender: mapGender(profile.gender),
+    gender: mapGenderToFhir(profile.gender),
     birthDate: buildBirthDate(profile.dateOfBirth, profile.dobEstimated),
     ...(birthTimeISO && {
       _birthDate: {
@@ -227,6 +214,9 @@ export function buildFhirPatient(input: MapperInput): Patient {
     }),
     ...(extensions.length > 0 && { extension: extensions }),
     ...(fhirAddresses.length > 0 && { address: fhirAddresses }),
+    photo: profile.image
+      ? [{ contentType: 'image/jpeg', data: profile.image }]
+      : [],
   };
 
   return patient;

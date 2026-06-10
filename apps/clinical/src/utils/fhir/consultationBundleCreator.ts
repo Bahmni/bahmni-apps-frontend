@@ -16,7 +16,7 @@ export const createConsultationBundle = (
 export const createBundleEntry = (
   fullURL: string,
   resource: FhirResource,
-  requestMethod: 'POST' | 'PUT',
+  requestMethod: 'POST' | 'PUT' | 'DELETE',
   resourceUrl?: string,
 ): BundleEntry<FhirResource> => {
   return {

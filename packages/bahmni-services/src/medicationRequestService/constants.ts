@@ -80,3 +80,5 @@ export const MEDICATIONS_SEARCH_URL = (searchTerm: string, count: number) =>
 
 export const VACCINES_URL =
   OPENMRS_FHIR_R4 + '/Medication?code=http://hl7.org/fhir/sid/cvx|&_count=100';
+
+export const MEDICATIONS_INPUT_CONTROL_KEY = 'medication';

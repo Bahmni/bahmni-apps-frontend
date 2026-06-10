@@ -51,6 +51,14 @@ export { TextArea, type TextAreaProps } from './atoms/textArea';
 export { RowCell, type RowCellProps } from './atoms/rowCell';
 export { NotificationContainer } from './molecules/notification';
 export {
+  DataTable,
+  type DataTableActionButton,
+  type DataTableColumn,
+  type DataTableFilterOption,
+  type DataTableProps,
+  type FilterType,
+} from './organisms/dataTable';
+export {
   SortableDataTable,
   type SortableDataTableProps,
 } from './molecules/sortableDataTable';

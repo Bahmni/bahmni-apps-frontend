@@ -190,6 +190,23 @@
           "url": {
             "type": "string",
             "description": "URL to access the dashboard data"
+          },
+          "printOptions": {
+            "type": "array",
+            "description": "Print options shown in the print button for this dashboard",
+            "items": {
+              "type": "object",
+              "required": ["translationKey", "templateId"],
+              "additionalProperties": false,
+              "properties": {
+                "translationKey": { "type": "string" },
+                "templateId": { "type": "string" },
+                "privileges": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
           }
         }
       }

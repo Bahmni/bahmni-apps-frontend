@@ -1058,14 +1058,15 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
-"@bahmni/form2-controls@0.0.3-dev.50":
-  version "0.0.3-dev.50"
-  resolved "https://registry.npmjs.org/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.50.tgz#dd18cc938c5d85611e0bb89e0fc859081a3c21db"
-  integrity sha512-/EkOr46tPwN8PpLhlQGoZY2HiHUF5p2o6V+FE0tGYyLZ0hZ5kgkPn4BVUVIRMn8wjm8998G6QIbpa3tWfzSX1g==
+"@bahmni/form2-controls@0.0.3-dev.57":
+  version "0.0.3-dev.57"
+  resolved "https://registry.npmjs.org/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.57.tgz#b186c1c82adaf65ba8cde09b882929b2b24b1a1f"
+  integrity sha512-nCXAH9TzdyGOLXWEGBnzCCYcKXdL3OTQeBQuBHLwFlbiAuCAQqeduR/wJhxphd8hbl3FoP0Zp+FXWsGp17J/nA==
   dependencies:
     ajv "^8.17.1"
     base64-inline-loader "^1.1.0"
     classnames "^2.2.5"
+    html-entities "^2.6.0"
     immutable "4.3.8"
     lodash "^4.17.21"
     prop-types "^15.6.2"
@@ -4419,6 +4420,18 @@
   integrity sha512-/X4EFNcnPiSs8wM2v+b6DqS5mmGeuJQvxBglmDxl6ZQb5V26ouD2SJYAcC3VjbNwqhY2zjxVD15rDA5nGbMn3A==
   dependencies:
     "@tanstack/query-core" "5.85.5"
+
+"@tanstack/react-table@^8.21.3":
+  version "8.21.3"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-table/-/react-table-8.21.3.tgz#2c38c747a5731c1a07174fda764b9c2b1fb5e91b"
+  integrity sha512-5nNMTSETP4ykGegmVkhjcS8tTLW6Vl4axfEGQN3v0zdHYbK4UfoqfPChclTrJ4EoK9QynqAu9oUf8VEmrpZ5Ww==
+  dependencies:
+    "@tanstack/table-core" "8.21.3"
+
+"@tanstack/table-core@8.21.3":
+  version "8.21.3"
+  resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.21.3.tgz#2977727d8fc8dfa079112d9f4d4c019110f1732c"
+  integrity sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==
 
 "@testing-library/dom@^10.4.0":
   version "10.4.1"

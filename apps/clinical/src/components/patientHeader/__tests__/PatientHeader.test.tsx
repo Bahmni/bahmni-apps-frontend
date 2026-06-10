@@ -10,6 +10,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
 import { dispatchConsultationStart } from '../../../events/startConsultation';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
+import { usePatientVisit } from '../../../hooks/usePatientVisit';
 import PatientHeader from '../PatientHeader';
 import '@testing-library/jest-dom';
 
@@ -30,12 +31,31 @@ jest.mock('@bahmni/widgets', () => ({
   PatientDetails: () => (
     <div data-testid="patient-details-mock">PatientDetails Mock</div>
   ),
+  DocumentPrintButton: () => <div data-testid="document-print-button-mock" />,
   useActivePractitioner: jest.fn(() => ({
     uuid: 'active-practitioner-uuid',
     practitioner: { uuid: 'active-practitioner-uuid' },
   })),
   usePatientUUID: jest.fn(() => 'patient-uuid'),
   useHasPrivilege: jest.fn(() => true),
+}));
+
+jest.mock('../../../hooks/usePatientVisit', () => ({
+  usePatientVisit: jest.fn(() => ({
+    activeVisit: { id: 'visit-uuid-123' },
+    lastVisit: null,
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
+  })),
+}));
+
+jest.mock('../../../providers/clinicalConfig', () => ({
+  useClinicalConfig: jest.fn(() => ({
+    clinicalConfig: null,
+    isLoading: false,
+    error: null,
+  })),
 }));
 
 jest.mock('../../../hooks/useEncounterSession', () => ({
@@ -57,6 +77,9 @@ const mockedUseEncounterSession = useEncounterSession as jest.MockedFunction<
 
 const mockedUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
+>;
+const mockedUsePatientVisit = usePatientVisit as jest.MockedFunction<
+  typeof usePatientVisit
 >;
 
 const mockDispatchConsultationStart =
@@ -117,6 +140,22 @@ describe('PatientHeader Component', () => {
       renderComponent();
       const patientDetails = screen.getByTestId('patient-details-mock');
       expect(patientDetails).toBeInTheDocument();
+    });
+
+    test('uses lastVisit id in renderContext when no active visit', () => {
+      mockedUsePatientVisit.mockReturnValueOnce({
+        activeVisit: null,
+        lastVisit: { id: 'last-visit-uuid' } as any,
+        loading: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      renderComponent();
+
+      expect(
+        screen.getByTestId('document-print-button-mock'),
+      ).toBeInTheDocument();
     });
   });
 
