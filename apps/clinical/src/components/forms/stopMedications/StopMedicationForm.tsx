@@ -203,9 +203,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                 >
                   {t('STOP_MEDICATION_NOTE_LABEL')}
                 </label>
-                <span className={styles.noteCounter}>
-                  {note.length}/100
-                </span>
+                <span className={styles.noteCounter}>{note.length}/100</span>
               </div>
               <TextArea
                 id="stop-medication-note"

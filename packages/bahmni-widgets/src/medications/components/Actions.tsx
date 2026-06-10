@@ -53,7 +53,9 @@ const Actions: React.FC<ActionsProps> = ({
           kind="ghost"
           size="sm"
           disabled={disabled}
-          onClick={() => !disabled && handleAction(action, medication, startDate)}
+          onClick={() =>
+            !disabled && handleAction(action, medication, startDate)
+          }
           testId={`medication-action-${action.type}-${medication.id}`}
         >
           {icon}

@@ -1,5 +1,5 @@
-import { Bundle, ValueSet } from 'fhir/r4';
 import { get, post } from '@bahmni/services';
+import { Bundle, ValueSet } from 'fhir/r4';
 import { fetchStopReasons, stopMedication } from '../stopMedicationService';
 
 jest.mock('@bahmni/services', () => ({

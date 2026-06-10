@@ -1,10 +1,7 @@
-import {
-  dispatchAuditEvent,
-  AUDIT_LOG_EVENT_DETAILS,
-} from '@bahmni/services';
+import { dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS } from '@bahmni/services';
 import { stopMedication } from '../../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../../stores/stopMedicationsStore';
-import { getRegisteredInputControls, clearRegistry } from '../../registry';
+import { getRegisteredInputControls } from '../../registry';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -49,7 +46,6 @@ describe('stopMedications input control', () => {
 
   it('reset() calls store reset', () => {
     const control = getStopMedicationsControl()!;
-    const resetSpy = jest.spyOn(useStopMedicationStore.getState(), 'reset');
 
     control.reset();
 

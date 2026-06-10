@@ -1,8 +1,7 @@
 import { renderHook } from '@testing-library/react';
-import { act } from 'react';
 import { MedicationRequest } from 'fhir/r4';
+import { act } from 'react';
 import { useStopMedicationStore } from '../stopMedicationsStore';
-import { StopMedicationConfig } from '../../models/medicationConfig';
 
 const mockMedicationRequest: MedicationRequest = {
   resourceType: 'MedicationRequest',
