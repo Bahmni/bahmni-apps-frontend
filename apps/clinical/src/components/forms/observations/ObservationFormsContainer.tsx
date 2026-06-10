@@ -254,13 +254,12 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             };
           } | null
         )?.state;
-        const formData = convertImmutableToPlainObject(containerState?.data);
 
         const processedObservations = executeOnFormSaveEvent(
           formMetadata!,
           transformedObservations,
           patientUUID!,
-          formData,
+          containerState?.data,
         );
 
         handleSaveForm(processedObservations, null);

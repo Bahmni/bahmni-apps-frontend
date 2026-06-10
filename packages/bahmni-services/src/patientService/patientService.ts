@@ -19,7 +19,6 @@ import {
   ADDRESS_HIERARCHY_MIN_SEARCH_LENGTH,
   UUID_PATTERN,
   ORDERED_ADDRESS_HIERARCHY_URL,
-  PATIENT_IMAGE_URL,
   GET_PATIENT_PROFILE_URL,
   PERSON_ATTRIBUTE_TYPES_URL,
   RELATIONSHIP_TYPES_URL,
@@ -174,6 +173,7 @@ export const formatPatientData = (patient: Patient): FormattedPatientData => {
     formattedAddress: address,
     formattedContact: contact,
     identifiers: identifierMap,
+    photoUrl: patient.photo?.[0]?.url,
   };
 };
 
@@ -189,16 +189,13 @@ export const getFormattedPatientById = async (
   return formatPatientData(patient);
 };
 
-/**
- * Fetches a patient's photo from OpenMRS as a Blob and converts it to a base64 data URL
- * suitable for use as an img src attribute
- * @param patientUUID - The UUID of the patient whose photo to fetch
- * @returns A base64 data URL string for the patient photo
- */
-export const getPatientPhotoDataUrl = async (
-  patientUUID: string,
+export const fetchPatientPhotoFromUrl = async (
+  photoUrl: string,
 ): Promise<string> => {
-  const blob = await get<Blob>(PATIENT_IMAGE_URL(patientUUID), {
+  if (!photoUrl.startsWith('/')) {
+    throw new Error('Photo URL must be a relative path');
+  }
+  const blob = await get<Blob>(photoUrl, {
     responseType: 'blob',
   });
   return await blobToDataUrl(blob);
