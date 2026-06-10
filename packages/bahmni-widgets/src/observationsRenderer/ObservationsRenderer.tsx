@@ -13,6 +13,7 @@ import { formatObservationValue } from '../observations/utils';
 import {
   getObservationDisplayInfo,
   sortObservationsBySortId,
+  sortObservationsByControlOrder,
   groupMultiSelectObservations,
   transformObservations,
 } from '../utils/Observations';
@@ -27,6 +28,8 @@ export interface ObservationsRendererProps {
   className?: string;
   testIdPrefix?: string;
   hideThumbnail?: boolean;
+  controlOrder?: string[];
+  sectionMap?: Record<string, string>;
 }
 
 interface ObservationMemberProps {
@@ -51,8 +54,8 @@ const renderValueWithMedia = (
     if (hasMediaPart) {
       return (
         <div className={styles.mediaGroup}>
-          {parts.map((part, index) => (
-            <React.Fragment key={index}>
+          {parts.map((part) => (
+            <React.Fragment key={part}>
               {renderValueWithMedia(part, hideThumbnail)}
             </React.Fragment>
           ))}
@@ -273,6 +276,8 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
   className,
   testIdPrefix = '',
   hideThumbnail = false,
+  controlOrder,
+  sectionMap,
 }) => {
   const { t } = useTranslation();
 
@@ -280,9 +285,12 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
     if (observations.length === 0) return [];
 
     const transformed = transformObservations(observations);
-    const sorted = sortObservationsBySortId(transformed);
+    const sorted =
+      controlOrder && controlOrder.length > 0
+        ? sortObservationsByControlOrder(transformed, controlOrder)
+        : sortObservationsBySortId(transformed);
     return groupMultiSelectObservations(sorted);
-  }, [observations]);
+  }, [observations, controlOrder]);
 
   const headers = [
     { key: 'label', header: 'label' },
@@ -326,6 +334,79 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
     );
   }
 
+  // Group observations: standalone obs render as rows; observations belonging
+  // to a form section are collected into a group rendered like an obsGroupControl.
+  type RenderGroup =
+    | { kind: 'obs'; obs: ExtractedObservation; index: number }
+    | {
+        kind: 'section';
+        name: string;
+        members: { obs: ExtractedObservation; index: number }[];
+      };
+
+  const renderGroups: RenderGroup[] = [];
+  let currentSectionGroup: Extract<RenderGroup, { kind: 'section' }> | null =
+    null;
+
+  processedObservations.forEach((obs, index) => {
+    const controlId = obs.sortId?.split('-')[0] ?? '';
+    const sectionName = sectionMap?.[controlId] ?? null;
+
+    if (sectionName) {
+      if (!currentSectionGroup || currentSectionGroup.name !== sectionName) {
+        currentSectionGroup = { kind: 'section', name: sectionName, members: [] };
+        renderGroups.push(currentSectionGroup);
+      }
+      currentSectionGroup.members.push({ obs, index });
+    } else {
+      currentSectionGroup = null;
+      renderGroups.push({ kind: 'obs', obs, index });
+    }
+  });
+
+  const prefix = testIdPrefix ? `${testIdPrefix}-` : '';
+
+  const elements: React.ReactNode[] = renderGroups.map((group) => {
+    if (group.kind === 'obs') {
+      return renderObservation(
+        group.obs,
+        group.index,
+        t,
+        testIdPrefix,
+        hideThumbnail,
+      );
+    }
+    // Render form section exactly like an obsGroupControl
+    return (
+      <div
+        key={`section-${group.name}`}
+        className={styles.observation}
+        data-testid={`${prefix}section-${group.name}`}
+      >
+        <div className={styles.groupContainer}>
+          <div
+            className={styles.groupLabel}
+            data-testid={`${prefix}section-label-${group.name}`}
+          >
+            {group.name}
+          </div>
+          <div className={styles.groupMembers}>
+            {group.members.map(({ obs, index: memberIndex }) => (
+              <ObservationMember
+                key={obs.id}
+                member={obs}
+                depth={0}
+                memberIndex={memberIndex}
+                testIdPrefix={testIdPrefix}
+                hideThumbnail={hideThumbnail}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  });
+
   return (
     <div
       id="observations-renderer"
@@ -333,9 +414,7 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
       aria-label="observations-renderer-aria-label"
       className={classNames(styles.resultsContainer, className)}
     >
-      {processedObservations.map((obs, index) =>
-        renderObservation(obs, index, t, testIdPrefix, hideThumbnail),
-      )}
+      {elements}
     </div>
   );
 };
