@@ -26,6 +26,7 @@ import {
   getActiveEntries,
 } from '../utils';
 import {
+  makeMockEntry,
   mockEncounterConcepts,
   mockObsFormsState,
   mockRegistry,
@@ -480,6 +481,98 @@ describe('ConsultationPad', () => {
       await waitFor(() => {
         expect(submitConsultation).toHaveBeenCalledWith(
           expect.objectContaining(expectedArgs),
+        );
+      });
+    });
+  });
+
+  describe('direct submit (onDirectSubmit)', () => {
+    it('calls onDirectSubmit instead of submitConsultation when entry has onDirectSubmit', async () => {
+      const onClose = jest.fn();
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const directEntry = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([directEntry] as any);
+
+      renderComponent({ onClose });
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+        expect(submitConsultation).not.toHaveBeenCalled();
+        expect(dispatchConsultationSaved).toHaveBeenCalled();
+        expect(onClose).toHaveBeenCalled();
+      });
+    });
+
+    it('shows success notification after direct submit completes', async () => {
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const directEntry = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([directEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'success' }),
+        );
+      });
+    });
+
+    it('calls submitConsultation when mixed entries (direct + bundle)', async () => {
+      const onClose = jest.fn();
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const directEntry = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+      const bundleEntry = {
+        ...makeMockEntry('medication'),
+        hasData: jest.fn().mockReturnValue(true),
+      };
+
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([directEntry, bundleEntry] as any);
+
+      renderComponent({ onClose });
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+        expect(submitConsultation).toHaveBeenCalled();
+      });
+    });
+
+    it('shows error notification when onDirectSubmit throws', async () => {
+      const mockDirectSubmit = jest
+        .fn()
+        .mockRejectedValue(new Error('Stop failed'));
+      const directEntry = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([directEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
         );
       });
     });

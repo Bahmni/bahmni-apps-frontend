@@ -1,10 +1,8 @@
-import { getConfig, fetchMedicationOrdersMetadata } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { act, render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 
 import type { EncounterSessionStartContext } from '../../../../events/startConsultation';
-import { fetchStopReasons } from '../../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../../stores/stopMedicationsStore';
 import StopMedicationForm from '../StopMedicationForm';
 
@@ -40,8 +38,6 @@ jest.mock('@bahmni/design-system', () => {
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  getConfig: jest.fn(),
-  fetchMedicationOrdersMetadata: jest.fn(),
   useTranslation: jest.fn(() => ({
     t: (key: string) => key,
   })),
@@ -201,7 +197,9 @@ describe('StopMedicationForm', () => {
         renderForm({ stopMedication: medWithoutDisplay });
       });
 
-      expect(screen.getByTestId('stop-medication-form-tile')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('stop-medication-form-tile'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -234,7 +232,9 @@ describe('StopMedicationForm', () => {
         renderForm({ stopMedication: mockMedicationRequest });
       });
 
-      expect(screen.getByPlaceholderText('STOP_MEDICATION_NOTE_PLACEHOLDER')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('STOP_MEDICATION_NOTE_PLACEHOLDER'),
+      ).toBeInTheDocument();
     });
 
     it('renders the form tile with the correct test id', async () => {
@@ -374,7 +374,9 @@ describe('StopMedicationForm', () => {
         renderForm({ stopMedication: mockMedicationRequest });
       });
 
-      const textarea = screen.getByPlaceholderText('STOP_MEDICATION_NOTE_PLACEHOLDER');
+      const textarea = screen.getByPlaceholderText(
+        'STOP_MEDICATION_NOTE_PLACEHOLDER',
+      );
       fireEvent.change(textarea, { target: { value: 'Hello' } });
 
       expect(setNote).toHaveBeenCalledWith('Hello');
@@ -395,7 +397,9 @@ describe('StopMedicationForm', () => {
         renderForm({ stopMedication: mockMedicationRequest });
       });
 
-      const textarea = screen.getByPlaceholderText('STOP_MEDICATION_NOTE_PLACEHOLDER');
+      const textarea = screen.getByPlaceholderText(
+        'STOP_MEDICATION_NOTE_PLACEHOLDER',
+      );
       const over100 = 'A'.repeat(101);
       fireEvent.change(textarea, { target: { value: over100 } });
 
@@ -412,7 +416,9 @@ describe('StopMedicationForm', () => {
         renderForm({ stopMedication: mockMedicationRequest });
       });
 
-      const textarea = screen.getByPlaceholderText('STOP_MEDICATION_NOTE_PLACEHOLDER');
+      const textarea = screen.getByPlaceholderText(
+        'STOP_MEDICATION_NOTE_PLACEHOLDER',
+      );
       const exactly100 = 'B'.repeat(100);
       fireEvent.change(textarea, { target: { value: exactly100 } });
 
@@ -465,29 +471,14 @@ describe('StopMedicationForm', () => {
   // 10. Date picker onChange calls setStopDate when a date is selected
   // -------------------------------------------------------------------------
   describe('date picker onChange', () => {
-    it('calls setStopDate when a flatpickr calendar day is clicked', async () => {
-      const setStopDate = jest.fn();
-      mockUseStopMedicationStore.mockReturnValue(
-        makeStoreMock({ setStopDate }) as any,
-      );
-
+    it('renders the date picker input mounted in jsdom', async () => {
       await act(async () => {
         renderForm({ stopMedication: mockMedicationRequest });
       });
 
-      const todayCell = document.querySelector<HTMLElement>(
-        '.flatpickr-day.today',
-      );
-
-      if (todayCell) {
-        fireEvent.click(todayCell);
-        expect(setStopDate).toHaveBeenCalledWith(expect.any(Date));
-      } else {
-        // flatpickr is not active in jsdom; confirm the input is still mounted
-        expect(
-          screen.getByTestId('stop-medication-date-input'),
-        ).toBeInTheDocument();
-      }
+      expect(
+        screen.getByTestId('stop-medication-date-input'),
+      ).toBeInTheDocument();
     });
 
     it('renders the date picker input with the placeholder "dd/mm/yyyy"', async () => {
@@ -679,7 +670,9 @@ describe('StopMedicationForm', () => {
         renderForm({ stopMedication: mockMedicationRequest });
       });
 
-      expect(screen.getByPlaceholderText('STOP_MEDICATION_NOTE_PLACEHOLDER')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('STOP_MEDICATION_NOTE_PLACEHOLDER'),
+      ).toBeInTheDocument();
     });
   });
 
