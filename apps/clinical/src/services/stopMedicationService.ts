@@ -63,7 +63,7 @@ export async function stopMedication(
       { name: 'reason', valueString: reason },
       {
         name: 'effectiveDate',
-        valueDate: effectiveDate.toISOString().split('T')[0],
+        valueDate: `${effectiveDate.getFullYear()}-${String(effectiveDate.getMonth() + 1).padStart(2, '0')}-${String(effectiveDate.getDate()).padStart(2, '0')}`,
       },
       ...(note ? [{ name: 'note', valueString: note }] : []),
     ],

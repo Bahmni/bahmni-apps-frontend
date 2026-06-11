@@ -219,6 +219,28 @@ describe('stopMedicationService', () => {
       expect(calledParams.parameter).toHaveLength(2);
     });
 
+    it('formats effectiveDate using local date parts (not UTC) to avoid timezone off-by-one', async () => {
+      mockPost.mockResolvedValueOnce({});
+
+      // new Date(year, month, day) creates local midnight — toISOString() would produce
+      // the previous day's date in UTC-offset timezones (e.g., UTC-1 → 2025-06-09T23:00Z).
+      // Local getters must be used instead.
+      const localMidnight = new Date(2025, 5, 10); // June 10 local midnight
+
+      await stopMedication({
+        medicationRequestId: 'med-1',
+        reason: 'test',
+        effectiveDate: localMidnight,
+      });
+
+      const calledParams = mockPost.mock.calls[0][1] as any;
+      const valueDate = calledParams.parameter.find(
+        (p: { name: string }) => p.name === 'effectiveDate',
+      ).valueDate;
+
+      expect(valueDate).toBe('2025-06-10');
+    });
+
     it('should return MedicationRequest response', async () => {
       const mockResponse = {
         resourceType: 'MedicationRequest' as const,
