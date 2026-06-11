@@ -46,7 +46,7 @@ export const logAuditEvent = async (
   // Prepare audit log entry
   const auditEntry: AuditLogEntry = {
     patientUuid,
-    eventType: eventDetail.eventType,
+    eventType: eventDetail.eventType as AuditEventType,
     message: messageParams
       ? `${eventDetail.message}~${JSON.stringify(messageParams)}`
       : eventDetail.message,

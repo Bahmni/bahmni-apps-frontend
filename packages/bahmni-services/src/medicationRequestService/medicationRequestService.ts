@@ -349,7 +349,7 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
         const ext = medication.extension?.find(
           (e) =>
             e.url ===
-            'http://fhir.bahmni.org/ext/medicationRequest/dateStopped',
+            'http://fhir.bahmni.org/ext/medicationRequest/dateStopped', // NOSONAR
         );
         return (ext?.valueDateTime ?? ext?.valueDate) as string | undefined;
       })(),
