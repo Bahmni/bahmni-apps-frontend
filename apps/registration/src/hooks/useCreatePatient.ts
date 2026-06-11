@@ -19,11 +19,11 @@ import {
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
-import { useRegistrationConfig } from '../providers/registrationConfig';
 import { createRegistrationEncounterForPatient } from '../services/registrationEncounterService';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
+import { useRegistrationEncounterTypeUuid } from './useRegistrationEncounterTypeUuid';
 
 interface CreatePatientFormData {
   profile: BasicInfoData & {
@@ -54,10 +54,9 @@ export const useCreatePatient = () => {
   const navigate = useNavigate();
   const { personAttributes } = usePersonAttributes();
   const { data: identifierTypes } = useIdentifierTypes();
-  const { registrationConfig } = useRegistrationConfig();
+  const encounterTypeUuid = useRegistrationEncounterTypeUuid();
 
   const createRegistrationEncounter = async (patientUuid: string) => {
-    const encounterTypeUuid = registrationConfig?.registrationEncounterTypeUuid;
     if (!encounterTypeUuid) return;
 
     try {

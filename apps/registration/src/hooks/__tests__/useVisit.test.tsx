@@ -11,9 +11,10 @@ const mockAddNotification = jest.fn();
 const mockFindValidRegistrationEncounterInSession = jest.fn();
 const mockCreateRegistrationEncounterForPatient = jest.fn();
 
-const mockUseRegistrationConfig = jest.fn();
-jest.mock('../../providers/registrationConfig', () => ({
-  useRegistrationConfig: () => mockUseRegistrationConfig(),
+const mockUseRegistrationEncounterTypeUuid = jest.fn();
+jest.mock('../useRegistrationEncounterTypeUuid', () => ({
+  useRegistrationEncounterTypeUuid: () =>
+    mockUseRegistrationEncounterTypeUuid(),
 }));
 
 const mockLinkRegistrationEncounterToVisit = jest.fn();
@@ -57,7 +58,7 @@ describe('useVisit', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseRegistrationConfig.mockReturnValue({ registrationConfig: null });
+    mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
@@ -109,7 +110,7 @@ describe('useVisit', () => {
     beforeEach(() => {
       mockCheckIfActiveVisitExists.mockResolvedValue(false);
       mockCreateVisitForPatient.mockResolvedValue({});
-      mockUseRegistrationConfig.mockReturnValue({ registrationConfig: null });
+      mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
       mockLinkRegistrationEncounterToVisit.mockResolvedValue(undefined);
     });
 
@@ -145,11 +146,9 @@ describe('useVisit', () => {
     });
 
     it('should link registration encounter to visit after visit creation when encounter type is configured', async () => {
-      mockUseRegistrationConfig.mockReturnValue({
-        registrationConfig: {
-          registrationEncounterTypeUuid: 'reg-encounter-type-uuid',
-        },
-      });
+      mockUseRegistrationEncounterTypeUuid.mockReturnValue(
+        'reg-encounter-type-uuid',
+      );
 
       mockFindValidRegistrationEncounterInSession.mockResolvedValue({
         id: 'enc-123',
@@ -171,11 +170,9 @@ describe('useVisit', () => {
     });
 
     it('should create a registration encounter when none exists and link it to visit', async () => {
-      mockUseRegistrationConfig.mockReturnValue({
-        registrationConfig: {
-          registrationEncounterTypeUuid: 'reg-encounter-type-uuid',
-        },
-      });
+      mockUseRegistrationEncounterTypeUuid.mockReturnValue(
+        'reg-encounter-type-uuid',
+      );
 
       mockFindValidRegistrationEncounterInSession.mockResolvedValue(null);
       mockCreateRegistrationEncounterForPatient.mockResolvedValue({
@@ -197,11 +194,9 @@ describe('useVisit', () => {
 
     it('should show error notification when encounter linkage fails', async () => {
       const error = new Error('Failed to link encounter');
-      mockUseRegistrationConfig.mockReturnValue({
-        registrationConfig: {
-          registrationEncounterTypeUuid: 'reg-encounter-type-uuid',
-        },
-      });
+      mockUseRegistrationEncounterTypeUuid.mockReturnValue(
+        'reg-encounter-type-uuid',
+      );
       mockLinkRegistrationEncounterToVisit.mockRejectedValue(error);
 
       const { result } = renderHook(() => useCreateVisit(), { wrapper });
@@ -218,10 +213,8 @@ describe('useVisit', () => {
       });
     });
 
-    it('should skip encounter linkage when registrationEncounterTypeUuid is not configured', async () => {
-      mockUseRegistrationConfig.mockReturnValue({
-        registrationConfig: {},
-      });
+    it('should skip encounter linkage when registrationEncounterType is not configured', async () => {
+      mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
 
       const { result } = renderHook(() => useCreateVisit(), { wrapper });
 

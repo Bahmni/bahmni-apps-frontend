@@ -10,9 +10,10 @@ import { ReactNode } from 'react';
 import { PersonAttributesProvider } from '../../providers/PersonAttributesProvider';
 import { useCreatePatient } from '../useCreatePatient';
 
-const mockUseRegistrationConfig = jest.fn();
-jest.mock('../../providers/registrationConfig', () => ({
-  useRegistrationConfig: () => mockUseRegistrationConfig(),
+const mockUseRegistrationEncounterTypeUuid = jest.fn();
+jest.mock('../useRegistrationEncounterTypeUuid', () => ({
+  useRegistrationEncounterTypeUuid: () =>
+    mockUseRegistrationEncounterTypeUuid(),
 }));
 
 jest.mock('@bahmni/services', () => ({
@@ -134,7 +135,7 @@ describe('useCreatePatient', () => {
     mockUseNotification.mockReturnValue({
       addNotification: mockAddNotification,
     });
-    mockUseRegistrationConfig.mockReturnValue({ registrationConfig: null });
+    mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
     mockCreateRegistrationEncounterForPatient.mockResolvedValue(undefined);
     window.history.replaceState = jest.fn();
   });
@@ -264,11 +265,9 @@ describe('useCreatePatient', () => {
 
   it('should create a registration encounter after patient is saved when encounter type is configured', async () => {
     mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationEncounterTypeUuid: 'reg-encounter-type-uuid',
-      },
-    });
+    mockUseRegistrationEncounterTypeUuid.mockReturnValue(
+      'reg-encounter-type-uuid',
+    );
 
     const { result } = renderHook(() => useCreatePatient(), {
       wrapper: createWrapper(),
@@ -285,11 +284,7 @@ describe('useCreatePatient', () => {
 
   it('should not create a registration encounter when encounter type is not configured', async () => {
     mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationEncounterTypeUuid: undefined,
-      },
-    });
+    mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
 
     const { result } = renderHook(() => useCreatePatient(), {
       wrapper: createWrapper(),
@@ -308,11 +303,9 @@ describe('useCreatePatient', () => {
 
   it('should show error notification and not block patient save when encounter creation fails', async () => {
     mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
-    mockUseRegistrationConfig.mockReturnValue({
-      registrationConfig: {
-        registrationEncounterTypeUuid: 'reg-encounter-type-uuid',
-      },
-    });
+    mockUseRegistrationEncounterTypeUuid.mockReturnValue(
+      'reg-encounter-type-uuid',
+    );
     mockCreateRegistrationEncounterForPatient.mockRejectedValue(
       new Error('Encounter creation failed'),
     );
