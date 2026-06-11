@@ -11,6 +11,8 @@ export {
 } from './confirmationModal/ConfirmationModal';
 
 // Widget Components
+export { DocumentPrintButton } from './documentPrintButton';
+export type { PrintOption } from './documentPrintButton';
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
 export { AppointmentsTable } from './appointments';
@@ -43,6 +45,7 @@ export { useHasPrivilege } from './userPrivileges/useHasPrivilege';
 // User Privileges
 export { UserPrivilegeProvider } from './userPrivileges/UserPrivilegeProvider';
 export { CONSULTATION_PAD_PRIVILEGES } from './userPrivileges/consultationPadPrivileges';
+export { GET_PATIENT_PHOTO_PRIVILEGE } from './userPrivileges/patientPhotoPrivileges';
 
 // App Context
 export { AppContextProvider } from './appContext';

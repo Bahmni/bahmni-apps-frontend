@@ -1,5 +1,6 @@
 import { FilterableMultiSelect } from '@carbon/react';
 import type { Column } from '@tanstack/react-table';
+import styles from '../styles/DataTable.module.scss';
 import type { DataTableFilterOption } from '../types';
 import { deriveFacetedOptions } from '../utils';
 
@@ -27,9 +28,11 @@ export const DataTableSelectFilter = <T,>({
     <FilterableMultiSelect
       id={`${dataTestId}-filter-${column.id}`}
       data-testid={`${dataTestId}-filter-${column.id}`}
+      className={styles.selectFilter}
       titleText={`Filter ${header}`}
       hideLabel
       placeholder={`Filter ${header}`}
+      useTitleInItem
       items={options}
       itemToString={(item) => (item ? item.label : '')}
       initialSelectedItems={selectedItems}

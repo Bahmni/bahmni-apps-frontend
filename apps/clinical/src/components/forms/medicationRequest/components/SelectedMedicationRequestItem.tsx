@@ -11,7 +11,7 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation, getTodayDate, type CDSSRule } from '@bahmni/services';
 import { dispatchCDSSCheck } from '@bahmni/services';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MedicationInputEntry } from '../../../../models/medication';
 import { MedicationConfig } from '../../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
@@ -81,8 +81,13 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
 
       const [hasNote, setHasNote] = useState(!!note);
       const noteRequired = findAttr('note', attributes)?.required;
+      const initialEditMountRef = useRef(!!entry.fhirResourceId);
 
       useEffect(() => {
+        if (initialEditMountRef.current) {
+          initialEditMountRef.current = false;
+          return;
+        }
         const totalQuantity = calculateTotalQuantity(
           dosage,
           frequency,
@@ -100,6 +105,9 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
       ]);
 
       useEffect(() => {
+        // Skip STAT/frequency normalization for edit rows — they already have
+        // their values populated from the FHIR resource.
+        if (entry.fhirResourceId) return;
         if (isMedicationRequest) {
           if (isPRN || !isSTAT) {
             updateFrequency(id, null);
@@ -137,6 +145,9 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
       ]);
 
       useEffect(() => {
+        // Skip applying defaults for items loaded for edit — they already have
+        // their values populated from the FHIR resource.
+        if (entry.fhirResourceId) return;
         applyMountDefaults({
           attributes,
           medicationConfig,

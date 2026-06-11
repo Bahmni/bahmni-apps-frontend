@@ -3,7 +3,10 @@ import {
   MedicationFrequency as Frequency,
   type CDSCard,
 } from '@bahmni/services';
-import { Medication } from 'fhir/r4';
+import {
+  Medication,
+  MedicationRequest as FhirMedicationRequest,
+} from 'fhir/r4';
 import { useStore } from 'zustand';
 import { createStore } from 'zustand/vanilla';
 import { Concept } from '../../../models/encounterConcepts';
@@ -20,6 +23,9 @@ import { findAttr } from './utils';
 export interface MedicationRequestState {
   selectedMedicationRequests: MedicationInputEntry[];
   attributes: InputControlAttributes[] | undefined;
+  originalEditIds: string[];
+  originalEditSnapshots: Map<string, MedicationInputEntry>;
+  pendingFhirEdits: FhirMedicationRequest[];
   setAttributes: (attrs: InputControlAttributes[]) => void;
   addItem: (medication: Medication, displayName: string) => string;
   removeItem: (id: string) => void;
@@ -36,6 +42,9 @@ export interface MedicationRequestState {
   updateDispenseQuantity: (id: string, quantity: number) => void;
   updateDispenseUnit: (id: string, unit: Concept) => void;
   updateNote: (id: string, note: string) => void;
+  setPendingFhirEdits: (resources: FhirMedicationRequest[]) => void;
+  loadMedicationsForEdit: (entries: MedicationInputEntry[]) => void;
+  hasEditChanges: () => boolean;
   validateAll: () => boolean;
   updateItemCDSCards: (itemId: string, cards: CDSCard[]) => void;
   hasCriticalCDSCards: () => boolean;
@@ -210,6 +219,32 @@ function applyDispenseUnitUpdate(
   return updated;
 }
 
+/**
+ * Compares two MedicationInputEntry objects field-by-field to detect changes.
+ * Used by hasEditChanges() to determine if an edited entry differs from its
+ * original snapshot — enabling the "Done" button to re-disable on revert.
+ */
+function hasMedicationChanged(
+  current: MedicationInputEntry,
+  original: MedicationInputEntry,
+): boolean {
+  if (current.dosage !== original.dosage) return true;
+  if (current.dosageUnit?.uuid !== original.dosageUnit?.uuid) return true;
+  if (current.frequency?.uuid !== original.frequency?.uuid) return true;
+  if (current.route?.uuid !== original.route?.uuid) return true;
+  if (current.duration !== original.duration) return true;
+  if (current.durationUnit?.code !== original.durationUnit?.code) return true;
+  if (current.instruction?.uuid !== original.instruction?.uuid) return true;
+  if (current.isSTAT !== original.isSTAT) return true;
+  if (current.isPRN !== original.isPRN) return true;
+  if (current.startDate?.toDateString() !== original.startDate?.toDateString())
+    return true;
+  if (current.dispenseQuantity !== original.dispenseQuantity) return true;
+  if (current.dispenseUnit?.uuid !== original.dispenseUnit?.uuid) return true;
+  if ((current.note ?? '') !== (original.note ?? '')) return true;
+  return false;
+}
+
 type FieldValidationConfig = {
   attr: string;
   key: keyof MedicationInputEntry['errors'];
@@ -312,6 +347,9 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
   return createStore<MedicationRequestState>((set, get) => ({
     selectedMedicationRequests: [],
     attributes: undefined,
+    originalEditIds: [],
+    originalEditSnapshots: new Map(),
+    pendingFhirEdits: [],
 
     setAttributes: (attrs: InputControlAttributes[]) => {
       set({ attributes: attrs });
@@ -440,9 +478,9 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
         selectedMedicationRequests: state.selectedMedicationRequests.map(
           (item) => {
             if (item.id !== id) return item;
-            const updated = applyIsSTATUpdate(item, isSTAT);
+            let updated = applyIsSTATUpdate(item, isSTAT);
             if (isSTAT && !isMedicationRequest) {
-              return { ...updated, duration: 0, durationUnit: null };
+              updated = { ...updated, duration: 0, durationUnit: null };
             }
             return updated;
           },
@@ -501,6 +539,41 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
       return isValid;
     },
 
+    setPendingFhirEdits: (resources: FhirMedicationRequest[]) => {
+      set({ pendingFhirEdits: resources });
+    },
+
+    loadMedicationsForEdit: (entries: MedicationInputEntry[]) => {
+      const snapshots = new Map<string, MedicationInputEntry>();
+      entries.forEach((e) => snapshots.set(e.id, { ...e }));
+      set({
+        selectedMedicationRequests: entries,
+        originalEditIds: entries.map((e) => e.id),
+        originalEditSnapshots: snapshots,
+        pendingFhirEdits: [],
+      });
+    },
+
+    hasEditChanges: () => {
+      const {
+        selectedMedicationRequests,
+        originalEditIds,
+        originalEditSnapshots,
+      } = get();
+      // New items added (no fhirResourceId)
+      if (selectedMedicationRequests.some((m) => !m.fhirResourceId))
+        return true;
+      // Any original item removed
+      const currentIds = new Set(selectedMedicationRequests.map((m) => m.id));
+      if (originalEditIds.some((id) => !currentIds.has(id))) return true;
+      // Any edited item differs from its original snapshot
+      return selectedMedicationRequests.some((m) => {
+        const original = originalEditSnapshots.get(m.id);
+        if (!original) return true;
+        return hasMedicationChanged(m, original);
+      });
+    },
+
     updateItemCDSCards: (itemId: string, cards: CDSCard[]) => {
       set((state) => ({
         selectedMedicationRequests: state.selectedMedicationRequests.map(
@@ -517,7 +590,12 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
     },
 
     reset: () => {
-      set({ selectedMedicationRequests: [] });
+      set({
+        selectedMedicationRequests: [],
+        originalEditIds: [],
+        originalEditSnapshots: new Map(),
+        pendingFhirEdits: [],
+      });
     },
 
     getState: () => get(),

@@ -47,8 +47,8 @@
 .emptyStateCell {
   @include type-style("body-compact-01");
   background-color: $background;
-  padding: $spacing-06 $spacing-05;
-  text-align: center;
+  padding: $spacing-06 !important;
+  text-align: center !important;
   color: $text-secondary;
 }
 
@@ -117,5 +117,17 @@
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+.selectFilter {
+  min-width: calc($spacing-12 + $spacing-05);
+}
+
+.dateRangeFilter{
+  div:first-child {
+    display:flex;
+    flex-direction: column !important;
+    gap: $spacing-02
+  }
 }
 

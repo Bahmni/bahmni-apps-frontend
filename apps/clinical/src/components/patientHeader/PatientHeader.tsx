@@ -1,23 +1,28 @@
 import {
   useTranslation,
   useSubscribeConsultationSaved,
-  CONSULTATION_ENCOUNTER_TYPE_UUID,
   setEncounterSessionDecision,
   setEncounterSessionLoading,
   resetEncounterSession,
 } from '@bahmni/services';
 import {
+  DocumentPrintButton,
   PatientDetails,
   useActivePractitioner,
   usePatientUUID,
+  type PrintOption,
 } from '@bahmni/widgets';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
+import { usePatientVisit } from '../../hooks/usePatientVisit';
+import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationActionButton from './ConsultationActionButton';
 import styles from './styles/PatientHeader.module.scss';
 
 interface PatientHeaderProps {
   isActionAreaVisible: boolean;
+  printOptions?: PrintOption[];
 }
 
 /**
@@ -29,24 +34,36 @@ interface PatientHeaderProps {
  */
 const PatientHeader: React.FC<PatientHeaderProps> = ({
   isActionAreaVisible,
+  printOptions,
 }) => {
   const { t } = useTranslation();
   const { practitioner } = useActivePractitioner();
+  const { clinicalConfig } = useClinicalConfig();
+  const { encounterConcepts } = useEncounterConcepts();
 
   const patientUUID = usePatientUUID();
 
-  // Single hook call shared with ConsultationActionButton via props to avoid
-  // duplicate FHIR searches. matchReason is exposed on the DOM so downstream
-  // widget consumers can read it without waiting for ConsultationPad to open.
+  const defaultEncounterTypeName =
+    clinicalConfig?.consultationPad?.inputControls?.find(
+      (c) => c.type === 'encounterDetails',
+    )?.metadata?.defaultEncounterType as string | undefined;
+
+  const encounterTypeUUID = useMemo(() => {
+    if (!defaultEncounterTypeName || !encounterConcepts) return undefined;
+    return encounterConcepts.encounterTypes.find(
+      (et) => et.name === defaultEncounterTypeName,
+    )?.uuid;
+  }, [defaultEncounterTypeName, encounterConcepts]);
+
   const {
     matchReason,
     editActiveEncounter,
-    isLoading,
     activeEncounter,
+    isLoading,
     refetch,
   } = useEncounterSession({
     practitioner,
-    encounterTypeUUID: CONSULTATION_ENCOUNTER_TYPE_UUID,
+    encounterTypeUUID,
   });
 
   // Reset the shared store whenever the patient changes so stale data from a
@@ -83,6 +100,22 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     [patientUUID],
   );
 
+  const {
+    activeVisit,
+    lastVisit,
+    loading: visitLoading,
+  } = usePatientVisit(patientUUID);
+
+  const visitUuid = activeVisit?.id ?? lastVisit?.id;
+
+  const renderContext = useMemo(
+    () => ({
+      ...(patientUUID && { patientUUID }),
+      ...(visitUuid && { visitUuid }),
+    }),
+    [patientUUID, visitUuid],
+  );
+
   return (
     <div
       aria-label={t('PATIENT_HEADER_LABEL')}
@@ -92,13 +125,28 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
         matchReason.length > 0 ? matchReason.join(',') : undefined
       }
       data-can-edit-encounter={editActiveEncounter ? 'true' : undefined}
+      data-active-encounter-uuid={
+        editActiveEncounter && activeEncounter?.id
+          ? activeEncounter.id
+          : undefined
+      }
+      data-active-practitioner-uuid={practitioner?.uuid ?? undefined}
     >
       <PatientDetails />
-      <ConsultationActionButton
-        isActionAreaVisible={isActionAreaVisible}
-        editActiveEncounter={editActiveEncounter}
-        isLoading={isLoading}
-      />
+      <div className={styles.actionButtons}>
+        <ConsultationActionButton
+          isActionAreaVisible={isActionAreaVisible}
+          editActiveEncounter={editActiveEncounter}
+          isLoading={isLoading}
+        />
+        <DocumentPrintButton
+          printOptions={printOptions}
+          renderContext={renderContext}
+          disabled={visitLoading}
+          data-testid="print-clinical-card"
+          size="md"
+        />
+      </div>
     </div>
   );
 };

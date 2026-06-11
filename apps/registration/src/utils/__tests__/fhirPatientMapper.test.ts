@@ -278,4 +278,27 @@ describe('buildFhirPatient', () => {
   it('should omit address when all fields empty', () => {
     expect(buildFhirPatient(baseInput).address).toBeUndefined();
   });
+
+  it('should include photo with base64 data when image is provided', () => {
+    const result = buildFhirPatient({
+      ...baseInput,
+      profile: { ...baseProfile, image: '/9j/4AAQbase64data' },
+    });
+    expect(result.photo).toEqual([
+      { contentType: 'image/jpeg', data: '/9j/4AAQbase64data' },
+    ]);
+  });
+
+  it('should include empty photo array when no image is provided', () => {
+    const result = buildFhirPatient(baseInput);
+    expect(result.photo).toEqual([]);
+  });
+
+  it('should include empty photo array on update when image is removed', () => {
+    const result = buildFhirPatient({
+      ...baseInput,
+      patientUuid: 'uuid-123',
+    });
+    expect(result.photo).toEqual([]);
+  });
 });

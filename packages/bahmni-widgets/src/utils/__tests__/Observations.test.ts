@@ -508,6 +508,54 @@ describe('Observations Utils', () => {
       expect(grouped).toHaveLength(1);
       expect(grouped[0].observationValue?.value).toBe('Option A, Option B');
     });
+
+    it('should preserve comment from later observation when first has none', () => {
+      const observations: ExtractedObservation[] = [
+        {
+          id: 'obs-1',
+          display: 'Pulse',
+          conceptId: 'concept-pulse',
+          observationValue: { value: '1', type: 'string' },
+        },
+        {
+          id: 'obs-2',
+          display: 'Pulse',
+          conceptId: 'concept-pulse',
+          observationValue: { value: '2', type: 'string' },
+          comment: 'Patient resting',
+        },
+      ];
+
+      const grouped = groupMultiSelectObservations(observations);
+
+      expect(grouped).toHaveLength(1);
+      expect(grouped[0].observationValue?.value).toBe('1, 2');
+      expect(grouped[0].comment).toBe('Patient resting');
+    });
+
+    it('should keep comment from first observation when it has one', () => {
+      const observations: ExtractedObservation[] = [
+        {
+          id: 'obs-1',
+          display: 'Pulse',
+          conceptId: 'concept-pulse',
+          observationValue: { value: '1', type: 'string' },
+          comment: 'First note',
+        },
+        {
+          id: 'obs-2',
+          display: 'Pulse',
+          conceptId: 'concept-pulse',
+          observationValue: { value: '2', type: 'string' },
+          comment: 'Second note',
+        },
+      ];
+
+      const grouped = groupMultiSelectObservations(observations);
+
+      expect(grouped).toHaveLength(1);
+      expect(grouped[0].comment).toBe('First note');
+    });
   });
 
   describe('transformObservations', () => {

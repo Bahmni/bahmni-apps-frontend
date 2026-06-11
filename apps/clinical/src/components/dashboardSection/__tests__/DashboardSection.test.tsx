@@ -415,6 +415,93 @@ describe('DashboardSection Component', () => {
       expect(capturedProps[0].disableActions).toBe(true);
     });
 
+    it('passes canEditOrCreate to widgets', async () => {
+      const capturedProps: Record<string, unknown>[] = [];
+      const ProbeWidget = (props: Record<string, unknown>) => {
+        capturedProps.push(props);
+        return <div data-testid="probe-widget-edit" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: [],
+        canEditOrCreate: true,
+        isLoading: false,
+        activeEncounter: { id: 'enc-123' },
+      });
+
+      renderSection({
+        id: 'allergies-section',
+        name: 'Allergies',
+        icon: 'test-icon',
+        controls: [{ type: 'allergies', name: '', config: {} }],
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('probe-widget-edit')).toBeInTheDocument();
+      });
+      expect(capturedProps[0].canEditOrCreate).toBe(true);
+    });
+
+    it('passes activeEncounterUuid derived from activeEncounter to widgets', async () => {
+      const capturedProps: Record<string, unknown>[] = [];
+      const ProbeWidget = (props: Record<string, unknown>) => {
+        capturedProps.push(props);
+        return <div data-testid="probe-widget-enc" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: [],
+        canEditOrCreate: true,
+        isLoading: false,
+        activeEncounter: { id: 'enc-active-uuid' },
+      });
+
+      renderSection({
+        id: 'allergies-section',
+        name: 'Allergies',
+        icon: 'test-icon',
+        controls: [{ type: 'allergies', name: '', config: {} }],
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('probe-widget-enc')).toBeInTheDocument();
+      });
+      expect(capturedProps[0].activeEncounterUuid).toBe('enc-active-uuid');
+    });
+
+    it('passes activeEncounterUuid as null when no active encounter exists', async () => {
+      const capturedProps: Record<string, unknown>[] = [];
+      const ProbeWidget = (props: Record<string, unknown>) => {
+        capturedProps.push(props);
+        return <div data-testid="probe-widget-no-enc" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: [],
+        canEditOrCreate: false,
+        isLoading: false,
+        activeEncounter: undefined,
+      });
+
+      renderSection({
+        id: 'allergies-section',
+        name: 'Allergies',
+        icon: 'test-icon',
+        controls: [{ type: 'allergies', name: '', config: {} }],
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('probe-widget-no-enc')).toBeInTheDocument();
+      });
+      expect(capturedProps[0].activeEncounterUuid).toBeNull();
+    });
+
     it('passes disableActions=false when matchReasons is empty', async () => {
       const capturedProps: Record<string, unknown>[] = [];
       const ProbeWidget = (props: Record<string, unknown>) => {

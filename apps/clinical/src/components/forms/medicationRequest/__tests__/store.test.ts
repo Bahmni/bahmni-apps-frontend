@@ -10,6 +10,7 @@ import {
   mockInstruction,
   mockMedication,
   mockMedicationAttributesWithDefaults,
+  mockMedicationEntry,
   mockRequiredMedicationAttributes,
   mockRoute,
   mockVaccination,
@@ -179,9 +180,11 @@ describe('useMedicationRequestStore', () => {
         const targetId = store().selectedMedicationRequests[0].id;
         const otherEntryBefore = store().selectedMedicationRequests[1];
 
-        store()[actionName](targetId, value);
+        (store() as any)[actionName](targetId, value);
 
-        expect(store().selectedMedicationRequests[0][fieldName]).toEqual(value);
+        expect(
+          (store().selectedMedicationRequests[0] as any)[fieldName],
+        ).toEqual(value);
         expect(store().selectedMedicationRequests[1]).toEqual(otherEntryBefore);
       },
     );
@@ -192,7 +195,7 @@ describe('useMedicationRequestStore', () => {
         store().addItem(mockMedication, 'Paracetamol 500mg');
         const before = [...store().selectedMedicationRequests];
 
-        store()[actionName]('non-existent-id', value);
+        (store() as any)[actionName]('non-existent-id', value);
 
         expect(store().selectedMedicationRequests).toEqual(before);
       },
@@ -206,13 +209,13 @@ describe('useMedicationRequestStore', () => {
 
         store().validateAll();
         expect(
-          store().selectedMedicationRequests[0].errors[fieldName],
+          (store().selectedMedicationRequests[0].errors as any)[fieldName],
         ).toBeDefined();
 
-        store()[actionName](id, validValue);
+        (store() as any)[actionName](id, validValue);
 
         expect(
-          store().selectedMedicationRequests[0].errors[fieldName],
+          (store().selectedMedicationRequests[0].errors as any)[fieldName],
         ).toBeUndefined();
       },
     );
@@ -224,10 +227,10 @@ describe('useMedicationRequestStore', () => {
         const id = store().selectedMedicationRequests[0].id;
 
         store().validateAll();
-        store()[actionName](id, invalidValue);
+        (store() as any)[actionName](id, invalidValue);
 
         expect(
-          store().selectedMedicationRequests[0].errors[fieldName],
+          (store().selectedMedicationRequests[0].errors as any)[fieldName],
         ).toBeDefined();
       },
     );
@@ -634,5 +637,254 @@ describe('useMedicationRequestStore', () => {
         expect(typeof result.current.addItem).toBe('function');
       },
     );
+  });
+
+  describe('loadMedicationsForEdit', () => {
+    it('loads entries, captures originalEditIds and originalEditSnapshots', () => {
+      const entries = [
+        { ...mockMedicationEntry, id: 'edit-1', fhirResourceId: 'fhir-1' },
+        { ...mockMedicationEntry, id: 'edit-2', fhirResourceId: 'fhir-2' },
+      ];
+
+      store().loadMedicationsForEdit(entries);
+
+      expect(store().selectedMedicationRequests).toHaveLength(2);
+      expect(store().originalEditIds).toEqual(['edit-1', 'edit-2']);
+      expect(store().originalEditSnapshots.size).toBe(2);
+      expect(store().originalEditSnapshots.get('edit-1')).toBeDefined();
+      expect(store().pendingFhirEdits).toEqual([]);
+    });
+  });
+
+  describe('hasEditChanges', () => {
+    it('returns false when no changes have been made', () => {
+      const entries = [
+        { ...mockMedicationEntry, id: 'edit-1', fhirResourceId: 'fhir-1' },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      expect(store().hasEditChanges()).toBe(false);
+    });
+
+    it('returns true when an entry has been modified', () => {
+      const entries = [
+        { ...mockMedicationEntry, id: 'edit-1', fhirResourceId: 'fhir-1' },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateDosage('edit-1', 10);
+
+      expect(store().hasEditChanges()).toBe(true);
+    });
+
+    it('returns true when a new item has been added', () => {
+      const entries = [
+        { ...mockMedicationEntry, id: 'edit-1', fhirResourceId: 'fhir-1' },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().addItem(mockMedication, 'Paracetamol 500mg');
+
+      expect(store().hasEditChanges()).toBe(true);
+    });
+
+    it('returns true when an original item has been removed', () => {
+      const entries = [
+        { ...mockMedicationEntry, id: 'edit-1', fhirResourceId: 'fhir-1' },
+        { ...mockMedicationEntry, id: 'edit-2', fhirResourceId: 'fhir-2' },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().removeItem('edit-1');
+
+      expect(store().hasEditChanges()).toBe(true);
+    });
+  });
+
+  describe('snapshot-based change detection', () => {
+    it('detects change when field differs from original snapshot', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-1',
+          fhirResourceId: 'fhir-123',
+          dosage: 5,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateDosage('edit-1', 10);
+
+      expect(store().hasEditChanges()).toBe(true);
+    });
+
+    it('returns false when value is reverted to original', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-1',
+          fhirResourceId: 'fhir-123',
+          dosage: 5,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateDosage('edit-1', 10);
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateDosage('edit-1', 5);
+      expect(store().hasEditChanges()).toBe(false);
+    });
+  });
+
+  describe('hasMedicationChanged field-by-field detection', () => {
+    it('detects dosageUnit change and reverts cleanly', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-du',
+          fhirResourceId: 'fhir-du',
+          dosageUnit: mockDosageUnit,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateDosageUnit('edit-du', { uuid: 'ml-uuid', name: 'ml' });
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateDosageUnit('edit-du', mockDosageUnit);
+      expect(store().hasEditChanges()).toBe(false);
+    });
+
+    it('detects frequency change and reverts cleanly', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-fr',
+          fhirResourceId: 'fhir-fr',
+          frequency: mockFrequency,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateFrequency('edit-fr', {
+        uuid: '0',
+        name: 'Immediately',
+        frequencyPerDay: 1,
+      });
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateFrequency('edit-fr', mockFrequency);
+      expect(store().hasEditChanges()).toBe(false);
+    });
+
+    it('detects note change and reverts cleanly', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-note',
+          fhirResourceId: 'fhir-note',
+          note: 'original note',
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateNote('edit-note', 'changed note');
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateNote('edit-note', 'original note');
+      expect(store().hasEditChanges()).toBe(false);
+    });
+
+    it('detects isPRN change and reverts cleanly', () => {
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-prn',
+          fhirResourceId: 'fhir-prn',
+          isPRN: false,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateIsPRN('edit-prn', true);
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateIsPRN('edit-prn', false);
+      expect(store().hasEditChanges()).toBe(false);
+    });
+  });
+
+  describe('setPendingFhirEdits', () => {
+    it('sets pending FHIR edits', () => {
+      const mockFhirResources = [
+        {
+          resourceType: 'MedicationRequest' as const,
+          id: 'fhir-1',
+          status: 'active' as const,
+          intent: 'order' as const,
+          subject: { reference: 'Patient/123' },
+        },
+        {
+          resourceType: 'MedicationRequest' as const,
+          id: 'fhir-2',
+          status: 'active' as const,
+          intent: 'order' as const,
+          subject: { reference: 'Patient/123' },
+        },
+      ];
+
+      store().setPendingFhirEdits(mockFhirResources);
+
+      expect(store().pendingFhirEdits).toHaveLength(2);
+      expect(store().pendingFhirEdits[0].id).toBe('fhir-1');
+      expect(store().pendingFhirEdits[1].id).toBe('fhir-2');
+    });
+
+    it('clears pending FHIR edits when set to empty array', () => {
+      const mockFhirResources = [
+        {
+          resourceType: 'MedicationRequest' as const,
+          id: 'fhir-1',
+          status: 'active' as const,
+          intent: 'order' as const,
+          subject: { reference: 'Patient/123' },
+        },
+      ];
+      store().setPendingFhirEdits(mockFhirResources);
+      expect(store().pendingFhirEdits).toHaveLength(1);
+
+      store().setPendingFhirEdits([]);
+
+      expect(store().pendingFhirEdits).toEqual([]);
+    });
+  });
+
+  describe('reset clears edit state', () => {
+    it('clears selectedMedicationRequests, originalEditIds, and pendingFhirEdits', () => {
+      const entries = [
+        { ...mockMedicationEntry, id: 'edit-1', fhirResourceId: 'fhir-1' },
+      ];
+      store().loadMedicationsForEdit(entries);
+      store().setPendingFhirEdits([
+        {
+          resourceType: 'MedicationRequest' as const,
+          id: 'fhir-1',
+          status: 'active' as const,
+          intent: 'order' as const,
+          subject: { reference: 'Patient/123' },
+        },
+      ]);
+
+      expect(store().selectedMedicationRequests).toHaveLength(1);
+      expect(store().originalEditIds).toHaveLength(1);
+      expect(store().pendingFhirEdits).toHaveLength(1);
+
+      store().reset();
+
+      expect(store().selectedMedicationRequests).toEqual([]);
+      expect(store().originalEditIds).toEqual([]);
+      expect(store().pendingFhirEdits).toEqual([]);
+    });
   });
 });

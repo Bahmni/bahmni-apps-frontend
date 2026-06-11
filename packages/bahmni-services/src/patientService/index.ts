@@ -14,7 +14,7 @@ export {
   getGenders,
   getAddressHierarchyEntries,
   getOrderedAddressHierarchyLevels,
-  getPatientPhotoDataUrl,
+  fetchPatientPhotoFromUrl,
   getPatientProfile,
   getRelationshipTypes,
   getPersonAttributeTypes,
