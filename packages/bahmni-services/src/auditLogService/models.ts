@@ -1,7 +1,7 @@
 // Core audit log entry sent to API
 export interface AuditLogEntry {
   patientUuid?: string;
-  eventType: AuditEventType;
+  eventType: string;
   message: string;
   module: string;
 }
@@ -17,10 +17,5 @@ export type AuditEventType =
   | 'VIEWED_CLINICAL_DASHBOARD'
   | 'EDIT_ENCOUNTER'
   | 'VIEWED_REGISTRATION_PATIENT_SEARCH'
-  | 'REGISTER_NEW_PATIENT'
-  | 'VIEWED_NEW_PATIENT_PAGE'
-  | 'OPEN_VISIT'
-  | 'EDIT_PATIENT_DETAILS'
   | 'VIEWED_RADIOLOGY_RESULTS'
-  | 'CREATE_ENCOUNTER'
   | 'STOP_MEDICATION';
