@@ -97,6 +97,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   encounterUuids,
   canEditOrCreate: canEditEncounter = false,
   activeEncounterUuid = null,
+  disableActions = false,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
@@ -363,7 +364,9 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             startDate={row.startDate}
             disabledActionTypes={[
               ...(isEditable(row) ? [] : ['edit']),
-              ...(!['active', 'on-hold'].includes(row.status) ? ['stop'] : []),
+              ...(disableActions || !['active', 'on-hold'].includes(row.status)
+                ? ['stop']
+                : []),
             ]}
           />
         );
