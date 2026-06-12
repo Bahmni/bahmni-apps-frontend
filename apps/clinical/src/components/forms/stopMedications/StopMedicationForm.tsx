@@ -97,7 +97,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       }
     }, [medicationConfig?.stopMedicationFields, setFieldConfig]);
 
-    const { data: orderDates } = useQuery({
+    useQuery({
       queryKey: ['orderDates', stopMedication?.id],
       queryFn: () =>
         get<{ effectiveStartDate: string; effectiveStopDate: string }>(
@@ -106,16 +106,15 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       enabled: !!stopMedication?.id,
     });
 
-    // min = effectiveStartDate (medication start), max = today (can't stop in the future)
-    // For scheduled medications the effectiveStartDate is in the future — in that case
-    // we don't apply a minDate so the user can still select today to cancel the order.
+    // min = today (can't stop in the past), max = today (can't stop in the future)
+    // effectiveStartDate is ignored for minDate — today is always the earliest selectable date.
     // Memoized so the Date object references stay stable between re-renders and
     // don't trigger unnecessary flatpickr minDate/maxDate updates.
     const minStopDate = useMemo(() => {
-      if (!orderDates?.effectiveStartDate) return undefined;
-      const start = new Date(orderDates.effectiveStartDate);
-      return start > new Date() ? undefined : start;
-    }, [orderDates?.effectiveStartDate]);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return today;
+    }, []);
     const maxStopDate = useMemo(() => {
       const today = new Date();
       today.setHours(23, 59, 59, 999);
