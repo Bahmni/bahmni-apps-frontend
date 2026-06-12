@@ -1,40 +1,51 @@
 import { get, post } from '@bahmni/services';
-import { MedicationRequest, ValueSet, Bundle } from 'fhir/r4';
-
-const FHIR_BASE = '/openmrs/ws/fhir2/R4';
-const STOP_REASON_VALUESET_TITLE = 'Stopped Order Reason';
+import { MedicationRequest } from 'fhir/r4';
+import {
+  STOP_REASON_CONCEPT_NAME,
+  STOP_REASON_CONCEPT_URL,
+  STOP_MEDICATION_URL,
+} from '../constants/app';
 
 export interface StopReason {
   uuid: string;
   display: string;
 }
 
+interface ConceptMember {
+  uuid: string;
+  display: string;
+}
+
+interface ConceptSearchResult {
+  results: Array<{
+    uuid: string;
+    setMembers: ConceptMember[];
+    answers: ConceptMember[];
+  }>;
+}
+
 /**
- * Fetches stop reasons from the FHIR ValueSet "Stopped Order Reason".
+ * Fetches stop reasons from the OpenMRS concept "Stopped Order Reason".
  *
- * 1. Searches: GET /ws/fhir2/R4/ValueSet?title=Stopped+Order+Reason
- * 2. Expands: GET /ws/fhir2/R4/ValueSet/{uuid}/$expand
- * 3. Returns the expanded concepts as stop reasons
+ * Returns setMembers (ConvSet) or answers (Coded), whichever is populated.
+ * GET /openmrs/ws/rest/v1/concept?name=Stopped+Order+Reason&v=custom:(uuid,setMembers:(uuid,display),answers:(uuid,display))
  */
 export async function fetchStopReasons(): Promise<StopReason[]> {
   try {
-    const searchBundle = await get<Bundle>(
-      `${FHIR_BASE}/ValueSet?title=${encodeURIComponent(STOP_REASON_VALUESET_TITLE)}`,
+    const result = await get<ConceptSearchResult>(
+      STOP_REASON_CONCEPT_URL(STOP_REASON_CONCEPT_NAME),
     );
 
-    const valueSetEntry = searchBundle.entry?.[0]?.resource as
-      | ValueSet
-      | undefined;
-    if (!valueSetEntry?.id) return [];
+    const concept = result.results?.[0];
+    if (!concept) return [];
 
-    const expanded = await get<ValueSet>(
-      `${FHIR_BASE}/ValueSet/${valueSetEntry.id}/$expand`,
-    );
+    const members =
+      concept.setMembers?.length > 0 ? concept.setMembers : concept.answers;
+    if (!members?.length) return [];
 
-    const contains = expanded.expansion?.contains ?? [];
-    return contains.map((c) => ({
-      uuid: c.code ?? '',
-      display: c.display ?? '',
+    return members.map((m) => ({
+      uuid: m.uuid,
+      display: m.display,
     }));
   } catch {
     return [];
@@ -70,7 +81,7 @@ export async function stopMedication(
   };
 
   return post<MedicationRequest>(
-    `${FHIR_BASE}/MedicationRequest/${medicationRequestId}/$stop`,
+    STOP_MEDICATION_URL(medicationRequestId),
     fhirParams,
   );
 }

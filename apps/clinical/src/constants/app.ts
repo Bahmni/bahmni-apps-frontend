@@ -24,3 +24,11 @@ export const CLINICAL_V2_CONFIG_BASE_URL =
   '/bahmni_config/openmrs/apps/clinical/v2';
 
 export const CDSS_SERVER_CONFIG_URL = `${CLINICAL_V2_CONFIG_BASE_URL}/cdss-servers.json`;
+
+export const STOP_REASON_CONCEPT_NAME = 'Stopped Order Reason';
+export const STOP_REASON_CONCEPT_URL = (name: string) =>
+  OPENMRS_REST_V1 +
+  `/concept?name=${encodeURIComponent(name)}&v=custom:(uuid,setMembers:(uuid,display),answers:(uuid,display))`;
+
+export const STOP_MEDICATION_URL = (id: string) =>
+  OPENMRS_FHIR_R4 + `/MedicationRequest/${id}/$stop`;
