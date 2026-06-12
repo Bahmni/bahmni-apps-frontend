@@ -1,7 +1,7 @@
 import { SortableDataTable } from '@bahmni/design-system';
 import { getConditionPage, useTranslation } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNotification } from '../notification';
 import { ConditionViewModel } from './models';
 import styles from './styles/ConditionsTable.module.scss';
@@ -63,13 +63,8 @@ const ConditionsTabContent: React.FC<ConditionsTabContentProps> = ({
     },
   });
 
-  // Track whether patientUUID was previously set to reset page on change
-  const prevPatientUUIDRef = useRef(patientUUID);
   useEffect(() => {
-    if (prevPatientUUIDRef.current !== patientUUID) {
-      prevPatientUUIDRef.current = patientUUID;
-      setCurrentPage(1);
-    }
+    setCurrentPage(1);
   }, [patientUUID]);
 
   useEffect(() => {

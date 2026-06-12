@@ -111,21 +111,7 @@ const ConditionsTable: React.FC<WidgetProps> = ({
     }
   };
 
-  // Active tab includes the Actions column; Inactive tab hides it
-  const activeHeaders = useMemo(() => {
-    const base = [
-      { key: 'display', header: t('CONDITION_LIST_CONDITION') },
-      { key: 'onsetDate', header: t('CONDITION_TABLE_DURATION') },
-      { key: 'recorder', header: t('CONDITION_TABLE_RECORDED_BY') },
-      { key: 'status', header: t('CONDITION_LIST_STATUS') },
-    ];
-    if (showActions) {
-      base.push({ key: 'actions', header: t('ACTIONS') });
-    }
-    return base;
-  }, [t, showActions]);
-
-  const inactiveHeaders = useMemo(
+  const baseHeaders = useMemo(
     () => [
       { key: 'display', header: t('CONDITION_LIST_CONDITION') },
       { key: 'onsetDate', header: t('CONDITION_TABLE_DURATION') },
@@ -134,6 +120,16 @@ const ConditionsTable: React.FC<WidgetProps> = ({
     ],
     [t],
   );
+
+  const activeHeaders = useMemo(
+    () =>
+      showActions
+        ? [...baseHeaders, { key: 'actions', header: t('ACTIONS') }]
+        : baseHeaders,
+    [baseHeaders, showActions, t],
+  );
+
+  const inactiveHeaders = baseHeaders;
 
   const renderCell = useCallback(
     (condition: ConditionViewModel, cellId: string) => {
@@ -193,7 +189,7 @@ const ConditionsTable: React.FC<WidgetProps> = ({
           return undefined;
       }
     },
-    [t, disableActions],
+    [t, disableActions, setConditionToMarkInactive],
   );
 
   return (
