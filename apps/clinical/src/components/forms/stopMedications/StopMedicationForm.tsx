@@ -15,7 +15,7 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { MedicationRequest } from 'fhir/r4';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import {
@@ -53,6 +53,18 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       setMedicationToStop,
       setFieldConfig,
     } = useStopMedicationStore();
+
+    // Stable ref for the DatePicker `value` prop — prevents the controlled-value cycle
+    // where Carbon calls fp.setDate(value) on every Zustand update and clears the input
+    // when the user re-selects the same date that is already in the store.
+    const initialStopDateRef = useRef(stopDate);
+    const prevMedicationIdRef = useRef<string | undefined>(stopMedication?.id);
+    // Update synchronously during render so the DatePicker re-initialises to today
+    // whenever a different medication is being stopped.
+    if (prevMedicationIdRef.current !== stopMedication?.id) {
+      prevMedicationIdRef.current = stopMedication?.id;
+      initialStopDateRef.current = stopDate;
+    }
 
     const { data: medicationConfig } = useQuery({
       queryKey: ['medicationConfig'],
@@ -94,19 +106,27 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       enabled: !!stopMedication?.id,
     });
 
+    // min = effectiveStartDate (medication start), max = today (can't stop in the future)
+    // For scheduled medications the effectiveStartDate is in the future — in that case
+    // we don't apply a minDate so the user can still select today to cancel the order.
+    // Memoized so the Date object references stay stable between re-renders and
+    // don't trigger unnecessary flatpickr minDate/maxDate updates.
+    const minStopDate = useMemo(() => {
+      if (!orderDates?.effectiveStartDate) return undefined;
+      const start = new Date(orderDates.effectiveStartDate);
+      return start > new Date() ? undefined : start;
+    }, [orderDates?.effectiveStartDate]);
+    const maxStopDate = useMemo(() => {
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      return today;
+    }, []);
+
     if (!stopMedication) {
       return null;
     }
 
     const medicationName = stopMedication.medicationReference?.display ?? '';
-
-    // min = effectiveStartDate (medication start), max = today (can't stop in the future)
-    const minStopDate = orderDates?.effectiveStartDate
-      ? new Date(orderDates.effectiveStartDate)
-      : undefined;
-    const today = new Date();
-    today.setHours(23, 59, 59, 999);
-    const maxStopDate = today;
 
     // Use concept-based reasons from API; fall back to config-based strings
     const stopReasons: StopReason[] =
@@ -140,7 +160,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
               <DatePicker
                 datePickerType="single"
                 data-testid="stop-medication-date-picker"
-                value={stopDate}
+                value={initialStopDateRef.current}
                 minDate={minStopDate}
                 maxDate={maxStopDate}
                 onChange={(dates: Date[]) => {
@@ -148,7 +168,6 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                     setStopDate(dates[0]);
                   }
                 }}
-                allowInput={false}
               >
                 <DatePickerInput
                   id="stop-medication-date"
