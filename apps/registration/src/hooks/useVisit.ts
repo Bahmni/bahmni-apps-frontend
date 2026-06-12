@@ -8,12 +8,12 @@ import {
 import { useNotification } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { useRegistrationConfig } from '../providers/registrationConfig';
 import {
   linkRegistrationEncounterToVisit,
   findValidRegistrationEncounterInSession,
   createRegistrationEncounterForPatient,
 } from '../services/registrationEncounterService';
+import { useRegistrationEncounterTypeUuid } from './useRegistrationEncounterTypeUuid';
 
 export const useVisitTypes = () => {
   const { data: visitTypes, isLoading } = useQuery({
@@ -47,7 +47,7 @@ export const useCreateVisit = () => {
   const { patientUuid } = useParams<{ patientUuid: string }>();
   const { hasActiveVisit } = useActiveVisit(patientUuid);
   const queryClient = useQueryClient();
-  const { registrationConfig } = useRegistrationConfig();
+  const encounterTypeUuid = useRegistrationEncounterTypeUuid();
 
   const createVisit = async (patientUuid: string, visitType: VisitType) => {
     try {
@@ -57,8 +57,6 @@ export const useCreateVisit = () => {
       await createVisitForPatient(patientUuid, visitType);
       queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
 
-      const encounterTypeUuid =
-        registrationConfig?.registrationEncounterTypeUuid;
       if (encounterTypeUuid) {
         try {
           const existingEncounter =
