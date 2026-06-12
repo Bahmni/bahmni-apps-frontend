@@ -5,6 +5,7 @@ import './conditionsAndDiagnoses';
 import './medicationRequest';
 import './immunization';
 import './observations';
+import './stopMedications';
 
 export type { InputControl, EncounterContext } from './models';
 export { default as InputControlRenderer } from './renderer';

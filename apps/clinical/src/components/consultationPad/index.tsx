@@ -65,6 +65,15 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 }) => {
   const preloadedAllergies = encounterSessionStartContext.preloadedAllergies;
   const encounterType = encounterSessionStartContext.encounterType;
+  const editOnlyKey = encounterSessionStartContext.editOnly as
+    | string
+    | undefined;
+  const editTitle = encounterSessionStartContext.editTitle as
+    | string
+    | undefined;
+  const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
+    | string
+    | undefined;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -124,9 +133,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   }, [encounterType, clinicalConfig]);
 
-  const editOnlyKey = encounterSessionStartContext.editOnly;
-  const editTitle = encounterSessionStartContext.editTitle;
-
   const activeEntries = useMemo(
     () => getActiveEntries(registry, resolvedEncounterType!, editOnlyKey),
     [registry, resolvedEncounterType, editOnlyKey],
@@ -165,9 +171,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       encounterTypeUUID: selectedEncounterType?.uuid,
     });
 
-  const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
-    | string
-    | undefined;
   const [editEncounter, setEditEncounter] = useState<Encounter | null>(null);
   const [editEncounterLoading, setEditEncounterLoading] = useState(false);
   useEffect(() => {
@@ -405,6 +408,41 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
     try {
       setIsSubmitting(true);
+
+      // If any active entry has a direct submit handler (e.g., $stop operation),
+      // call it directly and skip the consultation bundle flow.
+      const directSubmitEntries = activeEntries.filter(
+        (entry) => entry.hasData() && entry.onDirectSubmit,
+      );
+      const bundleEntries = activeEntries.filter(
+        (entry) => entry.hasData() && !entry.onDirectSubmit,
+      );
+
+      for (const entry of directSubmitEntries) {
+        await entry.onDirectSubmit!();
+      }
+
+      // Skip bundle submission if all data was handled by direct submit
+      if (directSubmitEntries.length > 0 && bundleEntries.length === 0) {
+        const updatedResources = captureUpdatedResources(activeEntries);
+        dispatchConsultationSaved({
+          patientUUID: useEncounterDetailsStore.getState().patientUUID ?? '',
+          updatedResources,
+          updatedConcepts: new Map(),
+        });
+
+        addNotification({
+          title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
+          message: t('CONSULTATION_SUBMITTED_SUCCESS_MESSAGE'),
+          type: 'success',
+          timeout: 5000,
+        });
+
+        activeEntries.forEach((entry) => entry.reset());
+        onClose();
+        return;
+      }
+
       const result = await submitConsultation({
         activeEncounter: encounterForSubmission,
         episodeOfCareUuids,

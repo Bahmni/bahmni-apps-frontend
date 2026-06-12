@@ -2,7 +2,7 @@ import { Button, Edit, IconButton } from '@bahmni/design-system';
 import { hasPrivilege, useTranslation } from '@bahmni/services';
 import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
 import { MedicationRequest } from 'fhir/r4';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import { MedicationAction } from '../models';
 import { handleAction } from './actionHandlers';
@@ -14,25 +14,35 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
 type ActionsProps = {
   actions: MedicationAction[];
   medication: MedicationRequest;
+  startDate?: string;
   disabledActionTypes?: string[];
 };
 
 const Actions: React.FC<ActionsProps> = ({
   actions,
   medication,
+  startDate,
   disabledActionTypes = [],
 }) => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
 
-  if (actions.length === 0) return null;
+  // Filter out actions the user doesn't have privilege for — completely hidden, not disabled
+  const permittedActions = useMemo(
+    () =>
+      actions.filter((action) =>
+        hasPrivilege(userPrivileges, action.requiredPrivilege),
+      ),
+    [actions, userPrivileges],
+  );
+
+  if (permittedActions.length === 0) return null;
 
   const isActionDisabled = (action: MedicationAction) =>
-    disabledActionTypes.includes(action.type) ||
-    !hasPrivilege(userPrivileges, action.requiredPrivilege);
+    disabledActionTypes.includes(action.type);
 
-  if (actions.length === 1) {
-    const action = actions[0];
+  if (permittedActions.length === 1) {
+    const action = permittedActions[0];
     const disabled = isActionDisabled(action);
     const icon = ACTION_ICONS[action.type];
 
@@ -43,7 +53,9 @@ const Actions: React.FC<ActionsProps> = ({
           kind="ghost"
           size="sm"
           disabled={disabled}
-          onClick={() => !disabled && handleAction(action, medication)}
+          onClick={() =>
+            !disabled && handleAction(action, medication, startDate)
+          }
           testId={`medication-action-${action.type}-${medication.id}`}
         >
           {icon}
@@ -56,9 +68,9 @@ const Actions: React.FC<ActionsProps> = ({
         id={`medication-action-${action.type}-button`}
         data-testid={`medication-action-${action.type}-${medication.id}`}
         aria-label={t(action.label)}
-        kind="ghost"
+        kind={action.type === 'stop' ? 'danger--ghost' : 'ghost'}
         disabled={disabled}
-        onClick={() => handleAction(action, medication)}
+        onClick={() => handleAction(action, medication, startDate)}
       >
         {t(action.label)}
       </Button>
@@ -73,14 +85,15 @@ const Actions: React.FC<ActionsProps> = ({
       flipped
       size="sm"
     >
-      {actions.map((action) => (
+      {permittedActions.map((action) => (
         <OverflowMenuItem
           id={`medication-action-${action.type}-${medication.id}`}
           data-testid={`medication-action-${action.type}-${medication.id}`}
           key={action.type}
           itemText={t(action.label)}
+          isDelete={action.type === 'stop'}
           disabled={isActionDisabled(action)}
-          onClick={() => handleAction(action, medication)}
+          onClick={() => handleAction(action, medication, startDate)}
         />
       ))}
     </OverflowMenu>

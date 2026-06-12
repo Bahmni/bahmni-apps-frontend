@@ -9,6 +9,19 @@ export interface DrugFormDefault {
   route?: string;
 }
 
+export interface StopMedicationFieldConfig {
+  isVisible?: boolean;
+  isMandatory?: boolean;
+}
+
+export interface StopMedicationConfig {
+  stopDate?: StopMedicationFieldConfig;
+  stopReason?: StopMedicationFieldConfig;
+  note?: StopMedicationFieldConfig;
+}
+
 export interface MedicationJSONConfig {
   drugFormDefaults?: Record<string, DrugFormDefault>;
+  stopReasons?: string[];
+  stopMedicationFields?: StopMedicationConfig;
 }

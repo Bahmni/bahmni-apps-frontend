@@ -7,7 +7,7 @@ const { join } = require('path');
 module.exports = (env, argv) => {
   //TODO to read this from docker compose
   //TODO should we hardcode?
-  const publicPath = env.PUBLIC_PATH || process.env.PUBLIC_PATH || '/bahmni-new/';
+  const publicPath = env.PUBLIC_PATH || process.env.PUBLIC_PATH || '/bahmni-v2/';
   const isDevelopment = argv.mode !== 'production';
 
   return {
@@ -27,7 +27,7 @@ module.exports = (env, argv) => {
     devServer: {
       port: 3000,
       historyApiFallback: {
-        index: '/bahmni-new/index.html',
+        index: '/bahmni-v2/index.html',
         disableDotRule: true,
         htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
       },

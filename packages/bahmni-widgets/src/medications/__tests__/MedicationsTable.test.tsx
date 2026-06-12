@@ -3,6 +3,7 @@ import {
   formatDateTime,
   groupByDate,
   MedicationRequest,
+  MedicationStatus,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
@@ -20,6 +21,7 @@ import {
   sortMedicationsByStatus,
 } from '../utils';
 import {
+  fhirMedicationRequestMock,
   mockMedications,
   mockMedicationWithDoseForm,
   mockMedicationWithoutDoseForm,
@@ -576,6 +578,227 @@ describe('MedicationsTable', () => {
       const editButton = screen.getByTestId('medication-action-edit-1');
       expect(editButton).toBeInTheDocument();
       expect(editButton).toBeDisabled();
+    });
+  });
+
+  describe('Stop medication rendering', () => {
+    it('renders stopped status tag for stopped medications', async () => {
+      const stoppedMedication = {
+        ...mockMedications[0],
+        status: MedicationStatus.Stopped,
+      };
+
+      const formattedStopped = {
+        id: stoppedMedication.id,
+        name: stoppedMedication.name,
+        dosage: `${stoppedMedication.dose?.value} ${stoppedMedication.dose?.unit}`,
+        dosageUnit: stoppedMedication.dose?.unit ?? '',
+        quantity: `${stoppedMedication.quantity.value} ${stoppedMedication.quantity.unit}`,
+        instruction: stoppedMedication.instructions,
+        startDate: stoppedMedication.startDate,
+        orderDate: stoppedMedication.orderDate,
+        orderedBy: stoppedMedication.orderedBy,
+        status: stoppedMedication.status,
+        priority: stoppedMedication.priority,
+        asNeeded: stoppedMedication.asNeeded,
+        isImmediate: stoppedMedication.isImmediate,
+        fhirResource: fhirMedicationRequestMock,
+      };
+
+      mockFormatMedicationRequest.mockReturnValue(formattedStopped);
+      mockSortMedicationsByStatus.mockReturnValue([formattedStopped]);
+
+      const medicationsByDate = [
+        { date: '15/01/2024', items: [formattedStopped] },
+      ];
+      mockGroupByDate.mockReturnValue(medicationsByDate);
+
+      mockUseQuery.mockReturnValue({
+        data: [stoppedMedication],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+
+      // Stopped medications appear in "All" tab
+      const allTab = screen.getByRole('tab', { name: 'MEDICATIONS_TAB_ALL' });
+      await userEvent.click(allTab);
+
+      expect(
+        screen.getByText('MEDICATIONS_STATUS_STOPPED'),
+      ).toBeInTheDocument();
+    });
+
+    it('displays stop reason text below status when medication is stopped', async () => {
+      const stoppedMedication = {
+        ...mockMedications[0],
+        status: MedicationStatus.Stopped,
+        stopReason: 'Adverse reaction',
+      };
+
+      const formattedStopped = {
+        id: stoppedMedication.id,
+        name: stoppedMedication.name,
+        dosage: `${stoppedMedication.dose?.value} ${stoppedMedication.dose?.unit}`,
+        dosageUnit: stoppedMedication.dose?.unit ?? '',
+        quantity: `${stoppedMedication.quantity.value} ${stoppedMedication.quantity.unit}`,
+        instruction: stoppedMedication.instructions,
+        startDate: stoppedMedication.startDate,
+        orderDate: stoppedMedication.orderDate,
+        orderedBy: stoppedMedication.orderedBy,
+        status: stoppedMedication.status,
+        priority: stoppedMedication.priority,
+        asNeeded: stoppedMedication.asNeeded,
+        isImmediate: stoppedMedication.isImmediate,
+        stopReason: 'Adverse reaction',
+        fhirResource: fhirMedicationRequestMock,
+      };
+
+      mockFormatMedicationRequest.mockReturnValue(formattedStopped);
+      mockSortMedicationsByStatus.mockReturnValue([formattedStopped]);
+
+      const medicationsByDate = [
+        { date: '15/01/2024', items: [formattedStopped] },
+      ];
+      mockGroupByDate.mockReturnValue(medicationsByDate);
+
+      mockUseQuery.mockReturnValue({
+        data: [stoppedMedication],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+
+      // Switch to "All" tab where stopped medications appear
+      const allTab = screen.getByRole('tab', { name: 'MEDICATIONS_TAB_ALL' });
+      await userEvent.click(allTab);
+
+      expect(
+        screen.getByText((content) => content.includes('Adverse reaction')),
+      ).toBeInTheDocument();
+    });
+
+    it('disables stop action for completed medications', () => {
+      const stopConfig = {
+        actions: [
+          {
+            label: 'Stop',
+            type: 'stop',
+            encounterType: 'Consultation',
+            requiredPrivilege: ['Stop Orders'],
+          },
+        ],
+      };
+
+      const completedMedication = {
+        ...mockMedications[0],
+        status: MedicationStatus.Completed,
+      };
+
+      mockUseUserPrivilege.mockReturnValue({
+        userPrivileges: [{ name: 'Stop Orders' }],
+      } as any);
+
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) => ({
+          id: med.id,
+          name: med.name,
+          dosage: `${med.dose?.value} ${med.dose?.unit}`,
+          dosageUnit: med.dose?.unit ?? '',
+          quantity: `${med.quantity.value} ${med.quantity.unit}`,
+          instruction: med.instructions,
+          startDate: med.startDate,
+          orderDate: med.orderDate,
+          orderedBy: med.orderedBy,
+          status: med.status,
+          priority: med.priority,
+          asNeeded: med.asNeeded,
+          isImmediate: med.isImmediate,
+          fhirResource: {
+            resourceType: 'MedicationRequest',
+            id: med.id,
+          },
+        }),
+      );
+
+      // Completed meds appear in "All" tab but we still verify
+      // the action is disabled via the active/scheduled tab logic
+      mockUseQuery.mockReturnValue({
+        data: [completedMedication],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      // Completed medications are not in active/scheduled, so the actions
+      // column won't render for them in the default tab. But the status
+      // disabling logic can be verified through the rendering path.
+      render(<MedicationsTable config={stopConfig} />);
+
+      // Completed medications don't appear in active tab
+      expect(
+        screen.queryByTestId('medication-action-stop-1'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('enables stop action for active medications', () => {
+      const stopConfig = {
+        actions: [
+          {
+            label: 'STOP_ACTION_LABEL',
+            type: 'stop',
+            encounterType: 'Consultation',
+            requiredPrivilege: ['Stop Orders'],
+          },
+        ],
+      };
+
+      mockUseUserPrivilege.mockReturnValue({
+        userPrivileges: [{ name: 'Stop Orders' }],
+      } as any);
+
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) => ({
+          id: med.id,
+          name: med.name,
+          dosage: `${med.dose?.value} ${med.dose?.unit}`,
+          dosageUnit: med.dose?.unit ?? '',
+          quantity: `${med.quantity.value} ${med.quantity.unit}`,
+          instruction: med.instructions,
+          startDate: med.startDate,
+          orderDate: med.orderDate,
+          orderedBy: med.orderedBy,
+          status: med.status,
+          priority: med.priority,
+          asNeeded: med.asNeeded,
+          isImmediate: med.isImmediate,
+          fhirResource: {
+            resourceType: 'MedicationRequest',
+            id: med.id,
+          },
+        }),
+      );
+
+      mockUseQuery.mockReturnValue({
+        data: [mockMedications[0]], // active medication
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable config={stopConfig} />);
+
+      const stopButton = screen.getByTestId('medication-action-stop-1');
+      expect(stopButton).toBeInTheDocument();
+      expect(stopButton).not.toBeDisabled();
     });
   });
 
