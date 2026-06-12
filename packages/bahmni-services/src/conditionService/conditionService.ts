@@ -44,16 +44,18 @@ export interface ConditionPage {
  * @param patientUUID - The UUID of the patient
  * @param count - Number of items per page (default 10)
  * @param page - 1-based page number (default 1)
+ * @param clinicalStatus - Optional FHIR clinical-status filter: 'active' or 'inactive'. When omitted, all conditions are returned.
  * @returns Promise resolving to a ConditionPage with conditions and total count
  */
 export async function getConditionPage(
   patientUUID: string,
   count: number = 10,
   page: number = 1,
+  clinicalStatus?: 'active' | 'inactive',
 ): Promise<ConditionPage> {
   const offset = (page - 1) * count;
   const bundle = await get<Bundle>(
-    PATIENT_CONDITION_PAGE_URL(patientUUID, count, offset),
+    PATIENT_CONDITION_PAGE_URL(patientUUID, count, offset, clinicalStatus),
   );
   const conditions =
     bundle.entry
