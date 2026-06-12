@@ -5,7 +5,7 @@ import {
   post,
   Form2Observation,
 } from '@bahmni/services';
-import { BundleEntry, Reference, Encounter, CodeableConcept } from 'fhir/r4';
+import { BundleEntry, CodeableConcept, Encounter, Reference } from 'fhir/r4';
 import { ALLERGY_INTOLERANCE_RESOURCE_TYPE } from '../constants/allergy';
 import { CONSULTATION_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';

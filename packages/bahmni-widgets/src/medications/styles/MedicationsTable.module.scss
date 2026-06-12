@@ -69,6 +69,13 @@
   color: $cool-gray-20;
 }
 
+.stopReasonText {
+  @include type-style("helper-text-01");
+  color: $text-secondary;
+  display: block;
+  margin-block-start: $spacing-02;
+}
+
 .rowSeperator {
   td {
     border-block-end: 0 !important;
@@ -117,3 +124,10 @@
     }
   }
 }
+
+.stopDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
