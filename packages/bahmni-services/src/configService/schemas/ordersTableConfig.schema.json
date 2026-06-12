@@ -69,6 +69,13 @@
         }
       },
       "minItems": 1
+    },
+    "tabPractitionerTypeMap": {
+      "type": "object",
+      "description": "Mapping of order tab names to practitioner types for region-specific configuration",
+      "additionalProperties": {
+        "type": "string"
+      }
     }
   }
 }

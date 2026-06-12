@@ -182,6 +182,10 @@ describe('OrderFulfillmentSlider', () => {
         threshold: 28,
         tabLabels: ['Radiology Order'],
       },
+      tabPractitionerTypeMap: {
+        'Radiology Order': 'Radiology Technologist',
+        'Lab Order': 'Laboratory Technologist',
+      },
     },
   };
 

@@ -1,9 +1,5 @@
 import { get } from '../api';
-import {
-  ORDERS_BASE_URL,
-  PROVIDER_ENDPOINT_PATTERN,
-  TAB_PRACTITIONER_TYPE_MAP,
-} from './constants';
+import { ORDERS_BASE_URL, PROVIDER_ENDPOINT_PATTERN } from './constants';
 
 export interface Provider {
   id: string;
@@ -21,15 +17,21 @@ export interface ProviderResponse {
 
 export const fetchProvidersByTab = async (
   tabLabel: string,
+  tabPractitionerTypeMap?: Record<string, string>,
 ): Promise<Provider[]> => {
-  const practitionerType = TAB_PRACTITIONER_TYPE_MAP[tabLabel];
+  if (!tabPractitionerTypeMap) {
+    return [];
+  }
+
+  const practitionerType = tabPractitionerTypeMap[tabLabel];
 
   if (!practitionerType) {
     return [];
   }
 
   try {
-    const url = `${ORDERS_BASE_URL}${PROVIDER_ENDPOINT_PATTERN}${practitionerType}`;
+    const encodedPractitionerType = encodeURIComponent(practitionerType);
+    const url = `${ORDERS_BASE_URL}${PROVIDER_ENDPOINT_PATTERN}${encodedPractitionerType}`;
     const response = await get<ProviderResponse>(url);
 
     if (response?.results && Array.isArray(response.results)) {

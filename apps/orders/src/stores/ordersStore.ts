@@ -98,9 +98,11 @@ export interface OrdersStoreState {
   tabCounts: Record<string, number>;
   currentUser: User;
   currentLocation: { name: string; uuid: string };
+  tabPractitionerTypeMap?: Record<string, string>;
   setSelectedIndex: (selected: number) => void;
   fetchCurrentUser: () => void;
   setCurrentLocation: () => void;
+  setTabPractitionerTypeMap: (map: Record<string, string>) => void;
   fetchOrdersForTab: (selected: number) => void;
   fetchAllPendingOrders: (tabs: OrderTab[]) => void;
   fetchProviders: (tabLabel: string) => void;
@@ -117,6 +119,7 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
   isLoading: false,
   currentUser: {} as User,
   currentLocation: { name: '', uuid: '' },
+  tabPractitionerTypeMap: undefined,
   ordersData: [],
   providers: {},
   setSelectedIndex: (selected: number) => {
@@ -148,6 +151,12 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
     } catch {
       // Silently fail if cookie is invalid, keep current location
     }
+  },
+  setTabPractitionerTypeMap: (map: Record<string, string>) => {
+    set((state) => ({
+      ...state,
+      tabPractitionerTypeMap: map,
+    }));
   },
   fetchOrdersForTab: async (tabIndex: number) => {
     const { tabs, currentLocation, currentUser, setIsLoading } = get();
@@ -231,14 +240,17 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
     }
   },
   fetchProviders: async (tabLabel: string) => {
-    const { providers: existingProviders } = get();
+    const { providers: existingProviders, tabPractitionerTypeMap } = get();
 
     if (existingProviders[tabLabel]) {
       return;
     }
 
     try {
-      const providers = await fetchProvidersByTab(tabLabel);
+      const providers = await fetchProvidersByTab(
+        tabLabel,
+        tabPractitionerTypeMap,
+      );
       set((state) => ({
         ...state,
         providers: {
