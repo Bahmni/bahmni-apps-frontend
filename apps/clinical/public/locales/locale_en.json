@@ -360,8 +360,17 @@
   "MEDICATION_STAT": "STAT",
   "MEDICATION_TOTAL_QUANTITY": "Total quantity",
   "NOTE_LABEL": "Note",
-  "MEDICATION_ADD_NOTE": "Add Note",
-  "MEDICATION_ADD_NOTE_PLACEHOLDER": "Add notes for the Medication",
+  "STOP_ACTION_LABEL": "Stop",
+  "STOP_MEDICATION_FORM_TITLE": "Stop Medication",
+  "STOP_MEDICATION_NAME_LABEL": "Medication name",
+  "STOP_MEDICATION_DATE_LABEL": "Stop date",
+  "STOP_MEDICATION_REASON_LABEL": "Stop reason",
+  "STOP_MEDICATION_NOTE_LABEL": "Description",
+  "STOP_MEDICATION_NOTE_PLACEHOLDER": "Enter description",
+  "STOP_MEDICATION_REASON_REQUIRED": "Stop reason is required",
+  "STOP_MEDICATION_DATE_REQUIRED": "Stop date is required",
+  "STOP_MEDICATION_NOTE_REQUIRED": "Note is required",
+  "STOP_MEDICATION_MESSAGE": "Stopped a medication for patient",
   "MONTHS_one": " month",
   "MONTHS_other": " months",
   "NETWORK_ERROR": "A network error occurred",
@@ -501,5 +510,7 @@
   "YEARS_one": " year",
   "YEARS_other": " years",
   "PRINT_MODAL_PREPARING_DOCUMENT": "Preparing document…",
-  "PRINT_MORE_OPTIONS": "More print options"
+  "PRINT_MORE_OPTIONS": "More print options",
+  "MEDICATIONS_STOPPED_ON": "Stopped on",
+  "MEDICATIONS_STOPPED_DUE_TO": "due to"
 }

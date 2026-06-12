@@ -26,7 +26,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
           >
             <a
               class="cds--link"
-              href="/bahmni/home/index.html"
+              href="/bahmni-v2/home"
             >
               Home
             </a>

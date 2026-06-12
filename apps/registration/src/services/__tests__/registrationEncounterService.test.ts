@@ -7,11 +7,13 @@ import {
   getUserLoginLocation,
   getCurrentUser,
   getCurrentProvider,
+  get,
 } from '@bahmni/services';
 import type { Encounter } from 'fhir/r4';
 import {
   createRegistrationEncounterForPatient,
   findValidRegistrationEncounterInSession,
+  getEncounterTypeUuidByName,
   linkRegistrationEncounterToVisit,
 } from '../registrationEncounterService';
 
@@ -25,6 +27,7 @@ jest.mock('@bahmni/services', () => ({
   getUserLoginLocation: jest.fn(),
   getCurrentUser: jest.fn(),
   getCurrentProvider: jest.fn(),
+  get: jest.fn(),
   dispatchAuditEvent: jest.fn(),
   AUDIT_LOG_EVENT_DETAILS: {
     CREATE_ENCOUNTER: { eventType: 'CREATE_ENCOUNTER', module: 'registration' },
@@ -64,6 +67,7 @@ const mockGetCurrentUser = getCurrentUser as jest.MockedFunction<
 const mockGetCurrentProvider = getCurrentProvider as jest.MockedFunction<
   typeof getCurrentProvider
 >;
+const mockGet = get as jest.MockedFunction<typeof get>;
 
 const PATIENT_UUID = 'patient-uuid-123';
 const ENCOUNTER_TYPE_UUID = 'enc-type-uuid-456';
@@ -403,5 +407,55 @@ describe('linkRegistrationEncounterToVisit', () => {
     expect(mockSearchEncounters).not.toHaveBeenCalled();
     expect(mockUpdateFhirEncounter).not.toHaveBeenCalled();
     expect(mockCreateFhirEncounter).not.toHaveBeenCalled();
+  });
+});
+
+describe('getEncounterTypeUuidByName', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should return the uuid when the encounter type name matches', async () => {
+    mockGet.mockResolvedValue({
+      results: [
+        { uuid: 'uuid-001', name: 'Registration' },
+        { uuid: 'uuid-002', name: 'OPD' },
+      ],
+    });
+
+    const result = await getEncounterTypeUuidByName('Registration');
+
+    expect(result).toBe('uuid-001');
+    expect(mockGet).toHaveBeenCalledWith(
+      expect.stringContaining('q=Registration'),
+    );
+  });
+
+  it('should return undefined when no encounter type matches the name', async () => {
+    mockGet.mockResolvedValue({
+      results: [{ uuid: 'uuid-001', name: 'OPD' }],
+    });
+
+    const result = await getEncounterTypeUuidByName('Registration');
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should return undefined when results are empty', async () => {
+    mockGet.mockResolvedValue({ results: [] });
+
+    const result = await getEncounterTypeUuidByName('Registration');
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should URL-encode the name in the query', async () => {
+    mockGet.mockResolvedValue({ results: [] });
+
+    await getEncounterTypeUuidByName('Clinic Visit Type');
+
+    expect(mockGet).toHaveBeenCalledWith(
+      expect.stringContaining('q=Clinic%20Visit%20Type'),
+    );
   });
 });

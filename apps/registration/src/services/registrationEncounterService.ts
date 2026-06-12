@@ -9,10 +9,14 @@ import {
   getUserLoginLocation,
   searchEncounters,
   updateFhirEncounter,
+  get,
+  OPENMRS_REST_V1,
   type AuditEventType,
 } from '@bahmni/services';
 import type { Encounter } from 'fhir/r4';
 import { buildRegistrationEncounterPayload } from '../utils/fhirEncounterMapper';
+
+const ENCOUNTER_TYPE_URL = `${OPENMRS_REST_V1}/encountertype`;
 
 /**
  * Creates a registration encounter for patient.
@@ -136,4 +140,13 @@ export async function linkRegistrationEncounterToVisit(
   }
 
   if (validEncounters.length === 0) return;
+}
+
+export async function getEncounterTypeUuidByName(
+  name: string,
+): Promise<string | undefined> {
+  const response = await get<{ results: { uuid: string; name: string }[] }>(
+    `${ENCOUNTER_TYPE_URL}?q=${encodeURIComponent(name)}&v=default`,
+  );
+  return response.results.find((r) => r.name === name)?.uuid;
 }
