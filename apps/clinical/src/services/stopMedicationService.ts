@@ -1,8 +1,8 @@
 import { get, post } from '@bahmni/services';
-import { MedicationRequest } from 'fhir/r4';
+import { MedicationRequest, ValueSet, Bundle } from 'fhir/r4';
 import {
-  STOP_REASON_CONCEPT_NAME,
-  STOP_REASON_CONCEPT_URL,
+  STOP_REASON_VALUESET_URL,
+  STOP_REASON_VALUESET_EXPAND_URL,
   STOP_MEDICATION_URL,
 } from '../constants/app';
 
@@ -11,41 +11,32 @@ export interface StopReason {
   display: string;
 }
 
-interface ConceptMember {
-  uuid: string;
-  display: string;
-}
-
-interface ConceptSearchResult {
-  results: Array<{
-    uuid: string;
-    setMembers: ConceptMember[];
-    answers: ConceptMember[];
-  }>;
-}
-
 /**
- * Fetches stop reasons from the OpenMRS concept "Stopped Order Reason".
+ * Fetches stop reasons from the FHIR ValueSet "Stopped Order Reason".
  *
- * Returns setMembers (ConvSet) or answers (Coded), whichever is populated.
- * GET /openmrs/ws/rest/v1/concept?name=Stopped+Order+Reason&v=custom:(uuid,setMembers:(uuid,display),answers:(uuid,display))
+ * 1. Searches: GET /fhir2/R4/ValueSet?title=Stopped+Order+Reason
+ * 2. Expands: GET /fhir2/R4/ValueSet/{uuid}/$expand
+ * 3. Returns the expanded concepts as stop reasons
+ *
+ * Requires the concept to be Class=ConvSet in OpenMRS.
  */
 export async function fetchStopReasons(): Promise<StopReason[]> {
   try {
-    const result = await get<ConceptSearchResult>(
-      STOP_REASON_CONCEPT_URL(STOP_REASON_CONCEPT_NAME),
+    const searchBundle = await get<Bundle>(STOP_REASON_VALUESET_URL);
+
+    const valueSetEntry = searchBundle.entry?.[0]?.resource as
+      | ValueSet
+      | undefined;
+    if (!valueSetEntry?.id) return [];
+
+    const expanded = await get<ValueSet>(
+      STOP_REASON_VALUESET_EXPAND_URL(valueSetEntry.id),
     );
 
-    const concept = result.results?.[0];
-    if (!concept) return [];
-
-    const members =
-      concept.setMembers?.length > 0 ? concept.setMembers : concept.answers;
-    if (!members?.length) return [];
-
-    return members.map((m) => ({
-      uuid: m.uuid,
-      display: m.display,
+    const contains = expanded.expansion?.contains ?? [];
+    return contains.map((c) => ({
+      uuid: c.code ?? '',
+      display: c.display ?? '',
     }));
   } catch {
     return [];

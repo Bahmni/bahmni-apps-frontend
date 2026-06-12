@@ -1,7 +1,8 @@
 import { get, post } from '@bahmni/services';
+import { Bundle, ValueSet } from 'fhir/r4';
 import {
-  STOP_REASON_CONCEPT_NAME,
-  STOP_REASON_CONCEPT_URL,
+  STOP_REASON_VALUESET_URL,
+  STOP_REASON_VALUESET_EXPAND_URL,
 } from '../../constants/app';
 import { fetchStopReasons, stopMedication } from '../stopMedicationService';
 
@@ -20,45 +21,55 @@ describe('stopMedicationService', () => {
   });
 
   describe('fetchStopReasons', () => {
-    it('should return stop reasons from concept set members', async () => {
-      mockGet.mockResolvedValueOnce({
-        results: [
+    it('should return stop reasons from FHIR ValueSet expand', async () => {
+      const searchBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
           {
-            uuid: 'concept-uuid-1',
-            setMembers: [
-              { uuid: 'reason-1', display: 'Adverse reaction' },
-              { uuid: 'reason-2', display: 'Patient request' },
-              { uuid: 'reason-3', display: 'Drug interaction' },
-            ],
+            resource: {
+              resourceType: 'ValueSet',
+              id: 'vs-uuid-1',
+              status: 'active',
+            } as ValueSet,
           },
         ],
-      });
+      };
+      const expandedValueSet: ValueSet = {
+        resourceType: 'ValueSet',
+        id: 'vs-uuid-1',
+        status: 'active',
+        expansion: {
+          timestamp: '2025-01-01',
+          contains: [
+            { code: 'reason-1', display: 'Adverse reaction' },
+            { code: 'reason-2', display: 'Patient request' },
+          ],
+        },
+      };
+
+      mockGet
+        .mockResolvedValueOnce(searchBundle)
+        .mockResolvedValueOnce(expandedValueSet);
 
       const result = await fetchStopReasons();
 
       expect(result).toEqual([
         { uuid: 'reason-1', display: 'Adverse reaction' },
         { uuid: 'reason-2', display: 'Patient request' },
-        { uuid: 'reason-3', display: 'Drug interaction' },
       ]);
-
+      expect(mockGet).toHaveBeenCalledWith(STOP_REASON_VALUESET_URL);
       expect(mockGet).toHaveBeenCalledWith(
-        STOP_REASON_CONCEPT_URL(STOP_REASON_CONCEPT_NAME),
+        STOP_REASON_VALUESET_EXPAND_URL('vs-uuid-1'),
       );
     });
 
-    it('should return empty array when concept not found', async () => {
-      mockGet.mockResolvedValueOnce({ results: [] });
-
-      const result = await fetchStopReasons();
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return empty array when concept has no set members', async () => {
+    it('should return empty array when ValueSet not found', async () => {
       mockGet.mockResolvedValueOnce({
-        results: [{ uuid: 'concept-uuid-1', setMembers: [] }],
-      });
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [],
+      } as Bundle);
 
       const result = await fetchStopReasons();
 
