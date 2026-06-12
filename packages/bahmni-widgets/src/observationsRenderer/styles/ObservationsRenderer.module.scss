@@ -107,3 +107,9 @@
   color: $text-secondary;
   font-style: italic;
 }
+
+.mediaGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-03;
+}
