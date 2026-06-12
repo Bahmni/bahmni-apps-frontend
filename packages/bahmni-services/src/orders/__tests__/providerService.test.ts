@@ -1,5 +1,4 @@
 import { get } from '../../api';
-import { TAB_PRACTITIONER_TYPE_MAP } from '../constants';
 import {
   fetchProvidersByTab,
   Provider,
@@ -11,6 +10,14 @@ jest.mock('../../api', () => ({
 }));
 
 const mockGet = get as jest.MockedFunction<typeof get>;
+
+const TEST_TAB_PRACTITIONER_TYPE_MAP: Record<string, string> = {
+  'Radiology Order': 'Radiology Technologist',
+  'Rehab Order': 'Physiotherapist',
+  'P&O Order': 'P&O Technician',
+  'Speech Therapy Order': 'Speech Therapist',
+  'Audiology Order': 'Audiology technician',
+};
 
 describe('providerService', () => {
   beforeEach(() => {
@@ -37,7 +44,10 @@ describe('providerService', () => {
 
         mockGet.mockResolvedValueOnce(mockResponse);
 
-        const result = await fetchProvidersByTab('Radiology Order');
+        const result = await fetchProvidersByTab(
+          'Radiology Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(mockGet).toHaveBeenCalledWith(
           '/openmrs/ws/rest/v1//provider?v=custom:(id,name,uuid)&attrName=practitioner_type&attrValue=Radiology%20Technologist',
@@ -70,7 +80,10 @@ describe('providerService', () => {
 
         mockGet.mockResolvedValueOnce(mockResponse);
 
-        const result = await fetchProvidersByTab('P&O Order');
+        const result = await fetchProvidersByTab(
+          'P&O Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result[0].id).toBe('new-uuid');
       });
@@ -89,14 +102,17 @@ describe('providerService', () => {
 
         mockGet.mockResolvedValueOnce(mockResponse);
 
-        const result = await fetchProvidersByTab('Rehab Order');
+        const result = await fetchProvidersByTab(
+          'Rehab Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result[0].id).toBe('provider-id');
       });
 
       it('should fetch providers for all configured tab labels', async () => {
         mockGet.mockReset();
-        const tabLabels = Object.keys(TAB_PRACTITIONER_TYPE_MAP);
+        const tabLabels = Object.keys(TEST_TAB_PRACTITIONER_TYPE_MAP);
 
         for (const tabLabel of tabLabels) {
           const mockResponse: ProviderResponse = {
@@ -111,7 +127,10 @@ describe('providerService', () => {
 
           mockGet.mockResolvedValueOnce(mockResponse);
 
-          const result = await fetchProvidersByTab(tabLabel);
+          const result = await fetchProvidersByTab(
+            tabLabel,
+            TEST_TAB_PRACTITIONER_TYPE_MAP,
+          );
 
           expect(result).toHaveLength(1);
           expect(result[0].name).toBe('Test Provider');
@@ -120,8 +139,18 @@ describe('providerService', () => {
     });
 
     describe('Edge Cases', () => {
+      it('should return empty array when no config is provided', async () => {
+        const result = await fetchProvidersByTab('Radiology Order');
+
+        expect(mockGet).not.toHaveBeenCalled();
+        expect(result).toEqual([]);
+      });
+
       it('should return empty array for unmapped tab label', async () => {
-        const result = await fetchProvidersByTab('Unknown Order Type');
+        const result = await fetchProvidersByTab(
+          'Unknown Order Type',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(mockGet).not.toHaveBeenCalled();
         expect(result).toEqual([]);
@@ -131,7 +160,10 @@ describe('providerService', () => {
         mockGet.mockReset();
         mockGet.mockResolvedValueOnce(null);
 
-        const result = await fetchProvidersByTab('Radiology Order');
+        const result = await fetchProvidersByTab(
+          'Radiology Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result).toEqual([]);
       });
@@ -140,7 +172,10 @@ describe('providerService', () => {
         mockGet.mockReset();
         mockGet.mockResolvedValueOnce({} as ProviderResponse);
 
-        const result = await fetchProvidersByTab('Speech Therapy Order');
+        const result = await fetchProvidersByTab(
+          'Speech Therapy Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result).toEqual([]);
       });
@@ -149,7 +184,10 @@ describe('providerService', () => {
         mockGet.mockReset();
         mockGet.mockResolvedValueOnce({ results: 'not-an-array' } as any);
 
-        const result = await fetchProvidersByTab('Rehab Order');
+        const result = await fetchProvidersByTab(
+          'Rehab Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result).toEqual([]);
       });
@@ -162,7 +200,10 @@ describe('providerService', () => {
 
         mockGet.mockResolvedValueOnce(mockResponse);
 
-        const result = await fetchProvidersByTab('P&O Order');
+        const result = await fetchProvidersByTab(
+          'P&O Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result).toEqual([]);
       });
@@ -173,7 +214,10 @@ describe('providerService', () => {
         mockGet.mockReset();
         mockGet.mockRejectedValueOnce(new Error('API Error'));
 
-        const result = await fetchProvidersByTab('Radiology Order');
+        const result = await fetchProvidersByTab(
+          'Radiology Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result).toEqual([]);
       });
@@ -182,7 +226,10 @@ describe('providerService', () => {
         mockGet.mockReset();
         mockGet.mockRejectedValueOnce(new Error('Network Error'));
 
-        const result = await fetchProvidersByTab('Rehab Order');
+        const result = await fetchProvidersByTab(
+          'Rehab Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result).toEqual([]);
       });
@@ -191,7 +238,10 @@ describe('providerService', () => {
         mockGet.mockReset();
         mockGet.mockRejectedValueOnce({ status: 404, message: 'Not Found' });
 
-        const result = await fetchProvidersByTab('Speech Therapy Order');
+        const result = await fetchProvidersByTab(
+          'Speech Therapy Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result).toEqual([]);
       });
@@ -203,7 +253,10 @@ describe('providerService', () => {
           message: 'Internal Server Error',
         });
 
-        const result = await fetchProvidersByTab('Radiology Order');
+        const result = await fetchProvidersByTab(
+          'Radiology Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result).toEqual([]);
       });
@@ -224,7 +277,10 @@ describe('providerService', () => {
 
         mockGet.mockResolvedValueOnce(mockResponse);
 
-        const result = await fetchProvidersByTab('Radiology Order');
+        const result = await fetchProvidersByTab(
+          'Radiology Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result[0]).toEqual({
           id: 'provider-uuid-456',
@@ -247,7 +303,10 @@ describe('providerService', () => {
 
         mockGet.mockResolvedValueOnce(mockResponse);
 
-        const result = await fetchProvidersByTab('Rehab Order');
+        const result = await fetchProvidersByTab(
+          'Rehab Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result[0].name).toBe("Dr. O'Brien-Smith");
       });
@@ -266,7 +325,10 @@ describe('providerService', () => {
 
         mockGet.mockResolvedValueOnce(mockResponse);
 
-        const result = await fetchProvidersByTab('Rehab Order');
+        const result = await fetchProvidersByTab(
+          'Rehab Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result).toHaveLength(5);
         expect(result.map((p) => p.name)).toEqual([
@@ -284,7 +346,10 @@ describe('providerService', () => {
         mockGet.mockReset();
         mockGet.mockResolvedValueOnce({ results: [] });
 
-        await fetchProvidersByTab('Radiology Order');
+        await fetchProvidersByTab(
+          'Radiology Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(mockGet).toHaveBeenCalledWith(
           expect.stringContaining('attrValue=Radiology%20Technologist'),
@@ -295,7 +360,10 @@ describe('providerService', () => {
         mockGet.mockReset();
         mockGet.mockResolvedValueOnce({ results: [] });
 
-        await fetchProvidersByTab('Speech Therapy Order');
+        await fetchProvidersByTab(
+          'Speech Therapy Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(mockGet).toHaveBeenCalledWith(
           expect.stringContaining('attrValue=Speech%20Therapist'),
@@ -306,7 +374,7 @@ describe('providerService', () => {
         mockGet.mockReset();
         mockGet.mockResolvedValueOnce({ results: [] });
 
-        await fetchProvidersByTab('P&O Order');
+        await fetchProvidersByTab('P&O Order', TEST_TAB_PRACTITIONER_TYPE_MAP);
 
         const expectedUrl =
           '/openmrs/ws/rest/v1//provider?v=custom:(id,name,uuid)&attrName=practitioner_type&attrValue=P%26O%20Technician';
@@ -329,7 +397,10 @@ describe('providerService', () => {
 
         mockGet.mockResolvedValueOnce(mockResponse);
 
-        const result: Provider[] = await fetchProvidersByTab('Radiology Order');
+        const result: Provider[] = await fetchProvidersByTab(
+          'Radiology Order',
+          TEST_TAB_PRACTITIONER_TYPE_MAP,
+        );
 
         expect(result[0]).toHaveProperty('id');
         expect(result[0]).toHaveProperty('name');

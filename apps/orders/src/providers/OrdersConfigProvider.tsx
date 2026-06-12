@@ -9,6 +9,7 @@ import {
 import React, { ReactNode, useState, useMemo, useEffect } from 'react';
 import { OrdersConfigContext } from '../contexts/OrdersConfigContext';
 import { transformExtensionConfigToTabs } from '../models/ordersConfig';
+import useOrdersStore from '../stores/ordersStore';
 
 interface OrdersConfigProviderProps {
   children: ReactNode;
@@ -21,6 +22,8 @@ export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
     useState<OrdersTableConfig | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { setTabPractitionerTypeMap } = useOrdersStore();
+
   useEffect(() => {
     const fetchConfig = async () => {
       setIsLoading(true);
@@ -31,6 +34,9 @@ export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
         ]);
         setOrdersConfig(config);
         setOrdersTableConfig(tableConfig);
+        if (tableConfig?.tabPractitionerTypeMap) {
+          setTabPractitionerTypeMap(tableConfig.tabPractitionerTypeMap);
+        }
       } catch (error) {
         const { title, message } = getFormattedError(error);
         setError(new Error(message));
@@ -40,7 +46,7 @@ export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
       }
     };
     fetchConfig();
-  }, []);
+  }, [setTabPractitionerTypeMap]);
   const tabs = useMemo(
     () => transformExtensionConfigToTabs(ordersConfig),
     [ordersConfig],
