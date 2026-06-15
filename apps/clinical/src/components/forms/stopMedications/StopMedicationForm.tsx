@@ -8,7 +8,6 @@ import {
   Tile,
 } from '@bahmni/design-system';
 import {
-  get,
   getConfig,
   fetchMedicationOrdersMetadata,
   useTranslation,
@@ -97,26 +96,14 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       }
     }, [medicationConfig?.stopMedicationFields, setFieldConfig]);
 
-    const { data: orderDates } = useQuery({
-      queryKey: ['orderDates', stopMedication?.id],
-      queryFn: () =>
-        get<{ effectiveStartDate: string; effectiveStopDate: string }>(
-          `/openmrs/ws/rest/v1/order/${stopMedication!.id}?v=custom:(effectiveStartDate,effectiveStopDate)`,
-        ),
-      enabled: !!stopMedication?.id,
-    });
-
-    // Active meds: min = effectiveStartDate, max = today
-    // Scheduled (on-hold) meds: min = today (effectiveStartDate is future)
+    // min = today, max = today — only today is selectable as the stop date
     // Memoized so the Date object references stay stable between re-renders and
     // don't trigger unnecessary flatpickr minDate/maxDate updates.
-    const isScheduled = stopMedication?.status === 'on-hold';
     const minStopDate = useMemo(() => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      if (isScheduled || !orderDates?.effectiveStartDate) return today;
-      return new Date(orderDates.effectiveStartDate);
-    }, [isScheduled, orderDates?.effectiveStartDate]);
+      return today;
+    }, []);
     const maxStopDate = useMemo(() => {
       const today = new Date();
       today.setHours(23, 59, 59, 999);
