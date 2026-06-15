@@ -234,6 +234,7 @@ describe('BasicForm', () => {
     selectedVisitType: null,
     encounterParticipants: [],
     consultationDate: new Date(),
+    isConsultationDateReady: true,
     requestedEncounterType: null,
     isEncounterDetailsFormReady: true,
     activeVisit: null,

@@ -110,6 +110,7 @@ const defaultEncounterDetailsState = {
   isError: false,
   setRequestedEncounterType: jest.fn(),
   setConsultationDate: jest.fn(),
+  isConsultationDateReady: true,
 };
 
 const mockAddNotification = jest.fn();
@@ -373,7 +374,7 @@ describe('ConsultationPad', () => {
       });
     });
 
-    it('does not call setConsultationDate when activeEncounter has no period.start', async () => {
+    it('calls setConsultationDate with current date when activeEncounter has no period.start', async () => {
       const mockSetConsultationDate = jest.fn();
       (useEncounterDetailsStore as any).getState = jest.fn().mockReturnValue({
         ...defaultEncounterDetailsState,
@@ -387,7 +388,7 @@ describe('ConsultationPad', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(mockSetConsultationDate).not.toHaveBeenCalled();
+        expect(mockSetConsultationDate).toHaveBeenCalledWith(expect.any(Date));
       });
     });
   });

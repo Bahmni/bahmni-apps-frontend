@@ -207,8 +207,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       useEncounterDetailsStore
         .getState()
         .setConsultationDate(new Date(activeEncounter.period.start));
+    } else if (!editEncounterUuid) {
+      useEncounterDetailsStore.getState().setConsultationDate(new Date());
     }
-  }, [activeEncounter]);
+  }, [activeEncounter, editEncounterUuid]);
 
   // Only resume the existing encounter on an exact MATCHED case.
   // SESSION_EXPIRED, LOCATION_MISMATCH, PROVIDER_MISMATCH all silently create a new encounter.
