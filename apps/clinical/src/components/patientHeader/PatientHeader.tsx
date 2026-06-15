@@ -112,6 +112,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     () => ({
       ...(patientUUID && { patientUUID }),
       ...(visitUuid && { visitUuid }),
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
     [patientUUID, visitUuid],
   );

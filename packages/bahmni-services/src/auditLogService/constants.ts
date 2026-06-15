@@ -45,6 +45,10 @@ export const AUDIT_LOG_EVENT_DETAILS = {
     eventType: 'VIEWED_RADIOLOGY_RESULTS',
     message: 'VIEWED_RADIOLOGY_RESULTS_MESSAGE',
   },
+  STOP_MEDICATION: {
+    eventType: 'STOP_MEDICATION',
+    message: 'STOP_MEDICATION_MESSAGE',
+  },
   CREATE_ENCOUNTER: {
     eventType: 'CREATE_ENCOUNTER',
     message: 'CREATE_ENCOUNTER_MESSAGE',

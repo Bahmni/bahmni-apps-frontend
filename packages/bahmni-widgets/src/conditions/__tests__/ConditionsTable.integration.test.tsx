@@ -111,6 +111,8 @@ describe('ConditionsTable Integration', () => {
     });
     jest.clearAllMocks();
     resetEncounterSession();
+    // Restore default mock implementations that clearAllMocks doesn't reset
+    (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
@@ -122,24 +124,111 @@ describe('ConditionsTable Integration', () => {
     queryClient.clear();
   });
 
-  it('should show conditions table when patient has conditions marked', async () => {
+  it('renders Active and Inactive tab labels', async () => {
     mockedGetConditionPage.mockResolvedValueOnce(wrapPage([activeCondition]));
     renderComponent();
-    expect(screen.getByTestId('condition-table')).toBeInTheDocument();
+    // Tab labels are i18n keys when no translations are loaded
+    expect(screen.getByText('CONDITION_LIST_ACTIVE_TAB')).toBeInTheDocument();
+    expect(screen.getByText('CONDITION_LIST_INACTIVE_TAB')).toBeInTheDocument();
+  });
+
+  it('should show conditions table when patient has active conditions', async () => {
+    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([activeCondition]));
+    renderComponent();
+    expect(screen.getByTestId('condition-table-active')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
     });
     expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-    expect(mockedGetConditionPage).toHaveBeenCalledTimes(1);
   });
 
-  it('should show error state when an error occurs', async () => {
+  it('calls service with active clinical-status on initial load', async () => {
+    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([activeCondition]));
+    renderComponent();
+    await waitFor(() => {
+      expect(mockedGetConditionPage).toHaveBeenCalledWith(
+        'test-patient-uuid',
+        5,
+        1,
+        'active',
+      );
+    });
+  });
+
+  it('calls service with inactive clinical-status when switching to Inactive tab', async () => {
+    const user = userEvent.setup();
+
+    // Active tab loads first
+    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([activeCondition]));
+    // Inactive tab loads when clicked
+    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([inactiveCondition]));
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
+    });
+
+    const inactiveTab = screen.getByText('CONDITION_LIST_INACTIVE_TAB');
+    await user.click(inactiveTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('High blood pressure')).toBeInTheDocument();
+    });
+
+    expect(mockedGetConditionPage).toHaveBeenCalledWith(
+      'test-patient-uuid',
+      5,
+      1,
+      'inactive',
+    );
+  });
+
+  it('shows empty state for active tab when no active conditions exist', async () => {
+    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([]));
+    renderComponent();
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('conditions-table-active-empty'),
+      ).toBeInTheDocument();
+    });
+    // Empty state message should be specific to active tab
+    expect(
+      screen.getByText('CONDITION_LIST_NO_ACTIVE_CONDITIONS'),
+    ).toBeInTheDocument();
+  });
+
+  it('shows empty state for inactive tab when no inactive conditions exist', async () => {
+    const user = userEvent.setup();
+
+    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([activeCondition]));
+    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([]));
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
+    });
+
+    const inactiveTab = screen.getByText('CONDITION_LIST_INACTIVE_TAB');
+    await user.click(inactiveTab);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('CONDITION_LIST_NO_INACTIVE_CONDITIONS'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('should show error state when an error occurs on active tab', async () => {
     const errorMessage = 'Failed to fetch conditions from server';
     mockedGetConditionPage.mockRejectedValueOnce(new Error(errorMessage));
     renderComponent();
-    expect(screen.getByTestId('condition-table')).toBeInTheDocument();
+    expect(screen.getByTestId('condition-table-active')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByTestId('conditions-table-error')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('conditions-table-active-error'),
+      ).toBeInTheDocument();
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'ERROR_DEFAULT_TITLE',
@@ -148,27 +237,19 @@ describe('ConditionsTable Integration', () => {
     });
   });
 
-  it('shows empty state when patient has no conditions', async () => {
-    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([]));
+  it('does not call the API when patientUUID is null', async () => {
+    // Override just for this test — beforeEach restores it to 'test-patient-uuid'
+    (usePatientUUID as jest.Mock).mockReturnValue(null);
+    // Do NOT set up a mock response — if the API were called, it would fail with no mock available.
+
     renderComponent();
-    await waitFor(() => {
-      expect(screen.getByTestId('conditions-table-empty')).toBeInTheDocument();
-    });
+
+    await act(async () => {});
+
+    expect(mockedGetConditionPage).not.toHaveBeenCalled();
   });
 
-  it('calls service with page=1 on initial load', async () => {
-    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([activeCondition]));
-    renderComponent();
-    await waitFor(() => {
-      expect(mockedGetConditionPage).toHaveBeenCalledWith(
-        'test-patient-uuid',
-        5,
-        1,
-      );
-    });
-  });
-
-  it('navigates to page 2 via offset-based fetch', async () => {
+  it('navigates to page 2 via offset-based fetch on Active tab', async () => {
     const user = userEvent.setup();
 
     mockedGetConditionPage.mockResolvedValueOnce(
@@ -184,7 +265,7 @@ describe('ConditionsTable Integration', () => {
       expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('button', { name: /next page/i }));
+    await user.click(screen.getAllByRole('button', { name: /next page/i })[0]);
 
     await waitFor(() => {
       expect(screen.getByText('High blood pressure')).toBeInTheDocument();
@@ -194,11 +275,12 @@ describe('ConditionsTable Integration', () => {
       'test-patient-uuid',
       2,
       2,
+      'active',
     );
     expect(screen.queryByText('Diabetes mellitus')).not.toBeInTheDocument();
   });
 
-  it('navigates back to page 1 when previous button is clicked', async () => {
+  it('navigates back to page 1 when previous button is clicked on Active tab', async () => {
     const user = userEvent.setup();
 
     mockedGetConditionPage.mockResolvedValueOnce(
@@ -217,12 +299,14 @@ describe('ConditionsTable Integration', () => {
       expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('button', { name: /next page/i }));
+    await user.click(screen.getAllByRole('button', { name: /next page/i })[0]);
     await waitFor(() => {
       expect(screen.getByText('High blood pressure')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('button', { name: /previous page/i }));
+    await user.click(
+      screen.getAllByRole('button', { name: /previous page/i })[0],
+    );
     await waitFor(() => {
       expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
     });
@@ -231,6 +315,7 @@ describe('ConditionsTable Integration', () => {
       'test-patient-uuid',
       2,
       1,
+      'active',
     );
   });
 
@@ -250,8 +335,10 @@ describe('ConditionsTable Integration', () => {
       expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
     });
 
-    const select = screen.getByRole('combobox', { name: /items per page/i });
-    await user.selectOptions(select, '5');
+    const selects = screen.getAllByRole('combobox', {
+      name: /items per page/i,
+    });
+    await user.selectOptions(selects[0], '5');
 
     await waitFor(() => {
       expect(mockedGetConditionPage).toHaveBeenCalledTimes(2);
@@ -261,12 +348,13 @@ describe('ConditionsTable Integration', () => {
       'test-patient-uuid',
       5,
       1,
+      'active',
     );
   });
 
   it('shows pagination footer but disables next when server total is fewer than or equal to pageSize', async () => {
     mockedGetConditionPage.mockResolvedValueOnce(
-      wrapPage([activeCondition, inactiveCondition], 2),
+      wrapPage([activeCondition], 1),
     );
 
     renderComponent({ config: { pageSize: 10 } });
@@ -275,7 +363,9 @@ describe('ConditionsTable Integration', () => {
       expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
     });
 
-    expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
+    expect(
+      screen.getAllByRole('button', { name: /next page/i })[0],
+    ).toBeDisabled();
   });
 
   it('shows pagination when server total exceeds pageSize', async () => {
@@ -290,18 +380,26 @@ describe('ConditionsTable Integration', () => {
     });
 
     expect(
-      screen.getByRole('button', { name: /next page/i }),
+      screen.getAllByRole('button', { name: /next page/i })[0],
     ).toBeInTheDocument();
   });
 
-  it('does not call the API when patientUUID is null', async () => {
-    (usePatientUUID as jest.Mock).mockReturnValue(null);
-    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([]));
+  it('does not fire inactive query on initial mount (lazy loading)', async () => {
+    mockedGetConditionPage.mockResolvedValueOnce(wrapPage([activeCondition]));
 
     renderComponent();
 
-    await act(async () => {});
+    await waitFor(() => {
+      expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
+    });
 
-    expect(mockedGetConditionPage).not.toHaveBeenCalled();
+    // Only the active query should have fired
+    expect(mockedGetConditionPage).toHaveBeenCalledTimes(1);
+    expect(mockedGetConditionPage).toHaveBeenCalledWith(
+      'test-patient-uuid',
+      5,
+      1,
+      'active',
+    );
   });
 });
