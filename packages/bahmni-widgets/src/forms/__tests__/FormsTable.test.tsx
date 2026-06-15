@@ -1292,5 +1292,169 @@ describe('FormsTable', () => {
         ).toBeGreaterThan(initialCallCount);
       });
     });
+
+    it('passes controlOrder from schema so reordered fields render in schema position order', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      // Schema: Patient id (id=26) at pos=0, Temperature (id=18) at pos=1
+      // Without controlOrder, numeric sort would put Temperature (18) before Patient id (26)
+      mockFetchFormMetadata.mockResolvedValue({
+        ...mockFormMetadata,
+        schema: {
+          controls: [
+            { id: 26, type: 'obsControl' },
+            { id: 18, type: 'obsControl' },
+          ],
+        },
+      });
+
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-temp',
+              status: 'final',
+              code: { text: 'Temperature' },
+              valueQuantity: { value: 37 },
+              extension: [
+                {
+                  url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+                  valueString: 'History Form.1/18-0',
+                },
+              ],
+            },
+          },
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-patient-id',
+              status: 'final',
+              code: { text: 'Patient id' },
+              valueString: '42',
+              extension: [
+                {
+                  url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+                  valueString: 'History Form.1/26-0',
+                },
+              ],
+            },
+          },
+        ],
+      } as Bundle<Observation>);
+
+      renderFormsTable();
+
+      await waitFor(() =>
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument(),
+      );
+      const links = document.querySelectorAll('.cds--link');
+      await user.click(links[0] as HTMLElement);
+
+      await waitFor(() =>
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument(),
+      );
+
+      // Wait for both observations to appear in modal
+      await waitFor(
+        () => {
+          expect(screen.getByText('Patient id')).toBeInTheDocument();
+          expect(screen.getByText('Temperature')).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+
+      // Patient id (schema pos=0) must precede Temperature (schema pos=1) in DOM
+      const patientIdEl = screen.getByText('Patient id');
+      const temperatureEl = screen.getByText('Temperature');
+      expect(
+        patientIdEl.compareDocumentPosition(temperatureEl) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it('renders section header when schema contains a type:section control', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      mockFetchFormMetadata.mockResolvedValue({
+        ...mockFormMetadata,
+        schema: {
+          controls: [
+            {
+              id: 10,
+              type: 'section',
+              label: { value: 'Diagnostics' },
+              controls: [
+                { id: 11, type: 'obsControl' },
+                { id: 12, type: 'obsControl' },
+              ],
+            },
+          ],
+        },
+      });
+
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-signs',
+              status: 'final',
+              code: { text: 'Sign/symptom name' },
+              valueString: 'Fever',
+              extension: [
+                {
+                  url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+                  valueString: 'History Form.1/11-0',
+                },
+              ],
+            },
+          },
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-meds',
+              status: 'final',
+              code: { text: 'Current medications' },
+              valueString: 'Paracetamol',
+              extension: [
+                {
+                  url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+                  valueString: 'History Form.1/12-0',
+                },
+              ],
+            },
+          },
+        ],
+      } as Bundle<Observation>);
+
+      renderFormsTable();
+
+      await waitFor(() =>
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument(),
+      );
+      const links = document.querySelectorAll('.cds--link');
+      await user.click(links[0] as HTMLElement);
+
+      await waitFor(() =>
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument(),
+      );
+
+      // Section label "Diagnostics" and both member observations should render
+      await waitFor(
+        () => {
+          expect(screen.getByText('Diagnostics')).toBeInTheDocument();
+          expect(screen.getByText('Sign/symptom name')).toBeInTheDocument();
+          expect(screen.getByText('Current medications')).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+    });
   });
 });
