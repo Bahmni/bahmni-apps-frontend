@@ -298,9 +298,11 @@ describe('VisitTypeSelector', () => {
   it('disables the button and dropdown when disabled prop is true', async () => {
     renderComponent(undefined, { disabled: true });
 
-    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+    const button = await screen.findByRole('button', {
+      name: /Start OPD visit/i,
+    });
 
-    expect(screen.getByRole('button')).toBeDisabled();
+    expect(button).toBeDisabled();
     expect(screen.getByRole('combobox')).toBeDisabled();
   });
 });
