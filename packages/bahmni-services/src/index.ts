@@ -1,4 +1,5 @@
 export { get, post, put, patch, del } from './api';
+export { LOGIN_PATH } from './api/constants';
 export {
   initAppI18n,
   useTranslation,
@@ -22,7 +23,7 @@ export {
   getGenders,
   getAddressHierarchyEntries,
   getOrderedAddressHierarchyLevels,
-  getPatientPhotoDataUrl,
+  fetchPatientPhotoFromUrl,
   getPatientProfile,
   getPersonAttributeTypes,
   getRelationshipTypes,
@@ -180,6 +181,7 @@ export {
   type MedicationOrdersMetadataResponse,
   type Frequency as MedicationFrequency,
   type OrderAttribute,
+  MEDICATIONS_INPUT_CONTROL_KEY,
 } from './medicationRequestService';
 export { getMedicationByUuid } from './medicationService';
 export {
@@ -238,12 +240,13 @@ export {
 } from './providerService';
 export {
   findActiveEncounterInSession,
+  searchEncounters,
+  getEncounterSessionDuration,
   resolveEncounterMatchDecision,
   canResumeOwnInSessionEncounter,
   type EncounterMatchDecision,
   type MatchReasonCode,
   MATCH_REASON_MESSAGES,
-  CONSULTATION_ENCOUNTER_TYPE_UUID,
   useEncounterSessionStore,
   setEncounterSessionDecision,
   setEncounterSessionLoading,
@@ -255,8 +258,12 @@ export {
 
 export {
   getActiveVisit,
+  getEncounterByUuid,
+  getVisits,
   shouldEnableEncounterFilter,
   getObservationsBundleByEncounterUuid,
+  createFhirEncounter,
+  updateFhirEncounter,
   type FormsEncounter,
 } from './encounterService';
 
@@ -280,6 +287,8 @@ export {
   HL7_CONDITION_CATEGORY_CONDITION_CODE,
   HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE,
   FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
+  FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
+  FHIR_ENCOUNTER_TAG_SYSTEM,
   FHIR_OBSERVATION_INTERPRETATION_SYSTEM,
   FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
   FHIR_OBSERVATION_VALUE_ATTACHMENT_URL,
@@ -297,6 +306,7 @@ export {
   OPENMRS_REST_V1,
   OPENMRS_FHIR_R4,
   BAHMNI_HOME_PATH,
+  BAHMNI_APP_BASE_PATH,
 } from './constants/app';
 export {
   getCurrentUserPrivileges,
@@ -407,3 +417,10 @@ export {
   type CDSSEventDetail,
   type CDSSServerConfig,
 } from './cdssService';
+export { getTemplates, renderAsHtml } from './templateService';
+export type {
+  TemplateInfo,
+  TemplateTrigger,
+  RenderRequest,
+  TemplateListResponse,
+} from './templateService';

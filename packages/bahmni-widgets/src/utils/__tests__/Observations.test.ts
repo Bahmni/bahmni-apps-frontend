@@ -6,6 +6,7 @@ import {
   extractObservationValue,
   getObservationDisplayInfo,
   sortObservationsBySortId,
+  sortObservationsByControlOrder,
   groupMultiSelectObservations,
   transformObservations,
 } from '../Observations';
@@ -480,6 +481,69 @@ describe('Observations Utils', () => {
     });
   });
 
+  describe('sortObservationsByControlOrder', () => {
+    it('should sort observations by their position in controlOrder, not by numeric sortId', () => {
+      // controlOrder: 14, 15, 16, 25, 26, 18, 19
+      // Observations have sortIds: "14-0", "25-0", "18-0"
+      // Expected order: 14 (pos 0) → 25 (pos 3) → 18 (pos 5)
+      const controlOrder = ['14', '15', '16', '25', '26', '18', '19'];
+
+      const observations: ExtractedObservation[] = [
+        { id: 'obs-14', display: 'Pulse', sortId: '14-0' },
+        { id: 'obs-25', display: 'LowBirthWeight', sortId: '25-0' },
+        { id: 'obs-18', display: 'Temperature', sortId: '18-0' },
+      ];
+
+      const sorted = sortObservationsByControlOrder(observations, controlOrder);
+
+      expect(sorted.map((o) => o.id)).toEqual(['obs-14', 'obs-25', 'obs-18']);
+    });
+
+    it('should place observations with unknown control IDs at the end', () => {
+      const controlOrder = ['14', '18'];
+
+      const observations: ExtractedObservation[] = [
+        { id: 'obs-18', display: 'Temperature', sortId: '18-0' },
+        { id: 'obs-99', display: 'Unknown', sortId: '99-0' },
+        { id: 'obs-14', display: 'Pulse', sortId: '14-0' },
+      ];
+
+      const sorted = sortObservationsByControlOrder(observations, controlOrder);
+
+      expect(sorted[0].id).toBe('obs-14');
+      expect(sorted[1].id).toBe('obs-18');
+      expect(sorted[2].id).toBe('obs-99');
+    });
+
+    it('should not mutate the original observations array', () => {
+      const controlOrder = ['18', '14'];
+      const observations: ExtractedObservation[] = [
+        { id: 'obs-14', display: 'Pulse', sortId: '14-0' },
+        { id: 'obs-18', display: 'Temperature', sortId: '18-0' },
+      ];
+      const original = [...observations];
+
+      sortObservationsByControlOrder(observations, controlOrder);
+
+      expect(observations[0].id).toBe(original[0].id);
+      expect(observations[1].id).toBe(original[1].id);
+    });
+
+    it('should handle observations with missing sortId by treating them as unknown', () => {
+      const controlOrder = ['14', '18'];
+
+      const observations: ExtractedObservation[] = [
+        { id: 'obs-no-sort', display: 'NoSort' },
+        { id: 'obs-14', display: 'Pulse', sortId: '14-0' },
+      ];
+
+      const sorted = sortObservationsByControlOrder(observations, controlOrder);
+
+      expect(sorted[0].id).toBe('obs-14');
+      expect(sorted[1].id).toBe('obs-no-sort');
+    });
+  });
+
   describe('groupMultiSelectObservations', () => {
     it('should group observations with same conceptId', () => {
       const observations: ExtractedObservation[] = [
@@ -507,6 +571,102 @@ describe('Observations Utils', () => {
 
       expect(grouped).toHaveLength(1);
       expect(grouped[0].observationValue?.value).toBe('Option A, Option B');
+    });
+
+    it('should preserve comment from later observation when first has none', () => {
+      const observations: ExtractedObservation[] = [
+        {
+          id: 'obs-1',
+          display: 'Pulse',
+          conceptId: 'concept-pulse',
+          observationValue: { value: '1', type: 'string' },
+        },
+        {
+          id: 'obs-2',
+          display: 'Pulse',
+          conceptId: 'concept-pulse',
+          observationValue: { value: '2', type: 'string' },
+          comment: 'Patient resting',
+        },
+      ];
+
+      const grouped = groupMultiSelectObservations(observations);
+
+      expect(grouped).toHaveLength(1);
+      expect(grouped[0].observationValue?.value).toBe('1, 2');
+      expect(grouped[0].comment).toBe('Patient resting');
+    });
+
+    it('should keep comment from first observation when it has one', () => {
+      const observations: ExtractedObservation[] = [
+        {
+          id: 'obs-1',
+          display: 'Pulse',
+          conceptId: 'concept-pulse',
+          observationValue: { value: '1', type: 'string' },
+          comment: 'First note',
+        },
+        {
+          id: 'obs-2',
+          display: 'Pulse',
+          conceptId: 'concept-pulse',
+          observationValue: { value: '2', type: 'string' },
+          comment: 'Second note',
+        },
+      ];
+
+      const grouped = groupMultiSelectObservations(observations);
+
+      expect(grouped).toHaveLength(1);
+      expect(grouped[0].comment).toBe('First note');
+    });
+
+    it('should not merge group observations (those with members) even when they share conceptId', () => {
+      const obs1: ExtractedObservation = {
+        id: 'bp-1',
+        display: 'Blood Pressure',
+        conceptId: 'bp-concept',
+        observationValue: { value: '120, 80', type: 'string' },
+        members: [
+          {
+            id: 'systolic-1',
+            display: 'Systolic',
+            observationValue: { value: 120, type: 'quantity' },
+          },
+          {
+            id: 'diastolic-1',
+            display: 'Diastolic',
+            observationValue: { value: 80, type: 'quantity' },
+          },
+        ],
+      };
+
+      const obs2: ExtractedObservation = {
+        id: 'bp-2',
+        display: 'Blood Pressure',
+        conceptId: 'bp-concept',
+        observationValue: { value: '130, 90', type: 'string' },
+        members: [
+          {
+            id: 'systolic-2',
+            display: 'Systolic',
+            observationValue: { value: 130, type: 'quantity' },
+          },
+          {
+            id: 'diastolic-2',
+            display: 'Diastolic',
+            observationValue: { value: 90, type: 'quantity' },
+          },
+        ],
+      };
+
+      const grouped = groupMultiSelectObservations([obs1, obs2]);
+
+      expect(grouped).toHaveLength(2);
+      expect(grouped[0].id).toBe('bp-1');
+      expect(grouped[1].id).toBe('bp-2');
+      expect(grouped[0].members).toHaveLength(2);
+      expect(grouped[1].members).toHaveLength(2);
     });
   });
 
@@ -758,6 +918,68 @@ describe('Observations Utils', () => {
       expect(result[0].members?.[0].observationValue?.value).toBe(
         'Blurring, Rotation',
       );
+    });
+
+    it('should sort group members by their sortId from form-namespace-path', () => {
+      const formPath = (id: number) => ({
+        url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+        valueString: `Bahmni^Vitals.1/${id}-0`,
+      });
+
+      const parentObs: Observation = {
+        resourceType: 'Observation',
+        id: 'bp-parent',
+        status: 'final',
+        code: { text: 'Blood Pressure' },
+        hasMember: [
+          { reference: 'Observation/member-systolic' },
+          { reference: 'Observation/member-position' },
+          { reference: 'Observation/member-diastolic' },
+        ],
+      };
+
+      // Members arrive in hasMember order: systolic(19), position(21), diastolic(20)
+      // Expected sort order: systolic(19) → diastolic(20) → position(21)
+      const systolic: Observation = {
+        resourceType: 'Observation',
+        id: 'member-systolic',
+        status: 'final',
+        code: { text: 'Systolic', coding: [{ code: 'systolic-concept' }] },
+        valueQuantity: { value: 120, unit: 'mmHg' },
+        extension: [formPath(19)],
+      };
+
+      const position: Observation = {
+        resourceType: 'Observation',
+        id: 'member-position',
+        status: 'final',
+        code: { text: 'Body position', coding: [{ code: 'position-concept' }] },
+        valueCodeableConcept: { text: 'Standing' },
+        extension: [formPath(21)],
+      };
+
+      const diastolic: Observation = {
+        resourceType: 'Observation',
+        id: 'member-diastolic',
+        status: 'final',
+        code: { text: 'Diastolic', coding: [{ code: 'diastolic-concept' }] },
+        valueQuantity: { value: 80, unit: 'mmHg' },
+        extension: [formPath(20)],
+      };
+
+      const result = transformObservations([
+        parentObs,
+        systolic,
+        position,
+        diastolic,
+      ]);
+
+      expect(result).toHaveLength(1);
+      const members = result[0].members!;
+      expect(members).toHaveLength(3);
+      expect(members[0].display).toBe('Systolic');
+      expect(members[1].display).toBe('Diastolic');
+      expect(members[2].display).toBe('Body position');
     });
   });
 });

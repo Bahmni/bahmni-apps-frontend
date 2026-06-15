@@ -23,6 +23,7 @@ import {
   getMedicationDisplay,
   getMedicationsFromBundle,
 } from '../../../services/medicationService';
+import { parseFhirToMedicationInputEntry } from '../../../utils/fhir/medicationRequestParser';
 import CDSCardAlert from '../../cdsCardAlert/CDSCardAlert';
 import SelectedMedicationRequestItem from './components/SelectedMedicationRequestItem';
 import {
@@ -31,7 +32,7 @@ import {
 } from './constants';
 import { MedicationRequestStoreKey } from './models';
 import medicationConfigSchema from './schema.json';
-import { useMedicationRequestStore } from './store';
+import { getMedicationRequestStore, useMedicationRequestStore } from './store';
 import styles from './styles/MedicationRequestForm.module.scss';
 import {
   getMedicationRequestComboBoxItems,
@@ -100,12 +101,27 @@ const MedicationRequestForm: React.FC<{
     addItem,
     removeItem,
     setAttributes,
+    pendingFhirEdits,
     updateItemCDSCards,
   } = useMedicationRequestStore(inputControlType as MedicationRequestStoreKey);
 
+  const isEditMode = selectedMedicationRequests.some((m) => m.fhirResourceId);
+
+  const parsedEditEntries = useMemo(() => {
+    if (pendingFhirEdits.length === 0 || !medicationConfig) return null;
+    return pendingFhirEdits.map((fhir) =>
+      parseFhirToMedicationInputEntry(fhir, medicationConfig),
+    );
+  }, [pendingFhirEdits, medicationConfig]);
+
   useEffect(() => {
     setAttributes(attributes);
-  }, []);
+    if (parsedEditEntries) {
+      const storeKey = inputControlType as MedicationRequestStoreKey;
+      const store = getMedicationRequestStore(storeKey);
+      store.getState().loadMedicationsForEdit(parsedEditEntries);
+    }
+  }, [parsedEditEntries, inputControlType]);
 
   useCDSSResultsListener((detail) => {
     const { cards } = detail;
@@ -205,7 +221,7 @@ const MedicationRequestForm: React.FC<{
           {t(`ERROR_FETCHING_${inputControlType.toUpperCase()}_CONFIG`)}
         </div>
       )}
-      {!medicationConfigLoading && !medicationConfigError && (
+      {!medicationConfigLoading && !medicationConfigError && !isEditMode && (
         <ComboBox
           id={`${inputControlType}-search`}
           data-testid={`${inputControlType}-search-combobox-test-id`}

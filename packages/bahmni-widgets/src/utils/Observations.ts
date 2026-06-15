@@ -176,6 +176,20 @@ export function sortObservationsBySortId(
   );
 }
 
+export function sortObservationsByControlOrder(
+  observations: ExtractedObservation[],
+  controlOrder: string[],
+): ExtractedObservation[] {
+  const orderMap = new Map(controlOrder.map((id, index) => [id, index]));
+  return [...observations].sort((a, b) => {
+    const aId = a.sortId?.split('-')[0] ?? '';
+    const bId = b.sortId?.split('-')[0] ?? '';
+    const aIndex = orderMap.has(aId) ? orderMap.get(aId)! : Infinity;
+    const bIndex = orderMap.has(bId) ? orderMap.get(bId)! : Infinity;
+    return aIndex - bIndex;
+  });
+}
+
 export function groupMultiSelectObservations(
   observations: ExtractedObservation[],
 ): ExtractedObservation[] {
@@ -192,11 +206,21 @@ export function groupMultiSelectObservations(
           )
         : undefined;
 
-      if (matchedObs?.observationValue && observation.observationValue) {
+      // Only merge scalar observations.
+      // Group observations (those with members) must not be merged — merging would discard the members of subsequent groups.
+      if (
+        matchedObs?.observationValue &&
+        observation.observationValue &&
+        !matchedObs.members &&
+        !observation.members
+      ) {
         matchedObs.observationValue.value =
           matchedObs.observationValue.value +
           ', ' +
           observation.observationValue.value;
+        if (!matchedObs.comment && observation.comment) {
+          matchedObs.comment = observation.comment;
+        }
       } else {
         valueGroupedObs.push(observation);
       }
@@ -230,8 +254,11 @@ export function transformObservations(
       .filter((obs): obs is Observation => !!obs)
       .map((obs) => extractSingleObservation(obs));
 
+    const sortedMembers = sortObservationsBySortId(members);
     const groupedMembers =
-      members.length > 0 ? groupMultiSelectObservations(members) : [];
+      sortedMembers.length > 0
+        ? groupMultiSelectObservations(sortedMembers)
+        : [];
 
     const sortId =
       observation.extension

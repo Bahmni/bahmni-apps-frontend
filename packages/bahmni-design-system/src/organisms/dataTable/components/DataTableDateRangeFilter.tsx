@@ -1,5 +1,6 @@
 import type { Column } from '@tanstack/react-table';
 import { DatePicker, DatePickerInput } from '../../../molecules/datePicker';
+import styles from '../styles/DataTable.module.scss';
 import type { DateRangeFilterValue } from '../utils';
 
 interface DataTableDateRangeFilterProps<T> {
@@ -30,6 +31,7 @@ export const DataTableDateRangeFilter = <T,>({
     <DatePicker
       datePickerType="range"
       testId={`${dataTestId}-filter-${column.id}`}
+      className={styles.dateRangeFilter}
       value={toDateArray(currentValue)}
       onChange={(dates: Date[]) => {
         if (!dates || dates.length === 0) {

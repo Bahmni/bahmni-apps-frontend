@@ -10,6 +10,12 @@ import { ReactNode } from 'react';
 import { PersonAttributesProvider } from '../../providers/PersonAttributesProvider';
 import { useCreatePatient } from '../useCreatePatient';
 
+const mockUseRegistrationEncounterTypeUuid = jest.fn();
+jest.mock('../useRegistrationEncounterTypeUuid', () => ({
+  useRegistrationEncounterTypeUuid: () =>
+    mockUseRegistrationEncounterTypeUuid(),
+}));
+
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   createFhirPatient: jest.fn(),
@@ -22,6 +28,12 @@ jest.mock('@bahmni/services', () => ({
       module: 'registration',
     },
   },
+}));
+
+const mockCreateRegistrationEncounterForPatient = jest.fn();
+jest.mock('../../services/registrationEncounterService', () => ({
+  createRegistrationEncounterForPatient: (...args: unknown[]) =>
+    mockCreateRegistrationEncounterForPatient(...args),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -123,6 +135,8 @@ describe('useCreatePatient', () => {
     mockUseNotification.mockReturnValue({
       addNotification: mockAddNotification,
     });
+    mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
+    mockCreateRegistrationEncounterForPatient.mockResolvedValue(undefined);
     window.history.replaceState = jest.fn();
   });
 
@@ -247,5 +261,74 @@ describe('useCreatePatient', () => {
         },
       ]),
     );
+  });
+
+  it('should create a registration encounter after patient is saved when encounter type is configured', async () => {
+    mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
+    mockUseRegistrationEncounterTypeUuid.mockReturnValue(
+      'reg-encounter-type-uuid',
+    );
+
+    const { result } = renderHook(() => useCreatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(mockFormData);
+
+    await waitFor(() => {
+      expect(mockCreateRegistrationEncounterForPatient).toHaveBeenCalledWith(
+        'patient-uuid-123',
+        'reg-encounter-type-uuid',
+      );
+    });
+  });
+
+  it('should not create a registration encounter when encounter type is not configured', async () => {
+    mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
+    mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
+
+    const { result } = renderHook(() => useCreatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(mockFormData);
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalled();
+    });
+
+    // Give time for fire-and-forget to settle
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(mockCreateRegistrationEncounterForPatient).not.toHaveBeenCalled();
+  });
+
+  it('should show error notification and not block patient save when encounter creation fails', async () => {
+    mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
+    mockUseRegistrationEncounterTypeUuid.mockReturnValue(
+      'reg-encounter-type-uuid',
+    );
+    mockCreateRegistrationEncounterForPatient.mockRejectedValue(
+      new Error('Encounter creation failed'),
+    );
+
+    const { result } = renderHook(() => useCreatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(mockFormData);
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'error',
+          message: 'Encounter creation failed',
+        }),
+      );
+    });
+
+    // Patient save succeeds regardless
+    expect(result.current.isSuccess).toBe(true);
   });
 });

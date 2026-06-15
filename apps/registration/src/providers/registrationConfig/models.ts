@@ -104,6 +104,7 @@ export interface RegistrationFormConfig {
 export interface RegistrationConfig {
   patientSearch: PatientSearchConfig;
   defaultVisitType?: string;
+  registrationEncounterType?: string;
   patientInformation?: PatientInformationConfig;
   fieldValidation?: FieldValidationConfig;
   registrationForm?: RegistrationFormConfig;
