@@ -5,7 +5,8 @@ import {
   post,
   Form2Observation,
 } from '@bahmni/services';
-import { BundleEntry, Reference, Encounter, CodeableConcept } from 'fhir/r4';
+import { BundleEntry, CodeableConcept, Encounter, Reference } from 'fhir/r4';
+import { ALLERGY_INTOLERANCE_RESOURCE_TYPE } from '../constants/allergy';
 import { CONSULTATION_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
@@ -123,6 +124,35 @@ export function createDiagnosisBundleEntries({
   return diagnosisEntries;
 }
 
+function createDeleteAndPostAllergyEntries(
+  allergy: AllergyInputEntry,
+  manifestationUUIDs: string[],
+  severity: 'mild' | 'moderate' | 'severe',
+  encounterSubject: Reference,
+  encounterReference: string,
+  practitionerUUID: string,
+): BundleEntry[] {
+  const deleteURL = `${ALLERGY_INTOLERANCE_RESOURCE_TYPE}/${allergy.resourceId}`;
+  const newResource = createEncounterAllergyResource(
+    allergy.id,
+    [allergy.type] as Array<'food' | 'medication' | 'environment' | 'biologic'>,
+    [{ manifestationUUIDs, severity }],
+    encounterSubject,
+    createEncounterReferenceFromString(encounterReference),
+    createPractitionerReference(practitionerUUID),
+    allergy.note,
+  );
+  return [
+    createBundleEntry(
+      deleteURL,
+      createDeleteAllergyResource(allergy.resourceId!),
+      'DELETE',
+      deleteURL,
+    ),
+    createBundleEntry(`urn:uuid:${crypto.randomUUID()}`, newResource, 'POST'),
+  ];
+}
+
 /**
  * Creates bundle entries for allergies as part of consultation bundle
  * @param params - Parameters required for creating allergy bundle entries
@@ -202,44 +232,47 @@ export function createAllergiesBundleEntries({
               existingManifestationByCode.get(code) ?? { coding: [{ code }] },
           );
 
-        const putResource = updateEncounterAllergyResource(
-          allergy.rawFhirResource,
-          manifestations,
-          severity,
-          createEncounterReferenceFromString(encounterReference),
-          allergy.note,
-        );
-        const putURL = `AllergyIntolerance/${allergy.resourceId}`;
-        allergyEntries.push(
-          createBundleEntry(putURL, putResource, 'PUT', putURL),
-        );
-      } else {
-        const deleteURL = `AllergyIntolerance/${allergy.resourceId}`;
-        allergyEntries.push(
-          createBundleEntry(
-            deleteURL,
-            createDeleteAllergyResource(allergy.resourceId!),
-            'DELETE',
-            deleteURL,
-          ),
+        // OpenMRS FHIR2 appends reactions on PUT rather than replacing them,
+        // so PUT cannot remove a reaction. Fall through to DELETE+POST when
+        // the user has removed one or more reactions.
+        const manifestationUUIDSet = new Set(manifestationUUIDs);
+        const reactionsRemoved = [...existingManifestationByCode.keys()].some(
+          (code) => !manifestationUUIDSet.has(code),
         );
 
-        const newResource = createEncounterAllergyResource(
-          allergy.id,
-          [allergy.type] as Array<
-            'food' | 'medication' | 'environment' | 'biologic'
-          >,
-          [{ manifestationUUIDs, severity }],
-          encounterSubject,
-          createEncounterReferenceFromString(encounterReference),
-          createPractitionerReference(practitionerUUID),
-          allergy.note,
-        );
+        if (!reactionsRemoved) {
+          const putResource = updateEncounterAllergyResource(
+            allergy.rawFhirResource,
+            manifestations,
+            severity,
+            createEncounterReferenceFromString(encounterReference),
+            allergy.note,
+          );
+          const putURL = `${ALLERGY_INTOLERANCE_RESOURCE_TYPE}/${allergy.resourceId}`;
+          allergyEntries.push(
+            createBundleEntry(putURL, putResource, 'PUT', putURL),
+          );
+        } else {
+          allergyEntries.push(
+            ...createDeleteAndPostAllergyEntries(
+              allergy,
+              manifestationUUIDs,
+              severity,
+              encounterSubject,
+              encounterReference,
+              practitionerUUID,
+            ),
+          );
+        }
+      } else {
         allergyEntries.push(
-          createBundleEntry(
-            `urn:uuid:${crypto.randomUUID()}`,
-            newResource,
-            'POST',
+          ...createDeleteAndPostAllergyEntries(
+            allergy,
+            manifestationUUIDs,
+            severity,
+            encounterSubject,
+            encounterReference,
+            practitionerUUID,
           ),
         );
       }

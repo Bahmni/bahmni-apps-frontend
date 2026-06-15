@@ -8,6 +8,12 @@ import {
 import { useNotification } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
+import {
+  linkRegistrationEncounterToVisit,
+  findValidRegistrationEncounterInSession,
+  createRegistrationEncounterForPatient,
+} from '../services/registrationEncounterService';
+import { useRegistrationEncounterTypeUuid } from './useRegistrationEncounterTypeUuid';
 
 export const useVisitTypes = () => {
   const { data: visitTypes, isLoading } = useQuery({
@@ -41,6 +47,7 @@ export const useCreateVisit = () => {
   const { patientUuid } = useParams<{ patientUuid: string }>();
   const { hasActiveVisit } = useActiveVisit(patientUuid);
   const queryClient = useQueryClient();
+  const encounterTypeUuid = useRegistrationEncounterTypeUuid();
 
   const createVisit = async (patientUuid: string, visitType: VisitType) => {
     try {
@@ -48,9 +55,34 @@ export const useCreateVisit = () => {
         return;
       }
       await createVisitForPatient(patientUuid, visitType);
-      await queryClient.invalidateQueries({
-        queryKey: ['hasActiveVisit', patientUuid],
-      });
+      queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
+
+      if (encounterTypeUuid) {
+        try {
+          const existingEncounter =
+            await findValidRegistrationEncounterInSession(
+              patientUuid,
+              encounterTypeUuid,
+            );
+          if (!existingEncounter) {
+            await createRegistrationEncounterForPatient(
+              patientUuid,
+              encounterTypeUuid,
+            );
+          }
+          await linkRegistrationEncounterToVisit(
+            patientUuid,
+            encounterTypeUuid,
+          );
+        } catch (error) {
+          addNotification({
+            title: t('ERROR_DEFAULT_TITLE'),
+            message: error instanceof Error ? error.message : String(error),
+            type: 'error',
+            timeout: 5000,
+          });
+        }
+      }
     } catch (error) {
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),

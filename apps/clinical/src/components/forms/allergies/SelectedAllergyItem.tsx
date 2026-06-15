@@ -119,7 +119,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             className={styles.selectedAllergyReactions}
           >
             <FilterableMultiSelect
-              key={`${id}-${selectedReactions.length}`}
+              key={id}
               id={`allergy-reactions-multiselect-${id}`}
               data-testid={`allergy-reactions-multiselect-${id}`}
               type="default"

@@ -1,7 +1,6 @@
 import {
   useTranslation,
   useSubscribeConsultationSaved,
-  CONSULTATION_ENCOUNTER_TYPE_UUID,
   setEncounterSessionDecision,
   setEncounterSessionLoading,
   resetEncounterSession,
@@ -14,8 +13,10 @@ import {
   type PrintOption,
 } from '@bahmni/widgets';
 import React, { useEffect, useMemo, useRef } from 'react';
+import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useEncounterSession } from '../../hooks/useEncounterSession';
 import { usePatientVisit } from '../../hooks/usePatientVisit';
+import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationActionButton from './ConsultationActionButton';
 import styles from './styles/PatientHeader.module.scss';
 
@@ -37,12 +38,23 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
 }) => {
   const { t } = useTranslation();
   const { practitioner } = useActivePractitioner();
+  const { clinicalConfig } = useClinicalConfig();
+  const { encounterConcepts } = useEncounterConcepts();
 
   const patientUUID = usePatientUUID();
 
-  // Single hook call shared with ConsultationActionButton via props to avoid
-  // duplicate FHIR searches. matchReason is exposed on the DOM so downstream
-  // widget consumers can read it without waiting for ConsultationPad to open.
+  const defaultEncounterTypeName =
+    clinicalConfig?.consultationPad?.inputControls?.find(
+      (c) => c.type === 'encounterDetails',
+    )?.metadata?.defaultEncounterType as string | undefined;
+
+  const encounterTypeUUID = useMemo(() => {
+    if (!defaultEncounterTypeName || !encounterConcepts) return undefined;
+    return encounterConcepts.encounterTypes.find(
+      (et) => et.name === defaultEncounterTypeName,
+    )?.uuid;
+  }, [defaultEncounterTypeName, encounterConcepts]);
+
   const {
     matchReason,
     editActiveEncounter,
@@ -51,7 +63,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     refetch,
   } = useEncounterSession({
     practitioner,
-    encounterTypeUUID: CONSULTATION_ENCOUNTER_TYPE_UUID,
+    encounterTypeUUID,
   });
 
   // Reset the shared store whenever the patient changes so stale data from a
@@ -100,6 +112,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     () => ({
       ...(patientUUID && { patientUUID }),
       ...(visitUuid && { visitUuid }),
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
     [patientUUID, visitUuid],
   );

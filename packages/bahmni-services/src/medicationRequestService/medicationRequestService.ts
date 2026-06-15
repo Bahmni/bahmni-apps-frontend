@@ -341,8 +341,20 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       ),
       note: getNote(medication.note),
       doseForm: doseForm,
+      statusReason:
+        medication.statusReason?.text ??
+        medication.statusReason?.coding?.[0]?.display ??
+        undefined,
+      dateStopped: (() => {
+        const ext = medication.extension?.find(
+          (e) =>
+            e.url ===
+            'http://fhir.bahmni.org/ext/medicationRequest/dateStopped', // NOSONAR
+        );
+        return (ext?.valueDateTime ?? ext?.valueDate) as string | undefined;
+      })(),
       fhirResource: medication,
-    };
+    } as MedicationRequest;
   });
 }
 

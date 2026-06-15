@@ -22,7 +22,10 @@ describe('Actions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseUserPrivilege.mockReturnValue({
-      userPrivileges: [{ uuid: 'u1', name: 'privilege1' }],
+      userPrivileges: [
+        { uuid: 'u1', name: 'privilege1' },
+        { uuid: 'u2', name: 'privilege2' },
+      ],
     } as any);
   });
 
@@ -63,6 +66,40 @@ describe('Actions', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('returns null when user lacks privilege for all actions', () => {
+    mockUseUserPrivilege.mockReturnValue({ userPrivileges: [] } as any);
+
+    const { container } = render(
+      <Actions
+        actions={singleActionMock}
+        medication={fhirMedicationRequestMock}
+      />,
+    );
+
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders single button when user has privilege for only one of multiple actions', () => {
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [{ uuid: 'u1', name: 'privilege1' }],
+    } as any);
+
+    render(
+      <Actions
+        actions={multipleActionsMock}
+        medication={fhirMedicationRequestMock}
+      />,
+    );
+
+    // Only one action permitted → single button, not overflow menu
+    expect(
+      screen.getByTestId('medication-action-administer-test-med-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('medication-actions-menu-test-med-id'),
+    ).not.toBeInTheDocument();
+  });
+
   it('disables the icon button when action type is in disabledActionTypes', () => {
     render(
       <Actions
@@ -100,23 +137,7 @@ describe('Actions', () => {
     expect(administerItem.closest('button')).toBeDisabled();
   });
 
-  it('disables action when user lacks required privilege', () => {
-    mockUseUserPrivilege.mockReturnValue({ userPrivileges: [] } as any);
-
-    render(
-      <Actions
-        actions={singleActionMock}
-        medication={fhirMedicationRequestMock}
-      />,
-    );
-
-    const button = screen.getByTestId(
-      'medication-action-administer-test-med-id',
-    );
-    expect(button).toBeDisabled();
-  });
-
-  it('calls handleAction when a single action icon button is clicked', async () => {
+  it('calls handleAction when a single action button is clicked', async () => {
     const handleActionSpy = jest.spyOn(actionHandlers, 'handleAction');
 
     render(
@@ -133,6 +154,7 @@ describe('Actions', () => {
     expect(handleActionSpy).toHaveBeenCalledWith(
       singleActionMock[0],
       fhirMedicationRequestMock,
+      undefined,
     );
   });
 
@@ -156,6 +178,7 @@ describe('Actions', () => {
     expect(handleActionSpy).toHaveBeenCalledWith(
       multipleActionsMock[0],
       fhirMedicationRequestMock,
+      undefined,
     );
   });
 
