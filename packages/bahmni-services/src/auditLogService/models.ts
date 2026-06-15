@@ -1,7 +1,7 @@
 // Core audit log entry sent to API
 export interface AuditLogEntry {
   patientUuid?: string;
-  eventType: string;
+  eventType: AuditEventType;
   message: string;
   module: string;
 }

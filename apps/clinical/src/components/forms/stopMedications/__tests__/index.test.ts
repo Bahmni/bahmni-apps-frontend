@@ -208,6 +208,34 @@ describe('stopMedications input control', () => {
       expect(mockStopMedication).not.toHaveBeenCalled();
     });
 
+    it('does not dispatch audit event when subject.reference is missing', async () => {
+      const control = getStopMedicationsControl()!;
+
+      mockStopMedication.mockResolvedValueOnce({
+        resourceType: 'MedicationRequest',
+        id: 'med-1',
+        status: 'stopped',
+        intent: 'order',
+        subject: {},
+      });
+
+      const store = useStopMedicationStore.getState();
+      store.setMedicationToStop({
+        resourceType: 'MedicationRequest',
+        id: 'med-1',
+        status: 'active',
+        intent: 'order',
+        subject: {},
+      });
+      store.setStopReason('reason');
+      store.setStopDate(new Date());
+
+      await control.onDirectSubmit!();
+
+      expect(mockStopMedication).toHaveBeenCalled();
+      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+    });
+
     it('omits note when note is empty', async () => {
       const control = getStopMedicationsControl()!;
 

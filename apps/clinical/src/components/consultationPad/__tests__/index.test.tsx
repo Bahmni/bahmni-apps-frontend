@@ -529,6 +529,37 @@ describe('ConsultationPad', () => {
       });
     });
 
+    it('shows error when direct submit succeeds but bundle submission fails in mixed scenario', async () => {
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const directEntry = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+      const bundleEntry = {
+        ...makeMockEntry('medication'),
+        hasData: jest.fn().mockReturnValue(true),
+      };
+
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([directEntry, bundleEntry] as any);
+      jest
+        .mocked(submitConsultation)
+        .mockRejectedValue(new Error('Bundle failed'));
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+        expect(submitConsultation).toHaveBeenCalled();
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        );
+      });
+    });
+
     it('calls submitConsultation when mixed entries (direct + bundle)', async () => {
       const onClose = jest.fn();
       const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);

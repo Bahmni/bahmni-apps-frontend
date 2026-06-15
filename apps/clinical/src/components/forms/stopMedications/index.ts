@@ -24,12 +24,16 @@ registerInputControl({
       effectiveDate: state.stopDate,
       note: state.note || undefined,
     });
-    dispatchAuditEvent({
-      eventType: AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION
-        .eventType as AuditEventType,
-      patientUuid:
-        state.medicationToStop.subject?.reference?.split('/').pop() ?? '',
-      messageParams: {},
-    });
+    const patientUuid = state.medicationToStop.subject?.reference
+      ?.split('/')
+      .pop();
+    if (patientUuid) {
+      dispatchAuditEvent({
+        eventType: AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION
+          .eventType as AuditEventType,
+        patientUuid,
+        messageParams: {},
+      });
+    }
   },
 });
