@@ -68,7 +68,7 @@ const Actions: React.FC<ActionsProps> = ({
         id={`medication-action-${action.type}-button`}
         data-testid={`medication-action-${action.type}-${medication.id}`}
         aria-label={t(action.label)}
-        kind="ghost"
+        kind={action.type === 'stop' ? 'danger--ghost' : 'ghost'}
         disabled={disabled}
         onClick={() => handleAction(action, medication, startDate)}
       >
@@ -91,7 +91,7 @@ const Actions: React.FC<ActionsProps> = ({
           data-testid={`medication-action-${action.type}-${medication.id}`}
           key={action.type}
           itemText={t(action.label)}
-          isDelete={false}
+          isDelete={action.type === 'stop'}
           disabled={isActionDisabled(action)}
           onClick={() => handleAction(action, medication, startDate)}
         />
