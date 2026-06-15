@@ -71,6 +71,7 @@ describe('VisitTypeSelector', () => {
     extraProps?: {
       activeVisitLabel?: string;
       onActiveVisitClick?: () => void;
+      disabled?: boolean;
     },
   ) => {
     const initialEntries = patientUuid
@@ -292,5 +293,14 @@ describe('VisitTypeSelector', () => {
         uuid: 'b7494a80-fdf9-49bb-bb40-396c47b40343',
       });
     });
+  });
+
+  it('disables the button and dropdown when disabled prop is true', async () => {
+    renderComponent(undefined, { disabled: true });
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+
+    expect(screen.getByRole('button')).toBeDisabled();
+    expect(screen.getByRole('combobox')).toBeDisabled();
   });
 });
