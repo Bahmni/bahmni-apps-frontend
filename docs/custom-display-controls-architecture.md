@@ -1,7 +1,6 @@
 # Custom Display Controls — Architecture
 
 > Design rationale and system architecture for implementation-authored dashboard controls.
-> For the step-by-step authoring how-to, see [`custom-display-controls.md`](./custom-display-controls.md).
 
 ---
 
@@ -9,18 +8,19 @@
 
 Implementations need to add their **own** clinical-dashboard widgets without forking or rebuilding
 the Bahmni frontend. A "custom display control" is a React component rendered inside a dashboard
-section, indistinguishable at runtime from a built-in widget such as `AllergiesTable`.
+section, indistinguishable at runtime from a built-in widget such as `Allergies`, `Medications` widgets.
 
 **Goals**
 
 - **No host fork.** An implementation ships a control without touching Bahmni source.
-- **One contract.** Custom controls use the same `WidgetProps` interface as built-in widgets.
+- **One contract.** Custom controls use the same props interface as the built-in widgets.
 - **One framework instance.** Exactly one React / design-system / services instance is shared, so
   hooks, context, theming, and the React Query cache all work across the boundary.
 - **Failure isolation.** A broken control degrades to an error tile; the rest of the dashboard
   renders normally.
-- **Two deployment shapes.** Support both implementations that build their own distro and those
-  that consume a prebuilt one.
+- **Two deployment shapes.** Support both ways of custom implementations:
+  - Implmentations that build their own distribution with their custom apps
+  - Implmentations that use Bahmni's product distibution, but only wants to add custom controls.
 
 **Non-goals**
 
@@ -71,12 +71,14 @@ flowchart TD
 ### Path A — build-time registration
 
 The implementation authors the control in its own repo/package and calls `registerWidget` during
-distro bootstrap. It compiles straight into the distro bundle: no hosted JS, no `window` global, no
-CSP concerns, full type-safety. This is the natural path for own-distro builders.
+distro bootstrap. It compiles straight into the distro bundle of the implementation's build. 
+ This is the natural path for own-distro builders.
 
 ### Path B — runtime drop-in
 
-The implementation builds the control as a **separate ESM bundle**, hosts it on the config server,
+This approach uses the browsers [dynamic import capability](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import).
+
+The implementation builds the control as a **separate ESM bundle**, hosts it on the either a seperate docker container, or volume mounted into a specific directory.
 and references its URL from the dashboard config. The host ships **one** built-in widget,
 `type: 'custom'`, that is a loader + export-selector + error boundary.
 
@@ -295,21 +297,3 @@ flowchart TB
 ```
 
 ---
-
-## 10. Component & file map
-
-| Concern | File |
-|---|---|
-| `WidgetProps` contract | `packages/bahmni-widgets/src/registry/model.ts` |
-| Registry singleton | `packages/bahmni-widgets/src/registry/index.ts` |
-| Built-in map (incl. `custom`) | `packages/bahmni-widgets/src/registry/widgetMap.ts` |
-| Runtime loader | `packages/bahmni-widgets/src/custom/CustomControl.tsx` |
-| Error boundary | `packages/bahmni-widgets/src/custom/ControlErrorBoundary.tsx` |
-| SDK type | `packages/bahmni-widgets/src/sdk.ts` |
-| SDK installer | `packages/bahmni-widgets/src/installControlsSdk.ts` |
-| Host bootstrap | `distro/src/main.tsx` |
-| Renderer | `apps/clinical/src/components/dashboardSection/DashboardSection.tsx` |
-| Externalization | each `vite.config.ts` `rollupOptions.external` + each `package.json` `peerDependencies` |
-| Authoring how-to | `docs/custom-display-controls.md` |
-| Starter template | `custom-control-starter/` (separate repo) |
-```
