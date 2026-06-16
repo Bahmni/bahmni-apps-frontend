@@ -375,6 +375,7 @@ const PatientRegister = () => {
                 <RegistrationActions
                   extensionPointId="org.bahmni.registration.navigation"
                   onBeforeNavigate={handleSave}
+                  disabled={isSaving}
                 />
               </div>
             </div>
