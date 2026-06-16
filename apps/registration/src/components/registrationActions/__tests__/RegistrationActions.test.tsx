@@ -24,14 +24,17 @@ jest.mock('../../../pages/PatientRegister/visitTypeSelector', () => ({
     onVisitTypeSelect,
     activeVisitLabel,
     onActiveVisitClick,
+    disabled,
   }: {
     onVisitTypeSelect: (visitType: VisitType) => void;
     activeVisitLabel?: string;
     onActiveVisitClick?: () => void;
+    disabled?: boolean;
   }) => (
     <div data-testid="visit-type-selector">
       <button
         data-testid="select-visit-type-button"
+        disabled={disabled}
         onClick={() =>
           onVisitTypeSelect({ name: 'OPD', uuid: 'opd-visit-type-uuid' })
         }
@@ -198,6 +201,55 @@ describe('RegistrationActions', () => {
 
     const button = screen.getByText('VIEW_PATIENT');
     expect(button).toBeInTheDocument();
+  });
+
+  describe('disabled prop', () => {
+    it('should disable the action button when disabled is true', () => {
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [mockExtensions[1]],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          disabled
+        />,
+      );
+
+      expect(screen.getByTestId('registration-action-button')).toBeDisabled();
+    });
+
+    it('should not disable the action button by default', () => {
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [mockExtensions[1]],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions extensionPointId="org.bahmni.registration.navigation" />,
+      );
+
+      expect(
+        screen.getByTestId('registration-action-button'),
+      ).not.toBeDisabled();
+    });
+
+    it('should propagate disabled to VisitTypeSelector', () => {
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [mockExtensions[0]],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          disabled
+        />,
+      );
+
+      expect(screen.getByTestId('select-visit-type-button')).toBeDisabled();
+    });
   });
 
   describe('onBeforeNavigate callback', () => {
