@@ -31,6 +31,7 @@ import {
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
+import { useFormPatientContext } from '../../../hooks/useFormPatientContext';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
@@ -52,6 +53,7 @@ interface ObservationFormsContainerProps {
       | typeof VALIDATION_STATE_SCRIPT_ERROR,
   ) => void;
   existingObservations?: Form2Observation[];
+  activeEncounterUuid?: string | null;
 }
 
 const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
@@ -60,11 +62,17 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onRemoveForm,
   onFormObservationsChange,
   existingObservations,
+  activeEncounterUuid,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { user } = useActivePractitioner();
-  const { episodeOfCare } = useClinicalAppData();
+  const { episodeOfCare, activeVisitId } = useClinicalAppData();
+  const { patient: patientContext } = useFormPatientContext({
+    patientUUID,
+    activeVisitUuid: activeVisitId,
+    activeEncounterUuid,
+  });
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const { forms: allForms, isLoading: isAllFormsLoading } =
     useObservationFormsSearch('', episodeOfCareUuids);
@@ -258,7 +266,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         const processedObservations = executeOnFormSaveEvent(
           formMetadata!,
           transformedObservations,
-          patientUUID!,
+          patientContext!,
           containerState?.data,
         );
 
@@ -268,6 +276,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           error instanceof Error
             ? error.message
             : t('OBSERVATION_FORM_SCRIPT_ERROR_MESSAGE');
+        console.error('[ObservationFormsContainer] onFormSave script error:', error);
         setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
         setValidationErrorMessage(errorMessage);
       }
@@ -361,7 +370,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           />
         ) : error ? (
           <div>{error.message}</div>
-        ) : formMetadata && patientUUID ? (
+        ) : formMetadata && patientUUID && patientContext ? (
           <CarbonContainer
             ref={formContainerRef}
             metadata={{
@@ -370,7 +379,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               version: formMetadata.version || '1',
             }}
             observations={observationsWithValues}
-            patient={{ uuid: patientUUID }}
+            patient={patientContext}
             translations={formMetadata.translations ?? {}}
             validate={validationErrorType !== null}
             validateForm

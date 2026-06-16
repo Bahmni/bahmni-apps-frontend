@@ -1,9 +1,10 @@
 import { runEventScript } from '@bahmni/form2-controls';
 import { Form2Observation, FormMetadata } from '@bahmni/services';
+import { FormPatientContext } from '../../../../models/observationForms';
 
 interface FormEventContext {
   observations: Form2Observation[];
-  patient: { uuid: string };
+  patient: FormPatientContext;
   formName?: string;
   formUuid?: string;
   formData?: FormDataRecord;
@@ -24,7 +25,7 @@ type FormDataRecord = Record<string, unknown> & {
 export const executeOnFormSaveEvent = (
   metadata: FormMetadata,
   observations: Form2Observation[],
-  patientUuid: string,
+  patient: FormPatientContext,
   formData?: FormDataRecord,
 ): Form2Observation[] => {
   const schema = metadata.schema as Record<string, unknown>;
@@ -32,6 +33,7 @@ export const executeOnFormSaveEvent = (
     ?.onFormSave as string;
 
   if (!onFormSaveScript) {
+    console.log('[formEventExecutor] No onFormSave script found in form schema, skipping.');
     return observations;
   }
 
@@ -45,11 +47,15 @@ export const executeOnFormSaveEvent = (
 
     const formContext: FormEventContext = {
       observations: JSON.parse(JSON.stringify(observations)),
-      patient: { uuid: patientUuid },
+      patient,
       formName: metadata.name,
       formUuid: metadata.uuid,
       formData: formData,
     };
+
+    console.log('[formEventExecutor] Executing onFormSave script for form:', metadata.name);
+    console.log('[formEventExecutor] Patient context passed to script:', patient);
+    console.log('[formEventExecutor] Observations before script:', observations);
 
     const result = runEventScript(
       formData,
@@ -57,10 +63,14 @@ export const executeOnFormSaveEvent = (
       formContext.patient,
     );
 
+    console.log('[formEventExecutor] Script result:', result);
+
     if (Array.isArray(result)) {
+      console.log('[formEventExecutor] Script returned modified observations:', result);
       return result;
     }
 
+    console.log('[formEventExecutor] Script returned non-array, using context observations:', formContext.observations);
     return formContext.observations;
   } catch (error) {
     const errorMessage =
