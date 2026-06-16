@@ -1,0 +1,23 @@
+# NOTICE                                                                                                       
+                                                                                                                 
+## Bahmni Frontend                                                                                             
+                                                                                                                
+Copyright © 2025 Thoughtworks, Inc.                                                                            
+                                                                                                                
+### Contributors
+                                                                                                                
+This repository has got source code generated at Thoughtworks.                                                 
+                                                                                                            
+This repository includes features developed with the International Organization                                 
+for Migration (IOM) under its MiHealth initiative, aligned with IOM's       
+commitment to advancing open-source digital public health solutions for
+migration health assessments to promote orderly and safe migration.    
+                                                                                                                
+### Third-Party Software                                                                                    
+                                                                                                                
+This product includes software developed by the Bahmni community and                                           
+third-party open source projects. See the LICENSE file for details.                                          
+                                                                    
+For a list of third-party dependencies and their licenses, refer to the                                        
+package.json files within each application module and the node_modules                                      
+directory.                                                      
