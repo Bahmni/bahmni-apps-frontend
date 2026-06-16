@@ -18,7 +18,8 @@
 }
 
 .divider {
-  display: none;
+  height: $spacing-07;
+  background-color: $layer-01;
 }
 
 .widgetLoading {
