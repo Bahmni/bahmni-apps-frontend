@@ -106,8 +106,8 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       enabled: !!stopMedication?.id,
     });
 
-    // Active meds: min = effectiveStartDate, max = today
-    // Scheduled (on-hold) meds: min = today (effectiveStartDate is future)
+    // min = effectiveStartDate (medication start), max = today
+    // Scheduled (on-hold) meds: effectiveStartDate is future — cap min to today
     // Memoized so the Date object references stay stable between re-renders and
     // don't trigger unnecessary flatpickr minDate/maxDate updates.
     const isScheduled = stopMedication?.status === 'on-hold';
@@ -159,6 +159,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
           {isStopDateVisible && (
             <Column sm={2} md={4} lg={8} className={styles.column}>
               <DatePicker
+                key={orderDates?.effectiveStartDate ?? 'pending'}
                 datePickerType="single"
                 data-testid="stop-medication-date-picker"
                 value={initialStopDateRef.current}
