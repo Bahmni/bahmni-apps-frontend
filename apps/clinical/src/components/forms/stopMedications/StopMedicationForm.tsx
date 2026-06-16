@@ -8,6 +8,7 @@ import {
   Tile,
 } from '@bahmni/design-system';
 import {
+  get,
   getConfig,
   fetchMedicationOrdersMetadata,
   useTranslation,
@@ -96,14 +97,26 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       }
     }, [medicationConfig?.stopMedicationFields, setFieldConfig]);
 
-    // min = today, max = today — only today is selectable as the stop date
+    const { data: orderDates } = useQuery({
+      queryKey: ['orderDates', stopMedication?.id],
+      queryFn: () =>
+        get<{ effectiveStartDate: string; effectiveStopDate: string }>(
+          `/openmrs/ws/rest/v1/order/${stopMedication!.id}?v=custom:(effectiveStartDate,effectiveStopDate)`,
+        ),
+      enabled: !!stopMedication?.id,
+    });
+
+    // min = effectiveStartDate (medication start), max = today
+    // Scheduled (on-hold) meds: effectiveStartDate is future — cap min to today
     // Memoized so the Date object references stay stable between re-renders and
     // don't trigger unnecessary flatpickr minDate/maxDate updates.
+    const isScheduled = stopMedication?.status === 'on-hold';
     const minStopDate = useMemo(() => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      return today;
-    }, []);
+      if (isScheduled || !orderDates?.effectiveStartDate) return today;
+      return new Date(orderDates.effectiveStartDate);
+    }, [isScheduled, orderDates?.effectiveStartDate]);
     const maxStopDate = useMemo(() => {
       const today = new Date();
       today.setHours(23, 59, 59, 999);
@@ -146,6 +159,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
           {isStopDateVisible && (
             <Column sm={2} md={4} lg={8} className={styles.column}>
               <DatePicker
+                key={orderDates?.effectiveStartDate ?? 'pending'}
                 datePickerType="single"
                 data-testid="stop-medication-date-picker"
                 value={initialStopDateRef.current}
