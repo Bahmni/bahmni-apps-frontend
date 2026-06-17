@@ -62,4 +62,8 @@ export const builtInWidgets: WidgetConfig[] = [
     type: 'immunizationHistory',
     component: lazy(() => import('../immunizationHistory/ImmunizationHistory')),
   },
+  {
+    type: 'tasksControl',
+    component: lazy(() => import('../tasks/TasksContainer')),
+  },
 ];

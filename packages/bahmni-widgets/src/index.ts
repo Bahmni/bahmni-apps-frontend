@@ -21,6 +21,7 @@ export { LabInvestigation } from './labinvestigation';
 export { SearchPatient } from './searchPatient';
 export { VitalFlowSheet } from './vitalFlowSheet';
 export { GenericServiceRequestTable } from './genericServiceRequest';
+export { TasksContainer } from './tasks';
 export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';

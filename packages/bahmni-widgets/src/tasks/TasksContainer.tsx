@@ -9,9 +9,9 @@ import React, { useMemo } from 'react';
 import { usePatientUUID } from '@bahmni/widgets';
 import { FormFillingTaskHandler } from './handlers/FormFillingTaskHandler';
 import { TaskViewModel, TaskHandlerConfig } from './handlers/models';
-import styles from './TasksTable.module.scss';
+import styles from './TasksContainer.module.scss';
 
-interface TasksTableProps {
+interface TasksContainerProps {
   config?: Record<string, unknown>;
   episodeOfCareUuids?: string[];
   encounterUuids?: string[];
@@ -51,7 +51,7 @@ const getTaskHandler = (handlerType: string) => {
   // Future handlers can be added here:
 };
 
-export const TasksTable: React.FC<TasksTableProps> = ({
+export const TasksContainer: React.FC<TasksContainerProps> = ({
   config,
   episodeOfCareUuids,
   encounterUuids,
@@ -111,7 +111,7 @@ export const TasksTable: React.FC<TasksTableProps> = ({
 
   if (emptyEncounterFilter) {
     return (
-      <div className={styles.emptyState} data-testid="tasks-table-empty">
+      <div className={styles.emptyState} data-testid="tasks-container-empty">
         {t('NO_TASKS_FOUND')}
       </div>
     );
@@ -119,14 +119,14 @@ export const TasksTable: React.FC<TasksTableProps> = ({
 
   if (!taskHandlerConfig || taskHandlerConfig.length === 0) {
     return (
-      <div className={styles.emptyState} data-testid="tasks-table-error">
+      <div className={styles.emptyState} data-testid="tasks-container-error">
         {t('TASKS_HANDLER_NOT_CONFIGURED')}
       </div>
     );
   }
 
   return (
-    <div data-testid="tasks-table">
+    <div data-testid="tasks-container">
       {tasksByHandler &&
         Array.from(tasksByHandler.entries()).map(([key, { config, tasks }]) => {
           const Handler = getTaskHandler(config.handlerType);
