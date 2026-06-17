@@ -1,0 +1,28 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.completedStatus {
+  color: $green-50;
+}
+
+.activeStatus {
+  color: $blue-50;
+}
+
+.scheduledStatus {
+  color: $yellow-20;
+}
+
+.cancelledStatus {
+  color: $cool-gray-50;
+}
+
+.stoppedStatus {
+  color: $red-50;
+}
+
+.defaultStatus {
+  color: $cool-gray-20;
+}
