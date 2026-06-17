@@ -10,6 +10,7 @@ import { handleExtensionNavigation } from '../../utils/extensionNavigation';
 export interface RegistrationActionsProps {
   extensionPointId?: string;
   onBeforeNavigate?: () => Promise<string | null>;
+  disabled?: boolean;
 }
 
 /**
@@ -25,6 +26,7 @@ export interface RegistrationActionsProps {
 export const RegistrationActions = ({
   extensionPointId,
   onBeforeNavigate,
+  disabled = false,
 }: RegistrationActionsProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -87,6 +89,7 @@ export const RegistrationActions = ({
               }
               activeVisitLabel={t('PATIENT_DASHBOARD_REDIRECT')}
               onActiveVisitClick={() => handleActiveVisitClick(extension)}
+              disabled={disabled}
               data-testid="visit-type-selector"
             />
           );
@@ -97,6 +100,7 @@ export const RegistrationActions = ({
             key={extension.id}
             kind={extension.kind ?? 'primary'}
             onClick={() => handleClick(extension)}
+            disabled={disabled}
             data-testid="registration-action-button"
             renderIcon={
               extension.icon
