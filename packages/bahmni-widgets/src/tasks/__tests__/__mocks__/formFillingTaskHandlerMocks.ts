@@ -4,23 +4,23 @@ export const mockTaskViewModels: TaskViewModel[] = [
   {
     id: 'task-1',
     name: 'Vitals Form',
-    status: 'requested',
     code: 'vitals-form',
+    status: 'requested',
   },
   {
     id: 'task-2',
     name: 'Physical Exam',
+    code: 'physical-exam',
     status: 'completed',
     completedBy: 'Dr. Smith',
-    completedOn: '2025-03-25T11:00:00Z',
-    code: 'physical-exam',
+    completedOn: '2025-03-25 11:00AM',
   },
   {
     id: 'task-3',
     name: 'Lab Review',
+    code: 'lab-review',
     status: 'in-progress',
     completedBy: 'Dr. Johnson',
-    code: 'lab-review',
   },
 ];
 

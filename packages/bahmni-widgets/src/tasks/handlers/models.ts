@@ -1,10 +1,10 @@
 export interface TaskViewModel {
   id: string;
   name: string;
+  code: string;
   status: string;
   completedBy?: string;
   completedOn?: string;
-  code?: string;
 }
 
 export interface TaskHandlerConfig {

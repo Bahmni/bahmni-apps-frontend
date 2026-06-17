@@ -47,11 +47,12 @@ describe('FormFillingTaskHandler', () => {
     expect(screen.getAllByText('-').length).toBeGreaterThan(0);
   });
 
-  it('should format completed on date correctly', () => {
+  it('should display completed on date field', () => {
     render(<FormFillingTaskHandler tasks={mockTaskViewModels} />);
 
-    const formattedDate = new Date('2025-03-25T11:00:00Z').toLocaleString();
-    expect(screen.getByText(formattedDate)).toBeInTheDocument();
+    const table = screen.getByTestId('form-filling-tasks-table');
+    expect(table).toBeInTheDocument();
+    expect(screen.getByText('2025-03-25 11:00AM')).toBeInTheDocument();
   });
 
   it('should render DataTable with empty tasks', () => {

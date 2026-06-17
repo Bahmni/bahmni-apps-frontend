@@ -424,3 +424,4 @@ export type {
   RenderRequest,
   TemplateListResponse,
 } from './templateService';
+export { getTasks } from './taskService';

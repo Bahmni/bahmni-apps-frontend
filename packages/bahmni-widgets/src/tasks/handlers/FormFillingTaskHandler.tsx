@@ -22,11 +22,6 @@ const getStatusDotClassName = (status: string): string => {
   return statusMap[status] || styles.defaultStatus;
 };
 
-/**
- * Handler for form-filling tasks
- * Displays tasks in a simple 4-column table
- * Future: Will support actions from handlerConfig
- */
 export const FormFillingTaskHandler: React.FC<TaskHandlerProps> = ({
   tasks,
   isLoading,
@@ -60,9 +55,7 @@ export const FormFillingTaskHandler: React.FC<TaskHandlerProps> = ({
         case 'completedBy':
           return task.completedBy ?? '-';
         case 'completedOn':
-          return task.completedOn
-            ? new Date(task.completedOn).toLocaleString()
-            : '-';
+          return task.completedOn ?? '-';
         default:
           return null;
       }
