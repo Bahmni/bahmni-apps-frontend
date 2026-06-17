@@ -7,14 +7,12 @@ import { useQuery } from '@tanstack/react-query';
 import { Task } from 'fhir/r4';
 import React, { useMemo } from 'react';
 import { usePatientUUID } from '@bahmni/widgets';
+import { WidgetProps } from '../registry';
 import { FormFillingTaskHandler } from './handlers/FormFillingTaskHandler';
 import { TaskViewModel, TaskHandlerConfig } from './handlers/models';
 import styles from './TasksContainer.module.scss';
 
-interface TasksContainerProps {
-  config?: Record<string, unknown>;
-  episodeOfCareUuids?: string[];
-  encounterUuids?: string[];
+interface TasksContainerProps extends WidgetProps {
   orderReference?: string;
 }
 
@@ -51,7 +49,7 @@ const getTaskHandler = (handlerType: string) => {
   // Future handlers can be added here:
 };
 
-export const TasksContainer: React.FC<TasksContainerProps> = ({
+const TasksContainer: React.FC<TasksContainerProps> = ({
   config,
   episodeOfCareUuids,
   encounterUuids,
@@ -145,3 +143,5 @@ export const TasksContainer: React.FC<TasksContainerProps> = ({
     </div>
   );
 };
+
+export default TasksContainer;
