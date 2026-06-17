@@ -90,7 +90,6 @@ export const useFormPatientContext = ({
           currentEncounterUuid: activeEncounterUuid ?? null,
         };
 
-        console.log('[useFormPatientContext] Patient context built:', patientContext);
         setPatient(patientContext);
       } catch (err) {
         if (cancelled) return;

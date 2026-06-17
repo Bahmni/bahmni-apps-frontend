@@ -33,7 +33,6 @@ export const executeOnFormSaveEvent = (
     ?.onFormSave as string;
 
   if (!onFormSaveScript) {
-    console.log('[formEventExecutor] No onFormSave script found in form schema, skipping.');
     return observations;
   }
 
@@ -53,24 +52,16 @@ export const executeOnFormSaveEvent = (
       formData: formData,
     };
 
-    console.log('[formEventExecutor] Executing onFormSave script for form:', metadata.name);
-    console.log('[formEventExecutor] Patient context passed to script:', patient);
-    console.log('[formEventExecutor] Observations before script:', observations);
-
     const result = runEventScript(
       formData,
       onFormSaveScript,
       formContext.patient,
     );
 
-    console.log('[formEventExecutor] Script result:', result);
-
     if (Array.isArray(result)) {
-      console.log('[formEventExecutor] Script returned modified observations:', result);
       return result;
     }
 
-    console.log('[formEventExecutor] Script returned non-array, using context observations:', formContext.observations);
     return formContext.observations;
   } catch (error) {
     const errorMessage =

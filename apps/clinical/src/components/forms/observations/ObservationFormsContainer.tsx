@@ -276,7 +276,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           error instanceof Error
             ? error.message
             : t('OBSERVATION_FORM_SCRIPT_ERROR_MESSAGE');
-        console.error('[ObservationFormsContainer] onFormSave script error:', error);
         setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
         setValidationErrorMessage(errorMessage);
       }
@@ -379,7 +378,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               version: formMetadata.version || '1',
             }}
             observations={observationsWithValues}
-            patient={patientContext}
+            patient={{
+              ...patientContext,
+              name: patientContext.name ?? undefined,
+              identifier: patientContext.identifier ?? undefined,
+              age: patientContext.age ?? undefined,
+              gender: patientContext.gender ?? undefined,
+              birthdate: patientContext.birthdate ?? undefined,
+            }}
             translations={formMetadata.translations ?? {}}
             validate={validationErrorType !== null}
             validateForm
