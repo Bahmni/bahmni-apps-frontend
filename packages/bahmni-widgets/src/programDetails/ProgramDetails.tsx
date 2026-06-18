@@ -44,6 +44,7 @@ interface ProgramDetailsProps {
   programUUID: string;
   config: {
     fields: string[];
+    translateValues: string[];
   };
 }
 
@@ -193,6 +194,19 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     data.allowedStates.length > 0 &&
     hasEditPatientProgramsPrivilege;
 
+  const renderAttributeValue = (field: string) => {
+    const raw = data?.attributes?.[field];
+    if (!raw) return '-';
+
+    if (config?.translateValues?.includes(field)) {
+      return t(
+        `EOC_${camelToScreamingSnakeCase(field)}_${camelToScreamingSnakeCase(raw)}`,
+        raw,
+      );
+    }
+    return raw;
+  };
+
   const renderKnownField = (field: string) => {
     switch (field) {
       case 'programName':
@@ -259,7 +273,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
               value={
                 KNOWN_FIELDS.includes(field)
                   ? renderKnownField(field)
-                  : (data?.attributes?.[field] ?? '-')
+                  : renderAttributeValue(field)
               }
             />
           </Column>

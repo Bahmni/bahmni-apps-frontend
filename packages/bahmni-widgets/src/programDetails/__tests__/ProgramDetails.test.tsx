@@ -1,4 +1,5 @@
 import { updateProgramState, formatDateTime } from '@bahmni/services';
+import * as BahmniServices from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
@@ -63,6 +64,7 @@ describe('ProgramDetails', () => {
         programUUID="test-program-uuid"
         config={{
           fields: ['programName', 'startDate', 'endDate', 'state', 'outcome'],
+          translateValues: [],
         }}
       />
     </QueryClientProvider>
@@ -110,6 +112,7 @@ describe('ProgramDetails', () => {
               'startDate',
               'state',
             ],
+            translateValues: [],
           }}
         />
       </QueryClientProvider>
@@ -172,6 +175,7 @@ describe('ProgramDetails', () => {
               'startDate',
               'state',
             ],
+            translateValues: [],
           }}
         />
       </QueryClientProvider>
@@ -511,6 +515,109 @@ describe('ProgramDetails', () => {
         title: 'PROGRAM_DETAILS_STATE_CHANGE_ERROR_TITLE',
         message: 'PROGRAM_DETAILS_ERROR_UPDATING_STATE',
       });
+    });
+  });
+
+  describe('renderAttributeValue', () => {
+    const mockQueryData = {
+      id: 'program-1',
+      uuid: 'program-uuid-1',
+      programName: 'TB Program',
+      dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+      dateCompleted: null,
+      outcomeName: null,
+      outcomeDetails: null,
+      currentStateName: 'Treatment Phase',
+      attributes: {
+        treatmentCategory: 'categoryI',
+      },
+      allowedStates: [],
+    };
+
+    it('should render raw attribute value when field is not in translateValues', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: mockQueryData,
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ProgramDetails
+            programUUID="test-program-uuid"
+            config={{
+              fields: ['treatmentCategory'],
+              translateValues: [],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-details-treatmentCategory-value-test-id'),
+      ).toHaveTextContent('categoryI');
+    });
+
+    it('should return "-" for missing attribute when field is in translateValues', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: mockQueryData,
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ProgramDetails
+            programUUID="test-program-uuid"
+            config={{
+              fields: ['missingField'],
+              translateValues: ['missingField'],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-details-missingField-value-test-id'),
+      ).toHaveTextContent('-');
+    });
+
+    it('should call t() with correct EOC key and render translated value when field is in translateValues', () => {
+      const mockT = jest.fn((key: string, fallback: string) => fallback);
+      const useTranslationSpy = jest
+        .spyOn(BahmniServices, 'useTranslation')
+        .mockReturnValue({ t: mockT });
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: mockQueryData,
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ProgramDetails
+            programUUID="test-program-uuid"
+            config={{
+              fields: ['treatmentCategory'],
+              translateValues: ['treatmentCategory'],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(mockT).toHaveBeenCalledWith(
+        'EOC_TREATMENT_CATEGORY_CATEGORY_I',
+        'categoryI',
+      );
+      expect(
+        screen.getByTestId('program-details-treatmentCategory-value-test-id'),
+      ).toHaveTextContent('categoryI');
+
+      useTranslationSpy.mockRestore();
     });
   });
 

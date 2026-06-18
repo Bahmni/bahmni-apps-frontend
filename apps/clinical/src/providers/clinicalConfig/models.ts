@@ -44,6 +44,7 @@ export interface Dashboard {
 
 export interface ProgramConfig {
   fields: string[];
+  translateValues: string[];
 }
 
 export interface ContextInformation {

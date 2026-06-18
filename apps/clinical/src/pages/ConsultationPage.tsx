@@ -282,6 +282,9 @@ const ConsultationPage: React.FC = () => {
           programUUID={programUUID}
           config={{
             fields: clinicalConfig.contextInformation?.program?.fields ?? [],
+            translateValues:
+              clinicalConfig?.contextInformation?.program?.translateValues ??
+              [],
           }}
         />
       );

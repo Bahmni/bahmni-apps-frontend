@@ -124,6 +124,13 @@
               "items": {
                 "type": "string"
               }
+            },
+            "translateValues": {
+              "type": "array",
+              "description": "List of fields whose values should be translated",
+              "items": {
+                "type": "string"
+              }
             }
           }
         }
