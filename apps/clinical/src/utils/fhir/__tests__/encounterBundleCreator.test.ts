@@ -1,15 +1,15 @@
 import { BundleEntry, FhirResource } from 'fhir/r4';
 import {
-  createConsultationBundle,
+  createEncounterBundle,
   createBundleEntry,
-} from '../consultationBundleCreator';
+} from '../encounterBundleCreator';
 
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
 global.crypto.randomUUID = jest.fn().mockReturnValue(mockUUID);
 
-describe('consultationBundleCreator utility functions', () => {
-  describe('createConsultationBundle', () => {
+describe('encounterBundleCreator utility functions', () => {
+  describe('createEncounterBundle', () => {
     beforeAll(() => {
       const mockDate = new Date('2023-01-01T12:00:00Z');
       jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
@@ -18,7 +18,7 @@ describe('consultationBundleCreator utility functions', () => {
       jest.resetAllMocks();
     });
 
-    it('should create a ConsultationBundle with the provided entries', () => {
+    it('should create a EncounterBundle with the provided entries', () => {
       const mockEntries: Array<BundleEntry<FhirResource>> = [
         {
           fullUrl: 'urn:uuid:123',
@@ -32,10 +32,10 @@ describe('consultationBundleCreator utility functions', () => {
         },
       ];
 
-      const result = createConsultationBundle(mockEntries);
+      const result = createEncounterBundle(mockEntries);
 
       expect(result).toEqual({
-        resourceType: 'ConsultationBundle',
+        resourceType: 'EncounterBundle',
         type: 'transaction',
         id: mockUUID,
         timestamp: '2023-01-01T12:00:00.000Z',
@@ -43,13 +43,13 @@ describe('consultationBundleCreator utility functions', () => {
       });
     });
 
-    it('should create a ConsultationBundle with empty entries when provided an empty array', () => {
+    it('should create a EncounterBundle with empty entries when provided an empty array', () => {
       const mockEntries: Array<BundleEntry<FhirResource>> = [];
 
-      const result = createConsultationBundle(mockEntries);
+      const result = createEncounterBundle(mockEntries);
 
       expect(result).toEqual({
-        resourceType: 'ConsultationBundle',
+        resourceType: 'EncounterBundle',
         type: 'transaction',
         id: mockUUID,
         timestamp: '2023-01-01T12:00:00.000Z',

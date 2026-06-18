@@ -1,4 +1,4 @@
-import { createAllergiesBundleEntries } from '../../../services/consultationBundleService';
+import { createAllergiesBundleEntries } from '../../../services/encounterBundleService';
 import { useAllergyStore } from '../../../stores';
 import { registerInputControl } from '../registry';
 import AllergiesForm from './AllergiesForm';
