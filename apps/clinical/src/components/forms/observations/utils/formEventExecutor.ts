@@ -1,10 +1,9 @@
-import { runEventScript } from '@bahmni/form2-controls';
+import { PatientData, runEventScript } from '@bahmni/form2-controls';
 import { Form2Observation, FormMetadata } from '@bahmni/services';
-import { FormPatientContext } from '../../../../models/observationForms';
 
 interface FormEventContext {
   observations: Form2Observation[];
-  patient: FormPatientContext;
+  patient: PatientData;
   formName?: string;
   formUuid?: string;
   formData?: FormDataRecord;
@@ -25,7 +24,7 @@ type FormDataRecord = Record<string, unknown> & {
 export const executeOnFormSaveEvent = (
   metadata: FormMetadata,
   observations: Form2Observation[],
-  patient: FormPatientContext,
+  patient: PatientData,
   formData?: FormDataRecord,
 ): Form2Observation[] => {
   const schema = metadata.schema as Record<string, unknown>;

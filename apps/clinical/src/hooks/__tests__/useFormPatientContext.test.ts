@@ -6,10 +6,14 @@ jest.mock('@bahmni/services', () => ({
   getPatientProfile: jest.fn(),
 }));
 
-// Mock date-fns so ageInDays is deterministic
+// Mock date-fns so age calculations are deterministic
 jest.mock('date-fns', () => ({
-  differenceInDays: jest.fn(() => 10950), // ~30 years in days
   parseISO: jest.fn((s: string) => new Date(s)),
+  differenceInDays: jest.fn(() => 10950),
+  differenceInYears: jest.fn(() => 30),
+  addYears: jest.fn((date: Date) => date),
+  differenceInMonths: jest.fn(() => 0),
+  addMonths: jest.fn((date: Date) => date),
 }));
 
 const mockGetPatientProfile = getPatientProfile as jest.MockedFunction<
@@ -131,7 +135,6 @@ describe('useFormPatientContext', () => {
         expect.objectContaining({
           uuid: PATIENT_UUID,
           identifier: 'BAH-001',
-          name: 'John Doe',
           display: 'John Doe',
           givenName: 'John',
           familyName: 'Doe',
@@ -144,9 +147,17 @@ describe('useFormPatientContext', () => {
           currentEncounterUuid: ACTIVE_ENCOUNTER_UUID,
         }),
       );
+      expect(typeof result.current.patient?.getAgeDetails).toBe('function');
+      expect(result.current.patient?.getAgeDetails()).toEqual({
+        year: 30,
+        month: 0,
+        day: 10950,
+        ageInDays: 10950,
+        ageText: '30y 0m 10950d',
+      });
     });
 
-    it('sets activeVisitUuid and currentEncounterUuid to null when not provided', async () => {
+    it('sets activeVisitUuid and currentEncounterUuid to undefined when not provided', async () => {
       mockGetPatientProfile.mockResolvedValueOnce(buildProfileResponse());
 
       const { result } = renderHook(() =>
@@ -159,8 +170,8 @@ describe('useFormPatientContext', () => {
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      expect(result.current.patient?.activeVisitUuid).toBeNull();
-      expect(result.current.patient?.currentEncounterUuid).toBeNull();
+      expect(result.current.patient?.activeVisitUuid).toBeUndefined();
+      expect(result.current.patient?.currentEncounterUuid).toBeUndefined();
     });
   });
 
@@ -191,7 +202,7 @@ describe('useFormPatientContext', () => {
       expect(result.current.patient?.identifier).toBe('BAH-SECOND');
     });
 
-    it('returns null identifier when no identifiers exist', async () => {
+    it('returns undefined identifier when no identifiers exist', async () => {
       const profile = buildProfileResponse({ identifiers: [] });
       mockGetPatientProfile.mockResolvedValueOnce(profile);
 
@@ -204,7 +215,7 @@ describe('useFormPatientContext', () => {
       );
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(result.current.patient?.identifier).toBeNull();
+      expect(result.current.patient?.identifier).toBeUndefined();
     });
 
     it('skips voided identifiers when selecting preferred', async () => {
@@ -279,7 +290,7 @@ describe('useFormPatientContext', () => {
       expect(result.current.patient?.display).toBe('Jane Smith');
     });
 
-    it('returns null name fields when names array is empty', async () => {
+    it('returns undefined name fields when names array is empty', async () => {
       const profile = buildProfileResponse({
         person: {
           uuid: 'person-uuid',
@@ -302,9 +313,9 @@ describe('useFormPatientContext', () => {
       );
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(result.current.patient?.display).toBeNull();
-      expect(result.current.patient?.givenName).toBeNull();
-      expect(result.current.patient?.familyName).toBeNull();
+      expect(result.current.patient?.display).toBeUndefined();
+      expect(result.current.patient?.givenName).toBeUndefined();
+      expect(result.current.patient?.familyName).toBeUndefined();
     });
 
     it('builds display from givenName and familyName when display field is missing', async () => {
@@ -343,8 +354,47 @@ describe('useFormPatientContext', () => {
     });
   });
 
-  describe('missing birthdate', () => {
-    it('returns null for ageInDays and birthdate when birthdate is missing', async () => {
+  describe('name field mapping with middleName', () => {
+    it('includes middleName in givenName', async () => {
+      const profile = buildProfileResponse({
+        person: {
+          uuid: 'person-uuid',
+          gender: 'M',
+          age: 30,
+          birthdate: '1996-01-01',
+          birthtime: null,
+          birthdateEstimated: false,
+          names: [
+            {
+              uuid: 'name-uuid-1',
+              givenName: 'John',
+              middleName: 'Michael',
+              familyName: 'Doe',
+              display: 'John Michael Doe',
+              preferred: true,
+              voided: false,
+            },
+          ],
+        },
+      });
+      mockGetPatientProfile.mockResolvedValueOnce(profile);
+
+      const { result } = renderHook(() =>
+        useFormPatientContext({
+          patientUUID: PATIENT_UUID,
+          activeVisitUuid: null,
+          activeEncounterUuid: null,
+        }),
+      );
+
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(result.current.patient?.givenName).toBe('John Michael');
+      expect(result.current.patient?.familyName).toBe('Doe');
+    });
+  });
+
+  describe('getAgeDetails', () => {
+    it('returns null when birthdate is missing', async () => {
       const profile = buildProfileResponse({
         person: {
           uuid: 'person-uuid',
@@ -376,9 +426,46 @@ describe('useFormPatientContext', () => {
       );
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(result.current.patient?.birthdate).toBeNull();
-      expect(result.current.patient?.ageInDays).toBeNull();
-      expect(result.current.patient?.birthtime).toBeNull();
+      expect(result.current.patient?.getAgeDetails()).toBeNull();
+    });
+  });
+
+  describe('missing birthdate', () => {
+    it('returns undefined for ageInDays and birthdate when birthdate is missing', async () => {
+      const profile = buildProfileResponse({
+        person: {
+          uuid: 'person-uuid',
+          gender: 'M',
+          age: null,
+          birthdate: null,
+          birthtime: null,
+          birthdateEstimated: false,
+          names: [
+            {
+              uuid: 'name-uuid-1',
+              givenName: 'John',
+              familyName: 'Doe',
+              display: 'John Doe',
+              preferred: true,
+              voided: false,
+            },
+          ],
+        },
+      });
+      mockGetPatientProfile.mockResolvedValueOnce(profile);
+
+      const { result } = renderHook(() =>
+        useFormPatientContext({
+          patientUUID: PATIENT_UUID,
+          activeVisitUuid: null,
+          activeEncounterUuid: null,
+        }),
+      );
+
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(result.current.patient?.birthdate).toBeUndefined();
+      expect(result.current.patient?.ageInDays).toBeUndefined();
+      expect(result.current.patient?.birthtime).toBeUndefined();
     });
   });
 

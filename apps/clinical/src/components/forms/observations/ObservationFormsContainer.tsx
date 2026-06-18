@@ -68,7 +68,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const patientUUID = usePatientUUID();
   const { user } = useActivePractitioner();
   const { episodeOfCare, activeVisitId } = useClinicalAppData();
-  const { patient: patientContext } = useFormPatientContext({
+  const {
+    patient: patientContext,
+    isLoading: isPatientLoading,
+    error: patientError,
+  } = useFormPatientContext({
     patientUUID,
     activeVisitUuid: activeVisitId,
     activeEncounterUuid,
@@ -176,6 +180,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   };
 
   const validateAndSave = () => {
+    if (!patientContext) return;
     if (formContainerRef.current) {
       if (validationErrorType) {
         setValidationErrorType(null);
@@ -266,7 +271,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         const processedObservations = executeOnFormSaveEvent(
           formMetadata!,
           transformedObservations,
-          patientContext!,
+          patientContext,
           containerState?.data,
         );
 
@@ -361,14 +366,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         className={styles.formContent}
         data-testid="observation-form-content"
       >
-        {isLoadingMetadata ? (
+        {isLoadingMetadata || isPatientLoading ? (
           <SkeletonText
             width="100%"
             lineCount={3}
             data-testid="observation-form-loading"
           />
-        ) : error ? (
-          <div>{error.message}</div>
+        ) : error || patientError ? (
+          <div>{(error ?? patientError)!.message}</div>
         ) : formMetadata && patientUUID && patientContext ? (
           <CarbonContainer
             ref={formContainerRef}
@@ -378,14 +383,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               version: formMetadata.version || '1',
             }}
             observations={observationsWithValues}
-            patient={{
-              ...patientContext,
-              name: patientContext.name ?? undefined,
-              identifier: patientContext.identifier ?? undefined,
-              age: patientContext.age ?? undefined,
-              gender: patientContext.gender ?? undefined,
-              birthdate: patientContext.birthdate ?? undefined,
-            }}
+            patient={patientContext}
             translations={formMetadata.translations ?? {}}
             validate={validationErrorType !== null}
             validateForm

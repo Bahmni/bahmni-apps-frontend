@@ -1,7 +1,7 @@
 // Import the mocked module to access the mock function
 import { runEventScript } from '@bahmni/form2-controls';
+import type { PatientData } from '@bahmni/form2-controls';
 import { Form2Observation, FormMetadata } from '@bahmni/services';
-import { FormPatientContext } from '../../../../../hooks/useFormPatientContext';
 import { executeOnFormSaveEvent } from '../formEventExecutor';
 
 // Mock @bahmni/form2-controls runEventScript
@@ -13,10 +13,12 @@ const mockRunEventScript = runEventScript as jest.MockedFunction<
 >;
 
 describe('formEventExecutor', () => {
-  const mockPatient: FormPatientContext = {
+  const mockPatient: PatientData = {
     uuid: 'patient-uuid-123',
     identifier: 'BAH-001',
+    name: 'John Doe',
     display: 'John Doe',
+    displayName: 'John Doe',
     givenName: 'John',
     familyName: 'Doe',
     age: 30,
@@ -26,6 +28,13 @@ describe('formEventExecutor', () => {
     gender: 'M',
     activeVisitUuid: 'visit-uuid-456',
     currentEncounterUuid: 'encounter-uuid-789',
+    getAgeDetails: () => ({
+      year: 30,
+      month: 0,
+      day: 0,
+      ageInDays: 10950,
+      ageText: '30y 0m 0d',
+    }),
   };
   const mockObservations: Form2Observation[] = [
     {
