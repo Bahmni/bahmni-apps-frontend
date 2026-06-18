@@ -10,7 +10,7 @@ import { TASKS_URL } from './constants';
  * @returns Promise resolving to a Bundle of Task resources
  */
 export async function getTasks(
-  patientUuid: string,
+  patientUuid?: string,
   basedOnReference?: string,
   encounterUuids?: string[],
 ): Promise<Bundle<Task>> {

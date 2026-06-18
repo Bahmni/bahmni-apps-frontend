@@ -316,7 +316,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                             config={tasksControlConfig}
                             episodeOfCareUuids={episodeOfCareUuids}
                             encounterUuids={encounterUuids}
-                            orderReference={`ServiceRequest/${request.id}`}
+                            orderReference={request.id}
                           />
                         )
                       : undefined
