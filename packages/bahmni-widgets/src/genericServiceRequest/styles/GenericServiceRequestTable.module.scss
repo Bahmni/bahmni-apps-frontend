@@ -34,12 +34,9 @@
 }
 
 .serviceRequestTableBody {
-  td {
+  td:not(:first-child) {
     width: 25%;
     border-block-end: 0 !important;
-  }
-  td:first-child {
-    width: 50%;
   }
 }
 
@@ -59,4 +56,12 @@
     padding-block: 0rem !important;
     padding-block-end: 0rem !important;
   }
+}
+
+.expandableContentSpacer {
+  border: none !important;
+}
+
+.expandedContent {
+  padding: 0 !important;
 }

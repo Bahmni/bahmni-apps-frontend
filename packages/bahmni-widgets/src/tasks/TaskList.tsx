@@ -32,7 +32,8 @@ const fetchAndTransformTasks = async (
   orderReference?: string,
   encounterUuids?: string[],
 ): Promise<TaskViewModel[]> => {
-  const data = await getTasks(patientUuid, orderReference, encounterUuids);
+  // For now, only pass orderReference as API only supports based-on parameter
+  const data = await getTasks(undefined, orderReference);
 
   if (!data?.entry || data.entry.length === 0) {
     return [];
@@ -70,7 +71,7 @@ const TaskList: React.FC<TaskListProps> = ({
     queryKey: ['tasks', patientUuid, orderReference, encounterUuids],
     queryFn: () =>
       fetchAndTransformTasks(patientUuid, orderReference, encounterUuids),
-    enabled: !!patientUuid && !emptyEncounterFilter,
+    enabled: !!orderReference && !emptyEncounterFilter,
   });
 
   // Process and group tasks by handler type
@@ -130,7 +131,7 @@ const TaskList: React.FC<TaskListProps> = ({
           const Handler = getTaskHandler(config.handlerType);
           if (Handler) {
             return (
-              <div key={key} className={styles.handlerSection}>
+              <div key={key}>
                 <Handler
                   tasks={tasks}
                   isLoading={isLoading}

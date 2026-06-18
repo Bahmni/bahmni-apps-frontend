@@ -73,6 +73,7 @@ export const FormFillingTaskHandler: React.FC<TaskHandlerProps> = ({
       errorStateMessage={error ? t('ERROR_LOADING_TASKS') : null}
       loading={isLoading}
       renderCell={renderCell}
+      className={styles.tasksTableBody}
     />
   );
 };

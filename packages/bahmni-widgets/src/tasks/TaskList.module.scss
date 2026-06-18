@@ -26,3 +26,18 @@
 .defaultStatus {
   color: $cool-gray-20;
 }
+
+.tasksTableBody {
+  padding: 0 !important;
+  td {
+    width: 25%;
+    border-block-end: 0 !important;
+  }
+}
+
+.emptyState {
+  padding: $spacing-05;
+  text-align: center;
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+}

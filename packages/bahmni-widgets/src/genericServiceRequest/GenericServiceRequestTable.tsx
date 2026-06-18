@@ -312,12 +312,20 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                   renderExpandedContent={
                     showTasks
                       ? (request) => (
-                          <TaskList
-                            config={tasksControlConfig}
-                            episodeOfCareUuids={episodeOfCareUuids}
-                            encounterUuids={encounterUuids}
-                            orderReference={request.id}
-                          />
+                          <tr>
+                            <td className={styles.expandableContentSpacer} />
+                            <td
+                              colSpan={headers.length}
+                              className={styles.expandedContent}
+                            >
+                              <TaskList
+                                config={tasksControlConfig}
+                                episodeOfCareUuids={episodeOfCareUuids}
+                                encounterUuids={encounterUuids}
+                                orderReference={request.id}
+                              />
+                            </td>
+                          </tr>
                         )
                       : undefined
                   }
