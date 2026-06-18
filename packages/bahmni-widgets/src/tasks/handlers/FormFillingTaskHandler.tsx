@@ -1,7 +1,7 @@
 import { DataTable, StatusTag } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React, { useCallback } from 'react';
-import styles from '../TasksContainer.module.scss';
+import styles from '../TaskList.module.scss';
 import { TaskViewModel } from './models';
 
 interface TaskHandlerProps {

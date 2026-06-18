@@ -10,9 +10,9 @@ import { usePatientUUID } from '@bahmni/widgets';
 import { WidgetProps } from '../registry';
 import { FormFillingTaskHandler } from './handlers/FormFillingTaskHandler';
 import { TaskViewModel, TaskHandlerConfig } from './handlers/models';
-import styles from './TasksContainer.module.scss';
+import styles from './TaskList.module.scss';
 
-interface TasksContainerProps extends WidgetProps {
+interface TaskListProps extends WidgetProps {
   orderReference?: string;
 }
 
@@ -49,7 +49,7 @@ const getTaskHandler = (handlerType: string) => {
   // Future handlers can be added here:
 };
 
-const TasksContainer: React.FC<TasksContainerProps> = ({
+const TaskList: React.FC<TaskListProps> = ({
   config,
   episodeOfCareUuids,
   encounterUuids,
@@ -109,7 +109,7 @@ const TasksContainer: React.FC<TasksContainerProps> = ({
 
   if (emptyEncounterFilter) {
     return (
-      <div className={styles.emptyState} data-testid="tasks-container-empty">
+      <div className={styles.emptyState} data-testid="task-list-empty">
         {t('NO_TASKS_FOUND')}
       </div>
     );
@@ -117,14 +117,14 @@ const TasksContainer: React.FC<TasksContainerProps> = ({
 
   if (!taskHandlerConfig || taskHandlerConfig.length === 0) {
     return (
-      <div className={styles.emptyState} data-testid="tasks-container-error">
+      <div className={styles.emptyState} data-testid="task-list-error">
         {t('TASKS_HANDLER_NOT_CONFIGURED')}
       </div>
     );
   }
 
   return (
-    <div data-testid="tasks-container">
+    <div data-testid="task-list">
       {tasksByHandler &&
         Array.from(tasksByHandler.entries()).map(([key, { config, tasks }]) => {
           const Handler = getTaskHandler(config.handlerType);
@@ -144,4 +144,4 @@ const TasksContainer: React.FC<TasksContainerProps> = ({
   );
 };
 
-export default TasksContainer;
+export default TaskList;

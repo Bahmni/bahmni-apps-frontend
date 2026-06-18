@@ -1,5 +1,6 @@
 import {
   SortableDataTable,
+  DataTable,
   TooltipIcon,
   Accordion,
   AccordionItem,
@@ -17,11 +18,12 @@ import {
   formatDateTime,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
+import TaskList from '../tasks/TaskList';
 import {
   ServiceRequestViewModel,
   ServiceRequestStatus,
@@ -69,6 +71,14 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const categoryName = (config?.orderType as string) || '';
+  const showTasks = config?.showTasks === true;
+  const tasksControlConfig = config?.tasksControlConfig as
+    | Record<string, unknown>
+    | undefined;
+
+  const [openAccordionIndices, setOpenAccordionIndices] = useState<Set<number>>(
+    new Set([0]),
+  );
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -264,20 +274,54 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                 key={date}
                 className={styles.customAccordianItem}
                 testId={'accordian-table-title'}
-                open={index === 0}
+                open={openAccordionIndices.has(index)}
+                onHeadingClick={() => {
+                  setOpenAccordionIndices((prev) => {
+                    const newSet = new Set(prev);
+                    if (newSet.has(index)) {
+                      newSet.delete(index);
+                    } else {
+                      newSet.add(index);
+                    }
+                    return newSet;
+                  });
+                }}
               >
-                <SortableDataTable
-                  headers={headers}
-                  ariaLabel={t('SERVICE_REQUEST_HEADING')}
-                  rows={requests}
-                  loading={isLoading}
-                  errorStateMessage={''}
-                  sortable={sortable}
-                  emptyStateMessage={t('NO_SERVICE_REQUESTS')}
-                  renderCell={renderCell}
-                  className={styles.serviceRequestTableBody}
-                  dataTestId={`generic-service-request-table-${date}`}
-                />
+                {showTasks ? (
+                  <DataTable
+                    columns={headers}
+                    rows={requests}
+                    ariaLabel={t('SERVICE_REQUEST_HEADING')}
+                    dataTestId={`generic-service-request-table-${date}`}
+                    loading={isLoading}
+                    errorStateMessage={''}
+                    emptyStateMessage={t('NO_SERVICE_REQUESTS')}
+                    renderCell={renderCell}
+                    renderExpandedContent={(request) => (
+                      <TaskList
+                        config={tasksControlConfig}
+                        episodeOfCareUuids={episodeOfCareUuids}
+                        encounterUuids={encounterUuids}
+                        orderReference={`ServiceRequest/${request.id}`}
+                      />
+                    )}
+                    initialExpandedRows={requests.map((r) => r.id)}
+                    className={styles.serviceRequestTableBody}
+                  />
+                ) : (
+                  <SortableDataTable
+                    headers={headers}
+                    ariaLabel={t('SERVICE_REQUEST_HEADING')}
+                    rows={requests}
+                    loading={isLoading}
+                    errorStateMessage={''}
+                    sortable={sortable}
+                    emptyStateMessage={t('NO_SERVICE_REQUESTS')}
+                    renderCell={renderCell}
+                    className={styles.serviceRequestTableBody}
+                    dataTestId={`generic-service-request-table-${date}`}
+                  />
+                )}
               </AccordionItem>
             );
           })}
