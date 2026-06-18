@@ -159,20 +159,28 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
 
   const headers = useMemo(
     () => [
-      { key: 'testName', header: t('SERVICE_REQUEST_TEST_NAME') },
-      { key: 'orderedBy', header: t('SERVICE_REQUEST_ORDERED_BY') },
-      { key: 'status', header: t('SERVICE_REQUEST_ORDERED_STATUS') },
+      {
+        key: 'testName',
+        header: t('SERVICE_REQUEST_TEST_NAME'),
+        enableSorting: true,
+      },
+      {
+        key: 'orderedBy',
+        header: t('SERVICE_REQUEST_ORDERED_BY'),
+        enableSorting: true,
+      },
+      {
+        key: 'orderedOn',
+        header: t('SERVICE_REQUEST_ORDERED_ON'),
+        enableSorting: true,
+      },
+      {
+        key: 'status',
+        header: t('SERVICE_REQUEST_ORDERED_STATUS'),
+        enableSorting: true,
+      },
     ],
     [t],
-  );
-
-  const sortable = useMemo(
-    () => [
-      { key: 'testName', sortable: true },
-      { key: 'orderedBy', sortable: true },
-      { key: 'status', sortable: true },
-    ],
-    [],
   );
 
   const processedServiceRequests = useMemo(() => {
@@ -225,6 +233,10 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
           );
         case 'orderedBy':
           return request.orderedBy;
+        case 'orderedOn':
+          return request.orderedDate
+            ? formatDateTime(request.orderedDate, t).formattedResult
+            : '-';
         case 'status':
           return (
             <StatusTag
@@ -287,41 +299,33 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                   });
                 }}
               >
-                {showTasks ? (
-                  <DataTable
-                    columns={headers}
-                    rows={requests}
-                    ariaLabel={t('SERVICE_REQUEST_HEADING')}
-                    dataTestId={`generic-service-request-table-${date}`}
-                    loading={isLoading}
-                    errorStateMessage={''}
-                    emptyStateMessage={t('NO_SERVICE_REQUESTS')}
-                    renderCell={renderCell}
-                    renderExpandedContent={(request) => (
-                      <TaskList
-                        config={tasksControlConfig}
-                        episodeOfCareUuids={episodeOfCareUuids}
-                        encounterUuids={encounterUuids}
-                        orderReference={`ServiceRequest/${request.id}`}
-                      />
-                    )}
-                    initialExpandedRows={requests.map((r) => r.id)}
-                    className={styles.serviceRequestTableBody}
-                  />
-                ) : (
-                  <SortableDataTable
-                    headers={headers}
-                    ariaLabel={t('SERVICE_REQUEST_HEADING')}
-                    rows={requests}
-                    loading={isLoading}
-                    errorStateMessage={''}
-                    sortable={sortable}
-                    emptyStateMessage={t('NO_SERVICE_REQUESTS')}
-                    renderCell={renderCell}
-                    className={styles.serviceRequestTableBody}
-                    dataTestId={`generic-service-request-table-${date}`}
-                  />
-                )}
+                <DataTable
+                  columns={headers}
+                  rows={requests}
+                  ariaLabel={t('SERVICE_REQUEST_HEADING')}
+                  dataTestId={`generic-service-request-table-${date}`}
+                  loading={isLoading}
+                  errorStateMessage={''}
+                  emptyStateMessage={t('NO_SERVICE_REQUESTS')}
+                  renderCell={renderCell}
+                  shouldRowBeExpandable={showTasks ? () => true : undefined}
+                  renderExpandedContent={
+                    showTasks
+                      ? (request) => (
+                          <TaskList
+                            config={tasksControlConfig}
+                            episodeOfCareUuids={episodeOfCareUuids}
+                            encounterUuids={encounterUuids}
+                            orderReference={`ServiceRequest/${request.id}`}
+                          />
+                        )
+                      : undefined
+                  }
+                  initialExpandedRows={
+                    showTasks ? requests.map((r) => r.id) : undefined
+                  }
+                  className={styles.serviceRequestTableBody}
+                />
               </AccordionItem>
             );
           })}
