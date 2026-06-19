@@ -128,6 +128,28 @@ const TaskList: React.FC<TaskListProps> = ({
     );
   }
 
+  if (isLoading || error) {
+    return (
+      <div data-testid="task-list">
+        {taskHandlerConfig.map((handlerConfig) => {
+          const Handler = getTaskHandler(handlerConfig.handlerType);
+          if (Handler) {
+            return (
+              <div key={handlerConfig.handlerType}>
+                <Handler
+                  tasks={[]}
+                  isLoading={isLoading}
+                  error={error ?? null}
+                />
+              </div>
+            );
+          }
+          return null;
+        })}
+      </div>
+    );
+  }
+
   return (
     <div data-testid="task-list">
       {tasksByHandler &&
@@ -144,6 +166,7 @@ const TaskList: React.FC<TaskListProps> = ({
               </div>
             );
           }
+          return null;
         })}
     </div>
   );
