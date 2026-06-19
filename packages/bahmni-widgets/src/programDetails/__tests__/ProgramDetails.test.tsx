@@ -610,7 +610,7 @@ describe('ProgramDetails', () => {
       );
 
       expect(mockT).toHaveBeenCalledWith(
-        'EOC_TREATMENT_CATEGORY_CATEGORY_I',
+        'EOC_ATTRIBUTE_VALUE_TREATMENT_CATEGORY_CATEGORY_I',
         'categoryI',
       );
       expect(
