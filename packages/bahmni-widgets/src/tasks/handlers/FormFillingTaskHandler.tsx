@@ -32,9 +32,9 @@ export const FormFillingTaskHandler: React.FC<TaskHandlerProps> = ({
 
   const columns = [
     { key: 'name', header: t('TASK_NAME') },
-    { key: 'status', header: t('STATUS') },
-    { key: 'completedBy', header: t('COMPLETED_BY') },
-    { key: 'completedOn', header: t('COMPLETED_ON') },
+    { key: 'completedBy', header: t('TASK_COMPLETED_BY') },
+    { key: 'completedOn', header: t('TASK_COMPLETED_ON') },
+    { key: 'status', header: t('TASK_STATUS') },
   ];
 
   const renderCell = useCallback(
@@ -42,6 +42,10 @@ export const FormFillingTaskHandler: React.FC<TaskHandlerProps> = ({
       switch (columnKey) {
         case 'name':
           return task.name;
+        case 'completedBy':
+          return task.completedBy ?? '-';
+        case 'completedOn':
+          return task.completedOn ?? '-';
         case 'status':
           return (
             <StatusTag
@@ -52,10 +56,6 @@ export const FormFillingTaskHandler: React.FC<TaskHandlerProps> = ({
               testId={`task-status-${task.id}`}
             />
           );
-        case 'completedBy':
-          return task.completedBy ?? '-';
-        case 'completedOn':
-          return task.completedOn ?? '-';
         default:
           return null;
       }
@@ -69,8 +69,8 @@ export const FormFillingTaskHandler: React.FC<TaskHandlerProps> = ({
       rows={tasks}
       ariaLabel={t('FORM_FILLING_TASKS')}
       dataTestId="form-filling-tasks-table"
-      emptyStateMessage={tasks.length === 0 ? t('NO_TASKS_FOUND') : null}
-      errorStateMessage={error ? t('ERROR_LOADING_TASKS') : null}
+      emptyStateMessage={tasks.length === 0 ? t('TASKS_NOT_FOUND') : null}
+      errorStateMessage={error ? t('TASKS_LOADING_ERROR') : null}
       loading={isLoading}
       renderCell={renderCell}
       className={styles.tasksTableBody}

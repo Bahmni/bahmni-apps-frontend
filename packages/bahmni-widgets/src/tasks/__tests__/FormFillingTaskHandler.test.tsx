@@ -18,9 +18,9 @@ describe('FormFillingTaskHandler', () => {
     render(<FormFillingTaskHandler tasks={mockTaskViewModels} />);
 
     expect(screen.getByText('TASK_NAME')).toBeInTheDocument();
-    expect(screen.getByText('STATUS')).toBeInTheDocument();
-    expect(screen.getByText('COMPLETED_BY')).toBeInTheDocument();
-    expect(screen.getByText('COMPLETED_ON')).toBeInTheDocument();
+    expect(screen.getByText('TASK_STATUS')).toBeInTheDocument();
+    expect(screen.getByText('TASK_COMPLETED_BY')).toBeInTheDocument();
+    expect(screen.getByText('TASK_COMPLETED_ON')).toBeInTheDocument();
   });
 
   it('should render all tasks with correct data', () => {
@@ -60,7 +60,7 @@ describe('FormFillingTaskHandler', () => {
 
     const table = screen.getByTestId('form-filling-tasks-table');
     expect(table).toBeInTheDocument();
-    expect(table).toHaveTextContent('NO_TASKS_FOUND');
+    expect(table).toHaveTextContent('TASKS_NOT_FOUND');
   });
 
   it('should render skeleton when loading', () => {
@@ -75,6 +75,6 @@ describe('FormFillingTaskHandler', () => {
 
     const errorElement = screen.getByTestId('form-filling-tasks-table-error');
     expect(errorElement).toBeInTheDocument();
-    expect(errorElement).toHaveTextContent('ERROR_LOADING_TASKS');
+    expect(errorElement).toHaveTextContent('TASKS_LOADING_ERROR');
   });
 });

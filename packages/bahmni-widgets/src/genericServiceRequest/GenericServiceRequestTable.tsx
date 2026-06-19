@@ -76,10 +76,6 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
     | Record<string, unknown>
     | undefined;
 
-  const [openAccordionIndices, setOpenAccordionIndices] = useState<Set<number>>(
-    new Set([0]),
-  );
-
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
     encounterUuids,
@@ -235,7 +231,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
           return request.orderedBy;
         case 'orderedOn':
           return request.orderedDate
-            ? formatDateTime(request.orderedDate, t).formattedResult
+            ? formatDateTime(request.orderedDate, t, true).formattedResult
             : '-';
         case 'status':
           return (
@@ -264,8 +260,8 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
       !!isError ||
       processedServiceRequests.length === 0 ||
       emptyEncounterFilter ? (
-        <SortableDataTable
-          headers={headers}
+        <DataTable
+          columns={headers}
           ariaLabel={t('SERVICE_REQUEST_HEADING')}
           rows={[]}
           loading={isLoading}
@@ -286,18 +282,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                 key={date}
                 className={styles.customAccordianItem}
                 testId={'accordian-table-title'}
-                open={openAccordionIndices.has(index)}
-                onHeadingClick={() => {
-                  setOpenAccordionIndices((prev) => {
-                    const newSet = new Set(prev);
-                    if (newSet.has(index)) {
-                      newSet.delete(index);
-                    } else {
-                      newSet.add(index);
-                    }
-                    return newSet;
-                  });
-                }}
+                open={index === 0}
               >
                 <DataTable
                   columns={headers}

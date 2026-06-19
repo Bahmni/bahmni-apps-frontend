@@ -2,6 +2,7 @@ import {
   shouldEnableEncounterFilter,
   useTranslation,
   getTasks,
+  formatDateTime,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { Task } from 'fhir/r4';
@@ -16,30 +17,34 @@ interface TaskListProps extends WidgetProps {
   orderReference?: string;
 }
 
-const mapTaskToViewModel = (task: Task): TaskViewModel => {
+const mapTaskToViewModel = (task: Task, t): TaskViewModel => {
   return {
     id: task.id ?? '',
     name: task.code?.text ?? task.code?.coding?.[0]?.display ?? '',
     code: task.code?.coding?.[0]?.code ?? task.code?.text ?? '',
     status: task.status,
     completedBy: task.owner?.display,
-    completedOn: task.lastModified,
+    completedOn: task.executionPeriod?.end
+      ? formatDateTime(task.executionPeriod.end, t, true).formattedResult
+      : '-',
   };
 };
 
 const fetchAndTransformTasks = async (
-  patientUuid: string,
+  t,
+  patientUuid?: string,
   orderReference?: string,
-  encounterUuids?: string[],
+  // encounterUuids?: string[], Would work once backend supports encounter filter for tasks API.
 ): Promise<TaskViewModel[]> => {
-  // For now, only pass orderReference as API only supports based-on parameter
-  const data = await getTasks(undefined, orderReference);
+  const data = await getTasks(patientUuid, orderReference);
 
   if (!data?.entry || data.entry.length === 0) {
     return [];
   }
 
-  return data.entry.map((entry) => mapTaskToViewModel(entry.resource as Task));
+  return data.entry.map((entry) =>
+    mapTaskToViewModel(entry.resource as Task, t),
+  );
 };
 
 const getTaskHandler = (handlerType: string) => {
@@ -69,9 +74,8 @@ const TaskList: React.FC<TaskListProps> = ({
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['tasks', patientUuid, orderReference, encounterUuids],
-    queryFn: () =>
-      fetchAndTransformTasks(patientUuid, orderReference, encounterUuids),
-    enabled: !!orderReference && !emptyEncounterFilter,
+    queryFn: () => fetchAndTransformTasks(t, patientUuid, orderReference),
+    enabled: !!patientUuid && !emptyEncounterFilter,
   });
 
   // Process and group tasks by handler type
@@ -111,7 +115,7 @@ const TaskList: React.FC<TaskListProps> = ({
   if (emptyEncounterFilter) {
     return (
       <div className={styles.emptyState} data-testid="task-list-empty">
-        {t('NO_TASKS_FOUND')}
+        {t('TASKS_NOT_FOUND')}
       </div>
     );
   }
