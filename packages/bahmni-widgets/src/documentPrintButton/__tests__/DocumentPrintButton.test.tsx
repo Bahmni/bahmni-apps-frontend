@@ -7,31 +7,28 @@ import { printViaIframe } from '../printViaIframe';
 
 jest.mock('@bahmni/design-system', () => ({
   ...jest.requireActual('@bahmni/design-system'),
-  Dropdown: ({
-    onChange,
-    items,
-    itemToString,
+  ComboButton: ({
+    label,
+    onClick,
+    children,
     disabled,
+    'data-testid': dataTestId,
   }: {
-    onChange: (change: { selectedItem: unknown }) => void;
-    items: unknown[];
-    itemToString: (item: unknown) => string;
+    label: string;
+    onClick?: () => void;
+    children: React.ReactNode;
     disabled?: boolean;
+    'data-testid'?: string;
   }) => (
-    <select
-      data-testid="print-dropdown"
-      disabled={disabled}
-      onChange={(e) => {
-        const index = parseInt(e.target.value);
-        onChange({ selectedItem: items[index] });
-      }}
-    >
-      {items.map((item, i) => (
-        <option key={itemToString(item)} value={i}>
-          {itemToString(item)}
-        </option>
-      ))}
-    </select>
+    <div data-testid={dataTestId}>
+      <button onClick={onClick} disabled={disabled}>
+        {label}
+      </button>
+      {children}
+    </div>
+  ),
+  MenuItem: ({ label, onClick }: { label: string; onClick?: () => void }) => (
+    <button onClick={onClick}>{label}</button>
   ),
 }));
 
@@ -94,7 +91,7 @@ describe('DocumentPrintButton', () => {
       expect(screen.getByText('PRINT_SUMMARY')).toBeInTheDocument();
     });
 
-    it('renders primary button and dropdown for multiple options', () => {
+    it('renders a ComboButton with primary action and additional options for multiple options', () => {
       render(
         <DocumentPrintButton
           printOptions={multipleOptions}
@@ -102,7 +99,7 @@ describe('DocumentPrintButton', () => {
         />,
       );
       expect(screen.getByText('PRINT_SUMMARY')).toBeInTheDocument();
-      expect(screen.getByTestId('print-dropdown')).toBeInTheDocument();
+      expect(screen.getByText('PRINT_PRESCRIPTION')).toBeInTheDocument();
     });
 
     it('prints the first option when primary button is clicked with multiple options', async () => {
@@ -273,7 +270,7 @@ describe('DocumentPrintButton', () => {
       );
     });
 
-    it('prints via dropdown selection for the second option', async () => {
+    it('prints via menu item click for the second option', async () => {
       render(
         <DocumentPrintButton
           printOptions={multipleOptions}
@@ -281,7 +278,7 @@ describe('DocumentPrintButton', () => {
         />,
       );
 
-      await userEvent.selectOptions(screen.getByTestId('print-dropdown'), '0');
+      await userEvent.click(screen.getByText('PRINT_PRESCRIPTION'));
 
       await waitFor(() =>
         expect(mockRenderAsHtml).toHaveBeenCalledWith(
