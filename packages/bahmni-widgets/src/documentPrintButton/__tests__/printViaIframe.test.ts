@@ -21,24 +21,46 @@ const buildMockImg = (complete: boolean): MockImg => {
 };
 
 let mockPrint: jest.Mock;
+let mockFocus: jest.Mock;
 let mockIframe: Record<string, unknown>;
+let loadHandler: (() => void) | null;
+let afterprintHandler: (() => void) | null;
+
+const flushMicrotasks = async () => {
+  await Promise.resolve();
+  await Promise.resolve();
+};
+
+const fireIframeLoad = () => loadHandler?.();
+
+const fireAfterprint = () => afterprintHandler?.();
 
 const buildMockIframe = (mockImages: MockImg[] = []) => {
   mockPrint = jest.fn();
+  mockFocus = jest.fn();
+  loadHandler = null;
+  afterprintHandler = null;
 
   const mockContentDoc = {
-    open: jest.fn(),
-    write: jest.fn(),
-    close: jest.fn(),
     querySelectorAll: jest.fn().mockReturnValue(mockImages),
   };
 
   return {
     _isMockIframe: true,
     style: { cssText: '' },
+    srcdoc: '',
     setAttribute: jest.fn(),
+    addEventListener: jest.fn((event: string, cb: () => void) => {
+      if (event === 'load') loadHandler = cb;
+    }),
     contentDocument: mockContentDoc,
-    contentWindow: { print: mockPrint },
+    contentWindow: {
+      print: mockPrint,
+      focus: mockFocus,
+      addEventListener: jest.fn((event: string, cb: () => void) => {
+        if (event === 'afterprint') afterprintHandler = cb;
+      }),
+    },
   };
 };
 
@@ -77,15 +99,26 @@ afterEach(() => {
 });
 
 describe('printViaIframe', () => {
-  it('writes HTML to iframe and prints immediately when there are no images', async () => {
+  it('renders HTML into the iframe via srcdoc, focuses, and prints', async () => {
     const html = '<html><body>Card</body></html>';
-    await printViaIframe(html);
+    const promise = printViaIframe(html);
+    fireIframeLoad();
+    await promise;
 
-    const doc = mockIframe.contentDocument as Record<string, jest.Mock>;
-    expect(doc.open).toHaveBeenCalled();
-    expect(doc.write).toHaveBeenCalledWith(html);
-    expect(doc.close).toHaveBeenCalled();
+    expect(mockIframe.srcdoc).toBe(html);
+    expect(mockFocus).toHaveBeenCalled();
     expect(mockPrint).toHaveBeenCalled();
+  });
+
+  it('removes the iframe only after the print dialog closes (afterprint)', async () => {
+    const promise = printViaIframe('<html><body>Card</body></html>');
+    fireIframeLoad();
+    await promise;
+
+    // Still mounted while the dialog is open.
+    expect(document.body.removeChild).not.toHaveBeenCalled();
+
+    fireAfterprint();
     expect(document.body.removeChild).toHaveBeenCalledWith(mockIframe);
   });
 
@@ -93,7 +126,11 @@ describe('printViaIframe', () => {
     const completeImg = buildMockImg(true);
     mockIframe = buildMockIframe([completeImg]);
 
-    await printViaIframe('<html><body><img src="/logo.png"/></body></html>');
+    const promise = printViaIframe(
+      '<html><body><img src="/logo.png"/></body></html>',
+    );
+    fireIframeLoad();
+    await promise;
 
     expect(mockPrint).toHaveBeenCalled();
     expect(completeImg.onload).toBeNull();
@@ -104,18 +141,16 @@ describe('printViaIframe', () => {
     const img2 = buildMockImg(false);
     mockIframe = buildMockIframe([img1, img2]);
 
-    let resolved = false;
     const promise = printViaIframe(
       '<html><body><img src="/a.png"/><img src="/b.png"/></body></html>',
-    ).then(() => {
-      resolved = true;
-    });
+    );
 
+    fireIframeLoad();
+    await flushMicrotasks();
     expect(mockPrint).not.toHaveBeenCalled();
 
     img1._fire('load');
     expect(mockPrint).not.toHaveBeenCalled();
-    expect(resolved).toBe(false);
 
     img2._fire('load');
     await promise;
@@ -131,6 +166,8 @@ describe('printViaIframe', () => {
       '<html><body><img src="/missing.png"/></body></html>',
     );
 
+    fireIframeLoad();
+    await flushMicrotasks();
     expect(mockPrint).not.toHaveBeenCalled();
 
     img._fire('error');
@@ -151,6 +188,8 @@ describe('printViaIframe', () => {
         '<html><body><img src="/slow.png"/></body></html>',
       );
 
+      fireIframeLoad();
+      await flushMicrotasks();
       expect(mockPrint).not.toHaveBeenCalled();
 
       jest.advanceTimersByTime(10000);
@@ -164,7 +203,9 @@ describe('printViaIframe', () => {
     (mockIframe as Record<string, unknown>).contentDocument = null;
     (mockIframe as Record<string, unknown>).contentWindow = null;
 
-    await printViaIframe('<html/>');
+    const promise = printViaIframe('<html/>');
+    fireIframeLoad();
+    await promise;
 
     expect(mockPrint).not.toHaveBeenCalled();
   });

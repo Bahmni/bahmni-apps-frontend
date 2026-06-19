@@ -4,8 +4,24 @@ function createIframe(): HTMLIFrameElement {
     'position:fixed;top:0;left:0;width:100%;height:100%;' +
     'border:none;opacity:0;pointer-events:none;z-index:-1;';
   iframe.setAttribute('sandbox', 'allow-same-origin allow-modals');
-  document.body.appendChild(iframe);
   return iframe;
+}
+
+const LOAD_TIMEOUT_MS = 5000;
+const CLEANUP_TIMEOUT_MS = 60000;
+
+function waitForIframeLoad(iframe: HTMLIFrameElement): Promise<void> {
+  return new Promise<void>((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      resolve();
+    };
+    iframe.addEventListener('load', finish, { once: true });
+    const timeoutId = setTimeout(finish, LOAD_TIMEOUT_MS);
+  });
 }
 
 function getIframeWindow(iframe: HTMLIFrameElement): Window | null {
@@ -49,6 +65,12 @@ function cleanupIframe(iframe: HTMLIFrameElement): void {
 
 export async function printViaIframe(html: string): Promise<void> {
   const iframe = createIframe();
+
+  const loaded = waitForIframeLoad(iframe);
+  iframe.srcdoc = html;
+  document.body.appendChild(iframe);
+  await loaded;
+
   const iframeDoc = getIframeDocument(iframe);
   const iframeWindow = getIframeWindow(iframe);
 
@@ -56,11 +78,18 @@ export async function printViaIframe(html: string): Promise<void> {
     cleanupIframe(iframe);
     return;
   }
-  iframeDoc.open();
-  iframeDoc.write(html);
-  iframeDoc.close();
   await waitForImagesToLoad(iframeDoc);
 
+  let cleaned = false;
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    clearTimeout(fallbackId);
+    cleanupIframe(iframe);
+  };
+  iframeWindow.addEventListener('afterprint', cleanup, { once: true });
+  const fallbackId = setTimeout(cleanup, CLEANUP_TIMEOUT_MS);
+
+  iframeWindow.focus();
   iframeWindow.print();
-  cleanupIframe(iframe);
 }
