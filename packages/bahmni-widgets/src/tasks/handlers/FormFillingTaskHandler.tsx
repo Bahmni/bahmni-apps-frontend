@@ -1,5 +1,5 @@
 import { DataTable, StatusTag } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, camelToScreamingSnakeCase } from '@bahmni/services';
 import React, { useCallback } from 'react';
 import styles from '../TaskList.module.scss';
 import { TaskViewModel } from './models';
@@ -20,6 +20,11 @@ const getStatusDotClassName = (status: string): string => {
     failed: styles.stoppedStatus,
   };
   return statusMap[status] || styles.defaultStatus;
+};
+
+const getTaskStatusKey = (status: string): string => {
+  if (!status) return 'TASK_STATUS_UNKNOWN';
+  return `TASK_STATUS_${camelToScreamingSnakeCase(status)}`;
 };
 
 export const FormFillingTaskHandler: React.FC<TaskHandlerProps> = ({
@@ -49,9 +54,7 @@ export const FormFillingTaskHandler: React.FC<TaskHandlerProps> = ({
         case 'status':
           return (
             <StatusTag
-              label={t(
-                `TASK_STATUS_${task.status.toUpperCase().replaceAll('-', '_')}`,
-              )}
+              label={t(getTaskStatusKey(task.status))}
               dotClassName={getStatusDotClassName(task.status)}
               testId={`task-status-${task.id}`}
             />
