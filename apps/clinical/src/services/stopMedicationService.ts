@@ -1,8 +1,10 @@
 import { get, post } from '@bahmni/services';
 import { MedicationRequest, ValueSet, Bundle } from 'fhir/r4';
-
-const FHIR_BASE = '/openmrs/ws/fhir2/R4';
-const STOP_REASON_VALUESET_TITLE = 'Stopped Order Reason';
+import {
+  STOP_REASON_VALUESET_URL,
+  STOP_REASON_VALUESET_EXPAND_URL,
+  STOP_MEDICATION_URL,
+} from '../constants/app';
 
 export interface StopReason {
   uuid: string;
@@ -18,9 +20,7 @@ export interface StopReason {
  */
 export async function fetchStopReasons(): Promise<StopReason[]> {
   try {
-    const searchBundle = await get<Bundle>(
-      `${FHIR_BASE}/ValueSet?title=${encodeURIComponent(STOP_REASON_VALUESET_TITLE)}`,
-    );
+    const searchBundle = await get<Bundle>(STOP_REASON_VALUESET_URL);
 
     const valueSetEntry = searchBundle.entry?.[0]?.resource as
       | ValueSet
@@ -28,7 +28,7 @@ export async function fetchStopReasons(): Promise<StopReason[]> {
     if (!valueSetEntry?.id) return [];
 
     const expanded = await get<ValueSet>(
-      `${FHIR_BASE}/ValueSet/${valueSetEntry.id}/$expand`,
+      STOP_REASON_VALUESET_EXPAND_URL(valueSetEntry.id),
     );
 
     const contains = expanded.expansion?.contains ?? [];
@@ -70,7 +70,7 @@ export async function stopMedication(
   };
 
   return post<MedicationRequest>(
-    `${FHIR_BASE}/MedicationRequest/${medicationRequestId}/$stop`,
+    STOP_MEDICATION_URL(medicationRequestId),
     fhirParams,
   );
 }
