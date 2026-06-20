@@ -59,7 +59,7 @@ async function waitForImagesToLoad(doc: Document): Promise<void> {
 
 function cleanupIframe(iframe: HTMLIFrameElement): void {
   if (document.body.contains(iframe)) {
-    document.body.removeChild(iframe);
+    iframe.remove();
   }
 }
 

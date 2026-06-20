@@ -93,7 +93,7 @@ export const DocumentPrintButton = ({
     if (items.length === 1) {
       return (
         <IconButton
-          label={iconLabel}
+          label={ t(items[0].translationKey) ?? iconLabel}
           kind="ghost"
           size={size ?? 'md'}
           disabled={disabled}
