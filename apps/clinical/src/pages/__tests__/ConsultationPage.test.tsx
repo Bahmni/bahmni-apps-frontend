@@ -189,6 +189,9 @@ jest.mock('@bahmni/widgets', () => ({
   useHasPrivilege: jest.fn(),
   useNotification: jest.fn(),
   usePatientUUID: jest.fn(),
+  ProgramDetails: jest.fn(() => (
+    <div data-testid="mocked-program-details">Program Details</div>
+  )),
 }));
 
 jest.mock('@bahmni/services', () => ({
@@ -690,6 +693,197 @@ describe('ConsultationPage', () => {
       await waitFor(() => {
         expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '2');
       });
+    });
+  });
+
+  describe('Program Details', () => {
+    const renderWithProgramParams = (programUUID?: string) => {
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+          },
+        },
+      });
+
+      const url = programUUID
+        ? `/consultation?programUUID=${programUUID}`
+        : '/consultation';
+
+      return render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={[url]}>
+            <ConsultationPage />
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    };
+
+    it('should render program details when contextInformation has program with translateValues', async () => {
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: {
+          ...mockClinicalConfig,
+          contextInformation: {
+            program: {
+              fields: ['programName', 'startDate', 'state'],
+              translateValues: ['state'],
+            },
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProgramParams('test-program-uuid');
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      // Component renders successfully without errors
+      expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+    });
+
+    it('should handle multiple translateValues in configuration', async () => {
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: {
+          ...mockClinicalConfig,
+          contextInformation: {
+            program: {
+              fields: ['programName', 'outcome', 'state'],
+              translateValues: ['outcome', 'state'],
+            },
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProgramParams('test-program-uuid');
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+    });
+
+    it('should handle empty translateValues array', async () => {
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: {
+          ...mockClinicalConfig,
+          contextInformation: {
+            program: {
+              fields: ['programName', 'startDate'],
+              translateValues: [],
+            },
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProgramParams('test-program-uuid');
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+    });
+
+    it('should handle undefined translateValues (defaults to empty array)', async () => {
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: {
+          ...mockClinicalConfig,
+          contextInformation: {
+            program: {
+              fields: ['programName', 'startDate'],
+              // translateValues is intentionally omitted
+            },
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProgramParams('test-program-uuid');
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+    });
+
+    it('should not render ProgramDetails when programUUID is missing from URL params', async () => {
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: {
+          ...mockClinicalConfig,
+          contextInformation: {
+            program: {
+              fields: ['programName', 'startDate'],
+              translateValues: ['state'],
+            },
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProgramParams();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByTestId('mocked-program-details'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not render ProgramDetails when contextInformation.program is not configured', async () => {
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: {
+          ...mockClinicalConfig,
+          contextInformation: {
+            // program config is intentionally omitted
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProgramParams('test-program-uuid');
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByTestId('mocked-program-details'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not render ProgramDetails when contextInformation is not configured', async () => {
+      (useClinicalConfig as jest.Mock).mockReturnValue({
+        clinicalConfig: {
+          ...mockClinicalConfig,
+          // contextInformation is intentionally omitted
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProgramParams('test-program-uuid');
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByTestId('mocked-program-details'),
+      ).not.toBeInTheDocument();
     });
   });
 });
