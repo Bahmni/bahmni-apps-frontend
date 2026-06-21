@@ -96,12 +96,12 @@ export const CommandPalette: React.FC = () => {
 
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
       if (patientActions.length < 2) return;
-      const el = document.querySelector<HTMLElement>(
-        '[data-patient-uuid][data-selected="true"]',
+      const highlighted = document.querySelector<HTMLElement>(
+        '[data-patient-uuid][aria-selected="true"]',
       );
-      if (!el) return;
+      if (!highlighted) return;
       e.preventDefault();
-      setSelectedPatientUuid(el.dataset.patientUuid ?? null);
+      setSelectedPatientUuid(highlighted.dataset.patientUuid ?? null);
       if (e.key === 'ArrowRight') {
         setActiveActionIndex((prev) => (prev + 1) % patientActions.length);
       } else {

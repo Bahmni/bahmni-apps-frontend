@@ -13,6 +13,7 @@ import type {
   TriggerConfig,
 } from '@bahmni/widgets';
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   BAHMNI_COMMAND_PALETTE_NAMESPACE,
   COMMAND_PALETTE_APP_CONFIG_URL,
@@ -46,11 +47,17 @@ export function useCommandPaletteConfig(): CommandPaletteConfig {
   const [searchAnnotations, setSearchAnnotations] = useState<
     SearchAnnotation[]
   >([]);
+  const [allExtensions, setAllExtensions] = useState<CommandPaletteExtension[]>(
+    [],
+  );
+  const [userPrivileges, setUserPrivileges] = useState<string[] | null>(null);
+
+  const { pathname } = useLocation();
 
   useEffect(() => {
     const controller = new AbortController();
 
-    (async () => {
+    void (async () => {
       const [, appConfigResult, privilegesResult, extensionsResult] =
         await Promise.allSettled([
           initAppI18n(BAHMNI_COMMAND_PALETTE_NAMESPACE),
@@ -66,12 +73,6 @@ export function useCommandPaletteConfig(): CommandPaletteConfig {
 
       const appConfig =
         appConfigResult.status === 'fulfilled' ? appConfigResult.value : null;
-      const userPrivileges =
-        privilegesResult.status === 'fulfilled' ? privilegesResult.value : null;
-      const allExtensions: CommandPaletteExtension[] =
-        extensionsResult.status === 'fulfilled'
-          ? (extensionsResult.value as unknown as CommandPaletteExtension[])
-          : [];
 
       if (appConfig) {
         const cp = appConfig.commandPalette;
@@ -80,48 +81,57 @@ export function useCommandPaletteConfig(): CommandPaletteConfig {
         if (cp?.searchAnnotations) setSearchAnnotations(cp.searchAnnotations);
       }
 
-      const currentPath = window.location.pathname;
-
-      const filterAndSort = (extensionPointId: string) =>
-        allExtensions
-          .filter((e) => e.extensionPointId === extensionPointId)
-          .filter((e) => {
-            if (!e.appContext) return true;
-            const paths = Array.isArray(e.appContext)
-              ? e.appContext
-              : [e.appContext];
-            return paths.some((p) => currentPath.startsWith(p));
-          })
-          .filter(
-            (e) =>
-              !e.requiredPrivilege ||
-              hasPrivilege(userPrivileges, e.requiredPrivilege),
-          )
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-      setNavItems(
-        filterAndSort(COMMAND_PALETTE_NAV_ITEM_POINT).map((e) => ({
-          id: e.id,
-          label: resolveLabel(e),
-          path: e.url ?? '',
-          icon: e.icon,
-          newTab: e.newTab,
-        })),
+      setUserPrivileges(
+        privilegesResult.status === 'fulfilled' ? privilegesResult.value : null,
       );
-
-      setPatientActions(
-        filterAndSort(COMMAND_PALETTE_PATIENT_ACTION_POINT).map((e) => ({
-          id: e.id,
-          label: resolveLabel(e),
-          icon: e.icon,
-          getPath: pathTemplateToGetPath(e.pathTemplate ?? ''),
-          basePath: basePathFromTemplate(e.pathTemplate ?? ''),
-        })),
+      setAllExtensions(
+        extensionsResult.status === 'fulfilled'
+          ? (extensionsResult.value as unknown as CommandPaletteExtension[])
+          : [],
       );
     })();
 
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    const filterAndSort = (extensionPointId: string) =>
+      allExtensions
+        .filter((e) => e.extensionPointId === extensionPointId)
+        .filter((e) => {
+          if (!e.appContext) return true;
+          const paths = Array.isArray(e.appContext)
+            ? e.appContext
+            : [e.appContext];
+          return paths.some((p) => pathname.startsWith(p));
+        })
+        .filter(
+          (e) =>
+            !e.requiredPrivilege ||
+            hasPrivilege(userPrivileges, e.requiredPrivilege),
+        )
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    setNavItems(
+      filterAndSort(COMMAND_PALETTE_NAV_ITEM_POINT).map((e) => ({
+        id: e.id,
+        label: resolveLabel(e),
+        path: e.url ?? '',
+        icon: e.icon,
+        newTab: e.newTab,
+      })),
+    );
+
+    setPatientActions(
+      filterAndSort(COMMAND_PALETTE_PATIENT_ACTION_POINT).map((e) => ({
+        id: e.id,
+        label: resolveLabel(e),
+        icon: e.icon,
+        getPath: pathTemplateToGetPath(e.pathTemplate ?? ''),
+        basePath: basePathFromTemplate(e.pathTemplate ?? ''),
+      })),
+    );
+  }, [allExtensions, userPrivileges, pathname]);
 
   return {
     navItems,

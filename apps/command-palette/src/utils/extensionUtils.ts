@@ -11,4 +11,4 @@ export const pathTemplateToGetPath =
     formatUrl(template, { patientUuid, patientIdentifier });
 
 export const resolveLabel = (e: CommandPaletteExtension): string =>
-  e.label ?? e.translationKey ?? '';
+  e.translationKey ?? e.label ?? '';

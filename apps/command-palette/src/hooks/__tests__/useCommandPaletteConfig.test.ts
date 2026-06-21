@@ -13,6 +13,10 @@ import {
 } from '../../constants/extensionPoints';
 import { useCommandPaletteConfig } from '../useCommandPaletteConfig';
 
+jest.mock('react-router-dom', () => ({
+  useLocation: jest.fn(() => ({ pathname: '/' })),
+}));
+
 jest.mock('@bahmni/services', () => ({
   getConfig: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
@@ -110,7 +114,7 @@ describe('useCommandPaletteConfig', () => {
   });
 
   it('applies trigger and patientFields from app config', async () => {
-    const customTrigger = { type: 'key' as const, keys: 'ctrl+space' };
+    const customTrigger = { type: 'key' as const, keys: ['ctrl+space'] };
     mockGetConfig.mockResolvedValue({
       id: 'command-palette',
       commandPalette: {
@@ -141,10 +145,8 @@ describe('useCommandPaletteConfig', () => {
   });
 
   it('excludes extensions outside the current appContext', async () => {
-    Object.defineProperty(window, 'location', {
-      value: { pathname: '/home' },
-      writable: true,
-    });
+    const { useLocation } = jest.requireMock('react-router-dom');
+    useLocation.mockReturnValue({ pathname: '/home' });
 
     mockFetchModuleExtensions.mockResolvedValue([
       navExt({ appContext: '/clinical' }),

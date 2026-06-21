@@ -46,5 +46,5 @@ export interface SearchAnnotation {
 }
 
 export type TriggerConfig =
-  | { type: 'combination'; keys: string }
-  | { type: 'double'; key: string; interval?: number };
+  | { type: 'combination'; keys: string[] }
+  | { type: 'double'; keys: string[]; interval?: number };

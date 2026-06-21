@@ -101,13 +101,15 @@ function parseKeys(keys: string): {
   };
 }
 
-export function matchesKeys(e: KeyboardEvent, keys: string): boolean {
-  const p = parseKeys(keys);
-  return (
-    e.key.toLowerCase() === p.key &&
-    e.metaKey === p.meta &&
-    e.ctrlKey === p.ctrl &&
-    e.shiftKey === p.shift &&
-    e.altKey === p.alt
-  );
+export function matchesKeys(e: KeyboardEvent, keys: string[]): boolean {
+  return keys.some((k) => {
+    const p = parseKeys(k);
+    return (
+      e.key.toLowerCase() === p.key &&
+      e.metaKey === p.meta &&
+      e.ctrlKey === p.ctrl &&
+      e.shiftKey === p.shift &&
+      e.altKey === p.alt
+    );
+  });
 }

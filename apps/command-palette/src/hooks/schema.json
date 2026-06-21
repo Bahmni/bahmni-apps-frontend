@@ -15,8 +15,7 @@
           "required": ["type"],
           "properties": {
             "type": { "type": "string", "enum": ["combination", "double"] },
-            "keys": { "type": "string" },
-            "key": { "type": "string" },
+            "keys": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
             "interval": { "type": "number" }
           },
           "allOf": [
@@ -32,7 +31,7 @@
                 "properties": { "type": { "const": "double" } },
                 "required": ["type"]
               },
-              "then": { "required": ["key"] }
+              "then": { "required": ["keys"] }
             }
           ]
         },

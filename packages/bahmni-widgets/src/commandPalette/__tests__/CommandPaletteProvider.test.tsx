@@ -18,7 +18,7 @@ const defaultProps: React.ComponentProps<typeof CommandPaletteProvider> = {
     primaryFields: ['name', 'identifier'],
     additionalFields: [],
   },
-  trigger: { type: 'combination', keys: 'meta+k' },
+  trigger: { type: 'combination', keys: ['meta+k'] },
   searchAnnotations: [],
 };
 

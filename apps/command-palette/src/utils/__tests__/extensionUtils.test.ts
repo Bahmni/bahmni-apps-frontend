@@ -52,14 +52,14 @@ describe('pathTemplateToGetPath', () => {
 });
 
 describe('resolveLabel', () => {
-  it('returns label when present', () => {
+  it('returns translationKey when present', () => {
     expect(
       resolveLabel(ext({ label: 'My Label', translationKey: 'MY_KEY' })),
-    ).toBe('My Label');
+    ).toBe('MY_KEY');
   });
 
-  it('falls back to translationKey when label is absent', () => {
-    expect(resolveLabel(ext({ translationKey: 'MY_KEY' }))).toBe('MY_KEY');
+  it('falls back to label when translationKey is absent', () => {
+    expect(resolveLabel(ext({ label: 'My Label' }))).toBe('My Label');
   });
 
   it('returns empty string when both are absent', () => {

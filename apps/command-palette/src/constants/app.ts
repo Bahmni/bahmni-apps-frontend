@@ -8,7 +8,7 @@ export const EXTENSION_BASE_URL = '/bahmni_config/openmrs/apps';
 
 export const DEFAULT_TRIGGER: TriggerConfig = {
   type: 'combination',
-  keys: 'meta+k',
+  keys: ['cmd+k', 'ctrl+k'],
 };
 
 export const DEFAULT_PATIENT_FIELDS: PatientFieldsConfig = {

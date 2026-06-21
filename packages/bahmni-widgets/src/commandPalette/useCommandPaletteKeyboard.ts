@@ -17,7 +17,8 @@ export function useCommandPaletteKeyboard(
       }
 
       if (trigger.type === 'combination') {
-        if (matchesKeys(e, trigger.keys)) {
+        const hasModifier = e.metaKey || e.ctrlKey || e.shiftKey || e.altKey;
+        if (hasModifier && matchesKeys(e, trigger.keys)) {
           e.preventDefault();
           toggle();
         }
@@ -29,7 +30,7 @@ export function useCommandPaletteKeyboard(
           active instanceof HTMLSelectElement ||
           (active as HTMLElement)?.isContentEditable;
 
-        if (matchesKeys(e, trigger.key) && !isTyping) {
+        if (matchesKeys(e, trigger.keys) && !isTyping) {
           const now = Date.now();
           const interval = trigger.interval ?? DEFAULT_DOUBLE_INTERVAL;
           if (now - lastPressTimeRef.current <= interval) {

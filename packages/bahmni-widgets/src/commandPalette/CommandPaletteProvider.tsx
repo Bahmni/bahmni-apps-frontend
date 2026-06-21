@@ -2,6 +2,7 @@ import React, {
   type ReactNode,
   useCallback,
   useContext,
+  useMemo,
   useState,
 } from 'react';
 import { CommandPalette } from './CommandPalette';
@@ -37,18 +38,28 @@ const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
 
   useCommandPaletteKeyboard(isOpen, toggle, trigger);
 
+  const contextValue = useMemo(
+    () => ({
+      isOpen,
+      toggle,
+      setOpen: setIsOpen,
+      navItems,
+      patientActions,
+      patientFieldsConfig,
+      searchAnnotations,
+    }),
+    [
+      isOpen,
+      toggle,
+      navItems,
+      patientActions,
+      patientFieldsConfig,
+      searchAnnotations,
+    ],
+  );
+
   return (
-    <CommandPaletteContext.Provider
-      value={{
-        isOpen,
-        toggle,
-        setOpen: setIsOpen,
-        navItems,
-        patientActions,
-        patientFieldsConfig,
-        searchAnnotations,
-      }}
-    >
+    <CommandPaletteContext.Provider value={contextValue}>
       {children}
       <CommandPalette />
     </CommandPaletteContext.Provider>

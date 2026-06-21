@@ -58,7 +58,7 @@ All Command Palette settings live under the `commandPalette` key in the dedicate
   "commandPalette": {
     "trigger": {
       "type": "combination",
-      "keys": "cmd+k"
+      "keys": ["cmd+k", "ctrl+k"]
     },
     "patientFields": {
       "primaryFields": ["name", "identifier"],
@@ -90,30 +90,32 @@ All Command Palette settings live under the `commandPalette` key in the dedicate
 
 ### Combination (key chord)
 
-Press all keys simultaneously.
+Press all keys simultaneously. `keys` is an array — list every shortcut that should trigger the palette. The first matching entry wins.
 
 ```json
 "trigger": {
   "type": "combination",
-  "keys": "cmd+k"
+  "keys": ["cmd+k", "ctrl+k"]
 }
 ```
 
 Supported modifier tokens: `cmd` / `meta`, `ctrl`, `shift`, `alt`.
 
+**At least one modifier is required.** A bare key with no modifier (e.g. `"k"`) is ignored even if listed.
+
 Examples:
-- `"ctrl+k"` — Ctrl + K
-- `"meta+shift+p"` — Cmd/Win + Shift + P
-- `"ctrl+shift+p"` — Ctrl + Shift + P
+- `["cmd+k", "ctrl+k"]` — macOS Cmd+K or Windows/Linux Ctrl+K (cross-platform default)
+- `["meta+shift+p", "ctrl+shift+p"]` — Cmd/Win+Shift+P on macOS, Ctrl+Shift+P elsewhere
+- `["ctrl+k"]` — Ctrl+K only
 
 ### Double-tap
 
-Tap the same key twice quickly.
+Tap the same key twice quickly. `keys` is an array — any listed key can be double-tapped to open the palette.
 
 ```json
 "trigger": {
   "type": "double",
-  "key": "k",
+  "keys": ["k"],
   "interval": 350
 }
 ```
@@ -121,7 +123,7 @@ Tap the same key twice quickly.
 | Field | Required | Default | Description |
 |---|---|---|---|
 | `type` | Yes | — | `"double"` |
-| `key` | Yes | — | Single character key to double-tap |
+| `keys` | Yes | — | Array of keys — double-tapping any one opens the palette |
 | `interval` | No | `350` | Maximum milliseconds between taps |
 
 > Double-tap is ignored when focus is inside an input field, textarea, or select element.
@@ -253,8 +255,9 @@ A link that appears in the Command Palette list. Selecting it navigates to the s
 {
   "id": "org.bahmni.commandpalette.nav.registration",
   "extensionPointId": "org.bahmni.commandpalette.navItem",
+  "type": "link",
   "translationKey": "COMMAND_PALETTE_NAV_REGISTRATION",
-  "url": "/bahmni-new/registration/search",
+  "url": "/bahmni-v2/registration/search",
   "icon": "fa-registered",
   "order": 1,
   "requiredPrivilege": "app:registration",
@@ -289,7 +292,7 @@ A button that appears after selecting a patient in search results. Navigates to 
   "extensionPointId": "org.bahmni.commandpalette.patientAction",
   "translationKey": "COMMAND_PALETTE_ACTION_CLINICAL",
   "icon": "fa-stethoscope",
-  "pathTemplate": "/bahmni-new/clinical/{{patientUuid}}",
+  "pathTemplate": "/bahmni-v2/clinical/{{patientUuid}}",
   "order": 2,
   "requiredPrivilege": "app:clinical"
 }
@@ -361,8 +364,8 @@ By default, a Command Palette item appears on every page. Use `appContext` to re
   "id": "org.bahmni.commandpalette.nav.clinical.worklist",
   "extensionPointId": "org.bahmni.commandpalette.navItem",
   "translationKey": "COMMAND_PALETTE_NAV_CLINICAL_WORKLIST",
-  "url": "/bahmni-new/clinical/worklist",
-  "appContext": ["/bahmni/clinical", "/bahmni-new/clinical"]
+  "url": "/bahmni-v2/clinical/worklist",
+  "appContext": ["/bahmni/clinical", "/bahmni-v2/clinical"]
 }
 ```
 
@@ -383,10 +386,10 @@ All items are defined in `openmrs/apps/command-palette/v2/extension.json`.
 | `COMMAND_PALETTE_NAV_CREATE_PATIENT` | Create New Patient | 3 | `app:registration` | No |
 | `COMMAND_PALETTE_NAV_BED_MANAGEMENT` | Bed Management | 4 | `app:adt` | No |
 | `COMMAND_PALETTE_NAV_OT` | Operating Theatre | 5 | `app:ot` | No |
-| `label: "OpenMRS"` | OpenMRS | 6 | `app:admin` | Yes |
-| `label: "Bahmni Wiki"` | Bahmni Wiki | 7 | _(none — public)_ | Yes |
+| `COMMAND_PALETTE_NAV_OPENMRS` | OpenMRS | 6 | `app:admin` | Yes |
+| `COMMAND_PALETTE_NAV_BAHMNI_WIKI` | Bahmni Wiki | 7 | _(none — public)_ | Yes |
 
-> OpenMRS and Bahmni Wiki items use a hard-coded `label` field instead of a `translationKey` (no i18n needed).
+> OpenMRS and Bahmni Wiki items use both `translationKey` and `label`. The `label` acts as a hardcoded fallback; `translationKey` is the primary display string resolved via i18n.
 
 ### Patient Action Buttons
 
@@ -408,8 +411,9 @@ In `openmrs/apps/command-palette/v2/extension.json`:
   "cmdPaletteNavRegistration": {
     "id": "org.bahmni.commandpalette.nav.registration",
     "extensionPointId": "org.bahmni.commandpalette.navItem",
+    "type": "link",
     "translationKey": "COMMAND_PALETTE_NAV_REGISTRATION",
-    "url": "/bahmni-new/registration/search",
+    "url": "/bahmni-v2/registration/search",
     "icon": "fa-registered",
     "newTab": true,
     "order": 1,
@@ -433,7 +437,7 @@ In `openmrs/apps/command-palette/v2/extension.json`:
     "extensionPointId": "org.bahmni.commandpalette.patientAction",
     "translationKey": "COMMAND_PALETTE_ACTION_CLINICAL",
     "icon": "fa-stethoscope",
-    "pathTemplate": "/bahmni-new/clinical/{{patientUuid}}",
+    "pathTemplate": "/bahmni-v2/clinical/{{patientUuid}}",
     "order": 2,
     "requiredPrivilege": "app:clinical"
   }
@@ -451,12 +455,13 @@ In `openmrs/apps/command-palette/v2/extension.json`:
   "cmdPaletteNavRegisterNewPatient": {
     "id": "org.bahmni.commandpalette.nav.registration.new",
     "extensionPointId": "org.bahmni.commandpalette.navItem",
+    "type": "link",
     "translationKey": "COMMAND_PALETTE_NAV_REGISTRATION_NEW",
-    "url": "/bahmni-new/registration/patient/new",
+    "url": "/bahmni-v2/registration/patient/new",
     "icon": "fa-user-plus",
     "order": 10,
     "requiredPrivilege": "app:registration",
-    "appContext": "/bahmni-new/registration"
+    "appContext": "/bahmni-v2/registration"
   }
 }
 ```
@@ -464,8 +469,9 @@ In `openmrs/apps/command-palette/v2/extension.json`:
 This item only appears when the user is on a Registration page. To also show it on the legacy Angular registration route, use an array:
 
 ```json
-"appContext": ["/bahmni-new/registration", "/bahmni/registration"]
+"appContext": ["/bahmni-v2/registration", "/bahmni/registration"]
 ```
+
 
 ---
 
