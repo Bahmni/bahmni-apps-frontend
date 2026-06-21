@@ -22,6 +22,7 @@ const buildMockImg = (complete: boolean): MockImg => {
 
 let mockPrint: jest.Mock;
 let mockFocus: jest.Mock;
+let mockRemove: jest.Mock;
 let mockIframe: Record<string, unknown>;
 let loadHandler: (() => void) | null;
 let afterprintHandler: (() => void) | null;
@@ -38,6 +39,7 @@ const fireAfterprint = () => afterprintHandler?.();
 const buildMockIframe = (mockImages: MockImg[] = []) => {
   mockPrint = jest.fn();
   mockFocus = jest.fn();
+  mockRemove = jest.fn();
   loadHandler = null;
   afterprintHandler = null;
 
@@ -50,6 +52,7 @@ const buildMockIframe = (mockImages: MockImg[] = []) => {
     style: { cssText: '' },
     srcdoc: '',
     setAttribute: jest.fn(),
+    remove: mockRemove,
     addEventListener: jest.fn((event: string, cb: () => void) => {
       if (event === 'load') loadHandler = cb;
     }),
@@ -116,10 +119,10 @@ describe('printViaIframe', () => {
     await promise;
 
     // Still mounted while the dialog is open.
-    expect(document.body.removeChild).not.toHaveBeenCalled();
+    expect(mockRemove).not.toHaveBeenCalled();
 
     fireAfterprint();
-    expect(document.body.removeChild).toHaveBeenCalledWith(mockIframe);
+    expect(mockRemove).toHaveBeenCalled();
   });
 
   it('prints immediately when all images are already complete', async () => {
