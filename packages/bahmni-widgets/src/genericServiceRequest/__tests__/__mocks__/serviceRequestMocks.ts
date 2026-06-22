@@ -72,29 +72,16 @@ export const mockServiceRequestBundle: Bundle<ServiceRequest> = {
   ],
 };
 
-export const mockServiceRequests: ServiceRequestViewModel[] = [
-  {
-    id: 'service-1',
-    testName: 'Blood Test',
-    priority: 'stat',
-    orderedBy: 'Dr. Smith',
-    orderedDate: '2023-12-01T10:30:00.000Z',
-    status: 'active',
-  },
-  {
-    id: 'service-2',
-    testName: 'Urine Test',
-    priority: 'routine',
-    orderedBy: 'Dr. Johnson',
-    orderedDate: '2023-12-01T14:15:00.000Z',
-    status: 'active',
-  },
-  {
-    id: 'service-3',
-    testName: 'Liver Function Test',
-    priority: 'stat',
-    orderedBy: 'Dr. Brown',
-    orderedDate: '2023-11-30T09:00:00.000Z',
-    status: 'active',
-  },
-];
+// Derive mockServiceRequests from bundle to avoid duplication
+export const mockServiceRequests: ServiceRequestViewModel[] =
+  mockServiceRequestBundle.entry?.map((entry) => {
+    const resource = entry.resource;
+    return {
+      id: resource?.id ?? '',
+      testName: resource?.code?.text ?? '',
+      priority: resource?.priority ?? 'routine',
+      orderedBy: resource?.requester?.display ?? '',
+      orderedDate: resource?.occurrencePeriod?.start ?? '',
+      status: resource?.status ?? 'unknown',
+    };
+  }) ?? [];

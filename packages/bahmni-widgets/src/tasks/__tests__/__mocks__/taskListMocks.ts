@@ -1,51 +1,6 @@
 import { Bundle, Task } from 'fhir/r4';
 import { TaskViewModel } from '../../models';
 
-export const mockTaskViewModels: TaskViewModel[] = [
-  {
-    id: 'task-1',
-    name: 'Vitals Form',
-    code: '6501d0f9-98da-44be-afc9-e2319453f0d6',
-    status: 'completed',
-    completedBy: 'Dr. Smith',
-    completedOn: '2025-03-25 11:00AM',
-    partOf: [],
-  },
-  {
-    id: 'task-2',
-    name: 'Physical Exam',
-    code: '7601d0f9-98da-44be-afc9-e2319453f0d7',
-    status: 'in-progress',
-    completedBy: 'Dr. Johnson',
-    completedOn: '-',
-    partOf: ['Task/parent-task-1'],
-  },
-  {
-    id: 'task-3',
-    name: 'Lab Review',
-    code: '8701d0f9-98da-44be-afc9-e2319453f0d8',
-    status: 'requested',
-    completedBy: undefined,
-    completedOn: '-',
-    partOf: ['Task/parent-task-1'],
-  },
-  {
-    id: 'parent-task-1',
-    name: 'Complete Patient Intake',
-    code: '9801d0f9-98da-44be-afc9-e2319453f0d9',
-    status: 'in-progress',
-    completedBy: undefined,
-    completedOn: '-',
-    partOf: [],
-  },
-];
-
-export const mockLeafTasks: TaskViewModel[] = [
-  mockTaskViewModels[1], // task-2 (has partOf)
-  mockTaskViewModels[2], // task-3 (has partOf)
-  mockTaskViewModels[0], // task-1 (no partOf, not referenced)
-];
-
 export const mockFHIRTasks: Task[] = [
   {
     resourceType: 'Task',
@@ -167,6 +122,41 @@ export const emptyTasksBundle: Bundle<Task> = {
   total: 0,
   entry: [],
 };
+
+// Derive mockTaskViewModels from FHIR tasks to avoid duplication
+const formatMockDateTime = (isoDate?: string): string => {
+  if (!isoDate) return '-';
+  const date = new Date(isoDate);
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+};
+
+export const mockTaskViewModels: TaskViewModel[] = mockFHIRTasks.map(
+  (task) => ({
+    id: task.id ?? '',
+    name: task.description ?? task.code?.text ?? '',
+    code: task.code?.coding?.[0]?.code ?? task.code?.text ?? '',
+    status: task.status,
+    completedBy: task.owner?.display,
+    completedOn: formatMockDateTime(task.executionPeriod?.end),
+    partOf:
+      task.partOf
+        ?.map((ref) => ref.reference)
+        .filter((ref): ref is string => !!ref) ?? [],
+  }),
+);
+
+export const mockLeafTasks: TaskViewModel[] = [
+  mockTaskViewModels[1], // task-2 (has partOf)
+  mockTaskViewModels[2], // task-3 (has partOf)
+  mockTaskViewModels[0], // task-1 (no partOf, not referenced)
+];
 
 export const mockTasksControlConfig = {
   showOnlyLeafTasks: true,
