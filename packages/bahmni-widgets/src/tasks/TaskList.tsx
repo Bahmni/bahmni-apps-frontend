@@ -106,7 +106,7 @@ const TaskList: React.FC<TaskListProps> = ({
   const patientUuid = usePatientUUID();
 
   const taskListConfig = config as TaskListConfig | undefined;
-  const showOnlyLeafTasks = taskListConfig?.showOnlyLeafTasks ?? true;
+  const showOnlyLeafTasks = taskListConfig?.showOnlyLeafTasks ?? false;
   const taskTypes = taskListConfig?.taskTypes;
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(

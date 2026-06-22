@@ -1,5 +1,5 @@
 import { Bundle, Task } from 'fhir/r4';
-import { TaskViewModel, TaskListConfig } from '../../models';
+import { TaskViewModel } from '../../models';
 
 export const mockTaskViewModels: TaskViewModel[] = [
   {
@@ -168,7 +168,7 @@ export const emptyTasksBundle: Bundle<Task> = {
   entry: [],
 };
 
-export const mockTasksControlConfig: TaskListConfig = {
+export const mockTasksControlConfig = {
   showOnlyLeafTasks: true,
   taskTypes: [
     '6501d0f9-98da-44be-afc9-e2319453f0d6',
@@ -176,7 +176,7 @@ export const mockTasksControlConfig: TaskListConfig = {
   ],
 };
 
-export const mockTasksControlConfigNoFitlers: TaskListConfig = {
+export const mockTasksControlConfigNoFitlers = {
   showOnlyLeafTasks: false,
 };
 
