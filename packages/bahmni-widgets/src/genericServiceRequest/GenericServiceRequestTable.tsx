@@ -1,5 +1,4 @@
 import {
-  SortableDataTable,
   DataTable,
   TooltipIcon,
   Accordion,
