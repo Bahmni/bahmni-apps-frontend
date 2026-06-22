@@ -22,6 +22,9 @@ export interface ActionHandlerConfig {
   };
 }
 
+// For backward compatibility
+export type TaskHandlerConfig = ActionHandlerConfig;
+
 export interface TaskListConfig {
   showOnlyLeafTasks?: boolean;
   taskTypes?: string[];

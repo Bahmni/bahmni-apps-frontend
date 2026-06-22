@@ -9,7 +9,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { Task } from 'fhir/r4';
 import React, { useMemo, useCallback } from 'react';
-import { usePatientUUID } from '@bahmni/widgets';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry';
 import { TaskViewModel, TaskListConfig } from './models';
 import styles from './TaskList.module.scss';
