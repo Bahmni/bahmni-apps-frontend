@@ -707,7 +707,7 @@ describe('ConsultationPage', () => {
       });
 
       const url = programUUID
-        ? `/consultation?programUUID=${programUUID}`
+        ? `/consultation?programUuid=${programUUID}`
         : '/consultation';
 
       return render(
@@ -742,6 +742,7 @@ describe('ConsultationPage', () => {
 
       // Component renders successfully without errors
       expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+      expect(screen.getByTestId('mocked-program-details')).toBeInTheDocument();
     });
 
     it('should handle multiple translateValues in configuration', async () => {
@@ -766,6 +767,7 @@ describe('ConsultationPage', () => {
       });
 
       expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+      expect(screen.getByTestId('mocked-program-details')).toBeInTheDocument();
     });
 
     it('should handle empty translateValues array', async () => {
@@ -790,6 +792,7 @@ describe('ConsultationPage', () => {
       });
 
       expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+      expect(screen.getByTestId('mocked-program-details')).toBeInTheDocument();
     });
 
     it('should handle undefined translateValues (defaults to empty array)', async () => {
@@ -814,6 +817,7 @@ describe('ConsultationPage', () => {
       });
 
       expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+      expect(screen.getByTestId('mocked-program-details')).toBeInTheDocument();
     });
 
     it('should not render ProgramDetails when programUUID is missing from URL params', async () => {
