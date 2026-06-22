@@ -90,7 +90,7 @@ function parseKeys(keys: string): {
   alt: boolean;
 } {
   const parts = keys.toLowerCase().split('+');
-  const key = parts[parts.length - 1];
+  const key = parts.at(-1)!;
   const mods = new Set(parts.slice(0, -1));
   return {
     key,

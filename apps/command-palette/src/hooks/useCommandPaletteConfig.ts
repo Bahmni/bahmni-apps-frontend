@@ -38,6 +38,17 @@ import commandPaletteAppJsonSchema from './schema.json';
 
 export type { CommandPaletteConfig };
 
+function isActiveForPathname(
+  extension: CommandPaletteExtension,
+  pathname: string,
+): boolean {
+  if (!extension.appContext) return true;
+  const paths = Array.isArray(extension.appContext)
+    ? extension.appContext
+    : [extension.appContext];
+  return paths.some((p) => pathname.startsWith(p));
+}
+
 export function useCommandPaletteConfig(): CommandPaletteConfig {
   const [navItems, setNavItems] = useState<NavItem[]>([]);
   const [patientActions, setPatientActions] = useState<PatientAction[]>([]);
@@ -98,13 +109,7 @@ export function useCommandPaletteConfig(): CommandPaletteConfig {
     const filterAndSort = (extensionPointId: string) =>
       allExtensions
         .filter((e) => e.extensionPointId === extensionPointId)
-        .filter((e) => {
-          if (!e.appContext) return true;
-          const paths = Array.isArray(e.appContext)
-            ? e.appContext
-            : [e.appContext];
-          return paths.some((p) => pathname.startsWith(p));
-        })
+        .filter((e) => isActiveForPathname(e, pathname))
         .filter(
           (e) =>
             !e.requiredPrivilege ||

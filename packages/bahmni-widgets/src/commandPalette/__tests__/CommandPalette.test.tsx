@@ -91,7 +91,7 @@ beforeEach(() => {
     loading: false,
     error: null,
   });
-  Object.defineProperty(window, 'location', {
+  Object.defineProperty(globalThis, 'location', {
     value: { href: '', pathname: '/' },
     writable: true,
   });
@@ -175,7 +175,60 @@ describe('CommandPalette', () => {
     ).toBeInTheDocument();
   });
 
-  it('navigates via window.location.href when a nav item with internal path is selected', async () => {
+  it('extracts patient UUID from value when a patient item is highlighted', async () => {
+    const user = userEvent.setup();
+    mockUseCommandPalette.mockReturnValue({
+      ...defaultContextValue,
+      isOpen: true,
+      patientActions: [
+        {
+          id: 'action-1',
+          label: 'Dashboard',
+          getPath: ({ patientUuid }: { patientUuid: string }) =>
+            `/dashboard/${patientUuid}`,
+          basePath: '/dashboard',
+        },
+      ],
+    });
+    mockUseCommandPaletteSearch.mockReturnValue({
+      patients: [mockPatient],
+      loading: false,
+      error: null,
+    });
+
+    render(<CommandPalette />);
+
+    const input = screen.getByTestId('cmdk-input');
+    await user.type(input, 'jo');
+
+    const patientItem = screen
+      .getAllByTestId('cmdk-item')
+      .find((el) => el.dataset.value?.startsWith('patient:'))!;
+    expect(patientItem).toBeInTheDocument();
+
+    await user.click(patientItem);
+
+    expect(globalThis.location.href).toBe('/dashboard/patient-uuid-1');
+  });
+
+  it('resets selected patient UUID when a non-patient item is highlighted', async () => {
+    const user = userEvent.setup();
+    mockUseCommandPalette.mockReturnValue({
+      ...defaultContextValue,
+      isOpen: true,
+    });
+
+    render(<CommandPalette />);
+
+    const navItem = screen.getAllByTestId('cmdk-item')[0];
+    expect(navItem).toBeInTheDocument();
+
+    await user.click(navItem);
+
+    expect(globalThis.location.href).toBe('/bahmni-new/registration/search');
+  });
+
+  it('navigates via globalThis.location.href when a nav item with internal path is selected', async () => {
     const user = userEvent.setup();
     mockUseCommandPalette.mockReturnValue({
       ...defaultContextValue,
@@ -187,6 +240,6 @@ describe('CommandPalette', () => {
     const navItem = screen.getByText('Go to Registration');
     await user.click(navItem.closest('[data-testid="cmdk-item"]')!);
 
-    expect(window.location.href).toBe('/bahmni-new/registration/search');
+    expect(globalThis.location.href).toBe('/bahmni-new/registration/search');
   });
 });

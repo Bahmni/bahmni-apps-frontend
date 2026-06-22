@@ -1,8 +1,20 @@
-import React from 'react';
+import React, { createContext, useContext } from 'react';
+
+const OnValueChangeContext = createContext<
+  ((value: string) => void) | undefined
+>(undefined);
 
 export const Command = Object.assign(
-  ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="cmdk-root">{children}</div>
+  ({
+    children,
+    onValueChange,
+  }: {
+    children: React.ReactNode;
+    onValueChange?: (value: string) => void;
+  }) => (
+    <OnValueChangeContext.Provider value={onValueChange}>
+      <div data-testid="cmdk-root">{children}</div>
+    </OnValueChangeContext.Provider>
   ),
   {
     Input: ({
@@ -52,10 +64,26 @@ export const Command = Object.assign(
       children: React.ReactNode;
       onSelect?: () => void;
       value?: string;
-    }) => (
-      <div data-testid="cmdk-item" data-value={value} onClick={onSelect}>
-        {children}
-      </div>
-    ),
+    }) => {
+      const onValueChange = useContext(OnValueChangeContext);
+      const handleActivate = () => {
+        if (value) onValueChange?.(value);
+        onSelect?.();
+      };
+      return (
+        <div
+          data-testid="cmdk-item"
+          data-value={value}
+          onClick={handleActivate}
+          onKeyDown={(e) =>
+            (e.key === 'Enter' || e.key === ' ') && handleActivate()
+          }
+          role="menuitem"
+          tabIndex={0}
+        >
+          {children}
+        </div>
+      );
+    },
   },
 );

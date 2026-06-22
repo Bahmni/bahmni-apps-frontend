@@ -47,11 +47,11 @@ export const CommandPalette: React.FC = () => {
   );
 
   const getDefaultActionIndex = useCallback(() => {
-    const pathname = window.location.pathname;
+    const pathname = globalThis.location.pathname;
     const idx = patientActions.findIndex(
       (a) => a.basePath && pathname.startsWith(a.basePath),
     );
-    return idx >= 0 ? idx : 0;
+    return Math.max(idx, 0);
   }, [patientActions]);
 
   const defaultActionIndex = getDefaultActionIndex();
@@ -63,7 +63,7 @@ export const CommandPalette: React.FC = () => {
   const handleCmdValueChange = useCallback(
     (val: string) => {
       setActiveActionIndex(getDefaultActionIndex());
-      const match = val.match(/^patient:([^:]+):/);
+      const match = /^patient:([^:]+):/.exec(val);
       setSelectedPatientUuid(match?.[1] ?? null);
     },
     [getDefaultActionIndex],
@@ -132,9 +132,9 @@ export const CommandPalette: React.FC = () => {
       if (!isHttp && !isRelative) return;
 
       if (preferNewTab || isHttp) {
-        window.open(path, '_blank', 'noopener,noreferrer');
+        globalThis.open(path, '_blank', 'noopener,noreferrer');
       } else {
-        window.location.href = path;
+        globalThis.location.href = path;
       }
     },
     [],
@@ -150,6 +150,14 @@ export const CommandPalette: React.FC = () => {
 
   if (!isOpen) return null;
 
+  const searchPlaceholder = selectedAnnotation
+    ? t('COMMAND_PALETTE_SEARCH_BY_ANNOTATION', {
+        annotation: selectedAnnotation.label.toLowerCase(),
+      })
+    : searchAnnotations.length > 0
+      ? t('COMMAND_PALETTE_SEARCH_WITH_FILTERS')
+      : t('COMMAND_PALETTE_SEARCH_DEFAULT');
+
   const isTypingAnnotationPrefix =
     !selectedAnnotation && searchTerm.startsWith('@');
   const isSearchActive = searchTerm.length >= 2 && !isTypingAnnotationPrefix;
@@ -157,11 +165,11 @@ export const CommandPalette: React.FC = () => {
   return createPortal(
     <>
       <div className={styles.overlay} onClick={close} aria-hidden="true" />
-      <div
+      <dialog
         className={styles.dialog}
-        role="dialog"
         aria-modal="true"
         aria-label={t('COMMAND_PALETTE_ARIA_LABEL')}
+        open
       >
         <Command
           label={t('COMMAND_PALETTE_ARIA_LABEL')}
@@ -177,15 +185,7 @@ export const CommandPalette: React.FC = () => {
             )}
             <Command.Input
               className={styles.input}
-              placeholder={
-                selectedAnnotation
-                  ? t('COMMAND_PALETTE_SEARCH_BY_ANNOTATION', {
-                      annotation: selectedAnnotation.label.toLowerCase(),
-                    })
-                  : searchAnnotations.length > 0
-                    ? t('COMMAND_PALETTE_SEARCH_WITH_FILTERS')
-                    : t('COMMAND_PALETTE_SEARCH_DEFAULT')
-              }
+              placeholder={searchPlaceholder}
               value={searchTerm}
               onValueChange={handleSearchChange}
               onKeyDown={handleInputKeyDown}
@@ -318,7 +318,7 @@ export const CommandPalette: React.FC = () => {
             </span>
           </div>
         </Command>
-      </div>
+      </dialog>
     </>,
     document.body,
   );
