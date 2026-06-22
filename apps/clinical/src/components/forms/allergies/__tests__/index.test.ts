@@ -1,4 +1,4 @@
-import { createAllergiesBundleEntries } from '../../../../services/consultationBundleService';
+import { createAllergiesBundleEntries } from '../../../../services/encounterBundleService';
 import { useAllergyStore } from '../../../../stores';
 import { clearRegistry, getRegisteredInputControls } from '../../registry';
 import AllergiesForm from '../AllergiesForm';
@@ -12,7 +12,7 @@ jest.mock('../../../../stores', () => ({
   },
 }));
 
-jest.mock('../../../../services/consultationBundleService', () => ({
+jest.mock('../../../../services/encounterBundleService', () => ({
   createAllergiesBundleEntries: jest.fn().mockReturnValue([]),
 }));
 

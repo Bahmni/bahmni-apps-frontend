@@ -2,11 +2,11 @@ import type { Bundle, Encounter } from 'fhir/r4';
 import {
   createEncounterBundleEntry,
   getEncounterReference,
-  postConsultationBundle,
-} from '../../services/consultationBundleService';
+  postEncounterBundle,
+} from '../../services/encounterBundleService';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { extractConceptsFromResponseBundle } from '../../utils/fhir/conceptExtractor';
-import { createConsultationBundle } from '../../utils/fhir/consultationBundleCreator';
+import { createEncounterBundle } from '../../utils/fhir/encounterBundleCreator';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
 import type { EncounterContext, InputControl } from '../forms';
 
@@ -71,13 +71,12 @@ export async function submitConsultation(
     .filter((entry) => entry.hasData() && entry.createBundleEntries)
     .flatMap((entry) => entry.createBundleEntries!(ctx));
 
-  const consultationBundle = createConsultationBundle([
+  const encounterBundle = createEncounterBundle([
     encounterBundleEntry,
     ...formEntries,
   ]);
 
-  const responseBundle =
-    await postConsultationBundle<Bundle>(consultationBundle);
+  const responseBundle = await postEncounterBundle<Bundle>(encounterBundle);
 
   return {
     updatedConcepts: extractConceptsFromResponseBundle(responseBundle),
