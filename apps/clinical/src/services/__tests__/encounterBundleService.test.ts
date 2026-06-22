@@ -17,11 +17,11 @@ import {
   createAllergiesBundleEntries,
   createServiceRequestBundleEntries,
   createConditionsBundleEntries,
-  postConsultationBundle,
+  postEncounterBundle,
   createEncounterBundleEntry,
   getEncounterReference,
   createObservationBundleEntries,
-} from '../consultationBundleService';
+} from '../encounterBundleService';
 
 // Mock crypto.randomUUID
 const mockUUID = '1d87ab20-8b86-4b41-a30d-984b2208d945';
@@ -82,7 +82,7 @@ jest.mock('@bahmni/form2-controls', () => ({
   }),
 }));
 
-describe('consultationBundleService', () => {
+describe('encounterBundleService', () => {
   afterAll(() => {
     jest.resetAllMocks();
   });
@@ -246,17 +246,17 @@ describe('consultationBundleService', () => {
     });
   });
 
-  describe('postConsultationBundle', () => {
+  describe('postEncounterBundle', () => {
     it('should call post with the correct URL and payload', async () => {
-      const mockBundle = { resourceType: 'ConsultationBundle' } as any;
+      const mockBundle = { resourceType: 'EncounterBundle' } as any;
       const mockResponse = { status: 'success' };
 
       (post as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await postConsultationBundle(mockBundle);
+      const result = await postEncounterBundle(mockBundle);
 
       expect(post).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/ConsultationBundle`,
+        `/openmrs/ws/fhir2/R4/EncounterBundle`,
         mockBundle,
       );
       expect(result).toEqual(mockResponse);

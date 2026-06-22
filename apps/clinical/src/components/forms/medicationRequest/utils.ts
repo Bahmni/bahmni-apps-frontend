@@ -15,7 +15,7 @@ import {
 } from '../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import { getMedicationDisplay } from '../../../services/medicationService';
-import { createBundleEntry } from '../../../utils/fhir/consultationBundleCreator';
+import { createBundleEntry } from '../../../utils/fhir/encounterBundleCreator';
 import { createMedicationRequestResource } from '../../../utils/fhir/medicationRequestResourceCreator';
 import {
   createEncounterReferenceFromString,

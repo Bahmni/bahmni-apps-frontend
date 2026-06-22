@@ -7,10 +7,10 @@ import {
 } from '@bahmni/services';
 import { BundleEntry, CodeableConcept, Encounter, Reference } from 'fhir/r4';
 import { ALLERGY_INTOLERANCE_RESOURCE_TYPE } from '../constants/allergy';
-import { CONSULTATION_BUNDLE_URL } from '../constants/app';
+import { ENCOUNTER_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
-import { ConsultationBundle } from '../models/consultationBundle';
+import { EncounterBundle } from '../models/encounterBundle';
 import { ServiceRequestInputEntry } from '../models/serviceRequest';
 import {
   createDeleteAllergyResource,
@@ -21,7 +21,7 @@ import {
   createEncounterDiagnosisResource,
   createEncounterConditionResource,
 } from '../utils/fhir/conditionResourceCreator';
-import { createBundleEntry } from '../utils/fhir/consultationBundleCreator';
+import { createBundleEntry } from '../utils/fhir/encounterBundleCreator';
 import { createObservationResources } from '../utils/fhir/observationResourceCreator';
 import {
   createPractitionerReference,
@@ -67,7 +67,7 @@ interface CreateObservationBundleEntriesParams {
 }
 
 /**
- * Creates bundle entries for diagnoses as part of consultation bundle
+ * Creates bundle entries for diagnoses as part of encounter bundle
  * @param params - Parameters required for creating diagnosis bundle entries
  * @returns Array of BundleEntry for diagnoses
  * @throws Error with specific message key for translation
@@ -154,7 +154,7 @@ function createDeleteAndPostAllergyEntries(
 }
 
 /**
- * Creates bundle entries for allergies as part of consultation bundle
+ * Creates bundle entries for allergies as part of encounter bundle
  * @param params - Parameters required for creating allergy bundle entries
  * @returns Array of BundleEntry for allergies
  * @throws Error with specific message key for translation
@@ -345,7 +345,7 @@ export function createServiceRequestBundleEntries({
 }
 
 /**
- * Creates bundle entries for conditions as part of consultation bundle
+ * Creates bundle entries for conditions as part of encounter bundle
  * @param params - Parameters required for creating condition bundle entries
  * @returns Array of BundleEntry for conditions
  * @throws Error with specific message key for translation
@@ -420,7 +420,7 @@ export function createConditionsBundleEntries({
 }
 
 /**
- * Creates bundle entries for observations from observation forms as part of consultation bundle
+ * Creates bundle entries for observations from observation forms as part of encounter bundle
  * @param params - Parameters required for creating observation bundle entries
  * @returns Array of BundleEntry for observations
  * @throws Error with specific message key for translation
@@ -526,8 +526,8 @@ export function getEncounterReference(
     : placeholderReference;
 }
 
-export async function postConsultationBundle<T>(
-  consultationBundle: ConsultationBundle,
+export async function postEncounterBundle<T>(
+  encounterBundle: EncounterBundle,
 ): Promise<T> {
-  return await post<T>(CONSULTATION_BUNDLE_URL, consultationBundle);
+  return await post<T>(ENCOUNTER_BUNDLE_URL, encounterBundle);
 }
