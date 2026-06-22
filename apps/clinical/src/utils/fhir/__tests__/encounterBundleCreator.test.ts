@@ -18,7 +18,7 @@ describe('encounterBundleCreator utility functions', () => {
       jest.resetAllMocks();
     });
 
-    it('should create a EncounterBundle with the provided entries', () => {
+    it('should create an EncounterBundle with the provided entries', () => {
       const mockEntries: Array<BundleEntry<FhirResource>> = [
         {
           fullUrl: 'urn:uuid:123',
@@ -43,7 +43,7 @@ describe('encounterBundleCreator utility functions', () => {
       });
     });
 
-    it('should create a EncounterBundle with empty entries when provided an empty array', () => {
+    it('should create an EncounterBundle with empty entries when provided an empty array', () => {
       const mockEntries: Array<BundleEntry<FhirResource>> = [];
 
       const result = createEncounterBundle(mockEntries);

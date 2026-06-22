@@ -67,7 +67,7 @@ interface CreateObservationBundleEntriesParams {
 }
 
 /**
- * Creates bundle entries for diagnoses as part of consultation bundle
+ * Creates bundle entries for diagnoses as part of encounter bundle
  * @param params - Parameters required for creating diagnosis bundle entries
  * @returns Array of BundleEntry for diagnoses
  * @throws Error with specific message key for translation
@@ -154,7 +154,7 @@ function createDeleteAndPostAllergyEntries(
 }
 
 /**
- * Creates bundle entries for allergies as part of consultation bundle
+ * Creates bundle entries for allergies as part of encounter bundle
  * @param params - Parameters required for creating allergy bundle entries
  * @returns Array of BundleEntry for allergies
  * @throws Error with specific message key for translation
@@ -345,7 +345,7 @@ export function createServiceRequestBundleEntries({
 }
 
 /**
- * Creates bundle entries for conditions as part of consultation bundle
+ * Creates bundle entries for conditions as part of encounter bundle
  * @param params - Parameters required for creating condition bundle entries
  * @returns Array of BundleEntry for conditions
  * @throws Error with specific message key for translation
@@ -420,7 +420,7 @@ export function createConditionsBundleEntries({
 }
 
 /**
- * Creates bundle entries for observations from observation forms as part of consultation bundle
+ * Creates bundle entries for observations from observation forms as part of encounter bundle
  * @param params - Parameters required for creating observation bundle entries
  * @returns Array of BundleEntry for observations
  * @throws Error with specific message key for translation
