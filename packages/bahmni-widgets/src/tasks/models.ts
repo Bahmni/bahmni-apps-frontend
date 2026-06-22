@@ -5,9 +5,10 @@ export interface TaskViewModel {
   status: string;
   completedBy?: string;
   completedOn?: string;
+  partOf?: string[];
 }
 
-export interface TaskHandlerConfig {
+export interface ActionHandlerConfig {
   taskCode: string;
   handlerType: string;
   handlerConfig?: {
@@ -19,4 +20,10 @@ export interface TaskHandlerConfig {
       icon?: string;
     }>;
   };
+}
+
+export interface TaskListConfig {
+  showOnlyLeafTasks?: boolean;
+  taskTypes?: string[];
+  actionHandlerConfig?: ActionHandlerConfig[];
 }
