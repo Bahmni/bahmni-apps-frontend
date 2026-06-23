@@ -26,6 +26,20 @@ export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
 
+export {
+  CommandPaletteProvider,
+  useCommandPalette,
+  type CommandPaletteContextType,
+  type AnnotationSearchType,
+  type NavItem,
+  type PatientAction,
+  type PatientActionContext,
+  type PatientFieldKey,
+  type PatientFieldsConfig,
+  type SearchAnnotation,
+  type TriggerConfig,
+} from './commandPalette';
+
 // Notification System
 export {
   useNotification,
@@ -34,6 +48,7 @@ export {
 } from './notification';
 
 // Hooks
+export { useDebounce } from './commandPalette/useDebounce';
 export { usePatientUUID } from './hooks/usePatientUUID';
 export { useUserPrivilege } from './userPrivileges/useUserPrivilege';
 export { useHasPrivilege } from './userPrivileges/useHasPrivilege';

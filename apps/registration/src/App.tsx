@@ -1,3 +1,4 @@
+import { CommandPaletteProvider } from '@bahmni/command-palette';
 import { Content, initFontAwesome, Loading } from '@bahmni/design-system';
 import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
@@ -50,14 +51,16 @@ const RegistrationApp: React.FC = () => {
           <RegistrationConfigProvider>
             <PersonAttributesProvider>
               <UserPrivilegeProvider>
-                <Routes>
-                  <Route path="/search" element={<PatientSearchPage />} />
-                  <Route path="patient/new" element={<PatientRegister />} />
-                  <Route
-                    path="/patient/:patientUuid"
-                    element={<PatientRegister />}
-                  />
-                </Routes>
+                <CommandPaletteProvider>
+                  <Routes>
+                    <Route path="/search" element={<PatientSearchPage />} />
+                    <Route path="patient/new" element={<PatientRegister />} />
+                    <Route
+                      path="/patient/:patientUuid"
+                      element={<PatientRegister />}
+                    />
+                  </Routes>
+                </CommandPaletteProvider>
               </UserPrivilegeProvider>
             </PersonAttributesProvider>
           </RegistrationConfigProvider>

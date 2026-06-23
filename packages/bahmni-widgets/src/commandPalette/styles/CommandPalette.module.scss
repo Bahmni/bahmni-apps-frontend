@@ -1,0 +1,424 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/motion" as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: $overlay;
+  z-index: 9000;
+  animation: fadeIn $duration-fast-02 motion(entrance, productive);
+}
+
+.dialog {
+  padding: 0;
+  position: fixed;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 660px;
+  background: $layer-02;
+  border: 1px solid $border-subtle-01;
+  border-radius: 8px;
+  box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.24);
+  z-index: 9001;
+  overflow: hidden;
+  animation: slideIn $duration-fast-02 motion(entrance, productive);
+
+  :global([cmdk-root]) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+// ── Input row ─────────────────────────────────────────────────────────────────
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+  padding: $spacing-04 $spacing-05;
+  border-bottom: 1px solid $border-subtle-01;
+  background: $layer-02;
+}
+
+.searchIcon {
+  width: 18px;
+  height: 18px;
+  color: $icon-secondary;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: $text-primary;
+  @include type-style('body-02');
+
+  &::placeholder {
+    color: $text-placeholder;
+  }
+}
+
+.annotationSuggestionPrefix {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px $spacing-02;
+  background: $layer-03;
+  border: 1px solid $border-subtle-02;
+  border-radius: 4px;
+  color: $interactive;
+  @include type-style('code-01');
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  margin-right: $spacing-02;
+}
+
+.annotationBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px $spacing-03;
+  background: $interactive;
+  color: $text-on-color;
+  border-radius: 4px;
+  @include type-style('label-01');
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.escHint {
+  flex-shrink: 0;
+  padding: 2px $spacing-02;
+  background: $layer-03;
+  border: 1px solid $border-subtle-02;
+  border-radius: 4px;
+  color: $text-helper;
+  @include type-style('code-01');
+  font-size: 0.6875rem;
+  cursor: default;
+}
+
+// ── List ──────────────────────────────────────────────────────────────────────
+
+.list {
+  max-height: 420px;
+  overflow-y: auto;
+  padding: $spacing-02 0;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $border-subtle-02;
+    border-radius: 2px;
+  }
+}
+
+.empty {
+  padding: $spacing-09 $spacing-05;
+  text-align: center;
+  color: $text-helper;
+  @include type-style('body-01');
+}
+
+// ── Group ─────────────────────────────────────────────────────────────────────
+
+.group {
+  :global([cmdk-group-heading]) {
+    padding: $spacing-03 $spacing-05 $spacing-02;
+    color: $text-helper;
+    @include type-style('label-01');
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+// ── Item (shared) ─────────────────────────────────────────────────────────────
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-04;
+  padding: $spacing-03 $spacing-05;
+  cursor: pointer;
+  color: $text-primary;
+  @include type-style('body-01');
+  transition: background $duration-fast-01 motion(standard, productive);
+
+  &:global([data-selected='true']) {
+    background: $layer-selected-02;
+
+    .itemActions {
+      opacity: 1;
+    }
+
+    .chevronButton {
+      opacity: 1;
+    }
+  }
+
+  &:hover {
+    background: $layer-hover-02;
+
+    .itemActions {
+      opacity: 1;
+    }
+
+    .chevronButton {
+      opacity: 1;
+    }
+  }
+}
+
+// ── Nav icon ──────────────────────────────────────────────────────────────────
+
+.navIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: $spacing-06;
+  height: $spacing-06;
+  border-radius: 6px;
+  background: $layer-03;
+  color: $icon-secondary;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+// ── Patient avatar ────────────────────────────────────────────────────────────
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: $spacing-07;
+  height: $spacing-07;
+  border-radius: 50%;
+  background: $interactive;
+  color: $text-on-color;
+  @include type-style('label-01');
+  font-weight: 600;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+// ── Item content ──────────────────────────────────────────────────────────────
+
+.itemContent {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  gap: $spacing-01;
+}
+
+.itemLabel {
+  @include type-style('body-01');
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Additional (expanded) fields ──────────────────────────────────────────────
+
+.additionalFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-01 $spacing-04;
+  padding-top: $spacing-01;
+}
+
+.additionalField {
+  @include type-style('label-01');
+  color: $text-secondary;
+  white-space: nowrap;
+}
+
+.fieldLabel {
+  color: $text-helper;
+  font-weight: 500;
+}
+
+// ── Chevron button ────────────────────────────────────────────────────────────
+
+.chevronButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: $spacing-05;
+  height: $spacing-05;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: $icon-secondary;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity $duration-fast-01 motion(standard, productive),
+    color $duration-fast-01 motion(standard, productive);
+
+  &:hover {
+    color: $icon-primary;
+  }
+}
+
+.chevronIcon {
+  font-size: 0.5rem;
+  line-height: 1;
+}
+
+// ── Action buttons ────────────────────────────────────────────────────────────
+
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity $duration-fast-01 motion(standard, productive);
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px $spacing-03;
+  background: $layer-03;
+  border: 1px solid $border-subtle-02;
+  border-radius: 4px;
+  color: $text-secondary;
+  cursor: pointer;
+  @include type-style('label-01');
+  white-space: nowrap;
+  transition: background $duration-fast-01 motion(standard, productive),
+    color $duration-fast-01 motion(standard, productive);
+
+  &:hover {
+    background: $layer-hover-03;
+    color: $text-primary;
+  }
+}
+
+.actionButtonLabel {
+  font-size: 0.75rem;
+}
+
+.actionButtonDefault {
+  background: $interactive;
+  border-color: $interactive;
+  color: $text-on-color;
+
+  &:hover {
+    filter: brightness(0.9);
+    color: $text-on-color;
+  }
+}
+
+.actionEnterHint {
+  margin-left: $spacing-01;
+  padding: 0 2px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  font-size: 0.6rem;
+  line-height: 1.4;
+  font-family: inherit;
+  pointer-events: none;
+}
+
+// ── Loading state ─────────────────────────────────────────────────────────────
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+  padding: $spacing-04 $spacing-05;
+  color: $text-helper;
+  @include type-style('body-01');
+}
+
+.ekgLine {
+  width: 60px;
+  height: 16px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.ekgPath {
+  fill: none;
+  stroke: $support-success;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 80 80;
+  animation: ekgScroll 1.8s linear infinite;
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: $spacing-04;
+  padding: $spacing-03 $spacing-05;
+  border-top: 1px solid $border-subtle-01;
+  background: $layer-01;
+}
+
+.shortcutHint {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+  color: $text-helper;
+  @include type-style('label-01');
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px $spacing-02;
+  background: $layer-03;
+  border: 1px solid $border-subtle-02;
+  border-radius: 4px;
+  color: $text-helper;
+  @include type-style('code-01');
+  font-size: 0.6875rem;
+}
+
+// ── Animations ────────────────────────────────────────────────────────────────
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes ekgScroll {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -160; }
+}
