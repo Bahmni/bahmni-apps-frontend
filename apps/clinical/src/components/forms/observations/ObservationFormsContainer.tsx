@@ -31,6 +31,7 @@ import {
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
+import { useFormPatientContext } from '../../../hooks/useFormPatientContext';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
@@ -52,6 +53,7 @@ interface ObservationFormsContainerProps {
       | typeof VALIDATION_STATE_SCRIPT_ERROR,
   ) => void;
   existingObservations?: Form2Observation[];
+  activeEncounterUuid?: string | null;
 }
 
 const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
@@ -60,11 +62,21 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onRemoveForm,
   onFormObservationsChange,
   existingObservations,
+  activeEncounterUuid,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { user } = useActivePractitioner();
-  const { episodeOfCare } = useClinicalAppData();
+  const { episodeOfCare, activeVisitId } = useClinicalAppData();
+  const {
+    patient: patientContext,
+    isLoading: isPatientLoading,
+    error: patientError,
+  } = useFormPatientContext({
+    patientUUID,
+    activeVisitUuid: activeVisitId,
+    activeEncounterUuid,
+  });
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const { forms: allForms, isLoading: isAllFormsLoading } =
     useObservationFormsSearch('', episodeOfCareUuids);
@@ -168,6 +180,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   };
 
   const validateAndSave = () => {
+    if (!patientContext) {
+      setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
+      setValidationErrorMessage(t('OBSERVATION_FORM_LOADING_METADATA_ERROR'));
+      return;
+    }
     if (formContainerRef.current) {
       if (validationErrorType) {
         setValidationErrorType(null);
@@ -258,7 +275,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         const processedObservations = executeOnFormSaveEvent(
           formMetadata!,
           transformedObservations,
-          patientUUID!,
+          patientContext,
           containerState?.data,
         );
 
@@ -353,15 +370,15 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         className={styles.formContent}
         data-testid="observation-form-content"
       >
-        {isLoadingMetadata ? (
+        {isLoadingMetadata || isPatientLoading ? (
           <SkeletonText
             width="100%"
             lineCount={3}
             data-testid="observation-form-loading"
           />
-        ) : error ? (
-          <div>{error.message}</div>
-        ) : formMetadata && patientUUID ? (
+        ) : error || patientError ? (
+          <div>{(error ?? patientError)!.message}</div>
+        ) : formMetadata && patientUUID && patientContext ? (
           <CarbonContainer
             ref={formContainerRef}
             metadata={{
@@ -370,7 +387,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               version: formMetadata.version || '1',
             }}
             observations={observationsWithValues}
-            patient={{ uuid: patientUUID }}
+            patient={patientContext}
             translations={formMetadata.translations ?? {}}
             validate={validationErrorType !== null}
             validateForm
@@ -416,7 +433,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         onPrimaryButtonClick={
           validationErrorType ? continueAnyway : validateAndSave
         }
-        isPrimaryButtonDisabled={false}
+        isPrimaryButtonDisabled={isPatientLoading || !patientContext}
         secondaryButtonText={t('OBSERVATION_FORM_DISCARD_BUTTON')}
         onSecondaryButtonClick={discard}
         content={formViewContent}
