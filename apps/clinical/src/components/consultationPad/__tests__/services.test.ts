@@ -1,7 +1,7 @@
-import * as consultationBundleService from '../../../services/consultationBundleService';
+import * as encounterBundleService from '../../../services/encounterBundleService';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import * as conceptExtractor from '../../../utils/fhir/conceptExtractor';
-import * as consultationBundleCreator from '../../../utils/fhir/consultationBundleCreator';
+import * as encounterBundleCreator from '../../../utils/fhir/encounterBundleCreator';
 import * as encounterResourceCreator from '../../../utils/fhir/encounterResourceCreator';
 import { submitConsultation } from '../services';
 import {
@@ -15,25 +15,25 @@ import {
 } from './__mocks__/servicesMocks';
 
 jest.mock('../../../stores/encounterDetailsStore');
-jest.mock('../../../services/consultationBundleService');
+jest.mock('../../../services/encounterBundleService');
 jest.mock('../../../utils/fhir/encounterResourceCreator');
-jest.mock('../../../utils/fhir/consultationBundleCreator');
+jest.mock('../../../utils/fhir/encounterBundleCreator');
 jest.mock('../../../utils/fhir/conceptExtractor');
 
 const mockCreateEncounterResource = jest.mocked(
   encounterResourceCreator.createEncounterResource,
 );
 const mockCreateEncounterBundleEntry = jest.mocked(
-  consultationBundleService.createEncounterBundleEntry,
+  encounterBundleService.createEncounterBundleEntry,
 );
 const mockGetEncounterReference = jest.mocked(
-  consultationBundleService.getEncounterReference,
+  encounterBundleService.getEncounterReference,
 );
-const mockCreateConsultationBundle = jest.mocked(
-  consultationBundleCreator.createConsultationBundle,
+const mockCreateEncounterBundle = jest.mocked(
+  encounterBundleCreator.createEncounterBundle,
 );
-const mockPostConsultationBundle = jest.mocked(
-  consultationBundleService.postConsultationBundle,
+const mockPostEncounterBundle = jest.mocked(
+  encounterBundleService.postEncounterBundle,
 );
 const mockExtractConcepts = jest.mocked(
   conceptExtractor.extractConceptsFromResponseBundle,
@@ -46,8 +46,8 @@ beforeEach(() => {
   mockCreateEncounterResource.mockReturnValue(mockEncounterResource);
   mockCreateEncounterBundleEntry.mockReturnValue(mockEncounterBundleEntry);
   mockGetEncounterReference.mockReturnValue('urn:uuid:encounter-entry-id');
-  mockCreateConsultationBundle.mockReturnValue(mockBundle);
-  mockPostConsultationBundle.mockResolvedValue(mockResponseBundle);
+  mockCreateEncounterBundle.mockReturnValue(mockBundle);
+  mockPostEncounterBundle.mockResolvedValue(mockResponseBundle);
   mockExtractConcepts.mockReturnValue(mockUpdatedConcepts);
 });
 
@@ -73,7 +73,7 @@ describe('submitConsultation', () => {
       activeEntries: [],
     });
 
-    expect(mockPostConsultationBundle).toHaveBeenCalledWith(mockBundle);
+    expect(mockPostEncounterBundle).toHaveBeenCalledWith(mockBundle);
     expect(mockExtractConcepts).toHaveBeenCalledWith(mockResponseBundle);
   });
 
@@ -94,7 +94,7 @@ describe('submitConsultation', () => {
 
     expect(entryWithData.createBundleEntries).toHaveBeenCalled();
     expect(entryWithoutData.createBundleEntries).not.toHaveBeenCalled();
-    expect(mockCreateConsultationBundle).toHaveBeenCalledWith([
+    expect(mockCreateEncounterBundle).toHaveBeenCalledWith([
       mockEncounterBundleEntry,
       { fullUrl: 'urn:uuid:obs-1', resource: { resourceType: 'Observation' } },
     ]);

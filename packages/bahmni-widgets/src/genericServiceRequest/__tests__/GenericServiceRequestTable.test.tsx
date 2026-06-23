@@ -1,19 +1,21 @@
 import {
   groupByDate,
-  useTranslation,
   getFormattedError,
   getCategoryUuidFromOrderTypes,
   getServiceRequests,
+  getTasks,
   useSubscribeConsultationSaved,
   formatDateTime,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
-import type { Bundle, ServiceRequest } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
+import {
+  mockTasksBundle,
+  emptyTasksBundle,
+} from '../../tasks/__tests__/__mocks__/taskListMocks';
 import GenericServiceRequestTable from '../GenericServiceRequestTable';
 import { ServiceRequestViewModel } from '../models';
 import {
@@ -21,12 +23,15 @@ import {
   mapServiceRequest,
   sortServiceRequestsByPriority,
 } from '../utils';
+import {
+  mockServiceRequestBundle,
+  mockServiceRequests,
+} from './__mocks__/serviceRequestMocks';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  useTranslation: jest.fn(),
   groupByDate: jest.fn(),
   formatDateTime: jest.fn(() => ({
     formattedResult: '01/12/2023',
@@ -35,6 +40,7 @@ jest.mock('@bahmni/services', () => ({
   getFormattedError: jest.fn(),
   getCategoryUuidFromOrderTypes: jest.fn(),
   getServiceRequests: jest.fn(),
+  getTasks: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
 
@@ -53,9 +59,6 @@ jest.mock('../../notification', () => ({
   useNotification: jest.fn(),
 }));
 
-const mockUseTranslation = useTranslation as jest.MockedFunction<
-  typeof useTranslation
->;
 const mockGroupByDate = groupByDate as jest.MockedFunction<typeof groupByDate>;
 const mockFormatDate = formatDateTime as jest.MockedFunction<
   typeof formatDateTime
@@ -70,6 +73,7 @@ const mockGetCategoryUuidFromOrderTypes =
 const mockGetServiceRequests = getServiceRequests as jest.MockedFunction<
   typeof getServiceRequests
 >;
+const mockGetTasks = getTasks as jest.MockedFunction<typeof getTasks>;
 const mockFilterServiceRequestReplacementEntries =
   filterServiceRequestReplacementEntries as jest.MockedFunction<
     typeof filterServiceRequestReplacementEntries
@@ -109,129 +113,11 @@ const createWrapper = () => {
   );
 };
 
-const mockOrderTypes = {
-  results: [
-    {
-      uuid: 'lab-uuid',
-      display: 'Lab Order',
-      conceptClasses: [
-        {
-          uuid: 'concept-class-1',
-          name: 'Test',
-        },
-      ],
-    },
-    {
-      uuid: 'radiology-uuid',
-      display: 'Radiology Order',
-      conceptClasses: [
-        {
-          uuid: 'concept-class-2',
-          name: 'Radiology',
-        },
-      ],
-    },
-  ],
-};
-
-const mockServiceRequestBundle: Bundle<ServiceRequest> = {
-  resourceType: 'Bundle',
-  type: 'searchset',
-  entry: [
-    {
-      resource: {
-        resourceType: 'ServiceRequest',
-        id: 'service-1',
-        status: 'active',
-        intent: 'order',
-        code: { text: 'Blood Test' },
-        priority: 'stat',
-        subject: { reference: 'Patient/patient-123' },
-        requester: { display: 'Dr. Smith' },
-        occurrencePeriod: { start: '2023-12-01T10:30:00.000Z' },
-      },
-    },
-    {
-      resource: {
-        resourceType: 'ServiceRequest',
-        id: 'service-2',
-        status: 'active',
-        intent: 'order',
-        code: { text: 'Urine Test' },
-        priority: 'routine',
-        subject: { reference: 'Patient/patient-123' },
-        requester: { display: 'Dr. Johnson' },
-        occurrencePeriod: { start: '2023-12-01T14:15:00.000Z' },
-      },
-    },
-    {
-      resource: {
-        resourceType: 'ServiceRequest',
-        id: 'service-3',
-        status: 'active',
-        intent: 'order',
-        code: { text: 'Liver Function Test' },
-        priority: 'stat',
-        subject: { reference: 'Patient/patient-123' },
-        requester: { display: 'Dr. Brown' },
-        occurrencePeriod: { start: '2023-11-30T09:00:00.000Z' },
-      },
-    },
-  ],
-};
-
-const mockServiceRequests: ServiceRequestViewModel[] = [
-  {
-    id: 'service-1',
-    testName: 'Blood Test',
-    priority: 'stat',
-    orderedBy: 'Dr. Smith',
-    orderedDate: '2023-12-01T10:30:00.000Z',
-    status: 'active',
-  },
-  {
-    id: 'service-2',
-    testName: 'Urine Test',
-    priority: 'routine',
-    orderedBy: 'Dr. Johnson',
-    orderedDate: '2023-12-01T14:15:00.000Z',
-    status: 'active',
-  },
-  {
-    id: 'service-3',
-    testName: 'Liver Function Test',
-    priority: 'stat',
-    orderedBy: 'Dr. Brown',
-    orderedDate: '2023-11-30T09:00:00.000Z',
-    status: 'active',
-  },
-];
-
 describe('GenericServiceRequestTable', () => {
   const mockAddNotification = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    mockUseTranslation.mockReturnValue({
-      t: (key: string) => {
-        const translations: Record<string, string> = {
-          SERVICE_REQUEST_TEST_NAME: 'Test Name',
-          SERVICE_REQUEST_ORDERED_BY: 'Ordered By',
-          SERVICE_REQUEST_ORDERED_STATUS: 'Status',
-          SERVICE_REQUEST_HEADING: 'Service Requests',
-          NO_SERVICE_REQUESTS: 'No service requests recorded',
-          SERVICE_REQUEST_PRIORITY_URGENT: 'Urgent',
-          ERROR_DEFAULT_TITLE: 'Error',
-          IN_PROGRESS_STATUS: 'In Progress',
-          COMPLETED_STATUS: 'Completed',
-          REVOKED_STATUS: 'Revoked',
-        };
-        return translations[key] || key;
-      },
-      i18n: {} as any,
-      ready: true,
-    } as any);
 
     mockUsePatientUUID.mockReturnValue('patient-123');
     mockUseNotification.mockReturnValue({
@@ -253,7 +139,21 @@ describe('GenericServiceRequestTable', () => {
     mockGroupByDate.mockReturnValue([]);
     mockGetCategoryUuidFromOrderTypes.mockResolvedValue('lab-uuid');
     mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
-    mockMapServiceRequest.mockReturnValue(mockServiceRequests);
+    mockMapServiceRequest.mockImplementation(
+      (bundle) =>
+        bundle.entry?.map((entry) => {
+          const resource = entry.resource as any;
+          return {
+            id: resource.id,
+            testName: resource.code?.text ?? '',
+            priority: resource.priority,
+            orderedBy: resource.requester?.display ?? '',
+            orderedDate: resource.occurrencePeriod?.start ?? '',
+            status: resource.status,
+          };
+        }) ?? [],
+    );
+    mockGetTasks.mockResolvedValue(emptyTasksBundle);
     mockUseSubscribeConsultationSaved.mockImplementation(() => {});
   });
 
@@ -310,7 +210,7 @@ describe('GenericServiceRequestTable', () => {
 
       await waitFor(() => {
         expect(mockAddNotification).toHaveBeenCalledWith({
-          title: 'Error',
+          title: 'ERROR_DEFAULT_TITLE',
           message: 'Network error',
           type: 'error',
         });
@@ -331,7 +231,7 @@ describe('GenericServiceRequestTable', () => {
 
       await waitFor(() => {
         expect(mockAddNotification).toHaveBeenCalledWith({
-          title: 'Error',
+          title: 'ERROR_DEFAULT_TITLE',
           message: 'Network error',
           type: 'error',
         });
@@ -368,9 +268,7 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.getByText('No service requests recorded'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('NO_SERVICE_REQUESTS')).toBeInTheDocument();
       });
     });
 
@@ -385,9 +283,7 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.getByText('No service requests recorded'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('NO_SERVICE_REQUESTS')).toBeInTheDocument();
       });
     });
   });
@@ -638,7 +534,9 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Urgent')).toBeInTheDocument();
+        expect(
+          screen.getByText('SERVICE_REQUEST_PRIORITY_URGENT'),
+        ).toBeInTheDocument();
       });
     });
 
@@ -775,7 +673,7 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('In Progress')).toBeInTheDocument();
+        expect(screen.getByText('IN_PROGRESS_STATUS')).toBeInTheDocument();
       });
     });
 
@@ -797,7 +695,7 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Completed')).toBeInTheDocument();
+        expect(screen.getByText('COMPLETED_STATUS')).toBeInTheDocument();
       });
     });
 
@@ -819,7 +717,7 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Revoked')).toBeInTheDocument();
+        expect(screen.getByText('REVOKED_STATUS')).toBeInTheDocument();
       });
     });
 
@@ -833,27 +731,6 @@ describe('GenericServiceRequestTable', () => {
         { date: '2023-12-01', items: [unknownServiceRequest] },
       ]);
 
-      mockUseTranslation.mockReturnValue({
-        t: (key: string) => {
-          const translations: Record<string, string> = {
-            SERVICE_REQUEST_TEST_NAME: 'Test Name',
-            SERVICE_REQUEST_ORDERED_BY: 'Ordered By',
-            SERVICE_REQUEST_ORDERED_STATUS: 'Status',
-            SERVICE_REQUEST_HEADING: 'Service Requests',
-            NO_SERVICE_REQUESTS: 'No service requests recorded',
-            SERVICE_REQUEST_PRIORITY_URGENT: 'Urgent',
-            ERROR_DEFAULT_TITLE: 'Error',
-            IN_PROGRESS_STATUS: 'In Progress',
-            COMPLETED_STATUS: 'Completed',
-            REVOKED_STATUS: 'Revoked',
-            UNKNOWN_STATUS: 'Unknown',
-          };
-          return translations[key] || key;
-        },
-        i18n: {} as any,
-        ready: true,
-      } as any);
-
       render(
         <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
         {
@@ -862,7 +739,7 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Unknown')).toBeInTheDocument();
+        expect(screen.getByText('UNKNOWN_STATUS')).toBeInTheDocument();
       });
     });
   });
@@ -931,7 +808,9 @@ describe('GenericServiceRequestTable', () => {
         expect(screen.getByText('Stat Test')).toBeInTheDocument();
         expect(screen.getByText('Routine Test')).toBeInTheDocument();
         expect(screen.getByText('Empty Priority Test')).toBeInTheDocument();
-        expect(screen.getAllByText('Urgent')).toHaveLength(1);
+        expect(
+          screen.getAllByText('SERVICE_REQUEST_PRIORITY_URGENT'),
+        ).toHaveLength(1);
       });
     });
 
@@ -941,9 +820,7 @@ describe('GenericServiceRequestTable', () => {
       });
 
       await waitFor(() => {
-        expect(
-          screen.getByText('No service requests recorded'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('NO_SERVICE_REQUESTS')).toBeInTheDocument();
       });
     });
 
@@ -958,9 +835,7 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.getByText('No service requests recorded'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('NO_SERVICE_REQUESTS')).toBeInTheDocument();
       });
     });
   });
@@ -1028,9 +903,7 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.getByText('No service requests recorded'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('NO_SERVICE_REQUESTS')).toBeInTheDocument();
       });
 
       expect(await axe(container)).toHaveNoViolations();
@@ -1045,7 +918,7 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        const tables = screen.getAllByLabelText('Service Requests');
+        const tables = screen.getAllByLabelText('SERVICE_REQUEST_HEADING');
         expect(tables.length).toBeGreaterThan(0);
       });
     });
@@ -1129,8 +1002,18 @@ describe('GenericServiceRequestTable', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Test Name')).toBeInTheDocument();
-        expect(screen.getByText('Ordered By')).toBeInTheDocument();
+        expect(
+          screen.getByText('SERVICE_REQUEST_TEST_NAME'),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('SERVICE_REQUEST_ORDERED_BY'),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('SERVICE_REQUEST_ORDERED_ON'),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('SERVICE_REQUEST_ORDERED_STATUS'),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -1219,9 +1102,7 @@ describe('GenericServiceRequestTable', () => {
         );
 
         await waitFor(() => {
-          expect(
-            screen.getByText('No service requests recorded'),
-          ).toBeInTheDocument();
+          expect(screen.getByText('NO_SERVICE_REQUESTS')).toBeInTheDocument();
           expect(
             screen.queryByTestId('accordian-table-title'),
           ).not.toBeInTheDocument();
@@ -1281,9 +1162,7 @@ describe('GenericServiceRequestTable', () => {
         );
 
         await waitFor(() => {
-          expect(
-            screen.getByText('No service requests recorded'),
-          ).toBeInTheDocument();
+          expect(screen.getByText('NO_SERVICE_REQUESTS')).toBeInTheDocument();
           expect(
             screen.queryByTestId('accordian-table-title'),
           ).not.toBeInTheDocument();
@@ -1343,9 +1222,7 @@ describe('GenericServiceRequestTable', () => {
         );
 
         await waitFor(() => {
-          expect(
-            screen.getByText('No service requests recorded'),
-          ).toBeInTheDocument();
+          expect(screen.getByText('NO_SERVICE_REQUESTS')).toBeInTheDocument();
         });
       });
 
@@ -1563,6 +1440,189 @@ describe('GenericServiceRequestTable', () => {
 
       // Verify refetch was NOT triggered
       expect(mockGetServiceRequests).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Task Integration', () => {
+    beforeEach(() => {
+      mockGroupByDate.mockImplementation((data) => {
+        if (!data || data.length === 0) return [];
+        return [{ date: '2023-12-01', items: data }];
+      });
+    });
+
+    describe('When showTasks is false or not configured', () => {
+      it('should not render TaskList when showTasks is false', async () => {
+        mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
+
+        render(
+          <GenericServiceRequestTable
+            config={{ orderType: 'Lab Order', showTasks: false }}
+          />,
+          { wrapper: createWrapper() },
+        );
+
+        await waitFor(() => {
+          expect(
+            screen.getByTestId('accordian-table-title'),
+          ).toBeInTheDocument();
+        });
+
+        expect(screen.queryByTestId('tasks-table')).not.toBeInTheDocument();
+        expect(mockGetTasks).not.toHaveBeenCalled();
+      });
+
+      it('should not render TaskList when showTasks is not configured', async () => {
+        mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
+
+        render(
+          <GenericServiceRequestTable config={{ orderType: 'Lab Order' }} />,
+          { wrapper: createWrapper() },
+        );
+
+        await waitFor(() => {
+          expect(
+            screen.getByTestId('accordian-table-title'),
+          ).toBeInTheDocument();
+        });
+
+        expect(screen.queryByTestId('tasks-table')).not.toBeInTheDocument();
+      });
+    });
+
+    describe('When showTasks is true', () => {
+      const tasksConfig = {
+        showOnlyLeafTasks: true,
+        taskTypes: ['6501d0f9-98da-44be-afc9-e2319453f0d6'],
+      };
+
+      it('should render rows as expandable and expand all rows by default when showTasks is true', async () => {
+        mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
+        mockGetTasks.mockResolvedValue(mockTasksBundle);
+
+        render(
+          <GenericServiceRequestTable
+            config={{
+              orderType: 'Lab Order',
+              showTasks: true,
+              tasksControlConfig: tasksConfig,
+            }}
+          />,
+          { wrapper: createWrapper() },
+        );
+
+        await waitFor(() => {
+          const table = screen.getByTestId(
+            'generic-service-request-table-2023-12-01',
+          );
+          expect(table).toBeInTheDocument();
+        });
+
+        // All rows should be expanded by default
+        const collapseButtons = screen.queryAllByRole('button', {
+          name: /collapse/i,
+        });
+        expect(collapseButtons.length).toBeGreaterThan(0);
+      });
+
+      it('should pass tasksControlConfig to TaskList component', async () => {
+        mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
+        mockGetTasks.mockResolvedValue(mockTasksBundle);
+
+        render(
+          <GenericServiceRequestTable
+            config={{
+              orderType: 'Lab Order',
+              showTasks: true,
+              tasksControlConfig: tasksConfig,
+            }}
+          />,
+          { wrapper: createWrapper() },
+        );
+
+        await waitFor(() => {
+          expect(mockGetTasks).toHaveBeenCalled();
+        });
+      });
+
+      it('should pass orderReference to TaskList for each service request', async () => {
+        mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
+        mockGetTasks.mockResolvedValue(mockTasksBundle);
+
+        render(
+          <GenericServiceRequestTable
+            config={{
+              orderType: 'Lab Order',
+              showTasks: true,
+              tasksControlConfig: tasksConfig,
+            }}
+          />,
+          { wrapper: createWrapper() },
+        );
+
+        await waitFor(() => {
+          expect(mockGetTasks).toHaveBeenCalledWith('patient-123', 'service-1');
+        });
+      });
+
+      it('should render TaskList in expanded row content', async () => {
+        mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
+        mockGetTasks.mockResolvedValue(mockTasksBundle);
+
+        render(
+          <GenericServiceRequestTable
+            config={{
+              orderType: 'Lab Order',
+              showTasks: true,
+              tasksControlConfig: tasksConfig,
+            }}
+          />,
+          { wrapper: createWrapper() },
+        );
+
+        await waitFor(() => {
+          expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+        });
+      });
+
+      it('should show task data when tasks are available', async () => {
+        mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
+        mockGetTasks.mockResolvedValue(mockTasksBundle);
+
+        render(
+          <GenericServiceRequestTable
+            config={{
+              orderType: 'Lab Order',
+              showTasks: true,
+              tasksControlConfig: tasksConfig,
+            }}
+          />,
+          { wrapper: createWrapper() },
+        );
+
+        await waitFor(() => {
+          expect(screen.getByText('Vitals Form')).toBeInTheDocument();
+        });
+      });
+
+      it('should render tasks even though tasksControlConfig is not provided', async () => {
+        mockGetServiceRequests.mockResolvedValue(mockServiceRequestBundle);
+        mockGetTasks.mockResolvedValue(mockTasksBundle);
+
+        render(
+          <GenericServiceRequestTable
+            config={{
+              orderType: 'Lab Order',
+              showTasks: true,
+            }}
+          />,
+          { wrapper: createWrapper() },
+        );
+
+        await waitFor(() => {
+          expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+        });
+      });
     });
   });
 });
