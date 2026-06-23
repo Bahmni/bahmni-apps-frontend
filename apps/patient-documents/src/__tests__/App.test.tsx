@@ -7,7 +7,7 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 jest.mock('@bahmni/design-system', () => ({
-  Loading: () => <div data-testid='loading' />,
+  Loading: () => <div data-testid="loading" />,
   initFontAwesome: jest.fn(),
 }));
 
