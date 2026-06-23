@@ -10,4 +10,10 @@ export default {
     '^react-i18next$': '<rootDir>/../../node_modules/react-i18next',
     '\\.(css|scss)$': 'identity-obj-proxy',
   },
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/**/*.test.{ts,tsx}',
+    '!src/**/*.spec.{ts,tsx}',
+  ],
 };

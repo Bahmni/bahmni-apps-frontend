@@ -43,4 +43,16 @@ describe('App', () => {
 
     expect(screen.getByTestId('index-page')).toBeInTheDocument();
   });
+
+  it('renders the patient-documents route', async () => {
+    render(
+      <MemoryRouter initialEntries={['/patient-documents/']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await act(async () => {});
+
+    expect(screen.getByTestId('patient-documents-page')).toBeInTheDocument();
+  });
 });
