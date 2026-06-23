@@ -1,4 +1,4 @@
-import { CommandPaletteProvider } from '@bahmni/command-palette';
+import { CommandPaletteProvider } from '@bahmni/command-palette-app';
 import { Content, initFontAwesome, Loading } from '@bahmni/design-system';
 import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {

@@ -1,5 +1,5 @@
 export default {
-  displayName: '@bahmni/command-palette',
+  displayName: '@bahmni/command-palette-app',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
   transformIgnorePatterns: [

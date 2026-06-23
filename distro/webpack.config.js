@@ -22,7 +22,7 @@ module.exports = (env, argv) => {
         '@bahmni/clinical-app': join(__dirname, '../apps/clinical/src'),
         '@bahmni/registration-app': join(__dirname, '../apps/registration/src'),
         '@bahmni/appointments-app': join(__dirname, '../apps/appointments/src'),
-        '@bahmni/command-palette': join(__dirname, '../apps/command-palette/src'),
+        '@bahmni/command-palette-app': join(__dirname, '../apps/command-palette/src'),
       } : {},
     },
     devServer: {
