@@ -1,4 +1,8 @@
-import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import {
+  render,
+  screen,
+  waitForElementToBeRemoved,
+} from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 
