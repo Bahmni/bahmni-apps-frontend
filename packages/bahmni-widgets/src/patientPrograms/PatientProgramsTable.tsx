@@ -3,6 +3,7 @@ import {
   useTranslation,
   formatDateTime,
   getPatientProgramsPage,
+  camelToScreamingSnakeCase,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -98,6 +99,22 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
     });
   }, [data?.programs]);
 
+  const renderAttributeValue = (
+    program: PatientProgramViewModel,
+    field: string,
+  ) => {
+    const raw = program.attributes[field];
+    if (!raw) return '-';
+
+    if ((config?.translateValues as string[] | undefined)?.includes(field)) {
+      return t(
+        `PROGRAM_ATTRIBUTE_VALUE_${camelToScreamingSnakeCase(field)}_${camelToScreamingSnakeCase(raw)}`,
+        raw,
+      );
+    }
+    return raw;
+  };
+
   const renderCell = (program: PatientProgramViewModel, cellId: string) => {
     switch (cellId) {
       case 'programName':
@@ -168,7 +185,7 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
             id={`${program.uuid}-${cellId}`}
             data-testid={`${program.uuid}-${cellId}-test-id`}
           >
-            {program.attributes[cellId] ?? '-'}
+            {renderAttributeValue(program, cellId)}
           </span>
         );
     }

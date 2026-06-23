@@ -200,7 +200,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
 
     if (config?.translateValues?.includes(field)) {
       return t(
-        `EOC_ATTRIBUTE_VALUE_${camelToScreamingSnakeCase(field)}_${camelToScreamingSnakeCase(raw)}`,
+        `PROGRAM_ATTRIBUTE_VALUE_${camelToScreamingSnakeCase(field)}_${camelToScreamingSnakeCase(raw)}`,
         raw,
       );
     }

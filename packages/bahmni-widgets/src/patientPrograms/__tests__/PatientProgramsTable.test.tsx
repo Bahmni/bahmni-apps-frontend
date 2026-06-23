@@ -2,6 +2,7 @@ import {
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
 } from '@bahmni/services';
+import * as BahmniServices from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
@@ -323,6 +324,102 @@ describe('PatientProgramsTable', () => {
     });
     const { container } = render(wrapper);
     expect(container).toMatchSnapshot();
+  });
+
+  describe('renderAttributeValue', () => {
+    const mockProgram = {
+      id: 'program-1',
+      uuid: 'program-uuid-1',
+      programName: 'TB Program',
+      dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+      dateCompleted: null,
+      outcomeName: null,
+      outcomeDetails: null,
+      currentStateName: 'Treatment Phase',
+      attributes: {
+        treatmentCategory: 'categoryI',
+      },
+    };
+
+    it('should render raw attribute value when field is not in translateValues', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { programs: [mockProgram], total: 1 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{ fields: ['treatmentCategory'], translateValues: [] }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-uuid-1-treatmentCategory-test-id'),
+      ).toHaveTextContent('categoryI');
+    });
+
+    it('should return "-" for missing attribute when field is in translateValues', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { programs: [mockProgram], total: 1 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: ['missingField'],
+              translateValues: ['missingField'],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-uuid-1-missingField-test-id'),
+      ).toHaveTextContent('-');
+    });
+
+    it('should call t() with correct EOC key and render translated value when field is in translateValues', () => {
+      const mockT = jest.fn((key: string, fallback: string) => fallback);
+      const useTranslationSpy = jest
+        .spyOn(BahmniServices, 'useTranslation')
+        .mockReturnValue({ t: mockT });
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { programs: [mockProgram], total: 1 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: ['treatmentCategory'],
+              translateValues: ['treatmentCategory'],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(mockT).toHaveBeenCalledWith(
+        'PROGRAM_ATTRIBUTE_VALUE_TREATMENT_CATEGORY_CATEGORY_I',
+        'categoryI',
+      );
+      expect(
+        screen.getByTestId('program-uuid-1-treatmentCategory-test-id'),
+      ).toHaveTextContent('categoryI');
+
+      useTranslationSpy.mockRestore();
+    });
   });
 
   describe('Accessibility', () => {
