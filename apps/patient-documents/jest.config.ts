@@ -9,9 +9,11 @@ export default {
     '^i18next$': '<rootDir>/../../node_modules/i18next',
     '^react-i18next$': '<rootDir>/../../node_modules/react-i18next',
     '\\.(css|scss)$': 'identity-obj-proxy',
+    '@bahmni/widgets/styles': 'identity-obj-proxy',
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
+    '!src/index.ts',
     '!src/**/*.d.ts',
     '!src/**/*.test.{ts,tsx}',
     '!src/**/*.spec.{ts,tsx}',
