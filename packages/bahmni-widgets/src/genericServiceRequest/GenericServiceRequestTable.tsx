@@ -17,7 +17,7 @@ import {
   formatDateTime,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
@@ -307,6 +307,7 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                                 episodeOfCareUuids={episodeOfCareUuids}
                                 encounterUuids={encounterUuids}
                                 orderReference={request.id}
+                                showEmptyStateMessage={false}
                               />
                             </td>
                           </tr>

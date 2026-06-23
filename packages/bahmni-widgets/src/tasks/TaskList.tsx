@@ -16,6 +16,7 @@ import styles from './TaskList.module.scss';
 
 interface TaskListProps extends WidgetProps {
   orderReference?: string;
+  showEmptyStateMessage?: boolean;
 }
 
 const mapTaskToViewModel = (
@@ -101,6 +102,7 @@ const TaskList: React.FC<TaskListProps> = ({
   episodeOfCareUuids,
   encounterUuids,
   orderReference,
+  showEmptyStateMessage = true,
 }) => {
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();
@@ -179,6 +181,10 @@ const TaskList: React.FC<TaskListProps> = ({
         {t('TASKS_NOT_FOUND')}
       </div>
     );
+  }
+
+  if (!showEmptyStateMessage && filteredTasks.length === 0 && !isLoading) {
+    return null;
   }
 
   return (
