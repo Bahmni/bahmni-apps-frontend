@@ -84,12 +84,18 @@ export const useFormPatientContext = ({
     const birthtimeOnly = person.birthtime
       ? (person.birthtime.match(/\d{2}:\d{2}:\d{2}/) ?? [])[0]
       : null;
-    const birthdate = birthdateDateOnly
-      ? new Date(birthdateDateOnly).toISOString()
-      : undefined;
-    const birthtime =
+    const birthdateObj = birthdateDateOnly ? new Date(birthdateDateOnly) : null;
+    const birthdate =
+      birthdateObj && !isNaN(birthdateObj.getTime())
+        ? birthdateObj.toISOString()
+        : undefined;
+    const birthtimeObj =
       birthdateDateOnly && birthtimeOnly
-        ? new Date(`${birthdateDateOnly}T${birthtimeOnly}`).toISOString()
+        ? new Date(`${birthdateDateOnly}T${birthtimeOnly}Z`)
+        : null;
+    const birthtime =
+      birthtimeObj && !isNaN(birthtimeObj.getTime())
+        ? birthtimeObj.toISOString()
         : undefined;
 
     return {
