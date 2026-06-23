@@ -45,7 +45,7 @@ export const executeOnFormSaveEvent = (
 
     const formContext: FormEventContext = {
       observations: JSON.parse(JSON.stringify(observations)),
-      patient,
+      patient: { ...patient },
       formName: metadata.name,
       formUuid: metadata.uuid,
       formData: formData,

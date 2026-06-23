@@ -180,7 +180,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   };
 
   const validateAndSave = () => {
-    if (!patientContext) return;
+    if (!patientContext) {
+      setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
+      setValidationErrorMessage(t('OBSERVATION_FORM_LOADING_METADATA_ERROR'));
+      return;
+    }
     if (formContainerRef.current) {
       if (validationErrorType) {
         setValidationErrorType(null);
@@ -429,7 +433,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         onPrimaryButtonClick={
           validationErrorType ? continueAnyway : validateAndSave
         }
-        isPrimaryButtonDisabled={false}
+        isPrimaryButtonDisabled={isPatientLoading || !patientContext}
         secondaryButtonText={t('OBSERVATION_FORM_DISCARD_BUTTON')}
         onSecondaryButtonClick={discard}
         content={formViewContent}
