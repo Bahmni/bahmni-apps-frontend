@@ -29,13 +29,30 @@ export interface FormatDateResult {
   };
 }
 
-/**
- * Calculates age based on a date string in the format yyyy-mm-dd
- * Returns age as an object with years, months, and days properties
- *
- * @param dateString - Birth date string in the format yyyy-mm-dd
- * @returns Age object containing years, months, and days or null if the input is invalid
- */
+export interface AgeDetails {
+  year: number;
+  month: number;
+  day: number;
+  ageInDays: number;
+  ageText: string;
+}
+
+export function computeAgeDetails(birthdate: string): AgeDetails | null {
+  if (!birthdate) return null;
+  const birth = parseISO(birthdate);
+  if (!isValid(birth)) return null;
+  const now = new Date();
+  if (birth > now) return null;
+  const ageInDays = differenceInDays(now, birth);
+  const year = differenceInYears(now, birth);
+  const afterYears = addYears(birth, year);
+  const month = differenceInMonths(now, afterYears);
+  const afterMonths = addMonths(afterYears, month);
+  const day = differenceInDays(now, afterMonths);
+  const ageText = `${year}y ${month}m ${day}d`;
+  return { year, month, day, ageInDays, ageText };
+}
+
 export function calculateAge(dateString: string): Age | null {
   if (
     typeof dateString !== 'string' ||

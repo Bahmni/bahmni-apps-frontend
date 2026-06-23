@@ -1,5 +1,6 @@
 import { ObservationForm } from '@bahmni/services';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import ObservationFormsContainer from '../ObservationFormsContainer';
 
 // Mock the defaultFormNames import
@@ -10,6 +11,13 @@ jest.mock('../ObservationForms', () => ({
 // Mock the hooks used by the component
 jest.mock('../../../../hooks/useObservationFormsSearch');
 jest.mock('../../../../hooks/usePinnedObservationForms');
+
+// Mock useFormPatientContext
+const mockUseFormPatientContext = jest.fn();
+jest.mock('../../../../hooks/useFormPatientContext', () => ({
+  useFormPatientContext: (...args: unknown[]) =>
+    mockUseFormPatientContext(...args),
+}));
 
 // Mock the extracted custom hooks
 const mockUseObservationFormData = jest.fn();
@@ -39,6 +47,9 @@ const mockGetValue = jest.fn();
 // Mock state data for form container
 const mockContainerState = { data: {} };
 
+// Captures the patient prop passed to CarbonContainer most recently
+let lastCarbonContainerPatient: unknown = undefined;
+
 jest.mock('@bahmni/form2-controls', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mockReact = require('react');
@@ -48,6 +59,9 @@ jest.mock('@bahmni/form2-controls', () => {
         getValue: mockGetValue,
         state: mockContainerState,
       }));
+
+      // Capture patient prop for assertions
+      lastCarbonContainerPatient = props.patient;
 
       return (
         <div data-testid="form2-container">
@@ -74,6 +88,7 @@ jest.mock('@bahmni/widgets', () => ({
 jest.mock('../../../../hooks/useClinicalAppData', () => ({
   useClinicalAppData: jest.fn(() => ({
     episodeOfCare: [],
+    activeVisitId: null,
   })),
 }));
 
@@ -196,6 +211,28 @@ describe('ObservationFormsContainer', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    lastCarbonContainerPatient = undefined;
+
+    // Default mock for useFormPatientContext — minimal patient so form renders
+    mockUseFormPatientContext.mockReturnValue({
+      patient: {
+        uuid: 'test-patient-uuid',
+        identifier: null,
+        name: null,
+        display: null,
+        givenName: null,
+        familyName: null,
+        age: null,
+        ageInDays: null,
+        birthdate: null,
+        birthtime: null,
+        gender: null,
+        activeVisitUuid: null,
+        currentEncounterUuid: null,
+      },
+      isLoading: false,
+      error: null,
+    });
 
     // Set default mock for getValue to return no errors
     mockGetValue.mockReturnValue({
@@ -478,6 +515,139 @@ describe('ObservationFormsContainer', () => {
 
       // Verify useObservationFormData was called with undefined
       expect(mockUseObservationFormData).toHaveBeenCalledWith(undefined);
+    });
+
+    it('should pass enriched patient context from useFormPatientContext to CarbonContainer', () => {
+      const enrichedPatient = {
+        uuid: 'test-patient-uuid',
+        identifier: 'BAH-001',
+        name: 'John Doe',
+        display: 'John Doe',
+        givenName: 'John',
+        familyName: 'Doe',
+        age: 30,
+        ageInDays: 10950,
+        birthdate: '1996-01-01',
+        birthtime: '08:00:00',
+        gender: 'M',
+        activeVisitUuid: 'visit-uuid-456',
+        currentEncounterUuid: 'encounter-uuid-789',
+      };
+
+      mockUseFormPatientContext.mockReturnValue({
+        patient: enrichedPatient,
+        isLoading: false,
+        error: null,
+      });
+
+      const mockMetadata = {
+        schema: { name: 'Test Form Schema', controls: [] },
+      };
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: mockMetadata,
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      (useClinicalAppData as jest.Mock).mockReturnValue({
+        episodeOfCare: [],
+        activeVisitId: 'visit-uuid-456',
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          activeEncounterUuid="encounter-uuid-789"
+        />,
+      );
+
+      expect(screen.getByTestId('form2-container')).toBeInTheDocument();
+      expect(lastCarbonContainerPatient).toEqual(enrichedPatient);
+    });
+
+    it('should pass useFormPatientContext enriched patient to executeOnFormSaveEvent', () => {
+      const enrichedPatient = {
+        uuid: 'test-patient-uuid',
+        identifier: 'BAH-001',
+        name: 'John Doe',
+        display: 'John Doe',
+        givenName: 'John',
+        familyName: 'Doe',
+        age: 30,
+        ageInDays: 10950,
+        birthdate: '1996-01-01',
+        birthtime: '08:00:00',
+        gender: 'M',
+        activeVisitUuid: 'visit-uuid-456',
+        currentEncounterUuid: null,
+      };
+
+      mockUseFormPatientContext.mockReturnValue({
+        patient: enrichedPatient,
+        isLoading: false,
+        error: null,
+      });
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: {
+          schema: { name: 'Test Form Schema', controls: [] },
+        },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      mockGetValue.mockReturnValue({
+        errors: [],
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          activeEncounterUuid={null}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      expect(mockExecuteOnFormSaveEvent).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.any(Array),
+        enrichedPatient,
+        expect.anything(),
+      );
+    });
+
+    it('should pass props to useFormPatientContext correctly', () => {
+      (useClinicalAppData as jest.Mock).mockReturnValue({
+        episodeOfCare: [],
+        activeVisitId: 'visit-xyz',
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          activeEncounterUuid="encounter-abc"
+        />,
+      );
+
+      expect(mockUseFormPatientContext).toHaveBeenCalledWith(
+        expect.objectContaining({
+          activeEncounterUuid: 'encounter-abc',
+          activeVisitUuid: 'visit-xyz',
+        }),
+      );
     });
   });
 
