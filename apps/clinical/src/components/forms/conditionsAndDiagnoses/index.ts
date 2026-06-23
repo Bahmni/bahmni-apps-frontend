@@ -1,7 +1,7 @@
 import {
   createConditionsBundleEntries,
   createDiagnosisBundleEntries,
-} from '../../../services/consultationBundleService';
+} from '../../../services/encounterBundleService';
 import { useConditionsAndDiagnosesStore } from '../../../stores';
 import { registerInputControl } from '../registry';
 import ConditionsAndDiagnoses from './ConditionsAndDiagnoses';

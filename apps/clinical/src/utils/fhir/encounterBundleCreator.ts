@@ -1,11 +1,11 @@
 import { BundleEntry, FhirResource } from 'fhir/r4';
-import { ConsultationBundle } from '../../models/consultationBundle';
+import { EncounterBundle } from '../../models/encounterBundle';
 
-export const createConsultationBundle = (
+export const createEncounterBundle = (
   entries: Array<BundleEntry<FhirResource>>,
-): ConsultationBundle => {
+): EncounterBundle => {
   return {
-    resourceType: 'ConsultationBundle',
+    resourceType: 'EncounterBundle',
     type: 'transaction',
     id: crypto.randomUUID(),
     timestamp: new Date().toISOString(),
