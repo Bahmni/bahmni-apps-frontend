@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 
@@ -39,7 +39,7 @@ describe('App', () => {
         <App />
       </MemoryRouter>,
     );
-    await act(async () => {});
+    await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
     expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
   });
 
@@ -52,7 +52,7 @@ describe('App', () => {
         <App />
       </MemoryRouter>,
     );
-    await act(async () => {});
+    await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
     expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
   });
 });
