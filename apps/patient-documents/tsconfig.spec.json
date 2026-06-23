@@ -6,7 +6,6 @@
     "types": ["jest", "node"]
   },
   "include": [
-    "@testing-library/jest-dom",
     "jest.config.ts",
     "setupTests.ts",
     "setupTests.i18n.ts",
