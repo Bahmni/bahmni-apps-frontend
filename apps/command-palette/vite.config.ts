@@ -30,7 +30,7 @@ export default defineConfig(() => ({
     },
     lib: {
       entry: 'src/index.ts',
-      name: '@bahmni/command-palette',
+      name: '@bahmni/command-palette-app',
       fileName: 'index',
       formats: ['es' as const],
     },
