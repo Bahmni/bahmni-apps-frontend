@@ -22,6 +22,7 @@ module.exports = (env, argv) => {
         '@bahmni/clinical-app': join(__dirname, '../apps/clinical/src'),
         '@bahmni/registration-app': join(__dirname, '../apps/registration/src'),
         '@bahmni/appointments-app': join(__dirname, '../apps/appointments/src'),
+        '@bahmni/command-palette-app': join(__dirname, '../apps/command-palette/src'),
       } : {},
     },
     devServer: {
@@ -58,6 +59,7 @@ module.exports = (env, argv) => {
           { input: isDevelopment ? '../apps/clinical/public/locales' : '../apps/clinical/dist/locales', glob: '**/*', output: 'clinical/locales' },
           { input: isDevelopment ? '../apps/registration/public/locales' : '../apps/registration/dist/locales', glob: '**/*', output: 'registration/locales' },
           { input: isDevelopment ? '../apps/appointments/public/locales' : '../apps/appointments/dist/locales', glob: '**/*', output: 'appointments/locales' },
+          { input: isDevelopment ? '../apps/command-palette/public/locales' : '../apps/command-palette/dist/locales', glob: '**/*', output: 'command-palette/locales' },
         ],
         styles: ['./src/styles.scss'],
         outputHashing:
