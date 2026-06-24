@@ -2,8 +2,6 @@ import {
   BaseLayout,
   Button,
   Header,
-  Icon,
-  ICON_SIZE,
   Link,
   Loading,
   SkeletonText,
@@ -27,6 +25,7 @@ import {
   SearchPatient,
   useNotification,
   useUserPrivilege,
+  UserGlobalAction,
 } from '@bahmni/widgets';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -294,14 +293,6 @@ const PatientSearchPage: React.FC = () => {
       isCurrentPage: true,
     },
   ];
-  const globalActions = [
-    {
-      id: 'user',
-      label: 'user',
-      renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.LG} />,
-      onClick: () => {},
-    },
-  ];
   const emptyMessage = isAdvancedSearch
     ? t('REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE', {
         searchTerm: searchTerm,
@@ -314,7 +305,10 @@ const PatientSearchPage: React.FC = () => {
     <BaseLayout
       header={
         <>
-          <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
+          <Header
+            breadcrumbItems={breadcrumbs}
+            userMenu={<UserGlobalAction />}
+          />
           <Button
             onClick={handleCreateNewPatient}
             size="md"
