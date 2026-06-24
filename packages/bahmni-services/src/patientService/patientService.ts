@@ -161,7 +161,9 @@ export const formatPatientData = (patient: Patient): FormattedPatientData => {
       identifierMap.set(id.type.text, id.value);
     }
   });
-  const identifier = fhirIdentifiers[0]?.value ?? null;
+  const identifier =
+    (fhirIdentifiers.find((id) => id.use === 'official') ?? fhirIdentifiers[0])
+      ?.value ?? null;
 
   const nameObj = patient.name?.[0] ?? null;
   const givenName = nameObj?.given?.join(' ') ?? null;

@@ -847,6 +847,63 @@ describe('Patient Service', () => {
 
       expect(result.identifiers.size).toBe(0);
     });
+
+    it('should select official identifier over the first when use=official is present', () => {
+      const patient: Patient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        identifier: [
+          { type: { text: 'Extra' }, value: 'EXTRA-001' },
+          { use: 'official', type: { text: 'Primary' }, value: 'BAH-002' },
+          { type: { text: 'Secondary' }, value: 'SEC-003' },
+        ],
+      };
+
+      const result = formatPatientData(patient);
+
+      expect(result.identifier).toBe('BAH-002');
+    });
+
+    it('should fall back to first identifier when no official identifier exists', () => {
+      const patient: Patient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        identifier: [
+          { type: { text: 'First' }, value: 'FIRST-001' },
+          { type: { text: 'Second' }, value: 'SEC-002' },
+        ],
+      };
+
+      const result = formatPatientData(patient);
+
+      expect(result.identifier).toBe('FIRST-001');
+    });
+
+    it('should concatenate multiple given names into givenName and fullName', () => {
+      const patient: Patient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        name: [{ given: ['John', 'Michael'], family: 'Doe' }],
+      };
+
+      const result = formatPatientData(patient);
+
+      expect(result.givenName).toBe('John Michael');
+      expect(result.familyName).toBe('Doe');
+      expect(result.fullName).toBe('John Michael Doe');
+    });
+
+    it('should return null age fields when birthDate is absent', () => {
+      const patient: Patient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+      };
+
+      const result = formatPatientData(patient);
+
+      expect(result.birthDate).toBeNull();
+      expect(result.birthtime).toBeNull();
+    });
   });
 
   describe('searchPatientByCustomAttribute', () => {

@@ -41,6 +41,21 @@ import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationFo
 import styles from './styles/ObservationFormsContainer.module.scss';
 import { executeOnFormSaveEvent } from './utils/formEventExecutor';
 
+const AGE_DETAILS_DEFAULT: AgeDetails = {
+  year: 0,
+  month: 0,
+  day: 0,
+  ageInDays: 0,
+  ageText: '',
+};
+
+const mapGenderFromFhir = (fhirGender: string): string => {
+  if (fhirGender === 'male') return 'M';
+  if (fhirGender === 'female') return 'F';
+  if (fhirGender === 'other') return 'O';
+  return 'U';
+};
+
 interface ObservationFormsContainerProps {
   onViewingFormChange: (viewingForm: ObservationForm | null) => void;
   viewingForm?: ObservationForm | null;
@@ -78,22 +93,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     enabled: !!patientUUID,
   });
 
-  const AGE_DETAILS_DEFAULT: AgeDetails = {
-    year: 0,
-    month: 0,
-    day: 0,
-    ageInDays: 0,
-    ageText: '',
-  };
-
   const patientContext = useMemo(() => {
     if (!fhirPatient || !patientUUID) return null;
     const ageDetails = fhirPatient.birthDate
       ? computeAgeDetails(fhirPatient.birthDate)
       : null;
-    const birthdate = fhirPatient.birthDate
-      ? new Date(fhirPatient.birthDate).toISOString()
-      : undefined;
     return {
       uuid: patientUUID,
       identifier: fhirPatient.identifier ?? undefined,
@@ -102,9 +106,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       familyName: fhirPatient.familyName ?? undefined,
       age: ageDetails?.year,
       ageInDays: ageDetails?.ageInDays,
-      birthdate,
+      birthdate: fhirPatient.birthDate ?? undefined,
       birthtime: fhirPatient.birthtime ?? undefined,
-      gender: fhirPatient.gender ?? undefined,
+      gender: fhirPatient.gender
+        ? mapGenderFromFhir(fhirPatient.gender)
+        : undefined,
       activeVisitUuid: activeVisitId ?? undefined,
       currentEncounterUuid: activeEncounterUuid ?? undefined,
       getAgeDetails: () => ageDetails ?? AGE_DETAILS_DEFAULT,
@@ -213,7 +219,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   };
 
   const validateAndSave = () => {
-    if (!patientContext) return;
     if (formContainerRef.current) {
       if (validationErrorType) {
         setValidationErrorType(null);

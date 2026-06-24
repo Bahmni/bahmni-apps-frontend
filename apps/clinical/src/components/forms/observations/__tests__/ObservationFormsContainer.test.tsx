@@ -4,8 +4,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import ObservationFormsContainer from '../ObservationFormsContainer';
 
-// Mock useQuery from react-query
-
 // Mock the defaultFormNames import
 jest.mock('../ObservationForms', () => ({
   defaultFormNames: ['History and Examination', 'Vitals'],
@@ -560,7 +558,7 @@ describe('ObservationFormsContainer', () => {
           display: 'John Doe',
           givenName: 'John',
           familyName: 'Doe',
-          gender: 'male',
+          gender: 'M',
           activeVisitUuid: 'visit-uuid-456',
           currentEncounterUuid: 'encounter-uuid-789',
         }),
