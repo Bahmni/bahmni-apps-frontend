@@ -21,6 +21,7 @@
   "STATUS_COMPLETED": "Completado",
   "STATUS_READY_FOR_PICKUP": "Listo para recoger",
   "STATUS_ON_HOLD": "En espera",
+  "STATUS_CANCELLED": "Cancelado",
   "URGENT": "Urgente",
   "UNASSIGNED": "Sin Asignar",
   "NO_ORDERS_FOUND": "No se encontraron órdenes",

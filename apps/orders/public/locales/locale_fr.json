@@ -21,6 +21,7 @@
   "STATUS_COMPLETED": "Terminé",
   "STATUS_READY_FOR_PICKUP": "Prêt à être récupéré",
   "STATUS_ON_HOLD": "En attente",
+  "STATUS_CANCELLED": "Annulé",
   "URGENT": "Urgent",
   "UNASSIGNED": "Non Assigné",
   "NO_ORDERS_FOUND": "Aucune ordonnance trouvée",
