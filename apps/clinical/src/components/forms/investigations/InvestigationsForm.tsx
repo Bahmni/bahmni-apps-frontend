@@ -3,9 +3,22 @@ import {
   Tile,
   BoxWHeader,
   SelectedItem,
+  InlineNotification,
 } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
-import { useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
+import {
+  useTranslation,
+  get,
+  OPENMRS_FHIR_R4,
+  useEncounterSessionStore,
+  useSubscribeConsultationSaved,
+} from '@bahmni/services';
+import {
+  useHasPrivilege,
+  usePatientUUID,
+  CONSULTATION_PAD_PRIVILEGES,
+} from '@bahmni/widgets';
+import { useQuery } from '@tanstack/react-query';
+import type { Bundle, ServiceRequest } from 'fhir/r4';
 import React, { useMemo, useCallback, useState } from 'react';
 import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
 import type { FlattenedInvestigations } from '../../../models/investigations';
@@ -15,6 +28,7 @@ import styles from './styles/InvestigationsForm.module.scss';
 
 const InvestigationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
+  const patientUUID = usePatientUUID();
   const canAddInvestigations = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS,
   );
@@ -22,6 +36,41 @@ const InvestigationsForm: React.FC = React.memo(() => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedInvestigationItem, setSelectedInvestigationItem] =
     useState<FlattenedInvestigations | null>(null);
+  const [showDuplicateNotification, setShowDuplicateNotification] =
+    useState(false);
+
+  const { activeEncounter, matchReasons } = useEncounterSessionStore();
+  const isActiveEncounterSession = matchReasons.includes('MATCHED');
+  const activeEncounterUuid = isActiveEncounterSession
+    ? activeEncounter?.id
+    : undefined;
+
+  const { data: existingOrders, refetch: refetchExistingOrders } = useQuery({
+    queryKey: ['encounterServiceRequests', activeEncounterUuid, patientUUID],
+    enabled: !!activeEncounterUuid && !!patientUUID && canAddInvestigations,
+    queryFn: () =>
+      get<Bundle<ServiceRequest>>(
+        `${OPENMRS_FHIR_R4}/ServiceRequest?encounter=${activeEncounterUuid}&patient=${patientUUID}&_count=200`,
+      ),
+  });
+
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (payload.patientUUID === patientUUID) {
+        refetchExistingOrders();
+      }
+    },
+    [patientUUID, refetchExistingOrders],
+  );
+
+  const existingOrderCodes = useMemo(() => {
+    if (!existingOrders?.entry) return new Set<string>();
+    return new Set(
+      existingOrders.entry
+        .map((e) => e.resource?.code?.coding?.[0]?.code)
+        .filter((code): code is string => !!code),
+    );
+  }, [existingOrders]);
 
   const { investigations, isLoading, error } =
     useInvestigationsSearch(searchTerm);
@@ -40,6 +89,17 @@ const InvestigationsForm: React.FC = React.memo(() => {
       });
     },
     [t],
+  );
+
+  const isAlreadySelected = useCallback(
+    (code: string): boolean => {
+      const isInFormState = Array.from(selectedServiceRequests.values())
+        .flat()
+        .some((entry) => entry.id === code);
+      const isInActiveEncounter = existingOrderCodes.has(code);
+      return isInFormState || isInActiveEncounter;
+    },
+    [selectedServiceRequests, existingOrderCodes],
   );
 
   const arrangeFilteredInvestigationsByCategory = useCallback(
@@ -110,7 +170,18 @@ const InvestigationsForm: React.FC = React.memo(() => {
       ];
     }
 
-    return arrangeFilteredInvestigationsByCategory(investigations);
+    return arrangeFilteredInvestigationsByCategory(investigations).map(
+      (item) => {
+        if (item.code !== '' && isAlreadySelected(item.code)) {
+          return {
+            ...item,
+            disabled: true,
+            display: `${item.display} (${t('INVESTIGATION_ALREADY_ADDED')})`,
+          };
+        }
+        return item;
+      },
+    );
   }, [
     investigations,
     searchTerm,
@@ -118,12 +189,19 @@ const InvestigationsForm: React.FC = React.memo(() => {
     error,
     t,
     arrangeFilteredInvestigationsByCategory,
+    isAlreadySelected,
   ]);
 
   const handleChange = (
     selectedItem: FlattenedInvestigations | null | undefined,
   ) => {
+    setShowDuplicateNotification(false);
     if (!selectedItem?.code) return;
+
+    if (isAlreadySelected(selectedItem.code)) {
+      setShowDuplicateNotification(true);
+      return;
+    }
 
     addServiceRequest(
       selectedItem.category,
@@ -162,6 +240,16 @@ const InvestigationsForm: React.FC = React.memo(() => {
         aria-label={t('INVESTIGATIONS_SEARCH_ARIA_LABEL')}
         size="md"
       />
+      {showDuplicateNotification && (
+        <InlineNotification
+          kind="error"
+          lowContrast
+          subtitle={t('INVESTIGATION_ALREADY_ADDED')}
+          onClose={() => setShowDuplicateNotification(false)}
+          hideCloseButton={false}
+          className={styles.duplicateNotification}
+        />
+      )}
 
       {selectedServiceRequests &&
         selectedServiceRequests.size > 0 &&
