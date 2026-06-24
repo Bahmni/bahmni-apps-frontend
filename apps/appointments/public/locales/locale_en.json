@@ -67,5 +67,8 @@
   "CONFIG_ERROR_SCHEMA_VALIDATION_FAILED": "Configuration does not match required schema",
   "CONFIG_ERROR_VALIDATION_FAILED": "Configuration validation failed",
   "ERROR_CONFIG_GENERIC_MESSAGE": "Unable to load {{config}}. Please try refreshing the page.",
-  "ERROR_CONFIG_TITLE": "{{config}} Error"
+  "ERROR_CONFIG_TITLE": "{{config}} Error",
+  "USER_GLOBAL_ACTION_BUTTON": "User menu",
+  "USER_GLOBAL_ACTION_MENU": "User actions",
+  "USER_LOGOUT_GLOBAL_ACTION": "Logout"
 }
