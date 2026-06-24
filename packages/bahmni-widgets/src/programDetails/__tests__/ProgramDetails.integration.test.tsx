@@ -28,6 +28,14 @@ jest.mock('@bahmni/services', () => ({
 }));
 jest.mock('../../notification');
 
+const detailFields = [
+  { name: 'programName' },
+  { name: 'Registration Number' },
+  { name: 'Treatment Category' },
+  { name: 'startDate' },
+  { name: 'state' },
+];
+
 describe('ProgramDetails Integration', () => {
   const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
@@ -67,15 +75,7 @@ describe('ProgramDetails Integration', () => {
     renderWithProviders(
       <ProgramDetails
         programUUID="enrollment-uuid-2"
-        config={{
-          fields: [
-            'programName',
-            'Registration Number',
-            'Treatment Category',
-            'startDate',
-            'state',
-          ],
-        }}
+        config={{ fields: detailFields }}
       />,
     );
 
@@ -110,7 +110,12 @@ describe('ProgramDetails Integration', () => {
       <ProgramDetails
         programUUID="enrollment-uuid-1"
         config={{
-          fields: ['programName', 'startDate', 'endDate', 'state'],
+          fields: [
+            { name: 'programName' },
+            { name: 'startDate' },
+            { name: 'endDate' },
+            { name: 'state' },
+          ],
         }}
       />,
     );
@@ -163,15 +168,7 @@ describe('ProgramDetails Integration', () => {
     renderWithProviders(
       <ProgramDetails
         programUUID="enrollment-uuid-2"
-        config={{
-          fields: [
-            'programName',
-            'Registration Number',
-            'Treatment Category',
-            'startDate',
-            'state',
-          ],
-        }}
+        config={{ fields: detailFields }}
       />,
     );
 
@@ -220,15 +217,7 @@ describe('ProgramDetails Integration', () => {
     renderWithProviders(
       <ProgramDetails
         programUUID="enrollment-uuid-2"
-        config={{
-          fields: [
-            'programName',
-            'Registration Number',
-            'Treatment Category',
-            'startDate',
-            'state',
-          ],
-        }}
+        config={{ fields: detailFields }}
       />,
     );
 
@@ -270,15 +259,7 @@ describe('ProgramDetails Integration', () => {
     renderWithProviders(
       <ProgramDetails
         programUUID="enrollment-uuid-2"
-        config={{
-          fields: [
-            'programName',
-            'Registration Number',
-            'Treatment Category',
-            'startDate',
-            'state',
-          ],
-        }}
+        config={{ fields: detailFields }}
       />,
     );
 

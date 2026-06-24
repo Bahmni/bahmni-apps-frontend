@@ -63,8 +63,13 @@ describe('ProgramDetails', () => {
       <ProgramDetails
         programUUID="test-program-uuid"
         config={{
-          fields: ['programName', 'startDate', 'endDate', 'state', 'outcome'],
-          translateValues: [],
+          fields: [
+            { name: 'programName' },
+            { name: 'startDate' },
+            { name: 'endDate' },
+            { name: 'state' },
+            { name: 'outcome' },
+          ],
         }}
       />
     </QueryClientProvider>
@@ -106,13 +111,12 @@ describe('ProgramDetails', () => {
           programUUID=""
           config={{
             fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
+              { name: 'programName' },
+              { name: 'Registration Number' },
+              { name: 'Treatment Category' },
+              { name: 'startDate' },
+              { name: 'state' },
             ],
-            translateValues: [],
           }}
         />
       </QueryClientProvider>
@@ -169,13 +173,12 @@ describe('ProgramDetails', () => {
           programUUID="test-program-uuid"
           config={{
             fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
+              { name: 'programName' },
+              { name: 'Registration Number' },
+              { name: 'Treatment Category' },
+              { name: 'startDate' },
+              { name: 'state' },
             ],
-            translateValues: [],
           }}
         />
       </QueryClientProvider>
@@ -547,8 +550,7 @@ describe('ProgramDetails', () => {
           <ProgramDetails
             programUUID="test-program-uuid"
             config={{
-              fields: ['treatmentCategory'],
-              translateValues: [],
+              fields: [{ name: 'treatmentCategory' }],
             }}
           />
         </QueryClientProvider>,
@@ -572,8 +574,7 @@ describe('ProgramDetails', () => {
           <ProgramDetails
             programUUID="test-program-uuid"
             config={{
-              fields: ['missingField'],
-              translateValues: ['missingField'],
+              fields: [{ name: 'missingField', translateValues: true }],
             }}
           />
         </QueryClientProvider>,
@@ -602,8 +603,7 @@ describe('ProgramDetails', () => {
           <ProgramDetails
             programUUID="test-program-uuid"
             config={{
-              fields: ['treatmentCategory'],
-              translateValues: ['treatmentCategory'],
+              fields: [{ name: 'treatmentCategory', translateValues: true }],
             }}
           />
         </QueryClientProvider>,

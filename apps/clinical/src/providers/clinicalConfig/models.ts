@@ -42,9 +42,13 @@ export interface Dashboard {
   printOptions?: PrintOption[];
 }
 
+export interface ProgramField {
+  name: string;
+  translateValues?: boolean;
+}
+
 export interface ProgramConfig {
-  fields: string[];
-  translateValues?: string[];
+  fields: ProgramField[];
 }
 
 export interface ContextInformation {

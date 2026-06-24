@@ -22,7 +22,7 @@ import React, { useMemo, useState } from 'react';
 import { useNotification } from '../notification';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { EDIT_PATIENT_PROGRAMS_PRIVILEGE, KNOWN_FIELDS } from './constants';
-import { ProgramDetailsViewModel } from './model';
+import { ProgramDetailsViewModel, ProgramField } from './model';
 import styles from './styles/ProgramDetails.module.scss';
 import {
   createProgramDetailsViewModel,
@@ -43,8 +43,7 @@ const fetchProgramDetails = async (
 interface ProgramDetailsProps {
   programUUID: string;
   config: {
-    fields: string[];
-    translateValues: string[];
+    fields: ProgramField[];
   };
 }
 
@@ -110,8 +109,8 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     if (!config?.fields || config.fields.length === 0) return {};
     return config.fields.reduce(
       (acc, field) => {
-        acc[field] = t(
-          `PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field)}`,
+        acc[field.name] = t(
+          `PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field.name)}`,
         );
         return acc;
       },
@@ -198,7 +197,8 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     const raw = data?.attributes?.[field];
     if (!raw) return '-';
 
-    if (config?.translateValues?.includes(field)) {
+    const fieldConfig = config?.fields?.find((f) => f.name === field);
+    if (fieldConfig?.translateValues) {
       return t(
         `PROGRAM_ATTRIBUTE_VALUE_${camelToScreamingSnakeCase(field)}_${camelToScreamingSnakeCase(raw)}`,
         raw,

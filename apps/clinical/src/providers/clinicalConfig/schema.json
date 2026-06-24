@@ -122,14 +122,19 @@
               "type": "array",
               "description": "List of fields to display in program details",
               "items": {
-                "type": "string"
-              }
-            },
-            "translateValues": {
-              "type": "array",
-              "description": "List of fields whose values should be translated",
-              "items": {
-                "type": "string"
+                "type": "object",
+                "required": ["name"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Field name to display"
+                  },
+                  "translateValues": {
+                    "type": "boolean",
+                    "description": "Whether to translate the value of this field"
+                  }
+                }
               }
             }
           }

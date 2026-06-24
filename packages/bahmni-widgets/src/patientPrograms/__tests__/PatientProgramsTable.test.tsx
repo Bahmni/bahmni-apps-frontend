@@ -49,7 +49,13 @@ describe('PatientProgramsTable', () => {
     <QueryClientProvider client={queryClient}>
       <PatientProgramsTable
         config={{
-          fields: ['programName', 'startDate', 'endDate', 'state', 'outcome'],
+          fields: [
+            { name: 'programName' },
+            { name: 'startDate' },
+            { name: 'endDate' },
+            { name: 'state' },
+            { name: 'outcome' },
+          ],
         }}
       />
     </QueryClientProvider>
@@ -157,11 +163,11 @@ describe('PatientProgramsTable', () => {
         <PatientProgramsTable
           config={{
             fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
+              { name: 'programName' },
+              { name: 'Registration Number' },
+              { name: 'Treatment Category' },
+              { name: 'startDate' },
+              { name: 'state' },
             ],
           }}
         />
@@ -243,7 +249,10 @@ describe('PatientProgramsTable', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
-            config={{ fields: ['programName', 'startDate'], pageSize: 1 }}
+            config={{
+              fields: [{ name: 'programName' }, { name: 'startDate' }],
+              pageSize: 1,
+            }}
           />
         </QueryClientProvider>,
       );
@@ -262,7 +271,10 @@ describe('PatientProgramsTable', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
-            config={{ fields: ['programName', 'startDate'], pageSize: 10 }}
+            config={{
+              fields: [{ name: 'programName' }, { name: 'startDate' }],
+              pageSize: 10,
+            }}
           />
         </QueryClientProvider>,
       );
@@ -279,7 +291,10 @@ describe('PatientProgramsTable', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
-            config={{ fields: ['programName', 'startDate'], pageSize: 2 }}
+            config={{
+              fields: [{ name: 'programName' }, { name: 'startDate' }],
+              pageSize: 2,
+            }}
           />
         </QueryClientProvider>,
       );
@@ -352,7 +367,7 @@ describe('PatientProgramsTable', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
-            config={{ fields: ['treatmentCategory'], translateValues: [] }}
+            config={{ fields: [{ name: 'treatmentCategory' }] }}
           />
         </QueryClientProvider>,
       );
@@ -374,8 +389,7 @@ describe('PatientProgramsTable', () => {
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
             config={{
-              fields: ['missingField'],
-              translateValues: ['missingField'],
+              fields: [{ name: 'missingField', translateValues: true }],
             }}
           />
         </QueryClientProvider>,
@@ -403,8 +417,7 @@ describe('PatientProgramsTable', () => {
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
             config={{
-              fields: ['treatmentCategory'],
-              translateValues: ['treatmentCategory'],
+              fields: [{ name: 'treatmentCategory', translateValues: true }],
             }}
           />
         </QueryClientProvider>,
