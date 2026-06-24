@@ -297,6 +297,34 @@ describe('RelationshipRow', () => {
     // (verified by the component rendering without errors)
   });
 
+  describe('Till date picker minDate (BAH-4773)', () => {
+    it('should set minDate to the start of today so today remains selectable after switching dates', () => {
+      const row = RelationshipRow({
+        relationship: mockRelationship,
+        relationshipTypes: mockRelationshipTypes,
+        suggestions: mockSuggestions,
+        errors: mockErrors,
+        ...mockCallbacks,
+      });
+
+      const minDate = row.tillDate.props.minDate as Date;
+      expect(minDate).toBeInstanceOf(Date);
+
+      // Regression: new Date() carried the current time, so today at midnight
+      // was treated as earlier than minDate by flatpickr and got rejected.
+      // minDate must be normalised to the start of today.
+      expect(minDate.getHours()).toBe(0);
+      expect(minDate.getMinutes()).toBe(0);
+      expect(minDate.getSeconds()).toBe(0);
+      expect(minDate.getMilliseconds()).toBe(0);
+
+      const today = new Date();
+      expect(minDate.getFullYear()).toBe(today.getFullYear());
+      expect(minDate.getMonth()).toBe(today.getMonth());
+      expect(minDate.getDate()).toBe(today.getDate());
+    });
+  });
+
   describe('Existing relationships', () => {
     const existingRelationship: RelationshipData = {
       id: 'rel-existing',
