@@ -55,7 +55,6 @@ export const UserGlobalAction = () => {
         onClick={() => setIsOpen(true)}
         label={t('USER_GLOBAL_ACTION_BUTTON')}
         align="bottom-end"
-        autoAlign
       >
         <Icon
           id="user-icon"

@@ -355,9 +355,9 @@ export const getValueType = (value: string | number): string => {
  */
 export function camelToScreamingSnakeCase(str: string): string {
   return str
-    .replaceAll(/\s+/g, '_')
-    .replaceAll(/([a-z])([A-Z])/g, '$1_$2')
-    .replaceAll(/([A-Z])([A-Z][a-z])/g, '$1_$2')
+    .replace(/[\s-]+/g, '_')
+    .replace(/([a-z])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
     .toUpperCase();
 }
 
