@@ -57,6 +57,9 @@ export const RelationshipRow = ({
 }: RelationshipRowProps) => {
   const isExisting = relationship.isExisting === true;
 
+  const minSelectableDate = new Date();
+  minSelectableDate.setHours(0, 0, 0, 0);
+
   const relationshipTypeDisplay = isExisting
     ? relationship.relationshipTypeLabel
     : relationshipTypes.find((rt) => rt.uuid === relationship.relationshipType)
@@ -167,7 +170,7 @@ export const RelationshipRow = ({
       <DatePicker
         datePickerType="single"
         value={relationship.tillDate}
-        minDate={new Date()}
+        minDate={minSelectableDate}
         data-testid="new-relationship-till-date-picker"
         onChange={(dates) => {
           if (dates[0]) {
