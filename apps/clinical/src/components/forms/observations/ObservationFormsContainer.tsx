@@ -15,13 +15,17 @@ import {
   ObservationForm,
   Form2Observation,
   getFormattedError,
+  getFormattedPatientById,
   getUserPreferredLocale,
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  type AgeDetails,
+  computeAgeDetails,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
-import React, { useState, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   DEFAULT_FORM_API_NAMES,
@@ -31,7 +35,6 @@ import {
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
-import { useFormPatientContext } from '../../../hooks/useFormPatientContext';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
@@ -68,15 +71,45 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const patientUUID = usePatientUUID();
   const { user } = useActivePractitioner();
   const { episodeOfCare, activeVisitId } = useClinicalAppData();
-  const {
-    patient: patientContext,
-    isLoading: isPatientLoading,
-    error: patientError,
-  } = useFormPatientContext({
-    patientUUID,
-    activeVisitUuid: activeVisitId,
-    activeEncounterUuid,
+
+  const { data: fhirPatient } = useQuery({
+    queryKey: ['patient', patientUUID],
+    queryFn: () => getFormattedPatientById(patientUUID!),
+    enabled: !!patientUUID,
   });
+
+  const AGE_DETAILS_DEFAULT: AgeDetails = {
+    year: 0,
+    month: 0,
+    day: 0,
+    ageInDays: 0,
+    ageText: '',
+  };
+
+  const patientContext = useMemo(() => {
+    if (!fhirPatient || !patientUUID) return null;
+    const ageDetails = fhirPatient.birthDate
+      ? computeAgeDetails(fhirPatient.birthDate)
+      : null;
+    const birthdate = fhirPatient.birthDate
+      ? new Date(fhirPatient.birthDate).toISOString()
+      : undefined;
+    return {
+      uuid: patientUUID,
+      identifier: fhirPatient.identifier ?? undefined,
+      display: fhirPatient.fullName ?? undefined,
+      givenName: fhirPatient.givenName ?? undefined,
+      familyName: fhirPatient.familyName ?? undefined,
+      age: ageDetails?.year,
+      ageInDays: ageDetails?.ageInDays,
+      birthdate,
+      birthtime: fhirPatient.birthtime ?? undefined,
+      gender: fhirPatient.gender ?? undefined,
+      activeVisitUuid: activeVisitId ?? undefined,
+      currentEncounterUuid: activeEncounterUuid ?? undefined,
+      getAgeDetails: () => ageDetails ?? AGE_DETAILS_DEFAULT,
+    };
+  }, [fhirPatient, patientUUID, activeVisitId, activeEncounterUuid]);
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const { forms: allForms, isLoading: isAllFormsLoading } =
     useObservationFormsSearch('', episodeOfCareUuids);
@@ -180,11 +213,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   };
 
   const validateAndSave = () => {
-    if (!patientContext) {
-      setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
-      setValidationErrorMessage(t('OBSERVATION_FORM_LOADING_METADATA_ERROR'));
-      return;
-    }
+    if (!patientContext) return;
     if (formContainerRef.current) {
       if (validationErrorType) {
         setValidationErrorType(null);
@@ -370,14 +399,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         className={styles.formContent}
         data-testid="observation-form-content"
       >
-        {isLoadingMetadata || isPatientLoading ? (
+        {isLoadingMetadata ? (
           <SkeletonText
             width="100%"
             lineCount={3}
             data-testid="observation-form-loading"
           />
-        ) : error || patientError ? (
-          <div>{(error ?? patientError)!.message}</div>
+        ) : error ? (
+          <div>{error.message}</div>
         ) : formMetadata && patientUUID && patientContext ? (
           <CarbonContainer
             ref={formContainerRef}
@@ -433,7 +462,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         onPrimaryButtonClick={
           validationErrorType ? continueAnyway : validateAndSave
         }
-        isPrimaryButtonDisabled={isPatientLoading || !patientContext}
+        isPrimaryButtonDisabled={false}
         secondaryButtonText={t('OBSERVATION_FORM_DISCARD_BUTTON')}
         onSecondaryButtonClick={discard}
         content={formViewContent}

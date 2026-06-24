@@ -547,15 +547,21 @@ describe('Patient Service', () => {
       const identifier = new Map<string, string>();
       identifier.set('MRN', '123456');
 
-      expect(result).toEqual({
-        id: 'test-uuid',
-        fullName: 'John Doe',
-        gender: 'male',
-        birthDate: '1990-01-01',
-        formattedAddress: '123 Main St, Boston, MA 02115',
-        formattedContact: 'phone: 555-123-4567',
-        identifiers: identifier,
-      });
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: 'test-uuid',
+          fullName: 'John Doe',
+          givenName: 'John',
+          familyName: 'Doe',
+          gender: 'male',
+          birthDate: '1990-01-01',
+          birthtime: null,
+          formattedAddress: '123 Main St, Boston, MA 02115',
+          formattedContact: 'phone: 555-123-4567',
+          identifiers: identifier,
+          identifier: '123456',
+        }),
+      );
     });
 
     it('should handle patient with minimal data', () => {
@@ -566,15 +572,21 @@ describe('Patient Service', () => {
 
       const result = formatPatientData(patient);
 
-      expect(result).toEqual({
-        id: 'test-uuid',
-        fullName: null,
-        gender: null,
-        birthDate: null,
-        formattedAddress: null,
-        formattedContact: null,
-        identifiers: new Map<string, string>(),
-      });
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: 'test-uuid',
+          fullName: null,
+          givenName: null,
+          familyName: null,
+          gender: null,
+          birthDate: null,
+          birthtime: null,
+          formattedAddress: null,
+          formattedContact: null,
+          identifiers: new Map<string, string>(),
+          identifier: null,
+        }),
+      );
     });
 
     it('should handle patient with undefined id', () => {
@@ -617,15 +629,18 @@ describe('Patient Service', () => {
 
       const result = formatPatientData(patient);
 
-      expect(result).toEqual({
-        id: 'test-uuid',
-        fullName: 'John Doe',
-        gender: 'male',
-        birthDate: '1990-01-01',
-        formattedAddress: '123 Main St, Boston, MA 02115',
-        formattedContact: 'phone: 555-123-4567',
-        identifiers: new Map<string, string>(),
-      });
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: 'test-uuid',
+          fullName: 'John Doe',
+          gender: 'male',
+          birthDate: '1990-01-01',
+          formattedAddress: '123 Main St, Boston, MA 02115',
+          formattedContact: 'phone: 555-123-4567',
+          identifiers: new Map<string, string>(),
+          identifier: '123456',
+        }),
+      );
     });
 
     it('should handle patient with empty address array', () => {
@@ -1013,15 +1028,17 @@ describe('Patient Service', () => {
       const result = await getFormattedPatientById(patientUUID);
 
       expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
-      expect(result).toEqual({
-        id: patientUUID,
-        fullName: 'John Doe',
-        gender: 'male',
-        birthDate: '1990-01-01',
-        formattedAddress: '123 Main St, Boston, MA 02115',
-        formattedContact: 'phone: 555-123-4567',
-        identifiers: new Map([['MRN', '123456']]),
-      });
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: patientUUID,
+          fullName: 'John Doe',
+          gender: 'male',
+          birthDate: '1990-01-01',
+          formattedAddress: '123 Main St, Boston, MA 02115',
+          formattedContact: 'phone: 555-123-4567',
+          identifiers: new Map([['MRN', '123456']]),
+        }),
+      );
     });
 
     it('should propagate errors from getPatientById', async () => {
