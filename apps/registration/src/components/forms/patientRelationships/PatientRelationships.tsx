@@ -1,6 +1,7 @@
 import { Button, SimpleDataTable } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useImperativeHandle } from 'react';
+import { useParams } from 'react-router-dom';
 import { RelationshipRow } from './RelationshipRow';
 import styles from './styles/index.module.scss';
 import { usePatientRelationship } from './usePatientRelationship';
@@ -41,6 +42,10 @@ export const PatientRelationships = ({
   ref,
 }: PatientRelationshipsProps) => {
   const { t } = useTranslation();
+
+  const { patientUuid: currentPatientUuid } = useParams<{
+    patientUuid: string;
+  }>();
 
   const {
     relationships,
@@ -88,10 +93,24 @@ export const PatientRelationships = ({
     { key: RELATIONSHIP_FIELDS.ACTIONS, header: t('REGISTRATION_ACTIONS') },
   ];
 
+  const selectedPatientUuids = new Set(
+    relationships
+      .filter((rel) => !rel.isDeleted && rel.patientUuid)
+      .map((rel) => rel.patientUuid),
+  );
+
   const rows = relationships
     .filter((rel) => !rel.isDeleted)
     .map((rel) => {
-      const suggestions = getPatientSuggestions(rel.id);
+      const excludedUuids = new Set(selectedPatientUuids);
+      excludedUuids.delete(rel.patientUuid);
+      if (currentPatientUuid) {
+        excludedUuids.add(currentPatientUuid);
+      }
+
+      const suggestions = getPatientSuggestions(rel.id).filter(
+        (suggestion) => !excludedUuids.has(suggestion.id),
+      );
       const rowErrors = validationErrors[rel.id] ?? {};
 
       return RelationshipRow({
