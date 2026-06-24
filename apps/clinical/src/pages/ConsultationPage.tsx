@@ -107,12 +107,6 @@ const ConsultationPage: React.FC = () => {
         ),
         onClick: handleSearchOpen,
       },
-      {
-        id: 'user',
-        label: t('GLOBAL_ACTION_USER'),
-        renderIcon: <UserGlobalAction />,
-        onClick: () => {},
-      },
     ],
     [handleSearchOpen, t],
   );
@@ -301,6 +295,7 @@ const ConsultationPage: React.FC = () => {
           <Header
             breadcrumbItems={breadcrumbItems}
             globalActions={globalActions}
+            userMenu={<UserGlobalAction />}
             sideNavItems={sidebarItems}
             activeSideNavItemId={activeItemId}
             onSideNavItemClick={handleItemClick}

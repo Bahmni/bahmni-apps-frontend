@@ -18,12 +18,9 @@ exports[`ConsultationPage Snapshot should match the snapshot 1`] = `
         >
           Search
         </button>
-        <button
-          data-testid="global-action-user"
-          tabindex="0"
-        >
-          User
-        </button>
+        <div
+          data-testid="user-global-action"
+        />
         <div
           data-testid="sidenav-item-vitals"
           role="button"
