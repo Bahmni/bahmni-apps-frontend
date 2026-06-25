@@ -9,12 +9,12 @@ import {
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import React, { useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import React, { Suspense, useEffect, useState } from 'react';
+import { Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
 import { CLINICAL_NAMESPACE } from './constants/app';
-import ConsultationPage from './pages/ConsultationPage';
 import { ClinicalConfigProvider } from './providers/clinicalConfig';
+import { routes, renderRoutes } from './routes';
 
 const queryClient = new QueryClient(queryClientConfig);
 
@@ -51,9 +51,9 @@ const ClinicalApp: React.FC = () => {
             <UserPrivilegeProvider>
               <ActivePractitionerProvider>
                 <CommandPaletteProvider>
-                  <Routes>
-                    <Route path=":patientUuid" element={<ConsultationPage />} />
-                  </Routes>
+                  <Suspense fallback={<Loading />}>
+                    <Routes>{renderRoutes(routes)}</Routes>
+                  </Suspense>
                   <ReactQueryDevtools initialIsOpen={false} />
                 </CommandPaletteProvider>
               </ActivePractitionerProvider>
