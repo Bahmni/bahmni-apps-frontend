@@ -366,7 +366,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           metadataError
             ? (getFormattedError(metadataError).message ??
               t('ERROR_FETCHING_FORM_METADATA'))
-            : t('ERROR_FETCHING_FORM_METADATA'),
+            : (getFormattedError(patientError!).message ??
+              t('ERROR_FETCHING_PATIENT_DATA')),
         )
       : null;
 
