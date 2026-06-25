@@ -17,6 +17,7 @@ import {
   getFormattedError,
   getFormattedPatientById,
   getUserPreferredLocale,
+  mapGenderFromFhir,
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
@@ -47,13 +48,6 @@ const AGE_DETAILS_DEFAULT: AgeDetails = {
   day: 0,
   ageInDays: 0,
   ageText: '',
-};
-
-const mapGenderFromFhir = (fhirGender: string): string => {
-  if (fhirGender === 'male') return 'M';
-  if (fhirGender === 'female') return 'F';
-  if (fhirGender === 'other') return 'O';
-  return 'U';
 };
 
 interface ObservationFormsContainerProps {
@@ -87,7 +81,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const { user } = useActivePractitioner();
   const { episodeOfCare, activeVisitId } = useClinicalAppData();
 
-  const { data: fhirPatient } = useQuery({
+  const {
+    data: fhirPatient,
+    isLoading: isPatientLoading,
+    error: patientError,
+  } = useQuery({
     queryKey: ['patient', patientUUID],
     queryFn: () => getFormattedPatientById(patientUUID!),
     enabled: !!patientUUID,
@@ -219,6 +217,12 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   };
 
   const validateAndSave = () => {
+    if (!patientContext) {
+      setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
+      setValidationErrorMessage(t('OBSERVATION_FORM_LOADING_METADATA_ERROR'));
+      return;
+    }
+
     if (formContainerRef.current) {
       if (validationErrorType) {
         setValidationErrorType(null);
@@ -356,12 +360,15 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     handleDiscardForm();
   };
 
-  const error = metadataError
-    ? new Error(
-        getFormattedError(metadataError).message ??
-          t('ERROR_FETCHING_FORM_METADATA'),
-      )
-    : null;
+  const error =
+    metadataError || patientError
+      ? new Error(
+          metadataError
+            ? (getFormattedError(metadataError).message ??
+              t('ERROR_FETCHING_FORM_METADATA'))
+            : t('ERROR_FETCHING_FORM_METADATA'),
+        )
+      : null;
 
   const formViewContent = (
     <div className={styles.formView} data-testid="observation-form-view">
@@ -404,7 +411,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         className={styles.formContent}
         data-testid="observation-form-content"
       >
-        {isLoadingMetadata ? (
+        {isLoadingMetadata || isPatientLoading ? (
           <SkeletonText
             width="100%"
             lineCount={3}
@@ -467,7 +474,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         onPrimaryButtonClick={
           validationErrorType ? continueAnyway : validateAndSave
         }
-        isPrimaryButtonDisabled={false}
+        isPrimaryButtonDisabled={isPatientLoading || !patientContext}
         secondaryButtonText={t('OBSERVATION_FORM_DISCARD_BUTTON')}
         onSecondaryButtonClick={discard}
         content={formViewContent}

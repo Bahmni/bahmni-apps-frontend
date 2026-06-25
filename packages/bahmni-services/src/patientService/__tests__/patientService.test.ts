@@ -904,6 +904,28 @@ describe('Patient Service', () => {
       expect(result.birthDate).toBeNull();
       expect(result.birthtime).toBeNull();
     });
+
+    it('should extract birthtime from _birthDate extension and replace epoch date with actual birthDate', () => {
+      const BIRTH_TIME_EXT_URL =
+        'http://hl7.org/fhir/StructureDefinition/patient-birthTime';
+      const patient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        birthDate: '1990-01-01',
+        _birthDate: {
+          extension: [
+            {
+              url: BIRTH_TIME_EXT_URL,
+              valueDateTime: '1970-01-01T08:30:00+05:30',
+            },
+          ],
+        },
+      } as unknown as Patient;
+
+      const result = formatPatientData(patient);
+
+      expect(result.birthtime).toBe('1990-01-01T08:30:00+05:30');
+    });
   });
 
   describe('searchPatientByCustomAttribute', () => {

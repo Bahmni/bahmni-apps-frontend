@@ -39,6 +39,13 @@ import {
   RelationshipTypesResponse,
 } from './models';
 
+export const mapGenderFromFhir = (fhirGender: string): string => {
+  if (fhirGender === 'male') return 'M';
+  if (fhirGender === 'female') return 'F';
+  if (fhirGender === 'other') return 'O';
+  return 'U';
+};
+
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
   if (!patientUUID || patientUUID.trim() === '') {
     throw new Error('Invalid patient UUID: UUID cannot be empty');
