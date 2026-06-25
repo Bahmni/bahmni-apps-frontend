@@ -59,6 +59,26 @@ export interface PatientSearchConfig {
   displayFields?: PatientSearchDisplayField[];
 }
 
+export interface ExtensionPoint {
+  id: string;
+  description?: string;
+}
+
+export interface ClinicalSearchExtensionParams {
+  searchHandler: string;
+  configUrl: string;
+}
+
+export interface ClinicalAppExtensionConfig {
+  id: string;
+  extensionPointId: string;
+  type: 'config';
+  requiredPrivileges?: string[];
+  translationKey: string;
+  icon?: string;
+  extensionParams: ClinicalSearchExtensionParams;
+}
+
 export interface ClinicalConfig {
   patientInformation: Record<string, unknown>;
   contextInformation?: ContextInformation;
@@ -66,6 +86,8 @@ export interface ClinicalConfig {
   actions: Array<unknown>;
   dashboards: Array<Dashboard>;
   consultationPad: ConsultationPad;
+  extensionPoints?: ExtensionPoint[];
+  clinicalAppExtensions?: ClinicalAppExtensionConfig[];
 }
 
 export interface ClinicalConfigContextType {

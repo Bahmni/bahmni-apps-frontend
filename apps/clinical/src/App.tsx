@@ -14,6 +14,7 @@ import { Route, Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
 import { CLINICAL_NAMESPACE } from './constants/app';
 import ConsultationPage from './pages/ConsultationPage';
+import AdvancedSearchPage from './pages/clinicalSearch/AdvancedSearchPage';
 import { ClinicalConfigProvider } from './providers/clinicalConfig';
 
 const queryClient = new QueryClient(queryClientConfig);
@@ -52,6 +53,7 @@ const ClinicalApp: React.FC = () => {
               <ActivePractitionerProvider>
                 <CommandPaletteProvider>
                   <Routes>
+                    <Route path="list" element={<AdvancedSearchPage />} />
                     <Route path=":patientUuid" element={<ConsultationPage />} />
                   </Routes>
                   <ReactQueryDevtools initialIsOpen={false} />

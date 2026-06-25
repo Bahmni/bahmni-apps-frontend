@@ -211,6 +211,77 @@
         }
       }
     },
+    "extensionPoints": {
+      "type": "array",
+      "description": "Array of extension point definitions that extensions can attach to",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the extension point (e.g., 'org.bahmni.clinical.v2.search')"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of what this extension point is for"
+          }
+        }
+      }
+    },
+    "clinicalAppExtensions": {
+      "type": "array",
+      "description": "Array of app extension configurations for clinical",
+      "items": {
+        "type": "object",
+        "required": ["id", "extensionPointId", "type", "translationKey", "extensionParams"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the extension"
+          },
+          "extensionPointId": {
+            "type": "string",
+            "description": "Extension point identifier this extension attaches to"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["config"],
+            "description": "Type of extension"
+          },
+          "requiredPrivileges": {
+            "type": "array",
+            "description": "All privileges required to view this extension",
+            "items": { "type": "string" }
+          },
+          "translationKey": {
+            "type": "string",
+            "description": "Translation key for the extension label"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon class name"
+          },
+          "extensionParams": {
+            "type": "object",
+            "required": ["searchHandler", "configUrl"],
+            "additionalProperties": false,
+            "properties": {
+              "searchHandler": {
+                "type": "string",
+                "description": "Search handler identifier"
+              },
+              "configUrl": {
+                "type": "string",
+                "description": "URL to the search config JSON"
+              }
+            }
+          }
+        }
+      }
+    },
     "consultationPad": {
       "type": "object",
       "description": "Configuration for consultation pad forms",
