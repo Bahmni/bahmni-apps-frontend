@@ -9,6 +9,12 @@ jest.mock('@bahmni/home-app', () => ({
   HomeApp: () => <main data-testid="index-page" />,
 }));
 
+jest.mock('@bahmni/widgets', () => ({
+  AppContextProvider: ({ children }: { children: React.ReactNode }) => children,
+  CommandPaletteProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+
 describe('App', () => {
   it('renders the index route', async () => {
     render(

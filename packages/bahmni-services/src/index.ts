@@ -114,7 +114,9 @@ export {
 } from './utils';
 export {
   type FormatDateResult,
+  type AgeDetails,
   calculateAge,
+  computeAgeDetails,
   formatDateTime,
   formatDateDistance,
   calculateOnsetDate,
@@ -424,3 +426,4 @@ export type {
   RenderRequest,
   TemplateListResponse,
 } from './templateService';
+export { getTasks } from './taskService';

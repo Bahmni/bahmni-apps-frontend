@@ -6,10 +6,13 @@
       "path": "../../packages/bahmni-widgets"
     },
     {
-      "path": "../../packages/bahmni-design-system"
+      "path": "../command-palette"
     },
     {
       "path": "../../packages/bahmni-services"
+    },
+    {
+      "path": "../../packages/bahmni-design-system"
     },
     {
       "path": "./tsconfig.lib.json"
