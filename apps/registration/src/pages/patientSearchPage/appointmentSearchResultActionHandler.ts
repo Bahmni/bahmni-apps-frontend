@@ -2,6 +2,7 @@ import {
   AppointmentSearchResult,
   SearchActionConfig,
   updateAppointmentStatus,
+  checkInAppointment,
   UserPrivilege,
   formatUrl,
   PatientSearchResultBundle,
@@ -66,7 +67,7 @@ export const handleActionButtonClick = async (
   setPatientSearchData: (data: PatientSearchResultBundle) => void,
   navigate: NavigateFunction,
 ) => {
-  const { status, navigation } = action.onAction;
+  const { status, navigation, submit } = action.onAction;
 
   if (action.type === 'changeStatus') {
     await updateAppointmentStatus(
@@ -89,15 +90,27 @@ export const handleActionButtonClick = async (
     options['appointmentNumber'] = row.appointmentNumber!;
     options['appointmentUuid'] = row.appointmentUuid!;
     handleActionNavigation(navigation ?? '', options, navigate);
+  } else if (action.type === 'checkInAndStartVisit') {
+    await checkInAppointment(submit!, row.appointmentUuid!).then((response) => {
+      const updatedPatientSearchData = {
+        totalCount: patientSearchData.totalCount,
+        pageOfResults: updateAppointmentStatusInResults(
+          patientSearchData.pageOfResults,
+          response.appointmentUuid,
+          response.appointmentStatus,
+        ),
+      };
+      setPatientSearchData(updatedPatientSearchData);
+    });
   }
 };
 
-export const isActionButtonEnabled = (
-  enabledRules: SearchActionConfig['enabledRule'],
-  row: PatientSearchViewModel<AppointmentSearchResult>,
+export const shouldRenderActionButton = (
+  action: SearchActionConfig,
   userPrivileges: UserPrivilege[],
+  row: PatientSearchViewModel<AppointmentSearchResult>,
 ): boolean => {
-  if (!enabledRules || enabledRules.length === 0) return true;
+  if (!action.enabledRule || action.enabledRule.length === 0) return false;
 
   const ruleValidatorMap = {
     privilegeCheck: privilegeValidator(userPrivileges),
@@ -105,26 +118,27 @@ export const isActionButtonEnabled = (
     appDateCheck: appDateValidator,
   };
 
-  return enabledRules.every((rule) =>
-    ruleValidatorMap[rule.type](rule.values, row),
-  );
+  return action.enabledRule.every((rule) => {
+    if (rule.type === 'appointmentService') {
+      return appointmentServiceValidator(rule.values, rule.excludeValues, row);
+    }
+    return ruleValidatorMap[rule.type](rule.values ?? [], row);
+  });
 };
 
-export const shouldRenderActionButton = (
-  action: SearchActionConfig,
-  userPrivileges: UserPrivilege[],
+export const appointmentServiceValidator = (
+  values: string[] | undefined,
+  excludeValues: string[] | undefined,
+  row: PatientSearchViewModel<AppointmentSearchResult>,
 ): boolean => {
-  const privilegeRules =
-    action.enabledRule
-      ?.filter((rule) => rule.type === 'privilegeCheck')
-      .map((rule) => rule.values)
-      .flat() ?? [];
-
-  if (privilegeRules.length === 0) {
-    return false;
+  const serviceUuid = String(row.appointmentServiceUuid ?? '');
+  if (excludeValues !== undefined) {
+    return excludeValues.length === 0 || !excludeValues.includes(serviceUuid);
   }
-
-  return privilegeValidator(userPrivileges)(privilegeRules);
+  if (values !== undefined) {
+    return values.length > 0 && values.includes(serviceUuid);
+  }
+  return false;
 };
 
 export const privilegeValidator =

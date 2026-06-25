@@ -76,6 +76,7 @@ export {
 export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
+  checkInAppointment,
   getAppointmentById,
   getUpcomingAppointments,
   getPastAppointments,

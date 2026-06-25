@@ -160,6 +160,14 @@ export interface AppointmentSearchResult extends PatientSearchResult {
   appointmentDate?: string;
   appointmentReason?: string;
   appointmentStatus?: string;
+  appointmentServiceUuid?: string;
+}
+
+export interface CheckInAppointmentResponse {
+  visitUuid: string;
+  patientUuid: string;
+  appointmentUuid: string;
+  appointmentStatus: string;
 }
 export interface Appointment {
   length: number;
@@ -414,14 +422,20 @@ export interface ExpectedFieldConfig {
 }
 export interface SearchActionConfig {
   translationKey: string;
-  type: 'navigate' | 'changeStatus';
+  type: 'navigate' | 'changeStatus' | 'checkInAndStartVisit';
   enabledRule?: Array<{
-    type: 'privilegeCheck' | 'statusCheck' | 'appDateCheck';
-    values: string[];
+    type:
+      | 'privilegeCheck'
+      | 'statusCheck'
+      | 'appDateCheck'
+      | 'appointmentService';
+    values?: string[];
+    excludeValues?: string[];
   }>;
   onAction: {
     navigation?: string;
     status?: string;
+    submit?: string;
   };
   onSuccess?: {
     notification: string;
