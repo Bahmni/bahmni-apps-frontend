@@ -1,6 +1,7 @@
 export {
   getPatientById,
   getFormattedPatientById,
+  mapGenderFromFhir,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
   getIdentifierTypes,
