@@ -25,7 +25,7 @@ export const UserGlobalAction = () => {
       registerDefaultActions(registry);
       hasRegistered.current = true;
     }
-  }, []);
+  }, [registry]);
 
   const filteredActions = useMemo(() => {
     return getActions()
@@ -37,19 +37,19 @@ export const UserGlobalAction = () => {
           ),
       )
       .filter((action) => !action.disabled);
+    // `getActions` reads the registry ref; `version` is the change signal that drives recompute
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPrivileges, version]);
 
   return (
     <div
       id="user-global-action"
       data-testid="user-global-action-test-id"
-      aria-label="user-global-action-aria-label"
       className={styles.container}
     >
       <IconButton
         id="user-global-action-button"
         data-testid="user-global-action-button-test-id"
-        aria-label="user-global-action-button-aria-label"
         kind="ghost"
         size="lg"
         onClick={() => setIsOpen(true)}
@@ -59,7 +59,6 @@ export const UserGlobalAction = () => {
         <Icon
           id="user-icon"
           data-testid="user-icon-button-test-id"
-          aria-label="user-icon-button-aria-label"
           name="fa-user"
           size={ICON_SIZE.LG}
         />
@@ -67,7 +66,6 @@ export const UserGlobalAction = () => {
       <Menu
         id="user-global-action-menu"
         data-testid="user-global-action-menu-test-id"
-        aria-label="user-global-action-menu-aria-label"
         open={isOpen}
         className={styles.menu}
         label={t('USER_GLOBAL_ACTION_MENU')}
@@ -77,10 +75,14 @@ export const UserGlobalAction = () => {
           <MenuItem
             id={`user-global-action-${action.id}`}
             data-testid={`user-global-action-${action.id}-test-id`}
-            aria-label={`user-global-action-${action.id}-aria-label`}
             key={action.id}
             label={t(action.label)}
-            onClick={action.onClick}
+            onClick={() => {
+              Promise.resolve(action.onClick()).catch((error) => {
+                // eslint-disable-next-line no-console
+                console.error(`User action "${action.id}" failed:`, error);
+              });
+            }}
             testId={`user-action-${action.id}`}
           />
         ))}

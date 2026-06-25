@@ -1,7 +1,10 @@
 import { del } from '../../api';
 import { LOGIN_PATH } from '../../api/constants';
-import { BAHMNI_USER_COOKIE_NAME, SESSION_URL } from '../../constants/app';
-import { BAHMNI_USER_LOCATION_COOKIE } from '../../userService/constants';
+import {
+  BAHMNI_USER_COOKIE_NAME,
+  BAHMNI_USER_LOCATION_COOKIE,
+  SESSION_URL,
+} from '../../constants/app';
 import { deleteCookie } from '../../utils';
 import { logout } from '../authService';
 

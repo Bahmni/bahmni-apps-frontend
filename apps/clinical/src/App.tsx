@@ -51,14 +51,14 @@ const ClinicalApp: React.FC = () => {
           <ClinicalConfigProvider>
             <UserPrivilegeProvider>
               <ActivePractitionerProvider>
-                <CommandPaletteProvider>
-                  <UserActionProvider>
+                <UserActionProvider>
+                  <CommandPaletteProvider>
                     <Suspense fallback={<Loading />}>
                       <Routes>{renderRoutes(routes)}</Routes>
                     </Suspense>
                     <ReactQueryDevtools initialIsOpen={false} />
-                  </UserActionProvider>
-                </CommandPaletteProvider>
+                  </CommandPaletteProvider>
+                </UserActionProvider>
               </ActivePractitionerProvider>
             </UserPrivilegeProvider>
           </ClinicalConfigProvider>

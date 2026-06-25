@@ -1,7 +1,6 @@
 import { del } from '../api';
 import { LOGIN_PATH } from '../api/constants';
-import { SESSION_URL } from '../constants/app';
-import { LOGOUT_COOKIES } from '../userService/constants';
+import { LOGOUT_COOKIES, SESSION_URL } from '../constants/app';
 import { deleteCookie } from '../utils';
 
 /**

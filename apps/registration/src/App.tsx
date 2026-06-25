@@ -52,8 +52,8 @@ const RegistrationApp: React.FC = () => {
           <RegistrationConfigProvider>
             <PersonAttributesProvider>
               <UserPrivilegeProvider>
-                <CommandPaletteProvider>
-                  <UserActionProvider>
+                <UserActionProvider>
+                  <CommandPaletteProvider>
                     <Routes>
                       <Route path="/search" element={<PatientSearchPage />} />
                       <Route path="patient/new" element={<PatientRegister />} />
@@ -62,8 +62,8 @@ const RegistrationApp: React.FC = () => {
                         element={<PatientRegister />}
                       />
                     </Routes>
-                  </UserActionProvider>
-                </CommandPaletteProvider>
+                  </CommandPaletteProvider>
+                </UserActionProvider>
               </UserPrivilegeProvider>
             </PersonAttributesProvider>
           </RegistrationConfigProvider>
