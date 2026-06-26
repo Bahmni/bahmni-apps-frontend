@@ -1631,12 +1631,14 @@ describe('Patient Service', () => {
     });
 
     it('should fetch and return ObservationData for date observation', async () => {
-      const mockObservations = [
-        {
-          value: '2025-01-15T08:30:00',
-        },
-      ];
-      mockedGet.mockResolvedValueOnce(mockObservations);
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          {
+            value: '2025-01-15T08:30:00',
+            auditInfo: { dateCreated: '2025-01-15T10:00:00.000+0000' },
+          },
+        ],
+      });
 
       const result = await getObservationByConceptName(
         patientUuid,
@@ -1650,15 +1652,44 @@ describe('Patient Service', () => {
       expect(mockedGet).toHaveBeenCalled();
     });
 
-    it('should return string for coded observation with name property', async () => {
-      const mockObservations = [
-        {
-          value: {
-            name: 'Yes',
+    it('should return most recently created observation when multiple exist', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          {
+            value: '2024-11-01T00:00:00',
+            auditInfo: { dateCreated: '2024-11-01T08:00:00.000+0000' },
           },
-        },
-      ];
-      mockedGet.mockResolvedValueOnce(mockObservations);
+          {
+            value: '2025-01-15T00:00:00',
+            auditInfo: { dateCreated: '2025-01-15T10:00:00.000+0000' },
+          },
+          {
+            value: '2024-06-01T00:00:00',
+            auditInfo: { dateCreated: '2024-06-01T06:00:00.000+0000' },
+          },
+        ],
+      });
+
+      const result = await getObservationByConceptName(
+        patientUuid,
+        conceptName,
+      );
+
+      expect(result).toEqual({
+        date: '2025-01-15',
+        daysSince: expect.any(Number),
+      });
+    });
+
+    it('should return display string for coded observation', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          {
+            value: { uuid: 'coded-concept-uuid', display: 'Yes' },
+            auditInfo: { dateCreated: '2025-01-15T10:00:00.000+0000' },
+          },
+        ],
+      });
 
       const result = await getObservationByConceptName(
         patientUuid,
@@ -1669,7 +1700,7 @@ describe('Patient Service', () => {
     });
 
     it('should return null when no observations found', async () => {
-      mockedGet.mockResolvedValueOnce([]);
+      mockedGet.mockResolvedValueOnce({ results: [] });
 
       const result = await getObservationByConceptName(
         patientUuid,
@@ -1699,20 +1730,22 @@ describe('Patient Service', () => {
       expect(result).toBeNull();
     });
 
-    it('should handle valueAsString format for text observations', async () => {
-      const mockObservations = [
-        {
-          valueAsString: 'Some text value',
-        },
-      ];
-      mockedGet.mockResolvedValueOnce(mockObservations);
+    it('should return null when obs value is neither a date string nor a coded object', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          {
+            value: null,
+            auditInfo: { dateCreated: '2025-01-15T10:00:00.000+0000' },
+          },
+        ],
+      });
 
       const result = await getObservationByConceptName(
         patientUuid,
         conceptName,
       );
 
-      expect(result).toBe('Some text value');
+      expect(result).toBeNull();
     });
   });
 });

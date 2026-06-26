@@ -520,16 +520,22 @@ export const getObservationByConceptName = async (
 
   try {
     interface BahmniObservation {
-      value?: string | object | null;
-      valueAsString?: string | null;
+      value?: string | Record<string, unknown> | null;
+      display?: string | null;
+      auditInfo?: { dateCreated: string };
     }
 
-    const url = `${OPENMRS_REST_V1}/bahmnicore/observations?patientUuid=${patientUuid}&concept=${encodeURIComponent(conceptName)}&scope=latest`;
-    const observations = await get<BahmniObservation[]>(url);
+    const url = `${OPENMRS_REST_V1}/obs?patient=${patientUuid}&concept=${encodeURIComponent(conceptName)}&v=custom:(uuid,value,display,auditInfo:(dateCreated))`;
+    const response = await get<{ results: BahmniObservation[] }>(url);
 
-    if (!observations?.length) return null;
+    if (!response?.results?.length) return null;
 
-    const obs = observations[0];
+    const sortedObs = [...response.results].sort(
+      (a, b) =>
+        new Date(b.auditInfo?.dateCreated ?? 0).getTime() -
+        new Date(a.auditInfo?.dateCreated ?? 0).getTime(),
+    );
+    const obs = sortedObs[0];
 
     if (obs.value && typeof obs.value === 'string' && obs.value.includes('-')) {
       const isoDate = obs.value.split('T')[0];
@@ -537,11 +543,11 @@ export const getObservationByConceptName = async (
       return daysSince !== null ? { date: isoDate, daysSince } : null;
     }
 
-    const textVal =
-      obs.value && typeof obs.value === 'object' && 'name' in obs.value
-        ? (obs.value as { name: string }).name
-        : (obs.valueAsString ?? null);
-    return textVal;
+    if (obs.value && typeof obs.value === 'object' && 'display' in obs.value) {
+      return (obs.value.display as string) ?? null;
+    }
+
+    return null;
   } catch {
     return null;
   }
