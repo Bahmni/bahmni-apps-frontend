@@ -153,7 +153,7 @@ Taking inspiration from [CDS Hooks Card Actions](https://cds-hooks.hl7.org/#acti
     "context": { 
         "encounterType": "OPD",
         "basedOn": { "resourceType": "Task", "id": "task-4589", "code": "12234", "input":[{}]},
-        "formNameInputType": "cocnept-uuid"
+        "formNameInputType": "concept-uuid"
      },
     "action": {
         "type": "create",
@@ -192,7 +192,7 @@ Taking inspiration from [CDS Hooks Card Actions](https://cds-hooks.hl7.org/#acti
 ```
 - Allows only the Order/Invetigation input control. Useful when we add + button on the orders display control.
 
-### Add from Radiology Order from Radiology Display Control
+### Add Radiology Order from Radiology Display Control
 
 ```json
 {
