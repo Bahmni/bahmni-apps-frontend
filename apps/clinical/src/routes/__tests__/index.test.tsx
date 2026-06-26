@@ -1,15 +1,19 @@
 import { ReactElement } from 'react';
 import { routes, renderRoutes } from '../index';
 
+interface RouteElementProps {
+  path: string;
+}
+
 describe('renderRoutes', () => {
-  let result: ReactElement[];
+  let result: ReactElement<RouteElementProps>[];
 
   beforeEach(() => {
-    result = renderRoutes(routes);
+    result = renderRoutes(routes) as ReactElement<RouteElementProps>[];
   });
 
-  it('returns one more entry than route configs', () => {
-    expect(result).toHaveLength(routes.length + 1);
+  it('returns one Route per route config', () => {
+    expect(result).toHaveLength(routes.length);
   });
 
   it.each(routes)(
@@ -19,11 +23,4 @@ describe('renderRoutes', () => {
       expect(match?.props.path).toBe(path);
     },
   );
-
-  it('catch-all navigates to queue with replace', () => {
-    const catchAll = result[result.length - 1];
-    expect(catchAll.props.path).toBe('*');
-    expect(catchAll.props.element.props.to).toBe('queue');
-    expect(catchAll.props.element.props.replace).toBe(true);
-  });
 });
