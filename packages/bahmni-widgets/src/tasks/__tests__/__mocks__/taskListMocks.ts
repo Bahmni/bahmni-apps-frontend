@@ -149,6 +149,7 @@ export const mockTaskViewModels: TaskViewModel[] = mockFHIRTasks.map(
       task.partOf
         ?.map((ref) => ref.reference)
         .filter((ref): ref is string => !!ref) ?? [],
+    fhirResource: task,
   }),
 );
 

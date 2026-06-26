@@ -11,6 +11,7 @@ import { Task } from 'fhir/r4';
 import React, { useMemo, useCallback } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry';
+import TaskActions from './components/TaskActions';
 import { TaskViewModel, TaskListConfig } from './models';
 import styles from './TaskList.module.scss';
 
@@ -36,6 +37,7 @@ const mapTaskToViewModel = (
       task.partOf
         ?.map((ref) => ref.reference)
         .filter((ref): ref is string => !!ref) ?? [],
+    fhirResource: task,
   };
 };
 
@@ -141,15 +143,22 @@ const TaskList: React.FC<TaskListProps> = ({
     return tasks;
   }, [data, taskTypes, showOnlyLeafTasks]);
 
-  const columns = useMemo(
-    () => [
+  const columns = useMemo(() => {
+    const baseColumns = [
       { key: 'name', header: t('TASK_NAME') },
       { key: 'completedBy', header: t('TASK_COMPLETED_BY') },
       { key: 'completedOn', header: t('TASK_COMPLETED_ON') },
       { key: 'status', header: t('TASK_STATUS') },
-    ],
-    [t],
-  );
+    ];
+
+    const hasActions = taskListConfig?.actionConfig?.some(
+      (config) => config.actions && config.actions.length > 0,
+    );
+
+    return hasActions
+      ? [...baseColumns, { key: 'actions', header: t('TASK_ACTIONS') }]
+      : baseColumns;
+  }, [t, taskListConfig?.actionConfig]);
 
   const renderCell = useCallback(
     (task: TaskViewModel, columnKey: string) => {
@@ -168,11 +177,20 @@ const TaskList: React.FC<TaskListProps> = ({
               testId={`task-status-${task.id}`}
             />
           );
+        case 'actions':
+          return (
+            taskListConfig?.actionConfig && (
+              <TaskActions
+                task={task}
+                actionConfig={taskListConfig?.actionConfig}
+              />
+            )
+          );
         default:
           return null;
       }
     },
-    [t],
+    [t, taskListConfig?.actionConfig],
   );
 
   if (emptyEncounterFilter) {
