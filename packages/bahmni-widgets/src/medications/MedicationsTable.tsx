@@ -15,7 +15,7 @@ import {
   useTranslation,
   groupByDate,
   formatDateTime,
-  FormattedMedicationRequest,
+  hasPrivilege,
   MedicationRequest,
   shouldEnableEncounterFilter,
   useSubscribeConsultationSaved,
@@ -28,9 +28,10 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
+import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import Actions from './components/Actions';
 import { MEDICATION_REQUEST_PRIORITY } from './constants';
-import { MedicationAction } from './models';
+import { FormattedMedicationRequest, MedicationAction } from './models';
 import styles from './styles/MedicationsTable.module.scss';
 import {
   formatMedicationRequest,
@@ -94,13 +95,26 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   config,
   episodeOfCareUuids,
   encounterUuids,
+  canEditOrCreate: canEditEncounter = false,
+  activeEncounterUuid = null,
+  disableActions = false,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
+  const { userPrivileges } = useUserPrivilege();
   const code = (config?.code as string[]) || [];
   const actions = (config?.actions as MedicationAction[]) ?? [];
-  const hasActions = actions.length > 0;
+  const permittedActions = useMemo(
+    () =>
+      actions.filter((action) =>
+        hasPrivilege(userPrivileges, action.requiredPrivilege),
+      ),
+    [actions, userPrivileges],
+  );
+  const hasActions = permittedActions.length > 0;
+  const editAction = permittedActions.find((a) => a.type === 'edit');
+  const canEdit = !!editAction;
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -157,10 +171,14 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         return formatDateTime(medication.orderDate, t).formattedResult;
       });
 
-      // Sort by date descending (most recent first)
-      const sortedGroups = grouped.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      );
+      // Sort by date descending (most recent first) using the raw orderDate
+      // from the first item in each group, since group.date is a formatted
+      // display string (e.g. "Today") that cannot be parsed by new Date().
+      const sortedGroups = grouped.sort((a, b) => {
+        const dateA = new Date(a.items[0]?.orderDate ?? 0).getTime();
+        const dateB = new Date(b.items[0]?.orderDate ?? 0).getTime();
+        return dateB - dateA;
+      });
 
       // Sort medications within each group by priority
       sortedGroups.forEach((group) => {
@@ -230,6 +248,26 @@ const MedicationsTable: React.FC<WidgetProps> = ({
     return [...activeMedications, ...scheduledMedications];
   }, [allMedications]);
 
+  const editableMedications = useMemo(() => {
+    if (!canEdit || !canEditEncounter || !activeEncounterUuid) return [];
+    return activeAndScheduledMedications.filter(
+      (m) =>
+        (m.status === 'active' || m.status === 'on-hold') &&
+        m.fhirResource?.encounter?.reference?.endsWith(activeEncounterUuid),
+    );
+  }, [
+    activeAndScheduledMedications,
+    canEdit,
+    canEditEncounter,
+    activeEncounterUuid,
+  ]);
+
+  const isEditable = useCallback(
+    (medication: FormattedMedicationRequest) =>
+      editableMedications.some((m) => m.id === medication.id),
+    [editableMedications],
+  );
+
   // Process medications for date grouping (only for All medications tab)
   const processedAllMedications = useMemo(() => {
     return processGroupedMedications(allMedications);
@@ -262,8 +300,9 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           </>
         );
       case 'dosage': {
+        const dosageClassName = styles.columnDataBold;
         if (typeof row.dosage === 'string') {
-          return <p className={styles.columnDataBold}>{row.dosage}</p>;
+          return <p className={dosageClassName}>{row.dosage}</p>;
         }
         if (
           row.dosage &&
@@ -273,13 +312,13 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         ) {
           const dosage = row.dosage as { value: number; unit: string };
           return (
-            <p className={styles.columnDataBold}>
+            <p className={dosageClassName}>
               {dosage.value} {dosage.unit}
             </p>
           );
         }
         return (
-          <p className={styles.columnDataBold}>
+          <p className={dosageClassName}>
             {t('MEDICATIONS_TABLE_NOT_AVAILABLE')}
           </p>
         );
@@ -294,14 +333,43 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         return formatDateTime(row.orderDate, t).formattedResult;
       case 'status':
         return (
-          <StatusTag
-            testId={`medication-status-${row.id}`}
-            label={t(getMedicationStatusKey(row.status))}
-            dotClassName={getMedicationStatusClassName(row.status)}
-          />
+          <>
+            <StatusTag
+              testId={`medication-status-${row.id}`}
+              label={t(getMedicationStatusKey(row.status))}
+              dotClassName={getMedicationStatusClassName(row.status)}
+            />
+            {(row.status === 'stopped' || row.status === 'cancelled') && (
+              <div className={styles.stopDetails}>
+                {row.dateStopped && (
+                  <span className={styles.stopReasonText}>
+                    {t('MEDICATIONS_STOPPED_ON')}{' '}
+                    {formatDateTime(row.dateStopped, t).formattedResult}
+                  </span>
+                )}
+                {row.stopReason && (
+                  <span className={styles.stopReasonText}>
+                    {t('MEDICATIONS_STOPPED_DUE_TO')} {row.stopReason}
+                  </span>
+                )}
+              </div>
+            )}
+          </>
         );
       case 'actions':
-        return <Actions actions={actions} medication={row.fhirResource} />;
+        return (
+          <Actions
+            actions={actions}
+            medication={row.fhirResource}
+            startDate={row.startDate}
+            disabledActionTypes={[
+              ...(isEditable(row) ? [] : ['edit']),
+              ...(disableActions || !['active', 'on-hold'].includes(row.status)
+                ? ['stop']
+                : []),
+            ]}
+          />
+        );
       default:
         return null;
     }
@@ -318,7 +386,11 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   }
 
   return (
-    <div data-testid="medications-table">
+    <div
+      id="medications-table"
+      data-testid="medications-table"
+      className={styles.medicationsTableWrapper}
+    >
       <Tabs
         selectedIndex={selectedIndex}
         onChange={(state) => handleTabChange(state.selectedIndex)}

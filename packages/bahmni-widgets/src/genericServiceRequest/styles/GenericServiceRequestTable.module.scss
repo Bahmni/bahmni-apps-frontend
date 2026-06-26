@@ -3,6 +3,28 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+:global([data-split-view] #main-display-area #generic-service-request-table) {
+  div[id^="accordion-item"] {
+    overflow-x: auto;
+  }
+}
+
+.inProgressStatus {
+  color: $yellow-70;
+}
+
+.completedStatus {
+  color: $green-50;
+}
+
+.revokedStatus {
+  color: $cool-gray-20;
+}
+
+.unknownStatus {
+  color: $cool-gray-20;
+}
+
 .requestName {
   @include type-style("heading-compact-01");
   color: $text-primary;
@@ -12,12 +34,9 @@
 }
 
 .serviceRequestTableBody {
-  td {
+  td:not(:first-child) {
     width: 25%;
     border-block-end: 0 !important;
-  }
-  td:first-child {
-    width: 50%;
   }
 }
 
@@ -36,4 +55,12 @@
     padding-block: 0rem !important;
     padding-block-end: 0rem !important;
   }
+}
+
+.expandableContentSpacer {
+  border: none !important;
+}
+
+.expandedContent {
+  padding: 0 !important;
 }

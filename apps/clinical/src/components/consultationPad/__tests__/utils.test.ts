@@ -337,6 +337,16 @@ describe('captureUpdatedResources', () => {
     expect(captureUpdatedResources(entries).medications).toBe(true);
   });
 
+  it('returns true for medications when stopMedications hasData', () => {
+    const entries = [
+      makeMockEntry('stopMedications', {
+        hasData: jest.fn().mockReturnValue(true),
+      }),
+    ];
+
+    expect(captureUpdatedResources(entries).medications).toBe(true);
+  });
+
   it('maps selected service request categories to lowercase boolean flags', () => {
     (useServiceRequestStore as unknown as { getState: jest.Mock }).getState =
       jest.fn().mockReturnValue({

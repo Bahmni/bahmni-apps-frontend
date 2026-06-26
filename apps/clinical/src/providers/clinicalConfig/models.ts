@@ -1,3 +1,6 @@
+import { type CDSSRule } from '@bahmni/services';
+import type { PrintOption } from '@bahmni/widgets';
+
 export interface AllergyConceptMap {
   medicationAllergenUuid: string;
   foodAllergenUuid: string;
@@ -21,6 +24,7 @@ export interface InputControl<
   encounterTypes: string[];
   privileges: string[];
   attributes: InputControlAttributes[];
+  cdss?: CDSSRule[];
 }
 
 export interface ConsultationPad {
@@ -35,6 +39,7 @@ export interface Dashboard {
   requiredPrivileges: string[];
   icon?: string;
   default?: boolean;
+  printOptions?: PrintOption[];
 }
 
 export interface ProgramConfig {

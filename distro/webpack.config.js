@@ -7,7 +7,7 @@ const { join } = require('path');
 module.exports = (env, argv) => {
   //TODO to read this from docker compose
   //TODO should we hardcode?
-  const publicPath = env.PUBLIC_PATH || process.env.PUBLIC_PATH || '/bahmni-new/';
+  const publicPath = env.PUBLIC_PATH || process.env.PUBLIC_PATH || '/bahmni-v2/';
   const isDevelopment = argv.mode !== 'production';
 
   return {
@@ -22,12 +22,13 @@ module.exports = (env, argv) => {
         '@bahmni/clinical-app': join(__dirname, '../apps/clinical/src'),
         '@bahmni/registration-app': join(__dirname, '../apps/registration/src'),
         '@bahmni/appointments-app': join(__dirname, '../apps/appointments/src'),
+        '@bahmni/command-palette-app': join(__dirname, '../apps/command-palette/src'),
       } : {},
     },
     devServer: {
       port: 3000,
       historyApiFallback: {
-        index: '/bahmni-new/index.html',
+        index: '/bahmni-v2/index.html',
         disableDotRule: true,
         htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
       },
@@ -58,6 +59,7 @@ module.exports = (env, argv) => {
           { input: isDevelopment ? '../apps/clinical/public/locales' : '../apps/clinical/dist/locales', glob: '**/*', output: 'clinical/locales' },
           { input: isDevelopment ? '../apps/registration/public/locales' : '../apps/registration/dist/locales', glob: '**/*', output: 'registration/locales' },
           { input: isDevelopment ? '../apps/appointments/public/locales' : '../apps/appointments/dist/locales', glob: '**/*', output: 'appointments/locales' },
+          { input: isDevelopment ? '../apps/command-palette/public/locales' : '../apps/command-palette/dist/locales', glob: '**/*', output: 'command-palette/locales' },
         ],
         styles: ['./src/styles.scss'],
         outputHashing:

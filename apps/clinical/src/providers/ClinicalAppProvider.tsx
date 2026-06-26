@@ -10,15 +10,18 @@ import {
   ClinicalAppContext,
   EpisodeOfCare,
 } from '../contexts/ClinicalAppContext';
+import { usePatientVisit } from '../hooks/usePatientVisit';
 
 interface ClinicalAppDataProviderProps {
   children: ReactNode;
   episodeUuids: string[];
+  patientId: string | null;
 }
 
 export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
   children,
   episodeUuids,
+  patientId,
 }) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -31,6 +34,8 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
     queryFn: () => getEncountersAndVisitsForEOC(episodeUuids),
     enabled: episodeUuids.length > 0,
   });
+
+  const { activeVisit } = usePatientVisit(patientId);
 
   useSubscribeConsultationSaved(() => {
     if (episodeUuids.length > 0) {
@@ -53,14 +58,27 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
       });
     }
 
+    const activeEpisodeId = episodeUuids.length > 0 ? episodeUuids[0] : null;
+    const activeVisitId = activeVisit?.id ?? null;
+
     return {
       episodeOfCare,
       visit: [],
       encounter: [],
       isLoading: isLoadingEncounters,
-      error: error as Error | null,
+      error: error,
+      patientId,
+      activeVisitId,
+      activeEpisodeId,
     };
-  }, [episodeOfCareData, episodeUuids, isLoadingEncounters, error]);
+  }, [
+    episodeOfCareData,
+    episodeUuids,
+    isLoadingEncounters,
+    error,
+    patientId,
+    activeVisit?.id,
+  ]);
 
   if (isLoadingEncounters && episodeUuids.length > 0) {
     return <Loading description={t('LOADING_CLINICAL_DATA')} role="status" />;

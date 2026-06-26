@@ -8,6 +8,26 @@ const mockCheckIfActiveVisitExists = jest.fn();
 const mockCreateVisitForPatient = jest.fn();
 const mockGetVisitTypes = jest.fn();
 const mockAddNotification = jest.fn();
+const mockFindValidRegistrationEncounterInSession = jest.fn();
+const mockCreateRegistrationEncounterForPatient = jest.fn();
+
+const mockUseRegistrationEncounterTypeUuid = jest.fn();
+jest.mock('../useRegistrationEncounterTypeUuid', () => ({
+  useRegistrationEncounterTypeUuid: () =>
+    mockUseRegistrationEncounterTypeUuid(),
+}));
+
+const mockLinkRegistrationEncounterToVisit = jest.fn();
+jest.mock('../../services/registrationEncounterService', () => ({
+  findValidRegistrationEncounterInSession: (...args: unknown[]) =>
+    mockFindValidRegistrationEncounterInSession(...args),
+
+  createRegistrationEncounterForPatient: (...args: unknown[]) =>
+    mockCreateRegistrationEncounterForPatient(...args),
+
+  linkRegistrationEncounterToVisit: (...args: unknown[]) =>
+    mockLinkRegistrationEncounterToVisit(...args),
+}));
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -38,6 +58,7 @@ describe('useVisit', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
@@ -89,6 +110,8 @@ describe('useVisit', () => {
     beforeEach(() => {
       mockCheckIfActiveVisitExists.mockResolvedValue(false);
       mockCreateVisitForPatient.mockResolvedValue({});
+      mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
+      mockLinkRegistrationEncounterToVisit.mockResolvedValue(undefined);
     });
 
     it('should create visit when no active visit exists', async () => {
@@ -120,6 +143,88 @@ describe('useVisit', () => {
           timeout: 5000,
         });
       });
+    });
+
+    it('should link registration encounter to visit after visit creation when encounter type is configured', async () => {
+      mockUseRegistrationEncounterTypeUuid.mockReturnValue(
+        'reg-encounter-type-uuid',
+      );
+
+      mockFindValidRegistrationEncounterInSession.mockResolvedValue({
+        id: 'enc-123',
+      });
+
+      const { result } = renderHook(() => useCreateVisit(), { wrapper });
+
+      await result.current.createVisit(patientUuid, mockVisitType);
+
+      await waitFor(() => {
+        expect(
+          mockCreateRegistrationEncounterForPatient,
+        ).not.toHaveBeenCalled();
+        expect(mockLinkRegistrationEncounterToVisit).toHaveBeenCalledWith(
+          patientUuid,
+          'reg-encounter-type-uuid',
+        );
+      });
+    });
+
+    it('should create a registration encounter when none exists and link it to visit', async () => {
+      mockUseRegistrationEncounterTypeUuid.mockReturnValue(
+        'reg-encounter-type-uuid',
+      );
+
+      mockFindValidRegistrationEncounterInSession.mockResolvedValue(null);
+      mockCreateRegistrationEncounterForPatient.mockResolvedValue({
+        id: 'new-encounter-id',
+      });
+
+      const { result } = renderHook(() => useCreateVisit(), { wrapper });
+
+      await result.current.createVisit(patientUuid, mockVisitType);
+      expect(mockCreateRegistrationEncounterForPatient).toHaveBeenCalledWith(
+        patientUuid,
+        'reg-encounter-type-uuid',
+      );
+      expect(mockLinkRegistrationEncounterToVisit).toHaveBeenCalledWith(
+        patientUuid,
+        'reg-encounter-type-uuid',
+      );
+    });
+
+    it('should show error notification when encounter linkage fails', async () => {
+      const error = new Error('Failed to link encounter');
+      mockUseRegistrationEncounterTypeUuid.mockReturnValue(
+        'reg-encounter-type-uuid',
+      );
+      mockLinkRegistrationEncounterToVisit.mockRejectedValue(error);
+
+      const { result } = renderHook(() => useCreateVisit(), { wrapper });
+
+      await result.current.createVisit(patientUuid, mockVisitType);
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ERROR_DEFAULT_TITLE',
+          message: error.message,
+          type: 'error',
+          timeout: 5000,
+        });
+      });
+    });
+
+    it('should skip encounter linkage when registrationEncounterType is not configured', async () => {
+      mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
+
+      const { result } = renderHook(() => useCreateVisit(), { wrapper });
+
+      await result.current.createVisit(patientUuid, mockVisitType);
+
+      await waitFor(() => {
+        expect(mockCreateVisitForPatient).toHaveBeenCalled();
+      });
+
+      expect(mockLinkRegistrationEncounterToVisit).not.toHaveBeenCalled();
     });
   });
 

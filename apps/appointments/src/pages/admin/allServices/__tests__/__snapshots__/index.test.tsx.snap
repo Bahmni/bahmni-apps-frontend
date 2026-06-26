@@ -26,7 +26,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
           >
             <a
               class="cds--link"
-              href="/bahmni/home/index.html"
+              href="/bahmni-v2/home"
             >
               Home
             </a>
@@ -59,7 +59,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
       >
         <section
           aria-label="all-services-action-data-table-aria-label"
-          class="table _actionDataTableBody_1aqtw_1 cds--data-table-container"
+          class="table _actionDataTableBody_mn1ph_1 cds--data-table-container"
           data-testid="all-services-action-data-table-test-id"
           id="all-services-action-data-table"
         >

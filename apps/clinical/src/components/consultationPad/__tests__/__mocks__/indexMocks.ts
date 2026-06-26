@@ -1,3 +1,4 @@
+import { createMockCDSCard } from '../../../../__mocks__/cdssMocks';
 import type { InputControl } from '../../../forms';
 
 export const mockRegistry: InputControl[] = [
@@ -70,4 +71,47 @@ export const mockUpdatedResources = {
   medications: false,
   immunizationHistory: false,
   serviceRequests: {} as Record<string, boolean>,
+};
+
+export const mockCDSSServerConfig = [
+  {
+    server: 'test-cdss-server',
+    url: 'http://test-cdss.example.com',
+    services: [
+      {
+        name: 'medication-prescribe',
+        description: 'Medication prescribing decision support',
+        contextResourceMap: [
+          { type: 'MedicationRequest', attribute: 'draftOrders' },
+          { type: 'Observation', attribute: 'observations' },
+        ],
+        prefetch: {
+          patient: 'Patient/{{context.patientId}}',
+        },
+      },
+    ],
+  },
+];
+
+export const mockCDSSCards = [
+  createMockCDSCard(
+    'MedicationRequest',
+    'med-123',
+    'Drug interaction warning',
+    'Consider alternative medication',
+  ),
+];
+
+export const mockEmptyCDSSConfig: any[] = [];
+
+export const mockCDSSCheckEvent = {
+  controlKey: 'medications',
+  itemId: 'item-123',
+  rules: [
+    {
+      event: 'onSelect',
+      server: 'test-cdss-server',
+      service: 'medication-prescribe',
+    },
+  ],
 };

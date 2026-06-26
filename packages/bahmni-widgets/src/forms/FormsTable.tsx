@@ -33,6 +33,7 @@ import { extractFormFieldPath } from './utils';
 interface FormsTableConfig {
   numberOfVisits?: number;
   hideThumbnail?: boolean;
+  forms?: string[];
 }
 
 /**
@@ -49,8 +50,11 @@ const FormsTable: React.FC<WidgetProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] =
     useState<FormRecordViewModel | null>(null);
-  const { numberOfVisits, hideThumbnail = false } = (config ??
-    {}) as FormsTableConfig;
+  const {
+    numberOfVisits,
+    hideThumbnail = false,
+    forms,
+  } = (config ?? {}) as FormsTableConfig;
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -73,13 +77,19 @@ const FormsTable: React.FC<WidgetProps> = ({
 
   // Filter forms data by encounterUuids if provided
   const filteredFormsData = useMemo(() => {
-    if (!encounterUuids || encounterUuids.length === 0) {
-      return formsData;
+    let result = formsData;
+    if (encounterUuids && encounterUuids.length > 0) {
+      result = result.filter((form) =>
+        encounterUuids.includes(form.encounterUuid),
+      );
     }
-    return formsData.filter((form) =>
-      encounterUuids.includes(form.encounterUuid),
-    );
-  }, [formsData, encounterUuids]);
+    if (Array.isArray(forms) && forms.length > 0) {
+      result = result.filter((entry) =>
+        forms.some((f) => f.toLowerCase() === entry.formName.toLowerCase()),
+      );
+    }
+    return result;
+  }, [formsData, encounterUuids, forms]);
 
   // Fetch published forms to get form UUIDs
   const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
@@ -104,6 +114,7 @@ const FormsTable: React.FC<WidgetProps> = ({
 
   // Fetch form metadata when a record is selected
   const {
+    data: formMetadata,
     isLoading: isLoadingMetadata,
     isError: isMetadataError,
     error: metadataError,
@@ -155,6 +166,58 @@ const FormsTable: React.FC<WidgetProps> = ({
       return !formFieldPath || formFieldPath.includes(selectedRecord.formName);
     });
   }, [fhirObservationBundle, selectedRecord?.formName]);
+
+  const controlOrder = useMemo(() => {
+    if (!formMetadata?.schema) return undefined;
+    const ids: string[] = [];
+    const collectIds = (controls: unknown[]) => {
+      (controls ?? []).forEach((ctrl: unknown) => {
+        const c = ctrl as { id?: number; controls?: unknown[] };
+        if (c.id != null) ids.push(String(c.id));
+        if (c.controls) collectIds(c.controls);
+      });
+    };
+    collectIds(
+      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
+    );
+    return ids.length > 0 ? ids : undefined;
+  }, [formMetadata]);
+
+  const sectionMap = useMemo(() => {
+    if (!formMetadata?.schema) return undefined;
+    const map: Record<string, string> = {};
+
+    const processControls = (
+      controls: unknown[],
+      currentSection: string | null,
+    ) => {
+      for (const ctrl of controls as {
+        id?: number;
+        type?: string;
+        label?: { value?: string };
+        controls?: unknown[];
+      }[]) {
+        if (ctrl.type === 'section') {
+          const sectionName = ctrl.label?.value ?? 'Section';
+          processControls(ctrl.controls ?? [], sectionName);
+        } else {
+          if (ctrl.id != null && currentSection) {
+            map[String(ctrl.id)] = currentSection;
+          }
+          if (ctrl.controls) {
+            processControls(ctrl.controls, currentSection);
+          }
+        }
+      }
+    };
+
+    processControls(
+      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
+      null,
+    );
+
+    return Object.keys(map).length > 0 ? map : undefined;
+  }, [formMetadata]);
 
   const modalErrorMessage = useMemo(() => {
     if (metadataError) {
@@ -253,7 +316,7 @@ const FormsTable: React.FC<WidgetProps> = ({
 
   return (
     <>
-      <div data-testid="forms-table">
+      <div id="forms-table" data-testid="forms-table">
         {loading ||
         !!isError ||
         processedForms.length === 0 ||
@@ -321,6 +384,8 @@ const FormsTable: React.FC<WidgetProps> = ({
             emptyStateMessage={t('NO_FORM_DATA_AVAILABLE')}
             testIdPrefix={selectedRecord.formName}
             hideThumbnail={hideThumbnail}
+            controlOrder={controlOrder}
+            sectionMap={sectionMap}
           />
         </Modal>
       )}

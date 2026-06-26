@@ -13,6 +13,7 @@ import {
   generateId,
   getFormattedPatientById,
   capitalize,
+  hasPrivilege,
 } from '@bahmni/services';
 import {
   ProgramDetails,
@@ -206,6 +207,13 @@ const ConsultationPage: React.FC = () => {
     };
   }, [dashboardConfig, userPrivileges]);
 
+  const filteredPrintOptions = useMemo(() => {
+    if (!currentDashboard?.printOptions || !userPrivileges) return [];
+    return currentDashboard.printOptions.filter((option) =>
+      hasPrivilege(userPrivileges, option.privileges),
+    );
+  }, [currentDashboard, userPrivileges]);
+
   const sidebarItems = useMemo(() => {
     if (!filteredDashboardConfig) return [];
     return getSidebarItems(filteredDashboardConfig, t);
@@ -281,7 +289,7 @@ const ConsultationPage: React.FC = () => {
   };
 
   return (
-    <ClinicalAppProvider episodeUuids={episodeUuids}>
+    <ClinicalAppProvider episodeUuids={episodeUuids} patientId={patientUUID}>
       {/* Rendered outside ActionAreaLayout: uses position:fixed to overlay the header area.
           Placed here (inside ClinicalAppProvider) so it has access to clinical context. */}
       <PatientSearch isOpen={isSearchOpen} onClose={handleSearchClose} />
@@ -315,7 +323,10 @@ const ConsultationPage: React.FC = () => {
               aria-label={t('PATIENT_HEADER_SECTION')}
               className={styles.stickySection}
             >
-              <PatientHeader isActionAreaVisible={isActionAreaVisible} />
+              <PatientHeader
+                isActionAreaVisible={isActionAreaVisible}
+                printOptions={filteredPrintOptions}
+              />
               {renderContextInformation()}
             </div>
             <DashboardContainer

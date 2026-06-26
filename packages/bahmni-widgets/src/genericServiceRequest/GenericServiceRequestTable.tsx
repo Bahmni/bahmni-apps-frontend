@@ -1,9 +1,10 @@
 import {
-  SortableDataTable,
+  DataTable,
   TooltipIcon,
   Accordion,
   AccordionItem,
   Tag,
+  StatusTag,
 } from '@bahmni/design-system';
 import {
   getFormattedError,
@@ -21,6 +22,7 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
+import TaskList from '../tasks/TaskList';
 import {
   ServiceRequestViewModel,
   ServiceRequestStatus,
@@ -29,6 +31,7 @@ import {
 import styles from './styles/GenericServiceRequestTable.module.scss';
 import {
   filterServiceRequestReplacementEntries,
+  getStatusDotClassName,
   mapServiceRequest,
   sortServiceRequestsByPriority,
 } from './utils';
@@ -67,6 +70,10 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const categoryName = (config?.orderType as string) || '';
+  const showTasks = config?.showTasks === true;
+  const tasksControlConfig = config?.tasksControlConfig as
+    | Record<string, unknown>
+    | undefined;
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -147,20 +154,28 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
 
   const headers = useMemo(
     () => [
-      { key: 'testName', header: t('SERVICE_REQUEST_TEST_NAME') },
-      { key: 'orderedBy', header: t('SERVICE_REQUEST_ORDERED_BY') },
-      { key: 'status', header: t('SERVICE_REQUEST_ORDERED_STATUS') },
+      {
+        key: 'testName',
+        header: t('SERVICE_REQUEST_TEST_NAME'),
+        enableSorting: true,
+      },
+      {
+        key: 'orderedBy',
+        header: t('SERVICE_REQUEST_ORDERED_BY'),
+        enableSorting: true,
+      },
+      {
+        key: 'orderedOn',
+        header: t('SERVICE_REQUEST_ORDERED_ON'),
+        enableSorting: true,
+      },
+      {
+        key: 'status',
+        header: t('SERVICE_REQUEST_ORDERED_STATUS'),
+        enableSorting: true,
+      },
     ],
     [t],
-  );
-
-  const sortable = useMemo(
-    () => [
-      { key: 'testName', sortable: true },
-      { key: 'orderedBy', sortable: true },
-      { key: 'status', sortable: true },
-    ],
-    [],
   );
 
   const processedServiceRequests = useMemo(() => {
@@ -213,13 +228,19 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
           );
         case 'orderedBy':
           return request.orderedBy;
+        case 'orderedOn':
+          return request.orderedDate
+            ? formatDateTime(request.orderedDate, t, true).formattedResult
+            : '-';
         case 'status':
           return (
-            <Tag type="outline">
-              {t(
+            <StatusTag
+              label={t(
                 STATUS_TRANSLATION_MAP[request.status as ServiceRequestStatus],
               )}
-            </Tag>
+              dotClassName={getStatusDotClassName(request.status, styles)}
+              testId={`${request.id}-status`}
+            />
           );
 
         default:
@@ -230,13 +251,16 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
   );
 
   return (
-    <div data-testid="generic-service-request-table">
+    <div
+      id="generic-service-request-table"
+      data-testid="generic-service-request-table"
+    >
       {isLoading ||
       !!isError ||
       processedServiceRequests.length === 0 ||
       emptyEncounterFilter ? (
-        <SortableDataTable
-          headers={headers}
+        <DataTable
+          columns={headers}
           ariaLabel={t('SERVICE_REQUEST_HEADING')}
           rows={[]}
           loading={isLoading}
@@ -259,17 +283,41 @@ const GenericServiceRequestTable: React.FC<WidgetProps> = ({
                 testId={'accordian-table-title'}
                 open={index === 0}
               >
-                <SortableDataTable
-                  headers={headers}
-                  ariaLabel={t('SERVICE_REQUEST_HEADING')}
+                <DataTable
+                  columns={headers}
                   rows={requests}
+                  ariaLabel={t('SERVICE_REQUEST_HEADING')}
+                  dataTestId={`generic-service-request-table-${date}`}
                   loading={isLoading}
                   errorStateMessage={''}
-                  sortable={sortable}
                   emptyStateMessage={t('NO_SERVICE_REQUESTS')}
                   renderCell={renderCell}
+                  shouldRowBeExpandable={showTasks ? () => true : undefined}
+                  renderExpandedContent={
+                    showTasks
+                      ? (request) => (
+                          <tr>
+                            <td className={styles.expandableContentSpacer} />
+                            <td
+                              colSpan={headers.length}
+                              className={styles.expandedContent}
+                            >
+                              <TaskList
+                                config={tasksControlConfig}
+                                episodeOfCareUuids={episodeOfCareUuids}
+                                encounterUuids={encounterUuids}
+                                orderReference={request.id}
+                                showEmptyStateMessage={false}
+                              />
+                            </td>
+                          </tr>
+                        )
+                      : undefined
+                  }
+                  initialExpandedRows={
+                    showTasks ? requests.map((r) => r.id) : undefined
+                  }
                   className={styles.serviceRequestTableBody}
-                  dataTestId={`generic-service-request-table-${date}`}
                 />
               </AccordionItem>
             );

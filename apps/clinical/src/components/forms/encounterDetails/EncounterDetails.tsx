@@ -13,9 +13,9 @@ import {
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useActiveVisit } from '../../../hooks/useActiveVisit';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useLocations } from '../../../hooks/useLocations';
+import { usePatientVisit } from '../../../hooks/usePatientVisit';
 import { Concept } from '../../../models/encounterConcepts';
 import { OpenMRSLocation } from '../../../models/location';
 import { useEncounterDetailsStore } from '../../../stores';
@@ -31,7 +31,7 @@ const EncounterDetails: React.FC = () => {
     activeVisit,
     loading: loadingActiveVisit,
     error: activeVisitError,
-  } = useActiveVisit(patientUUID);
+  } = usePatientVisit(patientUUID);
   const {
     locations,
     loading: loadingLocations,

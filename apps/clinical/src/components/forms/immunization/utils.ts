@@ -1,5 +1,4 @@
 import {
-  generateUUID,
   resolveComboBoxItems,
   formatDateTime,
   Location,
@@ -16,7 +15,7 @@ import {
 } from 'fhir/r4';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import { getMedicationDisplay } from '../../../services/medicationService';
-import { createBundleEntry } from '../../../utils/fhir/consultationBundleCreator';
+import { createBundleEntry } from '../../../utils/fhir/encounterBundleCreator';
 import {
   createEncounterReferenceFromString,
   createPractitionerReference,
@@ -261,6 +260,7 @@ export function createImmunizationBundleEntries({
     ];
     const resource: Immunization = {
       resourceType: 'Immunization',
+      id: entry.id,
       status: 'completed',
       vaccineCode: {
         coding: [
@@ -311,6 +311,6 @@ export function createImmunizationBundleEntries({
       ],
     };
 
-    return createBundleEntry(`urn:uuid:${generateUUID()}`, resource, 'POST');
+    return createBundleEntry(`urn:uuid:${entry.id}`, resource, 'POST');
   });
 }

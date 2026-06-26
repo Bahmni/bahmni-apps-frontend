@@ -40,6 +40,14 @@ function filterEncountersByVisit(
   );
 }
 
+function sortByMostRecent(encounters: Encounter[]): Encounter[] {
+  return [...encounters].sort((a, b) => {
+    const dateA = new Date(a.period?.start ?? 0).getTime();
+    const dateB = new Date(b.period?.start ?? 0).getTime();
+    return dateB - dateA;
+  });
+}
+
 export async function resolveEncounterMatchDecision(
   patientUUID: string,
   practitionerUUID: string,
@@ -83,9 +91,8 @@ export async function resolveEncounterMatchDecision(
       recentEncounters,
       activeVisit.id,
     );
-    const practitionerEncountersAllTime = filterEncountersByVisit(
-      practitionerAllTimeEncounters,
-      activeVisit.id,
+    const practitionerEncountersAllTime = sortByMostRecent(
+      filterEncountersByVisit(practitionerAllTimeEncounters, activeVisit.id),
     );
 
     // 5. No encounters at all → NO_ACTIVE_ENCOUNTER
@@ -109,24 +116,20 @@ export async function resolveEncounterMatchDecision(
         (p) => getReferenceId(p.individual?.reference) === uuid,
       ) ?? false;
 
-    const currentPractitionerRecentEncounters = recentEncountersInVisit.filter(
-      (e) => hasParticipant(e, practitionerUUID),
+    const currentPractitionerRecentEncounters = sortByMostRecent(
+      recentEncountersInVisit.filter((e) =>
+        hasParticipant(e, practitionerUUID),
+      ),
     );
-    const otherProvidersRecentEncounters = recentEncountersInVisit.filter(
-      (e) => !hasParticipant(e, practitionerUUID),
+    const otherProvidersRecentEncounters = sortByMostRecent(
+      recentEncountersInVisit.filter(
+        (e) => !hasParticipant(e, practitionerUUID),
+      ),
     );
 
-    // 7. Multiple recent encounters by this practitioner → MULTIPLE_ENCOUNTERS_FOUND
-    if (currentPractitionerRecentEncounters.length > 1) {
-      return {
-        matched: false,
-        encounter: currentPractitionerRecentEncounters[0],
-        reasons: ['MULTIPLE_ENCOUNTERS_FOUND'],
-      };
-    }
-
-    // 8. One recent encounter by this practitioner → MATCHED or LOCATION_MISMATCH
-    if (currentPractitionerRecentEncounters.length === 1) {
+    // 7. Recent encounters by this practitioner → MATCHED or LOCATION_MISMATCH
+    //    When multiple exist, pick the most recent by period.start.
+    if (currentPractitionerRecentEncounters.length >= 1) {
       const encounter = currentPractitionerRecentEncounters[0];
       if (checkLocationMatch(encounter, locationUUID)) {
         return { matched: true, encounter, reasons: ['MATCHED'] };

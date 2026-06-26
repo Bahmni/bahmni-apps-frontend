@@ -1,5 +1,7 @@
 import { ObservationForm } from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import ObservationFormsContainer from '../ObservationFormsContainer';
 
 // Mock the defaultFormNames import
@@ -10,6 +12,10 @@ jest.mock('../ObservationForms', () => ({
 // Mock the hooks used by the component
 jest.mock('../../../../hooks/useObservationFormsSearch');
 jest.mock('../../../../hooks/usePinnedObservationForms');
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(),
+}));
 
 // Mock the extracted custom hooks
 const mockUseObservationFormData = jest.fn();
@@ -39,6 +45,9 @@ const mockGetValue = jest.fn();
 // Mock state data for form container
 const mockContainerState = { data: {} };
 
+// Captures the patient prop passed to CarbonContainer most recently
+let lastCarbonContainerPatient: unknown = undefined;
+
 jest.mock('@bahmni/form2-controls', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mockReact = require('react');
@@ -48,6 +57,9 @@ jest.mock('@bahmni/form2-controls', () => {
         getValue: mockGetValue,
         state: mockContainerState,
       }));
+
+      // Capture patient prop for assertions
+      lastCarbonContainerPatient = props.patient;
 
       return (
         <div data-testid="form2-container">
@@ -74,6 +86,7 @@ jest.mock('@bahmni/widgets', () => ({
 jest.mock('../../../../hooks/useClinicalAppData', () => ({
   useClinicalAppData: jest.fn(() => ({
     episodeOfCare: [],
+    activeVisitId: null,
   })),
 }));
 
@@ -196,6 +209,24 @@ describe('ObservationFormsContainer', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    lastCarbonContainerPatient = undefined;
+
+    // Default mock for useQuery — minimal patient data so form renders
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 'test-patient-uuid',
+        fullName: null,
+        givenName: null,
+        familyName: null,
+        gender: null,
+        birthDate: null,
+        birthtime: null,
+        formattedAddress: null,
+        formattedContact: null,
+        identifiers: new Map(),
+        identifier: null,
+      },
+    });
 
     // Set default mock for getValue to return no errors
     mockGetValue.mockReturnValue({
@@ -478,6 +509,124 @@ describe('ObservationFormsContainer', () => {
 
       // Verify useObservationFormData was called with undefined
       expect(mockUseObservationFormData).toHaveBeenCalledWith(undefined);
+    });
+
+    it('should pass enriched patient context from FHIR cache to CarbonContainer', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          id: 'test-patient-uuid',
+          fullName: 'John Doe',
+          givenName: 'John',
+          familyName: 'Doe',
+          gender: 'male',
+          birthDate: '1996-01-01',
+          birthtime: null,
+          formattedAddress: null,
+          formattedContact: null,
+          identifiers: new Map(),
+          identifier: 'BAH-001',
+        },
+      });
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: { schema: { name: 'Test Form Schema', controls: [] } },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      (useClinicalAppData as jest.Mock).mockReturnValue({
+        episodeOfCare: [],
+        activeVisitId: 'visit-uuid-456',
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          activeEncounterUuid="encounter-uuid-789"
+        />,
+      );
+
+      expect(screen.getByTestId('form2-container')).toBeInTheDocument();
+      expect(lastCarbonContainerPatient).toEqual(
+        expect.objectContaining({
+          uuid: 'test-patient-uuid',
+          identifier: 'BAH-001',
+          display: 'John Doe',
+          givenName: 'John',
+          familyName: 'Doe',
+          gender: 'M',
+          activeVisitUuid: 'visit-uuid-456',
+          currentEncounterUuid: 'encounter-uuid-789',
+        }),
+      );
+    });
+
+    it('should pass enriched patient to executeOnFormSaveEvent', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          id: 'test-patient-uuid',
+          fullName: 'John Doe',
+          givenName: 'John',
+          familyName: 'Doe',
+          gender: 'male',
+          birthDate: null,
+          birthtime: null,
+          formattedAddress: null,
+          formattedContact: null,
+          identifiers: new Map(),
+          identifier: 'BAH-001',
+        },
+      });
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: { schema: { name: 'Test Form Schema', controls: [] } },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      mockGetValue.mockReturnValue({
+        errors: [],
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          activeEncounterUuid={null}
+        />,
+      );
+
+      fireEvent.click(screen.getByTestId('primary-button'));
+
+      expect(mockExecuteOnFormSaveEvent).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.any(Array),
+        expect.objectContaining({
+          uuid: 'test-patient-uuid',
+          identifier: 'BAH-001',
+        }),
+        expect.anything(),
+      );
+    });
+
+    it('should use queryKey [patient, patientUUID] matching ConsultationPage cache', () => {
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(useQuery as jest.Mock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: ['patient', 'test-patient-uuid'],
+        }),
+      );
     });
   });
 

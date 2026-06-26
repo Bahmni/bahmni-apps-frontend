@@ -29,6 +29,9 @@
     },
     {
       "path": "./apps/appointments"
+    },
+    {
+      "path": "./apps/command-palette"
     }
   ]
 }

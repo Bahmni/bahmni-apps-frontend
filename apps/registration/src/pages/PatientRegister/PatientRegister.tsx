@@ -63,11 +63,11 @@ const PatientRegister = () => {
     useRef<AdditionalIdentifiersRef>(null);
 
   const {
+    patientDetails,
     profileInitialData,
     personAttributesInitialData,
     addressInitialData,
     additionalIdentifiersInitialData,
-    relationshipsInitialData,
     initialDobEstimated,
     metadata: initialMetadata,
   } = usePatientDetails({
@@ -76,9 +76,8 @@ const PatientRegister = () => {
 
   const [metadata, setMetadata] = useState(initialMetadata);
 
-  const { patientPhoto } = usePatientPhoto({
-    patientUuid: metadata?.patientUuid,
-  });
+  const photoUrl = patientDetails?.photo?.[0]?.url;
+  const { patientPhoto } = usePatientPhoto({ photoUrl });
 
   useEffect(() => {
     if (initialMetadata) {
@@ -253,7 +252,6 @@ const PatientRegister = () => {
       addressInitialData,
       personAttributesInitialData,
       additionalIdentifiersInitialData,
-      relationshipsInitialData,
       initialDobEstimated,
       patientPhoto: patientPhoto ?? undefined,
     }),
@@ -262,7 +260,6 @@ const PatientRegister = () => {
       addressInitialData,
       personAttributesInitialData,
       additionalIdentifiersInitialData,
-      relationshipsInitialData,
       initialDobEstimated,
       patientPhoto,
     ],
@@ -378,6 +375,7 @@ const PatientRegister = () => {
                 <RegistrationActions
                   extensionPointId="org.bahmni.registration.navigation"
                   onBeforeNavigate={handleSave}
+                  disabled={isSaving}
                 />
               </div>
             </div>

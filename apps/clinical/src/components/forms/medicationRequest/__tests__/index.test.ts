@@ -30,6 +30,8 @@ const makeStoreMock = (overrides = {}) => {
     reset: jest.fn(),
     validateAll: jest.fn().mockReturnValue(true),
     selectedMedicationRequests: [],
+    updateItemCDSCards: jest.fn(),
+    hasCriticalCDSCards: jest.fn().mockReturnValue(false),
     ...overrides,
   });
   return mockStore;
@@ -126,6 +128,53 @@ describe('medicationRequest index registration', () => {
         practitionerUUID: ctx.practitionerUUID,
         statDurationInMilliseconds: ctx.statDurationInMilliseconds,
       });
+    },
+  );
+
+  it.each(['medication', 'vaccination'] as const)(
+    'updateItemCDSCards() delegates to store for key "%s"',
+    (key) => {
+      const mockUpdateItemCDSCards = jest.fn();
+      mockGetStore.mockImplementation(() =>
+        makeStoreMock({ updateItemCDSCards: mockUpdateItemCDSCards }),
+      );
+
+      const mockCards = [
+        {
+          summary: 'Test card',
+          indicator: 'warning' as const,
+          source: { label: 'Test' },
+        },
+      ];
+
+      const entry = getRegisteredInputControls().find((e) => e.key === key);
+      entry?.updateItemCDSCards?.('item-123', mockCards);
+
+      expect(mockUpdateItemCDSCards).toHaveBeenCalledWith(
+        'item-123',
+        mockCards,
+      );
+    },
+  );
+
+  it.each([
+    { key: 'medication' as const, hasCritical: false },
+    { key: 'medication' as const, hasCritical: true },
+    { key: 'vaccination' as const, hasCritical: false },
+    { key: 'vaccination' as const, hasCritical: true },
+  ])(
+    'hasCriticalCDSCards() returns $hasCritical for key "$key"',
+    ({ key, hasCritical }) => {
+      const mockHasCriticalCDSCards = jest.fn().mockReturnValue(hasCritical);
+      mockGetStore.mockImplementation(() =>
+        makeStoreMock({ hasCriticalCDSCards: mockHasCriticalCDSCards }),
+      );
+
+      const entry = getRegisteredInputControls().find((e) => e.key === key);
+      const result = entry?.hasCriticalCDSCards?.();
+
+      expect(mockHasCriticalCDSCards).toHaveBeenCalledTimes(1);
+      expect(result).toBe(hasCritical);
     },
   );
 });

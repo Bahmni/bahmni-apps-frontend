@@ -21,6 +21,14 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         <div
           class="cds--list-box__wrapper"
         >
+          <label
+            class="cds--label"
+            dir="auto"
+            for="immunization-drug-name-combobox-test-id-1"
+            id="downshift-_r_rp_-label"
+          >
+            Drug Name
+          </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
           >
@@ -33,7 +41,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 aria-controls="downshift-_r_rp_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-label="Choose an item"
+                aria-labelledby="downshift-_r_rp_-label"
                 autocomplete="off"
                 class="cds--text-input cds--text-input--empty"
                 data-testid="immunization-drug-name-combobox-test-id-1-test-id"
@@ -95,7 +103,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               class="cds--date-picker-container"
             >
               <label
-                class="cds--label cds--visually-hidden"
+                class="cds--label"
                 dir="auto"
                 for="immunization-administered-on-test-id-1"
               >
@@ -141,6 +149,14 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         <div
           class="cds--list-box__wrapper"
         >
+          <label
+            class="cds--label"
+            dir="auto"
+            for="immunization-administered-location-combobox-test-id-1"
+            id="downshift-_r_rt_-label"
+          >
+            Administration Location
+          </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
           >
@@ -153,7 +169,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 aria-controls="downshift-_r_rt_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-label="Choose an item"
+                aria-labelledby="downshift-_r_rt_-label"
                 autocomplete="off"
                 class="cds--text-input cds--text-input--empty"
                 data-testid="immunization-administered-location-test-id-1-test-id"
@@ -207,6 +223,14 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         <div
           class="cds--list-box__wrapper"
         >
+          <label
+            class="cds--label"
+            dir="auto"
+            for="immunization-route-combobox-test-id-1"
+            id="downshift-_r_s0_-label"
+          >
+            Route
+          </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
           >
@@ -219,7 +243,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 aria-controls="downshift-_r_s0_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-label="Choose an item"
+                aria-labelledby="downshift-_r_s0_-label"
                 autocomplete="off"
                 class="cds--text-input cds--text-input--empty"
                 data-testid="immunization-route-test-id-1-test-id"
@@ -273,6 +297,14 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         <div
           class="cds--list-box__wrapper"
         >
+          <label
+            class="cds--label"
+            dir="auto"
+            for="immunization-site-combobox-test-id-1"
+            id="downshift-_r_s3_-label"
+          >
+            Body Site
+          </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
           >
@@ -285,7 +317,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 aria-controls="downshift-_r_s3_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-label="Choose an item"
+                aria-labelledby="downshift-_r_s3_-label"
                 autocomplete="off"
                 class="cds--text-input cds--text-input--empty"
                 data-testid="immunization-site-test-id-1-test-id"
@@ -343,7 +375,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
             class="cds--text-input__label-wrapper"
           >
             <label
-              class="cds--label cds--visually-hidden"
+              class="cds--label"
               dir="auto"
               for="immunization-manufacturer-test-id-1"
             >
@@ -381,6 +413,14 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         <div
           class="cds--list-box__wrapper batchNumber"
         >
+          <label
+            class="cds--label"
+            dir="auto"
+            for="immunization-batch-number-test-id-1"
+            id="downshift-_r_s6_-label"
+          >
+            Batch Number
+          </label>
           <div
             class="cds--combo-box cds--autoalign cds--list-box"
           >
@@ -393,7 +433,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
                 aria-controls="downshift-_r_s6_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-label="Choose an item"
+                aria-labelledby="downshift-_r_s6_-label"
                 autocomplete="off"
                 class="cds--text-input cds--text-input--empty"
                 data-testid="immunization-batch-number-test-id-1"
@@ -445,13 +485,13 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
         class="column cds--sm:col-span-4 cds--md:col-span-2 cds--lg:col-span-5 cds--css-grid-column"
       >
         <div
-          class="cds--form-item"
+          class="cds--form-item doseSequenceInput"
         >
           <div
-            class="cds--number cds--number--helpertext cds--number--nolabel cds--number--md"
+            class="cds--number cds--number--helpertext cds--number--md"
           >
             <label
-              class="cds--label cds--visually-hidden"
+              class="cds--label"
               dir="auto"
               for="immunization-dose-sequence-test-id-1"
             >
@@ -545,7 +585,7 @@ exports[`SelectedImmunizationItem Snapshots matches snapshot with all form field
               class="cds--date-picker-container"
             >
               <label
-                class="cds--label cds--visually-hidden"
+                class="cds--label"
                 dir="auto"
                 for="immunization-expiry-date-test-id-1"
               >

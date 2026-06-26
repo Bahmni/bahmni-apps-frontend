@@ -1,5 +1,6 @@
 import {
   parseISO,
+  parse,
   isValid,
   differenceInYears,
   differenceInMonths,
@@ -28,13 +29,30 @@ export interface FormatDateResult {
   };
 }
 
-/**
- * Calculates age based on a date string in the format yyyy-mm-dd
- * Returns age as an object with years, months, and days properties
- *
- * @param dateString - Birth date string in the format yyyy-mm-dd
- * @returns Age object containing years, months, and days or null if the input is invalid
- */
+export interface AgeDetails {
+  year: number;
+  month: number;
+  day: number;
+  ageInDays: number;
+  ageText: string;
+}
+
+export function computeAgeDetails(birthdate: string): AgeDetails | null {
+  if (!birthdate) return null;
+  const birth = parseISO(birthdate);
+  if (!isValid(birth)) return null;
+  const now = new Date();
+  if (birth > now) return null;
+  const ageInDays = differenceInDays(now, birth);
+  const year = differenceInYears(now, birth);
+  const afterYears = addYears(birth, year);
+  const month = differenceInMonths(now, afterYears);
+  const afterMonths = addMonths(afterYears, month);
+  const day = differenceInDays(now, afterMonths);
+  const ageText = `${year}y ${month}m ${day}d`;
+  return { year, month, day, ageInDays, ageText };
+}
+
 export function calculateAge(dateString: string): Age | null {
   if (
     typeof dateString !== 'string' ||
@@ -512,4 +530,31 @@ export function sortByDate(
     const diff = dateA.getTime() - dateB.getTime();
     return ascending ? diff : -diff;
   });
+}
+
+/**
+ * Converts 12-hour time format (with AM/PM) to 24-hour format
+ * @param timeStr - Time string in 12-hour format (e.g., "02:30 PM", "11:45 AM")
+ * @returns Time string in 24-hour format (e.g., "14:30", "11:45"), or empty string if invalid
+ */
+export function convertTo24HourFormat(timeStr: string): string {
+  if (!timeStr?.trim()) return '';
+
+  const parsed = parse(timeStr, 'hh:mm aa', new Date());
+  if (!isValid(parsed)) return '';
+
+  return format(parsed, 'HH:mm');
+}
+
+/**
+ * Converts a time string in 12-hour format (with AM/PM) to total minutes since midnight.
+ * Useful for time comparisons and calculations.
+ * @param timeStr - Time string in 12-hour format (e.g., "09:00 AM", "02:30 PM")
+ * @returns Total minutes since midnight, or null if the input is invalid
+ */
+export function getTimeInMinutes(timeStr: string): number | null {
+  const time24 = convertTo24HourFormat(timeStr);
+  if (!time24) return null;
+  const [hours, minutes] = time24.split(':').map(Number);
+  return hours * 60 + minutes;
 }

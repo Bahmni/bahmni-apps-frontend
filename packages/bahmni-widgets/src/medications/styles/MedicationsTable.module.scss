@@ -69,6 +69,13 @@
   color: $cool-gray-20;
 }
 
+.stopReasonText {
+  @include type-style("helper-text-01");
+  color: $text-secondary;
+  display: block;
+  margin-block-start: $spacing-02;
+}
+
 .rowSeperator {
   td {
     border-block-end: 0 !important;
@@ -84,6 +91,10 @@
   }
 }
 
+.medicationsTableWrapper {
+  position: relative;
+}
+
 .customAccordianItem {
   background-color: $layer-01;
   :global(.cds--accordion__content) {
@@ -95,3 +106,28 @@
     padding-block-end: 0rem !important;
   }
 }
+
+:global([data-split-view] #main-display-area #medications-table) {
+  div[id^="accordion-item"] {
+    overflow-x: auto;
+  }
+  div[id^="accordion-item"]:has(table td:nth-child(5)) {
+    padding-block-end: $spacing-05;
+  }
+  table:has(td:nth-child(5)) {
+    min-width: 62.5rem;
+    td, th {
+      min-width: 6.875rem;
+    }
+    td:first-child, th:first-child {
+      min-width: unset !important;
+    }
+  }
+}
+
+.stopDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
