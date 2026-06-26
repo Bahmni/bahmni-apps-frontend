@@ -474,10 +474,8 @@ describe('appointmentSearchResultActionHandler', () => {
       };
 
       (checkInAppointment as jest.Mock).mockResolvedValue({
-        visitUuid: 'visit-uuid-1',
-        patientUuid: 'patient-uuid-1',
         appointmentUuid: 'appt-uuid-1',
-        appointmentStatus: 'Arrived',
+        status: 'Arrived',
       });
 
       await handleActionButtonClick(
@@ -505,10 +503,8 @@ describe('appointmentSearchResultActionHandler', () => {
       };
 
       (checkInAppointment as jest.Mock).mockResolvedValue({
-        visitUuid: 'visit-uuid-1',
-        patientUuid: 'patient-uuid-1',
         appointmentUuid: 'appt-uuid-1',
-        appointmentStatus: 'Arrived',
+        status: 'Arrived',
       });
 
       await handleActionButtonClick(

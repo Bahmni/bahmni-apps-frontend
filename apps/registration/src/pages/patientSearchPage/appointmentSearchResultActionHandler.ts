@@ -97,7 +97,7 @@ export const handleActionButtonClick = async (
         pageOfResults: updateAppointmentStatusInResults(
           patientSearchData.pageOfResults,
           response.appointmentUuid,
-          response.appointmentStatus,
+          response.status,
         ),
       };
       setPatientSearchData(updatedPatientSearchData);

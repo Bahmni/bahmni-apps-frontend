@@ -164,10 +164,8 @@ export interface AppointmentSearchResult extends PatientSearchResult {
 }
 
 export interface CheckInAppointmentResponse {
-  visitUuid: string;
-  patientUuid: string;
   appointmentUuid: string;
-  appointmentStatus: string;
+  status: string;
 }
 export interface Appointment {
   length: number;
