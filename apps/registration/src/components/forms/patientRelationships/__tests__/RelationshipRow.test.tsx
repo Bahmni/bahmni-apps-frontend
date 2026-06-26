@@ -475,6 +475,137 @@ describe('RelationshipRow', () => {
     });
   });
 
+  describe('selected patient display (BAH-4825)', () => {
+    // Regression: when another row triggers a patient search, the shared
+    // `suggestions` list is replaced with results for that search. The previous
+    // fix looked up the selected patient inside `suggestions`, so it returned
+    // undefined and selectedItem became null — clearing the displayed name.
+    // The fix must build selectedItem from the row's own stored fields
+    // (patientUuid / patientId / patientName) regardless of what is in suggestions.
+    it('should display stored patient even when suggestions does not contain that patient', () => {
+      const selectedRelationship: RelationshipData = {
+        ...mockRelationship,
+        patientUuid: 'patient-uuid-abc',
+        patientId: 'PAT999',
+        patientName: 'Alice Example',
+      };
+
+      // suggestions contain a DIFFERENT patient — simulating another row's search results
+      const differentSuggestions: PatientSuggestion[] = [
+        {
+          id: 'other-patient',
+          identifier: 'OTHER001',
+          name: 'Other Patient',
+          text: 'Other Patient (OTHER001)',
+        },
+      ];
+
+      const row = RelationshipRow({
+        relationship: selectedRelationship,
+        relationshipTypes: mockRelationshipTypes,
+        suggestions: differentSuggestions,
+        errors: mockErrors,
+        ...mockCallbacks,
+      });
+
+      const selectedItem = row.patientId.props.selectedItem as {
+        id: string;
+        identifier: string;
+        name: string;
+        text: string;
+      } | null;
+
+      expect(selectedItem).not.toBeNull();
+      expect(selectedItem?.id).toBe('patient-uuid-abc');
+      expect(selectedItem?.identifier).toBe('PAT999');
+      expect(selectedItem?.name).toBe('Alice Example');
+      expect(selectedItem?.text).toBe('Alice Example (PAT999)');
+    });
+
+    // AC4: multiple rows with selected patients must each keep their own display,
+    // independent of the single shared `suggestions` list (which only ever holds
+    // the most recent row's search results). Each row derives selectedItem solely
+    // from its own stored fields, so a foreign suggestions list affects neither.
+    it('should display each row independently when multiple rows have selected patients', () => {
+      const rowARelationship: RelationshipData = {
+        ...mockRelationship,
+        id: 'rel-a',
+        patientUuid: 'uuid-alice',
+        patientId: 'PAT999',
+        patientName: 'Alice Example',
+      };
+      const rowBRelationship: RelationshipData = {
+        ...mockRelationship,
+        id: 'rel-b',
+        patientUuid: 'uuid-bob',
+        patientId: 'PAT888',
+        patientName: 'Bob Sample',
+      };
+
+      // suggestions contain NEITHER selected patient — simulating a third search
+      const unrelatedSuggestions: PatientSuggestion[] = [
+        {
+          id: 'other-patient',
+          identifier: 'OTHER001',
+          name: 'Other Patient',
+          text: 'Other Patient (OTHER001)',
+        },
+      ];
+
+      const rowA = RelationshipRow({
+        relationship: rowARelationship,
+        relationshipTypes: mockRelationshipTypes,
+        suggestions: unrelatedSuggestions,
+        errors: mockErrors,
+        ...mockCallbacks,
+      });
+      const rowB = RelationshipRow({
+        relationship: rowBRelationship,
+        relationshipTypes: mockRelationshipTypes,
+        suggestions: unrelatedSuggestions,
+        errors: mockErrors,
+        ...mockCallbacks,
+      });
+
+      type SelectedItem = {
+        id: string;
+        identifier: string;
+        name: string;
+        text: string;
+      } | null;
+
+      const rowASelected = rowA.patientId.props.selectedItem as SelectedItem;
+      const rowBSelected = rowB.patientId.props.selectedItem as SelectedItem;
+
+      expect(rowASelected?.id).toBe('uuid-alice');
+      expect(rowASelected?.name).toBe('Alice Example');
+      expect(rowASelected?.text).toBe('Alice Example (PAT999)');
+
+      expect(rowBSelected?.id).toBe('uuid-bob');
+      expect(rowBSelected?.name).toBe('Bob Sample');
+      expect(rowBSelected?.text).toBe('Bob Sample (PAT888)');
+    });
+
+    it('should return null selectedItem when patientUuid is not set', () => {
+      const unselectedRelationship: RelationshipData = {
+        ...mockRelationship,
+        patientUuid: undefined,
+        patientId: '',
+        patientName: undefined,
+      };
+
+      const row = RelationshipRow({
+        relationship: unselectedRelationship,
+        relationshipTypes: mockRelationshipTypes,
+        suggestions: mockSuggestions,
+        errors: mockErrors,
+        ...mockCallbacks,
+      });
+
+      expect(row.patientId.props.selectedItem).toBeNull();
+    });
+  });
+
   describe('Edge cases', () => {
     it('should handle null item in itemToString for relationship type', () => {
       const row = RelationshipRow({
@@ -530,6 +661,10 @@ describe('RelationshipRow', () => {
     });
 
     it('should handle empty patient suggestions gracefully', () => {
+      // With BAH-4825 fix, selectedItem is derived from row's stored fields
+      // (patientUuid/patientId/patientName), not from the suggestions list.
+      // When patientUuid is set, the selected patient is displayed regardless
+      // of whether suggestions contains that patient.
       const row = RelationshipRow({
         relationship: { ...mockRelationship, patientId: 'NON_EXISTENT' },
         relationshipTypes: mockRelationshipTypes,
@@ -542,7 +677,9 @@ describe('RelationshipRow', () => {
 
       const combobox = screen.getByRole('combobox');
       expect(combobox).toBeInTheDocument();
-      expect(combobox).toHaveValue('');
+      // patientUuid is set (from mockRelationship), so selectedItem is non-null
+      // and the text is derived from patientId (since patientName is not set)
+      expect(combobox).toHaveValue('NON_EXISTENT');
     });
   });
 });
