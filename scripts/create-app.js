@@ -524,6 +524,11 @@ function patchDistroAppTsx(distroPath, appNameKebab, appNamePascal) {
   const filePath = path.join(distroPath, 'src/app/app.tsx');
   let content = fs.readFileSync(filePath, 'utf8');
 
+  if (content.includes(`@bahmni/${appNameKebab}-app`)) {
+    console.log(`  ${colors.green}✔${colors.reset} distro/src/app/app.tsx skipped (already wired)`);
+    return;
+  }
+
   const lazyImport = `const ${appNamePascal}App = lazy(() =>
   import('@bahmni/${appNameKebab}-app').then((module) => ({
     default: module.${appNamePascal}App,
@@ -545,16 +550,25 @@ function patchDistroWebpackConfig(distroPath, appNameKebab) {
   const filePath = path.join(distroPath, 'webpack.config.js');
   let content = fs.readFileSync(filePath, 'utf8');
 
-  content = content.replace(
+  if (content.includes(`@bahmni/${appNameKebab}-app`)) {
+    console.log(`  ${colors.green}✔${colors.reset} distro/webpack.config.js skipped (already wired)`);
+    return;
+  }
+
+  const withAlias = content.replace(
     '      } : {},',
     `        '@bahmni/${appNameKebab}-app': join(__dirname, '../apps/${appNameKebab}/src'),\n      } : {},`,
   );
+  if (withAlias === content) throw new Error(`Pattern not found in ${filePath}: could not insert webpack alias`);
+  content = withAlias;
 
   const newAsset = `          { input: isDevelopment ? '../apps/${appNameKebab}/public/locales' : '../apps/${appNameKebab}/dist/locales', glob: '**/*', output: '${appNameKebab}/locales' },`;
-  content = content.replace(
+  const withAsset = content.replace(
     '\n        ],\n        styles:',
     `\n${newAsset}\n        ],\n        styles:`,
   );
+  if (withAsset === content) throw new Error(`Pattern not found in ${filePath}: could not insert asset entry`);
+  content = withAsset;
 
   fs.writeFileSync(filePath, content);
 }
@@ -569,6 +583,7 @@ function patchDistroTsconfig(distroPath, appNameKebab) {
   );
 
   if (insertBeforeIndex === -1) {
+    console.log(`  ${colors.yellow}⚠${colors.reset} tsconfig.app.json reference not found — appending reference to end`);
     tsconfig.references.push(appRef);
   } else {
     tsconfig.references.splice(insertBeforeIndex, 0, appRef);
@@ -719,7 +734,7 @@ async function main() {
 
   console.log('\nInstalling dependencies...');
   try {
-    execSync('yarn install --frozen-lockfile -W', { cwd: rootDir, stdio: 'inherit' });
+    execSync('yarn install -W', { cwd: rootDir, stdio: 'inherit' });
     console.log(`  ${colors.green}✔${colors.reset} yarn install`);
   } catch (error) {
     console.log(`  ${colors.red}✘${colors.reset} yarn install failed — ${error.message}`);
