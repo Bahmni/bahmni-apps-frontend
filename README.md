@@ -50,7 +50,7 @@ For a comprehensive setup guide including development environments, Docker confi
 - `yarn lint` - Run ESLint to check for code quality issues
 - `yarn lint:fix` - Fix ESLint issues automatically
 - `yarn format` - Format code with Prettier
-- `yarn create:app` - Adds a new react app to apps/ following conventions
+- `yarn create:app` - Adds a new React app to apps/ following conventions
 
 ## Technologies
 

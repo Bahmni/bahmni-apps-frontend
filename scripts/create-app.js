@@ -77,7 +77,7 @@ function createDirectoryStructure(appPath) {
 function getPackageJsonTemplate(appNameKebab) {
   return JSON.stringify(
     {
-      name: `@bahmni/${appNameKebab}`,
+      name: `@bahmni/${appNameKebab}-app`,
       version: '0.0.1',
       type: 'module',
       main: './dist/index.js',
@@ -99,7 +99,7 @@ function getPackageJsonTemplate(appNameKebab) {
         'react-router-dom': '^7.5.3',
       },
       "author": "Thoughtworks Inc.",
-      "license": "MPLv2",
+      "license": "MPL-2.0",
       "files": [
         "dist",
         "README.md",
@@ -379,7 +379,11 @@ function getConstantsAppTemplate(appConstantName, appNamespace) {
 }
 
 function getIndexTsTemplate(appNamePascal) {
-  return `export { ${appNamePascal}App } from './App';
+  return `import { ${appNamePascal}App } from './App';
+import '@bahmni/widgets/styles';
+import './styles.scss';
+
+export { ${appNamePascal}App };
 `;
 }
 
@@ -505,14 +509,14 @@ export const renderRoutes = (routeConfigs: Routes) => {
 }
 
 function getIndexPageTemplate(appNamePascal) {
-  return `export const IndexPage: React.FC = () => {
+  return `export function IndexPage() {
   return (
     <div>
       <h1>Welcome to ${appNamePascal}</h1>
       <p>${appNamePascal} application for Bahmni</p>
     </div>
   );
-};
+}
 `;
 }
 
@@ -525,10 +529,14 @@ function patchDistroAppTsx(distroPath, appNameKebab, appNamePascal) {
     default: module.${appNamePascal}App,
   })),
 );\n`;
-  content = content.replace('\nexport function App()', `\n${lazyImport}\nexport function App()`);
+  const withLazy = content.replace('\nexport function App()', `\n${lazyImport}\nexport function App()`);
+  if (withLazy === content) throw new Error(`Pattern not found in ${filePath}: could not insert lazy import`);
+  content = withLazy;
 
   const route = `          <Route path="/${appNameKebab}/*" element={<${appNamePascal}App />} />\n`;
-  content = content.replace('          <Route path="*"', `${route}          <Route path="*"`);
+  const withRoute = content.replace('          <Route path="*"', `${route}          <Route path="*"`);
+  if (withRoute === content) throw new Error(`Pattern not found in ${filePath}: could not insert route`);
+  content = withRoute;
 
   fs.writeFileSync(filePath, content);
 }
@@ -631,6 +639,7 @@ function createAllFiles(appPath, transforms) {
       path: 'src/pages/Index.tsx',
       content: getIndexPageTemplate(appNamePascal),
     },
+    { path: 'src/styles.scss', content: '// App global styles\n' },
     { path: 'public/locales/locale_en.json', content: '{}' },
     { path: 'public/locales/locale_es.json', content: '{}' },
   ];
@@ -705,12 +714,16 @@ async function main() {
 
   const rootDir = process.cwd();
 
+  let installSuccess = true;
+  let buildSuccess = true;
+
   console.log('\nInstalling dependencies...');
   try {
     execSync('yarn install --frozen-lockfile -W', { cwd: rootDir, stdio: 'inherit' });
     console.log(`  ${colors.green}✔${colors.reset} yarn install`);
   } catch (error) {
     console.log(`  ${colors.red}✘${colors.reset} yarn install failed — ${error.message}`);
+    installSuccess = false;
   }
 
   console.log('\nBuilding...');
@@ -719,11 +732,14 @@ async function main() {
     console.log(`  ${colors.green}✔${colors.reset} yarn build`);
   } catch (error) {
     console.log(`  ${colors.red}✘${colors.reset} yarn build failed — ${error.message}`);
+    buildSuccess = false;
   }
 
-  console.log(
-    `\n${colors.green}✔${colors.reset} Application created successfully\n`,
-  );
+  if (installSuccess && buildSuccess) {
+    console.log(`\n${colors.green}✔${colors.reset} Application created successfully\n`);
+  } else {
+    console.log(`\n${colors.yellow}⚠${colors.reset} Application created with warnings. Please check the errors above.\n`);
+  }
 
   rl.close();
 }
