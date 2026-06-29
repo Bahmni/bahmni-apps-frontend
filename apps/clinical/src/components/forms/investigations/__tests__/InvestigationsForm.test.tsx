@@ -1,4 +1,8 @@
-import { useEncounterSessionStore, get } from '@bahmni/services';
+import {
+  useEncounterSessionStore,
+  getOrderTypes,
+  getExistingServiceRequestsForAllCategories,
+} from '@bahmni/services';
 import { useHasPrivilege, UserPrivilegeProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
@@ -26,7 +30,7 @@ jest.mock('@bahmni/services', () => ({
       { uuid: 'proc', display: 'Procedure Order', conceptClasses: [] },
     ],
   }),
-  get: jest.fn().mockResolvedValue({ entry: [] }),
+  getExistingServiceRequestsForAllCategories: jest.fn().mockResolvedValue([]),
   useEncounterSessionStore: jest.fn().mockReturnValue({
     activeEncounter: null,
     matchReasons: [],
@@ -160,7 +164,16 @@ describe('InvestigationsForm', () => {
       canEditOrCreate: false,
       isLoading: false,
     });
-    (get as jest.Mock).mockResolvedValue({ entry: [] });
+    (getOrderTypes as jest.Mock).mockResolvedValue({
+      results: [
+        { uuid: 'lab', display: 'Lab Order', conceptClasses: [] },
+        { uuid: 'rad', display: 'Radiology Order', conceptClasses: [] },
+        { uuid: 'proc', display: 'Procedure Order', conceptClasses: [] },
+      ],
+    });
+    (getExistingServiceRequestsForAllCategories as jest.Mock).mockResolvedValue(
+      [],
+    );
     const { useNotification, usePatientUUID } =
       jest.requireMock('@bahmni/widgets');
     (useNotification as jest.Mock).mockReturnValue({
@@ -553,19 +566,16 @@ describe('InvestigationsForm', () => {
       });
 
       // Simulate backend returning CBC as already ordered in this encounter
-      (get as jest.Mock).mockResolvedValue({
-        entry: [
+      (getExistingServiceRequestsForAllCategories as jest.Mock).mockResolvedValue(
+        [
           {
-            resource: {
-              resourceType: 'ServiceRequest',
-              id: 'sr-001',
-              code: {
-                coding: [{ code: 'cbc-001', display: 'Complete Blood Count' }],
-              },
-            },
+            conceptCode: 'cbc-001',
+            categoryUuid: 'lab',
+            display: 'Complete Blood Count',
+            requesterUuid: 'practitioner-001',
           },
         ],
-      });
+      );
 
       render(<InvestigationsForm />, { wrapper: createWrapper() });
       const combobox = screen.getByRole('combobox');

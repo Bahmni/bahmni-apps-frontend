@@ -7,8 +7,8 @@ import {
 } from '@bahmni/design-system';
 import {
   useTranslation,
-  get,
-  OPENMRS_FHIR_R4,
+  getOrderTypes,
+  getExistingServiceRequestsForAllCategories,
   useEncounterSessionStore,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
@@ -19,7 +19,6 @@ import {
   CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import type { Bundle, ServiceRequest } from 'fhir/r4';
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
 import type { FlattenedInvestigations } from '../../../models/investigations';
@@ -55,10 +54,14 @@ const InvestigationsForm: React.FC = React.memo(() => {
     queryKey: ['encounterServiceRequests', activeEncounterUuid, patientUUID],
     enabled: !!activeEncounterUuid && !!patientUUID && canAddInvestigations,
     staleTime: 30_000,
-    queryFn: () =>
-      get<Bundle<ServiceRequest>>(
-        `${OPENMRS_FHIR_R4}/ServiceRequest?_count=200&_sort=-_lastUpdated&encounter=${activeEncounterUuid}&patient=${patientUUID}`,
-      ),
+    queryFn: async () => {
+      const orderTypesData = await getOrderTypes();
+      return getExistingServiceRequestsForAllCategories(
+        orderTypesData.results,
+        patientUUID!,
+        [activeEncounterUuid!],
+      );
+    },
   });
 
   useEffect(() => {
@@ -84,12 +87,8 @@ const InvestigationsForm: React.FC = React.memo(() => {
   );
 
   const existingOrderCodes = useMemo(() => {
-    if (!existingOrders?.entry) return new Set<string>();
-    return new Set(
-      existingOrders.entry
-        .map((e) => e.resource?.code?.coding?.[0]?.code)
-        .filter((code): code is string => !!code),
-    );
+    if (!existingOrders?.length) return new Set<string>();
+    return new Set(existingOrders.map((sr) => sr.conceptCode).filter(Boolean));
   }, [existingOrders]);
 
   const { investigations, isLoading, error } =

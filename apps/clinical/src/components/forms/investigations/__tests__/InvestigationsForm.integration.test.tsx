@@ -28,7 +28,7 @@ jest.mock('@bahmni/services', () => ({
   findActiveEncounterInSession: jest
     .fn()
     .mockResolvedValue({ id: 'mock-encounter-id' }),
-  get: jest.fn().mockResolvedValue({ entry: [] }),
+  getExistingServiceRequestsForAllCategories: jest.fn().mockResolvedValue([]),
   useEncounterSessionStore: jest.fn().mockReturnValue({
     activeEncounter: null,
     matchReasons: [],
