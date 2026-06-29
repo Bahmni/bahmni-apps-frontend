@@ -105,6 +105,12 @@ export const handleActionButtonClick = async (
   }
 };
 
+type RuleValidator = (
+  values: string[],
+  row: PatientSearchViewModel<AppointmentSearchResult>,
+  excludeValues?: string[],
+) => boolean;
+
 export const shouldRenderActionButton = (
   action: SearchActionConfig,
   userPrivileges: UserPrivilege[],
@@ -112,18 +118,17 @@ export const shouldRenderActionButton = (
 ): boolean => {
   if (!action.enabledRule || action.enabledRule.length === 0) return false;
 
-  const ruleValidatorMap = {
-    privilegeCheck: privilegeValidator(userPrivileges),
-    statusCheck: statusValidator,
-    appDateCheck: appDateValidator,
+  const ruleValidatorMap: Record<string, RuleValidator> = {
+    privilegeCheck: (values) => privilegeValidator(userPrivileges)(values),
+    statusCheck: (values, row) => statusValidator(values, row),
+    appDateCheck: (values, row) => appDateValidator(values, row),
+    appointmentService: (values, row, excludeValues) =>
+      appointmentServiceValidator(values, excludeValues, row),
   };
 
-  return action.enabledRule.every((rule) => {
-    if (rule.type === 'appointmentService') {
-      return appointmentServiceValidator(rule.values, rule.excludeValues, row);
-    }
-    return ruleValidatorMap[rule.type](rule.values ?? [], row);
-  });
+  return action.enabledRule.every((rule) =>
+    ruleValidatorMap[rule.type](rule.values ?? [], row, rule.excludeValues),
+  );
 };
 
 export const appointmentServiceValidator = (
