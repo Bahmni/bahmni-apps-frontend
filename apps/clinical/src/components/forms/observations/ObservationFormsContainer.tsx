@@ -23,6 +23,7 @@ import {
   extractNotesFromFormData,
   type AgeDetails,
   computeAgeDetails,
+  hasMissingMandatoryVisibleField,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -276,14 +277,31 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         return;
       }
 
-      if (hasErrors) {
-        const hasMandatoryError = errors
-          .flat()
-          .some(
-            (err: { get?: (key: string) => string; message?: string }) =>
-              (err.get?.('message') ?? err.message) ===
-              VALIDATION_STATE_MANDATORY,
-          );
+      // form2-controls does not propagate mandatory errors to getValue().errors for
+      // fields that were never interacted with — including always-visible mandatory
+      // fields and fields revealed via isHidden scripting. Check the Container data
+      // directly to catch these violations.
+      const containerStateData = (
+        formContainerRef.current as {
+          state?: { data?: Record<string, unknown> | { toJS?: () => unknown } };
+        } | null
+      )?.state?.data;
+      const hasMissingMandatory = hasMissingMandatoryVisibleField(
+        convertImmutableToPlainObject(containerStateData) as
+          | Record<string, unknown>
+          | undefined,
+      );
+
+      if (hasErrors || hasMissingMandatory) {
+        const hasMandatoryError =
+          hasMissingMandatory ||
+          errors
+            .flat()
+            .some(
+              (err: { get?: (key: string) => string; message?: string }) =>
+                (err.get?.('message') ?? err.message) ===
+                VALIDATION_STATE_MANDATORY,
+            );
         const errorType = hasMandatoryError
           ? VALIDATION_STATE_MANDATORY
           : VALIDATION_STATE_INVALID;

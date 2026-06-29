@@ -5,6 +5,7 @@ import {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  hasMissingMandatoryVisibleField,
   FormData,
   ConceptValue,
   Form2Observation,
@@ -1027,5 +1028,111 @@ describe('observationFormsTransformer', () => {
       expect(result).toHaveLength(1);
       expect(result[0].concept.uuid).toBe('text-concept-uuid');
     });
+  });
+});
+
+describe('hasMissingMandatoryVisibleField', () => {
+  const mandatoryControl = { properties: { mandatory: true } };
+  const optionalControl = { properties: { mandatory: false } };
+
+  it('returns true when a visible mandatory field has no value', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: false,
+      value: { value: undefined },
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
+  });
+
+  it('returns false when a visible mandatory field has a value', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: false,
+      value: { value: 'Dr. Smith' },
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns false when a mandatory field is hidden', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: true,
+      voided: false,
+      value: { value: undefined },
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns false when a mandatory field is voided', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: true,
+      value: { value: undefined },
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns false for a visible optional field with no value', () => {
+    const data = {
+      control: optionalControl,
+      hidden: false,
+      voided: false,
+      value: { value: undefined },
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns true when a nested mandatory field has no value', () => {
+    const data = {
+      control: {},
+      hidden: false,
+      children: [
+        {
+          control: mandatoryControl,
+          hidden: false,
+          voided: false,
+          value: { value: null },
+        },
+      ],
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
+  });
+
+  it('returns false when nested mandatory field is hidden', () => {
+    const data = {
+      control: {},
+      hidden: false,
+      children: [
+        {
+          control: mandatoryControl,
+          hidden: true,
+          voided: false,
+          value: { value: null },
+        },
+      ],
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns false for undefined or null input', () => {
+    expect(hasMissingMandatoryVisibleField(undefined)).toBe(false);
+    expect(
+      hasMissingMandatoryVisibleField(
+        null as unknown as Record<string, unknown>,
+      ),
+    ).toBe(false);
+  });
+
+  it('returns true when value is an empty string', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: false,
+      value: { value: '' },
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
   });
 });

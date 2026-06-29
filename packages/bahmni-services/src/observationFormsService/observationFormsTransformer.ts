@@ -522,3 +522,51 @@ function processControlForNotesExtraction(
     });
   }
 }
+
+/**
+ * Checks if any visible, non-voided mandatory fields in the Container data have no values.
+ *
+ * form2-controls does not propagate mandatory errors back to the Container's internal
+ * data structure when a field has never been interacted with by the user — this includes
+ * always-visible mandatory fields that were never touched, and fields that transition
+ * from hidden to visible via isHidden scripting without user interaction.
+ * As a result, getValue().errors is empty for such fields even when they are required.
+ *
+ * This function traverses the Container's Immutable data (converted to plain JS via toJS())
+ * to detect these missed violations directly.
+ */
+export function hasMissingMandatoryVisibleField(
+  data: Record<string, unknown> | undefined,
+): boolean {
+  if (!data || typeof data !== 'object') return false;
+
+  const control = data.control as Record<string, unknown> | undefined;
+  const properties = control?.properties as Record<string, unknown> | undefined;
+
+  if (properties?.mandatory === true && !data.hidden && !data.voided) {
+    const valueObj =
+      data.value && typeof data.value === 'object'
+        ? (data.value as Record<string, unknown>)
+        : null;
+    const actualValue = valueObj ? valueObj.value : data.value;
+    if (
+      actualValue === null ||
+      actualValue === undefined ||
+      actualValue === ''
+    ) {
+      return true;
+    }
+  }
+
+  const children = data.children;
+  if (Array.isArray(children)) {
+    return children.some(
+      (child) =>
+        child &&
+        typeof child === 'object' &&
+        hasMissingMandatoryVisibleField(child as Record<string, unknown>),
+    );
+  }
+
+  return false;
+}

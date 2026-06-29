@@ -327,6 +327,7 @@ export {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  hasMissingMandatoryVisibleField,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
