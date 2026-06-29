@@ -32,14 +32,18 @@ export const extractFormNameFromTask = (
  */
 export const canUserEditForm = (
   userPrivileges: UserPrivilege[] | null,
-  form: ObservationForm,
+  form: ObservationForm | undefined,
 ): boolean => {
+  if (!form) {
+    return false;
+  }
+
   if (!userPrivileges || userPrivileges.length === 0) {
     return false;
   }
 
   if (!form.privileges || form.privileges.length === 0) {
-    return true;
+    return false;
   }
 
   const userPrivilegeNames = new Set(

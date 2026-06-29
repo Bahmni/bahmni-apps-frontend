@@ -20,7 +20,9 @@ export const isActionVisible = (
 
     if (!formName) return false;
 
-    const matchingForm = allForms.find((form) => form.name === formName);
+    const matchingForm = allForms.find(
+      (form) => form.name.toLowerCase() === formName.toLowerCase(),
+    );
     return matchingForm ? canUserEditForm(userPrivileges, matchingForm) : false;
   }
 
