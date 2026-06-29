@@ -130,7 +130,7 @@
                     "type": "string",
                     "description": "Field name to display"
                   },
-                  "translateValues": {
+                  "enableTranslation": {
                     "type": "boolean",
                     "description": "Whether to translate the value of this field"
                   }

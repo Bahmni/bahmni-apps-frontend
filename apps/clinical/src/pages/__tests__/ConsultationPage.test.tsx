@@ -719,40 +719,14 @@ describe('ConsultationPage', () => {
       );
     };
 
-    it('should render program details when contextInformation has program with translateValues', async () => {
+    it('should render program details when contextInformation has program with enableTranslation', async () => {
       (useClinicalConfig as jest.Mock).mockReturnValue({
         clinicalConfig: {
           ...mockClinicalConfig,
           contextInformation: {
             program: {
               fields: ['programName', 'startDate', 'state'],
-              translateValues: ['state'],
-            },
-          },
-        },
-        isLoading: false,
-        error: null,
-      });
-
-      renderWithProgramParams('test-program-uuid');
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
-      });
-
-      // Component renders successfully without errors
-      expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
-      expect(screen.getByTestId('mocked-program-details')).toBeInTheDocument();
-    });
-
-    it('should handle multiple translateValues in configuration', async () => {
-      (useClinicalConfig as jest.Mock).mockReturnValue({
-        clinicalConfig: {
-          ...mockClinicalConfig,
-          contextInformation: {
-            program: {
-              fields: ['programName', 'outcome', 'state'],
-              translateValues: ['outcome', 'state'],
+              enableTranslation: ['state'],
             },
           },
         },
@@ -769,15 +743,14 @@ describe('ConsultationPage', () => {
       expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
       expect(screen.getByTestId('mocked-program-details')).toBeInTheDocument();
     });
-
-    it('should handle empty translateValues array', async () => {
+    it('should handle empty enableTranslation array', async () => {
       (useClinicalConfig as jest.Mock).mockReturnValue({
         clinicalConfig: {
           ...mockClinicalConfig,
           contextInformation: {
             program: {
               fields: ['programName', 'startDate'],
-              translateValues: [],
+              enableTranslation: [],
             },
           },
         },
@@ -795,14 +768,14 @@ describe('ConsultationPage', () => {
       expect(screen.getByTestId('mocked-program-details')).toBeInTheDocument();
     });
 
-    it('should handle undefined translateValues (defaults to empty array)', async () => {
+    it('should handle undefined enableTranslation (defaults to empty array)', async () => {
       (useClinicalConfig as jest.Mock).mockReturnValue({
         clinicalConfig: {
           ...mockClinicalConfig,
           contextInformation: {
             program: {
               fields: ['programName', 'startDate'],
-              // translateValues is intentionally omitted
+              // enableTranslation is intentionally omitted
             },
           },
         },
@@ -827,7 +800,7 @@ describe('ConsultationPage', () => {
           contextInformation: {
             program: {
               fields: ['programName', 'startDate'],
-              translateValues: ['state'],
+              enableTranslation: ['state'],
             },
           },
         },

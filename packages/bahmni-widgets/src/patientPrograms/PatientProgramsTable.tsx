@@ -109,7 +109,7 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
     if (!raw) return '-';
 
     const fieldConfig = configFields.find((f) => f.name === field);
-    if (fieldConfig?.translateValues) {
+    if (fieldConfig?.enableTranslation) {
       return t(
         `PROGRAM_ATTRIBUTE_VALUE_${camelToScreamingSnakeCase(field)}_${camelToScreamingSnakeCase(raw)}`,
         raw,

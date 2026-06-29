@@ -537,7 +537,7 @@ describe('ProgramDetails', () => {
       allowedStates: [],
     };
 
-    it('should render raw attribute value when field is not in translateValues', () => {
+    it('should render raw attribute value when field is not in enableTranslation', () => {
       (useQuery as jest.Mock).mockReturnValue({
         data: mockQueryData,
         error: null,
@@ -561,7 +561,7 @@ describe('ProgramDetails', () => {
       ).toHaveTextContent('categoryI');
     });
 
-    it('should return "-" for missing attribute when field is in translateValues', () => {
+    it('should return "-" for missing attribute when field is in enableTranslation', () => {
       (useQuery as jest.Mock).mockReturnValue({
         data: mockQueryData,
         error: null,
@@ -574,7 +574,7 @@ describe('ProgramDetails', () => {
           <ProgramDetails
             programUUID="test-program-uuid"
             config={{
-              fields: [{ name: 'missingField', translateValues: true }],
+              fields: [{ name: 'missingField', enableTranslation: true }],
             }}
           />
         </QueryClientProvider>,
@@ -585,7 +585,7 @@ describe('ProgramDetails', () => {
       ).toHaveTextContent('-');
     });
 
-    it('should call t() with correct EOC key and render translated value when field is in translateValues', () => {
+    it('should call t() with correct EOC key and render translated value when field is in enableTranslation', () => {
       const mockT = jest.fn((key: string, fallback: string) => fallback);
       const useTranslationSpy = jest
         .spyOn(BahmniServices, 'useTranslation')
@@ -603,7 +603,7 @@ describe('ProgramDetails', () => {
           <ProgramDetails
             programUUID="test-program-uuid"
             config={{
-              fields: [{ name: 'treatmentCategory', translateValues: true }],
+              fields: [{ name: 'treatmentCategory', enableTranslation: true }],
             }}
           />
         </QueryClientProvider>,

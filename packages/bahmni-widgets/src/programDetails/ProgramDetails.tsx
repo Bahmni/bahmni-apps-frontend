@@ -198,7 +198,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     if (!raw) return '-';
 
     const fieldConfig = config?.fields?.find((f) => f.name === field);
-    if (fieldConfig?.translateValues) {
+    if (fieldConfig?.enableTranslation) {
       return t(
         `PROGRAM_ATTRIBUTE_VALUE_${camelToScreamingSnakeCase(field)}_${camelToScreamingSnakeCase(raw)}`,
         raw,

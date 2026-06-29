@@ -44,7 +44,7 @@ export interface Dashboard {
 
 export interface ProgramField {
   name: string;
-  translateValues?: boolean;
+  enableTranslation?: boolean;
 }
 
 export interface ProgramConfig {

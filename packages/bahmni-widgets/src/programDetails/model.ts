@@ -15,5 +15,5 @@ export interface ProgramDetailsViewModel {
 }
 export interface ProgramField {
   name: string;
-  translateValues?: boolean;
+  enableTranslation?: boolean;
 }

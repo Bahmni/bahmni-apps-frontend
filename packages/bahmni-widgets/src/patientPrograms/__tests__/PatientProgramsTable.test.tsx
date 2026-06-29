@@ -356,7 +356,7 @@ describe('PatientProgramsTable', () => {
       },
     };
 
-    it('should render raw attribute value when field is not in translateValues', () => {
+    it('should render raw attribute value when field is not in enableTranslation', () => {
       (useQuery as jest.Mock).mockReturnValue({
         data: { programs: [mockProgram], total: 1 },
         error: null,
@@ -377,7 +377,7 @@ describe('PatientProgramsTable', () => {
       ).toHaveTextContent('categoryI');
     });
 
-    it('should return "-" for missing attribute when field is in translateValues', () => {
+    it('should return "-" for missing attribute when field is in enableTranslation', () => {
       (useQuery as jest.Mock).mockReturnValue({
         data: { programs: [mockProgram], total: 1 },
         error: null,
@@ -389,7 +389,7 @@ describe('PatientProgramsTable', () => {
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
             config={{
-              fields: [{ name: 'missingField', translateValues: true }],
+              fields: [{ name: 'missingField', enableTranslation: true }],
             }}
           />
         </QueryClientProvider>,
@@ -400,7 +400,7 @@ describe('PatientProgramsTable', () => {
       ).toHaveTextContent('-');
     });
 
-    it('should call t() with correct EOC key and render translated value when field is in translateValues', () => {
+    it('should call t() with correct EOC key and render translated value when field is in enableTranslation', () => {
       const mockT = jest.fn((key: string, fallback: string) => fallback);
       const useTranslationSpy = jest
         .spyOn(BahmniServices, 'useTranslation')
@@ -417,7 +417,7 @@ describe('PatientProgramsTable', () => {
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
             config={{
-              fields: [{ name: 'treatmentCategory', translateValues: true }],
+              fields: [{ name: 'treatmentCategory', enableTranslation: true }],
             }}
           />
         </QueryClientProvider>,
