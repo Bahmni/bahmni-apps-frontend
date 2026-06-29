@@ -7,11 +7,15 @@ export interface Age {
 export interface FormattedPatientData {
   id: string;
   fullName: string | null;
+  givenName: string | null;
+  familyName: string | null;
   gender: string | null;
   birthDate: string | null;
+  birthtime: string | null;
   formattedAddress: string | null;
   formattedContact: string | null;
   identifiers: Map<string, string>;
+  identifier: string | null;
   photoUrl?: string;
 }
 
