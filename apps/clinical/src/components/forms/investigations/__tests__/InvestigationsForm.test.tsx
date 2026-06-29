@@ -2,6 +2,7 @@ import {
   useEncounterSessionStore,
   getOrderTypes,
   getExistingServiceRequestsForAllCategories,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useHasPrivilege, UserPrivilegeProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -174,6 +175,7 @@ describe('InvestigationsForm', () => {
     (getExistingServiceRequestsForAllCategories as jest.Mock).mockResolvedValue(
       [],
     );
+    (useSubscribeConsultationSaved as jest.Mock).mockImplementation(() => {});
     const { useNotification, usePatientUUID } =
       jest.requireMock('@bahmni/widgets');
     (useNotification as jest.Mock).mockReturnValue({
@@ -625,6 +627,121 @@ describe('InvestigationsForm', () => {
         expect(cbcOption).toBeInTheDocument();
         expect(cbcOption).not.toHaveAttribute('disabled');
       });
+    });
+
+    test('shows error notification when fetching existing encounter orders fails', async () => {
+      const mockError = new Error('Failed to fetch service requests');
+      (getExistingServiceRequestsForAllCategories as jest.Mock).mockRejectedValue(
+        mockError,
+      );
+
+      const mockAddNotification = jest.fn();
+      const { useNotification } = jest.requireMock('@bahmni/widgets');
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+      });
+
+      (useEncounterSessionStore as jest.Mock).mockReturnValue({
+        activeEncounter: { id: 'encounter-uuid-123' },
+        matchReasons: ['MATCHED'],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+
+      await waitFor(
+        () => {
+          expect(mockAddNotification).toHaveBeenCalledWith({
+            title: 'Error',
+            message: mockError.message,
+            type: 'error',
+          });
+        },
+        { timeout: 3000 },
+      );
+    });
+
+    test('refetches existing orders after consultation saved with service requests', async () => {
+      let savedCallback: ((payload: any) => void) | null = null;
+      const { useSubscribeConsultationSaved } =
+        jest.requireMock('@bahmni/services');
+      (useSubscribeConsultationSaved as jest.Mock).mockImplementation(
+        (cb: (payload: any) => void) => {
+          savedCallback = cb;
+        },
+      );
+
+      (useEncounterSessionStore as jest.Mock).mockReturnValue({
+        activeEncounter: { id: 'encounter-uuid-123' },
+        matchReasons: ['MATCHED'],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(getExistingServiceRequestsForAllCategories).toHaveBeenCalled();
+      });
+
+      const callCountBefore = (
+        getExistingServiceRequestsForAllCategories as jest.Mock
+      ).mock.calls.length;
+
+      // Fire the consultation saved event with service requests updated
+      savedCallback?.({
+        patientUUID: 'mock-patient-uuid',
+        updatedResources: { serviceRequests: { lab: true } },
+      });
+
+      await waitFor(() => {
+        expect(
+          (getExistingServiceRequestsForAllCategories as jest.Mock).mock.calls
+            .length,
+        ).toBeGreaterThan(callCountBefore);
+      });
+    });
+
+    test('does not refetch when consultation saved without service requests', async () => {
+      let savedCallback: ((payload: any) => void) | null = null;
+      const { useSubscribeConsultationSaved } =
+        jest.requireMock('@bahmni/services');
+      (useSubscribeConsultationSaved as jest.Mock).mockImplementation(
+        (cb: (payload: any) => void) => {
+          savedCallback = cb;
+        },
+      );
+
+      (useEncounterSessionStore as jest.Mock).mockReturnValue({
+        activeEncounter: { id: 'encounter-uuid-123' },
+        matchReasons: ['MATCHED'],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(getExistingServiceRequestsForAllCategories).toHaveBeenCalled();
+      });
+
+      const callCountBefore = (
+        getExistingServiceRequestsForAllCategories as jest.Mock
+      ).mock.calls.length;
+
+      // Fire with empty serviceRequests — should NOT refetch
+      savedCallback?.({
+        patientUUID: 'mock-patient-uuid',
+        updatedResources: { serviceRequests: {} },
+      });
+
+      await new Promise((r) => setTimeout(r, 100));
+
+      expect(
+        (getExistingServiceRequestsForAllCategories as jest.Mock).mock.calls
+          .length,
+      ).toBe(callCountBefore);
     });
   });
 
