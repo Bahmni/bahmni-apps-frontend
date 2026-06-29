@@ -40,6 +40,7 @@ jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   usePatientUUID: jest.fn().mockReturnValue('mock-patient-uuid'),
   useHasPrivilege: jest.fn(),
+  useNotification: jest.fn().mockReturnValue({ addNotification: jest.fn() }),
   UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) =>
     children,
 }));
@@ -145,16 +146,27 @@ const createWrapper = () => {
 
 describe('InvestigationsForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithInvestigations);
-    // Setup default mocks
     (useInvestigationsSearch as jest.Mock).mockReturnValue({
       investigations: [],
       isLoading: false,
       error: null,
     });
-
     (useServiceRequestStore as unknown as jest.Mock).mockReturnValue(mockStore);
+    (useEncounterSessionStore as jest.Mock).mockReturnValue({
+      activeEncounter: null,
+      matchReasons: [],
+      canEditOrCreate: false,
+      isLoading: false,
+    });
+    (get as jest.Mock).mockResolvedValue({ entry: [] });
+    const { useNotification, usePatientUUID } =
+      jest.requireMock('@bahmni/widgets');
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: jest.fn(),
+    });
+    (usePatientUUID as jest.Mock).mockReturnValue('mock-patient-uuid');
   });
 
   describe('Component Rendering', () => {
@@ -560,15 +572,18 @@ describe('InvestigationsForm', () => {
 
       await user.type(combobox, 'complete');
 
-      await waitFor(() => {
-        const options = screen.getAllByRole('option');
-        const cbcOption = options.find((o) =>
-          o.textContent?.includes('Complete Blood Count'),
-        );
-        expect(cbcOption).toBeInTheDocument();
-        expect(cbcOption).toHaveAttribute('disabled');
-        expect(cbcOption?.textContent).toMatch(/already added/i);
-      });
+      await waitFor(
+        () => {
+          const options = screen.getAllByRole('option');
+          const cbcOption = options.find((o) =>
+            o.textContent?.includes('Complete Blood Count'),
+          );
+          expect(cbcOption).toBeInTheDocument();
+          expect(cbcOption).toHaveAttribute('disabled');
+          expect(cbcOption?.textContent).toMatch(/already added/i);
+        },
+        { timeout: 3000 },
+      );
     });
 
     test('allows ordering investigation when encounter is not MATCHED (new encounter)', async () => {

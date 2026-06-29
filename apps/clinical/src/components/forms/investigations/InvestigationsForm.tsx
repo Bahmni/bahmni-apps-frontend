@@ -14,12 +14,13 @@ import {
 } from '@bahmni/services';
 import {
   useHasPrivilege,
+  useNotification,
   usePatientUUID,
   CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import type { Bundle, ServiceRequest } from 'fhir/r4';
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import useInvestigationsSearch from '../../../hooks/useInvestigationsSearch';
 import type { FlattenedInvestigations } from '../../../models/investigations';
 import useServiceRequestStore from '../../../stores/serviceRequestStore';
@@ -29,6 +30,7 @@ import styles from './styles/InvestigationsForm.module.scss';
 const InvestigationsForm: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
+  const { addNotification } = useNotification();
   const canAddInvestigations = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.INVESTIGATIONS,
   );
@@ -45,18 +47,36 @@ const InvestigationsForm: React.FC = React.memo(() => {
     ? activeEncounter?.id
     : undefined;
 
-  const { data: existingOrders, refetch: refetchExistingOrders } = useQuery({
+  const {
+    data: existingOrders,
+    refetch: refetchExistingOrders,
+    error: existingOrdersError,
+  } = useQuery({
     queryKey: ['encounterServiceRequests', activeEncounterUuid, patientUUID],
     enabled: !!activeEncounterUuid && !!patientUUID && canAddInvestigations,
+    staleTime: 30_000,
     queryFn: () =>
       get<Bundle<ServiceRequest>>(
-        `${OPENMRS_FHIR_R4}/ServiceRequest?encounter=${activeEncounterUuid}&patient=${patientUUID}&_count=200`,
+        `${OPENMRS_FHIR_R4}/ServiceRequest?_count=200&_sort=-_lastUpdated&encounter=${activeEncounterUuid}&patient=${patientUUID}`,
       ),
   });
 
+  useEffect(() => {
+    if (existingOrdersError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: existingOrdersError.message,
+        type: 'error',
+      });
+    }
+  }, [existingOrdersError, addNotification, t]);
+
   useSubscribeConsultationSaved(
     (payload) => {
-      if (payload.patientUUID === patientUUID) {
+      if (
+        payload.patientUUID === patientUUID &&
+        Object.keys(payload.updatedResources.serviceRequests ?? {}).length > 0
+      ) {
         refetchExistingOrders();
       }
     },

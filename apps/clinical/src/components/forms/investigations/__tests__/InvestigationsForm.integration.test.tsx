@@ -43,6 +43,7 @@ jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn().mockReturnValue('mock-patient-uuid'),
   useUserPrivilege: jest.fn(),
   useHasPrivilege: jest.fn(() => true),
+  useNotification: jest.fn().mockReturnValue({ addNotification: jest.fn() }),
 }));
 
 jest.mock('../../../../stores/serviceRequestStore');
