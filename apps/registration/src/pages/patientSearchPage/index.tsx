@@ -30,7 +30,6 @@ import { useRegistrationConfig } from '../../providers/registrationConfig';
 import {
   getAppointmentStatusClassName,
   handleActionButtonClick,
-  isActionButtonEnabled,
   shouldRenderActionButton,
 } from './appointmentSearchResultActionHandler';
 import styles from './styles/index.module.scss';
@@ -201,7 +200,13 @@ const PatientSearchPage: React.FC = () => {
       <Stack gap={3} className={styles.actionButtonsContainer}>
         {searchFields.map((field) =>
           field.actions?.map((action) => {
-            if (!shouldRenderActionButton(action, userPrivileges ?? []))
+            if (
+              !shouldRenderActionButton(
+                action,
+                userPrivileges ?? [],
+                row as PatientSearchViewModel<AppointmentSearchResult>,
+              )
+            )
               return null;
             return (
               <Button
@@ -210,13 +215,6 @@ const PatientSearchPage: React.FC = () => {
                 kind="tertiary"
                 size="sm"
                 data-testid={`patient-action-button-${action.translationKey}`}
-                disabled={
-                  !isActionButtonEnabled(
-                    action.enabledRule,
-                    row,
-                    userPrivileges ?? [],
-                  )
-                }
                 onClick={() =>
                   handleActionButtonClick(
                     action,
