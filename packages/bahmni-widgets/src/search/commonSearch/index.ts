@@ -6,4 +6,4 @@ registerSearchWidget({
   component: CommonSearchWidget,
 });
 
-export { default } from './CommonSearchWidget';
+export { default as CommonSearchWidget } from './CommonSearchWidget';

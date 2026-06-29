@@ -82,6 +82,7 @@ export {
   type SearchWidget,
   type SearchWidgetConfig,
   type SearchWidgetConfigContextType,
+  CommonSearchWidget,
 } from './search';
 
 // Extensions

@@ -14,3 +14,5 @@ export type {
   SearchWidgetConfig,
   SearchWidgetConfigContextType,
 } from './models';
+
+export { CommonSearchWidget } from './commonSearch';
