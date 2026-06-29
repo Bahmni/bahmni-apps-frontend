@@ -66,6 +66,9 @@ interface ObservationFormsContainerProps {
   ) => void;
   existingObservations?: Form2Observation[];
   activeEncounterUuid?: string | null;
+  directMode?: boolean;
+  onDirectModeSubmit?: () => void | Promise<void>;
+  onDirectModeCancel?: () => void;
 }
 
 const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
@@ -75,6 +78,9 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onFormObservationsChange,
   existingObservations,
   activeEncounterUuid,
+  directMode = false,
+  onDirectModeSubmit,
+  onDirectModeCancel,
 }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
@@ -450,34 +456,54 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       data-testid="observation-form-title-container"
     >
       <span data-testid="observation-form-name">{viewingForm?.name}</span>
-      {!DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '') && (
-        <div
-          onClick={handlePinToggle}
-          className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
-          title={isCurrentFormPinned ? 'Unpin form' : 'Pin form'}
-        >
-          <Icon id="pin-icon" name="fa-thumbtack" size={ICON_SIZE.SM} />
-        </div>
-      )}
+      {!directMode &&
+        !DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '') && (
+          <div
+            onClick={handlePinToggle}
+            className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
+            title={isCurrentFormPinned ? 'Unpin form' : 'Pin form'}
+          >
+            <Icon id="pin-icon" name="fa-thumbtack" size={ICON_SIZE.SM} />
+          </div>
+        )}
     </div>
   );
 
   if (viewingForm) {
+    const primaryButtonText = directMode
+      ? t('CONSULTATION_PAD_DONE_BUTTON')
+      : validationErrorType
+      ? t('OBSERVATION_FORM_CONTINUE_ANYWAY_BUTTON')
+      : t('OBSERVATION_FORM_SAVE_BUTTON');
+
+    const secondaryButtonText = directMode
+      ? t('CONSULTATION_PAD_CANCEL_BUTTON')
+      : t('OBSERVATION_FORM_DISCARD_BUTTON');
+
+    const saveWithErrorHandling = validationErrorType
+      ? continueAnyway
+      : validateAndSave;
+
+    const handlePrimaryClick = directMode
+      ? () => {
+          validateAndSave();
+          onDirectModeSubmit?.();
+        }
+      : saveWithErrorHandling;
+
+    const handleSecondaryClick = directMode
+      ? (onDirectModeCancel ?? discard)
+      : discard;
+
     return (
       <ActionArea
         className={styles.formViewActionArea}
         title={formTitleWithPin as unknown as string}
-        primaryButtonText={
-          validationErrorType
-            ? t('OBSERVATION_FORM_CONTINUE_ANYWAY_BUTTON')
-            : t('OBSERVATION_FORM_SAVE_BUTTON')
-        }
-        onPrimaryButtonClick={
-          validationErrorType ? continueAnyway : validateAndSave
-        }
+        primaryButtonText={primaryButtonText}
+        onPrimaryButtonClick={handlePrimaryClick}
         isPrimaryButtonDisabled={isPatientLoading || !patientContext}
-        secondaryButtonText={t('OBSERVATION_FORM_DISCARD_BUTTON')}
-        onSecondaryButtonClick={discard}
+        secondaryButtonText={secondaryButtonText}
+        onSecondaryButtonClick={handleSecondaryClick}
         content={formViewContent}
       />
     );

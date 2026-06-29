@@ -1,13 +1,22 @@
 import type { ObservationForm } from '@bahmni/services';
 import { useActivePractitioner } from '@bahmni/widgets';
 import React, { useEffect, useRef } from 'react';
+import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
+import type { ClinicalInputControlConfig } from '../../consultationPad/models';
 import ObservationForms from './ObservationForms';
 
-const ObservationFormsPanel: React.FC = () => {
+interface ObservationFormsPanelProps {
+  encounterSessionStartContext?: EncounterSessionStartContext;
+  inputControlConfig?: ClinicalInputControlConfig;
+}
+
+const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
+  encounterSessionStartContext,
+}) => {
   const { user } = useActivePractitioner();
   const { episodeOfCare } = useClinicalAppData();
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
@@ -38,6 +47,34 @@ const ObservationFormsPanel: React.FC = () => {
     }
     prevViewingFormRef.current = viewingForm;
   }, [viewingForm, refetchPinnedForms]);
+
+  const taskFormName = encounterSessionStartContext?.taskFormName as
+    | string
+    | undefined;
+  const directFormMode = encounterSessionStartContext?.directFormMode as
+    | boolean
+    | undefined;
+
+  useEffect(() => {
+    if (taskFormName && directFormMode && !isAllFormsLoading) {
+      const matchingForm = allForms.find(
+        (form) => form.name.toLowerCase() === taskFormName.toLowerCase(),
+      );
+
+      if (matchingForm) {
+        if (!selectedForms.some((f) => f.uuid === matchingForm.uuid)) {
+          addForm(matchingForm);
+        }
+      }
+    }
+  }, [
+    taskFormName,
+    directFormMode,
+    allForms,
+    isAllFormsLoading,
+    selectedForms,
+    addForm,
+  ]);
 
   const handleFormSelect = (form: ObservationForm) => {
     addForm(form);
