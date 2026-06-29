@@ -83,14 +83,6 @@ export const updateAppointmentStatus = async (
   });
 };
 
-/**
- * Check in an appointment and start a visit via a config-supplied URL.
- *
- * @param submitUrl - Full API endpoint (from action config's onAction.submit)
- * @param appointmentUuid - Appointment UUID to check in
- * @returns API response (uuid and status of the updated appointment)
- * @throws Error if the API request fails
- */
 export const checkInAppointment = async (
   submitUrl: string,
   appointmentUuid: string,
