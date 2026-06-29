@@ -1,11 +1,16 @@
 import { render, screen } from '@testing-library/react';
-import AdvancedSearchWidget from '../AdvancedSearchWidget';
+import CommonSearchWidget from '../CommonSearchWidget';
 
-describe('AdvancedSearchWidget', () => {
+describe('CommonSearchWidget', () => {
   it('renders with correct test ID', () => {
-    render(<AdvancedSearchWidget />);
+    render(<CommonSearchWidget />);
     expect(
-      screen.getByTestId('advanced-search-widget-test-id'),
+      screen.getByTestId('common-search-widget-test-id'),
     ).toBeInTheDocument();
+  });
+
+  it('renders translated label', () => {
+    render(<CommonSearchWidget />);
+    expect(screen.getByText('COMMON_SEARCH_LABEL')).toBeInTheDocument();
   });
 });

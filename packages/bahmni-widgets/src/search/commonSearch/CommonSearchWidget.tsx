@@ -1,16 +1,16 @@
 import { useTranslation } from '@bahmni/services';
 
-const AdvancedSearchWidget = () => {
+const CommonSearchWidget = () => {
   const { t } = useTranslation();
   return (
     <div
-      id="advanced-search-widget"
-      data-testid="advanced-search-widget-test-id"
-      aria-label="Advanced Search"
+      id="common-search-widget"
+      data-testid="common-search-widget-test-id"
+      aria-label="Common Search"
     >
-      {t('ADVANCED_SEARCH_LABEL')}
+      {t('COMMON_SEARCH_LABEL')}
     </div>
   );
 };
 
-export default AdvancedSearchWidget;
+export default CommonSearchWidget;

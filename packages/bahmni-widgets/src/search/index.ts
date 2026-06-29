@@ -1,4 +1,4 @@
-import './advancedSearch';
+import './commonSearch';
 
 export {
   registerSearchWidget,

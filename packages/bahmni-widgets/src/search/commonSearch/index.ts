@@ -1,9 +1,9 @@
 import { registerSearchWidget } from '../registry';
-import AdvancedSearchWidget from './AdvancedSearchWidget';
+import CommonSearchWidget from './CommonSearchWidget';
 
 registerSearchWidget({
-  key: 'advancedSearch',
-  component: AdvancedSearchWidget,
+  key: 'commonSearch',
+  component: CommonSearchWidget,
 });
 
-export { default } from './AdvancedSearchWidget';
+export { default } from './CommonSearchWidget';
