@@ -18,7 +18,7 @@
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.5.3"
+    "react-router-dom": "^7.15.0"
   },
   "author": "Thoughtworks Inc.",
   "license": "MPLv2",
