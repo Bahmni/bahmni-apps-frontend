@@ -10,6 +10,7 @@ export { useCamera } from './cameraService';
 export {
   getPatientById,
   getFormattedPatientById,
+  mapGenderFromFhir,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
   getIdentifierTypes,
@@ -284,6 +285,7 @@ export {
 } from './auditLogService';
 
 export {
+  BIRTH_TIME_EXT_URL,
   HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM,
   HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CODE_SYSTEM,

@@ -1,6 +1,7 @@
 import { Patient } from 'fhir/r4';
 import { get, post, put } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
+import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
 import {
@@ -37,6 +38,13 @@ import {
   PersonAttributeTypesResponse,
   RelationshipTypesResponse,
 } from './models';
+
+export const mapGenderFromFhir = (fhirGender: string): string => {
+  if (fhirGender === 'male') return 'M';
+  if (fhirGender === 'female') return 'F';
+  if (fhirGender === 'other') return 'O';
+  return 'U';
+};
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
   if (!patientUUID || patientUUID.trim() === '') {
@@ -153,26 +161,47 @@ export const formatPatientData = (patient: Patient): FormattedPatientData => {
       ? formatPatientContact(patient.telecom[0])
       : null;
 
-  const identifiers = patient.identifier ?? [];
-
+  const fhirIdentifiers = patient.identifier ?? [];
   const identifierMap = new Map<string, string>();
-  if (identifiers.length > 0) {
-    identifiers.forEach((identifier) => {
-      if (!identifier.type?.text || !identifier.value) {
-        return;
-      }
-      identifierMap.set(identifier.type.text, identifier.value);
-    });
-  }
+  fhirIdentifiers.forEach((id) => {
+    if (id.type?.text && id.value) {
+      identifierMap.set(id.type.text, id.value);
+    }
+  });
+  const identifier =
+    (fhirIdentifiers.find((id) => id.use === 'official') ?? fhirIdentifiers[0])
+      ?.value ?? null;
+
+  const nameObj = patient.name?.[0] ?? null;
+  const givenName = nameObj?.given?.join(' ') ?? null;
+  const familyName = nameObj?.family ?? null;
+
+  const birthDateExt = (patient as unknown as Record<string, unknown>)
+    ._birthDate as
+    | { extension?: { url: string; valueDateTime?: string }[] }
+    | undefined;
+  const birthtimeRaw =
+    birthDateExt?.extension?.find((e) => e.url === BIRTH_TIME_EXT_URL)
+      ?.valueDateTime ?? null;
+  // OpenMRS FHIR2 sets the date portion of valueDateTime to epoch (1970-01-01)
+  // as a placeholder. Replace it with the actual birthDate.
+  const birthtime =
+    birthtimeRaw && patient.birthDate
+      ? birthtimeRaw.replace(/^\d{4}-\d{2}-\d{2}/, patient.birthDate)
+      : birthtimeRaw;
 
   return {
     id: patient.id ?? '',
     fullName: formatPatientName(patient),
+    givenName: givenName ?? null,
+    familyName: familyName ?? null,
     gender: patient.gender ?? null,
     birthDate: patient.birthDate ?? null,
+    birthtime,
     formattedAddress: address,
     formattedContact: contact,
     identifiers: identifierMap,
+    identifier,
     photoUrl: patient.photo?.[0]?.url,
   };
 };
