@@ -568,16 +568,16 @@ describe('InvestigationsForm', () => {
       });
 
       // Simulate backend returning CBC as already ordered in this encounter
-      (getExistingServiceRequestsForAllCategories as jest.Mock).mockResolvedValue(
-        [
-          {
-            conceptCode: 'cbc-001',
-            categoryUuid: 'lab',
-            display: 'Complete Blood Count',
-            requesterUuid: 'practitioner-001',
-          },
-        ],
-      );
+      (
+        getExistingServiceRequestsForAllCategories as jest.Mock
+      ).mockResolvedValue([
+        {
+          conceptCode: 'cbc-001',
+          categoryUuid: 'lab',
+          display: 'Complete Blood Count',
+          requesterUuid: 'practitioner-001',
+        },
+      ]);
 
       render(<InvestigationsForm />, { wrapper: createWrapper() });
       const combobox = screen.getByRole('combobox');
@@ -631,9 +631,9 @@ describe('InvestigationsForm', () => {
 
     test('shows error notification when fetching existing encounter orders fails', async () => {
       const mockError = new Error('Failed to fetch service requests');
-      (getExistingServiceRequestsForAllCategories as jest.Mock).mockRejectedValue(
-        mockError,
-      );
+      (
+        getExistingServiceRequestsForAllCategories as jest.Mock
+      ).mockRejectedValue(mockError);
 
       const mockAddNotification = jest.fn();
       const { useNotification } = jest.requireMock('@bahmni/widgets');
@@ -739,9 +739,8 @@ describe('InvestigationsForm', () => {
       await new Promise((r) => setTimeout(r, 100));
 
       expect(
-        (getExistingServiceRequestsForAllCategories as jest.Mock).mock.calls
-          .length,
-      ).toBe(callCountBefore);
+        (getExistingServiceRequestsForAllCategories as jest.Mock).mock.calls,
+      ).toHaveLength(callCountBefore);
     });
   });
 
