@@ -315,6 +315,8 @@ describe('appointmentSearchResultActionHandler', () => {
   describe('handleActionButtonClick', () => {
     let mockNavigate: jest.MockedFunction<NavigateFunction>;
     let mockSetPatientSearchData: jest.Mock;
+    let mockAddNotification: jest.Mock;
+    const mockT = (key: string) => key;
 
     const mockRow: PatientSearchViewModel<AppointmentSearchResult> = {
       uuid: 'patient-uuid-1',
@@ -351,6 +353,7 @@ describe('appointmentSearchResultActionHandler', () => {
     beforeEach(() => {
       mockNavigate = jest.fn();
       mockSetPatientSearchData = jest.fn();
+      mockAddNotification = jest.fn();
       jest.clearAllMocks();
     });
 
@@ -375,6 +378,8 @@ describe('appointmentSearchResultActionHandler', () => {
         mockPatientSearchData,
         mockSetPatientSearchData,
         mockNavigate,
+        mockAddNotification,
+        mockT,
       );
 
       expect(updateAppointmentStatus).toHaveBeenCalledWith(
@@ -405,6 +410,8 @@ describe('appointmentSearchResultActionHandler', () => {
         mockPatientSearchData,
         mockSetPatientSearchData,
         mockNavigate,
+        mockAddNotification,
+        mockT,
       );
 
       expect(mockSetPatientSearchData).toHaveBeenCalledWith({
@@ -416,6 +423,107 @@ describe('appointmentSearchResultActionHandler', () => {
           }),
         ]),
       });
+    });
+
+    it('should show success notification after changeStatus action when onSuccess is configured', async () => {
+      const action: SearchActionConfig = {
+        type: 'changeStatus',
+        translationKey: 'Mark Arrived',
+        onAction: { status: 'Arrived' },
+        enabledRule: [],
+        onSuccess: {
+          notification:
+            'REGISTRATION_APPOINTMENT_MARKED_AS_ARRIVED_SUCCESS_NOTIFICATION',
+        },
+      };
+
+      (updateAppointmentStatus as jest.Mock).mockResolvedValue({
+        uuid: 'appt-uuid-1',
+        status: 'Arrived',
+      });
+
+      await handleActionButtonClick(
+        action,
+        mockRow,
+        mockPatientSearchData,
+        mockSetPatientSearchData,
+        mockNavigate,
+        mockAddNotification,
+        mockT,
+      );
+
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title:
+          'REGISTRATION_APPOINTMENT_MARKED_AS_ARRIVED_SUCCESS_NOTIFICATION',
+        message: '',
+        type: 'success',
+        timeout: 5000,
+      });
+    });
+
+    it('should show success notification after checkInAndStartVisit action when onSuccess is configured', async () => {
+      const action: SearchActionConfig = {
+        type: 'checkInAndStartVisit',
+        translationKey: 'Check In',
+        onAction: {
+          submit:
+            '/openmrs/ws/rest/v1/iom/appointment/checkin?visitType=Follow+Up',
+        },
+        enabledRule: [],
+        onSuccess: {
+          notification:
+            'REGISTRATION_APPOINTMENT_MARKED_AS_ARRIVED_SUCCESS_NOTIFICATION',
+        },
+      };
+
+      (checkInAppointment as jest.Mock).mockResolvedValue({
+        appointmentUuid: 'appt-uuid-1',
+        status: 'Arrived',
+      });
+
+      await handleActionButtonClick(
+        action,
+        mockRow,
+        mockPatientSearchData,
+        mockSetPatientSearchData,
+        mockNavigate,
+        mockAddNotification,
+        mockT,
+      );
+
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title:
+          'REGISTRATION_APPOINTMENT_MARKED_AS_ARRIVED_SUCCESS_NOTIFICATION',
+        message: '',
+        type: 'success',
+        timeout: 5000,
+      });
+    });
+
+    it('should not show success notification when onSuccess is not configured', async () => {
+      const action: SearchActionConfig = {
+        type: 'changeStatus',
+        translationKey: 'Mark Arrived',
+        onAction: { status: 'Arrived' },
+        enabledRule: [],
+      };
+
+      (updateAppointmentStatus as jest.Mock).mockResolvedValue({
+        uuid: 'appt-uuid-1',
+        status: 'Arrived',
+      });
+
+      await handleActionButtonClick(
+        action,
+        mockRow,
+        mockPatientSearchData,
+        mockSetPatientSearchData,
+        mockNavigate,
+        mockAddNotification,
+        mockT,
+      );
+
+      expect(mockAddNotification).not.toHaveBeenCalled();
     });
 
     it('should navigate for navigate action', async () => {
@@ -434,6 +542,8 @@ describe('appointmentSearchResultActionHandler', () => {
         mockPatientSearchData,
         mockSetPatientSearchData,
         mockNavigate,
+        mockAddNotification,
+        mockT,
       );
 
       expect(mockNavigate).toHaveBeenCalledWith(
@@ -458,6 +568,8 @@ describe('appointmentSearchResultActionHandler', () => {
         mockPatientSearchData,
         mockSetPatientSearchData,
         mockNavigate,
+        mockAddNotification,
+        mockT,
       );
 
       expect(mockNavigate).toHaveBeenCalledWith('/appointment/APT-001');
@@ -484,6 +596,8 @@ describe('appointmentSearchResultActionHandler', () => {
         mockPatientSearchData,
         mockSetPatientSearchData,
         mockNavigate,
+        mockAddNotification,
+        mockT,
       );
 
       expect(checkInAppointment).toHaveBeenCalledWith(submitUrl, 'appt-uuid-1');
@@ -513,6 +627,8 @@ describe('appointmentSearchResultActionHandler', () => {
         mockPatientSearchData,
         mockSetPatientSearchData,
         mockNavigate,
+        mockAddNotification,
+        mockT,
       );
 
       expect(mockSetPatientSearchData).toHaveBeenCalledWith({
@@ -524,6 +640,65 @@ describe('appointmentSearchResultActionHandler', () => {
           }),
         ]),
       });
+    });
+
+    it('should show error notification when changeStatus API fails', async () => {
+      const action: SearchActionConfig = {
+        type: 'changeStatus',
+        translationKey: 'Mark Arrived',
+        onAction: { status: 'Arrived' },
+        enabledRule: [],
+      };
+
+      (updateAppointmentStatus as jest.Mock).mockRejectedValue(
+        new Error('API error'),
+      );
+
+      await handleActionButtonClick(
+        action,
+        mockRow,
+        mockPatientSearchData,
+        mockSetPatientSearchData,
+        mockNavigate,
+        mockAddNotification,
+        mockT,
+      );
+
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'error' }),
+      );
+      expect(mockSetPatientSearchData).not.toHaveBeenCalled();
+    });
+
+    it('should show error notification when checkInAndStartVisit API fails', async () => {
+      const action: SearchActionConfig = {
+        type: 'checkInAndStartVisit',
+        translationKey: 'Check In',
+        onAction: {
+          submit:
+            '/openmrs/ws/rest/v1/iom/appointment/checkin?visitType=Follow+Up',
+        },
+        enabledRule: [],
+      };
+
+      (checkInAppointment as jest.Mock).mockRejectedValue(
+        new Error('API error'),
+      );
+
+      await handleActionButtonClick(
+        action,
+        mockRow,
+        mockPatientSearchData,
+        mockSetPatientSearchData,
+        mockNavigate,
+        mockAddNotification,
+        mockT,
+      );
+
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'error' }),
+      );
+      expect(mockSetPatientSearchData).not.toHaveBeenCalled();
     });
   });
 
