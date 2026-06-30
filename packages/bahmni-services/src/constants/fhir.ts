@@ -1,3 +1,6 @@
+export const BIRTH_TIME_EXT_URL =
+  'http://hl7.org/fhir/StructureDefinition/patient-birthTime'; // NOSONAR
+
 export const FHIR_ENCOUNTER_TYPE_CODE_SYSTEM =
   'http://fhir.openmrs.org/code-system/encounter-type';
 export const FHIR_ENCOUNTER_CLASS_CODE_SYSTEM =

@@ -1,7 +1,6 @@
 export const PATIENT_ATTRIBUTE_PREFIX = 'http://fhir.bahmni.org/ext/patient/'; // NOSONAR
 export const ADDRESS_EXT_URL = 'http://fhir.openmrs.org/ext/address'; // NOSONAR
-export const BIRTH_TIME_EXT_URL =
-  'http://hl7.org/fhir/StructureDefinition/patient-birthTime'; // NOSONAR
+export { BIRTH_TIME_EXT_URL } from '@bahmni/services';
 export const IDENTIFIER_LOCATION_EXT_URL =
   'http://fhir.openmrs.org/ext/patient/identifier#location'; // NOSONAR
 export const DATE_CREATED_EXT_URL =
