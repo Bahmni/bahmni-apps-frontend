@@ -92,28 +92,35 @@ export const handleActionButtonClick = async (
     });
   };
 
+  const handleResponse = async (
+    promise: Promise<{ appointmentUuid: string; status: string }>,
+  ) => {
+    try {
+      const { appointmentUuid, status: updatedStatus } = await promise;
+      setPatientSearchData({
+        totalCount: patientSearchData.totalCount,
+        pageOfResults: updateAppointmentStatusInResults(
+          patientSearchData.pageOfResults,
+          appointmentUuid,
+          updatedStatus,
+        ),
+      });
+      showSuccessNotification();
+    } catch {
+      showErrorNotification();
+    }
+  };
+
   if (action.type === 'changeStatus') {
-    await updateAppointmentStatus(
-      row.appointmentUuid as string,
-      status as string,
-    )
-      .then((response) => {
-        const { uuid, status: updatedStatus } = response as {
+    await handleResponse(
+      updateAppointmentStatus(row.appointmentUuid!, status!).then((res) => {
+        const { uuid, status: updatedStatus } = res as {
           uuid: string;
           status: string;
         };
-        const updatedPatientSearchData = {
-          totalCount: patientSearchData.totalCount,
-          pageOfResults: updateAppointmentStatusInResults(
-            patientSearchData.pageOfResults,
-            uuid,
-            updatedStatus,
-          ),
-        };
-        setPatientSearchData(updatedPatientSearchData);
-        showSuccessNotification();
-      })
-      .catch(showErrorNotification);
+        return { appointmentUuid: uuid, status: updatedStatus };
+      }),
+    );
   } else if (action.type === 'navigate') {
     const options: Record<string, string> = {};
     options['patientUuid'] = row.uuid;
@@ -121,20 +128,7 @@ export const handleActionButtonClick = async (
     options['appointmentUuid'] = row.appointmentUuid!;
     handleActionNavigation(navigation ?? '', options, navigate);
   } else if (action.type === 'checkInAndStartVisit') {
-    await checkInAppointment(submit!, row.appointmentUuid!)
-      .then((response) => {
-        const updatedPatientSearchData = {
-          totalCount: patientSearchData.totalCount,
-          pageOfResults: updateAppointmentStatusInResults(
-            patientSearchData.pageOfResults,
-            response.appointmentUuid,
-            response.status,
-          ),
-        };
-        setPatientSearchData(updatedPatientSearchData);
-        showSuccessNotification();
-      })
-      .catch(showErrorNotification);
+    await handleResponse(checkInAppointment(submit!, row.appointmentUuid!));
   }
 };
 

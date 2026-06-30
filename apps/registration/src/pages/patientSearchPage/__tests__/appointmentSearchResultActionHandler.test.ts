@@ -466,8 +466,7 @@ describe('appointmentSearchResultActionHandler', () => {
         type: 'checkInAndStartVisit',
         translationKey: 'Check In',
         onAction: {
-          submit:
-            '/openmrs/ws/rest/v1/iom/appointment/checkin?visitType=Follow+Up',
+          submit: '/bahmni/appointment/checkin',
         },
         enabledRule: [],
         onSuccess: {
@@ -576,8 +575,7 @@ describe('appointmentSearchResultActionHandler', () => {
     });
 
     it('should call checkInAppointment with submit URL and appointmentUuid for checkInAndStartVisit action', async () => {
-      const submitUrl =
-        '/openmrs/ws/rest/v1/iom/appointment/checkin?visitType=Follow+Up';
+      const submitUrl = '/bahmni/appointment/checkin';
       const action: SearchActionConfig = {
         type: 'checkInAndStartVisit',
         translationKey: 'Check In',
@@ -610,8 +608,7 @@ describe('appointmentSearchResultActionHandler', () => {
         type: 'checkInAndStartVisit',
         translationKey: 'Check In',
         onAction: {
-          submit:
-            '/openmrs/ws/rest/v1/iom/appointment/checkin?visitType=Follow+Up',
+          submit: '/bahmni/appointment/checkin',
         },
         enabledRule: [],
       };
@@ -675,8 +672,7 @@ describe('appointmentSearchResultActionHandler', () => {
         type: 'checkInAndStartVisit',
         translationKey: 'Check In',
         onAction: {
-          submit:
-            '/openmrs/ws/rest/v1/iom/appointment/checkin?visitType=Follow+Up',
+          submit: '/bahmni/appointment/checkin',
         },
         enabledRule: [],
       };
