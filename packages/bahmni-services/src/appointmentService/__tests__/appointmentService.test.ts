@@ -18,6 +18,7 @@ import {
   getPastAppointmentsPage,
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
+  checkInAppointment,
   getAppointmentById,
   getAllAppointmentServices,
   deleteAppointmentService,
@@ -149,6 +150,19 @@ describe('Appointment Service', () => {
         onDate,
       },
     );
+  });
+
+  it('checkInAppointment should call POST with the submit URL and appointmentUuid body', async () => {
+    const submitUrl =
+      '/openmrs/ws/rest/v1/iom/appointment/checkin?visitType=Follow+Up';
+    const appointmentUuid = 'appt-uuid-1';
+    const mockResponse = { uuid: appointmentUuid, status: 'Arrived' };
+    mockedPost.mockResolvedValue(mockResponse);
+
+    const result = await checkInAppointment(submitUrl, appointmentUuid);
+
+    expect(mockedPost).toHaveBeenCalledWith(submitUrl, { appointmentUuid });
+    expect(result).toEqual(mockResponse);
   });
 
   it.each([
