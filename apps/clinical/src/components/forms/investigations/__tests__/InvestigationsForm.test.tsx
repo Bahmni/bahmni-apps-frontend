@@ -1,3 +1,9 @@
+import {
+  useEncounterSessionStore,
+  getOrderTypes,
+  getExistingServiceRequestsForAllCategories,
+  useSubscribeConsultationSaved,
+} from '@bahmni/services';
 import { useHasPrivilege, UserPrivilegeProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
@@ -25,12 +31,21 @@ jest.mock('@bahmni/services', () => ({
       { uuid: 'proc', display: 'Procedure Order', conceptClasses: [] },
     ],
   }),
+  getExistingServiceRequestsForAllCategories: jest.fn().mockResolvedValue([]),
+  useEncounterSessionStore: jest.fn().mockReturnValue({
+    activeEncounter: null,
+    matchReasons: [],
+    canEditOrCreate: false,
+    isLoading: false,
+  }),
+  useSubscribeConsultationSaved: jest.fn(),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   usePatientUUID: jest.fn().mockReturnValue('mock-patient-uuid'),
   useHasPrivilege: jest.fn(),
+  useNotification: jest.fn().mockReturnValue({ addNotification: jest.fn() }),
   UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) =>
     children,
 }));
@@ -136,16 +151,37 @@ const createWrapper = () => {
 
 describe('InvestigationsForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     mockUseHasPrivilege.mockReturnValue(mockUserPrivilegesWithInvestigations);
-    // Setup default mocks
     (useInvestigationsSearch as jest.Mock).mockReturnValue({
       investigations: [],
       isLoading: false,
       error: null,
     });
-
     (useServiceRequestStore as unknown as jest.Mock).mockReturnValue(mockStore);
+    (useEncounterSessionStore as jest.Mock).mockReturnValue({
+      activeEncounter: null,
+      matchReasons: [],
+      canEditOrCreate: false,
+      isLoading: false,
+    });
+    (getOrderTypes as jest.Mock).mockResolvedValue({
+      results: [
+        { uuid: 'lab', display: 'Lab Order', conceptClasses: [] },
+        { uuid: 'rad', display: 'Radiology Order', conceptClasses: [] },
+        { uuid: 'proc', display: 'Procedure Order', conceptClasses: [] },
+      ],
+    });
+    (getExistingServiceRequestsForAllCategories as jest.Mock).mockResolvedValue(
+      [],
+    );
+    (useSubscribeConsultationSaved as jest.Mock).mockImplementation(() => {});
+    const { useNotification, usePatientUUID } =
+      jest.requireMock('@bahmni/widgets');
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: jest.fn(),
+    });
+    (usePatientUUID as jest.Mock).mockReturnValue('mock-patient-uuid');
   });
 
   describe('Component Rendering', () => {
@@ -414,7 +450,7 @@ describe('InvestigationsForm', () => {
       );
     });
 
-    test('allows adding the same investigation multiple times (duplicates are allowed) - item is not disabled in dropdown', async () => {
+    test("disables already-ordered investigation in dropdown and shows '(Already added)' text", async () => {
       const user = userEvent.setup();
       (useInvestigationsSearch as jest.Mock).mockReturnValue({
         investigations: mockInvestigations,
@@ -449,15 +485,262 @@ describe('InvestigationsForm', () => {
       await user.type(combobox, 'complete');
 
       await waitFor(() => {
-        // Item should NOT be disabled or marked as already selected
+        // CBC option should be disabled and show "(Already added)" text
+        const options = screen.getAllByRole('option');
+        const cbcOption = options.find((o) =>
+          o.textContent?.includes('Complete Blood Count'),
+        );
+        expect(cbcOption).toBeInTheDocument();
+        expect(cbcOption).toHaveAttribute('disabled');
+        expect(cbcOption?.textContent).toMatch(/already added/i);
+
+        // Other items should NOT be disabled
+        const glucoseOption = options.find((o) =>
+          o.textContent?.includes('Blood Glucose Test'),
+        );
+        expect(glucoseOption).toBeInTheDocument();
+        expect(glucoseOption).not.toHaveAttribute('disabled');
+      });
+    });
+
+    test('does not allow adding an already-ordered investigation', async () => {
+      const user = userEvent.setup();
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+
+      // Simulate that CBC is already selected in the store
+      const selectedMap = new Map([
+        [
+          'Lab Order',
+          [
+            {
+              uid: 'uid-cbc-001',
+              id: 'cbc-001',
+              display: 'Complete Blood Count',
+              selectedPriority: 'routine' as const,
+            },
+          ],
+        ],
+      ]);
+
+      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
+        ...mockStore,
+        selectedServiceRequests: selectedMap,
+      });
+
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+      const combobox = screen.getByRole('combobox');
+
+      // Search for the already-selected investigation
+      await user.type(combobox, 'complete');
+
+      await waitFor(() => {
+        // The dropdown should show the disabled item with "(Already added)" text
+        const options = screen.getAllByRole('option');
+        const cbcOption = options.find((o) =>
+          o.textContent?.includes('Complete Blood Count'),
+        );
+        expect(cbcOption).toBeInTheDocument();
+        expect(cbcOption).toHaveAttribute('disabled');
+      });
+
+      // addServiceRequest should NOT have been called (item is disabled)
+      expect(mockStore.addServiceRequest).not.toHaveBeenCalled();
+    });
+
+    test('disables investigation already ordered in the active encounter (MATCHED session)', async () => {
+      const user = userEvent.setup();
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+
+      // Simulate an active encounter session with MATCHED reason
+      (useEncounterSessionStore as jest.Mock).mockReturnValue({
+        activeEncounter: { id: 'encounter-uuid-123' },
+        matchReasons: ['MATCHED'],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+
+      // Simulate backend returning CBC as already ordered in this encounter
+      (
+        getExistingServiceRequestsForAllCategories as jest.Mock
+      ).mockResolvedValue([
+        {
+          conceptCode: 'cbc-001',
+          categoryUuid: 'lab',
+          display: 'Complete Blood Count',
+          requesterUuid: 'practitioner-001',
+        },
+      ]);
+
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+      const combobox = screen.getByRole('combobox');
+
+      await user.type(combobox, 'complete');
+
+      await waitFor(
+        () => {
+          const options = screen.getAllByRole('option');
+          const cbcOption = options.find((o) =>
+            o.textContent?.includes('Complete Blood Count'),
+          );
+          expect(cbcOption).toBeInTheDocument();
+          expect(cbcOption).toHaveAttribute('disabled');
+          expect(cbcOption?.textContent).toMatch(/already added/i);
+        },
+        { timeout: 3000 },
+      );
+    });
+
+    test('allows ordering investigation when encounter is not MATCHED (new encounter)', async () => {
+      const user = userEvent.setup();
+      (useInvestigationsSearch as jest.Mock).mockReturnValue({
+        investigations: mockInvestigations,
+        isLoading: false,
+        error: null,
+      });
+
+      // Simulate SESSION_EXPIRED - new encounter will be created
+      (useEncounterSessionStore as jest.Mock).mockReturnValue({
+        activeEncounter: { id: 'old-encounter-uuid' },
+        matchReasons: ['SESSION_EXPIRED'],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+      const combobox = screen.getByRole('combobox');
+
+      await user.type(combobox, 'complete');
+
+      await waitFor(() => {
         const options = screen.getAllByRole('option');
         const cbcOption = options.find((o) =>
           o.textContent?.includes('Complete Blood Count'),
         );
         expect(cbcOption).toBeInTheDocument();
         expect(cbcOption).not.toHaveAttribute('disabled');
-        expect(cbcOption?.textContent).not.toMatch(/already/i);
       });
+    });
+
+    test('shows error notification when fetching existing encounter orders fails', async () => {
+      const mockError = new Error('Failed to fetch service requests');
+      (
+        getExistingServiceRequestsForAllCategories as jest.Mock
+      ).mockRejectedValue(mockError);
+
+      const mockAddNotification = jest.fn();
+      const { useNotification } = jest.requireMock('@bahmni/widgets');
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+      });
+
+      (useEncounterSessionStore as jest.Mock).mockReturnValue({
+        activeEncounter: { id: 'encounter-uuid-123' },
+        matchReasons: ['MATCHED'],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+
+      await waitFor(
+        () => {
+          expect(mockAddNotification).toHaveBeenCalledWith({
+            title: 'Error',
+            message: mockError.message,
+            type: 'error',
+          });
+        },
+        { timeout: 3000 },
+      );
+    });
+
+    test('refetches existing orders after consultation saved with service requests', async () => {
+      let savedCallback: ((payload: any) => void) | null = null;
+      const { useSubscribeConsultationSaved } =
+        jest.requireMock('@bahmni/services');
+      (useSubscribeConsultationSaved as jest.Mock).mockImplementation(
+        (cb: (payload: any) => void) => {
+          savedCallback = cb;
+        },
+      );
+
+      (useEncounterSessionStore as jest.Mock).mockReturnValue({
+        activeEncounter: { id: 'encounter-uuid-123' },
+        matchReasons: ['MATCHED'],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(getExistingServiceRequestsForAllCategories).toHaveBeenCalled();
+      });
+
+      const callCountBefore = (
+        getExistingServiceRequestsForAllCategories as jest.Mock
+      ).mock.calls.length;
+
+      // Fire the consultation saved event with service requests updated
+      savedCallback?.({
+        patientUUID: 'mock-patient-uuid',
+        updatedResources: { serviceRequests: { lab: true } },
+      });
+
+      await waitFor(() => {
+        expect(
+          (getExistingServiceRequestsForAllCategories as jest.Mock).mock.calls
+            .length,
+        ).toBeGreaterThan(callCountBefore);
+      });
+    });
+
+    test('does not refetch when consultation saved without service requests', async () => {
+      let savedCallback: ((payload: any) => void) | null = null;
+      const { useSubscribeConsultationSaved } =
+        jest.requireMock('@bahmni/services');
+      (useSubscribeConsultationSaved as jest.Mock).mockImplementation(
+        (cb: (payload: any) => void) => {
+          savedCallback = cb;
+        },
+      );
+
+      (useEncounterSessionStore as jest.Mock).mockReturnValue({
+        activeEncounter: { id: 'encounter-uuid-123' },
+        matchReasons: ['MATCHED'],
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+
+      render(<InvestigationsForm />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(getExistingServiceRequestsForAllCategories).toHaveBeenCalled();
+      });
+
+      const callCountBefore = (
+        getExistingServiceRequestsForAllCategories as jest.Mock
+      ).mock.calls.length;
+
+      // Fire with empty serviceRequests — should NOT refetch
+      savedCallback?.({
+        patientUUID: 'mock-patient-uuid',
+        updatedResources: { serviceRequests: {} },
+      });
+
+      await new Promise((r) => setTimeout(r, 100));
+
+      expect(
+        (getExistingServiceRequestsForAllCategories as jest.Mock).mock.calls,
+      ).toHaveLength(callCountBefore);
     });
   });
 
@@ -509,39 +792,6 @@ describe('InvestigationsForm', () => {
       expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
       expect(screen.getByText('Blood Glucose Test')).toBeInTheDocument();
       expect(screen.getByText('Chest X-Ray')).toBeInTheDocument();
-    });
-
-    test('displays duplicate investigations (same concept) in the list', () => {
-      const selectedMap = new Map([
-        [
-          'Lab Order',
-          [
-            {
-              uid: 'uid-cbc-001-a',
-              id: 'cbc-001',
-              display: 'Complete Blood Count',
-              selectedPriority: 'routine',
-            },
-            {
-              uid: 'uid-cbc-001-b',
-              id: 'cbc-001',
-              display: 'Complete Blood Count',
-              selectedPriority: 'stat',
-            },
-          ],
-        ],
-      ]);
-
-      (useServiceRequestStore as unknown as jest.Mock).mockReturnValue({
-        ...mockStore,
-        selectedServiceRequests: selectedMap,
-      });
-
-      render(<InvestigationsForm />, { wrapper: createWrapper() });
-
-      expect(screen.getByText('Added Lab Order')).toBeInTheDocument();
-      const cbcItems = screen.getAllByText('Complete Blood Count');
-      expect(cbcItems).toHaveLength(2);
     });
 
     test('removes investigation when close button is clicked using uid', async () => {
