@@ -172,7 +172,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     });
 
   const [editEncounter, setEditEncounter] = useState<Encounter | null>(null);
-  const [editEncounterLoading, setEditEncounterLoading] = useState(false);
+  const [editEncounterLoading, setEditEncounterLoading] = useState(
+    Boolean(editEncounterUuid),
+  );
   useEffect(() => {
     if (!editEncounterUuid) return;
     const abortController = new AbortController();
@@ -203,14 +205,18 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const activeEncounter = editEncounterUuid ? editEncounter : sessionEncounter;
 
   useEffect(() => {
-    if (activeEncounter?.period?.start) {
+    const periodStart = activeEncounter?.period?.start;
+    if (periodStart) {
+      const date = new Date(periodStart);
       useEncounterDetailsStore
         .getState()
-        .setConsultationDate(new Date(activeEncounter.period.start));
+        .setConsultationDate(isNaN(date.getTime()) ? new Date() : date);
     } else if (!editEncounterUuid) {
       useEncounterDetailsStore.getState().setConsultationDate(new Date());
+    } else if (editEncounterUuid && !editEncounterLoading) {
+      useEncounterDetailsStore.getState().setConsultationDate(new Date());
     }
-  }, [activeEncounter, editEncounterUuid]);
+  }, [activeEncounter, editEncounterUuid, editEncounterLoading]);
 
   // Only resume the existing encounter on an exact MATCHED case.
   // SESSION_EXPIRED, LOCATION_MISMATCH, PROVIDER_MISMATCH all silently create a new encounter.
