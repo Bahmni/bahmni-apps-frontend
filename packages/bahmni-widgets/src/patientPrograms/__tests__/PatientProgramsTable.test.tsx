@@ -11,6 +11,7 @@ import {
 import { render, screen, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import PatientProgramsTable from '../PatientProgramsTable';
+import { mockProgram } from './__mocks__/patientProgramMocks';
 
 expect.extend(toHaveNoViolations);
 
@@ -342,20 +343,6 @@ describe('PatientProgramsTable', () => {
   });
 
   describe('renderAttributeValue', () => {
-    const mockProgram = {
-      id: 'program-1',
-      uuid: 'program-uuid-1',
-      programName: 'TB Program',
-      dateEnrolled: '2023-01-15T10:30:00.000+00:00',
-      dateCompleted: null,
-      outcomeName: null,
-      outcomeDetails: null,
-      currentStateName: 'Treatment Phase',
-      attributes: {
-        treatmentCategory: 'categoryI',
-      },
-    };
-
     it('should render raw attribute value when field is not in enableTranslation', () => {
       (useQuery as jest.Mock).mockReturnValue({
         data: { programs: [mockProgram], total: 1 },
@@ -400,7 +387,7 @@ describe('PatientProgramsTable', () => {
       ).toHaveTextContent('-');
     });
 
-    it('should call t() with correct EOC key and render translated value when field is in enableTranslation', () => {
+    it('should translate attribute value using EOC key when enableTranslation is true', () => {
       const mockT = jest.fn((key: string, fallback: string) => fallback);
       const useTranslationSpy = jest
         .spyOn(BahmniServices, 'useTranslation')
