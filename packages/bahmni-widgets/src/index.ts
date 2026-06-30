@@ -78,25 +78,14 @@ export {
   getSearchWidget,
   clearSearchWidgetRegistry,
   SearchWidgetConfigProvider,
+  withSearchConfig,
   useSearchWidgetConfig,
   type SearchWidget,
+  type SearchWidgetProps,
   type SearchWidgetConfig,
   type SearchWidgetConfigContextType,
   CommonSearchWidget,
 } from './search';
-
-// Extensions
-export {
-  Extensions,
-  registerExtensionWidget,
-  getExtensionWidget,
-  clearExtensionWidget,
-  useExtensionConfig,
-  type ExtensionWidget,
-  type Extension,
-  type ExtensionParams,
-  type ExtensionConfigContextType,
-} from './extensions';
 
 // Widget Registry
 export {
