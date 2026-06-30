@@ -2,6 +2,7 @@ import * as services from '@bahmni/services';
 import { NotificationProvider, useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import ClinicalList from '../index';
 import {
@@ -9,6 +10,8 @@ import {
   mockPrivilegedSearchExtension,
   mockSearchExtension,
 } from './__mocks__/utilsMocks';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('../constants', () => ({
   EXTENSION_HANDLERS: {
@@ -136,4 +139,18 @@ describe('ClinicalList', () => {
       ).toBeInTheDocument();
     },
   );
+
+  describe('Accessibility', () => {
+    it('has no accessibility violations', async () => {
+      const { container } = renderPage();
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('Snapshot', () => {
+    it('matches snapshot', () => {
+      const { container } = renderPage();
+      expect(container.firstChild).toMatchSnapshot();
+    });
+  });
 });

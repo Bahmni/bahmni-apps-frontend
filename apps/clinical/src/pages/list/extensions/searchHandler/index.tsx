@@ -1,4 +1,5 @@
 import {
+  CodeSnippetSkeleton,
   Icon,
   ICON_SIZE,
   Tab,
@@ -61,7 +62,14 @@ const Search = ({ extensions }: ExtensionHandlerProps) => {
               aria-label={`Panel ${ext.id}`}
             >
               {Widget ? (
-                <Suspense fallback={null}>
+                <Suspense
+                  fallback={
+                    <CodeSnippetSkeleton
+                      type="multi"
+                      className={styles.loading}
+                    />
+                  }
+                >
                   <Widget extensionParams={ext.extensionParams} />
                 </Suspense>
               ) : (

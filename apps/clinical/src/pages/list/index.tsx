@@ -1,4 +1,4 @@
-import { BaseLayout, Header } from '@bahmni/design-system';
+import { BaseLayout, CodeSnippetSkeleton, Header } from '@bahmni/design-system';
 import { BAHMNI_HOME_PATH, useTranslation } from '@bahmni/services';
 import { useUserPrivilege } from '@bahmni/widgets';
 import { Suspense, useMemo } from 'react';
@@ -56,7 +56,14 @@ const ClinicalList = () => {
                 data-testid={`${pointId}-test-id`}
                 className={styles.tabs}
               >
-                <Suspense fallback={null}>
+                <Suspense
+                  fallback={
+                    <CodeSnippetSkeleton
+                      type="multi"
+                      className={styles.loading}
+                    />
+                  }
+                >
                   <Handler extensions={filtered} />
                 </Suspense>
               </div>

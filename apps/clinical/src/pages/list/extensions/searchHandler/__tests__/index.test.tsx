@@ -3,12 +3,15 @@ import {
   registerSearchWidget,
 } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import Search from '..';
 import {
   mockExtensionWithIcon,
   mockExtensionWithRegisteredType,
   mockExtensionWithUnregisteredType,
 } from './__mocks__/searchHandlerMocks';
+
+expect.extend(toHaveNoViolations);
 
 const MockWidget = () => <div data-testid="mock-widget-test-id" />;
 MockWidget.displayName = 'MockWidget';
@@ -71,5 +74,23 @@ describe('Search', () => {
         `${mockExtensionWithRegisteredType.id}-icon-test-id`,
       ),
     ).not.toBeInTheDocument();
+  });
+
+  describe('Accessibility', () => {
+    it('has no accessibility violations', async () => {
+      const { container } = render(
+        <Search extensions={[mockExtensionWithRegisteredType]} />,
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('Snapshot', () => {
+    it('matches snapshot', () => {
+      const { container } = render(
+        <Search extensions={[mockExtensionWithRegisteredType]} />,
+      );
+      expect(container.firstChild).toMatchSnapshot();
+    });
   });
 });
