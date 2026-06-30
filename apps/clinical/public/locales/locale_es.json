@@ -388,6 +388,7 @@
   "NO_CONFIGURED_CONTROLS": "No hay controles configurados para esta sección",
   "NO_DASHBOARD_SECTIONS": "No hay secciones del panel configuradas",
   "NO_DIAGNOSES": "No hay diagnósticos registrados",
+  "NO_EXTENSIONS_CONFIGURED": "No hay extensiones configuradas para su rol / privilegio",
   "NO_MATCHING_ALLERGEN_FOUND": "No se encontró ningún alérgeno coincidente",
   "NO_MATCHING_DIAGNOSIS_FOUND": "No se encontraron diagnósticos coincidentes",
   "NO_MATCHING_DRUG_NAME_FOUND": "No se encontró ningún nombre de medicamento coincidente",

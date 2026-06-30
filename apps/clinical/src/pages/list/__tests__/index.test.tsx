@@ -2,11 +2,24 @@ import * as services from '@bahmni/services';
 import { NotificationProvider, useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
+import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import ClinicalList from '../index';
+import {
+  mockOtherExtension,
+  mockPrivilegedSearchExtension,
+  mockSearchExtension,
+} from './__mocks__/utilsMocks';
+
+jest.mock('../constants', () => ({
+  EXTENSION_HANDLERS: {
+    'org.bahmni.clinical.v2.search': () => (
+      <div data-testid="mock-search-handler-test-id" />
+    ),
+  },
+}));
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  getConfig: jest.fn(),
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
@@ -15,8 +28,10 @@ jest.mock('@bahmni/widgets', () => ({
   useUserPrivilege: jest.fn(),
 }));
 
-const mockGetConfig = services.getConfig as jest.MockedFunction<
-  typeof services.getConfig
+jest.mock('../../../providers/clinicalConfig');
+
+const mockUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
+  typeof useClinicalConfig
 >;
 
 const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
@@ -48,36 +63,77 @@ describe('ClinicalList', () => {
       setIsLoading: jest.fn(),
       setError: jest.fn(),
     });
-    mockGetConfig.mockResolvedValue([]);
+    mockUseClinicalConfig.mockReturnValue({
+      clinicalConfig: { extensions: [] } as any,
+      isLoading: false,
+      error: null,
+    });
   });
 
   afterEach(() => {
     queryClient.clear();
   });
 
-  it('renders the page container with correct test ID', () => {
-    renderPage();
-    expect(
-      screen.getByTestId('clinical-list-page-test-id'),
-    ).toBeInTheDocument();
-  });
-
-  it('renders the tabs container with correct test ID', () => {
-    renderPage();
-    expect(
-      screen.getByTestId('clinical-list-tabs-test-id'),
-    ).toBeInTheDocument();
-  });
-
-  it('renders Home breadcrumb with link to BAHMNI_HOME_PATH', () => {
+  it('renders breadcrumb navigation', () => {
     renderPage();
     const homeLink = screen.getByRole('link', { name: /HOME_LABEL/i });
-    expect(homeLink).toBeInTheDocument();
     expect(homeLink).toHaveAttribute('href', services.BAHMNI_HOME_PATH);
-  });
-
-  it('renders Clinical as current page breadcrumb', () => {
-    renderPage();
     expect(screen.getByText('CLINICAL_LABEL')).toBeInTheDocument();
   });
+
+  it('renders extension handler container when a registered extension is configured', () => {
+    mockUseClinicalConfig.mockReturnValue({
+      clinicalConfig: { extensions: [mockSearchExtension] } as any,
+      isLoading: false,
+      error: null,
+    });
+    renderPage();
+    expect(
+      screen.getByTestId('org.bahmni.clinical.v2.search-test-id'),
+    ).toBeInTheDocument();
+  });
+
+  it.each([
+    {
+      description: 'extensions array is empty',
+      clinicalConfig: { extensions: [] },
+      userPrivileges: [{ uuid: 'priv-1', name: 'app:clinical' }],
+    },
+    {
+      description: 'clinicalConfig has no extensions property',
+      clinicalConfig: {},
+      userPrivileges: [{ uuid: 'priv-1', name: 'app:clinical' }],
+    },
+    {
+      description: 'user lacks required privilege',
+      clinicalConfig: { extensions: [mockPrivilegedSearchExtension] },
+      userPrivileges: [{ uuid: 'priv-2', name: 'app:admin' }],
+    },
+    {
+      description: 'extension point has no registered handler',
+      clinicalConfig: { extensions: [mockOtherExtension] },
+      userPrivileges: [{ uuid: 'priv-1', name: 'app:clinical' }],
+    },
+  ])(
+    'shows no extensions configured message when $description',
+    ({ clinicalConfig, userPrivileges }) => {
+      mockUseUserPrivilege.mockReturnValue({
+        userPrivileges,
+        isLoading: false,
+        error: null,
+        setUserPrivileges: jest.fn(),
+        setIsLoading: jest.fn(),
+        setError: jest.fn(),
+      });
+      mockUseClinicalConfig.mockReturnValue({
+        clinicalConfig: clinicalConfig as any,
+        isLoading: false,
+        error: null,
+      });
+      renderPage();
+      expect(
+        screen.getByTestId('no-extensions-configured-test-id'),
+      ).toBeInTheDocument();
+    },
+  );
 });

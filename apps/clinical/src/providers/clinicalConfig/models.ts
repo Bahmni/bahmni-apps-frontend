@@ -1,5 +1,6 @@
 import { type CDSSRule } from '@bahmni/services';
 import type { PrintOption } from '@bahmni/widgets';
+import type { Extension } from '../../extensions';
 
 export interface AllergyConceptMap {
   medicationAllergenUuid: string;
@@ -66,6 +67,7 @@ export interface ClinicalConfig {
   actions: Array<unknown>;
   dashboards: Array<Dashboard>;
   consultationPad: ConsultationPad;
+  extensions?: Extension[];
 }
 
 export interface ClinicalConfigContextType {

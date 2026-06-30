@@ -1,4 +1,4 @@
-import { filterByPrivileges } from '../utils';
+import { filterExtensionsByPrivileges } from '../utils';
 import {
   mockExtensionNoPrivileges,
   mockExtensionWithMultiplePrivileges,
@@ -6,7 +6,7 @@ import {
   mockUserPrivileges,
 } from './__mocks__/extensionsMocks';
 
-describe('filterByPrivileges', () => {
+describe('filterExtensionsByPrivileges', () => {
   it.each([
     {
       description: 'shows extension with no requiredPrivileges',
@@ -46,7 +46,7 @@ describe('filterByPrivileges', () => {
       expectedIds: ['ext-1', 'ext-3'],
     },
   ])('$description', ({ extensions, userPrivileges, expectedIds }) => {
-    const result = filterByPrivileges(extensions, userPrivileges);
+    const result = filterExtensionsByPrivileges(extensions, userPrivileges);
     expect(result.map((e) => e.id)).toEqual(expectedIds);
   });
 });

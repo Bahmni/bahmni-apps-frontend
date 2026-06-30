@@ -388,6 +388,7 @@
   "NO_CONFIGURED_CONTROLS": "No configured controls to for this section",
   "NO_DASHBOARD_SECTIONS": "No dashboard sections configured",
   "NO_DIAGNOSES": "No Diagnoses recorded",
+  "NO_EXTENSIONS_CONFIGURED": "No extensions configured for your role / privilege",
   "NO_MATCHING_ALLERGEN_FOUND": "No matching Allergen recorded",
   "NO_MATCHING_DIAGNOSIS_FOUND": "No matching Diagnosis recorded",
   "NO_MATCHING_DRUG_NAME_FOUND": "No matching drug name found",

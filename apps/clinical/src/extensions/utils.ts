@@ -1,7 +1,7 @@
 import { hasPrivilege, UserPrivilege } from '@bahmni/services';
 import { Extension } from './models';
 
-export const filterByPrivileges = (
+export const filterExtensionsByPrivileges = (
   extensions: Extension[],
   userPrivileges: UserPrivilege[] | null,
 ): Extension[] =>

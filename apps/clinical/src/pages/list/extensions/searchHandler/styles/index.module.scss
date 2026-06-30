@@ -1,15 +1,6 @@
+@use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
-@use "@carbon/react/scss/type" as *;
-
-.page {
-  padding-top: $spacing-10;
-  padding-inline: calc($spacing-12 + $spacing-05);
-}
-
-.tabs {
-  box-shadow: 0 3px 6px 0 $shadow;
-}
 
 .message {
   @include type-style('body-compact-01');
