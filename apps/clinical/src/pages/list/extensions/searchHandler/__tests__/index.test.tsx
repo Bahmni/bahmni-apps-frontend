@@ -34,10 +34,14 @@ describe('Search', () => {
       />,
     );
     expect(
-      screen.getByRole('tab', { name: `Search Tab ${mockExtensionWithRegisteredType.id}` }),
+      screen.getByRole('tab', {
+        name: `Search Tab ${mockExtensionWithRegisteredType.id}`,
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('tab', { name: `Search Tab ${mockExtensionWithIcon.id}` }),
+      screen.getByRole('tab', {
+        name: `Search Tab ${mockExtensionWithIcon.id}`,
+      }),
     ).toBeInTheDocument();
   });
 
