@@ -7,7 +7,10 @@ export {
   type SearchWidget,
 } from './registry';
 
-export { default as SearchWidgetConfigProvider } from './provider';
+export {
+  default as SearchWidgetConfigProvider,
+  withSearchConfig,
+} from './provider';
 export { useSearchWidgetConfig } from './context';
 export type {
   SearchWidgetProps,

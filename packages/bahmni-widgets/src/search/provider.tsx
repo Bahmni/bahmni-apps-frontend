@@ -43,13 +43,15 @@ const SearchWidgetConfigProvider = ({
 export default SearchWidgetConfigProvider;
 
 export const withSearchConfig = (
-  Component: React.ComponentType,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Component: React.ComponentType<any>,
 ): React.ComponentType<SearchWidgetProps> => {
-  const WrappedWidget = ({ configUrl }: SearchWidgetProps) => {
-    if (!configUrl) return null;
+  const WrappedWidget = ({ extensionParams }: SearchWidgetProps) => {
+    const configUrl = extensionParams?.configUrl as string | undefined;
+    if (!configUrl) return <Component extensionParams={extensionParams} />;
     return (
       <SearchWidgetConfigProvider configUrl={configUrl}>
-        <Component />
+        <Component extensionParams={extensionParams} />
       </SearchWidgetConfigProvider>
     );
   };

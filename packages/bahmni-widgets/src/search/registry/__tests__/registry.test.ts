@@ -1,8 +1,4 @@
 import {
-  getExtensionWidget,
-  clearExtensionWidget,
-} from '../../../extensions/registry';
-import {
   clearSearchWidgetRegistry,
   getSearchWidget,
   registerSearchWidget,
@@ -17,26 +13,29 @@ describe('Search Widget Registry', () => {
   });
 
   describe('registerSearchWidget', () => {
-    it('stores the raw widget in the search registry', () => {
+    it('stores the widget and makes it retrievable by key', () => {
       registerSearchWidget({ key: 'testWidget', component: MockWidget });
-
-      expect(getSearchWidget('testWidget')?.component).toBe(MockWidget);
+      expect(getSearchWidget('testWidget')).toBeDefined();
     });
 
-    it('stores a wrapped widget in the extension registry', () => {
+    it('wraps component with withSearchConfig on registration', () => {
       registerSearchWidget({ key: 'testWidget', component: MockWidget });
-
-      const extensionWidget = getExtensionWidget('testWidget');
-      expect(extensionWidget).toBeDefined();
-      expect(extensionWidget?.component).not.toBe(MockWidget);
-    });
-
-    it('sets displayName on the wrapped extension widget', () => {
-      registerSearchWidget({ key: 'testWidget', component: MockWidget });
-
-      const extensionWidget = getExtensionWidget('testWidget');
-      expect(extensionWidget?.component.displayName).toBe(
+      const registered = getSearchWidget('testWidget');
+      expect(registered?.component.displayName).toBe(
         'WithSearchConfig(MockWidget)',
+      );
+    });
+
+    it('registers multiple widgets independently', () => {
+      const MockWidgetB = () => null;
+      MockWidgetB.displayName = 'MockWidgetB';
+      registerSearchWidget({ key: 'widgetA', component: MockWidget });
+      registerSearchWidget({ key: 'widgetB', component: MockWidgetB });
+      expect(getSearchWidget('widgetA')?.component.displayName).toBe(
+        'WithSearchConfig(MockWidget)',
+      );
+      expect(getSearchWidget('widgetB')?.component.displayName).toBe(
+        'WithSearchConfig(MockWidgetB)',
       );
     });
   });
@@ -45,22 +44,13 @@ describe('Search Widget Registry', () => {
     it('returns undefined for an unregistered key', () => {
       expect(getSearchWidget('unknown')).toBeUndefined();
     });
-
-    it('returns the correct raw widget for a registered key', () => {
-      registerSearchWidget({ key: 'testWidget', component: MockWidget });
-
-      expect(getSearchWidget('testWidget')?.component).toBe(MockWidget);
-    });
   });
 
   describe('clearSearchWidgetRegistry', () => {
-    it('removes entries from both the search and extension registries', () => {
+    it('removes all registered widgets', () => {
       registerSearchWidget({ key: 'testWidget', component: MockWidget });
-
       clearSearchWidgetRegistry();
-
       expect(getSearchWidget('testWidget')).toBeUndefined();
-      expect(getExtensionWidget('testWidget')).toBeUndefined();
     });
   });
 });

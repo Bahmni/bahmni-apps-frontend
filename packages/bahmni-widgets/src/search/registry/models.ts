@@ -1,4 +1,6 @@
+import { SearchWidgetProps } from '../models';
+
 export interface SearchWidget {
   key: string;
-  component: React.ComponentType;
+  component: React.ComponentType<SearchWidgetProps>;
 }

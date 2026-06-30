@@ -1,7 +1,6 @@
-import { ExtensionWidgetProps } from '../extensions/registry';
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface SearchWidgetProps extends ExtensionWidgetProps {}
+export interface SearchWidgetProps {
+  extensionParams?: Record<string, unknown>;
+}
 
 export type SearchWidgetConfig = Record<string, unknown>;
 

@@ -109,16 +109,26 @@ describe('withSearchConfig', () => {
     queryClient.clear();
   });
 
-  it('renders null when configUrl is not provided', () => {
+  it('renders the component directly when extensionParams is not provided', () => {
     const Wrapped = withSearchConfig(MockWidget);
-    const { container } = render(<Wrapped />, { wrapper: TestWrapper });
-    expect(container).toBeEmptyDOMElement();
+    render(<Wrapped />, { wrapper: TestWrapper });
+    expect(screen.getByTestId('mock-widget')).toBeInTheDocument();
   });
 
-  it('renders the wrapped widget when configUrl is provided', async () => {
+  it('renders the component directly when extensionParams has no configUrl', () => {
+    const Wrapped = withSearchConfig(MockWidget);
+    render(<Wrapped extensionParams={{ searchHandler: 'handler' }} />, {
+      wrapper: TestWrapper,
+    });
+    expect(screen.getByTestId('mock-widget')).toBeInTheDocument();
+  });
+
+  it('renders with SearchWidgetConfigProvider when extensionParams has configUrl', async () => {
     const Wrapped = withSearchConfig(MockWidget);
 
-    render(<Wrapped configUrl="/test/config.json" />, { wrapper: TestWrapper });
+    render(<Wrapped extensionParams={{ configUrl: '/test/config.json' }} />, {
+      wrapper: TestWrapper,
+    });
 
     await waitFor(() => {
       expect(screen.getByTestId('mock-widget')).toBeInTheDocument();
