@@ -7,11 +7,15 @@ export interface Age {
 export interface FormattedPatientData {
   id: string;
   fullName: string | null;
+  givenName: string | null;
+  familyName: string | null;
   gender: string | null;
   birthDate: string | null;
+  birthtime: string | null;
   formattedAddress: string | null;
   formattedContact: string | null;
   identifiers: Map<string, string>;
+  identifier: string | null;
   photoUrl?: string;
 }
 
@@ -160,6 +164,12 @@ export interface AppointmentSearchResult extends PatientSearchResult {
   appointmentDate?: string;
   appointmentReason?: string;
   appointmentStatus?: string;
+  appointmentServiceUuid?: string;
+}
+
+export interface CheckInAppointmentResponse {
+  appointmentUuid: string;
+  status: string;
 }
 export interface Appointment {
   length: number;
@@ -414,14 +424,20 @@ export interface ExpectedFieldConfig {
 }
 export interface SearchActionConfig {
   translationKey: string;
-  type: 'navigate' | 'changeStatus';
+  type: 'navigate' | 'changeStatus' | 'checkInAndStartVisit';
   enabledRule?: Array<{
-    type: 'privilegeCheck' | 'statusCheck' | 'appDateCheck';
-    values: string[];
+    type:
+      | 'privilegeCheck'
+      | 'statusCheck'
+      | 'appDateCheck'
+      | 'appointmentService';
+    values?: string[];
+    excludeValues?: string[];
   }>;
   onAction: {
     navigation?: string;
     status?: string;
+    submit?: string;
   };
   onSuccess?: {
     notification: string;

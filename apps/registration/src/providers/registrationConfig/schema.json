@@ -129,7 +129,7 @@
                     },
                     "type": {
                       "type": "string",
-                      "enum": ["changeStatus", "navigate"],
+                      "enum": ["changeStatus", "navigate", "checkInAndStartVisit"],
                       "description": "Type of action to perform"
                     },
                     "enabledRule": {
@@ -143,14 +143,20 @@
                             "enum": [
                               "privilegeCheck",
                               "statusCheck",
-                              "appDateCheck"
+                              "appDateCheck",
+                              "appointmentService"
                             ],
                             "description": "Type of rule to evaluate"
                           },
                           "values": {
                             "type": "array",
                             "items": { "type": "string" },
-                            "description": "Values to check against for the rule"
+                            "description": "Values to match for the rule. For appointmentService: UUIDs of services — action is enabled only when the appointment service UUID is in this list."
+                          },
+                          "excludeValues": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "description": "Values to exclude for the rule. Only valid for appointmentService type: UUIDs of services — action is enabled when the appointment service UUID is NOT in this list."
                           }
                         }
                       }
@@ -167,6 +173,10 @@
                         "navigation": {
                           "type": "string",
                           "description": "URL path to navigate to (for navigate type)"
+                        },
+                        "submit": {
+                          "type": "string",
+                          "description": "API endpoint URL to submit to (for checkInAndStartVisit type)"
                         }
                       }
                     },

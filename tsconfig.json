@@ -32,6 +32,9 @@
     },
     {
       "path": "./apps/command-palette"
+    },
+    {
+      "path": "./apps/patient-documents"
     }
   ]
 }
