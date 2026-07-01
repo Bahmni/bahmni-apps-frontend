@@ -1,2 +1,2 @@
 export type { Extension, ExtensionHandlerProps } from './models';
-export { filterExtensionsByPrivileges } from './utils';
+export { groupExtensionsByPoint, filterExtensionsByPrivileges } from './utils';

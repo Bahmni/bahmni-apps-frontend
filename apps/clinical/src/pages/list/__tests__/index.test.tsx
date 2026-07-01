@@ -9,7 +9,7 @@ import {
   mockOtherExtension,
   mockPrivilegedSearchExtension,
   mockSearchExtension,
-} from './__mocks__/utilsMocks';
+} from './__mocks__/listMocks';
 
 expect.extend(toHaveNoViolations);
 

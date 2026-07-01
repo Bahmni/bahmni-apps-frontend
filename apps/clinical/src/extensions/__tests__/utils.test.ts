@@ -1,10 +1,41 @@
-import { filterExtensionsByPrivileges } from '../utils';
+import { filterExtensionsByPrivileges, groupExtensionsByPoint } from '../utils';
 import {
   mockExtensionNoPrivileges,
+  mockExtensionWithDifferentPoint,
   mockExtensionWithMultiplePrivileges,
   mockExtensionWithPrivilege,
   mockUserPrivileges,
 } from './__mocks__/extensionsMocks';
+
+describe('groupExtensionsByPoint', () => {
+  it('returns empty map for empty extensions', () => {
+    expect(groupExtensionsByPoint([])).toEqual(new Map());
+  });
+
+  it('groups extensions under their extensionPointId', () => {
+    const result = groupExtensionsByPoint([
+      mockExtensionNoPrivileges,
+      mockExtensionWithDifferentPoint,
+    ]);
+    expect(result.get('org.bahmni.clinical.v2.search')).toEqual([
+      mockExtensionNoPrivileges,
+    ]);
+    expect(result.get('org.bahmni.clinical.v2.other')).toEqual([
+      mockExtensionWithDifferentPoint,
+    ]);
+  });
+
+  it('groups multiple extensions under the same extensionPointId', () => {
+    const result = groupExtensionsByPoint([
+      mockExtensionWithPrivilege,
+      mockExtensionNoPrivileges,
+    ]);
+    expect(result.get('org.bahmni.clinical.v2.search')).toEqual([
+      mockExtensionWithPrivilege,
+      mockExtensionNoPrivileges,
+    ]);
+  });
+});
 
 describe('filterExtensionsByPrivileges', () => {
   it.each([

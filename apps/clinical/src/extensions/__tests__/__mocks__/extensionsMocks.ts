@@ -27,6 +27,13 @@ export const mockExtensionNoPrivileges: Extension = {
   extensionParams: { searchHandler: 'handler', configUrl: '/config.json' },
 };
 
+export const mockExtensionWithDifferentPoint: Extension = {
+  id: 'ext-4',
+  extensionPointId: 'org.bahmni.clinical.v2.other',
+  type: 'sqlSearch',
+  translationKey: 'ALL_PATIENTS_SEARCH_LABEL',
+};
+
 export const mockUserPrivileges: UserPrivilege[] = [
   { uuid: 'priv-1', name: 'app:clinical' },
 ];

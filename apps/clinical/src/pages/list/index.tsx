@@ -2,11 +2,13 @@ import { BaseLayout, CodeSnippetSkeleton, Header } from '@bahmni/design-system';
 import { BAHMNI_HOME_PATH, useTranslation } from '@bahmni/services';
 import { useUserPrivilege } from '@bahmni/widgets';
 import { Suspense, useMemo } from 'react';
-import { filterExtensionsByPrivileges } from '../../extensions';
+import {
+  filterExtensionsByPrivileges,
+  groupExtensionsByPoint,
+} from '../../extensions';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { EXTENSION_HANDLERS } from './constants';
 import styles from './styles/index.module.scss';
-import { groupExtensionsByPoint } from './utils';
 
 const ClinicalList = () => {
   const { t } = useTranslation();
