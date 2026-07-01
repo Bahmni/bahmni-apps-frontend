@@ -3,13 +3,9 @@ import {
   MODULE_LABELS,
   createFhirEncounter,
   dispatchAuditEvent,
-  getActiveVisitByPatient,
   getCurrentProvider,
   getCurrentUser,
-  getEncounterSessionDuration,
   getUserLoginLocation,
-  searchEncounters,
-  updateFhirEncounter,
   get,
   OPENMRS_REST_V1,
   type AuditEventType,
@@ -62,93 +58,6 @@ export async function createRegistrationEncounterForPatient(
     module: MODULE_LABELS.REGISTRATION,
   });
   return createdEncounter;
-}
-
-function isEncounterInSession(
-  encounter: Encounter,
-  sessionDurationMs: number,
-): boolean {
-  return (
-    !!encounter.period?.start &&
-    new Date(encounter.period.start).getTime() + sessionDurationMs > Date.now()
-  );
-}
-
-function sortByMostRecent(encounters: Encounter[]): Encounter[] {
-  return [...encounters].sort((a, b) => {
-    const dateA = new Date(a.period?.start ?? 0).getTime();
-    const dateB = new Date(b.period?.start ?? 0).getTime();
-    return dateB - dateA;
-  });
-}
-
-/**
- * Returns the recent registration encounter whose session is still valid
- * (period.start + sessionDuration > now), or null if none exists.
- * Uses _lastUpdated as a loose server-side pre-filter to reduce result size,
- * then validates period.start client-side for correctness.
- * Throws on failure — callers decide how to handle errors.
- */
-export async function findValidRegistrationEncounterInSession(
-  patientUuid: string,
-  encounterTypeUuid: string,
-): Promise<Encounter | null> {
-  const sessionDuration = await getEncounterSessionDuration();
-  const sessionDurationMs = sessionDuration * 60 * 1000;
-  const sessionStartTime = new Date(Date.now() - sessionDurationMs);
-
-  const candidates = await searchEncounters({
-    patient: patientUuid,
-    type: encounterTypeUuid,
-    _lastUpdated: `ge${sessionStartTime.toISOString()}`,
-  });
-
-  return (
-    sortByMostRecent(candidates).find((e) =>
-      isEncounterInSession(e, sessionDurationMs),
-    ) ?? null
-  );
-}
-
-/**
- * Links a registration encounter to the patient's newly created active visit.
- * Throws on unexpected API failures — callers decide how to handle errors.
- */
-export async function linkRegistrationEncounterToVisit(
-  patientUuid: string,
-  encounterTypeUuid: string,
-): Promise<void> {
-  const activeVisit = await getActiveVisitByPatient(patientUuid);
-  const visitResult = activeVisit?.results?.[0];
-  const visitUuid = visitResult?.uuid;
-  if (!visitUuid) return;
-
-  const sessionDuration = await getEncounterSessionDuration();
-  const sessionDurationMs = sessionDuration * 60 * 1000;
-  const sessionStartTime = new Date(Date.now() - sessionDurationMs);
-
-  const candidates = await searchEncounters({
-    patient: patientUuid,
-    type: encounterTypeUuid,
-    _lastUpdated: `ge${sessionStartTime.toISOString()}`,
-  });
-
-  const validEncounters = sortByMostRecent(
-    candidates.filter((e) => isEncounterInSession(e, sessionDurationMs)),
-  );
-
-  const encounterToLink = validEncounters[0];
-
-  if (encounterToLink?.id) {
-    await updateFhirEncounter(encounterToLink.id, {
-      ...encounterToLink,
-      period: { start: new Date(visitResult.startDatetime).toISOString() },
-      partOf: { reference: `Encounter/${visitUuid}` },
-    });
-    return;
-  }
-
-  if (validEncounters.length === 0) return;
 }
 
 export async function getEncounterTypeUuidByName(
