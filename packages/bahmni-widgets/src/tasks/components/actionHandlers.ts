@@ -48,6 +48,7 @@ const handleLaunchFormAction = (
         taskFormName: formName,
         directFormMode: true,
         editOnly: 'observationForms',
+        task: task.fhirResource,
       },
     }),
   );

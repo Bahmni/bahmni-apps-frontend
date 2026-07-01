@@ -568,6 +568,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           directMode={directFormMode}
           onDirectModeSubmit={handleSubmit}
           onDirectModeCancel={handleCancel}
+          encounterSessionStartContext={encounterSessionStartContext}
         />
       )}
     </>

@@ -26,6 +26,7 @@ import {
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
+import type { Reference, Task } from 'fhir/r4';
 import React, { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -35,6 +36,7 @@ import {
   VALIDATION_STATE_INVALID,
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
+import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
@@ -63,12 +65,14 @@ interface ObservationFormsContainerProps {
       | typeof VALIDATION_STATE_MANDATORY
       | typeof VALIDATION_STATE_INVALID
       | typeof VALIDATION_STATE_SCRIPT_ERROR,
+    basedOn?: Reference,
   ) => void;
   existingObservations?: Form2Observation[];
   activeEncounterUuid?: string | null;
   directMode?: boolean;
   onDirectModeSubmit?: () => void | Promise<void>;
   onDirectModeCancel?: () => void;
+  encounterSessionStartContext?: EncounterSessionStartContext;
 }
 
 const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
@@ -81,8 +85,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   directMode = false,
   onDirectModeSubmit,
   onDirectModeCancel,
+  encounterSessionStartContext,
 }) => {
   const { t } = useTranslation();
+
+  // Extract basedOn reference from task (if available)
+  const task = encounterSessionStartContext?.task as Task | undefined;
+  const basedOn = task?.basedOn?.[0];
   const patientUUID = usePatientUUID();
   const { user } = useActivePractitioner();
   const { episodeOfCare, activeVisitId } = useClinicalAppData();
@@ -217,6 +226,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         viewingForm.uuid,
         observationsToSave,
         validationErrorType,
+        basedOn,
       );
     }
     onViewingFormChange(null);
@@ -473,8 +483,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     const primaryButtonText = directMode
       ? t('CONSULTATION_PAD_DONE_BUTTON')
       : validationErrorType
-      ? t('OBSERVATION_FORM_CONTINUE_ANYWAY_BUTTON')
-      : t('OBSERVATION_FORM_SAVE_BUTTON');
+        ? t('OBSERVATION_FORM_CONTINUE_ANYWAY_BUTTON')
+        : t('OBSERVATION_FORM_SAVE_BUTTON');
 
     const secondaryButtonText = directMode
       ? t('CONSULTATION_PAD_CANCEL_BUTTON')
