@@ -4,11 +4,15 @@ import {
   ProgramEnrollment,
 } from '@bahmni/services';
 import { KNOWN_FIELDS } from './constants';
-import { ProgramDetailsViewModel } from './model';
+import { ProgramDetailsViewModel, ProgramField } from './model';
 
-export function extractProgramAttributeNames(fields?: string[]): string[] {
+export function extractProgramAttributeNames(
+  fields?: ProgramField[],
+): string[] {
   if (!fields) return [];
-  return fields.filter((field) => !KNOWN_FIELDS.includes(field));
+  return fields
+    .map((field) => field.name)
+    .filter((name) => !KNOWN_FIELDS.includes(name));
 }
 
 export function createProgramDetailsViewModel(

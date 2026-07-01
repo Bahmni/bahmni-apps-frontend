@@ -13,3 +13,7 @@ export interface ProgramDetailsViewModel {
     display: string;
   }[];
 }
+export interface ProgramField {
+  name: string;
+  enableTranslation?: boolean;
+}
