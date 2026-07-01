@@ -2,12 +2,243 @@
 
 exports[`ExpandableSortableDataTable Snapshots matches snapshot when empty 1`] = `
 <div>
-  <p
-    class="expandableDataTableBodyEmpty"
-    data-testid="expandable-table-empty"
+  <div
+    class="expandable-sortable-data-table expandableDataTableBody"
+    data-testid="expandable-sortable-data-table"
   >
-    No data found
-  </p>
+    <div
+      class="cds--data-table-content"
+    >
+      <table
+        aria-label="Snapshot Empty"
+        class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+      >
+        <thead>
+          <tr>
+            <th
+              class="cds--table-expand"
+              data-previous-value="collapsed"
+              id="expand"
+              scope="col"
+            >
+              <button
+                aria-controls=""
+                aria-expanded="true"
+                aria-label="Collapse all rows"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="nonSortableHeader cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-«r24»"
+              >
+                Click to sort rows by Name header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-«r24»"
+                class="nonSortableHeader cds--table-sort"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Name
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="nonSortableHeader cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-«r25»"
+              >
+                Click to sort rows by Status header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-«r25»"
+                class="nonSortableHeader cds--table-sort"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Status
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="nonSortableHeader cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-«r26»"
+              >
+                Click to sort rows by Count header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-«r26»"
+                class="nonSortableHeader cds--table-sort"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Count
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          aria-live="polite"
+        />
+      </table>
+    </div>
+    <p
+      class="expandableDataTableBodyEmpty"
+      data-testid="expandable-table-empty"
+    >
+      No data found
+    </p>
+  </div>
 </div>
 `;
 
@@ -168,12 +399,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1o»"
+                id="table-sort-«r27»"
               >
                 Click to sort rows by Name header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1o»"
+                aria-describedby="table-sort-«r27»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
@@ -228,12 +459,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1p»"
+                id="table-sort-«r28»"
               >
                 Click to sort rows by Status header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1p»"
+                aria-describedby="table-sort-«r28»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
@@ -288,12 +519,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1q»"
+                id="table-sort-«r29»"
               >
                 Click to sort rows by Count header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1q»"
+                aria-describedby="table-sort-«r29»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
@@ -536,12 +767,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1l»"
+                id="table-sort-«r21»"
               >
                 Click to sort rows by Name header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1l»"
+                aria-describedby="table-sort-«r21»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
@@ -596,12 +827,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1m»"
+                id="table-sort-«r22»"
               >
                 Click to sort rows by Status header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1m»"
+                aria-describedby="table-sort-«r22»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >
@@ -656,12 +887,12 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«r1n»"
+                id="table-sort-«r23»"
               >
                 Click to sort rows by Count header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«r1n»"
+                aria-describedby="table-sort-«r23»"
                 class="nonSortableHeader cds--table-sort"
                 type="button"
               >

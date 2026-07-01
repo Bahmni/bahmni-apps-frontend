@@ -79,21 +79,11 @@ export const ExpandableSortableDataTable = <
     );
   }
 
-  if (!rows || rows.length === 0) {
-    return (
-      <p
-        data-testid="expandable-table-empty"
-        className={styles.expandableDataTableBodyEmpty}
-      >
-        {emptyStateMessage}
-      </p>
-    );
-  }
-
-  const rowMap = new Map(rows.map((row) => [row.id, row]));
+  const dataRows = rows ?? [];
+  const rowMap = new Map(dataRows.map((row) => [row.id, row]));
 
   // Create a stable key based on row IDs to force remount when rows change
-  const tableKey = rows.map((row) => row.id).join('-');
+  const tableKey = dataRows.map((row) => row.id).join('-');
 
   return (
     <div
@@ -102,7 +92,7 @@ export const ExpandableSortableDataTable = <
     >
       <DataTable
         key={tableKey}
-        rows={rows}
+        rows={dataRows}
         headers={headers}
         isSortable
         size="md"
@@ -136,10 +126,11 @@ export const ExpandableSortableDataTable = <
                     <TableHeader
                       {...headerProps}
                       key={header.key}
-                      className={classnames(
-                        headerProps.className,
-                        !isSortable ? styles.nonSortableHeader : '',
-                      )}
+                      className={classnames({
+                        [headerProps.className as string]:
+                          !!headerProps.className,
+                        [styles.nonSortableHeader]: !isSortable,
+                      })}
                     >
                       {header.header}
                     </TableHeader>
@@ -148,44 +139,57 @@ export const ExpandableSortableDataTable = <
               </TableRow>
             </TableHead>
             <TableBody>
-              {tableRows.map((row) => {
-                const originalRow = rowMap.get(row.id);
+              {tableRows.length > 0 &&
+                tableRows.map((row) => {
+                  const originalRow = rowMap.get(row.id);
 
-                if (!originalRow) {
-                  return null;
-                }
+                  if (!originalRow) {
+                    return null;
+                  }
 
-                const isRowExpandable = originalRow.isExpandable !== false;
-                const { key: _key, ...rowProps } = getRowProps({ row });
+                  const isRowExpandable = originalRow.isExpandable !== false;
+                  const { key: _key, ...rowProps } = getRowProps({ row });
 
-                return (
-                  <React.Fragment key={row.id}>
-                    <TableExpandRow
-                      {...rowProps}
-                      key={row.id}
-                      isExpanded={isRowExpandable ? rowProps.isExpanded : false}
-                      onExpand={isRowExpandable ? rowProps.onExpand : undefined}
-                      aria-label={`Expand row ${row.id}`}
-                      className={classnames({
-                        [styles.hideExpandButton]: !isRowExpandable,
-                      })}
-                    >
-                      {row.cells.map((cell) => (
-                        <TableCell key={cell.id}>
-                          {renderCell(originalRow, cell.info.header)}
-                        </TableCell>
-                      ))}
-                    </TableExpandRow>
-                    {rowProps.isExpanded &&
-                      isRowExpandable &&
-                      renderExpandedContent(originalRow)}
-                  </React.Fragment>
-                );
-              })}
+                  return (
+                    <React.Fragment key={row.id}>
+                      <TableExpandRow
+                        {...rowProps}
+                        key={row.id}
+                        isExpanded={
+                          isRowExpandable ? rowProps.isExpanded : false
+                        }
+                        onExpand={
+                          isRowExpandable ? rowProps.onExpand : () => {}
+                        }
+                        aria-label={`Expand row ${row.id}`}
+                        className={classnames({
+                          [styles.hideExpandButton]: !isRowExpandable,
+                        })}
+                      >
+                        {row.cells.map((cell) => (
+                          <TableCell key={cell.id}>
+                            {renderCell(originalRow, cell.info.header)}
+                          </TableCell>
+                        ))}
+                      </TableExpandRow>
+                      {rowProps.isExpanded &&
+                        isRowExpandable &&
+                        renderExpandedContent(originalRow)}
+                    </React.Fragment>
+                  );
+                })}
             </TableBody>
           </Table>
         )}
       </DataTable>
+      {dataRows.length === 0 && (
+        <p
+          data-testid="expandable-table-empty"
+          className={styles.expandableDataTableBodyEmpty}
+        >
+          {emptyStateMessage}
+        </p>
+      )}
     </div>
   );
 };
