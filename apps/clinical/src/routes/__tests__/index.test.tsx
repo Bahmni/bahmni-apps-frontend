@@ -16,11 +16,8 @@ describe('renderRoutes', () => {
     expect(result).toHaveLength(routes.length);
   });
 
-  it.each(routes)(
-    'maps $name config to a Route with path $path',
-    ({ path }) => {
-      const match = result.find((el) => el.props.path === path);
-      expect(match?.props.path).toBe(path);
-    },
-  );
+  it.each(routes)('maps $path config to a Route', ({ path }) => {
+    const match = result.find((el) => el.props.path === path);
+    expect(match?.props.path).toBe(path);
+  });
 });

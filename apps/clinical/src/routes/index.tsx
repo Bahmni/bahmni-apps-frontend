@@ -10,12 +10,10 @@ export const routes: Routes = [
   {
     path: ':patientUuid',
     component: ConsultationPage,
-    name: 'Consultation',
   },
   {
     path: '/',
     component: ClinicalList,
-    name: 'ClinicalList',
   },
 ];
 
