@@ -5,6 +5,7 @@ import {
   getTasks,
   formatDateTime,
   camelToScreamingSnakeCase,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { Task } from 'fhir/r4';
@@ -118,11 +119,23 @@ const TaskList: React.FC<TaskListProps> = ({
     encounterUuids,
   );
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['tasks', patientUuid, orderReference, encounterUuids],
     queryFn: () => fetchAndTransformTasks(t, patientUuid ?? '', orderReference),
     enabled: !!patientUuid && !emptyEncounterFilter,
   });
+
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (
+        payload.patientUUID === patientUuid &&
+        payload.updatedResources.observationFormsWithBasedOn
+      ) {
+        refetch();
+      }
+    },
+    [patientUuid, refetch],
+  );
 
   const filteredTasks = useMemo(() => {
     if (!data || data.length === 0) {
