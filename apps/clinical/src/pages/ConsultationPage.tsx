@@ -193,7 +193,7 @@ const ConsultationPage: React.FC = () => {
     if (dashboardConfigError) {
       addNotification({
         title: t('ERROR_LOADING_DASHBOARD_CONFIG'),
-        message: dashboardConfigError.message,
+        message: t(dashboardConfigError.message),
         type: 'error',
       });
     }
@@ -271,6 +271,16 @@ const ConsultationPage: React.FC = () => {
         description={t('LOADING_DASHBOARD_CONFIG')}
         role="status"
       />
+    );
+  }
+  if (dashboardConfigError || !filteredDashboardConfig) {
+    return (
+      <div
+        id="error-loading-dashboard-config"
+        data-testid="error-loading-dashboard-config-test-id"
+      >
+        {t('ERROR_LOADING_DASHBOARD_CONFIG')}
+      </div>
     );
   }
 

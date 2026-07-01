@@ -621,6 +621,71 @@ describe('ConsultationPage', () => {
     });
   });
 
+  describe('Dashboard config error handling', () => {
+    it('should show error div and call addNotification when dashboard config fetch fails', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+      (getConfig as jest.Mock).mockRejectedValue(new Error('Network error'));
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('error-loading-dashboard-config-test-id'),
+        ).toBeInTheDocument();
+      });
+
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Error loading dashboard configuration',
+        message: 'Network error',
+        type: 'error',
+      });
+    });
+
+    it('should show error div when dashboard config resolves to null', async () => {
+      (getConfig as jest.Mock).mockResolvedValue(null);
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('error-loading-dashboard-config-test-id'),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should not call addNotification for dashboard config error when fetch succeeds', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(mockAddNotification).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'error',
+          title: 'Error loading dashboard configuration',
+        }),
+      );
+      expect(
+        screen.queryByTestId('error-loading-dashboard-config-test-id'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   describe('Scroll trigger on sidebar click', () => {
     it('should increment scrollTrigger when sidebar item is clicked', async () => {
       renderWithProvider();
