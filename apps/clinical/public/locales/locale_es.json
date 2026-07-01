@@ -2,6 +2,7 @@
   "ABNORMAL_VALUE": "Valor Anormal",
   "ADD_ALLERGY_NOTE": "Agregar Nota",
   "ADD_ALLERGY_NOTE_PLACEHOLDER": "Agregar notas para la alergia",
+  "COMMON_SEARCH_CONFIG_ERROR": "No se pudo cargar la configuración de Búsqueda Común. Por favor intente refrescar la página.",
   "COMMON_SEARCH_LABEL": "Búsqueda Común",
   "ALLERGEN": "Alérgeno",
   "ALLERGIES_ADDED_ALLERGIES": "Alergias Agregadas",

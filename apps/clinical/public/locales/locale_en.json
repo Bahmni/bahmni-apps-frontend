@@ -2,6 +2,7 @@
   "ABNORMAL_VALUE": "Abnormal Value",
   "ADD_ALLERGY_NOTE": "Add Note",
   "ADD_ALLERGY_NOTE_PLACEHOLDER": "Add notes for the Allergy",
+  "COMMON_SEARCH_CONFIG_ERROR": "Unable to load Common Search configuration. Please try refreshing the page.",
   "COMMON_SEARCH_LABEL": "Common Search",
   "ALLERGEN": "Allergen",
   "ALLERGIES_ADDED_ALLERGIES": "Added Allergies",

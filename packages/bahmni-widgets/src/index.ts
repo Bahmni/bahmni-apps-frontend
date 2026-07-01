@@ -77,13 +77,8 @@ export {
   registerSearchWidget,
   getSearchWidget,
   clearSearchWidgetRegistry,
-  SearchWidgetConfigProvider,
-  withSearchConfig,
-  useSearchWidgetConfig,
   type SearchWidget,
   type SearchWidgetProps,
-  type SearchWidgetConfig,
-  type SearchWidgetConfigContextType,
   CommonSearchWidget,
 } from './search';
 

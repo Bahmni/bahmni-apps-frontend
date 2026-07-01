@@ -1,5 +1,4 @@
 import React from 'react';
-import { withSearchConfig } from '../provider';
 import { SearchWidget } from './models';
 
 const searchWidgetRegistry: SearchWidget[] = [];
@@ -10,7 +9,7 @@ export const registerSearchWidget = (entry: {
 }): void => {
   searchWidgetRegistry.push({
     key: entry.key,
-    component: withSearchConfig(entry.component),
+    component: entry.component,
   });
 };
 

@@ -18,12 +18,9 @@ describe('Search Widget Registry', () => {
       expect(getSearchWidget('testWidget')).toBeDefined();
     });
 
-    it('wraps component with withSearchConfig on registration', () => {
+    it('stores the raw component without wrapping', () => {
       registerSearchWidget({ key: 'testWidget', component: MockWidget });
-      const registered = getSearchWidget('testWidget');
-      expect(registered?.component.displayName).toBe(
-        'WithSearchConfig(MockWidget)',
-      );
+      expect(getSearchWidget('testWidget')?.component).toBe(MockWidget);
     });
 
     it('registers multiple widgets independently', () => {
@@ -31,12 +28,8 @@ describe('Search Widget Registry', () => {
       MockWidgetB.displayName = 'MockWidgetB';
       registerSearchWidget({ key: 'widgetA', component: MockWidget });
       registerSearchWidget({ key: 'widgetB', component: MockWidgetB });
-      expect(getSearchWidget('widgetA')?.component.displayName).toBe(
-        'WithSearchConfig(MockWidget)',
-      );
-      expect(getSearchWidget('widgetB')?.component.displayName).toBe(
-        'WithSearchConfig(MockWidgetB)',
-      );
+      expect(getSearchWidget('widgetA')?.component).toBe(MockWidget);
+      expect(getSearchWidget('widgetB')?.component).toBe(MockWidgetB);
     });
   });
 
