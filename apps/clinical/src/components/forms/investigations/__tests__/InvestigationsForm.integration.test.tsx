@@ -28,6 +28,14 @@ jest.mock('@bahmni/services', () => ({
   findActiveEncounterInSession: jest
     .fn()
     .mockResolvedValue({ id: 'mock-encounter-id' }),
+  getExistingServiceRequestsForAllCategories: jest.fn().mockResolvedValue([]),
+  useEncounterSessionStore: jest.fn().mockReturnValue({
+    activeEncounter: null,
+    matchReasons: [],
+    canEditOrCreate: false,
+    isLoading: false,
+  }),
+  useSubscribeConsultationSaved: jest.fn(),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -35,6 +43,7 @@ jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn().mockReturnValue('mock-patient-uuid'),
   useUserPrivilege: jest.fn(),
   useHasPrivilege: jest.fn(() => true),
+  useNotification: jest.fn().mockReturnValue({ addNotification: jest.fn() }),
 }));
 
 jest.mock('../../../../stores/serviceRequestStore');
@@ -524,7 +533,7 @@ describe('InvestigationsForm Integration Tests', () => {
       });
     });
 
-    test('should allow re-selection of already selected investigations (duplicates allowed)', async () => {
+    test('should disable already-ordered investigation in dropdown', async () => {
       const user = userEvent.setup();
 
       const mockStoreWithSelection = {
@@ -554,13 +563,14 @@ describe('InvestigationsForm Integration Tests', () => {
       await user.type(combobox, 'complete blood');
 
       await waitFor(() => {
-        // Item should be selectable (not disabled) even though it's already selected
-        const option = screen.getByRole('option', {
-          name: 'Complete Blood Count',
-        });
-        expect(option).toBeInTheDocument();
-        expect(option).not.toHaveAttribute('disabled');
-        expect(option.textContent).not.toMatch(/already/i);
+        // Item should be disabled and show "(Already added)" text
+        const options = screen.getAllByRole('option');
+        const cbcOption = options.find((o) =>
+          o.textContent?.includes('Complete Blood Count'),
+        );
+        expect(cbcOption).toBeInTheDocument();
+        expect(cbcOption).toHaveAttribute('disabled');
+        expect(cbcOption?.textContent).toMatch(/already added/i);
       });
     });
   });
