@@ -219,7 +219,7 @@ describe('UnavailabilityForm', () => {
           const [, endCalendar] = screen.getAllByRole('application', {
             name: 'calendar-container',
           });
-          await userEvent.click(within(endCalendar).getByText('29'));
+          await userEvent.click(within(endCalendar).getByText('15'));
         },
         expectedKeys: ['endDate', 'dateTime'],
       },
