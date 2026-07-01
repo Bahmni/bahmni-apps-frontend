@@ -10,6 +10,8 @@ interface RegistrationEncounterParams {
   encounterTypeUuid: string;
   locationUuid: string;
   providerUuid?: string;
+  visitUuid?: string;
+  periodStart?: string;
 }
 
 export const buildRegistrationEncounterPayload = ({
@@ -17,6 +19,8 @@ export const buildRegistrationEncounterPayload = ({
   encounterTypeUuid,
   locationUuid,
   providerUuid,
+  visitUuid,
+  periodStart,
 }: RegistrationEncounterParams): Encounter => ({
   resourceType: 'Encounter',
   status: 'in-progress',
@@ -56,5 +60,8 @@ export const buildRegistrationEncounterPayload = ({
       },
     ],
   }),
-  period: { start: new Date().toISOString() },
+  ...(visitUuid && {
+    partOf: { reference: `Encounter/${visitUuid}` },
+  }),
+  period: { start: periodStart ?? new Date().toISOString() },
 });

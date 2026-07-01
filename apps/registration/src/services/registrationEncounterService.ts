@@ -26,6 +26,7 @@ const ENCOUNTER_TYPE_URL = `${OPENMRS_REST_V1}/encountertype`;
 export async function createRegistrationEncounterForPatient(
   patientUuid: string,
   encounterTypeUuid: string,
+  options?: { visitUuid?: string; periodStart?: string },
 ): Promise<Encounter> {
   const locationUuid = getUserLoginLocation().uuid;
   const user = await getCurrentUser();
@@ -36,6 +37,8 @@ export async function createRegistrationEncounterForPatient(
     encounterTypeUuid,
     locationUuid,
     providerUuid: provider?.uuid,
+    visitUuid: options?.visitUuid,
+    periodStart: options?.periodStart,
   });
 
   const createdEncounter = await createFhirEncounter(encounter);
