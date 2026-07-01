@@ -4,7 +4,6 @@ import { Extension } from '../../models';
 export const mockExtensionWithPrivilege: Extension = {
   id: 'ext-1',
   extensionPointId: 'org.bahmni.clinical.v2.search',
-  type: 'sqlSearch',
   translationKey: 'ACTIVE_PATIENTS_SEARCH_LABEL',
   extensionParams: { searchHandler: 'handler', configUrl: '/config.json' },
   requiredPrivileges: ['app:clinical'],
@@ -13,7 +12,6 @@ export const mockExtensionWithPrivilege: Extension = {
 export const mockExtensionWithMultiplePrivileges: Extension = {
   id: 'ext-2',
   extensionPointId: 'org.bahmni.clinical.v2.search',
-  type: 'sqlSearch',
   translationKey: 'PENDING_ORDERS_SEARCH_LABEL',
   extensionParams: { searchHandler: 'handler', configUrl: '/config.json' },
   requiredPrivileges: ['app:clinical', 'app:orders'],
@@ -22,7 +20,6 @@ export const mockExtensionWithMultiplePrivileges: Extension = {
 export const mockExtensionNoPrivileges: Extension = {
   id: 'ext-3',
   extensionPointId: 'org.bahmni.clinical.v2.search',
-  type: 'sqlSearch',
   translationKey: 'ALL_PATIENTS_SEARCH_LABEL',
   extensionParams: { searchHandler: 'handler', configUrl: '/config.json' },
 };
@@ -30,7 +27,6 @@ export const mockExtensionNoPrivileges: Extension = {
 export const mockExtensionWithDifferentPoint: Extension = {
   id: 'ext-4',
   extensionPointId: 'org.bahmni.clinical.v2.other',
-  type: 'sqlSearch',
   translationKey: 'ALL_PATIENTS_SEARCH_LABEL',
 };
 
