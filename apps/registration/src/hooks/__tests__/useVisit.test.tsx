@@ -184,7 +184,7 @@ describe('useVisit', () => {
       expect(mockCreateRegistrationEncounterForPatient).not.toHaveBeenCalled();
     });
 
-    it('should not create a visit or encounter when an active visit already exists', async () => {
+    it('should not create a visit or registration encounter when the same patient already has an active visit', async () => {
       // useCreateVisit reads patientUuid from the route to check for an active
       // visit; point it at our patient so the guard can engage.
       mockUseParams.mockReturnValue({ patientUuid });
