@@ -43,7 +43,7 @@ export const canUserEditForm = (
   }
 
   if (!form.privileges || form.privileges.length === 0) {
-    return false;
+    return true;
   }
 
   const userPrivilegeNames = new Set(
