@@ -416,6 +416,18 @@ describe('ConsultationPage', () => {
     });
   });
 
+  describe('Snapshot', () => {
+    it('should match the snapshot', async () => {
+      const { asFragment } = renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(asFragment()).toMatchSnapshot();
+    });
+  });
+
   describe('Privilege-based section filtering', () => {
     const privilegedDashboardConfig = {
       sections: [
