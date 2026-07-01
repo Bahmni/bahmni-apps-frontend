@@ -12,3 +12,8 @@ export interface PatientProgramViewModel {
   readonly currentStateName: string | null;
   readonly attributes: Record<string, string | null>;
 }
+
+export interface ProgramField {
+  name: string;
+  enableTranslation?: boolean;
+}

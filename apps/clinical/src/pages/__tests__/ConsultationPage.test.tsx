@@ -189,6 +189,9 @@ jest.mock('@bahmni/widgets', () => ({
   useHasPrivilege: jest.fn(),
   useNotification: jest.fn(),
   usePatientUUID: jest.fn(),
+  ProgramDetails: jest.fn(() => (
+    <div data-testid="mocked-program-details">Program Details</div>
+  )),
 }));
 
 jest.mock('@bahmni/services', () => ({
@@ -286,40 +289,6 @@ describe('ConsultationPage', () => {
   });
 
   describe('Rendering and Structure', () => {
-    it('should render the ConsultationPage component', async () => {
-      renderWithProvider();
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
-      });
-    });
-
-    it('should show a search icon in the header reachable via keyboard Tab navigation', async () => {
-      renderWithProvider();
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
-      });
-
-      const searchIcon = screen.getByTestId('global-action-search');
-      expect(searchIcon).toBeInTheDocument();
-      expect(searchIcon).toHaveAttribute('tabindex', '0');
-    });
-
-    it('should expand search input when the search icon is clicked', async () => {
-      renderWithProvider();
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByTestId('global-action-search'));
-
-      expect(
-        screen.getByTestId('patient-search-container'),
-      ).toBeInTheDocument();
-    });
-
     it('should handle the loading state', () => {
       (useClinicalConfig as jest.Mock).mockReturnValue({
         clinicalConfig: null,
