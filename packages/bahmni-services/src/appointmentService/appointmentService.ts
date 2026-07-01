@@ -16,6 +16,7 @@ import {
   AppointmentPage,
   AppointmentService,
   AppointmentUnavailability,
+  CheckInAppointmentResponse,
   CreateUnavailabilityRequest,
 } from './models';
 
@@ -81,6 +82,11 @@ export const updateAppointmentStatus = async (
     onDate,
   });
 };
+
+export const checkInAppointment = async (
+  submitUrl: string,
+  appointmentUuid: string,
+) => post<CheckInAppointmentResponse>(submitUrl, { appointmentUuid });
 
 /**
  * Fetch a specific appointment by ID.

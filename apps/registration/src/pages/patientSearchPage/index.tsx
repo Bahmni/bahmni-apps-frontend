@@ -23,14 +23,17 @@ import {
   PatientSearchResultBundle,
   useTranslation,
 } from '@bahmni/services';
-import { SearchPatient, useUserPrivilege } from '@bahmni/widgets';
+import {
+  SearchPatient,
+  useNotification,
+  useUserPrivilege,
+} from '@bahmni/widgets';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
 import {
   getAppointmentStatusClassName,
   handleActionButtonClick,
-  isActionButtonEnabled,
   shouldRenderActionButton,
 } from './appointmentSearchResultActionHandler';
 import styles from './styles/index.module.scss';
@@ -62,6 +65,7 @@ const PatientSearchPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedFieldType, setSelectedFieldType] = useState<string>('');
   const { userPrivileges } = useUserPrivilege();
+  const { addNotification } = useNotification();
   const { registrationConfig } = useRegistrationConfig();
 
   const handleCreateNewPatient = () => {
@@ -201,7 +205,13 @@ const PatientSearchPage: React.FC = () => {
       <Stack gap={3} className={styles.actionButtonsContainer}>
         {searchFields.map((field) =>
           field.actions?.map((action) => {
-            if (!shouldRenderActionButton(action, userPrivileges ?? []))
+            if (
+              !shouldRenderActionButton(
+                action,
+                userPrivileges ?? [],
+                row as PatientSearchViewModel<AppointmentSearchResult>,
+              )
+            )
               return null;
             return (
               <Button
@@ -210,13 +220,6 @@ const PatientSearchPage: React.FC = () => {
                 kind="tertiary"
                 size="sm"
                 data-testid={`patient-action-button-${action.translationKey}`}
-                disabled={
-                  !isActionButtonEnabled(
-                    action.enabledRule,
-                    row,
-                    userPrivileges ?? [],
-                  )
-                }
                 onClick={() =>
                   handleActionButtonClick(
                     action,
@@ -224,6 +227,8 @@ const PatientSearchPage: React.FC = () => {
                     patientSearchData!,
                     setPatientSearchData,
                     navigate,
+                    addNotification,
+                    t,
                   )
                 }
               >

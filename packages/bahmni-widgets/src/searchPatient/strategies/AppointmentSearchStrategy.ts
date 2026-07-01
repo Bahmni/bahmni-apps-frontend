@@ -124,6 +124,7 @@ export class AppointmentSearchStrategy implements SearchStrategy {
       .formattedResult,
     appointmentReason: this.getAppointmentReasons(appt),
     appointmentStatus: appt.status,
+    appointmentServiceUuid: appt.service?.uuid,
   });
 
   /**

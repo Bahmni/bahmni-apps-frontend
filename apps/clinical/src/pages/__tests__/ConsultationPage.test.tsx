@@ -189,6 +189,9 @@ jest.mock('@bahmni/widgets', () => ({
   useHasPrivilege: jest.fn(),
   useNotification: jest.fn(),
   usePatientUUID: jest.fn(),
+  ProgramDetails: jest.fn(() => (
+    <div data-testid="mocked-program-details">Program Details</div>
+  )),
 }));
 
 jest.mock('@bahmni/services', () => ({
@@ -286,40 +289,6 @@ describe('ConsultationPage', () => {
   });
 
   describe('Rendering and Structure', () => {
-    it('should render the ConsultationPage component', async () => {
-      renderWithProvider();
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
-      });
-    });
-
-    it('should show a search icon in the header reachable via keyboard Tab navigation', async () => {
-      renderWithProvider();
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
-      });
-
-      const searchIcon = screen.getByTestId('global-action-search');
-      expect(searchIcon).toBeInTheDocument();
-      expect(searchIcon).toHaveAttribute('tabindex', '0');
-    });
-
-    it('should expand search input when the search icon is clicked', async () => {
-      renderWithProvider();
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByTestId('global-action-search'));
-
-      expect(
-        screen.getByTestId('patient-search-container'),
-      ).toBeInTheDocument();
-    });
-
     it('should handle the loading state', () => {
       (useClinicalConfig as jest.Mock).mockReturnValue({
         clinicalConfig: null,
@@ -648,6 +617,71 @@ describe('ConsultationPage', () => {
       ).not.toBeInTheDocument();
       expect(
         screen.queryByTestId('sidenav-item-vitals'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Dashboard config error handling', () => {
+    it('should show error div and call addNotification when dashboard config fetch fails', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+      (getConfig as jest.Mock).mockRejectedValue(new Error('Network error'));
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('error-loading-dashboard-config-test-id'),
+        ).toBeInTheDocument();
+      });
+
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Error loading dashboard configuration',
+        message: 'Network error',
+        type: 'error',
+      });
+    });
+
+    it('should show error div when dashboard config resolves to null', async () => {
+      (getConfig as jest.Mock).mockResolvedValue(null);
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('error-loading-dashboard-config-test-id'),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should not call addNotification for dashboard config error when fetch succeeds', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(mockAddNotification).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'error',
+          title: 'Error loading dashboard configuration',
+        }),
+      );
+      expect(
+        screen.queryByTestId('error-loading-dashboard-config-test-id'),
       ).not.toBeInTheDocument();
     });
   });

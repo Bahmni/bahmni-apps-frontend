@@ -131,9 +131,6 @@ jest.mock('../appointmentSearchResultActionHandler', () => {
     }),
     handleActionButtonClick: jest.fn(),
     handleActionNavigation: jest.fn(),
-    isActionButtonEnabled: jest.fn((...args) => {
-      return actual.isActionButtonEnabled(...args);
-    }),
     shouldRenderActionButton: jest.fn((...args) => {
       return actual.shouldRenderActionButton(...args);
     }),
@@ -910,7 +907,7 @@ describe('PatientSearchPage', () => {
       });
     });
 
-    it('should disable "Mark Arrived" button when date is not today', async () => {
+    it('should not render "Mark Arrived" button when enabled rules are not satisfied', async () => {
       mockSearchData = {
         totalCount: 1,
         pageOfResults: [mockAppointmentData[1]],
@@ -942,8 +939,7 @@ describe('PatientSearchPage', () => {
       fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
       await waitFor(() => {
-        const markArrivedButton = screen.getByText('Mark Arrived');
-        expect(markArrivedButton).toBeDisabled();
+        expect(screen.queryByText('Mark Arrived')).not.toBeInTheDocument();
       });
     });
 
