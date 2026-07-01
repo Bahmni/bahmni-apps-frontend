@@ -299,6 +299,9 @@ describe('RelationshipRow', () => {
 
   describe('Till date picker minDate (BAH-4773)', () => {
     it('should set minDate to the start of today so today remains selectable after switching dates', () => {
+      // Capture the reference date before deriving minDate so the assertions
+      // can't flake if the clock rolls past midnight between the two calls.
+      const today = new Date();
       const row = RelationshipRow({
         relationship: mockRelationship,
         relationshipTypes: mockRelationshipTypes,
@@ -318,7 +321,6 @@ describe('RelationshipRow', () => {
       expect(minDate.getSeconds()).toBe(0);
       expect(minDate.getMilliseconds()).toBe(0);
 
-      const today = new Date();
       expect(minDate.getFullYear()).toBe(today.getFullYear());
       expect(minDate.getMonth()).toBe(today.getMonth());
       expect(minDate.getDate()).toBe(today.getDate());
