@@ -10,6 +10,7 @@ import {
   get,
 } from '@bahmni/services';
 import type { Encounter } from 'fhir/r4';
+import { buildRegistrationEncounterPayload } from '../../utils/fhirEncounterMapper';
 import {
   createRegistrationEncounterForPatient,
   findValidRegistrationEncounterInSession,
@@ -41,6 +42,10 @@ jest.mock('../../utils/fhirEncounterMapper', () => ({
   }),
 }));
 
+const mockBuildRegistrationEncounterPayload =
+  buildRegistrationEncounterPayload as jest.MockedFunction<
+    typeof buildRegistrationEncounterPayload
+  >;
 const mockGetActiveVisitByPatient =
   getActiveVisitByPatient as jest.MockedFunction<
     typeof getActiveVisitByPatient
@@ -183,6 +188,25 @@ describe('createRegistrationEncounterForPatient', () => {
         messageParams: { encounterType: ENCOUNTER_TYPE_UUID },
       }),
     );
+  });
+
+  it('should POST an encounter linked to the visit via partOf when visit options are provided', async () => {
+    // The service's responsibility is to pass the visit linkage details to the
+    // payload builder (which owns partOf/period construction) and then POST the
+    // result. The mapper is unit-tested separately.
+    await createRegistrationEncounterForPatient(
+      PATIENT_UUID,
+      ENCOUNTER_TYPE_UUID,
+      { visitUuid: VISIT_UUID, periodStart: VISIT_START },
+    );
+
+    expect(mockBuildRegistrationEncounterPayload).toHaveBeenCalledWith(
+      expect.objectContaining({
+        visitUuid: VISIT_UUID,
+        periodStart: VISIT_START,
+      }),
+    );
+    expect(mockCreateFhirEncounter).toHaveBeenCalled();
   });
 });
 

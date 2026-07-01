@@ -63,5 +63,12 @@ export const buildRegistrationEncounterPayload = ({
   ...(visitUuid && {
     partOf: { reference: `Encounter/${visitUuid}` },
   }),
-  period: { start: periodStart ?? new Date().toISOString() },
+  // Normalize to a FHIR-valid instant. OpenMRS returns datetimes with a
+  // colon-less timezone offset (e.g. 2026-07-01T10:00:00.000+0000), which FHIR
+  // rejects; new Date(...).toISOString() yields a valid `...Z` instant.
+  period: {
+    start: periodStart
+      ? new Date(periodStart).toISOString()
+      : new Date().toISOString(),
+  },
 });
