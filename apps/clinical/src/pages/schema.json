@@ -47,32 +47,7 @@
                 },
                 "config": {
                   "type": "object",
-                  "description": "Configuration for the control. For 'programs' type, see programsConfig definition.",
-                  "properties": {
-                    "pageSize": {
-                      "type": "number",
-                      "description": "Number of rows per page"
-                    },
-                    "fields": {
-                      "type": "array",
-                      "description": "Fields to display. Each entry must be an object with 'name' and optional 'enableTranslation'.",
-                      "items": {
-                        "type": "object",
-                        "required": ["name"],
-                        "additionalProperties": false,
-                        "properties": {
-                          "name": {
-                            "type": "string",
-                            "description": "Field or program attribute name to display. Built-in values: 'programName', 'startDate', 'endDate', 'outcome', 'state'. Any other value is treated as a program attribute name."
-                          },
-                          "enableTranslation": {
-                            "type": "boolean",
-                            "description": "When true, the cell value is translated via i18n key PROGRAM_ATTRIBUTE_VALUE_<FIELD>_<VALUE>"
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "description": "Configuration for the control. For 'programs' type, see programsConfig definition."
                 }
               }
             }
