@@ -7,6 +7,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import Search from '..';
 import {
   mockExtensionWithIcon,
+  mockExtensionWithNoSearchHandler,
   mockExtensionWithRegisteredType,
   mockExtensionWithUnregisteredType,
 } from './__mocks__/searchHandlerMocks';
@@ -53,8 +54,17 @@ describe('Search', () => {
     expect(screen.getByTestId('mock-widget-test-id')).toBeInTheDocument();
   });
 
-  it('shows not-registered message when widget type is unregistered', () => {
-    render(<Search extensions={[mockExtensionWithUnregisteredType]} />);
+  it.each([
+    {
+      description: 'searchHandler key is not registered',
+      extension: mockExtensionWithUnregisteredType,
+    },
+    {
+      description: 'extensionParams has no searchHandler',
+      extension: mockExtensionWithNoSearchHandler,
+    },
+  ])('shows not-registered message when $description', ({ extension }) => {
+    render(<Search extensions={[extension]} />);
     expect(
       screen.getByTestId('extension-widget-not-registered-test-id'),
     ).toBeInTheDocument();

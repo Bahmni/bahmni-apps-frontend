@@ -52,7 +52,9 @@ const Search = ({ extensions }: ExtensionHandlerProps) => {
       </TabList>
       <TabPanels>
         {extensions.map((ext) => {
-          const widget = getSearchWidget(ext.type);
+          const widget = getSearchWidget(
+            ext.extensionParams?.searchHandler ?? '',
+          );
           const Widget = widget?.component;
           return (
             <TabPanel

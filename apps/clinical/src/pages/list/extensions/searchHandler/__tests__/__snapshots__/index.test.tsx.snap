@@ -33,11 +33,11 @@ exports[`Search Snapshot matches snapshot 1`] = `
     role="tablist"
   >
     <button
-      aria-controls="ccs-_r_6_-tabpanel-0"
+      aria-controls="ccs-_r_7_-tabpanel-0"
       aria-label="Search Tab ext-1"
       aria-selected="true"
       class="cds--tabs__nav-item cds--tabs__nav-link cds--tabs__nav-item--selected"
-      id="ccs-_r_6_-tab-0"
+      id="ccs-_r_7_-tab-0"
       role="tab"
       tabindex="0"
       type="button"
