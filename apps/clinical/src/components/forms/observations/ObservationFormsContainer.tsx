@@ -4,6 +4,7 @@ import {
   ICON_SIZE,
   InlineNotification,
   SkeletonText,
+  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   CarbonContainer,
@@ -41,6 +42,7 @@ import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
+import EncounterDetails from '../encounterDetails/EncounterDetails';
 import styles from './styles/ObservationFormsContainer.module.scss';
 import { executeOnFormSaveEvent } from './utils/formEventExecutor';
 
@@ -389,6 +391,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   const formViewContent = (
     <div className={styles.formView} data-testid="observation-form-view">
+      {directMode && (
+        <>
+          <EncounterDetails />
+          <MenuItemDivider />
+        </>
+      )}
+
       {validationErrorType &&
         validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR && (
           <div className={styles.errorNotificationWrapper}>
