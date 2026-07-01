@@ -1,5 +1,6 @@
 import {
   AUDIT_LOG_EVENT_DETAILS,
+  MODULE_LABELS,
   createFhirEncounter,
   dispatchAuditEvent,
   getActiveVisitByPatient,
@@ -48,12 +49,17 @@ export async function createRegistrationEncounterForPatient(
     createdEncounter.type?.[0]?.text ??
     encounterTypeUuid;
 
+  // EDIT_ENCOUNTER is a shared event with no default module (Clinical relies on
+  // that), so the registration module is passed explicitly here.
   dispatchAuditEvent({
-    eventType: AUDIT_LOG_EVENT_DETAILS.CREATE_ENCOUNTER
+    eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
       .eventType as AuditEventType,
     patientUuid,
-    messageParams: { encounterType: encounterTypeName },
-    module: AUDIT_LOG_EVENT_DETAILS.CREATE_ENCOUNTER.module,
+    messageParams: {
+      encounterUuid: createdEncounter.id,
+      encounterType: encounterTypeName,
+    },
+    module: MODULE_LABELS.REGISTRATION,
   });
   return createdEncounter;
 }

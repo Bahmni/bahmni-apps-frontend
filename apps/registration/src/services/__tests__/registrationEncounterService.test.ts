@@ -31,8 +31,9 @@ jest.mock('@bahmni/services', () => ({
   get: jest.fn(),
   dispatchAuditEvent: jest.fn(),
   AUDIT_LOG_EVENT_DETAILS: {
-    CREATE_ENCOUNTER: { eventType: 'CREATE_ENCOUNTER', module: 'registration' },
+    EDIT_ENCOUNTER: { eventType: 'EDIT_ENCOUNTER' },
   },
+  MODULE_LABELS: { REGISTRATION: 'registration', CLINICAL: 'clinical' },
 }));
 
 jest.mock('../../utils/fhirEncounterMapper', () => ({
@@ -172,7 +173,10 @@ describe('createRegistrationEncounterForPatient', () => {
 
     expect(mockDispatchAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({
-        messageParams: { encounterType: 'Registration' },
+        messageParams: {
+          encounterUuid: 'new-enc-uuid',
+          encounterType: 'Registration',
+        },
       }),
     );
   });
@@ -185,9 +189,29 @@ describe('createRegistrationEncounterForPatient', () => {
 
     expect(mockDispatchAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({
-        messageParams: { encounterType: ENCOUNTER_TYPE_UUID },
+        messageParams: {
+          encounterUuid: 'new-enc-uuid',
+          encounterType: ENCOUNTER_TYPE_UUID,
+        },
       }),
     );
+  });
+
+  it('should log EDIT_ENCOUNTER for the registration module with encounter and patient identifiers', async () => {
+    await createRegistrationEncounterForPatient(
+      PATIENT_UUID,
+      ENCOUNTER_TYPE_UUID,
+    );
+
+    expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+      eventType: 'EDIT_ENCOUNTER',
+      patientUuid: PATIENT_UUID,
+      messageParams: {
+        encounterUuid: 'new-enc-uuid',
+        encounterType: ENCOUNTER_TYPE_UUID,
+      },
+      module: 'registration',
+    });
   });
 
   it('should POST an encounter linked to the visit via partOf when visit options are provided', async () => {
