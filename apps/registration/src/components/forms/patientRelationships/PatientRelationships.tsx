@@ -1,6 +1,6 @@
 import { Button, SimpleDataTable } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import { useImperativeHandle, useMemo } from 'react';
+import { useImperativeHandle } from 'react';
 import { useParams } from 'react-router-dom';
 import { RelationshipRow } from './RelationshipRow';
 import styles from './styles/index.module.scss';
@@ -61,7 +61,7 @@ export const PatientRelationships = ({
     validate,
     clearData,
     removeDeletedRelationships,
-  } = usePatientRelationship({ initialData });
+  } = usePatientRelationship({ initialData, currentPatientUuid });
 
   useImperativeHandle(ref, () => ({
     getData,
@@ -93,28 +93,10 @@ export const PatientRelationships = ({
     { key: RELATIONSHIP_FIELDS.ACTIONS, header: t('REGISTRATION_ACTIONS') },
   ];
 
-  const selectedPatientUuids = useMemo(
-    () =>
-      new Set(
-        relationships
-          .filter((rel) => !rel.isDeleted && rel.patientUuid)
-          .map((rel) => rel.patientUuid),
-      ),
-    [relationships],
-  );
-
   const rows = relationships
     .filter((rel) => !rel.isDeleted)
     .map((rel) => {
-      const excludedUuids = new Set(selectedPatientUuids);
-      excludedUuids.delete(rel.patientUuid);
-      if (currentPatientUuid) {
-        excludedUuids.add(currentPatientUuid);
-      }
-
-      const suggestions = getPatientSuggestions(rel.id).filter(
-        (suggestion) => !excludedUuids.has(suggestion.id),
-      );
+      const suggestions = getPatientSuggestions(rel.id);
       const rowErrors = validationErrors[rel.id] ?? {};
 
       return RelationshipRow({
