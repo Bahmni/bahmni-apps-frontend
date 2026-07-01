@@ -7,6 +7,7 @@ import {
   Link,
 } from '@bahmni/design-system';
 import { formatDateTime } from '@bahmni/services';
+import { startOfDay } from 'date-fns';
 import { getPatientUrlExternal } from '../../../constants/app';
 import type { PatientSuggestion } from '../../../hooks/usePatientSearch';
 import type { RelationshipData } from './PatientRelationships';
@@ -56,9 +57,6 @@ export const RelationshipRow = ({
   t,
 }: RelationshipRowProps) => {
   const isExisting = relationship.isExisting === true;
-
-  const minSelectableDate = new Date();
-  minSelectableDate.setHours(0, 0, 0, 0);
 
   const relationshipTypeDisplay = isExisting
     ? relationship.relationshipTypeLabel
@@ -170,7 +168,7 @@ export const RelationshipRow = ({
       <DatePicker
         datePickerType="single"
         value={relationship.tillDate}
-        minDate={minSelectableDate}
+        minDate={startOfDay(new Date())}
         data-testid="new-relationship-till-date-picker"
         onChange={(dates) => {
           if (dates[0]) {
