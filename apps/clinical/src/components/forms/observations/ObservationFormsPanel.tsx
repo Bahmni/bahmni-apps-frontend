@@ -6,12 +6,10 @@ import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
-import type { ClinicalInputControlConfig } from '../../consultationPad/models';
 import ObservationForms from './ObservationForms';
 
 interface ObservationFormsPanelProps {
   encounterSessionStartContext?: EncounterSessionStartContext;
-  inputControlConfig?: ClinicalInputControlConfig;
 }
 
 const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
