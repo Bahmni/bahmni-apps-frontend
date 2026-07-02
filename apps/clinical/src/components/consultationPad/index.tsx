@@ -566,8 +566,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           existingObservations={getFormData(viewingForm.uuid)?.observations}
           activeEncounterUuid={activeEncounter?.id ?? null}
           directMode={directFormMode}
-          onDirectModeSubmit={handleSubmit}
-          onDirectModeCancel={handleCancel}
+          onDirectModeSubmit={directFormMode ? handleSubmit : undefined}
+          onDirectModeCancel={directFormMode ? handleCancel : undefined}
           encounterSessionStartContext={encounterSessionStartContext}
         />
       )}

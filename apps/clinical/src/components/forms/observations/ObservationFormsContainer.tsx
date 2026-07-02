@@ -234,7 +234,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     onViewingFormChange(null);
   };
 
-  const validateAndSave = () => {
+  const validateAndSave = (onSuccess?: () => void) => {
     if (!patientContext) {
       setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
       setValidationErrorMessage(t('OBSERVATION_FORM_LOADING_METADATA_ERROR'));
@@ -255,6 +255,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             : [];
 
         handleSaveForm(transformedObservations, validationErrorType);
+        onSuccess?.();
         return;
       }
 
@@ -336,6 +337,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         );
 
         handleSaveForm(processedObservations, null);
+        onSuccess?.();
       } catch (error) {
         const errorMessage =
           error instanceof Error
@@ -504,10 +506,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       : validateAndSave;
 
     const handlePrimaryClick = directMode
-      ? () => {
-          validateAndSave();
-          onDirectModeSubmit?.();
-        }
+      ? () => validateAndSave(onDirectModeSubmit)
       : saveWithErrorHandling;
 
     const handleSecondaryClick = directMode
