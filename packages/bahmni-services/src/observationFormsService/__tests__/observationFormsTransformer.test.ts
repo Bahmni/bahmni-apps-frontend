@@ -1045,7 +1045,7 @@ describe('hasMissingMandatoryVisibleField', () => {
     expect(hasMissingMandatoryVisibleField(data)).toBe(true);
   });
 
-  it('returns false when a visible mandatory field has a value', () => {
+  it('returns false when a visible mandatory field has a text value', () => {
     const data = {
       control: mandatoryControl,
       hidden: false,
@@ -1053,6 +1053,49 @@ describe('hasMissingMandatoryVisibleField', () => {
       value: { value: 'Dr. Smith' },
     };
     expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns false when a mandatory coded field has a concept answer', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: false,
+      value: { value: null, concept: { uuid: 'abc-123', name: 'True' } },
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns true when a mandatory coded field has no concept answer', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: false,
+      value: { value: null, concept: null },
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
+  });
+
+  it('returns false when a mandatory multi-select field has selected items', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: false,
+      value: {
+        value: null,
+        concept: [{ uuid: 'abc-123', name: 'Option A' }],
+      },
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns true when a mandatory multi-select field has no selected items', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: false,
+      value: { value: null, concept: [] },
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
   });
 
   it('returns false when a mandatory field is hidden', () => {
@@ -1115,6 +1158,42 @@ describe('hasMissingMandatoryVisibleField', () => {
       ],
     };
     expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns false for a mandatory group node whose children are all filled', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: false,
+      value: null,
+      children: [
+        {
+          control: mandatoryControl,
+          hidden: false,
+          voided: false,
+          value: { value: 'filled' },
+        },
+      ],
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns true for a mandatory group node with an empty mandatory child', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: false,
+      value: null,
+      children: [
+        {
+          control: mandatoryControl,
+          hidden: false,
+          voided: false,
+          value: { value: null },
+        },
+      ],
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
   });
 
   it('returns false for undefined or null input', () => {

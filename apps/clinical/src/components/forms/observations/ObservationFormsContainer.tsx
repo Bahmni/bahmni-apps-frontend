@@ -272,15 +272,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       const isEmpty = !hasAnyValue; // Empty if no values (including empty strings), even if there are notes
       const hasErrors = errors && errors.length > 0;
 
-      if (isEmpty) {
-        setValidationErrorType(VALIDATION_STATE_EMPTY);
-        return;
-      }
-
-      // form2-controls does not propagate mandatory errors to getValue().errors for
-      // fields that were never interacted with — including always-visible mandatory
-      // fields and fields revealed via isHidden scripting. Check the Container data
-      // directly to catch these violations.
       const containerStateData = (
         formContainerRef.current as {
           state?: { data?: Record<string, unknown> | { toJS?: () => unknown } };
@@ -291,6 +282,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           | Record<string, unknown>
           | undefined,
       );
+
+      if (isEmpty && !hasMissingMandatory) {
+        setValidationErrorType(VALIDATION_STATE_EMPTY);
+        return;
+      }
 
       if (hasErrors || hasMissingMandatory) {
         const hasMandatoryError =
