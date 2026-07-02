@@ -401,6 +401,50 @@ describe('TaskActions', () => {
     });
   });
 
+  describe('Task action disabled State based on task status', () => {
+    it('should disable button when task status is not "ready"', async () => {
+      const taskNotReady = {
+        ...mockTaskViewModelWithInput,
+        status: 'completed',
+      };
+
+      render(
+        <TaskActions task={taskNotReady} actionConfig={mockTaskActionConfig} />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Fill Form' }),
+        ).toBeInTheDocument();
+      });
+
+      const button = screen.getByRole('button', { name: 'Fill Form' });
+      expect(button).toBeDisabled();
+    });
+
+    it('should enable button when task status is "ready"', async () => {
+      const taskReady = {
+        ...mockTaskViewModelWithInput,
+        status: 'ready',
+      };
+
+      render(
+        <TaskActions task={taskReady} actionConfig={mockTaskActionConfig} />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Fill Form' }),
+        ).toBeInTheDocument();
+      });
+
+      const button = screen.getByRole('button', { name: 'Fill Form' });
+      expect(button).not.toBeDisabled();
+    });
+  });
+
   describe('Edge Cases', () => {
     it('should handle missing actionConfig gracefully', async () => {
       const taskWithNoConfig = {

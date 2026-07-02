@@ -10,6 +10,8 @@ import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import type { TaskViewModel, TaskActionConfig } from '../models';
 import { handleTaskAction, isActionVisible } from './actionHandlers';
 
+const READY_TASK_STATUS = 'ready' as const;
+
 interface TaskActionsProps {
   task: TaskViewModel;
   actionConfig: TaskActionConfig[];
@@ -52,6 +54,8 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, actionConfig }) => {
 
   const action = permittedActions[0];
 
+  const isButtonDisabled = task.status !== READY_TASK_STATUS;
+
   return (
     <IconButton
       label={action.label}
@@ -59,6 +63,7 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, actionConfig }) => {
       size="sm"
       onClick={() => handleTaskAction(action, task)}
       testId={`task-action-${action.type}-${task.id}`}
+      disabled={isButtonDisabled}
     >
       <Icon name={action.icon} id={`task-action-icon-${task.id}`} />
     </IconButton>

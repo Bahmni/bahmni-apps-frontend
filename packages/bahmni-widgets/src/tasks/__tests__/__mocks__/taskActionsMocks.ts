@@ -137,10 +137,11 @@ const createTaskWithFormInput = (
   taskDisplay: string,
   formName: string,
   additionalInput?: Task['input'],
+  status: Task['status'] = 'ready',
 ): Task => ({
   resourceType: 'Task',
   id,
-  status: 'requested',
+  status,
   intent: 'order',
   description,
   code: {
