@@ -223,6 +223,33 @@
         }
       }
     },
+    "extensions": {
+      "type": "array",
+      "description": "List of app-specific extension configurations",
+      "items": {
+        "type": "object",
+        "required": ["id", "extensionPointId", "translationKey"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "extensionPointId": { "type": "string" },
+          "translationKey": { "type": "string" },
+          "icon": { "type": "string" },
+          "requiredPrivileges": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "extensionParams": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "searchHandler": { "type": "string" },
+              "configUrl": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
     "consultationPad": {
       "type": "object",
       "description": "Configuration for consultation pad forms",
