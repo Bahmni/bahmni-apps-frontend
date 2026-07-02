@@ -22,7 +22,7 @@ import React, { useMemo, useState } from 'react';
 import { useNotification } from '../notification';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { EDIT_PATIENT_PROGRAMS_PRIVILEGE, KNOWN_FIELDS } from './constants';
-import { ProgramDetailsViewModel } from './model';
+import { ProgramDetailsViewModel, ProgramField } from './model';
 import styles from './styles/ProgramDetails.module.scss';
 import {
   createProgramDetailsViewModel,
@@ -43,7 +43,7 @@ const fetchProgramDetails = async (
 interface ProgramDetailsProps {
   programUUID: string;
   config: {
-    fields: string[];
+    fields: ProgramField[];
   };
 }
 
@@ -109,8 +109,8 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     if (!config?.fields || config.fields.length === 0) return {};
     return config.fields.reduce(
       (acc, field) => {
-        acc[field] = t(
-          `PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field)}`,
+        acc[field.name] = t(
+          `PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field.name)}`,
         );
         return acc;
       },
@@ -193,6 +193,20 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     data.allowedStates.length > 0 &&
     hasEditPatientProgramsPrivilege;
 
+  const renderAttributeValue = (field: string) => {
+    const raw = data?.attributes?.[field];
+    if (!raw) return '-';
+
+    const fieldConfig = config?.fields?.find((f) => f.name === field);
+    if (fieldConfig?.enableTranslation) {
+      return t(
+        `PROGRAM_ATTRIBUTE_VALUE_${camelToScreamingSnakeCase(field)}_${camelToScreamingSnakeCase(raw)}`,
+        raw,
+      );
+    }
+    return raw;
+  };
+
   const renderKnownField = (field: string) => {
     switch (field) {
       case 'programName':
@@ -259,7 +273,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
               value={
                 KNOWN_FIELDS.includes(field)
                   ? renderKnownField(field)
-                  : (data?.attributes?.[field] ?? '-')
+                  : renderAttributeValue(field)
               }
             />
           </Column>
