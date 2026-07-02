@@ -29,7 +29,11 @@ const defaultConfig = {
 
 describe('CommandPaletteProvider', () => {
   beforeEach(() => {
+    localStorage.setItem('enableCommandPalette', 'true');
     mockUseCommandPaletteConfig.mockReturnValue(defaultConfig);
+  });
+  afterEach(() => {
+    localStorage.clear();
   });
 
   it('renders children inside the widget provider', () => {
@@ -43,8 +47,16 @@ describe('CommandPaletteProvider', () => {
     expect(screen.getByText('child content')).toBeInTheDocument();
   });
 
-  it('renders without children', () => {
-    render(<CommandPaletteProvider />);
-    expect(screen.getByTestId('widget-provider')).toBeInTheDocument();
+  it('does not render the widget provider when command palette is disabled', () => {
+    localStorage.setItem('enableCommandPalette', 'false');
+
+    render(
+      <CommandPaletteProvider>
+        <span>child content</span>
+      </CommandPaletteProvider>,
+    );
+
+    expect(screen.queryByTestId('widget-provider')).not.toBeInTheDocument();
+    expect(screen.getByText('child content')).toBeInTheDocument();
   });
 });

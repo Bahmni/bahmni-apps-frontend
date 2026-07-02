@@ -72,6 +72,16 @@ export {
 // Config Provider Factories
 export { createConfigProvider, createConfigHook } from './configProvider';
 
+// Search Widgets
+export {
+  registerSearchWidget,
+  getSearchWidget,
+  clearSearchWidgetRegistry,
+  type SearchWidget,
+  type SearchWidgetProps,
+  CommonSearchWidget,
+} from './search';
+
 // Widget Registry
 export {
   registerWidget,

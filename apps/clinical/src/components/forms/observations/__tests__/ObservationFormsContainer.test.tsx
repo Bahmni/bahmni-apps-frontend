@@ -3,6 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import ObservationFormsContainer from '../ObservationFormsContainer';
+import {
+  mockMinimalPatientData,
+  mockEnrichedPatientData,
+} from './__mocks__/observationFormContainerMocks';
 
 // Mock the defaultFormNames import
 jest.mock('../ObservationForms', () => ({
@@ -213,19 +217,7 @@ describe('ObservationFormsContainer', () => {
 
     // Default mock for useQuery — minimal patient data so form renders
     (useQuery as jest.Mock).mockReturnValue({
-      data: {
-        id: 'test-patient-uuid',
-        fullName: null,
-        givenName: null,
-        familyName: null,
-        gender: null,
-        birthDate: null,
-        birthtime: null,
-        formattedAddress: null,
-        formattedContact: null,
-        identifiers: new Map(),
-        identifier: null,
-      },
+      data: mockMinimalPatientData,
     });
 
     // Set default mock for getValue to return no errors
@@ -515,19 +507,7 @@ describe('ObservationFormsContainer', () => {
 
     it('should pass enriched patient context from FHIR cache to CarbonContainer', () => {
       (useQuery as jest.Mock).mockReturnValue({
-        data: {
-          id: 'test-patient-uuid',
-          fullName: 'John Doe',
-          givenName: 'John',
-          familyName: 'Doe',
-          gender: 'male',
-          birthDate: '1996-01-01',
-          birthtime: null,
-          formattedAddress: null,
-          formattedContact: null,
-          identifiers: new Map(),
-          identifier: 'BAH-001',
-        },
+        data: mockEnrichedPatientData,
       });
 
       mockUseObservationFormData.mockReturnValue({
@@ -569,19 +549,7 @@ describe('ObservationFormsContainer', () => {
 
     it('should pass enriched patient to executeOnFormSaveEvent', () => {
       (useQuery as jest.Mock).mockReturnValue({
-        data: {
-          id: 'test-patient-uuid',
-          fullName: 'John Doe',
-          givenName: 'John',
-          familyName: 'Doe',
-          gender: 'male',
-          birthDate: null,
-          birthtime: null,
-          formattedAddress: null,
-          formattedContact: null,
-          identifiers: new Map(),
-          identifier: 'BAH-001',
-        },
+        data: { ...mockEnrichedPatientData, birthDate: null },
       });
 
       mockUseObservationFormData.mockReturnValue({

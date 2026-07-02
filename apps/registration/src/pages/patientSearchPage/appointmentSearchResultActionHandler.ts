@@ -2,10 +2,12 @@ import {
   AppointmentSearchResult,
   SearchActionConfig,
   updateAppointmentStatus,
+  checkInAppointment,
   UserPrivilege,
   formatUrl,
   PatientSearchResultBundle,
   hasPrivilege,
+  type Notification,
 } from '@bahmni/services';
 import { isSameDay, isBefore, isAfter } from 'date-fns';
 import { NavigateFunction } from 'react-router-dom';
@@ -65,66 +67,110 @@ export const handleActionButtonClick = async (
   patientSearchData: PatientSearchResultBundle,
   setPatientSearchData: (data: PatientSearchResultBundle) => void,
   navigate: NavigateFunction,
+  addNotification: (notification: Omit<Notification, 'id'>) => void,
+  t: (key: string) => string,
 ) => {
-  const { status, navigation } = action.onAction;
+  const { status, navigation, submit } = action.onAction;
 
-  if (action.type === 'changeStatus') {
-    await updateAppointmentStatus(
-      row.appointmentUuid as string,
-      status as string,
-    ).then((response) => {
-      const updatedPatientSearchData = {
+  const showSuccessNotification = () => {
+    if (action.onSuccess?.notification) {
+      addNotification({
+        title: t(action.onSuccess.notification),
+        message: '',
+        type: 'success',
+        timeout: 5000,
+      });
+    }
+  };
+
+  const showErrorNotification = () => {
+    addNotification({
+      title: t('REGISTRATION_ACTION_BUTTON_GENERIC_ERROR'),
+      message: '',
+      type: 'error',
+      timeout: 5000,
+    });
+  };
+
+  const handleResponse = async (
+    promise: Promise<{ appointmentUuid: string; status: string }>,
+  ) => {
+    try {
+      const { appointmentUuid, status: updatedStatus } = await promise;
+      setPatientSearchData({
         totalCount: patientSearchData.totalCount,
         pageOfResults: updateAppointmentStatusInResults(
           patientSearchData.pageOfResults,
-          response.uuid,
-          response.status,
+          appointmentUuid,
+          updatedStatus,
         ),
-      };
-      setPatientSearchData(updatedPatientSearchData);
-    });
+      });
+      showSuccessNotification();
+    } catch {
+      showErrorNotification();
+    }
+  };
+
+  if (action.type === 'changeStatus') {
+    await handleResponse(
+      updateAppointmentStatus(row.appointmentUuid!, status!).then((res) => {
+        const { uuid, status: updatedStatus } = res as {
+          uuid: string;
+          status: string;
+        };
+        return { appointmentUuid: uuid, status: updatedStatus };
+      }),
+    );
   } else if (action.type === 'navigate') {
     const options: Record<string, string> = {};
     options['patientUuid'] = row.uuid;
     options['appointmentNumber'] = row.appointmentNumber!;
     options['appointmentUuid'] = row.appointmentUuid!;
     handleActionNavigation(navigation ?? '', options, navigate);
+  } else if (action.type === 'checkInAndStartVisit') {
+    await handleResponse(checkInAppointment(submit!, row.appointmentUuid!));
   }
 };
 
-export const isActionButtonEnabled = (
-  enabledRules: SearchActionConfig['enabledRule'],
+type RuleValidator = (
+  values: string[],
   row: PatientSearchViewModel<AppointmentSearchResult>,
-  userPrivileges: UserPrivilege[],
-): boolean => {
-  if (!enabledRules || enabledRules.length === 0) return true;
-
-  const ruleValidatorMap = {
-    privilegeCheck: privilegeValidator(userPrivileges),
-    statusCheck: statusValidator,
-    appDateCheck: appDateValidator,
-  };
-
-  return enabledRules.every((rule) =>
-    ruleValidatorMap[rule.type](rule.values, row),
-  );
-};
+  excludeValues?: string[],
+) => boolean;
 
 export const shouldRenderActionButton = (
   action: SearchActionConfig,
   userPrivileges: UserPrivilege[],
+  row: PatientSearchViewModel<AppointmentSearchResult>,
 ): boolean => {
-  const privilegeRules =
-    action.enabledRule
-      ?.filter((rule) => rule.type === 'privilegeCheck')
-      .map((rule) => rule.values)
-      .flat() ?? [];
+  if (!action.enabledRule || action.enabledRule.length === 0) return false;
 
-  if (privilegeRules.length === 0) {
-    return false;
+  const ruleValidatorMap: Record<string, RuleValidator> = {
+    privilegeCheck: (values) => privilegeValidator(userPrivileges)(values),
+    statusCheck: (values, row) => statusValidator(values, row),
+    appDateCheck: (values, row) => appDateValidator(values, row),
+    appointmentService: (values, row, excludeValues) =>
+      appointmentServiceValidator(values, excludeValues, row),
+  };
+
+  return action.enabledRule.every((rule) =>
+    ruleValidatorMap[rule.type](rule.values ?? [], row, rule.excludeValues),
+  );
+};
+
+export const appointmentServiceValidator = (
+  values: string[] | undefined,
+  excludeValues: string[] | undefined,
+  row: PatientSearchViewModel<AppointmentSearchResult>,
+): boolean => {
+  const serviceUuid = String(row.appointmentServiceUuid ?? '');
+  if (excludeValues !== undefined) {
+    return excludeValues.length === 0 || !excludeValues.includes(serviceUuid);
   }
-
-  return privilegeValidator(userPrivileges)(privilegeRules);
+  if (values !== undefined) {
+    return values.length > 0 && values.includes(serviceUuid);
+  }
+  return false;
 };
 
 export const privilegeValidator =
