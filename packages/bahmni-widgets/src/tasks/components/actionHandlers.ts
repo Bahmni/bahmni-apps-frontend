@@ -15,7 +15,7 @@ export const isActionVisible = (
   if (action.type === 'launchForm') {
     const formName = extractFormNameFromTask(
       task,
-      action.handlerConfig.formInputCode,
+      action.handlerConfig.formInputCode as string,
     );
 
     if (!formName) return false;
@@ -25,9 +25,6 @@ export const isActionVisible = (
     );
     return matchingForm ? canUserEditForm(userPrivileges, matchingForm) : false;
   }
-
-  // Add more action types here as needed
-  // if (action.type === 'otherType') { ... }
 
   return false;
 };
@@ -61,5 +58,4 @@ export const handleTaskAction = (
   if (action.type === 'launchForm') {
     handleLaunchFormAction(action, task);
   }
-  // Add more action types here as needed
 };

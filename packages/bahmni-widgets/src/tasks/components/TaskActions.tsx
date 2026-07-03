@@ -33,17 +33,14 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, actionConfig }) => {
     return actionConfig.find((config) => config.taskCode === task.code);
   }, [actionConfig, task.code]);
 
-  // Filter out actions the user doesn't have privilege for — completely hidden, not disabled
   const permittedActions = useMemo(() => {
     if (!matchingConfig?.actions || isFormsLoading) return [];
 
     return matchingConfig.actions.filter((action) => {
-      // Common privilege check (applies to ALL action types)
       if (!hasPrivilege(userPrivileges, action.requiredPrivileges)) {
         return false;
       }
 
-      // Action-specific visibility check
       return isActionVisible(action, task, allForms, userPrivileges);
     });
   }, [matchingConfig, userPrivileges, allForms, isFormsLoading, task]);
