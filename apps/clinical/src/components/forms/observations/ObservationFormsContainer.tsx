@@ -241,7 +241,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     }
 
     if (formContainerRef.current) {
-      if (validationErrorType) {
+      if (validationErrorType && !handleDirectModeSubmit) {
         setValidationErrorType(null);
         const { observations: currentObservations } =
           formContainerRef.current.getValue();
@@ -254,7 +254,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             : [];
 
         handleSaveForm(transformedObservations, validationErrorType);
-        handleDirectModeSubmit?.();
         return;
       }
 
