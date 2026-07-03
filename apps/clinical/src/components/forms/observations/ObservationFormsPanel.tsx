@@ -47,11 +47,9 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   }, [viewingForm, refetchPinnedForms]);
 
   const taskFormName = encounterSessionStartContext?.taskFormName as
-    | string
-    | undefined;
+    string | undefined;
   const directFormMode = encounterSessionStartContext?.directFormMode as
-    | boolean
-    | undefined;
+    boolean | undefined;
 
   useEffect(() => {
     if (taskFormName && directFormMode && !isAllFormsLoading) {
@@ -59,10 +57,11 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
         (form) => form.name.toLowerCase() === taskFormName.toLowerCase(),
       );
 
-      if (matchingForm) {
-        if (!selectedForms.some((f) => f.uuid === matchingForm.uuid)) {
-          addForm(matchingForm);
-        }
+      if (
+        matchingForm &&
+        !selectedForms.some((f) => f.uuid === matchingForm.uuid)
+      ) {
+        addForm(matchingForm);
       }
     }
   }, [
