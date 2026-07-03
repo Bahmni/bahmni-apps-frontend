@@ -1,7 +1,8 @@
 import { MedicationOrdersMetadataResponse } from '@bahmni/services';
 
 export interface MedicationConfig
-  extends MedicationOrdersMetadataResponse, MedicationJSONConfig {}
+  extends MedicationOrdersMetadataResponse,
+    MedicationJSONConfig {}
 
 export interface DrugFormDefault {
   doseUnits?: string;

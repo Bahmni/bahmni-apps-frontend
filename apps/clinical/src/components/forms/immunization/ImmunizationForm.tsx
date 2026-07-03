@@ -87,12 +87,14 @@ const ImmunizationForm = ({
     cdss: cdssRules = [],
   } = inputControlConfig ?? {};
   const vaccineConceptSetUuid = metadata?.vaccineConceptSetUuid as
-    string | undefined;
+    | string
+    | undefined;
 
   const routeConceptUuid = metadata?.routeConceptUuid as string | undefined;
   const siteConceptUuid = metadata?.siteConceptUuid as string | undefined;
   const administeredLocationTag = metadata?.administeredLocationTag as
-    string | undefined;
+    | string
+    | undefined;
   const disableAdditionalAdministrations =
     metadata?.disableAdditionalAdministrations as boolean | undefined;
   const fetchStockBatches = metadata?.fetchStockBatches as boolean | undefined;

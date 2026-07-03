@@ -4,4 +4,5 @@ import {
 } from './constants';
 
 export type MedicationRequestStoreKey =
-  typeof MEDICATIONS_INPUT_CONTROL_KEY | typeof VACCINATIONS_INPUT_CONTROL_KEY;
+  | typeof MEDICATIONS_INPUT_CONTROL_KEY
+  | typeof VACCINATIONS_INPUT_CONTROL_KEY;

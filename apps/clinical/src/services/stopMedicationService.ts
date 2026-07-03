@@ -23,7 +23,8 @@ export async function fetchStopReasons(): Promise<StopReason[]> {
     const searchBundle = await get<Bundle>(STOP_REASON_VALUESET_URL);
 
     const valueSetEntry = searchBundle.entry?.[0]?.resource as
-      ValueSet | undefined;
+      | ValueSet
+      | undefined;
     if (!valueSetEntry?.id) return [];
 
     const expanded = await get<ValueSet>(
