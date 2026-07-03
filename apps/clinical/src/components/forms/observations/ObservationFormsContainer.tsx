@@ -91,7 +91,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // Extract basedOn reference from task (if available)
   const task = encounterSessionStartContext?.task as Task | undefined;
   const basedOn = task?.basedOn?.[0];
   const patientUUID = usePatientUUID();
@@ -234,7 +233,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     onViewingFormChange(null);
   };
 
-  const validateAndSave = (onSuccess?: () => void) => {
+  const validateAndSave = (handleDirectModeSubmit?: () => void) => {
     if (!patientContext) {
       setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
       setValidationErrorMessage(t('OBSERVATION_FORM_LOADING_METADATA_ERROR'));
@@ -255,7 +254,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             : [];
 
         handleSaveForm(transformedObservations, validationErrorType);
-        onSuccess?.();
+        handleDirectModeSubmit?.();
         return;
       }
 
@@ -337,7 +336,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         );
 
         handleSaveForm(processedObservations, null);
-        onSuccess?.();
+        handleDirectModeSubmit?.();
       } catch (error) {
         const errorMessage =
           error instanceof Error
