@@ -204,9 +204,7 @@ export function createAllergiesBundleEntries({
       .filter((r): r is { code: string } => r.code !== undefined)
       .map((r) => r.code);
     const severity = allergy.selectedSeverity.code as
-      | 'mild'
-      | 'moderate'
-      | 'severe';
+      'mild' | 'moderate' | 'severe';
 
     if (isExisting && allergy.rawFhirResource) {
       const allergyEncounterRef = allergy.rawFhirResource.encounter?.reference;

@@ -66,17 +66,13 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const preloadedAllergies = encounterSessionStartContext.preloadedAllergies;
   const encounterType = encounterSessionStartContext.encounterType;
   const editOnlyKey = encounterSessionStartContext.editOnly as
-    | string
-    | undefined;
+    string | undefined;
   const editTitle = encounterSessionStartContext.editTitle as
-    | string
-    | undefined;
+    string | undefined;
   const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
-    | string
-    | undefined;
+    string | undefined;
   const directFormMode = encounterSessionStartContext.directFormMode as
-    | boolean
-    | undefined;
+    boolean | undefined;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -229,8 +225,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   // Seed medication store with FHIR resources for edit mode
   useEffect(() => {
     const editMedications = encounterSessionStartContext.editMedications as
-      | MedicationRequest[]
-      | undefined;
+      MedicationRequest[] | undefined;
     const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
     medStore
       .getState()

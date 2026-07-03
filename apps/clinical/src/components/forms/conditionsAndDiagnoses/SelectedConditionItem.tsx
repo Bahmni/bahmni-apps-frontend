@@ -80,10 +80,7 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
             itemToString={(item) => t(item?.display ?? '')}
             onChange={(event) => {
               const unit = event.selectedItem?.id as
-                | 'days'
-                | 'months'
-                | 'years'
-                | null;
+                'days' | 'months' | 'years' | null;
               if (unit && ['days', 'months', 'years'].includes(unit)) {
                 updateConditionDuration(id, durationValue, unit);
               }

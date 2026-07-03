@@ -14,8 +14,7 @@ interface PatientSearchProps {
 }
 
 type PatientSearchItem =
-  | PatientSearchResult
-  | { display: string; disabled: true };
+  PatientSearchResult | { display: string; disabled: true };
 
 const DEFAULT_DISPLAY_FIELDS: PatientSearchDisplayField[] = [
   { field: 'name', bold: true },

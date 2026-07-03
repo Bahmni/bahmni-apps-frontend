@@ -39,8 +39,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
   ({ encounterSessionStartContext }) => {
     const { t } = useTranslation();
     const stopMedication = encounterSessionStartContext?.stopMedication as
-      | MedicationRequest
-      | undefined;
+      MedicationRequest | undefined;
     const {
       stopDate,
       stopReason,
