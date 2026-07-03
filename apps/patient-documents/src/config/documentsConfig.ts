@@ -7,6 +7,7 @@ export const PATIENT_DOCUMENTS_CONFIG_URL =
 export interface PatientDocumentsConfig {
   /** Name of the encounter type under which uploaded documents are recorded. */
   documentEncounterTypeName: string;
+  maxFileSizeMb?: number;
 }
 
 export const patientDocumentsConfigSchema = {
@@ -19,6 +20,10 @@ export const patientDocumentsConfigSchema = {
       type: 'string',
       description:
         'Name of the encounter type under which uploaded documents are recorded',
+    },
+    maxFileSizeMb: {
+      type: 'number',
+      description: 'Maximum allowed upload size in MB',
     },
   },
   required: ['documentEncounterTypeName'],

@@ -24,7 +24,6 @@ import styles from './__styles__/DocumentUpload.module.scss';
 import {
   FILE_INPUT_ACCEPT,
   isAcceptedFileType,
-  MAX_DOCUMENT_SIZE_BYTES,
   MAX_DOCUMENT_SIZE_MB,
   MAX_NOTE_LENGTH,
 } from './constants';
@@ -68,6 +67,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   encounterTypeName,
   saveTarget,
   documentTypes = [],
+  maxFileSizeMb = MAX_DOCUMENT_SIZE_MB,
   onSaved,
 }) => {
   const { t } = useTranslation();
@@ -113,13 +113,13 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       });
       return;
     }
-    if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
+    if (file.size > maxFileSizeMb * 1000 * 1000) {
       addNotification({
         title: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE', {
           defaultValue: 'File too large',
         }),
         message: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_MESSAGE', {
-          size: MAX_DOCUMENT_SIZE_MB,
+          size: maxFileSizeMb,
           defaultValue:
             'File size exceeds the maximum allowed limit of {{size}}MB.',
         }),
@@ -281,7 +281,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         </p>
         <p className={styles.uploaderHelp}>
           {t('DOCUMENT_UPLOAD_HELP', {
-            size: MAX_DOCUMENT_SIZE_MB,
+            size: maxFileSizeMb,
             defaultValue:
               'Max file size is {{size}}MB. Supported file types are images, videos and PDF.',
           })}

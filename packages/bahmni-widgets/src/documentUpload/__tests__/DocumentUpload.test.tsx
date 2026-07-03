@@ -33,6 +33,7 @@ const CREATE_ENCOUNTER_TARGET = {
 const renderWidget = (
   onSaved = jest.fn(),
   saveTarget: DocumentSaveTarget = EXISTING_ENCOUNTER_TARGET,
+  maxFileSizeMb?: number,
 ) =>
   render(
     <DocumentUpload
@@ -40,6 +41,7 @@ const renderWidget = (
       encounterTypeName="Patient Document"
       saveTarget={saveTarget}
       documentTypes={[{ id: 'type-1', label: 'Lab Report' }]}
+      maxFileSizeMb={maxFileSizeMb}
       onSaved={onSaved}
     />,
   );
@@ -141,9 +143,19 @@ describe('DocumentUpload', () => {
     );
   });
 
-  it('rejects a file larger than the 5MB limit without uploading', () => {
+  it('rejects a file larger than the default size limit without uploading', () => {
     renderWidget();
-    selectFile('image/png', 6 * 1024 * 1024);
+    selectFile('image/png', 8 * 1024 * 1024);
+
+    expect(uploadDocument).not.toHaveBeenCalled();
+    expect(mockAddNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'error' }),
+    );
+  });
+
+  it('rejects using the configured maxFileSizeMb when provided', () => {
+    renderWidget(jest.fn(), EXISTING_ENCOUNTER_TARGET, 2);
+    selectFile('image/png', 3 * 1024 * 1024);
 
     expect(uploadDocument).not.toHaveBeenCalled();
     expect(mockAddNotification).toHaveBeenCalledWith(

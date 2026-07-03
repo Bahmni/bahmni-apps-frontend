@@ -19,6 +19,7 @@ export interface DocumentUploadProps {
   encounterTypeName: string;
   saveTarget: DocumentSaveTarget;
   documentTypes?: DocumentTypeOption[];
+  maxFileSizeMb?: number;
   onSaved?: () => void;
 }
 

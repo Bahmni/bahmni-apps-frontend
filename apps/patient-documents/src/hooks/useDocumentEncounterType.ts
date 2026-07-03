@@ -1,6 +1,6 @@
 import { EncounterTypeRef, getEncounterTypeByName } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { getPatientDocumentsConfig } from '../config/documentsConfig';
+import { usePatientDocumentsConfig } from './usePatientDocumentsConfig';
 
 // Reads the document encounter type name from config and resolves it to {uuid, name}.
 export const useDocumentEncounterType = (): {
@@ -8,10 +8,7 @@ export const useDocumentEncounterType = (): {
   isLoading: boolean;
   error: Error | null;
 } => {
-  const configQuery = useQuery({
-    queryKey: ['patientDocumentsConfig'],
-    queryFn: getPatientDocumentsConfig,
-  });
+  const configQuery = usePatientDocumentsConfig();
 
   const typeName = configQuery.data?.documentEncounterTypeName;
 
