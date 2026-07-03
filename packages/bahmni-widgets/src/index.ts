@@ -8,6 +8,12 @@ export {
 // Widget Components
 export { DocumentPrintButton } from './documentPrintButton';
 export type { PrintOption } from './documentPrintButton';
+export { DocumentUpload } from './documentUpload';
+export type {
+  DocumentUploadProps,
+  DocumentTypeOption,
+  DocumentSaveTarget,
+} from './documentUpload';
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
 export { AppointmentsTable } from './appointments';

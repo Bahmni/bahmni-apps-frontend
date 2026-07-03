@@ -1,4 +1,11 @@
-import { OPENMRS_FHIR_R4 } from '../constants/app';
+import { OPENMRS_FHIR_R4, OPENMRS_REST_V1 } from '../constants/app';
+
+export const DOCUMENT_REFERENCE_URL = `${OPENMRS_FHIR_R4}/DocumentReference`;
+
+export const ENCOUNTER_BUNDLE_URL = `${OPENMRS_FHIR_R4}/EncounterBundle`;
+
+export const DOCUMENT_TYPES_URL = (conceptName: string) =>
+  `${OPENMRS_REST_V1}/concept?s=byFullySpecifiedName&name=${encodeURIComponent(conceptName)}&v=custom:(uuid,setMembers:(uuid,name:(name)))`;
 
 export const PATIENT_DOCUMENT_REFERENCES_URL = (
   patientUuid: string,

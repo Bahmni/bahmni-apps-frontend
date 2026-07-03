@@ -8,6 +8,7 @@ import App from '../App';
 
 jest.mock('@bahmni/services', () => ({
   initAppI18n: jest.fn().mockResolvedValue(undefined),
+  initializeAuditListener: jest.fn(),
 }));
 
 jest.mock('@bahmni/design-system', () => ({
@@ -20,6 +21,8 @@ jest.mock('@bahmni/widgets', () => ({
     children,
   NotificationServiceComponent: () => null,
   UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+  ActivePractitionerProvider: ({ children }: { children: React.ReactNode }) =>
     children,
 }));
 

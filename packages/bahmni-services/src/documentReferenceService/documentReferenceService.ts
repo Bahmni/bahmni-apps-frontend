@@ -1,7 +1,33 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../api';
-import { PATIENT_DOCUMENT_REFERENCES_URL } from './constants';
-import { DocumentViewModel } from './models';
+import {
+  DOCUMENT_TYPES_URL,
+  PATIENT_DOCUMENT_REFERENCES_URL,
+} from './constants';
+import { DocumentType, DocumentViewModel } from './models';
+
+interface ConceptSetMember {
+  uuid: string;
+  name?: { name?: string };
+}
+
+/**
+ * Fetches the configurable document types (set members of the given document-type concept),
+ * e.g. Prescription, Radiology Report. Used to populate the document-type dropdown.
+ * @param conceptName - fully specified name of the document-type concept set
+ */
+export async function getDocumentTypes(
+  conceptName: string,
+): Promise<DocumentType[]> {
+  const response = await get<{
+    results: Array<{ setMembers?: ConceptSetMember[] }>;
+  }>(DOCUMENT_TYPES_URL(conceptName));
+  const setMembers = response.results?.[0]?.setMembers ?? [];
+  return setMembers.map((member) => ({
+    id: member.uuid,
+    label: member.name?.name ?? '',
+  }));
+}
 
 /**
  * Maps FHIR DocumentReference entries to DocumentViewModel for UI consumption
@@ -16,6 +42,9 @@ function mapDocumentReferencesToViewModels(
     .map((entry) => {
       const doc = entry.resource;
       const masterIdentifier = doc.masterIdentifier?.value ?? doc.id ?? '';
+      const encounterId = doc.context?.encounter?.[0]?.reference
+        ?.split('/')
+        .pop();
 
       const attachments = (doc.content ?? [])
         .map((c) => c.attachment)
@@ -35,6 +64,8 @@ function mapDocumentReferencesToViewModels(
         contentType: firstAttachment?.contentType,
         documentUrl: firstAttachment?.url ?? '',
         attachments,
+        encounterId,
+        description: doc.description,
       };
     });
 }

@@ -1,0 +1,20 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-05;
+  // Clear the fixed Carbon header ($spacing-09), then the gap below it ($spacing-06).
+  margin-block-start: $spacing-09;
+  padding-block: $spacing-06;
+  // Patient banner side gutter (matches the Figma ~112px banner gutter).
+  padding-inline: calc($spacing-12 + $spacing-05);
+}
+
+.patientBanner {
+  background: $layer-02;
+  box-shadow: 0 2px 6px $shadow;
+  padding: $spacing-05;
+  padding-inline: $spacing-06;
+}

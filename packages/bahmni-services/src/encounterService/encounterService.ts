@@ -2,9 +2,16 @@ import { Observation, Encounter, Bundle } from 'fhir/r4';
 import { get, post, put } from '../api';
 import {
   PATIENT_VISITS_URL,
+  PATIENT_ENCOUNTERS_URL,
+  ENCOUNTER_TYPE_BY_NAME_URL,
   FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
   FHIR_ENCOUNTER_URL,
 } from './constants';
+
+export interface EncounterTypeRef {
+  uuid: string;
+  name: string;
+}
 
 /**
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
@@ -29,6 +36,40 @@ export async function getVisits(patientUUID: string): Promise<Encounter[]> {
       ?.map((entry) => entry.resource)
       .filter((resource): resource is Encounter => resource !== undefined) ?? []
   );
+}
+
+/**
+ * Fetches all encounters for a patient (both visits, tagged "visit", and their child encounters,
+ * which carry a partOf reference to the visit). Used to group resources under their visit.
+ * @param patientUUID - The UUID of the patient
+ * @returns Promise resolving to an array of FHIR Encounters
+ */
+export async function getPatientEncounters(
+  patientUUID: string,
+): Promise<Encounter[]> {
+  const bundle = await get<Bundle<Encounter>>(
+    PATIENT_ENCOUNTERS_URL(patientUUID),
+  );
+  return (
+    bundle.entry
+      ?.map((entry) => entry.resource)
+      .filter((resource): resource is Encounter => resource !== undefined) ?? []
+  );
+}
+
+/**
+ * Resolves an encounter type UUID from its name via the OpenMRS REST API. Returns the exact-name
+ * match when present, otherwise the first result, or null when none is found.
+ * @param name - The encounter type name (e.g. "Patient Document")
+ */
+export async function getEncounterTypeByName(
+  name: string,
+): Promise<EncounterTypeRef | null> {
+  const response = await get<{ results: EncounterTypeRef[] }>(
+    ENCOUNTER_TYPE_BY_NAME_URL(name),
+  );
+  const results = response.results ?? [];
+  return results.find((type) => type.name === name) ?? results[0] ?? null;
 }
 
 /**

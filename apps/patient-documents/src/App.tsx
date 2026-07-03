@@ -1,6 +1,7 @@
 import { Loading, initFontAwesome } from '@bahmni/design-system';
-import { initAppI18n } from '@bahmni/services';
+import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
+  ActivePractitionerProvider,
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,
@@ -23,6 +24,7 @@ export function App() {
       try {
         await initAppI18n(BAHMNI_PATIENT_DOCUMENTS_NAMESPACE);
         initFontAwesome();
+        initializeAuditListener();
         setIsInitialized(true);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -41,11 +43,13 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <NotificationProvider>
         <UserPrivilegeProvider>
-          <NotificationServiceComponent />
-          <Suspense fallback={<Loading />}>
-            <Routes>{renderRoutes(routes)}</Routes>
-          </Suspense>
-          <ReactQueryDevtools initialIsOpen={false} />
+          <ActivePractitionerProvider>
+            <NotificationServiceComponent />
+            <Suspense fallback={<Loading />}>
+              <Routes>{renderRoutes(routes)}</Routes>
+            </Suspense>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </ActivePractitionerProvider>
         </UserPrivilegeProvider>
       </NotificationProvider>
     </QueryClientProvider>
