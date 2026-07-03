@@ -34,14 +34,22 @@ const renderTile = (document: DocumentViewModel) => {
   const type = (document.contentType ?? '').toLowerCase();
   const title = document.documentType ?? document.documentIdentifier;
   if (type.includes('image')) {
-    return <ImageTile id={document.id} imageSrc={document.documentUrl} alt={title} />;
+    return (
+      <ImageTile id={document.id} imageSrc={document.documentUrl} alt={title} />
+    );
   }
   if (type.includes('video')) {
     return (
-      <VideoTile id={document.id} videoSrc={document.documentUrl} modalTitle={title} />
+      <VideoTile
+        id={document.id}
+        videoSrc={document.documentUrl}
+        modalTitle={title}
+      />
     );
   }
-  return <FileTile id={document.id} src={document.documentUrl} modalTitle={title} />;
+  return (
+    <FileTile id={document.id} src={document.documentUrl} modalTitle={title} />
+  );
 };
 
 export const DocumentsSection: React.FC<DocumentsSectionProps> = ({

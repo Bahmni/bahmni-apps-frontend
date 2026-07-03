@@ -37,14 +37,30 @@ import {
 const renderTile = (pending: PendingDocument) => {
   const type = pending.contentType.toLowerCase();
   if (type.includes('image')) {
-    return <ImageTile id={pending.url} imageSrc={pending.url} alt={pending.fileName} />;
+    return (
+      <ImageTile
+        id={pending.url}
+        imageSrc={pending.url}
+        alt={pending.fileName}
+      />
+    );
   }
   if (type.includes('video')) {
     return (
-      <VideoTile id={pending.url} videoSrc={pending.url} modalTitle={pending.fileName} />
+      <VideoTile
+        id={pending.url}
+        videoSrc={pending.url}
+        modalTitle={pending.fileName}
+      />
     );
   }
-  return <FileTile id={pending.url} src={pending.url} modalTitle={pending.fileName} />;
+  return (
+    <FileTile
+      id={pending.url}
+      src={pending.url}
+      modalTitle={pending.fileName}
+    />
+  );
 };
 
 export const DocumentUpload: React.FC<DocumentUploadProps> = ({
