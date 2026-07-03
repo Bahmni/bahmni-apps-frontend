@@ -47,10 +47,11 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   }, [viewingForm, refetchPinnedForms]);
 
   const taskFormName = encounterSessionStartContext?.taskFormName as
-    string | undefined;
+    | string
+    | undefined;
   const directFormMode = encounterSessionStartContext?.directFormMode as
-    boolean | undefined;
-
+    | boolean
+    | undefined;
   useEffect(() => {
     if (taskFormName && directFormMode && !isAllFormsLoading) {
       const matchingForm = allForms.find(
