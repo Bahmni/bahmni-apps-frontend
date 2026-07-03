@@ -196,6 +196,7 @@ const TaskList: React.FC<TaskListProps> = ({
               <TaskActions
                 task={task}
                 actionConfig={taskListConfig?.actionConfig}
+                episodeOfCareUuids={episodeOfCareUuids}
               />
             )
           );
@@ -203,7 +204,7 @@ const TaskList: React.FC<TaskListProps> = ({
           return null;
       }
     },
-    [t, taskListConfig?.actionConfig],
+    [t, taskListConfig?.actionConfig, episodeOfCareUuids],
   );
 
   if (emptyEncounterFilter) {

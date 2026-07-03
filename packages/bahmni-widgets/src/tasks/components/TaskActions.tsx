@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import type { TaskViewModel, TaskActionConfig } from '../models';
+import { hasLaunchFormActions } from '../utils';
 import { handleTaskAction, isActionVisible } from './actionHandlers';
 
 const READY_TASK_STATUS = 'ready' as const;
@@ -15,17 +16,25 @@ const READY_TASK_STATUS = 'ready' as const;
 interface TaskActionsProps {
   task: TaskViewModel;
   actionConfig: TaskActionConfig[];
+  episodeOfCareUuids?: string[];
 }
 
-const TaskActions: React.FC<TaskActionsProps> = ({ task, actionConfig }) => {
+const TaskActions: React.FC<TaskActionsProps> = ({
+  task,
+  actionConfig,
+  episodeOfCareUuids,
+}) => {
   const { userPrivileges } = useUserPrivilege();
+
+  const shouldFetchForms = hasLaunchFormActions(actionConfig, task.code);
 
   const { data: allForms = [], isLoading: isFormsLoading } = useQuery<
     ObservationForm[],
     Error
   >({
-    queryKey: ['observationForms'],
-    queryFn: () => fetchObservationForms(),
+    queryKey: ['observationForms', episodeOfCareUuids],
+    queryFn: () => fetchObservationForms(episodeOfCareUuids),
+    enabled: shouldFetchForms,
   });
 
   const matchingConfig = useMemo(() => {

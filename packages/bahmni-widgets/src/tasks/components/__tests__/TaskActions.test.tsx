@@ -103,10 +103,7 @@ describe('TaskActions', () => {
         { wrapper: createWrapper() },
       );
 
-      await waitFor(() => {
-        expect(mockFetchObservationForms).toHaveBeenCalled();
-      });
-
+      expect(mockFetchObservationForms).not.toHaveBeenCalled();
       expect(container).toBeEmptyDOMElement();
     });
 
@@ -124,10 +121,7 @@ describe('TaskActions', () => {
         { wrapper: createWrapper() },
       );
 
-      await waitFor(() => {
-        expect(mockFetchObservationForms).toHaveBeenCalled();
-      });
-
+      expect(mockFetchObservationForms).not.toHaveBeenCalled();
       expect(container).toBeEmptyDOMElement();
     });
 
@@ -460,10 +454,7 @@ describe('TaskActions', () => {
         { wrapper: createWrapper() },
       );
 
-      await waitFor(() => {
-        expect(mockFetchObservationForms).toHaveBeenCalled();
-      });
-
+      expect(mockFetchObservationForms).not.toHaveBeenCalled();
       expect(container).toBeEmptyDOMElement();
     });
 
@@ -483,10 +474,7 @@ describe('TaskActions', () => {
         { wrapper: createWrapper() },
       );
 
-      await waitFor(() => {
-        expect(mockFetchObservationForms).toHaveBeenCalled();
-      });
-
+      expect(mockFetchObservationForms).not.toHaveBeenCalled();
       expect(container).toBeEmptyDOMElement();
     });
   });

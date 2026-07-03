@@ -1,5 +1,5 @@
 import type { ObservationForm, UserPrivilege } from '@bahmni/services';
-import type { TaskViewModel } from './models';
+import type { TaskViewModel, TaskActionConfig } from './models';
 
 /**
  * Extract form name from task input based on inputType
@@ -56,4 +56,23 @@ export const canUserEditForm = (
     );
     return hasFormPrivilege && formPrivilege.editable;
   });
+};
+
+/**
+ * Check if action config has any 'launchForm' type actions for the given task
+ * @param actionConfig - Array of task action configurations
+ * @param taskCode - The task code to check
+ * @returns true if there are launchForm actions, false otherwise
+ */
+export const hasLaunchFormActions = (
+  actionConfig: TaskActionConfig[],
+  taskCode: string,
+): boolean => {
+  const matchingConfig = actionConfig?.find(
+    (config) => config.taskCode === taskCode,
+  );
+  return (
+    matchingConfig?.actions?.some((action) => action.type === 'launchForm') ??
+    false
+  );
 };
