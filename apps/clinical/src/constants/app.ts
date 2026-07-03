@@ -1,7 +1,7 @@
 import { OPENMRS_REST_V1, OPENMRS_FHIR_R4 } from '@bahmni/services';
 
 export const BAHMNI_CLINICAL_PATH =
-  '/bahmni/clinical/index.html#/v2/patient/search';
+  '/bahmni/clinical/index.html#/default/patient/search';
 export const ENCOUNTER_CONCEPTS_URL =
   OPENMRS_REST_V1 +
   '/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS';
