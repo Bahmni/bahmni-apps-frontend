@@ -60,7 +60,11 @@ interface CreateConditionsBundleEntriesParams {
 }
 
 interface CreateObservationBundleEntriesParams {
-  observationFormsData: Record<string, Form2Observation[]>;
+  observationFormsData: Array<{
+    formUuid: string;
+    observations: Form2Observation[];
+    basedOn?: Reference;
+  }>;
   encounterSubject: Reference;
   encounterReference: string;
   practitionerUUID: string;
@@ -431,7 +435,7 @@ export function createObservationBundleEntries({
   encounterReference,
   practitionerUUID,
 }: CreateObservationBundleEntriesParams): BundleEntry[] {
-  if (!observationFormsData || typeof observationFormsData !== 'object') {
+  if (!observationFormsData || !Array.isArray(observationFormsData)) {
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
   }
 
@@ -450,8 +454,8 @@ export function createObservationBundleEntries({
   const observationEntries: BundleEntry[] = [];
 
   // Iterate through all observation forms and their observations
-  for (const formUuid in observationFormsData) {
-    const observations = observationFormsData[formUuid];
+  for (const formData of observationFormsData) {
+    const { observations, basedOn } = formData;
 
     if (!observations || !Array.isArray(observations)) {
       continue;
@@ -463,6 +467,7 @@ export function createObservationBundleEntries({
       encounterSubject,
       createEncounterReferenceFromString(encounterReference),
       createPractitionerReference(practitionerUUID),
+      basedOn,
     );
 
     // Create bundle entries for each observation resource

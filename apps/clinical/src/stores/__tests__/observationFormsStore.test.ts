@@ -196,6 +196,31 @@ describe('observationFormsStore', () => {
 
       expect(result.current.selectedForms).toHaveLength(1);
     });
+
+    it('should remove basedOn when form is removed', () => {
+      const { result } = renderHook(() => useObservationFormsStore());
+      const mockBasedOn = {
+        reference: 'ServiceRequest/service-request-123',
+      };
+
+      act(() => {
+        result.current.addForm(mockForm1);
+        result.current.updateFormData(
+          'form-1',
+          mockObservations,
+          null,
+          mockBasedOn,
+        );
+      });
+
+      expect(result.current.formsData['form-1'].basedOn).toEqual(mockBasedOn);
+
+      act(() => {
+        result.current.removeForm('form-1');
+      });
+
+      expect(result.current.formsData['form-1']).toBeUndefined();
+    });
   });
 
   describe('updateFormData', () => {
@@ -321,6 +346,100 @@ describe('observationFormsStore', () => {
         VALIDATION_STATE_INVALID,
       );
     });
+
+    it('should store basedOn reference in formData when provided', () => {
+      const { result } = renderHook(() => useObservationFormsStore());
+      const mockBasedOn = {
+        reference: 'ServiceRequest/service-request-123',
+      };
+
+      act(() => {
+        result.current.addForm(mockForm1);
+        result.current.updateFormData(
+          'form-1',
+          mockObservations,
+          null,
+          mockBasedOn,
+        );
+      });
+
+      const formData = result.current.formsData['form-1'];
+      expect(formData.basedOn).toEqual(mockBasedOn);
+    });
+
+    it('should not include basedOn when undefined', () => {
+      const { result } = renderHook(() => useObservationFormsStore());
+
+      act(() => {
+        result.current.addForm(mockForm1);
+        result.current.updateFormData('form-1', mockObservations);
+      });
+
+      const formData = result.current.formsData['form-1'];
+      expect(formData.basedOn).toBeUndefined();
+    });
+
+    it('should preserve basedOn when updating observations', () => {
+      const { result } = renderHook(() => useObservationFormsStore());
+      const mockBasedOn = {
+        reference: 'ServiceRequest/service-request-123',
+      };
+
+      act(() => {
+        result.current.addForm(mockForm1);
+        result.current.updateFormData(
+          'form-1',
+          mockObservations,
+          null,
+          mockBasedOn,
+        );
+      });
+
+      act(() => {
+        result.current.updateFormData(
+          'form-1',
+          [...mockObservations, { ...mockObservations[0], value: 'Updated' }],
+          null,
+          mockBasedOn,
+        );
+      });
+
+      const formData = result.current.formsData['form-1'];
+      expect(formData.basedOn).toEqual(mockBasedOn);
+      expect(formData.observations).toHaveLength(2);
+    });
+
+    it.each([
+      [
+        'with validation state and basedOn',
+        VALIDATION_STATE_MANDATORY,
+        { reference: 'ServiceRequest/123' },
+      ],
+      ['with null validation and basedOn', null, { reference: 'Task/456' }],
+      [
+        'with validation state, no basedOn',
+        VALIDATION_STATE_INVALID,
+        undefined,
+      ],
+      ['with no validation, no basedOn', undefined, undefined],
+    ])('should correctly update formData %s', (_, validationState, basedOn) => {
+      const { result } = renderHook(() => useObservationFormsStore());
+
+      act(() => {
+        result.current.addForm(mockForm1);
+        result.current.updateFormData(
+          'form-1',
+          mockObservations,
+          validationState,
+          basedOn,
+        );
+      });
+
+      const formData = result.current.formsData['form-1'];
+      expect(formData.observations).toEqual(mockObservations);
+      expect(formData.validationErrorType).toBe(validationState);
+      expect(formData.basedOn).toEqual(basedOn);
+    });
   });
 
   describe('getFormData', () => {
@@ -424,7 +543,7 @@ describe('observationFormsStore', () => {
   });
 
   describe('getObservationFormsData', () => {
-    it('should return observation data grouped by form uuid', () => {
+    it('should return array of observation data with form uuid', () => {
       const { result } = renderHook(() => useObservationFormsStore());
 
       act(() => {
@@ -434,15 +553,89 @@ describe('observationFormsStore', () => {
       });
 
       const formsData = result.current.getObservationFormsData();
-      expect(formsData['form-1']).toEqual(mockObservations);
-      expect(formsData['form-2']).toBeUndefined();
+      expect(Array.isArray(formsData)).toBe(true);
+      expect(formsData).toHaveLength(1);
+      expect(formsData[0]).toEqual({
+        formUuid: 'form-1',
+        observations: mockObservations,
+        basedOn: undefined,
+      });
     });
 
-    it('should return empty object when no forms have data', () => {
+    it('should return empty array when no forms have data', () => {
       const { result } = renderHook(() => useObservationFormsStore());
 
       const formsData = result.current.getObservationFormsData();
-      expect(formsData).toEqual({});
+      expect(formsData).toEqual([]);
+    });
+
+    it('should include basedOn reference when provided', () => {
+      const { result } = renderHook(() => useObservationFormsStore());
+      const mockBasedOn = {
+        reference: 'ServiceRequest/service-request-123',
+      };
+
+      act(() => {
+        result.current.addForm(mockForm1);
+        result.current.updateFormData(
+          'form-1',
+          mockObservations,
+          null,
+          mockBasedOn,
+        );
+      });
+
+      const formsData = result.current.getObservationFormsData();
+      expect(formsData).toHaveLength(1);
+      expect(formsData[0]).toEqual({
+        formUuid: 'form-1',
+        observations: mockObservations,
+        basedOn: mockBasedOn,
+      });
+    });
+
+    it('should omit basedOn when undefined', () => {
+      const { result } = renderHook(() => useObservationFormsStore());
+
+      act(() => {
+        result.current.addForm(mockForm1);
+        result.current.updateFormData('form-1', mockObservations);
+      });
+
+      const formsData = result.current.getObservationFormsData();
+      expect(formsData[0].basedOn).toBeUndefined();
+    });
+
+    it('should return multiple forms with their respective basedOn references', () => {
+      const { result } = renderHook(() => useObservationFormsStore());
+      const mockBasedOn1 = {
+        reference: 'ServiceRequest/service-request-123',
+      };
+      const mockBasedOn2 = {
+        reference: 'ServiceRequest/service-request-456',
+      };
+
+      act(() => {
+        result.current.addForm(mockForm1);
+        result.current.addForm(mockForm2);
+        result.current.updateFormData(
+          'form-1',
+          mockObservations,
+          null,
+          mockBasedOn1,
+        );
+        result.current.updateFormData(
+          'form-2',
+          mockObservations,
+          null,
+          mockBasedOn2,
+        );
+      });
+
+      const formsData = result.current.getObservationFormsData();
+      expect(formsData).toHaveLength(2);
+      expect(formsData[0].basedOn).toEqual(mockBasedOn1);
+      expect(formsData[1].basedOn).toEqual(mockBasedOn2);
     });
   });
 

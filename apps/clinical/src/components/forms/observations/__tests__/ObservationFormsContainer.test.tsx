@@ -328,6 +328,7 @@ describe('ObservationFormsContainer', () => {
         mockForm.uuid,
         expect.any(Array),
         null,
+        undefined,
       );
       expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
     });
@@ -402,6 +403,7 @@ describe('ObservationFormsContainer', () => {
           }),
         ]),
         null,
+        undefined,
       );
       expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
     });
@@ -928,6 +930,7 @@ describe('ObservationFormsContainer', () => {
           mockForm.uuid,
           expect.any(Array),
           'mandatory', // validationErrorType is passed with the error type
+          undefined,
         );
         expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
       });
@@ -999,6 +1002,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'invalid', // validationErrorType is passed
+          undefined,
         );
       });
     });
@@ -1058,6 +1062,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'mandatory',
+          undefined,
         );
         expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
       });
@@ -1136,6 +1141,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1219,6 +1225,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1284,6 +1291,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1367,6 +1375,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
