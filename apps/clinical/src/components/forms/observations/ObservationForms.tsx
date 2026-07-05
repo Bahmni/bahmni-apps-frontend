@@ -31,6 +31,8 @@ interface ObservationFormsProps {
   allForms: ObservationForm[];
   isAllFormsLoading: boolean;
   observationFormsError: Error | null;
+  // Set of form UUIDs already submitted in the active encounter (BAH-4828)
+  submittedFormUuids?: Set<string>;
 }
 
 /**
@@ -58,6 +60,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     allForms,
     isAllFormsLoading,
     observationFormsError,
+    submittedFormUuids = new Set(),
   }) => {
     const { t } = useTranslation();
     const canAddObservations = useHasPrivilege(
@@ -197,18 +200,20 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         ];
       }
 
-      // Map forms to ComboBox items with proper labeling for already selected forms
+      // Map forms to ComboBox items with proper labeling for already-selected or already-submitted forms
       const results = availableForms.map((form: ObservationForm) => {
         const isAlreadySelected = selectedForms.some(
           (selected: ObservationForm) => selected.uuid === form.uuid,
         );
+        const isSubmitted = submittedFormUuids.has(form.uuid);
+        const disabled = isAlreadySelected || isSubmitted;
 
         return {
           id: form.uuid,
-          label: isAlreadySelected
+          label: disabled
             ? `${form.name} (${t('OBSERVATION_FORMS_FORM_ALREADY_ADDED')})`
             : form.name,
-          disabled: isAlreadySelected,
+          disabled,
         };
       });
 
@@ -219,6 +224,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       searchTerm,
       availableForms,
       selectedForms,
+      submittedFormUuids,
       t,
     ]);
 
