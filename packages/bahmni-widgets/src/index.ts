@@ -31,6 +31,7 @@ export { TaskList } from './tasks';
 export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
+export { extractFormFieldPath } from './forms/utils';
 
 export {
   CommandPaletteProvider,

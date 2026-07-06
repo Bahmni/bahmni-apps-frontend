@@ -25,6 +25,15 @@ jest.mock('@bahmni/services', () => ({
 
 jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn(),
+  extractFormFieldPath: (observation?: {
+    extension?: { url: string; valueString?: string }[];
+  }) =>
+    observation?.extension?.find(
+      (ext) =>
+        ext.url ===
+        jest.requireActual('@bahmni/services')
+          .FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
+    )?.valueString,
 }));
 
 const mockGetObservationsBundleByEncounterUuid =
@@ -322,10 +331,36 @@ describe('useSubmittedEncounterForms', () => {
     });
   });
 
+  describe('fetch error → fail-open (empty set)', () => {
+    it('returns an empty set and does not throw when the fetch rejects', async () => {
+      const consoleerrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      mockGetObservationsBundleByEncounterUuid.mockRejectedValue(
+        new Error('network error'),
+      );
+
+      const { result } = renderHook(
+        () => useSubmittedEncounterForms(allForms),
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() =>
+        expect(mockGetObservationsBundleByEncounterUuid).toHaveBeenCalledTimes(
+          1,
+        ),
+      );
+
+      expect(result.current.size).toBe(0);
+      consoleerrorSpy.mockRestore();
+    });
+  });
+
   describe('namespace and version parsing', () => {
     it.each([
       ['Bahmni^Vitals.1/10-0', 'form-uuid-vitals'],
       ['Vitals.1/1-0', 'form-uuid-vitals'],
+      ['Vitals.1.2/1-0', 'form-uuid-vitals'],
       ['History.2/3-0', 'form-uuid-history'],
       ['Bahmni^History.3/1-0', 'form-uuid-history'],
     ])('parses "%s" to form uuid %s', async (valueString, expectedUuid) => {

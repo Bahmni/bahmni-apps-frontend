@@ -19,6 +19,8 @@ import {
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import styles from './styles/ObservationForms.module.scss';
 
+const EMPTY_SET = new Set<string>();
+
 interface ObservationFormsProps {
   onFormSelect?: (form: ObservationForm) => void;
   selectedForms?: ObservationForm[];
@@ -31,7 +33,6 @@ interface ObservationFormsProps {
   allForms: ObservationForm[];
   isAllFormsLoading: boolean;
   observationFormsError: Error | null;
-  // Set of form UUIDs already submitted in the active encounter (BAH-4828)
   submittedFormUuids?: Set<string>;
 }
 
@@ -60,7 +61,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     allForms,
     isAllFormsLoading,
     observationFormsError,
-    submittedFormUuids = new Set(),
+    submittedFormUuids = EMPTY_SET,
   }) => {
     const { t } = useTranslation();
     const canAddObservations = useHasPrivilege(

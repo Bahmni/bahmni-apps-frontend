@@ -1,45 +1,22 @@
 import {
-  FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
   ObservationForm,
   getObservationsBundleByEncounterUuid,
   useEncounterSessionStore,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
-import { usePatientUUID } from '@bahmni/widgets';
+import { usePatientUUID, extractFormFieldPath } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import type { Observation } from 'fhir/r4';
 import { useMemo } from 'react';
 
-/**
- * Parse the form name from an observation's form-namespace-path valueString.
- *
- * The valueString format is either:
- *   - `{namespace}^{formName}.{version}/{fieldPath}`  e.g. `Bahmni^Vitals.1/10-0`
- *   - `{formName}.{version}/{fieldPath}`              e.g. `Vitals.1/1-0`
- *
- * Returns the bare form name (e.g. `Vitals`), or undefined if the value is absent/malformed.
- */
 function parseFormName(valueString: string | undefined): string | undefined {
   if (!valueString) return undefined;
   const beforeSlash = valueString.split('/')[0];
-  // Strip optional `{namespace}^` prefix, then strip trailing `.{version}`
   const name = beforeSlash
     .split('^')
     .pop()
-    ?.replace(/\.\d+$/, '');
+    ?.replace(/(\.\d+)+$/, '');
   return name ?? undefined;
-}
-
-/**
- * Extract the form-namespace-path valueString from a FHIR Observation extension.
- * Uses the canonical URL constant from @bahmni/services to avoid hardcoding.
- * This inlines the same logic as `extractFormFieldPath` from @bahmni/widgets/src/forms/utils
- * to avoid a cross-package deep import.
- */
-function getFormNamespacePath(obs: Observation): string | undefined {
-  return obs.extension?.find(
-    (ext) => ext.url === FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
-  )?.valueString;
 }
 
 /**
@@ -48,8 +25,6 @@ function getFormNamespacePath(obs: Observation): string | undefined {
  * - Returns an empty set when there is no MATCHED encounter session (new encounter → all forms selectable).
  * - Automatically refetches after any consultation save for the current patient (handles the
  *   "Continue Consultation" multi-bundle flow).
- *
- * Mirrors the pattern in InvestigationsForm.tsx lines 43-92.
  */
 export function useSubmittedEncounterForms(
   allForms: ObservationForm[],
@@ -57,17 +32,25 @@ export function useSubmittedEncounterForms(
   const patientUUID = usePatientUUID();
   const { activeEncounter, matchReasons } = useEncounterSessionStore();
 
-  // Only consider an encounter if the session is actively MATCHED
   const activeEncounterUuid = matchReasons.includes('MATCHED')
     ? activeEncounter?.id
     : undefined;
 
-  const { data: bundle, refetch } = useQuery({
-    queryKey: ['submittedEncounterForms', activeEncounterUuid],
+  const {
+    data: bundle,
+    refetch,
+    error,
+  } = useQuery({
+    queryKey: ['submittedEncounterForms', patientUUID, activeEncounterUuid],
     enabled: !!activeEncounterUuid && !!patientUUID,
     staleTime: 30_000,
     queryFn: () => getObservationsBundleByEncounterUuid(activeEncounterUuid!),
   });
+
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to fetch submitted encounter forms', error);
+  }
 
   useSubscribeConsultationSaved(
     (payload) => {
@@ -75,7 +58,7 @@ export function useSubmittedEncounterForms(
         refetch();
       }
     },
-    [patientUUID, refetch],
+    [patientUUID],
   );
 
   return useMemo(() => {
@@ -88,7 +71,7 @@ export function useSubmittedEncounterForms(
     const submittedUuids = new Set<string>();
 
     for (const obs of observations) {
-      const valueString = getFormNamespacePath(obs);
+      const valueString = extractFormFieldPath(obs);
       const formName = parseFormName(valueString);
       if (!formName) continue;
 
