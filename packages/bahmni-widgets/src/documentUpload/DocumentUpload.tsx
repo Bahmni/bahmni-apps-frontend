@@ -223,7 +223,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         <p className={styles.uploaderHelp}>
           {maxFileSizeMb !== undefined
             ? t('DOCUMENT_UPLOAD_HELP', { size: maxFileSizeMb })
-            : t('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE')}
+            : t('DOCUMENT_UPLOAD_SUPPORTED_TYPES')}
         </p>
         <input
           ref={fileInputRef}

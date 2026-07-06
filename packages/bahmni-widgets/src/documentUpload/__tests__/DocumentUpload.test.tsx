@@ -167,7 +167,7 @@ describe('DocumentUpload', () => {
     getDocumentUploadMaxSizeMb.mockResolvedValueOnce(undefined);
     renderWidget();
     // no max-size line — only the supported-types help text
-    await screen.findByText('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE');
+    await screen.findByText('DOCUMENT_UPLOAD_SUPPORTED_TYPES');
 
     selectFile('image/png', 8 * 1024 * 1024);
 

@@ -24,6 +24,7 @@
   "DOCUMENT_UPLOAD_SAVING": "Saving…",
   "DOCUMENT_UPLOAD_SIZE_EXCEEDED_MESSAGE": "File size exceeds the maximum allowed limit of {{size}}MB.",
   "DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE": "File too large",
+  "DOCUMENT_UPLOAD_SUPPORTED_TYPES": "Supported file types are images, videos and PDF.",
   "DOCUMENT_UPLOAD_TITLE": "Upload files",
   "DOCUMENT_UPLOAD_UPLOADING": "Uploading…",
   "MONTHS_one": " month",
