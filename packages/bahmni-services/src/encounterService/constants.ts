@@ -7,9 +7,13 @@ export const PATIENT_VISITS_URL = (patientUUID: string) =>
   OPENMRS_FHIR_R4 +
   `/Encounter?subject:Patient=${patientUUID}&_tag=visit&_sort=-_lastUpdated`;
 
-export const PATIENT_ENCOUNTERS_URL = (patientUUID: string) =>
+export const PATIENT_ENCOUNTERS_URL = (
+  patientUUID: string,
+  count: number = 100,
+  offset: number = 0,
+) =>
   OPENMRS_FHIR_R4 +
-  `/Encounter?subject:Patient=${patientUUID}&_sort=-_lastUpdated`;
+  `/Encounter?subject:Patient=${patientUUID}&_sort=-_lastUpdated&_count=${count}&_getpagesoffset=${offset}`;
 
 export const FHIR_OBSERVATIONS_BY_ENCOUNTER_URL = (encounterUUID: string) =>
   `${OPENMRS_FHIR_R4}/Observation/$fetch-all?encounter=${encounterUUID}`;

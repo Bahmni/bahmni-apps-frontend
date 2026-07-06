@@ -1,7 +1,8 @@
 import { DocumentReference } from 'fhir/r4';
 import { post } from '../../api';
+import { ENCOUNTER_BUNDLE_URL } from '../../encounterBundle';
 import { getUserLoginLocation } from '../../userService';
-import { DOCUMENT_REFERENCE_URL, ENCOUNTER_BUNDLE_URL } from '../constants';
+import { DOCUMENT_REFERENCE_URL } from '../constants';
 import { createDocumentReference, saveDocument } from '../documentWriteService';
 import { SaveDocumentInput } from '../models';
 

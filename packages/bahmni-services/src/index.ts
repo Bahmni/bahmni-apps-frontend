@@ -280,6 +280,13 @@ export {
 } from './episodeOfCareService';
 
 export {
+  createEncounterBundle,
+  createBundleEntry,
+  ENCOUNTER_BUNDLE_URL,
+  type EncounterBundle,
+} from './encounterBundle';
+
+export {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
   initializeAuditListener,
@@ -390,6 +397,8 @@ export {
   type DocumentReferencePage,
   type DocumentViewModel,
   type DocumentType,
+  type DocumentSaveTarget,
+  type CreateEncounterInVisit,
   type CreateDocumentReferenceInput,
   type SaveDocumentInput,
   type DocumentReference,

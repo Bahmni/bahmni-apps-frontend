@@ -10,6 +10,8 @@ export { createDocumentReference, saveDocument } from './documentWriteService';
 export type {
   DocumentViewModel,
   DocumentType,
+  DocumentSaveTarget,
+  CreateEncounterInVisit,
   CreateDocumentReferenceInput,
   SaveDocumentInput,
 } from './models';

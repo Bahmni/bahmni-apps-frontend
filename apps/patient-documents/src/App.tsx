@@ -1,4 +1,4 @@
-import { Loading, initFontAwesome } from '@bahmni/design-system';
+import { Content, Loading, initFontAwesome } from '@bahmni/design-system';
 import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
   ActivePractitionerProvider,
@@ -12,6 +12,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
 import { BAHMNI_PATIENT_DOCUMENTS_NAMESPACE } from './constants/app';
+import { PatientDocumentsConfigProvider } from './providers/patientDocumentsConfig';
 import { routes, renderRoutes } from './routes';
 
 const queryClient = new QueryClient(queryClientConfig);
@@ -40,19 +41,23 @@ export function App() {
     return <Loading />;
   }
   return (
-    <QueryClientProvider client={queryClient}>
-      <NotificationProvider>
-        <UserPrivilegeProvider>
-          <ActivePractitionerProvider>
-            <NotificationServiceComponent />
-            <Suspense fallback={<Loading />}>
-              <Routes>{renderRoutes(routes)}</Routes>
-            </Suspense>
-            <ReactQueryDevtools initialIsOpen={false} />
-          </ActivePractitionerProvider>
-        </UserPrivilegeProvider>
-      </NotificationProvider>
-    </QueryClientProvider>
+    <Content>
+      <QueryClientProvider client={queryClient}>
+        <NotificationProvider>
+          <NotificationServiceComponent />
+          <PatientDocumentsConfigProvider>
+            <UserPrivilegeProvider>
+              <ActivePractitionerProvider>
+                <Suspense fallback={<Loading />}>
+                  <Routes>{renderRoutes(routes)}</Routes>
+                </Suspense>
+                <ReactQueryDevtools initialIsOpen={false} />
+              </ActivePractitionerProvider>
+            </UserPrivilegeProvider>
+          </PatientDocumentsConfigProvider>
+        </NotificationProvider>
+      </QueryClientProvider>
+    </Content>
   );
 }
 

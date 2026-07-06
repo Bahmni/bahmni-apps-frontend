@@ -12,6 +12,9 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 jest.mock('@bahmni/design-system', () => ({
+  Content: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   Loading: () => <div data-testid="loading" />,
   initFontAwesome: jest.fn(),
 }));
@@ -24,6 +27,14 @@ jest.mock('@bahmni/widgets', () => ({
     children,
   ActivePractitionerProvider: ({ children }: { children: React.ReactNode }) =>
     children,
+}));
+
+jest.mock('../providers/patientDocumentsConfig', () => ({
+  PatientDocumentsConfigProvider: ({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) => children,
 }));
 
 jest.mock('@tanstack/react-query-devtools', () => ({

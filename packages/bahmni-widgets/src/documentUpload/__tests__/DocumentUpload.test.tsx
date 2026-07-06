@@ -66,8 +66,8 @@ describe('DocumentUpload', () => {
 
   it('renders the upload section', () => {
     renderWidget();
-    expect(screen.getByText('Upload files')).toBeInTheDocument();
-    expect(screen.getByText('Upload')).toBeInTheDocument();
+    expect(screen.getByText('DOCUMENT_UPLOAD_TITLE')).toBeInTheDocument();
+    expect(screen.getByText('DOCUMENT_UPLOAD_BUTTON')).toBeInTheDocument();
   });
 
   it('uploads bytes on file select and shows the pending row', async () => {
@@ -100,7 +100,7 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('Save'));
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
 
     await waitFor(() =>
       expect(saveDocument).toHaveBeenCalledWith(
@@ -119,7 +119,7 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('Save'));
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
 
     await waitFor(() =>
       expect(mockAddNotification).toHaveBeenCalledWith(
@@ -133,7 +133,7 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('Save'));
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
 
     await waitFor(() =>
       expect(saveDocument).toHaveBeenCalledWith(
@@ -152,8 +152,8 @@ describe('DocumentUpload', () => {
 
   it('shows the configured max size in the help text and rejects a larger file', async () => {
     renderWidget();
-    // wait for the setting to load so the size check is active
-    await screen.findByText(/Max file size is 5MB/);
+    // wait for the setting to load so the size check is active (help text shows the max-size line)
+    await screen.findByText('DOCUMENT_UPLOAD_HELP');
 
     selectFile('image/png', 8 * 1024 * 1024);
 
@@ -166,8 +166,8 @@ describe('DocumentUpload', () => {
   it('does not enforce a size limit when the setting is not configured', async () => {
     getDocumentUploadMaxSizeMb.mockResolvedValueOnce(undefined);
     renderWidget();
-    // no "Max file size" line — only the supported-types text
-    await screen.findByText('Supported file types are images, videos and PDF.');
+    // no max-size line — only the supported-types help text
+    await screen.findByText('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE');
 
     selectFile('image/png', 8 * 1024 * 1024);
 
@@ -213,11 +213,11 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('Add note'));
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_ADD_NOTE'));
     fireEvent.change(screen.getByTestId('document-note'), {
       target: { value: 'follow up in 2 weeks' },
     });
-    fireEvent.click(screen.getByText('Save'));
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
 
     await waitFor(() =>
       expect(saveDocument).toHaveBeenCalledWith(
@@ -231,8 +231,10 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    expect(screen.queryByText('Choose an option')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByText('Save'));
+    expect(
+      screen.queryByText('DOCUMENT_UPLOAD_CHOOSE_TYPE'),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
 
     await waitFor(() =>
       expect(saveDocument).toHaveBeenCalledWith(
@@ -249,7 +251,7 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByLabelText('Discard'));
+    fireEvent.click(screen.getByLabelText('DOCUMENT_UPLOAD_DISCARD'));
 
     expect(
       screen.queryByTestId('pending-document-row'),
@@ -264,7 +266,7 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('Save'));
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
 
     await waitFor(() =>
       expect(mockAddNotification).toHaveBeenCalledWith(

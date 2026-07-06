@@ -1,5 +1,5 @@
+import type { EncounterBundle } from '@bahmni/services';
 import type { Bundle, BundleEntry, Encounter } from 'fhir/r4';
-import type { EncounterBundle } from '../../../../models/encounterBundle';
 import type { InputControl } from '../../../forms';
 
 export const mockStoreState = {

@@ -1,24 +1,13 @@
-export interface DocumentTypeOption {
-  id: string;
-  label: string;
-}
+import type { DocumentSaveTarget, DocumentType } from '@bahmni/services';
 
-// Provide encounterUuid to reuse an existing encounter, or createEncounterInVisit to create one.
-export type DocumentSaveTarget =
-  | { encounterUuid: string }
-  | {
-      createEncounterInVisit: {
-        visitUuid: string;
-        encounterTypeUuid: string;
-        encounterTypeDisplay?: string;
-      };
-    };
+// Re-export so consumers/tests of this widget can reference the shared type.
+export type { DocumentSaveTarget } from '@bahmni/services';
 
 export interface DocumentUploadProps {
   patientUuid: string;
   encounterTypeName: string;
   saveTarget: DocumentSaveTarget;
-  documentTypes?: DocumentTypeOption[];
+  documentTypes?: DocumentType[];
   onSaved?: () => void;
 }
 

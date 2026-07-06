@@ -1,6 +1,4 @@
 export { DocumentUpload } from './DocumentUpload';
-export type {
-  DocumentUploadProps,
-  DocumentTypeOption,
-  DocumentSaveTarget,
-} from './models';
+export { renderDocumentTile } from './renderDocumentTile';
+export type { DocumentTileData } from './renderDocumentTile';
+export type { DocumentUploadProps, DocumentSaveTarget } from './models';

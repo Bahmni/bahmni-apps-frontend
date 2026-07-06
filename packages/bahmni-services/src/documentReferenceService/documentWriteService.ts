@@ -5,9 +5,14 @@ import {
   FHIR_ENCOUNTER_TAG_SYSTEM,
   FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
 } from '../constants/fhir';
+import {
+  createBundleEntry,
+  createEncounterBundle,
+  ENCOUNTER_BUNDLE_URL,
+} from '../encounterBundle';
 import { getUserLoginLocation } from '../userService';
 import { generateUUID } from '../utils/utils';
-import { DOCUMENT_REFERENCE_URL, ENCOUNTER_BUNDLE_URL } from './constants';
+import { DOCUMENT_REFERENCE_URL } from './constants';
 import { CreateDocumentReferenceInput, SaveDocumentInput } from './models';
 
 // encounterReference is a concrete "Encounter/{uuid}" or a bundle-local "urn:uuid:..." placeholder.
@@ -145,22 +150,10 @@ export async function saveDocument(input: SaveDocumentInput): Promise<unknown> {
   );
   const documentReference = buildDocumentReference(input, encounterPlaceholder);
 
-  const bundle = {
-    resourceType: 'EncounterBundle',
-    type: 'transaction',
-    entry: [
-      {
-        fullUrl: encounterPlaceholder,
-        resource: encounter,
-        request: { method: 'POST', url: 'Encounter' },
-      },
-      {
-        fullUrl: `urn:uuid:${generateUUID()}`,
-        resource: documentReference,
-        request: { method: 'POST', url: 'DocumentReference' },
-      },
-    ],
-  };
+  const bundle = createEncounterBundle([
+    createBundleEntry(encounterPlaceholder, encounter, 'POST'),
+    createBundleEntry(`urn:uuid:${generateUUID()}`, documentReference, 'POST'),
+  ]);
 
   return post<unknown>(ENCOUNTER_BUNDLE_URL, bundle);
 }

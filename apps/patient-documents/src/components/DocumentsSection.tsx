@@ -1,17 +1,11 @@
-import {
-  Accordion,
-  AccordionItem,
-  FileTile,
-  ImageTile,
-  Loading,
-  VideoTile,
-} from '@bahmni/design-system';
+import { Accordion, AccordionItem, Loading } from '@bahmni/design-system';
 import {
   DocumentViewModel,
   formatDateTime,
   getDocumentTypes,
+  getFormattedError,
 } from '@bahmni/services';
-import { DocumentUpload } from '@bahmni/widgets';
+import { DocumentUpload, renderDocumentTile } from '@bahmni/widgets';
 import { TextArea } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
@@ -30,34 +24,20 @@ interface DocumentsSectionProps {
   documentEncounterType: DocumentEncounterType;
 }
 
-const renderTile = (document: DocumentViewModel) => {
-  const type = (document.contentType ?? '').toLowerCase();
-  const title = document.documentType ?? document.documentIdentifier;
-  if (type.includes('image')) {
-    return (
-      <ImageTile id={document.id} imageSrc={document.documentUrl} alt={title} />
-    );
-  }
-  if (type.includes('video')) {
-    return (
-      <VideoTile
-        id={document.id}
-        videoSrc={document.documentUrl}
-        modalTitle={title}
-      />
-    );
-  }
-  return (
-    <FileTile id={document.id} src={document.documentUrl} modalTitle={title} />
-  );
-};
+const renderTile = (document: DocumentViewModel) =>
+  renderDocumentTile({
+    id: document.id,
+    src: document.documentUrl,
+    title: document.documentType ?? document.documentIdentifier,
+    contentType: document.contentType,
+  });
 
 export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   patientUuid,
   documentEncounterType,
 }) => {
   const { t } = useTranslation(BAHMNI_PATIENT_DOCUMENTS_NAMESPACE);
-  const { visitGroups, isLoading, refetch } = useVisitDocuments(
+  const { visitGroups, isLoading, error, refetch } = useVisitDocuments(
     patientUuid,
     documentEncounterType.uuid,
   );
@@ -69,6 +49,15 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
 
   if (isLoading) {
     return <Loading withOverlay={false} />;
+  }
+
+  if (error) {
+    return (
+      <section className={styles.documents} aria-label={t('DOCUMENTS_TITLE')}>
+        <h2 className={styles.heading}>{t('DOCUMENTS_TITLE')}</h2>
+        <p className={styles.loadError}>{getFormattedError(error).message}</p>
+      </section>
+    );
   }
 
   // Documents are attached to visits; with no visits there is nothing to show or upload into.
@@ -142,6 +131,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                           id={`note-${document.id}`}
                           className={styles.note}
                           labelText=""
+                          aria-label={t('DOCUMENT_UPLOAD_ADD_NOTE')}
                           rows={2}
                           readOnly
                           value={document.description}

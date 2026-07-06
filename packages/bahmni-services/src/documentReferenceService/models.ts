@@ -41,6 +41,18 @@ export interface DocumentType {
   label: string;
 }
 
+/** Details for lazily creating a dedicated document encounter within a visit. */
+export interface CreateEncounterInVisit {
+  visitUuid: string;
+  encounterTypeUuid: string;
+  encounterTypeDisplay?: string;
+}
+
+/** Where a document is attached: an existing encounter, or a new one created within a visit. */
+export type DocumentSaveTarget =
+  | { encounterUuid: string }
+  | { createEncounterInVisit: CreateEncounterInVisit };
+
 // Provide encounterUuid to attach to an existing encounter, or createEncounterInVisit to create one.
 export interface SaveDocumentInput {
   patientUuid: string;
@@ -52,9 +64,5 @@ export interface SaveDocumentInput {
   description?: string;
   authorPractitionerUuid?: string;
   encounterUuid?: string;
-  createEncounterInVisit?: {
-    visitUuid: string;
-    encounterTypeUuid: string;
-    encounterTypeDisplay?: string;
-  };
+  createEncounterInVisit?: CreateEncounterInVisit;
 }

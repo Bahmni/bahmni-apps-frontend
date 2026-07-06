@@ -1,6 +1,7 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../../api';
-import { DOCUMENT_TYPES_URL, DOCUMENT_UPLOAD_MAX_SIZE_URL } from '../constants';
+import { CONCEPT_BY_FULLY_SPECIFIED_NAME_URL } from '../../conceptService/constants';
+import { DOCUMENT_UPLOAD_MAX_SIZE_URL } from '../constants';
 import {
   getDocumentReferences,
   getFormattedDocumentReferences,
@@ -506,11 +507,11 @@ describe('documentReferenceService', () => {
           setMembers: [
             {
               uuid: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-              name: { name: 'Prescription' },
+              display: 'Prescription',
             },
             {
               uuid: 'b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e',
-              name: { name: 'Radiology Report' },
+              display: 'Radiology Report',
             },
           ],
         },
@@ -522,7 +523,9 @@ describe('documentReferenceService', () => {
 
       const result = await getDocumentTypes(conceptName);
 
-      expect(mockedGet).toHaveBeenCalledWith(DOCUMENT_TYPES_URL(conceptName));
+      expect(mockedGet).toHaveBeenCalledWith(
+        CONCEPT_BY_FULLY_SPECIFIED_NAME_URL(conceptName),
+      );
       expect(result).toEqual([
         { id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', label: 'Prescription' },
         {

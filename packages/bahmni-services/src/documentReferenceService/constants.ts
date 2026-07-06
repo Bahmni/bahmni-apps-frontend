@@ -2,15 +2,10 @@ import { OPENMRS_FHIR_R4, OPENMRS_REST_V1 } from '../constants/app';
 
 export const DOCUMENT_REFERENCE_URL = `${OPENMRS_FHIR_R4}/DocumentReference`;
 
-export const ENCOUNTER_BUNDLE_URL = `${OPENMRS_FHIR_R4}/EncounterBundle`;
-
 export const DOCUMENT_UPLOAD_MAX_SIZE_SETTING =
   'bahmni.documentUpload.maxFileSizeInMB';
 
 export const DOCUMENT_UPLOAD_MAX_SIZE_URL = `${OPENMRS_REST_V1}/systemsetting?q=${DOCUMENT_UPLOAD_MAX_SIZE_SETTING}&v=custom:(property,value)`;
-
-export const DOCUMENT_TYPES_URL = (conceptName: string) =>
-  `${OPENMRS_REST_V1}/concept?s=byFullySpecifiedName&name=${encodeURIComponent(conceptName)}&v=custom:(uuid,setMembers:(uuid,name:(name)))`;
 
 export const PATIENT_DOCUMENT_REFERENCES_URL = (
   patientUuid: string,

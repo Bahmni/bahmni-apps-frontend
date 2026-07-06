@@ -1,7 +1,7 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../api';
+import { searchConceptByName } from '../conceptService/conceptService';
 import {
-  DOCUMENT_TYPES_URL,
   DOCUMENT_UPLOAD_MAX_SIZE_URL,
   PATIENT_DOCUMENT_REFERENCES_URL,
 } from './constants';
@@ -22,11 +22,6 @@ export async function getDocumentUploadMaxSizeMb(): Promise<
   return Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
-interface ConceptSetMember {
-  uuid: string;
-  name?: { name?: string };
-}
-
 /**
  * Fetches the configurable document types (set members of the given document-type concept),
  * e.g. Prescription, Radiology Report. Used to populate the document-type dropdown.
@@ -35,13 +30,10 @@ interface ConceptSetMember {
 export async function getDocumentTypes(
   conceptName: string,
 ): Promise<DocumentType[]> {
-  const response = await get<{
-    results: Array<{ setMembers?: ConceptSetMember[] }>;
-  }>(DOCUMENT_TYPES_URL(conceptName));
-  const setMembers = response.results?.[0]?.setMembers ?? [];
-  return setMembers.map((member) => ({
+  const concept = await searchConceptByName(conceptName);
+  return (concept?.setMembers ?? []).map((member) => ({
     id: member.uuid,
-    label: member.name?.name ?? '',
+    label: member.display ?? '',
   }));
 }
 

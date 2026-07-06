@@ -1,16 +1,9 @@
-import {
-  Button,
-  Dropdown,
-  FileTile,
-  IconButton,
-  ImageTile,
-  Link,
-  VideoTile,
-} from '@bahmni/design-system';
+import { Button, Dropdown, IconButton, Link } from '@bahmni/design-system';
 import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
+  DocumentType,
   getDocumentUploadMaxSizeMb,
   saveDocument,
   uploadDocument,
@@ -23,45 +16,10 @@ import { useTranslation } from 'react-i18next';
 import { useActivePractitioner } from '../activePractitioner';
 import { useNotification } from '../notification';
 import styles from './__styles__/DocumentUpload.module.scss';
-import {
-  FILE_INPUT_ACCEPT,
-  isAcceptedFileType,
-  MAX_NOTE_LENGTH,
-} from './constants';
-import {
-  DocumentTypeOption,
-  DocumentUploadProps,
-  PendingDocument,
-} from './models';
-
-const renderTile = (pending: PendingDocument) => {
-  const type = pending.contentType.toLowerCase();
-  if (type.includes('image')) {
-    return (
-      <ImageTile
-        id={pending.url}
-        imageSrc={pending.url}
-        alt={pending.fileName}
-      />
-    );
-  }
-  if (type.includes('video')) {
-    return (
-      <VideoTile
-        id={pending.url}
-        videoSrc={pending.url}
-        modalTitle={pending.fileName}
-      />
-    );
-  }
-  return (
-    <FileTile
-      id={pending.url}
-      src={pending.url}
-      modalTitle={pending.fileName}
-    />
-  );
-};
+import { FILE_INPUT_ACCEPT, MAX_NOTE_LENGTH } from './constants';
+import { DocumentUploadProps, PendingDocument } from './models';
+import { renderDocumentTile } from './renderDocumentTile';
+import { isAcceptedFileType } from './utils';
 
 export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   patientUuid,
@@ -83,9 +41,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   });
 
   const [pending, setPending] = useState<PendingDocument | null>(null);
-  const [selectedType, setSelectedType] = useState<DocumentTypeOption | null>(
-    null,
-  );
+  const [selectedType, setSelectedType] = useState<DocumentType | null>(null);
   const [note, setNote] = useState('');
   const [showNote, setShowNote] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -110,12 +66,8 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     }
     if (!isAcceptedFileType(file.type)) {
       addNotification({
-        title: t('DOCUMENT_UPLOAD_INVALID_TYPE_TITLE', {
-          defaultValue: 'Unsupported file type',
-        }),
-        message: t('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE', {
-          defaultValue: 'Supported file types are images, videos and PDF.',
-        }),
+        title: t('DOCUMENT_UPLOAD_INVALID_TYPE_TITLE'),
+        message: t('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE'),
         type: 'error',
       });
       return;
@@ -125,13 +77,9 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       file.size > maxFileSizeMb * 1000 * 1000
     ) {
       addNotification({
-        title: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE', {
-          defaultValue: 'File too large',
-        }),
+        title: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE'),
         message: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_MESSAGE', {
           size: maxFileSizeMb,
-          defaultValue:
-            'File size exceeds the maximum allowed limit of {{size}}MB.',
         }),
         type: 'error',
       });
@@ -148,9 +96,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       setPending({ url, fileName: file.name, contentType: file.type });
     } catch (error) {
       addNotification({
-        title: t('DOCUMENT_UPLOAD_FAILED_TITLE', {
-          defaultValue: 'Upload failed',
-        }),
+        title: t('DOCUMENT_UPLOAD_FAILED_TITLE'),
         message: error instanceof Error ? error.message : String(error),
         type: 'error',
       });
@@ -177,28 +123,22 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         ...saveTarget,
       });
       dispatchAuditEvent({
-        eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
+        eventType: AUDIT_LOG_EVENT_DETAILS.UPLOAD_PATIENT_DOCUMENT
           .eventType as AuditEventType,
         patientUuid,
         messageParams: { encounterType: encounterTypeName },
         module: encounterTypeName,
       });
       addNotification({
-        title: t('DOCUMENT_UPLOAD_SAVE_SUCCESS_TITLE', {
-          defaultValue: 'Document saved',
-        }),
-        message: t('DOCUMENT_UPLOAD_SAVE_SUCCESS_MESSAGE', {
-          defaultValue: 'The document was saved successfully.',
-        }),
+        title: t('DOCUMENT_UPLOAD_SAVE_SUCCESS_TITLE'),
+        message: t('DOCUMENT_UPLOAD_SAVE_SUCCESS_MESSAGE'),
         type: 'success',
       });
       resetPending();
       onSaved?.();
     } catch (error) {
       addNotification({
-        title: t('DOCUMENT_UPLOAD_SAVE_FAILED_TITLE', {
-          defaultValue: 'Save failed',
-        }),
+        title: t('DOCUMENT_UPLOAD_SAVE_FAILED_TITLE'),
         message: error instanceof Error ? error.message : String(error),
         type: 'error',
       });
@@ -212,43 +152,41 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       {pending && (
         <div className={styles.pending} data-testid="pending-document-row">
           <div className={styles.pendingRow}>
-            <div className={styles.fileCell}>{renderTile(pending)}</div>
+            <div className={styles.fileCell}>
+              {renderDocumentTile({
+                id: pending.url,
+                src: pending.url,
+                title: pending.fileName,
+                contentType: pending.contentType,
+              })}
+            </div>
             <div className={styles.typeCell}>
               <Dropdown
                 id="document-type"
                 testId="document-type-dropdown"
                 titleText=""
-                label={t('DOCUMENT_UPLOAD_CHOOSE_TYPE', {
-                  defaultValue: 'Choose an option',
-                })}
+                aria-label={t('DOCUMENT_UPLOAD_CHOOSE_TYPE')}
+                label={t('DOCUMENT_UPLOAD_CHOOSE_TYPE')}
                 items={documentTypes}
                 selectedItem={selectedOrDefaultType}
-                itemToString={(item: DocumentTypeOption | null) =>
-                  item?.label ?? ''
-                }
+                itemToString={(item: DocumentType | null) => item?.label ?? ''}
                 onChange={({
                   selectedItem,
                 }: {
-                  selectedItem: DocumentTypeOption | null;
+                  selectedItem: DocumentType | null;
                 }) => setSelectedType(selectedItem)}
               />
             </div>
             <div className={styles.actionsCell}>
               {isSaving ? (
-                <InlineLoading
-                  description={t('DOCUMENT_UPLOAD_SAVING', {
-                    defaultValue: 'Saving…',
-                  })}
-                />
+                <InlineLoading description={t('DOCUMENT_UPLOAD_SAVING')} />
               ) : (
                 <Button kind="tertiary" size="md" onClick={handleSave}>
-                  {t('DOCUMENT_UPLOAD_SAVE', { defaultValue: 'Save' })}
+                  {t('DOCUMENT_UPLOAD_SAVE')}
                 </Button>
               )}
               <IconButton
-                label={t('DOCUMENT_UPLOAD_DISCARD', {
-                  defaultValue: 'Discard',
-                })}
+                label={t('DOCUMENT_UPLOAD_DISCARD')}
                 kind="ghost"
                 size="md"
                 onClick={resetPending}
@@ -261,7 +199,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
             className={styles.addNoteLink}
             onClick={() => setShowNote((show) => !show)}
           >
-            {t('DOCUMENT_UPLOAD_ADD_NOTE', { defaultValue: 'Add note' })}
+            {t('DOCUMENT_UPLOAD_ADD_NOTE')}
           </Link>
           {showNote && (
             <TextArea
@@ -269,12 +207,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
               data-testid="document-note"
               className={styles.noteArea}
               labelText=""
+              aria-label={t('DOCUMENT_UPLOAD_ADD_NOTE')}
               rows={2}
               value={note}
               maxLength={MAX_NOTE_LENGTH}
-              placeholder={t('DOCUMENT_UPLOAD_NOTE_PLACEHOLDER', {
-                defaultValue: 'Add note',
-              })}
+              placeholder={t('DOCUMENT_UPLOAD_NOTE_PLACEHOLDER')}
               onChange={(e) => setNote(e.target.value)}
             />
           )}
@@ -282,20 +219,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       )}
 
       <div className={styles.uploader}>
-        <p className={styles.uploaderTitle}>
-          {t('DOCUMENT_UPLOAD_TITLE', { defaultValue: 'Upload files' })}
-        </p>
+        <p className={styles.uploaderTitle}>{t('DOCUMENT_UPLOAD_TITLE')}</p>
         <p className={styles.uploaderHelp}>
           {maxFileSizeMb !== undefined
-            ? t('DOCUMENT_UPLOAD_HELP', {
-                size: maxFileSizeMb,
-                defaultValue:
-                  'Max file size is {{size}}MB. Supported file types are images, videos and PDF.',
-              })
-            : t('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE', {
-                defaultValue:
-                  'Supported file types are images, videos and PDF.',
-              })}
+            ? t('DOCUMENT_UPLOAD_HELP', { size: maxFileSizeMb })
+            : t('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE')}
         </p>
         <input
           ref={fileInputRef}
@@ -308,13 +236,14 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         {isUploading ? (
           <InlineLoading
             data-testid="document-uploading"
-            description={t('DOCUMENT_UPLOAD_UPLOADING', {
-              defaultValue: 'Uploading…',
-            })}
+            description={t('DOCUMENT_UPLOAD_UPLOADING')}
           />
         ) : (
-          <Button onClick={() => fileInputRef.current?.click()}>
-            {t('DOCUMENT_UPLOAD_BUTTON', { defaultValue: 'Upload' })}
+          <Button
+            disabled={!!pending}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {t('DOCUMENT_UPLOAD_BUTTON')}
           </Button>
         )}
       </div>

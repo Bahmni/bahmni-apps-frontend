@@ -17,6 +17,14 @@ jest.mock('@bahmni/services', () => ({
     .mockResolvedValue({ fullName: 'Naman Shukla' }),
 }));
 
+jest.mock('../../providers/patientDocumentsConfig', () => ({
+  usePatientDocumentsConfig: () => ({
+    patientDocumentsConfig: undefined,
+    isLoading: false,
+    error: null,
+  }),
+}));
+
 const renderPage = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },

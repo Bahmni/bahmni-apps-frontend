@@ -41,25 +41,39 @@ export async function getVisits(patientUUID: string): Promise<Encounter[]> {
 /**
  * Fetches all encounters for a patient (both visits, tagged "visit", and their child encounters,
  * which carry a partOf reference to the visit). Used to group resources under their visit.
+ * Walks every page (offset-based) so patients with many encounters are not truncated to the
+ * server's default page size.
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to an array of FHIR Encounters
  */
 export async function getPatientEncounters(
   patientUUID: string,
 ): Promise<Encounter[]> {
-  const bundle = await get<Bundle<Encounter>>(
-    PATIENT_ENCOUNTERS_URL(patientUUID),
-  );
-  return (
-    bundle.entry
-      ?.map((entry) => entry.resource)
-      .filter((resource): resource is Encounter => resource !== undefined) ?? []
-  );
+  const pageSize = 100;
+  const encounters: Encounter[] = [];
+  let offset = 0;
+
+  for (;;) {
+    const bundle = await get<Bundle<Encounter>>(
+      PATIENT_ENCOUNTERS_URL(patientUUID, pageSize, offset),
+    );
+    const page = (bundle.entry ?? [])
+      .map((entry) => entry.resource)
+      .filter((resource): resource is Encounter => resource !== undefined);
+    encounters.push(...page);
+
+    if (page.length < pageSize) {
+      break;
+    }
+    offset += pageSize;
+  }
+
+  return encounters;
 }
 
 /**
- * Resolves an encounter type UUID from its name via the OpenMRS REST API. Returns the exact-name
- * match when present, otherwise the first result, or null when none is found.
+ * Resolves an encounter type by its name via the OpenMRS REST API. `q=` is a fuzzy search, so only
+ * an exact-name match is returned; null otherwise (a wrong pick would corrupt grouping/creation).
  * @param name - The encounter type name (e.g. "Patient Document")
  */
 export async function getEncounterTypeByName(
@@ -69,7 +83,7 @@ export async function getEncounterTypeByName(
     ENCOUNTER_TYPE_BY_NAME_URL(name),
   );
   const results = response.results ?? [];
-  return results.find((type) => type.name === name) ?? results[0] ?? null;
+  return results.find((type) => type.name === name) ?? null;
 }
 
 /**

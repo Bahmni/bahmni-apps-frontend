@@ -63,6 +63,14 @@ export const useVisitDocuments = (
       }
     });
 
+  // A document may be attached directly to a visit-level encounter; map each visit to itself so
+  // those documents group under their visit instead of being dropped.
+  visits.forEach((visit) => {
+    if (visit.id) {
+      encounterToVisit.set(visit.id, visit.id);
+    }
+  });
+
   const documentsByVisit = new Map<string, DocumentViewModel[]>();
   documents.forEach((document) => {
     if (!document.encounterId) {

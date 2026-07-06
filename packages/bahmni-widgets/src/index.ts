@@ -8,11 +8,11 @@ export {
 // Widget Components
 export { DocumentPrintButton } from './documentPrintButton';
 export type { PrintOption } from './documentPrintButton';
-export { DocumentUpload } from './documentUpload';
+export { DocumentUpload, renderDocumentTile } from './documentUpload';
 export type {
   DocumentUploadProps,
-  DocumentTypeOption,
   DocumentSaveTarget,
+  DocumentTileData,
 } from './documentUpload';
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';

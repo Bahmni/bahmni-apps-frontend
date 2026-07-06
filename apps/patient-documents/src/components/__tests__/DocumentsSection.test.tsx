@@ -125,6 +125,20 @@ describe('DocumentsSection', () => {
     );
   });
 
+  it('surfaces a load error instead of silently rendering nothing', () => {
+    mockUseVisitDocuments.mockReturnValue({
+      visitGroups: [],
+      isLoading: false,
+      error: new Error('Failed to load documents'),
+      refetch: mockRefetch,
+    });
+
+    renderSection();
+
+    expect(screen.getByText('Failed to load documents')).toBeInTheDocument();
+    expect(screen.queryAllByTestId('document-upload')).toHaveLength(0);
+  });
+
   it('renders nothing when the patient has no visits', () => {
     mockUseVisitDocuments.mockReturnValue({
       visitGroups: [],
