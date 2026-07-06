@@ -31,7 +31,7 @@ describe('RelationshipRow', () => {
     relationshipType: 'type1',
     patientId: 'PAT001',
     patientUuid: 'patient1',
-    tillDate: '01/01/2025',
+    tillDate: '2025-01-01',
   };
 
   const mockErrors = {
@@ -324,6 +324,61 @@ describe('RelationshipRow', () => {
       expect(minDate.getFullYear()).toBe(today.getFullYear());
       expect(minDate.getMonth()).toBe(today.getMonth());
       expect(minDate.getDate()).toBe(today.getDate());
+    });
+  });
+
+  describe('Till date format round-trip (BAH-4773)', () => {
+    it('should store the selected date as an ISO yyyy-MM-dd string', () => {
+      const row = RelationshipRow({
+        relationship: mockRelationship,
+        relationshipTypes: mockRelationshipTypes,
+        suggestions: mockSuggestions,
+        errors: mockErrors,
+        ...mockCallbacks,
+      });
+
+      // Simulate the user picking 31 July 2026 in the picker.
+      row.tillDate.props.onChange([new Date(2026, 6, 31)]);
+
+      // Regression: previously stored via toLocaleDateString('en-GB') as
+      // "31/07/2026" (day-first). In an environment whose configured date
+      // format is month-first, the picker re-parsed that string as month 31,
+      // overflowing to 07/07/2028. Storing ISO removes the ambiguity.
+      expect(mockCallbacks.onUpdateRelationship).toHaveBeenCalledWith(
+        'rel-1',
+        'tillDate',
+        '2026-07-31',
+      );
+    });
+
+    it('should pass a Date object (not a locale string) as the picker value', () => {
+      const row = RelationshipRow({
+        relationship: mockRelationship,
+        relationshipTypes: mockRelationshipTypes,
+        suggestions: mockSuggestions,
+        errors: mockErrors,
+        ...mockCallbacks,
+      });
+
+      // A Date object cannot be re-parsed with the wrong date format, so the
+      // displayed value stays consistent across environments.
+      const value = row.tillDate.props.value as Date;
+      expect(value).toBeInstanceOf(Date);
+      expect(value.getFullYear()).toBe(2025);
+      expect(value.getMonth()).toBe(0);
+      expect(value.getDate()).toBe(1);
+    });
+
+    it('should pass undefined value when no till date is set', () => {
+      const row = RelationshipRow({
+        relationship: { ...mockRelationship, tillDate: '' },
+        relationshipTypes: mockRelationshipTypes,
+        suggestions: mockSuggestions,
+        errors: mockErrors,
+        ...mockCallbacks,
+      });
+
+      expect(row.tillDate.props.value).toBeUndefined();
     });
   });
 
