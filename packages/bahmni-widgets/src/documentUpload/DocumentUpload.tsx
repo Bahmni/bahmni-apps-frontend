@@ -23,7 +23,11 @@ import { useTranslation } from 'react-i18next';
 import { useActivePractitioner } from '../activePractitioner';
 import { useNotification } from '../notification';
 import styles from './__styles__/DocumentUpload.module.scss';
-import { FILE_INPUT_ACCEPT, isAcceptedFileType, MAX_NOTE_LENGTH } from './constants';
+import {
+  FILE_INPUT_ACCEPT,
+  isAcceptedFileType,
+  MAX_NOTE_LENGTH,
+} from './constants';
 import {
   DocumentTypeOption,
   DocumentUploadProps,
@@ -116,7 +120,10 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       });
       return;
     }
-    if (maxFileSizeMb !== undefined && file.size > maxFileSizeMb * 1000 * 1000) {
+    if (
+      maxFileSizeMb !== undefined &&
+      file.size > maxFileSizeMb * 1000 * 1000
+    ) {
       addNotification({
         title: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE', {
           defaultValue: 'File too large',
