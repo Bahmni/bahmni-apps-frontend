@@ -384,6 +384,7 @@ export {
   getFormattedDocumentReferences,
   getDocumentReferencePage,
   getDocumentTypes,
+  getDocumentUploadMaxSizeMb,
   createDocumentReference,
   saveDocument,
   type DocumentReferencePage,

@@ -17,7 +17,6 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { BAHMNI_PATIENT_DOCUMENTS_NAMESPACE } from '../constants/app';
-import { usePatientDocumentsConfig } from '../hooks/usePatientDocumentsConfig';
 import { useVisitDocuments } from '../hooks/useVisitDocuments';
 import styles from './styles/DocumentsSection.module.scss';
 
@@ -67,8 +66,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     queryKey: ['documentTypes', documentEncounterType.name],
     queryFn: () => getDocumentTypes(documentEncounterType.name),
   });
-
-  const { data: config } = usePatientDocumentsConfig();
 
   if (isLoading) {
     return <Loading withOverlay={false} />;
@@ -159,7 +156,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 encounterTypeName={documentEncounterType.name}
                 saveTarget={saveTarget}
                 documentTypes={documentTypes}
-                maxFileSizeMb={config?.maxFileSizeMb}
                 onSaved={refetch}
               />
             </AccordionItem>

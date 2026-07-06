@@ -3,6 +3,7 @@ export {
   getFormattedDocumentReferences,
   getDocumentReferencePage,
   getDocumentTypes,
+  getDocumentUploadMaxSizeMb,
   type DocumentReferencePage,
 } from './documentReferenceService';
 export { createDocumentReference, saveDocument } from './documentWriteService';

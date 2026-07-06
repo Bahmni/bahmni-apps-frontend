@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { DocumentUpload } from '../DocumentUpload';
 import { DocumentSaveTarget } from '../models';
@@ -6,6 +7,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   uploadDocument: jest.fn().mockResolvedValue({ url: 'patient/doc.png' }),
   saveDocument: jest.fn().mockResolvedValue({}),
+  getDocumentUploadMaxSizeMb: jest.fn().mockResolvedValue(5),
 }));
 
 const mockAddNotification = jest.fn();
@@ -19,7 +21,8 @@ jest.mock('../../activePractitioner', () => ({
   }),
 }));
 
-const { uploadDocument, saveDocument } = jest.requireMock('@bahmni/services');
+const { uploadDocument, saveDocument, getDocumentUploadMaxSizeMb } =
+  jest.requireMock('@bahmni/services');
 
 const EXISTING_ENCOUNTER_TARGET = { encounterUuid: 'encounter-uuid' };
 const CREATE_ENCOUNTER_TARGET = {
@@ -33,18 +36,22 @@ const CREATE_ENCOUNTER_TARGET = {
 const renderWidget = (
   onSaved = jest.fn(),
   saveTarget: DocumentSaveTarget = EXISTING_ENCOUNTER_TARGET,
-  maxFileSizeMb?: number,
-) =>
-  render(
-    <DocumentUpload
-      patientUuid="patient-uuid"
-      encounterTypeName="Patient Document"
-      saveTarget={saveTarget}
-      documentTypes={[{ id: 'type-1', label: 'Lab Report' }]}
-      maxFileSizeMb={maxFileSizeMb}
-      onSaved={onSaved}
-    />,
+) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <DocumentUpload
+        patientUuid="patient-uuid"
+        encounterTypeName="Patient Document"
+        saveTarget={saveTarget}
+        documentTypes={[{ id: 'type-1', label: 'Lab Report' }]}
+        onSaved={onSaved}
+      />
+    </QueryClientProvider>,
   );
+};
 
 const selectFile = (mimeType = 'image/png', sizeInBytes = 4) => {
   const input = screen.getByTestId('document-file-input');
@@ -143,8 +150,11 @@ describe('DocumentUpload', () => {
     );
   });
 
-  it('rejects a file larger than the default size limit without uploading', () => {
+  it('shows the configured max size in the help text and rejects a larger file', async () => {
     renderWidget();
+    // wait for the setting to load so the size check is active
+    await screen.findByText(/Max file size is 5MB/);
+
     selectFile('image/png', 8 * 1024 * 1024);
 
     expect(uploadDocument).not.toHaveBeenCalled();
@@ -153,14 +163,15 @@ describe('DocumentUpload', () => {
     );
   });
 
-  it('rejects using the configured maxFileSizeMb when provided', () => {
-    renderWidget(jest.fn(), EXISTING_ENCOUNTER_TARGET, 2);
-    selectFile('image/png', 3 * 1024 * 1024);
+  it('does not enforce a size limit when the setting is not configured', async () => {
+    getDocumentUploadMaxSizeMb.mockResolvedValueOnce(undefined);
+    renderWidget();
+    // no "Max file size" line — only the supported-types text
+    await screen.findByText('Supported file types are images, videos and PDF.');
 
-    expect(uploadDocument).not.toHaveBeenCalled();
-    expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'error' }),
-    );
+    selectFile('image/png', 8 * 1024 * 1024);
+
+    await waitFor(() => expect(uploadDocument).toHaveBeenCalled());
   });
 
   it('renders a video tile for a video upload', async () => {
@@ -179,14 +190,17 @@ describe('DocumentUpload', () => {
     ).toBeInTheDocument();
   });
 
-  it('notifies and shows no pending row when the byte upload fails', async () => {
-    uploadDocument.mockRejectedValueOnce(new Error('Network error'));
+  it('shows the backend error verbatim and no pending row when the upload fails', async () => {
+    uploadDocument.mockRejectedValueOnce(new Error('File too large on server'));
     renderWidget();
     selectFile();
 
     await waitFor(() =>
       expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'error' }),
+        expect.objectContaining({
+          type: 'error',
+          message: 'File too large on server',
+        }),
       ),
     );
     expect(
@@ -243,8 +257,8 @@ describe('DocumentUpload', () => {
     expect(saveDocument).not.toHaveBeenCalled();
   });
 
-  it('keeps the pending selection and notifies on save failure', async () => {
-    saveDocument.mockRejectedValueOnce(new Error('Network error'));
+  it('keeps the pending selection and shows the backend error on save failure', async () => {
+    saveDocument.mockRejectedValueOnce(new Error('Save rejected by server'));
     const onSaved = jest.fn();
     renderWidget(onSaved);
     selectFile();
@@ -254,7 +268,10 @@ describe('DocumentUpload', () => {
 
     await waitFor(() =>
       expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'error' }),
+        expect.objectContaining({
+          type: 'error',
+          message: 'Save rejected by server',
+        }),
       ),
     );
     // no data loss: the pending row is retained so the user can retry

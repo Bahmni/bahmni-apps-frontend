@@ -2,9 +2,25 @@ import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../api';
 import {
   DOCUMENT_TYPES_URL,
+  DOCUMENT_UPLOAD_MAX_SIZE_URL,
   PATIENT_DOCUMENT_REFERENCES_URL,
 } from './constants';
 import { DocumentType, DocumentViewModel } from './models';
+
+/**
+ * Reads the configured max document upload size (MB) from the
+ * `bahmni.documentUpload.maxFileSizeInMB` system setting. Returns undefined when unset so callers
+ * can fall back to their own default.
+ */
+export async function getDocumentUploadMaxSizeMb(): Promise<
+  number | undefined
+> {
+  const response = await get<{ results: Array<{ value?: string }> }>(
+    DOCUMENT_UPLOAD_MAX_SIZE_URL,
+  );
+  const value = Number(response.results?.[0]?.value);
+  return Number.isFinite(value) && value > 0 ? value : undefined;
+}
 
 interface ConceptSetMember {
   uuid: string;

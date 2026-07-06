@@ -26,12 +26,6 @@ jest.mock('../../hooks/useVisitDocuments', () => ({
   useVisitDocuments: (...args: unknown[]) => mockUseVisitDocuments(...args),
 }));
 
-jest.mock('../../hooks/usePatientDocumentsConfig', () => ({
-  usePatientDocumentsConfig: () => ({
-    data: { documentEncounterTypeName: 'Patient Document', maxFileSizeMb: 7 },
-  }),
-}));
-
 const documentEncounterType = {
   uuid: 'doc-enc-type-uuid',
   name: 'Patient Document',

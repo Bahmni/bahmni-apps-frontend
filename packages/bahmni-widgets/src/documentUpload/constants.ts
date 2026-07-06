@@ -1,5 +1,3 @@
-export const MAX_DOCUMENT_SIZE_MB = 7;
-
 // Accept all images and videos plus PDF (matches old Bahmni's supported document types).
 export const FILE_INPUT_ACCEPT = 'image/*,video/*,application/pdf';
 

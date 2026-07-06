@@ -11,22 +11,19 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
+  getDocumentUploadMaxSizeMb,
   saveDocument,
   uploadDocument,
 } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
 import { InlineLoading, TextArea } from '@carbon/react';
+import { useQuery } from '@tanstack/react-query';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActivePractitioner } from '../activePractitioner';
 import { useNotification } from '../notification';
 import styles from './__styles__/DocumentUpload.module.scss';
-import {
-  FILE_INPUT_ACCEPT,
-  isAcceptedFileType,
-  MAX_DOCUMENT_SIZE_MB,
-  MAX_NOTE_LENGTH,
-} from './constants';
+import { FILE_INPUT_ACCEPT, isAcceptedFileType, MAX_NOTE_LENGTH } from './constants';
 import {
   DocumentTypeOption,
   DocumentUploadProps,
@@ -67,13 +64,19 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   encounterTypeName,
   saveTarget,
   documentTypes = [],
-  maxFileSizeMb = MAX_DOCUMENT_SIZE_MB,
   onSaved,
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { practitioner } = useActivePractitioner();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Max size comes solely from the bahmni.documentUpload.maxFileSizeInMB setting; when it is not
+  // set there is no client-side size limit (the backend remains the authority).
+  const { data: maxFileSizeMb } = useQuery({
+    queryKey: ['documentUploadMaxSizeMb'],
+    queryFn: getDocumentUploadMaxSizeMb,
+  });
 
   const [pending, setPending] = useState<PendingDocument | null>(null);
   const [selectedType, setSelectedType] = useState<DocumentTypeOption | null>(
@@ -113,7 +116,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       });
       return;
     }
-    if (file.size > maxFileSizeMb * 1000 * 1000) {
+    if (maxFileSizeMb !== undefined && file.size > maxFileSizeMb * 1000 * 1000) {
       addNotification({
         title: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE', {
           defaultValue: 'File too large',
@@ -136,14 +139,12 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         patientUuid,
       );
       setPending({ url, fileName: file.name, contentType: file.type });
-    } catch {
+    } catch (error) {
       addNotification({
         title: t('DOCUMENT_UPLOAD_FAILED_TITLE', {
           defaultValue: 'Upload failed',
         }),
-        message: t('DOCUMENT_UPLOAD_FAILED_MESSAGE', {
-          defaultValue: 'Could not upload the document. Please try again.',
-        }),
+        message: error instanceof Error ? error.message : String(error),
         type: 'error',
       });
     } finally {
@@ -186,14 +187,12 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       });
       resetPending();
       onSaved?.();
-    } catch {
+    } catch (error) {
       addNotification({
         title: t('DOCUMENT_UPLOAD_SAVE_FAILED_TITLE', {
           defaultValue: 'Save failed',
         }),
-        message: t('DOCUMENT_UPLOAD_SAVE_FAILED_MESSAGE', {
-          defaultValue: 'Could not save the document. Please try again.',
-        }),
+        message: error instanceof Error ? error.message : String(error),
         type: 'error',
       });
     } finally {
@@ -280,11 +279,16 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
           {t('DOCUMENT_UPLOAD_TITLE', { defaultValue: 'Upload files' })}
         </p>
         <p className={styles.uploaderHelp}>
-          {t('DOCUMENT_UPLOAD_HELP', {
-            size: maxFileSizeMb,
-            defaultValue:
-              'Max file size is {{size}}MB. Supported file types are images, videos and PDF.',
-          })}
+          {maxFileSizeMb !== undefined
+            ? t('DOCUMENT_UPLOAD_HELP', {
+                size: maxFileSizeMb,
+                defaultValue:
+                  'Max file size is {{size}}MB. Supported file types are images, videos and PDF.',
+              })
+            : t('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE', {
+                defaultValue:
+                  'Supported file types are images, videos and PDF.',
+              })}
         </p>
         <input
           ref={fileInputRef}

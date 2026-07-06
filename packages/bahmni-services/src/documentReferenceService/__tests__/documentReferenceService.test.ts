@@ -1,11 +1,12 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../../api';
-import { DOCUMENT_TYPES_URL } from '../constants';
+import { DOCUMENT_TYPES_URL, DOCUMENT_UPLOAD_MAX_SIZE_URL } from '../constants';
 import {
   getDocumentReferences,
   getFormattedDocumentReferences,
   getDocumentReferencePage,
   getDocumentTypes,
+  getDocumentUploadMaxSizeMb,
 } from '../documentReferenceService';
 
 jest.mock('../../api');
@@ -564,6 +565,33 @@ describe('documentReferenceService', () => {
       expect(result).toEqual([
         { id: 'c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f', label: '' },
       ]);
+    });
+  });
+
+  describe('getDocumentUploadMaxSizeMb', () => {
+    it('returns the configured size from the system setting', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          { property: 'bahmni.documentUpload.maxFileSizeInMB', value: '5' },
+        ],
+      });
+
+      const result = await getDocumentUploadMaxSizeMb();
+
+      expect(mockedGet).toHaveBeenCalledWith(DOCUMENT_UPLOAD_MAX_SIZE_URL);
+      expect(result).toBe(5);
+    });
+
+    it('returns undefined when the setting is not configured', async () => {
+      mockedGet.mockResolvedValueOnce({ results: [] });
+
+      expect(await getDocumentUploadMaxSizeMb()).toBeUndefined();
+    });
+
+    it('returns undefined when the value is not a positive number', async () => {
+      mockedGet.mockResolvedValueOnce({ results: [{ value: 'abc' }] });
+
+      expect(await getDocumentUploadMaxSizeMb()).toBeUndefined();
     });
   });
 });
