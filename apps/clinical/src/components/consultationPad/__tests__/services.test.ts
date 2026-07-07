@@ -1,7 +1,7 @@
+import { createEncounterBundle } from '@bahmni/services';
 import * as encounterBundleService from '../../../services/encounterBundleService';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import * as conceptExtractor from '../../../utils/fhir/conceptExtractor';
-import * as encounterBundleCreator from '../../../utils/fhir/encounterBundleCreator';
 import * as encounterResourceCreator from '../../../utils/fhir/encounterResourceCreator';
 import { submitConsultation } from '../services';
 import {
@@ -14,10 +14,13 @@ import {
   mockUpdatedConcepts,
 } from './__mocks__/servicesMocks';
 
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  createEncounterBundle: jest.fn(),
+}));
 jest.mock('../../../stores/encounterDetailsStore');
 jest.mock('../../../services/encounterBundleService');
 jest.mock('../../../utils/fhir/encounterResourceCreator');
-jest.mock('../../../utils/fhir/encounterBundleCreator');
 jest.mock('../../../utils/fhir/conceptExtractor');
 
 const mockCreateEncounterResource = jest.mocked(
@@ -29,9 +32,7 @@ const mockCreateEncounterBundleEntry = jest.mocked(
 const mockGetEncounterReference = jest.mocked(
   encounterBundleService.getEncounterReference,
 );
-const mockCreateEncounterBundle = jest.mocked(
-  encounterBundleCreator.createEncounterBundle,
-);
+const mockCreateEncounterBundle = jest.mocked(createEncounterBundle);
 const mockPostEncounterBundle = jest.mocked(
   encounterBundleService.postEncounterBundle,
 );

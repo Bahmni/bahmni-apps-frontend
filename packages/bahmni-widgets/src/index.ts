@@ -8,6 +8,12 @@ export {
 // Widget Components
 export { DocumentPrintButton } from './documentPrintButton';
 export type { PrintOption } from './documentPrintButton';
+export { DocumentUpload, renderDocumentTile } from './documentUpload';
+export type {
+  DocumentUploadProps,
+  DocumentSaveTarget,
+  DocumentTileData,
+} from './documentUpload';
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
 export { AppointmentsTable } from './appointments';
@@ -71,6 +77,16 @@ export {
 
 // Config Provider Factories
 export { createConfigProvider, createConfigHook } from './configProvider';
+
+// Search Widgets
+export {
+  registerSearchWidget,
+  getSearchWidget,
+  clearSearchWidgetRegistry,
+  type SearchWidget,
+  type SearchWidgetProps,
+  CommonSearchWidget,
+} from './search';
 
 // Widget Registry
 export {

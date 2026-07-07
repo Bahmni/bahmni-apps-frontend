@@ -1,5 +1,8 @@
 import type { ConsultationPad } from '../../../providers/clinicalConfig/models';
-import { useServiceRequestStore } from '../../../stores';
+import {
+  useServiceRequestStore,
+  useObservationFormsStore,
+} from '../../../stores';
 import type { InputControl } from '../../forms';
 import {
   captureUpdatedResources,
@@ -54,6 +57,10 @@ beforeEach(() => {
   (useServiceRequestStore as unknown as { getState: jest.Mock }).getState = jest
     .fn()
     .mockReturnValue({ selectedServiceRequests: new Map() });
+  (useObservationFormsStore as unknown as { getState: jest.Mock }).getState =
+    jest.fn().mockReturnValue({
+      getObservationFormsData: jest.fn().mockReturnValue([]),
+    });
 });
 
 describe('loadEncounterInputControls', () => {
@@ -372,6 +379,7 @@ describe('captureUpdatedResources', () => {
       allergies: false,
       medications: false,
       immunizationHistory: false,
+      observationFormsWithBasedOn: false,
       serviceRequests: {},
     });
   });
