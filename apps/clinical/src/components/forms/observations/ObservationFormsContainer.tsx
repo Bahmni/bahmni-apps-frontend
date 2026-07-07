@@ -24,6 +24,7 @@ import {
   extractNotesFromFormData,
   type AgeDetails,
   computeAgeDetails,
+  hasMissingMandatoryVisibleField,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -288,19 +289,32 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       const isEmpty = !hasAnyValue; // Empty if no values (including empty strings), even if there are notes
       const hasErrors = errors && errors.length > 0;
 
-      if (isEmpty) {
+      const containerStateData = (
+        formContainerRef.current as {
+          state?: { data?: Record<string, unknown> | { toJS?: () => unknown } };
+        } | null
+      )?.state?.data;
+      const hasMissingMandatory = hasMissingMandatoryVisibleField(
+        convertImmutableToPlainObject(containerStateData) as
+          | Record<string, unknown>
+          | undefined,
+      );
+
+      if (isEmpty && !hasMissingMandatory) {
         setValidationErrorType(VALIDATION_STATE_EMPTY);
         return;
       }
 
-      if (hasErrors) {
-        const hasMandatoryError = errors
-          .flat()
-          .some(
-            (err: { get?: (key: string) => string; message?: string }) =>
-              (err.get?.('message') ?? err.message) ===
-              VALIDATION_STATE_MANDATORY,
-          );
+      if (hasErrors || hasMissingMandatory) {
+        const hasMandatoryError =
+          hasMissingMandatory ||
+          errors
+            .flat()
+            .some(
+              (err: { get?: (key: string) => string; message?: string }) =>
+                (err.get?.('message') ?? err.message) ===
+                VALIDATION_STATE_MANDATORY,
+            );
         const errorType = hasMandatoryError
           ? VALIDATION_STATE_MANDATORY
           : VALIDATION_STATE_INVALID;
