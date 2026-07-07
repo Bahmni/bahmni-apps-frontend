@@ -639,7 +639,7 @@ describe('appointmentSearchResultActionHandler', () => {
       });
     });
 
-    it('should show error notification when changeStatus API fails', async () => {
+    it('should show the API error message when changeStatus fails with a message', async () => {
       const action: SearchActionConfig = {
         type: 'changeStatus',
         translationKey: 'Mark Arrived',
@@ -648,7 +648,7 @@ describe('appointmentSearchResultActionHandler', () => {
       };
 
       (updateAppointmentStatus as jest.Mock).mockRejectedValue(
-        new Error('API error'),
+        'Server error occurred',
       );
 
       await handleActionButtonClick(
@@ -661,25 +661,24 @@ describe('appointmentSearchResultActionHandler', () => {
         mockT,
       );
 
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'error' }),
-      );
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Server error occurred',
+        message: '',
+        type: 'error',
+        timeout: 5000,
+      });
       expect(mockSetPatientSearchData).not.toHaveBeenCalled();
     });
 
-    it('should show error notification when checkInAndStartVisit API fails', async () => {
+    it('should show generic error notification when changeStatus fails without a message', async () => {
       const action: SearchActionConfig = {
-        type: 'checkInAndStartVisit',
-        translationKey: 'Check In',
-        onAction: {
-          submit: '/bahmni/appointment/checkin',
-        },
+        type: 'changeStatus',
+        translationKey: 'Mark Arrived',
+        onAction: { status: 'Arrived' },
         enabledRule: [],
       };
 
-      (checkInAppointment as jest.Mock).mockRejectedValue(
-        new Error('API error'),
-      );
+      (updateAppointmentStatus as jest.Mock).mockRejectedValue(null);
 
       await handleActionButtonClick(
         action,
@@ -691,10 +690,69 @@ describe('appointmentSearchResultActionHandler', () => {
         mockT,
       );
 
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'error' }),
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'REGISTRATION_ACTION_BUTTON_GENERIC_ERROR',
+        message: '',
+        type: 'error',
+        timeout: 5000,
+      });
+    });
+
+    it('should show the API error message when checkInAndStartVisit fails with a message', async () => {
+      const action: SearchActionConfig = {
+        type: 'checkInAndStartVisit',
+        translationKey: 'Check In',
+        onAction: { submit: '/bahmni/appointment/checkin' },
+        enabledRule: [],
+      };
+
+      (checkInAppointment as jest.Mock).mockRejectedValue('Check-in failed');
+
+      await handleActionButtonClick(
+        action,
+        mockRow,
+        mockPatientSearchData,
+        mockSetPatientSearchData,
+        mockNavigate,
+        mockAddNotification,
+        mockT,
       );
+
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Check-in failed',
+        message: '',
+        type: 'error',
+        timeout: 5000,
+      });
       expect(mockSetPatientSearchData).not.toHaveBeenCalled();
+    });
+
+    it('should show generic error notification when checkInAndStartVisit fails without a message', async () => {
+      const action: SearchActionConfig = {
+        type: 'checkInAndStartVisit',
+        translationKey: 'Check In',
+        onAction: { submit: '/bahmni/appointment/checkin' },
+        enabledRule: [],
+      };
+
+      (checkInAppointment as jest.Mock).mockRejectedValue(null);
+
+      await handleActionButtonClick(
+        action,
+        mockRow,
+        mockPatientSearchData,
+        mockSetPatientSearchData,
+        mockNavigate,
+        mockAddNotification,
+        mockT,
+      );
+
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'REGISTRATION_ACTION_BUTTON_GENERIC_ERROR',
+        message: '',
+        type: 'error',
+        timeout: 5000,
+      });
     });
   });
 

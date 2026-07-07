@@ -1,4 +1,5 @@
 import { ObservationForm, Form2Observation } from '@bahmni/services';
+import type { Reference } from 'fhir/r4';
 import { create } from 'zustand';
 import {
   VALIDATION_STATE_EMPTY,
@@ -18,6 +19,7 @@ export interface ObservationFormData {
     | typeof VALIDATION_STATE_MANDATORY
     | typeof VALIDATION_STATE_INVALID
     | typeof VALIDATION_STATE_SCRIPT_ERROR;
+  basedOn?: Reference;
 }
 
 export interface ObservationFormsState {
@@ -35,11 +37,16 @@ export interface ObservationFormsState {
       | typeof VALIDATION_STATE_MANDATORY
       | typeof VALIDATION_STATE_INVALID
       | typeof VALIDATION_STATE_SCRIPT_ERROR,
+    basedOn?: Reference,
   ) => void;
   getFormData: (formUuid: string) => ObservationFormData | undefined;
   setViewingForm: (form: ObservationForm | null) => void;
   getAllObservations: () => Form2Observation[];
-  getObservationFormsData: () => Record<string, Form2Observation[]>;
+  getObservationFormsData: () => Array<{
+    formUuid: string;
+    observations: Form2Observation[];
+    basedOn?: Reference;
+  }>;
   validate: () => boolean;
   reset: () => void;
   getState: () => ObservationFormsState;
@@ -111,6 +118,7 @@ export const useObservationFormsStore = create<ObservationFormsState>(
         | typeof VALIDATION_STATE_MANDATORY
         | typeof VALIDATION_STATE_INVALID
         | typeof VALIDATION_STATE_SCRIPT_ERROR,
+      basedOn?: Reference,
     ) => {
       if (!validateFormUuid(formUuid)) {
         return;
@@ -132,6 +140,7 @@ export const useObservationFormsStore = create<ObservationFormsState>(
             observations,
             timestamp: Date.now(),
             validationErrorType,
+            basedOn,
           },
         },
       }));
@@ -167,13 +176,11 @@ export const useObservationFormsStore = create<ObservationFormsState>(
 
     getObservationFormsData: () => {
       const state = get();
-      const result: Record<string, Form2Observation[]> = {};
-
-      Object.entries(state.formsData).forEach(([formUuid, formData]) => {
-        result[formUuid] = formData.observations;
-      });
-
-      return result;
+      return Object.entries(state.formsData).map(([formUuid, formData]) => ({
+        formUuid,
+        observations: formData.observations,
+        basedOn: formData.basedOn,
+      }));
     },
 
     validate: () => {

@@ -83,9 +83,12 @@ export const handleActionButtonClick = async (
     }
   };
 
-  const showErrorNotification = () => {
+  const showErrorNotification = (error: unknown) => {
     addNotification({
-      title: t('REGISTRATION_ACTION_BUTTON_GENERIC_ERROR'),
+      title:
+        typeof error === 'string'
+          ? error
+          : t('REGISTRATION_ACTION_BUTTON_GENERIC_ERROR'),
       message: '',
       type: 'error',
       timeout: 5000,
@@ -106,8 +109,8 @@ export const handleActionButtonClick = async (
         ),
       });
       showSuccessNotification();
-    } catch {
-      showErrorNotification();
+    } catch (error) {
+      showErrorNotification(error);
     }
   };
 
