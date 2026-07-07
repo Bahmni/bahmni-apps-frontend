@@ -130,4 +130,37 @@ export const mockPatientContextWithRangeNumeric: SearchContextConfig = {
   ],
 };
 
+export const mockContextMultipleDefaults: SearchContextConfig = {
+  context: 'patient',
+  translationKey: 'PATIENT_SEARCH',
+  requiredPrivileges: ['View Patients'],
+  locationAware: 'loggedInLocation',
+  url: '/openmrs/ws/rest/v1/patient/search',
+  pageSize: 20,
+  criteria: [
+    {
+      field: { key: 'patient.name.given' },
+      translationKey: 'PATIENT_GIVEN_NAME',
+      default: true,
+      input: {
+        kind: 'text',
+        placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
+      },
+    },
+    {
+      field: { key: 'patient.gender' },
+      translationKey: 'PATIENT_GENDER',
+      default: true,
+      input: {
+        kind: 'options',
+        placeholderTranslationKey: 'PATIENT_GENDER_PLACEHOLDER',
+        options: [
+          { translationKey: 'MALE', value: 'M' },
+          { translationKey: 'FEMALE', value: 'F' },
+        ],
+      },
+    },
+  ],
+};
+
 export const mockConfig = [mockPatientContext, mockAppointmentContext];

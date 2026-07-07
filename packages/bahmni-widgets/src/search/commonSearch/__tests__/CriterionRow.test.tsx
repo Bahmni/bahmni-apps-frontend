@@ -48,22 +48,22 @@ describe('CriterionRow', () => {
     },
     {
       kind: 'numeric',
-      testId: 'numeric-criterion-input',
+      testId: 'numeric-criterion-input-test-id',
       criterion: mockPatientContext.criteria[2],
     },
     {
       kind: 'options',
-      testId: 'options-criterion-input',
+      testId: 'options-criterion-input-test-id',
       criterion: mockPatientContext.criteria[1],
     },
     {
       kind: 'date',
-      testId: 'date-criterion-input',
+      testId: 'date-criterion-input-test-id',
       criterion: mockDateCriterion,
     },
     {
       kind: 'lookup',
-      testId: 'lookup-criterion-input',
+      testId: 'lookup-criterion-input-test-id',
       criterion: mockLookupCriterion,
     },
   ])('renders $kind criterion input', ({ testId, criterion }) => {

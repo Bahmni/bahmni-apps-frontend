@@ -1,0 +1,125 @@
+import {
+  Column,
+  DatePicker,
+  DatePickerInput,
+  Grid,
+} from '@bahmni/design-system';
+import { useTranslation } from '@bahmni/services';
+import { DateInput as DateInputConfig, RangeValue } from '../models';
+import styles from '../styles/CommonSearchWidget.module.scss';
+
+interface Props {
+  input: DateInputConfig;
+  value: RangeValue | null;
+  onChange: (value: RangeValue | null) => void;
+  validationError: string | null;
+}
+
+const DateCriterionInput = ({
+  input,
+  value,
+  onChange,
+  validationError,
+}: Props) => {
+  const { t } = useTranslation();
+
+  if (input.rangeAllowed) {
+    return (
+      <Grid
+        id="date-criterion-input"
+        data-testid="date-criterion-input-test-id"
+      >
+        <Column
+          sm={2}
+          md={2}
+          lg={5}
+          id="date-criterion-input-from"
+          data-testid="date-criterion-input-from-test-id"
+          className={styles.datePicker}
+        >
+          <DatePicker
+            datePickerType="single"
+            value={value?.from.value ?? ''}
+            onChange={(dates: Date[]) =>
+              onChange({
+                from: {
+                  value: dates[0]?.toISOString() ?? null,
+                  comparator: null,
+                },
+                to: {
+                  value: value?.to?.value ?? null,
+                  comparator: value?.to?.comparator ?? null,
+                },
+              })
+            }
+          >
+            <DatePickerInput
+              id={`date-input-from-${input.placeholderTranslationKey}`}
+              labelText={t('COMMON_SEARCH_CRITERIA_DATE_INPUT_FIELD_FROM')}
+              placeholder={t(input.placeholderTranslationKey)}
+              invalid={!!validationError && !value?.from.value}
+              invalidText={validationError ?? undefined}
+            />
+          </DatePicker>
+        </Column>
+        <Column
+          sm={2}
+          md={2}
+          lg={5}
+          id="date-criterion-input-to"
+          data-testid="date-criterion-input-to-test-id"
+          className={styles.datePicker}
+        >
+          <DatePicker
+            datePickerType="single"
+            value={value?.to?.value ?? ''}
+            onChange={(dates: Date[]) =>
+              onChange({
+                from: {
+                  value: value?.from.value ?? null,
+                  comparator: value?.from.comparator ?? null,
+                },
+                to: {
+                  value: dates[0]?.toISOString() ?? null,
+                  comparator: null,
+                },
+              })
+            }
+          >
+            <DatePickerInput
+              id={`date-input-to-${input.placeholderTranslationKey}`}
+              labelText={t('COMMON_SEARCH_CRITERIA_DATE_INPUT_FIELD_TO')}
+              placeholder={t(input.placeholderTranslationKey)}
+              invalid={!!validationError && !value?.to?.value}
+              invalidText={validationError ?? undefined}
+            />
+          </DatePicker>
+        </Column>
+      </Grid>
+    );
+  }
+
+  return (
+    <div id="date-criterion-input" data-testid="date-criterion-input-test-id">
+      <DatePicker
+        datePickerType="single"
+        value={value?.from.value ?? ''}
+        className={styles.datePicker}
+        onChange={(dates: Date[]) => {
+          const iso = dates[0]?.toISOString() ?? null;
+          onChange(iso ? { from: { value: iso, comparator: null } } : null);
+        }}
+      >
+        <DatePickerInput
+          id={`date-input-${input.placeholderTranslationKey}`}
+          labelText={t('ENTER_SEARCH_VALUE')}
+          placeholder={t(input.placeholderTranslationKey)}
+          invalid={!!validationError}
+          invalidText={validationError ?? undefined}
+        />
+      </DatePicker>
+    </div>
+  );
+};
+
+export default DateCriterionInput;

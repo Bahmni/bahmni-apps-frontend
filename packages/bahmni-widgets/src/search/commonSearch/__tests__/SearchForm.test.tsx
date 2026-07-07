@@ -82,7 +82,7 @@ describe('SearchForm', () => {
       fireEvent.click(
         screen.getByTestId('common-search-add-criterion-button-test-id'),
       );
-      expect(screen.getAllByTestId(/criterion-row/)).toHaveLength(1);
+      expect(screen.getAllByTestId(/criterion-row-/)).toHaveLength(1);
     });
 
     it.each([
@@ -144,7 +144,9 @@ describe('SearchForm', () => {
       expect(
         screen.queryByTestId('text-criterion-input-test-id'),
       ).not.toBeInTheDocument();
-      expect(screen.getByTestId('options-criterion-input')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('options-criterion-input-test-id'),
+      ).toBeInTheDocument();
     });
 
     it('resets the value to null when criterion changes', () => {
@@ -195,7 +197,9 @@ describe('SearchForm', () => {
       expect(
         screen.getByTestId('text-criterion-input-test-id'),
       ).toBeInTheDocument();
-      expect(screen.getByTestId('options-criterion-input')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('options-criterion-input-test-id'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -250,6 +254,9 @@ describe('SearchForm', () => {
 
       const input = screen.getByRole('textbox');
       fireEvent.change(input, { target: { value: 'Rahul' } });
+      expect(
+        screen.getByTestId('common-search-search-button-test-id'),
+      ).not.toBeDisabled();
       fireEvent.click(
         screen.getByTestId('common-search-search-button-test-id'),
       );
@@ -342,6 +349,9 @@ describe('SearchForm', () => {
       const [, toInput] = screen.getAllByRole('spinbutton');
       fireEvent.change(toInput, { target: { value: '30' } });
 
+      expect(
+        screen.getByText('COMMON_SEARCH_VALUE_REQUIRED'),
+      ).toBeInTheDocument();
       expect(
         screen.getByTestId('common-search-search-button-test-id'),
       ).toBeDisabled();
