@@ -1,3 +1,4 @@
+import { createEncounterBundle } from '@bahmni/services';
 import type { Bundle, Encounter } from 'fhir/r4';
 import {
   createEncounterBundleEntry,
@@ -6,7 +7,6 @@ import {
 } from '../../services/encounterBundleService';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { extractConceptsFromResponseBundle } from '../../utils/fhir/conceptExtractor';
-import { createEncounterBundle } from '../../utils/fhir/encounterBundleCreator';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
 import type { EncounterContext, InputControl } from '../forms';
 

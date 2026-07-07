@@ -7,6 +7,8 @@ import {
   getObservationsBundleByEncounterUuid,
   createFhirEncounter,
   updateFhirEncounter,
+  getPatientEncounters,
+  getEncounterTypeByName,
 } from '../../encounterService';
 import {
   mockVisitBundle,
@@ -15,6 +17,8 @@ import {
 } from '../__mocks__/mocks';
 import {
   PATIENT_VISITS_URL,
+  PATIENT_ENCOUNTERS_URL,
+  ENCOUNTER_TYPE_BY_NAME_URL,
   FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
   FHIR_ENCOUNTER_URL,
 } from '../constants';
@@ -261,6 +265,97 @@ describe('encounterService', () => {
       await expect(
         updateFhirEncounter(encounterUUID, mockEncounterUpdate),
       ).rejects.toThrow('Update failed');
+    });
+  });
+
+  describe('getPatientEncounters', () => {
+    it('should fetch and unwrap encounter resources from the bundle', async () => {
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
+
+      const result = await getPatientEncounters(patientUUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        PATIENT_ENCOUNTERS_URL(patientUUID),
+      );
+      expect(result).toEqual(
+        mockVisitBundle.entry?.map((entry) => entry.resource),
+      );
+    });
+
+    it('should return an empty array when the bundle has no entries', async () => {
+      mockedGet.mockResolvedValueOnce({
+        resourceType: 'Bundle',
+        type: 'searchset',
+      });
+
+      const result = await getPatientEncounters(patientUUID);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should walk every page until a non-full page is returned', async () => {
+      const fullPage = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: Array.from({ length: 100 }, (_, i) => ({
+          resource: { resourceType: 'Encounter', id: `enc-${i}` },
+        })),
+      };
+      const lastPage = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [{ resource: { resourceType: 'Encounter', id: 'enc-100' } }],
+      };
+      mockedGet.mockResolvedValueOnce(fullPage).mockResolvedValueOnce(lastPage);
+
+      const result = await getPatientEncounters(patientUUID);
+
+      expect(mockedGet).toHaveBeenCalledTimes(2);
+      expect(mockedGet).toHaveBeenNthCalledWith(
+        1,
+        PATIENT_ENCOUNTERS_URL(patientUUID, 100, 0),
+      );
+      expect(mockedGet).toHaveBeenNthCalledWith(
+        2,
+        PATIENT_ENCOUNTERS_URL(patientUUID, 100, 100),
+      );
+      expect(result).toHaveLength(101);
+    });
+  });
+
+  describe('getEncounterTypeByName', () => {
+    const name = 'Patient Document';
+
+    it('should return the exact-name match from the results', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          { uuid: 'other-uuid', name: 'Other' },
+          { uuid: 'doc-uuid', name },
+        ],
+      });
+
+      const result = await getEncounterTypeByName(name);
+
+      expect(mockedGet).toHaveBeenCalledWith(ENCOUNTER_TYPE_BY_NAME_URL(name));
+      expect(result).toEqual({ uuid: 'doc-uuid', name });
+    });
+
+    it('returns null when there is no exact-name match (fuzzy q= result)', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [{ uuid: 'first-uuid', name: 'Patient Documents' }],
+      });
+
+      const result = await getEncounterTypeByName(name);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when there are no results', async () => {
+      mockedGet.mockResolvedValueOnce({ results: [] });
+
+      const result = await getEncounterTypeByName(name);
+
+      expect(result).toBeNull();
     });
   });
 });

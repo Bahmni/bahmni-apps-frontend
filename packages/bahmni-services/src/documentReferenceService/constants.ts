@@ -1,4 +1,11 @@
-import { OPENMRS_FHIR_R4 } from '../constants/app';
+import { OPENMRS_FHIR_R4, OPENMRS_REST_V1 } from '../constants/app';
+
+export const DOCUMENT_REFERENCE_URL = `${OPENMRS_FHIR_R4}/DocumentReference`;
+
+export const DOCUMENT_UPLOAD_MAX_SIZE_SETTING =
+  'bahmni.documentUpload.maxFileSizeInMB';
+
+export const DOCUMENT_UPLOAD_MAX_SIZE_URL = `${OPENMRS_REST_V1}/systemsetting?q=${DOCUMENT_UPLOAD_MAX_SIZE_SETTING}&v=custom:(property,value)`;
 
 export const PATIENT_DOCUMENT_REFERENCES_URL = (
   patientUuid: string,
