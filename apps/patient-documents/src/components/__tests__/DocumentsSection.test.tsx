@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { DocumentsSection } from '../DocumentsSection';
 
 jest.mock('@bahmni/services', () => ({
@@ -9,9 +9,12 @@ jest.mock('@bahmni/services', () => ({
     .mockResolvedValue([{ id: 'type-1', label: 'Prescription' }]),
 }));
 
+const mockAddNotification = jest.fn();
+
 // DocumentUpload has its own test suite; stub it here and expose the wiring we care about.
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
+  useNotification: () => ({ addNotification: mockAddNotification }),
   DocumentUpload: (props: { saveTarget: unknown }) => (
     <div
       data-testid="document-upload"
@@ -137,6 +140,21 @@ describe('DocumentsSection', () => {
 
     expect(screen.getByText('Failed to load documents')).toBeInTheDocument();
     expect(screen.queryAllByTestId('document-upload')).toHaveLength(0);
+  });
+
+  it('notifies when document types fail to load, without blocking upload', async () => {
+    const { getDocumentTypes } = jest.requireMock('@bahmni/services');
+    getDocumentTypes.mockRejectedValueOnce(new Error('types boom'));
+
+    renderSection();
+
+    await waitFor(() =>
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'error' }),
+      ),
+    );
+    // Document type is optional, so upload widgets still render.
+    expect(screen.getAllByTestId('document-upload').length).toBeGreaterThan(0);
   });
 
   it('renders nothing when the patient has no visits', () => {

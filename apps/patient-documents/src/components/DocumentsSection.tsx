@@ -5,10 +5,14 @@ import {
   getDocumentTypes,
   getFormattedError,
 } from '@bahmni/services';
-import { DocumentUpload, renderDocumentTile } from '@bahmni/widgets';
+import {
+  DocumentUpload,
+  renderDocumentTile,
+  useNotification,
+} from '@bahmni/widgets';
 import { TextArea } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BAHMNI_PATIENT_DOCUMENTS_NAMESPACE } from '../constants/app';
 import { useVisitDocuments } from '../hooks/useVisitDocuments';
@@ -37,15 +41,25 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   documentEncounterType,
 }) => {
   const { t } = useTranslation(BAHMNI_PATIENT_DOCUMENTS_NAMESPACE);
+  const { addNotification } = useNotification();
   const { visitGroups, isLoading, error, refetch } = useVisitDocuments(
     patientUuid,
     documentEncounterType.uuid,
   );
 
-  const { data: documentTypes } = useQuery({
+  const { data: documentTypes, error: documentTypesError } = useQuery({
     queryKey: ['documentTypes', documentEncounterType.name],
     queryFn: () => getDocumentTypes(documentEncounterType.name),
   });
+
+  // Document types populate an optional dropdown, so a failure must not block upload — but the
+  // user should still be told the list could not be loaded rather than seeing an empty dropdown.
+  useEffect(() => {
+    if (documentTypesError) {
+      const { title, message } = getFormattedError(documentTypesError);
+      addNotification({ title, message, type: 'error' });
+    }
+  }, [documentTypesError, addNotification]);
 
   if (isLoading) {
     return <Loading withOverlay={false} />;
