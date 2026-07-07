@@ -32,7 +32,6 @@ export async function submitConsultation(
     encounterParticipants,
     activeVisit,
     selectedLocation,
-    consultationDate,
     practitioner,
   } = useEncounterDetailsStore.getState();
 
@@ -44,7 +43,7 @@ export async function submitConsultation(
     activeVisit!.id,
     deps.episodeOfCareUuids,
     selectedLocation!.uuid,
-    consultationDate,
+    deps.activeEncounter?.period?.start ?? null,
   );
 
   const encounterBundleEntry = createEncounterBundleEntry(
@@ -63,7 +62,7 @@ export async function submitConsultation(
     encounterSubject: encounterResource.subject!,
     encounterReference,
     practitionerUUID: practitioner!.uuid,
-    consultationDate,
+    consultationDate: new Date(),
     statDurationInMilliseconds: deps.statDurationInMilliseconds,
   };
 
