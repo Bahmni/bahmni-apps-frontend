@@ -327,13 +327,16 @@ const EncounterDetails: React.FC = () => {
       </Column>
 
       <Column sm={4} md={8} lg={5} className={styles.column}>
-        <DatePicker datePickerType="single" data-testid="encounter-date-picker">
+        <DatePicker
+          datePickerType="single"
+          data-testid="encounter-date-picker"
+          value={formattedDate.formattedResult}
+        >
           <DatePickerInput
             id="encounter-date-picker-input"
             data-testid="encounter-date-picker-input"
             title={t('ENCOUNTER_DATE')}
             labelText={t('ENCOUNTER_DATE')}
-            defaultValue={formattedDate.formattedResult}
             disabled
           />
         </DatePicker>

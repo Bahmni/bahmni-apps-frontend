@@ -1,7 +1,41 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../api';
-import { PATIENT_DOCUMENT_REFERENCES_URL } from './constants';
-import { DocumentViewModel } from './models';
+import { searchConceptByName } from '../conceptService/conceptService';
+import {
+  DOCUMENT_UPLOAD_MAX_SIZE_URL,
+  PATIENT_DOCUMENT_REFERENCES_URL,
+} from './constants';
+import { DocumentType, DocumentViewModel } from './models';
+
+/**
+ * Reads the configured max document upload size (MB) from the
+ * `bahmni.documentUpload.maxFileSizeInMB` system setting. Returns undefined when unset so callers
+ * can fall back to their own default.
+ */
+export async function getDocumentUploadMaxSizeMb(): Promise<
+  number | undefined
+> {
+  const response = await get<{ results: Array<{ value?: string }> }>(
+    DOCUMENT_UPLOAD_MAX_SIZE_URL,
+  );
+  const value = Number(response.results?.[0]?.value);
+  return Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+/**
+ * Fetches the configurable document types (set members of the given document-type concept),
+ * e.g. Prescription, Radiology Report. Used to populate the document-type dropdown.
+ * @param conceptName - fully specified name of the document-type concept set
+ */
+export async function getDocumentTypes(
+  conceptName: string,
+): Promise<DocumentType[]> {
+  const concept = await searchConceptByName(conceptName);
+  return (concept?.setMembers ?? []).map((member) => ({
+    id: member.uuid,
+    label: member.display ?? '',
+  }));
+}
 
 /**
  * Maps FHIR DocumentReference entries to DocumentViewModel for UI consumption
@@ -16,6 +50,9 @@ function mapDocumentReferencesToViewModels(
     .map((entry) => {
       const doc = entry.resource;
       const masterIdentifier = doc.masterIdentifier?.value ?? doc.id ?? '';
+      const encounterId = doc.context?.encounter?.[0]?.reference
+        ?.split('/')
+        .pop();
 
       const attachments = (doc.content ?? [])
         .map((c) => c.attachment)
@@ -35,6 +72,8 @@ function mapDocumentReferencesToViewModels(
         contentType: firstAttachment?.contentType,
         documentUrl: firstAttachment?.url ?? '',
         attachments,
+        encounterId,
+        description: doc.description,
       };
     });
 }

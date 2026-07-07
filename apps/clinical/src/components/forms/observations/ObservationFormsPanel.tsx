@@ -52,27 +52,19 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const directFormMode = encounterSessionStartContext?.directFormMode as
     | boolean
     | undefined;
+
   useEffect(() => {
     if (taskFormName && directFormMode && !isAllFormsLoading) {
+      useObservationFormsStore.getState().reset();
       const matchingForm = allForms.find(
         (form) => form.name.toLowerCase() === taskFormName.toLowerCase(),
       );
 
-      if (
-        matchingForm &&
-        !selectedForms.some((f) => f.uuid === matchingForm.uuid)
-      ) {
+      if (matchingForm) {
         addForm(matchingForm);
       }
     }
-  }, [
-    taskFormName,
-    directFormMode,
-    allForms,
-    isAllFormsLoading,
-    selectedForms,
-    addForm,
-  ]);
+  }, [taskFormName, directFormMode, allForms, isAllFormsLoading, addForm]);
 
   const handleFormSelect = (form: ObservationForm) => {
     addForm(form);

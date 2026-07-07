@@ -54,6 +54,10 @@ export const AUDIT_LOG_EVENT_DETAILS = {
     message: 'CREATE_ENCOUNTER_MESSAGE',
     module: MODULE_LABELS.REGISTRATION,
   },
+  UPLOAD_PATIENT_DOCUMENT: {
+    eventType: 'UPLOAD_PATIENT_DOCUMENT',
+    message: 'UPLOAD_PATIENT_DOCUMENT_MESSAGE',
+  },
 };
 
 export const AUDIT_LOG_URL = OPENMRS_REST_V1 + '/auditlog';
