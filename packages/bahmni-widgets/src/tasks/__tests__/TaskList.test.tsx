@@ -6,6 +6,7 @@ import {
   mockTasksBundle,
   emptyTasksBundle,
   mockTasksControlConfigNoFitlers,
+  mockTasksControlConfigWithActions,
   mockError,
 } from './__mocks__/taskListMocks';
 
@@ -13,10 +14,22 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getTasks: jest.fn(),
   shouldEnableEncounterFilter: jest.fn(),
+  useSubscribeConsultationSaved: jest.fn((callback) => {
+    // Store callback for testing
+    (globalThis as any).__consultationSavedCallback = callback;
+  }),
+  fetchObservationForms: jest.fn(() => Promise.resolve([])),
+  hasPrivilege: jest.fn(() => true),
 }));
 
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'patient-uuid'),
+}));
+
+jest.mock('../../userPrivileges/useUserPrivilege', () => ({
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: [{ name: 'Edit Vitals', retired: false }],
+  })),
 }));
 
 const mockGetTasks = getTasks as jest.MockedFunction<typeof getTasks>;
@@ -355,6 +368,191 @@ describe('TaskList', () => {
 
       await waitFor(() => {
         expect(mockGetTasks).toHaveBeenCalledTimes(2);
+      });
+    });
+  });
+
+  describe('Actions Column', () => {
+    beforeEach(() => {
+      mockGetTasks.mockResolvedValue(mockTasksBundle);
+    });
+
+    it('should show actions column header when actionConfig exists', async () => {
+      render(<TaskList config={mockTasksControlConfigWithActions} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('TASK_ACTIONS')).toBeInTheDocument();
+      });
+    });
+
+    it('should not show actions column when no actionConfig', async () => {
+      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_ACTIONS')).not.toBeInTheDocument();
+    });
+
+    it('should not show actions column when actionConfig is empty', async () => {
+      render(
+        <TaskList config={{ showOnlyLeafTasks: false, actionConfig: [] }} />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_ACTIONS')).not.toBeInTheDocument();
+    });
+
+    it('should not show actions column when actionConfig has no actions', async () => {
+      const configWithoutActions = {
+        showOnlyLeafTasks: false,
+        actionConfig: [{ taskCode: 'some-code', actions: [] }],
+      };
+
+      render(<TaskList config={configWithoutActions} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_ACTIONS')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Task Refetch on Consultation Save', () => {
+    beforeEach(() => {
+      mockGetTasks.mockResolvedValue(mockTasksBundle);
+      delete (globalThis as any).__consultationSavedCallback;
+    });
+
+    it('should refetch tasks when observationFormsWithBasedOn is true', async () => {
+      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(mockGetTasks).toHaveBeenCalledTimes(1);
+
+      // Trigger consultation saved event
+      const callback = (globalThis as any).__consultationSavedCallback;
+      if (callback) {
+        callback({
+          patientUUID: 'patient-uuid',
+          updatedResources: {
+            observationFormsWithBasedOn: true,
+          },
+        });
+      }
+
+      await waitFor(() => {
+        expect(mockGetTasks).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    it('should not refetch when observationFormsWithBasedOn is false', async () => {
+      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(mockGetTasks).toHaveBeenCalledTimes(1);
+
+      // Trigger consultation saved event
+      const callback = (globalThis as any).__consultationSavedCallback;
+      if (callback) {
+        callback({
+          patientUUID: 'patient-uuid',
+          updatedResources: {
+            observationFormsWithBasedOn: false,
+          },
+        });
+      }
+
+      await waitFor(() => {
+        expect(mockGetTasks).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('should not refetch for different patientUUID', async () => {
+      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(mockGetTasks).toHaveBeenCalledTimes(1);
+
+      // Trigger consultation saved event for different patient
+      const callback = (globalThis as any).__consultationSavedCallback;
+      if (callback) {
+        callback({
+          patientUUID: 'different-patient-uuid',
+          updatedResources: {
+            observationFormsWithBasedOn: true,
+          },
+        });
+      }
+
+      await waitFor(() => {
+        expect(mockGetTasks).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('should refetch only for matching patientUUID', async () => {
+      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      const initialCallCount = mockGetTasks.mock.calls.length;
+
+      // Trigger with wrong patient
+      const callback = (globalThis as any).__consultationSavedCallback;
+      if (callback) {
+        callback({
+          patientUUID: 'wrong-patient',
+          updatedResources: { observationFormsWithBasedOn: true },
+        });
+      }
+
+      await waitFor(() => {
+        expect(mockGetTasks).toHaveBeenCalledTimes(initialCallCount);
+      });
+
+      // Trigger with correct patient
+      if (callback) {
+        callback({
+          patientUUID: 'patient-uuid',
+          updatedResources: { observationFormsWithBasedOn: true },
+        });
+      }
+
+      await waitFor(() => {
+        expect(mockGetTasks).toHaveBeenCalledTimes(initialCallCount + 1);
       });
     });
   });

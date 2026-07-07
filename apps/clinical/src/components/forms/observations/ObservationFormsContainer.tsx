@@ -4,6 +4,7 @@ import {
   ICON_SIZE,
   InlineNotification,
   SkeletonText,
+  MenuItemDivider,
 } from '@bahmni/design-system';
 import {
   CarbonContainer,
@@ -23,9 +24,11 @@ import {
   extractNotesFromFormData,
   type AgeDetails,
   computeAgeDetails,
+  hasMissingMandatoryVisibleField,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
+import type { Reference, Task } from 'fhir/r4';
 import React, { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -35,10 +38,12 @@ import {
   VALIDATION_STATE_INVALID,
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
+import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
+import EncounterDetails from '../encounterDetails/EncounterDetails';
 import styles from './styles/ObservationFormsContainer.module.scss';
 import { executeOnFormSaveEvent } from './utils/formEventExecutor';
 
@@ -63,9 +68,14 @@ interface ObservationFormsContainerProps {
       | typeof VALIDATION_STATE_MANDATORY
       | typeof VALIDATION_STATE_INVALID
       | typeof VALIDATION_STATE_SCRIPT_ERROR,
+    basedOn?: Reference,
   ) => void;
   existingObservations?: Form2Observation[];
   activeEncounterUuid?: string | null;
+  directMode?: boolean;
+  onDirectModeSubmit?: () => void | Promise<void>;
+  onDirectModeCancel?: () => void;
+  encounterSessionStartContext?: EncounterSessionStartContext;
 }
 
 const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
@@ -75,8 +85,15 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onFormObservationsChange,
   existingObservations,
   activeEncounterUuid,
+  directMode = false,
+  onDirectModeSubmit,
+  onDirectModeCancel,
+  encounterSessionStartContext,
 }) => {
   const { t } = useTranslation();
+
+  const task = encounterSessionStartContext?.task as Task | undefined;
+  const basedOn = task?.basedOn?.[0];
   const patientUUID = usePatientUUID();
   const { user } = useActivePractitioner();
   const { episodeOfCare, activeVisitId } = useClinicalAppData();
@@ -211,12 +228,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         viewingForm.uuid,
         observationsToSave,
         validationErrorType,
+        basedOn,
       );
     }
     onViewingFormChange(null);
   };
 
-  const validateAndSave = () => {
+  const validateAndSave = (handleDirectModeSubmit?: () => void) => {
     if (!patientContext) {
       setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
       setValidationErrorMessage(t('OBSERVATION_FORM_LOADING_METADATA_ERROR'));
@@ -224,7 +242,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     }
 
     if (formContainerRef.current) {
-      if (validationErrorType) {
+      if (validationErrorType && !handleDirectModeSubmit) {
         setValidationErrorType(null);
         const { observations: currentObservations } =
           formContainerRef.current.getValue();
@@ -271,19 +289,32 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       const isEmpty = !hasAnyValue; // Empty if no values (including empty strings), even if there are notes
       const hasErrors = errors && errors.length > 0;
 
-      if (isEmpty) {
+      const containerStateData = (
+        formContainerRef.current as {
+          state?: { data?: Record<string, unknown> | { toJS?: () => unknown } };
+        } | null
+      )?.state?.data;
+      const hasMissingMandatory = hasMissingMandatoryVisibleField(
+        convertImmutableToPlainObject(containerStateData) as
+          | Record<string, unknown>
+          | undefined,
+      );
+
+      if (isEmpty && !hasMissingMandatory) {
         setValidationErrorType(VALIDATION_STATE_EMPTY);
         return;
       }
 
-      if (hasErrors) {
-        const hasMandatoryError = errors
-          .flat()
-          .some(
-            (err: { get?: (key: string) => string; message?: string }) =>
-              (err.get?.('message') ?? err.message) ===
-              VALIDATION_STATE_MANDATORY,
-          );
+      if (hasErrors || hasMissingMandatory) {
+        const hasMandatoryError =
+          hasMissingMandatory ||
+          errors
+            .flat()
+            .some(
+              (err: { get?: (key: string) => string; message?: string }) =>
+                (err.get?.('message') ?? err.message) ===
+                VALIDATION_STATE_MANDATORY,
+            );
         const errorType = hasMandatoryError
           ? VALIDATION_STATE_MANDATORY
           : VALIDATION_STATE_INVALID;
@@ -318,6 +349,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         );
 
         handleSaveForm(processedObservations, null);
+        handleDirectModeSubmit?.();
       } catch (error) {
         const errorMessage =
           error instanceof Error
@@ -373,6 +405,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   const formViewContent = (
     <div className={styles.formView} data-testid="observation-form-view">
+      {directMode && (
+        <>
+          <EncounterDetails />
+          <MenuItemDivider />
+        </>
+      )}
+
       {validationErrorType &&
         validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR && (
           <div className={styles.errorNotificationWrapper}>
@@ -450,34 +489,51 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       data-testid="observation-form-title-container"
     >
       <span data-testid="observation-form-name">{viewingForm?.name}</span>
-      {!DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '') && (
-        <div
-          onClick={handlePinToggle}
-          className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
-          title={isCurrentFormPinned ? 'Unpin form' : 'Pin form'}
-        >
-          <Icon id="pin-icon" name="fa-thumbtack" size={ICON_SIZE.SM} />
-        </div>
-      )}
+      {!directMode &&
+        !DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '') && (
+          <div
+            onClick={handlePinToggle}
+            className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
+            title={isCurrentFormPinned ? 'Unpin form' : 'Pin form'}
+          >
+            <Icon id="pin-icon" name="fa-thumbtack" size={ICON_SIZE.SM} />
+          </div>
+        )}
     </div>
   );
 
   if (viewingForm) {
+    const primaryButtonText = directMode
+      ? t('CONSULTATION_PAD_DONE_BUTTON')
+      : validationErrorType
+        ? t('OBSERVATION_FORM_CONTINUE_ANYWAY_BUTTON')
+        : t('OBSERVATION_FORM_SAVE_BUTTON');
+
+    const secondaryButtonText = directMode
+      ? t('CONSULTATION_PAD_CANCEL_BUTTON')
+      : t('OBSERVATION_FORM_DISCARD_BUTTON');
+
+    const saveWithErrorHandling = validationErrorType
+      ? continueAnyway
+      : validateAndSave;
+
+    const handlePrimaryClick = directMode
+      ? () => validateAndSave(onDirectModeSubmit)
+      : saveWithErrorHandling;
+
+    const handleSecondaryClick = directMode
+      ? (onDirectModeCancel ?? discard)
+      : discard;
+
     return (
       <ActionArea
         className={styles.formViewActionArea}
         title={formTitleWithPin as unknown as string}
-        primaryButtonText={
-          validationErrorType
-            ? t('OBSERVATION_FORM_CONTINUE_ANYWAY_BUTTON')
-            : t('OBSERVATION_FORM_SAVE_BUTTON')
-        }
-        onPrimaryButtonClick={
-          validationErrorType ? continueAnyway : validateAndSave
-        }
+        primaryButtonText={primaryButtonText}
+        onPrimaryButtonClick={handlePrimaryClick}
         isPrimaryButtonDisabled={isPatientLoading || !patientContext}
-        secondaryButtonText={t('OBSERVATION_FORM_DISCARD_BUTTON')}
-        onSecondaryButtonClick={discard}
+        secondaryButtonText={secondaryButtonText}
+        onSecondaryButtonClick={handleSecondaryClick}
         content={formViewContent}
       />
     );

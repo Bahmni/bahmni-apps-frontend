@@ -151,8 +151,16 @@ export const RelationshipRow = ({
         items={suggestions}
         itemToString={(item) => item?.text ?? ''}
         selectedItem={
-          suggestions.find((s) => s.identifier === relationship.patientId) ??
-          null
+          relationship.patientUuid
+            ? {
+                id: relationship.patientUuid,
+                identifier: relationship.patientId,
+                name: relationship.patientName ?? '',
+                text: relationship.patientName
+                  ? `${relationship.patientName} (${relationship.patientId})`
+                  : relationship.patientId,
+              }
+            : null
         }
         invalid={!!errors.patientId}
         invalidText={errors.patientId}

@@ -264,6 +264,9 @@ export {
   getActiveVisit,
   getEncounterByUuid,
   getVisits,
+  getPatientEncounters,
+  getEncounterTypeByName,
+  type EncounterTypeRef,
   shouldEnableEncounterFilter,
   getObservationsBundleByEncounterUuid,
   createFhirEncounter,
@@ -275,6 +278,13 @@ export {
   getEncountersAndVisitsForEOC,
   type EpisodeOfCareDataType,
 } from './episodeOfCareService';
+
+export {
+  createEncounterBundle,
+  createBundleEntry,
+  ENCOUNTER_BUNDLE_URL,
+  type EncounterBundle,
+} from './encounterBundle';
 
 export {
   dispatchAuditEvent,
@@ -327,6 +337,7 @@ export {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  hasMissingMandatoryVisibleField,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
@@ -380,8 +391,17 @@ export {
   getDocumentReferences,
   getFormattedDocumentReferences,
   getDocumentReferencePage,
+  getDocumentTypes,
+  getDocumentUploadMaxSizeMb,
+  createDocumentReference,
+  saveDocument,
   type DocumentReferencePage,
   type DocumentViewModel,
+  type DocumentType,
+  type DocumentSaveTarget,
+  type CreateEncounterInVisit,
+  type CreateDocumentReferenceInput,
+  type SaveDocumentInput,
   type DocumentReference,
 } from './documentReferenceService';
 

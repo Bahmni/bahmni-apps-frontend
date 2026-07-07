@@ -7,6 +7,7 @@ import {
   formatUrl,
   PatientSearchResultBundle,
   hasPrivilege,
+  type Notification,
 } from '@bahmni/services';
 import { isSameDay, isBefore, isAfter } from 'date-fns';
 import { NavigateFunction } from 'react-router-dom';
@@ -66,24 +67,63 @@ export const handleActionButtonClick = async (
   patientSearchData: PatientSearchResultBundle,
   setPatientSearchData: (data: PatientSearchResultBundle) => void,
   navigate: NavigateFunction,
+  addNotification: (notification: Omit<Notification, 'id'>) => void,
+  t: (key: string) => string,
 ) => {
   const { status, navigation, submit } = action.onAction;
 
-  if (action.type === 'changeStatus') {
-    await updateAppointmentStatus(
-      row.appointmentUuid as string,
-      status as string,
-    ).then((response) => {
-      const updatedPatientSearchData = {
+  const showSuccessNotification = () => {
+    if (action.onSuccess?.notification) {
+      addNotification({
+        title: t(action.onSuccess.notification),
+        message: '',
+        type: 'success',
+        timeout: 5000,
+      });
+    }
+  };
+
+  const showErrorNotification = (error: unknown) => {
+    addNotification({
+      title:
+        typeof error === 'string'
+          ? error
+          : t('REGISTRATION_ACTION_BUTTON_GENERIC_ERROR'),
+      message: '',
+      type: 'error',
+      timeout: 5000,
+    });
+  };
+
+  const handleResponse = async (
+    promise: Promise<{ appointmentUuid: string; status: string }>,
+  ) => {
+    try {
+      const { appointmentUuid, status: updatedStatus } = await promise;
+      setPatientSearchData({
         totalCount: patientSearchData.totalCount,
         pageOfResults: updateAppointmentStatusInResults(
           patientSearchData.pageOfResults,
-          response.uuid,
-          response.status,
+          appointmentUuid,
+          updatedStatus,
         ),
-      };
-      setPatientSearchData(updatedPatientSearchData);
-    });
+      });
+      showSuccessNotification();
+    } catch (error) {
+      showErrorNotification(error);
+    }
+  };
+
+  if (action.type === 'changeStatus') {
+    await handleResponse(
+      updateAppointmentStatus(row.appointmentUuid!, status!).then((res) => {
+        const { uuid, status: updatedStatus } = res as {
+          uuid: string;
+          status: string;
+        };
+        return { appointmentUuid: uuid, status: updatedStatus };
+      }),
+    );
   } else if (action.type === 'navigate') {
     const options: Record<string, string> = {};
     options['patientUuid'] = row.uuid;
@@ -91,17 +131,7 @@ export const handleActionButtonClick = async (
     options['appointmentUuid'] = row.appointmentUuid!;
     handleActionNavigation(navigation ?? '', options, navigate);
   } else if (action.type === 'checkInAndStartVisit') {
-    await checkInAppointment(submit!, row.appointmentUuid!).then((response) => {
-      const updatedPatientSearchData = {
-        totalCount: patientSearchData.totalCount,
-        pageOfResults: updateAppointmentStatusInResults(
-          patientSearchData.pageOfResults,
-          response.appointmentUuid,
-          response.status,
-        ),
-      };
-      setPatientSearchData(updatedPatientSearchData);
-    });
+    await handleResponse(checkInAppointment(submit!, row.appointmentUuid!));
   }
 };
 

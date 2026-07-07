@@ -56,13 +56,13 @@ describe('ConsultationActionButton', () => {
       ).toBeInTheDocument();
     });
 
-    it('shows "Edit Consultation" text when active encounter exists', () => {
+    it('shows "Continue Consultation" text when active encounter exists', () => {
       render(
         <ConsultationActionButton {...defaultProps} editActiveEncounter />,
       );
 
       expect(
-        screen.getByRole('button', { name: /CONSULTATION_ACTION_EDIT/i }),
+        screen.getByRole('button', { name: /CONSULTATION_ACTION_CONTINUE/i }),
       ).toBeInTheDocument();
     });
 
@@ -112,7 +112,9 @@ describe('ConsultationActionButton', () => {
     render(<ConsultationActionButton {...defaultProps} />);
 
     expect(
-      screen.queryByRole('button', { name: /CONSULTATION_ACTION_(NEW|EDIT)/i }),
+      screen.queryByRole('button', {
+        name: /CONSULTATION_ACTION_(NEW|CONTINUE)/i,
+      }),
     ).not.toBeInTheDocument();
   });
 });

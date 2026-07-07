@@ -1,5 +1,5 @@
 import type { ConsultationPad } from '../../providers/clinicalConfig/models';
-import { useServiceRequestStore } from '../../stores';
+import { useServiceRequestStore, useObservationFormsStore } from '../../stores';
 import type { InputControl } from '../forms';
 import { getRegisteredInputControls } from '../forms/registry';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
@@ -69,6 +69,14 @@ export function captureUpdatedResources(entries: InputControl[]) {
   const hasData = (key: string) =>
     entries.find((e) => e.key === key)?.hasData() ?? false;
 
+  // Check if observation forms with basedOn references were saved
+  const observationFormsData = useObservationFormsStore
+    .getState()
+    .getObservationFormsData();
+  const hasObservationFormsWithBasedOn = observationFormsData.some(
+    (formData: { basedOn?: unknown }) => formData.basedOn !== undefined,
+  );
+
   return {
     conditions: hasData('conditionsAndDiagnoses'),
     allergies: hasData('allergies'),
@@ -79,5 +87,6 @@ export function captureUpdatedResources(entries: InputControl[]) {
     immunizationHistory:
       hasData('immunizationHistory') || hasData('immunizationAdministration'),
     serviceRequests,
+    observationFormsWithBasedOn: hasObservationFormsWithBasedOn,
   };
 }

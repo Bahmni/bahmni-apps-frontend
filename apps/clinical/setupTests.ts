@@ -14,6 +14,20 @@ globalThis.TextDecoder = TextDecoder;
 
 globalThis.HTMLElement.prototype.scrollIntoView = jest.fn();
 
+Object.defineProperty(globalThis, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
+
 // Polyfill crypto.randomUUID for jest/jsdom environment
 if (!globalThis.crypto?.randomUUID) {
   let counter = 0;

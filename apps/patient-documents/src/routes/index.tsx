@@ -8,7 +8,7 @@ const IndexPage = lazy(() =>
 
 export const routes: Routes = [
   {
-    path: '/',
+    path: ':patientUuid',
     component: IndexPage,
     name: 'Index',
   },

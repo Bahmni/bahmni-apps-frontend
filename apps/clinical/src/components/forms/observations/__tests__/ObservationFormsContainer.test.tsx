@@ -3,6 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import ObservationFormsContainer from '../ObservationFormsContainer';
+import {
+  mockMinimalPatientData,
+  mockEnrichedPatientData,
+} from './__mocks__/observationFormContainerMocks';
 
 // Mock the defaultFormNames import
 jest.mock('../ObservationForms', () => ({
@@ -213,19 +217,7 @@ describe('ObservationFormsContainer', () => {
 
     // Default mock for useQuery — minimal patient data so form renders
     (useQuery as jest.Mock).mockReturnValue({
-      data: {
-        id: 'test-patient-uuid',
-        fullName: null,
-        givenName: null,
-        familyName: null,
-        gender: null,
-        birthDate: null,
-        birthtime: null,
-        formattedAddress: null,
-        formattedContact: null,
-        identifiers: new Map(),
-        identifier: null,
-      },
+      data: mockMinimalPatientData,
     });
 
     // Set default mock for getValue to return no errors
@@ -336,6 +328,7 @@ describe('ObservationFormsContainer', () => {
         mockForm.uuid,
         expect.any(Array),
         null,
+        undefined,
       );
       expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
     });
@@ -410,6 +403,7 @@ describe('ObservationFormsContainer', () => {
           }),
         ]),
         null,
+        undefined,
       );
       expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
     });
@@ -513,19 +507,7 @@ describe('ObservationFormsContainer', () => {
 
     it('should pass enriched patient context from FHIR cache to CarbonContainer', () => {
       (useQuery as jest.Mock).mockReturnValue({
-        data: {
-          id: 'test-patient-uuid',
-          fullName: 'John Doe',
-          givenName: 'John',
-          familyName: 'Doe',
-          gender: 'male',
-          birthDate: '1996-01-01',
-          birthtime: null,
-          formattedAddress: null,
-          formattedContact: null,
-          identifiers: new Map(),
-          identifier: 'BAH-001',
-        },
+        data: mockEnrichedPatientData,
       });
 
       mockUseObservationFormData.mockReturnValue({
@@ -567,19 +549,7 @@ describe('ObservationFormsContainer', () => {
 
     it('should pass enriched patient to executeOnFormSaveEvent', () => {
       (useQuery as jest.Mock).mockReturnValue({
-        data: {
-          id: 'test-patient-uuid',
-          fullName: 'John Doe',
-          givenName: 'John',
-          familyName: 'Doe',
-          gender: 'male',
-          birthDate: null,
-          birthtime: null,
-          formattedAddress: null,
-          formattedContact: null,
-          identifiers: new Map(),
-          identifier: 'BAH-001',
-        },
+        data: { ...mockEnrichedPatientData, birthDate: null },
       });
 
       mockUseObservationFormData.mockReturnValue({
@@ -960,6 +930,7 @@ describe('ObservationFormsContainer', () => {
           mockForm.uuid,
           expect.any(Array),
           'mandatory', // validationErrorType is passed with the error type
+          undefined,
         );
         expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
       });
@@ -1031,6 +1002,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'invalid', // validationErrorType is passed
+          undefined,
         );
       });
     });
@@ -1090,6 +1062,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'mandatory',
+          undefined,
         );
         expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
       });
@@ -1168,6 +1141,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1251,6 +1225,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1316,6 +1291,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1399,6 +1375,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1552,6 +1529,45 @@ describe('ObservationFormsContainer', () => {
           'translated_OBSERVATION_FORM_VALIDATION_ERROR_SUBTITLE_EMPTY',
         );
       });
+    });
+
+    it('should show mandatory error when a visible mandatory field has no value but getValue returns no errors (isHidden scenario)', async () => {
+      // Simulate a field that was hidden via isHidden scripting and became visible,
+      // but form2-controls did not propagate the mandatory error to getValue().errors.
+      // Also covers always-visible mandatory fields never touched by the user.
+      mockGetValue.mockReturnValue({
+        observations: [
+          { concept: { uuid: 'other-field' }, value: 'some value' },
+        ],
+        errors: [],
+      });
+
+      mockContainerState.data = {
+        children: [
+          {
+            control: { properties: { mandatory: true } },
+            hidden: false,
+            voided: false,
+            value: { value: undefined },
+            children: [],
+          },
+        ],
+      };
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      fireEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('inline-notification')).toBeInTheDocument();
+        expect(screen.getByTestId('notification-title')).toHaveTextContent(
+          'translated_OBSERVATION_FORM_VALIDATION_ERROR_TITLE_MANDATORY',
+        );
+      });
+
+      mockContainerState.data = {};
     });
   });
 });

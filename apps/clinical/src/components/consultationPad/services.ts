@@ -1,3 +1,4 @@
+import { createEncounterBundle } from '@bahmni/services';
 import type { Bundle, Encounter } from 'fhir/r4';
 import {
   createEncounterBundleEntry,
@@ -6,7 +7,6 @@ import {
 } from '../../services/encounterBundleService';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { extractConceptsFromResponseBundle } from '../../utils/fhir/conceptExtractor';
-import { createEncounterBundle } from '../../utils/fhir/encounterBundleCreator';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
 import type { EncounterContext, InputControl } from '../forms';
 
@@ -32,7 +32,6 @@ export async function submitConsultation(
     encounterParticipants,
     activeVisit,
     selectedLocation,
-    consultationDate,
     practitioner,
   } = useEncounterDetailsStore.getState();
 
@@ -44,7 +43,7 @@ export async function submitConsultation(
     activeVisit!.id,
     deps.episodeOfCareUuids,
     selectedLocation!.uuid,
-    consultationDate,
+    deps.activeEncounter?.period?.start ?? null,
   );
 
   const encounterBundleEntry = createEncounterBundleEntry(
@@ -63,7 +62,7 @@ export async function submitConsultation(
     encounterSubject: encounterResource.subject!,
     encounterReference,
     practitionerUUID: practitioner!.uuid,
-    consultationDate,
+    consultationDate: new Date(),
     statDurationInMilliseconds: deps.statDurationInMilliseconds,
   };
 
