@@ -1,0 +1,92 @@
+import { v4 as uuidv4 } from 'uuid';
+import {
+  CriterionConfig,
+  CriterionRow,
+  CriterionValue,
+  InputConfig,
+  ScalarValue,
+  SearchContextConfig,
+} from './models';
+
+const isRangeInput = (input: InputConfig): boolean =>
+  (input.kind === 'date' || input.kind === 'numeric') && !!input.rangeAllowed;
+
+const isScalarValue = (v: CriterionValue): v is ScalarValue => 'value' in v;
+
+export const getValueError = (
+  value: CriterionValue | null,
+  input: InputConfig,
+  errorMessage: string,
+): string | null => {
+  if (!value) return errorMessage;
+  if (isScalarValue(value)) return value.value ? null : errorMessage;
+  const valid = isRangeInput(input)
+    ? !!value.from.value && !!value.to?.value
+    : !!value.from.value;
+  return valid ? null : errorMessage;
+};
+
+export const makeRow = (criterionKey: string | null): CriterionRow => ({
+  rowId: uuidv4(),
+  criterionKey,
+  value: null,
+  validationError: null,
+});
+
+export const initialRows = (context: SearchContextConfig): CriterionRow[] => {
+  const defaults = context.criteria.filter((c) => c.default);
+  if (defaults.length > 0) return defaults.map((c) => makeRow(c.field.key));
+  return [makeRow(context.criteria[0].field.key)];
+};
+
+const activeKeysFrom = (
+  rows: CriterionRow[],
+  excludeRowId?: string,
+): Set<string> =>
+  new Set(
+    rows
+      .filter(
+        (r): r is CriterionRow & { criterionKey: string } =>
+          r.criterionKey !== null && r.rowId !== excludeRowId,
+      )
+      .map((r) => r.criterionKey),
+  );
+
+export const availableCriteriaForRow = (
+  criteria: CriterionConfig[],
+  rows: CriterionRow[],
+  currentRowId: string,
+): CriterionConfig[] => {
+  const activeKeys = activeKeysFrom(rows, currentRowId);
+  return criteria.filter((c) => !activeKeys.has(c.field.key));
+};
+
+export const criteriaAvailableToAdd = (
+  criteria: CriterionConfig[],
+  rows: CriterionRow[],
+): CriterionConfig[] => {
+  const activeKeys = activeKeysFrom(rows);
+  return criteria.filter((c) => !activeKeys.has(c.field.key));
+};
+
+export const updateRow = (
+  rows: CriterionRow[],
+  rowId: string,
+  updater: (row: CriterionRow) => Partial<CriterionRow>,
+): CriterionRow[] =>
+  rows.map((r) => (r.rowId === rowId ? { ...r, ...updater(r) } : r));
+
+export const validateRows = (
+  rows: CriterionRow[],
+  criteria: CriterionConfig[],
+  criterionError: string,
+  valueError: string,
+): CriterionRow[] =>
+  rows.map((r) => {
+    if (!r.criterionKey) return { ...r, validationError: criterionError };
+    const criterion = criteria.find((c) => c.field.key === r.criterionKey)!;
+    return {
+      ...r,
+      validationError: getValueError(r.value, criterion.input, valueError),
+    };
+  });

@@ -85,7 +85,10 @@ export interface SearchContextConfig {
   criteria: CriterionConfig[];
 }
 
-export type CommonSearchWidgetConfig = [SearchContextConfig, ...SearchContextConfig[]];
+export type CommonSearchWidgetConfig = [
+  SearchContextConfig,
+  ...SearchContextConfig[],
+];
 
 export interface CriterionRow {
   rowId: string;
