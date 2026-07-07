@@ -3,6 +3,7 @@ import {
   fetchObservationForms,
   hasPrivilege,
   type ObservationForm,
+  useTranslation,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
@@ -25,6 +26,7 @@ const TaskActions: React.FC<TaskActionsProps> = ({
   episodeOfCareUuids,
 }) => {
   const { userPrivileges } = useUserPrivilege();
+  const { t } = useTranslation();
 
   const shouldFetchForms = hasLaunchFormActions(actionConfig, task.code);
 
@@ -64,7 +66,7 @@ const TaskActions: React.FC<TaskActionsProps> = ({
 
   return (
     <IconButton
-      label={action.label}
+      label={t(action.label)}
       kind="ghost"
       size="sm"
       onClick={() => handleTaskAction(action, task)}
