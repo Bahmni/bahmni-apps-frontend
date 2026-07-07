@@ -3,6 +3,7 @@
   "title": "Common Search Widget Config Schema",
   "description": "Configuration for the common search widget, defining search criteria per context",
   "type": "array",
+  "minItems": 1,
   "items": {
     "$ref": "#/definitions/searchContextConfig"
   },
