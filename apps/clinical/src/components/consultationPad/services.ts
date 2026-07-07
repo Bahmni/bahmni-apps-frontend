@@ -44,7 +44,7 @@ export async function submitConsultation(
     activeVisit!.id,
     deps.episodeOfCareUuids,
     selectedLocation!.uuid,
-    consultationDate,
+    deps.activeEncounter?.period?.start ?? null,
   );
 
   const encounterBundleEntry = createEncounterBundleEntry(
