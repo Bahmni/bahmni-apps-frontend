@@ -1,3 +1,57 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
 .fullWidth {
   max-inline-size: 100% !important;
+}
+
+.grid {
+  margin-inline: 0;
+  padding-inline: 0;
+  min-width: stretch;
+  gap: $spacing-04;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.column {
+  margin-inline: 0;
+  align-self: baseline;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: $spacing-05;
+  margin-top: $spacing-03;
+  border-top: 1px solid $border-subtle-02;
+}
+
+.close {
+  margin-inline: 0;
+  align-self: center;
+  justify-self: end;
+}
+
+.datePicker {
+  margin-inline-end: 0;
+  > div {
+    > div {
+      display: block;
+      min-inline-size: -webkit-fill-available !important;
+      > div {
+        display: block;
+        > div {
+          display: block;
+        }
+        input {
+          inline-size: -webkit-fill-available !important;
+        }
+      }
+    }
+  }
+}
+
+.numericInput {
+  margin-inline-end: 0;
 }

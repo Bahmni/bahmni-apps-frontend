@@ -311,7 +311,7 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
           id="common-search-add-criterion-button"
           type="button"
         >
-          ADD_SEARCH_CRITERIA
+          COMMON_SEARCH_ADD_CRITERIA_BUTTON
         </button>
         <button
           class="cds--btn cds--btn--primary"
@@ -319,7 +319,7 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
           id="common-search-search-button"
           type="button"
         >
-          SEARCH
+          COMMON_SEARCH_SEARCH_BUTTON
         </button>
       </div>
     </div>
