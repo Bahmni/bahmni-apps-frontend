@@ -2,12 +2,20 @@ import { getConfig } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
+import { useNotification } from '../../../notification';
 import CommonSearchWidget from '../CommonSearchWidget';
 import { mockCommonSearchWidgetConfig } from './__mocks__/commonSearchWidgetMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getConfig: jest.fn(),
+}));
+
+jest.mock('../../../notification');
+
+jest.mock('../SearchForm', () => ({
+  __esModule: true,
+  default: () => <div data-testid="search-form" />,
 }));
 
 describe('CommonSearchWidget', () => {
@@ -18,6 +26,9 @@ describe('CommonSearchWidget', () => {
       defaultOptions: { queries: { retry: false } },
     });
     jest.clearAllMocks();
+    (useNotification as jest.Mock).mockReturnValue({
+      addNotification: jest.fn(),
+    });
   });
 
   afterEach(() => {
@@ -83,6 +94,7 @@ describe('CommonSearchWidget', () => {
       expect(
         screen.getByTestId('common-search-widget-test-id'),
       ).toBeInTheDocument();
+      expect(screen.getByTestId('search-form')).toBeInTheDocument();
     });
   });
 });

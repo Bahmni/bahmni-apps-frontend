@@ -4,13 +4,18 @@ import { useQuery } from '@tanstack/react-query';
 import { SearchWidgetProps } from '../models';
 import { CommonSearchWidgetConfig } from './models';
 import schema from './schema.json';
+import SearchForm from './SearchForm';
 import styles from './styles/CommonSearchWidget.module.scss';
 
 const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { t } = useTranslation();
   const configUrl = extensionParams?.configUrl as string | undefined;
 
-  const { isLoading, error } = useQuery({
+  const {
+    isLoading,
+    error,
+    data: config,
+  } = useQuery({
     queryKey: ['commonSearchWidgetConfig', configUrl],
     queryFn: () => getConfig<CommonSearchWidgetConfig>(configUrl!, schema),
     enabled: !!configUrl,
@@ -26,7 +31,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       />
     );
 
-  if (error || !configUrl)
+  if (error || !configUrl || !config)
     return (
       <InlineNotification
         id="common-search-config-error"
@@ -44,7 +49,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       data-testid="common-search-widget-test-id"
       aria-label="Common Search"
     >
-      {t('COMMON_SEARCH_LABEL')}
+      <SearchForm config={config} />
     </div>
   );
 };
