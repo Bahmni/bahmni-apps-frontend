@@ -1160,6 +1160,42 @@ describe('hasMissingMandatoryVisibleField', () => {
     expect(hasMissingMandatoryVisibleField(data)).toBe(false);
   });
 
+  it('returns false for a hidden group node containing a visible mandatory empty child', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: true,
+      voided: false,
+      value: null,
+      children: [
+        {
+          control: mandatoryControl,
+          hidden: false,
+          voided: false,
+          value: { value: null },
+        },
+      ],
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
+  it('returns false for a voided group node containing a visible mandatory empty child', () => {
+    const data = {
+      control: mandatoryControl,
+      hidden: false,
+      voided: true,
+      value: null,
+      children: [
+        {
+          control: mandatoryControl,
+          hidden: false,
+          voided: false,
+          value: { value: null },
+        },
+      ],
+    };
+    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
+  });
+
   it('returns false for a mandatory group node whose children are all filled', () => {
     const data = {
       control: mandatoryControl,

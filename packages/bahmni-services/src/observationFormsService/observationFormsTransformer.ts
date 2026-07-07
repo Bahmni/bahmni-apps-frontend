@@ -600,7 +600,10 @@ export function hasMissingMandatoryVisibleField(
     }
   }
 
-  // Recurse into children regardless of this node's mandatory flag
+  // Skip hidden/voided subtrees entirely — their children are not visible
+  if (data.hidden || data.voided) return false;
+
+  // Recurse into children
   if (hasChildren) {
     return (children as unknown[]).some(
       (child) =>
