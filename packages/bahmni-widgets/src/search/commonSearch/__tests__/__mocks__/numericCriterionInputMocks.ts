@@ -19,3 +19,8 @@ export const mockRangeValue: RangeValue = {
   from: { value: '20', comparator: null },
   to: { value: '30', comparator: null },
 };
+
+export const mockInvalidOrderRangeValue: RangeValue = {
+  from: { value: '50', comparator: null },
+  to: { value: '20', comparator: null },
+};

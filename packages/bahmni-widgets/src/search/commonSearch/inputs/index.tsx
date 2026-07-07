@@ -15,6 +15,7 @@ interface CriterionInputProps {
   value: CriterionValue | null;
   onChange: (value: CriterionValue | null) => void;
   validationError: string | null;
+  rangeOrderError: string | null;
 }
 
 const CriterionInput = ({
@@ -22,6 +23,7 @@ const CriterionInput = ({
   value,
   onChange,
   validationError,
+  rangeOrderError,
 }: CriterionInputProps) => {
   switch (input.kind) {
     case 'text':
@@ -40,6 +42,7 @@ const CriterionInput = ({
           value={value as RangeValue | null}
           onChange={onChange as (value: RangeValue | null) => void}
           validationError={validationError}
+          rangeOrderError={rangeOrderError}
         />
       );
     case 'date':
@@ -49,6 +52,7 @@ const CriterionInput = ({
           value={value as RangeValue | null}
           onChange={onChange as (value: RangeValue | null) => void}
           validationError={validationError}
+          rangeOrderError={rangeOrderError}
         />
       );
     case 'options':

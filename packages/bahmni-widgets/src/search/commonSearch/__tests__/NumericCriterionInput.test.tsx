@@ -3,6 +3,7 @@ import NumericCriterionInput from '../inputs/NumericCriterionInput';
 import { RangeValue } from '../models';
 import {
   mockFromValue,
+  mockInvalidOrderRangeValue,
   mockNumericInput,
   mockRangeNumericInput,
   mockRangeValue,
@@ -14,6 +15,7 @@ const renderInput = (
   input = mockNumericInput,
   value: RangeValue | null = null,
   validationError: string | null = null,
+  rangeOrderError: string | null = null,
 ) =>
   render(
     <NumericCriterionInput
@@ -21,6 +23,7 @@ const renderInput = (
       value={value}
       onChange={mockOnChange}
       validationError={validationError}
+      rangeOrderError={rangeOrderError}
     />,
   );
 
@@ -148,6 +151,30 @@ describe('NumericCriterionInput', () => {
     it('does not show validationError when both bounds are filled', () => {
       renderInput(mockRangeNumericInput, mockRangeValue, null);
       expect(screen.queryByText('VALUE_REQUIRED')).not.toBeInTheDocument();
+    });
+
+    it('shows rangeOrderError on the to field only when from > to', () => {
+      renderInput(
+        mockRangeNumericInput,
+        mockInvalidOrderRangeValue,
+        null,
+        'RANGE_ORDER_ERR',
+      );
+      expect(screen.getByText('RANGE_ORDER_ERR')).toBeInTheDocument();
+      expect(screen.getAllByText('RANGE_ORDER_ERR')).toHaveLength(1);
+    });
+
+    it('does not show rangeOrderError on the from field', () => {
+      renderInput(
+        mockRangeNumericInput,
+        mockInvalidOrderRangeValue,
+        null,
+        'RANGE_ORDER_ERR',
+      );
+      const fromContainer = screen.getByTestId(
+        'numeric-criterion-input-from-test-id',
+      );
+      expect(fromContainer).not.toHaveTextContent('RANGE_ORDER_ERR');
     });
   });
 });

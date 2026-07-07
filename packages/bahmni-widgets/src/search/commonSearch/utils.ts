@@ -26,11 +26,32 @@ export const getValueError = (
   return valid ? null : errorMessage;
 };
 
+export const getRangeOrderError = (
+  value: CriterionValue | null,
+  input: InputConfig,
+  errorMessage: string,
+): string | null => {
+  if (!isRangeInput(input) || !value || isScalarValue(value)) return null;
+  const fromVal = value.from.value;
+  const toVal = value.to?.value;
+  if (!fromVal || !toVal) return null;
+  if (input.kind === 'numeric') {
+    const f = Number.parseFloat(fromVal);
+    const t = Number.parseFloat(toVal);
+    return !Number.isNaN(f) && !Number.isNaN(t) && f > t ? errorMessage : null;
+  }
+  if (input.kind === 'date') {
+    return new Date(fromVal) > new Date(toVal) ? errorMessage : null;
+  }
+  return null;
+};
+
 export const makeRow = (criterionKey: string | null): CriterionRow => ({
   rowId: uuidv4(),
   criterionKey,
   value: null,
   validationError: null,
+  rangeOrderError: null,
 });
 
 export const initialRows = (context: SearchContextConfig): CriterionRow[] => {
@@ -81,12 +102,15 @@ export const validateRows = (
   criteria: CriterionConfig[],
   criterionError: string,
   valueError: string,
+  rangeOrderMessage: string,
 ): CriterionRow[] =>
   rows.map((r) => {
-    if (!r.criterionKey) return { ...r, validationError: criterionError };
+    if (!r.criterionKey)
+      return { ...r, validationError: criterionError, rangeOrderError: null };
     const criterion = criteria.find((c) => c.field.key === r.criterionKey)!;
-    return {
-      ...r,
-      validationError: getValueError(r.value, criterion.input, valueError),
-    };
+    const validationError = getValueError(r.value, criterion.input, valueError);
+    const rangeOrderError = validationError
+      ? null
+      : getRangeOrderError(r.value, criterion.input, rangeOrderMessage);
+    return { ...r, validationError, rangeOrderError };
   });

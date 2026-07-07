@@ -4,28 +4,26 @@ import { RangeValue } from '../models';
 import {
   mockDateInput,
   mockFromValue,
+  mockInvalidOrderRangeValue,
   mockRangeDateInput,
   mockRangeValue,
 } from './__mocks__/dateCriterionInputMocks';
 
 const mockOnChange = jest.fn();
 
-const defaultProps = {
-  onChange: mockOnChange,
-  validationError: null,
-};
-
 const renderInput = (
   input = mockDateInput,
   value: RangeValue | null = null,
   validationError: string | null = null,
+  rangeOrderError: string | null = null,
 ) =>
   render(
     <DateCriterionInput
-      {...defaultProps}
       input={input}
       value={value}
+      onChange={mockOnChange}
       validationError={validationError}
+      rangeOrderError={rangeOrderError}
     />,
   );
 
@@ -143,6 +141,30 @@ describe('DateCriterionInput', () => {
     it('does not show validationError when both bounds are filled', () => {
       renderInput(mockRangeDateInput, mockRangeValue, null);
       expect(screen.queryByText('VALUE_REQUIRED')).not.toBeInTheDocument();
+    });
+
+    it('shows rangeOrderError on the to field only when from > to', () => {
+      renderInput(
+        mockRangeDateInput,
+        mockInvalidOrderRangeValue,
+        null,
+        'RANGE_ORDER_ERR',
+      );
+      expect(screen.getByText('RANGE_ORDER_ERR')).toBeInTheDocument();
+      expect(screen.getAllByText('RANGE_ORDER_ERR')).toHaveLength(1);
+    });
+
+    it('does not show rangeOrderError on the from field', () => {
+      renderInput(
+        mockRangeDateInput,
+        mockInvalidOrderRangeValue,
+        null,
+        'RANGE_ORDER_ERR',
+      );
+      const fromContainer = screen.getByTestId(
+        'date-criterion-input-from-test-id',
+      );
+      expect(fromContainer).not.toHaveTextContent('RANGE_ORDER_ERR');
     });
   });
 });

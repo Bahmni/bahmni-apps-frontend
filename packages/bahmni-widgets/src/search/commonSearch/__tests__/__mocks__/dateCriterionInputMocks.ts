@@ -19,3 +19,8 @@ export const mockRangeValue: RangeValue = {
   from: { value: '2024-01-01T00:00:00.000Z', comparator: null },
   to: { value: '2024-12-31T00:00:00.000Z', comparator: null },
 };
+
+export const mockInvalidOrderRangeValue: RangeValue = {
+  from: { value: '2024-12-31T00:00:00.000Z', comparator: null },
+  to: { value: '2024-01-01T00:00:00.000Z', comparator: null },
+};

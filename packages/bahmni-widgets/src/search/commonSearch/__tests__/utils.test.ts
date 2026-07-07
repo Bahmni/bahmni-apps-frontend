@@ -2,6 +2,7 @@ import {
   initialRows,
   availableCriteriaForRow,
   criteriaAvailableToAdd,
+  getRangeOrderError,
   updateRow,
   validateRows,
 } from '../utils';
@@ -17,6 +18,7 @@ import {
   mockRowRangeNoBounds,
   mockRowRangePartial,
   mockRowRangeFull,
+  mockRowRangeInvalidOrder,
   mockRowScalarEmpty,
   mockRowTextNoValue,
   mockRowTextWithValue,
@@ -91,6 +93,97 @@ describe('availableCriteriaForRow', () => {
   });
 });
 
+describe('getRangeOrderError', () => {
+  const numericRangeInput =
+    mockPatientContextWithRangeNumeric.criteria[0].input;
+  const numericNonRangeInput = mockPatientContext.criteria[2].input;
+  const dateRangeInput = {
+    kind: 'date' as const,
+    placeholderTranslationKey: 'DATE_PLACEHOLDER',
+    rangeAllowed: true,
+  };
+
+  it.each([
+    {
+      label: 'non-range input',
+      value: {
+        from: { value: '50', comparator: null },
+        to: { value: '20', comparator: null },
+      },
+      input: numericNonRangeInput,
+      expected: null,
+    },
+    {
+      label: 'null value',
+      value: null,
+      input: numericRangeInput,
+      expected: null,
+    },
+    {
+      label: 'from missing',
+      value: {
+        from: { value: null, comparator: null },
+        to: { value: '20', comparator: null },
+      },
+      input: numericRangeInput,
+      expected: null,
+    },
+    {
+      label: 'to missing',
+      value: { from: { value: '20', comparator: null } },
+      input: numericRangeInput,
+      expected: null,
+    },
+    {
+      label: 'numeric: from < to (valid)',
+      value: {
+        from: { value: '20', comparator: null },
+        to: { value: '50', comparator: null },
+      },
+      input: numericRangeInput,
+      expected: null,
+    },
+    {
+      label: 'numeric: from === to (valid)',
+      value: {
+        from: { value: '30', comparator: null },
+        to: { value: '30', comparator: null },
+      },
+      input: numericRangeInput,
+      expected: null,
+    },
+    {
+      label: 'numeric: from > to (invalid)',
+      value: {
+        from: { value: '50', comparator: null },
+        to: { value: '20', comparator: null },
+      },
+      input: numericRangeInput,
+      expected: 'RANGE_ORDER_ERR',
+    },
+    {
+      label: 'date: from > to (invalid)',
+      value: {
+        from: { value: '2024-12-31T00:00:00.000Z', comparator: null },
+        to: { value: '2024-01-01T00:00:00.000Z', comparator: null },
+      },
+      input: dateRangeInput,
+      expected: 'RANGE_ORDER_ERR',
+    },
+    {
+      label: 'date: from === to (valid)',
+      value: {
+        from: { value: '2024-06-15T00:00:00.000Z', comparator: null },
+        to: { value: '2024-06-15T00:00:00.000Z', comparator: null },
+      },
+      input: dateRangeInput,
+      expected: null,
+    },
+  ])('returns $expected when $label', ({ value, input, expected }) => {
+    expect(getRangeOrderError(value, input, 'RANGE_ORDER_ERR')).toBe(expected);
+  });
+});
+
 describe('validateRows', () => {
   it.each([
     {
@@ -98,59 +191,76 @@ describe('validateRows', () => {
       row: mockRowNoCriterion,
       criteria: mockPatientContext.criteria,
       expectedError: 'CRITERION_ERR',
+      expectedRangeOrderError: null,
     },
     {
       label: 'null value for non-range input',
       row: mockRowTextNoValue,
       criteria: mockPatientContext.criteria,
       expectedError: 'VALUE_ERR',
+      expectedRangeOrderError: null,
     },
     {
       label: 'valid value for non-range input',
       row: mockRowTextWithValue,
       criteria: mockPatientContext.criteria,
       expectedError: null,
+      expectedRangeOrderError: null,
     },
     {
       label: 'empty scalar value',
       row: mockRowScalarEmpty,
       criteria: mockPatientContext.criteria,
       expectedError: 'VALUE_ERR',
+      expectedRangeOrderError: null,
     },
     {
       label: 'non-range numeric with from value filled',
       row: mockRowRangePartial,
       criteria: mockPatientContext.criteria,
       expectedError: null,
+      expectedRangeOrderError: null,
     },
     {
       label: 'range numeric with neither bound filled',
       row: mockRowRangeNoBounds,
       criteria: mockPatientContextWithRangeNumeric.criteria,
       expectedError: 'VALUE_ERR',
+      expectedRangeOrderError: null,
     },
     {
       label: 'range input with only from filled',
       row: mockRowRangePartial,
       criteria: mockPatientContextWithRangeNumeric.criteria,
       expectedError: 'VALUE_ERR',
+      expectedRangeOrderError: null,
     },
     {
-      label: 'range input with both bounds filled',
+      label: 'range input with both bounds filled and valid order',
       row: mockRowRangeFull,
       criteria: mockPatientContextWithRangeNumeric.criteria,
       expectedError: null,
+      expectedRangeOrderError: null,
+    },
+    {
+      label: 'range input with both bounds filled but from > to',
+      row: mockRowRangeInvalidOrder,
+      criteria: mockPatientContextWithRangeNumeric.criteria,
+      expectedError: null,
+      expectedRangeOrderError: 'RANGE_ORDER_ERR',
     },
   ])(
-    '$label: sets validationError to $expectedError',
-    ({ row, criteria, expectedError }) => {
+    '$label: sets validationError=$expectedError rangeOrderError=$expectedRangeOrderError',
+    ({ row, criteria, expectedError, expectedRangeOrderError }) => {
       const result = validateRows(
         [row],
         criteria,
         'CRITERION_ERR',
         'VALUE_ERR',
+        'RANGE_ORDER_ERR',
       );
       expect(result[0].validationError).toBe(expectedError);
+      expect(result[0].rangeOrderError).toBe(expectedRangeOrderError);
     },
   );
 
@@ -160,6 +270,7 @@ describe('validateRows', () => {
       mockPatientContext.criteria,
       'CRITERION_ERR',
       'VALUE_ERR',
+      'RANGE_ORDER_ERR',
     );
     expect(result[0].validationError).toBe('CRITERION_ERR');
     expect(result[1].validationError).toBeNull();

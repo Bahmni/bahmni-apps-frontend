@@ -13,6 +13,7 @@ interface Props {
   value: RangeValue | null;
   onChange: (value: RangeValue | null) => void;
   validationError: string | null;
+  rangeOrderError: string | null;
 }
 
 const DateCriterionInput = ({
@@ -20,6 +21,7 @@ const DateCriterionInput = ({
   value,
   onChange,
   validationError,
+  rangeOrderError,
 }: Props) => {
   const { t } = useTranslation();
 
@@ -90,8 +92,15 @@ const DateCriterionInput = ({
               id={`date-input-to-${input.placeholderTranslationKey}`}
               labelText={t('COMMON_SEARCH_CRITERIA_DATE_INPUT_FIELD_TO')}
               placeholder={t(input.placeholderTranslationKey)}
-              invalid={!!validationError && !value?.to?.value}
-              invalidText={validationError ?? undefined}
+              invalid={
+                (!!validationError && !value?.to?.value) || !!rangeOrderError
+              }
+              invalidText={
+                rangeOrderError ??
+                (validationError && !value?.to?.value
+                  ? validationError
+                  : undefined)
+              }
             />
           </DatePicker>
         </Column>

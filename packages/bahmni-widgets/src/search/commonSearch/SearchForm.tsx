@@ -66,6 +66,7 @@ const SearchForm = ({ config }: SearchFormProps) => {
         criterionKey,
         value: null,
         validationError: null,
+        rangeOrderError: null,
       })),
     );
   };
@@ -79,6 +80,7 @@ const SearchForm = ({ config }: SearchFormProps) => {
         return {
           value,
           validationError: filled ? null : r.validationError,
+          rangeOrderError: null,
         };
       }),
     );
@@ -109,9 +111,10 @@ const SearchForm = ({ config }: SearchFormProps) => {
       activeContext.criteria,
       t('COMMON_SEARCH_CRITERION_REQUIRED'),
       t('COMMON_SEARCH_VALUE_REQUIRED'),
+      t('COMMON_SEARCH_RANGE_ORDER_INVALID'),
     );
     setRows(validated);
-    if (validated.some((r) => r.validationError)) return;
+    if (validated.some((r) => r.validationError ?? r.rangeOrderError)) return;
     addNotification({
       title: t('COMMON_SEARCH_SUCCESS'),
       message: t('COMMON_SEARCH_SUCCESS_MESSAGE'),
@@ -211,7 +214,10 @@ const SearchForm = ({ config }: SearchFormProps) => {
             data-testid="common-search-search-button-test-id"
             onClick={handleSearch}
             disabled={
-              rows.length === 0 || rows.some((r) => r.validationError !== null)
+              rows.length === 0 ||
+              rows.some(
+                (r) => r.validationError !== null || r.rangeOrderError !== null,
+              )
             }
           >
             {t('COMMON_SEARCH_SEARCH_BUTTON')}

@@ -8,6 +8,7 @@ interface Props {
   value: RangeValue | null;
   onChange: (value: RangeValue | null) => void;
   validationError: string | null;
+  rangeOrderError: string | null;
 }
 
 const toRawValue = (val: string | number | undefined): string | null => {
@@ -20,12 +21,14 @@ const NumericCriterionInput = ({
   value,
   onChange,
   validationError,
+  rangeOrderError,
 }: Props) => {
   const { t } = useTranslation();
 
   if (input.rangeAllowed) {
     const fromInvalid = !!validationError && !value?.from.value;
-    const toInvalid = !!validationError && !value?.to?.value;
+    const toInvalid =
+      (!!validationError && !value?.to?.value) || !!rangeOrderError;
     return (
       <Grid
         id="numeric-criterion-input"
@@ -81,7 +84,9 @@ const NumericCriterionInput = ({
               })
             }
             invalid={toInvalid}
-            invalidText={toInvalid ? validationError : undefined}
+            invalidText={
+              rangeOrderError ?? (toInvalid ? validationError : undefined)
+            }
           />
         </Column>
       </Grid>

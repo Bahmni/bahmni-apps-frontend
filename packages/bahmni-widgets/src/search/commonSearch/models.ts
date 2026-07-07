@@ -95,4 +95,5 @@ export interface CriterionRow {
   criterionKey: string | null;
   value: CriterionValue | null;
   validationError: string | null;
+  rangeOrderError: string | null;
 }

@@ -64,6 +64,7 @@ const CriterionRow = ({
             value={row.value}
             onChange={(val) => onValueChange(row.rowId, val)}
             validationError={row.validationError}
+            rangeOrderError={row.rangeOrderError}
           />
         ) : (
           <div />

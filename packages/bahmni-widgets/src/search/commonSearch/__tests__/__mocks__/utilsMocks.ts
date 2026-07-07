@@ -5,6 +5,7 @@ export const mockRowNoCriterion: CriterionRow = {
   criterionKey: null,
   value: null,
   validationError: null,
+  rangeOrderError: null,
 };
 
 export const mockRowTextNoValue: CriterionRow = {
@@ -12,6 +13,7 @@ export const mockRowTextNoValue: CriterionRow = {
   criterionKey: 'patient.name.given',
   value: null,
   validationError: null,
+  rangeOrderError: null,
 };
 
 export const mockRowTextWithValue: CriterionRow = {
@@ -19,6 +21,7 @@ export const mockRowTextWithValue: CriterionRow = {
   criterionKey: 'patient.name.given',
   value: { value: 'Rahul' } satisfies ScalarValue,
   validationError: null,
+  rangeOrderError: null,
 };
 
 export const mockRowScalarEmpty: CriterionRow = {
@@ -26,6 +29,7 @@ export const mockRowScalarEmpty: CriterionRow = {
   criterionKey: 'patient.name.given',
   value: { value: '' } satisfies ScalarValue,
   validationError: null,
+  rangeOrderError: null,
 };
 
 export const mockRowGenderNoValue: CriterionRow = {
@@ -33,6 +37,7 @@ export const mockRowGenderNoValue: CriterionRow = {
   criterionKey: 'patient.gender',
   value: null,
   validationError: null,
+  rangeOrderError: null,
 };
 
 export const mockRowRangeNoBounds: CriterionRow = {
@@ -40,6 +45,7 @@ export const mockRowRangeNoBounds: CriterionRow = {
   criterionKey: 'patient.age',
   value: { from: { value: null, comparator: null } } satisfies RangeValue,
   validationError: null,
+  rangeOrderError: null,
 };
 
 export const mockRowRangePartial: CriterionRow = {
@@ -47,6 +53,7 @@ export const mockRowRangePartial: CriterionRow = {
   criterionKey: 'patient.age',
   value: { from: { value: '20', comparator: null } } satisfies RangeValue,
   validationError: null,
+  rangeOrderError: null,
 };
 
 export const mockRowRangeFull: CriterionRow = {
@@ -57,4 +64,16 @@ export const mockRowRangeFull: CriterionRow = {
     to: { value: '30', comparator: null },
   } satisfies RangeValue,
   validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockRowRangeInvalidOrder: CriterionRow = {
+  rowId: 'row-range-invalid-order',
+  criterionKey: 'patient.age',
+  value: {
+    from: { value: '50', comparator: null },
+    to: { value: '20', comparator: null },
+  } satisfies RangeValue,
+  validationError: null,
+  rangeOrderError: null,
 };

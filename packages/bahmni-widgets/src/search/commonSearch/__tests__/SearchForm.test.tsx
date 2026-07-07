@@ -389,6 +389,66 @@ describe('SearchForm', () => {
     });
   });
 
+  describe('Range order validation', () => {
+    it('shows range order error on to field when from > to', () => {
+      renderForm([mockPatientContextWithRangeNumeric]);
+      const [fromInput, toInput] = screen.getAllByRole('spinbutton');
+      fireEvent.change(fromInput, { target: { value: '50' } });
+      fireEvent.change(toInput, { target: { value: '20' } });
+      fireEvent.click(
+        screen.getByTestId('common-search-search-button-test-id'),
+      );
+      expect(
+        screen.getByText('COMMON_SEARCH_RANGE_ORDER_INVALID'),
+      ).toBeInTheDocument();
+      expect(mockAddNotification).not.toHaveBeenCalled();
+    });
+
+    it('disables search button after range order error is set', () => {
+      renderForm([mockPatientContextWithRangeNumeric]);
+      const [fromInput, toInput] = screen.getAllByRole('spinbutton');
+      fireEvent.change(fromInput, { target: { value: '50' } });
+      fireEvent.change(toInput, { target: { value: '20' } });
+      fireEvent.click(
+        screen.getByTestId('common-search-search-button-test-id'),
+      );
+      expect(
+        screen.getByTestId('common-search-search-button-test-id'),
+      ).toBeDisabled();
+    });
+
+    it('clears range order error when to value changes', () => {
+      renderForm([mockPatientContextWithRangeNumeric]);
+      const [fromInput, toInput] = screen.getAllByRole('spinbutton');
+      fireEvent.change(fromInput, { target: { value: '50' } });
+      fireEvent.change(toInput, { target: { value: '20' } });
+      fireEvent.click(
+        screen.getByTestId('common-search-search-button-test-id'),
+      );
+      expect(
+        screen.getByText('COMMON_SEARCH_RANGE_ORDER_INVALID'),
+      ).toBeInTheDocument();
+
+      fireEvent.change(toInput, { target: { value: '60' } });
+      expect(
+        screen.queryByText('COMMON_SEARCH_RANGE_ORDER_INVALID'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('allows equal from and to values', () => {
+      renderForm([mockPatientContextWithRangeNumeric]);
+      const [fromInput, toInput] = screen.getAllByRole('spinbutton');
+      fireEvent.change(fromInput, { target: { value: '30' } });
+      fireEvent.change(toInput, { target: { value: '30' } });
+      fireEvent.click(
+        screen.getByTestId('common-search-search-button-test-id'),
+      );
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'success' }),
+      );
+    });
+  });
+
   describe('Snapshot', () => {
     it('matches snapshot', () => {
       const { container } = renderForm();
