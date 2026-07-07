@@ -1,6 +1,7 @@
 import { Button, SimpleDataTable } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useImperativeHandle } from 'react';
+import { useParams } from 'react-router-dom';
 import { RelationshipRow } from './RelationshipRow';
 import styles from './styles/index.module.scss';
 import { usePatientRelationship } from './usePatientRelationship';
@@ -42,6 +43,10 @@ export const PatientRelationships = ({
 }: PatientRelationshipsProps) => {
   const { t } = useTranslation();
 
+  const { patientUuid: currentPatientUuid } = useParams<{
+    patientUuid: string;
+  }>();
+
   const {
     relationships,
     relationshipTypes,
@@ -56,7 +61,7 @@ export const PatientRelationships = ({
     validate,
     clearData,
     removeDeletedRelationships,
-  } = usePatientRelationship({ initialData });
+  } = usePatientRelationship({ initialData, currentPatientUuid });
 
   useImperativeHandle(ref, () => ({
     getData,

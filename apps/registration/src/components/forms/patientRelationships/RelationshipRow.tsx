@@ -7,6 +7,7 @@ import {
   Link,
 } from '@bahmni/design-system';
 import { formatDateTime } from '@bahmni/services';
+import { format, parse, startOfDay } from 'date-fns';
 import { getPatientUrlExternal } from '../../../constants/app';
 import type { PatientSuggestion } from '../../../hooks/usePatientSearch';
 import type { RelationshipData } from './PatientRelationships';
@@ -174,15 +175,24 @@ export const RelationshipRow = ({
     tillDate: (
       <DatePicker
         datePickerType="single"
-        value={relationship.tillDate}
-        minDate={new Date()}
+        // Store as ISO (yyyy-MM-dd) and hand the picker a Date object rather than
+        // a locale string. A locale string is re-parsed by the picker using the
+        // environment's configured date format, so a day-first "31/07/2026" gets
+        // misread as month-first (month 31 → overflow → 07/07/2028) wherever the
+        // configured format differs from en-GB. A Date object removes that ambiguity.
+        value={
+          relationship.tillDate
+            ? parse(relationship.tillDate, 'yyyy-MM-dd', new Date())
+            : undefined
+        }
+        minDate={startOfDay(new Date())}
         data-testid="new-relationship-till-date-picker"
         onChange={(dates) => {
           if (dates[0]) {
             onUpdateRelationship(
               relationship.id,
               RELATIONSHIP_FIELDS.TILL_DATE,
-              dates[0].toLocaleDateString('en-GB'),
+              format(dates[0], 'yyyy-MM-dd'),
             );
           }
         }}
