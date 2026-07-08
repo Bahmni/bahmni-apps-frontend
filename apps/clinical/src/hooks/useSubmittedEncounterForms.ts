@@ -4,20 +4,10 @@ import {
   useEncounterSessionStore,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
-import { usePatientUUID, extractFormFieldPath } from '@bahmni/widgets';
+import { usePatientUUID, extractFormName } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import type { Observation } from 'fhir/r4';
-import { useMemo } from 'react';
-
-function parseFormName(valueString: string | undefined): string | undefined {
-  if (!valueString) return undefined;
-  const beforeSlash = valueString.split('/')[0];
-  const name = beforeSlash
-    .split('^')
-    .pop()
-    ?.replace(/(\.\d+)+$/, '');
-  return name ?? undefined;
-}
+import { useEffect, useMemo } from 'react';
 
 /**
  * Returns the set of form UUIDs that have already been submitted in the active encounter.
@@ -47,10 +37,12 @@ export function useSubmittedEncounterForms(
     queryFn: () => getObservationsBundleByEncounterUuid(activeEncounterUuid!),
   });
 
-  if (error) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to fetch submitted encounter forms', error);
-  }
+  useEffect(() => {
+    if (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to fetch submitted encounter forms', error);
+    }
+  }, [error]);
 
   useSubscribeConsultationSaved(
     (payload) => {
@@ -71,8 +63,7 @@ export function useSubmittedEncounterForms(
     const submittedUuids = new Set<string>();
 
     for (const obs of observations) {
-      const valueString = extractFormFieldPath(obs);
-      const formName = parseFormName(valueString);
+      const formName = extractFormName(obs);
       if (!formName) continue;
 
       const matched = allForms.find((f) => f.name === formName);

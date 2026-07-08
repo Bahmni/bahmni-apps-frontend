@@ -25,15 +25,24 @@ jest.mock('@bahmni/services', () => ({
 
 jest.mock('@bahmni/widgets', () => ({
   usePatientUUID: jest.fn(),
-  extractFormFieldPath: (observation?: {
+  extractFormName: (observation?: {
     extension?: { url: string; valueString?: string }[];
-  }) =>
-    observation?.extension?.find(
+  }) => {
+    const valueString = observation?.extension?.find(
       (ext) =>
         ext.url ===
         jest.requireActual('@bahmni/services')
           .FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
-    )?.valueString,
+    )?.valueString;
+    if (!valueString) return undefined;
+    const name = valueString
+      .split('/')[0]
+      .split('^')
+      .pop()
+      ?.replace(/\.\d+$/, '');
+    if (!name) return undefined;
+    return name;
+  },
 }));
 
 const mockGetObservationsBundleByEncounterUuid =
@@ -63,6 +72,7 @@ const allForms: ObservationForm[] = [
   { uuid: 'form-uuid-vitals', name: 'Vitals', id: 1, privileges: [] },
   { uuid: 'form-uuid-history', name: 'History', id: 2, privileges: [] },
   { uuid: 'form-uuid-notes', name: 'Progress Notes', id: 3, privileges: [] },
+  { uuid: 'form-uuid-covid', name: 'COVID.19', id: 4, privileges: [] },
 ];
 
 /** Build a FHIR Observation with a form-namespace-path extension. */
@@ -360,9 +370,10 @@ describe('useSubmittedEncounterForms', () => {
     it.each([
       ['Bahmni^Vitals.1/10-0', 'form-uuid-vitals'],
       ['Vitals.1/1-0', 'form-uuid-vitals'],
-      ['Vitals.1.2/1-0', 'form-uuid-vitals'],
       ['History.2/3-0', 'form-uuid-history'],
       ['Bahmni^History.3/1-0', 'form-uuid-history'],
+      ['COVID.19.1/1-0', 'form-uuid-covid'],
+      ['Bahmni^COVID.19.2/1-0', 'form-uuid-covid'],
     ])('parses "%s" to form uuid %s', async (valueString, expectedUuid) => {
       mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
         makeBundle([makeObservation(valueString)]),
