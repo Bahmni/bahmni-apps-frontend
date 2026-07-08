@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { get, del, post } from '../../api';
 import { BAHMNI_USER_COOKIE_NAME } from '../../constants/app';
 import { getCookieByName, deleteCookie } from '../../utils';
@@ -301,14 +302,14 @@ describe('logout', () => {
     expect(deleteCookie).toHaveBeenCalledTimes(LOGOUT_COOKIES.length);
   });
 
-  it('should throw error when API call fails', async () => {
+  it('should re-throw the original error when API call fails', async () => {
     const mockError = new Error('Network error');
     (del as jest.Mock).mockRejectedValue(mockError);
 
-    await expect(logout()).rejects.toThrow('USER_LOGOUT_FAILED');
+    await expect(logout()).rejects.toThrow('Network error');
   });
 
-  it('should not clear cookies if API call fails', async () => {
+  it('should not clear cookies if a non-401 API call fails', async () => {
     const mockError = new Error('Network error');
     (del as jest.Mock).mockRejectedValue(mockError);
 
@@ -319,6 +320,22 @@ describe('logout', () => {
     }
 
     expect(deleteCookie).not.toHaveBeenCalled();
+  });
+
+  it('should clear cookies and re-throw when the session has already expired (401)', async () => {
+    const expiredError = {
+      isAxiosError: true,
+      response: { status: 401 },
+    };
+    (del as jest.Mock).mockRejectedValue(expiredError);
+    const isAxiosErrorSpy = jest
+      .spyOn(axios, 'isAxiosError')
+      .mockReturnValue(true);
+
+    await expect(logout()).rejects.toBe(expiredError);
+    expect(deleteCookie).toHaveBeenCalledTimes(LOGOUT_COOKIES.length);
+
+    isAxiosErrorSpy.mockRestore();
   });
 });
 

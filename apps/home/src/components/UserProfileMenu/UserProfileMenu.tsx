@@ -3,6 +3,7 @@ import { useTranslation, logout, getFormattedError } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { UserAvatar } from '@carbon/icons-react';
 import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
+import axios from 'axios';
 import React, { useState } from 'react';
 import { LOGIN_PATH, CHANGE_PASSWORD_PATH } from '../../constants/app';
 import styles from './styles/UserProfileMenu.module.scss';
@@ -31,10 +32,14 @@ export const UserProfileMenu: React.FC = () => {
       await logout();
       window.location.href = LOGIN_PATH;
     } catch (error) {
-      const { title } = getFormattedError(error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        window.location.href = LOGIN_PATH;
+        return;
+      }
+      const { title, message } = getFormattedError(error);
       addNotification({
         title,
-        message: t('HOME_ERROR_LOGOUT_FAILED'),
+        message,
         type: 'error',
       });
       // eslint-disable-next-line no-console

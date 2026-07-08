@@ -150,7 +150,7 @@ describe('getFormattedError', () => {
 
       expect(result).toEqual({
         title: 'Server Error',
-        message: 'The server encountered an error. Please try again later.',
+        message: 'Logout failed. Please try again',
       });
     });
 
@@ -166,7 +166,39 @@ describe('getFormattedError', () => {
 
       expect(result).toEqual({
         title: 'Server Error',
-        message: 'The server encountered an error. Please try again later.',
+        message: 'Logout failed. Please try again',
+      });
+    });
+
+    it('should surface backend error field on server errors when provided', () => {
+      const error = {
+        response: {
+          status: 500,
+          data: { error: 'Database connection failed' },
+        },
+      } as unknown as AxiosError;
+
+      const result = getFormattedError(error);
+
+      expect(result).toEqual({
+        title: 'Server Error',
+        message: 'Database connection failed',
+      });
+    });
+
+    it('should fall back to backend message on server errors when error field is absent', () => {
+      const error = {
+        response: {
+          status: 502,
+          data: { message: 'Upstream is unavailable' },
+        },
+      } as unknown as AxiosError;
+
+      const result = getFormattedError(error);
+
+      expect(result).toEqual({
+        title: 'Server Error',
+        message: 'Upstream is unavailable',
       });
     });
   });
@@ -194,7 +226,7 @@ describe('getFormattedError', () => {
       });
     });
 
-    it('should handle network errors (no response)', () => {
+    it('should surface the axios message for network errors (no response)', () => {
       const error = {
         message: 'Network Error',
         isAxiosError: true,
@@ -206,8 +238,44 @@ describe('getFormattedError', () => {
 
       expect(result).toEqual({
         title: 'Network Error',
+        message: 'Network Error',
+      });
+
+      jest.restoreAllMocks();
+    });
+
+    it('should fall back to a generic message for network errors without a message', () => {
+      const error = {
+        isAxiosError: true,
+      } as AxiosError;
+
+      jest.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+
+      const result = getFormattedError(error);
+
+      expect(result).toEqual({
+        title: 'Network Error',
         message:
           'Unable to connect to the server. Please check your internet connection.',
+      });
+
+      jest.restoreAllMocks();
+    });
+
+    it('should handle request timeout (ECONNABORTED) errors', () => {
+      const error = {
+        code: 'ECONNABORTED',
+        message: 'timeout of 5000ms exceeded',
+        isAxiosError: true,
+      } as AxiosError;
+
+      jest.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+
+      const result = getFormattedError(error);
+
+      expect(result).toEqual({
+        title: 'Request Timeout',
+        message: 'Request timed out. Please try again.',
       });
 
       jest.restoreAllMocks();

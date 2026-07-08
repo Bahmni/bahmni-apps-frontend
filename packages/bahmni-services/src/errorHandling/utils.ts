@@ -104,10 +104,16 @@ export const getFormattedError = (
         case 500:
         case 502:
         case 503:
-        case 504:
+        case 504: {
           title = 'Server Error';
-          message = 'The server encountered an error. Please try again later.';
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const responseData = axiosError.response.data as Record<string, any>;
+          message =
+            responseData?.error ??
+            responseData?.message ??
+            'Logout failed. Please try again';
           break;
+        }
         default: {
           title = 'Error';
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,9 +126,13 @@ export const getFormattedError = (
       }
     } else if (error instanceof Error) {
       message = error.message;
+    } else if (axiosError.code === 'ECONNABORTED') {
+      title = 'Request Timeout';
+      message = 'Request timed out. Please try again.';
     } else {
       title = 'Network Error';
       message =
+        axiosError.message ??
         'Unable to connect to the server. Please check your internet connection.';
     }
   } else if (error instanceof Error) {

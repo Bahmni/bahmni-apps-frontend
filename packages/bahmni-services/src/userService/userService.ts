@@ -1,3 +1,4 @@
+import axios from 'axios';
 import i18next from 'i18next';
 import { get, del, post } from '../api';
 import { BAHMNI_USER_COOKIE_NAME } from '../constants/app';
@@ -9,7 +10,6 @@ import {
   DEFAULT_DATE_FORMAT_PROPERTY,
   LOGOUT_URL,
   LOGOUT_COOKIES,
-  ERROR_MESSAGES,
   AVAILABLE_LOCATIONS_URL,
   SAVE_USER_LOCATION_URL,
   UPDATE_SESSION_LOCATION_URL,
@@ -99,9 +99,12 @@ export const logout = async (): Promise<void> => {
       deleteCookie(cookieName);
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Logout failed:', error);
-    throw new Error(i18next.t(ERROR_MESSAGES.LOGOUT_FAILED));
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      // Session already expired on the server; clear local cookies anyway
+      LOGOUT_COOKIES.forEach(deleteCookie);
+    }
+
+    throw error;
   }
 };
 

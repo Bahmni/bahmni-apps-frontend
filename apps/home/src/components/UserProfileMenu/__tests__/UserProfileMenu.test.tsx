@@ -219,11 +219,32 @@ describe('UserProfileMenu', () => {
 
     expect(mockAddNotification).toHaveBeenCalledWith({
       title: 'Error',
-      message: 'Failed to logout. Please try again.',
+      message: 'Something went wrong',
       type: 'error',
     });
     expect(logoutBtn).not.toBeDisabled();
     consoleErrorSpy.mockRestore();
+  });
+
+  it('redirects to login without notifying when the session has already expired (401)', async () => {
+    const expiredError = {
+      isAxiosError: true,
+      response: { status: 401 },
+    };
+    mockLogout.mockRejectedValue(expiredError);
+    const user = userEvent.setup();
+
+    render(<UserProfileMenu />);
+
+    const logoutBtn = screen.getByTestId('logout-option');
+    await user.click(logoutBtn);
+
+    await waitFor(() => {
+      expect(window.location.href).toBe('/bahmni/home/index.html#/login');
+    });
+
+    expect(mockAddNotification).not.toHaveBeenCalled();
+    expect(mockGetFormattedError).not.toHaveBeenCalled();
   });
 
   describe('Accessibility', () => {
