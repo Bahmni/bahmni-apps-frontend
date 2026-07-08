@@ -15,6 +15,7 @@ import './styles/form2-controls-fixes.scss';
 import {
   ObservationForm,
   Form2Observation,
+  type ComplexValue,
   getFormattedError,
   getFormattedPatientById,
   getUserPreferredLocale,
@@ -152,6 +153,21 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     typeof CarbonContainer
   > | null>(null);
 
+  // Latch onto the first render that has FHIR-enriched observations (uuid + status).
+  // handleFormDataChange overwrites the store on every keystroke with status-less
+  // observations, making existingObservations stale by save time.
+  // This ref freezes the enriched snapshot so mergeObservationStatuses always has
+  // the correct current status ("final" or "amended") to echo back in PUT requests.
+  const statusSourceRef = useRef<Form2Observation[]>(
+    existingObservations ?? [],
+  );
+  if (
+    !statusSourceRef.current.some((o) => !!o.uuid) &&
+    existingObservations?.some((o) => !!o.uuid)
+  ) {
+    statusSourceRef.current = existingObservations;
+  }
+
   const {
     observations,
     handleFormDataChange: baseHandleFormDataChange,
@@ -188,11 +204,26 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   const observationsWithValues = React.useMemo(() => {
     if (!existingObservations) return [];
-    return existingObservations.filter(
-      (obs) =>
-        (obs.value !== null && obs.value !== undefined) ||
-        (obs.groupMembers && obs.groupMembers.length > 0),
-    );
+    return existingObservations
+      .filter(
+        (obs) =>
+          (obs.value !== null && obs.value !== undefined) ||
+          (obs.groupMembers && obs.groupMembers.length > 0),
+      )
+      .map((obs) => {
+        // CarbonContainer's Immutable.js records call value.indexOf('voided')
+        // internally. Complex observations fetched from FHIR have { url, fileName }
+        // OBJECT values — convert to plain string URL so CarbonContainer doesn't
+        // crash. The OBJECT is restored at save time via restoreComplexValues().
+        if (
+          typeof obs.value === 'object' &&
+          obs.value !== null &&
+          'url' in obs.value
+        ) {
+          return { ...obs, value: (obs.value as ComplexValue).url };
+        }
+        return obs;
+      });
   }, [existingObservations]);
 
   const handlePinToggle = (e: React.MouseEvent) => {
@@ -253,6 +284,16 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
                 currentObservations,
               )
             : [];
+
+        mergeObservationStatuses(
+          transformedObservations,
+          statusSourceRef.current,
+        );
+        restoreComplexValues(transformedObservations, statusSourceRef.current);
+        injectMissingDeleteObs(
+          transformedObservations,
+          statusSourceRef.current,
+        );
 
         handleSaveForm(transformedObservations, validationErrorType);
         return;
@@ -326,6 +367,16 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       setValidationErrorMessage(null);
 
       try {
+        mergeObservationStatuses(
+          transformedObservations,
+          statusSourceRef.current,
+        );
+        restoreComplexValues(transformedObservations, statusSourceRef.current);
+        injectMissingDeleteObs(
+          transformedObservations,
+          statusSourceRef.current,
+        );
+
         // Extract and append notes-only observations to the existing array
         extractAndAppendNotesFromFormData(
           formContainerRef,
@@ -381,6 +432,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         formContainerRef,
         transformedObservations,
       );
+
+      mergeObservationStatuses(
+        transformedObservations,
+        statusSourceRef.current,
+      );
+      restoreComplexValues(transformedObservations, statusSourceRef.current);
+      injectMissingDeleteObs(transformedObservations, statusSourceRef.current);
 
       handleSaveForm(transformedObservations, validationErrorType);
     }
@@ -483,12 +541,19 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     </div>
   );
 
+  const isEditMode =
+    encounterSessionStartContext?.editOnly === 'observationForms';
+
   const formTitleWithPin = (
     <div
       className={styles.formTitleContainer}
       data-testid="observation-form-title-container"
     >
-      <span data-testid="observation-form-name">{viewingForm?.name}</span>
+      <span data-testid="observation-form-name">
+        {isEditMode
+          ? `${t('EDIT_OBSERVATION_FORM_LABEL')} ${viewingForm?.name}`
+          : viewingForm?.name}
+      </span>
       {!directMode &&
         !DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '') && (
           <div
@@ -540,6 +605,118 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   }
 
   return null;
+};
+
+/**
+ * When an addMore file-upload item is deleted, form2-controls removes it from
+ * the list entirely instead of keeping it as voided. CarbonContainer.getValue()
+ * no longer returns it, so the uuid is lost and no DELETE entry is generated.
+ *
+ * This function diffs `transformed` (what CarbonContainer returned) against
+ * `original` (the FHIR-fetched observations in statusSourceRef). Any uuid
+ * present in original but absent from transformed is injected as a synthetic
+ * voided entry so createObservationEntriesWithVerbs emits a DELETE.
+ */
+const injectMissingDeleteObs = (
+  transformed: Form2Observation[],
+  original: Form2Observation[],
+): void => {
+  const presentUuids = new Set<string>();
+  const collectUuids = (obs: Form2Observation) => {
+    if (obs.uuid) presentUuids.add(obs.uuid);
+    obs.groupMembers?.forEach(collectUuids);
+  };
+  transformed.forEach(collectUuids);
+
+  const injectInto = (
+    originalList: Form2Observation[],
+    targetList: Form2Observation[],
+  ) => {
+    for (const orig of originalList) {
+      if (orig.uuid && !presentUuids.has(orig.uuid)) {
+        // Obs existed in original but is gone from CarbonContainer output → DELETE
+        targetList.push({
+          ...orig,
+          voided: true,
+          value: null,
+          groupMembers: undefined,
+        });
+      }
+      if (orig.groupMembers?.length) {
+        const matchingGroup = targetList.find((o) => o.uuid === orig.uuid);
+        if (matchingGroup) {
+          matchingGroup.groupMembers = matchingGroup.groupMembers ?? [];
+          injectInto(orig.groupMembers, matchingGroup.groupMembers);
+        }
+      }
+    }
+  };
+
+  injectInto(original, transformed);
+};
+
+/**
+ * CarbonContainer receives Complex observation values as plain string URLs
+ * (OBJECT values are stripped in observationsWithValues to avoid the
+ * value.indexOf crash). This function restores the original ComplexValue
+ * OBJECT (which carries fileName) from the frozen statusSource so that
+ * createObservationResource can persist valueAttachment.title to the DB.
+ *
+ * For newly uploaded files (not in source), the value remains a string and
+ * FhirObservationTransformer's FileNameCache handles the title on save.
+ */
+const restoreComplexValues = (
+  transformed: Form2Observation[],
+  source: Form2Observation[],
+): void => {
+  // Build url → ComplexValue map from source observations
+  const urlToComplex = new Map<string, ComplexValue>();
+  const buildMap = (obs: Form2Observation) => {
+    if (
+      typeof obs.value === 'object' &&
+      obs.value !== null &&
+      'url' in obs.value
+    ) {
+      urlToComplex.set(
+        (obs.value as ComplexValue).url,
+        obs.value as ComplexValue,
+      );
+    }
+    obs.groupMembers?.forEach(buildMap);
+  };
+  source.forEach(buildMap);
+
+  const restore = (obs: Form2Observation) => {
+    if (typeof obs.value === 'string' && urlToComplex.has(obs.value)) {
+      obs.value = urlToComplex.get(obs.value)!;
+    }
+    obs.groupMembers?.forEach(restore);
+  };
+  transformed.forEach(restore);
+};
+
+/**
+ * CarbonContainer does not pass the `status` field through getValue().
+ * This function copies the FHIR status from pre-loaded existingObservations
+ * into the transformed observations (matched by uuid) so that PUT requests
+ * in the bundle echo back the same status OpenMRS currently has stored.
+ * Without it, sending no status causes a null error; sending a different
+ * status causes "Editing the fields [status] on Obs is not allowed".
+ */
+const mergeObservationStatuses = (
+  transformed: Form2Observation[],
+  existing: Form2Observation[],
+): void => {
+  for (const obs of transformed) {
+    if (!obs.uuid) continue;
+    const match = existing.find((e) => e.uuid === obs.uuid);
+    if (match?.status) {
+      obs.status = match.status;
+    }
+    if (obs.groupMembers && match?.groupMembers) {
+      mergeObservationStatuses(obs.groupMembers, match.groupMembers);
+    }
+  }
 };
 
 const extractAndAppendNotesFromFormData = (

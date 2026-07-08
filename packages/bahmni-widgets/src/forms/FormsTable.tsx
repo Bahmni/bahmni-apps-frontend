@@ -2,6 +2,8 @@ import {
   SortableDataTable,
   Accordion,
   AccordionItem,
+  Edit,
+  IconButton,
   Link,
   Modal,
 } from '@bahmni/design-system';
@@ -26,9 +28,13 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { ObservationsRenderer } from '../observationsRenderer';
 import { WidgetProps } from '../registry/model';
+import { CONSULTATION_PAD_PRIVILEGES } from '../userPrivileges/consultationPadPrivileges';
+import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import { FormRecordViewModel, GroupedFormRecords } from './models';
 import styles from './styles/FormsTable.module.scss';
 import { extractFormFieldPath } from './utils';
+
+const CONSULTATION_START_EVENT = 'startConsultation';
 
 interface FormsTableConfig {
   numberOfVisits?: number;
@@ -44,6 +50,8 @@ const FormsTable: React.FC<WidgetProps> = ({
   episodeOfCareUuids,
   encounterUuids,
   config,
+  disableActions = false,
+  activeEncounterUuid = null,
 }) => {
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();
@@ -55,6 +63,28 @@ const FormsTable: React.FC<WidgetProps> = ({
     hideThumbnail = false,
     forms,
   } = (config ?? {}) as FormsTableConfig;
+
+  const canEditObservations = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.EDIT_OBSERVATIONS,
+  );
+  // Actions column shown only when:
+  //  - user has Edit Observations privilege (AC #5)
+  //  - visit is active / disableActions not set (AC #2)
+  //  - there is a currently MATCHED active encounter (AC #3, #4)
+  //    (activeEncounterUuid is null when session expired or not MATCHED)
+  const showActions =
+    canEditObservations && !disableActions && !!activeEncounterUuid;
+
+  // Per-row: only the currently active encounter can be edited.
+  // activeEncounterUuid is set by DashboardSection only when the session is MATCHED
+  // (i.e., within session window AND for the current practitioner) — satisfying AC #3 and #4.
+  const isRowEditable = useCallback(
+    (record: FormRecordViewModel): boolean => {
+      if (!activeEncounterUuid) return false;
+      return record.encounterUuid === activeEncounterUuid;
+    },
+    [activeEncounterUuid],
+  );
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -229,13 +259,14 @@ const FormsTable: React.FC<WidgetProps> = ({
     return undefined;
   }, [metadataError, formDataError]);
 
-  const headers = useMemo(
-    () => [
+  const headers = useMemo(() => {
+    const base = [
       { key: 'recordedOn', header: t('RECORDED_ON') },
       { key: 'recordedBy', header: t('RECORDED_BY') },
-    ],
-    [t],
-  );
+    ];
+    if (showActions) base.push({ key: 'actions', header: t('ACTIONS') });
+    return base;
+  }, [t, showActions]);
 
   const sortable = useMemo(
     () => [
@@ -296,6 +327,20 @@ const FormsTable: React.FC<WidgetProps> = ({
     setSelectedRecord(null);
   }, []);
 
+  const handleRowEdit = useCallback((record: FormRecordViewModel) => {
+    globalThis.dispatchEvent(
+      new CustomEvent(CONSULTATION_START_EVENT, {
+        detail: {
+          editOnly: 'observationForms',
+          editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
+          editEncounterUuid: record.encounterUuid,
+          editFormName: record.formName,
+          directFormMode: true,
+        },
+      }),
+    );
+  }, []);
+
   const renderCell = useCallback(
     (record: FormRecordViewModel, cellId: string) => {
       switch (cellId) {
@@ -307,11 +352,23 @@ const FormsTable: React.FC<WidgetProps> = ({
           );
         case 'recordedBy':
           return record.recordedBy;
+        case 'actions':
+          return isRowEditable(record) ? (
+            <IconButton
+              label={t('EDIT_OBSERVATION_FORM')}
+              kind="ghost"
+              size="sm"
+              testId={`edit-form-${record.encounterUuid}`}
+              onClick={() => handleRowEdit(record)}
+            >
+              <Edit />
+            </IconButton>
+          ) : null;
         default:
           return null;
       }
     },
-    [handleRecordedOnClick],
+    [handleRecordedOnClick, handleRowEdit, isRowEditable, t],
   );
 
   return (
@@ -370,7 +427,25 @@ const FormsTable: React.FC<WidgetProps> = ({
           portalId={'main-display-area'}
           open={isModalOpen}
           onRequestClose={handleCloseModal}
-          modalHeading={selectedRecord.formName}
+          modalHeading={
+            <div className={styles.modalHeading}>
+              <span>{selectedRecord.formName}</span>
+              {showActions && isRowEditable(selectedRecord) && (
+                <IconButton
+                  label={t('EDIT_OBSERVATION_FORM')}
+                  kind="ghost"
+                  size="sm"
+                  testId={`edit-form-modal-${selectedRecord.encounterUuid}`}
+                  onClick={() => {
+                    handleCloseModal();
+                    handleRowEdit(selectedRecord);
+                  }}
+                >
+                  <Edit />
+                </IconButton>
+              )}
+            </div>
+          }
           modalLabel={`${selectedRecord.recordedOn} | ${selectedRecord.recordedBy}`}
           passiveModal
           size="md"

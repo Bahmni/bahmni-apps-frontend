@@ -454,7 +454,7 @@ describe('DashboardSection Component', () => {
         React.lazy(() => Promise.resolve({ default: ProbeWidget })),
       );
       mockUseEncounterSessionStore.mockReturnValue({
-        matchReasons: [],
+        matchReasons: ['MATCHED'],
         canEditOrCreate: true,
         isLoading: false,
         activeEncounter: { id: 'enc-active-uuid' },

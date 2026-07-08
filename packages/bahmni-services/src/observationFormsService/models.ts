@@ -60,6 +60,16 @@ export interface FormMetadata {
 
 // Observation data from form2-controls (used in consultation bundle)
 export interface Form2Observation {
+  /** FHIR Observation resource UUID. Present for observations fetched from the backend
+   *  (edit flow). Used to emit PUT instead of POST in the encounter bundle. */
+  uuid?: string;
+  /** True when the observation was cleared/deleted by the user in edit mode.
+   *  Combined with uuid, signals the bundle builder to emit DELETE. */
+  voided?: boolean;
+  /** Current FHIR status stored in OpenMRS (e.g. "final", "amended").
+   *  Preserved from the FHIR fetch so PUT requests echo back the same value —
+   *  OpenMRS rejects status changes and also errors when status is absent on PUT. */
+  status?: string;
   concept: { uuid: string; datatype?: string };
   value: string | number | boolean | ConceptValue | ComplexValue | null; // null for obsGroupControl parent observations
   obsDatetime?: string;

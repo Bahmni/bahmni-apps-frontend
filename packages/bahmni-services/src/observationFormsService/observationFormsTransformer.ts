@@ -349,6 +349,14 @@ export function transformContainerObservationsToForm2Observations(
         typeof obs.formFieldPath === 'string' ? obs.formFieldPath : undefined,
     };
 
+    // Preserve uuid, voided and status so the bundle builder can emit the
+    // correct HTTP verb and status value for each observation.
+    // status is required on PUT/POST-with-uuid by OpenMRS and must echo back
+    // exactly what is stored ("final" on first edit, "amended" on subsequent edits).
+    if (typeof obs.uuid === 'string') observation.uuid = obs.uuid;
+    if (obs.voided === true) observation.voided = true;
+    if (typeof obs.status === 'string') observation.status = obs.status;
+
     if (obs.comment && typeof obs.comment === 'string') {
       observation.comment = obs.comment;
     }
@@ -358,16 +366,11 @@ export function transformContainerObservationsToForm2Observations(
     }
 
     if (obs.groupMembers && Array.isArray(obs.groupMembers)) {
-      // Filter out voided group members
-      const nonVoidedGroupMembers = obs.groupMembers.filter((member) => {
-        const isMemberVoided =
-          member.voided ??
-          (member.value &&
-            typeof member.value === 'string' &&
-            member.value.endsWith('voided'));
-        return !isMemberVoided;
-      });
-      observation.groupMembers = nonVoidedGroupMembers.map(transform);
+      // Include ALL group members (including voided ones with uuid) so the
+      // bundle builder can emit DELETE entries for cleared children.
+      observation.groupMembers = (
+        obs.groupMembers as Record<string, unknown>[]
+      ).map(transform);
     }
 
     return observation;
