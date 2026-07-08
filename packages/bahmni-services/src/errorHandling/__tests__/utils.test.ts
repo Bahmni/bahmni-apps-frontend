@@ -150,7 +150,7 @@ describe('getFormattedError', () => {
 
       expect(result).toEqual({
         title: 'Server Error',
-        message: 'Logout failed. Please try again',
+        message: 'The server encountered an error. Please try again later.',
       });
     });
 
@@ -166,7 +166,7 @@ describe('getFormattedError', () => {
 
       expect(result).toEqual({
         title: 'Server Error',
-        message: 'Logout failed. Please try again',
+        message: 'The server encountered an error. Please try again later.',
       });
     });
 
@@ -201,6 +201,22 @@ describe('getFormattedError', () => {
         message: 'Upstream is unavailable',
       });
     });
+
+    it('should surface a nested backend error object message on server errors', () => {
+      const error = {
+        response: {
+          status: 500,
+          data: { error: { message: 'Database connection failed' } },
+        },
+      } as unknown as AxiosError;
+
+      const result = getFormattedError(error);
+
+      expect(result).toEqual({
+        title: 'Server Error',
+        message: 'Database connection failed',
+      });
+    });
   });
 
   describe('Other error types', () => {
@@ -226,13 +242,13 @@ describe('getFormattedError', () => {
       });
     });
 
+    // These use real AxiosError instances (not plain object literals). A real
+    // AxiosError is an `instanceof Error`, which previously short-circuited the
+    // network/timeout branches. Constructing real instances guards against that
+    // regression.
     it('should surface the axios message for network errors (no response)', () => {
-      const error = {
-        message: 'Network Error',
-        isAxiosError: true,
-      } as AxiosError;
-
       jest.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+      const error = new axios.AxiosError('Network Error', 'ERR_NETWORK');
 
       const result = getFormattedError(error);
 
@@ -240,16 +256,11 @@ describe('getFormattedError', () => {
         title: 'Network Error',
         message: 'Network Error',
       });
-
-      jest.restoreAllMocks();
     });
 
     it('should fall back to a generic message for network errors without a message', () => {
-      const error = {
-        isAxiosError: true,
-      } as AxiosError;
-
       jest.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+      const error = new axios.AxiosError();
 
       const result = getFormattedError(error);
 
@@ -258,18 +269,14 @@ describe('getFormattedError', () => {
         message:
           'Unable to connect to the server. Please check your internet connection.',
       });
-
-      jest.restoreAllMocks();
     });
 
     it('should handle request timeout (ECONNABORTED) errors', () => {
-      const error = {
-        code: 'ECONNABORTED',
-        message: 'timeout of 5000ms exceeded',
-        isAxiosError: true,
-      } as AxiosError;
-
       jest.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+      const error = new axios.AxiosError(
+        'timeout of 5000ms exceeded',
+        'ECONNABORTED',
+      );
 
       const result = getFormattedError(error);
 
@@ -277,8 +284,6 @@ describe('getFormattedError', () => {
         title: 'Request Timeout',
         message: 'Request timed out. Please try again.',
       });
-
-      jest.restoreAllMocks();
     });
 
     it('should handle null/undefined errors', () => {

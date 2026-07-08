@@ -113,15 +113,15 @@ describe('UserProfileMenu', () => {
   it('renders change password option', () => {
     render(<UserProfileMenu />);
 
-    expect(screen.getByTestId('change-password-option')).toHaveTextContent(
-      'Change Password',
-    );
+    expect(
+      screen.getByRole('button', { name: 'Change Password' }),
+    ).toBeInTheDocument();
   });
 
   it('renders logout option', () => {
     render(<UserProfileMenu />);
 
-    expect(screen.getByTestId('logout-option')).toHaveTextContent('Logout');
+    expect(screen.getByRole('button', { name: 'Logout' })).toBeInTheDocument();
   });
 
   it('renders menu divider', () => {
@@ -134,7 +134,9 @@ describe('UserProfileMenu', () => {
     const user = userEvent.setup();
     render(<UserProfileMenu />);
 
-    const changePasswordBtn = screen.getByTestId('change-password-option');
+    const changePasswordBtn = screen.getByRole('button', {
+      name: 'Change Password',
+    });
     await user.click(changePasswordBtn);
 
     expect(window.location.href).toBe(
@@ -148,7 +150,7 @@ describe('UserProfileMenu', () => {
 
     render(<UserProfileMenu />);
 
-    const logoutBtn = screen.getByTestId('logout-option');
+    const logoutBtn = screen.getByRole('button', { name: 'Logout' });
     await user.click(logoutBtn);
 
     await waitFor(() => {
@@ -159,17 +161,19 @@ describe('UserProfileMenu', () => {
   });
 
   it('disables logout button while logging out', async () => {
-    mockLogout.mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 100)),
-    );
+    // Never resolves, so the component stays in the logging-out state for the
+    // duration of the assertion (avoids timer-based flakiness).
+    mockLogout.mockImplementation(() => new Promise<void>(() => {}));
     const user = userEvent.setup();
 
     render(<UserProfileMenu />);
 
-    const logoutBtn = screen.getByTestId('logout-option');
+    const logoutBtn = screen.getByRole('button', { name: 'Logout' });
     await user.click(logoutBtn);
 
-    expect(logoutBtn).toBeDisabled();
+    await waitFor(() => {
+      expect(logoutBtn).toBeDisabled();
+    });
   });
 
   it('renders skeleton while loading', () => {
@@ -210,7 +214,7 @@ describe('UserProfileMenu', () => {
 
     render(<UserProfileMenu />);
 
-    const logoutBtn = screen.getByTestId('logout-option');
+    const logoutBtn = screen.getByRole('button', { name: 'Logout' });
     await user.click(logoutBtn);
 
     await waitFor(() => {
@@ -226,6 +230,64 @@ describe('UserProfileMenu', () => {
     consoleErrorSpy.mockRestore();
   });
 
+  it('displays the timeout message from getFormattedError when logout times out', async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    mockLogout.mockRejectedValue(new Error('timeout of 5000ms exceeded'));
+    mockGetFormattedError.mockReturnValue({
+      title: 'Request Timeout',
+      message: 'Request timed out. Please try again.',
+    });
+    const user = userEvent.setup();
+
+    render(<UserProfileMenu />);
+
+    const logoutBtn = screen.getByRole('button', { name: 'Logout' });
+    await user.click(logoutBtn);
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Request Timeout',
+        message: 'Request timed out. Please try again.',
+        type: 'error',
+      });
+    });
+
+    expect(logoutBtn).not.toBeDisabled();
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('allows logout to be retried after a failure', async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    mockLogout
+      .mockRejectedValueOnce(new Error('Logout failed'))
+      .mockResolvedValueOnce(undefined);
+    const user = userEvent.setup();
+
+    render(<UserProfileMenu />);
+
+    const logoutBtn = screen.getByRole('button', { name: 'Logout' });
+
+    // First attempt fails — button re-enabled, still on page
+    await user.click(logoutBtn);
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalled();
+    });
+    expect(logoutBtn).not.toBeDisabled();
+
+    // Second attempt succeeds — redirects to login
+    await user.click(logoutBtn);
+    await waitFor(() => {
+      expect(window.location.href).toBe('/bahmni/home/index.html#/login');
+    });
+    expect(mockLogout).toHaveBeenCalledTimes(2);
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it('redirects to login without notifying when the session has already expired (401)', async () => {
     const expiredError = {
       isAxiosError: true,
@@ -236,7 +298,7 @@ describe('UserProfileMenu', () => {
 
     render(<UserProfileMenu />);
 
-    const logoutBtn = screen.getByTestId('logout-option');
+    const logoutBtn = screen.getByRole('button', { name: 'Logout' });
     await user.click(logoutBtn);
 
     await waitFor(() => {
@@ -251,6 +313,37 @@ describe('UserProfileMenu', () => {
     it('passes axe accessibility tests in default state', async () => {
       const { container } = render(<UserProfileMenu />);
       expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it('passes axe accessibility tests in loading state', async () => {
+      mockUseActivePractitioner.mockReturnValue({
+        practitioner: null,
+        user: null,
+        loading: true,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      const { container } = render(<UserProfileMenu />);
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it('passes axe accessibility tests after a logout failure', async () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      mockLogout.mockRejectedValue(new Error('Logout failed'));
+      const user = userEvent.setup();
+
+      const { container } = render(<UserProfileMenu />);
+
+      await user.click(screen.getByRole('button', { name: 'Logout' }));
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalled();
+      });
+
+      expect(await axe(container)).toHaveNoViolations();
+      consoleErrorSpy.mockRestore();
     });
   });
 });

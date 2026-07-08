@@ -41,6 +41,25 @@ const parseFHIRError = (outcome: FHIROperationOutcome): string | null => {
   return null;
 };
 
+const extractBackendMessage = (data: unknown): string | undefined => {
+  if (!data || typeof data !== 'object') {
+    return undefined;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const responseData = data as Record<string, any>;
+  const backendError = responseData.error;
+  if (typeof backendError === 'string') {
+    return backendError;
+  }
+  if (typeof backendError?.message === 'string') {
+    return backendError.message;
+  }
+  if (typeof responseData.message === 'string') {
+    return responseData.message;
+  }
+  return undefined;
+};
+
 /**
  * Formats error messages from different sources
  * @param error - The error to format
@@ -80,10 +99,8 @@ export const getFormattedError = (
           }
 
           // Handle non-FHIR errors
-          const backendMessage =
-            responseData?.error?.message ?? responseData?.message;
           message =
-            backendMessage ??
+            extractBackendMessage(responseData) ??
             'Invalid input parameters. Please check your request and try again.';
           break;
         }
@@ -104,35 +121,28 @@ export const getFormattedError = (
         case 500:
         case 502:
         case 503:
-        case 504: {
+        case 504:
           title = 'Server Error';
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const responseData = axiosError.response.data as Record<string, any>;
           message =
-            responseData?.error ??
-            responseData?.message ??
-            'Logout failed. Please try again';
+            extractBackendMessage(axiosError.response.data) ??
+            'The server encountered an error. Please try again later.';
           break;
-        }
-        default: {
+        default:
           title = 'Error';
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const responseData = axiosError.response.data as Record<string, any>;
           message =
-            responseData?.message ??
+            extractBackendMessage(axiosError.response.data) ??
             axiosError.message ??
             'An unknown error occurred';
-        }
       }
-    } else if (error instanceof Error) {
-      message = error.message;
     } else if (axiosError.code === 'ECONNABORTED') {
+      // Request timed out — a real AxiosError has no `response` here.
+      // This must be checked before the generic network fallback below.
       title = 'Request Timeout';
       message = 'Request timed out. Please try again.';
     } else {
       title = 'Network Error';
       message =
-        axiosError.message ??
+        axiosError.message ||
         'Unable to connect to the server. Please check your internet connection.';
     }
   } else if (error instanceof Error) {

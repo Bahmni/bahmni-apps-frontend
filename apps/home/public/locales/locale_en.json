@@ -3,7 +3,6 @@
   "HOME_ERROR_FETCH_CONFIG": "Failed to load home page configuration",
   "HOME_ERROR_LOCATION_SYNC_FAILED": "Location change saved locally but failed to sync to server.",
   "HOME_ERROR_LOCATION_SYNC_FAILED_TITLE": "Location Sync Warning",
-  "HOME_ERROR_LOGOUT_FAILED": "Failed to logout. Please try again.",
   "HOME_GREETING": "Hi, {{name}}",
   "HOME_LOADING": "Loading",
   "HOME_LOADING_MODULES": "Loading modules",
