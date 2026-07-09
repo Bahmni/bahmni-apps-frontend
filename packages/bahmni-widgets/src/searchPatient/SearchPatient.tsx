@@ -282,7 +282,6 @@ const SearchPatient = ({
           size="md"
           onClick={() => handleClick('name')}
           disabled={isLoading || searchInput.trim().length === 0}
-          className={styles.searchButton}
         >
           {buttonTitle}
         </Button>
@@ -345,7 +344,6 @@ const SearchPatient = ({
           id="advance-search-button"
           testId="advance-search-button"
           disabled={isLoading || advanceSearchInput.trim().length === 0}
-          className={styles.searchButton}
           onClick={() => handleClick('advance')}
         >
           {buttonTitle}

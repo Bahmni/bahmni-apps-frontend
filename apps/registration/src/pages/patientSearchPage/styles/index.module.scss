@@ -73,7 +73,6 @@
   border: 1px solid;
   display: flex;
   width: 8.8rem !important;
-  padding: 0.4375rem $spacing-05 !important;
   align-items: center;
   gap: $spacing-07;
 }
@@ -82,7 +81,6 @@
   position: fixed !important;
   top: $spacing-02;
   right: $spacing-09;
-  padding-inline: $spacing-05 !important;
   z-index: 9999;
   background-color: $support-success;
 
