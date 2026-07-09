@@ -91,6 +91,6 @@
 }
 
 .skeleton {
-  block-size: 100% !important;
-  inline-size: -webkit-fill-available !important;
+  block-size: 4*$spacing-13 !important;
+  inline-size: 100% !important;
 }
