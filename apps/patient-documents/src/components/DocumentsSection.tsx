@@ -66,7 +66,12 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   }, [documentTypesError, addNotification]);
 
   if (isLoading) {
-    return <SkeletonPlaceholder className={styles.skeleton} />;
+    return (
+      <SkeletonPlaceholder
+        className={styles.skeleton}
+        testId="document-section-skeleton"
+      />
+    );
   }
 
   if (error) {
