@@ -37,8 +37,13 @@ For a comprehensive setup guide including development environments, Docker confi
 - [Frontend Architecture](docs/architecture.md) - A comprehensive overview of the Bahmni Apps Frontend architecture
 - [Project Structure](docs/project-structure.md) - A high-level overview of the project structure
 - [i18n Guide](docs/i18n-guide.md) - Internationalization implementation details
+- [Command Palette Guide](docs/command-palette-guide.md) - Configuring command palette actions and navigation
+- [Data Table Guide](docs/data-table-guide.md) - Usage of the reusable data table component
 - [Sortable Data Table Guide](docs/sortable-data-table-guide.md) - Usage of the sortable data table component
 - [Global Notification Guide](docs/global-notification-guide.md) - Using the notification system
+- [Document Print Button Guide](docs/document-print-button-guide.md) - Printing documents from Bahmni apps
+- [Icon Guide](docs/bahmni-icon-guide.md) - Using Bahmni icon components
+- [Colour Token System](docs/bahmni-colour-token-system.md) - Design token usage for color styling
 
 ### Building for Production
 
