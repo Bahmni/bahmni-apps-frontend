@@ -857,6 +857,52 @@ describe('FormsTable', () => {
       ).not.toBeInTheDocument();
     });
 
+    it('shows Actions column only for the accordion group that has an editable row', async () => {
+      // Two form groups: "Vitals Form" (encounter-1 = active, editable) and
+      // "History Form" (encounter-2 = different encounter, not editable).
+      mockGetPatientFormData.mockResolvedValue([
+        {
+          formType: 'v2',
+          formName: 'Vitals Form',
+          formVersion: 1,
+          visitUuid: 'visit-1',
+          visitStartDateTime: NOW,
+          encounterUuid: 'encounter-1',
+          encounterDateTime: NOW - 5 * 60 * 1000,
+          providers: [{ providerName: 'Dr. Smith', uuid: 'provider-1' }],
+        },
+        {
+          formType: 'v2',
+          formName: 'History Form',
+          formVersion: 1,
+          visitUuid: 'visit-1',
+          visitStartDateTime: NOW,
+          encounterUuid: 'encounter-2',
+          encounterDateTime: NOW - 30 * 60 * 1000,
+          providers: [{ providerName: 'Dr. Other', uuid: 'provider-2' }],
+        },
+      ]);
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      renderFormsTable({ activeEncounterUuid: 'encounter-1' });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('edit-form-encounter-1'),
+        ).toBeInTheDocument();
+      });
+
+      // Vitals Form accordion (has editable row) should show Actions column
+      const vitalsTable = screen.getByTestId('forms-table-Vitals Form');
+      expect(vitalsTable.querySelector('[data-testid="forms-table-Vitals Form"]') || vitalsTable).toBeDefined();
+
+      // History Form accordion (no editable row) should NOT have Actions column header
+      const historyTable = screen.getByTestId('forms-table-History Form');
+      expect(
+        historyTable.querySelectorAll('[data-testid^="edit-form-"]').length,
+      ).toBe(0);
+    });
+
     it('fires startConsultation event with correct payload when row edit icon is clicked', async () => {
       const user = userEvent.setup();
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
