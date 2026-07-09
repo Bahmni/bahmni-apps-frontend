@@ -17,7 +17,6 @@ import {
 } from '@bahmni/services';
 import { useState } from 'react';
 import { printViaIframe } from './printViaIframe';
-import styles from './styles/DocumentPrintButton.module.scss';
 
 export interface PrintOption {
   translationKey: string;
@@ -135,7 +134,6 @@ export const DocumentPrintButton = ({
         disabled={disabled}
         data-testid={dataTestId}
         onClick={() => handlePrint(items[0])}
-        className={styles.primaryPrintButton}
       >
         {t(items[0].translationKey)}
       </Button>
