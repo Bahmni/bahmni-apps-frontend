@@ -3,3 +3,11 @@
 .primaryPrintButton {
   padding-right: $spacing-05 !important;
 }
+
+.comboPrintButton {
+  :global(.cds--combo-button__primary-action) {
+    button {
+      padding-right: $spacing-05 !important;
+    }
+  }
+}
