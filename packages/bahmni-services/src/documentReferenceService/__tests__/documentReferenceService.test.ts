@@ -526,7 +526,7 @@ describe('documentReferenceService', () => {
       const result = await getDocumentTypes(conceptName);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${OPENMRS_REST_V1}/concept?s=byFullySpecifiedName&name=Patient%20Document%20Type&v=custom%3A(setMembers%3A(uuid%2Cdisplay))`,
+        `${OPENMRS_REST_V1}/concept?s=byFullySpecifiedName&name=Patient%20Document&v=custom%3A(setMembers%3A(uuid%2Cdisplay))`,
       );
       expect(result).toEqual([
         { id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', label: 'Prescription' },
