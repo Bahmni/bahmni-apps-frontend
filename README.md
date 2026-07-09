@@ -97,4 +97,4 @@ For a more detailed explanation of the project structure and architecture, see [
 
 ## License
 
-[Add license information here]
+This project is distributed under the Mozilla Public License 2.0. See [LICENSE](LICENSE) for details.
