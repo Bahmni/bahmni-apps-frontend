@@ -173,7 +173,6 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
           <Button
             kind="primary"
             onClick={handleCaptureClick}
-            className={styles.button}
             data-testid="capture-photo-button"
           >
             {t('CREATE_PATIENT_CAPTURE_PHOTO')}
