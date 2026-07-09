@@ -89,3 +89,8 @@
     margin-inline: 0;
   }
 }
+
+.skeleton {
+  block-size: 100% !important;
+  inline-size: -webkit-fill-available !important;
+}

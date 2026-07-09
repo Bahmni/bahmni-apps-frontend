@@ -500,6 +500,7 @@ describe('documentReferenceService', () => {
   describe('getDocumentTypes', () => {
     // Shape of the OpenMRS concept setMembers response.
     const conceptName = 'Patient Document Type';
+    const customView = 'custom:(setMembers:(uuid,display))';
     const conceptResponse = {
       results: [
         {
@@ -524,7 +525,7 @@ describe('documentReferenceService', () => {
       const result = await getDocumentTypes(conceptName);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        CONCEPT_BY_FULLY_SPECIFIED_NAME_URL(conceptName),
+        CONCEPT_BY_FULLY_SPECIFIED_NAME_URL(conceptName, customView),
       );
       expect(result).toEqual([
         { id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', label: 'Prescription' },

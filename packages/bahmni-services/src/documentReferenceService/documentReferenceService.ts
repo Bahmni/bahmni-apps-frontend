@@ -30,7 +30,8 @@ export async function getDocumentUploadMaxSizeMb(): Promise<
 export async function getDocumentTypes(
   conceptName: string,
 ): Promise<DocumentType[]> {
-  const concept = await searchConceptByName(conceptName);
+  const customView = 'custom:(setMembers:(uuid,display))';
+  const concept = await searchConceptByName(conceptName, customView);
   return (concept?.setMembers ?? []).map((member) => ({
     id: member.uuid,
     label: member.display ?? '',
