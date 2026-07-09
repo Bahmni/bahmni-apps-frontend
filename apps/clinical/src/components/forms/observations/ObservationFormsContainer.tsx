@@ -93,6 +93,23 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  // Derive early so it can be used for hook initialisation below.
+  const isEditMode =
+    encounterSessionStartContext?.editOnly === 'observationForms';
+
+  // Init-settle guard: CarbonContainer fires onValueUpdated on mount; all
+  // synchronous fires are skipped. setTimeout(0) flips the flag after React's
+  // commit phase is fully done.
+  const initSettledRef = React.useRef(!isEditMode);
+
+  // Baseline captured from CarbonContainer's getValue() after init settles.
+  // Using CarbonContainer's own state (not FHIR data) as the baseline ensures
+  // any schema-driven defaults inside layout sections are included, so comparing
+  // against this baseline correctly detects only genuine user changes.
+  const [baselineObservations, setBaselineObservations] = React.useState<
+    Form2Observation[]
+  >([]);
+
   const task = encounterSessionStartContext?.task as Task | undefined;
   const basedOn = task?.basedOn?.[0];
   const patientUUID = usePatientUUID();
@@ -179,11 +196,44 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     viewingForm?.uuid ? { formUuid: viewingForm.uuid } : undefined,
   );
 
+  // Snapshot-based change detection (mirrors medication edit's hasEditChanges).
+  // Uses CarbonContainer's own getValue() state (captured after init settles)
+  // as the baseline — this includes schema-driven defaults inside layout sections,
+  // so the comparison correctly detects only genuine user changes.
+  const hasFormChanges = React.useMemo(() => {
+    if (!isEditMode) return true; // non-edit forms are always saveable
+    // Baseline not yet captured (init still settling) or no user changes yet.
+    if (baselineObservations.length === 0 || observations.length === 0)
+      return false;
+    return detectFormChanges(observations, baselineObservations);
+  }, [isEditMode, observations, baselineObservations]);
+
   const handleFormDataChange = React.useCallback(
     (data: unknown) => {
       if (validationErrorType) {
         setValidationErrorType(null);
       }
+      // Skip all CarbonContainer fires until init has settled. setTimeout(0)
+      // runs after React's synchronous commit phase (including Strict Mode
+      // double-mount), so every init fire — no matter how many — is skipped.
+      // After settling, capture CarbonContainer's current state as the baseline
+      // so that any schema-driven defaults are included in the comparison.
+      if (!initSettledRef.current) {
+        setTimeout(() => {
+          initSettledRef.current = true;
+          if (formContainerRef.current) {
+            const { observations: initObs } =
+              formContainerRef.current.getValue();
+            if (initObs && initObs.length > 0) {
+              setBaselineObservations(
+                transformContainerObservationsToForm2Observations(initObs),
+              );
+            }
+          }
+        }, 0);
+        return;
+      }
+
       if (viewingForm && onFormObservationsChange) {
         onFormObservationsChange(viewingForm.uuid, observations, null);
       }
@@ -467,6 +517,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         <>
           <EncounterDetails />
           <MenuItemDivider />
+          {isEditMode && viewingForm && (
+            <div
+              className={styles.editFormSectionTitle}
+              data-testid="edit-form-section-title"
+            >
+              <span>{viewingForm.name}</span>
+            </div>
+          )}
         </>
       )}
 
@@ -541,9 +599,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     </div>
   );
 
-  const isEditMode =
-    encounterSessionStartContext?.editOnly === 'observationForms';
-
   const formTitleWithPin = (
     <div
       className={styles.formTitleContainer}
@@ -596,7 +651,9 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         title={formTitleWithPin as unknown as string}
         primaryButtonText={primaryButtonText}
         onPrimaryButtonClick={handlePrimaryClick}
-        isPrimaryButtonDisabled={isPatientLoading || !patientContext}
+        isPrimaryButtonDisabled={
+          isPatientLoading || !patientContext || (isEditMode && !hasFormChanges)
+        }
         secondaryButtonText={secondaryButtonText}
         onSecondaryButtonClick={handleSecondaryClick}
         content={formViewContent}
@@ -738,6 +795,87 @@ const extractAndAppendNotesFromFormData = (
 
   // Extract notes-only observations and append to the array using service function
   extractNotesFromFormData(formData, transformedObservations);
+};
+
+/**
+ * Value-level comparison used by detectFormChanges.
+ * Handles coded ({uuid}) vs coded, Complex ({url}) vs string, and primitives.
+ */
+const obsValuesEqual = (a: unknown, b: unknown): boolean => {
+  if (a === b) return true;
+  if (a == null && b == null) return true;
+  if (a == null || b == null) return false;
+
+  // Date normalization: baseline stores Date objects (from CarbonContainer's
+  // getValue()), while observations stores ISO strings (from transformControlValue).
+  // Extract the YYYY-MM-DD prefix for a timezone-safe comparison.
+  const toDateStr = (v: unknown): string | null => {
+    if (v instanceof Date && !isNaN((v as Date).getTime()))
+      return (v as Date).toISOString().slice(0, 10);
+    if (typeof v === 'string') {
+      const m = (v as string).match(/^(\d{4}-\d{2}-\d{2})/);
+      if (m) return m[1];
+    }
+    return null;
+  };
+  const aDate = toDateStr(a);
+  const bDate = toDateStr(b);
+  if (aDate !== null && bDate !== null) return aDate === bDate;
+
+  const aObj = typeof a === 'object' ? (a as Record<string, unknown>) : null;
+  const bObj = typeof b === 'object' ? (b as Record<string, unknown>) : null;
+
+  // Coded values: compare by uuid only (ignore display/name differences)
+  if (aObj && 'uuid' in aObj && bObj && 'uuid' in bObj) {
+    return aObj.uuid === bObj.uuid;
+  }
+  // Complex: string URL vs {url} object
+  if (typeof a === 'string' && bObj && 'url' in bObj) return a === bObj.url;
+  if (typeof b === 'string' && aObj && 'url' in aObj) return b === aObj.url;
+
+  return String(a) === String(b);
+};
+
+/**
+ * Compares current form observations (from useObservationFormData, keyed by
+ * formFieldPath) against the FHIR-loaded originals.  Returns true when any
+ * field was added, removed, or changed — and false when every value matches,
+ * so the Done button correctly re-disables when the user restores originals.
+ */
+const detectFormChanges = (
+  current: Form2Observation[],
+  original: Form2Observation[],
+): boolean => {
+  const collect = (
+    list: Form2Observation[],
+    map: Map<string, unknown>,
+  ): void => {
+    for (const obs of list) {
+      if (obs.formFieldPath && obs.value !== null && obs.value !== undefined) {
+        map.set(obs.formFieldPath, obs.value);
+      }
+      if (obs.groupMembers) collect(obs.groupMembers, map);
+    }
+  };
+
+  const currentVals = new Map<string, unknown>();
+  collect(current, currentVals);
+  const originalVals = new Map<string, unknown>();
+  collect(original, originalVals);
+
+  // New fields
+  for (const path of currentVals.keys()) {
+    if (!originalVals.has(path)) return true;
+  }
+  // Removed fields
+  for (const path of originalVals.keys()) {
+    if (!currentVals.has(path)) return true;
+  }
+  // Changed values
+  for (const [path, val] of currentVals) {
+    if (!obsValuesEqual(val, originalVals.get(path))) return true;
+  }
+  return false;
 };
 
 export default ObservationFormsContainer;

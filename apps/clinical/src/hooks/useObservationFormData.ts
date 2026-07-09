@@ -137,7 +137,17 @@ export function useObservationFormData(
 
         const conceptUuid = controlRecord.control?.concept?.uuid;
         const fieldPath = controlRecord.formFieldPath;
-        if (!conceptUuid || !fieldPath) return;
+        if (!conceptUuid || !fieldPath) {
+          // Layout section (no concept) — recurse into its children so obs
+          // controls nested inside sections are captured in observations.
+          if (controlRecord.children?.length) {
+            extractControls(
+              { formFieldPath: '', children: controlRecord.children },
+              controls,
+            );
+          }
+          return;
+        }
 
         const isObsGroupControl =
           controlRecord.control?.type === FORM_CONTROL_TYPE_OBS_GROUP;

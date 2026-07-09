@@ -259,14 +259,32 @@ const FormsTable: React.FC<WidgetProps> = ({
     return undefined;
   }, [metadataError, formDataError]);
 
-  const headers = useMemo(() => {
-    const base = [
+  // Base headers without Actions — shared across all groups.
+  const baseHeaders = useMemo(
+    () => [
       { key: 'recordedOn', header: t('RECORDED_ON') },
       { key: 'recordedBy', header: t('RECORDED_BY') },
-    ];
-    if (showActions) base.push({ key: 'actions', header: t('ACTIONS') });
-    return base;
-  }, [t, showActions]);
+    ],
+    [t],
+  );
+
+  // Headers WITH the Actions column — used only for groups that have at least
+  // one editable row, so empty Action columns don't appear on non-editable forms.
+  const headersWithActions = useMemo(
+    () => [...baseHeaders, { key: 'actions', header: t('ACTIONS') }],
+    [baseHeaders, t],
+  );
+
+  const getGroupHeaders = useCallback(
+    (records: FormRecordViewModel[]) => {
+      const hasEditableRow = showActions && records.some(isRowEditable);
+      return hasEditableRow ? headersWithActions : baseHeaders;
+    },
+    [showActions, isRowEditable, headersWithActions, baseHeaders],
+  );
+
+  // Kept for the empty/error state table that shows no rows.
+  const headers = baseHeaders;
 
   const sortable = useMemo(
     () => [
@@ -393,6 +411,7 @@ const FormsTable: React.FC<WidgetProps> = ({
           <Accordion align="start">
             {processedForms.map((formGroup, index) => {
               const { formName, records } = formGroup;
+              const groupHeaders = getGroupHeaders(records);
 
               return (
                 <AccordionItem
@@ -403,7 +422,7 @@ const FormsTable: React.FC<WidgetProps> = ({
                   open={index === 0}
                 >
                   <SortableDataTable
-                    headers={headers}
+                    headers={groupHeaders}
                     ariaLabel={t('FORMS_HEADING')}
                     rows={records}
                     loading={false}
