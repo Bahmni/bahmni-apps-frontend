@@ -19,6 +19,8 @@ import {
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import styles from './styles/ObservationForms.module.scss';
 
+const EMPTY_SET = new Set<string>();
+
 interface ObservationFormsProps {
   onFormSelect?: (form: ObservationForm) => void;
   selectedForms?: ObservationForm[];
@@ -31,6 +33,7 @@ interface ObservationFormsProps {
   allForms: ObservationForm[];
   isAllFormsLoading: boolean;
   observationFormsError: Error | null;
+  submittedFormUuids?: Set<string>;
 }
 
 /**
@@ -58,6 +61,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     allForms,
     isAllFormsLoading,
     observationFormsError,
+    submittedFormUuids = EMPTY_SET,
   }) => {
     const { t } = useTranslation();
     const canAddObservations = useHasPrivilege(
@@ -197,18 +201,20 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         ];
       }
 
-      // Map forms to ComboBox items with proper labeling for already selected forms
+      // Map forms to ComboBox items with proper labeling for already-selected or already-submitted forms
       const results = availableForms.map((form: ObservationForm) => {
         const isAlreadySelected = selectedForms.some(
           (selected: ObservationForm) => selected.uuid === form.uuid,
         );
+        const isSubmitted = submittedFormUuids.has(form.uuid);
+        const disabled = isAlreadySelected || isSubmitted;
 
         return {
           id: form.uuid,
-          label: isAlreadySelected
+          label: disabled
             ? `${form.name} (${t('OBSERVATION_FORMS_FORM_ALREADY_ADDED')})`
             : form.name,
-          disabled: isAlreadySelected,
+          disabled,
         };
       });
 
@@ -219,6 +225,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       searchTerm,
       availableForms,
       selectedForms,
+      submittedFormUuids,
       t,
     ]);
 
