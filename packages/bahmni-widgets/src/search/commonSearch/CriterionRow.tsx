@@ -1,4 +1,4 @@
-import { Button, Close, Column, Dropdown, Grid } from '@bahmni/design-system';
+import { Button, Close, Dropdown } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { CriterionInput } from './inputs';
 import {
@@ -31,12 +31,12 @@ const CriterionRow = ({
     : undefined;
 
   return (
-    <Grid
-      id={`criterion-row-${row.rowId}-grid`}
-      data-testid={`criterion-row-${row.rowId}-grid-test-id`}
-      className={styles.grid}
+    <div
+      id={`criterion-row-${row.rowId}`}
+      data-testid={`criterion-row-${row.rowId}-test-id`}
+      className={styles.criterionRow}
     >
-      <Column sm={2} md={4} lg={4} className={styles.column}>
+      <div className={styles.criterionSelector}>
         <Dropdown
           id={`criterion-selector-${row.rowId}`}
           titleText={t('COMMON_SEARCH_SELECT_SEARCH_CRITERIA')}
@@ -56,8 +56,8 @@ const CriterionRow = ({
           invalid={!!criterionError}
           invalidText={criterionError}
         />
-      </Column>
-      <Column sm={4} md={8} lg={11} className={styles.column}>
+      </div>
+      <div className={styles.criterionInput}>
         {selectedCriterion ? (
           <CriterionInput
             input={selectedCriterion.input}
@@ -69,8 +69,8 @@ const CriterionRow = ({
         ) : (
           <div />
         )}
-      </Column>
-      <Column sm={1} md={1} lg={1} className={styles.close}>
+      </div>
+      <div className={styles.criterionClose}>
         <Button
           id={`remove-criterion-${row.rowId}`}
           data-testid={`remove-criterion-${row.rowId}-test-id`}
@@ -80,8 +80,8 @@ const CriterionRow = ({
         >
           <Close size={16} />
         </Button>
-      </Column>
-    </Grid>
+      </div>
+    </div>
   );
 };
 

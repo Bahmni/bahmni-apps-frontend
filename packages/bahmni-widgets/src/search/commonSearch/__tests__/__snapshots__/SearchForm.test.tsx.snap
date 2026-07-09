@@ -3,12 +3,12 @@
 exports[`SearchForm Snapshot matches snapshot 1`] = `
 <div>
   <div
-    class="grid cds--css-grid"
-    data-testid="search-form-grid-test-id"
-    id="search-form-grid"
+    class="searchForm"
+    data-testid="search-form-test-id"
+    id="search-form"
   >
     <div
-      class="column cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-4 cds--css-grid-column"
+      class="dropdownCol"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -77,7 +77,7 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
       </div>
     </div>
     <div
-      class="column cds--sm:col-span-4 cds--md:col-span-4 cds--lg:col-span-4 cds--css-grid-column"
+      class="dropdownCol"
     >
       <div
         class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -147,15 +147,15 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
       </div>
     </div>
     <div
-      class="column cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+      class="fullWidthCol"
     >
       <div
-        class="grid cds--subgrid cds--subgrid--wide"
-        data-testid="criterion-row-test-uuid-1-grid-test-id"
-        id="criterion-row-test-uuid-1-grid"
+        class="criterionRow"
+        data-testid="criterion-row-test-uuid-1-test-id"
+        id="criterion-row-test-uuid-1"
       >
         <div
-          class="column cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-4 cds--css-grid-column"
+          class="criterionSelector"
         >
           <div
             class="cds--dropdown__wrapper cds--list-box__wrapper"
@@ -223,7 +223,7 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
           </div>
         </div>
         <div
-          class="column cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-11 cds--css-grid-column"
+          class="criterionInput"
         >
           <div
             data-testid="text-criterion-input-test-id"
@@ -270,7 +270,7 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
           </div>
         </div>
         <div
-          class="close cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--css-grid-column"
+          class="criterionClose"
         >
           <button
             aria-label="Remove criterion"
@@ -298,7 +298,7 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
       </div>
     </div>
     <div
-      class="column cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
+      class="fullWidthCol"
     >
       <div
         class="footer"

@@ -1,22 +1,61 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/breakpoint" as *;
 
 .fullWidth {
   max-inline-size: 100% !important;
 }
 
-.grid {
-  margin-inline: 0;
-  padding-inline: 0;
-  min-width: stretch;
+.searchForm {
+  display: flex;
+  flex-wrap: wrap;
   gap: $spacing-04;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.column {
-  margin-inline: 0;
-  align-self: baseline;
+.dropdownCol {
+  flex: 0 0 100%;
+
+  @include breakpoint(md) {
+    flex: 1 1 0;
+    max-width: 30%;
+  }
+
+  @include breakpoint(lg) {
+    max-width: 25%;
+  }
+}
+
+.fullWidthCol {
+  flex: 0 0 100%;
+}
+
+.criterionRow {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-04;
+}
+
+.criterionSelector {
+  flex: 0 0 30%;
+
+  @include breakpoint(lg) {
+    flex: 0 0 25%;
+  }
+}
+
+.criterionInput {
+  flex: 1 1 0;
+}
+
+.criterionClose {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+.rangeContainer {
+  display: flex;
+  gap: $spacing-04;
 }
 
 .footer {
@@ -27,10 +66,8 @@
   border-top: 1px solid $border-subtle-02;
 }
 
-.close {
-  margin-inline: 0;
-  align-self: center;
-  justify-self: end;
+.rangeInputCol {
+  flex: 1 1 0;
 }
 
 .datePicker {

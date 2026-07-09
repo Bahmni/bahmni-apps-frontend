@@ -1,9 +1,4 @@
-import {
-  Column,
-  DatePicker,
-  DatePickerInput,
-  Grid,
-} from '@bahmni/design-system';
+import { DatePicker, DatePickerInput } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { DateInput as DateInputConfig, RangeValue } from '../models';
 import styles from '../styles/CommonSearchWidget.module.scss';
@@ -27,17 +22,15 @@ const DateCriterionInput = ({
 
   if (input.rangeAllowed) {
     return (
-      <Grid
+      <div
         id="date-criterion-input"
         data-testid="date-criterion-input-test-id"
+        className={styles.rangeContainer}
       >
-        <Column
-          sm={2}
-          md={2}
-          lg={5}
+        <div
           id="date-criterion-input-from"
           data-testid="date-criterion-input-from-test-id"
-          className={styles.datePicker}
+          className={`${styles.rangeInputCol} ${styles.datePicker}`}
         >
           <DatePicker
             datePickerType="single"
@@ -63,14 +56,11 @@ const DateCriterionInput = ({
               invalidText={validationError ?? undefined}
             />
           </DatePicker>
-        </Column>
-        <Column
-          sm={2}
-          md={2}
-          lg={5}
+        </div>
+        <div
           id="date-criterion-input-to"
           data-testid="date-criterion-input-to-test-id"
-          className={styles.datePicker}
+          className={`${styles.rangeInputCol} ${styles.datePicker}`}
         >
           <DatePicker
             datePickerType="single"
@@ -103,8 +93,8 @@ const DateCriterionInput = ({
               }
             />
           </DatePicker>
-        </Column>
-      </Grid>
+        </div>
+      </div>
     );
   }
 

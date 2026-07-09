@@ -299,7 +299,7 @@ describe('SearchForm', () => {
         screen.getByText('COMMON_SEARCH_NO_LOCATION_ERROR'),
       ).toBeInTheDocument();
       expect(
-        screen.queryByTestId('search-form-grid-test-id'),
+        screen.queryByTestId('search-form-test-id'),
       ).not.toBeInTheDocument();
     });
 
@@ -308,9 +308,7 @@ describe('SearchForm', () => {
       expect(
         screen.queryByText('COMMON_SEARCH_NO_LOCATION_ERROR'),
       ).not.toBeInTheDocument();
-      expect(
-        screen.getByTestId('search-form-grid-test-id'),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('search-form-test-id')).toBeInTheDocument();
     });
   });
 

@@ -1,10 +1,4 @@
-import {
-  Button,
-  Column,
-  Dropdown,
-  Grid,
-  InlineNotification,
-} from '@bahmni/design-system';
+import { Button, Dropdown, InlineNotification } from '@bahmni/design-system';
 import {
   getUserLoginLocation,
   useTranslation,
@@ -136,12 +130,12 @@ const SearchForm = ({ config }: SearchFormProps) => {
     );
 
   return (
-    <Grid
-      id="search-form-grid"
-      data-testid="search-form-grid-test-id"
-      className={styles.grid}
+    <div
+      id="search-form"
+      data-testid="search-form-test-id"
+      className={styles.searchForm}
     >
-      <Column sm={4} md={4} lg={4} className={styles.column}>
+      <div className={styles.dropdownCol}>
         <Dropdown
           id="context-selector"
           data-testid="context-selector-test-id"
@@ -154,8 +148,8 @@ const SearchForm = ({ config }: SearchFormProps) => {
           }
           onChange={handleContextChange}
         />
-      </Column>
-      <Column sm={4} md={4} lg={4} className={styles.column}>
+      </div>
+      <div className={styles.dropdownCol}>
         <Dropdown
           id="location-selector"
           data-testid="location-selector-test-id"
@@ -169,9 +163,9 @@ const SearchForm = ({ config }: SearchFormProps) => {
           disabled
           onChange={() => {}}
         />
-      </Column>
+      </div>
       {rows.map((row) => (
-        <Column sm={4} md={8} lg={16} key={row.rowId} className={styles.column}>
+        <div key={row.rowId} className={styles.fullWidthCol}>
           <CriterionRowComponent
             row={row}
             availableCriteria={availableCriteriaForRow(
@@ -188,9 +182,9 @@ const SearchForm = ({ config }: SearchFormProps) => {
             onValueChange={handleValueChange}
             onRemove={handleRemove}
           />
-        </Column>
+        </div>
       ))}
-      <Column sm={4} md={8} lg={16} className={styles.column}>
+      <div className={styles.fullWidthCol}>
         <div
           id="common-search-footer"
           data-testid="common-search-footer-test-id"
@@ -223,8 +217,8 @@ const SearchForm = ({ config }: SearchFormProps) => {
             {t('COMMON_SEARCH_SEARCH_BUTTON')}
           </Button>
         </div>
-      </Column>
-    </Grid>
+      </div>
+    </div>
   );
 };
 

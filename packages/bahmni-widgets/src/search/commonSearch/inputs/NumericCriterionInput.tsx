@@ -1,4 +1,4 @@
-import { Column, Grid, NumberInput } from '@bahmni/design-system';
+import { NumberInput } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { NumericInput as NumericInputConfig, RangeValue } from '../models';
 import styles from '../styles/CommonSearchWidget.module.scss';
@@ -30,17 +30,15 @@ const NumericCriterionInput = ({
     const toInvalid =
       (!!validationError && !value?.to?.value) || !!rangeOrderError;
     return (
-      <Grid
+      <div
         id="numeric-criterion-input"
         data-testid="numeric-criterion-input-test-id"
+        className={styles.rangeContainer}
       >
-        <Column
-          sm={2}
-          md={2}
-          lg={5}
+        <div
           id="numeric-criterion-input-from"
           data-testid="numeric-criterion-input-from-test-id"
-          className={styles.numericInput}
+          className={styles.rangeInputCol}
         >
           <NumberInput
             id={`numeric-input-from-${input.placeholderTranslationKey}`}
@@ -60,14 +58,11 @@ const NumericCriterionInput = ({
             invalidText={fromInvalid ? validationError : undefined}
             className={styles.numericInput}
           />
-        </Column>
-        <Column
-          sm={2}
-          md={2}
-          lg={5}
+        </div>
+        <div
           id="numeric-criterion-input-to"
           data-testid="numeric-criterion-input-to-test-id"
-          className={styles.numericInput}
+          className={styles.rangeInputCol}
         >
           <NumberInput
             id={`numeric-input-to-${input.placeholderTranslationKey}`}
@@ -88,8 +83,8 @@ const NumericCriterionInput = ({
               rangeOrderError ?? (toInvalid ? validationError : undefined)
             }
           />
-        </Column>
-      </Grid>
+        </div>
+      </div>
     );
   }
 
