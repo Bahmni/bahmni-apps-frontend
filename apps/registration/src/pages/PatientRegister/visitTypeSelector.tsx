@@ -69,7 +69,6 @@ export const VisitTypeSelector = ({
         }
         onClick={() => defaultVisitType && onVisitTypeSelect(defaultVisitType)}
         disabled={isDisabled}
-        size="lg"
       >
         {visitTypesArray
           .filter((vt) => vt.uuid !== defaultVisitType?.uuid)
