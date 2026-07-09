@@ -23,7 +23,11 @@ import {
   PatientSearchResultBundle,
   useTranslation,
 } from '@bahmni/services';
-import { SearchPatient, useUserPrivilege } from '@bahmni/widgets';
+import {
+  SearchPatient,
+  useNotification,
+  useUserPrivilege,
+} from '@bahmni/widgets';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
@@ -61,6 +65,7 @@ const PatientSearchPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedFieldType, setSelectedFieldType] = useState<string>('');
   const { userPrivileges } = useUserPrivilege();
+  const { addNotification } = useNotification();
   const { registrationConfig } = useRegistrationConfig();
 
   const handleCreateNewPatient = () => {
@@ -222,6 +227,8 @@ const PatientSearchPage: React.FC = () => {
                     patientSearchData!,
                     setPatientSearchData,
                     navigate,
+                    addNotification,
+                    t,
                   )
                 }
               >

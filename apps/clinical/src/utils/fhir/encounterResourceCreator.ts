@@ -17,7 +17,7 @@ export const createEncounterResource = (
   visitUUID: string,
   episodeOfCareUUID: string[],
   encounterLocationUUID: string,
-  encounterStartTimestamp: Date,
+  existingEncounterStartTime?: string | null,
 ): Encounter => {
   return {
     resourceType: 'Encounter',
@@ -52,7 +52,7 @@ export const createEncounterResource = (
     partOf: createEncounterReference(visitUUID),
     location: [createEncounterLocationReference(encounterLocationUUID)],
     period: {
-      start: encounterStartTimestamp.toISOString(),
+      start: (existingEncounterStartTime ?? undefined) as string,
     },
     //TODO : link correct episode of care uuid to the current encounter
     episodeOfCare: episodeOfCareUUID.map((uuid) =>

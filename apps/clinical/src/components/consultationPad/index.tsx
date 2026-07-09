@@ -69,6 +69,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
     | string
     | undefined;
+  const directFormMode = encounterSessionStartContext.directFormMode as
+    | boolean
+    | undefined;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -565,6 +568,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           onFormObservationsChange={updateFormData}
           existingObservations={getFormData(viewingForm.uuid)?.observations}
           activeEncounterUuid={activeEncounter?.id ?? null}
+          directMode={directFormMode}
+          onDirectModeSubmit={directFormMode ? handleSubmit : undefined}
+          onDirectModeCancel={directFormMode ? handleCancel : undefined}
+          encounterSessionStartContext={encounterSessionStartContext}
         />
       )}
     </>

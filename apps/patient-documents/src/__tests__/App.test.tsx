@@ -8,9 +8,13 @@ import App from '../App';
 
 jest.mock('@bahmni/services', () => ({
   initAppI18n: jest.fn().mockResolvedValue(undefined),
+  initializeAuditListener: jest.fn(),
 }));
 
 jest.mock('@bahmni/design-system', () => ({
+  Content: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   Loading: () => <div data-testid="loading" />,
   initFontAwesome: jest.fn(),
 }));
@@ -21,6 +25,16 @@ jest.mock('@bahmni/widgets', () => ({
   NotificationServiceComponent: () => null,
   UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) =>
     children,
+  ActivePractitionerProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+
+jest.mock('../providers/patientDocumentsConfig', () => ({
+  PatientDocumentsConfigProvider: ({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) => children,
 }));
 
 jest.mock('@tanstack/react-query-devtools', () => ({

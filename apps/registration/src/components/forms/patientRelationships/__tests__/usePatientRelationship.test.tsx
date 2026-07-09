@@ -384,6 +384,159 @@ describe('usePatientRelationship', () => {
     });
   });
 
+  describe('Suggestion Filtering (BAH-4773)', () => {
+    const ALL_SUGGESTIONS = [
+      { id: 'p1', identifier: 'PAT001', name: 'Alice', text: 'PAT001 - Alice' },
+      { id: 'p2', identifier: 'PAT002', name: 'Bob', text: 'PAT002 - Bob' },
+      { id: 'p3', identifier: 'PAT003', name: 'Carol', text: 'PAT003 - Carol' },
+    ];
+
+    const ids = (suggestions: { id: string }[]) => suggestions.map((s) => s.id);
+
+    beforeEach(() => {
+      mockGetPatientSuggestions.mockReturnValue(ALL_SUGGESTIONS);
+    });
+
+    it('excludes a patient selected in another row while keeping it in its own row', () => {
+      const initialData = [
+        {
+          id: 'rel-1',
+          relationshipType: 'type-1',
+          patientId: 'PAT001',
+          patientUuid: 'p1',
+          tillDate: '',
+        },
+        {
+          id: 'rel-2',
+          relationshipType: 'type-1',
+          patientId: '',
+          tillDate: '',
+        },
+      ];
+
+      const { result } = renderHook(() =>
+        usePatientRelationship({ initialData }),
+      );
+
+      // Row 1 keeps its own selection available.
+      expect(ids(result.current.getPatientSuggestions('rel-1'))).toEqual([
+        'p1',
+        'p2',
+        'p3',
+      ]);
+      // Row 2 no longer offers p1 because row 1 took it.
+      expect(ids(result.current.getPatientSuggestions('rel-2'))).toEqual([
+        'p2',
+        'p3',
+      ]);
+    });
+
+    it('keeps a duplicated patient excluded from every row (count-based exclusion)', () => {
+      const initialData = [
+        {
+          id: 'rel-1',
+          relationshipType: 'type-1',
+          patientId: 'PAT001',
+          patientUuid: 'p1',
+          tillDate: '',
+        },
+        {
+          id: 'rel-2',
+          relationshipType: 'type-1',
+          patientId: 'PAT001',
+          patientUuid: 'p1',
+          tillDate: '',
+        },
+      ];
+
+      const { result } = renderHook(() =>
+        usePatientRelationship({ initialData }),
+      );
+
+      // p1 is used by two rows, so it stays excluded in both rather than being
+      // wrongly re-allowed by a plain Set delete.
+      expect(ids(result.current.getPatientSuggestions('rel-1'))).toEqual([
+        'p2',
+        'p3',
+      ]);
+      expect(ids(result.current.getPatientSuggestions('rel-2'))).toEqual([
+        'p2',
+        'p3',
+      ]);
+    });
+
+    it('does not exclude patients from deleted rows', () => {
+      const initialData = [
+        {
+          id: 'rel-1',
+          relationshipType: 'type-1',
+          patientId: 'PAT001',
+          patientUuid: 'p1',
+          tillDate: '',
+          isExisting: true,
+          isDeleted: true,
+        },
+        {
+          id: 'rel-2',
+          relationshipType: 'type-1',
+          patientId: '',
+          tillDate: '',
+        },
+      ];
+
+      const { result } = renderHook(() =>
+        usePatientRelationship({ initialData }),
+      );
+
+      expect(ids(result.current.getPatientSuggestions('rel-2'))).toEqual([
+        'p1',
+        'p2',
+        'p3',
+      ]);
+    });
+
+    it('excludes the current patient (self) when currentPatientUuid is provided', () => {
+      const initialData = [
+        {
+          id: 'rel-1',
+          relationshipType: 'type-1',
+          patientId: '',
+          tillDate: '',
+        },
+      ];
+
+      const { result } = renderHook(() =>
+        usePatientRelationship({ initialData, currentPatientUuid: 'p2' }),
+      );
+
+      expect(ids(result.current.getPatientSuggestions('rel-1'))).toEqual([
+        'p1',
+        'p3',
+      ]);
+    });
+
+    it('keeps all suggestions when there is no current patient', () => {
+      const initialData = [
+        {
+          id: 'rel-1',
+          relationshipType: 'type-1',
+          patientId: '',
+          tillDate: '',
+        },
+      ];
+
+      const { result } = renderHook(() =>
+        usePatientRelationship({ initialData }),
+      );
+
+      expect(ids(result.current.getPatientSuggestions('rel-1'))).toEqual([
+        'p1',
+        'p2',
+        'p3',
+      ]);
+    });
+  });
+
   describe('Hook Properties', () => {
     it('should expose all required properties', () => {
       const { result } = renderHook(() => usePatientRelationship({}));

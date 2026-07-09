@@ -1058,10 +1058,10 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
-"@bahmni/form2-controls@0.0.3-dev.70":
-  version "0.0.3-dev.70"
-  resolved "https://registry.npmjs.org/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.70.tgz#6afb243f98bd15a5b89fdab64a047fa2e8eb43bf"
-  integrity sha512-wIvLJptqBOxeecmMthLshxg38CZJAhjVLk0hWZzoE5fERjilVhz1hVdyr798XXE+bwPUiFrqh37RxAZ8Zdtqsw==
+"@bahmni/form2-controls@0.0.3-dev.71":
+  version "0.0.3-dev.71"
+  resolved "https://registry.yarnpkg.com/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.71.tgz#89e95a59c55865962c6f4a8056fe743f74106574"
+  integrity sha512-1RFT5QOZGLLJW0TAcWkDiyxYI2Jera9IxzBYM7p/zchUOa2Dvfll5hfvcy83n96KG/y2Z+G1y/7d2TeTn9P44w==
   dependencies:
     ajv "^8.17.1"
     base64-inline-loader "^1.1.0"
@@ -13655,17 +13655,17 @@ react-resizable-panels@^4.5.2:
   resolved "https://registry.npmjs.org/react-resizable-panels/-/react-resizable-panels-4.6.2.tgz#1004f9ee9c259e7dc0da3a33d9de4bff23427055"
   integrity sha512-d6hyD6s7ewNAI+oINrZznR/08GUyAszrowXouUDztePEn/tQ2z/LEI2qRvrizYBe3TpgBi0cCjc10pXTTOc4jw==
 
-react-router-dom@^7.12.0:
-  version "7.12.0"
-  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-7.12.0.tgz#0f2a059c6b2c4ae04474fe4171c59fb48b9fb8cf"
-  integrity sha512-pfO9fiBcpEfX4Tx+iTYKDtPbrSLLCbwJ5EqP+SPYQu1VYCXdy79GSj0wttR0U4cikVdlImZuEZ/9ZNCgoaxwBA==
+react-router-dom@^7.15.0:
+  version "7.18.0"
+  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-7.18.0.tgz#71a657374610e00cebf2783804d7812facfdb1b5"
+  integrity sha512-Fi0yY6kgtKae/Th2xibdWK0KSdYZ4B53Gyf6wRtomOKWgpNm7H7+DyfDhncdz9FKbpS+1jmDhg3F4WoGJ+yFOA==
   dependencies:
-    react-router "7.12.0"
+    react-router "7.18.0"
 
-react-router@7.12.0:
-  version "7.12.0"
-  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.12.0.tgz#459a86862abbedd02e76e686751fe71f9fd73a4f"
-  integrity sha512-kTPDYPFzDVGIIGNLS5VJykK0HfHLY5MF3b+xj0/tTyNYL1gF1qs7u67Z9jEhQk2sQ98SUaHxlG31g1JtF7IfVw==
+react-router@7.18.0:
+  version "7.18.0"
+  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.18.0.tgz#e7d94b54745277aabe3cf93fac938cbebc9c1c5e"
+  integrity sha512-pTTGt8J+ji1NOmYnjzT+bAJy/1zD+Jp4ziO6cL7T3ZLvXKtusO7BpFqlRXitqpcPVqllsIXFHRMt+2/k3Xn6HQ==
   dependencies:
     cookie "^1.0.1"
     set-cookie-parser "^2.6.0"

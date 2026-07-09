@@ -263,6 +263,7 @@ describe('observationResourceCreator', () => {
         patientReference: mockSubjectReference,
         encounterReference: mockEncounterReference,
         performerReference: mockPerformerReference,
+        basedOnReference: undefined,
       });
     });
 
@@ -284,5 +285,153 @@ describe('observationResourceCreator', () => {
       expect(result[0].resource.resourceType).toBe('Observation');
       expect(typeof result[0].fullUrl).toBe('string');
     });
+  });
+
+  describe('BasedOn Reference Handling', () => {
+    const mockBasedOnReference: Reference = {
+      reference: 'ServiceRequest/service-request-123',
+    };
+
+    it('should call getFhirObservations with basedOnReference when provided', () => {
+      (getFhirObservations as jest.Mock).mockReturnValue([
+        mockFhirObservationResult,
+      ]);
+
+      createObservationResources(
+        [mockObservation],
+        mockSubjectReference,
+        mockEncounterReference,
+        mockPerformerReference,
+        mockBasedOnReference,
+      );
+
+      expect(getFhirObservations).toHaveBeenCalledWith([mockObservation], {
+        patientReference: mockSubjectReference,
+        encounterReference: mockEncounterReference,
+        performerReference: mockPerformerReference,
+        basedOnReference: mockBasedOnReference,
+      });
+    });
+
+    it('should pass undefined basedOnReference when not provided', () => {
+      (getFhirObservations as jest.Mock).mockReturnValue([
+        mockFhirObservationResult,
+      ]);
+
+      createObservationResources(
+        [mockObservation],
+        mockSubjectReference,
+        mockEncounterReference,
+        mockPerformerReference,
+      );
+
+      expect(getFhirObservations).toHaveBeenCalledWith([mockObservation], {
+        patientReference: mockSubjectReference,
+        encounterReference: mockEncounterReference,
+        performerReference: mockPerformerReference,
+        basedOnReference: undefined,
+      });
+    });
+
+    it('should pass all references correctly to getFhirObservations when basedOn exists', () => {
+      (getFhirObservations as jest.Mock).mockReturnValue([
+        mockFhirObservationResult,
+      ]);
+
+      createObservationResources(
+        [mockObservation],
+        mockSubjectReference,
+        mockEncounterReference,
+        mockPerformerReference,
+        mockBasedOnReference,
+      );
+
+      expect(getFhirObservations).toHaveBeenCalledTimes(1);
+      const callArgs = (getFhirObservations as jest.Mock).mock.calls[0];
+      expect(callArgs[0]).toEqual([mockObservation]);
+      expect(callArgs[1].patientReference).toEqual(mockSubjectReference);
+      expect(callArgs[1].encounterReference).toEqual(mockEncounterReference);
+      expect(callArgs[1].performerReference).toEqual(mockPerformerReference);
+      expect(callArgs[1].basedOnReference).toEqual(mockBasedOnReference);
+    });
+
+    it('should return observation entries when basedOn reference is provided', () => {
+      const obsWithBasedOn = {
+        resource: {
+          ...mockFhirObservationResult.resource,
+          basedOn: [mockBasedOnReference],
+        },
+        fullUrl: 'urn:uuid:obs-with-basedon',
+      };
+
+      (getFhirObservations as jest.Mock).mockReturnValue([obsWithBasedOn]);
+
+      const result = createObservationResources(
+        [mockObservation],
+        mockSubjectReference,
+        mockEncounterReference,
+        mockPerformerReference,
+        mockBasedOnReference,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].fullUrl).toBe('urn:uuid:obs-with-basedon');
+      expect((result[0].resource as any).basedOn).toEqual([
+        mockBasedOnReference,
+      ]);
+    });
+
+    it('should handle errors and include basedOn context in error message', () => {
+      const libError = new Error('Invalid basedOn reference');
+      (getFhirObservations as jest.Mock).mockImplementation(() => {
+        throw libError;
+      });
+
+      expect(() =>
+        createObservationResources(
+          [mockObservation],
+          mockSubjectReference,
+          mockEncounterReference,
+          mockPerformerReference,
+          mockBasedOnReference,
+        ),
+      ).toThrow('Failed to transform observations to FHIR format');
+      expect(() =>
+        createObservationResources(
+          [mockObservation],
+          mockSubjectReference,
+          mockEncounterReference,
+          mockPerformerReference,
+          mockBasedOnReference,
+        ),
+      ).toThrow('Invalid basedOn reference');
+    });
+
+    it.each([
+      ['with basedOn', mockBasedOnReference, mockBasedOnReference],
+      ['without basedOn', undefined, undefined],
+    ])(
+      'should correctly handle %s reference',
+      (_, basedOn, expectedBasedOnRef) => {
+        (getFhirObservations as jest.Mock).mockReturnValue([
+          mockFhirObservationResult,
+        ]);
+
+        createObservationResources(
+          [mockObservation],
+          mockSubjectReference,
+          mockEncounterReference,
+          mockPerformerReference,
+          basedOn,
+        );
+
+        expect(getFhirObservations).toHaveBeenCalledWith([mockObservation], {
+          patientReference: mockSubjectReference,
+          encounterReference: mockEncounterReference,
+          performerReference: mockPerformerReference,
+          basedOnReference: expectedBasedOnRef,
+        });
+      },
+    );
   });
 });
