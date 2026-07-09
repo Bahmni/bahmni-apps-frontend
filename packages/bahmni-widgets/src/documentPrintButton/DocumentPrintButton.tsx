@@ -147,7 +147,6 @@ export const DocumentPrintButton = ({
       size={size ?? 'lg'}
       disabled={disabled}
       data-testid={dataTestId}
-      className={styles.comboPrintButton}
     >
       {items.slice(1).map((item) => (
         <MenuItem
