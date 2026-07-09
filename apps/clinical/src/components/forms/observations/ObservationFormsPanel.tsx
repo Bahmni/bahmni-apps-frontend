@@ -5,6 +5,7 @@ import type { EncounterSessionStartContext } from '../../../events/startConsulta
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
+import { useSubmittedEncounterForms } from '../../../hooks/useSubmittedEncounterForms';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ObservationForms from './ObservationForms';
 
@@ -37,6 +38,8 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
 
   const { selectedForms, addForm, removeForm, viewingForm } =
     useObservationFormsStore();
+
+  const submittedFormUuids = useSubmittedEncounterForms(allForms);
 
   const prevViewingFormRef = useRef(viewingForm);
   useEffect(() => {
@@ -81,6 +84,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
       allForms={allForms}
       isAllFormsLoading={isAllFormsLoading}
       observationFormsError={observationFormsError}
+      submittedFormUuids={submittedFormUuids}
     />
   );
 };

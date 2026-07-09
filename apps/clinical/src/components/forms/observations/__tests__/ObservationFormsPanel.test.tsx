@@ -5,6 +5,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../../hooks/usePinnedObservationForms';
+import { useSubmittedEncounterForms } from '../../../../hooks/useSubmittedEncounterForms';
 import { useObservationFormsStore } from '../../../../stores/observationFormsStore';
 import ObservationForms from '../ObservationForms';
 import ObservationFormsPanel from '../ObservationFormsPanel';
@@ -44,6 +45,10 @@ jest.mock('../../../../hooks/useObservationFormsSearch', () => ({
 
 jest.mock('../../../../hooks/usePinnedObservationForms', () => ({
   usePinnedObservationForms: jest.fn(),
+}));
+
+jest.mock('../../../../hooks/useSubmittedEncounterForms', () => ({
+  useSubmittedEncounterForms: jest.fn(() => new Set<string>()),
 }));
 
 jest.mock('../../../../stores/observationFormsStore', () => ({
@@ -124,6 +129,16 @@ describe('ObservationFormsPanel', () => {
       [mockForm1, mockForm2],
       { userUuid: 'practitioner-uuid', isFormsLoading: false },
     );
+  });
+
+  it('passes submittedFormUuids from useSubmittedEncounterForms to ObservationForms', () => {
+    const mockSubmittedUuids = new Set(['form-uuid-1']);
+    jest.mocked(useSubmittedEncounterForms).mockReturnValue(mockSubmittedUuids);
+
+    render(<ObservationFormsPanel />);
+
+    const receivedProps = MockObservationForms.mock.calls[0][0];
+    expect(receivedProps.submittedFormUuids).toBe(mockSubmittedUuids);
   });
 
   it('calls addForm when onFormSelect is invoked', () => {
