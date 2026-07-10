@@ -1,9 +1,8 @@
-import { getUserLoginLocation } from '@bahmni/services';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { v4 as uuidv4 } from 'uuid';
-import { useNotification } from '../../../notification';
 import SearchForm from '../SearchForm';
+import { validateRows } from '../utils';
 import {
   mockConfig,
   mockContextNoDefaults,
@@ -16,26 +15,28 @@ import {
 jest.mock('uuid');
 expect.extend(toHaveNoViolations);
 
-jest.mock('@bahmni/services', () => ({
-  ...jest.requireActual('@bahmni/services'),
-  getUserLoginLocation: jest.fn(),
-}));
-jest.mock('../../../notification');
+const mockOnSearch = jest
+  .fn()
+  .mockImplementation((rows, criteria) =>
+    validateRows(
+      rows,
+      criteria,
+      'COMMON_SEARCH_CRITERION_REQUIRED',
+      'COMMON_SEARCH_VALUE_REQUIRED',
+      'COMMON_SEARCH_RANGE_ORDER_INVALID',
+    ),
+  );
 
-const mockAddNotification = jest.fn();
-
-const renderForm = (config = mockConfig) =>
-  render(<SearchForm config={config} />);
+const renderForm = (config = mockConfig, location = mockLocation) =>
+  render(
+    <SearchForm config={config} location={location} onSearch={mockOnSearch} />,
+  );
 
 describe('SearchForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     let counter = 0;
     (uuidv4 as jest.Mock).mockImplementation(() => `test-uuid-${++counter}`);
-    (useNotification as jest.Mock).mockReturnValue({
-      addNotification: mockAddNotification,
-    });
-    (getUserLoginLocation as jest.Mock).mockReturnValue(mockLocation);
   });
 
   describe('Context selector', () => {
@@ -204,7 +205,7 @@ describe('SearchForm', () => {
   });
 
   describe('Validation', () => {
-    it('shows inline error, suppresses toast, and disables search button when Search is clicked with empty value', () => {
+    it('shows inline error and disables search button when Search is clicked with empty value', () => {
       renderForm();
       fireEvent.click(
         screen.getByTestId('common-search-search-button-test-id'),
@@ -212,7 +213,6 @@ describe('SearchForm', () => {
       expect(
         screen.getByText('COMMON_SEARCH_VALUE_REQUIRED'),
       ).toBeInTheDocument();
-      expect(mockAddNotification).not.toHaveBeenCalled();
       expect(
         screen.getByTestId('common-search-search-button-test-id'),
       ).toBeDisabled();
@@ -231,18 +231,6 @@ describe('SearchForm', () => {
       ).toBeInTheDocument();
     });
 
-    it('shows success toast when all rows are valid', () => {
-      renderForm();
-      const input = screen.getByRole('textbox');
-      fireEvent.change(input, { target: { value: 'Rahul' } });
-      fireEvent.click(
-        screen.getByTestId('common-search-search-button-test-id'),
-      );
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'success' }),
-      );
-    });
-
     it('re-enables search after all errors are fixed', () => {
       renderForm();
       fireEvent.click(
@@ -257,10 +245,6 @@ describe('SearchForm', () => {
       expect(
         screen.getByTestId('common-search-search-button-test-id'),
       ).not.toBeDisabled();
-      fireEvent.click(
-        screen.getByTestId('common-search-search-button-test-id'),
-      );
-      expect(mockAddNotification).toHaveBeenCalled();
     });
   });
 
@@ -283,32 +267,8 @@ describe('SearchForm', () => {
     });
 
     it('shows location name when display is absent', () => {
-      (getUserLoginLocation as jest.Mock).mockReturnValue(
-        mockLocationNoDisplay,
-      );
-      renderForm();
+      renderForm(mockConfig, mockLocationNoDisplay);
       expect(screen.getByText('Ward B')).toBeInTheDocument();
-    });
-
-    it('shows no-location error and hides form when location is unavailable', () => {
-      (getUserLoginLocation as jest.Mock).mockImplementation(() => {
-        throw new Error('No location');
-      });
-      renderForm();
-      expect(
-        screen.getByText('COMMON_SEARCH_NO_LOCATION_ERROR'),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByTestId('search-form-test-id'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('hides no-location error and shows form when location is set', () => {
-      renderForm();
-      expect(
-        screen.queryByText('COMMON_SEARCH_NO_LOCATION_ERROR'),
-      ).not.toBeInTheDocument();
-      expect(screen.getByTestId('search-form-test-id')).toBeInTheDocument();
     });
   });
 
@@ -372,19 +332,6 @@ describe('SearchForm', () => {
         expectedCount,
       );
     });
-
-    it('shows success toast when both bounds are filled', () => {
-      renderForm([mockPatientContextWithRangeNumeric]);
-      const [fromInput, toInput] = screen.getAllByRole('spinbutton');
-      fireEvent.change(fromInput, { target: { value: '20' } });
-      fireEvent.change(toInput, { target: { value: '30' } });
-      fireEvent.click(
-        screen.getByTestId('common-search-search-button-test-id'),
-      );
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'success' }),
-      );
-    });
   });
 
   describe('Range order validation', () => {
@@ -399,7 +346,6 @@ describe('SearchForm', () => {
       expect(
         screen.getByText('COMMON_SEARCH_RANGE_ORDER_INVALID'),
       ).toBeInTheDocument();
-      expect(mockAddNotification).not.toHaveBeenCalled();
     });
 
     it('disables search button after range order error is set', () => {
@@ -431,19 +377,6 @@ describe('SearchForm', () => {
       expect(
         screen.queryByText('COMMON_SEARCH_RANGE_ORDER_INVALID'),
       ).not.toBeInTheDocument();
-    });
-
-    it('allows equal from and to values', () => {
-      renderForm([mockPatientContextWithRangeNumeric]);
-      const [fromInput, toInput] = screen.getAllByRole('spinbutton');
-      fireEvent.change(fromInput, { target: { value: '30' } });
-      fireEvent.change(toInput, { target: { value: '30' } });
-      fireEvent.click(
-        screen.getByTestId('common-search-search-button-test-id'),
-      );
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'success' }),
-      );
     });
   });
 

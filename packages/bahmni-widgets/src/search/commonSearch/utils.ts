@@ -36,9 +36,9 @@ export const getRangeOrderError = (
   const toVal = value.to?.value;
   if (!fromVal || !toVal) return null;
   if (input.kind === 'numeric') {
-    const f = Number.parseFloat(fromVal);
-    const t = Number.parseFloat(toVal);
-    return !Number.isNaN(f) && !Number.isNaN(t) && f > t ? errorMessage : null;
+    const fromNum = Number.parseFloat(fromVal);
+    const toNum = Number.parseFloat(toVal);
+    return !Number.isNaN(fromNum) && !Number.isNaN(toNum) && fromNum > toNum ? errorMessage : null;
   }
   if (input.kind === 'date') {
     return new Date(fromVal) > new Date(toVal) ? errorMessage : null;

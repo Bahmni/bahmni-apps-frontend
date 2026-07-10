@@ -1,15 +1,35 @@
 import { CodeSnippetSkeleton, InlineNotification } from '@bahmni/design-system';
-import { getConfig, useTranslation } from '@bahmni/services';
+import {
+  getConfig,
+  getUserLoginLocation,
+  useTranslation,
+  UserLocation,
+} from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
-import { CommonSearchWidgetConfig } from './models';
+import {
+  CommonSearchWidgetConfig,
+  CriterionConfig,
+  CriterionRow,
+} from './models';
 import schema from './schema.json';
 import SearchForm from './SearchForm';
 import styles from './styles/CommonSearchWidget.module.scss';
+import { validateRows } from './utils';
 
 const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const configUrl = extensionParams?.configUrl as string | undefined;
+  const [location] = useState<UserLocation | null>(() => {
+    try {
+      return getUserLoginLocation();
+    } catch {
+      return null;
+    }
+  });
 
   const {
     isLoading,
@@ -20,6 +40,28 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
     queryFn: () => getConfig<CommonSearchWidgetConfig>(configUrl!, schema),
     enabled: !!configUrl,
   });
+
+  const handleSearch = (
+    rows: CriterionRow[],
+    criteria: CriterionConfig[],
+  ): CriterionRow[] => {
+    const validated = validateRows(
+      rows,
+      criteria,
+      t('COMMON_SEARCH_CRITERION_REQUIRED'),
+      t('COMMON_SEARCH_VALUE_REQUIRED'),
+      t('COMMON_SEARCH_RANGE_ORDER_INVALID'),
+    );
+    if (!validated.some((r) => r.validationError ?? r.rangeOrderError)) {
+      addNotification({
+        title: t('COMMON_SEARCH_SUCCESS'),
+        message: t('COMMON_SEARCH_SUCCESS_MESSAGE'),
+        type: 'success',
+        timeout: 3000,
+      });
+    }
+    return validated;
+  };
 
   if (isLoading)
     return (
@@ -43,13 +85,25 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       />
     );
 
+  if (!location)
+    return (
+      <InlineNotification
+        id="common-search-no-location-error"
+        testId="common-search-no-location-error-test-id"
+        kind="error"
+        lowContrast
+        title={t('COMMON_SEARCH_NO_LOCATION_ERROR')}
+        className={styles.fullWidth}
+      />
+    );
+
   return (
     <div
       id="common-search-widget"
       data-testid="common-search-widget-test-id"
       aria-label="Common Search"
     >
-      <SearchForm config={config} />
+      <SearchForm config={config} location={location} onSearch={handleSearch} />
     </div>
   );
 };

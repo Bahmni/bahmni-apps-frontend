@@ -1,14 +1,10 @@
-import { Button, Dropdown, InlineNotification } from '@bahmni/design-system';
-import {
-  getUserLoginLocation,
-  useTranslation,
-  UserLocation,
-} from '@bahmni/services';
+import { Button, Dropdown } from '@bahmni/design-system';
+import { useTranslation, UserLocation } from '@bahmni/services';
 import { useState } from 'react';
-import { useNotification } from '../../notification';
 import CriterionRowComponent from './CriterionRow';
 import {
   CommonSearchWidgetConfig,
+  CriterionConfig,
   CriterionRow,
   CriterionValue,
   SearchContextConfig,
@@ -20,23 +16,19 @@ import {
   initialRows,
   makeRow,
   updateRow,
-  validateRows,
 } from './utils';
 
 interface SearchFormProps {
   config: CommonSearchWidgetConfig;
+  location: UserLocation;
+  onSearch: (
+    rows: CriterionRow[],
+    criteria: CriterionConfig[],
+  ) => CriterionRow[];
 }
 
-const SearchForm = ({ config }: SearchFormProps) => {
+const SearchForm = ({ config, location, onSearch }: SearchFormProps) => {
   const { t } = useTranslation();
-  const { addNotification } = useNotification();
-  const [location] = useState<UserLocation | null>(() => {
-    try {
-      return getUserLoginLocation();
-    } catch {
-      return null;
-    }
-  });
   const [activeContextKey, setActiveContextKey] = useState<string>(
     config[0].context,
   );
@@ -98,36 +90,6 @@ const SearchForm = ({ config }: SearchFormProps) => {
       : null;
     setRows((prev) => [...prev, makeRow(preselect)]);
   };
-
-  const handleSearch = () => {
-    const validated = validateRows(
-      rows,
-      activeContext.criteria,
-      t('COMMON_SEARCH_CRITERION_REQUIRED'),
-      t('COMMON_SEARCH_VALUE_REQUIRED'),
-      t('COMMON_SEARCH_RANGE_ORDER_INVALID'),
-    );
-    setRows(validated);
-    if (validated.some((r) => r.validationError ?? r.rangeOrderError)) return;
-    addNotification({
-      title: t('COMMON_SEARCH_SUCCESS'),
-      message: t('COMMON_SEARCH_SUCCESS_MESSAGE'),
-      type: 'success',
-      timeout: 3000,
-    });
-  };
-
-  if (!location)
-    return (
-      <InlineNotification
-        id="common-search-no-location-error"
-        testId="common-search-no-location-error-test-id"
-        kind="error"
-        lowContrast
-        title={t('COMMON_SEARCH_NO_LOCATION_ERROR')}
-        className={styles.fullWidth}
-      />
-    );
 
   return (
     <div
@@ -206,7 +168,7 @@ const SearchForm = ({ config }: SearchFormProps) => {
             kind="primary"
             id="common-search-search-button"
             data-testid="common-search-search-button-test-id"
-            onClick={handleSearch}
+            onClick={() => setRows(onSearch(rows, activeContext.criteria))}
             disabled={
               rows.length === 0 ||
               rows.some(
