@@ -887,20 +887,17 @@ describe('FormsTable', () => {
       renderFormsTable({ activeEncounterUuid: 'encounter-1' });
 
       await waitFor(() => {
-        expect(
-          screen.getByTestId('edit-form-encounter-1'),
-        ).toBeInTheDocument();
+        expect(screen.getByTestId('edit-form-encounter-1')).toBeInTheDocument();
       });
 
-      // Vitals Form accordion (has editable row) should show Actions column
-      const vitalsTable = screen.getByTestId('forms-table-Vitals Form');
-      expect(vitalsTable.querySelector('[data-testid="forms-table-Vitals Form"]') || vitalsTable).toBeDefined();
+      // Vitals Form accordion (has editable row) — edit icon visible
+      expect(screen.getByTestId('edit-form-encounter-1')).toBeInTheDocument();
 
-      // History Form accordion (no editable row) should NOT have Actions column header
+      // History Form accordion (no editable row) — NO edit icons present
       const historyTable = screen.getByTestId('forms-table-History Form');
       expect(
-        historyTable.querySelectorAll('[data-testid^="edit-form-"]').length,
-      ).toBe(0);
+        historyTable.querySelectorAll('[data-testid^="edit-form-"]'),
+      ).toHaveLength(0);
     });
 
     it('fires startConsultation event with correct payload when row edit icon is clicked', async () => {

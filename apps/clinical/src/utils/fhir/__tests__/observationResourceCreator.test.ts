@@ -555,7 +555,9 @@ describe('createObservationEntriesWithVerbs', () => {
       expect(entries[0].request?.method).toBe('PUT');
       // obs.status ('amended') must be echoed back so OpenMRS sees the same
       // value it already has and does not raise "Editing status not allowed".
-      expect((entries[0].resource as Record<string, unknown>).status).toBe('amended');
+      expect((entries[0].resource as Record<string, unknown>).status).toBe(
+        'amended',
+      );
     });
 
     it('returns empty array for empty input', () => {
@@ -574,9 +576,7 @@ describe('createObservationEntriesWithVerbs', () => {
       const groupObs: Form2Observation = {
         concept: { uuid: 'group-concept' },
         value: null,
-        groupMembers: [
-          { concept: { uuid: 'child-concept' }, value: 10 },
-        ],
+        groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
       };
       (getFhirObservations as jest.Mock).mockReturnValue([mockEntry()]);
 
@@ -587,9 +587,7 @@ describe('createObservationEntriesWithVerbs', () => {
         performer,
       );
 
-      const parentEntry = entries.find(
-        (e) => e.request?.method === 'POST',
-      );
+      const parentEntry = entries.find((e) => e.request?.method === 'POST');
       expect(parentEntry).toBeDefined();
     });
 
@@ -599,11 +597,11 @@ describe('createObservationEntriesWithVerbs', () => {
         value: null,
         uuid: 'parent-obs-uuid',
         status: 'final',
-        groupMembers: [
-          { concept: { uuid: 'child-concept' }, value: 10 },
-        ],
+        groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
       };
-      (getFhirObservations as jest.Mock).mockReturnValue([mockEntry('Observation/parent-obs-uuid')]);
+      (getFhirObservations as jest.Mock).mockReturnValue([
+        mockEntry('Observation/parent-obs-uuid'),
+      ]);
 
       const entries = createObservationEntriesWithVerbs(
         [groupObs],
@@ -618,7 +616,9 @@ describe('createObservationEntriesWithVerbs', () => {
       expect(parentEntry).toBeDefined();
       expect(parentEntry?.request?.method).toBe('POST');
       expect(parentEntry?.request?.url).toBe('Observation');
-      expect((parentEntry?.resource as Record<string, unknown>).id).toBe('parent-obs-uuid');
+      expect((parentEntry?.resource as Record<string, unknown>).id).toBe(
+        'parent-obs-uuid',
+      );
     });
 
     it('emits DELETE for parent obsGroup when all children are removed', () => {
@@ -627,7 +627,12 @@ describe('createObservationEntriesWithVerbs', () => {
         value: null,
         uuid: 'parent-obs-uuid',
         groupMembers: [
-          { concept: { uuid: 'child-concept' }, value: null, uuid: 'child-uuid', voided: true },
+          {
+            concept: { uuid: 'child-concept' },
+            value: null,
+            uuid: 'child-uuid',
+            voided: true,
+          },
         ],
       };
 
