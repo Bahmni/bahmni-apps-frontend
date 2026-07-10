@@ -136,6 +136,14 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
     // Step 3: Combine - defaults first, then user-pinned
     const allPinnedForms = [...sortedDefaultForms, ...sortedUserPinnedForms];
 
+    // Step 4: Remove already-submitted forms so they don't appear in pinned tiles.
+    // Computed once here to avoid two separate .filter() calls in the JSX.
+    const visiblePinnedForms = useMemo(
+      () => allPinnedForms.filter((f) => !submittedFormUuids.has(f.uuid)),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [allPinnedForms, submittedFormUuids],
+    );
+
     const handleSearch = useCallback((searchQuery: string) => {
       setSearchTerm(searchQuery);
     }, []);
@@ -306,9 +314,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
           <FormCardContainer
             title={t('DEFAULT_AND_PINNED_FORMS_TITLE')}
             showNoFormsMessage={
-              !isAllFormsLoading &&
-              allPinnedForms.filter((f) => !submittedFormUuids.has(f.uuid))
-                .length === 0
+              !isAllFormsLoading && visiblePinnedForms.length === 0
             }
             noFormsMessage={t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
             dataTestId="pinned-forms-container"
@@ -320,9 +326,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
                 testId="pinned-forms-skeleton"
               />
             ) : (
-              allPinnedForms
-                .filter((form) => !submittedFormUuids.has(form.uuid))
-                .map((form: ObservationForm) => (
+              visiblePinnedForms.map((form: ObservationForm) => (
                   <FormCard
                     key={form.uuid}
                     title={form.name}

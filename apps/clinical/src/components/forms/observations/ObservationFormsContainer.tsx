@@ -98,9 +98,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     encounterSessionStartContext?.editOnly === 'observationForms';
 
   // Init-settle guard: CarbonContainer fires onValueUpdated on mount; all
-  // synchronous fires are skipped. setTimeout(0) flips the flag after React's
-  // commit phase is fully done.
+  // synchronous fires are skipped. The timer is cancelled and rescheduled on
+  // every init fire so the baseline is always captured AFTER the last init
+  // fire settles — even if CarbonContainer fires slightly asynchronously.
   const initSettledRef = React.useRef(!isEditMode);
+  const initSettleTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   // Baseline captured from CarbonContainer's getValue() after init settles.
   // Using CarbonContainer's own state (not FHIR data) as the baseline ensures
@@ -175,6 +179,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   // observations, making existingObservations stale by save time.
   // This ref freezes the enriched snapshot so mergeObservationStatuses always has
   // the correct current status ("final" or "amended") to echo back in PUT requests.
+  //
+  // The inline update below intentionally runs during render (not in an effect)
+  // so the ref is updated synchronously on the very first render that carries
+  // uuid-bearing observations — before any child renders or effects run.
+  // It is a one-way latch: once the ref holds uuids it is never overwritten again.
   const statusSourceRef = useRef<Form2Observation[]>(
     existingObservations ?? [],
   );
@@ -219,7 +228,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       // After settling, capture CarbonContainer's current state as the baseline
       // so that any schema-driven defaults are included in the comparison.
       if (!initSettledRef.current) {
-        setTimeout(() => {
+        // Cancel any pending settle — reschedule so the baseline is captured
+        // AFTER the last init fire (handles delayed async fires from
+        // CarbonContainer that might arrive after the initial setTimeout(0)).
+        if (initSettleTimerRef.current !== null) {
+          clearTimeout(initSettleTimerRef.current);
+        }
+        initSettleTimerRef.current = setTimeout(() => {
+          initSettleTimerRef.current = null;
           initSettledRef.current = true;
           if (formContainerRef.current) {
             const { observations: initObs } =
@@ -606,7 +622,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     >
       <span data-testid="observation-form-name">
         {isEditMode
-          ? `${t('EDIT_OBSERVATION_FORM_LABEL')} ${viewingForm?.name}`
+          ? `${t('EDIT_OBSERVATION_FORM')} ${viewingForm?.name}`
           : viewingForm?.name}
       </span>
       {!directMode &&
@@ -665,6 +681,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 };
 
 /**
+ * NOTE: This function — like mergeObservationStatuses and restoreComplexValues —
+ * mutates `transformed` in place. All three are called sequentially in
+ * validateAndSave/continueAnyway just before the final handleSaveForm call,
+ * so the mutation window is intentionally narrow and controlled.
+ *
  * When an addMore file-upload item is deleted, form2-controls removes it from
  * the list entirely instead of keeping it as voided. CarbonContainer.getValue()
  * no longer returns it, so the uuid is lost and no DELETE entry is generated.
@@ -798,69 +819,71 @@ const extractAndAppendNotesFromFormData = (
 };
 
 /**
- * Value-level comparison used by detectFormChanges.
- * Handles coded ({uuid}) vs coded, Complex ({url}) vs string, and primitives.
+ * Converts a single observation value to a stable, comparable string.
+ *
+ * Handles:
+ * - Coded values ({uuid}) — keyed by uuid only, ignoring display/name drift
+ * - Complex ({url}) and URL strings — normalised to the URL string
+ * - Date objects and ISO date strings — reduced to YYYY-MM-DD (timezone-safe).
+ *   The regex match is validated with `new Date()` so numeric-looking strings
+ *   like "2024" are never misidentified as dates. (Issue #1)
+ * - Primitives — String()
  */
-const obsValuesEqual = (a: unknown, b: unknown): boolean => {
-  if (a === b) return true;
-  if (a == null && b == null) return true;
-  if (a == null || b == null) return false;
-
-  // Date normalization: baseline stores Date objects (from CarbonContainer's
-  // getValue()), while observations stores ISO strings (from transformControlValue).
-  // Extract the YYYY-MM-DD prefix for a timezone-safe comparison.
-  const toDateStr = (v: unknown): string | null => {
-    if (v instanceof Date && !isNaN((v as Date).getTime()))
-      return (v as Date).toISOString().slice(0, 10);
-    if (typeof v === 'string') {
-      const m = (v as string).match(/^(\d{4}-\d{2}-\d{2})/);
-      if (m) return m[1];
+const valueFingerprint = (v: unknown): string => {
+  if (v === null || v === undefined) return '';
+  // Date: validate the parsed date before treating the string as a date value
+  if (v instanceof Date && !isNaN(v.getTime()))
+    return `date:${v.toISOString().slice(0, 10)}`;
+  if (typeof v === 'string') {
+    const m = v.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (m) {
+      const d = new Date(m[1]);
+      if (!isNaN(d.getTime())) return `date:${m[1]}`;
     }
-    return null;
-  };
-  const aDate = toDateStr(a);
-  const bDate = toDateStr(b);
-  if (aDate !== null && bDate !== null) return aDate === bDate;
-
-  const aObj = typeof a === 'object' ? (a as Record<string, unknown>) : null;
-  const bObj = typeof b === 'object' ? (b as Record<string, unknown>) : null;
-
-  // Coded values: compare by uuid only (ignore display/name differences)
-  if (aObj && 'uuid' in aObj && bObj && 'uuid' in bObj) {
-    return aObj.uuid === bObj.uuid;
   }
-  // Complex: string URL vs {url} object
-  if (typeof a === 'string' && bObj && 'url' in bObj) return a === bObj.url;
-  if (typeof b === 'string' && aObj && 'url' in aObj) return b === aObj.url;
-
-  return String(a) === String(b);
+  const obj =
+    typeof v === 'object' ? (v as Record<string, unknown>) : null;
+  if (obj && 'uuid' in obj) return `uuid:${obj.uuid}`;
+  if (typeof v === 'string' && obj == null) return v; // plain string / URL
+  if (obj && 'url' in obj) return `url:${obj.url}`;
+  return String(v);
 };
 
 /**
  * Compares current form observations (from useObservationFormData, keyed by
- * formFieldPath) against the FHIR-loaded originals.  Returns true when any
- * field was added, removed, or changed — and false when every value matches,
- * so the Done button correctly re-disables when the user restores originals.
+ * formFieldPath) against the baseline.  Returns true when any field was added,
+ * removed, or changed.
+ *
+ * Multiselect fields produce several observations with the same formFieldPath.
+ * Collecting into sorted string arrays per path (Issue #3) makes the comparison
+ * order-independent and avoids Map overwrites that caused the last value to win.
  */
 const detectFormChanges = (
   current: Form2Observation[],
   original: Form2Observation[],
 ): boolean => {
+  // Collect all value fingerprints per formFieldPath into sorted arrays so
+  // multiselect entries (same path, different values) are compared as a set.
   const collect = (
     list: Form2Observation[],
-    map: Map<string, unknown>,
+    map: Map<string, string[]>,
   ): void => {
     for (const obs of list) {
       if (obs.formFieldPath && obs.value !== null && obs.value !== undefined) {
-        map.set(obs.formFieldPath, obs.value);
+        const fp = valueFingerprint(obs.value);
+        const arr = map.get(obs.formFieldPath) ?? [];
+        arr.push(fp);
+        map.set(obs.formFieldPath, arr);
       }
       if (obs.groupMembers) collect(obs.groupMembers, map);
     }
+    // Sort each bucket so comparison is order-independent
+    for (const arr of map.values()) arr.sort();
   };
 
-  const currentVals = new Map<string, unknown>();
+  const currentVals = new Map<string, string[]>();
   collect(current, currentVals);
-  const originalVals = new Map<string, unknown>();
+  const originalVals = new Map<string, string[]>();
   collect(original, originalVals);
 
   // New fields
@@ -871,9 +894,11 @@ const detectFormChanges = (
   for (const path of originalVals.keys()) {
     if (!currentVals.has(path)) return true;
   }
-  // Changed values
-  for (const [path, val] of currentVals) {
-    if (!obsValuesEqual(val, originalVals.get(path))) return true;
+  // Changed values (including multiselect set differences)
+  for (const [path, currArr] of currentVals) {
+    const origArr = originalVals.get(path)!;
+    if (currArr.length !== origArr.length) return true;
+    if (currArr.some((v, i) => v !== origArr[i])) return true;
   }
   return false;
 };
