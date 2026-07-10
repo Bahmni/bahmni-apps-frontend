@@ -89,3 +89,8 @@
     margin-inline: 0;
   }
 }
+
+.skeleton {
+  block-size: calc($spacing-12*3);
+  inline-size: 100%;
+}

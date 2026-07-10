@@ -122,6 +122,7 @@ describe('DocumentsSection', () => {
 
     const { container } = renderSection();
 
+    expect(screen.getByTestId('document-section-skeleton')).toBeInTheDocument();
     expect(screen.queryAllByTestId('document-upload')).toHaveLength(0);
     expect(container.querySelectorAll('.cds--accordion__heading')).toHaveLength(
       0,
