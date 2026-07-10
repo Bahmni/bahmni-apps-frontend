@@ -1,4 +1,8 @@
-import { Accordion, AccordionItem, Loading } from '@bahmni/design-system';
+import {
+  Accordion,
+  AccordionItem,
+  SkeletonPlaceholder,
+} from '@bahmni/design-system';
 import {
   DocumentViewModel,
   formatDateTime,
@@ -62,7 +66,12 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   }, [documentTypesError, addNotification]);
 
   if (isLoading) {
-    return <Loading withOverlay={false} />;
+    return (
+      <SkeletonPlaceholder
+        className={styles.skeleton}
+        testId="document-section-skeleton"
+      />
+    );
   }
 
   if (error) {

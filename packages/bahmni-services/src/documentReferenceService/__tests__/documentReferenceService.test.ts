@@ -1,6 +1,6 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../../api';
-import { CONCEPT_BY_FULLY_SPECIFIED_NAME_URL } from '../../conceptService/constants';
+import { OPENMRS_REST_V1 } from '../../constants/app';
 import { DOCUMENT_UPLOAD_MAX_SIZE_URL } from '../constants';
 import {
   getDocumentReferences,
@@ -500,6 +500,7 @@ describe('documentReferenceService', () => {
   describe('getDocumentTypes', () => {
     // Shape of the OpenMRS concept setMembers response.
     const conceptName = 'Patient Document Type';
+    const customView = 'custom:(setMembers:(uuid,display))';
     const conceptResponse = {
       results: [
         {
@@ -521,10 +522,11 @@ describe('documentReferenceService', () => {
     it('maps concept setMembers to {id,label} document type options', async () => {
       mockedGet.mockResolvedValueOnce(conceptResponse);
 
+      const conceptName = 'Patient Document';
       const result = await getDocumentTypes(conceptName);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        CONCEPT_BY_FULLY_SPECIFIED_NAME_URL(conceptName),
+        `${OPENMRS_REST_V1}/concept?s=byFullySpecifiedName&name=Patient%20Document&v=custom%3A(setMembers%3A(uuid%2Cdisplay))`,
       );
       expect(result).toEqual([
         { id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', label: 'Prescription' },
