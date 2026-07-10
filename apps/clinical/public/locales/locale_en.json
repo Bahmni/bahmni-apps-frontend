@@ -11,6 +11,7 @@
   "COMMON_SEARCH_CRITERION_REQUIRED": "Please select a search criterion",
   "COMMON_SEARCH_LABEL": "Common Search",
   "COMMON_SEARCH_NO_LOCATION_ERROR": "No location selected. Please log in with a location to use search.",
+  "COMMON_SEARCH_NO_PRIVILEGE_ERROR": "No search context configured for the current user's role / privileges.",
   "COMMON_SEARCH_RANGE_ORDER_INVALID": "To value must be greater than or equal to From value",
   "COMMON_SEARCH_SEARCH_BUTTON": "Search",
   "COMMON_SEARCH_SELECT_CONTEXT_PLACEHOLDER": "Select a context",

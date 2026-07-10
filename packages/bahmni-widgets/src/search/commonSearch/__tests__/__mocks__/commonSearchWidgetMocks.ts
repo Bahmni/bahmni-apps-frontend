@@ -1,4 +1,4 @@
-import { UserLocation } from '@bahmni/services';
+import { UserLocation, UserPrivilege } from '@bahmni/services';
 import {
   CommonSearchWidgetConfig,
   CriterionConfig,
@@ -25,6 +25,55 @@ export const mockCommonSearchWidgetConfig: CommonSearchWidgetConfig = [
       },
     ],
   },
+];
+
+export const mockMultiContextConfig: CommonSearchWidgetConfig = [
+  {
+    context: 'patient',
+    translationKey: 'PATIENT_SEARCH',
+    requiredPrivileges: ['View Patients'],
+    locationAware: 'loggedInLocation',
+    url: '/openmrs/ws/rest/v1/patient/search',
+    pageSize: 20,
+    criteria: [
+      {
+        field: { key: 'patient.name.given' },
+        translationKey: 'PATIENT_GIVEN_NAME',
+        default: true,
+        input: {
+          kind: 'text',
+          placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
+        },
+      },
+    ],
+  },
+  {
+    context: 'appointment',
+    translationKey: 'APPOINTMENT_SEARCH',
+    requiredPrivileges: ['View Appointments'],
+    locationAware: 'allowedLocation',
+    url: '/openmrs/ws/rest/v1/appointment/search',
+    pageSize: 10,
+    criteria: [
+      {
+        field: { key: 'patient.name.given' },
+        translationKey: 'PATIENT_GIVEN_NAME',
+        default: true,
+        input: {
+          kind: 'text',
+          placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
+        },
+      },
+    ],
+  },
+];
+
+export const mockPrivilegeViewPatients: UserPrivilege[] = [
+  { uuid: 'priv-uuid-1', name: 'View Patients' },
+];
+
+export const mockPrivilegeViewAppointments: UserPrivilege[] = [
+  { uuid: 'priv-uuid-2', name: 'View Appointments' },
 ];
 
 export const mockWidgetLocation: UserLocation = {

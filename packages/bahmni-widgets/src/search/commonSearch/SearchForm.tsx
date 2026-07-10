@@ -3,7 +3,6 @@ import { useTranslation, UserLocation } from '@bahmni/services';
 import { useState } from 'react';
 import CriterionRowComponent from './CriterionRow';
 import {
-  CommonSearchWidgetConfig,
   CriterionConfig,
   CriterionRow,
   CriterionValue,
@@ -19,7 +18,7 @@ import {
 } from './utils';
 
 interface SearchFormProps {
-  config: CommonSearchWidgetConfig;
+  config: SearchContextConfig[];
   location: UserLocation;
   onSearch: (
     rows: CriterionRow[],

@@ -1,7 +1,9 @@
 import { CodeSnippetSkeleton, InlineNotification } from '@bahmni/design-system';
 import {
+  getCurrentUserPrivileges,
   getConfig,
   getUserLoginLocation,
+  hasPrivilege,
   useTranslation,
   UserLocation,
 } from '@bahmni/services';
@@ -32,14 +34,27 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   });
 
   const {
-    isLoading,
-    error,
+    isLoading: isConfigLoading,
+    error: configError,
     data: config,
   } = useQuery({
     queryKey: ['commonSearchWidgetConfig', configUrl],
     queryFn: () => getConfig<CommonSearchWidgetConfig>(configUrl!, schema),
     enabled: !!configUrl,
   });
+
+  const {
+    isLoading: isPrivilegesLoading,
+    error: privilegesError,
+    data: userPrivileges,
+  } = useQuery({
+    queryKey: ['currentUserPrivileges'],
+    queryFn: getCurrentUserPrivileges,
+    enabled: !!config,
+  });
+
+  const isLoading = isConfigLoading || isPrivilegesLoading;
+  const error = configError ?? privilegesError;
 
   const handleSearch = (
     rows: CriterionRow[],
@@ -97,13 +112,33 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       />
     );
 
+  const privilegedContexts = config.filter((c) =>
+    hasPrivilege(userPrivileges ?? null, c.requiredPrivileges),
+  );
+
+  if (privilegedContexts.length === 0)
+    return (
+      <InlineNotification
+        id="common-search-no-privilege-error"
+        testId="common-search-no-privilege-error-test-id"
+        kind="error"
+        lowContrast
+        title={t('COMMON_SEARCH_NO_PRIVILEGE_ERROR')}
+        className={styles.fullWidth}
+      />
+    );
+
   return (
     <div
       id="common-search-widget"
       data-testid="common-search-widget-test-id"
       aria-label="Common Search"
     >
-      <SearchForm config={config} location={location} onSearch={handleSearch} />
+      <SearchForm
+        config={privilegedContexts}
+        location={location}
+        onSearch={handleSearch}
+      />
     </div>
   );
 };

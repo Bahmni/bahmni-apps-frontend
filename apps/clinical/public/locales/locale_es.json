@@ -11,6 +11,7 @@
   "COMMON_SEARCH_CRITERION_REQUIRED": "Por favor seleccione un criterio de búsqueda",
   "COMMON_SEARCH_LABEL": "Búsqueda Común",
   "COMMON_SEARCH_NO_LOCATION_ERROR": "No se ha seleccionado ninguna ubicación. Inicie sesión con una ubicación para usar la búsqueda.",
+  "COMMON_SEARCH_NO_PRIVILEGE_ERROR": "Ningún contexto de búsqueda configurado para el rol / privilegios del usuario actual.",
   "COMMON_SEARCH_RANGE_ORDER_INVALID": "El valor final debe ser mayor o igual al valor inicial",
   "COMMON_SEARCH_SEARCH_BUTTON": "Buscar",
   "COMMON_SEARCH_SELECT_CONTEXT_PLACEHOLDER": "Seleccionar un contexto",
