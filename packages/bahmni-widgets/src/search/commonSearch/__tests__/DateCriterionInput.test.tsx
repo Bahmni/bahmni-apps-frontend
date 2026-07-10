@@ -143,28 +143,17 @@ describe('DateCriterionInput', () => {
       expect(screen.queryByText('VALUE_REQUIRED')).not.toBeInTheDocument();
     });
 
-    it('shows rangeOrderError on the to field only when from > to', () => {
+    it('shows rangeOrderError on to field only, not from', () => {
       renderInput(
         mockRangeDateInput,
         mockInvalidOrderRangeValue,
         null,
         'RANGE_ORDER_ERR',
       );
-      expect(screen.getByText('RANGE_ORDER_ERR')).toBeInTheDocument();
       expect(screen.getAllByText('RANGE_ORDER_ERR')).toHaveLength(1);
-    });
-
-    it('does not show rangeOrderError on the from field', () => {
-      renderInput(
-        mockRangeDateInput,
-        mockInvalidOrderRangeValue,
-        null,
-        'RANGE_ORDER_ERR',
-      );
-      const fromContainer = screen.getByTestId(
-        'date-criterion-input-from-test-id',
-      );
-      expect(fromContainer).not.toHaveTextContent('RANGE_ORDER_ERR');
+      expect(
+        screen.getByTestId('date-criterion-input-from-test-id'),
+      ).not.toHaveTextContent('RANGE_ORDER_ERR');
     });
   });
 });

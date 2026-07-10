@@ -24,16 +24,12 @@ const renderInput = (
 describe('LookupCriterionInput', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('renders combobox with ENTER_SEARCH_VALUE label', () => {
+  it('renders with correct label and placeholder', () => {
     renderInput();
     expect(
       screen.getByTestId('lookup-criterion-input-test-id'),
     ).toBeInTheDocument();
     expect(screen.getByText('ENTER_SEARCH_VALUE')).toBeInTheDocument();
-  });
-
-  it('renders placeholder from input config', () => {
-    renderInput();
     expect(
       screen.getByPlaceholderText('LOOKUP_PLACEHOLDER'),
     ).toBeInTheDocument();

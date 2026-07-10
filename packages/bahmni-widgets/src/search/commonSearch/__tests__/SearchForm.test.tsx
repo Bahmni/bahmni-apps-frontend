@@ -335,7 +335,7 @@ describe('SearchForm', () => {
   });
 
   describe('Range order validation', () => {
-    it('shows range order error on to field when from > to', () => {
+    it('shows range order error and disables search button when from > to', () => {
       renderForm([mockPatientContextWithRangeNumeric]);
       const [fromInput, toInput] = screen.getAllByRole('spinbutton');
       fireEvent.change(fromInput, { target: { value: '50' } });
@@ -346,16 +346,6 @@ describe('SearchForm', () => {
       expect(
         screen.getByText('COMMON_SEARCH_RANGE_ORDER_INVALID'),
       ).toBeInTheDocument();
-    });
-
-    it('disables search button after range order error is set', () => {
-      renderForm([mockPatientContextWithRangeNumeric]);
-      const [fromInput, toInput] = screen.getAllByRole('spinbutton');
-      fireEvent.change(fromInput, { target: { value: '50' } });
-      fireEvent.change(toInput, { target: { value: '20' } });
-      fireEvent.click(
-        screen.getByTestId('common-search-search-button-test-id'),
-      );
       expect(
         screen.getByTestId('common-search-search-button-test-id'),
       ).toBeDisabled();

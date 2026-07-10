@@ -24,16 +24,12 @@ const renderInput = (
 describe('OptionsCriterionInput', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('renders dropdown with ENTER_SEARCH_VALUE label', () => {
+  it('renders with correct label and placeholder', () => {
     renderInput();
     expect(
       screen.getByTestId('options-criterion-input-test-id'),
     ).toBeInTheDocument();
     expect(screen.getByText('ENTER_SEARCH_VALUE')).toBeInTheDocument();
-  });
-
-  it('renders placeholder from input config', () => {
-    renderInput();
     expect(screen.getByText('OPTIONS_PLACEHOLDER')).toBeInTheDocument();
   });
 
