@@ -31,12 +31,14 @@ describe('NumericCriterionInput', () => {
   beforeEach(() => jest.clearAllMocks());
 
   describe('single mode', () => {
-    it('renders one number input with ENTER_SEARCH_VALUE label', () => {
+    it('renders one number input with COMMON_SEARCH_CRITERION_LABEL label', () => {
       renderInput();
       expect(
         screen.getByTestId('numeric-criterion-input-test-id'),
       ).toBeInTheDocument();
-      expect(screen.getByText('ENTER_SEARCH_VALUE')).toBeInTheDocument();
+      expect(
+        screen.getByText('COMMON_SEARCH_CRITERION_LABEL'),
+      ).toBeInTheDocument();
     });
 
     it.each([

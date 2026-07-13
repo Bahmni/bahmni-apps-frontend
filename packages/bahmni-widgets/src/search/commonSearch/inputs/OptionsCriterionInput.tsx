@@ -30,7 +30,7 @@ const OptionsCriterionInput = ({
     >
       <Dropdown
         id={`options-input-${input.placeholderTranslationKey}`}
-        titleText={t('ENTER_SEARCH_VALUE')}
+        titleText={t('COMMON_SEARCH_CRITERION_LABEL')}
         label={t(input.placeholderTranslationKey)}
         items={input.options}
         selectedItem={selectedItem}

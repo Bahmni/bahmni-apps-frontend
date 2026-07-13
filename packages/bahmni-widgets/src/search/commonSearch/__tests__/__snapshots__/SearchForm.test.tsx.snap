@@ -240,7 +240,7 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
                   dir="auto"
                   for="text-input-PATIENT_GIVEN_NAME_PLACEHOLDER"
                 >
-                  ENTER_SEARCH_VALUE
+                  COMMON_SEARCH_CRITERION_LABEL
                 </label>
               </div>
               <div

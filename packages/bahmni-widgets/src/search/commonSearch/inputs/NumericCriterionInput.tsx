@@ -95,7 +95,7 @@ const NumericCriterionInput = ({
     >
       <NumberInput
         id={`numeric-input-${input.placeholderTranslationKey}`}
-        label={t('ENTER_SEARCH_VALUE')}
+        label={t('COMMON_SEARCH_CRITERION_LABEL')}
         placeholder={t(input.placeholderTranslationKey)}
         value={value?.from.value ?? 0}
         onChange={(_e, state) => {
