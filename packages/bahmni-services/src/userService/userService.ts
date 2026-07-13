@@ -1,6 +1,6 @@
 import axios from 'axios';
 import i18next from 'i18next';
-import { get, del, post } from '../api';
+import { get, post } from '../api';
 import { BAHMNI_USER_COOKIE_NAME } from '../constants/app';
 import { getCookieByName, deleteCookie } from '../utils';
 import {
@@ -92,19 +92,14 @@ export const getAvailableLocations = async (): Promise<UserLocation[]> => {
  * Logs out the current user by clearing session and cookies
  * @throws Error with i18n key if logout fails
  */
+
+// Raw instance — no interceptors attached
+const rawClient = axios.create();
 export const logout = async (): Promise<void> => {
   try {
-    await del(LOGOUT_URL);
-    LOGOUT_COOKIES.forEach((cookieName) => {
-      deleteCookie(cookieName);
-    });
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 401) {
-      // Session already expired on the server; clear local cookies anyway
-      LOGOUT_COOKIES.forEach(deleteCookie);
-    }
-
-    throw error;
+    await rawClient.delete(LOGOUT_URL, { withCredentials: true });
+  } finally {
+    LOGOUT_COOKIES.forEach(deleteCookie);
   }
 };
 

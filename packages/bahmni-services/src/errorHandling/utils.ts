@@ -41,23 +41,25 @@ const parseFHIRError = (outcome: FHIROperationOutcome): string | null => {
   return null;
 };
 
+const MAX_MESSAGE_LENGTH = 200;
 const extractBackendMessage = (data: unknown): string | undefined => {
   if (!data || typeof data !== 'object') {
     return undefined;
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const responseData = data as Record<string, any>;
   const backendError = responseData.error;
+  let message: string | undefined;
   if (typeof backendError === 'string') {
-    return backendError;
+    message = backendError;
+  } else if (typeof backendError?.message === 'string') {
+    message = backendError.message;
+  } else if (typeof responseData.message === 'string') {
+    message = responseData.message;
   }
-  if (typeof backendError?.message === 'string') {
-    return backendError.message;
+  if (message && message.length > MAX_MESSAGE_LENGTH) {
+    return message.substring(0, MAX_MESSAGE_LENGTH) + '...';
   }
-  if (typeof responseData.message === 'string') {
-    return responseData.message;
-  }
-  return undefined;
+  return message;
 };
 
 /**
@@ -123,9 +125,7 @@ export const getFormattedError = (
         case 503:
         case 504:
           title = 'Server Error';
-          message =
-            extractBackendMessage(axiosError.response.data) ??
-            'The server encountered an error. Please try again later.';
+          message = 'The server encountered an error. Please try again later.';
           break;
         default:
           title = 'Error';
@@ -142,7 +142,6 @@ export const getFormattedError = (
     } else {
       title = 'Network Error';
       message =
-        axiosError.message ||
         'Unable to connect to the server. Please check your internet connection.';
     }
   } else if (error instanceof Error) {
