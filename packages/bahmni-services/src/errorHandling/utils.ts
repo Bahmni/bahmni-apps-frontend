@@ -46,13 +46,17 @@ const extractBackendMessage = (data: unknown): string | undefined => {
   if (!data || typeof data !== 'object') {
     return undefined;
   }
-  const responseData = data as Record<string, any>;
+  const responseData = data as Record<string, unknown>;
   const backendError = responseData.error;
   let message: string | undefined;
   if (typeof backendError === 'string') {
     message = backendError;
-  } else if (typeof backendError?.message === 'string') {
-    message = backendError.message;
+  } else if (
+    typeof backendError === 'object' &&
+    backendError !== null &&
+    typeof (backendError as Record<string, unknown>).message === 'string'
+  ) {
+    message = (backendError as Record<string, unknown>).message as string;
   } else if (typeof responseData.message === 'string') {
     message = responseData.message;
   }

@@ -37,6 +37,7 @@ export const UserProfileMenu: React.FC = () => {
         message: t(message),
         type: 'error',
       });
+      // eslint-disable-next-line no-console
       console.error('Logout failed:', error);
     } finally {
       setIsLoggingOut(false);
