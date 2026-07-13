@@ -40,6 +40,14 @@ export const mockRowGenderNoValue: CriterionRow = {
   rangeOrderError: null,
 };
 
+export const mockRowGenderWithValue: CriterionRow = {
+  rowId: 'row-gender-with-value',
+  criterionKey: 'patient.gender',
+  value: { value: 'M' } satisfies ScalarValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
 export const mockRowRangeNoBounds: CriterionRow = {
   rowId: 'row-range-no-bounds',
   criterionKey: 'patient.age',
@@ -74,6 +82,22 @@ export const mockRowRangeInvalidOrder: CriterionRow = {
     from: { value: '50', comparator: null },
     to: { value: '20', comparator: null },
   } satisfies RangeValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockRowTextFailingRegex: CriterionRow = {
+  rowId: 'row-text-failing-regex',
+  criterionKey: 'patient.name.given',
+  value: { value: 'Rahul123' } satisfies ScalarValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockRowTextPassingRegex: CriterionRow = {
+  rowId: 'row-text-passing-regex',
+  criterionKey: 'patient.name.given',
+  value: { value: 'Rahul' } satisfies ScalarValue,
   validationError: null,
   rangeOrderError: null,
 };

@@ -10,6 +10,7 @@
   "COMMON_SEARCH_CRITERIA_NUMERIC_INPUT_FIELD_TO": "Ingrese Hasta",
   "COMMON_SEARCH_CRITERION_REQUIRED": "Por favor seleccione un criterio de búsqueda",
   "COMMON_SEARCH_CRITERION_LABEL": "Ingrese valor de búsqueda",
+  "COMMON_SEARCH_INVALID_FORMAT": "Formato no válido",
   "COMMON_SEARCH_LABEL": "Búsqueda Común",
   "COMMON_SEARCH_NO_LOCATION_ERROR": "No se ha seleccionado ninguna ubicación. Inicie sesión con una ubicación para usar la búsqueda.",
   "COMMON_SEARCH_NO_PRIVILEGE_ERROR": "Ningún contexto de búsqueda configurado para el rol / privilegios del usuario actual.",

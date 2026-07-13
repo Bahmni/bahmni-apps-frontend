@@ -111,7 +111,12 @@
       "additionalProperties": false,
       "properties": {
         "kind": { "type": "string", "const": "text" },
-        "placeholderTranslationKey": { "type": "string", "minLength": 1 }
+        "placeholderTranslationKey": { "type": "string", "minLength": 1 },
+        "regex": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional regular expression. When provided, the value is validated against this pattern on search submission."
+        }
       }
     },
     "dateInput": {

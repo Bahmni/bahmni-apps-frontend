@@ -6,6 +6,7 @@ import {
   InputConfig,
   ScalarValue,
   SearchContextConfig,
+  TextInput,
 } from './models';
 
 const isRangeInput = (input: InputConfig): boolean =>
@@ -26,6 +27,16 @@ export const getValueError = (
   return valid ? null : errorMessage;
 };
 
+export const validateTextInput = (
+  value: CriterionValue | null,
+  input: TextInput,
+  errorMessage: string,
+): string | null => {
+  if (!input.regex || !value) return null;
+  if (!isScalarValue(value)) return null;
+  return new RegExp(input.regex).test(value.value) ? null : errorMessage;
+};
+
 export const getRangeOrderError = (
   value: CriterionValue | null,
   input: InputConfig,
@@ -42,10 +53,7 @@ export const getRangeOrderError = (
       ? errorMessage
       : null;
   }
-  if (input.kind === 'date') {
-    return new Date(fromVal) > new Date(toVal) ? errorMessage : null;
-  }
-  return null;
+  return new Date(fromVal) > new Date(toVal) ? errorMessage : null;
 };
 
 export const makeRow = (criterionKey: string | null): CriterionRow => ({
@@ -99,20 +107,67 @@ export const updateRow = (
 ): CriterionRow[] =>
   rows.map((r) => (r.rowId === rowId ? { ...r, ...updater(r) } : r));
 
+const validateByType = (
+  value: CriterionValue | null,
+  criterion: CriterionConfig,
+  rangeOrderMessage: string,
+  t: (key: string, options?: { defaultValue?: string }) => string,
+): { validationError: string | null; rangeOrderError: string | null } => {
+  switch (criterion.input.kind) {
+    case 'text':
+      return {
+        validationError: validateTextInput(
+          value,
+          criterion.input,
+          t(`${criterion.translationKey}_INVALID_FORMAT`, {
+            defaultValue: t('COMMON_SEARCH_INVALID_FORMAT'),
+          }),
+        ),
+        rangeOrderError: null,
+      };
+    case 'numeric':
+    case 'date':
+      return {
+        validationError: null,
+        rangeOrderError: getRangeOrderError(
+          value,
+          criterion.input,
+          rangeOrderMessage,
+        ),
+      };
+    default:
+      return { validationError: null, rangeOrderError: null };
+  }
+};
+
 export const validateRows = (
   rows: CriterionRow[],
   criteria: CriterionConfig[],
   criterionError: string,
   valueError: string,
   rangeOrderMessage: string,
+  t: (key: string, options?: { defaultValue?: string }) => string,
 ): CriterionRow[] =>
   rows.map((r) => {
     if (!r.criterionKey)
       return { ...r, validationError: criterionError, rangeOrderError: null };
     const criterion = criteria.find((c) => c.field.key === r.criterionKey)!;
-    const validationError = getValueError(r.value, criterion.input, valueError);
-    const rangeOrderError = validationError
-      ? null
-      : getRangeOrderError(r.value, criterion.input, rangeOrderMessage);
+    const valueValidationError = getValueError(
+      r.value,
+      criterion.input,
+      valueError,
+    );
+    if (valueValidationError)
+      return {
+        ...r,
+        validationError: valueValidationError,
+        rangeOrderError: null,
+      };
+    const { validationError, rangeOrderError } = validateByType(
+      r.value,
+      criterion,
+      rangeOrderMessage,
+      t,
+    );
     return { ...r, validationError, rangeOrderError };
   });

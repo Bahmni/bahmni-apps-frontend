@@ -10,6 +10,7 @@
   "COMMON_SEARCH_CRITERIA_NUMERIC_INPUT_FIELD_TO": "Enter To",
   "COMMON_SEARCH_CRITERION_REQUIRED": "Please select a search criterion",
   "COMMON_SEARCH_CRITERION_LABEL": "Enter search value",
+  "COMMON_SEARCH_INVALID_FORMAT": "Invalid format",
   "COMMON_SEARCH_LABEL": "Common Search",
   "COMMON_SEARCH_NO_LOCATION_ERROR": "No location selected. Please log in with a location to use search.",
   "COMMON_SEARCH_NO_PRIVILEGE_ERROR": "No search context configured for the current user's role / privileges.",

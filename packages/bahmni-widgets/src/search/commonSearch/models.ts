@@ -35,6 +35,7 @@ export type CriterionValue = ScalarValue | RangeValue;
 export interface TextInput {
   kind: 'text';
   placeholderTranslationKey: string;
+  regex?: string;
 }
 
 export interface NumericInput {

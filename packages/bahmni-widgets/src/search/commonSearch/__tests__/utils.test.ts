@@ -1,7 +1,9 @@
+import { TextInput } from '../models';
 import {
   initialRows,
   availableCriteriaForRow,
   criteriaAvailableToAdd,
+  validateTextInput,
   getRangeOrderError,
   updateRow,
   validateRows,
@@ -10,17 +12,21 @@ import {
   mockContextMultipleDefaults,
   mockPatientContext,
   mockPatientContextWithRangeNumeric,
+  mockPatientContextWithRegex,
   mockContextNoDefaults,
 } from './__mocks__/searchFormMocks';
 import {
   mockRowGenderNoValue,
+  mockRowGenderWithValue,
   mockRowNoCriterion,
   mockRowRangeNoBounds,
   mockRowRangePartial,
   mockRowRangeFull,
   mockRowRangeInvalidOrder,
   mockRowScalarEmpty,
+  mockRowTextFailingRegex,
   mockRowTextNoValue,
+  mockRowTextPassingRegex,
   mockRowTextWithValue,
 } from './__mocks__/utilsMocks';
 
@@ -90,6 +96,51 @@ describe('availableCriteriaForRow', () => {
       mockRowTextNoValue.rowId,
     );
     expect(result).toHaveLength(mockPatientContext.criteria.length);
+  });
+});
+
+describe('validateTextInput', () => {
+  it.each([
+    {
+      label: 'text input with regex, value matches',
+      value: { value: 'Rahul' },
+      input: {
+        kind: 'text' as const,
+        placeholderTranslationKey: 'PH',
+        regex: '^[A-Za-z]+$',
+      },
+      expected: null,
+    },
+    {
+      label: 'text input with regex, value fails',
+      value: { value: 'Rahul123' },
+      input: {
+        kind: 'text' as const,
+        placeholderTranslationKey: 'PH',
+        regex: '^[A-Za-z]+$',
+      },
+      expected: 'FORMAT_ERR',
+    },
+    {
+      label: 'text input without regex',
+      value: { value: 'Rahul' },
+      input: { kind: 'text' as const, placeholderTranslationKey: 'PH' },
+      expected: null,
+    },
+    {
+      label: 'null value',
+      value: null,
+      input: {
+        kind: 'text' as const,
+        placeholderTranslationKey: 'PH',
+        regex: '^[A-Za-z]+$',
+      },
+      expected: null,
+    },
+  ])('returns $expected when $label', ({ value, input, expected }) => {
+    expect(validateTextInput(value, input as TextInput, 'FORMAT_ERR')).toBe(
+      expected,
+    );
   });
 });
 
@@ -184,12 +235,17 @@ describe('getRangeOrderError', () => {
   });
 });
 
+const mockT = (key: string) => key;
+const mockTFallback = (key: string, opts?: { defaultValue?: string }) =>
+  opts?.defaultValue ?? key;
+
 describe('validateRows', () => {
   it.each([
     {
       label: 'null criterionKey',
       row: mockRowNoCriterion,
       criteria: mockPatientContext.criteria,
+      t: mockT,
       expectedError: 'CRITERION_ERR',
       expectedRangeOrderError: null,
     },
@@ -197,6 +253,7 @@ describe('validateRows', () => {
       label: 'null value for non-range input',
       row: mockRowTextNoValue,
       criteria: mockPatientContext.criteria,
+      t: mockT,
       expectedError: 'VALUE_ERR',
       expectedRangeOrderError: null,
     },
@@ -204,6 +261,7 @@ describe('validateRows', () => {
       label: 'valid value for non-range input',
       row: mockRowTextWithValue,
       criteria: mockPatientContext.criteria,
+      t: mockT,
       expectedError: null,
       expectedRangeOrderError: null,
     },
@@ -211,6 +269,7 @@ describe('validateRows', () => {
       label: 'empty scalar value',
       row: mockRowScalarEmpty,
       criteria: mockPatientContext.criteria,
+      t: mockT,
       expectedError: 'VALUE_ERR',
       expectedRangeOrderError: null,
     },
@@ -218,6 +277,7 @@ describe('validateRows', () => {
       label: 'non-range numeric with from value filled',
       row: mockRowRangePartial,
       criteria: mockPatientContext.criteria,
+      t: mockT,
       expectedError: null,
       expectedRangeOrderError: null,
     },
@@ -225,6 +285,7 @@ describe('validateRows', () => {
       label: 'range numeric with neither bound filled',
       row: mockRowRangeNoBounds,
       criteria: mockPatientContextWithRangeNumeric.criteria,
+      t: mockT,
       expectedError: 'VALUE_ERR',
       expectedRangeOrderError: null,
     },
@@ -232,6 +293,7 @@ describe('validateRows', () => {
       label: 'range input with only from filled',
       row: mockRowRangePartial,
       criteria: mockPatientContextWithRangeNumeric.criteria,
+      t: mockT,
       expectedError: 'VALUE_ERR',
       expectedRangeOrderError: null,
     },
@@ -239,6 +301,7 @@ describe('validateRows', () => {
       label: 'range input with both bounds filled and valid order',
       row: mockRowRangeFull,
       criteria: mockPatientContextWithRangeNumeric.criteria,
+      t: mockT,
       expectedError: null,
       expectedRangeOrderError: null,
     },
@@ -246,18 +309,61 @@ describe('validateRows', () => {
       label: 'range input with both bounds filled but from > to',
       row: mockRowRangeInvalidOrder,
       criteria: mockPatientContextWithRangeNumeric.criteria,
+      t: mockT,
       expectedError: null,
       expectedRangeOrderError: 'RANGE_ORDER_ERR',
     },
+    {
+      label: 'options criterion with filled value produces no errors',
+      row: mockRowGenderWithValue,
+      criteria: mockPatientContext.criteria,
+      t: mockT,
+      expectedError: null,
+      expectedRangeOrderError: null,
+    },
+    {
+      label: 'text with regex, empty value skips regex and returns value error',
+      row: mockRowTextNoValue,
+      criteria: mockPatientContextWithRegex.criteria,
+      t: mockT,
+      expectedError: 'VALUE_ERR',
+      expectedRangeOrderError: null,
+    },
+    {
+      label: 'text with regex, value passes regex',
+      row: mockRowTextPassingRegex,
+      criteria: mockPatientContextWithRegex.criteria,
+      t: mockT,
+      expectedError: null,
+      expectedRangeOrderError: null,
+    },
+    {
+      label: 'text with regex, value fails regex — derived key found',
+      row: mockRowTextFailingRegex,
+      criteria: mockPatientContextWithRegex.criteria,
+      t: mockT,
+      expectedError: 'PATIENT_GIVEN_NAME_INVALID_FORMAT',
+      expectedRangeOrderError: null,
+    },
+    {
+      label:
+        'text with regex, value fails regex — derived key missing, falls back',
+      row: mockRowTextFailingRegex,
+      criteria: mockPatientContextWithRegex.criteria,
+      t: mockTFallback,
+      expectedError: 'COMMON_SEARCH_INVALID_FORMAT',
+      expectedRangeOrderError: null,
+    },
   ])(
     '$label: sets validationError=$expectedError rangeOrderError=$expectedRangeOrderError',
-    ({ row, criteria, expectedError, expectedRangeOrderError }) => {
+    ({ row, criteria, t, expectedError, expectedRangeOrderError }) => {
       const result = validateRows(
         [row],
         criteria,
         'CRITERION_ERR',
         'VALUE_ERR',
         'RANGE_ORDER_ERR',
+        t,
       );
       expect(result[0].validationError).toBe(expectedError);
       expect(result[0].rangeOrderError).toBe(expectedRangeOrderError);
@@ -271,6 +377,7 @@ describe('validateRows', () => {
       'CRITERION_ERR',
       'VALUE_ERR',
       'RANGE_ORDER_ERR',
+      mockT,
     );
     expect(result[0].validationError).toBe('CRITERION_ERR');
     expect(result[1].validationError).toBeNull();
