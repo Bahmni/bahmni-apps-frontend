@@ -10,6 +10,7 @@ import {
   createImmunizationBundleEntries,
   findAttr,
   formatBatchItemDisplay,
+  getAllValueSetComboBoxItems,
   getBatchNumberComboBoxItems,
   getComboBoxItems,
   getLocationComboBoxItems,
@@ -136,6 +137,47 @@ describe('getValueSetComboBoxItems', () => {
         mockValueSetWithoutContains,
         'No results',
       ),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
+  });
+});
+
+describe('getAllValueSetComboBoxItems', () => {
+  it('returns all items when searchTerm is empty, without requiring a search', () => {
+    expect(
+      getAllValueSetComboBoxItems('', mockVaccineValueSet, 'No results'),
+    ).toEqual([
+      { code: 'covid-19', display: 'COVID-19 Vaccine' },
+      { code: 'flu', display: 'Influenza Vaccine' },
+    ]);
+  });
+
+  it('returns all items when searchTerm is whitespace-only', () => {
+    expect(
+      getAllValueSetComboBoxItems('   ', mockVaccineValueSet, 'No results'),
+    ).toHaveLength(2);
+  });
+
+  it('filters items by search term case-insensitively once the user types', () => {
+    expect(
+      getAllValueSetComboBoxItems('COVID', mockVaccineValueSet, 'No results'),
+    ).toEqual([{ code: 'covid-19', display: 'COVID-19 Vaccine' }]);
+  });
+
+  it('returns disabled sentinel when no items match a search term', () => {
+    expect(
+      getAllValueSetComboBoxItems('mumps', mockVaccineValueSet, 'No results'),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
+  });
+
+  it('returns disabled sentinel when valueSet is undefined', () => {
+    expect(
+      getAllValueSetComboBoxItems('', undefined, 'No results'),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
+  });
+
+  it('returns disabled sentinel when expansion has no contains', () => {
+    expect(
+      getAllValueSetComboBoxItems('', mockValueSetWithoutContains, 'No results'),
     ).toEqual([{ code: '', display: 'No results', disabled: true }]);
   });
 });

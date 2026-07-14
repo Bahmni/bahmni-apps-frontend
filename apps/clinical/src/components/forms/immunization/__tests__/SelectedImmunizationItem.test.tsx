@@ -799,6 +799,19 @@ describe('SelectedImmunizationItem', () => {
   describe('Status reason field', () => {
     const statusReasonAttributes = [{ name: 'statusReason', required: false }];
 
+    it('shows all reason options by default, without requiring the user to type', async () => {
+      const user = userEvent.setup();
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={statusReasonAttributes}
+        />,
+      );
+      await user.click(screen.getByPlaceholderText('Select reason'));
+      expect(screen.getByText('Not age appropriate')).toBeInTheDocument();
+      expect(screen.getByText('Other')).toBeInTheDocument();
+    });
+
     it('calls updateStatusReason with code and display when a reason is selected', async () => {
       const user = userEvent.setup();
       render(
