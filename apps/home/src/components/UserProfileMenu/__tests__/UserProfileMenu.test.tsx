@@ -27,33 +27,23 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 jest.mock('@carbon/react', () => ({
-  OverflowMenu: ({
-    children,
-    className,
-    renderIcon: Icon,
-    iconDescription,
-    ...props
-  }: any) => (
-    <div className={className} {...props}>
-      {Icon && <Icon />}
-      <span>{iconDescription}</span>
-      <div data-testid="menu-content">{children}</div>
-    </div>
+  HeaderGlobalAction: ({ children, onClick, isActive, ...props }: any) => (
+    <button onClick={onClick} data-active={isActive} {...props}>
+      {children}
+    </button>
   ),
-  OverflowMenuItem: ({
-    itemText,
-    onClick,
-    disabled,
-    hasDivider,
-    ...props
-  }: any) => (
-    <>
-      {hasDivider && <hr data-testid="menu-divider" />}
-      <button onClick={onClick} disabled={disabled} {...props}>
-        {itemText}
-      </button>
-    </>
+  Menu: ({ children, open }: any) =>
+    open ? <div data-testid="menu-content">{children}</div> : null,
+  MenuItem: ({ label, onClick, disabled, ...props }: any) => (
+    <button onClick={onClick} disabled={disabled} {...props}>
+      {label}
+    </button>
   ),
+  MenuItemDivider: () => <hr data-testid="menu-divider" />,
+}));
+
+jest.mock('@carbon/icons-react', () => ({
+  UserAvatar: () => <svg data-testid="user-avatar-icon" />,
 }));
 
 const mockUseActivePractitioner = useActivePractitioner as jest.MockedFunction<
@@ -110,30 +100,59 @@ describe('UserProfileMenu', () => {
     expect(screen.getByTestId('user-profile-menu')).toBeInTheDocument();
   });
 
-  it('renders change password option', () => {
+  it('renders change password option', async () => {
+    const user = userEvent.setup();
     render(<UserProfileMenu />);
+
+    await user.click(screen.getByTestId('user-profile-menu'));
 
     expect(screen.getByTestId('change-password-option')).toHaveTextContent(
       'Change Password',
     );
   });
 
-  it('renders logout option', () => {
+  it('renders logout option', async () => {
+    const user = userEvent.setup();
     render(<UserProfileMenu />);
+
+    await user.click(screen.getByTestId('user-profile-menu'));
 
     expect(screen.getByTestId('logout-option')).toHaveTextContent('Logout');
   });
 
-  it('renders menu divider', () => {
+  it('renders menu divider', async () => {
+    const user = userEvent.setup();
     render(<UserProfileMenu />);
 
+    await user.click(screen.getByTestId('user-profile-menu'));
+
     expect(screen.getByTestId('menu-divider')).toBeInTheDocument();
+  });
+
+  it('toggles the menu open state when the trigger is clicked', async () => {
+    const user = userEvent.setup();
+    render(<UserProfileMenu />);
+
+    const trigger = screen.getByTestId('user-profile-menu');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTestId('menu-content')).not.toBeInTheDocument();
+
+    await user.click(trigger);
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByTestId('menu-content')).toBeInTheDocument();
+
+    await user.click(trigger);
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTestId('menu-content')).not.toBeInTheDocument();
   });
 
   it('redirects to old app change password page on click', async () => {
     const user = userEvent.setup();
     render(<UserProfileMenu />);
 
+    await user.click(screen.getByTestId('user-profile-menu'));
     const changePasswordBtn = screen.getByTestId('change-password-option');
     await user.click(changePasswordBtn);
 
@@ -148,6 +167,7 @@ describe('UserProfileMenu', () => {
 
     render(<UserProfileMenu />);
 
+    await user.click(screen.getByTestId('user-profile-menu'));
     const logoutBtn = screen.getByTestId('logout-option');
     await user.click(logoutBtn);
 
@@ -166,6 +186,7 @@ describe('UserProfileMenu', () => {
 
     render(<UserProfileMenu />);
 
+    await user.click(screen.getByTestId('user-profile-menu'));
     const logoutBtn = screen.getByTestId('logout-option');
     await user.click(logoutBtn);
 
@@ -210,6 +231,7 @@ describe('UserProfileMenu', () => {
 
     render(<UserProfileMenu />);
 
+    await user.click(screen.getByTestId('user-profile-menu'));
     const logoutBtn = screen.getByTestId('logout-option');
     await user.click(logoutBtn);
 
