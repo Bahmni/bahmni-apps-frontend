@@ -105,5 +105,6 @@ export function createNotAdministeredImmunizationViewModel(
     reason: immunization.statusReason?.coding?.[0]?.display ?? null,
     date: immunization.occurrenceDateTime ?? null,
     recordedBy: getPerformerDisplay(immunization, ENTERING_PROVIDER_CODE),
+    notes: immunization.note?.[0]?.text ?? null,
   };
 }
