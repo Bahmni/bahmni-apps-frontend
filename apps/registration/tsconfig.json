@@ -6,10 +6,10 @@
       "path": "../../packages/bahmni-widgets"
     },
     {
-      "path": "../command-palette"
+      "path": "../../packages/bahmni-services"
     },
     {
-      "path": "../../packages/bahmni-services"
+      "path": "../command-palette"
     },
     {
       "path": "../../packages/bahmni-design-system"

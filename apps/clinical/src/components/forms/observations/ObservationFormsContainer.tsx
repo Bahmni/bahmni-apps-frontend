@@ -918,13 +918,13 @@ const extractAndAppendNotesFromFormData = (
 const valueFingerprint = (v: unknown): string => {
   if (v === null || v === undefined) return '';
   // Date: validate the parsed date before treating the string as a date value
-  if (v instanceof Date && !isNaN(v.getTime()))
+  if (v instanceof Date && !Number.isNaN(v.getTime()))
     return `date:${v.toISOString().slice(0, 10)}`;
   if (typeof v === 'string') {
-    const m = v.match(/^(\d{4}-\d{2}-\d{2})/);
+    const m = /^(\d{4}-\d{2}-\d{2})/.exec(v);
     if (m) {
       const d = new Date(m[1]);
-      if (!isNaN(d.getTime())) return `date:${m[1]}`;
+      if (!Number.isNaN(d.getTime())) return `date:${m[1]}`;
     }
   }
   const obj = typeof v === 'object' ? (v as Record<string, unknown>) : null;
@@ -934,7 +934,7 @@ const valueFingerprint = (v: unknown): string => {
   // that an obs whose value was { url, fileName } in FHIR (returned as Complex by
   // getValue()) matches the plain URL string produced by extractControls.
   if (obj && 'url' in obj) return String(obj.url);
-  return String(v);
+  return JSON.stringify(v);
 };
 
 /**
@@ -980,7 +980,7 @@ const detectFormChanges = (
       if (obs.groupMembers) collect(obs.groupMembers, map);
     }
     // Sort each bucket so comparison is order-independent
-    for (const arr of map.values()) arr.sort();
+    for (const arr of map.values()) arr.sort((a, b) => a.localeCompare(b));
   };
 
   const currentVals = new Map<string, string[]>();

@@ -121,9 +121,9 @@ const FormsTable: React.FC<WidgetProps> = ({
       const form = publishedForms.find((f) => f.name === formName);
       if (!form?.privileges || form.privileges.length === 0) return true;
       if (!userPrivileges || userPrivileges.length === 0) return false;
-      const userPrivilegeNames = userPrivileges.map((p) => p.name);
+      const userPrivilegeNames = new Set(userPrivileges.map((p) => p.name));
       return form.privileges.some(
-        (fp) => userPrivilegeNames.includes(fp.privilegeName) && fp.editable,
+        (fp) => userPrivilegeNames.has(fp.privilegeName) && fp.editable,
       );
     },
     [publishedForms, userPrivileges],
@@ -288,7 +288,8 @@ const FormsTable: React.FC<WidgetProps> = ({
 
   const getGroupHeaders = useCallback(
     (records: FormRecordViewModel[]) => {
-      const hasEditableRow = showActions && records.some(isRowEditable);
+      const hasEditableRow =
+        showActions && records.some((r) => isRowEditable(r));
       return hasEditableRow ? headersWithActions : baseHeaders;
     },
     [showActions, isRowEditable, headersWithActions, baseHeaders],

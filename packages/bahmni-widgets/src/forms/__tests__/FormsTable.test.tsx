@@ -819,7 +819,7 @@ describe('FormsTable', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('shows edit icon only for the active encounter row (AC #3, #4)', async () => {
+    it('shows edit icon only for the active encounter row', async () => {
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
       mockUseHasPrivilege.mockReturnValue(true);
       // encounter-1 is the active encounter
@@ -838,7 +838,7 @@ describe('FormsTable', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('hides Actions column when disableActions is true (no active visit, AC #2)', async () => {
+    it('hides Actions column when disableActions is true (no active visit)', async () => {
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
       mockUseHasPrivilege.mockReturnValue(true);
 
@@ -857,7 +857,7 @@ describe('FormsTable', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('hides Actions column when activeEncounterUuid is null (session expired, AC #3)', async () => {
+    it('hides Actions column when activeEncounterUuid is null (session expired)', async () => {
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
       mockUseHasPrivilege.mockReturnValue(true);
 
@@ -1013,7 +1013,7 @@ describe('FormsTable', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('does not show edit icon in modal when encounter is not the active encounter (AC #3, #4)', async () => {
+    it('does not show edit icon in modal when encounter is not the active encounter', async () => {
       const user = userEvent.setup();
       const otherEncounterRecord: FormResponseData[] = [
         {

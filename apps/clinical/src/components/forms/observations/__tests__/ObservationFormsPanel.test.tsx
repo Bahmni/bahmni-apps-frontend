@@ -1,6 +1,8 @@
+import { getObservationsFromFhir } from '@bahmni/form2-controls';
 import type { ObservationForm } from '@bahmni/services';
+import { getObservationsBundleByEncounterUuid } from '@bahmni/services';
 import { useActivePractitioner } from '@bahmni/widgets';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../../hooks/useObservationFormsSearch';
@@ -58,6 +60,15 @@ jest.mock('../../../../stores/observationFormsStore', () => ({
 jest.mock('../ObservationForms', () => ({
   __esModule: true,
   default: jest.fn(() => <div data-testid="observation-forms" />),
+}));
+
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  getObservationsBundleByEncounterUuid: jest.fn(),
+}));
+
+jest.mock('@bahmni/form2-controls', () => ({
+  getObservationsFromFhir: jest.fn(),
 }));
 
 const MockObservationForms = jest.mocked(ObservationForms);
@@ -291,6 +302,126 @@ describe('ObservationFormsPanel', () => {
 
       expect(mockReset).not.toHaveBeenCalled();
       expect(mockAddForm).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Edit mode — fetches FHIR bundle and pre-populates store', () => {
+    const mockSetState = jest.fn();
+
+    beforeEach(() => {
+      jest.mocked(useObservationFormsStore).mockReturnValue({
+        selectedForms: [],
+        addForm: mockAddForm,
+        removeForm: mockRemoveForm,
+        viewingForm: null,
+      } as ReturnType<typeof useObservationFormsStore>);
+
+      // Expose setState on the mock so the component can call it
+      (
+        useObservationFormsStore as unknown as { setState: jest.Mock }
+      ).setState = mockSetState;
+    });
+
+    it('fetches bundle and calls addForm when edit context is provided', async () => {
+      const mockBundle = {
+        entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest
+        .mocked(getObservationsFromFhir)
+        .mockReturnValue([
+          { concept: { uuid: 'concept-1' }, value: 42 },
+        ] as never);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(getObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
+          'encounter-uuid-1',
+        );
+      });
+
+      await waitFor(() => {
+        expect(mockAddForm).toHaveBeenCalledWith(mockForm1);
+      });
+    });
+
+    it('calls addForm even when FHIR fetch fails', async () => {
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockRejectedValue(new Error('Network error'));
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(mockAddForm).toHaveBeenCalledWith(mockForm1);
+      });
+    });
+
+    it('does not fetch when editFormName does not match any form', async () => {
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'NonExistentForm',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(getObservationsBundleByEncounterUuid).not.toHaveBeenCalled();
+        expect(mockAddForm).not.toHaveBeenCalled();
+      });
+    });
+
+    it('does not fetch when form is already in selectedForms', async () => {
+      jest.mocked(useObservationFormsStore).mockReturnValue({
+        selectedForms: [mockForm1],
+        addForm: mockAddForm,
+        removeForm: mockRemoveForm,
+        viewingForm: null,
+      } as ReturnType<typeof useObservationFormsStore>);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(getObservationsBundleByEncounterUuid).not.toHaveBeenCalled();
+      });
+    });
+
+    it('skips fetch when not in edit mode', async () => {
+      render(<ObservationFormsPanel />);
+
+      await waitFor(() => {
+        expect(getObservationsBundleByEncounterUuid).not.toHaveBeenCalled();
+      });
     });
   });
 });
