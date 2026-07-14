@@ -28,6 +28,7 @@ import { useImmunizationHistoryStore } from '../stores';
 import styles from '../styles/ImmunizationForm.module.scss';
 import {
   formatBatchItemDisplay,
+  getAllValueSetComboBoxItems,
   getBatchNumberComboBoxItems,
   getLocationComboBoxItems,
   getMedicationComboBoxItems,
@@ -164,7 +165,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
 
   const statusReasonComboBoxItems = useMemo(
     () =>
-      getValueSetComboBoxItems(
+      getAllValueSetComboBoxItems(
         statusReasonSearchTerm,
         statusReasons,
         t('NO_MATCHING_STATUS_REASON_FOUND'),
@@ -416,7 +417,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         )}
 
         {findAttr('statusReason', attributes) && (
-          <Column sm={4} md={2} lg={5} className={styles.column}>
+          <Column sm={4} md={8} lg={16} className={styles.column}>
             <ComboBox
               id={`immunization-status-reason-combobox-${id}`}
               data-testid={`immunization-status-reason-${id}-test-id`}
@@ -425,6 +426,7 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
                 'IMMUNIZATION_INPUT_CONTROL_STATUS_REASON_PLACEHOLDER',
               )}
               autoAlign
+              className={styles.statusReason}
               items={statusReasonComboBoxItems}
               itemToString={(item) => item?.display ?? ''}
               selectedItem={
