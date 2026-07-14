@@ -267,6 +267,91 @@ describe('DataTable column filtering', () => {
   });
 });
 
+describe('DataTable numeric filter', () => {
+  interface Patient {
+    id: string;
+    name: string;
+    age: number;
+  }
+
+  const patients: Patient[] = [
+    { id: '1', name: 'Alice', age: 25 },
+    { id: '2', name: 'Bob', age: 34 },
+    { id: '3', name: 'Carol', age: 45 },
+  ];
+
+  const numericColumns: DataTableColumn<Patient>[] = [
+    { key: 'name', header: 'Name' },
+    { key: 'age', header: 'Age', enableFiltering: true, filterType: 'numeric' },
+  ];
+
+  const renderCell = (row: Patient, key: string) =>
+    String(row[key as keyof Patient]);
+
+  it('renders a number input for filterType "numeric" columns', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable
+        columns={numericColumns}
+        rows={patients}
+        renderCell={renderCell}
+        ariaLabel="Patients"
+        dataTestId="patients-table"
+      />,
+    );
+
+    await user.click(screen.getByTestId('patients-table-filter-toggle'));
+
+    expect(
+      screen.getByRole('spinbutton', { name: /filter age/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('narrows rows when a number is typed (substring match)', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable
+        columns={numericColumns}
+        rows={patients}
+        renderCell={renderCell}
+        ariaLabel="Patients"
+        dataTestId="patients-table"
+      />,
+    );
+
+    await user.click(screen.getByTestId('patients-table-filter-toggle'));
+    const input = screen.getByRole('spinbutton', { name: /filter age/i });
+    await user.type(input, '5');
+
+    const visibleRows = screen.getAllByTestId(/^table-row-/);
+    expect(visibleRows).toHaveLength(2);
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+    expect(screen.getByText('Carol')).toBeInTheDocument();
+    expect(screen.queryByText('Bob')).not.toBeInTheDocument();
+  });
+
+  it('restores all rows when the filter toggle is used to clear', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable
+        columns={numericColumns}
+        rows={patients}
+        renderCell={renderCell}
+        ariaLabel="Patients"
+        dataTestId="patients-table"
+      />,
+    );
+
+    await user.click(screen.getByTestId('patients-table-filter-toggle'));
+    const input = screen.getByRole('spinbutton', { name: /filter age/i });
+    await user.type(input, '5');
+    expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(2);
+
+    await user.click(screen.getByTestId('patients-table-filter-toggle'));
+    expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(3);
+  });
+});
+
 describe('DataTable date range filter', () => {
   interface Order {
     id: string;

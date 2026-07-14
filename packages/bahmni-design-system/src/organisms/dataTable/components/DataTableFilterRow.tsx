@@ -3,6 +3,7 @@ import type { Table } from '@tanstack/react-table';
 import styles from '../styles/DataTable.module.scss';
 import type { DataTableColumn } from '../types';
 import { DataTableDateRangeFilter } from './DataTableDateRangeFilter';
+import { DataTableNumericFilter } from './DataTableNumericFilter';
 import { DataTableSelectFilter } from './DataTableSelectFilter';
 import { DataTableTextFilter } from './DataTableTextFilter';
 
@@ -44,6 +45,13 @@ export const DataTableFilterRow = <T extends { id: string }>({
           )}
           {col.filterType === 'dateRange' && (
             <DataTableDateRangeFilter
+              column={tanstackCol}
+              header={col.header}
+              dataTestId={dataTestId}
+            />
+          )}
+          {col.filterType === 'numeric' && (
+            <DataTableNumericFilter
               column={tanstackCol}
               header={col.header}
               dataTestId={dataTestId}
