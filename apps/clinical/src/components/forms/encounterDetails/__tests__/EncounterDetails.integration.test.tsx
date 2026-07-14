@@ -158,6 +158,8 @@ describe('BasicForm Integration Tests', () => {
 
     // Reset the store before each test
     useEncounterDetailsStore.getState().reset();
+    // Mark consultation date as ready (normally done by ConsultationPad)
+    useEncounterDetailsStore.getState().setConsultationDate(new Date());
   });
 
   const renderBasicForm = (customPractitionerState?: any) => {
