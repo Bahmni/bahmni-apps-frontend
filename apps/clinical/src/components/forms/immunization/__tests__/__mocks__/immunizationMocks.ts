@@ -74,6 +74,21 @@ export const mockAdministrationInputControlConfig = {
   metadata: { ...baseMetadata, disableAdditionalAdministrations: true },
 };
 
+export const mockWaiverInputControlConfig = {
+  encounterTypes: ['Immunization'],
+  privileges: ['app:clinical;addHistory'],
+  attributes: [
+    { name: 'statusReason', required: true },
+    { name: 'note', required: false },
+  ],
+  metadata: {
+    vaccineConceptSetUuid: 'vaccine-concept-set-uuid',
+    statusReasonValueSetUuid: 'status-reason-value-set-uuid',
+    otherReasonConceptUuid: 'other-uuid',
+  },
+  type: 'immunizationWaiver',
+};
+
 export const mockImmunizationInputControlConfigWithFetchStockBatches = {
   ...mockImmunizationInputControlConfig,
   metadata: {
@@ -130,6 +145,13 @@ export const mockSitesValueSet = buildValueSet([
   { code: 'arm', display: 'Left Arm' },
 ]);
 
+export const OTHER_REASON_CONCEPT_UUID = 'other-uuid';
+
+export const mockStatusReasonsValueSet = buildValueSet([
+  { code: 'not-age-appropriate', display: 'Not age appropriate' },
+  { code: OTHER_REASON_CONCEPT_UUID, display: 'Other' },
+]);
+
 export const mockLocations: Location[] = [
   { uuid: 'location-uuid-1', display: 'Main Clinic', childLocations: [] },
 ];
@@ -155,6 +177,7 @@ export const mockImmunizationEntry: ImmunizationInputEntry = {
   batchNumber: null,
   stockLocation: null,
   doseSequence: null,
+  statusReason: null,
   errors: {},
   hasBeenValidated: false,
 };
@@ -258,6 +281,43 @@ export const mockInfluenzaVaccineDrug: Medication = {
 
 export const mockCovid19VaccineDrugs: Medication[] = [mockCovid19VaccineDrug];
 
+export const mockCovidVaccineMedicationWithDisplay: Medication = {
+  resourceType: 'Medication',
+  id: 'covid-med-1',
+  code: {
+    coding: [{ code: '213', display: 'COVID-19 vaccine' }],
+    text: 'COVID-19 vaccine',
+  },
+};
+
+export const mockDuplicateCovidVaccineMedication: Medication = {
+  resourceType: 'Medication',
+  id: 'covid-med-2',
+  code: {
+    coding: [{ code: '213', display: 'COVID-19 vaccine (brand B)' }],
+  },
+};
+
+export const mockFluVaccineMedicationWithDisplay: Medication = {
+  resourceType: 'Medication',
+  id: 'flu-med-1',
+  code: {
+    coding: [{ code: '88', display: 'Influenza vaccine' }],
+  },
+};
+
+export const mockVaccineMedicationWithoutCoding: Medication = {
+  resourceType: 'Medication',
+  id: 'no-coding-med',
+  code: {},
+};
+
+export const mockVaccineMedicationsWithDisplay: Medication[] = [
+  mockCovidVaccineMedicationWithDisplay,
+  mockDuplicateCovidVaccineMedication,
+  mockFluVaccineMedicationWithDisplay,
+];
+
 export const mockVaccinationBundle = {
   resourceType: 'Bundle',
   type: 'searchset',
@@ -292,6 +352,11 @@ export const mockImmunizationEntryComplete: ImmunizationInputEntry = {
   batchNumber: 'BATCH-001',
   doseSequence: 3,
   note: 'Third dose completed successfully.',
+};
+
+export const mockImmunizationEntryWaiver: ImmunizationInputEntry = {
+  ...mockImmunizationEntryComplete,
+  statusReason: { code: 'not-age-appropriate', display: 'Not age appropriate' },
 };
 
 export const mockImmunizationEntryWithBasedOn: ImmunizationInputEntry = {
@@ -418,9 +483,11 @@ export const mockVaccinationBundleWithCovid = {
 export const mockStore = {
   selectedImmunizations: [],
   attributes: undefined,
+  waiverReasonConfig: undefined,
   addImmunization: jest.fn(),
   removeImmunization: jest.fn(),
   setAttributes: jest.fn(),
+  setWaiverReasonConfig: jest.fn(),
   updateAdministeredOn: jest.fn(),
   updateVaccineDrug: jest.fn(),
   updateAdministeredLocation: jest.fn(),
@@ -431,6 +498,7 @@ export const mockStore = {
   updateBatchNumber: jest.fn(),
   updateStockLocation: jest.fn(),
   updateDoseSequence: jest.fn(),
+  updateStatusReason: jest.fn(),
   updateNote: jest.fn(),
   validateAll: jest.fn(),
   reset: jest.fn(),

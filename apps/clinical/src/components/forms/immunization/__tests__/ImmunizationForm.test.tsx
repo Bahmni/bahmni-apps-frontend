@@ -36,7 +36,9 @@ import {
   mockSitesValueSet,
   mockStore,
   mockVaccinationBundle,
+  mockVaccineMedicationsWithDisplay,
   mockVaccineValueSet,
+  mockWaiverInputControlConfig,
 } from './__mocks__/immunizationMocks';
 
 jest.mock('@bahmni/services', () => ({
@@ -542,6 +544,108 @@ describe('ImmunizationForm', () => {
           }),
         );
       });
+    });
+  });
+
+  describe('Waiver form type', () => {
+    const waiverVaccinationBundle = {
+      resourceType: 'Bundle',
+      type: 'searchset',
+      entry: mockVaccineMedicationsWithDisplay.map((resource) => ({
+        resource,
+      })),
+    };
+
+    it('sources vaccine search results from Medication resources rather than the concept ValueSet', async () => {
+      const user = userEvent.setup();
+      mockUseQuery.mockImplementation(({ queryKey: qk }: any) => {
+        if (qk[0] === 'vaccination') {
+          return {
+            data: waiverVaccinationBundle,
+            isLoading: false,
+            error: null,
+          };
+        }
+        return defaultQueryMock({ queryKey: qk }) as any;
+      });
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockWaiverInputControlConfig}
+        />,
+      );
+      await user.type(
+        screen.getByRole('combobox', { name: /search to add immunization/i }),
+        'covid',
+      );
+      await waitFor(() => {
+        expect(screen.getByText('COVID-19 vaccine')).toBeInTheDocument();
+        expect(screen.queryByText('Influenza vaccine')).not.toBeInTheDocument();
+      });
+    });
+
+    it('calls addImmunization with the Medication coding code and display when a vaccine is selected', async () => {
+      const user = userEvent.setup();
+      mockUseQuery.mockImplementation(({ queryKey: qk }: any) => {
+        if (qk[0] === 'vaccination') {
+          return {
+            data: waiverVaccinationBundle,
+            isLoading: false,
+            error: null,
+          };
+        }
+        return defaultQueryMock({ queryKey: qk }) as any;
+      });
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockWaiverInputControlConfig}
+        />,
+      );
+      await user.type(
+        screen.getByRole('combobox', { name: /search to add immunization/i }),
+        'flu',
+      );
+      await waitFor(() => {
+        expect(screen.getByText('Influenza vaccine')).toBeInTheDocument();
+      });
+      await user.click(screen.getByText('Influenza vaccine'));
+      await waitFor(() => {
+        expect(mockStore.addImmunization).toHaveBeenCalledWith({
+          code: '88',
+          display: 'Influenza vaccine',
+        });
+      });
+    });
+
+    it('disables the vaccineConceptSetUuid query even when a vaccineConceptSetUuid is configured', () => {
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockWaiverInputControlConfig}
+        />,
+      );
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: ['vaccineConceptSetUuid', 'vaccine-concept-set-uuid'],
+          enabled: false,
+        }),
+      );
+    });
+
+    it('leaves the vaccineConceptSetUuid query enabled for non-waiver form types', () => {
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockImmunizationInputControlConfig}
+        />,
+      );
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: ['vaccineConceptSetUuid', 'vaccine-concept-set-uuid'],
+          enabled: true,
+        }),
+      );
     });
   });
 

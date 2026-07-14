@@ -21,7 +21,9 @@ import {
   mockLocations,
   mockRoutesValueSet,
   mockSitesValueSet,
+  mockStatusReasonsValueSet,
   mockStore,
+  OTHER_REASON_CONCEPT_UUID,
 } from './__mocks__/immunizationMocks';
 
 jest.mock('../stores');
@@ -43,6 +45,8 @@ const defaultProps = {
   immunization: mockImmunizationEntry,
   routes: mockRoutesValueSet,
   sites: mockSitesValueSet,
+  statusReasons: mockStatusReasonsValueSet,
+  otherReasonConceptUuid: OTHER_REASON_CONCEPT_UUID,
   administeredLocationTag: mockLocations,
   attributes: mockFullAttributes,
   vaccineDrugs: mockCovid19VaccineDrugs,
@@ -123,6 +127,11 @@ describe('SelectedImmunizationItem', () => {
         [{ name: 'note', required: true }],
         `immunization-note-${id}-test-id`,
       ],
+      [
+        'statusReason',
+        [{ name: 'statusReason', required: false }],
+        `immunization-status-reason-${id}-test-id`,
+      ],
     ])(
       'renders %s field when attributes includes it',
       (_, attributes, testId) => {
@@ -149,6 +158,7 @@ describe('SelectedImmunizationItem', () => {
         `immunization-dose-sequence-${id}`,
         `immunization-expiry-date-input-${id}`,
         `immunization-add-note-link-${id}-test-id`,
+        `immunization-status-reason-${id}-test-id`,
       ].forEach((testId) =>
         expect(screen.queryByTestId(testId)).not.toBeInTheDocument(),
       );
@@ -783,6 +793,135 @@ describe('SelectedImmunizationItem', () => {
         screen.queryByTestId(`immunization-note-${id}-test-id`),
       ).not.toBeInTheDocument();
       expect(mockStore.updateNote).toHaveBeenCalledWith(id, '');
+    });
+  });
+
+  describe('Status reason field', () => {
+    const statusReasonAttributes = [{ name: 'statusReason', required: false }];
+
+    it('calls updateStatusReason with code and display when a reason is selected', async () => {
+      const user = userEvent.setup();
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={statusReasonAttributes}
+        />,
+      );
+      await user.type(
+        screen.getByPlaceholderText('Select reason'),
+        'age appropriate',
+      );
+      await user.click(screen.getByText('Not age appropriate'));
+      await waitFor(() => {
+        expect(mockStore.updateStatusReason).toHaveBeenCalledWith(id, {
+          code: 'not-age-appropriate',
+          display: 'Not age appropriate',
+        });
+      });
+    });
+
+    it('calls updateStatusReason with null when the selection is cleared', async () => {
+      const user = userEvent.setup();
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={statusReasonAttributes}
+          immunization={{
+            ...mockImmunizationEntry,
+            statusReason: {
+              code: 'not-age-appropriate',
+              display: 'Not age appropriate',
+            },
+          }}
+        />,
+      );
+      mockStore.updateStatusReason.mockClear();
+      await user.click(
+        screen.getByRole('button', { name: 'Clear selected item' }),
+      );
+      await waitFor(() => {
+        expect(mockStore.updateStatusReason).toHaveBeenCalledWith(id, null);
+      });
+    });
+
+    it('shows the selected reason as the combobox value', () => {
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={statusReasonAttributes}
+          immunization={{
+            ...mockImmunizationEntry,
+            statusReason: {
+              code: 'not-age-appropriate',
+              display: 'Not age appropriate',
+            },
+          }}
+        />,
+      );
+      expect(screen.getByRole('combobox')).toHaveValue('Not age appropriate');
+    });
+
+    it('shows the error message when statusReason has an error', () => {
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={statusReasonAttributes}
+          immunization={{
+            ...mockImmunizationEntry,
+            errors: {
+              statusReason: 'IMMUNIZATION_INPUT_CONTROL_STATUS_REASON_REQUIRED',
+            },
+          }}
+        />,
+      );
+      expect(screen.getByText('Please select a reason')).toBeInTheDocument();
+    });
+
+    it('shows the note textarea directly (skipping the "Add Note" link) when reason is "Other", even when note is not marked required', () => {
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={[
+            ...statusReasonAttributes,
+            { name: 'note', required: false },
+          ]}
+          immunization={{
+            ...mockImmunizationEntry,
+            statusReason: { code: OTHER_REASON_CONCEPT_UUID, display: 'Other' },
+          }}
+        />,
+      );
+      expect(
+        screen.queryByTestId(`immunization-add-note-link-${id}-test-id`),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId(`immunization-note-${id}-test-id`),
+      ).toBeInTheDocument();
+    });
+
+    it('shows the "Add Note" link (not the textarea) when reason is not "Other"', () => {
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={[
+            ...statusReasonAttributes,
+            { name: 'note', required: false },
+          ]}
+          immunization={{
+            ...mockImmunizationEntry,
+            statusReason: {
+              code: 'not-age-appropriate',
+              display: 'Not age appropriate',
+            },
+          }}
+        />,
+      );
+      expect(
+        screen.getByTestId(`immunization-add-note-link-${id}-test-id`),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId(`immunization-note-${id}-test-id`),
+      ).not.toBeInTheDocument();
     });
   });
 
