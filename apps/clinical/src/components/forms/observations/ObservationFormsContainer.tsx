@@ -241,9 +241,22 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             const { observations: initObs } =
               formContainerRef.current.getValue();
             if (initObs && initObs.length > 0) {
-              setBaselineObservations(
-                transformContainerObservationsToForm2Observations(initObs),
+              const baseline =
+                transformContainerObservationsToForm2Observations(initObs);
+              // eslint-disable-next-line no-console
+              console.log(
+                '[baseline] obs count:',
+                baseline.length,
+                baseline.map((o) => ({
+                  fp: o.formFieldPath,
+                  val: o.value,
+                  gm: o.groupMembers?.map((g) => ({
+                    fp: g.formFieldPath,
+                    val: g.value,
+                  })),
+                })),
               );
+              setBaselineObservations(baseline);
             }
           }
         }, 0);
@@ -270,26 +283,60 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   const observationsWithValues = React.useMemo(() => {
     if (!existingObservations) return [];
-    return existingObservations
-      .filter(
-        (obs) =>
-          (obs.value !== null && obs.value !== undefined) ||
-          (obs.groupMembers && obs.groupMembers.length > 0),
-      )
-      .map((obs) => {
-        // CarbonContainer's Immutable.js records call value.indexOf('voided')
-        // internally. Complex observations fetched from FHIR have { url, fileName }
-        // OBJECT values — convert to plain string URL so CarbonContainer doesn't
-        // crash. The OBJECT is restored at save time via restoreComplexValues().
-        if (
-          typeof obs.value === 'object' &&
-          obs.value !== null &&
-          'url' in obs.value
-        ) {
-          return { ...obs, value: (obs.value as ComplexValue).url };
-        }
-        return obs;
+
+    // getObservationsFromFhir (form2-controls) may return children both as
+    // top-level entries AND inside a parent obsGroup's groupMembers.  Passing
+    // the duplicate to CarbonContainer causes two problems:
+    //   1. React "duplicate key" warnings (CarbonContainer uses uuid as key).
+    //   2. getValue() returns the child twice → baseline gets 2 fingerprints
+    //      for that formFieldPath → detectFormChanges always reports "changed".
+    //
+    // Fix: collect every uuid that appears inside any obs's groupMembers, then
+    // exclude top-level obs whose uuid is in that set.  The child will still
+    // pre-populate via the parent's groupMembers property.
+    const childUuids = new Set<string>();
+    const collectChildUuids = (obs: Form2Observation): void => {
+      obs.groupMembers?.forEach((child) => {
+        if (child.uuid) childUuids.add(child.uuid);
+        collectChildUuids(child);
       });
+    };
+    existingObservations.forEach(collectChildUuids);
+
+    // Recursively convert Complex { url, fileName } values to plain string URLs.
+    // CarbonContainer's Immutable.js records call value.indexOf('voided'), so
+    // object values crash the render.  This must also apply to values nested
+    // inside groupMembers — without it, getValue() returns the child Complex as
+    // an object whose fingerprint ("url:http://...") never matches the string
+    // fingerprint ("http://...") produced by extractControls, keeping Done enabled
+    // even when the user has made no net change.
+    const convertComplex = (obs: Form2Observation): Form2Observation => {
+      const converted =
+        typeof obs.value === 'object' &&
+        obs.value !== null &&
+        'url' in obs.value
+          ? { ...obs, value: (obs.value as ComplexValue).url }
+          : obs;
+      if (converted.groupMembers) {
+        return {
+          ...converted,
+          groupMembers: converted.groupMembers.map(convertComplex),
+        };
+      }
+      return converted;
+    };
+
+    return existingObservations
+      .filter((obs) => {
+        // Drop top-level duplicates of groupMember children.
+        if (obs.uuid && childUuids.has(obs.uuid)) return false;
+        // Drop obs that have no value and no group members (nothing to show).
+        return (
+          (obs.value !== null && obs.value !== undefined) ||
+          (obs.groupMembers && obs.groupMembers.length > 0)
+        );
+      })
+      .map(convertComplex);
   }, [existingObservations]);
 
   const handlePinToggle = (e: React.MouseEvent) => {
@@ -355,6 +402,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           transformedObservations,
           statusSourceRef.current,
         );
+        replaceNoteRemovedObs(transformedObservations, statusSourceRef.current);
         restoreComplexValues(transformedObservations, statusSourceRef.current);
         injectMissingDeleteObs(
           transformedObservations,
@@ -437,6 +485,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           transformedObservations,
           statusSourceRef.current,
         );
+        replaceNoteRemovedObs(transformedObservations, statusSourceRef.current);
         restoreComplexValues(transformedObservations, statusSourceRef.current);
         injectMissingDeleteObs(
           transformedObservations,
@@ -503,6 +552,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         transformedObservations,
         statusSourceRef.current,
       );
+      replaceNoteRemovedObs(transformedObservations, statusSourceRef.current);
       restoreComplexValues(transformedObservations, statusSourceRef.current);
       injectMissingDeleteObs(transformedObservations, statusSourceRef.current);
 
@@ -693,8 +743,44 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
  * This function diffs `transformed` (what CarbonContainer returned) against
  * `original` (the FHIR-fetched observations in statusSourceRef). Any uuid
  * present in original but absent from transformed is injected as a synthetic
- * voided entry so createObservationEntriesWithVerbs emits a DELETE.
+ * voided entry so createObservationEntries emits a DELETE.
  */
+/**
+ * OpenMRS FHIR2 performs partial updates on PUT: an absent `note` field leaves
+ * the existing comment unchanged in the database. The only reliable way to clear
+ * a note is to DELETE the existing obs and POST a new one with the same value
+ * but no comment. This function finds obs where the note was cleared (original
+ * had comment, current does not) and replaces them in-place with the DELETE+POST
+ * pair so createObservationEntries emits the correct bundle entries.
+ */
+const replaceNoteRemovedObs = (
+  transformed: Form2Observation[],
+  original: Form2Observation[],
+): void => {
+  const originalByUuid = new Map<string, Form2Observation>();
+  const buildMap = (obs: Form2Observation) => {
+    if (obs.uuid) originalByUuid.set(obs.uuid, obs);
+    obs.groupMembers?.forEach(buildMap);
+  };
+  original.forEach(buildMap);
+
+  for (let i = transformed.length - 1; i >= 0; i--) {
+    const obs = transformed[i];
+    if (obs.uuid && !obs.voided && !obs.comment) {
+      const orig = originalByUuid.get(obs.uuid);
+      if (orig?.comment) {
+        // DELETE old obs, POST new obs with same value but no note
+        transformed.splice(
+          i,
+          1,
+          { ...obs, voided: true },
+          { ...obs, uuid: undefined, comment: undefined },
+        );
+      }
+    }
+  }
+};
+
 const injectMissingDeleteObs = (
   transformed: Form2Observation[],
   original: Form2Observation[],
@@ -841,11 +927,13 @@ const valueFingerprint = (v: unknown): string => {
       if (!isNaN(d.getTime())) return `date:${m[1]}`;
     }
   }
-  const obj =
-    typeof v === 'object' ? (v as Record<string, unknown>) : null;
+  const obj = typeof v === 'object' ? (v as Record<string, unknown>) : null;
   if (obj && 'uuid' in obj) return `uuid:${obj.uuid}`;
   if (typeof v === 'string' && obj == null) return v; // plain string / URL
-  if (obj && 'url' in obj) return `url:${obj.url}`;
+  // Normalise Complex { url } to the same fingerprint as a plain URL string so
+  // that an obs whose value was { url, fileName } in FHIR (returned as Complex by
+  // getValue()) matches the plain URL string produced by extractControls.
+  if (obj && 'url' in obj) return String(obj.url);
   return String(v);
 };
 
@@ -872,8 +960,22 @@ const detectFormChanges = (
       if (obs.formFieldPath && obs.value !== null && obs.value !== undefined) {
         const fp = valueFingerprint(obs.value);
         const arr = map.get(obs.formFieldPath) ?? [];
-        arr.push(fp);
+        // Deduplicate: CarbonContainer may still return the same obs via both a
+        // parent obsGroup's groupMembers and as a standalone entry.  Without
+        // dedup the baseline length is 2 while current is 1, so detectFormChanges
+        // always reports "changed" even after the user restores the original value.
+        if (!arr.includes(fp)) arr.push(fp);
         map.set(obs.formFieldPath, arr);
+      }
+      // Track comment (note) changes independently of value changes so that
+      // adding or editing a note on an existing obs enables the Done button.
+      if (
+        obs.formFieldPath &&
+        obs.comment !== null &&
+        obs.comment !== undefined
+      ) {
+        const commentKey = `${obs.formFieldPath}__comment`;
+        map.set(commentKey, [String(obs.comment)]);
       }
       if (obs.groupMembers) collect(obs.groupMembers, map);
     }
@@ -885,6 +987,14 @@ const detectFormChanges = (
   collect(current, currentVals);
   const originalVals = new Map<string, string[]>();
   collect(original, originalVals);
+
+  // eslint-disable-next-line no-console
+  console.log(
+    '[detectFormChanges] current:',
+    Object.fromEntries(currentVals),
+    'baseline:',
+    Object.fromEntries(originalVals),
+  );
 
   // New fields
   for (const path of currentVals.keys()) {

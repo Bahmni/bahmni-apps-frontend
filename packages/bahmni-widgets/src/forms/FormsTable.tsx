@@ -30,6 +30,7 @@ import { ObservationsRenderer } from '../observationsRenderer';
 import { WidgetProps } from '../registry/model';
 import { CONSULTATION_PAD_PRIVILEGES } from '../userPrivileges/consultationPadPrivileges';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
+import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { FormRecordViewModel, GroupedFormRecords } from './models';
 import styles from './styles/FormsTable.module.scss';
 import { extractFormFieldPath } from './utils';
@@ -67,24 +68,9 @@ const FormsTable: React.FC<WidgetProps> = ({
   const canEditObservations = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.EDIT_OBSERVATIONS,
   );
-  // Actions column shown only when:
-  //  - user has Edit Observations privilege (AC #5)
-  //  - visit is active / disableActions not set (AC #2)
-  //  - there is a currently MATCHED active encounter (AC #3, #4)
-  //    (activeEncounterUuid is null when session expired or not MATCHED)
+  const { userPrivileges } = useUserPrivilege();
   const showActions =
     canEditObservations && !disableActions && !!activeEncounterUuid;
-
-  // Per-row: only the currently active encounter can be edited.
-  // activeEncounterUuid is set by DashboardSection only when the session is MATCHED
-  // (i.e., within session window AND for the current practitioner) — satisfying AC #3 and #4.
-  const isRowEditable = useCallback(
-    (record: FormRecordViewModel): boolean => {
-      if (!activeEncounterUuid) return false;
-      return record.encounterUuid === activeEncounterUuid;
-    },
-    [activeEncounterUuid],
-  );
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -126,6 +112,31 @@ const FormsTable: React.FC<WidgetProps> = ({
     queryKey: ['observationForms'],
     queryFn: () => fetchObservationForms(),
   });
+
+  // Per-form privilege check: mirrors the combobox disable logic in ObservationForms.
+  // If a form has privileges configured, the user must have at least one of them
+  // AND that privilege must be marked editable. Forms with no privileges are open to all.
+  const canEditForm = useCallback(
+    (formName: string): boolean => {
+      const form = publishedForms.find((f) => f.name === formName);
+      if (!form?.privileges || form.privileges.length === 0) return true;
+      if (!userPrivileges || userPrivileges.length === 0) return false;
+      const userPrivilegeNames = userPrivileges.map((p) => p.name);
+      return form.privileges.some(
+        (fp) => userPrivilegeNames.includes(fp.privilegeName) && fp.editable,
+      );
+    },
+    [publishedForms, userPrivileges],
+  );
+
+  const isRowEditable = useCallback(
+    (record: FormRecordViewModel): boolean => {
+      if (!activeEncounterUuid) return false;
+      if (record.encounterUuid !== activeEncounterUuid) return false;
+      return canEditForm(record.formName);
+    },
+    [activeEncounterUuid, canEditForm],
+  );
 
   // Get form UUID by matching form name
   const getFormUuidByName = useCallback(
@@ -283,7 +294,6 @@ const FormsTable: React.FC<WidgetProps> = ({
     [showActions, isRowEditable, headersWithActions, baseHeaders],
   );
 
-  // Kept for the empty/error state table that shows no rows.
   const headers = baseHeaders;
 
   const sortable = useMemo(

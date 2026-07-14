@@ -2,31 +2,6 @@ import { getFhirObservations, FhirReference } from '@bahmni/form2-controls';
 import { Form2Observation, createBundleEntry } from '@bahmni/services';
 import { BundleEntry, Observation, Reference } from 'fhir/r4';
 
-export const createObservationResources = (
-  observations: Form2Observation[],
-  subjectReference: Reference,
-  encounterReference: Reference,
-  performerReference: Reference,
-  basedOn?: Reference,
-): Array<{ resource: Observation; fullUrl: string }> => {
-  try {
-    const observationEntries = getFhirObservations(observations, {
-      patientReference: subjectReference as FhirReference,
-      encounterReference: encounterReference as FhirReference,
-      performerReference: performerReference as FhirReference,
-      basedOnReference: basedOn as FhirReference | undefined,
-    }) as Array<{ resource: Observation; fullUrl: string }>;
-
-    return observationEntries;
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown transformation error';
-    throw new Error(
-      `Failed to transform observations to FHIR format: ${errorMessage}`,
-    );
-  }
-};
-
 /**
  * Creates FHIR bundle entries for a list of Form2Observations, using the
  * correct HTTP verb for each observation based on its uuid and voided state:
@@ -44,7 +19,7 @@ export const createObservationResources = (
  *     the obsGroup in place; new child entries are linked via hasMember.
  *   - If the parent has no uuid                             → parent is POST.
  */
-export function createObservationEntriesWithVerbs(
+export function createObservationEntries(
   observations: Form2Observation[],
   subjectReference: Reference,
   encounterReference: Reference,
@@ -139,17 +114,21 @@ export function createObservationEntriesWithVerbs(
     }
 
     // ── Leaf observation ─────────────────────────────────────────────────────
-    if (obs.uuid && obs.voided) {
-      // DELETE existing observation whose value was cleared
-      const url = `Observation/${obs.uuid}`;
-      entries.push(
-        createBundleEntry(
-          url,
-          { resourceType: 'Observation', id: obs.uuid } as Observation,
-          'DELETE',
-          url,
-        ),
-      );
+    if (!obs.uuid && !obs.voided) {
+      // Skip observations with no value — these are empty addMore trailing slots
+      // that CarbonContainer includes in getValue(). POSTing them triggers a
+      // ConceptComplex cast error on the backend for Complex-type concepts.
+      if (obs.value === null || obs.value === undefined) return null;
+
+      // POST new observation
+      const [entry] = getFhirObservations([obs], options) as Array<{
+        resource: Observation;
+        fullUrl: string;
+      }>;
+      if (entry) {
+        entries.push(createBundleEntry(entry.fullUrl, entry.resource, 'POST'));
+        return entry.fullUrl;
+      }
       return null;
     }
 
@@ -174,21 +153,17 @@ export function createObservationEntriesWithVerbs(
       return null;
     }
 
-    if (!obs.uuid && !obs.voided) {
-      // Skip observations with no value — these are empty addMore trailing slots
-      // that CarbonContainer includes in getValue(). POSTing them triggers a
-      // ConceptComplex cast error on the backend for Complex-type concepts.
-      if (obs.value === null || obs.value === undefined) return null;
-
-      // POST new observation
-      const [entry] = getFhirObservations([obs], options) as Array<{
-        resource: Observation;
-        fullUrl: string;
-      }>;
-      if (entry) {
-        entries.push(createBundleEntry(entry.fullUrl, entry.resource, 'POST'));
-        return entry.fullUrl;
-      }
+    if (obs.uuid && obs.voided) {
+      // DELETE existing observation whose value was cleared
+      const url = `Observation/${obs.uuid}`;
+      entries.push(
+        createBundleEntry(
+          url,
+          { resourceType: 'Observation', id: obs.uuid } as Observation,
+          'DELETE',
+          url,
+        ),
+      );
       return null;
     }
 

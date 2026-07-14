@@ -46,6 +46,8 @@ interface FormControlRecord {
   formFieldPath?: string;
   value?: {
     value?: unknown;
+    // Coded / select answers are stored at .concept (not .value) by form2-controls
+    concept?: unknown;
     interpretation?: string;
     comment?: string;
   };
@@ -174,15 +176,24 @@ export function useObservationFormData(
         }
 
         const value = controlRecord.value?.value;
-        if (value === null || value === undefined || value === '') return;
+        // Coded / select controls store the selected answer at .concept, not .value.
+        // Fall back to .concept so coded obs are included in change detection.
+        const codedConcept = controlRecord.value?.concept;
+        const effectiveValue = value ?? codedConcept;
+        if (
+          effectiveValue === null ||
+          effectiveValue === undefined ||
+          effectiveValue === ''
+        )
+          return;
 
         const control: FormControlData = {
           id: fieldPath,
           conceptUuid,
-          type: Array.isArray(value)
+          type: Array.isArray(effectiveValue)
             ? FORM_CONTROL_TYPE_MULTISELECT
             : FORM_CONTROL_TYPE_OBS,
-          value: value as
+          value: effectiveValue as
             | string
             | number
             | boolean

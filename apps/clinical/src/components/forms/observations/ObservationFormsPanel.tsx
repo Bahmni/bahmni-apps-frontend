@@ -98,12 +98,23 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
       .then((bundle) => {
         const form2Observations = getObservationsFromFhir(bundle);
 
+        // eslint-disable-next-line no-console
+        console.log(
+          '[EditMode] editFormName:',
+          editFormName,
+          'bundle entries:',
+          bundle?.entry?.length,
+          'form2Obs:',
+          form2Observations.length,
+          form2Observations,
+        );
+
         if (form2Observations.length > 0) {
           // Build uuid → status map from the raw FHIR bundle so PUT requests can
           // echo back the same status value (OpenMRS rejects status changes and
           // also errors when status is absent on PUT).
           const statusByUuid = buildStatusMap(bundle as Bundle);
-          const enrichedObservations = enrichObservationsWithStatus(
+          const observationsWithStatus = enrichObservationsWithStatus(
             form2Observations as Form2Observation[],
             statusByUuid,
           );
@@ -116,7 +127,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
               [matchingForm.uuid]: {
                 formUuid: matchingForm.uuid,
                 formName: matchingForm.name,
-                observations: enrichedObservations,
+                observations: observationsWithStatus,
                 timestamp: Date.now(),
               },
             },
@@ -127,7 +138,9 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
         // with existingObservations already populated.
         addForm(matchingForm);
       })
-      .catch(() => {
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('[EditMode] FHIR fetch FAILED for', editFormName, err);
         // Fetch failed — open the form blank so the user can re-enter data.
         addForm(matchingForm);
       });

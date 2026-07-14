@@ -17,14 +17,23 @@ import { Bundle, Observation } from 'fhir/r4';
 import { toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
+import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import FormsTable from '../FormsTable';
 
 jest.mock('../../userPrivileges/useHasPrivilege', () => ({
   useHasPrivilege: jest.fn(),
 }));
 
+jest.mock('../../userPrivileges/useUserPrivilege', () => ({
+  useUserPrivilege: jest.fn(),
+}));
+
 const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
   typeof useHasPrivilege
+>;
+
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
 >;
 
 expect.extend(toHaveNoViolations);
@@ -249,6 +258,15 @@ describe('FormsTable', () => {
     );
     // Default: no edit privilege
     mockUseHasPrivilege.mockReturnValue(false);
+    // Default: no user privileges (per-form checks open to all when form has no privileges)
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [],
+      isLoading: false,
+      error: null,
+      setUserPrivileges: jest.fn(),
+      setIsLoading: jest.fn(),
+      setError: jest.fn(),
+    });
   });
 
   describe('Component States', () => {

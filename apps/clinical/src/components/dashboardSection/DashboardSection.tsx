@@ -24,9 +24,6 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   const { matchReasons, canEditOrCreate, activeEncounter } =
     useEncounterSessionStore();
   const noActiveVisit = matchReasons.includes('NO_ACTIVE_VISIT');
-  // Only expose the active encounter UUID when the session is genuinely MATCHED.
-  // If the session has expired (SESSION_EXPIRED, PROVIDER_MISMATCH, etc.) the
-  // encounter UUID is stale — widgets must not offer edit actions for it.
   const isSessionMatched = matchReasons.includes('MATCHED');
   const activeEncounterUuid = isSessionMatched
     ? (activeEncounter?.id ?? null)

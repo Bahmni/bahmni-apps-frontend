@@ -106,12 +106,14 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       });
     }, [allForms]);
 
-    // Use API names for filtering (these match the actual form names from backend)
-    const defaultPinnedForms = validatedAvailableForms.filter((form) =>
-      DEFAULT_FORM_API_NAMES.includes(form.name),
+    const defaultPinnedForms = useMemo(
+      () =>
+        validatedAvailableForms.filter((form) =>
+          DEFAULT_FORM_API_NAMES.includes(form.name),
+        ),
+      [validatedAvailableForms],
     );
 
-    // Filter orphaned pinned forms - remove forms that are pinned but no longer available
     const validUserPinnedForms = useMemo(() => {
       return pinnedForms.filter((pinnedForm) => {
         return validatedAvailableForms.some(
@@ -120,27 +122,26 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       });
     }, [pinnedForms, validatedAvailableForms]);
 
-    // Merge with user-pinned forms (avoid duplicates)
-    const userPinnedUuids = validUserPinnedForms.map((f) => f.uuid);
+    const sortedDefaultForms = useMemo(() => {
+      const userPinnedUuids = validUserPinnedForms.map((f) => f.uuid);
+      return defaultPinnedForms
+        .filter((f) => !userPinnedUuids.includes(f.uuid))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    }, [defaultPinnedForms, validUserPinnedForms]);
 
-    // Step 1: Get default forms that user hasn't pinned, sorted alphabetically
-    const sortedDefaultForms = defaultPinnedForms
-      .filter((f) => !userPinnedUuids.includes(f.uuid))
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    // Step 2: Get user-pinned forms, sorted alphabetically
-    const sortedUserPinnedForms = [...validUserPinnedForms].sort((a, b) =>
-      a.name.localeCompare(b.name),
+    const sortedUserPinnedForms = useMemo(
+      () =>
+        [...validUserPinnedForms].sort((a, b) => a.name.localeCompare(b.name)),
+      [validUserPinnedForms],
     );
 
-    // Step 3: Combine - defaults first, then user-pinned
-    const allPinnedForms = [...sortedDefaultForms, ...sortedUserPinnedForms];
+    const allPinnedForms = useMemo(
+      () => [...sortedDefaultForms, ...sortedUserPinnedForms],
+      [sortedDefaultForms, sortedUserPinnedForms],
+    );
 
-    // Step 4: Remove already-submitted forms so they don't appear in pinned tiles.
-    // Computed once here to avoid two separate .filter() calls in the JSX.
     const visiblePinnedForms = useMemo(
       () => allPinnedForms.filter((f) => !submittedFormUuids.has(f.uuid)),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       [allPinnedForms, submittedFormUuids],
     );
 
@@ -327,26 +328,26 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
               />
             ) : (
               visiblePinnedForms.map((form: ObservationForm) => (
-                  <FormCard
-                    key={form.uuid}
-                    title={form.name}
-                    icon="fa-file-lines"
-                    actionIcon={
-                      !DEFAULT_FORM_API_NAMES.includes(form.name)
-                        ? 'fa-thumbtack'
-                        : undefined
-                    }
-                    onOpen={() => onFormSelect?.(form)}
-                    onActionClick={() => {
-                      const newPinnedForms = pinnedForms.filter(
-                        (f) => f.uuid !== form.uuid,
-                      );
-                      updatePinnedForms(newPinnedForms);
-                    }}
-                    dataTestId={`pinned-form-${form.name}`}
-                    ariaLabel={`Open ${form.name} form`}
-                  />
-                ))
+                <FormCard
+                  key={form.uuid}
+                  title={form.name}
+                  icon="fa-file-lines"
+                  actionIcon={
+                    !DEFAULT_FORM_API_NAMES.includes(form.name)
+                      ? 'fa-thumbtack'
+                      : undefined
+                  }
+                  onOpen={() => onFormSelect?.(form)}
+                  onActionClick={() => {
+                    const newPinnedForms = pinnedForms.filter(
+                      (f) => f.uuid !== form.uuid,
+                    );
+                    updatePinnedForms(newPinnedForms);
+                  }}
+                  dataTestId={`pinned-form-${form.name}`}
+                  ariaLabel={`Open ${form.name} form`}
+                />
+              ))
             )}
           </FormCardContainer>
         </div>

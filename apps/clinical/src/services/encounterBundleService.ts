@@ -22,7 +22,7 @@ import {
   createEncounterDiagnosisResource,
   createEncounterConditionResource,
 } from '../utils/fhir/conditionResourceCreator';
-import { createObservationEntriesWithVerbs } from '../utils/fhir/observationResourceCreator';
+import { createObservationEntries } from '../utils/fhir/observationResourceCreator';
 import {
   createPractitionerReference,
   createEncounterReferenceFromString,
@@ -456,7 +456,6 @@ export function createObservationBundleEntries({
   const encounterRef = createEncounterReferenceFromString(encounterReference);
   const practitionerRef = createPractitionerReference(practitionerUUID);
 
-  // Iterate through all observation forms and their observations
   for (const formData of observationFormsData) {
     const { observations, basedOn } = formData;
 
@@ -464,7 +463,7 @@ export function createObservationBundleEntries({
       continue;
     }
 
-    const entries = createObservationEntriesWithVerbs(
+    const entries = createObservationEntries(
       observations,
       encounterSubject,
       encounterRef,
