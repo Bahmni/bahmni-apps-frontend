@@ -119,6 +119,18 @@ export const mockRowWithValidValue: CriterionRow = {
   rangeOrderError: null,
 };
 
+export const mockCommonSearchWidgetConfigWithRange: CommonSearchWidgetConfig = [
+  {
+    context: 'patient',
+    translationKey: 'PATIENT_SEARCH',
+    requiredPrivileges: ['View Patients'],
+    locationAware: 'loggedInLocation',
+    url: '/openmrs/ws/rest/v1/patient/search',
+    pageSize: 20,
+    criteria: [mockNumericRangeCriterionConfig],
+  },
+];
+
 export const mockRowWithRangeOrderError: CriterionRow = {
   rowId: 'row-1',
   criterionKey: 'patient.age',

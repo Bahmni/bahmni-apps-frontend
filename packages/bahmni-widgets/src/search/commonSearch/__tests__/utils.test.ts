@@ -7,6 +7,8 @@ import {
   getRangeOrderError,
   updateRow,
   validateRows,
+  resolveRows,
+  buildPayload,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -28,6 +30,10 @@ import {
   mockRowTextNoValue,
   mockRowTextPassingRegex,
   mockRowTextWithValue,
+  mockRowWithKeyTypeValue,
+  mockResolvedScalarRow,
+  mockResolvedKeyTypeRow,
+  mockResolvedRangeRow,
 } from './__mocks__/utilsMocks';
 
 describe('initialRows', () => {
@@ -403,6 +409,136 @@ describe('updateRow', () => {
       validationError: r.criterionKey ? 'has-criterion' : null,
     }));
     expect(result[0].validationError).toBe('has-criterion');
+  });
+});
+
+describe('resolveRows', () => {
+  const criteria = [
+    ...mockPatientContext.criteria,
+    {
+      field: { key: 'patient.identifiers', keyType: 'PASSPORT' },
+      translationKey: 'PATIENT_PASSPORT',
+      input: { kind: 'text' as const, placeholderTranslationKey: 'PH' },
+    },
+  ];
+
+  it.each([
+    {
+      label: 'rows with null criterionKey are excluded',
+      rows: [mockRowNoCriterion, mockRowTextWithValue],
+      expectedLength: 1,
+    },
+    {
+      label: 'rows with null value are excluded',
+      rows: [mockRowTextNoValue, mockRowTextWithValue],
+      expectedLength: 1,
+    },
+    {
+      label: 'valid rows are all included',
+      rows: [mockRowTextWithValue, mockRowWithKeyTypeValue],
+      expectedLength: 2,
+    },
+  ])('$label', ({ rows, expectedLength }) => {
+    expect(resolveRows(rows, criteria)).toHaveLength(expectedLength);
+  });
+
+  it('maps field from matching criterion config', () => {
+    const result = resolveRows([mockRowWithKeyTypeValue], criteria);
+    expect(result[0].field).toEqual({
+      key: 'patient.identifiers',
+      keyType: 'PASSPORT',
+    });
+  });
+
+  it('preserves the row value', () => {
+    const result = resolveRows([mockRowTextWithValue], criteria);
+    expect(result[0].value).toEqual(mockRowTextWithValue.value);
+  });
+});
+
+describe('buildPayload', () => {
+  it.each([
+    {
+      label: 'scalar field → single leaf with eq comparator',
+      resolvedRows: [mockResolvedScalarRow],
+      entity: 'patient',
+      expected: {
+        entity: 'patient',
+        criteria: {
+          operator: 'AND',
+          conditions: [
+            { field: 'patient.givenName', comparator: 'eq', value: 'John' },
+          ],
+        },
+      },
+    },
+    {
+      label: 'keyType field → AND group with .kind and .value leaves',
+      resolvedRows: [mockResolvedKeyTypeRow],
+      entity: 'patient',
+      expected: {
+        entity: 'patient',
+        criteria: {
+          operator: 'AND',
+          conditions: [
+            {
+              operator: 'AND',
+              conditions: [
+                {
+                  field: 'patient.identifiers.kind',
+                  comparator: 'eq',
+                  value: 'PASSPORT',
+                },
+                {
+                  field: 'patient.identifiers.value',
+                  comparator: 'eq',
+                  value: 'P123',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+    {
+      label: 'range field → AND group with gt from and lt to',
+      resolvedRows: [mockResolvedRangeRow],
+      entity: 'patient',
+      expected: {
+        entity: 'patient',
+        criteria: {
+          operator: 'AND',
+          conditions: [
+            {
+              operator: 'AND',
+              conditions: [
+                { field: 'patient.age', comparator: 'gt', value: '20' },
+                { field: 'patient.age', comparator: 'lt', value: '50' },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  ])('$label', ({ resolvedRows, entity, expected }) => {
+    expect(buildPayload(resolvedRows, entity)).toEqual(expected);
+  });
+
+  it('multiple rows → multiple top-level conditions', () => {
+    const result = buildPayload(
+      [mockResolvedScalarRow, mockResolvedKeyTypeRow, mockResolvedRangeRow],
+      'patient',
+    );
+    expect(result.criteria.conditions).toHaveLength(3);
+  });
+
+  it('entity maps to different context values', () => {
+    expect(buildPayload([mockResolvedScalarRow], 'appointment').entity).toBe(
+      'appointment',
+    );
+    expect(buildPayload([mockResolvedScalarRow], 'episodeOfCare').entity).toBe(
+      'episodeOfCare',
+    );
   });
 });
 

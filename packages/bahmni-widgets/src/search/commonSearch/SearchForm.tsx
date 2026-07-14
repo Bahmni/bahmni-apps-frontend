@@ -22,7 +22,7 @@ interface SearchFormProps {
   location: UserLocation;
   onSearch: (
     rows: CriterionRow[],
-    criteria: CriterionConfig[],
+    context: SearchContextConfig,
   ) => CriterionRow[];
 }
 
@@ -167,7 +167,7 @@ const SearchForm = ({ config, location, onSearch }: SearchFormProps) => {
             kind="primary"
             id="common-search-search-button"
             data-testid="common-search-search-button-test-id"
-            onClick={() => setRows(onSearch(rows, activeContext.criteria))}
+            onClick={() => setRows(onSearch(rows, activeContext))}
             disabled={
               rows.length === 0 ||
               rows.some(

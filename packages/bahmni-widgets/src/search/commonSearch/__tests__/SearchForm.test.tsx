@@ -17,10 +17,10 @@ expect.extend(toHaveNoViolations);
 
 const mockOnSearch = jest
   .fn()
-  .mockImplementation((rows, criteria) =>
+  .mockImplementation((rows, context) =>
     validateRows(
       rows,
-      criteria,
+      context.criteria,
       'COMMON_SEARCH_CRITERION_REQUIRED',
       'COMMON_SEARCH_VALUE_REQUIRED',
       'COMMON_SEARCH_RANGE_ORDER_INVALID',
@@ -256,6 +256,17 @@ describe('SearchForm', () => {
       expect(
         screen.getByTestId('common-search-search-button-test-id'),
       ).toBeDisabled();
+    });
+
+    it('calls onSearch with the active context', () => {
+      renderForm();
+      fireEvent.click(
+        screen.getByTestId('common-search-search-button-test-id'),
+      );
+      expect(mockOnSearch).toHaveBeenCalledWith(
+        expect.any(Array),
+        mockConfig[0],
+      );
     });
   });
 

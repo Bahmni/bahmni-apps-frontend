@@ -11,15 +11,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
+import { post } from './api';
 import {
   CommonSearchWidgetConfig,
-  CriterionConfig,
   CriterionRow,
+  SearchContextConfig,
 } from './models';
 import schema from './schema.json';
 import SearchForm from './SearchForm';
 import styles from './styles/CommonSearchWidget.module.scss';
-import { validateRows } from './utils';
+import { buildPayload, resolveRows, validateRows } from './utils';
 
 const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { t } = useTranslation();
@@ -58,17 +59,21 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
 
   const handleSearch = (
     rows: CriterionRow[],
-    criteria: CriterionConfig[],
+    context: SearchContextConfig,
   ): CriterionRow[] => {
     const validated = validateRows(
       rows,
-      criteria,
+      context.criteria,
       t('COMMON_SEARCH_CRITERION_REQUIRED'),
       t('COMMON_SEARCH_VALUE_REQUIRED'),
       t('COMMON_SEARCH_RANGE_ORDER_INVALID'),
       t,
     );
     if (!validated.some((r) => r.validationError ?? r.rangeOrderError)) {
+      void post(
+        context.url,
+        buildPayload(resolveRows(validated, context.criteria), context.context),
+      );
       addNotification({
         title: t('COMMON_SEARCH_SUCCESS'),
         message: t('COMMON_SEARCH_SUCCESS_MESSAGE'),

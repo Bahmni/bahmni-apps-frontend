@@ -7,20 +7,25 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { useNotification } from '../../../notification';
+import { post } from '../api';
 import CommonSearchWidget from '../CommonSearchWidget';
-import { CriterionConfig, CriterionRow, SearchContextConfig } from '../models';
+import { CriterionRow, SearchContextConfig } from '../models';
 import {
   mockCommonSearchWidgetConfig,
+  mockCommonSearchWidgetConfigWithRange,
   mockMultiContextConfig,
-  mockNumericRangeCriterionConfig,
   mockPrivilegeViewAppointments,
   mockPrivilegeViewPatients,
   mockRowWithEmptyValue,
   mockRowWithRangeOrderError,
   mockRowWithValidValue,
-  mockTextCriterionConfig,
   mockWidgetLocation,
 } from './__mocks__/commonSearchWidgetMocks';
+
+jest.mock('../api', () => ({
+  post: jest.fn(),
+}));
+const mockPost = post as jest.Mock;
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -32,7 +37,7 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('../../../notification');
 
 let capturedOnSearch:
-  | ((rows: CriterionRow[], criteria: CriterionConfig[]) => CriterionRow[])
+  | ((rows: CriterionRow[], context: SearchContextConfig) => CriterionRow[])
   | null = null;
 let capturedConfig: SearchContextConfig[] | null = null;
 
@@ -57,6 +62,7 @@ describe('CommonSearchWidget', () => {
     jest.clearAllMocks();
     capturedOnSearch = null;
     capturedConfig = null;
+    mockPost.mockResolvedValue({ results: [] });
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
@@ -264,25 +270,65 @@ describe('CommonSearchWidget', () => {
 
     it('does not call addNotification when rows have validation errors', async () => {
       await renderAndWait();
-      capturedOnSearch!([mockRowWithEmptyValue], [mockTextCriterionConfig]);
+      capturedOnSearch!(
+        [mockRowWithEmptyValue],
+        mockCommonSearchWidgetConfig[0],
+      );
       expect(mockAddNotification).not.toHaveBeenCalled();
     });
 
     it('calls addNotification with success type when all rows are valid', async () => {
       await renderAndWait();
-      capturedOnSearch!([mockRowWithValidValue], [mockTextCriterionConfig]);
+      capturedOnSearch!(
+        [mockRowWithValidValue],
+        mockCommonSearchWidgetConfig[0],
+      );
       expect(mockAddNotification).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'success' }),
       );
     });
 
     it('does not call addNotification when range order error exists', async () => {
-      await renderAndWait();
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfigWithRange,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
       capturedOnSearch!(
         [mockRowWithRangeOrderError],
-        [mockNumericRangeCriterionConfig],
+        mockCommonSearchWidgetConfigWithRange[0],
       );
       expect(mockAddNotification).not.toHaveBeenCalled();
+    });
+
+    it('calls post with url and built payload when all rows are valid', async () => {
+      await renderAndWait();
+      capturedOnSearch!(
+        [mockRowWithValidValue],
+        mockCommonSearchWidgetConfig[0],
+      );
+      await waitFor(() => {
+        expect(mockPost).toHaveBeenCalledWith(
+          mockCommonSearchWidgetConfig[0].url,
+          expect.objectContaining({
+            entity: mockCommonSearchWidgetConfig[0].context,
+          }),
+        );
+      });
+    });
+
+    it('does not call post when rows have validation errors', async () => {
+      await renderAndWait();
+      capturedOnSearch!(
+        [mockRowWithEmptyValue],
+        mockCommonSearchWidgetConfig[0],
+      );
+      expect(mockPost).not.toHaveBeenCalled();
     });
   });
 });

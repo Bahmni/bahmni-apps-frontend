@@ -4,7 +4,10 @@ import {
   CriterionRow,
   CriterionValue,
   InputConfig,
+  ResolvedRow,
   ScalarValue,
+  SearchCondition,
+  SearchPayload,
   SearchContextConfig,
   TextInput,
 } from './models';
@@ -139,6 +142,55 @@ const validateByType = (
       return { validationError: null, rangeOrderError: null };
   }
 };
+
+const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
+  if (!isScalarValue(value)) {
+    return {
+      operator: 'AND',
+      conditions: [
+        { field: field.key, comparator: 'gt', value: value.from.value! },
+        { field: field.key, comparator: 'lt', value: value.to!.value! },
+      ],
+    };
+  }
+  if (field.keyType) {
+    return {
+      operator: 'AND',
+      conditions: [
+        { field: `${field.key}.kind`, comparator: 'eq', value: field.keyType },
+        { field: `${field.key}.value`, comparator: 'eq', value: value.value },
+      ],
+    };
+  }
+  return { field: field.key, comparator: 'eq', value: value.value };
+};
+
+export const resolveRows = (
+  rows: CriterionRow[],
+  criteria: CriterionConfig[],
+): ResolvedRow[] =>
+  rows
+    .filter(
+      (
+        r,
+      ): r is CriterionRow & { criterionKey: string; value: CriterionValue } =>
+        r.criterionKey !== null && r.value !== null,
+    )
+    .map((r) => ({
+      field: criteria.find((c) => c.field.key === r.criterionKey)!.field,
+      value: r.value,
+    }));
+
+export const buildPayload = (
+  resolvedRows: ResolvedRow[],
+  entity: string,
+): SearchPayload => ({
+  entity,
+  criteria: {
+    operator: 'AND',
+    conditions: resolvedRows.map(buildCondition),
+  },
+});
 
 export const validateRows = (
   rows: CriterionRow[],

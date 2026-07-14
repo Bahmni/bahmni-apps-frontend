@@ -98,3 +98,26 @@ export interface CriterionRow {
   validationError: string | null;
   rangeOrderError: string | null;
 }
+
+export interface ResolvedRow {
+  field: FieldConfig;
+  value: CriterionValue;
+}
+
+export interface SearchConditionLeaf {
+  field: string;
+  comparator: Comparator;
+  value: string;
+}
+
+export interface SearchConditionGroup {
+  operator: 'AND' | 'OR';
+  conditions: SearchCondition[];
+}
+
+export type SearchCondition = SearchConditionLeaf | SearchConditionGroup;
+
+export interface SearchPayload {
+  entity: string;
+  criteria: SearchConditionGroup;
+}
