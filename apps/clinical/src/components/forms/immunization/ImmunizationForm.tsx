@@ -26,6 +26,7 @@ import SelectedImmunizationItem from './components/SelectedImmunizationItem';
 import {
   IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,
   IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
+  IMMUNIZATION_WAIVER_INPUT_CONTROL_KEY,
 } from './constants';
 import { ImmunizationStoreKey } from './models';
 import { useImmunizationHistoryStore } from './stores';
@@ -34,6 +35,7 @@ import {
   buildBasedOnImmunizationEntry,
   findAttr,
   getComboBoxItems,
+  getVaccineComboBoxItems,
 } from './utils';
 
 const ImmunizationForm = ({
@@ -47,11 +49,14 @@ const ImmunizationForm = ({
   const [searchTerm, setSearchTerm] = useState('');
   const immunizationFormType = (inputControlConfig?.type ??
     IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY) as ImmunizationStoreKey;
+  const isWaiver =
+    immunizationFormType === IMMUNIZATION_WAIVER_INPUT_CONTROL_KEY;
   const {
     addImmunization,
     removeImmunization,
     selectedImmunizations,
     setAttributes,
+    setWaiverReasonConfig,
     updateItemCDSCards,
   } = useImmunizationHistoryStore(immunizationFormType);
 
@@ -98,12 +103,22 @@ const ImmunizationForm = ({
   const disableAdditionalAdministrations =
     metadata?.disableAdditionalAdministrations as boolean | undefined;
   const fetchStockBatches = metadata?.fetchStockBatches as boolean | undefined;
+  const statusReasonValueSetUuid = metadata?.statusReasonValueSetUuid as
+    | string
+    | undefined;
+  const otherReasonConceptUuid = metadata?.otherReasonConceptUuid as
+    | string
+    | undefined;
 
   useEffect(() => {
     if (attributes) {
       setAttributes(attributes);
     }
   }, [attributes, setAttributes]);
+
+  useEffect(() => {
+    setWaiverReasonConfig({ otherReasonConceptUuid });
+  }, [otherReasonConceptUuid, setWaiverReasonConfig]);
 
   useCDSSResultsListener((detail) => {
     const { cards } = detail;
@@ -126,7 +141,8 @@ const ImmunizationForm = ({
   } = useQuery({
     queryKey: ['vaccineConceptSetUuid', vaccineConceptSetUuid],
     queryFn: () => searchFHIRConcepts(vaccineConceptSetUuid!),
-    enabled: !!vaccineConceptSetUuid && !isConfigLoading && !configError,
+    enabled:
+      !isWaiver && !!vaccineConceptSetUuid && !isConfigLoading && !configError,
     staleTime: Infinity,
   });
 
@@ -176,6 +192,17 @@ const ImmunizationForm = ({
   });
 
   const {
+    data: statusReasonConceptSet,
+    isLoading: statusReasonConceptSetLoading,
+    error: statusReasonConceptSetError,
+  } = useQuery({
+    queryKey: ['statusReasonValueSetUuid', statusReasonValueSetUuid],
+    queryFn: () => searchFHIRConcepts(statusReasonValueSetUuid!),
+    enabled: !!statusReasonValueSetUuid && !isConfigLoading && !configError,
+    staleTime: Infinity,
+  });
+
+  const {
     data: vaccinationDrugs,
     isLoading: vaccinationDrugsLoading,
     error: vaccinationDrugsError,
@@ -218,19 +245,27 @@ const ImmunizationForm = ({
 
   const vaccineCodeComboBoxItems = useMemo(
     () =>
-      getComboBoxItems(
-        searchTerm,
-        vaccineCodeConceptSet,
-        isConfigLoading || vaccineCodeConceptSetLoading,
-        !!configError || !!vaccineCodeConceptSetError,
-        {
-          loading: t('LOADING_IMMUNIZATIONS'),
-          error: t('ERROR_SEARCHING_IMMUNIZATIONS'),
-          empty: t('NO_MATCHING_IMMUNIZATIONS_FOUND'),
-        },
-      ),
+      isWaiver
+        ? getVaccineComboBoxItems(
+            searchTerm,
+            vaccineMedications,
+            t('NO_MATCHING_IMMUNIZATIONS_FOUND'),
+          )
+        : getComboBoxItems(
+            searchTerm,
+            vaccineCodeConceptSet,
+            isConfigLoading || vaccineCodeConceptSetLoading,
+            !!configError || !!vaccineCodeConceptSetError,
+            {
+              loading: t('LOADING_IMMUNIZATIONS'),
+              error: t('ERROR_SEARCHING_IMMUNIZATIONS'),
+              empty: t('NO_MATCHING_IMMUNIZATIONS_FOUND'),
+            },
+          ),
     [
+      isWaiver,
       searchTerm,
+      vaccineMedications,
       vaccineCodeConceptSet,
       isConfigLoading,
       vaccineCodeConceptSetLoading,
@@ -252,7 +287,8 @@ const ImmunizationForm = ({
       sitesConceptSetLoading ||
       administeredLocationTagLoading ||
       vaccinationDrugsLoading ||
-      basedOnMedicationLoading;
+      basedOnMedicationLoading ||
+      statusReasonConceptSetLoading;
 
     const willAutoPopulate =
       !!basedOn && (basedOnMedicationLoading || vaccinationDrugsLoading);
@@ -267,6 +303,7 @@ const ImmunizationForm = ({
     administeredLocationTagLoading,
     vaccinationDrugsLoading,
     basedOnMedicationLoading,
+    statusReasonConceptSetLoading,
     basedOn,
   ]);
 
@@ -278,7 +315,8 @@ const ImmunizationForm = ({
       !!sitesConceptSetError ||
       !!administeredLocationTagError ||
       !!vaccinationDrugsError ||
-      !!basedOnMedicationError
+      !!basedOnMedicationError ||
+      !!statusReasonConceptSetError
     );
   }, [
     configError,
@@ -288,6 +326,7 @@ const ImmunizationForm = ({
     administeredLocationTagError,
     vaccinationDrugsError,
     basedOnMedicationError,
+    statusReasonConceptSetError,
   ]);
 
   const showSelectedImmunizations =
@@ -296,13 +335,15 @@ const ImmunizationForm = ({
       routesConceptSetError ??
       sitesConceptSetError ??
       administeredLocationTagError ??
-      vaccinationDrugsError
+      vaccinationDrugsError ??
+      statusReasonConceptSetError
     ) &&
     !(
       routesConceptSetLoading ||
       sitesConceptSetLoading ||
       administeredLocationTagLoading ||
-      vaccinationDrugsLoading
+      vaccinationDrugsLoading ||
+      statusReasonConceptSetLoading
     );
 
   return (
@@ -374,6 +415,8 @@ const ImmunizationForm = ({
                   immunization={immunization}
                   routes={routesConceptSet}
                   sites={sitesConceptSet}
+                  statusReasons={statusReasonConceptSet}
+                  otherReasonConceptUuid={otherReasonConceptUuid}
                   attributes={attributes}
                   administeredLocationTag={administeredLocationTagData}
                   vaccineDrugs={vaccineMedications}
