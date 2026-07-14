@@ -266,9 +266,9 @@ describe('getVaccineComboBoxItems', () => {
       id: 'med-with-text',
       code: { coding: [{ code: 'bcg-code' }], text: 'BCG Vaccine' },
     };
-    expect(
-      getVaccineComboBoxItems('BCG', [medication], 'No results'),
-    ).toEqual([{ code: 'bcg-code', display: 'BCG Vaccine' }]);
+    expect(getVaccineComboBoxItems('BCG', [medication], 'No results')).toEqual([
+      { code: 'bcg-code', display: 'BCG Vaccine' },
+    ]);
   });
 
   it('falls back to the code itself when neither coding display nor code.text is set', () => {
@@ -276,11 +276,7 @@ describe('getVaccineComboBoxItems', () => {
       getVaccineComboBoxItems('covid-19', mockVaccineDrugs, 'No results'),
     ).toEqual([{ code: '', display: 'No results', disabled: true }]);
     expect(
-      getVaccineComboBoxItems(
-        'bcg-code',
-        mockVaccineDrugs,
-        'No results',
-      ),
+      getVaccineComboBoxItems('bcg-code', mockVaccineDrugs, 'No results'),
     ).toEqual([{ code: 'bcg-code', display: 'bcg-code' }]);
   });
 

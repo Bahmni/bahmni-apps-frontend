@@ -208,7 +208,7 @@ export function getLocationComboBoxItems(
 ): LocationComboBoxItem[] {
   if (!searchTerm.trim()) return [];
   return (locations ?? [])
-    .flatMap((location) => [location, ...location.childLocations])
+    .flatMap((location) => [location, ...(location.childLocations ?? [])])
     .filter((location) =>
       location.display.toLowerCase().includes(searchTerm.toLowerCase()),
     )
@@ -307,9 +307,13 @@ export function createImmunizationBundleEntries({
           }
         : undefined,
       route:
-        !isWaiver && entry.route ? { coding: [{ code: entry.route }] } : undefined,
+        !isWaiver && entry.route
+          ? { coding: [{ code: entry.route }] }
+          : undefined,
       site:
-        !isWaiver && entry.site ? { coding: [{ code: entry.site }] } : undefined,
+        !isWaiver && entry.site
+          ? { coding: [{ code: entry.site }] }
+          : undefined,
       expirationDate:
         !isWaiver && entry.expiryDate
           ? entry.expiryDate.toISOString().split('T')[0]
@@ -318,7 +322,7 @@ export function createImmunizationBundleEntries({
         !isWaiver && entry.manufacturer
           ? { display: entry.manufacturer }
           : undefined,
-      lotNumber: !isWaiver ? entry.batchNumber ?? undefined : undefined,
+      lotNumber: !isWaiver ? (entry.batchNumber ?? undefined) : undefined,
       protocolApplied:
         !isWaiver && entry.doseSequence
           ? [{ doseNumberPositiveInt: entry.doseSequence }]

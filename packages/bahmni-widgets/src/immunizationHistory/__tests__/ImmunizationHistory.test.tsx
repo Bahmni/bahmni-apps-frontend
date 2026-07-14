@@ -259,9 +259,7 @@ describe('ImmunizationHistory', () => {
 
   it('omits editOnly when tabbed and neither administeredInputControlKey nor notAdministeredInputControlKey is configured', async () => {
     const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
-    render(
-      <ImmunizationHistory config={{ encounterType: 'Immunization' }} />,
-    );
+    render(<ImmunizationHistory config={{ encounterType: 'Immunization' }} />);
     await userEvent.click(
       screen.getByTestId('immunization-history-widget-add-button-test-id'),
     );

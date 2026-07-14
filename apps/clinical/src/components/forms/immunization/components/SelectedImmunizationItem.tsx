@@ -90,8 +90,8 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   const isOtherReasonSelected =
     !!immunization.statusReason &&
     immunization.statusReason.code === otherReasonConceptUuid;
-  const noteRequired =
-    findAttr('note', attributes)?.required || isOtherReasonSelected;
+  const noteRequiredByConfig = findAttr('note', attributes)?.required ?? false;
+  const noteRequired = noteRequiredByConfig || isOtherReasonSelected;
   const [hasNote, setHasNote] = useState(
     !!immunization.note || isOtherReasonSelected,
   );
