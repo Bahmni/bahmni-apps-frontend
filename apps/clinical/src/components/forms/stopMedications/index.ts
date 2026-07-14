@@ -10,6 +10,7 @@ import StopMedicationForm from './StopMedicationForm';
 
 registerInputControl({
   key: 'stopMedications',
+  onActionTriggered: true,
   component: StopMedicationForm,
   reset: () => useStopMedicationStore.getState().reset(),
   validate: () => useStopMedicationStore.getState().validate(),

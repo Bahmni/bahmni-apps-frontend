@@ -7,6 +7,7 @@ export interface InputControl {
   key: string;
   encounterTypes?: string[];
   privilege?: string[];
+  onActionTriggered?: boolean;
   inputControlConfig?: ClinicalInputControlConfig;
   component: React.ComponentType<{
     encounterSessionStartContext?: EncounterSessionStartContext;
