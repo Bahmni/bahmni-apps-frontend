@@ -153,6 +153,126 @@ describe('ImmunizationHistory', () => {
     );
   });
 
+  it.each([
+    { status: 'completed', configuredKey: 'immunizationHistory' },
+    { status: 'not-done', configuredKey: 'immunizationWaiver' },
+  ])(
+    'dispatches editOnly=$configuredKey when status is $status and inputControlKey is configured',
+    async ({ status, configuredKey }) => {
+      const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+      render(
+        <ImmunizationHistory
+          config={{
+            status,
+            encounterType: 'Immunization',
+            inputControlKey: configuredKey,
+          }}
+        />,
+      );
+      await userEvent.click(
+        screen.getByTestId('immunization-history-widget-add-button-test-id'),
+      );
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'startConsultation',
+          detail: { encounterType: 'Immunization', editOnly: configuredKey },
+        }),
+      );
+    },
+  );
+
+  it.each(['completed', 'not-done'])(
+    'omits editOnly when status is %s but inputControlKey is not configured (backward compatible)',
+    async (status) => {
+      const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+      render(
+        <ImmunizationHistory
+          config={{ status, encounterType: 'Immunization' }}
+        />,
+      );
+      await userEvent.click(
+        screen.getByTestId('immunization-history-widget-add-button-test-id'),
+      );
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'startConsultation',
+          detail: { encounterType: 'Immunization' },
+        }),
+      );
+    },
+  );
+
+  it('dispatches administeredInputControlKey when tabbed and the Administered tab (default) is active', async () => {
+    const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+    render(
+      <ImmunizationHistory
+        config={{
+          encounterType: 'Immunization',
+          administeredInputControlKey: 'immunizationHistory',
+          notAdministeredInputControlKey: 'immunizationWaiver',
+        }}
+      />,
+    );
+    await userEvent.click(
+      screen.getByTestId('immunization-history-widget-add-button-test-id'),
+    );
+    expect(dispatchEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'startConsultation',
+        detail: {
+          encounterType: 'Immunization',
+          editOnly: 'immunizationHistory',
+        },
+      }),
+    );
+  });
+
+  it('dispatches notAdministeredInputControlKey when tabbed and the Not Administered tab is active', async () => {
+    const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+    render(
+      <ImmunizationHistory
+        config={{
+          encounterType: 'Immunization',
+          administeredInputControlKey: 'immunizationHistory',
+          notAdministeredInputControlKey: 'immunizationWaiver',
+        }}
+      />,
+    );
+    await userEvent.click(
+      screen.getByRole('tab', {
+        name: 'IMMUNIZATION_HISTORY_WIDGET_TAB_NOT_ADMINISTERED',
+      }),
+    );
+    await userEvent.click(
+      screen.getByTestId('immunization-history-widget-add-button-test-id'),
+    );
+    expect(dispatchEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'startConsultation',
+        detail: {
+          encounterType: 'Immunization',
+          editOnly: 'immunizationWaiver',
+        },
+      }),
+    );
+  });
+
+  it('omits editOnly when tabbed and neither administeredInputControlKey nor notAdministeredInputControlKey is configured', async () => {
+    const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+    render(
+      <ImmunizationHistory config={{ encounterType: 'Immunization' }} />,
+    );
+    await userEvent.click(
+      screen.getByTestId('immunization-history-widget-add-button-test-id'),
+    );
+    expect(dispatchEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'startConsultation',
+        detail: { encounterType: 'Immunization' },
+      }),
+    );
+  });
+
   it('renders Font Awesome plus icon inside add button', () => {
     render(<ImmunizationHistory config={{ encounterType: 'Immunization' }} />);
     const addButton = screen.getByTestId(
@@ -241,7 +361,7 @@ describe('ImmunizationHistory', () => {
         mockNotAdministeredImmunization,
       ),
       visibleHeaders: [
-        'IMMUNIZATION_HISTORY_WIDGET_COL_CODE',
+        'IMMUNIZATION_HISTORY_WIDGET_COL_TYPE',
         'IMMUNIZATION_HISTORY_WIDGET_COL_DATE',
       ],
       hiddenHeaders: ['IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY'],

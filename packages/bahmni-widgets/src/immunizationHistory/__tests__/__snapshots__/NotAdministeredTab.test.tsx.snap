@@ -7,7 +7,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
     id="immunization-not-administered-tab"
   >
     <div
-      class="table _sortableDataTableBody_1w499_1"
+      class="table notAdministeredTable _sortableDataTableBody_1w499_1"
       data-testid="not-administered-immunizations-table"
     >
       <div
@@ -26,12 +26,12 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_10_"
+                  id="table-sort-_r_20_"
                 >
-                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_CODE header in ascending order
+                  Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_TYPE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_10_"
+                  aria-describedby="table-sort-_r_20_"
                   class="cds--table-sort"
                   data-testid="table-header-code"
                   type="button"
@@ -42,7 +42,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
                     <div
                       class="cds--table-header-label"
                     >
-                      IMMUNIZATION_HISTORY_WIDGET_COL_CODE
+                      IMMUNIZATION_HISTORY_WIDGET_COL_TYPE
                     </div>
                     <svg
                       aria-hidden="true"
@@ -100,12 +100,12 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_12_"
+                  id="table-sort-_r_22_"
                 >
                   Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_DATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_12_"
+                  aria-describedby="table-sort-_r_22_"
                   class="cds--table-sort"
                   data-testid="table-header-date"
                   type="button"
@@ -161,12 +161,12 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_13_"
+                  id="table-sort-_r_23_"
                 >
                   Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_13_"
+                  aria-describedby="table-sort-_r_23_"
                   class="cds--table-sort"
                   data-testid="table-header-recordedBy"
                   type="button"
@@ -226,11 +226,66 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
               <td
                 data-testid="table-cell-waiver-uuid-1-code"
               >
-                <span
+                <div
                   class="code"
                 >
-                  Hepatitis B
-                </span>
+                  <span>
+                    Hepatitis B
+                  </span>
+                  <span
+                    class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--auto-align cds--autoalign cds--popover--bottom cds--toggletip _tooltipIcon_d1wk8_1 cds--autoalign"
+                  >
+                    <button
+                      aria-controls="id-_r_24_"
+                      aria-expanded="false"
+                      aria-label="Show information"
+                      class="cds--toggletip-button"
+                      type="button"
+                    >
+                      <span
+                        aria-label="Discussed alternative options with patient."
+                        class="_bahmniIcon_1cg5e_1 _paddingNone_1cg5e_1"
+                        id="tooltip-icon-fa-file-lines"
+                        role="img"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="svg-inline--fa fa-file-lines fa-lg "
+                          data-icon="file-lines"
+                          data-prefix="fas"
+                          data-testid="tooltip-icon-fa-file-lines"
+                          focusable="false"
+                          role="img"
+                          viewBox="0 0 384 512"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM112 256l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16s7.2-16 16-16z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                    <span
+                      class="cds--popover"
+                      id="id-_r_24_"
+                    >
+                      <span
+                        class="cds--popover-content"
+                        style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
+                      >
+                        <div
+                          class="cds--toggletip-content"
+                        >
+                          Discussed alternative options with patient.
+                        </div>
+                        <span
+                          class="cds--popover-caret cds--popover--auto-align"
+                        />
+                      </span>
+                    </span>
+                  </span>
+                </div>
               </td>
               <td
                 data-testid="table-cell-waiver-uuid-1-reason"

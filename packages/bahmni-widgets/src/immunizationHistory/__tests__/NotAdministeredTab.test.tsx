@@ -69,7 +69,7 @@ describe('NotAdministeredTab', () => {
       <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(
-      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_CODE'),
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_TYPE'),
     ).toBeInTheDocument();
     expect(
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_REASON'),
@@ -249,6 +249,39 @@ describe('NotAdministeredTab', () => {
     expect(
       screen.getByTestId(`table-cell-${mockRow.id}-${field}`),
     ).toHaveTextContent('-');
+  });
+
+  it('displays tooltip icon when the not-administered immunization has notes', () => {
+    render(
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
+    expect(
+      screen.getByLabelText('Discussed alternative options with patient.'),
+    ).toBeInTheDocument();
+  });
+
+  it('does not display tooltip icon when the not-administered immunization has no notes', () => {
+    mockUseQuery.mockReturnValue({
+      data: [{ ...mockRow, notes: null }],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+    render(
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
+    expect(
+      screen.queryByLabelText('Discussed alternative options with patient.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('applies the notAdministeredTable layout class to the table', () => {
+    render(
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
+    expect(
+      screen.getByTestId('not-administered-immunizations-table'),
+    ).toHaveClass('notAdministeredTable');
   });
 
   it('passes accessibility tests', async () => {

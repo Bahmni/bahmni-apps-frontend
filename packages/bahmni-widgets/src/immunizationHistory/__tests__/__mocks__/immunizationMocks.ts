@@ -66,4 +66,5 @@ export const mockNotAdministeredImmunization: Immunization = {
       actor: { display: 'John Davis' },
     },
   ],
+  note: [{ text: 'Discussed alternative options with patient.' }],
 };
