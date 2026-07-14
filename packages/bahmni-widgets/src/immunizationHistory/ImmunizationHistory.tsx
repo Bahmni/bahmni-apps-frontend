@@ -22,7 +22,11 @@ import {
   ADMINISTERED_EXPANDED_FIELDS,
   NOT_ADMINISTERED_COLUMN_FIELDS,
 } from './constants';
-import { AdministeredTabConfig, NotAdministeredTabConfig } from './model';
+import {
+  AdministeredTabConfig,
+  ImmunizationHistoryWidgetConfig,
+  NotAdministeredTabConfig,
+} from './model';
 import styles from './styles/Immunizations.module.scss';
 
 const getTitleByStatus = (status: ImmunizationStatus) => {
@@ -41,14 +45,14 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
   const patientUUID = usePatientUUID();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const status = config?.status as ImmunizationStatus;
-  const encounterType = config?.encounterType as string;
-  const startEncounterPrivilege = config?.startEncounterPrivilege as string;
+  const widgetConfig = config as ImmunizationHistoryWidgetConfig | undefined;
+  const status = widgetConfig?.status as ImmunizationStatus;
+  const encounterType = widgetConfig?.encounterType as string;
+  const startEncounterPrivilege =
+    widgetConfig?.startEncounterPrivilege as string;
 
-  const administeredFields = config?.administeredFields as string[] | undefined;
-  const notAdministeredFields = config?.notAdministeredFields as
-    | string[]
-    | undefined;
+  const administeredFields = widgetConfig?.administeredFields;
+  const notAdministeredFields = widgetConfig?.notAdministeredFields;
 
   const administeredConfig: AdministeredTabConfig = {
     columns: administeredFields
@@ -73,10 +77,20 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
     startEncounterPrivilege ?? ADD_IMMUNIZATIONS_PRIVILEGE,
   );
 
+  const resolveAddButtonInputControlKey = (): string | undefined => {
+    if (status === 'completed' || status === 'not-done') {
+      return widgetConfig?.inputControlKey;
+    }
+    return selectedIndex === 0
+      ? widgetConfig?.administeredInputControlKey
+      : widgetConfig?.notAdministeredInputControlKey;
+  };
+
   const handleAddImmunization = () => {
+    const editOnly = resolveAddButtonInputControlKey();
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
-        detail: { encounterType },
+        detail: editOnly ? { encounterType, editOnly } : { encounterType },
       }),
     );
   };
