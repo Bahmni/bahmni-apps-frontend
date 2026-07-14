@@ -76,6 +76,16 @@ export interface CriterionConfig {
   input: InputConfig;
 }
 
+export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
+
+export interface ResultFieldConfig {
+  key: string;
+  translationKey: string;
+  expression: string;
+  enableSort?: boolean;
+  filterType?: ResultFieldFilterType;
+}
+
 export interface SearchContextConfig {
   context: 'patient' | 'appointment' | 'episodeOfCare';
   translationKey: string;
@@ -84,6 +94,7 @@ export interface SearchContextConfig {
   url: string;
   pageSize: number;
   criteria: CriterionConfig[];
+  resultFields: ResultFieldConfig[];
 }
 
 export type CommonSearchWidgetConfig = [

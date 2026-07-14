@@ -17,7 +17,8 @@
         "locationAware",
         "url",
         "pageSize",
-        "criteria"
+        "criteria",
+        "resultFields"
       ],
       "additionalProperties": false,
       "properties": {
@@ -58,6 +59,43 @@
           "items": { "$ref": "#/definitions/criterionConfig" },
           "minItems": 1,
           "description": "Search criteria available in this context"
+        },
+        "resultFields": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/resultFieldConfig" },
+          "minItems": 1,
+          "description": "Defines the columns shown in the results table after a successful search"
+        }
+      }
+    },
+    "resultFieldConfig": {
+      "type": "object",
+      "required": ["key", "translationKey", "expression"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Column identifier used as the property key on each result row"
+        },
+        "translationKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "i18n key for the column header"
+        },
+        "expression": {
+          "type": "string",
+          "minLength": 1,
+          "description": "JSONata expression evaluated against each result item to extract the column value"
+        },
+        "enableSort": {
+          "type": "boolean",
+          "description": "When true, the column header is clickable to sort results client-side"
+        },
+        "filterType": {
+          "type": "string",
+          "enum": ["text", "select", "dateRange", "numeric"],
+          "description": "When present, a filter control appears for this column"
         }
       }
     },

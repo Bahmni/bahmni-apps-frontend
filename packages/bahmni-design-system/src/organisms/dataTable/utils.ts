@@ -79,6 +79,7 @@ const builtInFilterFnByType: Record<FilterType, string> = {
   text: 'includesString',
   select: 'arrIncludesSome',
   dateRange: 'inDateRange',
+  numeric: 'includesString',
 };
 
 const resolveFilterFn = (filterType: FilterType | undefined) => {

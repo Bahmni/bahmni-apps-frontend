@@ -1,5 +1,14 @@
 import { UserLocation } from '@bahmni/services';
-import { SearchContextConfig } from '../../models';
+import { ResultFieldConfig, SearchContextConfig } from '../../models';
+
+export const mockResultFields: ResultFieldConfig[] = [
+  {
+    key: 'name',
+    translationKey: 'PATIENT_NAME',
+    expression: 'name',
+    enableSort: true,
+  },
+];
 
 export const mockLocation: UserLocation = {
   uuid: 'loc-uuid-1',
@@ -19,6 +28,7 @@ export const mockPatientContext: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'patient.name.given' },
@@ -59,6 +69,7 @@ export const mockAppointmentContext: SearchContextConfig = {
   locationAware: 'allowedLocation',
   url: '/openmrs/ws/rest/v1/appointment/search',
   pageSize: 10,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'appointment.number' },
@@ -88,6 +99,7 @@ export const mockContextNoDefaults: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/episode/search',
   pageSize: 10,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'episode.identifier' },
@@ -116,6 +128,7 @@ export const mockPatientContextWithRangeNumeric: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'patient.age' },
@@ -137,6 +150,7 @@ export const mockContextMultipleDefaults: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'patient.name.given' },
@@ -170,6 +184,7 @@ export const mockPatientContextWithRegex: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'patient.name.given' },
