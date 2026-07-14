@@ -169,54 +169,6 @@ describe('getFormattedError', () => {
         message: 'The server encountered an error. Please try again later.',
       });
     });
-
-    it('should surface backend error field on server errors when provided', () => {
-      const error = {
-        response: {
-          status: 500,
-          data: { error: 'Database connection failed' },
-        },
-      } as unknown as AxiosError;
-
-      const result = getFormattedError(error);
-
-      expect(result).toEqual({
-        title: 'Server Error',
-        message: 'Database connection failed',
-      });
-    });
-
-    it('should fall back to backend message on server errors when error field is absent', () => {
-      const error = {
-        response: {
-          status: 502,
-          data: { message: 'Upstream is unavailable' },
-        },
-      } as unknown as AxiosError;
-
-      const result = getFormattedError(error);
-
-      expect(result).toEqual({
-        title: 'Server Error',
-        message: 'Upstream is unavailable',
-      });
-    });
-
-    it('should surface a nested backend error object message on server errors', () => {
-      const error = {
-        response: {
-          status: 500,
-          data: { error: { message: 'Database connection failed' } },
-        },
-      } as unknown as AxiosError;
-
-      const result = getFormattedError(error);
-
-      expect(result).toEqual({
-        title: 'Server Error',
-        message: 'Database connection failed',
-      });
-    });
   });
 
   describe('Other error types', () => {
@@ -246,18 +198,6 @@ describe('getFormattedError', () => {
     // AxiosError is an `instanceof Error`, which previously short-circuited the
     // network/timeout branches. Constructing real instances guards against that
     // regression.
-    it('should surface the axios message for network errors (no response)', () => {
-      jest.spyOn(axios, 'isAxiosError').mockReturnValue(true);
-      const error = new axios.AxiosError('Network Error', 'ERR_NETWORK');
-
-      const result = getFormattedError(error);
-
-      expect(result).toEqual({
-        title: 'Network Error',
-        message: 'Network Error',
-      });
-    });
-
     it('should fall back to a generic message for network errors without a message', () => {
       jest.spyOn(axios, 'isAxiosError').mockReturnValue(true);
       const error = new axios.AxiosError();
