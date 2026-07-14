@@ -107,6 +107,28 @@ export function getValueSetComboBoxItems(
   return items;
 }
 
+export function getVaccineComboBoxItems(
+  searchTerm: string,
+  medications: Medication[] | undefined,
+  emptyMessage: string,
+): ValueSetComboBoxItem[] {
+  if (!searchTerm.trim()) return [];
+  const seen = new Set<string>();
+  const items: ValueSetComboBoxItem[] = [];
+  (medications ?? []).forEach((med) => {
+    const code = med.code?.coding?.[0]?.code;
+    if (!code || seen.has(code)) return;
+    const display = med.code?.coding?.[0]?.display ?? med.code?.text ?? code;
+    if (!display.toLowerCase().includes(searchTerm.toLowerCase())) return;
+    seen.add(code);
+    items.push({ code, display });
+  });
+  if (!items.length) {
+    return [{ code: '', display: emptyMessage, disabled: true }];
+  }
+  return items;
+}
+
 export function getMedicationComboBoxItems(
   searchTerm: string,
   medications: Medication[] | undefined,
@@ -251,6 +273,7 @@ export function createImmunizationBundleEntries({
   encounterReference,
   practitionerUUID,
   isAdministration,
+  isWaiver,
 }: CreateImmunizationBundleEntriesParams): BundleEntry[] {
   return selectedImmunizations.map((entry) => {
     const extensions = [
@@ -261,7 +284,7 @@ export function createImmunizationBundleEntries({
     const resource: Immunization = {
       resourceType: 'Immunization',
       id: entry.id,
-      status: 'completed',
+      status: isWaiver ? 'not-done' : 'completed',
       vaccineCode: {
         coding: [
           { code: entry.vaccineCode.code, display: entry.vaccineCode.display },
@@ -273,18 +296,33 @@ export function createImmunizationBundleEntries({
       location: entry.administeredLocation
         ? resolveLocationReference(entry.administeredLocation)
         : undefined,
-      route: entry.route ? { coding: [{ code: entry.route }] } : undefined,
-      site: entry.site ? { coding: [{ code: entry.site }] } : undefined,
-      expirationDate: entry.expiryDate
-        ? entry.expiryDate.toISOString().split('T')[0]
+      statusReason: entry.statusReason
+        ? {
+            coding: [
+              {
+                code: entry.statusReason.code,
+                display: entry.statusReason.display,
+              },
+            ],
+          }
         : undefined,
-      manufacturer: entry.manufacturer
-        ? { display: entry.manufacturer }
-        : undefined,
-      lotNumber: entry.batchNumber ?? undefined,
-      protocolApplied: entry.doseSequence
-        ? [{ doseNumberPositiveInt: entry.doseSequence }]
-        : undefined,
+      route:
+        !isWaiver && entry.route ? { coding: [{ code: entry.route }] } : undefined,
+      site:
+        !isWaiver && entry.site ? { coding: [{ code: entry.site }] } : undefined,
+      expirationDate:
+        !isWaiver && entry.expiryDate
+          ? entry.expiryDate.toISOString().split('T')[0]
+          : undefined,
+      manufacturer:
+        !isWaiver && entry.manufacturer
+          ? { display: entry.manufacturer }
+          : undefined,
+      lotNumber: !isWaiver ? entry.batchNumber ?? undefined : undefined,
+      protocolApplied:
+        !isWaiver && entry.doseSequence
+          ? [{ doseNumberPositiveInt: entry.doseSequence }]
+          : undefined,
       note: entry.note
         ? [
             {
