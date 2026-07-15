@@ -12,7 +12,7 @@ import {
  * @param serviceRequestId - Service request UUID for based-on filter (optional)
  * @returns Promise resolving to FHIR observation bundle
  */
-export async function getPatientObservationsBundle(
+async function getPatientObservationsBundle(
   patientUuid: string,
   conceptCodes?: string[],
   serviceRequestId?: string,
