@@ -11,6 +11,8 @@ globalThis.TextEncoder = TextEncoder;
 // @ts-expect-error - Ignoring type issues with Node.js util TextDecoder
 globalThis.TextDecoder = TextDecoder;
 
+Element.prototype.scrollIntoView = jest.fn();
+
 Object.defineProperty(globalThis, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation((query: string) => ({

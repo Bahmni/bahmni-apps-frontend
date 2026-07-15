@@ -227,19 +227,49 @@ describe('Header', () => {
       expect(mockGlobalActions[1].onClick).toHaveBeenCalledTimes(1);
     });
 
-    it('does not render global actions when array is empty', () => {
+    it('does not render global bar when globalActions is empty and no userMenu', () => {
       render(<Header {...defaultProps} globalActions={[]} />);
 
       expect(screen.queryByTestId('header-global-bar')).not.toBeInTheDocument();
     });
 
-    it('does not render global actions when not provided', () => {
+    it('does not render global bar when neither globalActions nor userMenu provided', () => {
       const propsWithoutGlobalActions = { ...defaultProps };
       delete propsWithoutGlobalActions.globalActions;
 
       render(<Header {...propsWithoutGlobalActions} />);
 
       expect(screen.queryByTestId('header-global-bar')).not.toBeInTheDocument();
+    });
+
+    it('renders userMenu directly in the global bar (no HeaderGlobalAction wrapper)', () => {
+      render(
+        <Header
+          {...defaultProps}
+          globalActions={[]}
+          userMenu={<div data-testid="user-menu">User Menu</div>}
+        />,
+      );
+
+      expect(screen.getByTestId('header-global-bar')).toBeInTheDocument();
+      expect(screen.getByTestId('user-menu')).toBeInTheDocument();
+      // userMenu is not wrapped in a global-action tooltip button
+      expect(
+        screen.queryByTestId('global-action-user'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders userMenu alongside globalActions', () => {
+      render(
+        <Header
+          {...defaultProps}
+          userMenu={<div data-testid="user-menu">User Menu</div>}
+        />,
+      );
+
+      expect(screen.getByTestId('header-global-bar')).toBeInTheDocument();
+      expect(screen.getByTestId('global-action-search')).toBeInTheDocument();
+      expect(screen.getByTestId('user-menu')).toBeInTheDocument();
     });
   });
 
