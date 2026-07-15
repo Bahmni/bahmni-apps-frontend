@@ -59,6 +59,7 @@ export const mockNotAdministeredImmunization: Immunization = {
   vaccineCode: { coding: [{ display: 'Hepatitis B' }] },
   patient: { reference: 'Patient/patient-uuid' },
   occurrenceDateTime: '2026-03-19',
+  recorded: '2026-03-19T10:30:00.000Z',
   statusReason: { coding: [{ display: 'Patient refused' }] },
   performer: [
     {

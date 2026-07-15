@@ -21,6 +21,7 @@ export interface NotAdministeredImmunizationViewModel {
   code: string | null;
   reason: string | null;
   date: string | null;
+  recordedOn: string | null;
   recordedBy: string | null;
   notes: string | null;
 }

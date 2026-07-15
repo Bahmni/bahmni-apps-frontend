@@ -95,6 +95,11 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
     if (key === 'date') {
       return row.date ? formatDateTime(row.date, t).formattedResult : '-';
     }
+    if (key === 'recordedOn') {
+      return row.recordedOn
+        ? formatDateTime(row.recordedOn, t, true).formattedResult
+        : '-';
+    }
     return row[key as keyof NotAdministeredImmunizationViewModel] ?? '-';
   };
 

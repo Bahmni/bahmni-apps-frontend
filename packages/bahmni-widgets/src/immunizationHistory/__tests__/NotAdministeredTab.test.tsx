@@ -48,9 +48,12 @@ const mockRow = createNotAdministeredImmunizationViewModel(
 
 describe('NotAdministeredTab', () => {
   beforeEach(() => {
-    mockFormatDateTime.mockReturnValue({
-      formattedResult: '19-3-2026',
-    } as ReturnType<typeof formatDateTime>);
+    mockFormatDateTime.mockImplementation(
+      (_date, _t, includeTime) =>
+        ({
+          formattedResult: includeTime ? '19-3-2026 10:30 AM' : '19-3-2026',
+        }) as ReturnType<typeof formatDateTime>,
+    );
     mockUseSubscribeConsultationSaved.mockImplementation(() => {});
     mockUseQuery.mockReturnValue({
       data: [mockRow],
@@ -78,6 +81,9 @@ describe('NotAdministeredTab', () => {
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_DATE'),
     ).toBeInTheDocument();
     expect(
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_ON'),
+    ).toBeInTheDocument();
+    expect(
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY'),
     ).toBeInTheDocument();
   });
@@ -89,6 +95,7 @@ describe('NotAdministeredTab', () => {
     expect(screen.getByText('Hepatitis B')).toBeInTheDocument();
     expect(screen.getByText('Patient refused')).toBeInTheDocument();
     expect(screen.getByText('19-3-2026')).toBeInTheDocument();
+    expect(screen.getByText('19-3-2026 10:30 AM')).toBeInTheDocument();
     expect(screen.getByText('John Davis')).toBeInTheDocument();
   });
 
@@ -236,6 +243,7 @@ describe('NotAdministeredTab', () => {
     { field: 'code', override: { code: null } },
     { field: 'reason', override: { reason: null } },
     { field: 'date', override: { date: null } },
+    { field: 'recordedOn', override: { recordedOn: null } },
   ])('renders - for $field when value is null', ({ field, override }) => {
     mockUseQuery.mockReturnValue({
       data: [{ ...mockRow, ...override }],
