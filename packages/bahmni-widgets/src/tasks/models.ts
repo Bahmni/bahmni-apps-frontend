@@ -19,13 +19,23 @@ export interface TaskAction {
   handlerConfig: Record<string, unknown>;
 }
 
-export interface TaskActionConfig {
+export interface TaskView {
+  label: string;
+  type: string;
+  requiredPrivileges: string[];
+  handlerConfig: {
+    formInputCode: string;
+  };
+}
+
+export interface TaskConfig {
   taskCode: string;
-  actions: TaskAction[];
+  actions?: TaskAction[];
+  views?: TaskView[];
 }
 
 export interface TaskListConfig {
   showOnlyLeafTasks?: boolean;
   taskTypes?: string[];
-  actionConfig?: TaskActionConfig[];
+  taskConfig?: TaskConfig[];
 }
