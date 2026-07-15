@@ -68,7 +68,9 @@
   "CONFIG_ERROR_VALIDATION_FAILED": "Configuration validation failed",
   "ERROR_CONFIG_GENERIC_MESSAGE": "Unable to load {{config}}. Please try refreshing the page.",
   "ERROR_CONFIG_TITLE": "{{config}} Error",
+  "USER_CHANGE_PASSWORD_GLOBAL_ACTION": "Change Password",
   "USER_GLOBAL_ACTION_BUTTON": "User menu",
+  "USER_GLOBAL_ACTION_GREETING": "Hi, {{name}}",
   "USER_GLOBAL_ACTION_MENU": "User actions",
   "USER_LOGOUT_GLOBAL_ACTION": "Logout"
 }

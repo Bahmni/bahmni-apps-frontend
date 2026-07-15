@@ -1,16 +1,36 @@
-import {
-  Icon,
-  MenuItem,
-  ICON_SIZE,
-  Menu,
-  IconButton,
-} from '@bahmni/design-system';
+import { Menu, MenuItem, SkeletonPlaceholder } from '@bahmni/design-system';
 import { hasPrivilege, useTranslation } from '@bahmni/services';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { UserAvatar } from '@carbon/icons-react';
+import { HeaderGlobalAction, HeaderGlobalActionProps } from '@carbon/react';
+import {
+  AriaAttributes,
+  ComponentType,
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useContext,
+} from 'react';
+import { ActivePractitionerContext } from '../activePractitioner/ActivePractitionerContext';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { registerDefaultActions } from './actions';
 import { useUserActionRegistry } from './registry/hook';
 import styles from './styles/UserGlobalAction.module.scss';
+
+const MENU_ID = 'user-global-action-menu';
+
+// HeaderGlobalAction spreads unrecognised props (id, data-testid, aria-*) onto
+// its underlying <button> at runtime, but its published type doesn't declare
+// them. Widen the type locally instead of fighting Carbon's stale typings.
+const HeaderGlobalActionWithHtmlAttrs = HeaderGlobalAction as ComponentType<
+  HeaderGlobalActionProps & {
+    id?: string;
+    'data-testid'?: string;
+    'aria-haspopup'?: AriaAttributes['aria-haspopup'];
+    'aria-expanded'?: boolean;
+    'aria-controls'?: string;
+  }
+>;
 
 export const UserGlobalAction = () => {
   const { t } = useTranslation();
@@ -19,6 +39,13 @@ export const UserGlobalAction = () => {
   const registry = useUserActionRegistry();
   const { getActions, version } = registry;
   const hasRegistered = useRef(false);
+
+  // Consumed directly (not via the throwing `useActivePractitioner` hook) so this
+  // widget keeps working — avatar-only, no greeting — in apps that haven't wired
+  // an `ActivePractitionerProvider` yet, instead of crashing the header.
+  const activePractitioner = useContext(ActivePractitionerContext);
+  const user = activePractitioner?.user ?? null;
+  const loading = activePractitioner?.loading ?? false;
 
   useEffect(() => {
     if (!hasRegistered.current) {
@@ -41,30 +68,47 @@ export const UserGlobalAction = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPrivileges, version]);
 
+  if (loading) {
+    return (
+      <div
+        id="user-global-action"
+        data-testid="user-global-action-test-id"
+        className={styles.container}
+      >
+        <SkeletonPlaceholder
+          className={styles.skeleton}
+          testId="user-global-action-skeleton-test-id"
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       id="user-global-action"
       data-testid="user-global-action-test-id"
       className={styles.container}
     >
-      <IconButton
+      <HeaderGlobalActionWithHtmlAttrs
         id="user-global-action-button"
         data-testid="user-global-action-button-test-id"
-        kind="ghost"
-        size="lg"
-        onClick={() => setIsOpen(true)}
-        label={t('USER_GLOBAL_ACTION_BUTTON')}
-        align="bottom-end"
+        aria-label={t('USER_GLOBAL_ACTION_BUTTON')}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        aria-controls={MENU_ID}
+        isActive={isOpen}
+        onClick={() => setIsOpen((open) => !open)}
+        className={styles.userAction}
       >
-        <Icon
-          id="user-icon"
-          data-testid="user-icon-button-test-id"
-          name="fa-user"
-          size={ICON_SIZE.LG}
-        />
-      </IconButton>
+        <UserAvatar id="user-icon" data-testid="user-icon-button-test-id" />
+        {user?.display && (
+          <span className={styles.greeting}>
+            {t('USER_GLOBAL_ACTION_GREETING', { name: user.display })}
+          </span>
+        )}
+      </HeaderGlobalActionWithHtmlAttrs>
       <Menu
-        id="user-global-action-menu"
+        id={MENU_ID}
         data-testid="user-global-action-menu-test-id"
         open={isOpen}
         className={styles.menu}

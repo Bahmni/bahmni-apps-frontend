@@ -26,6 +26,8 @@
     "prepublishOnly": "yarn run build"
   },
   "dependencies": {
+    "@carbon/icons-react": "^11.65.0",
+    "@carbon/react": "^1.83.0",
     "cmdk": "^1.1.1"
   },
   "peerDependencies": {
