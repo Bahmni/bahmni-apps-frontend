@@ -130,6 +130,7 @@ jest.mock('@bahmni/design-system', () => ({
       globalActions,
       onSideNavItemClick,
       breadcrumbItems,
+      userMenu,
     }) => (
       <div data-testid="mocked-header-component">
         {globalActions?.map(
@@ -144,6 +145,7 @@ jest.mock('@bahmni/design-system', () => ({
             </button>
           ),
         )}
+        {userMenu}
         {sideNavItems.map(
           (item: {
             id: string;
@@ -192,6 +194,7 @@ jest.mock('@bahmni/widgets', () => ({
   ProgramDetails: jest.fn(() => (
     <div data-testid="mocked-program-details">Program Details</div>
   )),
+  UserGlobalAction: jest.fn(() => <div data-testid="user-global-action" />),
 }));
 
 jest.mock('@bahmni/services', () => ({

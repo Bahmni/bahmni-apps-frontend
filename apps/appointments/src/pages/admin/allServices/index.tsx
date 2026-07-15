@@ -12,7 +12,11 @@ import {
   hasPrivilege,
   useTranslation,
 } from '@bahmni/services';
-import { useNotification, useUserPrivilege } from '@bahmni/widgets';
+import {
+  useNotification,
+  useUserPrivilege,
+  UserGlobalAction,
+} from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { useAppointmentsConfig } from '../../../providers/appointmentsConfig';
@@ -126,7 +130,9 @@ const AllServicesPage: React.FC = () => {
 
   return (
     <BaseLayout
-      header={<Header breadcrumbItems={breadcrumbs} />}
+      header={
+        <Header breadcrumbItems={breadcrumbs} userMenu={<UserGlobalAction />} />
+      }
       main={
         canViewServices ? (
           <div
