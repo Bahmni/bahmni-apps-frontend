@@ -170,14 +170,18 @@ describe('getAllValueSetComboBoxItems', () => {
   });
 
   it('returns disabled sentinel when valueSet is undefined', () => {
-    expect(
-      getAllValueSetComboBoxItems('', undefined, 'No results'),
-    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
+    expect(getAllValueSetComboBoxItems('', undefined, 'No results')).toEqual([
+      { code: '', display: 'No results', disabled: true },
+    ]);
   });
 
   it('returns disabled sentinel when expansion has no contains', () => {
     expect(
-      getAllValueSetComboBoxItems('', mockValueSetWithoutContains, 'No results'),
+      getAllValueSetComboBoxItems(
+        '',
+        mockValueSetWithoutContains,
+        'No results',
+      ),
     ).toEqual([{ code: '', display: 'No results', disabled: true }]);
   });
 });
