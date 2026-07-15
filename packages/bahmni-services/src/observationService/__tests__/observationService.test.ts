@@ -36,6 +36,53 @@ describe('observationService', () => {
       );
     });
 
+    it('should call API with optional conceptCodes', async () => {
+      const patientUuid = 'patient-uuid-123';
+      const mockBundle = { resourceType: 'Bundle', entry: [] };
+      (api.get as jest.Mock).mockResolvedValue(mockBundle);
+
+      await getPatientObservationsBundle(patientUuid);
+
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATION_URL(patientUuid, undefined),
+      );
+    });
+
+    it('should call API with serviceRequestId', async () => {
+      const patientUuid = 'patient-uuid-123';
+      const conceptCodes = ['concept-1'];
+      const serviceRequestId = 'service-request-123';
+      const mockBundle = { resourceType: 'Bundle', entry: [] };
+      (api.get as jest.Mock).mockResolvedValue(mockBundle);
+
+      await getPatientObservationsBundle(
+        patientUuid,
+        conceptCodes,
+        serviceRequestId,
+      );
+
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATION_URL(patientUuid, conceptCodes, serviceRequestId),
+      );
+    });
+
+    it('should call API with serviceRequestId and no conceptCodes', async () => {
+      const patientUuid = 'patient-uuid-123';
+      const serviceRequestId = 'service-request-123';
+      const mockBundle = { resourceType: 'Bundle', entry: [] };
+      (api.get as jest.Mock).mockResolvedValue(mockBundle);
+
+      await getPatientObservationsBundle(
+        patientUuid,
+        undefined,
+        serviceRequestId,
+      );
+
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATION_URL(patientUuid, undefined, serviceRequestId),
+      );
+    });
+
     it('should return observation bundle', async () => {
       (api.get as jest.Mock).mockResolvedValue(mockObservationBundle);
 
@@ -63,6 +110,33 @@ describe('observationService', () => {
       const result = await getPatientObservations('patient-123', ['concept-1']);
 
       expect(result).toEqual([mockObservation]);
+    });
+
+    it('should return observations with serviceRequestId', async () => {
+      (api.get as jest.Mock).mockResolvedValue(mockObservationBundle);
+      const serviceRequestId = 'service-request-123';
+
+      const result = await getPatientObservations(
+        'patient-123',
+        ['concept-1'],
+        serviceRequestId,
+      );
+
+      expect(result).toEqual([mockObservation]);
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATION_URL('patient-123', ['concept-1'], serviceRequestId),
+      );
+    });
+
+    it('should return observations with optional conceptCodes', async () => {
+      (api.get as jest.Mock).mockResolvedValue(mockObservationBundle);
+
+      const result = await getPatientObservations('patient-123');
+
+      expect(result).toEqual([mockObservation]);
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATION_URL('patient-123', undefined),
+      );
     });
 
     it('should handle empty bundle', async () => {
@@ -133,6 +207,19 @@ describe('observationService', () => {
 
       expect(api.get).toHaveBeenCalledWith(
         FHIR_OBSERVATION_WITH_ENCOUNTER_URL(patientUuid, conceptCodes),
+      );
+    });
+
+    it('should call API with optional conceptCodes', async () => {
+      const patientUuid = 'patient-uuid-123';
+      (api.get as jest.Mock).mockResolvedValue(
+        mockObservationWithEncounterBundle,
+      );
+
+      await getPatientObservationsWithEncounterBundle(patientUuid);
+
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATION_WITH_ENCOUNTER_URL(patientUuid, undefined),
       );
     });
 

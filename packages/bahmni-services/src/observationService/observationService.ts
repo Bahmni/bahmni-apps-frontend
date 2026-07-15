@@ -8,14 +8,16 @@ import {
 /**
  * Fetch patient observation bundle from FHIR API
  * @param patientUuid - Patient UUID
- * @param conceptCodes - Array of concept UUIDs
+ * @param conceptCodes - Array of concept UUIDs (optional)
+ * @param serviceRequestId - Service request UUID for based-on filter (optional)
  * @returns Promise resolving to FHIR observation bundle
  */
 export async function getPatientObservationsBundle(
   patientUuid: string,
-  conceptCodes: string[],
+  conceptCodes?: string[],
+  serviceRequestId?: string,
 ): Promise<Bundle<Observation>> {
-  const url = FHIR_OBSERVATION_URL(patientUuid, conceptCodes);
+  const url = FHIR_OBSERVATION_URL(patientUuid, conceptCodes, serviceRequestId);
   return await get<Bundle<Observation>>(url);
 }
 
@@ -27,7 +29,7 @@ export async function getPatientObservationsBundle(
  */
 export async function getPatientObservationsWithEncounterBundle(
   patientUuid: string,
-  conceptCodes: string[],
+  conceptCodes?: string[],
 ): Promise<Bundle<Observation | Encounter>> {
   const url = FHIR_OBSERVATION_WITH_ENCOUNTER_URL(patientUuid, conceptCodes);
   return await get<Bundle<Observation | Encounter>>(url);
@@ -37,13 +39,19 @@ export async function getPatientObservationsWithEncounterBundle(
  * Fetch patient observations from FHIR API
  * @param patientUuid - Patient UUID
  * @param conceptCodes - Array of concept UUIDs
+ * @param serviceRequestId - Service request UUID for based-on filter (optional)
  * @returns Promise resolving to FHIR observation
  */
 export async function getPatientObservations(
   patientUUID: string,
-  conceptCodes: string[],
+  conceptCodes?: string[],
+  serviceRequestId?: string,
 ): Promise<Observation[]> {
-  const bundle = await getPatientObservationsBundle(patientUUID, conceptCodes);
+  const bundle = await getPatientObservationsBundle(
+    patientUUID,
+    conceptCodes,
+    serviceRequestId,
+  );
   const observations =
     bundle.entry
       ?.filter((entry) => entry.resource?.resourceType === 'Observation')
