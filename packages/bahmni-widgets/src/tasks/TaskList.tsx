@@ -13,6 +13,7 @@ import React, { useMemo, useCallback } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry';
 import TaskActions from './components/TaskActions';
+import TaskResults from './components/TaskResults';
 import { TaskViewModel, TaskListConfig } from './models';
 import styles from './TaskList.module.scss';
 
@@ -164,14 +165,24 @@ const TaskList: React.FC<TaskListProps> = ({
       { key: 'status', header: t('TASK_STATUS') },
     ];
 
-    const hasActions = taskListConfig?.actionConfig?.some(
+    const hasViews = taskListConfig?.taskConfig?.some(
+      (config) => config.views && config.views.length > 0,
+    );
+
+    if (hasViews) {
+      baseColumns.push({ key: 'results', header: t('TASK_RESULTS') });
+    }
+
+    const hasActions = taskListConfig?.taskConfig?.some(
       (config) => config.actions && config.actions.length > 0,
     );
 
-    return hasActions
-      ? [...baseColumns, { key: 'actions', header: t('TASK_ACTIONS') }]
-      : baseColumns;
-  }, [t, taskListConfig?.actionConfig]);
+    if (hasActions) {
+      baseColumns.push({ key: 'actions', header: t('TASK_ACTIONS') });
+    }
+
+    return baseColumns;
+  }, [t, taskListConfig?.taskConfig]);
 
   const renderCell = useCallback(
     (task: TaskViewModel, columnKey: string) => {
@@ -190,12 +201,18 @@ const TaskList: React.FC<TaskListProps> = ({
               testId={`task-status-${task.id}`}
             />
           );
+        case 'results':
+          return (
+            taskListConfig?.taskConfig && (
+              <TaskResults task={task} taskConfig={taskListConfig.taskConfig} />
+            )
+          );
         case 'actions':
           return (
-            taskListConfig?.actionConfig && (
+            taskListConfig?.taskConfig && (
               <TaskActions
                 task={task}
-                actionConfig={taskListConfig?.actionConfig}
+                taskConfig={taskListConfig.taskConfig}
                 episodeOfCareUuids={episodeOfCareUuids}
               />
             )
@@ -204,7 +221,7 @@ const TaskList: React.FC<TaskListProps> = ({
           return null;
       }
     },
-    [t, taskListConfig?.actionConfig, episodeOfCareUuids],
+    [t, taskListConfig?.taskConfig, episodeOfCareUuids],
   );
 
   if (emptyEncounterFilter) {

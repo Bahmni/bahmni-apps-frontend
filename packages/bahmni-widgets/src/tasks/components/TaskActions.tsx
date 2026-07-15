@@ -8,7 +8,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
-import type { TaskViewModel, TaskActionConfig } from '../models';
+import type { TaskViewModel, TaskConfig } from '../models';
 import { hasLaunchFormActions } from '../utils';
 import { handleTaskAction, isActionVisible } from './actionHandlers';
 
@@ -16,19 +16,19 @@ const READY_TASK_STATUS = 'ready' as const;
 
 interface TaskActionsProps {
   task: TaskViewModel;
-  actionConfig: TaskActionConfig[];
+  taskConfig: TaskConfig[];
   episodeOfCareUuids?: string[];
 }
 
 const TaskActions: React.FC<TaskActionsProps> = ({
   task,
-  actionConfig,
+  taskConfig,
   episodeOfCareUuids,
 }) => {
   const { userPrivileges } = useUserPrivilege();
   const { t } = useTranslation();
 
-  const shouldFetchForms = hasLaunchFormActions(actionConfig, task.code);
+  const shouldFetchForms = hasLaunchFormActions(taskConfig, task.code);
 
   const { data: allForms = [], isLoading: isFormsLoading } = useQuery<
     ObservationForm[],
@@ -40,9 +40,9 @@ const TaskActions: React.FC<TaskActionsProps> = ({
   });
 
   const matchingConfig = useMemo(() => {
-    if (!actionConfig) return null;
-    return actionConfig.find((config) => config.taskCode === task.code);
-  }, [actionConfig, task.code]);
+    if (!taskConfig) return null;
+    return taskConfig.find((config) => config.taskCode === task.code);
+  }, [taskConfig, task.code]);
 
   const permittedActions = useMemo(() => {
     if (!matchingConfig?.actions || isFormsLoading) return [];

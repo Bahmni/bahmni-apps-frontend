@@ -1,5 +1,5 @@
 import type { ObservationForm, UserPrivilege } from '@bahmni/services';
-import type { TaskViewModel, TaskActionConfig } from './models';
+import type { TaskViewModel, TaskConfig, TaskView } from './models';
 
 /**
  * Extract form name from task input based on inputType
@@ -60,19 +60,79 @@ export const canUserEditForm = (
 
 /**
  * Check if action config has any 'launchForm' type actions for the given task
- * @param actionConfig - Array of task action configurations
+ * @param taskConfig - Array of task configurations
  * @param taskCode - The task code to check
  * @returns true if there are launchForm actions, false otherwise
  */
 export const hasLaunchFormActions = (
-  actionConfig: TaskActionConfig[],
+  taskConfig: TaskConfig[],
   taskCode: string,
 ): boolean => {
-  const matchingConfig = actionConfig?.find(
+  const matchingConfig = taskConfig?.find(
     (config) => config.taskCode === taskCode,
   );
   return (
     matchingConfig?.actions?.some((action) => action.type === 'launchForm') ??
     false
+  );
+};
+
+/**
+ * Check if task config has any 'viewForm' type views for the given task
+ * @param taskConfig - Array of task configurations
+ * @param taskCode - The task code to check
+ * @returns true if there are viewForm views, false otherwise
+ */
+export const hasViewFormViews = (
+  taskConfig: TaskConfig[],
+  taskCode: string,
+): boolean => {
+  const matchingConfig = taskConfig?.find(
+    (config) => config.taskCode === taskCode,
+  );
+  return (
+    matchingConfig?.views?.some((view) => view.type === 'viewForm') ?? false
+  );
+};
+
+/**
+ * Check if a view should be visible for the given task
+ * @param view - TaskView configuration
+ * @param task - TaskViewModel
+ * @param userPrivileges - User's privileges
+ * @returns true if view should be visible, false otherwise
+ */
+export const isViewVisible = (
+  view: TaskView,
+  task: TaskViewModel,
+  userPrivileges: UserPrivilege[] | null,
+): boolean => {
+  if (task.status !== 'completed') {
+    return false;
+  }
+
+  const formName = extractFormNameFromTask(
+    task,
+    view.handlerConfig.formInputCode,
+  );
+
+  if (!formName) {
+    return false;
+  }
+
+  if (!userPrivileges || userPrivileges.length === 0) {
+    return false;
+  }
+
+  if (view.requiredPrivileges.length === 0) {
+    return true;
+  }
+
+  const userPrivilegeNames = new Set(
+    userPrivileges.map((privilege) => privilege.name),
+  );
+
+  return view.requiredPrivileges.every((requiredPrivilege) =>
+    userPrivilegeNames.has(requiredPrivilege),
   );
 };
