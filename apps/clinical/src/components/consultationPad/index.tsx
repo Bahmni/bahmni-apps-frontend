@@ -5,6 +5,7 @@ import {
   dispatchAuditEvent,
   dispatchConsultationSaved,
   dispatchCDSSResults,
+  findActiveEncounterInSession,
   getConfig,
   getEncounterByUuid,
   invokeCDSSRule,
@@ -30,7 +31,6 @@ import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
-import { useEncounterSession } from '../../hooks/useEncounterSession';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
@@ -162,13 +162,29 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       .setRequestedEncounterType(resolvedEncounterType);
   }, [resolvedEncounterType]);
 
-  const { practitioner } = useActivePractitioner();
-  const { activeEncounter: sessionEncounter, matchReason } =
-    useEncounterSession({
-      practitioner,
-      encounterTypeUUID: selectedEncounterType?.uuid,
-    });
+  const { episodeOfCare, patientId, activeVisitId, activeEpisodeId } =
+    useClinicalAppData();
 
+  const { practitioner } = useActivePractitioner();
+  const { data: sessionEncounter, status: sessionEncounterStatus } = useQuery({
+    queryKey: [
+      'activeEncounter',
+      patientId,
+      practitioner?.uuid,
+      selectedEncounterType?.uuid,
+    ],
+    queryFn: () =>
+      findActiveEncounterInSession(
+        patientId!,
+        practitioner?.uuid,
+        undefined,
+        selectedEncounterType?.uuid,
+      ),
+    staleTime: 0,
+    enabled: Boolean(
+      patientId && practitioner?.uuid && selectedEncounterType?.uuid,
+    ),
+  });
   const {
     data: editEncounter,
     isLoading: editEncounterLoading,
@@ -195,27 +211,21 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     : sessionEncounter;
 
   useEffect(() => {
-    const periodStart = activeEncounter?.period?.start;
+    const periodStart = sessionEncounter?.period?.start;
     if (periodStart) {
       const date = new Date(periodStart);
       useEncounterDetailsStore
         .getState()
         .setConsultationDate(isNaN(date.getTime()) ? new Date() : date);
-    } else if (!editEncounterUuid) {
-      useEncounterDetailsStore.getState().setConsultationDate(new Date());
-    } else if (editEncounterUuid && !editEncounterLoading) {
+    } else if (
+      sessionEncounterStatus === 'success' ||
+      sessionEncounterStatus === 'error'
+    ) {
       useEncounterDetailsStore.getState().setConsultationDate(new Date());
     }
-  }, [activeEncounter, editEncounterUuid, editEncounterLoading]);
+  }, [sessionEncounter, sessionEncounterStatus]);
 
-  // Only resume the existing encounter on an exact MATCHED case.
-  // SESSION_EXPIRED, LOCATION_MISMATCH, PROVIDER_MISMATCH all silently create a new encounter.
-  const encounterForSubmission = matchReason.includes('MATCHED')
-    ? activeEncounter
-    : null;
-
-  const { episodeOfCare, patientId, activeVisitId, activeEpisodeId } =
-    useClinicalAppData();
+  const encounterForSubmission = sessionEncounter;
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
