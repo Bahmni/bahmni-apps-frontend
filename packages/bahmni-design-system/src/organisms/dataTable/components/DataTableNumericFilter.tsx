@@ -18,11 +18,14 @@ export const DataTableNumericFilter = <T,>({
       id={`${dataTestId}-filter-${column.id}`}
       data-testid={`${dataTestId}-filter-${column.id}`}
       label={`Filter ${header}`}
+      allowEmpty
       hideLabel
       value={Number.isFinite(Number(filterValue)) ? Number(filterValue) : ''}
       onChange={(_e, state) => {
         const v = state?.value;
-        column.setFilterValue(v != null && v !== '' ? String(v) : undefined);
+        column.setFilterValue(
+          v != null && typeof v === 'number' ? Number(v) : undefined,
+        );
       }}
     />
   );
