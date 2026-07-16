@@ -43,12 +43,8 @@ describe('NumericCriterionInput', () => {
 
     it.each([
       ['a value', '42', { from: { value: '42', comparator: null } }],
-      [
-        'empty string (Carbon normalizes to 0)',
-        '',
-        { from: { value: '0', comparator: null } },
-      ],
-    ] as [string, string, RangeValue][])(
+      ['empty string', '', null],
+    ] as [string, string, RangeValue | null][])(
       'calls onChange with %s',
       (_, inputValue, expected) => {
         renderInput(mockNumericInput, mockFromValue);
@@ -93,11 +89,11 @@ describe('NumericCriterionInput', () => {
         },
       ],
       [
-        'from cleared (Carbon normalizes to 0), preserves existing to',
+        'from cleared, preserves existing to',
         0,
         '',
         {
-          from: { value: '0', comparator: null },
+          from: { value: null, comparator: null },
           to: { value: '30', comparator: null },
         },
       ],
@@ -111,12 +107,12 @@ describe('NumericCriterionInput', () => {
         },
       ],
       [
-        'to cleared (Carbon normalizes to 0), preserves existing from',
+        'to cleared, preserves existing from',
         1,
         '',
         {
           from: { value: '20', comparator: null },
-          to: { value: '0', comparator: null },
+          to: { value: null, comparator: null },
         },
       ],
     ] as [string, number, string, RangeValue][])(
