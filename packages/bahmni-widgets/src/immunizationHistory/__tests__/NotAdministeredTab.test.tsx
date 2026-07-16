@@ -94,9 +94,16 @@ describe('NotAdministeredTab', () => {
     );
     expect(screen.getByText('Hepatitis B')).toBeInTheDocument();
     expect(screen.getByText('Patient refused')).toBeInTheDocument();
-    expect(screen.getByText('19-3-2026')).toBeInTheDocument();
-    expect(screen.getByText('19-3-2026 10:30 AM')).toBeInTheDocument();
     expect(screen.getByText('John Davis')).toBeInTheDocument();
+    expect(mockFormatDateTime).toHaveBeenCalledWith(
+      mockRow.date,
+      expect.anything(),
+    );
+    expect(mockFormatDateTime).toHaveBeenCalledWith(
+      mockRow.recordedOn,
+      expect.anything(),
+      true,
+    );
   });
 
   it.each([

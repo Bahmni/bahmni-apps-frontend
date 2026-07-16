@@ -86,6 +86,20 @@ describe('ImmunizationHistory', () => {
     },
   );
 
+  it.each(['completed', 'not-done', undefined])(
+    'shows config.title instead of the status-derived default when configured (status: %s)',
+    (status) => {
+      render(
+        <ImmunizationHistory
+          config={{ status, title: 'CUSTOM_WIDGET_TITLE' }}
+        />,
+      );
+      expect(
+        screen.getByTestId('immunization-history-widget-title-test-id'),
+      ).toHaveTextContent('CUSTOM_WIDGET_TITLE');
+    },
+  );
+
   it.each([
     {
       label: 'encounterType not configured',
@@ -267,6 +281,115 @@ describe('ImmunizationHistory', () => {
       expect.objectContaining({
         type: 'startConsultation',
         detail: { encounterType: 'Immunization' },
+      }),
+    );
+  });
+
+  it.each([
+    { status: 'completed', configuredTitle: 'ADD_IMMUNIZATION_TITLE' },
+    {
+      status: 'not-done',
+      configuredTitle: 'ADD_VACCINE_NOT_ADMINISTERED_REASON_TITLE',
+    },
+  ])(
+    'dispatches editTitle=$configuredTitle when status is $status and editTitle is configured',
+    async ({ status, configuredTitle }) => {
+      const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+      render(
+        <ImmunizationHistory
+          config={{
+            status,
+            encounterType: 'Immunization',
+            inputControlKey: 'immunizationWaiver',
+            editTitle: configuredTitle,
+          }}
+        />,
+      );
+      await userEvent.click(
+        screen.getByTestId('immunization-history-widget-add-button-test-id'),
+      );
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'startConsultation',
+          detail: {
+            encounterType: 'Immunization',
+            editOnly: 'immunizationWaiver',
+            editTitle: configuredTitle,
+          },
+        }),
+      );
+    },
+  );
+
+  it('omits editTitle when status is fixed but editTitle is not configured (backward compatible)', async () => {
+    const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+    render(
+      <ImmunizationHistory
+        config={{ status: 'not-done', encounterType: 'Immunization' }}
+      />,
+    );
+    await userEvent.click(
+      screen.getByTestId('immunization-history-widget-add-button-test-id'),
+    );
+    expect(dispatchEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'startConsultation',
+        detail: { encounterType: 'Immunization' },
+      }),
+    );
+  });
+
+  it('dispatches administeredEditTitle when tabbed and the Administered tab (default) is active', async () => {
+    const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+    render(
+      <ImmunizationHistory
+        config={{
+          encounterType: 'Immunization',
+          administeredEditTitle: 'ADD_IMMUNIZATION_TITLE',
+          notAdministeredEditTitle: 'ADD_VACCINE_NOT_ADMINISTERED_REASON_TITLE',
+        }}
+      />,
+    );
+    await userEvent.click(
+      screen.getByTestId('immunization-history-widget-add-button-test-id'),
+    );
+    expect(dispatchEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'startConsultation',
+        detail: {
+          encounterType: 'Immunization',
+          editTitle: 'ADD_IMMUNIZATION_TITLE',
+        },
+      }),
+    );
+  });
+
+  it('dispatches notAdministeredEditTitle when tabbed and the Not Administered tab is active', async () => {
+    const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+    render(
+      <ImmunizationHistory
+        config={{
+          encounterType: 'Immunization',
+          administeredEditTitle: 'ADD_IMMUNIZATION_TITLE',
+          notAdministeredEditTitle: 'ADD_VACCINE_NOT_ADMINISTERED_REASON_TITLE',
+        }}
+      />,
+    );
+    await userEvent.click(
+      screen.getByRole('tab', {
+        name: 'IMMUNIZATION_HISTORY_WIDGET_TAB_NOT_ADMINISTERED',
+      }),
+    );
+    await userEvent.click(
+      screen.getByTestId('immunization-history-widget-add-button-test-id'),
+    );
+    expect(dispatchEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'startConsultation',
+        detail: {
+          encounterType: 'Immunization',
+          editTitle: 'ADD_VACCINE_NOT_ADMINISTERED_REASON_TITLE',
+        },
       }),
     );
   });

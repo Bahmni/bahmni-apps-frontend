@@ -86,11 +86,25 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
       : widgetConfig?.notAdministeredInputControlKey;
   };
 
+  const resolveAddButtonEditTitle = (): string | undefined => {
+    if (status === 'completed' || status === 'not-done') {
+      return widgetConfig?.editTitle;
+    }
+    return selectedIndex === 0
+      ? widgetConfig?.administeredEditTitle
+      : widgetConfig?.notAdministeredEditTitle;
+  };
+
   const handleAddImmunization = () => {
     const editOnly = resolveAddButtonInputControlKey();
+    const editTitle = resolveAddButtonEditTitle();
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
-        detail: editOnly ? { encounterType, editOnly } : { encounterType },
+        detail: {
+          encounterType,
+          ...(editOnly ? { editOnly } : {}),
+          ...(editTitle ? { editTitle } : {}),
+        },
       }),
     );
   };
@@ -157,7 +171,7 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
           id="immunization-history-widget-title"
           data-testid="immunization-history-widget-title-test-id"
         >
-          {t(getTitleByStatus(status))}
+          {t(widgetConfig?.title ?? getTitleByStatus(status))}
         </p>
         {hasAddImmunizationsPrivilege && encounterType && (
           <IconButton

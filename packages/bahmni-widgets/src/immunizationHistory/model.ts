@@ -37,14 +37,15 @@ export interface NotAdministeredTabConfig {
 
 export interface ImmunizationHistoryWidgetConfig {
   status?: 'completed' | 'not-done';
+  title?: string;
   encounterType?: string;
   startEncounterPrivilege?: string;
   administeredFields?: string[];
   notAdministeredFields?: string[];
-  /** Input control key the "+" button opens when `status` is fixed to one value. */
   inputControlKey?: string;
-  /** Input control key the "+" button opens for the administered tab, when `status` is unset. */
   administeredInputControlKey?: string;
-  /** Input control key the "+" button opens for the not-done tab, when `status` is unset. */
   notAdministeredInputControlKey?: string;
+  editTitle?: string;
+  administeredEditTitle?: string;
+  notAdministeredEditTitle?: string;
 }
