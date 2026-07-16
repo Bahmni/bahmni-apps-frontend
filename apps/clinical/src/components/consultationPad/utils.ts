@@ -85,9 +85,7 @@ export function captureUpdatedResources(entries: InputControl[]) {
       hasData('vaccination') ||
       hasData('stopMedications'),
     immunizationHistory:
-      hasData('immunizationHistory') ||
-      hasData('immunizationAdministration') ||
-      hasData('immunizationWaiver'),
+      hasData('immunizationHistory') || hasData('immunizationAdministration'),
     serviceRequests,
     observationFormsWithBasedOn: hasObservationFormsWithBasedOn,
   };

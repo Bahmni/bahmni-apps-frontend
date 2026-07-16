@@ -76,24 +76,6 @@ describe('auditLogService', () => {
       });
     });
 
-    it('should log ADD_VACCINE_NOT_ADMINISTERED_REASON event', async () => {
-      mockIsAuditLogEnabled.mockResolvedValue(true);
-      mockPost.mockResolvedValue({});
-
-      const result = await logAuditEvent(
-        'patient-waiver',
-        'ADD_VACCINE_NOT_ADMINISTERED_REASON',
-      );
-
-      expect(result).toEqual({ logged: true });
-      expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
-        patientUuid: 'patient-waiver',
-        eventType: 'ADD_VACCINE_NOT_ADMINISTERED_REASON',
-        message: 'ADD_VACCINE_NOT_ADMINISTERED_REASON_MESSAGE',
-        module: MODULE_LABELS.CLINICAL,
-      });
-    });
-
     it('should handle unknown event types', async () => {
       mockIsAuditLogEnabled.mockResolvedValue(true);
 
