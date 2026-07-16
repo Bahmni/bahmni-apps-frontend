@@ -4,6 +4,7 @@ import {
   generateId,
   generateUUID,
   getCookieByName,
+  deleteCookie,
   isStringEmpty,
   getPriorityByOrder,
   groupByDate,
@@ -58,6 +59,43 @@ describe('common utility functions', () => {
       expect(result).toBe('location_value');
     });
   });
+
+  describe('deleteCookie', () => {
+    const originalDocumentCookie = Object.getOwnPropertyDescriptor(
+      document,
+      'cookie',
+    );
+
+    beforeEach(() => {
+      Object.defineProperty(document, 'cookie', {
+        writable: true,
+        value: '',
+      });
+    });
+
+    afterAll(() => {
+      if (originalDocumentCookie) {
+        Object.defineProperty(document, 'cookie', originalDocumentCookie);
+      }
+    });
+
+    it('should delete cookie by setting expiry to past', () => {
+      deleteCookie('test_cookie');
+      expect(document.cookie).toContain('test_cookie=');
+      expect(document.cookie).toContain('expires=Thu, 01 Jan 1970');
+    });
+
+    it('should delete cookie with default path', () => {
+      deleteCookie('test_cookie');
+      expect(document.cookie).toContain('path=/');
+    });
+
+    it('should delete cookie with custom path', () => {
+      deleteCookie('test_cookie', '/custom/path');
+      expect(document.cookie).toContain('path=/custom/path');
+    });
+  });
+
   describe('generateId', () => {
     it('should generate a random string ID', () => {
       const id = generateId();

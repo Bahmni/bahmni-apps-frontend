@@ -222,13 +222,13 @@ export {
   getUserLoginLocation,
   getAvailableLocations,
   getDefaultDateFormat,
-  logout,
   saveUserLocation,
   updateSessionLocation,
   type User,
   type UserLocation,
   BAHMNI_USER_LOCATION_COOKIE,
 } from './userService';
+export { logout } from './authService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getPatientObservationsBundle,
