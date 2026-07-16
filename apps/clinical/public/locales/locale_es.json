@@ -2,6 +2,7 @@
   "ABNORMAL_VALUE": "Valor Anormal",
   "ADD_ALLERGY_NOTE": "Agregar Nota",
   "ADD_ALLERGY_NOTE_PLACEHOLDER": "Agregar notas para la alergia",
+  "ADD_VACCINE_NOT_ADMINISTERED_REASON_MESSAGE": "Se agregó el motivo de la vacuna no administrada",
   "COMMON_SEARCH_ADD_CRITERIA_BUTTON": "Agregar Criterios de Búsqueda",
   "COMMON_SEARCH_CONFIG_ERROR": "No se pudo cargar la configuración de Búsqueda Común. Por favor intente refrescar la página.",
   "COMMON_SEARCH_CRITERIA_DATE_INPUT_FIELD_FROM": "Ingrese Desde",

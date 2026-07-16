@@ -533,6 +533,48 @@ describe('ConsultationPad', () => {
       });
     });
 
+    it('dispatches an ADD_VACCINE_NOT_ADMINISTERED_REASON audit event when an immunizationWaiver entry has data', async () => {
+      const waiverEntry = makeMockEntry('immunizationWaiver', {
+        hasData: jest.fn().mockReturnValue(true),
+      });
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([...mockRegistry, waiverEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(dispatchAuditEvent).toHaveBeenCalledWith(
+          expect.objectContaining({
+            eventType: 'ADD_VACCINE_NOT_ADMINISTERED_REASON',
+          }),
+        );
+      });
+    });
+
+    it('does not dispatch an ADD_VACCINE_NOT_ADMINISTERED_REASON audit event when the immunizationWaiver entry has no data', async () => {
+      const waiverEntry = makeMockEntry('immunizationWaiver', {
+        hasData: jest.fn().mockReturnValue(false),
+      });
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([...mockRegistry, waiverEntry] as any);
+      enableSubmit();
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(dispatchConsultationSaved).toHaveBeenCalled();
+      });
+      expect(dispatchAuditEvent).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: 'ADD_VACCINE_NOT_ADMINISTERED_REASON',
+        }),
+      );
+    });
+
     it('shows observation forms validation error and does not submit when observationForms entry is invalid', async () => {
       const obsEntry = mockRegistry.find((e) => e.key === 'observationForms')!;
       (obsEntry.hasData as jest.Mock).mockReturnValue(true);

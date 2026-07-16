@@ -463,6 +463,18 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         messageParams: { encounterType: result.encounterTypeName },
       });
 
+      if (
+        activeEntries
+          .find((entry) => entry.key === 'immunizationWaiver')
+          ?.hasData()
+      ) {
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.ADD_VACCINE_NOT_ADMINISTERED_REASON
+            .eventType as AuditEventType,
+          patientUuid: result.patientUUID,
+        });
+      }
+
       const updatedResources = captureUpdatedResources(activeEntries);
       dispatchConsultationSaved({
         patientUUID: result.patientUUID,
