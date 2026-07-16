@@ -110,6 +110,15 @@ export interface CriterionRow {
   rangeOrderError: string | null;
 }
 
+export interface ActiveSearchState {
+  context: SearchContextConfig;
+  rows: CriterionRow[];
+  resultFields: ResultFieldConfig[];
+  results: unknown[];
+  isLoading: boolean;
+  apiError: string | null;
+}
+
 export interface ResolvedRow {
   field: FieldConfig;
   value: CriterionValue;

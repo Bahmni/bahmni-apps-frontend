@@ -215,6 +215,7 @@ export const post = async <T = unknown>(
   _url: string,
   payload: unknown,
 ): Promise<T> => {
+  await new Promise((resolve) => setTimeout(resolve, 3000));
   const entity = (payload as SearchPayload).entity;
   return (MOCK_BY_ENTITY[entity] ?? { results: [] }) as T;
 };

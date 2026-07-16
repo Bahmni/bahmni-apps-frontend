@@ -67,7 +67,10 @@ const SearchSummary = ({
         data-testid="search-summary-context-test-id"
         className={styles.summaryLeft}
       >
-        <span data-testid="search-summary-context-label-test-id">
+        <span
+          id="search-summary-context-label"
+          data-testid="search-summary-context-label-test-id"
+        >
           {t(context.translationKey) + ': '}
         </span>
         {tags.map((tag) => (
