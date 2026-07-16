@@ -1,8 +1,5 @@
-import { Modal, ModalBody, ModalHeader } from '@bahmni/design-system';
-import {
-  getPatientObservationsBundle,
-  useTranslation,
-} from '@bahmni/services';
+import { Modal } from '@bahmni/design-system';
+import { getPatientObservationsBundle, useTranslation } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import React, { useMemo } from 'react';
@@ -42,10 +39,11 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
   const encounterRef = task?.fhirResource.encounter?.reference;
   const serviceRequestRef = task?.fhirResource.basedOn?.[0]?.reference;
 
-  const { data: bundle, isLoading, error } = useQuery<
-    Bundle<Observation | Encounter>,
-    Error
-  >({
+  const {
+    data: bundle,
+    isLoading,
+    error,
+  } = useQuery<Bundle<Observation | Encounter>, Error>({
     queryKey: [
       'taskObservations',
       task?.code,
@@ -71,13 +69,14 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
   const encounterGroups = useMemo(() => {
     if (!bundle || !formName) return [];
 
-    const allObservations = bundle.entry
-      ?.filter((entry) => entry.resource?.resourceType === 'Observation')
-      .map((entry) => entry.resource as Observation) ?? [];
+    const allObservations =
+      bundle.entry
+        ?.filter((entry) => entry.resource?.resourceType === 'Observation')
+        .map((entry) => entry.resource as Observation) ?? [];
 
     const filteredObservations = allObservations.filter((obs) => {
       const path = extractFormFieldPath(obs);
-      return path && path.toLowerCase().includes(formName.toLowerCase());
+      return path?.toLowerCase().includes(formName.toLowerCase());
     });
 
     return groupObservationsByEncounter(filteredObservations, bundle);
@@ -124,8 +123,7 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
       size="lg"
       testId="view-form-modal"
     >
-      <ModalHeader />
-      <ModalBody>
+      <Modal.Body>
         {isLoading && <div>{t('LOADING')}</div>}
         {error && <div>{t('ERROR_LOADING_DATA')}</div>}
         {!isLoading && !error && encounterGroups.length === 0 && (
@@ -133,10 +131,12 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
         )}
         {!isLoading && !error && encounterGroups.length > 0 && (
           <div className={styles.modalContent}>
-            {encounterGroups.map(renderEncounterGroup)}
+            {encounterGroups.map((encounterGroup, index) =>
+              renderEncounterGroup(encounterGroup, index),
+            )}
           </div>
         )}
-      </ModalBody>
+      </Modal.Body>
     </Modal>
   );
 };
