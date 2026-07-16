@@ -47,6 +47,8 @@ export function getActiveEntries(
       !entry.encounterTypes || entry.encounterTypes.includes(encounterType);
     if (!matchesEncounterType) return false;
 
+    if (entry.onActionTriggered && entry.key !== editOnlyKey) return false;
+
     // When editOnly is set, show only the target form + encounterDetails.
     if (editOnlyKey) {
       return (
