@@ -24,16 +24,24 @@ interface SearchFormProps {
     rows: CriterionRow[],
     context: SearchContextConfig,
   ) => CriterionRow[];
+  savedRows?: CriterionRow[];
+  savedContextKey?: SearchContextConfig['context'];
 }
 
-const SearchForm = ({ config, location, onSearch }: SearchFormProps) => {
+const SearchForm = ({
+  config,
+  location,
+  onSearch,
+  savedRows,
+  savedContextKey,
+}: SearchFormProps) => {
   const { t } = useTranslation();
   const [activeContextKey, setActiveContextKey] = useState<string>(
-    config[0].context,
+    savedContextKey ?? config[0].context,
   );
   const activeContext = config.find((c) => c.context === activeContextKey)!;
-  const [rows, setRows] = useState<CriterionRow[]>(() =>
-    initialRows(activeContext),
+  const [rows, setRows] = useState<CriterionRow[]>(
+    () => savedRows ?? initialRows(activeContext),
   );
 
   const handleContextChange = ({

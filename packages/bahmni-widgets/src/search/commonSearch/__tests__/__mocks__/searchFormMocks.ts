@@ -1,5 +1,9 @@
 import { UserLocation } from '@bahmni/services';
-import { ResultFieldConfig, SearchContextConfig } from '../../models';
+import {
+  CriterionRow,
+  ResultFieldConfig,
+  SearchContextConfig,
+} from '../../models';
 
 export const mockResultFields: ResultFieldConfig[] = [
   {
@@ -200,3 +204,20 @@ export const mockPatientContextWithRegex: SearchContextConfig = {
 };
 
 export const mockConfig = [mockPatientContext, mockAppointmentContext];
+
+export const mockSavedRows: CriterionRow[] = [
+  {
+    rowId: 'saved-row-1',
+    criterionKey: 'patient.name.given',
+    value: { value: 'Rahul' },
+    validationError: null,
+    rangeOrderError: null,
+  },
+  {
+    rowId: 'saved-row-2',
+    criterionKey: 'patient.gender',
+    value: null,
+    validationError: null,
+    rangeOrderError: null,
+  },
+];

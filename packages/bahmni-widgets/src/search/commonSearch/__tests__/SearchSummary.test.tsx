@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import SearchSummary from '../SearchSummary';
 import {
   mockActiveSearchState,
@@ -12,6 +13,8 @@ import {
   mockOptionsRow,
   mockTextRow,
 } from './__mocks__/searchSummaryMocks';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -155,5 +158,29 @@ describe('SearchSummary', () => {
       }),
     );
     expect(onModifySearch).toHaveBeenCalledTimes(1);
+  });
+
+  describe('Snapshot', () => {
+    it('matches snapshot', () => {
+      const { container } = render(
+        <SearchSummary
+          activeSearchState={mockActiveSearchState}
+          onModifySearch={onModifySearch}
+        />,
+      );
+      expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('has no a11y violations', async () => {
+      const { container } = render(
+        <SearchSummary
+          activeSearchState={mockActiveSearchState}
+          onModifySearch={onModifySearch}
+        />,
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
   });
 });

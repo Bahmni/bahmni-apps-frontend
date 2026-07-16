@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SearchSummary Snapshot matches snapshot 1`] = `
+<div>
+  <div
+    class="searchSummary"
+    data-testid="search-summary-test-id"
+    id="search-summary"
+  >
+    <div
+      class="summaryLeft"
+      data-testid="search-summary-context-test-id"
+      id="search-summary-context"
+    >
+      <span
+        data-testid="search-summary-context-label-test-id"
+      >
+        APPOINTMENT_SEARCH: 
+      </span>
+      <div
+        class="cds--tag cds--tag--green"
+        id="tag-id-_r_m_"
+      >
+        <span
+          class="cds--tag__label"
+          dir="auto"
+          title="APPOINTMENT_NUMBER: AP000H7"
+        >
+          APPOINTMENT_NUMBER: AP000H7
+        </span>
+      </div>
+    </div>
+    <div
+      class="summaryRight"
+      data-testid="search-summary-modify-test-id"
+      id="search-summary-modify"
+    >
+      <button
+        class="cds--btn cds--btn--ghost"
+        data-testid="common-search-modify-button-test-id"
+        id="common-search-modify-button"
+        type="button"
+      >
+        COMMON_SEARCH_MODIFY_SEARCH_BUTTON
+        <svg
+          aria-hidden="true"
+          class="cds--btn__icon"
+          fill="currentColor"
+          focusable="false"
+          height="16"
+          preserveAspectRatio="xMidYMid meet"
+          viewBox="0 0 32 32"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M2 26H30V28H2zM25.4 9c.8-.8.8-2 0-2.8 0 0 0 0 0 0l-3.6-3.6c-.8-.8-2-.8-2.8 0 0 0 0 0 0 0l-15 15V24h6.4L25.4 9zM20.4 4L24 7.6l-3 3L17.4 7 20.4 4zM6 22v-3.6l10-10 3.6 3.6-10 10H6z"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+`;

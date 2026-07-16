@@ -4,12 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 import SearchForm from '../SearchForm';
 import { validateRows } from '../utils';
 import {
+  mockAppointmentContext,
   mockConfig,
   mockContextNoDefaults,
   mockLocation,
   mockLocationNoDisplay,
   mockPatientContext,
   mockPatientContextWithRangeNumeric,
+  mockSavedRows,
 } from './__mocks__/searchFormMocks';
 
 jest.mock('uuid');
@@ -379,6 +381,39 @@ describe('SearchForm', () => {
       expect(
         screen.queryByText('COMMON_SEARCH_RANGE_ORDER_INVALID'),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Restore from saved state', () => {
+    it('initialises with savedContextKey as the active context', () => {
+      render(
+        <SearchForm
+          config={mockConfig}
+          location={mockLocation}
+          onSearch={mockOnSearch}
+          savedContextKey="appointment"
+        />,
+      );
+      fireEvent.click(
+        screen.getByTestId('common-search-search-button-test-id'),
+      );
+      expect(mockOnSearch).toHaveBeenCalledWith(
+        expect.any(Array),
+        mockAppointmentContext,
+      );
+    });
+
+    it('initialises with savedRows as the active rows', () => {
+      render(
+        <SearchForm
+          config={mockConfig}
+          location={mockLocation}
+          onSearch={mockOnSearch}
+          savedRows={mockSavedRows}
+        />,
+      );
+      expect(screen.getAllByTestId(/criterion-row-/)).toHaveLength(2);
+      expect(screen.getByRole('textbox')).toHaveValue('Rahul');
     });
   });
 
