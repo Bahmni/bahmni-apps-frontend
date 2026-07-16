@@ -117,7 +117,9 @@ const ImmunizationForm = ({
   }, [attributes, setAttributes]);
 
   useEffect(() => {
-    setWaiverReasonConfig({ otherReasonConceptUuid });
+    if (otherReasonConceptUuid) {
+      setWaiverReasonConfig({ otherReasonConceptUuid });
+    }
   }, [otherReasonConceptUuid, setWaiverReasonConfig]);
 
   useCDSSResultsListener((detail) => {
@@ -154,6 +156,7 @@ const ImmunizationForm = ({
     queryKey: ['administeredLocationTag', administeredLocationTag],
     queryFn: () => getLocationByTag(administeredLocationTag!),
     enabled:
+      !isWaiver &&
       !!administeredLocationTag &&
       !isConfigLoading &&
       !configError &&
@@ -169,6 +172,7 @@ const ImmunizationForm = ({
     queryKey: ['routesConceptSet', routeConceptUuid],
     queryFn: () => searchFHIRConcepts(routeConceptUuid!),
     enabled:
+      !isWaiver &&
       !!routeConceptUuid &&
       !isConfigLoading &&
       !configError &&
@@ -184,6 +188,7 @@ const ImmunizationForm = ({
     queryKey: ['sitesConceptSet', siteConceptUuid],
     queryFn: () => searchFHIRConcepts(siteConceptUuid!),
     enabled:
+      !isWaiver &&
       !!siteConceptUuid &&
       !isConfigLoading &&
       !configError &&
@@ -198,7 +203,11 @@ const ImmunizationForm = ({
   } = useQuery({
     queryKey: ['statusReasonValueSetUuid', statusReasonValueSetUuid],
     queryFn: () => searchFHIRConcepts(statusReasonValueSetUuid!),
-    enabled: !!statusReasonValueSetUuid && !isConfigLoading && !configError,
+    enabled:
+      isWaiver &&
+      !!statusReasonValueSetUuid &&
+      !isConfigLoading &&
+      !configError,
     staleTime: Infinity,
   });
 
@@ -228,7 +237,10 @@ const ImmunizationForm = ({
         queryFn: () =>
           getAvailableStocks(immunization.drug!.code!, locationUuid!),
         enabled:
-          !!fetchStockBatches && !!immunization.drug?.code && !!locationUuid,
+          !isWaiver &&
+          !!fetchStockBatches &&
+          !!immunization.drug?.code &&
+          !!locationUuid,
       };
     }),
   });

@@ -63,6 +63,15 @@ export const mockImmunizationInputControlConfig = {
   type: 'immunizationHistory',
 };
 
+export const mockMisconfiguredHistoryInputControlConfig = {
+  ...baseInputControlConfig,
+  metadata: {
+    ...baseMetadata,
+    statusReasonValueSetUuid: 'status-reason-value-set-uuid',
+  },
+  type: 'immunizationHistory',
+};
+
 export const mockAdministrationInputControlConfigAllowed = {
   ...baseInputControlConfig,
   type: 'immunizationAdministration',
@@ -83,6 +92,21 @@ export const mockWaiverInputControlConfig = {
   ],
   metadata: {
     vaccineConceptSetUuid: 'vaccine-concept-set-uuid',
+    statusReasonValueSetUuid: 'status-reason-value-set-uuid',
+    otherReasonConceptUuid: 'other-uuid',
+  },
+  type: 'immunizationWaiver',
+};
+
+// Misconfigured on purpose: mixes waiver attributes/metadata with the
+// administered-only fields (route/site/administeredLocation/fetchStockBatches)
+// to prove those queries stay disabled for isWaiver regardless of config.
+export const mockMisconfiguredWaiverInputControlConfig = {
+  ...baseInputControlConfig,
+  attributes: [...baseAttributes, { name: 'statusReason', required: true }],
+  metadata: {
+    ...baseMetadata,
+    fetchStockBatches: true,
     statusReasonValueSetUuid: 'status-reason-value-set-uuid',
     otherReasonConceptUuid: 'other-uuid',
   },

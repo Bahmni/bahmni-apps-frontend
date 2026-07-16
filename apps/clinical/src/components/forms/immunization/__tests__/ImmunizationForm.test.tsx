@@ -31,6 +31,8 @@ import {
   mockLocations,
   mockMedicationRequest,
   mockMedicationRequestNoMedRef,
+  mockMisconfiguredHistoryInputControlConfig,
+  mockMisconfiguredWaiverInputControlConfig,
   mockMixedVaccinationBundle,
   mockRoutesValueSet,
   mockSitesValueSet,
@@ -556,7 +558,7 @@ describe('ImmunizationForm', () => {
       })),
     };
 
-    it('sources vaccine search results from Medication resources rather than the concept ValueSet', async () => {
+    it('sources vaccine search results from Medication resources instead of the vaccine concept ValueSet used by the administration/history form', async () => {
       const user = userEvent.setup();
       mockUseQuery.mockImplementation(({ queryKey: qk }: any) => {
         if (qk[0] === 'vaccination') {
@@ -618,7 +620,29 @@ describe('ImmunizationForm', () => {
       });
     });
 
-    it('disables the vaccineConceptSetUuid query even when a vaccineConceptSetUuid is configured', () => {
+    it('calls setWaiverReasonConfig with otherReasonConceptUuid for the waiver form type', () => {
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockWaiverInputControlConfig}
+        />,
+      );
+      expect(mockStore.setWaiverReasonConfig).toHaveBeenCalledWith({
+        otherReasonConceptUuid: 'other-uuid',
+      });
+    });
+
+    it('does not call setWaiverReasonConfig for non-waiver form types', () => {
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockImmunizationInputControlConfig}
+        />,
+      );
+      expect(mockStore.setWaiverReasonConfig).not.toHaveBeenCalled();
+    });
+
+    it('leaves the vaccineConceptSetUuid query disabled for the waiver form type, even when vaccineConceptSetUuid is configured', () => {
       render(
         <ImmunizationForm
           encounterSessionStartContext={{}}
@@ -644,6 +668,91 @@ describe('ImmunizationForm', () => {
         expect.objectContaining({
           queryKey: ['vaccineConceptSetUuid', 'vaccine-concept-set-uuid'],
           enabled: true,
+        }),
+      );
+    });
+
+    it('enables the statusReasonValueSetUuid query for the waiver form type', () => {
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockWaiverInputControlConfig}
+        />,
+      );
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: [
+            'statusReasonValueSetUuid',
+            'status-reason-value-set-uuid',
+          ],
+          enabled: true,
+        }),
+      );
+    });
+
+    it('leaves the statusReasonValueSetUuid query disabled for non-waiver form types, even when statusReasonValueSetUuid is configured', () => {
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockMisconfiguredHistoryInputControlConfig}
+        />,
+      );
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: [
+            'statusReasonValueSetUuid',
+            'status-reason-value-set-uuid',
+          ],
+          enabled: false,
+        }),
+      );
+    });
+
+    it.each([
+      ['administeredLocationTag', 'login-location'],
+      ['routesConceptSet', 'route-concept-uuid'],
+      ['sitesConceptSet', 'site-concept-uuid'],
+    ])(
+      'leaves the %s query disabled for the waiver form type, even when route/site/administeredLocation attributes and metadata are configured',
+      (queryKey, configuredValue) => {
+        render(
+          <ImmunizationForm
+            encounterSessionStartContext={{}}
+            inputControlConfig={mockMisconfiguredWaiverInputControlConfig}
+          />,
+        );
+        expect(mockUseQuery).toHaveBeenCalledWith(
+          expect.objectContaining({
+            queryKey: [queryKey, configuredValue],
+            enabled: false,
+          }),
+        );
+      },
+    );
+
+    it('leaves stock batch queries disabled for the waiver form type, even when fetchStockBatches is configured and the entry has drug code and administered location', () => {
+      jest.mocked(useImmunizationHistoryStore).mockReturnValue({
+        ...mockStore,
+        selectedImmunizations: [mockImmunizationEntryWithBasedOn],
+      });
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockMisconfiguredWaiverInputControlConfig}
+        />,
+      );
+      expect(mockUseQueries).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queries: expect.arrayContaining([
+            expect.objectContaining({
+              queryKey: [
+                'availableStocks',
+                'covid-drug-uuid',
+                'location-uuid-1',
+              ],
+              enabled: false,
+            }),
+          ]),
         }),
       );
     });
