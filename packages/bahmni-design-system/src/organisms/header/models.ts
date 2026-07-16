@@ -36,8 +36,22 @@ export interface HeaderGlobalAction {
  * Props for the Header component
  */
 export interface HeaderProps {
+  /**
+   * App/brand name rendered on the left as a Carbon `HeaderName`. `brandPrefix`
+   * shows as the small prefix label (e.g. "Home") and `brandHref` is its link.
+   * Prefer these over composing a `HeaderName` inside `extraContent`.
+   */
+  brandName?: string;
+  brandPrefix?: string;
+  brandHref?: string;
   breadcrumbItems?: HeaderBreadcrumbItem[];
   globalActions?: HeaderGlobalAction[];
+  /**
+   * Self-contained elements (e.g. a location selector) rendered in the global
+   * bar before `globalActions`/`userMenu`, without the HeaderGlobalAction
+   * icon-button wrapper. Use for controls that manage their own presentation.
+   */
+  globalFeatures?: ReactNode[];
   sideNavItems?: HeaderSideNavItem[];
   activeSideNavItemId?: string | null;
   onSideNavItemClick?: (itemId: string) => void;
