@@ -1,15 +1,14 @@
 import i18next from 'i18next';
-import { get, del, post } from '../api';
-import { BAHMNI_USER_COOKIE_NAME } from '../constants/app';
-import { getCookieByName, deleteCookie } from '../utils';
+import { get, post } from '../api';
+import {
+  BAHMNI_USER_COOKIE_NAME,
+  BAHMNI_USER_LOCATION_COOKIE,
+} from '../constants/app';
+import { getCookieByName } from '../utils';
 import {
   USER_RESOURCE_URL,
-  BAHMNI_USER_LOCATION_COOKIE,
   APP_SETTINGS_URL,
   DEFAULT_DATE_FORMAT_PROPERTY,
-  LOGOUT_URL,
-  LOGOUT_COOKIES,
-  ERROR_MESSAGES,
   AVAILABLE_LOCATIONS_URL,
   SAVE_USER_LOCATION_URL,
   UPDATE_SESSION_LOCATION_URL,
@@ -86,23 +85,6 @@ export const getDefaultDateFormat = async (): Promise<string | null> => {
 export const getAvailableLocations = async (): Promise<UserLocation[]> => {
   const response = await get<LocationsResponse>(AVAILABLE_LOCATIONS_URL);
   return response.results ?? [];
-};
-
-/**
- * Logs out the current user by clearing session and cookies
- * @throws Error with i18n key if logout fails
- */
-export const logout = async (): Promise<void> => {
-  try {
-    await del(LOGOUT_URL);
-    LOGOUT_COOKIES.forEach((cookieName) => {
-      deleteCookie(cookieName);
-    });
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Logout failed:', error);
-    throw new Error(i18next.t(ERROR_MESSAGES.LOGOUT_FAILED));
-  }
 };
 
 /**
