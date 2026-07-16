@@ -14,6 +14,7 @@ exports[`SearchSummary Snapshot matches snapshot 1`] = `
     >
       <span
         data-testid="search-summary-context-label-test-id"
+        id="search-summary-context-label"
       >
         APPOINTMENT_SEARCH: 
       </span>

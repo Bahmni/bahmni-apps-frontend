@@ -8,23 +8,24 @@ import {
   UserLocation,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { useNotification } from '../../notification';
+import { useRef, useState } from 'react';
 import { SearchWidgetProps } from '../models';
 import { post } from './api';
 import {
+  ActiveSearchState,
   CommonSearchWidgetConfig,
   CriterionRow,
   SearchContextConfig,
 } from './models';
+import ResultsTable from './ResultsTable';
 import schema from './schema.json';
 import SearchForm from './SearchForm';
+import SearchSummary from './SearchSummary';
 import styles from './styles/CommonSearchWidget.module.scss';
 import { buildPayload, resolveRows, validateRows } from './utils';
 
 const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { t } = useTranslation();
-  const { addNotification } = useNotification();
   const configUrl = extensionParams?.configUrl as string | undefined;
   const [location] = useState<UserLocation | null>(() => {
     try {
@@ -33,6 +34,12 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       return null;
     }
   });
+  const [activeSearchState, setActiveSearchState] =
+    useState<ActiveSearchState | null>(null);
+  const lastSearchRef = useRef<{
+    rows: CriterionRow[];
+    contextKey: SearchContextConfig['context'];
+  } | null>(null);
 
   const {
     isLoading: isConfigLoading,
@@ -70,18 +77,48 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       t,
     );
     if (!validated.some((r) => r.validationError ?? r.rangeOrderError)) {
-      void post(
+      lastSearchRef.current = { rows: validated, contextKey: context.context };
+      setActiveSearchState({
+        context,
+        rows: validated,
+        resultFields: context.resultFields,
+        results: [],
+        isLoading: true,
+        apiError: null,
+      });
+      post(
         context.url,
         buildPayload(resolveRows(validated, context.criteria), context.context),
-      );
-      addNotification({
-        title: t('COMMON_SEARCH_SUCCESS'),
-        message: t('COMMON_SEARCH_SUCCESS_MESSAGE'),
-        type: 'success',
-        timeout: 3000,
-      });
+      )
+        .then((data) => {
+          setActiveSearchState((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  results: (data as { results: unknown[] }).results,
+                  isLoading: false,
+                  apiError: null,
+                }
+              : null,
+          );
+        })
+        .catch(() => {
+          setActiveSearchState((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  isLoading: false,
+                  apiError: t('COMMON_SEARCH_API_ERROR_MESSAGE'),
+                }
+              : null,
+          );
+        });
     }
     return validated;
+  };
+
+  const handleModifySearch = () => {
+    setActiveSearchState(null);
   };
 
   if (isLoading)
@@ -140,11 +177,28 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       data-testid="common-search-widget-test-id"
       aria-label="Common Search"
     >
-      <SearchForm
-        config={privilegedContexts}
-        location={location}
-        onSearch={handleSearch}
-      />
+      {activeSearchState ? (
+        <>
+          <SearchSummary
+            activeSearchState={activeSearchState}
+            onModifySearch={handleModifySearch}
+          />
+          <ResultsTable
+            resultFields={activeSearchState.resultFields}
+            results={activeSearchState.results}
+            isLoading={activeSearchState.isLoading}
+            apiError={activeSearchState.apiError}
+          />
+        </>
+      ) : (
+        <SearchForm
+          config={privilegedContexts}
+          location={location}
+          onSearch={handleSearch}
+          savedRows={lastSearchRef.current?.rows}
+          savedContextKey={lastSearchRef.current?.contextKey}
+        />
+      )}
     </div>
   );
 };

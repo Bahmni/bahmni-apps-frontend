@@ -4,12 +4,15 @@ import {
   getUserLoginLocation,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { useNotification } from '../../../notification';
 import { post } from '../api';
 import CommonSearchWidget from '../CommonSearchWidget';
-import { CriterionRow, SearchContextConfig } from '../models';
+import {
+  ActiveSearchState,
+  CriterionRow,
+  SearchContextConfig,
+} from '../models';
 import {
   mockCommonSearchWidgetConfig,
   mockCommonSearchWidgetConfigWithRange,
@@ -34,8 +37,6 @@ jest.mock('@bahmni/services', () => ({
   getUserLoginLocation: jest.fn(),
 }));
 
-jest.mock('../../../notification');
-
 let capturedOnSearch:
   | ((rows: CriterionRow[], context: SearchContextConfig) => CriterionRow[])
   | null = null;
@@ -50,7 +51,37 @@ jest.mock('../SearchForm', () => ({
   },
 }));
 
-const mockAddNotification = jest.fn();
+jest.mock('../SearchSummary', () => ({
+  __esModule: true,
+  default: ({
+    onModifySearch,
+  }: {
+    activeSearchState: ActiveSearchState;
+    onModifySearch: () => void;
+  }) => (
+    <div data-testid="search-summary">
+      <button onClick={onModifySearch}>Modify Search</button>
+    </div>
+  ),
+}));
+
+let capturedIsLoading: boolean | null = null;
+let capturedApiError: string | null | undefined = undefined;
+
+jest.mock('../ResultsTable', () => ({
+  __esModule: true,
+  default: ({
+    isLoading,
+    apiError,
+  }: {
+    isLoading: boolean;
+    apiError: string | null;
+  }) => {
+    capturedIsLoading = isLoading;
+    capturedApiError = apiError;
+    return <div data-testid="results-table" />;
+  },
+}));
 
 describe('CommonSearchWidget', () => {
   let queryClient: QueryClient;
@@ -62,10 +93,9 @@ describe('CommonSearchWidget', () => {
     jest.clearAllMocks();
     capturedOnSearch = null;
     capturedConfig = null;
+    capturedIsLoading = null;
+    capturedApiError = undefined;
     mockPost.mockResolvedValue({ results: [] });
-    (useNotification as jest.Mock).mockReturnValue({
-      addNotification: mockAddNotification,
-    });
     (getUserLoginLocation as jest.Mock).mockReturnValue(mockWidgetLocation);
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue(
       mockPrivilegeViewPatients,
@@ -268,44 +298,6 @@ describe('CommonSearchWidget', () => {
       );
     };
 
-    it('does not call addNotification when rows have validation errors', async () => {
-      await renderAndWait();
-      capturedOnSearch!(
-        [mockRowWithEmptyValue],
-        mockCommonSearchWidgetConfig[0],
-      );
-      expect(mockAddNotification).not.toHaveBeenCalled();
-    });
-
-    it('calls addNotification with success type when all rows are valid', async () => {
-      await renderAndWait();
-      capturedOnSearch!(
-        [mockRowWithValidValue],
-        mockCommonSearchWidgetConfig[0],
-      );
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'success' }),
-      );
-    });
-
-    it('does not call addNotification when range order error exists', async () => {
-      (getConfig as jest.Mock).mockResolvedValueOnce(
-        mockCommonSearchWidgetConfigWithRange,
-      );
-      render(
-        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
-        { wrapper },
-      );
-      await waitFor(() =>
-        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
-      );
-      capturedOnSearch!(
-        [mockRowWithRangeOrderError],
-        mockCommonSearchWidgetConfigWithRange[0],
-      );
-      expect(mockAddNotification).not.toHaveBeenCalled();
-    });
-
     it('calls post with url and built payload when all rows are valid', async () => {
       await renderAndWait();
       capturedOnSearch!(
@@ -329,6 +321,81 @@ describe('CommonSearchWidget', () => {
         mockCommonSearchWidgetConfig[0],
       );
       expect(mockPost).not.toHaveBeenCalled();
+    });
+
+    it('does not call post when range order error exists', async () => {
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfigWithRange,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+      capturedOnSearch!(
+        [mockRowWithRangeOrderError],
+        mockCommonSearchWidgetConfigWithRange[0],
+      );
+      expect(mockPost).not.toHaveBeenCalled();
+    });
+
+    it('shows search summary and results table immediately with isLoading true on valid search', async () => {
+      mockPost.mockReturnValue(new Promise(() => {}));
+      await renderAndWait();
+      capturedOnSearch!(
+        [mockRowWithValidValue],
+        mockCommonSearchWidgetConfig[0],
+      );
+      await waitFor(() => {
+        expect(screen.getByTestId('search-summary')).toBeInTheDocument();
+        expect(screen.getByTestId('results-table')).toBeInTheDocument();
+      });
+      expect(capturedIsLoading).toBe(true);
+      expect(capturedApiError).toBeNull();
+    });
+
+    it('passes apiError to ResultsTable when post fails', async () => {
+      mockPost.mockRejectedValue(new Error('Network error'));
+      await renderAndWait();
+      capturedOnSearch!(
+        [mockRowWithValidValue],
+        mockCommonSearchWidgetConfig[0],
+      );
+      await waitFor(() => {
+        expect(capturedIsLoading).toBe(false);
+        expect(capturedApiError).toBe('COMMON_SEARCH_API_ERROR_MESSAGE');
+      });
+    });
+  });
+
+  describe('handleModifySearch', () => {
+    it('returns to search form and hides results when Modify Search is clicked', async () => {
+      mockPost.mockReturnValue(new Promise(() => {}));
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfig,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+      capturedOnSearch!(
+        [mockRowWithValidValue],
+        mockCommonSearchWidgetConfig[0],
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-summary')).toBeInTheDocument(),
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Modify Search' }));
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+      expect(screen.queryByTestId('search-summary')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('results-table')).not.toBeInTheDocument();
     });
   });
 });
