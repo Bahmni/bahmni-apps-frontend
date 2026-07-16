@@ -243,19 +243,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             if (initObs && initObs.length > 0) {
               const baseline =
                 transformContainerObservationsToForm2Observations(initObs);
-              // eslint-disable-next-line no-console
-              console.log(
-                '[baseline] obs count:',
-                baseline.length,
-                baseline.map((o) => ({
-                  fp: o.formFieldPath,
-                  val: o.value,
-                  gm: o.groupMembers?.map((g) => ({
-                    fp: g.formFieldPath,
-                    val: g.value,
-                  })),
-                })),
-              );
               setBaselineObservations(baseline);
             }
           }
@@ -326,6 +313,26 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       return converted;
     };
 
+    // getObservationsFromFhir (form2-controls) returns interpretation as display
+    // strings ("Abnormal", "Normal") via CODE_TO_INTERPRETATION. CarbonContainer
+    // internally uses uppercase codes ("ABNORMAL", "NORMAL") for comparison and
+    // the abnormal SelectableTag's `selected` state. Normalise to uppercase so
+    // the interpretation is pre-loaded correctly on edit.
+    const normalizeInterpretation = (
+      obs: Form2Observation,
+    ): Form2Observation => {
+      const updated = obs.interpretation
+        ? { ...obs, interpretation: obs.interpretation.toUpperCase() }
+        : obs;
+      if (updated.groupMembers) {
+        return {
+          ...updated,
+          groupMembers: updated.groupMembers.map(normalizeInterpretation),
+        };
+      }
+      return updated;
+    };
+
     return existingObservations
       .filter((obs) => {
         // Drop top-level duplicates of groupMember children.
@@ -336,7 +343,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           (obs.groupMembers && obs.groupMembers.length > 0)
         );
       })
-      .map(convertComplex);
+      .map(convertComplex)
+      .map(normalizeInterpretation);
   }, [existingObservations]);
 
   const handlePinToggle = (e: React.MouseEvent) => {
@@ -403,6 +411,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           statusSourceRef.current,
         );
         replaceNoteRemovedObs(transformedObservations, statusSourceRef.current);
+        replaceInterpretationRemovedObs(
+          transformedObservations,
+          statusSourceRef.current,
+        );
         restoreComplexValues(transformedObservations, statusSourceRef.current);
         injectMissingDeleteObs(
           transformedObservations,
@@ -486,6 +498,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           statusSourceRef.current,
         );
         replaceNoteRemovedObs(transformedObservations, statusSourceRef.current);
+        replaceInterpretationRemovedObs(
+          transformedObservations,
+          statusSourceRef.current,
+        );
         restoreComplexValues(transformedObservations, statusSourceRef.current);
         injectMissingDeleteObs(
           transformedObservations,
@@ -553,6 +569,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         statusSourceRef.current,
       );
       replaceNoteRemovedObs(transformedObservations, statusSourceRef.current);
+      replaceInterpretationRemovedObs(
+        transformedObservations,
+        statusSourceRef.current,
+      );
       restoreComplexValues(transformedObservations, statusSourceRef.current);
       injectMissingDeleteObs(transformedObservations, statusSourceRef.current);
 
@@ -647,7 +667,18 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             metadata={{
               ...(formMetadata.schema as Form2FormMetadata),
               name: viewingForm?.name,
-              version: formMetadata.version || '1',
+              // When editing an existing encounter, use the version embedded in
+              // the saved observations' formFieldPath (e.g. "Vitals.1/14-0" → "1").
+              // This ensures pre-population works for encounters saved before the
+              // FORM_METADATA_URL was updated to return the OpenMRS record version.
+              // For new encounters (no existing obs), use the OpenMRS record version
+              // so future formFieldPaths encode the correct version for lookup.
+              version:
+                extractVersionFromFormFieldPath(
+                  observationsWithValues[0]?.formFieldPath,
+                ) ??
+                formMetadata.version ??
+                '1',
             }}
             observations={observationsWithValues}
             patient={patientContext}
@@ -779,6 +810,55 @@ const replaceNoteRemovedObs = (
       }
     }
   }
+};
+
+/**
+ * OpenMRS FHIR2 performs partial updates on PUT: an absent `interpretation`
+ * element leaves the existing interpretation coding unchanged in the database.
+ * The only reliable way to clear an interpretation is to DELETE the existing obs
+ * and POST a new one with the same value but no interpretation.  This mirrors
+ * replaceNoteRemovedObs which handles the same problem for comments.
+ *
+ * Applies to both top-level obs AND group members (obsGroup children are each
+ * processed as individual leaf Observations in the bundle, so the same
+ * partial-update issue affects them — e.g. Blood Pressure → Systolic / Diastolic).
+ */
+const replaceInterpretationRemovedObs = (
+  transformed: Form2Observation[],
+  original: Form2Observation[],
+): void => {
+  const originalByUuid = new Map<string, Form2Observation>();
+  const buildMap = (obs: Form2Observation) => {
+    if (obs.uuid) originalByUuid.set(obs.uuid, obs);
+    obs.groupMembers?.forEach(buildMap);
+  };
+  original.forEach(buildMap);
+
+  const processObsList = (obsList: Form2Observation[]): void => {
+    for (let i = obsList.length - 1; i >= 0; i--) {
+      const obs = obsList[i];
+      if (obs.uuid && !obs.voided && !obs.interpretation) {
+        const orig = originalByUuid.get(obs.uuid);
+        if (orig?.interpretation) {
+          // DELETE old obs, POST new obs with same value but no interpretation
+          obsList.splice(
+            i,
+            1,
+            { ...obs, voided: true },
+            { ...obs, uuid: undefined, interpretation: undefined },
+          );
+          continue; // spliced entries don't need further recursion
+        }
+      }
+      // Recurse into group members so obsGroup children (e.g. Systolic, Diastolic)
+      // are also handled.
+      if (obs.groupMembers?.length) {
+        processObsList(obs.groupMembers);
+      }
+    }
+  };
+
+  processObsList(transformed);
 };
 
 const injectMissingDeleteObs = (
@@ -988,14 +1068,6 @@ const detectFormChanges = (
   const originalVals = new Map<string, string[]>();
   collect(original, originalVals);
 
-  // eslint-disable-next-line no-console
-  console.log(
-    '[detectFormChanges] current:',
-    Object.fromEntries(currentVals),
-    'baseline:',
-    Object.fromEntries(originalVals),
-  );
-
   // New fields
   for (const path of currentVals.keys()) {
     if (!originalVals.has(path)) return true;
@@ -1012,5 +1084,22 @@ const detectFormChanges = (
   }
   return false;
 };
+
+/**
+ * Extracts the form version string from an observation's formFieldPath.
+ * formFieldPath format: "FormName.version/controlId-instance"
+ * Returns null when the path is absent or does not contain version info.
+ */
+function extractVersionFromFormFieldPath(
+  formFieldPath: string | undefined,
+): string | null {
+  if (!formFieldPath) return null;
+  const slashIdx = formFieldPath.indexOf('/');
+  if (slashIdx < 0) return null;
+  const dotIdx = formFieldPath.lastIndexOf('.', slashIdx);
+  if (dotIdx < 0) return null;
+  const version = formFieldPath.substring(dotIdx + 1, slashIdx);
+  return version || null;
+}
 
 export default ObservationFormsContainer;

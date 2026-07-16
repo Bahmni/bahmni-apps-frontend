@@ -407,6 +407,166 @@ describe('ObservationFormsContainer', () => {
       );
       expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
     });
+
+    it('should DELETE+POST when interpretation is cleared on a standalone obs (partial-PUT workaround)', () => {
+      // OpenMRS FHIR2 partial PUT leaves interpretation unchanged when the field
+      // is absent. replaceInterpretationRemovedObs detects this and replaces the
+      // obs with a DELETE+POST pair so the interpretation is actually cleared.
+      const mockOnFormObservationsChange = jest.fn();
+      const mockOnViewingFormChange = jest.fn();
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [{ concept: { uuid: 'c1' }, value: 60 }],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: { schema: { name: 'Vitals', controls: [] } },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      // CarbonContainer returns no interpretation (user changed to normal value)
+      mockGetValue.mockReturnValue({
+        observations: [
+          {
+            concept: { uuid: 'c1' },
+            uuid: 'obs-uuid-1',
+            value: 60,
+            // interpretation intentionally absent
+          },
+        ],
+        errors: [],
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          // Seed existingObservations with ABNORMAL interpretation so
+          // statusSourceRef is populated with the original abnormal obs.
+          existingObservations={[
+            {
+              concept: { uuid: 'c1' },
+              uuid: 'obs-uuid-1',
+              value: 180,
+              interpretation: 'ABNORMAL',
+              status: 'final',
+            },
+          ]}
+          onFormObservationsChange={mockOnFormObservationsChange}
+          onViewingFormChange={mockOnViewingFormChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      expect(mockOnFormObservationsChange).toHaveBeenCalledWith(
+        mockForm.uuid,
+        expect.arrayContaining([
+          // DELETE entry for old obs with interpretation
+          expect.objectContaining({ uuid: 'obs-uuid-1', voided: true }),
+          // POST entry for new obs without interpretation
+          expect.objectContaining({
+            uuid: undefined,
+            interpretation: undefined,
+            value: 60,
+          }),
+        ]),
+        null,
+        undefined,
+      );
+    });
+
+    it('should DELETE+POST when interpretation is cleared on an obsGroup member (partial-PUT workaround)', () => {
+      // Blood Pressure obsGroup: Systolic and Diastolic are group members.
+      // Each is processed as an individual leaf Observation in the bundle,
+      // so the same partial-update issue applies — omitting interpretation
+      // from the PUT does not clear it. Verify that group members are handled.
+      const mockOnFormObservationsChange = jest.fn();
+      const mockOnViewingFormChange = jest.fn();
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [{ concept: { uuid: 'bp-group' }, value: null }],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: { schema: { name: 'Vitals', controls: [] } },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      // CarbonContainer returns group obs with members that have no interpretation
+      mockGetValue.mockReturnValue({
+        observations: [
+          {
+            concept: { uuid: 'bp-group' },
+            uuid: 'group-uuid',
+            value: null,
+            groupMembers: [
+              {
+                concept: { uuid: 'systolic' },
+                uuid: 'systolic-uuid',
+                value: 106,
+                // interpretation absent — user cleared it
+              },
+            ],
+          },
+        ],
+        errors: [],
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          existingObservations={[
+            {
+              concept: { uuid: 'bp-group' },
+              uuid: 'group-uuid',
+              value: null,
+              status: 'final',
+              groupMembers: [
+                {
+                  concept: { uuid: 'systolic' },
+                  uuid: 'systolic-uuid',
+                  value: 200,
+                  interpretation: 'ABNORMAL',
+                  status: 'final',
+                },
+              ],
+            },
+          ]}
+          onFormObservationsChange={mockOnFormObservationsChange}
+          onViewingFormChange={mockOnViewingFormChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      expect(mockOnFormObservationsChange).toHaveBeenCalledWith(
+        mockForm.uuid,
+        expect.arrayContaining([
+          expect.objectContaining({
+            uuid: 'group-uuid',
+            groupMembers: expect.arrayContaining([
+              // DELETE entry for the group member that had interpretation
+              expect.objectContaining({
+                uuid: 'systolic-uuid',
+                voided: true,
+              }),
+              // POST entry for new group member without interpretation
+              expect.objectContaining({
+                uuid: undefined,
+                interpretation: undefined,
+                value: 106,
+              }),
+            ]),
+          }),
+        ]),
+        null,
+        undefined,
+      );
+    });
   });
 
   describe('Form Display', () => {

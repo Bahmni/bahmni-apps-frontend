@@ -1,6 +1,10 @@
 import { getObservationsFromFhir } from '@bahmni/form2-controls';
 import type { ObservationForm } from '@bahmni/services';
-import { getObservationsBundleByEncounterUuid } from '@bahmni/services';
+import {
+  getObservationsBundleByEncounterUuid,
+  getPatientFormData,
+  fetchFormUuidByObservationDate,
+} from '@bahmni/services';
 import { useActivePractitioner } from '@bahmni/widgets';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -34,6 +38,7 @@ const mockRefetchPinnedForms = jest.fn();
 
 jest.mock('@bahmni/widgets', () => ({
   useActivePractitioner: jest.fn(),
+  usePatientUUID: jest.fn().mockReturnValue('patient-uuid-1'),
 }));
 
 jest.mock('../../../../hooks/useClinicalAppData', () => ({
@@ -65,6 +70,8 @@ jest.mock('../ObservationForms', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getObservationsBundleByEncounterUuid: jest.fn(),
+  getPatientFormData: jest.fn().mockResolvedValue([]),
+  fetchFormUuidByObservationDate: jest.fn().mockResolvedValue(null),
 }));
 
 jest.mock('@bahmni/form2-controls', () => ({
@@ -421,6 +428,144 @@ describe('ObservationFormsPanel', () => {
 
       await waitFor(() => {
         expect(getObservationsBundleByEncounterUuid).not.toHaveBeenCalled();
+      });
+    });
+
+    it('uses formUuid from patient forms API (primary approach, same as old Bahmni)', async () => {
+      const mockBundle = {
+        entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest
+        .mocked(getObservationsFromFhir)
+        .mockReturnValue([
+          { concept: { uuid: 'concept-1' }, value: 42 },
+        ] as never);
+      jest.mocked(getPatientFormData).mockResolvedValue([
+        {
+          formName: 'Vitals',
+          formVersion: 18,
+          formUuid: 'saved-form-uuid-v18',
+          encounterUuid: 'encounter-uuid-1',
+          formType: 'v2',
+          visitUuid: 'visit-1',
+          visitStartDateTime: 0,
+          encounterDateTime: 0,
+          providers: [],
+        },
+      ]);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(fetchFormUuidByObservationDate).not.toHaveBeenCalled();
+        expect(mockAddForm).toHaveBeenCalledWith(
+          expect.objectContaining({ uuid: 'saved-form-uuid-v18' }),
+        );
+      });
+    });
+
+    it('falls back to version/date lookup when formUuid is absent from patient forms API', async () => {
+      const mockBundle = {
+        entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest
+        .mocked(getObservationsFromFhir)
+        .mockReturnValue([
+          { concept: { uuid: 'concept-1' }, value: 42 },
+        ] as never);
+      // formUuid missing — falls back to fetchFormUuidByObservationDate
+      jest.mocked(getPatientFormData).mockResolvedValue([
+        {
+          formName: 'Vitals',
+          formVersion: 18,
+          encounterUuid: 'encounter-uuid-1',
+          formType: 'v2',
+          visitUuid: 'visit-1',
+          visitStartDateTime: 0,
+          encounterDateTime: 1752134400000,
+          providers: [],
+        },
+      ]);
+      jest
+        .mocked(fetchFormUuidByObservationDate)
+        .mockResolvedValue('saved-form-uuid-v18');
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(fetchFormUuidByObservationDate).toHaveBeenCalledWith(
+          'Vitals',
+          18,
+          1752134400000,
+        );
+        expect(mockAddForm).toHaveBeenCalledWith(
+          expect.objectContaining({ uuid: 'saved-form-uuid-v18' }),
+        );
+      });
+    });
+
+    it('uses latest form when the saved UUID matches latest published form', async () => {
+      const mockBundle = {
+        entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest
+        .mocked(getObservationsFromFhir)
+        .mockReturnValue([
+          { concept: { uuid: 'concept-1' }, value: 42 },
+        ] as never);
+      // formUuid matches latest (mockForm1.uuid = 'form-uuid-1')
+      jest.mocked(getPatientFormData).mockResolvedValue([
+        {
+          formName: 'Vitals',
+          formVersion: 1,
+          formUuid: 'form-uuid-1',
+          encounterUuid: 'encounter-uuid-1',
+          formType: 'v2',
+          visitUuid: 'visit-1',
+          visitStartDateTime: 0,
+          encounterDateTime: 0,
+          providers: [],
+        },
+      ]);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(fetchFormUuidByObservationDate).not.toHaveBeenCalled();
+        expect(mockAddForm).toHaveBeenCalledWith(mockForm1);
       });
     });
   });

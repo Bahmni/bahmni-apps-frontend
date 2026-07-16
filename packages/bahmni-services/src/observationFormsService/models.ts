@@ -106,6 +106,10 @@ export interface FormResponseData {
   formType: string;
   formName: string;
   formVersion: number;
+  /** UUID of the specific published form version used when the encounter was saved.
+   *  This is the authoritative identifier — same field used by the old Bahmni
+   *  Angular frontend (observationForm.formUuid) to load the correct form for edit. */
+  formUuid?: string;
   visitUuid: string;
   visitStartDateTime: number;
   encounterUuid: string;

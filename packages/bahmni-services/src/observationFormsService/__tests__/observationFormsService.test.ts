@@ -3,6 +3,7 @@ import { getUserPreferredLocale } from '../../i18n/translationService';
 import { OBSERVATION_FORMS_URL, FORM_DATA_URL } from '../constants';
 import {
   fetchObservationForms,
+  fetchFormUuidByObservationDate,
   getPatientFormData,
 } from '../observationFormsService';
 
@@ -404,6 +405,163 @@ describe('observationFormsService', () => {
       const result = await getPatientFormData(patientUuid);
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('fetchFormUuidByObservationDate', () => {
+    const jul10 = new Date('2026-07-10T10:00:00Z').getTime();
+    const jul1 = new Date('2026-07-01T00:00:00Z').getTime();
+
+    const makeForm = (
+      uuid: string,
+      dateCreated: string,
+      version = '1',
+      published = true,
+    ) => ({
+      uuid,
+      name: 'Vitals',
+      version,
+      published,
+      auditInfo: { dateCreated },
+    });
+
+    it('uses version-string match when formVersion > 1 (new encounters)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            makeForm('uuid-v1', '2026-07-01T00:00:00Z', '1'),
+            makeForm('uuid-v18', '2026-07-08T00:00:00Z', '18'),
+            makeForm('uuid-v19', '2026-07-15T00:00:00Z', '19'),
+          ],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate('Vitals', 18, jul10);
+
+      expect(result).toBe('uuid-v18');
+    });
+
+    it('falls back to date-based when formVersion is 1 (old encounters)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            makeForm('uuid-v1', '2026-07-01T00:00:00Z', '1'),
+            makeForm('uuid-v2', '2026-07-05T00:00:00Z', '2'),
+            makeForm('uuid-v3', '2026-07-15T00:00:00Z', '3'), // after encounter
+          ],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate('Vitals', 1, jul10);
+
+      expect(result).toBe('uuid-v2');
+    });
+
+    it('returns most recently published form before encounterDateTime', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            makeForm('uuid-v1', '2026-07-01T00:00:00Z', '1'),
+            makeForm('uuid-v2', '2026-07-05T00:00:00Z', '2'),
+            makeForm('uuid-v3', '2026-07-15T00:00:00Z', '3'),
+          ],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        jul10,
+      );
+
+      expect(result).toBe('uuid-v2');
+    });
+
+    it('falls back to oldest form when all forms post-date the encounter', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [makeForm('uuid-v1', '2026-08-01T00:00:00Z', '1')],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        jul1,
+      );
+
+      expect(result).toBe('uuid-v1');
+    });
+
+    it('returns oldest form when no date is provided', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            makeForm('uuid-v2', '2026-07-05T00:00:00Z', '2'),
+            makeForm('uuid-v1', '2026-07-01T00:00:00Z', '1'),
+          ],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        undefined,
+      );
+
+      expect(result).toBe('uuid-v1');
+    });
+
+    it('excludes unpublished forms', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            makeForm('uuid-v1', '2026-07-01T00:00:00Z', '1', false),
+            makeForm('uuid-v2', '2026-07-05T00:00:00Z', '2', true),
+          ],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        jul10,
+      );
+
+      expect(result).toBe('uuid-v2');
+    });
+
+    it('returns null when the API call fails', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 500 });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        jul10,
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it('returns null when no published forms match the name', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: [] }),
+      });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        jul10,
+      );
+
+      expect(result).toBeNull();
     });
   });
 });

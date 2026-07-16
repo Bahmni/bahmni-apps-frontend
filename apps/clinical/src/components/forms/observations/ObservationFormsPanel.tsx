@@ -1,7 +1,11 @@
 import { getObservationsFromFhir } from '@bahmni/form2-controls';
 import type { ObservationForm, Form2Observation } from '@bahmni/services';
-import { getObservationsBundleByEncounterUuid } from '@bahmni/services';
-import { useActivePractitioner } from '@bahmni/widgets';
+import {
+  getObservationsBundleByEncounterUuid,
+  getPatientFormData,
+  fetchFormUuidByObservationDate,
+} from '@bahmni/services';
+import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import type { Bundle } from 'fhir/r4';
 import React, { useEffect, useRef } from 'react';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
@@ -20,6 +24,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   encounterSessionStartContext,
 }) => {
   const { user } = useActivePractitioner();
+  const patientUUID = usePatientUUID();
   const { episodeOfCare } = useClinicalAppData();
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
 
@@ -92,22 +97,44 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     if (!matchingForm) return;
     if (selectedForms.some((f) => f.uuid === matchingForm.uuid)) return;
 
-    // Fetch observations BEFORE opening the form so CarbonContainer mounts
-    // with data already in the store (it does not re-initialize on prop change).
     getObservationsBundleByEncounterUuid(editEncounterUuid)
-      .then((bundle) => {
+      .then(async (bundle) => {
         const form2Observations = getObservationsFromFhir(bundle);
 
-        // eslint-disable-next-line no-console
-        console.log(
-          '[EditMode] editFormName:',
-          editFormName,
-          'bundle entries:',
-          bundle?.entry?.length,
-          'form2Obs:',
-          form2Observations.length,
-          form2Observations,
-        );
+        // Primary: read formUuid directly from the patient forms API —
+        // same approach as the old Bahmni Angular frontend (observationForm.formUuid).
+        // The backend stores the exact UUID of the form version used when the
+        // encounter was saved, so this is the authoritative identifier.
+        //
+        // Fallback: if formUuid is absent (older backend), use the observation's
+        // server-assigned `issued` timestamp to find the most recently published
+        // form version that predates the save time.
+        let formToOpen = matchingForm;
+        let savedFormUuid: string | null = null;
+
+        if (patientUUID) {
+          const patientForms = await getPatientFormData(patientUUID).catch(
+            () => [],
+          );
+          const encounterFormData = patientForms.find(
+            (d) => d.encounterUuid === editEncounterUuid,
+          );
+          // Primary: formUuid from patient forms API (same as old Bahmni Angular).
+          // Fallback: version-string or date-based lookup using formVersion and
+          // encounterDateTime (stable clinical date, unlike Observation.issued which
+          // updates on every re-edit).
+          savedFormUuid =
+            encounterFormData?.formUuid ??
+            (await fetchFormUuidByObservationDate(
+              editFormName,
+              encounterFormData?.formVersion,
+              encounterFormData?.encounterDateTime,
+            ).catch(() => null));
+        }
+
+        if (savedFormUuid && savedFormUuid !== matchingForm.uuid) {
+          formToOpen = { ...matchingForm, uuid: savedFormUuid };
+        }
 
         if (form2Observations.length > 0) {
           // Build uuid → status map from the raw FHIR bundle so PUT requests can
@@ -124,9 +151,9 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
           useObservationFormsStore.setState((state) => ({
             formsData: {
               ...state.formsData,
-              [matchingForm.uuid]: {
-                formUuid: matchingForm.uuid,
-                formName: matchingForm.name,
+              [formToOpen.uuid]: {
+                formUuid: formToOpen.uuid,
+                formName: formToOpen.name,
                 observations: observationsWithStatus,
                 timestamp: Date.now(),
               },
@@ -136,7 +163,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
 
         // Open the form AFTER data is stored — ObservationFormsContainer mounts
         // with existingObservations already populated.
-        addForm(matchingForm);
+        addForm(formToOpen);
       })
       .catch((err) => {
         // eslint-disable-next-line no-console
@@ -152,6 +179,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     allForms,
     selectedForms,
     addForm,
+    patientUUID,
   ]);
 
   // In edit mode the add-form search panel must never appear.
