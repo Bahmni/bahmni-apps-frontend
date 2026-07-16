@@ -8,6 +8,12 @@ export {
 // Widget Components
 export { DocumentPrintButton } from './documentPrintButton';
 export type { PrintOption } from './documentPrintButton';
+export { DocumentUpload, renderDocumentTile } from './documentUpload';
+export type {
+  DocumentUploadProps,
+  DocumentSaveTarget,
+  DocumentTileData,
+} from './documentUpload';
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
 export { AppointmentsTable } from './appointments';
@@ -25,6 +31,7 @@ export { TaskList } from './tasks';
 export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
+export { extractFormName } from './forms/utils';
 
 export {
   CommandPaletteProvider,
@@ -93,6 +100,14 @@ export {
   resetWidgetRegistry,
   type WidgetConfig,
 } from './registry';
+
+// User Global Action
+export {
+  UserGlobalAction,
+  UserActionProvider,
+  useUserActionRegistry,
+  type UserAction,
+} from './userGlobalAction';
 
 // Location
 export {

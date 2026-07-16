@@ -6,11 +6,7 @@ import {
   Column,
   SkeletonText,
 } from '@bahmni/design-system';
-import {
-  useTranslation,
-  formatDateTime,
-  type Provider,
-} from '@bahmni/services';
+import { useTranslation, type Provider } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
@@ -56,6 +52,7 @@ const EncounterDetails: React.FC = () => {
     selectedVisitType,
     encounterParticipants,
     consultationDate,
+    isConsultationDateReady,
     requestedEncounterType,
     isError,
     setSelectedLocation,
@@ -76,11 +73,6 @@ const EncounterDetails: React.FC = () => {
   const availablePractitioners = useMemo(
     () => (practitioner ? [practitioner] : []),
     [practitioner],
-  );
-
-  const formattedDate = useMemo(
-    () => formatDateTime(consultationDate, t),
-    [consultationDate],
   );
 
   const allLoadingStates = useMemo(
@@ -327,16 +319,24 @@ const EncounterDetails: React.FC = () => {
       </Column>
 
       <Column sm={4} md={8} lg={5} className={styles.column}>
-        <DatePicker datePickerType="single" data-testid="encounter-date-picker">
-          <DatePickerInput
-            id="encounter-date-picker-input"
-            data-testid="encounter-date-picker-input"
-            title={t('ENCOUNTER_DATE')}
-            labelText={t('ENCOUNTER_DATE')}
-            defaultValue={formattedDate.formattedResult}
-            disabled
-          />
-        </DatePicker>
+        <FormField
+          isLoading={!isConsultationDateReady}
+          placeholder={<DropdownPlaceholder />}
+        >
+          <DatePicker
+            datePickerType="single"
+            data-testid="encounter-date-picker"
+            value={consultationDate}
+          >
+            <DatePickerInput
+              id="encounter-date-picker-input"
+              data-testid="encounter-date-picker-input"
+              title={t('ENCOUNTER_DATE')}
+              labelText={t('ENCOUNTER_DATE')}
+              disabled
+            />
+          </DatePicker>
+        </FormField>
       </Column>
     </Grid>
   );

@@ -5,6 +5,7 @@ import {
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,
+  UserActionProvider,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -51,16 +52,18 @@ const RegistrationApp: React.FC = () => {
           <RegistrationConfigProvider>
             <PersonAttributesProvider>
               <UserPrivilegeProvider>
-                <CommandPaletteProvider>
-                  <Routes>
-                    <Route path="/search" element={<PatientSearchPage />} />
-                    <Route path="patient/new" element={<PatientRegister />} />
-                    <Route
-                      path="/patient/:patientUuid"
-                      element={<PatientRegister />}
-                    />
-                  </Routes>
-                </CommandPaletteProvider>
+                <UserActionProvider>
+                  <CommandPaletteProvider>
+                    <Routes>
+                      <Route path="/search" element={<PatientSearchPage />} />
+                      <Route path="patient/new" element={<PatientRegister />} />
+                      <Route
+                        path="/patient/:patientUuid"
+                        element={<PatientRegister />}
+                      />
+                    </Routes>
+                  </CommandPaletteProvider>
+                </UserActionProvider>
               </UserPrivilegeProvider>
             </PersonAttributesProvider>
           </RegistrationConfigProvider>

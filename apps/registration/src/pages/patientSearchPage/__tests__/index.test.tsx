@@ -155,6 +155,7 @@ jest.mock('@bahmni/widgets', () => ({
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: mockUserPrivileges,
   })),
+  UserGlobalAction: jest.fn(() => <div data-testid="user-global-action" />),
   register: jest.fn(),
   useNotification: jest.fn(() => ({ addNotification: jest.fn() })),
   SearchPatient: jest.fn(({ onSearch }) => {
@@ -295,7 +296,7 @@ describe('PatientSearchPage', () => {
         </NotificationProvider>
       </MemoryRouter>,
     );
-    expect(screen.getByTestId('global-action-user')).toBeInTheDocument();
+    expect(screen.getByTestId('user-global-action')).toBeInTheDocument();
     const createNewPatientButton = screen.getByRole('button', {
       name: /create new patient/i,
     });

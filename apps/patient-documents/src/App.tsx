@@ -1,6 +1,7 @@
-import { Loading, initFontAwesome } from '@bahmni/design-system';
-import { initAppI18n } from '@bahmni/services';
+import { Content, Loading, initFontAwesome } from '@bahmni/design-system';
+import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
+  ActivePractitionerProvider,
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,
@@ -11,6 +12,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
 import { BAHMNI_PATIENT_DOCUMENTS_NAMESPACE } from './constants/app';
+import { PatientDocumentsConfigProvider } from './providers/patientDocumentsConfig';
 import { routes, renderRoutes } from './routes';
 
 const queryClient = new QueryClient(queryClientConfig);
@@ -23,6 +25,7 @@ export function App() {
       try {
         await initAppI18n(BAHMNI_PATIENT_DOCUMENTS_NAMESPACE);
         initFontAwesome();
+        initializeAuditListener();
         setIsInitialized(true);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -38,17 +41,23 @@ export function App() {
     return <Loading />;
   }
   return (
-    <QueryClientProvider client={queryClient}>
-      <NotificationProvider>
-        <UserPrivilegeProvider>
+    <Content>
+      <QueryClientProvider client={queryClient}>
+        <NotificationProvider>
           <NotificationServiceComponent />
-          <Suspense fallback={<Loading />}>
-            <Routes>{renderRoutes(routes)}</Routes>
-          </Suspense>
-          <ReactQueryDevtools initialIsOpen={false} />
-        </UserPrivilegeProvider>
-      </NotificationProvider>
-    </QueryClientProvider>
+          <PatientDocumentsConfigProvider>
+            <UserPrivilegeProvider>
+              <ActivePractitionerProvider>
+                <Suspense fallback={<Loading />}>
+                  <Routes>{renderRoutes(routes)}</Routes>
+                </Suspense>
+                <ReactQueryDevtools initialIsOpen={false} />
+              </ActivePractitionerProvider>
+            </UserPrivilegeProvider>
+          </PatientDocumentsConfigProvider>
+        </NotificationProvider>
+      </QueryClientProvider>
+    </Content>
   );
 }
 

@@ -1,3 +1,5 @@
+import type { Task } from 'fhir/r4';
+
 export interface TaskViewModel {
   id: string;
   name: string;
@@ -5,25 +7,25 @@ export interface TaskViewModel {
   status: string;
   completedBy?: string;
   completedOn?: string;
-  partOf?: string[];
+  partOf: string[];
+  fhirResource: Task;
 }
 
-export interface ActionHandlerConfig {
+export interface TaskAction {
+  label: string;
+  type: string;
+  icon: string;
+  requiredPrivileges: string[];
+  handlerConfig: Record<string, unknown>;
+}
+
+export interface TaskActionConfig {
   taskCode: string;
-  handlerType: string;
-  handlerConfig?: {
-    actions?: Array<{
-      label: string;
-      type: string;
-      encounterType?: string;
-      requiredPrivileges?: string[];
-      icon?: string;
-    }>;
-  };
+  actions: TaskAction[];
 }
 
 export interface TaskListConfig {
   showOnlyLeafTasks?: boolean;
   taskTypes?: string[];
-  actionHandlerConfig?: ActionHandlerConfig[];
+  actionConfig?: TaskActionConfig[];
 }
