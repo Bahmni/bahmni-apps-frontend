@@ -165,7 +165,7 @@ describe('useImmunizationHistoryStore', () => {
       );
     });
 
-    it('is a no-op when the id does not exist', () => {
+    it('leaves selectedImmunizations unchanged when the id does not exist', () => {
       store().addImmunization(mockVaccineCode);
       const before = [...store().selectedImmunizations];
 
@@ -192,7 +192,7 @@ describe('useImmunizationHistoryStore', () => {
     );
 
     it.each(FIELD_UPDATE_CASES)(
-      'is a no-op when updating %s with a non-existent id',
+      'leaves selectedImmunizations unchanged when updating %s with a non-existent id',
       (_fieldName, actionName, validValue) => {
         store().addImmunization(mockVaccineCode);
         const before = [...store().selectedImmunizations];
@@ -427,7 +427,7 @@ describe('useImmunizationHistoryStore', () => {
       expect(store().selectedImmunizations[1]).toEqual(otherEntryBefore);
     });
 
-    it('is a no-op for a non-existent id', () => {
+    it('leaves selectedImmunizations unchanged when the id does not exist', () => {
       store().addImmunization(mockVaccineCode);
       const before = [...store().selectedImmunizations];
 
@@ -456,7 +456,7 @@ describe('useImmunizationHistoryStore', () => {
       expect(store().selectedImmunizations[1]).toEqual(otherEntryBefore);
     });
 
-    it('is a no-op for a non-existent id', () => {
+    it('leaves selectedImmunizations unchanged when the id does not exist', () => {
       store().addImmunization(mockVaccineCode);
       const before = [...store().selectedImmunizations];
 
@@ -629,7 +629,7 @@ describe('useImmunizationHistoryStore', () => {
       expect(store().selectedImmunizations[0].stockLocation).toBeNull();
     });
 
-    it('is a no-op for a non-existent id', () => {
+    it('leaves selectedImmunizations unchanged when the id does not exist', () => {
       store().addImmunization(mockVaccineCode);
       const before = [...store().selectedImmunizations];
 

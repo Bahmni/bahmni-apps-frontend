@@ -142,20 +142,21 @@ describe('getValueSetComboBoxItems', () => {
 });
 
 describe('getAllValueSetComboBoxItems', () => {
-  it('returns all items when searchTerm is empty, without requiring a search', () => {
-    expect(
-      getAllValueSetComboBoxItems('', mockVaccineValueSet, 'No results'),
-    ).toEqual([
-      { code: 'covid-19', display: 'COVID-19 Vaccine' },
-      { code: 'flu', display: 'Influenza Vaccine' },
-    ]);
-  });
-
-  it('returns all items when searchTerm is whitespace-only', () => {
-    expect(
-      getAllValueSetComboBoxItems('   ', mockVaccineValueSet, 'No results'),
-    ).toHaveLength(2);
-  });
+  it.each(['', '   '])(
+    'returns all items without requiring a search when searchTerm is %j',
+    (searchTerm) => {
+      expect(
+        getAllValueSetComboBoxItems(
+          searchTerm,
+          mockVaccineValueSet,
+          'No results',
+        ),
+      ).toEqual([
+        { code: 'covid-19', display: 'COVID-19 Vaccine' },
+        { code: 'flu', display: 'Influenza Vaccine' },
+      ]);
+    },
+  );
 
   it('filters items by search term case-insensitively once the user types', () => {
     expect(
@@ -163,25 +164,13 @@ describe('getAllValueSetComboBoxItems', () => {
     ).toEqual([{ code: 'covid-19', display: 'COVID-19 Vaccine' }]);
   });
 
-  it('returns disabled sentinel when no items match a search term', () => {
+  it.each([
+    ['no items match a search term', 'mumps', mockVaccineValueSet],
+    ['valueSet is undefined', '', undefined],
+    ['expansion has no contains', '', mockValueSetWithoutContains],
+  ])('returns disabled sentinel when %s', (_label, searchTerm, valueSet) => {
     expect(
-      getAllValueSetComboBoxItems('mumps', mockVaccineValueSet, 'No results'),
-    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
-  });
-
-  it('returns disabled sentinel when valueSet is undefined', () => {
-    expect(getAllValueSetComboBoxItems('', undefined, 'No results')).toEqual([
-      { code: '', display: 'No results', disabled: true },
-    ]);
-  });
-
-  it('returns disabled sentinel when expansion has no contains', () => {
-    expect(
-      getAllValueSetComboBoxItems(
-        '',
-        mockValueSetWithoutContains,
-        'No results',
-      ),
+      getAllValueSetComboBoxItems(searchTerm, valueSet, 'No results'),
     ).toEqual([{ code: '', display: 'No results', disabled: true }]);
   });
 });
