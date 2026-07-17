@@ -13,27 +13,31 @@ interface SearchSummaryProps {
   onModifySearch: () => void;
 }
 
-const formatValue = (value: CriterionValue, input: InputConfig): string => {
+const formatValue = (
+  value: CriterionValue,
+  input: InputConfig,
+  t: (key: string, options?: Record<string, string>) => string,
+): string => {
   if ('value' in value) return value.value;
 
   if (input.kind === 'date') {
     const from = formatDateTime(value.from.value!).formattedResult;
     if (!value.to?.value) return from;
     const to = formatDateTime(value.to.value).formattedResult;
-    return `${from} to ${to}`;
+    return t('COMMON_SEARCH_CRITERIA_TAG_RANGE', { from, to });
   }
 
-  const from = value.from.value;
-  if (!value.to?.value) return from!;
-  return `${from} to ${value.to.value}`;
+  const from = value.from.value!;
+  if (!value.to?.value) return from;
+  return t('COMMON_SEARCH_CRITERIA_TAG_RANGE', { from, to: value.to.value });
 };
 
 const buildTagText = (
   row: { criterionKey: string; value: CriterionValue },
   criterion: CriterionConfig,
-  t: (key: string) => string,
+  t: (key: string, options?: Record<string, string>) => string,
 ): string =>
-  `${t(criterion.translationKey)}: ${formatValue(row.value, criterion.input)}`;
+  `${t(criterion.translationKey)}: ${formatValue(row.value, criterion.input, t)}`;
 
 const SearchSummary = ({
   activeSearchState,

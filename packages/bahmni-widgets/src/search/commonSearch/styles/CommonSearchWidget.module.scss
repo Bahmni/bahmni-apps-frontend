@@ -112,7 +112,8 @@
 
 .summaryLeft {
   @include type-style("body-compact-01");
-  flex: 0 0 70%;
+  flex: 1 1 auto;
+  min-width: fit-content;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -127,7 +128,7 @@
 }
 
 .summaryRight {
-  flex: 0 0 29%;
+  flex: 0 0 auto;
   display: flex;
   justify-content: flex-end;
 }

@@ -84,7 +84,9 @@ describe('SearchSummary', () => {
         onModifySearch={onModifySearch}
       />,
     );
-    expect(screen.getByText('PATIENT_AGE: 20 to 40')).toBeInTheDocument();
+    expect(
+      screen.getByText('PATIENT_AGE: COMMON_SEARCH_CRITERIA_TAG_RANGE'),
+    ).toBeInTheDocument();
   });
 
   it('renders green tag showing only from value for numeric range criterion with no to value', () => {
@@ -126,7 +128,7 @@ describe('SearchSummary', () => {
       />,
     );
     expect(
-      screen.getByText('DATE_RANGE: 24/10/2025 to 03/06/2026'),
+      screen.getByText('DATE_RANGE: COMMON_SEARCH_CRITERIA_TAG_RANGE'),
     ).toBeInTheDocument();
   });
 
