@@ -1058,10 +1058,10 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
-"@bahmni/form2-controls@0.0.3-dev.71":
-  version "0.0.3-dev.71"
-  resolved "https://registry.yarnpkg.com/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.71.tgz#89e95a59c55865962c6f4a8056fe743f74106574"
-  integrity sha512-1RFT5QOZGLLJW0TAcWkDiyxYI2Jera9IxzBYM7p/zchUOa2Dvfll5hfvcy83n96KG/y2Z+G1y/7d2TeTn9P44w==
+"@bahmni/form2-controls@0.0.3-dev.75":
+  version "0.0.3-dev.75"
+  resolved "https://registry.npmjs.org/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.75.tgz#eb8b1805e4011838032e11dba34f808ad8428e9f"
+  integrity sha512-2hE4g7TCjRsKq/E9tBgd3nhnXvuq8LUB1Jj6gWYZ/QeiV8tR4T8nbQJqU5TiAAFiji7mcK//w8k85DAjFIkigA==
   dependencies:
     ajv "^8.17.1"
     base64-inline-loader "^1.1.0"
@@ -5087,6 +5087,13 @@
   version "2.0.7"
   resolved "https://registry.yarnpkg.com/@types/trusted-types/-/trusted-types-2.0.7.tgz#baccb07a970b91707df3a3e8ba6896c57ead2d11"
   integrity sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==
+
+"@types/uuid@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-11.0.0.tgz#f4fa34bbf2af941148ef1973c4361fc43617971c"
+  integrity sha512-HVyk8nj2m+jcFRNazzqyVKiZezyhDKrGUA3jlEcg/nZ6Ms+qHwocba1Y/AaVaznJTAM9xpdFSh+ptbNrhOGvZA==
+  dependencies:
+    uuid "*"
 
 "@types/ws@^8.5.10":
   version "8.18.1"
@@ -15933,6 +15940,11 @@ utils-merge@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==
+
+uuid@*:
+  version "14.0.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-14.0.1.tgz#8a5975b3e038902bfd169a10b5202f5ec0cf3faf"
+  integrity sha512-6ZxzVpzDXDa3bJWaHilVayA+BH/1zmxCJoVgvmqJnid/gPoKHxUrS/aC/T6LGQtNHT+XHG9fXPJB4d+IrU30Ew==
 
 uuid@^8.3.2:
   version "8.3.2"
