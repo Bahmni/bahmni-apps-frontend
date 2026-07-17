@@ -1002,10 +1002,7 @@ const valueFingerprint = (v: unknown): string => {
     return `date:${v.toISOString().slice(0, 10)}`;
   if (typeof v === 'string') {
     const m = /^(\d{4}-\d{2}-\d{2})/.exec(v);
-    if (m) {
-      const d = new Date(m[1]);
-      if (!Number.isNaN(d.getTime())) return `date:${m[1]}`;
-    }
+    if (m && !Number.isNaN(new Date(m[1]).getTime())) return `date:${m[1]}`;
   }
   const obj = typeof v === 'object' ? (v as Record<string, unknown>) : null;
   if (obj && 'uuid' in obj) return `uuid:${obj.uuid}`;

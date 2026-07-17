@@ -353,11 +353,11 @@ export function transformContainerObservationsToForm2Observations(
     if (obs.voided === true) observation.voided = true;
     if (typeof obs.status === 'string') observation.status = obs.status;
 
-    if (obs.comment && typeof obs.comment === 'string') {
+    if (typeof obs.comment === 'string') {
       observation.comment = obs.comment;
     }
 
-    if (obs.interpretation && typeof obs.interpretation === 'string') {
+    if (typeof obs.interpretation === 'string') {
       observation.interpretation = obs.interpretation;
     }
 
