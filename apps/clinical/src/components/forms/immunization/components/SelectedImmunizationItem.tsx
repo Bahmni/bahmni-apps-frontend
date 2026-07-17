@@ -28,6 +28,7 @@ import { useImmunizationHistoryStore } from '../stores';
 import styles from '../styles/ImmunizationForm.module.scss';
 import {
   formatBatchItemDisplay,
+  getAllValueSetComboBoxItems,
   getBatchNumberComboBoxItems,
   getLocationComboBoxItems,
   getMedicationComboBoxItems,
@@ -39,6 +40,8 @@ interface SelectedImmunizationItemProps {
   immunization: ImmunizationInputEntry;
   routes: ValueSet | undefined;
   sites: ValueSet | undefined;
+  statusReasons?: ValueSet;
+  otherReasonConceptUuid?: string;
   administeredLocationTag: Location[] | undefined;
   attributes: InputControlAttributes[] | undefined;
   vaccineDrugs: Medication[] | undefined;
@@ -58,6 +61,8 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
   immunization,
   routes,
   sites,
+  statusReasons,
+  otherReasonConceptUuid,
   attributes,
   administeredLocationTag,
   vaccineDrugs,
@@ -79,19 +84,31 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
     updateBatchNumber,
     updateStockLocation,
     updateDoseSequence,
+    updateStatusReason,
     updateNote,
   } = useImmunizationHistoryStore(storeKey);
   const { id } = immunization;
-  const noteRequired = findAttr('note', attributes)?.required;
-  const [hasNote, setHasNote] = useState(!!immunization.note);
+  const isOtherReasonSelected =
+    !!immunization.statusReason &&
+    immunization.statusReason.code === otherReasonConceptUuid;
+  const noteRequiredByConfig = findAttr('note', attributes)?.required ?? false;
+  const noteRequired = noteRequiredByConfig || isOtherReasonSelected;
+  const [hasNote, setHasNote] = useState(
+    !!immunization.note || isOtherReasonSelected,
+  );
   const [drugSearchTerm, setDrugSearchTerm] = useState('');
   const [routeSearchTerm, setRouteSearchTerm] = useState('');
   const [siteSearchTerm, setSiteSearchTerm] = useState('');
+  const [statusReasonSearchTerm, setStatusReasonSearchTerm] = useState('');
   const [
     administeredLocationTagSearchTerm,
     setAdministeredLocationTagSearchTerm,
   ] = useState('');
   const [isExpiryDateFromBatch, setIsExpiryDateFromBatch] = useState(false);
+
+  useEffect(() => {
+    if (isOtherReasonSelected) setHasNote(true);
+  }, [isOtherReasonSelected]);
 
   useEffect(() => {
     const rulesForThisEvent =
@@ -144,6 +161,16 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
         t('NO_MATCHING_SITE_FOUND'),
       ),
     [siteSearchTerm, sites],
+  );
+
+  const statusReasonComboBoxItems = useMemo(
+    () =>
+      getAllValueSetComboBoxItems(
+        statusReasonSearchTerm,
+        statusReasons,
+        t('NO_MATCHING_STATUS_REASON_FOUND'),
+      ),
+    [statusReasonSearchTerm, statusReasons],
   );
 
   const batchNumberComboBoxItems = useMemo(
@@ -384,6 +411,50 @@ const SelectedImmunizationItem: React.FC<SelectedImmunizationItemProps> = ({
               invalid={!!immunization.errors.site}
               invalidText={
                 immunization.errors.site ? t(immunization.errors.site) : ''
+              }
+            />
+          </Column>
+        )}
+
+        {findAttr('statusReason', attributes) && (
+          <Column sm={4} md={8} lg={16} className={styles.column}>
+            <ComboBox
+              id={`immunization-status-reason-combobox-${id}`}
+              data-testid={`immunization-status-reason-${id}-test-id`}
+              titleText={t('IMMUNIZATION_INPUT_CONTROL_STATUS_REASON_LABEL')}
+              placeholder={t(
+                'IMMUNIZATION_INPUT_CONTROL_STATUS_REASON_PLACEHOLDER',
+              )}
+              autoAlign
+              className={styles.statusReason}
+              items={statusReasonComboBoxItems}
+              itemToString={(item) => item?.display ?? ''}
+              selectedItem={
+                immunization.statusReason
+                  ? {
+                      code: immunization.statusReason.code,
+                      display: immunization.statusReason.display,
+                    }
+                  : null
+              }
+              onChange={({ selectedItem }) => {
+                if (selectedItem?.code && !selectedItem.disabled) {
+                  updateStatusReason(id, {
+                    code: selectedItem.code,
+                    display: selectedItem.display,
+                  });
+                } else {
+                  updateStatusReason(id, null);
+                }
+              }}
+              onInputChange={(searchQuery: string) =>
+                setStatusReasonSearchTerm(searchQuery)
+              }
+              invalid={!!immunization.errors.statusReason}
+              invalidText={
+                immunization.errors.statusReason
+                  ? t(immunization.errors.statusReason)
+                  : ''
               }
             />
           </Column>

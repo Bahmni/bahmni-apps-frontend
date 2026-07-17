@@ -7,7 +7,9 @@ import {
   ImmunizationHistoryState,
   ImmunizationInputEntry,
   ImmunizationLocation,
+  ImmunizationStatusReason,
   ImmunizationStoreKey,
+  WaiverReasonConfig,
 } from './models';
 import { findAttr } from './utils';
 
@@ -136,6 +138,18 @@ function applyBatchNumberUpdate(
   return updated;
 }
 
+function applyStatusReasonUpdate(
+  entry: ImmunizationInputEntry,
+  value: ImmunizationStatusReason | null,
+): ImmunizationInputEntry {
+  const updated = { ...entry, statusReason: value };
+  if (entry.hasBeenValidated) {
+    updated.errors = { ...entry.errors };
+    if (value) delete updated.errors.statusReason;
+  }
+  return updated;
+}
+
 function applyStockLocationUpdate(
   entry: ImmunizationInputEntry,
   value: string | null,
@@ -235,11 +249,18 @@ const FIELD_VALIDATIONS: FieldValidationConfig[] = [
     errorMsg: 'IMMUNIZATION_INPUT_CONTROL_NOTE_REQUIRED',
     hasValue: (e) => Boolean(e.note?.trim()),
   },
+  {
+    attr: 'statusReason',
+    key: 'statusReason',
+    errorMsg: 'IMMUNIZATION_INPUT_CONTROL_STATUS_REASON_REQUIRED',
+    hasValue: (e) => Boolean(e.statusReason),
+  },
 ];
 
 function validateEntry(
   entry: ImmunizationInputEntry,
   attributes: InputControlAttributes[] | undefined,
+  waiverReasonConfig: WaiverReasonConfig | undefined,
 ): { entry: ImmunizationInputEntry; valid: boolean } {
   const errors = { ...entry.errors };
   let valid = true;
@@ -264,6 +285,16 @@ function validateEntry(
     valid = false;
   }
 
+  const isOtherReason =
+    !!entry.statusReason &&
+    entry.statusReason.code === waiverReasonConfig?.otherReasonConceptUuid;
+  if (isOtherReason && !entry.note?.trim()) {
+    errors.note = 'IMMUNIZATION_INPUT_CONTROL_NOTE_REQUIRED';
+    valid = false;
+  } else if (!findAttr('note', attributes)?.required) {
+    delete errors.note;
+  }
+
   return { entry: { ...entry, errors, hasBeenValidated: true }, valid };
 }
 
@@ -271,6 +302,11 @@ function createImmunizationHistoryStore() {
   return createStore<ImmunizationHistoryState>((set, get) => ({
     selectedImmunizations: [],
     attributes: undefined,
+    waiverReasonConfig: undefined,
+
+    setWaiverReasonConfig: (config) => {
+      set({ waiverReasonConfig: config });
+    },
 
     addImmunization: (
       vaccineCode: { code: string; display: string },
@@ -294,6 +330,7 @@ function createImmunizationHistoryStore() {
         batchNumber: null,
         stockLocation: null,
         doseSequence: null,
+        statusReason: null,
         ...(defaults?.basedOnReference !== undefined && {
           basedOnReference: defaults.basedOnReference,
         }),
@@ -409,11 +446,22 @@ function createImmunizationHistoryStore() {
       }));
     },
 
+    updateStatusReason: (
+      id: string,
+      value: ImmunizationStatusReason | null,
+    ) => {
+      const applyUpdate = (entry: ImmunizationInputEntry) =>
+        entry.id === id ? applyStatusReasonUpdate(entry, value) : entry;
+      set((state) => ({
+        selectedImmunizations: state.selectedImmunizations.map(applyUpdate),
+      }));
+    },
+
     validateAll: () => {
-      const { attributes } = get();
+      const { attributes, waiverReasonConfig } = get();
       let isValid = true;
       const applyValidation = (entry: ImmunizationInputEntry) => {
-        const result = validateEntry(entry, attributes);
+        const result = validateEntry(entry, attributes, waiverReasonConfig);
         if (!result.valid) isValid = false;
         return result.entry;
       };
