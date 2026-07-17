@@ -996,7 +996,7 @@ const extractAndAppendNotesFromFormData = (
  * - Primitives — String()
  */
 const valueFingerprint = (v: unknown): string => {
-  if (v === null || v === undefined) return '';
+  if (v == null) return '';
   // Date: validate the parsed date before treating the string as a date value
   if (v instanceof Date && !Number.isNaN(v.getTime()))
     return `date:${v.toISOString().slice(0, 10)}`;

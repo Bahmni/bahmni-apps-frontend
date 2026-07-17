@@ -295,6 +295,18 @@ export function transformObservationsToFormData(
   };
 }
 
+/** Coerces a raw CarbonContainer field value to the typed Form2Observation value. */
+function getObsValue(
+  value: unknown,
+): string | number | boolean | ConceptValue | ComplexValue | null {
+  if (value == null) return null;
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'object') return value as ConceptValue | ComplexValue;
+  return null;
+}
+
 /**
  * Transforms raw observations from Container.getValue() to Form2Observation format
  * This ensures comment, interpretation, and other fields are properly included
@@ -303,25 +315,6 @@ export function transformContainerObservationsToForm2Observations(
   containerObservations: Record<string, unknown>[],
 ): Form2Observation[] {
   const transform = (obs: Record<string, unknown>): Form2Observation => {
-    const getValue = (
-      value: unknown,
-    ): string | number | boolean | ConceptValue | ComplexValue | null => {
-      if (value === null || value === undefined) {
-        return null;
-      }
-      if (
-        typeof value === 'string' ||
-        typeof value === 'number' ||
-        typeof value === 'boolean'
-      ) {
-        return value;
-      }
-
-      if (typeof value === 'object') {
-        return value as ConceptValue | ComplexValue;
-      }
-      return null;
-    };
 
     const concept = obs.concept as Record<string, unknown> | string | undefined;
     const conceptUuid: string =
@@ -338,7 +331,7 @@ export function transformContainerObservationsToForm2Observations(
         uuid: conceptUuid,
         datatype: conceptDatatype,
       },
-      value: getValue(obs.value),
+      value: getObsValue(obs.value),
       obsDatetime:
         typeof obs.observationDateTime === 'string'
           ? obs.observationDateTime

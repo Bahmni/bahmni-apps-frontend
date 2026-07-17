@@ -232,7 +232,7 @@ export const fetchFormUuidByObservationDate = async (
 
   if (candidates.length === 0) return formsWithDate[0].uuid;
 
-  return candidates[candidates.length - 1].uuid;
+  return candidates.at(-1)!.uuid;
 };
 
 /**
