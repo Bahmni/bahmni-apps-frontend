@@ -2,12 +2,7 @@ import { Button, Dropdown } from '@bahmni/design-system';
 import { useTranslation, UserLocation } from '@bahmni/services';
 import { useState } from 'react';
 import CriterionRowComponent from './CriterionRow';
-import {
-  CriterionConfig,
-  CriterionRow,
-  CriterionValue,
-  SearchContextConfig,
-} from './models';
+import { CriterionRow, CriterionValue, SearchContextConfig } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
 import {
   availableCriteriaForRow,

@@ -39,7 +39,7 @@ exports[`ResultsTable Snapshot matches snapshot for empty state 1`] = `
         <thead>
           <tr>
             <th
-              data-testid="table-header-name"
+              data-testid="table-header-uuid-0"
               scope="col"
             >
               <div
@@ -52,7 +52,7 @@ exports[`ResultsTable Snapshot matches snapshot for empty state 1`] = `
               </div>
             </th>
             <th
-              data-testid="table-header-age"
+              data-testid="table-header-uuid-1"
               scope="col"
             >
               <div
@@ -193,7 +193,7 @@ exports[`ResultsTable Snapshot matches snapshot with data 1`] = `
         <thead>
           <tr>
             <th
-              data-testid="table-header-name"
+              data-testid="table-header-uuid-0"
               scope="col"
             >
               <div
@@ -206,7 +206,7 @@ exports[`ResultsTable Snapshot matches snapshot with data 1`] = `
               </div>
             </th>
             <th
-              data-testid="table-header-age"
+              data-testid="table-header-uuid-1"
               scope="col"
             >
               <div

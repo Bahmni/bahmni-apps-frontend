@@ -79,7 +79,6 @@ export interface CriterionConfig {
 export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
 
 export interface ResultFieldConfig {
-  key: string;
   translationKey: string;
   expression: string;
   enableSort?: boolean;

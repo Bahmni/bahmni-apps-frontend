@@ -2,12 +2,10 @@ import { ResultFieldConfig } from '../../models';
 
 export const mockResultFields: ResultFieldConfig[] = [
   {
-    key: 'name',
     translationKey: 'PATIENT_NAME',
     expression: 'name',
   },
   {
-    key: 'age',
     translationKey: 'PATIENT_AGE',
     expression: 'age',
   },
@@ -15,7 +13,6 @@ export const mockResultFields: ResultFieldConfig[] = [
 
 export const mockInvalidExpressionFields: ResultFieldConfig[] = [
   {
-    key: 'name',
     translationKey: 'PATIENT_NAME',
     expression: '$$$invalid',
   },

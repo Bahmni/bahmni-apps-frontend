@@ -13,7 +13,7 @@ import {
 jest.mock('jsonata');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  generateUUID: jest.fn().mockReturnValue('generated-uuid'),
+  generateUUID: jest.fn(),
 }));
 expect.extend(toHaveNoViolations);
 
@@ -41,6 +41,8 @@ const renderTable = (
 describe('ResultsTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    let count = 0;
+    mockGenerateUUID.mockImplementation(() => `uuid-${count++}`);
     mockJsonata.mockReturnValue({
       evaluate: jest.fn().mockResolvedValue('evaluated-value'),
     });
@@ -113,7 +115,7 @@ describe('ResultsTable', () => {
           screen.getByTestId('common-search-results-table'),
         ).toBeInTheDocument();
       });
-      expect(mockGenerateUUID).not.toHaveBeenCalled();
+      expect(mockGenerateUUID).toHaveBeenCalledTimes(2);
     });
 
     it('generates a UUID as row id when item has no id', async () => {
@@ -123,7 +125,7 @@ describe('ResultsTable', () => {
           screen.getByTestId('common-search-results-table'),
         ).toBeInTheDocument();
       });
-      expect(mockGenerateUUID).toHaveBeenCalledTimes(1);
+      expect(mockGenerateUUID).toHaveBeenCalledTimes(3);
     });
   });
 

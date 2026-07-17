@@ -15,13 +15,15 @@ interface ResultsTableProps {
 
 type ResultRow = Record<string, unknown> & { id: string };
 
+type ResolvedField = { id: string; field: ResultFieldConfig };
+
 const evaluateRows = async (
   results: unknown[],
-  resultFields: ResultFieldConfig[],
+  resolvedFields: ResolvedField[],
 ): Promise<ResultRow[]> => {
-  const compiled = resultFields.map((f) => ({
-    key: f.key,
-    expr: jsonata(f.expression),
+  const compiled = resolvedFields.map(({ id, field }) => ({
+    key: id,
+    expr: jsonata(field.expression),
   }));
 
   return Promise.all(
@@ -50,6 +52,11 @@ const ResultsTable = ({
   const [rows, setRows] = useState<ResultRow[]>([]);
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
 
+  const resolvedFields = useMemo(
+    () => resultFields.map((field) => ({ id: generateUUID(), field })),
+    [resultFields],
+  );
+
   const expressionError = useMemo(() => {
     for (const field of resultFields) {
       try {
@@ -64,20 +71,22 @@ const ResultsTable = ({
   useEffect(() => {
     if (expressionError) return;
     setEvaluationError(null);
-    evaluateRows(results, resultFields)
+    evaluateRows(results, resolvedFields)
       .then(setRows)
       .catch(() => setEvaluationError(t('COMMON_SEARCH_EVALUATION_ERROR')));
-  }, [results, resultFields, expressionError, t]);
+  }, [results, resolvedFields, expressionError, t]);
 
   const errorStateMessage = expressionError ?? evaluationError ?? apiError;
 
-  const columns: DataTableColumn<ResultRow>[] = resultFields.map((f) => ({
-    key: f.key,
-    header: t(f.translationKey),
-    enableSorting: f.enableSort ?? false,
-    enableFiltering: !!f.filterType,
-    filterType: f.filterType,
-  }));
+  const columns: DataTableColumn<ResultRow>[] = resolvedFields.map(
+    ({ id, field }) => ({
+      key: id,
+      header: t(field.translationKey),
+      enableSorting: field.enableSort ?? false,
+      enableFiltering: !!field.filterType,
+      filterType: field.filterType,
+    }),
+  );
 
   return (
     <DataTable

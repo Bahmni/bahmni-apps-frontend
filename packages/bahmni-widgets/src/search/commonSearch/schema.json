@@ -70,14 +70,9 @@
     },
     "resultFieldConfig": {
       "type": "object",
-      "required": ["key", "translationKey", "expression"],
+      "required": ["translationKey", "expression"],
       "additionalProperties": false,
       "properties": {
-        "key": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Column identifier used as the property key on each result row"
-        },
         "translationKey": {
           "type": "string",
           "minLength": 1,

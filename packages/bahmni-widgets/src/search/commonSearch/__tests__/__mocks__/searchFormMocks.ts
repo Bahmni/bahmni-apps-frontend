@@ -7,7 +7,6 @@ import {
 
 export const mockResultFields: ResultFieldConfig[] = [
   {
-    key: 'name',
     translationKey: 'PATIENT_NAME',
     expression: 'name',
     enableSort: true,
