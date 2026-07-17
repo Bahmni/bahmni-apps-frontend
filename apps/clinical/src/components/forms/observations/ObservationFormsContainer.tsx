@@ -1087,7 +1087,7 @@ const detectFormChanges = (
  * formFieldPath format: "FormName.version/controlId-instance"
  * Returns null when the path is absent or does not contain version info.
  */
-function extractVersionFromFormFieldPath(
+export function extractVersionFromFormFieldPath(
   formFieldPath: string | undefined,
 ): string | null {
   if (!formFieldPath) return null;

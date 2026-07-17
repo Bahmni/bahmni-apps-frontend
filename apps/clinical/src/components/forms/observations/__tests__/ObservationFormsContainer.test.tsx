@@ -2,7 +2,9 @@ import { ObservationForm } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
-import ObservationFormsContainer from '../ObservationFormsContainer';
+import ObservationFormsContainer, {
+  extractVersionFromFormFieldPath,
+} from '../ObservationFormsContainer';
 import {
   mockMinimalPatientData,
   mockEnrichedPatientData,
@@ -1729,5 +1731,35 @@ describe('ObservationFormsContainer', () => {
 
       mockContainerState.data = {};
     });
+  });
+});
+
+describe('extractVersionFromFormFieldPath', () => {
+  it('extracts version from a standard formFieldPath', () => {
+    expect(extractVersionFromFormFieldPath('Vitals.18/14-0')).toBe('18');
+  });
+
+  it('extracts version from a formFieldPath with a single-digit version', () => {
+    expect(extractVersionFromFormFieldPath('Vitals.1/14-0')).toBe('1');
+  });
+
+  it('extracts version from a formFieldPath with a multi-word form name', () => {
+    expect(extractVersionFromFormFieldPath('History and Examination.2/3-0')).toBe('2');
+  });
+
+  it('returns null when formFieldPath is undefined', () => {
+    expect(extractVersionFromFormFieldPath(undefined)).toBeNull();
+  });
+
+  it('returns null when formFieldPath has no slash', () => {
+    expect(extractVersionFromFormFieldPath('Vitals.1')).toBeNull();
+  });
+
+  it('returns null when formFieldPath has no dot before the slash', () => {
+    expect(extractVersionFromFormFieldPath('Vitals/14-0')).toBeNull();
+  });
+
+  it('returns null when the version segment is empty', () => {
+    expect(extractVersionFromFormFieldPath('Vitals./14-0')).toBeNull();
   });
 });
