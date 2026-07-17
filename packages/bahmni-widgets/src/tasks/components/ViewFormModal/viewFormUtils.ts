@@ -24,7 +24,7 @@ export const extractUuidFromReference = (ref: string): string => {
 export const extractFormFieldPath = (observation: Observation): string | null => {
   const formFieldPathExtension = observation.extension?.find(
     (ext) =>
-      ext.url === 'http://fhir.openmrs.org/ext/obs#formFieldPath',
+      ext.url === 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
   );
 
   return formFieldPathExtension?.valueString ?? null;
