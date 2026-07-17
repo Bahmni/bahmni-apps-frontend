@@ -9,8 +9,6 @@ import styles from './styles/CommonSearchWidget.module.scss';
 interface ResultsTableProps {
   resultFields: ResultFieldConfig[];
   results: unknown[];
-  isLoading: boolean;
-  apiError: string | null;
 }
 
 type ResultRow = Record<string, unknown> & { id: string };
@@ -42,12 +40,7 @@ const evaluateRows = async (
   );
 };
 
-const ResultsTable = ({
-  resultFields,
-  results,
-  isLoading,
-  apiError,
-}: ResultsTableProps) => {
+const ResultsTable = ({ resultFields, results }: ResultsTableProps) => {
   const { t } = useTranslation();
   const [rows, setRows] = useState<ResultRow[]>([]);
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
@@ -76,7 +69,7 @@ const ResultsTable = ({
       .catch(() => setEvaluationError(t('COMMON_SEARCH_EVALUATION_ERROR')));
   }, [results, resolvedFields, expressionError, t]);
 
-  const errorStateMessage = expressionError ?? evaluationError ?? apiError;
+  const errorStateMessage = expressionError ?? evaluationError;
 
   const columns: DataTableColumn<ResultRow>[] = resolvedFields.map(
     ({ id, field }) => ({
@@ -96,7 +89,6 @@ const ResultsTable = ({
       title={t('COMMON_SEARCH_RESULTS_TABLE_TITLE')}
       columns={columns}
       rows={rows}
-      loading={isLoading}
       errorStateMessage={errorStateMessage}
       emptyStateMessage={t('COMMON_SEARCH_NO_RESULTS')}
       className={styles.dataTable}

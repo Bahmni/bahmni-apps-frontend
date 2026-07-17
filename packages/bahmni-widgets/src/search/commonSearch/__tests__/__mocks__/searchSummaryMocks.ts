@@ -1,5 +1,5 @@
 import {
-  ActiveSearchState,
+  CurrentSearchState,
   CriterionRow,
   SearchContextConfig,
 } from '../../models';
@@ -151,7 +151,7 @@ export const mockDateRangeRow: CriterionRow = {
   rangeOrderError: null,
 };
 
-export const mockActiveSearchState: ActiveSearchState = {
+export const mockActiveSearchState: CurrentSearchState = {
   context: mockAppointmentContext,
   rows: [mockTextRow],
   resultFields: mockResultFields,

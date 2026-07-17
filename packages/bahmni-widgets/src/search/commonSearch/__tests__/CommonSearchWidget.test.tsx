@@ -4,12 +4,18 @@ import {
   getUserLoginLocation,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import React from 'react';
 import { post } from '../api';
 import CommonSearchWidget from '../CommonSearchWidget';
 import {
-  ActiveSearchState,
+  CurrentSearchState,
   CriterionRow,
   SearchContextConfig,
 } from '../models';
@@ -29,6 +35,11 @@ jest.mock('../api', () => ({
   post: jest.fn(),
 }));
 const mockPost = post as jest.Mock;
+
+const mockAddNotification = jest.fn();
+jest.mock('../../../notification', () => ({
+  useNotification: () => ({ addNotification: mockAddNotification }),
+}));
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -56,7 +67,7 @@ jest.mock('../SearchSummary', () => ({
   default: ({
     onModifySearch,
   }: {
-    activeSearchState: ActiveSearchState;
+    currentSearchState: CurrentSearchState;
     onModifySearch: () => void;
   }) => (
     <div data-testid="search-summary">
@@ -65,22 +76,9 @@ jest.mock('../SearchSummary', () => ({
   ),
 }));
 
-let capturedIsLoading: boolean | null = null;
-let capturedApiError: string | null | undefined = undefined;
-
 jest.mock('../ResultsTable', () => ({
   __esModule: true,
-  default: ({
-    isLoading,
-    apiError,
-  }: {
-    isLoading: boolean;
-    apiError: string | null;
-  }) => {
-    capturedIsLoading = isLoading;
-    capturedApiError = apiError;
-    return <div data-testid="results-table" />;
-  },
+  default: () => <div data-testid="results-table" />,
 }));
 
 describe('CommonSearchWidget', () => {
@@ -93,8 +91,6 @@ describe('CommonSearchWidget', () => {
     jest.clearAllMocks();
     capturedOnSearch = null;
     capturedConfig = null;
-    capturedIsLoading = null;
-    capturedApiError = undefined;
     mockPost.mockResolvedValue({ results: [] });
     (getUserLoginLocation as jest.Mock).mockReturnValue(mockWidgetLocation);
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue(
@@ -300,18 +296,18 @@ describe('CommonSearchWidget', () => {
 
     it('calls post with url and built payload when all rows are valid', async () => {
       await renderAndWait();
-      capturedOnSearch!(
-        [mockRowWithValidValue],
-        mockCommonSearchWidgetConfig[0],
-      );
-      await waitFor(() => {
-        expect(mockPost).toHaveBeenCalledWith(
-          mockCommonSearchWidgetConfig[0].url,
-          expect.objectContaining({
-            entity: mockCommonSearchWidgetConfig[0].context,
-          }),
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
         );
       });
+      expect(mockPost).toHaveBeenCalledWith(
+        mockCommonSearchWidgetConfig[0].url,
+        expect.objectContaining({
+          entity: mockCommonSearchWidgetConfig[0].context,
+        }),
+      );
     });
 
     it('does not call post when rows have validation errors', async () => {
@@ -341,38 +337,44 @@ describe('CommonSearchWidget', () => {
       expect(mockPost).not.toHaveBeenCalled();
     });
 
-    it('shows search summary and results table immediately with isLoading true on valid search', async () => {
+    it('shows loading overlay over search form while search is in progress', async () => {
       mockPost.mockReturnValue(new Promise(() => {}));
       await renderAndWait();
-      capturedOnSearch!(
-        [mockRowWithValidValue],
-        mockCommonSearchWidgetConfig[0],
-      );
-      await waitFor(() => {
-        expect(screen.getByTestId('search-summary')).toBeInTheDocument();
-        expect(screen.getByTestId('results-table')).toBeInTheDocument();
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
       });
-      expect(capturedIsLoading).toBe(true);
-      expect(capturedApiError).toBeNull();
+      expect(
+        screen.getByTestId('common-search-loading-overlay-test-id'),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('search-form')).toBeInTheDocument();
     });
 
-    it('passes apiError to ResultsTable when post fails', async () => {
+    it('hides loading overlay and shows error toast when search API fails', async () => {
       mockPost.mockRejectedValue(new Error('Network error'));
       await renderAndWait();
-      capturedOnSearch!(
-        [mockRowWithValidValue],
-        mockCommonSearchWidgetConfig[0],
-      );
-      await waitFor(() => {
-        expect(capturedIsLoading).toBe(false);
-        expect(capturedApiError).toBe('COMMON_SEARCH_API_ERROR_MESSAGE');
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+      expect(
+        screen.queryByTestId('common-search-loading-overlay-test-id'),
+      ).not.toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'COMMON_SEARCH_API_ERROR_MESSAGE',
+        type: 'error',
+        timeout: 5000,
       });
     });
   });
 
   describe('handleModifySearch', () => {
     it('returns to search form and hides results when Modify Search is clicked', async () => {
-      mockPost.mockReturnValue(new Promise(() => {}));
       (getConfig as jest.Mock).mockResolvedValueOnce(
         mockCommonSearchWidgetConfig,
       );
@@ -383,13 +385,13 @@ describe('CommonSearchWidget', () => {
       await waitFor(() =>
         expect(screen.getByTestId('search-form')).toBeInTheDocument(),
       );
-      capturedOnSearch!(
-        [mockRowWithValidValue],
-        mockCommonSearchWidgetConfig[0],
-      );
-      await waitFor(() =>
-        expect(screen.getByTestId('search-summary')).toBeInTheDocument(),
-      );
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+      expect(screen.getByTestId('search-summary')).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'Modify Search' }));
       await waitFor(() =>
         expect(screen.getByTestId('search-form')).toBeInTheDocument(),

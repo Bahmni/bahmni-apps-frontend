@@ -1,16 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ResultsTable Snapshot matches snapshot for API error state 1`] = `
-<div>
-  <p
-    class="_statePlaceholder_sw2cd_67"
-    data-testid="common-search-results-table-error"
-  >
-    COMMON_SEARCH_API_ERROR_MESSAGE
-  </p>
-</div>
-`;
-
 exports[`ResultsTable Snapshot matches snapshot for empty state 1`] = `
 <div>
   <section
@@ -92,76 +81,6 @@ exports[`ResultsTable Snapshot matches snapshot for evaluation error state 1`] =
   >
     COMMON_SEARCH_EVALUATION_ERROR
   </p>
-</div>
-`;
-
-exports[`ResultsTable Snapshot matches snapshot for loading state 1`] = `
-<div>
-  <div
-    class="dataTable"
-    data-testid="common-search-results-table-skeleton"
-  >
-    <div
-      class="cds--skeleton cds--data-table-container"
-    >
-      <table
-        class="_skeleton_sw2cd_62 cds--skeleton cds--data-table cds--data-table--compact"
-      >
-        <thead>
-          <tr>
-            <th>
-              <span />
-            </th>
-            <th>
-              <span />
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <span />
-            </td>
-            <td>
-              <span />
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <span />
-            </td>
-            <td>
-              <span />
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <span />
-            </td>
-            <td>
-              <span />
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <span />
-            </td>
-            <td>
-              <span />
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <span />
-            </td>
-            <td>
-              <span />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 </div>
 `;
 

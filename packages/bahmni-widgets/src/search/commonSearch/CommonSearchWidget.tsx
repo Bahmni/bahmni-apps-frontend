@@ -1,4 +1,8 @@
-import { CodeSnippetSkeleton, InlineNotification } from '@bahmni/design-system';
+import {
+  CodeSnippetSkeleton,
+  InlineNotification,
+  Loading,
+} from '@bahmni/design-system';
 import {
   getCurrentUserPrivileges,
   getConfig,
@@ -9,10 +13,11 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
+import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
 import { post } from './api';
 import {
-  ActiveSearchState,
+  CurrentSearchState,
   CommonSearchWidgetConfig,
   CriterionRow,
   SearchContextConfig,
@@ -26,7 +31,9 @@ import { buildPayload, resolveRows, validateRows } from './utils';
 
 const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const configUrl = extensionParams?.configUrl as string | undefined;
+  const [isSearchResultsLoading, setIsSearchResultsLoading] = useState(false);
   const [location] = useState<UserLocation | null>(() => {
     try {
       return getUserLoginLocation();
@@ -34,8 +41,8 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       return null;
     }
   });
-  const [activeSearchState, setActiveSearchState] =
-    useState<ActiveSearchState | null>(null);
+  const [currentSearchState, setCurrentSearchState] =
+    useState<CurrentSearchState | null>(null);
   const lastSearchRef = useRef<{
     rows: CriterionRow[];
     contextKey: SearchContextConfig['context'];
@@ -78,47 +85,50 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
     );
     if (!validated.some((r) => r.validationError ?? r.rangeOrderError)) {
       lastSearchRef.current = { rows: validated, contextKey: context.context };
-      setActiveSearchState({
+      setCurrentSearchState({
         context,
         rows: validated,
         resultFields: context.resultFields,
         results: [],
-        isLoading: true,
-        apiError: null,
       });
+      setIsSearchResultsLoading(true);
       post(
         context.url,
         buildPayload(resolveRows(validated, context.criteria), context.context),
       )
         .then((data) => {
-          setActiveSearchState((prev) =>
+          setCurrentSearchState((prev: CurrentSearchState | null) =>
             prev
               ? {
                   ...prev,
                   results: (data as { results: unknown[] }).results,
-                  isLoading: false,
-                  apiError: null,
                 }
               : null,
           );
+          setIsSearchResultsLoading(false);
         })
         .catch(() => {
-          setActiveSearchState((prev) =>
+          setCurrentSearchState((prev: CurrentSearchState | null) =>
             prev
               ? {
                   ...prev,
-                  isLoading: false,
-                  apiError: t('COMMON_SEARCH_API_ERROR_MESSAGE'),
                 }
               : null,
           );
+          setIsSearchResultsLoading(false);
+          addNotification({
+            title: t('ERROR_DEFAULT_TITLE'),
+            message: t('COMMON_SEARCH_API_ERROR_MESSAGE'),
+            type: 'error',
+            timeout: 5000,
+          });
         });
     }
     return validated;
   };
 
   const handleModifySearch = () => {
-    setActiveSearchState(null);
+    setCurrentSearchState(null);
   };
 
   if (isLoading)
@@ -177,17 +187,15 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       data-testid="common-search-widget-test-id"
       aria-label="Common Search"
     >
-      {activeSearchState ? (
+      {!isSearchResultsLoading && currentSearchState ? (
         <>
           <SearchSummary
-            activeSearchState={activeSearchState}
+            currentSearchState={currentSearchState}
             onModifySearch={handleModifySearch}
           />
           <ResultsTable
-            resultFields={activeSearchState.resultFields}
-            results={activeSearchState.results}
-            isLoading={activeSearchState.isLoading}
-            apiError={activeSearchState.apiError}
+            resultFields={currentSearchState.resultFields}
+            results={currentSearchState.results}
           />
         </>
       ) : (
@@ -198,6 +206,14 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
           savedRows={lastSearchRef.current?.rows}
           savedContextKey={lastSearchRef.current?.contextKey}
         />
+      )}
+      {isSearchResultsLoading && (
+        <div
+          id="common-search-loading-overlay"
+          data-testid="common-search-loading-overlay-test-id"
+        >
+          <Loading active withOverlay />
+        </div>
       )}
     </div>
   );

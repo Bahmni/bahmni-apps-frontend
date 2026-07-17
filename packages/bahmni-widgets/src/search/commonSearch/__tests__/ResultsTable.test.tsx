@@ -24,16 +24,12 @@ const renderTable = (
   overrides: Partial<{
     resultFields: typeof mockResultFields;
     results: unknown[];
-    isLoading: boolean;
-    apiError: string | null;
   }> = {},
 ) =>
   render(
     <ResultsTable
       resultFields={mockResultFields}
       results={mockResults}
-      isLoading={false}
-      apiError={null}
       {...overrides}
     />,
   );
@@ -76,23 +72,6 @@ describe('ResultsTable', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows loading skeleton when isLoading is true', () => {
-    renderTable({ isLoading: true, results: [] });
-    expect(
-      screen.getByTestId('common-search-results-table-skeleton'),
-    ).toBeInTheDocument();
-  });
-
-  it('shows API error message when apiError is set', () => {
-    renderTable({ apiError: 'COMMON_SEARCH_API_ERROR_MESSAGE', results: [] });
-    expect(
-      screen.getByTestId('common-search-results-table-error'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('COMMON_SEARCH_API_ERROR_MESSAGE'),
-    ).toBeInTheDocument();
-  });
-
   it('shows empty state message when results is an empty array', () => {
     renderTable({ results: [] });
     expect(screen.getByText('COMMON_SEARCH_NO_RESULTS')).toBeInTheDocument();
@@ -132,19 +111,6 @@ describe('ResultsTable', () => {
   describe('Snapshot', () => {
     it('matches snapshot for empty state', () => {
       const { container } = renderTable({ results: [] });
-      expect(container).toMatchSnapshot();
-    });
-
-    it('matches snapshot for loading state', () => {
-      const { container } = renderTable({ isLoading: true, results: [] });
-      expect(container).toMatchSnapshot();
-    });
-
-    it('matches snapshot for API error state', () => {
-      const { container } = renderTable({
-        apiError: 'COMMON_SEARCH_API_ERROR_MESSAGE',
-        results: [],
-      });
       expect(container).toMatchSnapshot();
     });
 

@@ -1,7 +1,7 @@
 import { Button, Edit, Tag } from '@bahmni/design-system';
 import { formatDateTime, useTranslation } from '@bahmni/services';
 import {
-  ActiveSearchState,
+  CurrentSearchState,
   CriterionConfig,
   CriterionValue,
   InputConfig,
@@ -9,7 +9,7 @@ import {
 import styles from './styles/CommonSearchWidget.module.scss';
 
 interface SearchSummaryProps {
-  activeSearchState: ActiveSearchState;
+  currentSearchState: CurrentSearchState;
   onModifySearch: () => void;
 }
 
@@ -40,11 +40,11 @@ const buildTagText = (
   `${t(criterion.translationKey)}: ${formatValue(row.value, criterion.input, t)}`;
 
 const SearchSummary = ({
-  activeSearchState,
+  currentSearchState,
   onModifySearch,
 }: SearchSummaryProps) => {
   const { t } = useTranslation();
-  const { context, rows } = activeSearchState;
+  const { context, rows } = currentSearchState;
 
   const tags = rows
     .filter(

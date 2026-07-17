@@ -34,7 +34,7 @@ describe('SearchSummary', () => {
   it('renders the context label', () => {
     render(
       <SearchSummary
-        activeSearchState={mockActiveSearchState}
+        currentSearchState={mockActiveSearchState}
         onModifySearch={onModifySearch}
       />,
     );
@@ -67,7 +67,7 @@ describe('SearchSummary', () => {
   ])('renders green tag for $label', ({ row, expected }) => {
     render(
       <SearchSummary
-        activeSearchState={{ ...mockActiveSearchState, rows: [row] }}
+        currentSearchState={{ ...mockActiveSearchState, rows: [row] }}
         onModifySearch={onModifySearch}
       />,
     );
@@ -77,7 +77,7 @@ describe('SearchSummary', () => {
   it('renders green tag for numeric range criterion', () => {
     render(
       <SearchSummary
-        activeSearchState={{
+        currentSearchState={{
           ...mockActiveSearchState,
           rows: [mockNumericRangeRow],
         }}
@@ -92,7 +92,7 @@ describe('SearchSummary', () => {
   it('renders green tag showing only from value for numeric range criterion with no to value', () => {
     render(
       <SearchSummary
-        activeSearchState={{
+        currentSearchState={{
           ...mockActiveSearchState,
           rows: [mockNumericFromOnlyRow],
         }}
@@ -105,7 +105,7 @@ describe('SearchSummary', () => {
   it('renders green tag for date scalar criterion', () => {
     render(
       <SearchSummary
-        activeSearchState={{
+        currentSearchState={{
           ...mockActiveSearchState,
           rows: [mockDateScalarRow],
         }}
@@ -120,7 +120,7 @@ describe('SearchSummary', () => {
   it('renders green tag for date range criterion', () => {
     render(
       <SearchSummary
-        activeSearchState={{
+        currentSearchState={{
           ...mockActiveSearchState,
           rows: [mockDateRangeRow],
         }}
@@ -135,7 +135,7 @@ describe('SearchSummary', () => {
   it('renders Modify Search button with Edit icon', () => {
     render(
       <SearchSummary
-        activeSearchState={mockActiveSearchState}
+        currentSearchState={mockActiveSearchState}
         onModifySearch={onModifySearch}
       />,
     );
@@ -150,7 +150,7 @@ describe('SearchSummary', () => {
     const user = userEvent.setup();
     render(
       <SearchSummary
-        activeSearchState={mockActiveSearchState}
+        currentSearchState={mockActiveSearchState}
         onModifySearch={onModifySearch}
       />,
     );
@@ -166,7 +166,7 @@ describe('SearchSummary', () => {
     it('matches snapshot', () => {
       const { container } = render(
         <SearchSummary
-          activeSearchState={mockActiveSearchState}
+          currentSearchState={mockActiveSearchState}
           onModifySearch={onModifySearch}
         />,
       );
@@ -178,7 +178,7 @@ describe('SearchSummary', () => {
     it('has no a11y violations', async () => {
       const { container } = render(
         <SearchSummary
-          activeSearchState={mockActiveSearchState}
+          currentSearchState={mockActiveSearchState}
           onModifySearch={onModifySearch}
         />,
       );
