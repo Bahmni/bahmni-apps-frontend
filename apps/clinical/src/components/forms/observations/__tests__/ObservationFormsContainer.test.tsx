@@ -1744,7 +1744,9 @@ describe('extractVersionFromFormFieldPath', () => {
   });
 
   it('extracts version from a formFieldPath with a multi-word form name', () => {
-    expect(extractVersionFromFormFieldPath('History and Examination.2/3-0')).toBe('2');
+    expect(
+      extractVersionFromFormFieldPath('History and Examination.2/3-0'),
+    ).toBe('2');
   });
 
   it('returns null when formFieldPath is undefined', () => {

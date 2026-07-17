@@ -442,11 +442,10 @@ describe('observationFormsService', () => {
     });
 
     it('uses OpenMRS record fields (uuid, name, version, published) when present', async () => {
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => makeResponse(),
-        });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => makeResponse(),
+      });
 
       const result = await fetchFormMetadata(formUuid);
 
@@ -495,7 +494,8 @@ describe('observationFormsService', () => {
                     uuid: formUuid,
                     version: '18',
                     controls: [],
-                    translationsUrl: '/openmrs/ws/rest/v1/bahmniie/form/translations',
+                    translationsUrl:
+                      '/openmrs/ws/rest/v1/bahmniie/form/translations',
                   }),
                 },
               ],
