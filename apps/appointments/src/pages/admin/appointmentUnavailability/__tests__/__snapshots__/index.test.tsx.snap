@@ -15,7 +15,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
     >
       <nav
         aria-label="Breadcrumb"
-        class="_breadcrumb_fbh29_74"
+        class="_breadcrumb_hjxxm_74"
         data-testid="breadcrumb"
       >
         <ol
@@ -156,7 +156,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
     >
       <nav
         aria-label="Breadcrumb"
-        class="_breadcrumb_fbh29_74"
+        class="_breadcrumb_hjxxm_74"
         data-testid="breadcrumb"
       >
         <ol

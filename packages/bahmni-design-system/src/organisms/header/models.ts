@@ -57,6 +57,12 @@ export interface HeaderProps {
   onSideNavItemClick?: (itemId: string) => void;
   isRail?: boolean;
   ariaLabel?: string;
+  /**
+   * @deprecated Use the dedicated slots instead: `brandName`/`brandPrefix`/`brandHref`
+   * for branding, `globalFeatures` for self-contained global-bar controls (e.g. a
+   * location selector), and `userMenu` for the user menu. `extraContent` renders
+   * outside those structured slots and will be removed in the next major (v2).
+   */
   extraContent?: ReactNode;
   /**
    * A self-contained component (e.g. the user menu) rendered directly in the
