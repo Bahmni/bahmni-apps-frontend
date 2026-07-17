@@ -1,0 +1,19 @@
+@use "@carbon/react/scss/spacing" as *;
+
+.container {
+  position: relative;
+  display: inline-block;
+  button,
+  button:hover,
+  button:active {
+    color: white;
+  }
+}
+
+.menu {
+  position: fixed;
+  inset-block-start: $spacing-09 !important;
+  inset-inline-start: unset !important;
+  inset-inline-end: $spacing-05 !important;
+  z-index: 9999;
+}

@@ -101,6 +101,14 @@ export {
   type WidgetConfig,
 } from './registry';
 
+// User Global Action
+export {
+  UserGlobalAction,
+  UserActionProvider,
+  useUserActionRegistry,
+  type UserAction,
+} from './userGlobalAction';
+
 // Location
 export {
   LocationContext,
