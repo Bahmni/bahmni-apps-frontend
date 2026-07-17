@@ -15,12 +15,7 @@ import {
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import type {
-  Bundle,
-  BundleEntry,
-  Encounter,
-  MedicationRequest,
-} from 'fhir/r4';
+import type { Bundle, BundleEntry, MedicationRequest } from 'fhir/r4';
 import React, {
   useCallback,
   useEffect,
@@ -73,6 +68,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     | undefined;
   const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
     | string
+    | undefined;
+  const directFormMode = encounterSessionStartContext.directFormMode as
+    | boolean
     | undefined;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -171,36 +169,44 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       encounterTypeUUID: selectedEncounterType?.uuid,
     });
 
-  const [editEncounter, setEditEncounter] = useState<Encounter | null>(null);
-  const [editEncounterLoading, setEditEncounterLoading] = useState(false);
-  useEffect(() => {
-    if (!editEncounterUuid) return;
-    const abortController = new AbortController();
-    setEditEncounterLoading(true);
-    getEncounterByUuid(editEncounterUuid, { signal: abortController.signal })
-      .then((enc) => {
-        if (!abortController.signal.aborted) setEditEncounter(enc);
-      })
-      .catch(() => {
-        if (!abortController.signal.aborted) {
-          setEditEncounter(null);
-          addNotification({
-            title: t('ERROR_DEFAULT_TITLE'),
-            message: t('CONSULTATION_ERROR_GENERIC'),
-            type: 'error',
-            timeout: 5000,
-          });
-        }
-      })
-      .finally(() => {
-        if (!abortController.signal.aborted) setEditEncounterLoading(false);
-      });
-    return () => {
-      abortController.abort();
-    };
-  }, [editEncounterUuid, addNotification, t]);
+  const {
+    data: editEncounter,
+    isLoading: editEncounterLoading,
+    error: editEncounterError,
+  } = useQuery({
+    queryKey: ['encounter', editEncounterUuid],
+    queryFn: ({ signal }) => getEncounterByUuid(editEncounterUuid!, { signal }),
+    enabled: Boolean(editEncounterUuid),
+  });
 
-  const activeEncounter = editEncounterUuid ? editEncounter : sessionEncounter;
+  useEffect(() => {
+    if (editEncounterError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('CONSULTATION_ERROR_GENERIC'),
+        type: 'error',
+        timeout: 5000,
+      });
+    }
+  }, [editEncounterError, addNotification, t]);
+
+  const activeEncounter = editEncounterUuid
+    ? (editEncounter ?? null)
+    : sessionEncounter;
+
+  useEffect(() => {
+    const periodStart = activeEncounter?.period?.start;
+    if (periodStart) {
+      const date = new Date(periodStart);
+      useEncounterDetailsStore
+        .getState()
+        .setConsultationDate(isNaN(date.getTime()) ? new Date() : date);
+    } else if (!editEncounterUuid) {
+      useEncounterDetailsStore.getState().setConsultationDate(new Date());
+    } else if (editEncounterUuid && !editEncounterLoading) {
+      useEncounterDetailsStore.getState().setConsultationDate(new Date());
+    }
+  }, [activeEncounter, editEncounterUuid, editEncounterLoading]);
 
   // Only resume the existing encounter on an exact MATCHED case.
   // SESSION_EXPIRED, LOCATION_MISMATCH, PROVIDER_MISMATCH all silently create a new encounter.
@@ -561,6 +567,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           onRemoveForm={removeForm}
           onFormObservationsChange={updateFormData}
           existingObservations={getFormData(viewingForm.uuid)?.observations}
+          activeEncounterUuid={activeEncounter?.id ?? null}
+          directMode={directFormMode}
+          onDirectModeSubmit={directFormMode ? handleSubmit : undefined}
+          onDirectModeCancel={directFormMode ? handleCancel : undefined}
+          encounterSessionStartContext={encounterSessionStartContext}
         />
       )}
     </>

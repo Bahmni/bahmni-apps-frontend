@@ -29,6 +29,12 @@
     },
     {
       "path": "./apps/appointments"
+    },
+    {
+      "path": "./apps/command-palette"
+    },
+    {
+      "path": "./apps/patient-documents"
     }
   ]
 }

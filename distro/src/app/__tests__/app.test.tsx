@@ -9,6 +9,16 @@ jest.mock('@bahmni/home-app', () => ({
   HomeApp: () => <main data-testid="index-page" />,
 }));
 
+jest.mock('@bahmni/patient-documents-app', () => ({
+  PatientDocumentsApp: () => <div data-testid="patient-documents-page" />,
+}));
+
+jest.mock('@bahmni/widgets', () => ({
+  AppContextProvider: ({ children }: { children: React.ReactNode }) => children,
+  CommandPaletteProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+
 describe('App', () => {
   it('renders the index route', async () => {
     render(
@@ -32,5 +42,17 @@ describe('App', () => {
     await act(async () => {});
 
     expect(screen.getByTestId('index-page')).toBeInTheDocument();
+  });
+
+  it('renders the patient-documents route', async () => {
+    render(
+      <MemoryRouter initialEntries={['/patient-documents/']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await act(async () => {});
+
+    expect(screen.getByTestId('patient-documents-page')).toBeInTheDocument();
   });
 });

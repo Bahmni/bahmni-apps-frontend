@@ -6,11 +6,12 @@ export {
   type BahmniThemeConfig,
 } from './utils/applyTheme';
 
-export { Close, Edit, TrashCan } from '@carbon/icons-react';
+export { Close, Edit, TrashCan, Printer } from '@carbon/icons-react';
 
 export { ArrowRight, type ArrowRightProps } from './atoms/arrowRight';
 
 export { Button, type ButtonProps } from './atoms/button';
+export { ComboButton, type ComboButtonProps } from './atoms/comboButton';
 export { IconButton, type IconButtonProps } from './atoms/iconButton';
 export { Breadcrumb, type BreadcrumbProps } from './atoms/breadcrumb';
 export { Tile, type TileProps } from './atoms/tile';
@@ -145,6 +146,7 @@ export { ImageTile, type ImageTileProps } from './molecules/imageTile';
 export { FileTile, type FileTileProps } from './molecules/fileTile';
 export { VideoTile, type VideoTileProps } from './molecules/videoTile';
 export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
+export { Menu } from './atoms/menu';
 export { MenuItem, type MenuItemProps } from './atoms/menuItem';
 export {
   MenuItemDivider,
@@ -166,3 +168,9 @@ export {
   TableExpandedRow,
   type TableExpandedRowProps,
 } from './atoms/tableExpandedRow';
+export { InlineLoading, type InlineLoadingProps } from './atoms/inlineLoading';
+export { OverflowMenu, type OverflowMenuProps } from './atoms/overflowMenu';
+export {
+  OverflowMenuItem,
+  type OverflowMenuItemProps,
+} from './atoms/overflowMenuItem';

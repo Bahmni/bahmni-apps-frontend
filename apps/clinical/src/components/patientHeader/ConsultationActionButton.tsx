@@ -45,7 +45,7 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
       {isActionAreaVisible
         ? t('CONSULTATION_ACTION_IN_PROGRESS')
         : editActiveEncounter
-          ? t('CONSULTATION_ACTION_EDIT')
+          ? t('CONSULTATION_ACTION_CONTINUE')
           : t('CONSULTATION_ACTION_NEW')}
     </Button>
   );

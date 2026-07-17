@@ -1,0 +1,94 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+
+.fullWidth {
+  max-inline-size: 100% !important;
+}
+
+.searchForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-04;
+  align-items: flex-start;
+}
+
+.dropdownCol {
+  flex: 0 0 100%;
+
+  @include breakpoint(md) {
+    flex: 1 1 0;
+    max-width: 30%;
+  }
+
+  @include breakpoint(lg) {
+    max-width: 25%;
+  }
+}
+
+.fullWidthCol {
+  flex: 0 0 100%;
+}
+
+.criterionRow {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-04;
+}
+
+.criterionSelector {
+  flex: 0 0 30%;
+
+  @include breakpoint(lg) {
+    flex: 0 0 25%;
+  }
+}
+
+.criterionInput {
+  flex: 1 1 0;
+}
+
+.criterionClose {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+.rangeContainer {
+  display: flex;
+  gap: $spacing-04;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: $spacing-05;
+  margin-top: $spacing-03;
+  border-top: 1px solid $border-subtle-02;
+}
+
+.rangeInputCol {
+  flex: 1 1 0;
+}
+
+.datePicker {
+  margin-inline-end: 0;
+  > div {
+    > div {
+      display: block;
+      min-inline-size: -webkit-fill-available !important;
+      > div {
+        display: block;
+        > div {
+          display: block;
+        }
+        input {
+          inline-size: -webkit-fill-available !important;
+        }
+      }
+    }
+  }
+}
+
+.numericInput {
+  margin-inline-end: 0;
+}

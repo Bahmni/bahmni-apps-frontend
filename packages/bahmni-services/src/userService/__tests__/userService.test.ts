@@ -1,12 +1,11 @@
-import axios from 'axios';
 import { get, post } from '../../api';
-import { BAHMNI_USER_COOKIE_NAME } from '../../constants/app';
-import { getCookieByName, deleteCookie } from '../../utils';
+import {
+  BAHMNI_USER_COOKIE_NAME,
+  BAHMNI_USER_LOCATION_COOKIE,
+} from '../../constants/app';
+import { getCookieByName } from '../../utils';
 import {
   USER_RESOURCE_URL,
-  BAHMNI_USER_LOCATION_COOKIE,
-  LOGOUT_URL,
-  LOGOUT_COOKIES,
   AVAILABLE_LOCATIONS_URL,
   APP_SETTINGS_URL,
   SAVE_USER_LOCATION_URL,
@@ -15,7 +14,6 @@ import {
 import {
   getCurrentUser,
   getUserLoginLocation,
-  logout,
   getDefaultDateFormat,
   getAvailableLocations,
   saveUserLocation,
@@ -23,30 +21,9 @@ import {
 } from '../userService';
 
 jest.mock('../../api');
-
-// logout uses a raw axios instance (axios.create()) to bypass the response
-// interceptor. We keep the real axios but override delete on created instances
-// with a controllable mock so the raw request can be asserted on.
-jest.mock('axios', () => {
-  const actual = jest.requireActual('axios');
-  const deleteMock = jest.fn();
-  return {
-    __esModule: true,
-    default: {
-      ...actual.default,
-      create: (...args: unknown[]) => {
-        const instance = actual.default.create(...args);
-        instance.delete = deleteMock;
-        return instance;
-      },
-    },
-  };
-});
-
 jest.mock('../../utils', () => ({
   ...jest.requireActual('../../utils'),
   getCookieByName: jest.fn(),
-  deleteCookie: jest.fn(),
 }));
 
 jest.mock('i18next', () => ({
@@ -293,72 +270,6 @@ describe('getUserLocation', () => {
     const result = await getUserLoginLocation();
     expect(getCookieByName).toHaveBeenCalledWith(BAHMNI_USER_LOCATION_COOKIE);
     expect(result).toEqual(userLocation);
-  });
-});
-
-describe('logout', () => {
-  // logout calls rawClient.delete on the raw axios instance created via
-  // axios.create(). create() returns the same delete mock on every call.
-  const rawDelete = (axios.create() as unknown as { delete: jest.Mock }).delete;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    rawDelete.mockReset();
-    (deleteCookie as jest.Mock).mockReset();
-  });
-
-  it('should delete session and clear cookies on successful logout', async () => {
-    rawDelete.mockResolvedValue({});
-
-    await logout();
-
-    expect(rawDelete).toHaveBeenCalledWith(LOGOUT_URL, {
-      withCredentials: true,
-    });
-    // LOGOUT_COOKIES.forEach(deleteCookie) passes each cookie name as the first
-    // argument, so assert on that rather than an exact single-argument match.
-    expect(
-      (deleteCookie as jest.Mock).mock.calls.map((call) => call[0]),
-    ).toEqual([...LOGOUT_COOKIES]);
-  });
-
-  it('should clear all required cookies', async () => {
-    rawDelete.mockResolvedValue({});
-
-    await logout();
-
-    expect(deleteCookie).toHaveBeenCalledTimes(LOGOUT_COOKIES.length);
-  });
-
-  it('should re-throw the original error when API call fails', async () => {
-    const mockError = new Error('Network error');
-    rawDelete.mockRejectedValue(mockError);
-
-    await expect(logout()).rejects.toThrow('Network error');
-  });
-
-  it('should still clear cookies when the API call fails', async () => {
-    const mockError = new Error('Network error');
-    rawDelete.mockRejectedValue(mockError);
-
-    try {
-      await logout();
-    } catch {
-      // Expected to throw
-    }
-
-    expect(deleteCookie).toHaveBeenCalledTimes(LOGOUT_COOKIES.length);
-  });
-
-  it('should clear cookies and re-throw when the session has already expired (401)', async () => {
-    const expiredError = {
-      isAxiosError: true,
-      response: { status: 401 },
-    };
-    rawDelete.mockRejectedValue(expiredError);
-
-    await expect(logout()).rejects.toBe(expiredError);
-    expect(deleteCookie).toHaveBeenCalledTimes(LOGOUT_COOKIES.length);
   });
 });
 

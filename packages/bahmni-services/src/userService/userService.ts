@@ -1,15 +1,14 @@
-import axios from 'axios';
 import i18next from 'i18next';
 import { get, post } from '../api';
-import { BAHMNI_USER_COOKIE_NAME } from '../constants/app';
-import { getCookieByName, deleteCookie } from '../utils';
+import {
+  BAHMNI_USER_COOKIE_NAME,
+  BAHMNI_USER_LOCATION_COOKIE,
+} from '../constants/app';
+import { getCookieByName } from '../utils';
 import {
   USER_RESOURCE_URL,
-  BAHMNI_USER_LOCATION_COOKIE,
   APP_SETTINGS_URL,
   DEFAULT_DATE_FORMAT_PROPERTY,
-  LOGOUT_URL,
-  LOGOUT_COOKIES,
   AVAILABLE_LOCATIONS_URL,
   SAVE_USER_LOCATION_URL,
   UPDATE_SESSION_LOCATION_URL,
@@ -86,21 +85,6 @@ export const getDefaultDateFormat = async (): Promise<string | null> => {
 export const getAvailableLocations = async (): Promise<UserLocation[]> => {
   const response = await get<LocationsResponse>(AVAILABLE_LOCATIONS_URL);
   return response.results ?? [];
-};
-
-/**
- * Logs out the current user by clearing session and cookies
- * @throws Error with i18n key if logout fails
- */
-
-// Raw instance — no interceptors attached
-const rawClient = axios.create();
-export const logout = async (): Promise<void> => {
-  try {
-    await rawClient.delete(LOGOUT_URL, { withCredentials: true });
-  } finally {
-    LOGOUT_COOKIES.forEach(deleteCookie);
-  }
 };
 
 /**

@@ -5,20 +5,24 @@ import {
   PatientProgramsResponse,
 } from '@bahmni/services';
 import { KNOWN_FIELDS } from './constants';
-import { PatientProgramViewModel } from './model';
+import { PatientProgramViewModel, ProgramField } from './model';
 
-export function extractProgramAttributeNames(fields?: string[]): string[] {
+export function extractProgramAttributeNames(
+  fields?: ProgramField[],
+): string[] {
   if (!fields) return [];
-  return fields.filter((field) => !KNOWN_FIELDS.includes(field));
+  return fields
+    .map((field) => field.name)
+    .filter((name) => !KNOWN_FIELDS.includes(name));
 }
 
 export function createProgramHeaders(
-  fields: string[],
+  fields: ProgramField[],
   t: (key: string) => string,
 ): Array<{ key: string; header: string }> {
   return fields.map((field) => ({
-    key: field,
-    header: t(`PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field)}`),
+    key: field.name,
+    header: t(`PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field.name)}`),
   }));
 }
 

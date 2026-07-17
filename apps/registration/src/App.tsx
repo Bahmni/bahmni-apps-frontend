@@ -1,9 +1,11 @@
+import { CommandPaletteProvider } from '@bahmni/command-palette-app';
 import { Content, initFontAwesome, Loading } from '@bahmni/design-system';
 import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,
+  UserActionProvider,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -50,14 +52,18 @@ const RegistrationApp: React.FC = () => {
           <RegistrationConfigProvider>
             <PersonAttributesProvider>
               <UserPrivilegeProvider>
-                <Routes>
-                  <Route path="/search" element={<PatientSearchPage />} />
-                  <Route path="patient/new" element={<PatientRegister />} />
-                  <Route
-                    path="/patient/:patientUuid"
-                    element={<PatientRegister />}
-                  />
-                </Routes>
+                <UserActionProvider>
+                  <CommandPaletteProvider>
+                    <Routes>
+                      <Route path="/search" element={<PatientSearchPage />} />
+                      <Route path="patient/new" element={<PatientRegister />} />
+                      <Route
+                        path="/patient/:patientUuid"
+                        element={<PatientRegister />}
+                      />
+                    </Routes>
+                  </CommandPaletteProvider>
+                </UserActionProvider>
               </UserPrivilegeProvider>
             </PersonAttributesProvider>
           </RegistrationConfigProvider>

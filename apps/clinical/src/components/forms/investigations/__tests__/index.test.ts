@@ -1,4 +1,4 @@
-import { createServiceRequestBundleEntries } from '../../../../services/consultationBundleService';
+import { createServiceRequestBundleEntries } from '../../../../services/encounterBundleService';
 import { useServiceRequestStore } from '../../../../stores';
 import { clearRegistry, getRegisteredInputControls } from '../../registry';
 import InvestigationsForm from '../InvestigationsForm';
@@ -12,7 +12,7 @@ jest.mock('../../../../stores', () => ({
   },
 }));
 
-jest.mock('../../../../services/consultationBundleService', () => ({
+jest.mock('../../../../services/encounterBundleService', () => ({
   createServiceRequestBundleEntries: jest.fn().mockReturnValue([]),
 }));
 
