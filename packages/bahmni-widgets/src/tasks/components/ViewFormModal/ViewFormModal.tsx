@@ -1,6 +1,10 @@
 import { Modal } from '@bahmni/design-system';
-import { getPatientObservationsBundle, useTranslation } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import {
+  getEncounterByUuid,
+  getPatientObservationsBundle,
+  useTranslation,
+} from '@bahmni/services';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import React, { useMemo } from 'react';
 import { ObservationsRenderer } from '../../../observationsRenderer';
@@ -41,9 +45,9 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
 
   const {
     data: bundle,
-    isLoading,
-    error,
-  } = useQuery<Bundle<Observation | Encounter>, Error>({
+    isLoading: isLoadingObservations,
+    error: observationsError,
+  } = useQuery<Bundle<Observation>, Error>({
     queryKey: [
       'taskObservations',
       task?.code,
@@ -60,13 +64,13 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
         );
       }
       return { resourceType: 'Bundle', type: 'searchset' } as Bundle<
-        Observation | Encounter
+        Observation
       >;
     },
     enabled: open && !!task && !!formName,
   });
 
-  const encounterGroups = useMemo(() => {
+  const filteredObservations = useMemo(() => {
     if (!bundle || !formName) return [];
 
     const allObservations =
@@ -74,13 +78,59 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
         ?.filter((entry) => entry.resource?.resourceType === 'Observation')
         .map((entry) => entry.resource as Observation) ?? [];
 
-    const filteredObservations = allObservations.filter((obs) => {
+    return allObservations.filter((obs) => {
       const path = extractFormFieldPath(obs);
       return path?.toLowerCase().includes(formName.toLowerCase());
     });
-
-    return groupObservationsByEncounter(filteredObservations, bundle);
   }, [bundle, formName]);
+
+  const encounterUuids = useMemo(() => {
+    const uuids = new Set<string>();
+    filteredObservations.forEach((obs) => {
+      if (obs.encounter?.reference) {
+        const uuid = extractUuidFromReference(obs.encounter.reference);
+        if (uuid) uuids.add(uuid);
+      }
+    });
+    return Array.from(uuids);
+  }, [filteredObservations]);
+
+  const encounterQueries = useQueries({
+    queries: encounterUuids.map((uuid) => ({
+      queryKey: ['encounter', uuid],
+      queryFn: () => getEncounterByUuid(uuid),
+      enabled: open && encounterUuids.length > 0,
+    })),
+  });
+
+  const isLoadingEncounters = encounterQueries.some((q) => q.isLoading);
+  const encountersError = encounterQueries.find((q) => q.error)?.error;
+  const encounters = useMemo(() => {
+    return encounterQueries
+      .map((q) => q.data)
+      .filter((enc): enc is Encounter => !!enc);
+  }, [encounterQueries]);
+
+  const encounterGroups = useMemo(() => {
+    if (
+      filteredObservations.length === 0 ||
+      isLoadingEncounters ||
+      encounters.length === 0
+    ) {
+      return [];
+    }
+
+    const encountersBundle: Bundle<Encounter> = {
+      resourceType: 'Bundle',
+      type: 'searchset',
+      entry: encounters.map((enc) => ({ resource: enc })),
+    };
+
+    return groupObservationsByEncounter(filteredObservations, encountersBundle);
+  }, [filteredObservations, encounters, isLoadingEncounters]);
+
+  const isLoading = isLoadingObservations || isLoadingEncounters;
+  const error = observationsError ?? encountersError;
 
   const formatDateTime = (timestamp: number): string => {
     if (!timestamp) return '';
@@ -121,6 +171,7 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
       onRequestClose={onClose}
       modalHeading={formName ?? t('VIEW_DATA')}
       size="lg"
+      passiveModal
       testId="view-form-modal"
     >
       <Modal.Body>

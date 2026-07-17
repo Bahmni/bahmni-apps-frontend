@@ -33,12 +33,12 @@ export const extractFormFieldPath = (observation: Observation): string | null =>
 /**
  * Group observations by encounter
  * @param observations - Array of FHIR Observation resources
- * @param bundle - FHIR Bundle containing observations and included encounters
- * @returns Array of encounter groups with observations
+ * @param bundle - FHIR Bundle containing encounter resources
+ * @returns Array of encounter groups with observations, sorted by date (most recent first)
  */
 export const groupObservationsByEncounter = (
   observations: Observation[],
-  bundle: Bundle<Observation | Encounter>,
+  bundle: Bundle<Encounter>,
 ): EncounterGroup[] => {
   const encounterMap = new Map<string, EncounterGroup>();
 
@@ -60,13 +60,15 @@ export const groupObservationsByEncounter = (
     const encounterUuid = extractUuidFromReference(encounterRef);
     const encounterData = encounterDataMap.get(encounterUuid);
 
+    if (!encounterData) return;
+
     if (!encounterMap.has(encounterUuid)) {
-      const encounterDateTime = encounterData?.period?.start
+      const encounterDateTime = encounterData.period?.start
         ? new Date(encounterData.period.start).getTime()
         : 0;
 
       const providerName =
-        encounterData?.participant?.[0]?.individual?.display ?? 'Unknown';
+        encounterData.participant?.[0]?.individual?.display ?? 'Unknown';
 
       encounterMap.set(encounterUuid, {
         encounterUuid,
