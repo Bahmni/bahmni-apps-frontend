@@ -137,6 +137,52 @@ describe('createObservationEntries', () => {
       );
       expect(entries).toHaveLength(0);
     });
+
+    it('skips a new observation when getFhirObservations returns no entry', () => {
+      (getFhirObservations as jest.Mock).mockReturnValue([]);
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 42,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+      expect(entries).toHaveLength(0);
+    });
+
+    it('skips an existing observation when getFhirObservations returns no entry', () => {
+      (getFhirObservations as jest.Mock).mockReturnValue([]);
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 42,
+        uuid: 'existing-obs-uuid',
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+      expect(entries).toHaveLength(0);
+    });
+
+    it('skips a never-saved voided observation (no uuid + voided)', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: null,
+        voided: true,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+      expect(entries).toHaveLength(0);
+    });
   });
 
   describe('grouped observations (obsGroup)', () => {
@@ -187,6 +233,51 @@ describe('createObservationEntries', () => {
       expect((parentEntry?.resource as Record<string, unknown>).id).toBe(
         'parent-obs-uuid',
       );
+    });
+
+    it('skips new parent obsGroup when getFhirObservations returns no entry for parent', () => {
+      // Child call succeeds so hasMemberRefs is non-empty (allChildrenDeleted=false),
+      // but the subsequent parent POST call returns nothing → parent is skipped.
+      (getFhirObservations as jest.Mock)
+        .mockReturnValueOnce([mockEntry('urn:uuid:child')]) // child POST
+        .mockReturnValueOnce([]); // parent POST returns nothing
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
+      };
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+      // Child entry is added but parent is skipped
+      expect(entries).toHaveLength(1);
+      expect(entries[0].fullUrl).toBe('urn:uuid:child');
+    });
+
+    it('skips existing parent obsGroup when getFhirObservations returns no entry for the parent', () => {
+      // Child call succeeds (returns a ref) so not all children are deleted,
+      // but the subsequent parent POST call returns nothing → parent is skipped.
+      (getFhirObservations as jest.Mock)
+        .mockReturnValueOnce([mockEntry('urn:uuid:child')]) // child POST
+        .mockReturnValueOnce([]); // parent POST returns nothing
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-uuid',
+        groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
+      };
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+      // Child entry is added but parent entry is skipped (returns null)
+      expect(entries).toHaveLength(1);
+      expect(entries[0].fullUrl).toBe('urn:uuid:child');
     });
 
     it('emits DELETE for parent obsGroup when all children are removed', () => {
