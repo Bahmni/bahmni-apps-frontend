@@ -38,7 +38,12 @@ export function createObservationEntries(
   const processObservation = (obs: Form2Observation): string | null => {
     // Returns the fullUrl/reference to use in a parent's hasMember (null = deleted).
     if (obs.groupMembers && obs.groupMembers.length > 0) {
-      return processGroupedObservation(obs, processObservation, entries, options);
+      return processGroupedObservation(
+        obs,
+        processObservation,
+        entries,
+        options,
+      );
     }
     return processLeafObservation(obs, entries, options);
   };
@@ -76,7 +81,13 @@ function processGroupedObservation(
   }
   const allChildrenDeleted = hasMemberRefs.length === 0;
   if (obs.uuid) {
-    return processExistingGroup(obs, allChildrenDeleted, hasMemberRefs, entries, options);
+    return processExistingGroup(
+      obs,
+      allChildrenDeleted,
+      hasMemberRefs,
+      entries,
+      options,
+    );
   }
   if (allChildrenDeleted) return null;
   return postNewGroup(obs, hasMemberRefs, entries, options);
@@ -115,7 +126,9 @@ function processExistingGroup(
     if (obs.status) {
       parentEntry.resource.status = obs.status as Observation['status'];
     }
-    parentEntry.resource.hasMember = hasMemberRefs.map((ref) => ({ reference: ref }));
+    parentEntry.resource.hasMember = hasMemberRefs.map((ref) => ({
+      reference: ref,
+    }));
     const url = `Observation/${obs.uuid}`;
     entries.push(createBundleEntry(url, parentEntry.resource, 'POST'));
     return url;
@@ -135,8 +148,12 @@ function postNewGroup(
     options,
   ) as ObsEntry[];
   if (parentEntry) {
-    parentEntry.resource.hasMember = hasMemberRefs.map((ref) => ({ reference: ref }));
-    entries.push(createBundleEntry(parentEntry.fullUrl, parentEntry.resource, 'POST'));
+    parentEntry.resource.hasMember = hasMemberRefs.map((ref) => ({
+      reference: ref,
+    }));
+    entries.push(
+      createBundleEntry(parentEntry.fullUrl, parentEntry.resource, 'POST'),
+    );
     return parentEntry.fullUrl;
   }
   return null;
