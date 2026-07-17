@@ -307,7 +307,7 @@ describe('DataTable numeric filter', () => {
     ).toBeInTheDocument();
   });
 
-  it('narrows rows when a number is typed (substring match)', async () => {
+  it('narrows rows when an exact number is typed', async () => {
     const user = userEvent.setup();
     render(
       <DataTable
@@ -321,13 +321,13 @@ describe('DataTable numeric filter', () => {
 
     await user.click(screen.getByTestId('patients-table-filter-toggle'));
     const input = screen.getByRole('spinbutton', { name: /filter age/i });
-    await user.type(input, '5');
+    await user.type(input, '25');
 
     const visibleRows = screen.getAllByTestId(/^table-row-/);
-    expect(visibleRows).toHaveLength(2);
+    expect(visibleRows).toHaveLength(1);
     expect(screen.getByText('Alice')).toBeInTheDocument();
-    expect(screen.getByText('Carol')).toBeInTheDocument();
     expect(screen.queryByText('Bob')).not.toBeInTheDocument();
+    expect(screen.queryByText('Carol')).not.toBeInTheDocument();
   });
 
   it('restores all rows when the filter toggle is used to clear', async () => {
@@ -344,8 +344,8 @@ describe('DataTable numeric filter', () => {
 
     await user.click(screen.getByTestId('patients-table-filter-toggle'));
     const input = screen.getByRole('spinbutton', { name: /filter age/i });
-    await user.type(input, '5');
-    expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(2);
+    await user.type(input, '25');
+    expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(1);
 
     await user.click(screen.getByTestId('patients-table-filter-toggle'));
     expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(3);
