@@ -300,7 +300,11 @@ function getObsValue(
   value: unknown,
 ): string | number | boolean | ConceptValue | ComplexValue | null {
   if (value == null) return null;
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
     return value;
   }
   if (typeof value === 'object') return value as ConceptValue | ComplexValue;
@@ -315,7 +319,6 @@ export function transformContainerObservationsToForm2Observations(
   containerObservations: Record<string, unknown>[],
 ): Form2Observation[] {
   const transform = (obs: Record<string, unknown>): Form2Observation => {
-
     const concept = obs.concept as Record<string, unknown> | string | undefined;
     const conceptUuid: string =
       typeof concept === 'object' && concept !== null && 'uuid' in concept
