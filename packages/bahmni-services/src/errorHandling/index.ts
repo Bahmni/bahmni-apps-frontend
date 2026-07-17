@@ -1,1 +1,2 @@
-export { getFormattedError } from './utils';
+export { getFormattedError, getErrorKind } from './utils';
+export type { ErrorKind } from './utils';

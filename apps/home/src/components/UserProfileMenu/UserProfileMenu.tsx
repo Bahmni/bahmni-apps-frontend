@@ -1,5 +1,5 @@
 import { SkeletonPlaceholder } from '@bahmni/design-system';
-import { useTranslation, logout, getFormattedError } from '@bahmni/services';
+import { useTranslation, logout, getErrorKind } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { UserAvatar } from '@carbon/icons-react';
 import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
@@ -31,10 +31,24 @@ export const UserProfileMenu: React.FC = () => {
       await logout();
       window.location.href = LOGIN_PATH;
     } catch (error) {
-      const { title, message } = getFormattedError(error);
+      const kind = getErrorKind(error);
+      if (kind === 'unauthorized') {
+        window.location.href = LOGIN_PATH;
+        return;
+      }
+
+      const messageKey =
+        kind === 'network'
+          ? 'HOME_ERROR_LOGOUT_NETWORK'
+          : kind === 'timeout'
+            ? 'HOME_ERROR_LOGOUT_TIMEOUT'
+            : kind === 'server'
+              ? 'HOME_ERROR_LOGOUT_SERVER'
+              : 'HOME_ERROR_LOGOUT_FAILED';
+
       addNotification({
-        title: t(title),
-        message: t(message),
+        title: t('HOME_ERROR_LOGOUT_FAILED_TITLE'),
+        message: t(messageKey),
         type: 'error',
       });
       // eslint-disable-next-line no-console

@@ -66,6 +66,26 @@ const extractBackendMessage = (data: unknown): string | undefined => {
   return message;
 };
 
+export type ErrorKind =
+  | 'unauthorized' // HTTP 401 — session already ended
+  | 'network' // no response received (offline / DNS / CORS)
+  | 'timeout' // request aborted because it timed out
+  | 'server' // HTTP 5xx
+  | 'unknown'; // anything else (non-Axios error, other 4xx, etc.)
+
+export const getErrorKind = (error: unknown): ErrorKind => {
+  if (axios.isAxiosError(error)) {
+    if (error.response) {
+      if (error.response.status === 401) return 'unauthorized';
+      if (error.response.status >= 500) return 'server';
+      return 'unknown';
+    }
+    if (error.code === 'ECONNABORTED') return 'timeout';
+    return 'network';
+  }
+  return 'unknown';
+};
+
 /**
  * Formats error messages from different sources
  * @param error - The error to format

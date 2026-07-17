@@ -92,7 +92,8 @@ export {
   type AppointmentUnavailability,
   type CreateUnavailabilityRequest,
 } from './appointmentService';
-export { getFormattedError } from './errorHandling';
+export { getFormattedError, getErrorKind } from './errorHandling';
+export type { ErrorKind } from './errorHandling';
 export {
   capitalize,
   generateId,

@@ -1,4 +1,4 @@
-import { logout, getFormattedError } from '@bahmni/services';
+import { logout } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -23,7 +23,6 @@ jest.mock('@bahmni/design-system', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   logout: jest.fn(),
-  getFormattedError: jest.fn(),
 }));
 
 jest.mock('@carbon/react', () => ({
@@ -63,9 +62,6 @@ const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
 >;
 const mockLogout = logout as jest.MockedFunction<typeof logout>;
-const mockGetFormattedError = getFormattedError as jest.MockedFunction<
-  typeof getFormattedError
->;
 
 describe('UserProfileMenu', () => {
   const mockUser = {
@@ -88,11 +84,6 @@ describe('UserProfileMenu', () => {
       error: null,
       refetch: jest.fn(),
     } as any);
-
-    mockGetFormattedError.mockReturnValue({
-      title: 'Error',
-      message: 'Something went wrong',
-    });
 
     delete (window as any).location;
     window.location = { href: '' } as any;
@@ -222,39 +213,87 @@ describe('UserProfileMenu', () => {
     });
 
     expect(mockAddNotification).toHaveBeenCalledWith({
-      title: 'Error',
-      message: 'Something went wrong',
+      title: 'Logout Failed',
+      message: 'Logout failed. Please try again.',
       type: 'error',
     });
     expect(logoutBtn).not.toBeDisabled();
     consoleErrorSpy.mockRestore();
   });
 
-  it('displays the timeout message from getFormattedError when logout times out', async () => {
+  it('shows a network-specific message when logout fails without a response', async () => {
     const consoleErrorSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
-    mockLogout.mockRejectedValue(new Error('timeout of 5000ms exceeded'));
-    mockGetFormattedError.mockReturnValue({
-      title: 'Request Timeout',
-      message: 'Request timed out. Please try again.',
+    mockLogout.mockRejectedValue({ isAxiosError: true });
+    const user = userEvent.setup();
+
+    render(<UserProfileMenu />);
+
+    await user.click(screen.getByRole('button', { name: 'Logout' }));
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Logout Failed',
+        message:
+          'Unable to connect. Please check your internet connection and try again.',
+        type: 'error',
+      });
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('shows a timeout-specific message when the logout request times out', async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    mockLogout.mockRejectedValue({ isAxiosError: true, code: 'ECONNABORTED' });
+    const user = userEvent.setup();
+
+    render(<UserProfileMenu />);
+
+    await user.click(screen.getByRole('button', { name: 'Logout' }));
+
+    await waitFor(() => {
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'Logout Failed',
+        message: 'Logout timed out. Please try again.',
+        type: 'error',
+      });
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('shows a generic server message on a 5xx failure without leaking the backend body', async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const sqlLeak = 'ORA-00933: SQL command not properly ended';
+    mockLogout.mockRejectedValue({
+      isAxiosError: true,
+      response: { status: 500, data: { error: sqlLeak } },
     });
     const user = userEvent.setup();
 
     render(<UserProfileMenu />);
 
-    const logoutBtn = screen.getByRole('button', { name: 'Logout' });
-    await user.click(logoutBtn);
+    await user.click(screen.getByRole('button', { name: 'Logout' }));
 
     await waitFor(() => {
       expect(mockAddNotification).toHaveBeenCalledWith({
-        title: 'Request Timeout',
-        message: 'Request timed out. Please try again.',
+        title: 'Logout Failed',
+        message: 'The server encountered an error. Please try again later.',
         type: 'error',
       });
     });
 
-    expect(logoutBtn).not.toBeDisabled();
+    // The raw backend body must never reach the user-facing notification.
+    expect(mockAddNotification).not.toHaveBeenCalledWith(
+      expect.objectContaining({ message: expect.stringContaining(sqlLeak) }),
+    );
+
     consoleErrorSpy.mockRestore();
   });
 
@@ -306,7 +345,6 @@ describe('UserProfileMenu', () => {
     });
 
     expect(mockAddNotification).not.toHaveBeenCalled();
-    expect(mockGetFormattedError).not.toHaveBeenCalled();
   });
 
   describe('Accessibility', () => {
