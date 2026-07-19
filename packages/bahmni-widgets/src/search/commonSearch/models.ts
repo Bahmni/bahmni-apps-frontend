@@ -35,6 +35,7 @@ export type CriterionValue = ScalarValue | RangeValue;
 export interface TextInput {
   kind: 'text';
   placeholderTranslationKey: string;
+  regex?: string;
 }
 
 export interface NumericInput {
@@ -75,6 +76,15 @@ export interface CriterionConfig {
   input: InputConfig;
 }
 
+export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
+
+export interface ResultFieldConfig {
+  translationKey: string;
+  expression: string;
+  enableSort?: boolean;
+  filterType?: ResultFieldFilterType;
+}
+
 export interface SearchContextConfig {
   context: 'patient' | 'appointment' | 'episodeOfCare';
   translationKey: string;
@@ -83,6 +93,7 @@ export interface SearchContextConfig {
   url: string;
   pageSize: number;
   criteria: CriterionConfig[];
+  resultFields: ResultFieldConfig[];
 }
 
 export type CommonSearchWidgetConfig = [
@@ -96,4 +107,34 @@ export interface CriterionRow {
   value: CriterionValue | null;
   validationError: string | null;
   rangeOrderError: string | null;
+}
+
+export interface CurrentSearchState {
+  context: SearchContextConfig;
+  rows: CriterionRow[];
+  resultFields: ResultFieldConfig[];
+  results: unknown[];
+}
+
+export interface ResolvedRow {
+  field: FieldConfig;
+  value: CriterionValue;
+}
+
+export interface SearchConditionLeaf {
+  field: string;
+  comparator: Comparator;
+  value: string;
+}
+
+export interface SearchConditionGroup {
+  operator: 'AND' | 'OR';
+  conditions: SearchCondition[];
+}
+
+export type SearchCondition = SearchConditionLeaf | SearchConditionGroup;
+
+export interface SearchPayload {
+  entity: string;
+  criteria: SearchConditionGroup;
 }
