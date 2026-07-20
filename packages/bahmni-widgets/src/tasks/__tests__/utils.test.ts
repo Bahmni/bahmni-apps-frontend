@@ -1,9 +1,17 @@
+import type { TaskViewModel } from '../models';
 import {
   extractFormNameFromTask,
   canUserEditForm,
   hasViewFormViews,
   isViewVisible,
 } from '../utils';
+import {
+  mockTaskConfigWithViews,
+  mockTaskConfigEmptyViews,
+  mockTaskConfigNoViews,
+  mockViewFormView,
+  mockViewFormViewRestricted,
+} from './__mocks__/configMocks';
 import {
   mockTaskViewModelWithInput,
   mockTaskViewModelWithoutInput,
@@ -13,15 +21,7 @@ import {
   mockUserPrivileges,
   mockEmptyUserPrivileges,
 } from './__mocks__/taskActionsMocks';
-import {
-  mockTaskConfigWithViews,
-  mockTaskConfigEmptyViews,
-  mockTaskConfigNoViews,
-  mockViewFormView,
-  mockViewFormViewRestricted,
-} from './__mocks__/configMocks';
-import { VITALS_TASK_CODE, LAB_TESTS_TASK_CODE } from './__mocks__/taskListMocks';
-import type { TaskViewModel } from '../models';
+import { VITALS_TASK_CODE } from './__mocks__/taskListMocks';
 
 describe('extractFormNameFromTask', () => {
   it('should extract valueString from matching input', () => {
@@ -137,11 +137,21 @@ describe('canUserEditForm', () => {
 
 describe('hasViewFormViews', () => {
   it.each([
-    ['taskConfig with viewForm views', mockTaskConfigWithViews, VITALS_TASK_CODE, true],
+    [
+      'taskConfig with viewForm views',
+      mockTaskConfigWithViews,
+      VITALS_TASK_CODE,
+      true,
+    ],
     ['empty views array', mockTaskConfigEmptyViews, VITALS_TASK_CODE, false],
     ['no views property', mockTaskConfigNoViews, VITALS_TASK_CODE, false],
     ['empty taskConfig', [], VITALS_TASK_CODE, false],
-    ['non-matching task code', mockTaskConfigWithViews, 'non-existent-code', false],
+    [
+      'non-matching task code',
+      mockTaskConfigWithViews,
+      'non-existent-code',
+      false,
+    ],
   ])('should return %s for %s', (_, config, taskCode, expected) => {
     expect(hasViewFormViews(config, taskCode)).toBe(expected);
   });
@@ -164,19 +174,21 @@ describe('hasViewFormViews', () => {
         ],
       },
     ];
-    expect(hasViewFormViews(configWithMultipleViews, VITALS_TASK_CODE)).toBe(true);
+    expect(hasViewFormViews(configWithMultipleViews, VITALS_TASK_CODE)).toBe(
+      true,
+    );
   });
 
   it('should return false when views exist but none are viewForm type', () => {
     const configWithNonViewFormViews = [
       {
         taskCode: VITALS_TASK_CODE,
-        views: [
-          { ...mockViewFormView, type: 'otherType' },
-        ],
+        views: [{ ...mockViewFormView, type: 'otherType' }],
       },
     ];
-    expect(hasViewFormViews(configWithNonViewFormViews, VITALS_TASK_CODE)).toBe(false);
+    expect(hasViewFormViews(configWithNonViewFormViews, VITALS_TASK_CODE)).toBe(
+      false,
+    );
   });
 });
 
@@ -222,7 +234,11 @@ describe('isViewVisible', () => {
           input: [],
         },
       };
-      const result = isViewVisible(mockViewFormView, taskWithoutInput, mockUserPrivileges);
+      const result = isViewVisible(
+        mockViewFormView,
+        taskWithoutInput,
+        mockUserPrivileges,
+      );
       expect(result).toBe(false);
     });
 
@@ -234,12 +250,20 @@ describe('isViewVisible', () => {
           input: undefined,
         },
       };
-      const result = isViewVisible(mockViewFormView, taskWithNoInput, mockUserPrivileges);
+      const result = isViewVisible(
+        mockViewFormView,
+        taskWithNoInput,
+        mockUserPrivileges,
+      );
       expect(result).toBe(false);
     });
 
     it('should return true when form name exists', () => {
-      const result = isViewVisible(mockViewFormView, mockCompletedTask, mockUserPrivileges);
+      const result = isViewVisible(
+        mockViewFormView,
+        mockCompletedTask,
+        mockUserPrivileges,
+      );
       expect(result).toBe(true);
     });
   });
@@ -251,7 +275,11 @@ describe('isViewVisible', () => {
     });
 
     it('should return false when userPrivileges is empty array', () => {
-      const result = isViewVisible(mockViewFormView, mockCompletedTask, mockEmptyUserPrivileges);
+      const result = isViewVisible(
+        mockViewFormView,
+        mockCompletedTask,
+        mockEmptyUserPrivileges,
+      );
       expect(result).toBe(false);
     });
 
@@ -260,17 +288,29 @@ describe('isViewVisible', () => {
         ...mockViewFormView,
         requiredPrivileges: [],
       };
-      const result = isViewVisible(viewWithNoPrivileges, mockCompletedTask, mockUserPrivileges);
+      const result = isViewVisible(
+        viewWithNoPrivileges,
+        mockCompletedTask,
+        mockUserPrivileges,
+      );
       expect(result).toBe(true);
     });
 
     it('should return true when user has all required privileges', () => {
-      const result = isViewVisible(mockViewFormView, mockCompletedTask, mockUserPrivileges);
+      const result = isViewVisible(
+        mockViewFormView,
+        mockCompletedTask,
+        mockUserPrivileges,
+      );
       expect(result).toBe(true);
     });
 
     it('should return false when user lacks required privilege', () => {
-      const result = isViewVisible(mockViewFormViewRestricted, mockCompletedTask, mockUserPrivileges);
+      const result = isViewVisible(
+        mockViewFormViewRestricted,
+        mockCompletedTask,
+        mockUserPrivileges,
+      );
       expect(result).toBe(false);
     });
 
@@ -279,7 +319,11 @@ describe('isViewVisible', () => {
         ...mockViewFormView,
         requiredPrivileges: ['Edit Vitals', 'Admin Only'],
       };
-      const result = isViewVisible(viewWithMultiplePrivileges, mockCompletedTask, mockUserPrivileges);
+      const result = isViewVisible(
+        viewWithMultiplePrivileges,
+        mockCompletedTask,
+        mockUserPrivileges,
+      );
       expect(result).toBe(false);
     });
 
@@ -288,18 +332,55 @@ describe('isViewVisible', () => {
         ...mockViewFormView,
         requiredPrivileges: ['Edit Vitals', 'Edit Lab Tests'],
       };
-      const result = isViewVisible(viewWithMultiplePrivileges, mockCompletedTask, mockUserPrivileges);
+      const result = isViewVisible(
+        viewWithMultiplePrivileges,
+        mockCompletedTask,
+        mockUserPrivileges,
+      );
       expect(result).toBe(true);
     });
   });
 
   describe('Combined conditions', () => {
     it.each([
-      ['completed status + has privileges + has form', mockCompletedTask, mockViewFormView, mockUserPrivileges, true],
-      ['in-progress status + has privileges + has form', mockInProgressTask, mockViewFormView, mockUserPrivileges, false],
-      ['completed status + no privileges + has form', mockCompletedTask, mockViewFormView, mockEmptyUserPrivileges, false],
-      ['completed status + has privileges + no form', { ...mockCompletedTask, fhirResource: { ...mockCompletedTask.fhirResource, input: [] } }, mockViewFormView, mockUserPrivileges, false],
-      ['completed status + lacks required privilege + has form', mockCompletedTask, mockViewFormViewRestricted, mockUserPrivileges, false],
+      [
+        'completed status + has privileges + has form',
+        mockCompletedTask,
+        mockViewFormView,
+        mockUserPrivileges,
+        true,
+      ],
+      [
+        'in-progress status + has privileges + has form',
+        mockInProgressTask,
+        mockViewFormView,
+        mockUserPrivileges,
+        false,
+      ],
+      [
+        'completed status + no privileges + has form',
+        mockCompletedTask,
+        mockViewFormView,
+        mockEmptyUserPrivileges,
+        false,
+      ],
+      [
+        'completed status + has privileges + no form',
+        {
+          ...mockCompletedTask,
+          fhirResource: { ...mockCompletedTask.fhirResource, input: [] },
+        },
+        mockViewFormView,
+        mockUserPrivileges,
+        false,
+      ],
+      [
+        'completed status + lacks required privilege + has form',
+        mockCompletedTask,
+        mockViewFormViewRestricted,
+        mockUserPrivileges,
+        false,
+      ],
     ])('should return %s when %s', (_, task, view, privileges, expected) => {
       const result = isViewVisible(view, task, privileges);
       expect(result).toBe(expected);

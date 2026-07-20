@@ -2,6 +2,7 @@ import { getTasks, shouldEnableEncounterFilter } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import TaskList from '../TaskList';
+import { mockTaskConfigWithViews } from './__mocks__/configMocks';
 import {
   mockTasksBundle,
   emptyTasksBundle,
@@ -9,7 +10,6 @@ import {
   mockTasksControlConfigWithActions,
   mockError,
 } from './__mocks__/taskListMocks';
-import { mockTaskConfigWithViews } from './__mocks__/configMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),

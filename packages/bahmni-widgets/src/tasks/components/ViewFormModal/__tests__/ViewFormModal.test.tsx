@@ -5,11 +5,8 @@ import {
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import type { Bundle, Encounter, Observation } from 'fhir/r4';
-import ViewFormModal from '../ViewFormModal';
+import type { Bundle, Observation } from 'fhir/r4';
 import { mockViewFormView } from '../../../__tests__/__mocks__/configMocks';
-import { mockFHIRTaskWithInput } from '../../../__tests__/__mocks__/taskActionsMocks';
 import {
   mockObservationAndEncounterBundle,
   mockEmptyObservationsBundle,
@@ -17,7 +14,9 @@ import {
   mockEncounterWithoutProvider,
   mockObservationsForVitals,
 } from '../../../__tests__/__mocks__/observationMocks';
-import type { TaskViewModel } from '../../models';
+import { mockFHIRTaskWithInput } from '../../../__tests__/__mocks__/taskActionsMocks';
+import type { TaskViewModel } from '../../../models';
+import ViewFormModal from '../ViewFormModal';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -36,9 +35,10 @@ jest.mock('../../../../observationsRenderer', () => ({
   )),
 }));
 
-const mockGetPatientObservationsBundle = getPatientObservationsBundle as jest.MockedFunction<
-  typeof getPatientObservationsBundle
->;
+const mockGetPatientObservationsBundle =
+  getPatientObservationsBundle as jest.MockedFunction<
+    typeof getPatientObservationsBundle
+  >;
 const mockGetEncounterByUuid = getEncounterByUuid as jest.MockedFunction<
   typeof getEncounterByUuid
 >;
@@ -57,6 +57,7 @@ const createWrapper = () => {
     },
   });
 
+  // eslint-disable-next-line react/display-name
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
@@ -78,17 +79,18 @@ describe('ViewFormModal', () => {
     jest.clearAllMocks();
     mockFormatDateTime.mockReturnValue({
       formattedResult: '20/07/2026 09:59 AM',
-      isToday: false,
     });
   });
 
   describe('Modal rendering', () => {
     it('should render modal when open', () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockEmptyObservationsBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockEmptyObservationsBundle,
+      );
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -100,7 +102,7 @@ describe('ViewFormModal', () => {
       expect(screen.getByTestId('view-form-modal')).toBeInTheDocument();
     });
 
-    it('should not render modal content when closed', () => {
+    it('should not render modal when closed', () => {
       render(
         <ViewFormModal
           open={false}
@@ -113,18 +115,17 @@ describe('ViewFormModal', () => {
       );
 
       const modal = screen.queryByTestId('view-form-modal');
-      // Modal may exist in DOM but should not be visible
-      if (modal) {
-        expect(modal).not.toHaveClass('is-visible');
-      }
+      expect(modal?.classList.contains('is-visible')).toBe(false);
     });
 
     it('should display form name as modal heading', () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockEmptyObservationsBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockEmptyObservationsBundle,
+      );
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -145,11 +146,13 @@ describe('ViewFormModal', () => {
         },
       };
 
-      mockGetPatientObservationsBundle.mockResolvedValue(mockEmptyObservationsBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockEmptyObservationsBundle,
+      );
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={taskWithoutInput}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -162,11 +165,13 @@ describe('ViewFormModal', () => {
     });
 
     it('should call onClose when modal is closed', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockEmptyObservationsBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockEmptyObservationsBundle,
+      );
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -183,11 +188,13 @@ describe('ViewFormModal', () => {
 
   describe('Data fetching - Observations', () => {
     it('should fetch observations with serviceRequestId', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockEmptyObservationsBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockEmptyObservationsBundle,
+      );
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -209,7 +216,15 @@ describe('ViewFormModal', () => {
       ['modal is closed', false, mockTaskViewModel, mockViewFormView],
       ['task is null', true, null, mockViewFormView],
       ['view is null', true, mockTaskViewModel, null],
-      ['task has no form name', true, { ...mockTaskViewModel, fhirResource: { ...mockTaskViewModel.fhirResource, input: [] } }, mockViewFormView],
+      [
+        'task has no form name',
+        true,
+        {
+          ...mockTaskViewModel,
+          fhirResource: { ...mockTaskViewModel.fhirResource, input: [] },
+        },
+        mockViewFormView,
+      ],
     ])('should not fetch observations when %s', async (_, open, task, view) => {
       render(
         <ViewFormModal
@@ -238,7 +253,7 @@ describe('ViewFormModal', () => {
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={taskWithoutServiceRequest}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -255,12 +270,14 @@ describe('ViewFormModal', () => {
 
   describe('Data fetching - Encounters', () => {
     it('should fetch encounters for unique encounter UUIDs', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockObservationAndEncounterBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -294,12 +311,14 @@ describe('ViewFormModal', () => {
         ],
       };
 
-      mockGetPatientObservationsBundle.mockResolvedValue(bundleWithMultipleEncounters);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        bundleWithMultipleEncounters,
+      );
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -328,11 +347,13 @@ describe('ViewFormModal', () => {
         ],
       };
 
-      mockGetPatientObservationsBundle.mockResolvedValue(bundleWithNoEncounterRefs);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        bundleWithNoEncounterRefs,
+      );
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -351,12 +372,14 @@ describe('ViewFormModal', () => {
 
   describe('Observation filtering', () => {
     it('should filter observations by form name', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockObservationAndEncounterBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -395,7 +418,7 @@ describe('ViewFormModal', () => {
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -427,7 +450,7 @@ describe('ViewFormModal', () => {
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -437,7 +460,9 @@ describe('ViewFormModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('NO_OBSERVATIONS_FOR_TASK')).toBeInTheDocument();
+        expect(
+          screen.getByText('NO_OBSERVATIONS_FOR_TASK'),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -450,7 +475,7 @@ describe('ViewFormModal', () => {
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -467,14 +492,14 @@ describe('ViewFormModal', () => {
     });
 
     it('should display SkeletonPlaceholder while loading encounters', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockObservationAndEncounterBundle);
-      mockGetEncounterByUuid.mockImplementation(
-        () => new Promise(() => {}),
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
       );
+      mockGetEncounterByUuid.mockImplementation(() => new Promise(() => {}));
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -497,11 +522,13 @@ describe('ViewFormModal', () => {
 
   describe('Error states', () => {
     it('should display error message when observations fetch fails', async () => {
-      mockGetPatientObservationsBundle.mockRejectedValue(new Error('Network error'));
+      mockGetPatientObservationsBundle.mockRejectedValue(
+        new Error('Network error'),
+      );
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -511,17 +538,21 @@ describe('ViewFormModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('ERROR_LOADING_OBSERVATIONS')).toBeInTheDocument();
+        expect(
+          screen.getByText('ERROR_LOADING_OBSERVATIONS'),
+        ).toBeInTheDocument();
       });
     });
 
     it('should display error message when encounter fetch fails', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockObservationAndEncounterBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
       mockGetEncounterByUuid.mockRejectedValue(new Error('Encounter error'));
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -531,18 +562,22 @@ describe('ViewFormModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('ERROR_LOADING_OBSERVATIONS')).toBeInTheDocument();
+        expect(
+          screen.getByText('ERROR_LOADING_OBSERVATIONS'),
+        ).toBeInTheDocument();
       });
     });
   });
 
   describe('Empty states', () => {
     it('should display NO_OBSERVATIONS_FOR_TASK when no filtered observations', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockEmptyObservationsBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockEmptyObservationsBundle,
+      );
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -552,17 +587,21 @@ describe('ViewFormModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('NO_OBSERVATIONS_FOR_TASK')).toBeInTheDocument();
+        expect(
+          screen.getByText('NO_OBSERVATIONS_FOR_TASK'),
+        ).toBeInTheDocument();
       });
     });
 
     it('should display NO_OBSERVATIONS_FOR_TASK when encounterGroups is empty', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockObservationAndEncounterBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithoutProvider);
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -579,12 +618,14 @@ describe('ViewFormModal', () => {
 
   describe('Encounter group rendering', () => {
     it('should render encounter groups with headers', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockObservationAndEncounterBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -600,12 +641,14 @@ describe('ViewFormModal', () => {
     });
 
     it('should display formatted date and provider name', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockObservationAndEncounterBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -621,12 +664,14 @@ describe('ViewFormModal', () => {
     });
 
     it('should render ObservationsRenderer for each group', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockObservationAndEncounterBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"
@@ -636,17 +681,21 @@ describe('ViewFormModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('encounter-encounter-1-observations')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('encounter-encounter-1-observations'),
+        ).toBeInTheDocument();
       });
     });
 
     it('should call formatDateTime with correct parameters', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(mockObservationAndEncounterBundle);
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
         <ViewFormModal
-          open={true}
+          open
           task={mockTaskViewModel}
           view={mockViewFormView}
           patientUuid="patient-uuid"

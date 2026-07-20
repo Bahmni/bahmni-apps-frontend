@@ -1,10 +1,5 @@
 import type { Observation, Encounter, Bundle } from 'fhir/r4';
 import {
-  extractUuidFromReference,
-  extractFormFieldPath,
-  groupObservationsByEncounter,
-} from '../viewFormUtils';
-import {
   mockObservationWithFormPath,
   mockObservationWithoutFormPath,
   mockEncounterWithProvider,
@@ -12,6 +7,11 @@ import {
   mockEncounterWithoutPeriodStart,
   mockObservationsForVitals,
 } from '../../../__tests__/__mocks__/observationMocks';
+import {
+  extractUuidFromReference,
+  extractFormFieldPath,
+  groupObservationsByEncounter,
+} from '../viewFormUtils';
 
 describe('viewFormUtils', () => {
   describe('extractUuidFromReference', () => {
@@ -20,12 +20,9 @@ describe('viewFormUtils', () => {
       ['ServiceRequest/service-request-456', 'service-request-456'],
       ['Task/task-789', 'task-789'],
       ['Patient/patient-uuid', 'patient-uuid'],
-    ])(
-      'should extract UUID from reference %s',
-      (reference, expectedUuid) => {
-        expect(extractUuidFromReference(reference)).toBe(expectedUuid);
-      },
-    );
+    ])('should extract UUID from reference %s', (reference, expectedUuid) => {
+      expect(extractUuidFromReference(reference)).toBe(expectedUuid);
+    });
 
     it('should return empty string for empty reference', () => {
       expect(extractUuidFromReference('')).toBe('');
@@ -36,7 +33,9 @@ describe('viewFormUtils', () => {
     });
 
     it('should handle reference with multiple slashes', () => {
-      expect(extractUuidFromReference('http://example.com/Encounter/uuid-123')).toBe('uuid-123');
+      expect(
+        extractUuidFromReference('http://example.com/Encounter/uuid-123'),
+      ).toBe('uuid-123');
     });
   });
 
@@ -276,10 +275,7 @@ describe('viewFormUtils', () => {
       const bundle: Bundle<Encounter> = {
         resourceType: 'Bundle',
         type: 'searchset',
-        entry: [
-          { resource: oldEncounter },
-          { resource: newEncounter },
-        ],
+        entry: [{ resource: oldEncounter }, { resource: newEncounter }],
       };
 
       const result = groupObservationsByEncounter(observations, bundle);

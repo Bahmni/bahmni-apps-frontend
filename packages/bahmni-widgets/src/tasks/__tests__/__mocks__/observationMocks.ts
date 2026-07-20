@@ -221,7 +221,9 @@ export const mockEncountersBundle: Bundle<Encounter> = {
   ],
 };
 
-export const mockObservationAndEncounterBundle: Bundle<Observation | Encounter> = {
+export const mockObservationAndEncounterBundle: Bundle<
+  Observation | Encounter
+> = {
   resourceType: 'Bundle',
   type: 'searchset',
   total: 3,

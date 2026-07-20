@@ -1,8 +1,8 @@
 import { hasPrivilege } from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import TaskResults from '../TaskResults';
+import type { Task } from 'fhir/r4';
 import {
   mockTaskConfigWithViews,
   mockViewFormView,
@@ -12,12 +12,11 @@ import {
 } from '../../__tests__/__mocks__/configMocks';
 import {
   mockUserPrivileges,
-  mockEmptyUserPrivileges,
   mockFHIRTaskWithInput,
 } from '../../__tests__/__mocks__/taskActionsMocks';
-import { VITALS_TASK_CODE, FORM_NAME_INPUT_CODE } from '../../__tests__/__mocks__/taskListMocks';
-import type { Task } from 'fhir/r4';
+import { VITALS_TASK_CODE } from '../../__tests__/__mocks__/taskListMocks';
 import type { TaskViewModel } from '../../models';
+import TaskResults from '../TaskResults';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -44,7 +43,9 @@ jest.mock('../ViewFormModal/ViewFormModal', () => {
   });
 });
 
-const mockHasPrivilege = hasPrivilege as jest.MockedFunction<typeof hasPrivilege>;
+const mockHasPrivilege = hasPrivilege as jest.MockedFunction<
+  typeof hasPrivilege
+>;
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -57,12 +58,16 @@ const createWrapper = () => {
     },
   });
 
+  // eslint-disable-next-line react/display-name
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 };
 
-const createTaskViewModel = (fhirTask: Task, status: string = 'completed'): TaskViewModel => ({
+const createTaskViewModel = (
+  fhirTask: Task,
+  status: string = 'completed',
+): TaskViewModel => ({
   id: fhirTask.id ?? '',
   name: fhirTask.description ?? '',
   code: fhirTask.code?.coding?.[0]?.code ?? '',
@@ -71,9 +76,18 @@ const createTaskViewModel = (fhirTask: Task, status: string = 'completed'): Task
   fhirResource: fhirTask,
 });
 
-const mockCompletedTask = createTaskViewModel(mockFHIRTaskWithInput, 'completed');
-const mockInProgressTask = createTaskViewModel(mockFHIRTaskWithInput, 'in-progress');
-const mockRequestedTask = createTaskViewModel(mockFHIRTaskWithInput, 'requested');
+const mockCompletedTask = createTaskViewModel(
+  mockFHIRTaskWithInput,
+  'completed',
+);
+const mockInProgressTask = createTaskViewModel(
+  mockFHIRTaskWithInput,
+  'in-progress',
+);
+const mockRequestedTask = createTaskViewModel(
+  mockFHIRTaskWithInput,
+  'requested',
+);
 
 describe('TaskResults', () => {
   beforeEach(() => {
@@ -91,7 +105,9 @@ describe('TaskResults', () => {
         { wrapper: createWrapper() },
       );
 
-      const link = screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`);
+      const link = screen.getByTestId(
+        `task-view-viewForm-${mockCompletedTask.id}`,
+      );
       expect(link).toBeInTheDocument();
       expect(link).toHaveTextContent('View Data');
     });
@@ -117,10 +133,7 @@ describe('TaskResults', () => {
       ['undefined taskConfig', undefined],
     ])('should render dash when %s', (_, config) => {
       const { container } = render(
-        <TaskResults
-          task={mockCompletedTask}
-          taskConfig={config as any}
-        />,
+        <TaskResults task={mockCompletedTask} taskConfig={config as any} />,
         { wrapper: createWrapper() },
       );
 
@@ -181,7 +194,9 @@ describe('TaskResults', () => {
         { wrapper: createWrapper() },
       );
 
-      expect(screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`)).toBeInTheDocument();
+      expect(
+        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+      ).toBeInTheDocument();
     });
 
     it('should not show view when user lacks required privileges', () => {
@@ -190,10 +205,12 @@ describe('TaskResults', () => {
       const { container } = render(
         <TaskResults
           task={mockCompletedTask}
-          taskConfig={[{
-            taskCode: VITALS_TASK_CODE,
-            views: [mockViewFormViewRestricted],
-          }]}
+          taskConfig={[
+            {
+              taskCode: VITALS_TASK_CODE,
+              views: [mockViewFormViewRestricted],
+            },
+          ]}
         />,
         { wrapper: createWrapper() },
       );
@@ -202,13 +219,17 @@ describe('TaskResults', () => {
     });
 
     it('should show view when no privileges are required', () => {
-      const configWithNoPrivileges = [{
-        taskCode: VITALS_TASK_CODE,
-        views: [{
-          ...mockViewFormView,
-          requiredPrivileges: [],
-        }],
-      }];
+      const configWithNoPrivileges = [
+        {
+          taskCode: VITALS_TASK_CODE,
+          views: [
+            {
+              ...mockViewFormView,
+              requiredPrivileges: [],
+            },
+          ],
+        },
+      ];
 
       render(
         <TaskResults
@@ -218,7 +239,9 @@ describe('TaskResults', () => {
         { wrapper: createWrapper() },
       );
 
-      expect(screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`)).toBeInTheDocument();
+      expect(
+        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+      ).toBeInTheDocument();
     });
   });
 
@@ -229,10 +252,7 @@ describe('TaskResults', () => {
       ['ready', { ...mockCompletedTask, status: 'ready' }],
     ])('should not show view for %s task', (statusName, task) => {
       const { container } = render(
-        <TaskResults
-          task={task}
-          taskConfig={mockTaskConfigWithViews}
-        />,
+        <TaskResults task={task} taskConfig={mockTaskConfigWithViews} />,
         { wrapper: createWrapper() },
       );
 
@@ -249,7 +269,9 @@ describe('TaskResults', () => {
         { wrapper: createWrapper() },
       );
 
-      expect(screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`)).toBeInTheDocument();
+      expect(
+        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+      ).toBeInTheDocument();
     });
   });
 
@@ -265,7 +287,9 @@ describe('TaskResults', () => {
         { wrapper: createWrapper() },
       );
 
-      const link = screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`);
+      const link = screen.getByTestId(
+        `task-view-viewForm-${mockCompletedTask.id}`,
+      );
       await user.click(link);
 
       await waitFor(() => {
@@ -284,7 +308,9 @@ describe('TaskResults', () => {
         { wrapper: createWrapper() },
       );
 
-      const link = screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`);
+      const link = screen.getByTestId(
+        `task-view-viewForm-${mockCompletedTask.id}`,
+      );
       await user.click(link);
 
       await waitFor(() => {
@@ -322,7 +348,9 @@ describe('TaskResults', () => {
         { wrapper: createWrapper() },
       );
 
-      expect(screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`)).toBeInTheDocument();
+      expect(
+        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+      ).toBeInTheDocument();
     });
 
     it('should not show view when form name cannot be extracted', () => {
@@ -368,16 +396,18 @@ describe('TaskResults', () => {
 
   describe('View selection', () => {
     it('should render only first permitted view when multiple exist', () => {
-      const configWithMultipleViews = [{
-        taskCode: VITALS_TASK_CODE,
-        views: [
-          mockViewFormView,
-          {
-            ...mockViewFormView,
-            label: 'Second View',
-          },
-        ],
-      }];
+      const configWithMultipleViews = [
+        {
+          taskCode: VITALS_TASK_CODE,
+          views: [
+            mockViewFormView,
+            {
+              ...mockViewFormView,
+              label: 'Second View',
+            },
+          ],
+        },
+      ];
 
       render(
         <TaskResults
@@ -387,7 +417,9 @@ describe('TaskResults', () => {
         { wrapper: createWrapper() },
       );
 
-      const link = screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`);
+      const link = screen.getByTestId(
+        `task-view-viewForm-${mockCompletedTask.id}`,
+      );
       expect(link).toBeInTheDocument();
       expect(link).toHaveTextContent('View Data');
     });
@@ -401,7 +433,9 @@ describe('TaskResults', () => {
         { wrapper: createWrapper() },
       );
 
-      expect(screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`)).toBeInTheDocument();
+      expect(
+        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+      ).toBeInTheDocument();
     });
   });
 });

@@ -1,5 +1,9 @@
 import type { TaskView, TaskConfig } from '../../models';
-import { VITALS_TASK_CODE, LAB_TESTS_TASK_CODE, FORM_NAME_INPUT_CODE } from './taskListMocks';
+import {
+  VITALS_TASK_CODE,
+  LAB_TESTS_TASK_CODE,
+  FORM_NAME_INPUT_CODE,
+} from './taskListMocks';
 
 export const mockViewFormView: TaskView = {
   label: 'View Data',
