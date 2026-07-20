@@ -1,6 +1,7 @@
 export const IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY = 'immunizationHistory';
 export const IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY =
   'immunizationAdministration';
+export const IMMUNIZATION_WAIVER_INPUT_CONTROL_KEY = 'immunizationWaiver';
 export const ADMINISTERED_PRODUCT_EXTENSION_URL =
   'http://fhir.bahmni.org/ext/immunization/administeredProduct'; // NOSONAR
 export const BASED_ON_EXTENSION_URL =

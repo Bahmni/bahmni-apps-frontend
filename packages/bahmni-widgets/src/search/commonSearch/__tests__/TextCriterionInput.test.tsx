@@ -29,7 +29,9 @@ describe('TextCriterionInput', () => {
     expect(
       screen.getByTestId('text-criterion-input-test-id'),
     ).toBeInTheDocument();
-    expect(screen.getByText('ENTER_SEARCH_VALUE')).toBeInTheDocument();
+    expect(
+      screen.getByText('COMMON_SEARCH_CRITERION_LABEL'),
+    ).toBeInTheDocument();
     expect(screen.getByPlaceholderText('TEXT_PLACEHOLDER')).toBeInTheDocument();
   });
 

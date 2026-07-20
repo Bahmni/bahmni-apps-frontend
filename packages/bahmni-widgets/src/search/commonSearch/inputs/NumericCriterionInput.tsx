@@ -44,7 +44,8 @@ const NumericCriterionInput = ({
             id={`numeric-input-from-${input.placeholderTranslationKey}`}
             label={t('COMMON_SEARCH_CRITERIA_NUMERIC_INPUT_FIELD_FROM')}
             placeholder={t(input.placeholderTranslationKey)}
-            value={value?.from.value ?? 0}
+            value={value?.from.value ?? ''}
+            allowEmpty
             onChange={(_e, state) =>
               onChange({
                 from: { value: toRawValue(state?.value), comparator: null },
@@ -68,7 +69,8 @@ const NumericCriterionInput = ({
             id={`numeric-input-to-${input.placeholderTranslationKey}`}
             label={t('COMMON_SEARCH_CRITERIA_NUMERIC_INPUT_FIELD_TO')}
             placeholder={t(input.placeholderTranslationKey)}
-            value={value?.to?.value ?? 0}
+            allowEmpty
+            value={value?.to?.value ?? ''}
             onChange={(_e, state) =>
               onChange({
                 from: {
@@ -95,9 +97,10 @@ const NumericCriterionInput = ({
     >
       <NumberInput
         id={`numeric-input-${input.placeholderTranslationKey}`}
-        label={t('ENTER_SEARCH_VALUE')}
+        label={t('COMMON_SEARCH_CRITERION_LABEL')}
         placeholder={t(input.placeholderTranslationKey)}
-        value={value?.from.value ?? 0}
+        allowEmpty
+        value={value?.from.value ?? ''}
         onChange={(_e, state) => {
           const raw = toRawValue(state?.value);
           onChange(

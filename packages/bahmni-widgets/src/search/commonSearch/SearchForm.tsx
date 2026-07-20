@@ -2,12 +2,7 @@ import { Button, Dropdown } from '@bahmni/design-system';
 import { useTranslation, UserLocation } from '@bahmni/services';
 import { useState } from 'react';
 import CriterionRowComponent from './CriterionRow';
-import {
-  CriterionConfig,
-  CriterionRow,
-  CriterionValue,
-  SearchContextConfig,
-} from './models';
+import { CriterionRow, CriterionValue, SearchContextConfig } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
 import {
   availableCriteriaForRow,
@@ -22,18 +17,26 @@ interface SearchFormProps {
   location: UserLocation;
   onSearch: (
     rows: CriterionRow[],
-    criteria: CriterionConfig[],
+    context: SearchContextConfig,
   ) => CriterionRow[];
+  savedRows?: CriterionRow[];
+  savedContextKey?: SearchContextConfig['context'];
 }
 
-const SearchForm = ({ config, location, onSearch }: SearchFormProps) => {
+const SearchForm = ({
+  config,
+  location,
+  onSearch,
+  savedRows,
+  savedContextKey,
+}: SearchFormProps) => {
   const { t } = useTranslation();
   const [activeContextKey, setActiveContextKey] = useState<string>(
-    config[0].context,
+    savedContextKey ?? config[0].context,
   );
   const activeContext = config.find((c) => c.context === activeContextKey)!;
-  const [rows, setRows] = useState<CriterionRow[]>(() =>
-    initialRows(activeContext),
+  const [rows, setRows] = useState<CriterionRow[]>(
+    () => savedRows ?? initialRows(activeContext),
   );
 
   const handleContextChange = ({
@@ -167,7 +170,7 @@ const SearchForm = ({ config, location, onSearch }: SearchFormProps) => {
             kind="primary"
             id="common-search-search-button"
             data-testid="common-search-search-button-test-id"
-            onClick={() => setRows(onSearch(rows, activeContext.criteria))}
+            onClick={() => setRows(onSearch(rows, activeContext))}
             disabled={
               rows.length === 0 ||
               rows.some(

@@ -111,7 +111,7 @@ const DateCriterionInput = ({
       >
         <DatePickerInput
           id={`date-input-${input.placeholderTranslationKey}`}
-          labelText={t('ENTER_SEARCH_VALUE')}
+          labelText={t('COMMON_SEARCH_CRITERION_LABEL')}
           placeholder={t(input.placeholderTranslationKey)}
           invalid={!!validationError}
           invalidText={validationError ?? undefined}

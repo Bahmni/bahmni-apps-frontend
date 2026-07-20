@@ -21,7 +21,9 @@ export interface NotAdministeredImmunizationViewModel {
   code: string | null;
   reason: string | null;
   date: string | null;
+  recordedOn: string | null;
   recordedBy: string | null;
+  notes: string | null;
 }
 
 export interface AdministeredTabConfig {
@@ -31,4 +33,19 @@ export interface AdministeredTabConfig {
 
 export interface NotAdministeredTabConfig {
   columns: string[];
+}
+
+export interface ImmunizationHistoryWidgetConfig {
+  status?: 'completed' | 'not-done';
+  title?: string;
+  encounterType?: string;
+  startEncounterPrivilege?: string;
+  administeredFields?: string[];
+  notAdministeredFields?: string[];
+  inputControlKey?: string;
+  administeredInputControlKey?: string;
+  notAdministeredInputControlKey?: string;
+  editTitle?: string;
+  administeredEditTitle?: string;
+  notAdministeredEditTitle?: string;
 }

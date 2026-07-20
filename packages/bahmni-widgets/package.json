@@ -28,7 +28,8 @@
   "dependencies": {
     "@carbon/icons-react": "^11.65.0",
     "@carbon/react": "^1.83.0",
-    "cmdk": "^1.1.1"
+    "cmdk": "^1.1.1",
+    "jsonata": "2.2.1"
   },
   "peerDependencies": {
     "@bahmni/design-system": "^0.0.1-0",

@@ -1,5 +1,17 @@
 import { UserLocation } from '@bahmni/services';
-import { SearchContextConfig } from '../../models';
+import {
+  CriterionRow,
+  ResultFieldConfig,
+  SearchContextConfig,
+} from '../../models';
+
+export const mockResultFields: ResultFieldConfig[] = [
+  {
+    translationKey: 'PATIENT_NAME',
+    expression: 'name',
+    enableSort: true,
+  },
+];
 
 export const mockLocation: UserLocation = {
   uuid: 'loc-uuid-1',
@@ -19,6 +31,7 @@ export const mockPatientContext: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'patient.name.given' },
@@ -59,6 +72,7 @@ export const mockAppointmentContext: SearchContextConfig = {
   locationAware: 'allowedLocation',
   url: '/openmrs/ws/rest/v1/appointment/search',
   pageSize: 10,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'appointment.number' },
@@ -88,6 +102,7 @@ export const mockContextNoDefaults: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/episode/search',
   pageSize: 10,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'episode.identifier' },
@@ -116,6 +131,7 @@ export const mockPatientContextWithRangeNumeric: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'patient.age' },
@@ -137,6 +153,7 @@ export const mockContextMultipleDefaults: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  resultFields: mockResultFields,
   criteria: [
     {
       field: { key: 'patient.name.given' },
@@ -163,4 +180,43 @@ export const mockContextMultipleDefaults: SearchContextConfig = {
   ],
 };
 
+export const mockPatientContextWithRegex: SearchContextConfig = {
+  context: 'patient',
+  translationKey: 'PATIENT_SEARCH',
+  requiredPrivileges: ['View Patients'],
+  locationAware: 'loggedInLocation',
+  url: '/openmrs/ws/rest/v1/patient/search',
+  pageSize: 20,
+  resultFields: mockResultFields,
+  criteria: [
+    {
+      field: { key: 'patient.name.given' },
+      translationKey: 'PATIENT_GIVEN_NAME',
+      default: true,
+      input: {
+        kind: 'text',
+        placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
+        regex: '^[A-Za-z]+$',
+      },
+    },
+  ],
+};
+
 export const mockConfig = [mockPatientContext, mockAppointmentContext];
+
+export const mockSavedRows: CriterionRow[] = [
+  {
+    rowId: 'saved-row-1',
+    criterionKey: 'patient.name.given',
+    value: { value: 'Rahul' },
+    validationError: null,
+    rangeOrderError: null,
+  },
+  {
+    rowId: 'saved-row-2',
+    criterionKey: 'patient.gender',
+    value: null,
+    validationError: null,
+    rangeOrderError: null,
+  },
+];
