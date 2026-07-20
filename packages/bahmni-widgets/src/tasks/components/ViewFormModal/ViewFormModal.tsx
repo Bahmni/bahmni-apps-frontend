@@ -1,4 +1,4 @@
-import { Modal } from '@bahmni/design-system';
+import { Modal, SkeletonPlaceholder } from '@bahmni/design-system';
 import {
   getEncounterByUuid,
   getPatientObservationsBundle,
@@ -52,7 +52,7 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
       'taskObservations',
       task?.code,
       formName,
-      encounterRef || serviceRequestRef,
+      encounterRef ?? serviceRequestRef,
     ],
     queryFn: async () => {
       if (serviceRequestRef) {
@@ -63,9 +63,10 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
           serviceRequestId,
         );
       }
-      return { resourceType: 'Bundle', type: 'searchset' } as Bundle<
-        Observation
-      >;
+      return {
+        resourceType: 'Bundle',
+        type: 'searchset',
+      } as Bundle<Observation>;
     },
     enabled: open && !!task && !!formName,
   });
@@ -145,21 +146,16 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
     });
   };
 
-  const renderEncounterGroup = (group: EncounterGroup, index: number) => {
-    const isOriginal = index === encounterGroups.length - 1;
-    const dateLabel = isOriginal ? 'TASK_COMPLETED_ON' : 'RECORDED_ON';
-    const providerLabel = isOriginal ? 'TASK_COMPLETED_BY' : 'RECORDED_BY';
-
+  const renderEncounterGroup = (group: EncounterGroup) => {
     return (
       <div key={group.encounterUuid} className={styles.encounterGroup}>
         <div className={styles.encounterHeader}>
-          {t(dateLabel)}: {formatDateTime(group.encounterDateTime)} |{' '}
-          {t(providerLabel)}: {group.providerName}
+          {t('RECORDED_ON')}: {formatDateTime(group.encounterDateTime)} |{' '}
+          {t('RECORDED_BY')}: {group.providerName}
         </div>
         <ObservationsRenderer
           observations={group.observations}
-          testIdPrefix={`encounter-${index}`}
-          hideThumbnail={false}
+          testIdPrefix={`encounter-${group.encounterUuid}-observations`}
         />
       </div>
     );
@@ -175,17 +171,13 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
       testId="view-form-modal"
     >
       <Modal.Body>
-        {isLoading && <div>{t('LOADING')}</div>}
-        {error && <div>{t('ERROR_LOADING_DATA')}</div>}
+        {isLoading && <SkeletonPlaceholder />}
+        {error && <div>{t('ERROR_LOADING_OBSERVATIONS')}</div>}
         {!isLoading && !error && encounterGroups.length === 0 && (
           <div>{t('NO_OBSERVATIONS_FOR_TASK')}</div>
         )}
         {!isLoading && !error && encounterGroups.length > 0 && (
-          <div className={styles.modalContent}>
-            {encounterGroups.map((encounterGroup, index) =>
-              renderEncounterGroup(encounterGroup, index),
-            )}
-          </div>
+          <>{encounterGroups.map(renderEncounterGroup)}</>
         )}
       </Modal.Body>
     </Modal>

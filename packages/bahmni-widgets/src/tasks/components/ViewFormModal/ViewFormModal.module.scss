@@ -1,9 +1,9 @@
-.modalContent {
-  padding: 1rem 0;
-}
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
 
 .encounterGroup {
-  margin-bottom: 2rem;
+  margin-bottom: $spacing-06;
 
   &:last-child {
     margin-bottom: 0;
@@ -11,31 +11,6 @@
 }
 
 .encounterHeader {
-  font-size: 0.875rem;
-  color: #525252;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.observationsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.observationRow {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 1rem;
-  padding: 0.5rem 0;
-}
-
-.label {
-  font-weight: 600;
-  color: #161616;
-}
-
-.value {
-  color: #525252;
+  @include type-style('body-compact-01');
+  color: $text-secondary;
 }
