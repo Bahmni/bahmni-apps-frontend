@@ -234,6 +234,7 @@ export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
   getPatientObservations,
+  getObservationsBundleByEncounterUuid,
 } from './observationService';
 export {
   getCurrentProvider,
@@ -268,7 +269,6 @@ export {
   getEncounterTypeByName,
   type EncounterTypeRef,
   shouldEnableEncounterFilter,
-  getObservationsBundleByEncounterUuid,
   createFhirEncounter,
   updateFhirEncounter,
   type FormsEncounter,

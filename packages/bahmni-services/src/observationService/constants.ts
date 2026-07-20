@@ -38,3 +38,6 @@ export const FHIR_OBSERVATION_WITH_ENCOUNTER_URL = (
 
   return url;
 };
+
+export const FHIR_OBSERVATIONS_BY_ENCOUNTER_URL = (encounterUUID: string) =>
+  `${OPENMRS_FHIR_R4}/Observation/$fetch-all?encounter=${encounterUUID}`;

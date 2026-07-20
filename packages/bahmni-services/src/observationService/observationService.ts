@@ -3,6 +3,7 @@ import { get } from '../api';
 import {
   FHIR_OBSERVATION_URL,
   FHIR_OBSERVATION_WITH_ENCOUNTER_URL,
+  FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
 } from './constants';
 
 /**
@@ -58,4 +59,17 @@ export async function getPatientObservations(
       .map((entry) => entry.resource as Observation) ?? [];
 
   return observations;
+}
+
+/**
+ * Fetch observations by encounter UUID from FHIR API
+ * @param encounterUUID - Encounter UUID
+ * @returns Promise resolving to FHIR observation bundle
+ */
+export async function getObservationsBundleByEncounterUuid(
+  encounterUUID: string,
+): Promise<Bundle<Observation>> {
+  return await get<Bundle<Observation>>(
+    FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
+  );
 }

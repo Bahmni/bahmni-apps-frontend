@@ -4,15 +4,18 @@ import {
   mockEmptyObservationBundle,
   mockObservation,
   mockObservationWithEncounterBundle,
+  mockFormsEncounter,
 } from '../__mocks__/observationMocks';
 import {
   FHIR_OBSERVATION_URL,
   FHIR_OBSERVATION_WITH_ENCOUNTER_URL,
+  FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
 } from '../constants';
 import {
   getPatientObservationsBundle,
   getPatientObservations,
   getPatientObservationsWithEncounterBundle,
+  getObservationsBundleByEncounterUuid,
 } from '../observationService';
 
 jest.mock('../../api');
@@ -243,6 +246,39 @@ describe('observationService', () => {
       await expect(
         getPatientObservationsWithEncounterBundle('patient-123', ['concept-1']),
       ).rejects.toThrow(mockError);
+    });
+  });
+
+  describe('getObservationsBundleByEncounterUuid', () => {
+    const encounterUUID = 'e8c5eeb5-86d9-44d4-b37a-9de74a122a6e';
+
+    it('should fetch forms encounter from the FHIR API endpoint', async () => {
+      (api.get as jest.Mock).mockResolvedValueOnce(mockFormsEncounter);
+
+      await getObservationsBundleByEncounterUuid(encounterUUID);
+
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
+      );
+    });
+
+    it('should return the forms encounter data', async () => {
+      (api.get as jest.Mock).mockResolvedValueOnce(mockFormsEncounter);
+
+      const result = await getObservationsBundleByEncounterUuid(encounterUUID);
+
+      expect(result.resourceType).toBe('Bundle');
+      expect(result.entry).toBeDefined();
+    });
+
+    it('should propagate errors when the FHIR API call fails', async () => {
+      (api.get as jest.Mock).mockRejectedValueOnce(
+        new Error('Network failure'),
+      );
+
+      await expect(
+        getObservationsBundleByEncounterUuid(encounterUUID),
+      ).rejects.toThrow('Network failure');
     });
   });
 });

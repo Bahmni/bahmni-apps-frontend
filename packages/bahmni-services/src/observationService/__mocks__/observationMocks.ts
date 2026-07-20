@@ -165,3 +165,35 @@ export const mockObservationWithEncounterBundle: Bundle<
     },
   ],
 };
+
+export const mockFormsEncounter = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  total: 1,
+  entry: [
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-uuid-1',
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-uuid-1',
+        code: {
+          coding: [
+            {
+              system: 'http://loinc.org',
+              code: '8310-5',
+              display: 'Body temperature',
+            },
+          ],
+        },
+        valueQuantity: {
+          value: 98.6,
+          unit: 'F',
+        },
+        effectiveDateTime: '2024-02-18T09:57:21+00:00',
+        encounter: {
+          reference: 'Encounter/e8c5eeb5-86d9-44d4-b37a-9de74a122a6e',
+        },
+      },
+    },
+  ],
+};
