@@ -1,13 +1,12 @@
 import type { ObservationForm, UserPrivilege } from '@bahmni/services';
 import type { Task } from 'fhir/r4';
-import type { TaskAction, TaskActionConfig, TaskViewModel } from '../../models';
+import type { TaskAction, TaskConfig, TaskViewModel } from '../../models';
 import {
   VITALS_TASK_CODE,
   LAB_TESTS_TASK_CODE,
   FORM_NAME_INPUT_CODE,
 } from './taskListMocks';
 
-// Mock User Privileges
 export const mockUserPrivileges: UserPrivilege[] = [
   { name: 'Edit Vitals', retired: false },
   { name: 'Edit Lab Tests', retired: false },
@@ -16,7 +15,6 @@ export const mockUserPrivileges: UserPrivilege[] = [
 
 export const mockEmptyUserPrivileges: UserPrivilege[] = [];
 
-// Mock Observation Forms
 export const mockObservationForms: ObservationForm[] = [
   {
     formUuid: 'form-vitals-uuid',
@@ -83,7 +81,6 @@ export const mockObservationForms: ObservationForm[] = [
   },
 ];
 
-// Mock Task Actions
 export const mockLaunchFormAction: TaskAction = {
   label: 'Fill Form',
   type: 'launchForm',
@@ -117,8 +114,7 @@ export const mockRestrictedAction: TaskAction = {
   },
 };
 
-// Mock Task Action Config
-export const mockTaskActionConfig: TaskActionConfig[] = [
+export const mockTaskConfig: TaskConfig[] = [
   {
     taskCode: VITALS_TASK_CODE,
     actions: [mockLaunchFormAction],
@@ -129,7 +125,6 @@ export const mockTaskActionConfig: TaskActionConfig[] = [
   },
 ];
 
-// Helper function to create FHIR Task with input
 const createTaskWithFormInput = (
   id: string,
   description: string,
@@ -173,7 +168,6 @@ const createTaskWithFormInput = (
   ],
 });
 
-// Mock FHIR Tasks
 export const mockFHIRTaskWithInput: Task = {
   ...createTaskWithFormInput(
     'task-with-input',
@@ -255,7 +249,6 @@ export const mockFHIRTaskWithNonexistentForm: Task = createTaskWithFormInput(
   'Nonexistent Form',
 );
 
-// Helper function to create TaskViewModel from FHIR Task
 const createTaskViewModel = (fhirTask: Task): TaskViewModel => ({
   id: fhirTask.id ?? '',
   name: fhirTask.description ?? fhirTask.code?.text ?? '',
@@ -265,7 +258,6 @@ const createTaskViewModel = (fhirTask: Task): TaskViewModel => ({
   fhirResource: fhirTask,
 });
 
-// Mock TaskViewModels
 export const mockTaskViewModelWithInput: TaskViewModel = createTaskViewModel(
   mockFHIRTaskWithInput,
 );

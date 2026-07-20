@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
-  mockTaskActionConfig,
+  mockTaskConfig,
   mockTaskViewModelWithInput,
   mockTaskViewModelWithLabForm,
   mockObservationForms,
@@ -68,7 +68,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -85,7 +85,7 @@ describe('TaskActions', () => {
       const { container } = render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -97,9 +97,9 @@ describe('TaskActions', () => {
       expect(container).toBeEmptyDOMElement();
     });
 
-    it('should not render when actionConfig is empty', async () => {
+    it('should not render when taskConfig is empty', async () => {
       const { container } = render(
-        <TaskActions task={mockTaskViewModelWithInput} actionConfig={[]} />,
+        <TaskActions task={mockTaskViewModelWithInput} taskConfig={[]} />,
         { wrapper: createWrapper() },
       );
 
@@ -107,7 +107,7 @@ describe('TaskActions', () => {
       expect(container).toBeEmptyDOMElement();
     });
 
-    it('should not render when no matching actionConfig for task code', async () => {
+    it('should not render when no matching taskConfig for task code', async () => {
       const taskWithDifferentCode = {
         ...mockTaskViewModelWithInput,
         code: 'non-matching-code',
@@ -116,7 +116,7 @@ describe('TaskActions', () => {
       const { container } = render(
         <TaskActions
           task={taskWithDifferentCode}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -129,7 +129,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -160,7 +160,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={configWithMultipleActions}
+          taskConfig={configWithMultipleActions}
         />,
         { wrapper: createWrapper() },
       );
@@ -186,7 +186,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -211,7 +211,7 @@ describe('TaskActions', () => {
       const { container } = render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={restrictedConfig}
+          taskConfig={restrictedConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -227,7 +227,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -258,7 +258,7 @@ describe('TaskActions', () => {
       const { container } = render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -274,7 +274,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -296,7 +296,7 @@ describe('TaskActions', () => {
       const { container } = render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -308,7 +308,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -326,7 +326,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -353,7 +353,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -383,7 +383,7 @@ describe('TaskActions', () => {
       ['Vitals task', mockTaskViewModelWithInput, 'Fill Form'],
       ['Lab Tests task', mockTaskViewModelWithLabForm, 'Fill Form'],
     ])('should render action for %s', async (_, task, expectedLabel) => {
-      render(<TaskActions task={task} actionConfig={mockTaskActionConfig} />, {
+      render(<TaskActions task={task} taskConfig={mockTaskConfig} />, {
         wrapper: createWrapper(),
       });
 
@@ -403,7 +403,7 @@ describe('TaskActions', () => {
       };
 
       render(
-        <TaskActions task={taskNotReady} actionConfig={mockTaskActionConfig} />,
+        <TaskActions task={taskNotReady} taskConfig={mockTaskConfig} />,
         { wrapper: createWrapper() },
       );
 
@@ -424,7 +424,7 @@ describe('TaskActions', () => {
       };
 
       render(
-        <TaskActions task={taskReady} actionConfig={mockTaskActionConfig} />,
+        <TaskActions task={taskReady} taskConfig={mockTaskConfig} />,
         { wrapper: createWrapper() },
       );
 
@@ -440,17 +440,14 @@ describe('TaskActions', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle missing actionConfig gracefully', async () => {
+    it('should handle missing taskConfig gracefully', async () => {
       const taskWithNoConfig = {
         ...mockTaskViewModelWithInput,
         code: 'undefined-task-code',
       };
 
       const { container } = render(
-        <TaskActions
-          task={taskWithNoConfig}
-          actionConfig={mockTaskActionConfig}
-        />,
+        <TaskActions task={taskWithNoConfig} taskConfig={mockTaskConfig} />,
         { wrapper: createWrapper() },
       );
 
@@ -458,7 +455,7 @@ describe('TaskActions', () => {
       expect(container).toBeEmptyDOMElement();
     });
 
-    it('should handle undefined actionConfig.actions', async () => {
+    it('should handle undefined taskConfig.actions', async () => {
       const configWithoutActions = [
         {
           taskCode: mockTaskViewModelWithInput.code,
@@ -469,7 +466,7 @@ describe('TaskActions', () => {
       const { container } = render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={configWithoutActions}
+          taskConfig={configWithoutActions}
         />,
         { wrapper: createWrapper() },
       );

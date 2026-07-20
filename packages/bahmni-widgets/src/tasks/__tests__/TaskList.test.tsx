@@ -377,7 +377,7 @@ describe('TaskList', () => {
       mockGetTasks.mockResolvedValue(mockTasksBundle);
     });
 
-    it('should show actions column header when actionConfig exists', async () => {
+    it('should show actions column header when taskConfig exists', async () => {
       render(<TaskList config={mockTasksControlConfigWithActions} />, {
         wrapper: createWrapper(),
       });
@@ -387,7 +387,7 @@ describe('TaskList', () => {
       });
     });
 
-    it('should not show actions column when no actionConfig', async () => {
+    it('should not show actions column when no taskConfig', async () => {
       render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
         wrapper: createWrapper(),
       });
@@ -399,9 +399,9 @@ describe('TaskList', () => {
       expect(screen.queryByText('TASK_ACTIONS')).not.toBeInTheDocument();
     });
 
-    it('should not show actions column when actionConfig is empty', async () => {
+    it('should not show actions column when taskConfig is empty', async () => {
       render(
-        <TaskList config={{ showOnlyLeafTasks: false, actionConfig: [] }} />,
+        <TaskList config={{ showOnlyLeafTasks: false, taskConfig: [] }} />,
         {
           wrapper: createWrapper(),
         },
@@ -414,10 +414,10 @@ describe('TaskList', () => {
       expect(screen.queryByText('TASK_ACTIONS')).not.toBeInTheDocument();
     });
 
-    it('should not show actions column when actionConfig has no actions', async () => {
+    it('should not show actions column when taskConfig has no actions', async () => {
       const configWithoutActions = {
         showOnlyLeafTasks: false,
-        actionConfig: [{ taskCode: 'some-code', actions: [] }],
+        taskConfig: [{ taskCode: 'some-code', actions: [] }],
       };
 
       render(<TaskList config={configWithoutActions} />, {

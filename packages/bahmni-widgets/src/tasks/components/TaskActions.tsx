@@ -17,14 +17,9 @@ const READY_TASK_STATUS = 'ready' as const;
 interface TaskActionsProps {
   task: TaskViewModel;
   taskConfig: TaskConfig[];
-  episodeOfCareUuids?: string[];
 }
 
-const TaskActions: React.FC<TaskActionsProps> = ({
-  task,
-  taskConfig,
-  episodeOfCareUuids,
-}) => {
+const TaskActions: React.FC<TaskActionsProps> = ({ task, taskConfig }) => {
   const { userPrivileges } = useUserPrivilege();
   const { t } = useTranslation();
 
@@ -34,8 +29,8 @@ const TaskActions: React.FC<TaskActionsProps> = ({
     ObservationForm[],
     Error
   >({
-    queryKey: ['observationForms', episodeOfCareUuids],
-    queryFn: () => fetchObservationForms(episodeOfCareUuids),
+    queryKey: ['observationForms'],
+    queryFn: () => fetchObservationForms(),
     enabled: shouldFetchForms,
   });
 

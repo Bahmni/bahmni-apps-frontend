@@ -173,7 +173,7 @@ export const mockTasksControlConfigNoFitlers = {
   showOnlyLeafTasks: false,
 };
 
-export const mockTaskActionConfig = [
+export const mockTaskConfig = [
   {
     taskCode: VITALS_TASK_CODE,
     actions: [
@@ -193,7 +193,7 @@ export const mockTaskActionConfig = [
 
 export const mockTasksControlConfigWithActions = {
   showOnlyLeafTasks: false,
-  actionConfig: mockTaskActionConfig,
+  taskConfig: mockTaskConfig,
 };
 
 export const mockError = new Error('Failed to fetch tasks');
