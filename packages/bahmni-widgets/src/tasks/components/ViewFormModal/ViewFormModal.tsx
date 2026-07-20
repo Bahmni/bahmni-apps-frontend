@@ -1,5 +1,6 @@
 import { Modal, SkeletonPlaceholder } from '@bahmni/design-system';
 import {
+  formatDateTime,
   getEncounterByUuid,
   getPatientObservationsBundle,
   useTranslation,
@@ -128,24 +129,12 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
   const isLoading = isLoadingObservations || isLoadingEncounters;
   const error = observationsError ?? encountersError;
 
-  const formatDateTime = (timestamp: number): string => {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    return date.toLocaleString('en-GB', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
-  };
-
   const renderEncounterGroup = (group: EncounterGroup) => {
     return (
       <div key={group.encounterUuid} className={styles.encounterGroup}>
         <div className={styles.encounterHeader}>
-          {t('RECORDED_ON')}: {formatDateTime(group.encounterDateTime)} |{' '}
+          {t('RECORDED_ON')}:{' '}
+          {formatDateTime(group.encounterDateTime, t, true).formattedResult} |{' '}
           {t('RECORDED_BY')}: {group.providerName}
         </div>
         <ObservationsRenderer

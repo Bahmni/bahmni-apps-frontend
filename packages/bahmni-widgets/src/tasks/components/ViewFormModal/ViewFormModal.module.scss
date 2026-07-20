@@ -13,4 +13,5 @@
 .encounterHeader {
   @include type-style('body-compact-01');
   color: $text-secondary;
+  margin-bottom: $spacing-04;
 }

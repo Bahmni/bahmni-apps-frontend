@@ -5,7 +5,7 @@ export const FHIR_OBSERVATION_URL = (
   conceptCodes?: string[],
   serviceRequestId?: string,
 ) => {
-  let url = `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}`;
+  let url = `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&_sort=-_lastUpdated`;
 
   if (conceptCodes && conceptCodes.length > 0) {
     const codeParams = conceptCodes.join(',');
@@ -13,11 +13,8 @@ export const FHIR_OBSERVATION_URL = (
   }
 
   if (serviceRequestId) {
-    url += `&based-on=ServiceRequest/${serviceRequestId}`;
+    url += `&based-on=${serviceRequestId}`;
   }
-
-  url +=
-    '&_include=Observation:has-member&_include=Observation:encounter&_sort=-_lastUpdated';
 
   return url;
 };
