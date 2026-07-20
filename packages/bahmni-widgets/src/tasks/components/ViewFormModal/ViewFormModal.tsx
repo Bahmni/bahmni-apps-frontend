@@ -41,7 +41,6 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
     return extractFormNameFromTask(task, view.handlerConfig.formInputCode);
   }, [task, view]);
 
-  const encounterRef = task?.fhirResource.encounter?.reference;
   const serviceRequestRef = task?.fhirResource.basedOn?.[0]?.reference;
 
   const {
@@ -49,7 +48,7 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
     isLoading: isLoadingObservations,
     error: observationsError,
   } = useQuery<Bundle<Observation>, Error>({
-    queryKey: ['taskObservations', encounterRef ?? serviceRequestRef],
+    queryKey: ['taskObservations', serviceRequestRef],
     queryFn: async () => {
       if (serviceRequestRef) {
         const serviceRequestId = extractUuidFromReference(serviceRequestRef);
@@ -64,7 +63,7 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
         type: 'searchset',
       } as Bundle<Observation>;
     },
-    enabled: open && !!task && !!formName,
+    enabled: open && !!task && !!formName && !!serviceRequestRef,
   });
 
   const filteredObservations = useMemo(() => {
