@@ -1734,6 +1734,107 @@ describe('ObservationFormsContainer', () => {
   });
 });
 
+describe('Edit mode - hasFormChanges / change detection', () => {
+  const mockForm: ObservationForm = {
+    name: 'Edit Form',
+    uuid: 'edit-form-uuid',
+    id: 2,
+    privileges: [],
+  };
+
+  const editModeContext = {
+    editOnly: 'observationForms' as const,
+  };
+
+  const defaultProps = {
+    onViewingFormChange: jest.fn(),
+    viewingForm: mockForm,
+    onRemoveForm: jest.fn(),
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    (useQuery as jest.Mock).mockReturnValue({
+      data: mockMinimalPatientData,
+    });
+
+    mockGetValue.mockReturnValue({
+      observations: [],
+      errors: [],
+    });
+
+    const mockUseObservationFormsSearch = jest.requireMock(
+      '../../../../hooks/useObservationFormsSearch',
+    ).default;
+    mockUseObservationFormsSearch.mockReturnValue({
+      forms: [],
+      isLoading: false,
+      error: null,
+    });
+
+    const mockUsePinnedObservationForms = jest.requireMock(
+      '../../../../hooks/usePinnedObservationForms',
+    ).usePinnedObservationForms;
+    mockUsePinnedObservationForms.mockReturnValue({
+      pinnedForms: [],
+      updatePinnedForms: jest.fn(),
+      isLoading: false,
+      error: null,
+    });
+
+    mockUseObservationFormData.mockReturnValue({
+      observations: [],
+      handleFormDataChange: jest.fn(),
+      resetForm: jest.fn(),
+      formMetadata: undefined,
+      isLoadingMetadata: false,
+      metadataError: null,
+    });
+  });
+
+  it('should disable the primary button in edit mode when no observations exist (no changes)', () => {
+    // In edit mode with no observations, hasFormChanges returns false → button disabled
+    mockUseObservationFormData.mockReturnValue({
+      observations: [],
+      handleFormDataChange: jest.fn(),
+      resetForm: jest.fn(),
+      formMetadata: { schema: { name: 'Edit Form', controls: [] } },
+      isLoadingMetadata: false,
+      metadataError: null,
+    });
+
+    render(
+      <ObservationFormsContainer
+        {...defaultProps}
+        encounterSessionStartContext={editModeContext}
+      />,
+    );
+
+    const primaryButton = screen.getByTestId('primary-button');
+    expect(primaryButton).toBeDisabled();
+  });
+
+  it('should enable the primary button in non-edit mode regardless of observations', () => {
+    // Without encounterSessionStartContext.editOnly, isEditMode is false → hasFormChanges is true
+    mockUseObservationFormData.mockReturnValue({
+      observations: [],
+      handleFormDataChange: jest.fn(),
+      resetForm: jest.fn(),
+      formMetadata: { schema: { name: 'Normal Form', controls: [] } },
+      isLoadingMetadata: false,
+      metadataError: null,
+    });
+
+    render(
+      <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+    );
+
+    const primaryButton = screen.getByTestId('primary-button');
+    expect(primaryButton).not.toBeDisabled();
+  });
+});
+
 describe('extractVersionFromFormFieldPath', () => {
   it('extracts version from a standard formFieldPath', () => {
     expect(extractVersionFromFormFieldPath('Vitals.18/14-0')).toBe('18');
