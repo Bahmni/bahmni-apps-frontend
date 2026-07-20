@@ -53,6 +53,7 @@ import {
   getDefaultDashboard,
   getSidebarItems,
   filterSectionsByPrivileges,
+  isPatientNotFoundError,
 } from './util';
 
 const addSectionIds = (config: DashboardConfig): DashboardConfig => {
@@ -126,11 +127,27 @@ const ConsultationPage: React.FC = () => {
   const viewingForm = useObservationFormsStore((state) => state.viewingForm);
 
   const patientUUID = usePatientUUID();
-  const { data: patient } = useQuery({
+  const {
+    data: patient,
+    error: patientError,
+    isError: isPatientError,
+  } = useQuery({
     queryKey: ['patient', patientUUID],
     queryFn: () => getFormattedPatientById(patientUUID!),
     enabled: !!patientUUID,
   });
+
+  const isPatientNotFound =
+    isPatientError && isPatientNotFoundError(patientError);
+
+  // Only mount the patient-scoped content (patient header + dashboard widgets)
+  // once the patient is confirmed to exist. Those widgets each fetch data for
+  // the UUID as soon as they mount and raise their own error toasts, so
+  // rendering them for a missing patient would spam "Bad Request"/"Server Error"
+  // alongside the single "Patient not found" message. The header/breadcrumb/nav
+  // chrome always renders, so the screen is never blank. `patientUUID` is absent
+  // only outside the consultation route, where content should render as before.
+  const shouldRenderPatientContent = !patientUUID || !!patient;
 
   const breadcrumbItems = useMemo(
     () => [
@@ -198,6 +215,16 @@ const ConsultationPage: React.FC = () => {
       });
     }
   }, [dashboardConfigError]);
+
+  useEffect(() => {
+    if (isPatientNotFound && patientError instanceof Error) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t(patientError.message),
+        type: 'error',
+      });
+    }
+  }, [isPatientNotFound]);
 
   const filteredDashboardConfig = useMemo(() => {
     if (!dashboardConfig || !userPrivileges) return null;
@@ -326,24 +353,28 @@ const ConsultationPage: React.FC = () => {
               />
             }
           >
-            <div
-              id="section-sticky-header"
-              data-testid="section-sticky-header-test-id"
-              role="region"
-              aria-label={t('PATIENT_HEADER_SECTION')}
-              className={styles.stickySection}
-            >
-              <PatientHeader
-                isActionAreaVisible={isActionAreaVisible}
-                printOptions={filteredPrintOptions}
-              />
-              {renderContextInformation()}
-            </div>
-            <DashboardContainer
-              sections={filteredDashboardConfig!.sections}
-              activeItemId={activeItemId}
-              scrollTrigger={scrollTrigger}
-            />
+            {shouldRenderPatientContent && (
+              <>
+                <div
+                  id="section-sticky-header"
+                  data-testid="section-sticky-header-test-id"
+                  role="region"
+                  aria-label={t('PATIENT_HEADER_SECTION')}
+                  className={styles.stickySection}
+                >
+                  <PatientHeader
+                    isActionAreaVisible={isActionAreaVisible}
+                    printOptions={filteredPrintOptions}
+                  />
+                  {renderContextInformation()}
+                </div>
+                <DashboardContainer
+                  sections={filteredDashboardConfig!.sections}
+                  activeItemId={activeItemId}
+                  scrollTrigger={scrollTrigger}
+                />
+              </>
+            )}
           </Suspense>
         }
         isActionAreaVisible={isActionAreaVisible}

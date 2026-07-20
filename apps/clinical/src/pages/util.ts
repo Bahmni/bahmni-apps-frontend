@@ -44,6 +44,22 @@ export const filterSectionsByPrivileges = (
     .filter((section) => section.controls.length > 0);
 };
 
+// getFormattedError (shared errorHandling) classifies a failed patient-resource
+// fetch as this translation key, regardless of the exact HTTP status the backend
+// returned for the bad UUID. We key off it to surface a single "patient not
+// found" message and hold back the patient-scoped widgets.
+export const PATIENT_NOT_FOUND_ERROR_KEY = 'ERROR_PATIENT_NOT_FOUND';
+
+export const isPatientNotFoundError = (error: unknown): boolean => {
+  const message =
+    typeof error === 'string'
+      ? error
+      : error instanceof Error
+        ? error.message
+        : '';
+  return message === PATIENT_NOT_FOUND_ERROR_KEY;
+};
+
 export const getSidebarItems = (
   dashboardConfig: DashboardConfig,
   t: (key: string) => string,

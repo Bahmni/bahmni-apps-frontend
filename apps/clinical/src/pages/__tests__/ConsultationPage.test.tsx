@@ -403,6 +403,84 @@ describe('ConsultationPage', () => {
     });
   });
 
+  describe('Patient not found handling', () => {
+    it('shows the patient-not-found error notification when the patient fetch fails with ERROR_PATIENT_NOT_FOUND', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+      (usePatientUUID as jest.Mock).mockReturnValue('missing-patient-uuid');
+      // getFormattedError (via the api client) classifies a failed patient
+      // fetch as this key regardless of the underlying HTTP status.
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        new Error('ERROR_PATIENT_NOT_FOUND'),
+      );
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Error',
+          message: 'Patient not found',
+          type: 'error',
+        });
+      });
+
+      // The app chrome (header/breadcrumb/nav) still renders — never a blank page
+      expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+      // Patient-scoped widgets are held back so only "Patient not found" shows
+      expect(
+        screen.queryByTestId('dashboard-container'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('section-sticky-header-test-id'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders the dashboard once the patient loads successfully', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('valid-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockResolvedValue({
+        fullName: 'John Doe',
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('dashboard-container')).toBeInTheDocument();
+      });
+      expect(
+        screen.getByTestId('section-sticky-header-test-id'),
+      ).toBeInTheDocument();
+    });
+
+    it('does not show the patient-not-found notification for an unauthorized error', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+      (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        'Unauthorized: You are not authorized to perform this action. Please log in again.',
+      );
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(mockAddNotification).not.toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Patient not found' }),
+      );
+    });
+  });
+
   describe('Accessibility', () => {
     it('should have no accessibility violations', async () => {
       const { container } = renderWithProvider();

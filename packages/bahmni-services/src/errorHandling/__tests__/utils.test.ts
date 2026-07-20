@@ -87,6 +87,56 @@ describe('getFormattedError', () => {
     });
   });
 
+  describe('patient resource not found', () => {
+    const patientUrl =
+      '/openmrs/ws/fhir2/R4/Patient/0113da7b-09ee-481f-bbbf-a02ad9fb4a58';
+
+    it.each([400, 404, 500, 502, 503, 504])(
+      'returns ERROR_PATIENT_NOT_FOUND when the patient resource fetch fails with %s',
+      (status) => {
+        const error = {
+          config: { url: patientUrl },
+          response: { status, data: {}, config: { url: patientUrl } },
+        } as unknown as AxiosError;
+
+        expect(getFormattedError(error)).toEqual({
+          title: 'Error',
+          message: 'ERROR_PATIENT_NOT_FOUND',
+        });
+      },
+    );
+
+    it('does not classify a 401 on the patient resource as not-found', () => {
+      const error = {
+        response: {
+          status: 401,
+          data: {},
+          config: { url: patientUrl },
+        },
+      } as unknown as AxiosError;
+
+      expect(getFormattedError(error).message).not.toBe(
+        'ERROR_PATIENT_NOT_FOUND',
+      );
+    });
+
+    it('does not classify a non-patient 400 as patient-not-found', () => {
+      const error = {
+        response: {
+          status: 400,
+          data: {},
+          config: { url: '/openmrs/ws/fhir2/R4/MedicationRequest?patient=x' },
+        },
+      } as unknown as AxiosError;
+
+      expect(getFormattedError(error)).toEqual({
+        title: 'Bad Request',
+        message:
+          'Invalid input parameters. Please check your request and try again.',
+      });
+    });
+  });
+
   describe('HTTP status errors', () => {
     it('should handle 401 Unauthorized error', () => {
       const error = {
