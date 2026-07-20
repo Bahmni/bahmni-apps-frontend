@@ -1,0 +1,407 @@
+import { hasPrivilege } from '@bahmni/services';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import TaskResults from '../TaskResults';
+import {
+  mockTaskConfigWithViews,
+  mockViewFormView,
+  mockViewFormViewRestricted,
+  mockTaskConfigEmptyViews,
+  mockTaskConfigNoViews,
+} from '../../__tests__/__mocks__/configMocks';
+import {
+  mockUserPrivileges,
+  mockEmptyUserPrivileges,
+  mockFHIRTaskWithInput,
+} from '../../__tests__/__mocks__/taskActionsMocks';
+import { VITALS_TASK_CODE, FORM_NAME_INPUT_CODE } from '../../__tests__/__mocks__/taskListMocks';
+import type { Task } from 'fhir/r4';
+import type { TaskViewModel } from '../../models';
+
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  hasPrivilege: jest.fn(),
+}));
+
+jest.mock('../../../hooks/usePatientUUID', () => ({
+  usePatientUUID: jest.fn(() => 'patient-uuid-123'),
+}));
+
+jest.mock('../../../userPrivileges/useUserPrivilege', () => ({
+  useUserPrivilege: jest.fn(() => ({
+    userPrivileges: mockUserPrivileges,
+  })),
+}));
+
+jest.mock('../ViewFormModal/ViewFormModal', () => {
+  return jest.fn(({ open, onClose }) => {
+    return open ? (
+      <div data-testid="view-form-modal">
+        <button onClick={onClose}>Close Modal</button>
+      </div>
+    ) : null;
+  });
+});
+
+const mockHasPrivilege = hasPrivilege as jest.MockedFunction<typeof hasPrivilege>;
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        staleTime: 0,
+        gcTime: 0,
+      },
+    },
+  });
+
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
+
+const createTaskViewModel = (fhirTask: Task, status: string = 'completed'): TaskViewModel => ({
+  id: fhirTask.id ?? '',
+  name: fhirTask.description ?? '',
+  code: fhirTask.code?.coding?.[0]?.code ?? '',
+  status,
+  partOf: [],
+  fhirResource: fhirTask,
+});
+
+const mockCompletedTask = createTaskViewModel(mockFHIRTaskWithInput, 'completed');
+const mockInProgressTask = createTaskViewModel(mockFHIRTaskWithInput, 'in-progress');
+const mockRequestedTask = createTaskViewModel(mockFHIRTaskWithInput, 'requested');
+
+describe('TaskResults', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockHasPrivilege.mockReturnValue(true);
+  });
+
+  describe('Rendering', () => {
+    it('should render link when permitted views exist', () => {
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      const link = screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`);
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveTextContent('View Data');
+    });
+
+    it('should render dash when no permitted views exist', () => {
+      mockHasPrivilege.mockReturnValue(false);
+
+      const { container } = render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(container.textContent).toBe('-');
+      expect(screen.queryByText('View Data')).not.toBeInTheDocument();
+    });
+
+    it.each([
+      ['empty taskConfig', []],
+      ['null taskConfig', null],
+      ['undefined taskConfig', undefined],
+    ])('should render dash when %s', (_, config) => {
+      const { container } = render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={config as any}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(container.textContent).toBe('-');
+    });
+
+    it('should render dash when taskConfig has empty views array', () => {
+      const { container } = render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigEmptyViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(container.textContent).toBe('-');
+    });
+
+    it('should render dash when taskConfig has no views property', () => {
+      const { container } = render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigNoViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(container.textContent).toBe('-');
+    });
+
+    it('should render dash when no matching taskConfig for task code', () => {
+      const taskWithDifferentCode = {
+        ...mockCompletedTask,
+        code: 'non-existent-code',
+      };
+
+      const { container } = render(
+        <TaskResults
+          task={taskWithDifferentCode}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(container.textContent).toBe('-');
+    });
+  });
+
+  describe('Privilege filtering', () => {
+    it('should show view when user has required privileges', () => {
+      mockHasPrivilege.mockReturnValue(true);
+
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`)).toBeInTheDocument();
+    });
+
+    it('should not show view when user lacks required privileges', () => {
+      mockHasPrivilege.mockReturnValue(false);
+
+      const { container } = render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={[{
+            taskCode: VITALS_TASK_CODE,
+            views: [mockViewFormViewRestricted],
+          }]}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(container.textContent).toBe('-');
+    });
+
+    it('should show view when no privileges are required', () => {
+      const configWithNoPrivileges = [{
+        taskCode: VITALS_TASK_CODE,
+        views: [{
+          ...mockViewFormView,
+          requiredPrivileges: [],
+        }],
+      }];
+
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={configWithNoPrivileges}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`)).toBeInTheDocument();
+    });
+  });
+
+  describe('Task status filtering', () => {
+    it.each([
+      ['in-progress', mockInProgressTask],
+      ['requested', mockRequestedTask],
+      ['ready', { ...mockCompletedTask, status: 'ready' }],
+    ])('should not show view for %s task', (statusName, task) => {
+      const { container } = render(
+        <TaskResults
+          task={task}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(container.textContent).toBe('-');
+      expect(screen.queryByText('View Data')).not.toBeInTheDocument();
+    });
+
+    it('should show view only for completed tasks', () => {
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`)).toBeInTheDocument();
+    });
+  });
+
+  describe('Modal interaction', () => {
+    it('should open ViewFormModal when link is clicked', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      const link = screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`);
+      await user.click(link);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('view-form-modal')).toBeInTheDocument();
+      });
+    });
+
+    it('should close modal when onClose is called', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      const link = screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`);
+      await user.click(link);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('view-form-modal')).toBeInTheDocument();
+      });
+
+      const closeButton = screen.getByText('Close Modal');
+      await user.click(closeButton);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('view-form-modal')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should not render modal when not open', () => {
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(screen.queryByTestId('view-form-modal')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Form matching', () => {
+    it('should show view when task has matching form input', () => {
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`)).toBeInTheDocument();
+    });
+
+    it('should not show view when form name cannot be extracted', () => {
+      const taskWithoutInput: TaskViewModel = {
+        ...mockCompletedTask,
+        fhirResource: {
+          ...mockCompletedTask.fhirResource,
+          input: [],
+        },
+      };
+
+      const { container } = render(
+        <TaskResults
+          task={taskWithoutInput}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(container.textContent).toBe('-');
+    });
+
+    it('should not show view when task has no input property', () => {
+      const taskWithoutInputProperty: TaskViewModel = {
+        ...mockCompletedTask,
+        fhirResource: {
+          ...mockCompletedTask.fhirResource,
+          input: undefined,
+        },
+      };
+
+      const { container } = render(
+        <TaskResults
+          task={taskWithoutInputProperty}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(container.textContent).toBe('-');
+    });
+  });
+
+  describe('View selection', () => {
+    it('should render only first permitted view when multiple exist', () => {
+      const configWithMultipleViews = [{
+        taskCode: VITALS_TASK_CODE,
+        views: [
+          mockViewFormView,
+          {
+            ...mockViewFormView,
+            label: 'Second View',
+          },
+        ],
+      }];
+
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={configWithMultipleViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      const link = screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`);
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveTextContent('View Data');
+    });
+
+    it('should pass correct testId to link', () => {
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`)).toBeInTheDocument();
+    });
+  });
+});

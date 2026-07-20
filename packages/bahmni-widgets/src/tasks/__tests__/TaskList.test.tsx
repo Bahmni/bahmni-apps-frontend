@@ -9,6 +9,7 @@ import {
   mockTasksControlConfigWithActions,
   mockError,
 } from './__mocks__/taskListMocks';
+import { mockTaskConfigWithViews } from './__mocks__/configMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -429,6 +430,141 @@ describe('TaskList', () => {
       });
 
       expect(screen.queryByText('TASK_ACTIONS')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Results Column', () => {
+    beforeEach(() => {
+      mockGetTasks.mockResolvedValue(mockTasksBundle);
+    });
+
+    it('should show results column header when taskConfig has views', async () => {
+      const configWithViews = {
+        showOnlyLeafTasks: false,
+        taskConfig: mockTaskConfigWithViews,
+      };
+
+      render(<TaskList config={configWithViews} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('TASK_RESULTS')).toBeInTheDocument();
+      });
+    });
+
+    it('should not show results column when no taskConfig', async () => {
+      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_RESULTS')).not.toBeInTheDocument();
+    });
+
+    it('should not show results column when taskConfig is empty', async () => {
+      render(
+        <TaskList config={{ showOnlyLeafTasks: false, taskConfig: [] }} />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_RESULTS')).not.toBeInTheDocument();
+    });
+
+    it('should not show results column when taskConfig has no views', async () => {
+      const configWithoutViews = {
+        showOnlyLeafTasks: false,
+        taskConfig: [{ taskCode: 'some-code', actions: [] }],
+      };
+
+      render(<TaskList config={configWithoutViews} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_RESULTS')).not.toBeInTheDocument();
+    });
+
+    it('should not show results column when taskConfig has empty views array', async () => {
+      const configWithEmptyViews = {
+        showOnlyLeafTasks: false,
+        taskConfig: [{ taskCode: 'some-code', views: [] }],
+      };
+
+      render(<TaskList config={configWithEmptyViews} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_RESULTS')).not.toBeInTheDocument();
+    });
+
+    it('should show both Results and Actions columns when both exist', async () => {
+      const configWithBoth = {
+        showOnlyLeafTasks: false,
+        taskConfig: [
+          {
+            taskCode: 'some-code',
+            actions: [
+              {
+                label: 'Test Action',
+                type: 'launchForm',
+                icon: 'edit',
+                requiredPrivileges: [],
+                handlerConfig: {},
+              },
+            ],
+            views: [
+              {
+                label: 'Test View',
+                type: 'viewForm',
+                requiredPrivileges: [],
+                handlerConfig: { formInputCode: 'test' },
+              },
+            ],
+          },
+        ],
+      };
+
+      render(<TaskList config={configWithBoth} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('TASK_RESULTS')).toBeInTheDocument();
+        expect(screen.getByText('TASK_ACTIONS')).toBeInTheDocument();
+      });
+    });
+
+    it('should show Results column but not Actions column when only views exist', async () => {
+      const configWithOnlyViews = {
+        showOnlyLeafTasks: false,
+        taskConfig: mockTaskConfigWithViews,
+      };
+
+      render(<TaskList config={configWithOnlyViews} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('TASK_RESULTS')).toBeInTheDocument();
+        expect(screen.queryByText('TASK_ACTIONS')).not.toBeInTheDocument();
+      });
     });
   });
 
