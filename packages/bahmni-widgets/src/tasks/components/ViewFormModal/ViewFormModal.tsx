@@ -48,12 +48,7 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
     isLoading: isLoadingObservations,
     error: observationsError,
   } = useQuery<Bundle<Observation>, Error>({
-    queryKey: [
-      'taskObservations',
-      task?.code,
-      formName,
-      encounterRef ?? serviceRequestRef,
-    ],
+    queryKey: ['taskObservations', encounterRef ?? serviceRequestRef],
     queryFn: async () => {
       if (serviceRequestRef) {
         const serviceRequestId = extractUuidFromReference(serviceRequestRef);
