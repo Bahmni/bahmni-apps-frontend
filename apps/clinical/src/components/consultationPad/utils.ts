@@ -47,6 +47,8 @@ export function getActiveEntries(
       !entry.encounterTypes || entry.encounterTypes.includes(encounterType);
     if (!matchesEncounterType) return false;
 
+    if (entry.onActionTriggered && entry.key !== editOnlyKey) return false;
+
     // When editOnly is set, show only the target form + encounterDetails.
     if (editOnlyKey) {
       return (
@@ -85,7 +87,9 @@ export function captureUpdatedResources(entries: InputControl[]) {
       hasData('vaccination') ||
       hasData('stopMedications'),
     immunizationHistory:
-      hasData('immunizationHistory') || hasData('immunizationAdministration'),
+      hasData('immunizationHistory') ||
+      hasData('immunizationAdministration') ||
+      hasData('immunizationWaiver'),
     serviceRequests,
     observationFormsWithBasedOn: hasObservationFormsWithBasedOn,
   };

@@ -110,9 +110,10 @@ export function getCookieByName(name: string): string {
 /**
  * Deletes a cookie by name
  * @param name The name of the cookie to delete
+ * @param path The path of the cookie to delete (defaults to '/')
  */
-export function deleteCookie(name: string): void {
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+export function deleteCookie(name: string, path: string = '/'): void {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
 }
 
 /**

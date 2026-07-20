@@ -1,5 +1,236 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Tab Config Schema",
-  "type": "object"
+  "title": "Common Search Widget Config Schema",
+  "description": "Configuration for the common search widget, defining search criteria per context",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "$ref": "#/definitions/searchContextConfig"
+  },
+  "definitions": {
+    "searchContextConfig": {
+      "type": "object",
+      "required": [
+        "context",
+        "translationKey",
+        "requiredPrivileges",
+        "locationAware",
+        "url",
+        "pageSize",
+        "criteria",
+        "resultFields"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "type": "string",
+          "enum": ["patient", "appointment", "episodeOfCare"],
+          "description": "The context this search configuration applies to"
+        },
+        "translationKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "i18n key for the tab/section label"
+        },
+        "requiredPrivileges": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Privileges required to access this search context"
+        },
+        "locationAware": {
+          "type": "string",
+          "enum": ["loggedInLocation", "allowedLocation"],
+          "description": "Location scope applied when executing searches in this context"
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "description": "API endpoint URL for search results"
+        },
+        "pageSize": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of results per page"
+        },
+        "criteria": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/criterionConfig" },
+          "minItems": 1,
+          "description": "Search criteria available in this context"
+        },
+        "resultFields": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/resultFieldConfig" },
+          "minItems": 1,
+          "description": "Defines the columns shown in the results table after a successful search"
+        }
+      }
+    },
+    "resultFieldConfig": {
+      "type": "object",
+      "required": ["translationKey", "expression"],
+      "additionalProperties": false,
+      "properties": {
+        "translationKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "i18n key for the column header"
+        },
+        "expression": {
+          "type": "string",
+          "minLength": 1,
+          "description": "JSONata expression evaluated against each result item to extract the column value"
+        },
+        "enableSort": {
+          "type": "boolean",
+          "description": "When true, the column header is clickable to sort results client-side"
+        },
+        "filterType": {
+          "type": "string",
+          "enum": ["text", "select", "dateRange", "numeric"],
+          "description": "When present, a filter control appears for this column"
+        }
+      }
+    },
+    "criterionConfig": {
+      "type": "object",
+      "required": ["field", "translationKey", "input"],
+      "additionalProperties": false,
+      "properties": {
+        "field": { "$ref": "#/definitions/fieldConfig" },
+        "default": {
+          "type": "boolean",
+          "description": "Whether this criterion is shown by default in the UI"
+        },
+        "translationKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "i18n key for the criterion label"
+        },
+        "input": { "$ref": "#/definitions/inputConfig" }
+      }
+    },
+    "fieldConfig": {
+      "type": "object",
+      "required": ["key"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Field identifier used when constructing the search query"
+        },
+        "keyType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "UUID or type qualifier for polymorphic fields such as identifier or personAttribute"
+        }
+      }
+    },
+    "inputConfig": {
+      "oneOf": [
+        { "$ref": "#/definitions/textInput" },
+        { "$ref": "#/definitions/dateInput" },
+        { "$ref": "#/definitions/numericInput" },
+        { "$ref": "#/definitions/optionsInput" },
+        { "$ref": "#/definitions/lookupInput" }
+      ]
+    },
+    "textInput": {
+      "type": "object",
+      "required": ["kind", "placeholderTranslationKey"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "const": "text" },
+        "placeholderTranslationKey": { "type": "string", "minLength": 1 },
+        "regex": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional regular expression. When provided, the value is validated against this pattern on search submission."
+        }
+      }
+    },
+    "dateInput": {
+      "type": "object",
+      "required": ["kind", "placeholderTranslationKey"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "const": "date" },
+        "placeholderTranslationKey": { "type": "string", "minLength": 1 },
+        "rangeAllowed": {
+          "type": "boolean",
+          "description": "When true, UI renders two inputs (From and To), each with its own value and comparator"
+        }
+      }
+    },
+    "numericInput": {
+      "type": "object",
+      "required": ["kind", "placeholderTranslationKey"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "const": "numeric" },
+        "placeholderTranslationKey": { "type": "string", "minLength": 1 },
+        "rangeAllowed": {
+          "type": "boolean",
+          "description": "When true, UI renders two inputs (From and To), each with its own value and comparator"
+        }
+      }
+    },
+    "optionsInput": {
+      "type": "object",
+      "required": ["kind", "placeholderTranslationKey", "options"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "const": "options" },
+        "placeholderTranslationKey": { "type": "string", "minLength": 1 },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/optionItem" },
+          "description": "Static list of selectable options"
+        }
+      }
+    },
+    "optionItem": {
+      "type": "object",
+      "required": ["translationKey", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "translationKey": { "type": "string", "minLength": 1 },
+        "value": { "type": "string", "minLength": 1 }
+      }
+    },
+    "lookupInput": {
+      "type": "object",
+      "required": ["kind", "placeholderTranslationKey", "lookup"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "const": "lookup" },
+        "placeholderTranslationKey": { "type": "string", "minLength": 1 },
+        "lookup": { "$ref": "#/definitions/lookupConfig" }
+      }
+    },
+    "lookupConfig": {
+      "type": "object",
+      "required": ["source"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifies the lookup source (e.g. appointmentService, concept)"
+        },
+        "prefetch": {
+          "type": "boolean",
+          "description": "Whether to load all options upfront rather than on user input"
+        },
+        "valueSet": {
+          "type": "string",
+          "description": "UUID of the concept value set to restrict lookup results"
+        }
+      }
+    }
+  }
 }

@@ -34,6 +34,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
     isRail = false,
     ariaLabel = 'Header',
     extraContent,
+    userMenu,
   }) => {
     const { isSideNavExpanded, handleSideNavItemClick } =
       useHeaderSideNav(onSideNavItemClick);
@@ -60,8 +61,8 @@ export const Header: React.FC<HeaderProps> = React.memo(
       );
     };
 
-    const renderGlobalActions = () => {
-      if (globalActions.length === 0) return null;
+    const renderGlobalBar = () => {
+      if (globalActions.length === 0 && !userMenu) return null;
 
       return (
         <HeaderGlobalBar data-testid="header-global-bar">
@@ -76,6 +77,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
               {action.renderIcon}
             </HeaderGlobalAction>
           ))}
+          {userMenu}
         </HeaderGlobalBar>
       );
     };
@@ -123,7 +125,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
         render={() => (
           <CarbonHeader aria-label={ariaLabel} data-testid="header">
             {renderBreadcrumbs()}
-            {renderGlobalActions()}
+            {renderGlobalBar()}
             {renderSideNav()}
             {extraContent}
           </CarbonHeader>

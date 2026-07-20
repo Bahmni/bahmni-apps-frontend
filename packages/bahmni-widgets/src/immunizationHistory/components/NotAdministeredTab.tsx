@@ -1,4 +1,4 @@
-import { SortableDataTable } from '@bahmni/design-system';
+import { SortableDataTable, TooltipIcon } from '@bahmni/design-system';
 import {
   ConsultationSavedEventPayload,
   formatDateTime,
@@ -56,7 +56,12 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
   );
 
   const headers = useMemo(
-    () => createImmunizationHeaders(config.columns, t),
+    () =>
+      createImmunizationHeaders(config.columns, t).map((header) =>
+        header.key === 'code'
+          ? { ...header, header: t('IMMUNIZATION_HISTORY_WIDGET_COL_TYPE') }
+          : header,
+      ),
     [config.columns, t],
   );
 
@@ -74,10 +79,26 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
     key: string,
   ) => {
     if (key === 'code') {
-      return <span className={styles.code}>{row.code ?? '-'}</span>;
+      return (
+        <div className={styles.code}>
+          <span>{row.code ?? '-'}</span>
+          {row.notes && (
+            <TooltipIcon
+              iconName="fa-file-lines"
+              content={row.notes}
+              ariaLabel={row.notes}
+            />
+          )}
+        </div>
+      );
     }
     if (key === 'date') {
       return row.date ? formatDateTime(row.date, t).formattedResult : '-';
+    }
+    if (key === 'recordedOn') {
+      return row.recordedOn
+        ? formatDateTime(row.recordedOn, t, true).formattedResult
+        : '-';
     }
     return row[key as keyof NotAdministeredImmunizationViewModel] ?? '-';
   };
@@ -101,7 +122,7 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
         )}
         renderCell={renderCell}
         dataTestId="not-administered-immunizations-table"
-        className={styles.table}
+        className={`${styles.table} ${styles.notAdministeredTable}`}
       />
     </div>
   );
