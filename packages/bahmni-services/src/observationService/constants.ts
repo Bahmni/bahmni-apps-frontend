@@ -16,7 +16,7 @@ export const FHIR_OBSERVATION_URL = (
     url += `&based-on=${serviceRequestId}`;
   }
 
-  url += '&_include=Observation:has-member';
+  // url += '&_include=Observation:has-member';
 
   return url;
 };
