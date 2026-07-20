@@ -26,7 +26,7 @@ export const mockObservationWithFormPath: Observation = {
   },
   extension: [
     {
-      url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+      url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
       valueString: 'Bahmni^Vitals (6 years or older).1/17-0',
     },
   ],
@@ -88,7 +88,7 @@ export const mockObservationForPregnancy: Observation = {
   },
   extension: [
     {
-      url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+      url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
       valueString: 'Bahmni^Pregnancy Declaration.1/5-0',
     },
   ],
@@ -114,7 +114,7 @@ export const mockObservationsForVitals: Observation[] = [
     },
     extension: [
       {
-        url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+        url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
         valueString: 'Bahmni^Vitals (6 years or older).1/10-0',
       },
     ],
@@ -127,11 +127,11 @@ export const mockObservationsBundle: Bundle<Observation> = {
   total: 2,
   entry: [
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-1',
+      fullUrl: 'https://localhost/openmrs/ws/fhir2/R4/Observation/obs-1',
       resource: mockObservationWithFormPath,
     },
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-vitals-2',
+      fullUrl: 'https://localhost/openmrs/ws/fhir2/R4/Observation/obs-vitals-2',
       resource: mockObservationsForVitals[1],
     },
   ],
@@ -215,7 +215,7 @@ export const mockEncountersBundle: Bundle<Encounter> = {
   total: 1,
   entry: [
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Encounter/encounter-1',
+      fullUrl: 'https://localhost/openmrs/ws/fhir2/R4/Encounter/encounter-1',
       resource: mockEncounterWithProvider,
     },
   ],
@@ -229,15 +229,15 @@ export const mockObservationAndEncounterBundle: Bundle<
   total: 3,
   entry: [
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-1',
+      fullUrl: 'https://localhost/openmrs/ws/fhir2/R4/Observation/obs-1',
       resource: mockObservationWithFormPath,
     },
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-vitals-2',
+      fullUrl: 'https://localhost/openmrs/ws/fhir2/R4/Observation/obs-vitals-2',
       resource: mockObservationsForVitals[1],
     },
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Encounter/encounter-1',
+      fullUrl: 'https://localhost/openmrs/ws/fhir2/R4/Encounter/encounter-1',
       resource: mockEncounterWithProvider,
     },
   ],

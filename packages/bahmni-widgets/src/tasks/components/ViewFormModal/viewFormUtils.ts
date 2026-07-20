@@ -26,7 +26,7 @@ export const extractFormFieldPath = (
 ): string | null => {
   const formFieldPathExtension = observation.extension?.find(
     (ext) =>
-      ext.url === 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+      ext.url === 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
   );
 
   return formFieldPathExtension?.valueString ?? null;

@@ -6,7 +6,7 @@ export const mockObservation: Observation = {
   identifier: [
     {
       use: 'official',
-      system: 'http://www.bmc.nl/zorgportal/identifiers/observations',
+      system: 'https://www.bmc.nl/zorgportal/identifiers/observations',
       value: '6323',
     },
   ],
@@ -14,7 +14,7 @@ export const mockObservation: Observation = {
   code: {
     coding: [
       {
-        system: 'http://loinc.org',
+        system: 'https://loinc.org',
         code: '15074-8',
         display: 'Glucose [Moles/volume] in Blood',
       },
@@ -35,7 +35,7 @@ export const mockObservation: Observation = {
   valueQuantity: {
     value: 6.3,
     unit: 'mmol/l',
-    system: 'http://unitsofmeasure.org',
+    system: 'https://unitsofmeasure.org',
     code: 'mmol/L',
   },
   interpretation: [
@@ -43,7 +43,7 @@ export const mockObservation: Observation = {
       coding: [
         {
           system:
-            'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+            'https://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
           code: 'H',
           display: 'High',
         },
@@ -55,13 +55,13 @@ export const mockObservation: Observation = {
       low: {
         value: 3.1,
         unit: 'mmol/l',
-        system: 'http://unitsofmeasure.org',
+        system: 'https://unitsofmeasure.org',
         code: 'mmol/L',
       },
       high: {
         value: 6.2,
         unit: 'mmol/l',
-        system: 'http://unitsofmeasure.org',
+        system: 'https://unitsofmeasure.org',
         code: 'mmol/L',
       },
     },
@@ -93,7 +93,7 @@ export const mockEncounter: Encounter = {
   },
   status: 'unknown',
   class: {
-    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    system: 'https://terminology.hl7.org/CodeSystem/v3-ActCode',
     code: 'AMB',
   },
   subject: {
@@ -137,7 +137,7 @@ export const mockObservationWithEncounter: Observation = {
   valueQuantity: {
     value: 120,
     unit: 'mmHg',
-    system: 'http://unitsofmeasure.org',
+    system: 'https://unitsofmeasure.org',
     code: 'mmHg',
   },
 };
@@ -155,12 +155,12 @@ export const mockObservationWithEncounterBundle: Bundle<
   entry: [
     {
       fullUrl:
-        'http://localhost/openmrs/ws/fhir2/R4/Observation/0c0e1991-233a-4c4f-ba26-ee9522dd37fc',
+        'https://localhost/openmrs/ws/fhir2/R4/Observation/0c0e1991-233a-4c4f-ba26-ee9522dd37fc',
       resource: mockObservationWithEncounter,
     },
     {
       fullUrl:
-        'http://localhost/openmrs/ws/fhir2/R4/Encounter/1b5420db-e803-4875-97a1-1636869ebe4d',
+        'https://localhost/openmrs/ws/fhir2/R4/Encounter/1b5420db-e803-4875-97a1-1636869ebe4d',
       resource: mockEncounter,
     },
   ],
@@ -172,14 +172,14 @@ export const mockFormsEncounter = {
   total: 1,
   entry: [
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-uuid-1',
+      fullUrl: 'https://localhost/openmrs/ws/fhir2/R4/Observation/obs-uuid-1',
       resource: {
         resourceType: 'Observation',
         id: 'obs-uuid-1',
         code: {
           coding: [
             {
-              system: 'http://loinc.org',
+              system: 'https://loinc.org',
               code: '8310-5',
               display: 'Body temperature',
             },
