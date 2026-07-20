@@ -21,7 +21,9 @@ export const extractUuidFromReference = (ref: string): string => {
  * @param observation - FHIR Observation resource
  * @returns Form field path string or null
  */
-export const extractFormFieldPath = (observation: Observation): string | null => {
+export const extractFormFieldPath = (
+  observation: Observation,
+): string | null => {
   const formFieldPathExtension = observation.extension?.find(
     (ext) =>
       ext.url === 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
@@ -42,9 +44,10 @@ export const groupObservationsByEncounter = (
 ): EncounterGroup[] => {
   const encounterMap = new Map<string, EncounterGroup>();
 
-  const encounters = bundle.entry
-    ?.filter((entry) => entry.resource?.resourceType === 'Encounter')
-    .map((entry) => entry.resource as Encounter) ?? [];
+  const encounters =
+    bundle.entry
+      ?.filter((entry) => entry.resource?.resourceType === 'Encounter')
+      .map((entry) => entry.resource as Encounter) ?? [];
 
   const encounterDataMap = new Map<string, Encounter>();
   encounters.forEach((enc) => {

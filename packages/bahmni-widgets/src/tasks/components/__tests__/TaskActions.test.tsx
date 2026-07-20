@@ -180,7 +180,7 @@ describe('TaskActions', () => {
   describe('Privilege Filtering', () => {
     it('should filter actions based on user privileges', async () => {
       mockHasPrivilege.mockImplementation((privileges, required) => {
-        return required.includes('Edit Vitals');
+        return required?.includes('Edit Vitals') ?? false;
       });
 
       render(
@@ -402,10 +402,9 @@ describe('TaskActions', () => {
         status: 'completed',
       };
 
-      render(
-        <TaskActions task={taskNotReady} taskConfig={mockTaskConfig} />,
-        { wrapper: createWrapper() },
-      );
+      render(<TaskActions task={taskNotReady} taskConfig={mockTaskConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(
@@ -423,10 +422,9 @@ describe('TaskActions', () => {
         status: 'ready',
       };
 
-      render(
-        <TaskActions task={taskReady} taskConfig={mockTaskConfig} />,
-        { wrapper: createWrapper() },
-      );
+      render(<TaskActions task={taskReady} taskConfig={mockTaskConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(
