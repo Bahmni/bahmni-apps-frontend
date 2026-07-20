@@ -84,6 +84,8 @@ describe('UserGlobalAction', () => {
     expect(
       screen.queryByTestId('user-global-action-button-test-id'),
     ).not.toBeInTheDocument();
+    // Loading state is announced to screen readers.
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('should always render the avatar trigger without crashing when there is no user', () => {

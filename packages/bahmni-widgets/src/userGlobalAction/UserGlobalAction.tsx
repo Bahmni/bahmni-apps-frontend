@@ -141,6 +141,8 @@ export const UserGlobalAction = () => {
         id="user-global-action"
         data-testid="user-global-action-test-id"
         className={styles.container}
+        role="status"
+        aria-label={t('USER_GLOBAL_ACTION_LOADING')}
       >
         <SkeletonPlaceholder
           className={styles.skeleton}

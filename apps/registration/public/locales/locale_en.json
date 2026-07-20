@@ -166,6 +166,7 @@
   "USER_GLOBAL_ACTION_ERROR": "Something went wrong. Please try again.",
   "USER_GLOBAL_ACTION_ERROR_TITLE": "Action failed",
   "USER_GLOBAL_ACTION_GREETING": "Hi, {{name}}",
+  "USER_GLOBAL_ACTION_LOADING": "Loading user menu",
   "USER_GLOBAL_ACTION_MENU": "User actions",
   "USER_LOGOUT_GLOBAL_ACTION": "Logout",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app",
