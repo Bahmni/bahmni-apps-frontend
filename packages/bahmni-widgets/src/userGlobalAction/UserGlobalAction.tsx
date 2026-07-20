@@ -54,6 +54,63 @@ export const UserGlobalAction = () => {
     }
   }, [registry]);
 
+  // Keyboard navigation for the dropdown. Carbon's Menu ships its own arrow-key
+  // handling, but in this header/portal + fixed-position setup it behaves
+  // inconsistently (ArrowDown can fail to advance). Own it deterministically:
+  // focus the first item on open (WAI-ARIA menu-button pattern) and move focus
+  // with ArrowUp/ArrowDown ourselves, capturing the event so Carbon's handler
+  // doesn't also run.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const getItems = () =>
+      Array.from(
+        document
+          .getElementById(MENU_ID)
+          ?.querySelectorAll<HTMLElement>(
+            '[role="menuitem"]:not([aria-disabled="true"])',
+          ) ?? [],
+      );
+
+    let frame = 0;
+    let attempts = 0;
+    const focusFirstItem = () => {
+      const items = getItems();
+      if (items.length > 0) {
+        items[0].focus();
+      } else if (attempts < 5) {
+        attempts += 1;
+        frame = requestAnimationFrame(focusFirstItem);
+      }
+    };
+    frame = requestAnimationFrame(focusFirstItem);
+
+    const handleArrowKeys = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      const menu = document.getElementById(MENU_ID);
+      if (!menu?.contains(document.activeElement)) return;
+
+      const items = getItems();
+      if (items.length === 0) return;
+
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      const current = items.findIndex(
+        (item) => item === document.activeElement,
+      );
+      const delta = e.key === 'ArrowDown' ? 1 : -1;
+      const next = (current + delta + items.length) % items.length;
+      items[next].focus();
+    };
+
+    document.addEventListener('keydown', handleArrowKeys, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener('keydown', handleArrowKeys, true);
+    };
+  }, [isOpen]);
+
   const filteredActions = useMemo(() => {
     return getActions()
       .filter(

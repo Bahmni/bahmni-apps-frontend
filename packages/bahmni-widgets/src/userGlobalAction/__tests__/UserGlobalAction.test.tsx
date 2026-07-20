@@ -185,6 +185,33 @@ describe('UserGlobalAction', () => {
       expect(logoutIndex).toBeGreaterThanOrEqual(0);
       expect(changePasswordIndex).toBeLessThan(logoutIndex);
     });
+
+    it('should focus the first menu item when the menu opens so arrow keys navigate', async () => {
+      (registerDefaultActions as jest.Mock).mockImplementation((registry) => {
+        registry.registerAction({
+          id: 'user-change-password-global-action',
+          label: 'USER_CHANGE_PASSWORD_GLOBAL_ACTION',
+          onClick: jest.fn(),
+          priority: 100,
+        });
+        registry.registerAction({
+          id: 'user-logout-global-action',
+          label: 'USER_LOGOUT_GLOBAL_ACTION',
+          onClick: jest.fn(),
+          priority: 9999,
+        });
+      });
+
+      renderWithProviders(buildActivePractitionerValue());
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
+
+      await waitFor(() => {
+        const menuItems = screen.getAllByRole('menuitem');
+        expect(menuItems[0]).toHaveFocus();
+      });
+    });
   });
 
   describe('Action Filtering', () => {
