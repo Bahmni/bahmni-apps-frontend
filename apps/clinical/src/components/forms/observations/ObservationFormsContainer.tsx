@@ -784,7 +784,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
  * had comment, current does not) and replaces them in-place with the DELETE+POST
  * pair so createObservationEntries emits the correct bundle entries.
  */
-const replaceNoteRemovedObs = (
+export const replaceNoteRemovedObs = (
   transformed: Form2Observation[],
   original: Form2Observation[],
 ): void => {
@@ -823,7 +823,7 @@ const replaceNoteRemovedObs = (
  * processed as individual leaf Observations in the bundle, so the same
  * partial-update issue affects them — e.g. Blood Pressure → Systolic / Diastolic).
  */
-const replaceInterpretationRemovedObs = (
+export const replaceInterpretationRemovedObs = (
   transformed: Form2Observation[],
   original: Form2Observation[],
 ): void => {
@@ -861,7 +861,7 @@ const replaceInterpretationRemovedObs = (
   processObsList(transformed);
 };
 
-const injectMissingDeleteObs = (
+export const injectMissingDeleteObs = (
   transformed: Form2Observation[],
   original: Form2Observation[],
 ): void => {
@@ -909,7 +909,7 @@ const injectMissingDeleteObs = (
  * For newly uploaded files (not in source), the value remains a string and
  * FhirObservationTransformer's FileNameCache handles the title on save.
  */
-const restoreComplexValues = (
+export const restoreComplexValues = (
   transformed: Form2Observation[],
   source: Form2Observation[],
 ): void => {
@@ -947,7 +947,7 @@ const restoreComplexValues = (
  * Without it, sending no status causes a null error; sending a different
  * status causes "Editing the fields [status] on Obs is not allowed".
  */
-const mergeObservationStatuses = (
+export const mergeObservationStatuses = (
   transformed: Form2Observation[],
   existing: Form2Observation[],
 ): void => {
@@ -995,7 +995,7 @@ const extractAndAppendNotesFromFormData = (
  *   like "2024" are never misidentified as dates. (Issue #1)
  * - Primitives — String()
  */
-const valueFingerprint = (v: unknown): string => {
+export const valueFingerprint = (v: unknown): string => {
   if (v == null) return '';
   // Date: validate the parsed date before treating the string as a date value
   if (v instanceof Date && !Number.isNaN(v.getTime()))
@@ -1023,7 +1023,7 @@ const valueFingerprint = (v: unknown): string => {
  * Collecting into sorted string arrays per path (Issue #3) makes the comparison
  * order-independent and avoids Map overwrites that caused the last value to win.
  */
-const detectFormChanges = (
+export const detectFormChanges = (
   current: Form2Observation[],
   original: Form2Observation[],
 ): boolean => {
