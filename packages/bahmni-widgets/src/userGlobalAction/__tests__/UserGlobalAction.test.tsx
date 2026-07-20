@@ -6,6 +6,7 @@ import {
   ActivePractitionerContext,
   ActivePractitionerContextType,
 } from '../../activePractitioner/ActivePractitionerContext';
+import { NotificationContext } from '../../notification/NotificationContext';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import { registerDefaultActions } from '../actions';
 import { UserActionProvider } from '../registry/provider';
@@ -214,6 +215,118 @@ describe('UserGlobalAction', () => {
     });
   });
 
+  const registerChangePasswordAndLogout = () => {
+    (registerDefaultActions as jest.Mock).mockImplementation((registry) => {
+      registry.registerAction({
+        id: 'user-change-password-global-action',
+        label: 'USER_CHANGE_PASSWORD_GLOBAL_ACTION',
+        onClick: jest.fn(),
+        priority: 100,
+      });
+      registry.registerAction({
+        id: 'user-logout-global-action',
+        label: 'USER_LOGOUT_GLOBAL_ACTION',
+        onClick: jest.fn(),
+        priority: 9999,
+      });
+    });
+  };
+
+  describe('Keyboard navigation', () => {
+    it('should move focus with ArrowDown/ArrowUp and wrap around', async () => {
+      registerChangePasswordAndLogout();
+      renderWithProviders(buildActivePractitionerValue());
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
+
+      const items = await screen.findAllByRole('menuitem');
+      await waitFor(() => expect(items[0]).toHaveFocus());
+
+      await userEvent.keyboard('{ArrowDown}');
+      expect(items[1]).toHaveFocus();
+
+      // wraps from last item back to the first
+      await userEvent.keyboard('{ArrowDown}');
+      expect(items[0]).toHaveFocus();
+
+      // wraps from first item back to the last
+      await userEvent.keyboard('{ArrowUp}');
+      expect(items[1]).toHaveFocus();
+    });
+  });
+
+  describe('Action execution', () => {
+    it('should run the action onClick when a menu item is clicked', async () => {
+      const onClick = jest.fn();
+      (registerDefaultActions as jest.Mock).mockImplementation((registry) => {
+        registry.registerAction({
+          id: 'user-logout-global-action',
+          label: 'USER_LOGOUT_GLOBAL_ACTION',
+          onClick,
+        });
+      });
+
+      renderWithProviders(buildActivePractitionerValue());
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
+      await userEvent.click(
+        await screen.findByText('USER_LOGOUT_GLOBAL_ACTION'),
+      );
+
+      expect(onClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('should show an error notification and log when an action fails', async () => {
+      const consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      const addNotification = jest.fn();
+      (registerDefaultActions as jest.Mock).mockImplementation((registry) => {
+        registry.registerAction({
+          id: 'user-logout-global-action',
+          label: 'USER_LOGOUT_GLOBAL_ACTION',
+          onClick: jest.fn().mockRejectedValue(new Error('logout failed')),
+        });
+      });
+
+      render(
+        <NotificationContext.Provider
+          value={{
+            notifications: [],
+            addNotification,
+            removeNotification: jest.fn(),
+            clearAllNotifications: jest.fn(),
+          }}
+        >
+          <ActivePractitionerContext.Provider
+            value={buildActivePractitionerValue()}
+          >
+            <UserActionProvider>
+              <UserGlobalAction />
+            </UserActionProvider>
+          </ActivePractitionerContext.Provider>
+        </NotificationContext.Provider>,
+      );
+
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
+      await userEvent.click(
+        await screen.findByText('USER_LOGOUT_GLOBAL_ACTION'),
+      );
+
+      await waitFor(() =>
+        expect(addNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        ),
+      );
+      expect(consoleError).toHaveBeenCalled();
+      consoleError.mockRestore();
+    });
+  });
+
   describe('Action Filtering', () => {
     it.each([
       {
@@ -291,6 +404,57 @@ describe('UserGlobalAction', () => {
       const { container } = renderWithProviders(buildActivePractitionerValue());
       const results = await axe(container);
       expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations in the loading state', async () => {
+      const { container } = renderWithProviders(
+        buildActivePractitionerValue({ loading: true }),
+      );
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations when the menu is open', async () => {
+      registerChangePasswordAndLogout();
+      renderWithProviders(buildActivePractitionerValue());
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
+      await screen.findByRole('menu');
+
+      // The menu is portaled to <body>, so axe the whole document. The page-level
+      // `region` (landmark) rule is disabled — it only fires because this widget
+      // is rendered in isolation without the app's surrounding header landmark.
+      const results = await axe(document.body, {
+        rules: { region: { enabled: false } },
+      });
+      expect(results).toHaveNoViolations();
+    });
+  });
+
+  describe('Snapshot', () => {
+    it('matches snapshot with avatar and greeting', () => {
+      const { container } = renderWithProviders(
+        buildActivePractitionerValue({
+          user: {
+            display: 'Jane Doe',
+          } as ActivePractitionerContextType['user'],
+        }),
+      );
+      expect(container.firstChild).toMatchSnapshot();
+    });
+
+    it('matches snapshot in the avatar-only state (no user)', () => {
+      const { container } = renderWithProviders(
+        buildActivePractitionerValue({ user: null }),
+      );
+      expect(container.firstChild).toMatchSnapshot();
+    });
+
+    it('matches snapshot in the loading state', () => {
+      const { container } = renderWithProviders(
+        buildActivePractitionerValue({ loading: true }),
+      );
+      expect(container.firstChild).toMatchSnapshot();
     });
   });
 });

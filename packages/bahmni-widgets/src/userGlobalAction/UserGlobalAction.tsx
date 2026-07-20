@@ -12,6 +12,7 @@ import {
   useContext,
 } from 'react';
 import { ActivePractitionerContext } from '../activePractitioner/ActivePractitionerContext';
+import { NotificationContext } from '../notification/NotificationContext';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { registerDefaultActions } from './actions';
 import { useUserActionRegistry } from './registry/hook';
@@ -35,6 +36,10 @@ const HeaderGlobalActionWithHtmlAttrs = HeaderGlobalAction as ComponentType<
 export const UserGlobalAction = () => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
+  // Consumed directly (not via the throwing `useNotification` hook) so the widget
+  // still works in an app that hasn't wired a `NotificationProvider` — it just
+  // falls back to logging instead of a toast.
+  const notification = useContext(NotificationContext);
   const [isOpen, setIsOpen] = useState(false);
   const registry = useUserActionRegistry();
   const { getActions, version } = registry;
@@ -55,42 +60,28 @@ export const UserGlobalAction = () => {
   }, [registry]);
 
   // Keyboard navigation for the dropdown. Carbon's Menu ships its own arrow-key
-  // handling, but in this header/portal + fixed-position setup it behaves
-  // inconsistently (ArrowDown can fail to advance). Own it deterministically:
+  // handling, but in this header trigger + portaled, fixed-position setup its
+  // focus-on-open runs before the items register and can leave focus on the
+  // <ul>, after which ArrowDown fails to advance. Own it deterministically:
   // focus the first item on open (WAI-ARIA menu-button pattern) and move focus
-  // with ArrowUp/ArrowDown ourselves, capturing the event so Carbon's handler
-  // doesn't also run.
+  // with ArrowUp/ArrowDown ourselves. The listener is scoped to the menu element
+  // (capture phase) — not the document — so it only acts on this menu's keys and
+  // pre-empts Carbon's own handler.
   useEffect(() => {
     if (!isOpen) return;
 
-    const getItems = () =>
+    const getItems = (menu: HTMLElement) =>
       Array.from(
-        document
-          .getElementById(MENU_ID)
-          ?.querySelectorAll<HTMLElement>(
-            '[role="menuitem"]:not([aria-disabled="true"])',
-          ) ?? [],
+        menu.querySelectorAll<HTMLElement>(
+          '[role="menuitem"]:not([aria-disabled="true"])',
+        ),
       );
-
-    let frame = 0;
-    let attempts = 0;
-    const focusFirstItem = () => {
-      const items = getItems();
-      if (items.length > 0) {
-        items[0].focus();
-      } else if (attempts < 5) {
-        attempts += 1;
-        frame = requestAnimationFrame(focusFirstItem);
-      }
-    };
-    frame = requestAnimationFrame(focusFirstItem);
 
     const handleArrowKeys = (e: KeyboardEvent) => {
       if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-      const menu = document.getElementById(MENU_ID);
-      if (!menu?.contains(document.activeElement)) return;
+      if (!menuEl) return;
 
-      const items = getItems();
+      const items = getItems(menuEl);
       if (items.length === 0) return;
 
       e.preventDefault();
@@ -104,10 +95,29 @@ export const UserGlobalAction = () => {
       items[next].focus();
     };
 
-    document.addEventListener('keydown', handleArrowKeys, true);
+    let frame = 0;
+    let attempts = 0;
+    let menuEl: HTMLElement | null = null;
+
+    // The menu is portaled, so it may not exist on the first frame — retry until
+    // its items render, then focus the first item and attach the key handler.
+    const setup = () => {
+      const menu = document.getElementById(MENU_ID);
+      const items = menu ? getItems(menu) : [];
+      if (menu && items.length > 0) {
+        menuEl = menu;
+        items[0].focus();
+        menu.addEventListener('keydown', handleArrowKeys, true);
+      } else if (attempts < 5) {
+        attempts += 1;
+        frame = requestAnimationFrame(setup);
+      }
+    };
+    frame = requestAnimationFrame(setup);
+
     return () => {
       cancelAnimationFrame(frame);
-      document.removeEventListener('keydown', handleArrowKeys, true);
+      menuEl?.removeEventListener('keydown', handleArrowKeys, true);
     };
   }, [isOpen]);
 
@@ -180,6 +190,13 @@ export const UserGlobalAction = () => {
             label={t(action.label)}
             onClick={() => {
               Promise.resolve(action.onClick()).catch((error) => {
+                // Surface a toast so failures (e.g. logout) are visible to the
+                // user, not just logged — parity with the old Home user menu.
+                notification?.addNotification({
+                  title: t('USER_GLOBAL_ACTION_ERROR_TITLE'),
+                  message: t('USER_GLOBAL_ACTION_ERROR'),
+                  type: 'error',
+                });
                 // eslint-disable-next-line no-console
                 console.error(`User action "${action.id}" failed:`, error);
               });

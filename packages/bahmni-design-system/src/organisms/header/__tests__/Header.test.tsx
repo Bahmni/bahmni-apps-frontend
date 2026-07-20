@@ -451,5 +451,29 @@ describe('Header', () => {
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
+
+    it('should have no accessibility violations with brand, globalFeatures and userMenu slots', async () => {
+      const { container } = render(
+        <Header
+          {...defaultProps}
+          globalActions={[]}
+          brandName="Bahmni"
+          brandPrefix="Home"
+          brandHref="/"
+          globalFeatures={[
+            <div key="loc" data-testid="location-selector">
+              Location
+            </div>,
+          ]}
+          userMenu={
+            <button type="button" aria-label="User menu">
+              User
+            </button>
+          }
+        />,
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
   });
 });

@@ -566,6 +566,8 @@
   "UPDATE_PROGRAM_STATE_BUTTON": "Update State",
   "USER_CHANGE_PASSWORD_GLOBAL_ACTION": "Change Password",
   "USER_GLOBAL_ACTION_BUTTON": "User menu",
+  "USER_GLOBAL_ACTION_ERROR": "Something went wrong. Please try again.",
+  "USER_GLOBAL_ACTION_ERROR_TITLE": "Action failed",
   "USER_GLOBAL_ACTION_GREETING": "Hi, {{name}}",
   "USER_GLOBAL_ACTION_MENU": "User actions",
   "USER_LOGOUT_GLOBAL_ACTION": "Logout",
