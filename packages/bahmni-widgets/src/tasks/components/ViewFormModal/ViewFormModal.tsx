@@ -2,6 +2,7 @@ import { Modal, SkeletonPlaceholder } from '@bahmni/design-system';
 import {
   formatDateTime,
   getEncounterByUuid,
+  getObservationsBundleByEncounterUuid,
   getPatientObservationsBundle,
   useTranslation,
 } from '@bahmni/services';
@@ -42,29 +43,43 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
   }, [task, view]);
 
   const serviceRequestRef = task?.fhirResource.basedOn?.[0]?.reference;
+  const encounterRef = task?.fhirResource.encounter?.reference;
 
   const {
-    data: bundle,
-    isLoading: isLoadingObservations,
-    error: observationsError,
+    data: bundleByServiceRequest,
+    isLoading: isLoadingByServiceRequest,
+    error: errorByServiceRequest,
   } = useQuery<Bundle<Observation>, Error>({
-    queryKey: ['taskObservations', serviceRequestRef],
+    queryKey: ['observationsByServiceRequest', serviceRequestRef],
     queryFn: async () => {
-      if (serviceRequestRef) {
-        const serviceRequestId = extractUuidFromReference(serviceRequestRef);
-        return await getPatientObservationsBundle(
-          patientUuid,
-          undefined,
-          serviceRequestId,
-        );
-      }
-      return {
-        resourceType: 'Bundle',
-        type: 'searchset',
-      } as Bundle<Observation>;
+      const serviceRequestId = extractUuidFromReference(serviceRequestRef!);
+      return await getPatientObservationsBundle(
+        patientUuid,
+        undefined,
+        serviceRequestId,
+      );
     },
     enabled: open && !!task && !!formName && !!serviceRequestRef,
   });
+
+  const {
+    data: bundleByEncounter,
+    isLoading: isLoadingByEncounter,
+    error: errorByEncounter,
+  } = useQuery<Bundle<Observation>, Error>({
+    queryKey: ['observationsByEncounter', encounterRef],
+    queryFn: async () => {
+      const encounterUuid = extractUuidFromReference(encounterRef!);
+      return await getObservationsBundleByEncounterUuid(encounterUuid);
+    },
+    enabled:
+      open && !!task && !!formName && !serviceRequestRef && !!encounterRef,
+  });
+
+  const bundle = bundleByServiceRequest ?? bundleByEncounter;
+  const isLoadingObservations =
+    isLoadingByServiceRequest || isLoadingByEncounter;
+  const observationsError = errorByServiceRequest ?? errorByEncounter;
 
   const filteredObservations = useMemo(() => {
     if (!bundle || !formName) return [];

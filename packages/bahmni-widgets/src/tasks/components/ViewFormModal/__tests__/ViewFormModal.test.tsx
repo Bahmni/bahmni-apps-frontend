@@ -1,6 +1,7 @@
 import {
   formatDateTime,
   getEncounterByUuid,
+  getObservationsBundleByEncounterUuid,
   getPatientObservationsBundle,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -21,6 +22,7 @@ import ViewFormModal from '../ViewFormModal';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientObservationsBundle: jest.fn(),
+  getObservationsBundleByEncounterUuid: jest.fn(),
   getEncounterByUuid: jest.fn(),
   formatDateTime: jest.fn(),
 }));
@@ -38,6 +40,10 @@ jest.mock('../../../../observationsRenderer', () => ({
 const mockGetPatientObservationsBundle =
   getPatientObservationsBundle as jest.MockedFunction<
     typeof getPatientObservationsBundle
+  >;
+const mockGetObservationsBundleByEncounterUuid =
+  getObservationsBundleByEncounterUuid as jest.MockedFunction<
+    typeof getObservationsBundleByEncounterUuid
   >;
 const mockGetEncounterByUuid = getEncounterByUuid as jest.MockedFunction<
   typeof getEncounterByUuid
@@ -242,12 +248,13 @@ describe('ViewFormModal', () => {
       });
     });
 
-    it('should not fetch when serviceRequestRef is missing', async () => {
+    it('should not fetch when serviceRequestRef is missing and encounterRef is missing', async () => {
       const taskWithoutServiceRequest = {
         ...mockTaskViewModel,
         fhirResource: {
           ...mockTaskViewModel.fhirResource,
           basedOn: undefined,
+          encounter: undefined,
         },
       };
 
@@ -264,6 +271,80 @@ describe('ViewFormModal', () => {
 
       await waitFor(() => {
         expect(mockGetPatientObservationsBundle).not.toHaveBeenCalled();
+        expect(mockGetObservationsBundleByEncounterUuid).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should fetch observations by encounterUuid when serviceRequestRef is missing', async () => {
+      const taskWithEncounterOnly = {
+        ...mockTaskViewModel,
+        fhirResource: {
+          ...mockTaskViewModel.fhirResource,
+          basedOn: undefined,
+          encounter: {
+            reference: 'Encounter/encounter-123',
+          },
+        },
+      };
+
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
+      mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
+
+      render(
+        <ViewFormModal
+          open
+          task={taskWithEncounterOnly}
+          view={mockViewFormView}
+          patientUuid="patient-uuid"
+          onClose={mockOnClose}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(mockGetPatientObservationsBundle).not.toHaveBeenCalled();
+        expect(mockGetObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
+          'encounter-123',
+        );
+      });
+    });
+
+    it('should prefer serviceRequestRef over encounterRef when both exist', async () => {
+      const taskWithBothReferences = {
+        ...mockTaskViewModel,
+        fhirResource: {
+          ...mockTaskViewModel.fhirResource,
+          basedOn: [{ reference: 'ServiceRequest/service-request-123' }],
+          encounter: {
+            reference: 'Encounter/encounter-123',
+          },
+        },
+      };
+
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
+
+      render(
+        <ViewFormModal
+          open
+          task={taskWithBothReferences}
+          view={mockViewFormView}
+          patientUuid="patient-uuid"
+          onClose={mockOnClose}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(mockGetPatientObservationsBundle).toHaveBeenCalledWith(
+          'patient-uuid',
+          undefined,
+          'service-request-123',
+        );
+        expect(mockGetObservationsBundleByEncounterUuid).not.toHaveBeenCalled();
       });
     });
   });
