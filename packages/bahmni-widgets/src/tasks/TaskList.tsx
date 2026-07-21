@@ -12,10 +12,10 @@ import { Task } from 'fhir/r4';
 import React, { useMemo, useCallback } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry';
-import TaskActions from './components/TaskActions';
-import TaskViewResults from './components/TaskViewResults';
+import TaskActions from './actions/TaskActions';
 import { TaskViewModel, TaskListConfig } from './models';
 import styles from './TaskList.module.scss';
+import TaskViewResults from './views/TaskViewResults';
 
 interface TaskListProps extends WidgetProps {
   orderReference?: string;

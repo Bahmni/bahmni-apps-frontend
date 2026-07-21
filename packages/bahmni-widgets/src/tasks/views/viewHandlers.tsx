@@ -1,7 +1,7 @@
 import React from 'react';
 import { TaskViewType } from '../constants';
 import type { TaskView, TaskViewModel } from '../models';
-import ViewFormData from './ViewFormData/ViewFormData';
+import ViewFormData from './ViewFormData';
 
 export const handleTaskView = (
   view: TaskView,
