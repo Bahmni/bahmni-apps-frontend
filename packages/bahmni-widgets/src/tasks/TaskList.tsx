@@ -13,7 +13,7 @@ import React, { useMemo, useCallback } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry';
 import TaskActions from './components/TaskActions';
-import TaskResults from './components/TaskResults';
+import TaskViewResults from './components/TaskViewResults';
 import { TaskViewModel, TaskListConfig } from './models';
 import styles from './TaskList.module.scss';
 
@@ -204,7 +204,7 @@ const TaskList: React.FC<TaskListProps> = ({
         case 'results':
           return (
             taskListConfig?.taskConfig && (
-              <TaskResults task={task} taskConfig={taskListConfig.taskConfig} />
+              <TaskViewResults task={task} taskConfig={taskListConfig.taskConfig} />
             )
           );
         case 'actions':

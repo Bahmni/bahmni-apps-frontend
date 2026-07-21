@@ -8,12 +8,12 @@ import type { TaskConfig, TaskView, TaskViewModel } from '../models';
 import { isViewVisible } from '../utils';
 import ViewFormModal from './ViewFormModal/ViewFormModal';
 
-interface TaskResultsProps {
+interface TaskViewResultsProps {
   task: TaskViewModel;
   taskConfig: TaskConfig[];
 }
 
-const TaskResults: React.FC<TaskResultsProps> = ({ task, taskConfig }) => {
+const TaskViewResults: React.FC<TaskViewResultsProps> = ({ task, taskConfig }) => {
   const { userPrivileges } = useUserPrivilege();
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();
@@ -113,4 +113,4 @@ const TaskResults: React.FC<TaskResultsProps> = ({ task, taskConfig }) => {
   );
 };
 
-export default TaskResults;
+export default TaskViewResults;

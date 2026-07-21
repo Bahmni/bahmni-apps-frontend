@@ -16,7 +16,7 @@ import {
 } from '../../__tests__/__mocks__/taskActionsMocks';
 import { VITALS_TASK_CODE } from '../../__tests__/__mocks__/taskListMocks';
 import type { TaskViewModel } from '../../models';
-import TaskResults from '../TaskResults';
+import TaskViewResults from '../TaskViewResults';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -89,7 +89,7 @@ const mockRequestedTask = createTaskViewModel(
   'requested',
 );
 
-describe('TaskResults', () => {
+describe('TaskViewResults', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockHasPrivilege.mockReturnValue(true);
@@ -98,7 +98,7 @@ describe('TaskResults', () => {
   describe('Rendering', () => {
     it('should render link when permitted views exist', () => {
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -116,7 +116,7 @@ describe('TaskResults', () => {
       mockHasPrivilege.mockReturnValue(false);
 
       const { container } = render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -133,7 +133,7 @@ describe('TaskResults', () => {
       ['undefined taskConfig', undefined],
     ])('should render dash when %s', (_, config) => {
       const { container } = render(
-        <TaskResults task={mockCompletedTask} taskConfig={config as any} />,
+        <TaskViewResults task={mockCompletedTask} taskConfig={config as any} />,
         { wrapper: createWrapper() },
       );
 
@@ -142,7 +142,7 @@ describe('TaskResults', () => {
 
     it('should render dash when taskConfig has empty views array', () => {
       const { container } = render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigEmptyViews}
         />,
@@ -154,7 +154,7 @@ describe('TaskResults', () => {
 
     it('should render dash when taskConfig has no views property', () => {
       const { container } = render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigNoViews}
         />,
@@ -171,7 +171,7 @@ describe('TaskResults', () => {
       };
 
       const { container } = render(
-        <TaskResults
+        <TaskViewResults
           task={taskWithDifferentCode}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -187,7 +187,7 @@ describe('TaskResults', () => {
       mockHasPrivilege.mockReturnValue(true);
 
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -203,7 +203,7 @@ describe('TaskResults', () => {
       mockHasPrivilege.mockReturnValue(false);
 
       const { container } = render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={[
             {
@@ -232,7 +232,7 @@ describe('TaskResults', () => {
       ];
 
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={configWithNoPrivileges}
         />,
@@ -252,7 +252,7 @@ describe('TaskResults', () => {
       ['ready', { ...mockCompletedTask, status: 'ready' }],
     ])('should not show view for %s task', (statusName, task) => {
       const { container } = render(
-        <TaskResults task={task} taskConfig={mockTaskConfigWithViews} />,
+        <TaskViewResults task={task} taskConfig={mockTaskConfigWithViews} />,
         { wrapper: createWrapper() },
       );
 
@@ -262,7 +262,7 @@ describe('TaskResults', () => {
 
     it('should show view only for completed tasks', () => {
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -280,7 +280,7 @@ describe('TaskResults', () => {
       const user = userEvent.setup();
 
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -301,7 +301,7 @@ describe('TaskResults', () => {
       const user = userEvent.setup();
 
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -327,7 +327,7 @@ describe('TaskResults', () => {
 
     it('should not render modal when not open', () => {
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -341,7 +341,7 @@ describe('TaskResults', () => {
   describe('Form matching', () => {
     it('should show view when task has matching form input', () => {
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -363,7 +363,7 @@ describe('TaskResults', () => {
       };
 
       const { container } = render(
-        <TaskResults
+        <TaskViewResults
           task={taskWithoutInput}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -383,7 +383,7 @@ describe('TaskResults', () => {
       };
 
       const { container } = render(
-        <TaskResults
+        <TaskViewResults
           task={taskWithoutInputProperty}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -410,7 +410,7 @@ describe('TaskResults', () => {
       ];
 
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={configWithMultipleViews}
         />,
@@ -425,7 +425,7 @@ describe('TaskResults', () => {
 
     it('should show single Link when only one view exists', () => {
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigWithViews}
         />,
@@ -443,7 +443,7 @@ describe('TaskResults', () => {
 
     it('should pass correct testId to link', () => {
       render(
-        <TaskResults
+        <TaskViewResults
           task={mockCompletedTask}
           taskConfig={mockTaskConfigWithViews}
         />,
