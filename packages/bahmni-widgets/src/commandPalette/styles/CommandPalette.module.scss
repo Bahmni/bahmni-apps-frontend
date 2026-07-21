@@ -36,6 +36,20 @@
   }
 }
 
+.dialogChat {
+  display: flex;
+  flex-direction: column;
+  height: 60vh;
+  max-width: 700px;
+  transition: max-width $duration-moderate-01 motion(standard, productive),
+    height $duration-moderate-01 motion(standard, productive);
+}
+
+.dialogChatExpanded {
+  height: 70vh;
+  max-width: 960px;
+}
+
 // ── Input row ─────────────────────────────────────────────────────────────────
 
 .inputWrapper {

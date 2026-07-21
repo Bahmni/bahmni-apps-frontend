@@ -31,6 +31,27 @@ jest.mock('../useCommandPaletteSearch', () => ({
   useCommandPaletteSearch: jest.fn(),
 }));
 
+jest.mock('../aiChat', () => ({
+  AiChatPanel: ({
+    onBack,
+    initialQuery,
+  }: {
+    onBack: () => void;
+    initialQuery?: string;
+  }) => (
+    <div data-testid="ai-chat-panel-stub">
+      <span data-testid="ai-chat-initial-query">{initialQuery ?? ''}</span>
+      <button type="button" onClick={onBack}>
+        back to search
+      </button>
+    </div>
+  ),
+}));
+
+jest.mock('../aiChat/aiChatStore', () => ({
+  useAiChatStore: jest.fn(() => false),
+}));
+
 const mockUseCommandPalette = useCommandPalette as jest.Mock;
 const mockUseCommandPaletteSearch = useCommandPaletteSearch as jest.Mock;
 
@@ -128,11 +149,10 @@ describe('CommandPalette', () => {
 
     render(<CommandPalette />);
 
-    const navGroup = screen.getByTestId('cmdk-group');
-    expect(navGroup).toHaveAttribute(
-      'data-heading',
-      'COMMAND_PALETTE_GROUP_NAVIGATION',
-    );
+    const navGroup = screen
+      .getAllByTestId('cmdk-group')
+      .find((el) => el.dataset.heading === 'COMMAND_PALETTE_GROUP_NAVIGATION');
+    expect(navGroup).toBeInTheDocument();
     expect(screen.getByText('Go to Registration')).toBeInTheDocument();
   });
 
@@ -220,7 +240,9 @@ describe('CommandPalette', () => {
 
     render(<CommandPalette />);
 
-    const navItem = screen.getAllByTestId('cmdk-item')[0];
+    const navItem = screen
+      .getByText('Go to Registration')
+      .closest('[data-testid="cmdk-item"]')!;
     expect(navItem).toBeInTheDocument();
 
     await user.click(navItem);
@@ -241,5 +263,95 @@ describe('CommandPalette', () => {
     await user.click(navItem.closest('[data-testid="cmdk-item"]')!);
 
     expect(globalThis.location.href).toBe('/bahmni-new/registration/search');
+  });
+
+  describe('Ask AI', () => {
+    it('shows a pinned "Ask AI" item above the other groups', () => {
+      mockUseCommandPalette.mockReturnValue({
+        ...defaultContextValue,
+        isOpen: true,
+      });
+
+      render(<CommandPalette />);
+
+      expect(
+        screen.getByText('COMMAND_PALETTE_AI_CHAT_ITEM_LABEL'),
+      ).toBeInTheDocument();
+    });
+
+    it('seeds the item label with the current search term', async () => {
+      const user = userEvent.setup();
+      mockUseCommandPalette.mockReturnValue({
+        ...defaultContextValue,
+        isOpen: true,
+      });
+
+      render(<CommandPalette />);
+      await user.type(screen.getByTestId('cmdk-input'), 'paracetamol dose');
+
+      expect(
+        screen.getByText('COMMAND_PALETTE_AI_CHAT_ITEM_LABEL_WITH_QUERY'),
+      ).toBeInTheDocument();
+    });
+
+    it('hides the "Ask AI" item while typing an annotation prefix', async () => {
+      const user = userEvent.setup();
+      mockUseCommandPalette.mockReturnValue({
+        ...defaultContextValue,
+        isOpen: true,
+      });
+
+      render(<CommandPalette />);
+      await user.type(screen.getByTestId('cmdk-input'), '@ph');
+
+      expect(
+        screen.queryByText('COMMAND_PALETTE_AI_CHAT_ITEM_LABEL'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('switches to the chat panel when selected, passing the typed text as the initial query', async () => {
+      const user = userEvent.setup();
+      mockUseCommandPalette.mockReturnValue({
+        ...defaultContextValue,
+        isOpen: true,
+      });
+
+      render(<CommandPalette />);
+      await user.type(screen.getByTestId('cmdk-input'), 'paracetamol dose');
+      const aiItem = screen
+        .getByText('COMMAND_PALETTE_AI_CHAT_ITEM_LABEL_WITH_QUERY')
+        .closest('[data-testid="cmdk-item"]')!;
+      await user.click(aiItem);
+
+      expect(screen.getByTestId('ai-chat-panel-stub')).toBeInTheDocument();
+      expect(screen.queryByTestId('cmdk-root')).not.toBeInTheDocument();
+      expect(screen.getByTestId('ai-chat-initial-query')).toHaveTextContent(
+        'paracetamol dose',
+      );
+    });
+
+    it('returns to the search view and clears the search term when the panel calls onBack', async () => {
+      const user = userEvent.setup();
+      mockUseCommandPalette.mockReturnValue({
+        ...defaultContextValue,
+        isOpen: true,
+      });
+
+      render(<CommandPalette />);
+      await user.type(screen.getByTestId('cmdk-input'), 'paracetamol');
+      await user.click(
+        screen
+          .getByText('COMMAND_PALETTE_AI_CHAT_ITEM_LABEL_WITH_QUERY')
+          .closest('[data-testid="cmdk-item"]')!,
+      );
+      expect(screen.getByTestId('ai-chat-panel-stub')).toBeInTheDocument();
+
+      await user.click(screen.getByText('back to search'));
+
+      expect(
+        screen.queryByTestId('ai-chat-panel-stub'),
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId('cmdk-input')).toHaveValue('');
+    });
   });
 });

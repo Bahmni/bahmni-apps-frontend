@@ -58,8 +58,11 @@ export const PATIENT_FIELD_MAP: Record<PatientFieldKey, FieldDef> = {
   },
 };
 
+export const AI_CHAT_ITEM_VALUE = 'ai-chat';
+
 export const filterItems = (value: string, search: string): number => {
   if (value.startsWith('patient:')) return 1;
+  if (value === AI_CHAT_ITEM_VALUE) return 1;
   if (search.length < 2) return 1;
   return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
 };

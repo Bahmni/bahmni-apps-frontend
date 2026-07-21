@@ -1,0 +1,677 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/motion" as *;
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+
+$accent-gradient: linear-gradient(135deg, #4589ff 0%, #8a3ffc 100%);
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+  padding: $spacing-03 $spacing-05;
+  border-bottom: 1px solid $border-subtle-01;
+  background: $layer-01;
+}
+
+.headerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: $spacing-07;
+  height: $spacing-07;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: $icon-secondary;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background $duration-fast-01 motion(standard, productive),
+    color $duration-fast-01 motion(standard, productive);
+
+  &:hover {
+    background: $layer-hover-02;
+    color: $icon-primary;
+  }
+}
+
+.headerTitle {
+  flex: 1;
+  min-width: 0;
+  @include type-style("heading-compact-02");
+  padding: 0 $spacing-02;
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Body (thread + sidebar) ─────────────────────────────────────────────────
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+// ── Body (thread + sidebar) refinements ──
+.thread {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: $spacing-06 $spacing-05;
+  gap: $spacing-05;
+  scroll-behavior: smooth;
+  background: $background;
+}
+
+.emptyThread {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-04;
+  color: $text-secondary;
+  @include type-style("body-compact-02");
+  text-align: center;
+  padding: $spacing-07;
+
+  p {
+    margin: 0;
+    max-width: 28ch;
+  }
+}
+
+.emptyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: $spacing-09;
+  height: $spacing-09;
+  border-radius: 16px;
+  background: $accent-gradient;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(69, 137, 255, 0.35);
+}
+
+// ── Message bubbles ──────────────────────────────────────────────────────────
+
+.messageRow {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-03;
+  max-width: 88%;
+  animation: messageIn 180ms ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.messageRowUser {
+  align-self: flex-end;
+}
+
+.messageRowAssistant {
+  align-self: flex-start;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: $spacing-06;
+  height: $spacing-06;
+  border-radius: 50%;
+  background: $accent-gradient;
+  color: #fff;
+}
+
+.bubble {
+  padding: $spacing-03 $spacing-05;
+  border-radius: 18px;
+  @include type-style("body-compact-01");
+  line-height: 1.5;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.bubbleUser {
+  background: $accent-gradient;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 8px rgba(69, 137, 255, 0.25);
+}
+
+.bubbleAssistant {
+  background: $layer-01;
+  color: $text-primary;
+  border: 1px solid $border-subtle-01;
+  border-top-left-radius: 4px;
+}
+
+.bubbleError {
+  background: $support-error-inverse;
+  color: $text-on-color;
+}
+
+// User messages render as plain text (no markdown parsing) but still need
+// newlines preserved, since there are no block elements doing that for them.
+.plainText {
+  white-space: pre-wrap;
+}
+
+// Assistant messages render as parsed markdown - block elements (p/ul/pre)
+// carry their own spacing, so this tightens the browser defaults to fit a
+// compact chat bubble instead of fighting pre-wrap on the shared .bubble.
+.markdown {
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  p,
+  ul,
+  ol,
+  blockquote,
+  table {
+    margin: $spacing-03 0;
+  }
+
+  ul,
+  ol {
+    padding-left: $spacing-05;
+  }
+
+  code {
+    @include type-style("code-01");
+    background: $layer-02;
+    padding: 0 4px;
+    border-radius: 4px;
+  }
+
+  pre {
+    margin: $spacing-03 0;
+    padding: $spacing-03;
+    background: $layer-02;
+    border: 1px solid $border-subtle-01;
+    border-radius: 8px;
+    overflow-x: auto;
+
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th,
+  td {
+    border: 1px solid $border-subtle-01;
+    padding: $spacing-02 $spacing-03;
+    text-align: left;
+  }
+}
+
+// Heartbeat line (same as the palette's search loader) while waiting for the
+// assistant's first event.
+.typingIndicator {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.2em;
+}
+
+.ekgLine {
+  width: 60px;
+  height: 16px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.ekgPath {
+  fill: none;
+  stroke: $support-success;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 80 80;
+  animation: ekgScroll 1.8s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes ekgScroll {
+  from {
+    stroke-dashoffset: 0;
+  }
+
+  to {
+    stroke-dashoffset: -160;
+  }
+}
+
+.streamingCursor {
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  margin-left: 2px;
+  background: currentColor;
+  vertical-align: text-bottom;
+  animation: blink 1s step-start infinite;
+}
+
+// ── Composer ──────────────────────────────────────────────────────────────────
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-03;
+  margin: $spacing-04 $spacing-05 $spacing-05;
+  padding: $spacing-02 $spacing-02 $spacing-02 $spacing-05;
+  background: $field-01;
+  border: 1px solid $border-subtle-01;
+  border-radius: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  transition:
+    border-color $duration-fast-01 motion(standard, productive),
+    box-shadow $duration-fast-01 motion(standard, productive);
+
+  &:focus-within {
+    border-color: $focus;
+    box-shadow: 0 0 0 3px rgba(69, 137, 255, 0.2);
+  }
+}
+
+.composerInput {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  max-height: 96px;
+  padding: $spacing-03 0;
+  background: transparent;
+  border: none;
+  color: $text-primary;
+  @include type-style("body-compact-01");
+
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: $text-placeholder;
+  }
+}
+
+.sendButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: $spacing-07;
+  height: $spacing-07;
+  padding: 0;
+  background: $accent-gradient;
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    transform $duration-fast-01 motion(standard, productive),
+    opacity $duration-fast-01 motion(standard, productive);
+
+  &:hover:not(:disabled) {
+    transform: scale(1.08);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+// ── Confirmation (assistant waiting for approval) ─────────────────────────────
+
+.confirmation {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-04;
+  margin-top: $spacing-04;
+  padding: $spacing-05;
+  background: $layer-01;
+  border: 1px solid $border-subtle-01;
+  border-left: 4px solid $support-warning;
+  border-radius: 12px;
+}
+
+.confirmationHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-04;
+}
+
+.confirmationIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: $spacing-06;
+  height: $spacing-06;
+  border-radius: 50%;
+  background: $support-warning;
+  color: $text-primary;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.confirmationHeading {
+  @include type-style("heading-compact-01");
+  margin: 0;
+  color: $text-primary;
+}
+
+.confirmationTitle {
+  @include type-style("label-01");
+  margin: 0;
+  color: $text-secondary;
+}
+
+.confirmationActions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-03;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.confirmationAction {
+  padding: $spacing-04;
+  background: $layer-02;
+  border-radius: 6px;
+}
+
+.confirmationActionName {
+  @include type-style("body-compact-01");
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-03;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.confirmationServer {
+  @include type-style("label-01");
+  padding: 0 $spacing-03;
+  border-radius: 10px;
+  background: $layer-accent-01;
+  color: $text-secondary;
+  font-weight: 400;
+}
+
+.confirmationArgs {
+  @include type-style("body-compact-01");
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: $spacing-02 $spacing-04;
+  margin: $spacing-03 0 0;
+  overflow-wrap: anywhere;
+
+  dt {
+    color: $text-secondary;
+  }
+
+  dd {
+    margin: 0;
+    color: $text-primary;
+  }
+}
+
+.confirmationButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-03;
+}
+
+.confirmationApprove,
+.confirmationReject {
+  @include type-style("label-01");
+  min-width: 88px;
+  height: $spacing-07;
+  padding: 0 $spacing-05;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background $duration-fast-01 motion(standard, productive),
+    filter $duration-fast-01 motion(standard, productive);
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.confirmationApprove {
+  background: $interactive;
+  border: 1px solid $interactive;
+  color: $text-on-color;
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.9);
+  }
+}
+
+.confirmationReject {
+  background: transparent;
+  border: 1px solid $border-strong-01;
+  color: $text-primary;
+
+  &:hover:not(:disabled) {
+    background: $layer-hover-01;
+  }
+}
+
+// ── Sidebar (expanded mode) ───────────────────────────────────────────────────
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid $border-subtle-01;
+  background: $layer-01;
+  overflow-y: auto;
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-04;
+}
+
+.sidebarTitle {
+  @include type-style("label-01");
+  color: $text-helper;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sidebarList {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarEmpty {
+  padding: $spacing-04;
+  color: $text-helper;
+  @include type-style("helper-text-01");
+}
+
+.sidebarItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+  padding: $spacing-02 $spacing-04;
+  transition: background $duration-fast-01 motion(standard, productive);
+
+  &:hover {
+    background: $layer-hover-02;
+
+    .sidebarItemDelete {
+      opacity: 1;
+    }
+  }
+}
+
+.sidebarItemActive {
+  background: $layer-selected-02;
+  box-shadow: inset 3px 0 0 $interactive;
+}
+
+.sidebarItemContent {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+  padding: $spacing-02 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.sidebarItemTitle {
+  @include type-style("body-01");
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebarItemDate {
+  @include type-style("label-01");
+  color: $text-helper;
+}
+
+.sidebarItemDelete {
+  flex-shrink: 0;
+  width: $spacing-06;
+  height: $spacing-06;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: $icon-secondary;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity $duration-fast-01 motion(standard, productive);
+
+  &:hover {
+    color: $support-error;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.activityList {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  color: $text-secondary;
+}
+
+.activityLine {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  // a finished step stays listed but stops spinning and fades
+  &[data-state="finished"] {
+    opacity: 0.55;
+
+    .activitySpinner {
+      animation: none;
+      border-color: currentColor;
+      border-radius: 50%;
+      background: currentColor;
+    }
+  }
+}
+
+.activitySpinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: activitySpin 0.8s linear infinite;
+}
+
+@keyframes activitySpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activitySpinner {
+    animation: none;
+  }
+}
