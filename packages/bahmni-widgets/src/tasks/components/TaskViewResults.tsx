@@ -13,7 +13,10 @@ interface TaskViewResultsProps {
   taskConfig: TaskConfig[];
 }
 
-const TaskViewResults: React.FC<TaskViewResultsProps> = ({ task, taskConfig }) => {
+const TaskViewResults: React.FC<TaskViewResultsProps> = ({
+  task,
+  taskConfig,
+}) => {
   const { userPrivileges } = useUserPrivilege();
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();

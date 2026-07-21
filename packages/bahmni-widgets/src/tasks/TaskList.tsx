@@ -204,7 +204,10 @@ const TaskList: React.FC<TaskListProps> = ({
         case 'results':
           return (
             taskListConfig?.taskConfig && (
-              <TaskViewResults task={task} taskConfig={taskListConfig.taskConfig} />
+              <TaskViewResults
+                task={task}
+                taskConfig={taskListConfig.taskConfig}
+              />
             )
           );
         case 'actions':
