@@ -178,14 +178,16 @@ describe('observationService', () => {
       expect(result).toEqual(mockObservationWithEncounterBundle);
     });
 
-    it('should call API with optional conceptCodes', async () => {
+    it('should call API with empty conceptCodes', async () => {
       const patientUuid = 'patient-uuid-123';
       (api.get as jest.Mock).mockResolvedValue(
         mockObservationWithEncounterBundle,
       );
 
-      const result =
-        await getPatientObservationsWithEncounterBundle(patientUuid);
+      const result = await getPatientObservationsWithEncounterBundle(
+        patientUuid,
+        [],
+      );
 
       expect(api.get).toHaveBeenCalledWith(
         FHIR_OBSERVATION_WITH_ENCOUNTER_URL(patientUuid, undefined),

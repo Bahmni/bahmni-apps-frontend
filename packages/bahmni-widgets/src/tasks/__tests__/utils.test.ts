@@ -16,7 +16,6 @@ import {
   mockTaskViewModelWithoutInput,
   mockTaskViewModelWithEmptyInput,
   mockTaskViewModelWithCaseInsensitiveForm,
-  mockObservationForms,
   mockUserPrivileges,
   mockEmptyUserPrivileges,
 } from './__mocks__/taskActionsMocks';
@@ -120,7 +119,7 @@ describe('hasViewFormConfig', () => {
     const configWithNonViewFormViews = [
       {
         taskCode: VITALS_TASK_CODE,
-        views: [{ ...mockViewFormView, type: 'otherType' }],
+        views: [{ ...mockViewFormView, type: 'otherType' as any }],
       },
     ];
     expect(
@@ -156,7 +155,7 @@ describe('isViewFormDataVisible', () => {
       ['requested', mockRequestedTask, false],
       ['ready', mockReadyTask, false],
       ['completed', mockCompletedTask, true],
-    ])('should return %s for %s task status', (statusName, task, expected) => {
+    ])('should return %s for %s task status', (_statusName, task, expected) => {
       const result = isViewFormDataVisible(
         mockViewFormView,
         task,
