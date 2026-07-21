@@ -18,7 +18,13 @@ const formatValue = (
   input: InputConfig,
   t: (key: string, options?: Record<string, string>) => string,
 ): string => {
-  if ('value' in value) return value.value;
+  if ('value' in value) {
+    if (input.kind === 'options') {
+      const option = input.options.find((o) => o.value === value.value);
+      return option ? t(option.translationKey) : value.value;
+    }
+    return value.value;
+  }
 
   if (input.kind === 'date') {
     const from = formatDateTime(value.from.value!).formattedResult;
