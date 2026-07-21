@@ -588,7 +588,10 @@ describe('conditionResourceCreator', () => {
           'active',
         );
 
-        expect(mockCreateCoding).toHaveBeenNthCalledWith(1, conditionConceptUUID);
+        expect(mockCreateCoding).toHaveBeenNthCalledWith(
+          1,
+          conditionConceptUUID,
+        );
       });
     });
 
