@@ -5,6 +5,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../../hooks/usePinnedObservationForms';
+import { useSubmittedEncounterForms } from '../../../../hooks/useSubmittedEncounterForms';
 import { useObservationFormsStore } from '../../../../stores/observationFormsStore';
 import ObservationForms from '../ObservationForms';
 import ObservationFormsPanel from '../ObservationFormsPanel';
@@ -44,6 +45,10 @@ jest.mock('../../../../hooks/useObservationFormsSearch', () => ({
 
 jest.mock('../../../../hooks/usePinnedObservationForms', () => ({
   usePinnedObservationForms: jest.fn(),
+}));
+
+jest.mock('../../../../hooks/useSubmittedEncounterForms', () => ({
+  useSubmittedEncounterForms: jest.fn(() => new Set<string>()),
 }));
 
 jest.mock('../../../../stores/observationFormsStore', () => ({
@@ -126,6 +131,16 @@ describe('ObservationFormsPanel', () => {
     );
   });
 
+  it('passes submittedFormUuids from useSubmittedEncounterForms to ObservationForms', () => {
+    const mockSubmittedUuids = new Set(['form-uuid-1']);
+    jest.mocked(useSubmittedEncounterForms).mockReturnValue(mockSubmittedUuids);
+
+    render(<ObservationFormsPanel />);
+
+    const receivedProps = MockObservationForms.mock.calls[0][0];
+    expect(receivedProps.submittedFormUuids).toBe(mockSubmittedUuids);
+  });
+
   it('calls addForm when onFormSelect is invoked', () => {
     render(<ObservationFormsPanel />);
 
@@ -180,5 +195,102 @@ describe('ObservationFormsPanel', () => {
   it('has no accessibility violations', async () => {
     const { container } = render(<ObservationFormsPanel />);
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  describe('DirectMode Form Handling', () => {
+    const mockReset = jest.fn();
+
+    beforeEach(() => {
+      (
+        useObservationFormsStore as unknown as { getState: jest.Mock }
+      ).getState = jest.fn(() => ({
+        reset: mockReset,
+      }));
+    });
+
+    it('should reset store and add matching form when directFormMode is true and taskFormName is provided', () => {
+      const encounterContext = {
+        taskFormName: 'Vitals',
+        directFormMode: true,
+      };
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={encounterContext}
+        />,
+      );
+
+      expect(mockReset).toHaveBeenCalledTimes(1);
+      expect(mockAddForm).toHaveBeenCalledWith(mockForm1);
+    });
+
+    it('should not reset store when directFormMode is false', () => {
+      const encounterContext = {
+        taskFormName: 'Vitals',
+        directFormMode: false,
+      };
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={encounterContext}
+        />,
+      );
+
+      expect(mockReset).not.toHaveBeenCalled();
+      expect(mockAddForm).not.toHaveBeenCalled();
+    });
+
+    it('should not reset store when taskFormName is not provided', () => {
+      const encounterContext = {
+        directFormMode: true,
+      };
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={encounterContext}
+        />,
+      );
+
+      expect(mockReset).not.toHaveBeenCalled();
+      expect(mockAddForm).not.toHaveBeenCalled();
+    });
+
+    it('should not add form when matching form is not found', () => {
+      const encounterContext = {
+        taskFormName: 'Non-existent Form',
+        directFormMode: true,
+      };
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={encounterContext}
+        />,
+      );
+
+      expect(mockReset).toHaveBeenCalledTimes(1);
+      expect(mockAddForm).not.toHaveBeenCalled();
+    });
+
+    it('should not reset store when forms are still loading', () => {
+      jest.mocked(useObservationFormsSearch).mockReturnValue({
+        forms: [mockForm1, mockForm2],
+        isLoading: true,
+        error: null,
+      });
+
+      const encounterContext = {
+        taskFormName: 'Vitals',
+        directFormMode: true,
+      };
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={encounterContext}
+        />,
+      );
+
+      expect(mockReset).not.toHaveBeenCalled();
+      expect(mockAddForm).not.toHaveBeenCalled();
+    });
   });
 });

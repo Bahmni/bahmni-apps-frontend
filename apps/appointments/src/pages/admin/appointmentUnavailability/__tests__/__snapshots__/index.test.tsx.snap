@@ -54,6 +54,14 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
           </li>
         </ol>
       </nav>
+      <div
+        class="cds--header__global"
+        data-testid="header-global-bar"
+      >
+        <div
+          data-testid="user-global-action"
+        />
+      </div>
     </header>
     <div
       class="_panelGroup_vvtyi_161"
@@ -187,6 +195,14 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
           </li>
         </ol>
       </nav>
+      <div
+        class="cds--header__global"
+        data-testid="header-global-bar"
+      >
+        <div
+          data-testid="user-global-action"
+        />
+      </div>
     </header>
     <div
       class="_panelGroup_vvtyi_161"

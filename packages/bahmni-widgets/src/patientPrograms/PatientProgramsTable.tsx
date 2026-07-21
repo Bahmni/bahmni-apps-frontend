@@ -3,12 +3,13 @@ import {
   useTranslation,
   formatDateTime,
   getPatientProgramsPage,
+  camelToScreamingSnakeCase,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
-import { PatientProgramViewModel } from './model';
+import { PatientProgramViewModel, ProgramField } from './model';
 import styles from './styles/PatientProgramsTable.module.scss';
 import {
   createProgramHeaders,
@@ -28,9 +29,11 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);
 
+  const configFields = (config?.fields as ProgramField[] | undefined) ?? [];
+
   const programAttributes = useMemo(
-    () => extractProgramAttributeNames((config?.fields as string[]) ?? []),
-    [config?.fields],
+    () => extractProgramAttributeNames(configFields),
+    [configFields],
   );
 
   const { data, isLoading, isError } = useQuery({
@@ -80,8 +83,8 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
   );
 
   const headers = useMemo(
-    () => createProgramHeaders((config?.fields as string[]) ?? [], t),
-    [config?.fields, t],
+    () => createProgramHeaders(configFields, t),
+    [configFields, t],
   );
 
   // Server-side sort is not supported by bahmniprogramenrollment endpoint.
@@ -97,6 +100,23 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
       );
     });
   }, [data?.programs]);
+
+  const renderAttributeValue = (
+    program: PatientProgramViewModel,
+    field: string,
+  ) => {
+    const raw = program.attributes[field];
+    if (!raw) return '-';
+
+    const fieldConfig = configFields.find((f) => f.name === field);
+    if (fieldConfig?.enableTranslation) {
+      return t(
+        `PROGRAM_ATTRIBUTE_VALUE_${camelToScreamingSnakeCase(field)}_${camelToScreamingSnakeCase(raw)}`,
+        raw,
+      );
+    }
+    return raw;
+  };
 
   const renderCell = (program: PatientProgramViewModel, cellId: string) => {
     switch (cellId) {
@@ -168,7 +188,7 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
             id={`${program.uuid}-${cellId}`}
             data-testid={`${program.uuid}-${cellId}-test-id`}
           >
-            {program.attributes[cellId] ?? '-'}
+            {renderAttributeValue(program, cellId)}
           </span>
         );
     }

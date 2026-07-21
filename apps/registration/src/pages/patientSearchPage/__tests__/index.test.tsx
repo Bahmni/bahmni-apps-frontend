@@ -131,9 +131,6 @@ jest.mock('../appointmentSearchResultActionHandler', () => {
     }),
     handleActionButtonClick: jest.fn(),
     handleActionNavigation: jest.fn(),
-    isActionButtonEnabled: jest.fn((...args) => {
-      return actual.isActionButtonEnabled(...args);
-    }),
     shouldRenderActionButton: jest.fn((...args) => {
       return actual.shouldRenderActionButton(...args);
     }),
@@ -158,6 +155,7 @@ jest.mock('@bahmni/widgets', () => ({
   useUserPrivilege: jest.fn(() => ({
     userPrivileges: mockUserPrivileges,
   })),
+  UserGlobalAction: jest.fn(() => <div data-testid="user-global-action" />),
   register: jest.fn(),
   useNotification: jest.fn(() => ({ addNotification: jest.fn() })),
   SearchPatient: jest.fn(({ onSearch }) => {
@@ -298,7 +296,7 @@ describe('PatientSearchPage', () => {
         </NotificationProvider>
       </MemoryRouter>,
     );
-    expect(screen.getByTestId('global-action-user')).toBeInTheDocument();
+    expect(screen.getByTestId('user-global-action')).toBeInTheDocument();
     const createNewPatientButton = screen.getByRole('button', {
       name: /create new patient/i,
     });
@@ -910,7 +908,7 @@ describe('PatientSearchPage', () => {
       });
     });
 
-    it('should disable "Mark Arrived" button when date is not today', async () => {
+    it('should not render "Mark Arrived" button when enabled rules are not satisfied', async () => {
       mockSearchData = {
         totalCount: 1,
         pageOfResults: [mockAppointmentData[1]],
@@ -942,8 +940,7 @@ describe('PatientSearchPage', () => {
       fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
       await waitFor(() => {
-        const markArrivedButton = screen.getByText('Mark Arrived');
-        expect(markArrivedButton).toBeDisabled();
+        expect(screen.queryByText('Mark Arrived')).not.toBeInTheDocument();
       });
     });
 

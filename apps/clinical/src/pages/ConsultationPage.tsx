@@ -20,6 +20,7 @@ import {
   useNotification,
   useUserPrivilege,
   usePatientUUID,
+  UserGlobalAction,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, {
@@ -106,20 +107,6 @@ const ConsultationPage: React.FC = () => {
         ),
         onClick: handleSearchOpen,
       },
-      {
-        id: 'notifications',
-        label: t('GLOBAL_ACTION_NOTIFICATIONS'),
-        renderIcon: (
-          <Icon id="notifications-icon" name="fa-bell" size={ICON_SIZE.LG} />
-        ),
-        onClick: () => {},
-      },
-      {
-        id: 'user',
-        label: t('GLOBAL_ACTION_USER'),
-        renderIcon: <Icon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />,
-        onClick: () => {},
-      },
     ],
     [handleSearchOpen, t],
   );
@@ -193,7 +180,7 @@ const ConsultationPage: React.FC = () => {
     if (dashboardConfigError) {
       addNotification({
         title: t('ERROR_LOADING_DASHBOARD_CONFIG'),
-        message: dashboardConfigError.message,
+        message: t(dashboardConfigError.message),
         type: 'error',
       });
     }
@@ -273,6 +260,16 @@ const ConsultationPage: React.FC = () => {
       />
     );
   }
+  if (dashboardConfigError || !filteredDashboardConfig) {
+    return (
+      <div
+        id="error-loading-dashboard-config"
+        data-testid="error-loading-dashboard-config-test-id"
+      >
+        {t('ERROR_LOADING_DASHBOARD_CONFIG')}
+      </div>
+    );
+  }
 
   const renderContextInformation = () => {
     const programUUID = searchParams.get(PROGRAM_UUID_SEARCH_PARAMS_KEY);
@@ -298,6 +295,7 @@ const ConsultationPage: React.FC = () => {
           <Header
             breadcrumbItems={breadcrumbItems}
             globalActions={globalActions}
+            userMenu={<UserGlobalAction />}
             sideNavItems={sidebarItems}
             activeSideNavItemId={activeItemId}
             onSideNavItemClick={handleItemClick}

@@ -7,13 +7,17 @@ export const createObservationResources = (
   subjectReference: Reference,
   encounterReference: Reference,
   performerReference: Reference,
+  basedOn?: Reference,
 ): Array<{ resource: Observation; fullUrl: string }> => {
   try {
-    return getFhirObservations(observations, {
+    const observationEntries = getFhirObservations(observations, {
       patientReference: subjectReference as FhirReference,
       encounterReference: encounterReference as FhirReference,
       performerReference: performerReference as FhirReference,
+      basedOnReference: basedOn as FhirReference | undefined,
     }) as Array<{ resource: Observation; fullUrl: string }>;
+
+    return observationEntries;
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown transformation error';

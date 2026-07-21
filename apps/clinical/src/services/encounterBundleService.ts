@@ -2,15 +2,16 @@ import {
   ConditionInputEntry,
   DiagnosisInputEntry,
   calculateOnsetDate,
+  createBundleEntry,
+  ENCOUNTER_BUNDLE_URL,
   post,
   Form2Observation,
+  type EncounterBundle,
 } from '@bahmni/services';
 import { BundleEntry, CodeableConcept, Encounter, Reference } from 'fhir/r4';
 import { ALLERGY_INTOLERANCE_RESOURCE_TYPE } from '../constants/allergy';
-import { ENCOUNTER_BUNDLE_URL } from '../constants/app';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
-import { EncounterBundle } from '../models/encounterBundle';
 import { ServiceRequestInputEntry } from '../models/serviceRequest';
 import {
   createDeleteAllergyResource,
@@ -21,7 +22,6 @@ import {
   createEncounterDiagnosisResource,
   createEncounterConditionResource,
 } from '../utils/fhir/conditionResourceCreator';
-import { createBundleEntry } from '../utils/fhir/encounterBundleCreator';
 import { createObservationResources } from '../utils/fhir/observationResourceCreator';
 import {
   createPractitionerReference,
@@ -60,7 +60,11 @@ interface CreateConditionsBundleEntriesParams {
 }
 
 interface CreateObservationBundleEntriesParams {
-  observationFormsData: Record<string, Form2Observation[]>;
+  observationFormsData: Array<{
+    formUuid: string;
+    observations: Form2Observation[];
+    basedOn?: Reference;
+  }>;
   encounterSubject: Reference;
   encounterReference: string;
   practitionerUUID: string;
@@ -433,7 +437,7 @@ export function createObservationBundleEntries({
   encounterReference,
   practitionerUUID,
 }: CreateObservationBundleEntriesParams): BundleEntry[] {
-  if (!observationFormsData || typeof observationFormsData !== 'object') {
+  if (!observationFormsData || !Array.isArray(observationFormsData)) {
     throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
   }
 
@@ -452,8 +456,8 @@ export function createObservationBundleEntries({
   const observationEntries: BundleEntry[] = [];
 
   // Iterate through all observation forms and their observations
-  for (const formUuid in observationFormsData) {
-    const observations = observationFormsData[formUuid];
+  for (const formData of observationFormsData) {
+    const { observations, basedOn } = formData;
 
     if (!observations || !Array.isArray(observations)) {
       continue;
@@ -465,6 +469,7 @@ export function createObservationBundleEntries({
       encounterSubject,
       createEncounterReferenceFromString(encounterReference),
       createPractitionerReference(practitionerUUID),
+      basedOn,
     );
 
     // Create bundle entries for each observation resource
