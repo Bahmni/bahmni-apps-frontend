@@ -1,4 +1,9 @@
-import { Icon, IconButton } from '@bahmni/design-system';
+import {
+  Icon,
+  IconButton,
+  OverflowMenu,
+  OverflowMenuItem,
+} from '@bahmni/design-system';
 import {
   fetchObservationForms,
   hasPrivilege,
@@ -55,21 +60,45 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, taskConfig }) => {
     return null;
   }
 
-  const action = permittedActions[0];
+  const isActionDisabled = task.status !== READY_TASK_STATUS;
 
-  const isButtonDisabled = task.status !== READY_TASK_STATUS;
+  if (permittedActions.length === 1) {
+    const action = permittedActions[0];
+
+    return (
+      <IconButton
+        label={t(action.label)}
+        kind="ghost"
+        size="sm"
+        onClick={() => handleTaskAction(action, task)}
+        testId={`task-action-${action.type}-${task.id}`}
+        disabled={isActionDisabled}
+      >
+        <Icon name={action.icon} id={`task-action-icon-${task.id}`} />
+      </IconButton>
+    );
+  }
 
   return (
-    <IconButton
-      label={t(action.label)}
-      kind="ghost"
+    <OverflowMenu
+      id={`task-actions-menu-${task.id}`}
+      testId={`task-actions-menu-${task.id}`}
+      aria-label={t('TASK_ACTIONS_MENU_LABEL')}
+      flipped
       size="sm"
-      onClick={() => handleTaskAction(action, task)}
-      testId={`task-action-${action.type}-${task.id}`}
-      disabled={isButtonDisabled}
     >
-      <Icon name={action.icon} id={`task-action-icon-${task.id}`} />
-    </IconButton>
+      {permittedActions.map((action) => (
+        <OverflowMenuItem
+          id={`task-action-${action.type}-${task.id}`}
+          testId={`task-action-${action.type}-${task.id}`}
+          key={action.type}
+          itemText={t(action.label)}
+          isDelete={false}
+          disabled={isActionDisabled}
+          onClick={() => handleTaskAction(action, task)}
+        />
+      ))}
+    </OverflowMenu>
   );
 };
 

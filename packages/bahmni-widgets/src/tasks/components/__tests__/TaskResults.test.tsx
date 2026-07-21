@@ -395,7 +395,7 @@ describe('TaskResults', () => {
   });
 
   describe('View selection', () => {
-    it('should render only first permitted view when multiple exist', () => {
+    it('should render overflow menu when multiple views exist', () => {
       const configWithMultipleViews = [
         {
           taskCode: VITALS_TASK_CODE,
@@ -417,11 +417,28 @@ describe('TaskResults', () => {
         { wrapper: createWrapper() },
       );
 
-      const link = screen.getByTestId(
-        `task-view-viewForm-${mockCompletedTask.id}`,
+      const menu = screen.getByTestId(
+        `task-views-menu-${mockCompletedTask.id}`,
       );
-      expect(link).toBeInTheDocument();
-      expect(link).toHaveTextContent('View Data');
+      expect(menu).toBeInTheDocument();
+    });
+
+    it('should show single Link when only one view exists', () => {
+      render(
+        <TaskResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(
+        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.queryByTestId(`task-views-menu-${mockCompletedTask.id}`),
+      ).not.toBeInTheDocument();
     });
 
     it('should pass correct testId to link', () => {

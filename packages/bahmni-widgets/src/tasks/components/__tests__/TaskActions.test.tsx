@@ -142,7 +142,7 @@ describe('TaskActions', () => {
       });
     });
 
-    it('should show only first permitted action when multiple exist', async () => {
+    it('should show overflow menu when multiple actions exist', async () => {
       const configWithMultipleActions = [
         {
           taskCode: mockTaskViewModelWithInput.code,
@@ -167,12 +167,32 @@ describe('TaskActions', () => {
 
       await waitFor(() => {
         expect(
+          screen.getByTestId(
+            `task-actions-menu-${mockTaskViewModelWithInput.id}`,
+          ),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should show single IconButton when only one action exists', async () => {
+      render(
+        <TaskActions
+          task={mockTaskViewModelWithInput}
+          taskConfig={mockTaskConfig}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(
           screen.getByRole('button', { name: 'Fill Form' }),
         ).toBeInTheDocument();
       });
 
       expect(
-        screen.queryByRole('button', { name: 'Second Action' }),
+        screen.queryByTestId(
+          `task-actions-menu-${mockTaskViewModelWithInput.id}`,
+        ),
       ).not.toBeInTheDocument();
     });
   });

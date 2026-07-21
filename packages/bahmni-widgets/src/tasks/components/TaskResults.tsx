@@ -1,4 +1,4 @@
-import { Link } from '@bahmni/design-system';
+import { Link, OverflowMenu, OverflowMenuItem } from '@bahmni/design-system';
 import { hasPrivilege, useTranslation } from '@bahmni/services';
 import React, { useCallback, useMemo, useState } from 'react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
@@ -72,16 +72,42 @@ const TaskResults: React.FC<TaskResultsProps> = ({ task, taskConfig }) => {
     return <>-</>;
   }
 
-  const view = permittedViews[0];
+  if (permittedViews.length === 1) {
+    const view = permittedViews[0];
+
+    return (
+      <>
+        <Link
+          onClick={() => handleViewClick(view)}
+          testId={`task-view-${view.type}-${task.id}`}
+        >
+          {t(view.label)}
+        </Link>
+        {renderModal()}
+      </>
+    );
+  }
 
   return (
     <>
-      <Link
-        onClick={() => handleViewClick(view)}
-        testId={`task-view-${view.type}-${task.id}`}
+      <OverflowMenu
+        id={`task-views-menu-${task.id}`}
+        testId={`task-views-menu-${task.id}`}
+        aria-label={t('TASK_VIEWS_MENU_LABEL')}
+        flipped
+        size="sm"
       >
-        {t(view.label)}
-      </Link>
+        {permittedViews.map((view) => (
+          <OverflowMenuItem
+            id={`task-view-${view.type}-${task.id}`}
+            testId={`task-view-${view.type}-${task.id}`}
+            key={view.type}
+            itemText={t(view.label)}
+            isDelete={false}
+            onClick={() => handleViewClick(view)}
+          />
+        ))}
+      </OverflowMenu>
       {renderModal()}
     </>
   );
