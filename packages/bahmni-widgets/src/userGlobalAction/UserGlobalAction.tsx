@@ -87,9 +87,7 @@ export const UserGlobalAction = () => {
       e.preventDefault();
       e.stopImmediatePropagation();
 
-      const current = items.findIndex(
-        (item) => item === document.activeElement,
-      );
+      const current = items.indexOf(document.activeElement as HTMLElement);
       const delta = e.key === 'ArrowDown' ? 1 : -1;
       const next = (current + delta + items.length) % items.length;
       items[next].focus();
@@ -137,18 +135,17 @@ export const UserGlobalAction = () => {
 
   if (loading) {
     return (
-      <div
+      <output
         id="user-global-action"
         data-testid="user-global-action-test-id"
         className={styles.container}
-        role="status"
         aria-label={t('USER_GLOBAL_ACTION_LOADING')}
       >
         <SkeletonPlaceholder
           className={styles.skeleton}
           testId="user-global-action-skeleton-test-id"
         />
-      </div>
+      </output>
     );
   }
 

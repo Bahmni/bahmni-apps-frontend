@@ -64,18 +64,17 @@ exports[`UserGlobalAction Snapshot matches snapshot in the avatar-only state (no
 `;
 
 exports[`UserGlobalAction Snapshot matches snapshot in the loading state 1`] = `
-<div
+<output
   aria-label="USER_GLOBAL_ACTION_LOADING"
   class="container"
   data-testid="user-global-action-test-id"
   id="user-global-action"
-  role="status"
 >
   <div
     class="cds--skeleton__placeholder skeleton"
     data-testid="user-global-action-skeleton-test-id"
   />
-</div>
+</output>
 `;
 
 exports[`UserGlobalAction Snapshot matches snapshot with avatar and greeting 1`] = `
