@@ -8,6 +8,7 @@ import {
   getConfig,
   getUserLoginLocation,
   hasPrivilege,
+  post,
   useTranslation,
   UserLocation,
 } from '@bahmni/services';
@@ -15,7 +16,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
-import { post } from './api';
 import {
   CurrentSearchState,
   CommonSearchWidgetConfig,
@@ -108,14 +108,8 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
           setIsSearchResultsLoading(false);
         })
         .catch(() => {
-          setCurrentSearchState((prev: CurrentSearchState | null) =>
-            prev
-              ? {
-                  ...prev,
-                }
-              : null,
-          );
           setIsSearchResultsLoading(false);
+          setCurrentSearchState(null);
           addNotification({
             title: t('ERROR_DEFAULT_TITLE'),
             message: t('COMMON_SEARCH_API_ERROR_MESSAGE'),
