@@ -115,6 +115,7 @@ export function createDiagnosisBundleEntries({
       createEncounterReferenceFromString(encounterReference),
       createPractitionerReference(practitionerUUID),
       consultationDate,
+      diagnosis.conceptSystem,
     );
     const diagnosisBundleEntry = createBundleEntry(
       diagnosisResourceURL,
@@ -409,6 +410,7 @@ export function createConditionsBundleEntries({
       consultationDate,
       onsetDate!,
       'active',
+      condition.conceptSystem,
     );
 
     const conditionBundleEntry = createBundleEntry(
