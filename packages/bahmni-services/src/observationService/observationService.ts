@@ -30,7 +30,7 @@ export async function getPatientObservationsBundle(
  */
 export async function getPatientObservationsWithEncounterBundle(
   patientUuid: string,
-  conceptCodes?: string[],
+  conceptCodes: string[],
 ): Promise<Bundle<Observation | Encounter>> {
   const url = FHIR_OBSERVATION_WITH_ENCOUNTER_URL(patientUuid, conceptCodes);
   return await get<Bundle<Observation | Encounter>>(url);
