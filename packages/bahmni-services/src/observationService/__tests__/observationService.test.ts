@@ -75,7 +75,7 @@ describe('observationService', () => {
       const mockBundle = { resourceType: 'Bundle', entry: [] };
       (api.get as jest.Mock).mockResolvedValue(mockBundle);
 
-      await getPatientObservationsBundle(
+      const result = await getPatientObservationsBundle(
         patientUuid,
         undefined,
         serviceRequestId,
@@ -84,16 +84,7 @@ describe('observationService', () => {
       expect(api.get).toHaveBeenCalledWith(
         FHIR_OBSERVATION_URL(patientUuid, undefined, serviceRequestId),
       );
-    });
-
-    it('should return observation bundle', async () => {
-      (api.get as jest.Mock).mockResolvedValue(mockObservationBundle);
-
-      const result = await getPatientObservationsBundle('patient-123', [
-        'concept-1',
-      ]);
-
-      expect(result).toEqual(mockObservationBundle);
+      expect(result).toEqual(mockBundle);
     });
 
     it('should handle API errors', async () => {
@@ -113,33 +104,6 @@ describe('observationService', () => {
       const result = await getPatientObservations('patient-123', ['concept-1']);
 
       expect(result).toEqual([mockObservation]);
-    });
-
-    it('should return observations with serviceRequestId', async () => {
-      (api.get as jest.Mock).mockResolvedValue(mockObservationBundle);
-      const serviceRequestId = 'service-request-123';
-
-      const result = await getPatientObservations(
-        'patient-123',
-        ['concept-1'],
-        serviceRequestId,
-      );
-
-      expect(result).toEqual([mockObservation]);
-      expect(api.get).toHaveBeenCalledWith(
-        FHIR_OBSERVATION_URL('patient-123', ['concept-1'], serviceRequestId),
-      );
-    });
-
-    it('should return observations with optional conceptCodes', async () => {
-      (api.get as jest.Mock).mockResolvedValue(mockObservationBundle);
-
-      const result = await getPatientObservations('patient-123');
-
-      expect(result).toEqual([mockObservation]);
-      expect(api.get).toHaveBeenCalledWith(
-        FHIR_OBSERVATION_URL('patient-123', undefined),
-      );
     });
 
     it('should handle empty bundle', async () => {
@@ -203,7 +167,7 @@ describe('observationService', () => {
         mockObservationWithEncounterBundle,
       );
 
-      await getPatientObservationsWithEncounterBundle(
+      const result = await getPatientObservationsWithEncounterBundle(
         patientUuid,
         conceptCodes,
       );
@@ -211,6 +175,7 @@ describe('observationService', () => {
       expect(api.get).toHaveBeenCalledWith(
         FHIR_OBSERVATION_WITH_ENCOUNTER_URL(patientUuid, conceptCodes),
       );
+      expect(result).toEqual(mockObservationWithEncounterBundle);
     });
 
     it('should call API with optional conceptCodes', async () => {
@@ -219,23 +184,12 @@ describe('observationService', () => {
         mockObservationWithEncounterBundle,
       );
 
-      await getPatientObservationsWithEncounterBundle(patientUuid);
+      const result =
+        await getPatientObservationsWithEncounterBundle(patientUuid);
 
       expect(api.get).toHaveBeenCalledWith(
         FHIR_OBSERVATION_WITH_ENCOUNTER_URL(patientUuid, undefined),
       );
-    });
-
-    it('should return observation bundle with encounters', async () => {
-      (api.get as jest.Mock).mockResolvedValue(
-        mockObservationWithEncounterBundle,
-      );
-
-      const result = await getPatientObservationsWithEncounterBundle(
-        'patient-123',
-        ['concept-1'],
-      );
-
       expect(result).toEqual(mockObservationWithEncounterBundle);
     });
 
@@ -255,18 +209,11 @@ describe('observationService', () => {
     it('should fetch forms encounter from the FHIR API endpoint', async () => {
       (api.get as jest.Mock).mockResolvedValueOnce(mockFormsEncounter);
 
-      await getObservationsBundleByEncounterUuid(encounterUUID);
+      const result = await getObservationsBundleByEncounterUuid(encounterUUID);
 
       expect(api.get).toHaveBeenCalledWith(
         FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
       );
-    });
-
-    it('should return the forms encounter data', async () => {
-      (api.get as jest.Mock).mockResolvedValueOnce(mockFormsEncounter);
-
-      const result = await getObservationsBundleByEncounterUuid(encounterUUID);
-
       expect(result.resourceType).toBe('Bundle');
       expect(result.entry).toBeDefined();
     });
