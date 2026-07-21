@@ -2,12 +2,14 @@ import { Command } from 'cmdk';
 import React, { useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { AiChatPanel } from './aiChat';
+import { useAiChatStore } from './aiChat/aiChatStore';
 import type { SearchAnnotation } from './models';
 import { PatientCommandItem } from './PatientCommandItem';
 import styles from './styles/CommandPalette.module.scss';
 import { useCommandPalette } from './useCommandPalette';
 import { useCommandPaletteSearch } from './useCommandPaletteSearch';
-import { filterItems } from './utils';
+import { AI_CHAT_ITEM_VALUE, filterItems } from './utils';
 
 const SearchIcon: React.FC = () => (
   <svg
@@ -41,6 +43,8 @@ export const CommandPalette: React.FC = () => {
   const [selectedAnnotation, setSelectedAnnotation] =
     useState<SearchAnnotation | null>(null);
   const [activeActionIndex, setActiveActionIndex] = useState(0);
+  const [mode, setMode] = useState<'palette' | 'chat'>('palette');
+  const isAiChatExpanded = useAiChatStore((state) => state.isExpanded);
   const { patients, loading, error } = useCommandPaletteSearch(
     searchTerm,
     selectedAnnotation,
@@ -148,6 +152,12 @@ export const CommandPalette: React.FC = () => {
     [close, navigateToPath],
   );
 
+  const handleBackToSearch = useCallback(() => {
+    setMode('palette');
+    setSearchTerm('');
+    setSelectedAnnotation(null);
+  }, []);
+
   if (!isOpen) return null;
 
   const searchPlaceholder = selectedAnnotation
@@ -166,158 +176,193 @@ export const CommandPalette: React.FC = () => {
     <>
       <div className={styles.overlay} onClick={close} aria-hidden="true" />
       <dialog
-        className={styles.dialog}
+        className={
+          mode === 'chat'
+            ? isAiChatExpanded
+              ? `${styles.dialog} ${styles.dialogChat} ${styles.dialogChatExpanded}`
+              : `${styles.dialog} ${styles.dialogChat}`
+            : styles.dialog
+        }
         aria-modal="true"
         aria-label={t('COMMAND_PALETTE_ARIA_LABEL')}
         open
       >
-        <Command
-          label={t('COMMAND_PALETTE_ARIA_LABEL')}
-          onValueChange={handleCmdValueChange}
-          filter={filterItems}
-        >
-          <div className={styles.inputWrapper}>
-            <SearchIcon />
-            {selectedAnnotation && (
-              <span className={styles.annotationBadge}>
-                {selectedAnnotation.label}
-              </span>
-            )}
-            <Command.Input
-              className={styles.input}
-              placeholder={searchPlaceholder}
-              value={searchTerm}
-              onValueChange={handleSearchChange}
-              onKeyDown={handleInputKeyDown}
-              autoFocus
-            />
-            <kbd className={styles.escHint}>Esc</kbd>
-          </div>
+        {mode === 'chat' && (
+          <AiChatPanel
+            onBack={handleBackToSearch}
+            initialQuery={searchTerm || undefined}
+          />
+        )}
+        {mode === 'palette' && (
+          <Command
+            label={t('COMMAND_PALETTE_ARIA_LABEL')}
+            onValueChange={handleCmdValueChange}
+            filter={filterItems}
+          >
+            <div className={styles.inputWrapper}>
+              <SearchIcon />
+              {selectedAnnotation && (
+                <span className={styles.annotationBadge}>
+                  {selectedAnnotation.label}
+                </span>
+              )}
+              <Command.Input
+                className={styles.input}
+                placeholder={searchPlaceholder}
+                value={searchTerm}
+                onValueChange={handleSearchChange}
+                onKeyDown={handleInputKeyDown}
+                autoFocus
+              />
+              <kbd className={styles.escHint}>Esc</kbd>
+            </div>
 
-          <Command.List className={styles.list}>
-            <Command.Empty className={styles.empty}>
-              {t('COMMAND_PALETTE_NO_RESULTS')}
-            </Command.Empty>
+            <Command.List className={styles.list}>
+              <Command.Empty className={styles.empty}>
+                {t('COMMAND_PALETTE_NO_RESULTS')}
+              </Command.Empty>
 
-            {!selectedAnnotation &&
-              isTypingAnnotationPrefix &&
-              searchAnnotations.length > 0 && (
-                <Command.Group
-                  heading={t('COMMAND_PALETTE_GROUP_SEARCH_FILTERS')}
-                  className={styles.group}
-                >
-                  {searchAnnotations
-                    .filter((ann) => ann.prefix.startsWith(searchTerm))
-                    .map((ann) => (
-                      <Command.Item
-                        key={ann.prefix}
-                        value={ann.prefix}
-                        className={styles.item}
-                        onSelect={() => {
-                          setSelectedAnnotation(ann);
-                          setSearchTerm('');
-                        }}
-                      >
-                        <span className={styles.annotationSuggestionPrefix}>
-                          {ann.prefix}
-                        </span>
-                        <span className={styles.itemLabel}>{ann.label}</span>
-                      </Command.Item>
-                    ))}
+              {!isTypingAnnotationPrefix && (
+                <Command.Group className={styles.group}>
+                  <Command.Item
+                    value={AI_CHAT_ITEM_VALUE}
+                    className={styles.item}
+                    onSelect={() => setMode('chat')}
+                  >
+                    <span className={styles.navIcon} aria-hidden="true">
+                      ✦
+                    </span>
+                    <span className={styles.itemLabel}>
+                      {searchTerm
+                        ? t('COMMAND_PALETTE_AI_CHAT_ITEM_LABEL_WITH_QUERY', {
+                            query: searchTerm,
+                          })
+                        : t('COMMAND_PALETTE_AI_CHAT_ITEM_LABEL')}
+                    </span>
+                  </Command.Item>
                 </Command.Group>
               )}
 
-            {!isTypingAnnotationPrefix && navItems.length > 0 && (
-              <Command.Group
-                heading={t('COMMAND_PALETTE_GROUP_NAVIGATION')}
-                className={styles.group}
-              >
-                {navItems.map((item) => (
-                  <Command.Item
-                    key={item.id}
-                    value={item.label}
-                    className={styles.item}
-                    onSelect={() => {
-                      close();
-                      navigateToPath(item.path, item.newTab);
-                    }}
+              {!selectedAnnotation &&
+                isTypingAnnotationPrefix &&
+                searchAnnotations.length > 0 && (
+                  <Command.Group
+                    heading={t('COMMAND_PALETTE_GROUP_SEARCH_FILTERS')}
+                    className={styles.group}
                   >
-                    <span className={styles.navIcon} aria-hidden="true">
-                      ↗
-                    </span>
-                    <span className={styles.itemLabel}>
-                      {t(item.label, { defaultValue: item.label })}
-                    </span>
-                  </Command.Item>
-                ))}
-              </Command.Group>
-            )}
+                    {searchAnnotations
+                      .filter((ann) => ann.prefix.startsWith(searchTerm))
+                      .map((ann) => (
+                        <Command.Item
+                          key={ann.prefix}
+                          value={ann.prefix}
+                          className={styles.item}
+                          onSelect={() => {
+                            setSelectedAnnotation(ann);
+                            setSearchTerm('');
+                          }}
+                        >
+                          <span className={styles.annotationSuggestionPrefix}>
+                            {ann.prefix}
+                          </span>
+                          <span className={styles.itemLabel}>{ann.label}</span>
+                        </Command.Item>
+                      ))}
+                  </Command.Group>
+                )}
 
-            {isSearchActive && loading && (
-              <div className={styles.loading}>
-                <svg
-                  className={styles.ekgLine}
-                  viewBox="0 0 80 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
+              {!isTypingAnnotationPrefix && navItems.length > 0 && (
+                <Command.Group
+                  heading={t('COMMAND_PALETTE_GROUP_NAVIGATION')}
+                  className={styles.group}
                 >
-                  <path
-                    className={styles.ekgPath}
-                    d="M 0,10 L 12,10 L 14,8 L 16,10 L 20,10 L 22,2 L 25,18 L 28,10 L 36,10 L 39,5 L 42,10 L 52,10 L 54,8 L 56,10 L 60,10 L 62,2 L 65,18 L 68,10 L 76,10 L 79,5 L 80,8"
-                  />
-                </svg>
-                {t('COMMAND_PALETTE_SEARCHING')}
-              </div>
-            )}
+                  {navItems.map((item) => (
+                    <Command.Item
+                      key={item.id}
+                      value={item.label}
+                      className={styles.item}
+                      onSelect={() => {
+                        close();
+                        navigateToPath(item.path, item.newTab);
+                      }}
+                    >
+                      <span className={styles.navIcon} aria-hidden="true">
+                        ↗
+                      </span>
+                      <span className={styles.itemLabel}>
+                        {t(item.label, { defaultValue: item.label })}
+                      </span>
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              )}
 
-            {isSearchActive && !loading && error && (
-              <div className={styles.empty}>
-                {t('COMMAND_PALETTE_SEARCH_ERROR')}
-              </div>
-            )}
+              {isSearchActive && loading && (
+                <div className={styles.loading}>
+                  <svg
+                    className={styles.ekgLine}
+                    viewBox="0 0 80 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      className={styles.ekgPath}
+                      d="M 0,10 L 12,10 L 14,8 L 16,10 L 20,10 L 22,2 L 25,18 L 28,10 L 36,10 L 39,5 L 42,10 L 52,10 L 54,8 L 56,10 L 60,10 L 62,2 L 65,18 L 68,10 L 76,10 L 79,5 L 80,8"
+                    />
+                  </svg>
+                  {t('COMMAND_PALETTE_SEARCHING')}
+                </div>
+              )}
 
-            {isSearchActive && !loading && !error && (
-              <Command.Group
-                heading={t('COMMAND_PALETTE_GROUP_PATIENTS')}
-                className={styles.group}
-              >
-                {patients.map((patient) => (
-                  <PatientCommandItem
-                    key={patient.uuid}
-                    patient={patient}
-                    patientFieldsConfig={patientFieldsConfig}
-                    patientActions={patientActions}
-                    activeActionIndex={
-                      patient.uuid === selectedPatientUuid
-                        ? activeActionIndex
-                        : defaultActionIndex
-                    }
-                    onNavigate={handleSelect}
-                  />
-                ))}
-              </Command.Group>
-            )}
-          </Command.List>
+              {isSearchActive && !loading && error && (
+                <div className={styles.empty}>
+                  {t('COMMAND_PALETTE_SEARCH_ERROR')}
+                </div>
+              )}
 
-          <div className={styles.footer}>
-            <span className={styles.shortcutHint}>
-              <kbd className={styles.kbd}>↑↓</kbd>{' '}
-              {t('COMMAND_PALETTE_HINT_NAVIGATE')}
-            </span>
-            <span className={styles.shortcutHint}>
-              <kbd className={styles.kbd}>←→</kbd>{' '}
-              {t('COMMAND_PALETTE_HINT_SWITCH_ACTION')}
-            </span>
-            <span className={styles.shortcutHint}>
-              <kbd className={styles.kbd}>↵</kbd>{' '}
-              {t('COMMAND_PALETTE_HINT_SELECT')}
-            </span>
-            <span className={styles.shortcutHint}>
-              <kbd className={styles.kbd}>Esc</kbd>{' '}
-              {t('COMMAND_PALETTE_HINT_CLOSE')}
-            </span>
-          </div>
-        </Command>
+              {isSearchActive && !loading && !error && (
+                <Command.Group
+                  heading={t('COMMAND_PALETTE_GROUP_PATIENTS')}
+                  className={styles.group}
+                >
+                  {patients.map((patient) => (
+                    <PatientCommandItem
+                      key={patient.uuid}
+                      patient={patient}
+                      patientFieldsConfig={patientFieldsConfig}
+                      patientActions={patientActions}
+                      activeActionIndex={
+                        patient.uuid === selectedPatientUuid
+                          ? activeActionIndex
+                          : defaultActionIndex
+                      }
+                      onNavigate={handleSelect}
+                    />
+                  ))}
+                </Command.Group>
+              )}
+            </Command.List>
+
+            <div className={styles.footer}>
+              <span className={styles.shortcutHint}>
+                <kbd className={styles.kbd}>↑↓</kbd>{' '}
+                {t('COMMAND_PALETTE_HINT_NAVIGATE')}
+              </span>
+              <span className={styles.shortcutHint}>
+                <kbd className={styles.kbd}>←→</kbd>{' '}
+                {t('COMMAND_PALETTE_HINT_SWITCH_ACTION')}
+              </span>
+              <span className={styles.shortcutHint}>
+                <kbd className={styles.kbd}>↵</kbd>{' '}
+                {t('COMMAND_PALETTE_HINT_SELECT')}
+              </span>
+              <span className={styles.shortcutHint}>
+                <kbd className={styles.kbd}>Esc</kbd>{' '}
+                {t('COMMAND_PALETTE_HINT_CLOSE')}
+              </span>
+            </div>
+          </Command>
+        )}
       </dialog>
     </>,
     document.body,
