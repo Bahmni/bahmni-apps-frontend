@@ -220,7 +220,7 @@ const TaskList: React.FC<TaskListProps> = ({
           return null;
       }
     },
-    [t, taskListConfig?.taskConfig, episodeOfCareUuids],
+    [t, taskListConfig?.taskConfig],
   );
 
   if (emptyEncounterFilter) {
