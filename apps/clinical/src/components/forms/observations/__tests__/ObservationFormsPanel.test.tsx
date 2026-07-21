@@ -363,6 +363,54 @@ describe('ObservationFormsPanel', () => {
       });
     });
 
+    it('filters out observations from other forms recorded on the same encounter', async () => {
+      const mockBundle = {
+        entry: [
+          { resource: { resourceType: 'Observation', id: 'obs-1' } },
+          { resource: { resourceType: 'Observation', id: 'obs-2' } },
+        ],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      // Encounter has both Vitals and History and Examination observations
+      // mixed in one bundle — only the Vitals ones must be kept/stored, or a
+      // stray observation from the other form can corrupt this form's
+      // version/prepopulation matching (BAH-4732).
+      jest.mocked(getObservationsFromFhir).mockReturnValue([
+        {
+          concept: { uuid: 'concept-history' },
+          value: 'x',
+          formFieldPath: 'History and Examination.5/1-0',
+        },
+        {
+          concept: { uuid: 'concept-vitals' },
+          value: 42,
+          formFieldPath: 'Vitals.18/1-0',
+        },
+      ] as never);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(mockSetState).toHaveBeenCalled();
+      });
+
+      const updater = mockSetState.mock.calls[0][0];
+      const result = updater({ formsData: {} });
+      const storedObservations = result.formsData['form-uuid-1'].observations;
+      expect(storedObservations).toHaveLength(1);
+      expect(storedObservations[0].concept.uuid).toBe('concept-vitals');
+    });
+
     it('calls addForm even when FHIR fetch fails', async () => {
       jest
         .mocked(getObservationsBundleByEncounterUuid)
@@ -400,26 +448,44 @@ describe('ObservationFormsPanel', () => {
       });
     });
 
-    it('does not fetch when form is already in selectedForms', async () => {
-      jest.mocked(useObservationFormsStore).mockReturnValue({
-        selectedForms: [mockForm1],
-        addForm: mockAddForm,
-        removeForm: mockRemoveForm,
-        viewingForm: null,
-      } as ReturnType<typeof useObservationFormsStore>);
+    it('does not re-fetch on re-render within the same edit session', async () => {
+      // Guarding on `selectedForms` (previous behaviour) breaks once the
+      // resolved form uuid differs from the store entry's uuid — see
+      // BAH-4732 review feedback. The fetch is now latched on the
+      // (encounter, form) session itself, so it must fire exactly once even
+      // across re-renders that leave selectedForms unchanged.
+      const mockBundle = {
+        entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest
+        .mocked(getObservationsFromFhir)
+        .mockReturnValue([
+          { concept: { uuid: 'concept-1' }, value: 42 },
+        ] as never);
 
-      render(
-        <ObservationFormsPanel
-          encounterSessionStartContext={{
-            editOnly: 'observationForms',
-            editFormName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
-          }}
-        />,
+      const sessionContext = {
+        editOnly: 'observationForms',
+        editFormName: 'Vitals',
+        editEncounterUuid: 'encounter-uuid-1',
+      };
+
+      const { rerender } = render(
+        <ObservationFormsPanel encounterSessionStartContext={sessionContext} />,
       );
 
       await waitFor(() => {
-        expect(getObservationsBundleByEncounterUuid).not.toHaveBeenCalled();
+        expect(getObservationsBundleByEncounterUuid).toHaveBeenCalledTimes(1);
+      });
+
+      rerender(
+        <ObservationFormsPanel encounterSessionStartContext={sessionContext} />,
+      );
+
+      await waitFor(() => {
+        expect(getObservationsBundleByEncounterUuid).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -471,6 +537,64 @@ describe('ObservationFormsPanel', () => {
         expect(fetchFormUuidByObservationDate).not.toHaveBeenCalled();
         expect(mockAddForm).toHaveBeenCalledWith(
           expect.objectContaining({ uuid: 'saved-form-uuid-v18' }),
+        );
+      });
+    });
+
+    it('resolves the form-specific patientForms entry when the encounter has multiple form submissions', async () => {
+      const mockBundle = {
+        entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest
+        .mocked(getObservationsFromFhir)
+        .mockReturnValue([
+          { concept: { uuid: 'concept-1' }, value: 42 },
+        ] as never);
+      // Same encounter carries two form submissions — the lookup must match
+      // on formName too, not just encounterUuid, or this always resolves to
+      // whichever entry happens to be first (here, 'History and
+      // Examination', which would be the wrong form entirely) (BAH-4732).
+      jest.mocked(getPatientFormData).mockResolvedValue([
+        {
+          formName: 'History and Examination',
+          formVersion: 5,
+          formUuid: 'saved-form-uuid-history',
+          encounterUuid: 'encounter-uuid-1',
+          formType: 'v2',
+          visitUuid: 'visit-1',
+          visitStartDateTime: 0,
+          encounterDateTime: 0,
+          providers: [],
+        },
+        {
+          formName: 'Vitals',
+          formVersion: 18,
+          formUuid: 'saved-form-uuid-vitals',
+          encounterUuid: 'encounter-uuid-1',
+          formType: 'v2',
+          visitUuid: 'visit-1',
+          visitStartDateTime: 0,
+          encounterDateTime: 0,
+          providers: [],
+        },
+      ]);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(mockAddForm).toHaveBeenCalledWith(
+          expect.objectContaining({ uuid: 'saved-form-uuid-vitals' }),
         );
       });
     });

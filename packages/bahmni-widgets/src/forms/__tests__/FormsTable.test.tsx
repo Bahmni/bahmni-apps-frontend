@@ -1481,6 +1481,93 @@ describe('FormsTable', () => {
       );
     });
 
+    it('does not include observations from a form whose name is a substring match (e.g. "Vitals" vs "Second Vitals")', async () => {
+      const user = userEvent.setup();
+      // Encounter carries observations from two forms whose names collide
+      // under a naive substring check: "Second Vitals" contains "Vitals" as
+      // a substring, so `formFieldPath.includes(selectedRecord.formName)`
+      // would incorrectly pull the "Second Vitals" observation into the
+      // "Vitals" modal (BAH-4732).
+      mockGetPatientFormData.mockResolvedValue([
+        {
+          formType: 'v2',
+          formName: 'Vitals',
+          formVersion: 1,
+          visitUuid: 'visit-1',
+          visitStartDateTime: NOW - 10 * 60 * 1000,
+          encounterUuid: 'encounter-collision',
+          encounterDateTime: NOW - 10 * 60 * 1000,
+          providers: [{ providerName: 'Dr. Williams', uuid: 'provider-3' }],
+        },
+      ]);
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        total: 2,
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-vitals',
+              status: 'final',
+              code: {
+                text: 'Pulse',
+                coding: [{ code: 'concept-pulse', display: 'Pulse' }],
+              },
+              valueQuantity: { value: 70, unit: 'beats/min' },
+              extension: [
+                {
+                  url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+                  valueString: 'Bahmni^Vitals.1/1-0',
+                },
+              ],
+            },
+          },
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-second-vitals',
+              status: 'final',
+              code: {
+                text: 'Second Vitals Pulse',
+                coding: [
+                  { code: 'concept-pulse-2', display: 'Second Vitals Pulse' },
+                ],
+              },
+              valueQuantity: { value: 60, unit: 'beats/min' },
+              extension: [
+                {
+                  url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+                  valueString: 'Bahmni^Second Vitals.1/1-0',
+                },
+              ],
+            },
+          },
+        ],
+      } as Bundle<Observation>);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      const links = document.querySelectorAll('.cds--link');
+      expect(links.length).toBeGreaterThan(0);
+      await user.click(links[0] as HTMLElement);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Pulse')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('Second Vitals Pulse')).not.toBeInTheDocument();
+    });
+
     it('displays error message in modal when FHIR encounter data fetch fails', async () => {
       const user = userEvent.setup();
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);

@@ -2020,6 +2020,20 @@ describe('replaceNoteRemovedObs', () => {
     replaceNoteRemovedObs(transformed, original);
     expect(transformed).toHaveLength(1);
   });
+
+  it('recurses into group members', () => {
+    const child = obs('child-1');
+    const originalChild = obs('child-1', 'old note');
+    const transformed = [{ ...obs('grp-1'), groupMembers: [child] }];
+    const original = [{ ...obs('grp-1'), groupMembers: [originalChild] }];
+    replaceNoteRemovedObs(transformed, original);
+    const groupMembers = transformed[0].groupMembers as (typeof child)[];
+    expect(groupMembers).toHaveLength(2);
+    expect(groupMembers[0].voided).toBe(true);
+    expect(groupMembers[0].uuid).toBe('child-1');
+    expect(groupMembers[1].uuid).toBeUndefined();
+    expect(groupMembers[1].comment).toBeUndefined();
+  });
 });
 
 describe('replaceInterpretationRemovedObs', () => {

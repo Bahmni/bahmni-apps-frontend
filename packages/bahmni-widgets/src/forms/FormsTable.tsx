@@ -33,7 +33,7 @@ import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { FormRecordViewModel, GroupedFormRecords } from './models';
 import styles from './styles/FormsTable.module.scss';
-import { extractFormFieldPath } from './utils';
+import { extractFormFieldPath, extractFormName } from './utils';
 
 const CONSULTATION_START_EVENT = 'startConsultation';
 
@@ -201,10 +201,18 @@ const FormsTable: React.FC<WidgetProps> = ({
       .filter((entry) => entry.resource?.resourceType === 'Observation')
       .map((entry) => entry.resource as Observation);
 
-    // Filter by form name using formFieldPath
+    // Filter by form name using formFieldPath. Must be an exact form-name
+    // match (not substring) — e.g. formName "Vitals" is a substring of
+    // "Second Vitals", so `.includes()` would incorrectly pull "Second
+    // Vitals" observations into the "Vitals" modal for any encounter that
+    // has both forms recorded against it.
     return allObservations.filter((obs) => {
       const formFieldPath = extractFormFieldPath(obs);
-      return !formFieldPath || formFieldPath.includes(selectedRecord.formName);
+      if (!formFieldPath) return true;
+      return (
+        extractFormName(obs)?.toLowerCase() ===
+        selectedRecord.formName.toLowerCase()
+      );
     });
   }, [fhirObservationBundle, selectedRecord?.formName]);
 

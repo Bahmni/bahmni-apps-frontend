@@ -82,6 +82,34 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const isEditObservationFormsMode =
     encounterSessionStartContext?.editOnly === 'observationForms';
 
+  // useObservationFormsStore is a session-wide singleton, not scoped to a single
+  // edit session. Without this, `selectedForms` from a previous edit (or from the
+  // regular add-form flow) can already contain the next form's uuid, causing the
+  // guard below to skip fetching/populating observations for it entirely — the
+  // form opens but never prepopulates. Reset once per distinct (encounter, form)
+  // pair so each edit session starts from a clean store.
+  const editSessionKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isEditObservationFormsMode || !editFormName || !editEncounterUuid) {
+      return;
+    }
+    const sessionKey = `${editEncounterUuid}:${editFormName}`;
+    if (editSessionKeyRef.current === sessionKey) {
+      return;
+    }
+    editSessionKeyRef.current = sessionKey;
+    useObservationFormsStore.getState().reset();
+  }, [isEditObservationFormsMode, editFormName, editEncounterUuid]);
+
+  // Latches once the fetch for a given (encounter, form) session actually
+  // starts. Guarding on `selectedForms` instead (as before) breaks as soon as
+  // `savedFormUuid` differs from `matchingForm.uuid` (editing an encounter
+  // saved under an older form version): the form gets added to the store
+  // keyed by `savedFormUuid`, but the guard kept checking `matchingForm.uuid`,
+  // so it never matched and the entire fetch chain fired a second time on the
+  // next `selectedForms`-triggered re-render. Keying on the session itself
+  // (not on what ends up in the store) avoids that race entirely.
+  const editFetchSessionRef = useRef<string | null>(null);
   useEffect(() => {
     if (
       !isEditObservationFormsMode ||
@@ -95,11 +123,26 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
       (form) => form.name.toLowerCase() === editFormName.toLowerCase(),
     );
     if (!matchingForm) return;
-    if (selectedForms.some((f) => f.uuid === matchingForm.uuid)) return;
+
+    const sessionKey = `${editEncounterUuid}:${editFormName}`;
+    if (editFetchSessionRef.current === sessionKey) return;
+    editFetchSessionRef.current = sessionKey;
 
     getObservationsBundleByEncounterUuid(editEncounterUuid)
       .then(async (bundle) => {
-        const form2Observations = getObservationsFromFhir(bundle);
+        // getObservationsBundleByEncounterUuid fetches the WHOLE encounter's
+        // observations — an encounter can carry multiple form submissions
+        // (e.g. Vitals + History and Examination), all mixed together in one
+        // bundle. Keep only this form's own top-level observations (its
+        // formFieldPath is "<formName>.<version>/..."), otherwise a stray
+        // observation from a different form can end up first in the array and
+        // silently corrupt this form's version/prepopulation matching.
+        const form2Observations = getObservationsFromFhir(bundle).filter(
+          (obs) =>
+            obs.formFieldPath
+              ?.toLowerCase()
+              .startsWith(`${editFormName.toLowerCase()}.`),
+        );
 
         // Primary: read formUuid directly from the patient forms API —
         // same approach as the old Bahmni Angular frontend (observationForm.formUuid).
@@ -116,8 +159,14 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
           const patientForms = await getPatientFormData(patientUUID).catch(
             () => [],
           );
+          // An encounter can carry multiple form submissions (e.g. Vitals +
+          // History and Examination saved to the same encounter) — must also
+          // match on formName, or this always resolves to whichever form
+          // submission happens to be first for the encounter.
           const encounterFormData = patientForms.find(
-            (d) => d.encounterUuid === editEncounterUuid,
+            (d) =>
+              d.encounterUuid === editEncounterUuid &&
+              d.formName.toLowerCase() === editFormName.toLowerCase(),
           );
           // Primary: formUuid from patient forms API (same as old Bahmni Angular).
           // Fallback: version-string or date-based lookup using formVersion and
@@ -177,7 +226,6 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     editEncounterUuid,
     isAllFormsLoading,
     allForms,
-    selectedForms,
     addForm,
     patientUUID,
   ]);

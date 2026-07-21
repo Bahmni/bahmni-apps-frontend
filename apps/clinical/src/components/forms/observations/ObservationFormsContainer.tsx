@@ -795,21 +795,34 @@ export const replaceNoteRemovedObs = (
   };
   original.forEach(buildMap);
 
-  for (let i = transformed.length - 1; i >= 0; i--) {
-    const obs = transformed[i];
-    if (obs.uuid && !obs.voided && !obs.comment) {
-      const orig = originalByUuid.get(obs.uuid);
-      if (orig?.comment) {
-        // DELETE old obs, POST new obs with same value but no note
-        transformed.splice(
-          i,
-          1,
-          { ...obs, voided: true },
-          { ...obs, uuid: undefined, comment: undefined },
-        );
+  // Recurse into group members so obsGroup children (e.g. Blood Pressure ->
+  // Systolic / Diastolic) are also handled, not just top-level obs. Mirrors
+  // replaceInterpretationRemovedObs, which needs the same recursion for the
+  // same reason: obsGroup children are each processed as individual leaf
+  // Observations in the bundle.
+  const processObsList = (obsList: Form2Observation[]): void => {
+    for (let i = obsList.length - 1; i >= 0; i--) {
+      const obs = obsList[i];
+      if (obs.uuid && !obs.voided && !obs.comment) {
+        const orig = originalByUuid.get(obs.uuid);
+        if (orig?.comment) {
+          // DELETE old obs, POST new obs with same value but no note
+          obsList.splice(
+            i,
+            1,
+            { ...obs, voided: true },
+            { ...obs, uuid: undefined, comment: undefined },
+          );
+          continue; // spliced entries don't need further recursion
+        }
+      }
+      if (obs.groupMembers?.length) {
+        processObsList(obs.groupMembers);
       }
     }
-  }
+  };
+
+  processObsList(transformed);
 };
 
 /**
