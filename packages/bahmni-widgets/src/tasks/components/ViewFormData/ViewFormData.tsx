@@ -169,7 +169,7 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
       testId="view-form-modal"
     >
       <Modal.Body>
-        {isLoading && <SkeletonPlaceholder />}
+        {isLoading && <SkeletonPlaceholder className={styles.loader} />}
         {error && <div>{t('ERROR_LOADING_OBSERVATIONS')}</div>}
         {!isLoading && !error && encounterGroups.length === 0 && (
           <div>{t('NO_OBSERVATIONS_FOR_TASK')}</div>
