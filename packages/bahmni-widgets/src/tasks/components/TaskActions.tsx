@@ -14,8 +14,8 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import type { TaskViewModel, TaskConfig } from '../models';
-import { hasLaunchFormActions } from '../utils';
-import { handleTaskAction, isActionVisible } from './actionHandlers';
+import { hasLaunchFormActions, isFormActionVisible } from '../utils';
+import { handleTaskAction } from './actionHandlers';
 
 const READY_TASK_STATUS = 'ready' as const;
 
@@ -52,7 +52,7 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, taskConfig }) => {
         return false;
       }
 
-      return isActionVisible(action, task, allForms, userPrivileges);
+      return isFormActionVisible(action, task, allForms, userPrivileges);
     });
   }, [matchingConfig, userPrivileges, allForms, isFormsLoading, task]);
 

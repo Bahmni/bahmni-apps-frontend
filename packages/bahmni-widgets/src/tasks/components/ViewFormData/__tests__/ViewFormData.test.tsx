@@ -17,7 +17,7 @@ import {
 } from '../../../__tests__/__mocks__/observationMocks';
 import { mockFHIRTaskWithInput } from '../../../__tests__/__mocks__/taskActionsMocks';
 import type { TaskViewModel } from '../../../models';
-import ViewFormModal from '../ViewFormModal';
+import ViewFormData from '../ViewFormData';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -80,7 +80,7 @@ const mockTaskViewModel: TaskViewModel = {
 
 const mockOnClose = jest.fn();
 
-describe('ViewFormModal', () => {
+describe('ViewFormData', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFormatDateTime.mockReturnValue({
@@ -95,7 +95,7 @@ describe('ViewFormModal', () => {
       );
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -110,7 +110,7 @@ describe('ViewFormModal', () => {
 
     it('should not render modal when closed', () => {
       render(
-        <ViewFormModal
+        <ViewFormData
           open={false}
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -130,7 +130,7 @@ describe('ViewFormModal', () => {
       );
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -157,7 +157,7 @@ describe('ViewFormModal', () => {
       );
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={taskWithoutInput}
           view={mockViewFormView}
@@ -176,7 +176,7 @@ describe('ViewFormModal', () => {
       );
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -199,7 +199,7 @@ describe('ViewFormModal', () => {
       );
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -233,7 +233,7 @@ describe('ViewFormModal', () => {
       ],
     ])('should not fetch observations when %s', async (_, open, task, view) => {
       render(
-        <ViewFormModal
+        <ViewFormData
           open={open}
           task={task as any}
           view={view as any}
@@ -259,7 +259,7 @@ describe('ViewFormModal', () => {
       };
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={taskWithoutServiceRequest}
           view={mockViewFormView}
@@ -293,7 +293,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={taskWithEncounterOnly}
           view={mockViewFormView}
@@ -328,7 +328,7 @@ describe('ViewFormModal', () => {
       );
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={taskWithBothReferences}
           view={mockViewFormView}
@@ -357,7 +357,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -398,7 +398,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -433,7 +433,7 @@ describe('ViewFormModal', () => {
       );
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -459,7 +459,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -498,7 +498,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -530,7 +530,7 @@ describe('ViewFormModal', () => {
       mockGetPatientObservationsBundle.mockResolvedValue(bundleWithoutPath);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -555,7 +555,7 @@ describe('ViewFormModal', () => {
       );
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -579,7 +579,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockImplementation(() => new Promise(() => {}));
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -608,7 +608,7 @@ describe('ViewFormModal', () => {
       );
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -632,7 +632,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockRejectedValue(new Error('Encounter error'));
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -657,7 +657,7 @@ describe('ViewFormModal', () => {
       );
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -681,7 +681,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithoutProvider);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -705,7 +705,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -728,7 +728,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -751,7 +751,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}
@@ -775,7 +775,7 @@ describe('ViewFormModal', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
 
       render(
-        <ViewFormModal
+        <ViewFormData
           open
           task={mockTaskViewModel}
           view={mockViewFormView}

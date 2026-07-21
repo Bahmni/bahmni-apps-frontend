@@ -9,12 +9,13 @@ import {
   mockUserPrivileges,
   mockEmptyUserPrivileges,
 } from '../../__tests__/__mocks__/taskActionsMocks';
-import { isActionVisible, handleTaskAction } from '../actionHandlers';
+import { isFormActionVisible } from '../../utils';
+import { handleTaskAction } from '../actionHandlers';
 
-describe('isActionVisible', () => {
+describe('isFormActionVisible', () => {
   describe('launchForm action type', () => {
     it('should return false when formName cannot be extracted', () => {
-      const visible = isActionVisible(
+      const visible = isFormActionVisible(
         mockLaunchFormAction,
         mockTaskViewModelWithoutInput,
         mockObservationForms,
@@ -24,7 +25,7 @@ describe('isActionVisible', () => {
     });
 
     it('should return false when no matching form found', () => {
-      const visible = isActionVisible(
+      const visible = isFormActionVisible(
         mockLaunchFormAction,
         mockTaskViewModelWithNonexistentForm,
         mockObservationForms,
@@ -34,7 +35,7 @@ describe('isActionVisible', () => {
     });
 
     it('should return true when user can edit matching form', () => {
-      const visible = isActionVisible(
+      const visible = isFormActionVisible(
         mockLaunchFormAction,
         mockTaskViewModelWithInput,
         mockObservationForms,
@@ -44,7 +45,7 @@ describe('isActionVisible', () => {
     });
 
     it('should return false when user lacks form edit privileges', () => {
-      const visible = isActionVisible(
+      const visible = isFormActionVisible(
         mockLaunchFormAction,
         mockTaskViewModelWithInput,
         mockObservationForms,
@@ -54,7 +55,7 @@ describe('isActionVisible', () => {
     });
 
     it('should handle case-insensitive form name matching', () => {
-      const visible = isActionVisible(
+      const visible = isFormActionVisible(
         mockLaunchFormAction,
         mockTaskViewModelWithCaseInsensitiveForm,
         mockObservationForms,
@@ -64,7 +65,7 @@ describe('isActionVisible', () => {
     });
 
     it('should return false when userPrivileges is null', () => {
-      const visible = isActionVisible(
+      const visible = isFormActionVisible(
         mockLaunchFormAction,
         mockTaskViewModelWithInput,
         mockObservationForms,
@@ -94,7 +95,7 @@ describe('isActionVisible', () => {
         },
       };
 
-      const visible = isActionVisible(
+      const visible = isFormActionVisible(
         mockLaunchFormAction,
         generalFormTask,
         mockObservationForms,
@@ -135,7 +136,7 @@ describe('isActionVisible', () => {
         false,
       ],
     ])('should handle %s correctly', (_, task, privileges, expectedVisible) => {
-      const visible = isActionVisible(
+      const visible = isFormActionVisible(
         mockLaunchFormAction,
         task,
         mockObservationForms,
@@ -152,7 +153,7 @@ describe('isActionVisible', () => {
         type: 'unknownType',
       };
 
-      const visible = isActionVisible(
+      const visible = isFormActionVisible(
         unknownAction,
         mockTaskViewModelWithInput,
         mockObservationForms,

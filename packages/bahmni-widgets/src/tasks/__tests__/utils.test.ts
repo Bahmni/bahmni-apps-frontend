@@ -1,9 +1,8 @@
 import type { TaskViewModel } from '../models';
 import {
   extractFormNameFromTask,
-  canUserEditForm,
-  hasViewFormViews,
-  isViewVisible,
+  hasViewFormConfig,
+  isViewFormDataVisible,
 } from '../utils';
 import {
   mockTaskConfigWithViews,
@@ -73,69 +72,7 @@ describe('extractFormNameFromTask', () => {
   });
 });
 
-describe('canUserEditForm', () => {
-  const vitalsForm = mockObservationForms[0];
-  const labTestsForm = mockObservationForms[1];
-  const generalForm = mockObservationForms[2];
-  const restrictedForm = mockObservationForms[3];
-
-  it('should return false when form is undefined', () => {
-    const canEdit = canUserEditForm(mockUserPrivileges, undefined);
-    expect(canEdit).toBe(false);
-  });
-
-  it('should return false when userPrivileges is null', () => {
-    const canEdit = canUserEditForm(null, vitalsForm);
-    expect(canEdit).toBe(false);
-  });
-
-  it('should return false when userPrivileges is empty array', () => {
-    const canEdit = canUserEditForm(mockEmptyUserPrivileges, vitalsForm);
-    expect(canEdit).toBe(false);
-  });
-
-  it('should return true when form has no privileges configured', () => {
-    const canEdit = canUserEditForm(mockUserPrivileges, generalForm);
-    expect(canEdit).toBe(true);
-  });
-
-  it('should return true when user has editable privilege', () => {
-    const canEdit = canUserEditForm(mockUserPrivileges, vitalsForm);
-    expect(canEdit).toBe(true);
-  });
-
-  it('should return false when user has non-editable privilege', () => {
-    const viewOnlyPrivileges = [{ name: 'View Only Access', retired: false }];
-    const canEdit = canUserEditForm(viewOnlyPrivileges, labTestsForm);
-    expect(canEdit).toBe(false);
-  });
-
-  it('should return false when user lacks required privilege', () => {
-    const canEdit = canUserEditForm(mockUserPrivileges, restrictedForm);
-    expect(canEdit).toBe(false);
-  });
-
-  it('should return true when user has at least one editable privilege among multiple', () => {
-    const canEdit = canUserEditForm(mockUserPrivileges, labTestsForm);
-    expect(canEdit).toBe(true);
-  });
-
-  it.each([
-    [null, vitalsForm, false],
-    [mockEmptyUserPrivileges, vitalsForm, false],
-    [mockUserPrivileges, undefined, false],
-    [mockUserPrivileges, generalForm, true],
-    [mockUserPrivileges, vitalsForm, true],
-  ])(
-    'should return correct value for userPrivileges=%p, form=%p',
-    (privileges, form, expected) => {
-      const canEdit = canUserEditForm(privileges, form);
-      expect(canEdit).toBe(expected);
-    },
-  );
-});
-
-describe('hasViewFormViews', () => {
+describe('hasViewFormConfig', () => {
   it.each([
     [
       'taskConfig with viewForm views',
@@ -153,15 +90,15 @@ describe('hasViewFormViews', () => {
       false,
     ],
   ])('should return %s for %s', (_, config, taskCode, expected) => {
-    expect(hasViewFormViews(config, taskCode)).toBe(expected);
+    expect(hasViewFormConfig(config, taskCode)).toBe(expected);
   });
 
   it('should return false when taskConfig is null', () => {
-    expect(hasViewFormViews(null as any, VITALS_TASK_CODE)).toBe(false);
+    expect(hasViewFormConfig(null as any, VITALS_TASK_CODE)).toBe(false);
   });
 
   it('should return false when taskConfig is undefined', () => {
-    expect(hasViewFormViews(undefined as any, VITALS_TASK_CODE)).toBe(false);
+    expect(hasViewFormConfig(undefined as any, VITALS_TASK_CODE)).toBe(false);
   });
 
   it('should return true when multiple views include viewForm type', () => {
@@ -174,7 +111,7 @@ describe('hasViewFormViews', () => {
         ],
       },
     ];
-    expect(hasViewFormViews(configWithMultipleViews, VITALS_TASK_CODE)).toBe(
+    expect(hasViewFormConfig(configWithMultipleViews, VITALS_TASK_CODE)).toBe(
       true,
     );
   });
@@ -186,13 +123,13 @@ describe('hasViewFormViews', () => {
         views: [{ ...mockViewFormView, type: 'otherType' }],
       },
     ];
-    expect(hasViewFormViews(configWithNonViewFormViews, VITALS_TASK_CODE)).toBe(
-      false,
-    );
+    expect(
+      hasViewFormConfig(configWithNonViewFormViews, VITALS_TASK_CODE),
+    ).toBe(false);
   });
 });
 
-describe('isViewVisible', () => {
+describe('isViewFormDataVisible', () => {
   const mockCompletedTask: TaskViewModel = {
     ...mockTaskViewModelWithInput,
     status: 'completed',
@@ -220,7 +157,11 @@ describe('isViewVisible', () => {
       ['ready', mockReadyTask, false],
       ['completed', mockCompletedTask, true],
     ])('should return %s for %s task status', (statusName, task, expected) => {
-      const result = isViewVisible(mockViewFormView, task, mockUserPrivileges);
+      const result = isViewFormDataVisible(
+        mockViewFormView,
+        task,
+        mockUserPrivileges,
+      );
       expect(result).toBe(expected);
     });
   });
@@ -234,7 +175,7 @@ describe('isViewVisible', () => {
           input: [],
         },
       };
-      const result = isViewVisible(
+      const result = isViewFormDataVisible(
         mockViewFormView,
         taskWithoutInput,
         mockUserPrivileges,
@@ -250,7 +191,7 @@ describe('isViewVisible', () => {
           input: undefined,
         },
       };
-      const result = isViewVisible(
+      const result = isViewFormDataVisible(
         mockViewFormView,
         taskWithNoInput,
         mockUserPrivileges,
@@ -259,7 +200,7 @@ describe('isViewVisible', () => {
     });
 
     it('should return true when form name exists', () => {
-      const result = isViewVisible(
+      const result = isViewFormDataVisible(
         mockViewFormView,
         mockCompletedTask,
         mockUserPrivileges,
@@ -270,12 +211,16 @@ describe('isViewVisible', () => {
 
   describe('User privileges filtering', () => {
     it('should return false when userPrivileges is null', () => {
-      const result = isViewVisible(mockViewFormView, mockCompletedTask, null);
+      const result = isViewFormDataVisible(
+        mockViewFormView,
+        mockCompletedTask,
+        null,
+      );
       expect(result).toBe(false);
     });
 
     it('should return false when userPrivileges is empty array', () => {
-      const result = isViewVisible(
+      const result = isViewFormDataVisible(
         mockViewFormView,
         mockCompletedTask,
         mockEmptyUserPrivileges,
@@ -288,7 +233,7 @@ describe('isViewVisible', () => {
         ...mockViewFormView,
         requiredPrivileges: [],
       };
-      const result = isViewVisible(
+      const result = isViewFormDataVisible(
         viewWithNoPrivileges,
         mockCompletedTask,
         mockUserPrivileges,
@@ -297,7 +242,7 @@ describe('isViewVisible', () => {
     });
 
     it('should return true when user has all required privileges', () => {
-      const result = isViewVisible(
+      const result = isViewFormDataVisible(
         mockViewFormView,
         mockCompletedTask,
         mockUserPrivileges,
@@ -306,7 +251,7 @@ describe('isViewVisible', () => {
     });
 
     it('should return false when user lacks required privilege', () => {
-      const result = isViewVisible(
+      const result = isViewFormDataVisible(
         mockViewFormViewRestricted,
         mockCompletedTask,
         mockUserPrivileges,
@@ -319,7 +264,7 @@ describe('isViewVisible', () => {
         ...mockViewFormView,
         requiredPrivileges: ['Edit Vitals', 'Admin Only'],
       };
-      const result = isViewVisible(
+      const result = isViewFormDataVisible(
         viewWithMultiplePrivileges,
         mockCompletedTask,
         mockUserPrivileges,
@@ -332,7 +277,7 @@ describe('isViewVisible', () => {
         ...mockViewFormView,
         requiredPrivileges: ['Edit Vitals', 'Edit Lab Tests'],
       };
-      const result = isViewVisible(
+      const result = isViewFormDataVisible(
         viewWithMultiplePrivileges,
         mockCompletedTask,
         mockUserPrivileges,
@@ -382,7 +327,7 @@ describe('isViewVisible', () => {
         false,
       ],
     ])('should return %s when %s', (_, task, view, privileges, expected) => {
-      const result = isViewVisible(view, task, privileges);
+      const result = isViewFormDataVisible(view, task, privileges);
       expect(result).toBe(expected);
     });
   });

@@ -1,6 +1,6 @@
 import type { ObservationForm, UserPrivilege } from '@bahmni/services';
-import { TaskActionType, TaskViewType } from './constants';
-import type { TaskViewModel, TaskConfig, TaskView } from './models';
+import { TaskActionType, TaskViewType, FormPermissionType } from './constants';
+import type { TaskViewModel, TaskConfig, TaskView, TaskAction } from './models';
 
 /**
  * Extract form name from task input based on inputType
@@ -29,11 +29,16 @@ export const extractFormNameFromTask = (
 };
 
 /**
- * Check if user can edit a form based on privileges
+ * Check if user has privileges to access a specific form with given permission type
+ * @param userPrivileges - User's privileges
+ * @param form - Observation form to check
+ * @param permissionType - Type of permission to check ('editable' or 'viewable')
+ * @returns true if user has the specified permission for the form, false otherwise
  */
-export const canUserEditForm = (
+export const canUserAccessForm = (
   userPrivileges: UserPrivilege[] | null,
   form: ObservationForm | undefined,
+  permissionType: FormPermissionType = FormPermissionType.EDITABLE,
 ): boolean => {
   if (!form) {
     return false;
@@ -55,7 +60,7 @@ export const canUserEditForm = (
     const hasFormPrivilege = userPrivilegeNames.has(
       formPrivilege.privilegeName,
     );
-    return hasFormPrivilege && formPrivilege.editable;
+    return hasFormPrivilege && formPrivilege[permissionType];
   });
 };
 
@@ -85,7 +90,7 @@ export const hasLaunchFormActions = (
  * @param taskCode - The task code to check
  * @returns true if there are viewForm views, false otherwise
  */
-export const hasViewFormViews = (
+export const hasViewFormConfig = (
   taskConfig: TaskConfig[],
   taskCode: string,
 ): boolean => {
@@ -100,43 +105,84 @@ export const hasViewFormViews = (
 };
 
 /**
+ * Check if an action should be visible for the given task
+ * @param action - TaskAction configuration
+ * @param task - TaskViewModel
+ * @param allForms - All available observation forms
+ * @param userPrivileges - User's privileges
+ * @returns true if action should be visible, false otherwise
+ */
+export const isFormActionVisible = (
+  action: TaskAction,
+  task: TaskViewModel,
+  allForms: ObservationForm[],
+  userPrivileges: UserPrivilege[] | null,
+): boolean => {
+  if (action.type === TaskActionType.LAUNCH_FORM) {
+    const formName = extractFormNameFromTask(
+      task,
+      action.handlerConfig.formInputCode as string,
+    );
+
+    if (!formName) return false;
+
+    const matchingForm = allForms.find(
+      (form) => form.name.toLowerCase() === formName.toLowerCase(),
+    );
+    return matchingForm
+      ? canUserAccessForm(
+          userPrivileges,
+          matchingForm,
+          FormPermissionType.EDITABLE,
+        )
+      : false;
+  }
+
+  return false;
+};
+
+/**
  * Check if a view should be visible for the given task
  * @param view - TaskView configuration
  * @param task - TaskViewModel
  * @param userPrivileges - User's privileges
  * @returns true if view should be visible, false otherwise
  */
-export const isViewVisible = (
+export const isViewFormDataVisible = (
   view: TaskView,
   task: TaskViewModel,
   userPrivileges: UserPrivilege[] | null,
 ): boolean => {
-  if (task.status !== 'completed') {
-    return false;
+  if (view.type === TaskViewType.VIEW_FORM) {
+    if (task.status !== 'completed') {
+      return false;
+    }
+
+    const formName = extractFormNameFromTask(
+      task,
+      view.handlerConfig.formInputCode,
+    );
+
+    if (!formName) {
+      return false;
+    }
+
+    if (!userPrivileges || userPrivileges.length === 0) {
+      return false;
+    }
+
+    if (view.requiredPrivileges.length === 0) {
+      return true;
+    }
+
+    const userPrivilegeNames = new Set(
+      userPrivileges.map((privilege) => privilege.name),
+    );
+
+    return view.requiredPrivileges.every((requiredPrivilege) =>
+      userPrivilegeNames.has(requiredPrivilege),
+    );
   }
 
-  const formName = extractFormNameFromTask(
-    task,
-    view.handlerConfig.formInputCode,
-  );
-
-  if (!formName) {
-    return false;
-  }
-
-  if (!userPrivileges || userPrivileges.length === 0) {
-    return false;
-  }
-
-  if (view.requiredPrivileges.length === 0) {
-    return true;
-  }
-
-  const userPrivilegeNames = new Set(
-    userPrivileges.map((privilege) => privilege.name),
-  );
-
-  return view.requiredPrivileges.every((requiredPrivilege) =>
-    userPrivilegeNames.has(requiredPrivilege),
-  );
+  return false;
 };

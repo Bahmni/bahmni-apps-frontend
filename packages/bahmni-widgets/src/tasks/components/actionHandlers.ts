@@ -1,34 +1,6 @@
-import type { ObservationForm, UserPrivilege } from '@bahmni/services';
 import { TaskActionType } from '../constants';
 import type { TaskAction, TaskViewModel } from '../models';
-import { canUserEditForm, extractFormNameFromTask } from '../utils';
-
-/**
- * Check action-specific visibility requirements
- * (Beyond privilege checks which are done in TaskActions.tsx)
- */
-export const isActionVisible = (
-  action: TaskAction,
-  task: TaskViewModel,
-  allForms: ObservationForm[],
-  userPrivileges: UserPrivilege[] | null,
-): boolean => {
-  if (action.type === TaskActionType.LAUNCH_FORM) {
-    const formName = extractFormNameFromTask(
-      task,
-      action.handlerConfig.formInputCode as string,
-    );
-
-    if (!formName) return false;
-
-    const matchingForm = allForms.find(
-      (form) => form.name.toLowerCase() === formName.toLowerCase(),
-    );
-    return matchingForm ? canUserEditForm(userPrivileges, matchingForm) : false;
-  }
-
-  return false;
-};
+import { extractFormNameFromTask } from '../utils';
 
 const handleLaunchFormAction = (
   action: TaskAction,

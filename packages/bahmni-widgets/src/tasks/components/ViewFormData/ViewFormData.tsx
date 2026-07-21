@@ -12,7 +12,7 @@ import React, { useMemo } from 'react';
 import { ObservationsRenderer } from '../../../observationsRenderer';
 import type { TaskView, TaskViewModel } from '../../models';
 import { extractFormNameFromTask } from '../../utils';
-import styles from './ViewFormModal.module.scss';
+import styles from './ViewFormData.module.scss';
 import {
   extractFormFieldPath,
   extractUuidFromReference,
@@ -20,7 +20,7 @@ import {
   type EncounterGroup,
 } from './viewFormUtils';
 
-interface ViewFormModalProps {
+interface ViewFormDataProps {
   open: boolean;
   task: TaskViewModel | null;
   view: TaskView | null;
@@ -28,7 +28,7 @@ interface ViewFormModalProps {
   onClose: () => void;
 }
 
-const ViewFormModal: React.FC<ViewFormModalProps> = ({
+const ViewFormData: React.FC<ViewFormDataProps> = ({
   open,
   task,
   view,
@@ -182,4 +182,4 @@ const ViewFormModal: React.FC<ViewFormModalProps> = ({
   );
 };
 
-export default ViewFormModal;
+export default ViewFormData;

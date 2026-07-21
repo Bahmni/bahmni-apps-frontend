@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Task } from 'fhir/r4';
+import React from 'react';
 import {
   mockTaskConfigWithViews,
   mockViewFormView,
@@ -17,6 +18,7 @@ import {
 import { VITALS_TASK_CODE } from '../../__tests__/__mocks__/taskListMocks';
 import type { TaskViewModel } from '../../models';
 import TaskViewResults from '../TaskViewResults';
+import { handleTaskView } from '../viewHandlers';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -33,18 +35,17 @@ jest.mock('../../../userPrivileges/useUserPrivilege', () => ({
   })),
 }));
 
-jest.mock('../ViewFormModal/ViewFormModal', () => {
-  return jest.fn(({ open, onClose }) => {
-    return open ? (
-      <div data-testid="view-form-modal">
-        <button onClick={onClose}>Close Modal</button>
-      </div>
-    ) : null;
-  });
-});
+jest.mock('../viewHandlers', () => ({
+  handleTaskView: jest.fn(() => (
+    <div data-testid="mocked-view">Mocked View</div>
+  )),
+}));
 
 const mockHasPrivilege = hasPrivilege as jest.MockedFunction<
   typeof hasPrivilege
+>;
+const mockHandleTaskView = handleTaskView as jest.MockedFunction<
+  typeof handleTaskView
 >;
 
 const createWrapper = () => {
@@ -250,7 +251,7 @@ describe('TaskViewResults', () => {
       ['in-progress', mockInProgressTask],
       ['requested', mockRequestedTask],
       ['ready', { ...mockCompletedTask, status: 'ready' }],
-    ])('should not show view for %s task', (statusName, task) => {
+    ])('should not show view for %s task', (_statusName, task) => {
       const { container } = render(
         <TaskViewResults task={task} taskConfig={mockTaskConfigWithViews} />,
         { wrapper: createWrapper() },
@@ -275,8 +276,8 @@ describe('TaskViewResults', () => {
     });
   });
 
-  describe('Modal interaction', () => {
-    it('should open ViewFormModal when link is clicked', async () => {
+  describe('View rendering', () => {
+    it('should call handleTaskView when link is clicked', async () => {
       const user = userEvent.setup();
 
       render(
@@ -293,11 +294,16 @@ describe('TaskViewResults', () => {
       await user.click(link);
 
       await waitFor(() => {
-        expect(screen.getByTestId('view-form-modal')).toBeInTheDocument();
+        expect(mockHandleTaskView).toHaveBeenCalledWith(
+          mockViewFormView,
+          mockCompletedTask,
+          'patient-uuid-123',
+          expect.any(Function),
+        );
       });
     });
 
-    it('should close modal when onClose is called', async () => {
+    it('should render mocked view after clicking link', async () => {
       const user = userEvent.setup();
 
       render(
@@ -314,18 +320,11 @@ describe('TaskViewResults', () => {
       await user.click(link);
 
       await waitFor(() => {
-        expect(screen.getByTestId('view-form-modal')).toBeInTheDocument();
-      });
-
-      const closeButton = screen.getByText('Close Modal');
-      await user.click(closeButton);
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('view-form-modal')).not.toBeInTheDocument();
+        expect(screen.getByTestId('mocked-view')).toBeInTheDocument();
       });
     });
 
-    it('should not render modal when not open', () => {
+    it('should not render view when not selected', () => {
       render(
         <TaskViewResults
           task={mockCompletedTask}
@@ -334,7 +333,7 @@ describe('TaskViewResults', () => {
         { wrapper: createWrapper() },
       );
 
-      expect(screen.queryByTestId('view-form-modal')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('mocked-view')).not.toBeInTheDocument();
     });
   });
 

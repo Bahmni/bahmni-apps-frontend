@@ -5,3 +5,8 @@ export enum TaskActionType {
 export enum TaskViewType {
   VIEW_FORM = 'viewForm',
 }
+
+export enum FormPermissionType {
+  EDITABLE = 'editable',
+  VIEWABLE = 'viewable',
+}

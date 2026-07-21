@@ -5,6 +5,7 @@ export type { ObservationFormTranslations } from '../i18n';
 export interface FormPrivilege {
   privilegeName: string;
   editable: boolean;
+  viewable?: boolean;
 }
 
 // Domain model (what we use for application logic)
@@ -19,6 +20,7 @@ export interface ObservationForm {
 export interface ApiFormPrivilege {
   privilegeName: string;
   editable: boolean;
+  viewable?: boolean;
 }
 
 export interface ApiNameTranslation {
