@@ -1,3 +1,4 @@
+import { TaskViewType } from '../../constants';
 import type { TaskView, TaskConfig } from '../../models';
 import {
   VITALS_TASK_CODE,
@@ -7,7 +8,7 @@ import {
 
 export const mockViewFormView: TaskView = {
   label: 'View Data',
-  type: 'viewForm',
+  type: TaskViewType.VIEW_FORM,
   requiredPrivileges: ['Edit Vitals'],
   handlerConfig: {
     formInputCode: FORM_NAME_INPUT_CODE,
@@ -16,7 +17,7 @@ export const mockViewFormView: TaskView = {
 
 export const mockViewFormViewNoPrivileges: TaskView = {
   label: 'View Data',
-  type: 'viewForm',
+  type: TaskViewType.VIEW_FORM,
   requiredPrivileges: [],
   handlerConfig: {
     formInputCode: FORM_NAME_INPUT_CODE,
@@ -25,7 +26,7 @@ export const mockViewFormViewNoPrivileges: TaskView = {
 
 export const mockViewFormViewRestricted: TaskView = {
   label: 'View Admin Data',
-  type: 'viewForm',
+  type: TaskViewType.VIEW_FORM,
   requiredPrivileges: ['Admin Only'],
   handlerConfig: {
     formInputCode: FORM_NAME_INPUT_CODE,

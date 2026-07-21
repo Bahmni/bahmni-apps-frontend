@@ -1,4 +1,5 @@
 import type { Task } from 'fhir/r4';
+import { TaskActionType, TaskViewType } from './constants';
 
 export interface TaskViewModel {
   id: string;
@@ -13,7 +14,7 @@ export interface TaskViewModel {
 
 export interface TaskAction {
   label: string;
-  type: string;
+  type: TaskActionType;
   icon: string;
   requiredPrivileges: string[];
   handlerConfig: Record<string, unknown>;
@@ -21,7 +22,7 @@ export interface TaskAction {
 
 export interface TaskView {
   label: string;
-  type: string;
+  type: TaskViewType;
   requiredPrivileges: string[];
   handlerConfig: {
     formInputCode: string;

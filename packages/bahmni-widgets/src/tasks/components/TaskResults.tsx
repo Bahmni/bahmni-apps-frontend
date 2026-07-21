@@ -3,6 +3,7 @@ import { hasPrivilege, useTranslation } from '@bahmni/services';
 import React, { useCallback, useMemo, useState } from 'react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
+import { TaskViewType } from '../constants';
 import type { TaskConfig, TaskView, TaskViewModel } from '../models';
 import { isViewVisible } from '../utils';
 import ViewFormModal from './ViewFormModal/ViewFormModal';
@@ -38,7 +39,7 @@ const TaskResults: React.FC<TaskResultsProps> = ({ task, taskConfig }) => {
   }, [matchingConfig, userPrivileges, task]);
 
   const handleViewClick = useCallback((view: TaskView) => {
-    if (view.type === 'viewForm') {
+    if (view.type === TaskViewType.VIEW_FORM) {
       setSelectedView(view);
       setIsModalOpen(true);
     }
@@ -52,7 +53,7 @@ const TaskResults: React.FC<TaskResultsProps> = ({ task, taskConfig }) => {
   const renderModal = () => {
     if (!isModalOpen || !selectedView) return null;
 
-    if (selectedView.type === 'viewForm') {
+    if (selectedView.type === TaskViewType.VIEW_FORM) {
       return (
         <ViewFormModal
           open={isModalOpen}

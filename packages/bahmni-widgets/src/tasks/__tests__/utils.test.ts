@@ -170,7 +170,7 @@ describe('hasViewFormViews', () => {
         taskCode: VITALS_TASK_CODE,
         views: [
           mockViewFormView,
-          { ...mockViewFormView, type: 'viewForm', label: 'Another View' },
+          { ...mockViewFormView, label: 'Another View' },
         ],
       },
     ];

@@ -1,5 +1,6 @@
 import type { ObservationForm, UserPrivilege } from '@bahmni/services';
 import type { Task } from 'fhir/r4';
+import { TaskActionType } from '../../constants';
 import type { TaskAction, TaskConfig, TaskViewModel } from '../../models';
 import {
   VITALS_TASK_CODE,
@@ -83,7 +84,7 @@ export const mockObservationForms: ObservationForm[] = [
 
 export const mockLaunchFormAction: TaskAction = {
   label: 'Fill Form',
-  type: 'launchForm',
+  type: TaskActionType.LAUNCH_FORM,
   icon: 'edit',
   requiredPrivileges: ['Edit Vitals'],
   handlerConfig: {
@@ -94,7 +95,7 @@ export const mockLaunchFormAction: TaskAction = {
 
 export const mockLaunchFormActionNoPrivileges: TaskAction = {
   label: 'Fill Form',
-  type: 'launchForm',
+  type: TaskActionType.LAUNCH_FORM,
   icon: 'edit',
   requiredPrivileges: [],
   handlerConfig: {
@@ -105,7 +106,7 @@ export const mockLaunchFormActionNoPrivileges: TaskAction = {
 
 export const mockRestrictedAction: TaskAction = {
   label: 'Admin Action',
-  type: 'launchForm',
+  type: TaskActionType.LAUNCH_FORM,
   icon: 'admin',
   requiredPrivileges: ['Admin Only'],
   handlerConfig: {

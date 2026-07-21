@@ -1,6 +1,7 @@
 import { getTasks, shouldEnableEncounterFilter } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import { TaskActionType, TaskViewType } from '../constants';
 import TaskList from '../TaskList';
 import { mockTaskConfigWithViews } from './__mocks__/configMocks';
 import {
@@ -523,7 +524,7 @@ describe('TaskList', () => {
             actions: [
               {
                 label: 'Test Action',
-                type: 'launchForm',
+                type: TaskActionType.LAUNCH_FORM,
                 icon: 'edit',
                 requiredPrivileges: [],
                 handlerConfig: {},
@@ -532,7 +533,7 @@ describe('TaskList', () => {
             views: [
               {
                 label: 'Test View',
-                type: 'viewForm',
+                type: TaskViewType.VIEW_FORM,
                 requiredPrivileges: [],
                 handlerConfig: { formInputCode: 'test' },
               },

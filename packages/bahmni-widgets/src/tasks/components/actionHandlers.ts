@@ -1,4 +1,5 @@
 import type { ObservationForm, UserPrivilege } from '@bahmni/services';
+import { TaskActionType } from '../constants';
 import type { TaskAction, TaskViewModel } from '../models';
 import { canUserEditForm, extractFormNameFromTask } from '../utils';
 
@@ -12,7 +13,7 @@ export const isActionVisible = (
   allForms: ObservationForm[],
   userPrivileges: UserPrivilege[] | null,
 ): boolean => {
-  if (action.type === 'launchForm') {
+  if (action.type === TaskActionType.LAUNCH_FORM) {
     const formName = extractFormNameFromTask(
       task,
       action.handlerConfig.formInputCode as string,
@@ -55,7 +56,7 @@ export const handleTaskAction = (
   action: TaskAction,
   task: TaskViewModel,
 ): void => {
-  if (action.type === 'launchForm') {
+  if (action.type === TaskActionType.LAUNCH_FORM) {
     handleLaunchFormAction(action, task);
   }
 };

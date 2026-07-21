@@ -1,4 +1,5 @@
 import type { ObservationForm, UserPrivilege } from '@bahmni/services';
+import { TaskActionType, TaskViewType } from './constants';
 import type { TaskViewModel, TaskConfig, TaskView } from './models';
 
 /**
@@ -72,8 +73,9 @@ export const hasLaunchFormActions = (
     (config) => config.taskCode === taskCode,
   );
   return (
-    matchingConfig?.actions?.some((action) => action.type === 'launchForm') ??
-    false
+    matchingConfig?.actions?.some(
+      (action) => action.type === TaskActionType.LAUNCH_FORM,
+    ) ?? false
   );
 };
 
@@ -91,7 +93,9 @@ export const hasViewFormViews = (
     (config) => config.taskCode === taskCode,
   );
   return (
-    matchingConfig?.views?.some((view) => view.type === 'viewForm') ?? false
+    matchingConfig?.views?.some(
+      (view) => view.type === TaskViewType.VIEW_FORM,
+    ) ?? false
   );
 };
 

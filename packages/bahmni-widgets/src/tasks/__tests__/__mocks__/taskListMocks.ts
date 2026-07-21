@@ -1,4 +1,5 @@
 import { Bundle, Task } from 'fhir/r4';
+import { TaskActionType } from '../../constants';
 import { TaskViewModel } from '../../models';
 
 // Shared task code constants
@@ -179,7 +180,7 @@ export const mockTaskConfig = [
     actions: [
       {
         label: 'Fill Form',
-        type: 'launchForm',
+        type: TaskActionType.LAUNCH_FORM,
         icon: 'edit',
         requiredPrivileges: ['Edit Vitals'],
         handlerConfig: {
