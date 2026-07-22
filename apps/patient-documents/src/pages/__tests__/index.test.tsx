@@ -4,10 +4,19 @@ import { axe } from 'jest-axe';
 import { MemoryRouter } from 'react-router-dom';
 import { IndexPage } from '../Index';
 
+const mockHeaderProps = jest.fn();
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   PatientDetails: () => <div data-testid="patient-details-mock" />,
   usePatientUUID: jest.fn(() => 'patient-uuid'),
+}));
+
+jest.mock('@bahmni/design-system', () => ({
+  ...jest.requireActual('@bahmni/design-system'),
+  Header: (props: any) => {
+    mockHeaderProps(props);
+    return <div data-testid="header-mock" />;
+  },
 }));
 
 jest.mock('@bahmni/services', () => ({
@@ -39,6 +48,8 @@ const renderPage = (initialEntry = '/patient-uuid') => {
 };
 
 describe('IndexPage', () => {
+  beforeEach(() => jest.clearAllMocks());
+
   it('renders the patient banner', () => {
     renderPage();
     expect(screen.getByTestId('patient-details-mock')).toBeInTheDocument();
@@ -50,13 +61,25 @@ describe('IndexPage', () => {
     expect(results).toHaveNoViolations();
   });
 
-  it('builds breadcrumb search URL with encounter and concept params', async () => {
+  it('builds breadcrumb search URL with encoded encounter and concept params', async () => {
     renderPage(
       '/patient-uuid?encounterType=Patient%20Document&topLevelConcept=Patient%20Document&defaultOption=Patient%20File',
     );
 
     await expect(
-      screen.findByTestId('patient-details-mock'),
+      screen.findByTestId('header-mock'),
     ).resolves.toBeInTheDocument();
+
+    const headerProps = mockHeaderProps.mock.calls[0][0];
+    const searchBreadcrumb = headerProps.breadcrumbItems?.find(
+      (item: any) => item.id === 'search',
+    );
+    expect(searchBreadcrumb?.href).toContain(
+      'encounterType=Patient%20Document',
+    );
+    expect(searchBreadcrumb?.href).toContain(
+      'topLevelConcept=Patient%20Document',
+    );
+    expect(searchBreadcrumb?.href).toContain('defaultOption=Patient%20File');
   });
 });

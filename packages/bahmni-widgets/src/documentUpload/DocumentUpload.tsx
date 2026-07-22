@@ -115,6 +115,9 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     }
     setIsSaving(true);
     try {
+      if (pending.url?.startsWith('blob:')) {
+        URL.revokeObjectURL(pending.url);
+      }
       const { url } = await uploadDocument(
         file,
         encounterTypeName,
@@ -199,6 +202,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
                 label={t('DOCUMENT_UPLOAD_DISCARD')}
                 kind="ghost"
                 size="md"
+                disabled={isSaving}
                 onClick={resetPending}
               >
                 <Close />
