@@ -25,7 +25,7 @@ export const VideoTile: React.FC<VideoTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Safe: src attribute is URL-only, not parsed as HTML. finalSrc is blob: or server URL.
+  // lgtm [js/dom-text-reinterpreted-as-html] src is URL attribute only, not HTML
   const finalSrc = videoSrc.startsWith('blob:')
     ? videoSrc
     : DOCUMENT_AUTH_BASE_URL + videoSrc;
