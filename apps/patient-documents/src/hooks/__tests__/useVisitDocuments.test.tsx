@@ -112,7 +112,7 @@ describe('useVisitDocuments', () => {
     ]);
 
     const { result } = renderHook(
-      () => useVisitDocuments(PATIENT_UUID, DOC_ENCOUNTER_TYPE_UUID),
+      () => useVisitDocuments(PATIENT_UUID, [DOC_ENCOUNTER_TYPE_UUID]),
       { wrapper },
     );
 
@@ -146,7 +146,7 @@ describe('useVisitDocuments', () => {
     mockedGetFormattedDocumentReferences.mockResolvedValue([]);
 
     const { result } = renderHook(
-      () => useVisitDocuments(PATIENT_UUID, DOC_ENCOUNTER_TYPE_UUID),
+      () => useVisitDocuments(PATIENT_UUID, [DOC_ENCOUNTER_TYPE_UUID]),
       { wrapper },
     );
 
@@ -174,7 +174,7 @@ describe('useVisitDocuments', () => {
     ]);
 
     const { result } = renderHook(
-      () => useVisitDocuments(PATIENT_UUID, DOC_ENCOUNTER_TYPE_UUID),
+      () => useVisitDocuments(PATIENT_UUID, [DOC_ENCOUNTER_TYPE_UUID]),
       { wrapper },
     );
 
@@ -206,7 +206,7 @@ describe('useVisitDocuments', () => {
     ]);
 
     const { result } = renderHook(
-      () => useVisitDocuments(PATIENT_UUID, DOC_ENCOUNTER_TYPE_UUID),
+      () => useVisitDocuments(PATIENT_UUID, [DOC_ENCOUNTER_TYPE_UUID]),
       { wrapper },
     );
 
@@ -253,7 +253,7 @@ describe('useVisitDocuments', () => {
     ]);
 
     const { result } = renderHook(
-      () => useVisitDocuments(PATIENT_UUID, DOC_ENCOUNTER_TYPE_UUID),
+      () => useVisitDocuments(PATIENT_UUID, [DOC_ENCOUNTER_TYPE_UUID]),
       { wrapper },
     );
 
@@ -276,7 +276,7 @@ describe('useVisitDocuments', () => {
     ]);
 
     const { result } = renderHook(
-      () => useVisitDocuments(PATIENT_UUID, DOC_ENCOUNTER_TYPE_UUID),
+      () => useVisitDocuments(PATIENT_UUID, [DOC_ENCOUNTER_TYPE_UUID]),
       { wrapper },
     );
 

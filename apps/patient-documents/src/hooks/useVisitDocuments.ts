@@ -61,7 +61,12 @@ export const useVisitDocuments = (
   );
 
   const documentsQuery = useQuery({
-    queryKey: ['patientDocuments', patientUuid, documentEncounterTypeUuid],
+    queryKey: [
+      'patientDocuments',
+      patientUuid,
+      documentEncounterTypeUuid,
+      matchingEncounterInstanceUuids,
+    ],
     queryFn: () =>
       getFormattedDocumentReferences(
         patientUuid!,
