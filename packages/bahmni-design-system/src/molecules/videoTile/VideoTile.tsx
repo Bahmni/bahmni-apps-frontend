@@ -59,6 +59,7 @@ export const VideoTile: React.FC<VideoTileProps> = ({
           />
         ) : (
           <>
+            {/* lgtm[js/dom-text-reinterpreted-as-html]: src is URL attribute only */}
             <video
               id={`${id}-thumbnail`}
               data-testid={`${id}-thumbnail-test-id`}
@@ -93,6 +94,7 @@ export const VideoTile: React.FC<VideoTileProps> = ({
           testId={`${id}-modal-test-id`}
         >
           <div className={styles.modalVideoContainer}>
+            {/* lgtm[js/dom-text-reinterpreted-as-html]: src is URL attribute only */}
             <video
               id={`${id}-modal-video`}
               data-testid={`${id}-modal-video-test-id`}

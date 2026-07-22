@@ -64,6 +64,7 @@ export const FileTile: React.FC<FileTileProps> = ({
           testId={`${id}-modal-test-id`}
         >
           <div className={styles.modalIframeContainer}>
+            {/* lgtm[js/dom-text-reinterpreted-as-html]: src is URL attribute only */}
             <iframe
               id={`${id}-modal-iframe`}
               data-testid={`${id}-modal-iframe-test-id`}

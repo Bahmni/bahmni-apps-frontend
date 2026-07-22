@@ -60,6 +60,7 @@ export const ImageTile: React.FC<ImageTileProps> = ({
             className={styles.imageIcon}
           />
         ) : (
+          // lgtm [js/dom-text-reinterpreted-as-html] src is URL attribute only, not HTML
           <img
             id={`${id}-thumbnail`}
             data-testid={`${id}-thumbnail-test-id`}
@@ -84,6 +85,7 @@ export const ImageTile: React.FC<ImageTileProps> = ({
           testId={`${id}-modal-test-id`}
         >
           <div className={styles.modalImageContainer}>
+            {/* lgtm[js/dom-text-reinterpreted-as-html]: src is URL attribute only */}
             <img
               id={`${id}-modal-image`}
               data-testid={`${id}-modal-image-test-id`}
