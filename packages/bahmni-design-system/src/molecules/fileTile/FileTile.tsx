@@ -23,6 +23,7 @@ export const FileTile: React.FC<FileTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Safe: src attribute is URL-only, not parsed as HTML. finalSrc is blob: or server URL.
   const finalSrc = src.startsWith('blob:') ? src : DOCUMENT_AUTH_BASE_URL + src;
 
   const handleThumbnailClick = () => {

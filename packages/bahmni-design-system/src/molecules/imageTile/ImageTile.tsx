@@ -27,6 +27,7 @@ export const ImageTile: React.FC<ImageTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Safe: src attribute is URL-only, not parsed as HTML. finalSrc is blob: or server URL.
   const finalSrc = imageSrc.startsWith('blob:')
     ? imageSrc
     : DOCUMENT_AUTH_BASE_URL + imageSrc;
