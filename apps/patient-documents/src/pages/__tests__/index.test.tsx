@@ -25,13 +25,19 @@ jest.mock('../../providers/patientDocumentsConfig', () => ({
   }),
 }));
 
-const renderPage = () => {
+jest.mock('../../hooks/useDocumentEncounterType', () => ({
+  useDocumentEncounterType: () => ({
+    encounterType: { uuid: 'encounter-uuid', name: 'Patient Document' },
+  }),
+}));
+
+const renderPage = (initialEntry = '/patient-uuid') => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/patient-uuid']}>
+      <MemoryRouter initialEntries={[initialEntry]}>
         <IndexPage />
       </MemoryRouter>
     </QueryClientProvider>,
@@ -48,5 +54,15 @@ describe('IndexPage', () => {
     const { container } = renderPage();
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  it('builds breadcrumb search URL with encounter and concept params', async () => {
+    renderPage(
+      '/patient-uuid?encounterType=Patient%20Document&topLevelConcept=Patient%20Document&defaultOption=Patient%20File',
+    );
+
+    await expect(
+      screen.findByTestId('patient-details-mock'),
+    ).resolves.toBeInTheDocument();
   });
 });

@@ -280,4 +280,85 @@ describe('DocumentUpload', () => {
     expect(screen.getByTestId('pending-document-row')).toBeInTheDocument();
     expect(onSaved).not.toHaveBeenCalled();
   });
+
+  it('uploads document before saving metadata', async () => {
+    const callOrder: string[] = [];
+    uploadDocument.mockImplementation(async () => {
+      callOrder.push('upload');
+      return { url: 'server/uploaded.png' };
+    });
+    saveDocument.mockImplementation(async () => {
+      callOrder.push('save');
+      return {};
+    });
+
+    renderWidget();
+    selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+
+    await waitFor(() => {
+      expect(callOrder).toEqual(['upload', 'save']);
+    });
+  });
+
+  it('updates pending URL from blob to server URL after upload', async () => {
+    uploadDocument.mockResolvedValueOnce({ url: 'server/new-url.png' });
+    renderWidget();
+    selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+
+    await waitFor(() =>
+      expect(saveDocument).toHaveBeenCalledWith(
+        expect.objectContaining({ url: 'server/new-url.png' }),
+      ),
+    );
+  });
+
+  it('does not call saveDocument if uploadDocument fails', async () => {
+    uploadDocument.mockRejectedValueOnce(new Error('Upload failed'));
+    renderWidget();
+    selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+
+    await waitFor(() => expect(uploadDocument).toHaveBeenCalled());
+    expect(saveDocument).not.toHaveBeenCalled();
+  });
+
+  it('clears pending document when discard is clicked after file selection', async () => {
+    renderWidget();
+    selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    expect(fileInputRef).toBeDefined();
+    fireEvent.click(screen.getByLabelText('DOCUMENT_UPLOAD_DISCARD'));
+
+    expect(
+      screen.queryByTestId('pending-document-row'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('dispatchs audit event with correct encounter type on successful save', async () => {
+    const { dispatchAuditEvent } = jest.requireMock('@bahmni/services');
+    renderWidget();
+    selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+
+    await waitFor(() =>
+      expect(dispatchAuditEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          patientUuid: 'patient-uuid',
+          messageParams: { encounterType: 'Patient Document' },
+          module: 'Patient Document',
+        }),
+      ),
+    );
+  });
 });

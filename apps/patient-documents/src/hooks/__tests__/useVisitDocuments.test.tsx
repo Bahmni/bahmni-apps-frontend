@@ -118,6 +118,11 @@ describe('useVisitDocuments', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
+    expect(mockedGetFormattedDocumentReferences).toHaveBeenCalledWith(
+      PATIENT_UUID,
+      [NEWER_DOC_ENCOUNTER_UUID, OLDER_DOC_ENCOUNTER_UUID],
+    );
+
     const groups = result.current.visitGroups;
     expect(groups).toHaveLength(2);
 
@@ -147,6 +152,7 @@ describe('useVisitDocuments', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
+    expect(mockedGetFormattedDocumentReferences).not.toHaveBeenCalled();
     expect(result.current.visitGroups).toHaveLength(1);
     expect(result.current.visitGroups[0].documents).toEqual([]);
     expect(result.current.visitGroups[0].documentEncounterUuid).toBeUndefined();
@@ -155,7 +161,6 @@ describe('useVisitDocuments', () => {
   it('ignores documents without an encounter and malformed child encounters, and refetches both queries', async () => {
     mockedGetPatientEncounters.mockResolvedValue([
       visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),
-      // malformed child encounter: has a parent visit but no id -> must be skipped
       {
         resourceType: 'Encounter',
         status: 'finished',
@@ -165,7 +170,6 @@ describe('useVisitDocuments', () => {
       } as Encounter,
     ]);
     mockedGetFormattedDocumentReferences.mockResolvedValue([
-      // document without an encounterId -> must be skipped, not thrown on
       { ...document('doc-orphan', ''), encounterId: undefined },
     ]);
 
@@ -185,14 +189,18 @@ describe('useVisitDocuments', () => {
     await waitFor(() =>
       expect(mockedGetPatientEncounters).toHaveBeenCalledTimes(2),
     );
-    expect(mockedGetFormattedDocumentReferences).toHaveBeenCalledTimes(2);
+    expect(mockedGetFormattedDocumentReferences).toHaveBeenCalledTimes(1);
   });
 
   it('groups a document attached directly to a visit-level encounter', async () => {
     mockedGetPatientEncounters.mockResolvedValue([
       visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),
+      childEncounter(
+        NEWER_DOC_ENCOUNTER_UUID,
+        NEWER_VISIT_UUID,
+        DOC_ENCOUNTER_TYPE_UUID,
+      ),
     ]);
-    // document's encounterId is the visit itself (no child encounter in between)
     mockedGetFormattedDocumentReferences.mockResolvedValue([
       document('doc-on-visit', NEWER_VISIT_UUID),
     ]);
@@ -203,6 +211,11 @@ describe('useVisitDocuments', () => {
     );
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(mockedGetFormattedDocumentReferences).toHaveBeenCalledWith(
+      PATIENT_UUID,
+      [NEWER_DOC_ENCOUNTER_UUID],
+    );
 
     expect(result.current.visitGroups).toHaveLength(1);
     expect(result.current.visitGroups[0].documents.map((d) => d.id)).toEqual([
@@ -219,5 +232,58 @@ describe('useVisitDocuments', () => {
     expect(result.current.visitGroups).toEqual([]);
     expect(mockedGetPatientEncounters).not.toHaveBeenCalled();
     expect(mockedGetFormattedDocumentReferences).not.toHaveBeenCalled();
+  });
+
+  it('passes matching encounter instance UUIDs to getFormattedDocumentReferences', async () => {
+    mockedGetPatientEncounters.mockResolvedValue([
+      visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),
+      childEncounter(
+        NEWER_DOC_ENCOUNTER_UUID,
+        NEWER_VISIT_UUID,
+        DOC_ENCOUNTER_TYPE_UUID,
+      ),
+      childEncounter(
+        CONSULTATION_ENCOUNTER_UUID,
+        NEWER_VISIT_UUID,
+        'other-type-uuid',
+      ),
+    ]);
+    mockedGetFormattedDocumentReferences.mockResolvedValue([
+      document('doc-1', NEWER_DOC_ENCOUNTER_UUID),
+    ]);
+
+    const { result } = renderHook(
+      () => useVisitDocuments(PATIENT_UUID, DOC_ENCOUNTER_TYPE_UUID),
+      { wrapper },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(mockedGetFormattedDocumentReferences).toHaveBeenCalledWith(
+      PATIENT_UUID,
+      [NEWER_DOC_ENCOUNTER_UUID],
+    );
+  });
+
+  it('does not fetch documents if encounter type has no matching encounters', async () => {
+    mockedGetPatientEncounters.mockResolvedValue([
+      visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),
+      childEncounter(
+        CONSULTATION_ENCOUNTER_UUID,
+        NEWER_VISIT_UUID,
+        'other-type-uuid',
+      ),
+    ]);
+
+    const { result } = renderHook(
+      () => useVisitDocuments(PATIENT_UUID, DOC_ENCOUNTER_TYPE_UUID),
+      { wrapper },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(mockedGetFormattedDocumentReferences).not.toHaveBeenCalled();
+    expect(result.current.visitGroups).toHaveLength(1);
+    expect(result.current.visitGroups[0].documents).toEqual([]);
   });
 });

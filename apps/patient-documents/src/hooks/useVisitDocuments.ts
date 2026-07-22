@@ -26,7 +26,7 @@ const startTime = (encounter: Encounter): number =>
 // visit first, and resolves the existing document encounter per visit so uploads reuse it.
 export const useVisitDocuments = (
   patientUuid: string | null,
-  documentEncounterTypeUuid?: string,
+  documentEncounterTypeUuid?: string[],
 ) => {
   const encountersQuery = useQuery({
     queryKey: ['patientEncounters', patientUuid],
@@ -34,18 +34,7 @@ export const useVisitDocuments = (
     enabled: !!patientUuid,
   });
 
-  const documentsQuery = useQuery({
-    queryKey: ['patientDocuments', patientUuid],
-    queryFn: () => getFormattedDocumentReferences(patientUuid!),
-    enabled: !!patientUuid,
-  });
-
   const encounters = encountersQuery.data ?? [];
-  const documents = documentsQuery.data ?? [];
-
-  const visits = encounters
-    .filter(isVisit)
-    .sort((a, b) => startTime(b) - startTime(a));
 
   const encounterToVisit = new Map<string, string>();
   const documentEncounterByVisit = new Map<string, string>();
@@ -58,10 +47,36 @@ export const useVisitDocuments = (
       }
       encounterToVisit.set(encounter.id, visitId);
       const typeCode = encounter.type?.[0]?.coding?.[0]?.code;
-      if (documentEncounterTypeUuid && typeCode === documentEncounterTypeUuid) {
+      if (
+        documentEncounterTypeUuid &&
+        typeCode &&
+        documentEncounterTypeUuid.includes(typeCode)
+      ) {
         documentEncounterByVisit.set(visitId, encounter.id);
       }
     });
+
+  const matchingEncounterInstanceUuids = Array.from(
+    documentEncounterByVisit.values(),
+  );
+
+  const documentsQuery = useQuery({
+    queryKey: ['patientDocuments', patientUuid, documentEncounterTypeUuid],
+    queryFn: () =>
+      getFormattedDocumentReferences(
+        patientUuid!,
+        matchingEncounterInstanceUuids.length > 0
+          ? matchingEncounterInstanceUuids
+          : undefined,
+      ),
+    enabled: !!patientUuid && matchingEncounterInstanceUuids.length > 0,
+  });
+
+  const documents = documentsQuery.data ?? [];
+
+  const visits = encounters
+    .filter(isVisit)
+    .sort((a, b) => startTime(b) - startTime(a));
 
   // A document may be attached directly to a visit-level encounter; map each visit to itself so
   // those documents group under their visit instead of being dropped.
