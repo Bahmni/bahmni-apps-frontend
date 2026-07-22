@@ -67,7 +67,8 @@ export const VideoTile: React.FC<VideoTileProps> = ({
               preload="metadata"
               muted
             >
-              <source src={`${finalSrc}#t=0.1`} type="video/mp4" /> {/* lgtm[js/dom-text-reinterpreted-as-html] */}
+              <source src={`${finalSrc}#t=0.1`} type="video/mp4" />{' '}
+              {/* lgtm[js/dom-text-reinterpreted-as-html] */}
             </video>
             <div className={styles.playIconOverlay}>
               <PlayFilledAlt

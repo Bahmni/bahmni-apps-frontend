@@ -68,7 +68,7 @@ export const FileTile: React.FC<FileTileProps> = ({
               id={`${id}-modal-iframe`}
               data-testid={`${id}-modal-iframe-test-id`}
               aria-label={`${id}-modal-iframe-aria-label`}
-              src={finalSrc + '#toolbar=0'} // lgtm[js/dom-text-reinterpreted-as-html]
+              src={finalSrc + '#toolbar=0'}
               className={styles.modalIframe}
               title={modalTitle ?? 'Document Viewer'}
             />
