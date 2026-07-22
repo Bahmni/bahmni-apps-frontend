@@ -23,6 +23,7 @@ export const FileTile: React.FC<FileTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const finalSrc = src.startsWith('blob:') ? src : DOCUMENT_AUTH_BASE_URL + src;
 
   const handleThumbnailClick = () => {
     setIsModalOpen(true);
@@ -67,7 +68,7 @@ export const FileTile: React.FC<FileTileProps> = ({
               id={`${id}-modal-iframe`}
               data-testid={`${id}-modal-iframe-test-id`}
               aria-label={`${id}-modal-iframe-aria-label`}
-              src={DOCUMENT_AUTH_BASE_URL + src + '#toolbar=0'}
+              src={finalSrc + '#toolbar=0'}
               className={styles.modalIframe}
               title={modalTitle ?? 'Document Viewer'}
             />

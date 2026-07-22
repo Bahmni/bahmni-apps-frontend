@@ -25,6 +25,9 @@ export const VideoTile: React.FC<VideoTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const finalSrc = videoSrc.startsWith('blob:')
+    ? videoSrc
+    : DOCUMENT_AUTH_BASE_URL + videoSrc;
 
   const handleThumbnailClick = () => {
     setIsModalOpen(true);
@@ -66,10 +69,7 @@ export const VideoTile: React.FC<VideoTileProps> = ({
               preload="metadata"
               muted
             >
-              <source
-                src={`${DOCUMENT_AUTH_BASE_URL}${videoSrc}#t=0.1`}
-                type="video/mp4"
-              />
+              <source src={`${finalSrc}#t=0.1`} type="video/mp4" />
             </video>
             <div className={styles.playIconOverlay}>
               <PlayFilledAlt
@@ -99,7 +99,7 @@ export const VideoTile: React.FC<VideoTileProps> = ({
               id={`${id}-modal-video`}
               data-testid={`${id}-modal-video-test-id`}
               aria-label={`${id}-modal-video-aria-label`}
-              src={DOCUMENT_AUTH_BASE_URL + videoSrc}
+              src={finalSrc}
               className={styles.modalVideo}
               controls
               autoPlay

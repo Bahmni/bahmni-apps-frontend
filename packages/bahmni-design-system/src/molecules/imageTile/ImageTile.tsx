@@ -27,6 +27,9 @@ export const ImageTile: React.FC<ImageTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const finalSrc = imageSrc.startsWith('blob:')
+    ? imageSrc
+    : DOCUMENT_AUTH_BASE_URL + imageSrc;
 
   const handleThumbnailClick = () => {
     setIsModalOpen(true);
@@ -63,7 +66,7 @@ export const ImageTile: React.FC<ImageTileProps> = ({
             id={`${id}-thumbnail`}
             data-testid={`${id}-thumbnail-test-id`}
             aria-label={`${id}-thumbnail-aria-label`}
-            src={DOCUMENT_AUTH_BASE_URL + imageSrc}
+            src={finalSrc}
             alt={alt}
             className={styles.thumbnailImage}
             loading="lazy"
@@ -87,7 +90,7 @@ export const ImageTile: React.FC<ImageTileProps> = ({
               id={`${id}-modal-image`}
               data-testid={`${id}-modal-image-test-id`}
               aria-label={`${id}-modal-image-aria-label`}
-              src={DOCUMENT_AUTH_BASE_URL + imageSrc}
+              src={finalSrc}
               alt={alt}
               className={styles.modalImage}
             />
