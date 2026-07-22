@@ -24,7 +24,7 @@
       "properties": {
         "context": {
           "type": "string",
-          "enum": ["patient", "appointment", "episodeOfCare"],
+          "enum": ["patient", "appointment", "episodeOfCare", "patientProgram"],
           "description": "The context this search configuration applies to"
         },
         "translationKey": {
