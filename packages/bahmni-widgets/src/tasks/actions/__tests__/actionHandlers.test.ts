@@ -35,15 +35,47 @@ describe('isFormActionVisible', () => {
     };
 
     it.each([
-      ['valid form with privileges', mockTaskViewModelWithInput, mockUserPrivileges, true],
+      [
+        'valid form with privileges',
+        mockTaskViewModelWithInput,
+        mockUserPrivileges,
+        true,
+      ],
       ['no input', mockTaskViewModelWithoutInput, mockUserPrivileges, false],
-      ['nonexistent form', mockTaskViewModelWithNonexistentForm, mockUserPrivileges, false],
-      ['empty privileges', mockTaskViewModelWithInput, mockEmptyUserPrivileges, false],
+      [
+        'nonexistent form',
+        mockTaskViewModelWithNonexistentForm,
+        mockUserPrivileges,
+        false,
+      ],
+      [
+        'empty privileges',
+        mockTaskViewModelWithInput,
+        mockEmptyUserPrivileges,
+        false,
+      ],
       ['null privileges', mockTaskViewModelWithInput, null, false],
-      ['case-insensitive form name', mockTaskViewModelWithCaseInsensitiveForm, mockUserPrivileges, true],
-      ['form with no privileges configured', generalFormTask, mockUserPrivileges, true],
+      [
+        'case-insensitive form name',
+        mockTaskViewModelWithCaseInsensitiveForm,
+        mockUserPrivileges,
+        true,
+      ],
+      [
+        'form with no privileges configured',
+        generalFormTask,
+        mockUserPrivileges,
+        true,
+      ],
     ])('should handle %s', (_desc, task, privileges, expected) => {
-      expect(isFormActionVisible(mockLaunchFormAction, task, mockObservationForms, privileges)).toBe(expected);
+      expect(
+        isFormActionVisible(
+          mockLaunchFormAction,
+          task,
+          mockObservationForms,
+          privileges,
+        ),
+      ).toBe(expected);
     });
   });
 
