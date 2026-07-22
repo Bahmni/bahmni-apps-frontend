@@ -14,135 +14,36 @@ import { handleTaskAction } from '../actionHandlers';
 
 describe('isFormActionVisible', () => {
   describe('launchForm action type', () => {
-    it('should return false when formName cannot be extracted', () => {
-      const visible = isFormActionVisible(
-        mockLaunchFormAction,
-        mockTaskViewModelWithoutInput,
-        mockObservationForms,
-        mockUserPrivileges,
-      );
-      expect(visible).toBe(false);
-    });
-
-    it('should return false when no matching form found', () => {
-      const visible = isFormActionVisible(
-        mockLaunchFormAction,
-        mockTaskViewModelWithNonexistentForm,
-        mockObservationForms,
-        mockUserPrivileges,
-      );
-      expect(visible).toBe(false);
-    });
-
-    it('should return true when user can edit matching form', () => {
-      const visible = isFormActionVisible(
-        mockLaunchFormAction,
-        mockTaskViewModelWithInput,
-        mockObservationForms,
-        mockUserPrivileges,
-      );
-      expect(visible).toBe(true);
-    });
-
-    it('should return false when user lacks form edit privileges', () => {
-      const visible = isFormActionVisible(
-        mockLaunchFormAction,
-        mockTaskViewModelWithInput,
-        mockObservationForms,
-        mockEmptyUserPrivileges,
-      );
-      expect(visible).toBe(false);
-    });
-
-    it('should handle case-insensitive form name matching', () => {
-      const visible = isFormActionVisible(
-        mockLaunchFormAction,
-        mockTaskViewModelWithCaseInsensitiveForm,
-        mockObservationForms,
-        mockUserPrivileges,
-      );
-      expect(visible).toBe(true);
-    });
-
-    it('should return false when userPrivileges is null', () => {
-      const visible = isFormActionVisible(
-        mockLaunchFormAction,
-        mockTaskViewModelWithInput,
-        mockObservationForms,
-        null,
-      );
-      expect(visible).toBe(false);
-    });
-
-    it('should return true when form has no privileges configured', () => {
-      const generalFormTask = {
-        ...mockTaskViewModelWithInput,
-        fhirResource: {
-          ...mockTaskViewModelWithInput.fhirResource,
-          input: [
-            {
-              type: {
-                coding: [
-                  {
-                    code: 'form-name-input-type',
-                    display: 'Form Name',
-                  },
-                ],
-              },
-              valueString: 'General Form',
+    const generalFormTask = {
+      ...mockTaskViewModelWithInput,
+      fhirResource: {
+        ...mockTaskViewModelWithInput.fhirResource,
+        input: [
+          {
+            type: {
+              coding: [
+                {
+                  code: 'form-name-input-type',
+                  display: 'Form Name',
+                },
+              ],
             },
-          ],
-        },
-      };
-
-      const visible = isFormActionVisible(
-        mockLaunchFormAction,
-        generalFormTask,
-        mockObservationForms,
-        mockUserPrivileges,
-      );
-      expect(visible).toBe(true);
-    });
+            valueString: 'General Form',
+          },
+        ],
+      },
+    };
 
     it.each([
-      [
-        'task with input, valid form, user has privilege',
-        mockTaskViewModelWithInput,
-        mockUserPrivileges,
-        true,
-      ],
-      [
-        'task without input',
-        mockTaskViewModelWithoutInput,
-        mockUserPrivileges,
-        false,
-      ],
-      [
-        'task with nonexistent form',
-        mockTaskViewModelWithNonexistentForm,
-        mockUserPrivileges,
-        false,
-      ],
-      [
-        'task with input, user has no privileges',
-        mockTaskViewModelWithInput,
-        mockEmptyUserPrivileges,
-        false,
-      ],
-      [
-        'task with input, userPrivileges is null',
-        mockTaskViewModelWithInput,
-        null,
-        false,
-      ],
-    ])('should handle %s correctly', (_, task, privileges, expectedVisible) => {
-      const visible = isFormActionVisible(
-        mockLaunchFormAction,
-        task,
-        mockObservationForms,
-        privileges,
-      );
-      expect(visible).toBe(expectedVisible);
+      ['valid form with privileges', mockTaskViewModelWithInput, mockUserPrivileges, true],
+      ['no input', mockTaskViewModelWithoutInput, mockUserPrivileges, false],
+      ['nonexistent form', mockTaskViewModelWithNonexistentForm, mockUserPrivileges, false],
+      ['empty privileges', mockTaskViewModelWithInput, mockEmptyUserPrivileges, false],
+      ['null privileges', mockTaskViewModelWithInput, null, false],
+      ['case-insensitive form name', mockTaskViewModelWithCaseInsensitiveForm, mockUserPrivileges, true],
+      ['form with no privileges configured', generalFormTask, mockUserPrivileges, true],
+    ])('should handle %s', (_desc, task, privileges, expected) => {
+      expect(isFormActionVisible(mockLaunchFormAction, task, mockObservationForms, privileges)).toBe(expected);
     });
   });
 
@@ -193,19 +94,7 @@ describe('handleTaskAction', () => {
       );
     });
 
-    it('should extract form name from task input', () => {
-      handleTaskAction(mockLaunchFormAction, mockTaskViewModelWithLabForm);
-
-      expect(dispatchEventSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          detail: expect.objectContaining({
-            taskFormName: 'Lab Tests',
-          }),
-        }),
-      );
-    });
-
-    it('should pass encounterType from handler config', () => {
+    it('should pass custom encounterType from handler config', () => {
       const customAction = {
         ...mockLaunchFormAction,
         handlerConfig: {
@@ -225,73 +114,22 @@ describe('handleTaskAction', () => {
       );
     });
 
-    it('should set directFormMode to true', () => {
-      handleTaskAction(mockLaunchFormAction, mockTaskViewModelWithInput);
-
-      expect(dispatchEventSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          detail: expect.objectContaining({
-            directFormMode: true,
-          }),
-        }),
-      );
-    });
-
-    it('should set editOnly to observationForms', () => {
-      handleTaskAction(mockLaunchFormAction, mockTaskViewModelWithInput);
-
-      expect(dispatchEventSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          detail: expect.objectContaining({
-            editOnly: 'observationForms',
-          }),
-        }),
-      );
-    });
-
-    it('should pass task FHIR resource', () => {
-      handleTaskAction(mockLaunchFormAction, mockTaskViewModelWithInput);
-
-      expect(dispatchEventSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          detail: expect.objectContaining({
-            task: mockTaskViewModelWithInput.fhirResource,
-          }),
-        }),
-      );
-    });
-
-    it('should handle task without form name gracefully', () => {
-      handleTaskAction(mockLaunchFormAction, mockTaskViewModelWithoutInput);
-
-      expect(dispatchEventSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          detail: expect.objectContaining({
-            taskFormName: null,
-          }),
-        }),
-      );
-    });
-
     it.each([
-      ['Vitals', mockTaskViewModelWithInput, 'consultation'],
-      ['Lab Tests', mockTaskViewModelWithLabForm, 'consultation'],
-      ['VITALS', mockTaskViewModelWithCaseInsensitiveForm, 'consultation'],
-    ])(
-      'should dispatch event for %s form with encounterType %s',
-      (expectedFormName, task, encounterType) => {
-        handleTaskAction(mockLaunchFormAction, task);
+      ['Vitals', mockTaskViewModelWithInput],
+      ['Lab Tests', mockTaskViewModelWithLabForm],
+      ['VITALS', mockTaskViewModelWithCaseInsensitiveForm],
+      [null, mockTaskViewModelWithoutInput],
+    ])('should extract form name %s from task', (expectedFormName, task) => {
+      handleTaskAction(mockLaunchFormAction, task);
 
-        expect(dispatchEventSpy).toHaveBeenCalledWith(
-          expect.objectContaining({
-            detail: expect.objectContaining({
-              taskFormName: expectedFormName,
-              encounterType,
-            }),
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          detail: expect.objectContaining({
+            taskFormName: expectedFormName,
           }),
-        );
-      },
-    );
+        }),
+      );
+    });
   });
 
   describe('unknown action types', () => {

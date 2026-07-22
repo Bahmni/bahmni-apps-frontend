@@ -79,52 +79,6 @@ describe('TaskActions', () => {
       });
     });
 
-    it('should not render when no permitted actions exist', async () => {
-      mockHasPrivilege.mockReturnValue(false);
-
-      const { container } = render(
-        <TaskActions
-          task={mockTaskViewModelWithInput}
-          taskConfig={mockTaskConfig}
-        />,
-        { wrapper: createWrapper() },
-      );
-
-      await waitFor(() => {
-        expect(mockFetchObservationForms).toHaveBeenCalled();
-      });
-
-      expect(container).toBeEmptyDOMElement();
-    });
-
-    it('should not render when taskConfig is empty', async () => {
-      const { container } = render(
-        <TaskActions task={mockTaskViewModelWithInput} taskConfig={[]} />,
-        { wrapper: createWrapper() },
-      );
-
-      expect(mockFetchObservationForms).not.toHaveBeenCalled();
-      expect(container).toBeEmptyDOMElement();
-    });
-
-    it('should not render when no matching taskConfig for task code', async () => {
-      const taskWithDifferentCode = {
-        ...mockTaskViewModelWithInput,
-        code: 'non-matching-code',
-      };
-
-      const { container } = render(
-        <TaskActions
-          task={taskWithDifferentCode}
-          taskConfig={mockTaskConfig}
-        />,
-        { wrapper: createWrapper() },
-      );
-
-      expect(mockFetchObservationForms).not.toHaveBeenCalled();
-      expect(container).toBeEmptyDOMElement();
-    });
-
     it('should pass correct testId for action button', async () => {
       render(
         <TaskActions
@@ -195,6 +149,29 @@ describe('TaskActions', () => {
         ),
       ).not.toBeInTheDocument();
     });
+
+    it.each([
+      ['no permitted actions', () => mockHasPrivilege.mockReturnValue(false), mockTaskConfig, true],
+      ['empty taskConfig', () => {}, [], false],
+      ['no matching task code', () => {}, mockTaskConfig, false, { ...mockTaskViewModelWithInput, code: 'non-matching-code' }],
+    ])('should not render when %s', async (_desc, setup, config, shouldFetchForms, task = mockTaskViewModelWithInput) => {
+      setup();
+
+      const { container } = render(
+        <TaskActions task={task} taskConfig={config} />,
+        { wrapper: createWrapper() },
+      );
+
+      if (shouldFetchForms) {
+        await waitFor(() => {
+          expect(mockFetchObservationForms).toHaveBeenCalled();
+        });
+      } else {
+        expect(mockFetchObservationForms).not.toHaveBeenCalled();
+      }
+
+      expect(container).toBeEmptyDOMElement();
+    });
   });
 
   describe('Privilege Filtering', () => {
@@ -262,6 +239,22 @@ describe('TaskActions', () => {
   });
 
   describe('Form Edit Permissions', () => {
+    it('should show action when user can edit matching form', async () => {
+      render(
+        <TaskActions
+          task={mockTaskViewModelWithInput}
+          taskConfig={mockTaskConfig}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Fill Form' }),
+        ).toBeInTheDocument();
+      });
+    });
+
     it('should filter actions based on form edit permissions', async () => {
       const formsWithoutEditPrivilege = mockObservationForms.map((form) => ({
         ...form,
@@ -288,22 +281,6 @@ describe('TaskActions', () => {
       });
 
       expect(container).toBeEmptyDOMElement();
-    });
-
-    it('should show action when user can edit matching form', async () => {
-      render(
-        <TaskActions
-          task={mockTaskViewModelWithInput}
-          taskConfig={mockTaskConfig}
-        />,
-        { wrapper: createWrapper() },
-      );
-
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: 'Fill Form' }),
-        ).toBeInTheDocument();
-      });
     });
   });
 
@@ -340,7 +317,7 @@ describe('TaskActions', () => {
   });
 
   describe('Action Handling', () => {
-    it('should call handleTaskAction when button clicked', async () => {
+    it('should dispatch startConsultation event with correct details when button clicked', async () => {
       const user = userEvent.setup();
 
       render(
@@ -363,32 +340,6 @@ describe('TaskActions', () => {
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'startConsultation',
-        }),
-      );
-    });
-
-    it('should pass correct task and action to handler', async () => {
-      const user = userEvent.setup();
-
-      render(
-        <TaskActions
-          task={mockTaskViewModelWithInput}
-          taskConfig={mockTaskConfig}
-        />,
-        { wrapper: createWrapper() },
-      );
-
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: 'Fill Form' }),
-        ).toBeInTheDocument();
-      });
-
-      const button = screen.getByRole('button', { name: 'Fill Form' });
-      await user.click(button);
-
-      expect(dispatchEventSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
           detail: expect.objectContaining({
             task: mockTaskViewModelWithInput.fhirResource,
             taskFormName: 'Vitals',
@@ -416,13 +367,16 @@ describe('TaskActions', () => {
   });
 
   describe('Task action disabled State based on task status', () => {
-    it('should disable button when task status is not "ready"', async () => {
-      const taskNotReady = {
+    it.each([
+      ['ready', 'ready', false],
+      ['completed', 'completed', true],
+    ])('should %s button when task status is "%s"', async (_expectedState, status, shouldBeDisabled) => {
+      const task = {
         ...mockTaskViewModelWithInput,
-        status: 'completed',
+        status,
       };
 
-      render(<TaskActions task={taskNotReady} taskConfig={mockTaskConfig} />, {
+      render(<TaskActions task={task} taskConfig={mockTaskConfig} />, {
         wrapper: createWrapper(),
       });
 
@@ -433,27 +387,12 @@ describe('TaskActions', () => {
       });
 
       const button = screen.getByRole('button', { name: 'Fill Form' });
-      expect(button).toBeDisabled();
-    });
 
-    it('should enable button when task status is "ready"', async () => {
-      const taskReady = {
-        ...mockTaskViewModelWithInput,
-        status: 'ready',
-      };
-
-      render(<TaskActions task={taskReady} taskConfig={mockTaskConfig} />, {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: 'Fill Form' }),
-        ).toBeInTheDocument();
-      });
-
-      const button = screen.getByRole('button', { name: 'Fill Form' });
-      expect(button).not.toBeDisabled();
+      if (shouldBeDisabled) {
+        expect(button).toBeDisabled();
+      } else {
+        expect(button).not.toBeDisabled();
+      }
     });
   });
 
