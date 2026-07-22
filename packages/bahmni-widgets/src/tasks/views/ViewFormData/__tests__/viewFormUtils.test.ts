@@ -9,7 +9,6 @@ import {
 } from '../../../__tests__/__mocks__/observationMocks';
 import {
   extractUuidFromReference,
-  extractFormFieldPath,
   groupObservationsByEncounter,
 } from '../viewFormUtils';
 
@@ -36,80 +35,6 @@ describe('viewFormUtils', () => {
       expect(
         extractUuidFromReference('http://example.com/Encounter/uuid-123'),
       ).toBe('uuid-123');
-    });
-  });
-
-  describe('extractFormFieldPath', () => {
-    it('should extract form field path from extension', () => {
-      const result = extractFormFieldPath(mockObservationWithFormPath);
-      expect(result).toBe('Bahmni^Vitals (6 years or older).1/17-0');
-    });
-
-    it('should return null when observation has no extensions', () => {
-      const obsWithoutExtension: Observation = {
-        ...mockObservationWithoutFormPath,
-        extension: undefined,
-      };
-      const result = extractFormFieldPath(obsWithoutExtension);
-      expect(result).toBeNull();
-    });
-
-    it('should return null when extension array is empty', () => {
-      const obsWithEmptyExtension: Observation = {
-        ...mockObservationWithoutFormPath,
-        extension: [],
-      };
-      const result = extractFormFieldPath(obsWithEmptyExtension);
-      expect(result).toBeNull();
-    });
-
-    it('should return null when no matching extension URL found', () => {
-      const obsWithDifferentExtension: Observation = {
-        ...mockObservationWithoutFormPath,
-        extension: [
-          {
-            url: 'http://some-other-extension',
-            valueString: 'some value',
-          },
-        ],
-      };
-      const result = extractFormFieldPath(obsWithDifferentExtension);
-      expect(result).toBeNull();
-    });
-
-    it('should return null when valueString is missing', () => {
-      const obsWithNoValueString: Observation = {
-        ...mockObservationWithFormPath,
-        extension: [
-          {
-            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
-          },
-        ],
-      };
-      const result = extractFormFieldPath(obsWithNoValueString);
-      expect(result).toBeNull();
-    });
-
-    it('should handle multiple extensions and find correct one', () => {
-      const obsWithMultipleExtensions: Observation = {
-        ...mockObservationWithFormPath,
-        extension: [
-          {
-            url: 'http://some-other-extension',
-            valueString: 'wrong value',
-          },
-          {
-            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
-            valueString: 'correct^path.1/5-0',
-          },
-          {
-            url: 'http://another-extension',
-            valueString: 'another value',
-          },
-        ],
-      };
-      const result = extractFormFieldPath(obsWithMultipleExtensions);
-      expect(result).toBe('correct^path.1/5-0');
     });
   });
 

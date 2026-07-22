@@ -17,22 +17,6 @@ export const extractUuidFromReference = (ref: string): string => {
 };
 
 /**
- * Extract form field path from observation extension
- * @param observation - FHIR Observation resource
- * @returns Form field path string or null
- */
-export const extractFormFieldPath = (
-  observation: Observation,
-): string | null => {
-  const formFieldPathExtension = observation.extension?.find(
-    (ext) =>
-      ext.url === 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
-  );
-
-  return formFieldPathExtension?.valueString ?? null;
-};
-
-/**
  * Group observations by encounter
  * @param observations - Array of FHIR Observation resources
  * @param bundle - FHIR Bundle containing encounter resources
