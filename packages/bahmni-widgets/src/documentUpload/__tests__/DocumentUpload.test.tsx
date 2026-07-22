@@ -221,9 +221,7 @@ describe('DocumentUpload', () => {
         }),
       ),
     );
-    expect(
-      screen.queryByTestId('pending-document-row'),
-    ).toBeInTheDocument();
+    expect(screen.queryByTestId('pending-document-row')).toBeInTheDocument();
   });
 
   it('adds the typed note as the description on save', async () => {

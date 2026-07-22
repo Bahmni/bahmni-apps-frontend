@@ -217,9 +217,8 @@ describe('DocumentsSection', () => {
   it('passes the patient and document encounter type to the visit-documents hook', () => {
     renderSection();
 
-    expect(mockUseVisitDocuments).toHaveBeenCalledWith(
-      'patient-uuid',
-      ['doc-enc-type-uuid'],
-    );
+    expect(mockUseVisitDocuments).toHaveBeenCalledWith('patient-uuid', [
+      'doc-enc-type-uuid',
+    ]);
   });
 });
