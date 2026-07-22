@@ -25,12 +25,6 @@ jest.mock('../../providers/patientDocumentsConfig', () => ({
   }),
 }));
 
-jest.mock('../../hooks/useDocumentEncounterType', () => ({
-  useDocumentEncounterType: () => ({
-    encounterType: { uuid: 'encounter-uuid', name: 'Patient Document' },
-  }),
-}));
-
 const renderPage = (initialEntry = '/patient-uuid') => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },

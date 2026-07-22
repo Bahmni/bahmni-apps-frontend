@@ -89,7 +89,7 @@ const visitGroups = [
   },
 ];
 
-const renderSection = () => {
+const renderSection = (topLevelConcept?: string | null) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -98,6 +98,7 @@ const renderSection = () => {
       <DocumentsSection
         patientUuid="patient-uuid"
         documentEncounterType={documentEncounterType}
+        topLevelConcept={topLevelConcept}
       />
     </QueryClientProvider>,
   );
@@ -147,7 +148,7 @@ describe('DocumentsSection', () => {
     const { getDocumentTypes } = jest.requireMock('@bahmni/services');
     getDocumentTypes.mockRejectedValueOnce(new Error('types boom'));
 
-    renderSection();
+    renderSection('Patient Document');
 
     await waitFor(() =>
       expect(mockAddNotification).toHaveBeenCalledWith(
@@ -218,7 +219,7 @@ describe('DocumentsSection', () => {
 
     expect(mockUseVisitDocuments).toHaveBeenCalledWith(
       'patient-uuid',
-      'doc-enc-type-uuid',
+      ['doc-enc-type-uuid'],
     );
   });
 });
