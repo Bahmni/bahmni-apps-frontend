@@ -4,6 +4,7 @@ import {
   getEncounterByUuid,
   getObservationsBundleByEncounterUuid,
   getPatientObservationsBundle,
+  useSubscribeConsultationSaved,
   useTranslation,
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
@@ -49,6 +50,7 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
     data: bundleByServiceRequest,
     isLoading: isLoadingByServiceRequest,
     error: errorByServiceRequest,
+    refetch: refetchByServiceRequest,
   } = useQuery<Bundle<Observation>, Error>({
     queryKey: ['observationsByServiceRequest', serviceRequestRef],
     queryFn: async () => {
@@ -66,6 +68,7 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
     data: bundleByEncounter,
     isLoading: isLoadingByEncounter,
     error: errorByEncounter,
+    refetch: refetchByEncounter,
   } = useQuery<Bundle<Observation>, Error>({
     queryKey: ['observationsByEncounter', encounterRef],
     queryFn: async () => {
@@ -75,6 +78,32 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
     enabled:
       open && !!task && !!formName && !serviceRequestRef && !!encounterRef,
   });
+
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (payload.patientUUID === patientUuid) {
+        if (
+          payload.updatedResources?.observationFormsWithBasedOn &&
+          serviceRequestRef
+        ) {
+          refetchByServiceRequest();
+        } else if (
+          payload.updatedConcepts?.size > 0 &&
+          !serviceRequestRef &&
+          encounterRef
+        ) {
+          refetchByEncounter();
+        }
+      }
+    },
+    [
+      patientUuid,
+      serviceRequestRef,
+      encounterRef,
+      refetchByServiceRequest,
+      refetchByEncounter,
+    ],
+  );
 
   const bundle = bundleByServiceRequest ?? bundleByEncounter;
   const isLoadingObservations =
