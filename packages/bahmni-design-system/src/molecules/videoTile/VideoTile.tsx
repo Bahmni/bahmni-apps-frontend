@@ -2,7 +2,7 @@ import { PlayFilledAlt, Video } from '@carbon/icons-react';
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { Modal } from '../../atoms/modal';
-import { DOCUMENT_AUTH_BASE_URL } from '../shared/constants';
+import { resolveDocumentSrc } from '../shared/constants';
 import styles from './styles/VideoTile.module.scss';
 
 export interface VideoTileProps {
@@ -25,10 +25,7 @@ export const VideoTile: React.FC<VideoTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // lgtm [js/dom-text-reinterpreted-as-html] src is URL attribute only, not HTML
-  const finalSrc = videoSrc.startsWith('blob:')
-    ? videoSrc
-    : DOCUMENT_AUTH_BASE_URL + videoSrc;
+  const finalSrc = resolveDocumentSrc(videoSrc);
 
   const handleThumbnailClick = () => {
     setIsModalOpen(true);

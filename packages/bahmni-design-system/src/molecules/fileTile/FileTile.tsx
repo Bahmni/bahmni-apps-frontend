@@ -2,7 +2,7 @@ import { DocumentView } from '@carbon/icons-react';
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { Modal } from '../../atoms/modal';
-import { DOCUMENT_AUTH_BASE_URL } from '../shared/constants';
+import { resolveDocumentSrc } from '../shared/constants';
 import styles from './styles/FileTile.module.scss';
 
 export interface FileTileProps {
@@ -23,8 +23,7 @@ export const FileTile: React.FC<FileTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // lgtm [js/dom-text-reinterpreted-as-html] src is URL attribute only, not HTML
-  const finalSrc = src.startsWith('blob:') ? src : DOCUMENT_AUTH_BASE_URL + src;
+  const finalSrc = resolveDocumentSrc(src);
 
   const handleThumbnailClick = () => {
     setIsModalOpen(true);

@@ -2,7 +2,7 @@ import { Image } from '@carbon/icons-react';
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { Modal } from '../../atoms/modal';
-import { DOCUMENT_AUTH_BASE_URL } from '../shared/constants';
+import { resolveDocumentSrc } from '../shared/constants';
 import styles from './styles/ImageTile.module.scss';
 
 export interface ImageTileProps {
@@ -27,10 +27,7 @@ export const ImageTile: React.FC<ImageTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // lgtm [js/dom-text-reinterpreted-as-html] src is URL attribute only, not HTML
-  const finalSrc = imageSrc.startsWith('blob:')
-    ? imageSrc
-    : DOCUMENT_AUTH_BASE_URL + imageSrc;
+  const finalSrc = resolveDocumentSrc(imageSrc);
 
   const handleThumbnailClick = () => {
     setIsModalOpen(true);

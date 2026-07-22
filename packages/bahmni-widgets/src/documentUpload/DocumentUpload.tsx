@@ -114,15 +114,16 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       return;
     }
     setIsSaving(true);
+    const blobUrl = pending.url?.startsWith('blob:') ? pending.url : null;
     try {
-      if (pending.url?.startsWith('blob:')) {
-        URL.revokeObjectURL(pending.url);
-      }
       const { url } = await uploadDocument(
         file,
         encounterTypeName,
         patientUuid,
       );
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
       setPending((prev) => (prev ? { ...prev, url } : null));
       await saveDocument({
         patientUuid,
