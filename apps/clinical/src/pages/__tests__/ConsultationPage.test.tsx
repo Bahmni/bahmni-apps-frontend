@@ -368,7 +368,7 @@ describe('ConsultationPage', () => {
       );
     });
 
-    it('should show "Current Patient" fallback in breadcrumb while patient data is loading', async () => {
+    it('shows a loading placeholder and the "Current Patient" breadcrumb while patient data is loading', async () => {
       (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
       (getFormattedPatientById as jest.Mock).mockReturnValue(
         new Promise(() => {}),
@@ -376,10 +376,15 @@ describe('ConsultationPage', () => {
 
       renderWithProvider();
 
+      // Content area shows the patient loading placeholder while the fetch is in flight
       await waitFor(() => {
-        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+        expect(screen.getByText('Loading patient data...')).toBeInTheDocument();
       });
-
+      // Patient-scoped widgets are not mounted yet
+      expect(
+        screen.queryByTestId('dashboard-container'),
+      ).not.toBeInTheDocument();
+      // Header breadcrumb still shows the fallback
       expect(screen.getByTestId('breadcrumb-item-current')).toHaveTextContent(
         'Current Patient',
       );

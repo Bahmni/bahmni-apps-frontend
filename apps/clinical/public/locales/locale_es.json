@@ -316,6 +316,7 @@
   "LOADING_DASHBOARD_CONTENT": "Cargando contenido del panel...",
   "LOADING_IMMUNIZATIONS": "Cargando inmunizaciones...",
   "LOADING_MEDICATIONS": "Cargando medicamentos...",
+  "LOADING_PATIENT_DATA": "Cargando datos del paciente...",
   "LOADING_USER_PRIVILEGES": "Cargando privilegios de usuario...",
   "LOADING_VACCINATIONS": "Cargando vacunas...",
   "LOCATION": "Ubicación",

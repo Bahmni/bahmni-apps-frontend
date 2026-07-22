@@ -41,13 +41,16 @@ const parseFHIRError = (outcome: FHIROperationOutcome): string | null => {
   return null;
 };
 
+export const PATIENT_NOT_FOUND_ERROR_KEY = 'ERROR_PATIENT_NOT_FOUND';
+
 // A GET of a single FHIR patient resource, e.g. /ws/fhir2/R4/Patient/{uuid}.
-// When this specific request fails, the patient UUID is invalid or does not
-// exist, so we surface a dedicated "patient not found" message (as a
-// translation key) instead of a generic "Bad Request"/"Server Error".
+// A 400 (UUID looks valid but does not exist) or 404 (truly missing) on this
+// request means the patient could not be found, so we surface a dedicated
+// "patient not found" message (as a translation key) instead of a generic one.
+// 5xx is intentionally excluded — that indicates a real server error, not a
+// missing patient, and must not be masked.
 const PATIENT_RESOURCE_REQUEST = /\/Patient\/[0-9a-f-]{36}/i;
-const PATIENT_NOT_FOUND_STATUSES = [400, 404, 500, 502, 503, 504];
-const PATIENT_NOT_FOUND_KEY = 'ERROR_PATIENT_NOT_FOUND';
+const PATIENT_NOT_FOUND_STATUSES = [400, 404];
 
 const isPatientResourceRequest = (url?: string): boolean =>
   !!url && PATIENT_RESOURCE_REQUEST.test(url);
@@ -78,13 +81,13 @@ export const getFormattedError = (
       const requestUrl =
         axiosError.response.config?.url ?? axiosError.config?.url;
 
-      // A failed patient-resource fetch means the patient is missing/invalid,
-      // regardless of the exact status the backend returned for the bad UUID.
+      // A 400/404 on the patient-resource fetch means the patient is
+      // missing/invalid, so surface a dedicated "patient not found" message.
       if (
         isPatientResourceRequest(requestUrl) &&
         PATIENT_NOT_FOUND_STATUSES.includes(status)
       ) {
-        return { title: 'Error', message: PATIENT_NOT_FOUND_KEY };
+        return { title: 'Error', message: PATIENT_NOT_FOUND_ERROR_KEY };
       }
 
       switch (status) {

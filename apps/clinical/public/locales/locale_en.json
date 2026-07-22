@@ -316,6 +316,7 @@
   "LOADING_DASHBOARD_CONTENT": "Loading dashboard content...",
   "LOADING_IMMUNIZATIONS": "Loading immunizations...",
   "LOADING_MEDICATIONS": "Loading medications...",
+  "LOADING_PATIENT_DATA": "Loading patient data...",
   "LOADING_USER_PRIVILEGES": "Loading user privileges...",
   "LOADING_VACCINATIONS": "Loading Vaccinations...",
   "LOCATION": "Location",

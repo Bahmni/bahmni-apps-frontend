@@ -91,7 +91,7 @@ describe('getFormattedError', () => {
     const patientUrl =
       '/openmrs/ws/fhir2/R4/Patient/0113da7b-09ee-481f-bbbf-a02ad9fb4a58';
 
-    it.each([400, 404, 500, 502, 503, 504])(
+    it.each([400, 404])(
       'returns ERROR_PATIENT_NOT_FOUND when the patient resource fetch fails with %s',
       (status) => {
         const error = {
@@ -105,6 +105,21 @@ describe('getFormattedError', () => {
         });
       },
     );
+
+    it('does not classify a 500 on the patient resource as not-found (real server error is preserved)', () => {
+      const error = {
+        response: {
+          status: 500,
+          data: {},
+          config: { url: patientUrl },
+        },
+      } as unknown as AxiosError;
+
+      expect(getFormattedError(error)).toEqual({
+        title: 'Server Error',
+        message: 'The server encountered an error. Please try again later.',
+      });
+    });
 
     it('does not classify a 401 on the patient resource as not-found', () => {
       const error = {

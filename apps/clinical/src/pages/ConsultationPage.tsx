@@ -131,6 +131,7 @@ const ConsultationPage: React.FC = () => {
     data: patient,
     error: patientError,
     isError: isPatientError,
+    isPending: isPatientPending,
   } = useQuery({
     queryKey: ['patient', patientUUID],
     queryFn: () => getFormattedPatientById(patientUUID!),
@@ -224,7 +225,7 @@ const ConsultationPage: React.FC = () => {
         type: 'error',
       });
     }
-  }, [isPatientNotFound]);
+  }, [isPatientNotFound, patientError, addNotification, t]);
 
   const filteredDashboardConfig = useMemo(() => {
     if (!dashboardConfig || !userPrivileges) return null;
@@ -353,6 +354,14 @@ const ConsultationPage: React.FC = () => {
               />
             }
           >
+            {patientUUID && isPatientPending && (
+              <Loading
+                id="loading-patient"
+                data-testid="loading-patient-test-id"
+                description={t('LOADING_PATIENT_DATA')}
+                role="status"
+              />
+            )}
             {shouldRenderPatientContent && (
               <>
                 <div
