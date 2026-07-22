@@ -61,6 +61,15 @@
   }
 }
 
+.statusReason {
+  span {
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+}
+
 .doseSequenceInput {
   :global(.cds--number__control-btn.up-icon) {
     order: unset !important;

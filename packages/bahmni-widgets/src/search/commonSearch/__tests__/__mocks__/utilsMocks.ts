@@ -1,4 +1,9 @@
-import { CriterionRow, RangeValue, ScalarValue } from '../../models';
+import {
+  CriterionRow,
+  RangeValue,
+  ResolvedRow,
+  ScalarValue,
+} from '../../models';
 
 export const mockRowNoCriterion: CriterionRow = {
   rowId: 'row-no-criterion',
@@ -40,6 +45,14 @@ export const mockRowGenderNoValue: CriterionRow = {
   rangeOrderError: null,
 };
 
+export const mockRowGenderWithValue: CriterionRow = {
+  rowId: 'row-gender-with-value',
+  criterionKey: 'patient.gender',
+  value: { value: 'M' } satisfies ScalarValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
 export const mockRowRangeNoBounds: CriterionRow = {
   rowId: 'row-range-no-bounds',
   criterionKey: 'patient.age',
@@ -76,4 +89,46 @@ export const mockRowRangeInvalidOrder: CriterionRow = {
   } satisfies RangeValue,
   validationError: null,
   rangeOrderError: null,
+};
+
+export const mockRowTextFailingRegex: CriterionRow = {
+  rowId: 'row-text-failing-regex',
+  criterionKey: 'patient.name.given',
+  value: { value: 'Rahul123' } satisfies ScalarValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockRowTextPassingRegex: CriterionRow = {
+  rowId: 'row-text-passing-regex',
+  criterionKey: 'patient.name.given',
+  value: { value: 'Rahul' } satisfies ScalarValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockRowWithKeyTypeValue: CriterionRow = {
+  rowId: 'row-key-type',
+  criterionKey: 'patient.identifiers',
+  value: { value: 'P123' } satisfies ScalarValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockResolvedScalarRow: ResolvedRow = {
+  field: { key: 'patient.givenName' },
+  value: { value: 'John' } satisfies ScalarValue,
+};
+
+export const mockResolvedKeyTypeRow: ResolvedRow = {
+  field: { key: 'patient.identifiers', keyType: 'PASSPORT' },
+  value: { value: 'P123' } satisfies ScalarValue,
+};
+
+export const mockResolvedRangeRow: ResolvedRow = {
+  field: { key: 'patient.age' },
+  value: {
+    from: { value: '20', comparator: null },
+    to: { value: '50', comparator: null },
+  } satisfies RangeValue,
 };
