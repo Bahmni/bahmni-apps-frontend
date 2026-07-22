@@ -60,12 +60,11 @@ export const ImageTile: React.FC<ImageTileProps> = ({
             className={styles.imageIcon}
           />
         ) : (
-          // lgtm [js/dom-text-reinterpreted-as-html] src is URL attribute only, not HTML
           <img
             id={`${id}-thumbnail`}
             data-testid={`${id}-thumbnail-test-id`}
             aria-label={`${id}-thumbnail-aria-label`}
-            src={finalSrc}
+            src={finalSrc} // lgtm[js/dom-text-reinterpreted-as-html]
             alt={alt}
             className={styles.thumbnailImage}
             loading="lazy"
@@ -85,12 +84,11 @@ export const ImageTile: React.FC<ImageTileProps> = ({
           testId={`${id}-modal-test-id`}
         >
           <div className={styles.modalImageContainer}>
-            {/* lgtm[js/dom-text-reinterpreted-as-html]: src is URL attribute only */}
             <img
               id={`${id}-modal-image`}
               data-testid={`${id}-modal-image-test-id`}
               aria-label={`${id}-modal-image-aria-label`}
-              src={finalSrc}
+              src={finalSrc} // lgtm[js/dom-text-reinterpreted-as-html]
               alt={alt}
               className={styles.modalImage}
             />
