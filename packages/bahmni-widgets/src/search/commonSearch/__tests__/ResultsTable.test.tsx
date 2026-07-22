@@ -6,6 +6,8 @@ import ResultsTable from '../ResultsTable';
 import {
   mockInvalidExpressionFields,
   mockResultFields,
+  mockResultFieldsWithTransform,
+  mockResultFieldsWithUnknownTransform,
   mockResults,
   mockResultWithoutId,
 } from './__mocks__/resultsTableMocks';
@@ -142,6 +144,50 @@ describe('ResultsTable', () => {
     it('has no a11y violations for empty state', async () => {
       const { container } = renderTable({ results: [] });
       expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('Result field transforms', () => {
+    it('applies the configured transform to the column value', async () => {
+      mockJsonata.mockReturnValue({
+        evaluate: jest.fn().mockResolvedValue('us'),
+      });
+      renderTable({
+        resultFields: mockResultFieldsWithTransform,
+        results: [{ id: '1', country: 'us' }],
+      });
+      await waitFor(() => {
+        expect(screen.getByText('United States')).toBeInTheDocument();
+      });
+    });
+
+    it('falls back to the raw value when the transform key is not registered', async () => {
+      mockJsonata.mockReturnValue({
+        evaluate: jest.fn().mockResolvedValue('us'),
+      });
+      renderTable({
+        resultFields: mockResultFieldsWithUnknownTransform,
+        results: [{ id: '1', country: 'us' }],
+      });
+      await waitFor(() => {
+        expect(screen.getByText('us')).toBeInTheDocument();
+      });
+    });
+
+    it('skips the transform when the evaluated value is null', async () => {
+      mockJsonata.mockReturnValue({
+        evaluate: jest.fn().mockResolvedValue(null),
+      });
+      renderTable({
+        resultFields: mockResultFieldsWithTransform,
+        results: [{ id: '1', country: null }],
+      });
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('common-search-results-table'),
+        ).toBeInTheDocument();
+      });
+      expect(screen.queryByText('United States')).not.toBeInTheDocument();
     });
   });
 });

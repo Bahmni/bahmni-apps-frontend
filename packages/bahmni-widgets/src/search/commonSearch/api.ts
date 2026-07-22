@@ -4,19 +4,20 @@ const makePatient = (
   name: string,
   applicantId: string,
   birthdate: string,
+  country: string,
   age: number,
   sex: 'M' | 'F',
-) => ({ name, applicantId, birthdate, age, sex });
+) => ({ name, applicantId, birthdate, country, age, sex });
 
 const PATIENTS = [
-  makePatient('John Doe', 'APP-001', '1990-05-15', 34, 'M'),
-  makePatient('Jane Smith', 'APP-002', '1985-11-22', 39, 'F'),
-  makePatient('Carlos Rivera', 'APP-003', '1978-03-08', 46, 'M'),
-  makePatient('Amina Yusuf', 'APP-004', '1995-07-30', 29, 'F'),
-  makePatient('Wei Zhang', 'APP-005', '1982-12-01', 42, 'M'),
-  makePatient('Sara Petrov', 'APP-006', '1993-04-17', 31, 'F'),
-  makePatient('James Okafor', 'APP-007', '1975-09-25', 49, 'M'),
-  makePatient('Leila Mansouri', 'APP-008', '1988-06-11', 36, 'F'),
+  makePatient('John Doe', 'APP-001', '1990-05-15', 'US', 34, 'M'),
+  makePatient('Jane Smith', 'APP-002', '1985-11-22', 'UK', 39, 'F'),
+  makePatient('Carlos Rivera', 'APP-003', '1978-03-08', 'CA', 46, 'M'),
+  makePatient('Amina Yusuf', 'APP-004', '1995-07-30', 'CA', 29, 'F'),
+  makePatient('Wei Zhang', 'APP-005', '1982-12-01', 'CA', 42, 'M'),
+  makePatient('Sara Petrov', 'APP-006', '2026-05-01', 'CA', 31, 'F'),
+  makePatient('James Okafor', 'APP-007', '2025-12-09', 'CA', 49, 'M'),
+  makePatient('Leila Mansouri', 'APP-008', '1988-06-11', 'CA', 36, 'F'),
 ];
 
 const PATIENT_CONTACTS = [
@@ -39,8 +40,8 @@ const APPOINTMENT_MOCK = {
     {
       appointmentNumber: 'APT-001',
       status: 'Scheduled',
-      date: '2025-01-05',
-      time: '08:00',
+      date: '2025-01-05T08:00:00',
+      time: '2025-01-05T08:00:00',
       reason: 'Initial Medical Exam',
       service: 'US Health Assessment',
       patient: PATIENTS[0],
@@ -48,8 +49,8 @@ const APPOINTMENT_MOCK = {
     {
       appointmentNumber: 'APT-002',
       status: 'Completed',
-      date: '2025-01-08',
-      time: '09:30',
+      date: '2025-01-08T09:30:00',
+      time: '2025-01-08T09:30:00',
       reason: 'TB Screening',
       service: 'Canada Health Assessment',
       patient: PATIENTS[1],
@@ -57,8 +58,8 @@ const APPOINTMENT_MOCK = {
     {
       appointmentNumber: 'APT-003',
       status: 'Scheduled',
-      date: '2025-01-10',
-      time: '11:00',
+      date: '2025-01-10T11:00:00',
+      time: '2025-01-10T11:00:00',
       reason: 'Follow-up Consultation',
       service: 'Australia Health Assessment',
       patient: PATIENTS[2],
@@ -66,8 +67,8 @@ const APPOINTMENT_MOCK = {
     {
       appointmentNumber: 'APT-004',
       status: 'No Show',
-      date: '2025-01-12',
-      time: '13:00',
+      date: '2025-01-12T13:00:00',
+      time: '2025-01-12T13:00:00',
       reason: 'Panel Physician Review',
       service: 'UK Health Assessment',
       patient: PATIENTS[3],
@@ -75,8 +76,8 @@ const APPOINTMENT_MOCK = {
     {
       appointmentNumber: 'APT-005',
       status: 'Completed',
-      date: '2025-01-15',
-      time: '14:30',
+      date: '2025-01-15T14:30:00',
+      time: '2025-01-15T14:30:00',
       reason: 'Vaccination',
       service: 'US Health Assessment',
       patient: PATIENTS[4],
@@ -84,8 +85,8 @@ const APPOINTMENT_MOCK = {
     {
       appointmentNumber: 'APT-006',
       status: 'Cancelled',
-      date: '2025-01-18',
-      time: '10:00',
+      date: '2025-01-18T10:00:00',
+      time: '2025-01-18T10:00:00',
       reason: 'Lab Results Review',
       service: 'Germany Health Assessment',
       patient: PATIENTS[5],
@@ -93,8 +94,8 @@ const APPOINTMENT_MOCK = {
     {
       appointmentNumber: 'APT-007',
       status: 'Scheduled',
-      date: '2025-01-22',
-      time: '15:00',
+      date: '2025-01-22T15:00:00',
+      time: '2025-01-22T15:00:00',
       reason: 'Initial Medical Exam',
       service: 'New Zealand Assessment',
       patient: PATIENTS[6],
@@ -102,8 +103,8 @@ const APPOINTMENT_MOCK = {
     {
       appointmentNumber: 'APT-008',
       status: 'Confirmed',
-      date: '2025-01-25',
-      time: '09:00',
+      date: '2025-01-25T09:00:00',
+      time: '2025-01-25T09:00:00',
       reason: 'PDMP Assessment',
       service: 'Canada Health Assessment',
       patient: PATIENTS[7],

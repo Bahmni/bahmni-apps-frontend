@@ -1,3 +1,8 @@
+import {
+  DEFAULT_TIME_FORMAT,
+  formatDateTime,
+  getFormattedAge,
+} from '@bahmni/services';
 import { v4 as uuidv4 } from 'uuid';
 import {
   CriterionConfig,
@@ -11,6 +16,47 @@ import {
   SearchContextConfig,
   TextInput,
 } from './models';
+
+export type Translator = (
+  key: string,
+  options?: { count?: number; defaultValue?: string },
+) => string;
+
+export type ResultTransform = (value: unknown, t: Translator) => string;
+
+export const formatGender = (value: unknown, t: Translator): string =>
+  t(`GENDER_${value}`, { defaultValue: String(value ?? '') });
+
+export const formatCountry = (value: unknown): string => {
+  const code = String(value ?? '').trim();
+  if (!code) return '';
+  try {
+    const displayNames = new Intl.DisplayNames([navigator.language], {
+      type: 'region',
+    });
+    return displayNames.of(code.toUpperCase()) ?? code;
+  } catch {
+    return code;
+  }
+};
+
+export const resultTransforms: Record<string, ResultTransform> = {
+  formatDate: (value: unknown, t: Translator) =>
+    formatDateTime(value as string | Date | number, t).formattedResult,
+  formatTime: (value: unknown, t: Translator) =>
+    formatDateTime(
+      value as string | Date | number,
+      t,
+      false,
+      DEFAULT_TIME_FORMAT,
+    ).formattedResult,
+  formatDateTime: (value: unknown, t: Translator) =>
+    formatDateTime(value as string | Date | number, t, true).formattedResult,
+  formatAge: (value: unknown, t: Translator) =>
+    getFormattedAge(value as string | number, t),
+  formatGender,
+  formatCountry,
+};
 
 const isRangeInput = (input: InputConfig): boolean =>
   (input.kind === 'date' || input.kind === 'numeric') && !!input.rangeAllowed;

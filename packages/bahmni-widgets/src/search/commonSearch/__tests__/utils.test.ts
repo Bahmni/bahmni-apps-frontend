@@ -9,6 +9,10 @@ import {
   validateRows,
   resolveRows,
   buildPayload,
+  formatGender,
+  formatCountry,
+  resultTransforms,
+  Translator,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -564,5 +568,127 @@ describe('criteriaAvailableToAdd', () => {
     }));
     const result = criteriaAvailableToAdd(mockPatientContext.criteria, rows);
     expect(result).toHaveLength(0);
+  });
+});
+
+describe('formatGender', () => {
+  const translations: Record<string, string> = {
+    GENDER_M: 'Male',
+    GENDER_F: 'Female',
+  };
+  const t: Translator = (key, options) =>
+    translations[key] ?? options?.defaultValue ?? key;
+
+  it.each([
+    { label: 'maps M to the male label', value: 'M', expected: 'Male' },
+    { label: 'maps F to the female label', value: 'F', expected: 'Female' },
+    {
+      label: 'falls back to the raw value for an unmapped code',
+      value: 'O',
+      expected: 'O',
+    },
+    {
+      label: 'falls back to empty string for null',
+      value: null,
+      expected: '',
+    },
+    {
+      label: 'falls back to empty string for undefined',
+      value: undefined,
+      expected: '',
+    },
+  ])('$label', ({ value, expected }) => {
+    expect(formatGender(value, t)).toBe(expected);
+  });
+
+  it('builds the translation key from the value', () => {
+    const spy = jest.fn().mockReturnValue('Male');
+    formatGender('M', spy);
+    expect(spy).toHaveBeenCalledWith('GENDER_M', { defaultValue: 'M' });
+  });
+});
+
+describe('formatCountry', () => {
+  it.each([
+    {
+      label: 'resolves a lowercase ISO code to its display name',
+      value: 'us',
+      expected: 'United States',
+    },
+    {
+      label: 'resolves an uppercase ISO code to its display name',
+      value: 'IN',
+      expected: 'India',
+    },
+    {
+      label: 'returns empty string for empty input',
+      value: '',
+      expected: '',
+    },
+    { label: 'returns empty string for null', value: null, expected: '' },
+    {
+      label: 'returns empty string for undefined',
+      value: undefined,
+      expected: '',
+    },
+    {
+      label: 'returns the raw code when it is not a well-formed region',
+      value: '1',
+      expected: '1',
+    },
+  ])('$label', ({ value, expected }) => {
+    expect(formatCountry(value)).toBe(expected);
+  });
+});
+
+describe('resultTransforms', () => {
+  const identityT: Translator = (key, options) => options?.defaultValue ?? key;
+
+  it('registers all supported transform keys', () => {
+    expect(Object.keys(resultTransforms).sort()).toEqual(
+      [
+        'formatAge',
+        'formatCountry',
+        'formatDate',
+        'formatDateTime',
+        'formatGender',
+        'formatTime',
+      ].sort(),
+    );
+  });
+
+  it('wires formatGender into the map', () => {
+    expect(resultTransforms.formatGender).toBe(formatGender);
+  });
+
+  it('wires formatCountry into the map', () => {
+    expect(resultTransforms.formatCountry).toBe(formatCountry);
+  });
+
+  it('formatDate transform formats a date-only value', () => {
+    expect(resultTransforms.formatDate('2024-03-28', identityT)).toContain(
+      '2024',
+    );
+  });
+
+  it('formatTime transform formats a time-only value', () => {
+    expect(resultTransforms.formatTime('2024-03-28T14:30:00', identityT)).toBe(
+      '2:30 PM',
+    );
+  });
+
+  it('formatDateTime transform formats date and time together', () => {
+    const result = resultTransforms.formatDateTime(
+      '2024-03-28T14:30:00',
+      identityT,
+    );
+    expect(result).toContain('2024');
+    expect(result).toContain('2:30 PM');
+  });
+
+  it('formatAge transform derives a human-readable age from a birthdate', () => {
+    expect(resultTransforms.formatAge('1990-01-01', identityT)).toMatch(
+      /YEARS/,
+    );
   });
 });
