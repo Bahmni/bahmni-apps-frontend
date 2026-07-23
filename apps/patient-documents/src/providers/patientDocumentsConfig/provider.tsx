@@ -1,13 +1,10 @@
 import { createConfigProvider } from '@bahmni/widgets';
-import {
-  getPatientDocumentsConfig,
-  PatientDocumentsConfig,
-} from '../../config/documentsConfig';
+import { getPatientDocumentsConfig } from '../../config/documentsConfig';
 import { PatientDocumentsConfigContext } from './context';
 import { PatientDocumentsConfigContextType } from './models';
 
 export const PatientDocumentsConfigProvider = createConfigProvider<
-  PatientDocumentsConfig,
+  unknown,
   PatientDocumentsConfigContextType
 >({
   context: PatientDocumentsConfigContext,
@@ -18,7 +15,7 @@ export const PatientDocumentsConfigProvider = createConfigProvider<
     isLoading,
     error,
   }),
-  id: 'patient-documents-config',
+  id: 'document-upload-config',
   name: 'Patient Documents Config',
   displayName: 'PatientDocumentsConfigProvider',
 });
