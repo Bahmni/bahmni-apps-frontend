@@ -7,14 +7,14 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import type { Bundle, Observation } from 'fhir/r4';
-import { mockViewFormView } from '../../../__tests__/__mocks__/configMocks';
 import {
   mockObservationAndEncounterBundle,
   mockEmptyObservationsBundle,
   mockEncounterWithProvider,
   mockEncounterWithoutProvider,
   mockObservationsForVitals,
-} from '../../../__tests__/__mocks__/observationMocks';
+} from '../../../../observations/__mocks__/observationTestData';
+import { mockViewFormView } from '../../../__tests__/__mocks__/configMocks';
 import { mockFHIRTaskWithInput } from '../../../__tests__/__mocks__/taskActionsMocks';
 import type { TaskViewModel } from '../../../models';
 import ViewFormData from '../ViewFormData';
