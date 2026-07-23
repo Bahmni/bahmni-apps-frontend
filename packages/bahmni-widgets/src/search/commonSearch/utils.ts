@@ -24,11 +24,15 @@ export type Translator = (
 
 export type ResultTransform = (value: unknown, t: Translator) => string;
 
+export type DateTimeValue = string | Date | number;
+
 export const formatGender = (value: unknown, t: Translator): string =>
-  t(`GENDER_${value}`, { defaultValue: String(value ?? '') });
+  t(`GENDER_${value ?? ''}`, {
+    defaultValue: typeof value === 'object' ? '' : String(value ?? ''),
+  });
 
 export const formatCountry = (value: unknown): string => {
-  const code = String(value ?? '').trim();
+  const code = (typeof value === 'object' ? '' : String(value ?? '')).trim();
   if (!code) return '';
   try {
     const displayNames = new Intl.DisplayNames([navigator.language], {
@@ -42,16 +46,16 @@ export const formatCountry = (value: unknown): string => {
 
 export const resultTransforms: Record<string, ResultTransform> = {
   formatDate: (value: unknown, t: Translator) =>
-    formatDateTime(value as string | Date | number, t).formattedResult,
+    formatDateTime(value as DateTimeValue, t).formattedResult,
   formatTime: (value: unknown, t: Translator) =>
     formatDateTime(
-      value as string | Date | number,
+      value as DateTimeValue,
       t,
       false,
       DEFAULT_TIME_FORMAT,
     ).formattedResult,
   formatDateTime: (value: unknown, t: Translator) =>
-    formatDateTime(value as string | Date | number, t, true).formattedResult,
+    formatDateTime(value as DateTimeValue, t, true).formattedResult,
   formatAge: (value: unknown, t: Translator) =>
     getFormattedAge(value as string | number, t),
   formatGender,
