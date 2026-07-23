@@ -20,7 +20,7 @@ export const mockBundleWithCorrectValues: Bundle<Observation> = {
         effectiveDateTime: '2026-01-19T12:35:58+00:00',
         extension: [
           {
-            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
             valueString: 'Bahmni^Vitals.1/10-0',
           },
         ],
@@ -40,7 +40,7 @@ export const mockBundleWithCorrectValues: Bundle<Observation> = {
         },
         extension: [
           {
-            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
             valueString: 'Bahmni^Registration Details.2/25-1',
           },
         ],
@@ -57,7 +57,7 @@ export const mockBundleWithCorrectValues: Bundle<Observation> = {
         valueString: 'Fever, 2.0, Days',
         extension: [
           {
-            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
             valueString: 'Bahmni^Registration Details.2/25-2',
           },
         ],
@@ -308,7 +308,7 @@ export const mockBundleWithMixedObservations: Bundle<Observation | Encounter> =
           encounter: { reference: 'Encounter/enc-1' },
           extension: [
             {
-              url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+              url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
               valueString: 'Bahmni^Vitals.1/10-0',
             },
           ],
@@ -322,7 +322,7 @@ export const mockBundleWithMixedObservations: Bundle<Observation | Encounter> =
           code: { text: 'Systolic' },
           extension: [
             {
-              url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+              url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
               valueString: 'Bahmni^Lab Results.2/20-0',
             },
           ],
@@ -338,7 +338,7 @@ export const mockBundleWithMixedObservations: Bundle<Observation | Encounter> =
           encounter: { reference: 'Encounter/enc-1' },
           extension: [
             {
-              url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+              url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
               valueString: 'Bahmni^Lab Results.2/19-0',
             },
           ],
@@ -389,7 +389,7 @@ export const mockBundleWithGroupedObservationsOnly: Bundle<
         encounter: { reference: 'Encounter/enc-1' },
         extension: [
           {
-            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
             valueString: 'Bahmni^Vitals.1/10-0',
           },
         ],
@@ -413,7 +413,7 @@ export const mockBundleWithGroupedObservationsOnly: Bundle<
         encounter: { reference: 'Encounter/enc-2' },
         extension: [
           {
-            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
             valueString: 'Bahmni^Lab Results.2/20-0',
           },
         ],
@@ -574,7 +574,7 @@ export const mockBundleWithNormalReferenceRange: Bundle<Observation> = {
             type: {
               coding: [
                 {
-                  system: 'http://example.com/other-system',
+                  system: 'http://example.com/other-system', // NOSONAR
                   code: 'critical',
                 },
               ],
@@ -587,7 +587,7 @@ export const mockBundleWithNormalReferenceRange: Bundle<Observation> = {
               coding: [
                 {
                   system:
-                    'http://terminology.hl7.org/CodeSystem/referencerange-meaning',
+                    'http://terminology.hl7.org/CodeSystem/referencerange-meaning', // NOSONAR
                   code: 'normal',
                 },
               ],
@@ -600,7 +600,7 @@ export const mockBundleWithNormalReferenceRange: Bundle<Observation> = {
               coding: [
                 {
                   system:
-                    'http://terminology.hl7.org/CodeSystem/referencerange-meaning',
+                    'http://terminology.hl7.org/CodeSystem/referencerange-meaning', // NOSONAR
                   code: 'therapeutic',
                 },
               ],
@@ -612,7 +612,7 @@ export const mockBundleWithNormalReferenceRange: Bundle<Observation> = {
             coding: [
               {
                 system:
-                  'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+                  'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation', // NOSONAR
                 code: 'N',
                 display: 'Normal',
               },
@@ -646,7 +646,7 @@ export const mockBundleWithOnlyFirstReferenceRange: Bundle<Observation> = {
             type: {
               coding: [
                 {
-                  system: 'http://example.com/other-system',
+                  system: 'http://example.com/other-system', // NOSONAR
                   code: 'normal',
                 },
               ],
@@ -659,7 +659,7 @@ export const mockBundleWithOnlyFirstReferenceRange: Bundle<Observation> = {
               coding: [
                 {
                   system:
-                    'http://terminology.hl7.org/CodeSystem/referencerange-meaning',
+                    'http://terminology.hl7.org/CodeSystem/referencerange-meaning', // NOSONAR
                   code: 'therapeutic',
                 },
               ],
@@ -671,7 +671,7 @@ export const mockBundleWithOnlyFirstReferenceRange: Bundle<Observation> = {
             coding: [
               {
                 system:
-                  'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+                  'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation', // NOSONAR
                 code: 'A',
                 display: 'Abnormal',
               },
@@ -843,7 +843,7 @@ export const mockObservationWithFormPath: Observation = {
   },
   extension: [
     {
-      url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+      url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
       valueString: 'Bahmni^Vitals (6 years or older).1/17-0',
     },
   ],
@@ -869,7 +869,7 @@ export const mockObservationsForVitals: Observation[] = [
     },
     extension: [
       {
-        url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+        url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path', // NOSONAR
         valueString: 'Bahmni^Vitals (6 years or older).1/10-0',
       },
     ],
@@ -881,7 +881,7 @@ export const mockEncounterWithProvider: Encounter = {
   id: 'encounter-1',
   status: 'unknown',
   class: {
-    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', // NOSONAR
     code: 'AMB',
   },
   subject: {
@@ -906,7 +906,7 @@ export const mockEncounterWithoutProvider: Encounter = {
   id: 'encounter-2',
   status: 'unknown',
   class: {
-    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', // NOSONAR
     code: 'AMB',
   },
   subject: {
@@ -926,15 +926,15 @@ export const mockObservationAndEncounterBundle: Bundle<
   total: 3,
   entry: [
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-1',
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-1', // NOSONAR
       resource: mockObservationWithFormPath,
     },
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-vitals-2',
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-vitals-2', // NOSONAR
       resource: mockObservationsForVitals[1],
     },
     {
-      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Encounter/encounter-1',
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Encounter/encounter-1', // NOSONAR
       resource: mockEncounterWithProvider,
     },
   ],
