@@ -13,7 +13,7 @@
     @include type-style("heading-compact-02");
   }
 
-  > div:first-of-type {
+  > div:first-child {
     flex: 1;
     align-content: center;
     border-bottom: none;
@@ -30,6 +30,10 @@
       min-height: auto;
       justify-content: flex-end;
     }
+  }
+
+  > section:first-child {
+    flex: 0 0 100%;
   }
 
   table {
