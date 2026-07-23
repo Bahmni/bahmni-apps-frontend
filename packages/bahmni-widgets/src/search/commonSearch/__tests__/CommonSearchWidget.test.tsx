@@ -1,4 +1,5 @@
 import {
+  dispatchAuditEvent,
   getConfig,
   getCurrentUserPrivileges,
   getUserLoginLocation,
@@ -32,6 +33,7 @@ import {
 } from './__mocks__/commonSearchWidgetMocks';
 
 const mockPost = post as jest.Mock;
+const mockDispatchAuditEvent = dispatchAuditEvent as jest.Mock;
 
 const mockAddNotification = jest.fn();
 jest.mock('../../../notification', () => ({
@@ -44,6 +46,7 @@ jest.mock('@bahmni/services', () => ({
   getCurrentUserPrivileges: jest.fn(),
   getUserLoginLocation: jest.fn(),
   post: jest.fn(),
+  dispatchAuditEvent: jest.fn(),
 }));
 
 let capturedOnSearch:
@@ -371,6 +374,58 @@ describe('CommonSearchWidget', () => {
         type: 'error',
         timeout: 5000,
       });
+    });
+
+    it.each([
+      { context: 'patient' as const, expectedEventType: 'SEARCHED_PATIENT' },
+      {
+        context: 'appointment' as const,
+        expectedEventType: 'SEARCHED_APPOINTMENT',
+      },
+      {
+        context: 'patientProgram' as const,
+        expectedEventType: 'SEARCHED_PATIENT_PROGRAM',
+      },
+    ])(
+      'dispatches $expectedEventType audit event on successful $context search',
+      async ({ context, expectedEventType }) => {
+        const contextConfig = { ...mockCommonSearchWidgetConfig[0], context };
+        (getConfig as jest.Mock).mockResolvedValueOnce([contextConfig]);
+        render(
+          <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+          { wrapper },
+        );
+        await waitFor(() =>
+          expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+        );
+        await act(async () => {
+          capturedOnSearch!([mockRowWithValidValue], contextConfig);
+        });
+        expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+          eventType: expectedEventType,
+        });
+      },
+    );
+
+    it('does not dispatch audit event when validation fails', async () => {
+      await renderAndWait();
+      capturedOnSearch!(
+        [mockRowWithEmptyValue],
+        mockCommonSearchWidgetConfig[0],
+      );
+      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it('does not dispatch audit event when search API fails', async () => {
+      mockPost.mockRejectedValue(new Error('Network error'));
+      await renderAndWait();
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
     });
   });
 

@@ -9,6 +9,7 @@ import {
   validateRows,
   resolveRows,
   buildPayload,
+  toSearchAuditEventType,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -48,7 +49,7 @@ describe('initialRows', () => {
   it('falls back to first criterion when no default is set', () => {
     const rows = initialRows(mockContextNoDefaults);
     expect(rows).toHaveLength(1);
-    expect(rows[0].criterionKey).toBe('episode.identifier');
+    expect(rows[0].criterionKey).toBe('patientProgram.identifier');
   });
 
   it('returns one row per criterion when multiple defaults are set', () => {
@@ -536,8 +537,8 @@ describe('buildPayload', () => {
     expect(buildPayload([mockResolvedScalarRow], 'appointment').entity).toBe(
       'appointment',
     );
-    expect(buildPayload([mockResolvedScalarRow], 'episodeOfCare').entity).toBe(
-      'episodeOfCare',
+    expect(buildPayload([mockResolvedScalarRow], 'patientProgram').entity).toBe(
+      'patientProgram',
     );
   });
 });
@@ -564,5 +565,18 @@ describe('criteriaAvailableToAdd', () => {
     }));
     const result = criteriaAvailableToAdd(mockPatientContext.criteria, rows);
     expect(result).toHaveLength(0);
+  });
+});
+
+describe('toSearchAuditEventType', () => {
+  it.each([
+    { context: 'patient' as const, expected: 'SEARCHED_PATIENT' },
+    { context: 'appointment' as const, expected: 'SEARCHED_APPOINTMENT' },
+    {
+      context: 'patientProgram' as const,
+      expected: 'SEARCHED_PATIENT_PROGRAM',
+    },
+  ])('returns $expected for context $context', ({ context, expected }) => {
+    expect(toSearchAuditEventType(context)).toBe(expected);
   });
 });

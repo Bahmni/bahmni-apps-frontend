@@ -1,3 +1,4 @@
+import { AuditEventType, camelToScreamingSnakeCase } from '@bahmni/services';
 import { v4 as uuidv4 } from 'uuid';
 import {
   CriterionConfig,
@@ -11,6 +12,11 @@ import {
   SearchContextConfig,
   TextInput,
 } from './models';
+
+export const toSearchAuditEventType = (
+  context: SearchContextConfig['context'],
+): AuditEventType =>
+  `SEARCHED_${camelToScreamingSnakeCase(context)}` as AuditEventType;
 
 const isRangeInput = (input: InputConfig): boolean =>
   (input.kind === 'date' || input.kind === 'numeric') && !!input.rangeAllowed;

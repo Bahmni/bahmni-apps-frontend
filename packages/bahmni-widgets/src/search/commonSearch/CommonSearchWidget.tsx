@@ -4,6 +4,7 @@ import {
   Loading,
 } from '@bahmni/design-system';
 import {
+  dispatchAuditEvent,
   getCurrentUserPrivileges,
   getConfig,
   getUserLoginLocation,
@@ -27,7 +28,12 @@ import schema from './schema.json';
 import SearchForm from './SearchForm';
 import SearchSummary from './SearchSummary';
 import styles from './styles/CommonSearchWidget.module.scss';
-import { buildPayload, resolveRows, validateRows } from './utils';
+import {
+  buildPayload,
+  resolveRows,
+  toSearchAuditEventType,
+  validateRows,
+} from './utils';
 
 const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { t } = useTranslation();
@@ -105,6 +111,9 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
                 }
               : null,
           );
+          dispatchAuditEvent({
+            eventType: toSearchAuditEventType(context.context),
+          });
           setIsSearchResultsLoading(false);
         })
         .catch(() => {
