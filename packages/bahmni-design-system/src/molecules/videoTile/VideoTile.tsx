@@ -67,8 +67,7 @@ export const VideoTile: React.FC<VideoTileProps> = ({
               preload="metadata"
               muted
             >
-              <source src={`${finalSrc}#t=0.1`} type="video/mp4" />{' '}
-              {/* lgtm[js/dom-text-reinterpreted-as-html] */}
+              <source src={`${finalSrc}#t=0.1`} type="video/mp4" />
             </video>
             <div className={styles.playIconOverlay}>
               <PlayFilledAlt
@@ -98,7 +97,7 @@ export const VideoTile: React.FC<VideoTileProps> = ({
               id={`${id}-modal-video`}
               data-testid={`${id}-modal-video-test-id`}
               aria-label={`${id}-modal-video-aria-label`}
-              src={finalSrc} // lgtm[js/dom-text-reinterpreted-as-html]
+              src={finalSrc}
               className={styles.modalVideo}
               controls
               autoPlay
