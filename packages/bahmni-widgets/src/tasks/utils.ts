@@ -2,12 +2,6 @@ import type { ObservationForm, UserPrivilege } from '@bahmni/services';
 import { TaskActionType, TaskViewType, FormPermissionType } from './constants';
 import type { TaskViewModel, TaskConfig, TaskView, TaskAction } from './models';
 
-/**
- * Extract form name from task input based on inputType
- * @param task - TaskViewModel containing the full FHIR Task resource
- * @param inputType - The concept UUID to look for in task.input[].type.coding[].code
- * @returns The form name from task.input[].valueString, or null if not found
- */
 export const extractFormNameFromTask = (
   task: TaskViewModel,
   inputType: string,
@@ -28,13 +22,6 @@ export const extractFormNameFromTask = (
   return matchingInput?.valueString ?? null;
 };
 
-/**
- * Check if user has privileges to access a specific form with given permission type
- * @param userPrivileges - User's privileges
- * @param form - Observation form to check
- * @param permissionType - Type of permission to check ('editable' or 'viewable')
- * @returns true if user has the specified permission for the form, false otherwise
- */
 export const canUserAccessForm = (
   userPrivileges: UserPrivilege[] | null,
   form: ObservationForm | undefined,
@@ -64,12 +51,6 @@ export const canUserAccessForm = (
   });
 };
 
-/**
- * Check if action config has any 'launchForm' type actions for the given task
- * @param taskConfig - Array of task configurations
- * @param taskCode - The task code to check
- * @returns true if there are launchForm actions, false otherwise
- */
 export const hasLaunchFormActions = (
   taskConfig: TaskConfig[],
   taskCode: string,
@@ -84,12 +65,6 @@ export const hasLaunchFormActions = (
   );
 };
 
-/**
- * Check if task config has any 'viewForm' type views for the given task
- * @param taskConfig - Array of task configurations
- * @param taskCode - The task code to check
- * @returns true if there are viewForm views, false otherwise
- */
 export const hasViewFormConfig = (
   taskConfig: TaskConfig[],
   taskCode: string,
@@ -104,14 +79,6 @@ export const hasViewFormConfig = (
   );
 };
 
-/**
- * Check if an action should be visible for the given task
- * @param action - TaskAction configuration
- * @param task - TaskViewModel
- * @param allForms - All available observation forms
- * @param userPrivileges - User's privileges
- * @returns true if action should be visible, false otherwise
- */
 export const isFormActionVisible = (
   action: TaskAction,
   task: TaskViewModel,
@@ -141,13 +108,6 @@ export const isFormActionVisible = (
   return false;
 };
 
-/**
- * Check if a view should be visible for the given task
- * @param view - TaskView configuration
- * @param task - TaskViewModel
- * @param userPrivileges - User's privileges
- * @returns true if view should be visible, false otherwise
- */
 export const isViewFormDataVisible = (
   view: TaskView,
   task: TaskViewModel,
