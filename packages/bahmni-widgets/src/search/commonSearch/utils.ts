@@ -1,4 +1,5 @@
 import { AuditEventType, camelToScreamingSnakeCase } from '@bahmni/services';
+import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import {
   CriterionConfig,
@@ -171,6 +172,25 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
   return { field: field.key, comparator: 'eq', value: value.value };
 };
 
+const toLocalIso = (v: string): string =>
+  format(new Date(v), "yyyy-MM-dd'T'HH:mm:ss.SSSxx");
+
+const localizeDateTime = (value: CriterionValue): CriterionValue => {
+  if (isScalarValue(value)) return { value: toLocalIso(value.value) };
+  return {
+    from: {
+      ...value.from,
+      value: value.from.value ? toLocalIso(value.from.value) : null,
+    },
+    ...(value.to && {
+      to: {
+        ...value.to,
+        value: value.to.value ? toLocalIso(value.to.value) : null,
+      },
+    }),
+  };
+};
+
 export const resolveRows = (
   rows: CriterionRow[],
   criteria: CriterionConfig[],
@@ -182,10 +202,12 @@ export const resolveRows = (
       ): r is CriterionRow & { criterionKey: string; value: CriterionValue } =>
         r.criterionKey !== null && r.value !== null,
     )
-    .map((r) => ({
-      field: criteria.find((c) => c.field.key === r.criterionKey)!.field,
-      value: r.value,
-    }));
+    .map((r) => {
+      const criterion = criteria.find((c) => c.field.key === r.criterionKey)!;
+      const value =
+        criterion.input.kind === 'date' ? localizeDateTime(r.value) : r.value;
+      return { field: criterion.field, value };
+    });
 
 export const buildPayload = (
   resolvedRows: ResolvedRow[],

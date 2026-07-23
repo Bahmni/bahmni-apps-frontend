@@ -35,6 +35,9 @@ import {
   mockResolvedScalarRow,
   mockResolvedKeyTypeRow,
   mockResolvedRangeRow,
+  mockRowDateScalar,
+  mockRowDateRange,
+  mockRowDateRangeFromOnly,
 } from './__mocks__/utilsMocks';
 
 describe('initialRows', () => {
@@ -414,12 +417,27 @@ describe('updateRow', () => {
 });
 
 describe('resolveRows', () => {
+  const originalTZ = process.env.TZ;
+
+  beforeAll(() => {
+    process.env.TZ = 'Asia/Kolkata';
+  });
+
+  afterAll(() => {
+    process.env.TZ = originalTZ;
+  });
+
   const criteria = [
     ...mockPatientContext.criteria,
     {
       field: { key: 'patient.identifiers', keyType: 'PASSPORT' },
       translationKey: 'PATIENT_PASSPORT',
       input: { kind: 'text' as const, placeholderTranslationKey: 'PH' },
+    },
+    {
+      field: { key: 'patient.birthdate' },
+      translationKey: 'PATIENT_BIRTHDATE',
+      input: { kind: 'date' as const, placeholderTranslationKey: 'DATE_PH' },
     },
   ];
 
@@ -454,6 +472,32 @@ describe('resolveRows', () => {
   it('preserves the row value', () => {
     const result = resolveRows([mockRowTextWithValue], criteria);
     expect(result[0].value).toEqual(mockRowTextWithValue.value);
+  });
+
+  it.each([
+    {
+      label: 'scalar date value',
+      row: mockRowDateScalar,
+      expected: { value: '2026-07-23T16:00:00.000+0530' },
+    },
+    {
+      label: 'range date with from and to',
+      row: mockRowDateRange,
+      expected: {
+        from: { value: '2026-01-15T05:30:00.000+0530', comparator: null },
+        to: { value: '2026-07-24T05:29:59.000+0530', comparator: null },
+      },
+    },
+    {
+      label: 'range date with from only',
+      row: mockRowDateRangeFromOnly,
+      expected: {
+        from: { value: '2026-01-15T05:30:00.000+0530', comparator: null },
+      },
+    },
+  ])('converts $label to local timezone ISO format', ({ row, expected }) => {
+    const result = resolveRows([row], criteria);
+    expect(result[0].value).toEqual(expected);
   });
 });
 
