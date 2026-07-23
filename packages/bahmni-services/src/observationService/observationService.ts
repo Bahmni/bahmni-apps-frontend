@@ -2,7 +2,6 @@ import { Observation, Bundle, Encounter } from 'fhir/r4';
 import { get } from '../api';
 import {
   FHIR_OBSERVATION_URL,
-  FHIR_OBSERVATION_WITH_ENCOUNTER_URL,
   FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
 } from './constants';
 
@@ -32,7 +31,7 @@ export async function getPatientObservationsWithEncounterBundle(
   patientUuid: string,
   conceptCodes: string[],
 ): Promise<Bundle<Observation | Encounter>> {
-  const url = FHIR_OBSERVATION_WITH_ENCOUNTER_URL(patientUuid, conceptCodes);
+  const url = FHIR_OBSERVATION_URL(patientUuid, conceptCodes, undefined, true);
   return await get<Bundle<Observation | Encounter>>(url);
 }
 

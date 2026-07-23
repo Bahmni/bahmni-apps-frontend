@@ -4,34 +4,22 @@ export const FHIR_OBSERVATION_URL = (
   patientUuid: string,
   conceptCodes?: string[],
   serviceRequestId?: string,
+  includeEncounter?: boolean,
 ) => {
   let url = `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&_sort=-_lastUpdated`;
 
   if (conceptCodes && conceptCodes.length > 0) {
     const codeParams = conceptCodes.join(',');
     url += `&code=${codeParams}`;
+
+    if (includeEncounter) {
+      url += '&_include=Observation:has-member&_include=Observation:encounter';
+    }
   }
 
   if (serviceRequestId) {
     url += `&based-on=${serviceRequestId}`;
   }
-
-  return url;
-};
-
-export const FHIR_OBSERVATION_WITH_ENCOUNTER_URL = (
-  patientUuid: string,
-  conceptCodes: string[],
-) => {
-  let url = `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}`;
-
-  if (conceptCodes && conceptCodes.length > 0) {
-    const codeParams = conceptCodes.join(',');
-    url += `&code=${codeParams}`;
-  }
-
-  url +=
-    '&_include=Observation:has-member&_include=Observation:encounter&_sort=-_lastUpdated';
 
   return url;
 };

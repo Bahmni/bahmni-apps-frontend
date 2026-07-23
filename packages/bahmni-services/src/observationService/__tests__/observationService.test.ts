@@ -8,7 +8,6 @@ import {
 } from '../__mocks__/observationMocks';
 import {
   FHIR_OBSERVATION_URL,
-  FHIR_OBSERVATION_WITH_ENCOUNTER_URL,
   FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
 } from '../constants';
 import {
@@ -173,7 +172,7 @@ describe('observationService', () => {
       );
 
       expect(api.get).toHaveBeenCalledWith(
-        FHIR_OBSERVATION_WITH_ENCOUNTER_URL(patientUuid, conceptCodes),
+        FHIR_OBSERVATION_URL(patientUuid, conceptCodes, undefined, true),
       );
       expect(result).toEqual(mockObservationWithEncounterBundle);
     });
@@ -190,7 +189,7 @@ describe('observationService', () => {
       );
 
       expect(api.get).toHaveBeenCalledWith(
-        FHIR_OBSERVATION_WITH_ENCOUNTER_URL(patientUuid, undefined),
+        FHIR_OBSERVATION_URL(patientUuid, [], undefined, true),
       );
       expect(result).toEqual(mockObservationWithEncounterBundle);
     });
