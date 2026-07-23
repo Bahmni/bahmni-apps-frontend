@@ -25,6 +25,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
     useEncounterSessionStore();
   const noActiveVisit = matchReasons.includes('NO_ACTIVE_VISIT');
   const activeEncounterUuid = activeEncounter?.id ?? null;
+  const activeEncounterMatched = matchReasons.includes('MATCHED');
 
   const renderControl = (
     control: ControlConfig,
@@ -59,6 +60,8 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
             disableActions={noActiveVisit}
             canEditOrCreate={canEditOrCreate}
             activeEncounterUuid={activeEncounterUuid}
+            activeEncounter={activeEncounter}
+            activeEncounterMatched={activeEncounterMatched}
           />
         </Suspense>
         {showDivider && <div className={styles.divider} />}

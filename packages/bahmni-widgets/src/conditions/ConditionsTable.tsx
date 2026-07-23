@@ -32,6 +32,8 @@ import styles from './styles/ConditionsTable.module.scss';
 const ConditionsTable: React.FC<WidgetProps> = ({
   config,
   disableActions = false,
+  activeEncounter,
+  activeEncounterMatched,
 }) => {
   // Number() safely handles non-numeric config values (NaN → falsy → fallback 5)
   const configPageSize = Number(config?.pageSize) || 5;
@@ -90,7 +92,11 @@ const ConditionsTable: React.FC<WidgetProps> = ({
     if (!conditionToMarkInactive?.rawFhirResource) return;
     setIsSubmitting(true);
     try {
-      await markConditionAsInactive(conditionToMarkInactive.rawFhirResource);
+      await markConditionAsInactive(
+        conditionToMarkInactive.rawFhirResource,
+        activeEncounter ?? undefined,
+        activeEncounterMatched ?? false,
+      );
       dispatchAuditEvent({
         eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
           .eventType as AuditEventType,

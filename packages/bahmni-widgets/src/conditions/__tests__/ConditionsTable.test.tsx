@@ -413,6 +413,11 @@ describe('ConditionsTable', () => {
         ...activeCondition,
         rawFhirResource,
       };
+      const activeEncounterObj = {
+        resourceType: 'Encounter' as const,
+        id: 'enc-1',
+        status: 'in-progress' as const,
+      };
       (useHasPrivilege as jest.Mock).mockReturnValue(true);
       (useQuery as jest.Mock).mockReturnValue({
         data: { conditions: [conditionWithRaw], total: 1 },
@@ -425,7 +430,11 @@ describe('ConditionsTable', () => {
         rawFhirResource,
       );
 
-      renderTable({ config: actionsConfig });
+      renderTable({
+        config: actionsConfig,
+        activeEncounter: activeEncounterObj,
+        activeEncounterMatched: true,
+      });
 
       // Open the modal
       await user.click(
@@ -436,7 +445,11 @@ describe('ConditionsTable', () => {
       const confirmButton = screen.getByRole('button', { name: /YES/i });
       await user.click(confirmButton);
 
-      expect(markConditionAsInactive).toHaveBeenCalledWith(rawFhirResource);
+      expect(markConditionAsInactive).toHaveBeenCalledWith(
+        rawFhirResource,
+        activeEncounterObj,
+        true,
+      );
     });
 
     it('Modal closes after confirmation', async () => {
