@@ -2,16 +2,16 @@ import {
   resetEncounterSession,
   setEncounterSessionDecision,
   markConditionAsInactive,
+  dispatchAuditEvent,
 } from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { render, screen, within, act, waitFor } from '@testing-library/react';
+import { render, screen, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
 import { useNotification } from '../../notification';
 import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import ConditionsTable from '../ConditionsTable';
@@ -30,6 +30,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getConditions: jest.fn(),
   markConditionAsInactive: jest.fn(),
+  dispatchAuditEvent: jest.fn(),
 }));
 jest.mock('../../userPrivileges/useHasPrivilege');
 
@@ -481,7 +482,6 @@ describe('ConditionsTable', () => {
 
       renderTable({ config: actionsConfig });
 
-      // Open modal by clicking button
       await user.click(
         screen.getByTestId(`condition-mark-inactive-${conditionWithRaw.code}`),
       );
@@ -489,16 +489,117 @@ describe('ConditionsTable', () => {
         'is-visible',
       );
 
-      // Confirm the action
       const confirmButton = screen.getByRole('button', { name: /YES/i });
       await user.click(confirmButton);
 
-      // After async operation, modal should close (lose is-visible class)
       await act(async () => {});
 
       expect(screen.getByTestId('mark-inactive-confirm-modal')).not.toHaveClass(
         'is-visible',
       );
+    });
+
+    const setupWithRawCondition = (rawId: string) => {
+      const rawFhirResource = {
+        resourceType: 'Condition' as const,
+        id: rawId,
+        clinicalStatus: { coding: [{ code: 'active' }] },
+      };
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          conditions: [{ ...activeCondition, rawFhirResource }],
+          total: 1,
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+        refetch: jest.fn().mockResolvedValue(undefined),
+      });
+    };
+
+    describe('AC4 — error handling', () => {
+      it('shows error notification when markConditionAsInactive rejects', async () => {
+        const user = userEvent.setup();
+        setupWithRawCondition('cond-err');
+        (markConditionAsInactive as jest.Mock).mockRejectedValueOnce(
+          new Error('Server error'),
+        );
+
+        renderTable({ config: actionsConfig });
+        await user.click(
+          screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+        );
+        await user.click(screen.getByRole('button', { name: /YES/i }));
+        await act(async () => {});
+
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        );
+        expect(dispatchAuditEvent).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('AC5 — audit log', () => {
+      it('dispatches audit event with EDIT_ENCOUNTER type on success', async () => {
+        const user = userEvent.setup();
+        setupWithRawCondition('cond-audit');
+        (markConditionAsInactive as jest.Mock).mockResolvedValueOnce({});
+
+        renderTable({ config: actionsConfig });
+        await user.click(
+          screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+        );
+        await user.click(screen.getByRole('button', { name: /YES/i }));
+        await act(async () => {});
+
+        expect(dispatchAuditEvent).toHaveBeenCalledWith(
+          expect.objectContaining({
+            eventType: 'EDIT_ENCOUNTER',
+            patientUuid: 'test-patient-uuid',
+          }),
+        );
+      });
+    });
+
+    describe('AC6 — cache invalidation', () => {
+      it('invalidates conditions query after confirmation', async () => {
+        const user = userEvent.setup();
+        setupWithRawCondition('cond-cache');
+        (markConditionAsInactive as jest.Mock).mockResolvedValueOnce({});
+        const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+        renderTable({ config: actionsConfig });
+        await user.click(
+          screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+        );
+        await user.click(screen.getByRole('button', { name: /YES/i }));
+        await act(async () => {});
+
+        expect(invalidateSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ queryKey: ['conditions'] }),
+        );
+      });
+
+      it('invalidates conditions query even when markConditionAsInactive rejects', async () => {
+        const user = userEvent.setup();
+        setupWithRawCondition('cond-cache-err');
+        (markConditionAsInactive as jest.Mock).mockRejectedValueOnce(
+          new Error('fail'),
+        );
+        const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+        renderTable({ config: actionsConfig });
+        await user.click(
+          screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+        );
+        await user.click(screen.getByRole('button', { name: /YES/i }));
+        await act(async () => {});
+
+        expect(invalidateSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ queryKey: ['conditions'] }),
+        );
+      });
     });
   });
 });
