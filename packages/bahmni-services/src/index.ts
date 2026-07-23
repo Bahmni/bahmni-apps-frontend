@@ -343,7 +343,6 @@ export {
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
-  type ApiFormPrivilege,
   type FormMetadata,
   type FormData,
   type FormControlData,

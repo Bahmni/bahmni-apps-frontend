@@ -16,13 +16,6 @@ export interface ObservationForm {
   privileges: FormPrivilege[];
 }
 
-// API response interfaces (what comes from the backend)
-export interface ApiFormPrivilege {
-  privilegeName: string;
-  editable: boolean;
-  viewable?: boolean;
-}
-
 export interface ApiNameTranslation {
   display: string;
   locale: string;
@@ -32,7 +25,7 @@ export interface FormApiResponse {
   uuid: string;
   name: string;
   id: number;
-  privileges: ApiFormPrivilege[];
+  privileges: FormPrivilege[];
   nameTranslation: string;
 }
 
