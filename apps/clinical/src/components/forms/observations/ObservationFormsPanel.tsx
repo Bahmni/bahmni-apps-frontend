@@ -1,7 +1,6 @@
-import { fetchObservationForms, type ObservationForm } from '@bahmni/services';
+import type { ObservationForm } from '@bahmni/services';
 import { useActivePractitioner } from '@bahmni/widgets';
-import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
@@ -57,25 +56,6 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     | boolean
     | undefined;
 
-  const isTaskFormMissingInEpisodeForms = useMemo(() => {
-    if (!taskFormName || !directFormMode || isAllFormsLoading) {
-      return false;
-    }
-    const matchingForm = allForms.find(
-      (form) => form.name.toLowerCase() === taskFormName.toLowerCase(),
-    );
-    return !matchingForm;
-  }, [taskFormName, directFormMode, allForms, isAllFormsLoading]);
-
-  const {
-    data: allPublishedForms = [],
-    isLoading: isAllPublishedFormsLoading,
-  } = useQuery<ObservationForm[], Error>({
-    queryKey: ['observationForms'],
-    queryFn: () => fetchObservationForms(),
-    enabled: isTaskFormMissingInEpisodeForms,
-  });
-
   useEffect(() => {
     if (taskFormName && directFormMode && !isAllFormsLoading) {
       useObservationFormsStore.getState().reset();
@@ -85,29 +65,9 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
 
       if (matchingForm) {
         addForm(matchingForm);
-      } else if (
-        isTaskFormMissingInEpisodeForms &&
-        !isAllPublishedFormsLoading
-      ) {
-        const matchingPublishedForm = allPublishedForms.find(
-          (form) => form.name.toLowerCase() === taskFormName.toLowerCase(),
-        );
-
-        if (matchingPublishedForm) {
-          addForm(matchingPublishedForm);
-        }
       }
     }
-  }, [
-    taskFormName,
-    directFormMode,
-    allForms,
-    isAllFormsLoading,
-    addForm,
-    isTaskFormMissingInEpisodeForms,
-    allPublishedForms,
-    isAllPublishedFormsLoading,
-  ]);
+  }, [taskFormName, directFormMode, allForms, isAllFormsLoading, addForm]);
 
   const handleFormSelect = (form: ObservationForm) => {
     addForm(form);
