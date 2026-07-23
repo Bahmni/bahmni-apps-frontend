@@ -48,12 +48,8 @@ export const resultTransforms: Record<string, ResultTransform> = {
   formatDate: (value: unknown, t: Translator) =>
     formatDateTime(value as DateTimeValue, t).formattedResult,
   formatTime: (value: unknown, t: Translator) =>
-    formatDateTime(
-      value as DateTimeValue,
-      t,
-      false,
-      DEFAULT_TIME_FORMAT,
-    ).formattedResult,
+    formatDateTime(value as DateTimeValue, t, false, DEFAULT_TIME_FORMAT)
+      .formattedResult,
   formatDateTime: (value: unknown, t: Translator) =>
     formatDateTime(value as DateTimeValue, t, true).formattedResult,
   formatAge: (value: unknown, t: Translator) =>
