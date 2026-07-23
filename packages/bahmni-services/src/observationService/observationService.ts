@@ -5,13 +5,6 @@ import {
   FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
 } from './constants';
 
-/**
- * Fetch patient observation bundle from FHIR API
- * @param patientUuid - Patient UUID
- * @param conceptCodes - Array of concept UUIDs (optional)
- * @param serviceRequestId - Service request UUID for based-on filter (optional)
- * @returns Promise resolving to FHIR observation bundle
- */
 export async function getPatientObservationsBundle(
   patientUuid: string,
   conceptCodes?: string[],
@@ -21,12 +14,6 @@ export async function getPatientObservationsBundle(
   return await get<Bundle<Observation>>(url);
 }
 
-/**
- * Fetch patient observation and their encounter bundle from FHIR API
- * @param patientUuid - Patient UUID
- * @param conceptCodes - Array of concept UUIDs
- * @returns Promise resolving to FHIR observation and encounter bundle
- */
 export async function getPatientObservationsWithEncounterBundle(
   patientUuid: string,
   conceptCodes: string[],
@@ -35,13 +22,6 @@ export async function getPatientObservationsWithEncounterBundle(
   return await get<Bundle<Observation | Encounter>>(url);
 }
 
-/**
- * Fetch patient observations from FHIR API
- * @param patientUuid - Patient UUID
- * @param conceptCodes - Array of concept UUIDs
- * @param serviceRequestId - Service request UUID for based-on filter (optional)
- * @returns Promise resolving to FHIR observation
- */
 export async function getPatientObservations(
   patientUUID: string,
   conceptCodes?: string[],
@@ -60,11 +40,6 @@ export async function getPatientObservations(
   return observations;
 }
 
-/**
- * Fetch observations by encounter UUID from FHIR API
- * @param encounterUUID - Encounter UUID
- * @returns Promise resolving to FHIR observation bundle
- */
 export async function getObservationsBundleByEncounterUuid(
   encounterUUID: string,
 ): Promise<Bundle<Observation>> {
@@ -72,3 +47,64 @@ export async function getObservationsBundleByEncounterUuid(
     FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
   );
 }
+export interface EncounterGroup {
+  encounterUuid: string;
+  encounterDateTime: number;
+  providerName: string;
+  observations: Observation[];
+}
+
+const extractUuidFromReference = (ref: string): string => {
+  return ref.split('/').pop() ?? '';
+};
+
+export const groupObservationsByEncounter = (
+  observations: Observation[],
+  bundle: Bundle<Encounter>,
+): EncounterGroup[] => {
+  const encounterMap = new Map<string, EncounterGroup>();
+
+  const encounters =
+    bundle.entry
+      ?.filter((entry) => entry.resource?.resourceType === 'Encounter')
+      .map((entry) => entry.resource as Encounter) ?? [];
+
+  const encounterDataMap = new Map<string, Encounter>();
+  encounters.forEach((enc) => {
+    if (enc.id) {
+      encounterDataMap.set(enc.id, enc);
+    }
+  });
+
+  observations.forEach((obs) => {
+    const encounterRef = obs.encounter?.reference;
+    if (!encounterRef) return;
+
+    const encounterUuid = extractUuidFromReference(encounterRef);
+    const encounterData = encounterDataMap.get(encounterUuid);
+
+    if (!encounterData) return;
+
+    if (!encounterMap.has(encounterUuid)) {
+      const encounterDateTime = encounterData.period?.start
+        ? new Date(encounterData.period.start).getTime()
+        : 0;
+
+      const providerName =
+        encounterData.participant?.[0]?.individual?.display ?? 'Unknown';
+
+      encounterMap.set(encounterUuid, {
+        encounterUuid,
+        encounterDateTime,
+        providerName,
+        observations: [],
+      });
+    }
+
+    encounterMap.get(encounterUuid)!.observations.push(obs);
+  });
+
+  return Array.from(encounterMap.values()).sort(
+    (a, b) => b.encounterDateTime - a.encounterDateTime,
+  );
+};

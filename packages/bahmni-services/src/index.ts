@@ -235,6 +235,8 @@ export {
   getPatientObservationsWithEncounterBundle,
   getPatientObservations,
   getObservationsBundleByEncounterUuid,
+  groupObservationsByEncounter,
+  type EncounterGroup,
 } from './observationService';
 export {
   getCurrentProvider,

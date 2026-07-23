@@ -1,3 +1,4 @@
+import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import * as api from '../../api';
 import {
   mockObservationBundle,
@@ -5,6 +6,11 @@ import {
   mockObservation,
   mockObservationWithEncounterBundle,
   mockFormsEncounter,
+  mockObservationWithFormPath,
+  mockObservationsForVitals,
+  mockEncounterWithProvider,
+  mockEncounterWithoutProvider,
+  mockEncounterWithoutPeriodStart,
 } from '../__mocks__/observationMocks';
 import {
   FHIR_OBSERVATION_URL,
@@ -15,6 +21,7 @@ import {
   getPatientObservations,
   getPatientObservationsWithEncounterBundle,
   getObservationsBundleByEncounterUuid,
+  groupObservationsByEncounter,
 } from '../observationService';
 
 jest.mock('../../api');
@@ -227,6 +234,189 @@ describe('observationService', () => {
       await expect(
         getObservationsBundleByEncounterUuid(encounterUUID),
       ).rejects.toThrow('Network failure');
+    });
+  });
+
+  describe('groupObservationsByEncounter', () => {
+    it('should group observations by encounter', () => {
+      const observations = mockObservationsForVitals;
+      const bundle: Bundle<Encounter> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: mockEncounterWithProvider,
+          },
+        ],
+      };
+
+      const result = groupObservationsByEncounter(observations, bundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].encounterUuid).toBe('encounter-1');
+      expect(result[0].observations).toHaveLength(2);
+      expect(result[0].providerName).toBe('Super Man');
+    });
+
+    it('should return empty array when bundle has no entries', () => {
+      const observations = mockObservationsForVitals;
+      const emptyBundle: Bundle<Encounter> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [],
+      };
+
+      const result = groupObservationsByEncounter(observations, emptyBundle);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array when bundle has no encounters', () => {
+      const observations = mockObservationsForVitals;
+      const bundleWithoutEncounters: Bundle<Encounter> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'some-obs',
+              status: 'final',
+              code: { text: 'test' },
+            } as Observation,
+          },
+        ],
+      };
+
+      const result = groupObservationsByEncounter(
+        observations,
+        bundleWithoutEncounters as Bundle<Encounter>,
+      );
+
+      expect(result).toEqual([]);
+    });
+
+    it('should default to 0 when period start is missing', () => {
+      const observations: Observation[] = [
+        {
+          ...mockObservationWithFormPath,
+          encounter: {
+            reference: 'Encounter/encounter-3',
+          },
+        },
+      ];
+      const bundle: Bundle<Encounter> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: mockEncounterWithoutPeriodStart,
+          },
+        ],
+      };
+
+      const result = groupObservationsByEncounter(observations, bundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].encounterDateTime).toBe(0);
+    });
+
+    it('should default to Unknown when provider is missing', () => {
+      const observations: Observation[] = [
+        {
+          ...mockObservationWithFormPath,
+          encounter: {
+            reference: 'Encounter/encounter-2',
+          },
+        },
+      ];
+      const bundle: Bundle<Encounter> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: mockEncounterWithoutProvider,
+          },
+        ],
+      };
+
+      const result = groupObservationsByEncounter(observations, bundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].providerName).toBe('Unknown');
+    });
+
+    it('should sort groups by encounterDateTime descending', () => {
+      const observations: Observation[] = [
+        {
+          ...mockObservationWithFormPath,
+          id: 'obs-old',
+          encounter: {
+            reference: 'Encounter/encounter-old',
+          },
+        },
+        {
+          ...mockObservationWithFormPath,
+          id: 'obs-new',
+          encounter: {
+            reference: 'Encounter/encounter-new',
+          },
+        },
+      ];
+
+      const oldEncounter: Encounter = {
+        ...mockEncounterWithProvider,
+        id: 'encounter-old',
+        period: {
+          start: '2026-07-19T09:00:00+00:00',
+        },
+      };
+
+      const newEncounter: Encounter = {
+        ...mockEncounterWithProvider,
+        id: 'encounter-new',
+        period: {
+          start: '2026-07-20T09:00:00+00:00',
+        },
+      };
+
+      const bundle: Bundle<Encounter> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [{ resource: oldEncounter }, { resource: newEncounter }],
+      };
+
+      const result = groupObservationsByEncounter(observations, bundle);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].encounterUuid).toBe('encounter-new');
+      expect(result[1].encounterUuid).toBe('encounter-old');
+    });
+
+    it('should skip observations without encounter reference', () => {
+      const observations: Observation[] = [
+        mockObservationWithFormPath,
+        {
+          ...mockObservationWithFormPath,
+          id: 'obs-no-encounter',
+          encounter: undefined,
+        },
+      ];
+      const bundle: Bundle<Encounter> = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: mockEncounterWithProvider,
+          },
+        ],
+      };
+
+      const result = groupObservationsByEncounter(observations, bundle);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].observations).toHaveLength(1);
+      expect(result[0].observations[0].id).toBe('obs-1');
     });
   });
 });

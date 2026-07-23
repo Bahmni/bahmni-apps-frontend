@@ -4,22 +4,20 @@ import {
   getEncounterByUuid,
   getObservationsBundleByEncounterUuid,
   getPatientObservationsBundle,
+  groupObservationsByEncounter,
   useSubscribeConsultationSaved,
   useTranslation,
+  type EncounterGroup,
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import React, { useMemo } from 'react';
 import { extractFormFieldPath } from '../../../observations/utils';
 import { ObservationsRenderer } from '../../../observationsRenderer';
+import { extractId } from '../../../utils/Observations';
 import type { TaskView, TaskViewModel } from '../../models';
 import { extractFormNameFromTask } from '../../utils';
 import styles from './ViewFormData.module.scss';
-import {
-  extractUuidFromReference,
-  groupObservationsByEncounter,
-  type EncounterGroup,
-} from './viewFormUtils';
 
 interface ViewFormDataProps {
   open: boolean;
@@ -54,7 +52,7 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
   } = useQuery<Bundle<Observation>, Error>({
     queryKey: ['observationsByServiceRequest', serviceRequestRef],
     queryFn: async () => {
-      const serviceRequestId = extractUuidFromReference(serviceRequestRef!);
+      const serviceRequestId = extractId(serviceRequestRef!);
       return await getPatientObservationsBundle(
         patientUuid,
         undefined,
@@ -72,7 +70,7 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
   } = useQuery<Bundle<Observation>, Error>({
     queryKey: ['observationsByEncounter', encounterRef],
     queryFn: async () => {
-      const encounterUuid = extractUuidFromReference(encounterRef!);
+      const encounterUuid = extractId(encounterRef!) ?? '';
       return await getObservationsBundleByEncounterUuid(encounterUuid);
     },
     enabled:
@@ -128,7 +126,7 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
     const uuids = new Set<string>();
     filteredObservations.forEach((obs) => {
       if (obs.encounter?.reference) {
-        const uuid = extractUuidFromReference(obs.encounter.reference);
+        const uuid = extractId(obs.encounter.reference);
         if (uuid) uuids.add(uuid);
       }
     });
