@@ -21,7 +21,7 @@ const TextCriterionInput = ({
       <TextInput
         id={`text-input-${input.placeholderTranslationKey}`}
         data-testid={`text-input-${input.placeholderTranslationKey}-test-id`}
-        labelText={t('ENTER_SEARCH_VALUE')}
+        labelText={t('COMMON_SEARCH_CRITERION_LABEL')}
         placeholder={t(input.placeholderTranslationKey)}
         value={value?.value ?? ''}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

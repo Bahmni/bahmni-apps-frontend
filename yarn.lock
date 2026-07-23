@@ -1058,10 +1058,10 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
-"@bahmni/form2-controls@0.0.3-dev.73":
-  version "0.0.3-dev.73"
-  resolved "https://registry.yarnpkg.com/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.73.tgz#a6e8374ff744e2fc31b7be30768017c19898f238"
-  integrity sha512-UA9vjaC7rx9kQrE5Fy3SnDIJCvn/f5S5Ki9hKAatscxyGu1xXWu4+BLdgAOfEvOukWgbqLec5UTV/jRQbULHPg==
+"@bahmni/form2-controls@0.0.3-dev.76":
+  version "0.0.3-dev.76"
+  resolved "https://registry.npmjs.org/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.76.tgz#938cb916cf446a2622b27e88922e925b36d06b0e"
+  integrity sha512-Yif0WaCfb4SyQPEeBQuvPLVlZloFjsWhAeFEWakjFWmdytoxAWqLGnPrj0BZpBVcQn+5QX1lk3TDM3EOJDGnBQ==
   dependencies:
     ajv "^8.17.1"
     base64-inline-loader "^1.1.0"
@@ -11373,6 +11373,11 @@ json5@^2.1.2, json5@^2.2.0, json5@^2.2.2, json5@^2.2.3:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.3.tgz#78cd6f1a19bdc12b73db5ad0c61efd66c1e29283"
   integrity sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==
+
+jsonata@2.2.1:
+  version "2.2.1"
+  resolved "https://registry.npmjs.org/jsonata/-/jsonata-2.2.1.tgz#91d706cdae700887158067beebb8e60a475d74e0"
+  integrity sha512-xd1uwUrKeIcJbsWhaoS3qAX4Ea8m0Mw0G5nlnAQvPT7TbZ5qaPdzBVTQia9KfyuyQm+nenfyjvzUDTRYHsC2sw==
 
 jsonc-eslint-parser@^2.1.0:
   version "2.4.0"

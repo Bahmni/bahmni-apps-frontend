@@ -10,26 +10,32 @@ import {
   createImmunizationBundleEntries,
   findAttr,
   formatBatchItemDisplay,
+  getAllValueSetComboBoxItems,
   getBatchNumberComboBoxItems,
   getComboBoxItems,
   getLocationComboBoxItems,
   getMedicationComboBoxItems,
   getValueSetComboBoxItems,
+  getVaccineComboBoxItems,
 } from '../utils';
 import {
   mockAvailableStockResponse,
   mockAvailableStockWithEmptyBatch,
+  mockDuplicateCovidVaccineMedication,
   mockEmptyAvailableStockResponse,
   mockEncounterSubject,
   mockFetchedMedication,
   mockImmunizationEntry,
   mockImmunizationEntryComplete,
+  mockImmunizationEntryWaiver,
   mockImmunizationEntryWithBasedOn,
   mockImmunizationEntryWithBasedOnNoDrug,
   mockLocations,
   mockLocationsWithChildren,
   mockMedicationRequest,
   mockVaccineDrugs,
+  mockVaccineMedicationsWithDisplay,
+  mockVaccineMedicationWithoutCoding,
   mockVaccineValueSet,
   mockValueSetWithPartialItem,
   mockValueSetWithoutContains,
@@ -55,6 +61,7 @@ const BASE_BUNDLE_PARAMS = {
   encounterReference: 'Encounter/encounter-uuid',
   practitionerUUID: 'practitioner-uuid',
   isAdministration: false,
+  isWaiver: false,
 };
 
 describe('findAttr', () => {
@@ -134,6 +141,40 @@ describe('getValueSetComboBoxItems', () => {
   });
 });
 
+describe('getAllValueSetComboBoxItems', () => {
+  it.each(['', '   '])(
+    'returns all items without requiring a search when searchTerm is %j',
+    (searchTerm) => {
+      expect(
+        getAllValueSetComboBoxItems(
+          searchTerm,
+          mockVaccineValueSet,
+          'No results',
+        ),
+      ).toEqual([
+        { code: 'covid-19', display: 'COVID-19 Vaccine' },
+        { code: 'flu', display: 'Influenza Vaccine' },
+      ]);
+    },
+  );
+
+  it('filters items by search term case-insensitively once the user types', () => {
+    expect(
+      getAllValueSetComboBoxItems('COVID', mockVaccineValueSet, 'No results'),
+    ).toEqual([{ code: 'covid-19', display: 'COVID-19 Vaccine' }]);
+  });
+
+  it.each([
+    ['no items match a search term', 'mumps', mockVaccineValueSet],
+    ['valueSet is undefined', '', undefined],
+    ['expansion has no contains', '', mockValueSetWithoutContains],
+  ])('returns disabled sentinel when %s', (_label, searchTerm, valueSet) => {
+    expect(
+      getAllValueSetComboBoxItems(searchTerm, valueSet, 'No results'),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
+  });
+});
+
 describe('getMedicationComboBoxItems', () => {
   it.each([[''], ['   ']])(
     'returns empty array for "%s" searchTerm',
@@ -204,6 +245,91 @@ describe('getMedicationComboBoxItems', () => {
         'BCG',
         mockVaccineDrugs,
         'covid-19',
+        'No results',
+      ),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
+  });
+});
+
+describe('getVaccineComboBoxItems', () => {
+  it.each([[''], ['   ']])(
+    'returns empty array for "%s" searchTerm',
+    (searchTerm) => {
+      expect(
+        getVaccineComboBoxItems(
+          searchTerm,
+          mockVaccineMedicationsWithDisplay,
+          'No results',
+        ),
+      ).toEqual([]);
+    },
+  );
+
+  it('returns disabled sentinel when medications is undefined', () => {
+    expect(getVaccineComboBoxItems('covid', undefined, 'No results')).toEqual([
+      { code: '', display: 'No results', disabled: true },
+    ]);
+  });
+
+  it('filters medications by coding display, case-insensitively', () => {
+    expect(
+      getVaccineComboBoxItems(
+        'COVID',
+        mockVaccineMedicationsWithDisplay,
+        'No results',
+      ),
+    ).toEqual([{ code: '213', display: 'COVID-19 vaccine' }]);
+  });
+
+  it('deduplicates medications sharing the same coding code, keeping the first', () => {
+    const result = getVaccineComboBoxItems(
+      'covid',
+      [
+        mockDuplicateCovidVaccineMedication,
+        mockVaccineMedicationsWithDisplay[0],
+      ],
+      'No results',
+    );
+    expect(result).toEqual([
+      { code: '213', display: 'COVID-19 vaccine (brand B)' },
+    ]);
+  });
+
+  it('falls back to code.text when coding has no display', () => {
+    const medication = {
+      resourceType: 'Medication' as const,
+      id: 'med-with-text',
+      code: { coding: [{ code: 'bcg-code' }], text: 'BCG Vaccine' },
+    };
+    expect(getVaccineComboBoxItems('BCG', [medication], 'No results')).toEqual([
+      { code: 'bcg-code', display: 'BCG Vaccine' },
+    ]);
+  });
+
+  it('falls back to the code itself when neither coding display nor code.text is set', () => {
+    expect(
+      getVaccineComboBoxItems('covid-19', mockVaccineDrugs, 'No results'),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
+    expect(
+      getVaccineComboBoxItems('bcg-code', mockVaccineDrugs, 'No results'),
+    ).toEqual([{ code: 'bcg-code', display: 'bcg-code' }]);
+  });
+
+  it('skips medications without a coding code', () => {
+    expect(
+      getVaccineComboBoxItems(
+        'anything',
+        [mockVaccineMedicationWithoutCoding],
+        'No results',
+      ),
+    ).toEqual([{ code: '', display: 'No results', disabled: true }]);
+  });
+
+  it('returns disabled sentinel when no medications match the search term', () => {
+    expect(
+      getVaccineComboBoxItems(
+        'mumps',
+        mockVaccineMedicationsWithDisplay,
         'No results',
       ),
     ).toEqual([{ code: '', display: 'No results', disabled: true }]);
@@ -714,6 +840,54 @@ describe('createImmunizationBundleEntries', () => {
     });
     const resource = result[0].resource as Immunization;
     expect(resource.primarySource).toBe(true);
+  });
+
+  it('sets status to not-done and includes statusReason coding when isWaiver is true', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      isWaiver: true,
+      selectedImmunizations: [mockImmunizationEntryWaiver],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.status).toBe('not-done');
+    expect(resource.statusReason).toEqual({
+      coding: [{ code: 'not-age-appropriate', display: 'Not age appropriate' }],
+    });
+  });
+
+  it('sets status to completed when isWaiver is false, regardless of statusReason', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      isWaiver: false,
+      selectedImmunizations: [mockImmunizationEntryWaiver],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.status).toBe('completed');
+  });
+
+  it('omits route, site, manufacturer, lotNumber, protocolApplied and expirationDate when isWaiver is true, even if set on the entry', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      isWaiver: true,
+      selectedImmunizations: [mockImmunizationEntryWaiver],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.route).toBeUndefined();
+    expect(resource.site).toBeUndefined();
+    expect(resource.manufacturer).toBeUndefined();
+    expect(resource.lotNumber).toBeUndefined();
+    expect(resource.protocolApplied).toBeUndefined();
+    expect(resource.expirationDate).toBeUndefined();
+  });
+
+  it('omits statusReason when the entry has no statusReason set, even if isWaiver is true', () => {
+    const result = createImmunizationBundleEntries({
+      ...BASE_BUNDLE_PARAMS,
+      isWaiver: true,
+      selectedImmunizations: [mockImmunizationEntry],
+    });
+    const resource = result[0].resource as Immunization;
+    expect(resource.statusReason).toBeUndefined();
   });
 });
 
