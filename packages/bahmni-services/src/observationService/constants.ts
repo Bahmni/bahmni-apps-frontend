@@ -21,7 +21,7 @@ export const FHIR_OBSERVATION_URL = (
 
 export const FHIR_OBSERVATION_WITH_ENCOUNTER_URL = (
   patientUuid: string,
-  conceptCodes?: string[],
+  conceptCodes: string[],
 ) => {
   let url = `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}`;
 
