@@ -17,6 +17,10 @@ const defaultProps = {
   onChange: jest.fn(),
 };
 
+beforeAll(() => {
+  Element.prototype.scrollIntoView = jest.fn();
+});
+
 describe('ComboBox', () => {
   describe('clearSelectedOnChange=false (default)', () => {
     it('should display the selected item in the input', () => {
@@ -166,6 +170,156 @@ describe('ComboBox', () => {
       expect(onChange).toHaveBeenCalledWith(
         expect.objectContaining({ selectedItem: items[0] }),
       );
+    });
+  });
+
+  describe('prevents update-depth errors from unmemoized selectedItem values', () => {
+    it('should not call onChange when selectedItem rerenders with a value-equal but new-reference object', () => {
+      const onChange = jest.fn();
+      const { rerender } = render(
+        <ComboBox
+          {...defaultProps}
+          onChange={onChange}
+          selectedItem={{ ...items[0] }}
+        />,
+      );
+
+      onChange.mockClear();
+
+      rerender(
+        <ComboBox
+          {...defaultProps}
+          onChange={onChange}
+          selectedItem={{ ...items[0] }}
+        />,
+      );
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('combobox')).toHaveValue('Hypertension');
+    });
+
+    it('should allow editing a selected value without clearing it first, even when the parent rerenders with a fresh selectedItem reference on every keystroke', async () => {
+      const user = userEvent.setup();
+
+      const Wrapper = () => {
+        const [, forceRender] = useState(0);
+        return (
+          <ComboBox
+            {...defaultProps}
+            selectedItem={{ ...items[0] }}
+            onInputChange={() => forceRender((n) => n + 1)}
+          />
+        );
+      };
+
+      render(<Wrapper />);
+
+      const input = screen.getByRole('combobox');
+      expect(input).toHaveValue('Hypertension');
+
+      await user.clear(input);
+      await user.type(input, 'Diabetes');
+
+      expect(input).toHaveValue('Diabetes');
+    });
+
+    it('should not loop when typing a custom value with allowCustomValue, where onChange can receive a raw string instead of the stored object shape', async () => {
+      const user = userEvent.setup();
+
+      const Wrapper = () => {
+        const [location, setLocation] = useState<Item | null>(null);
+
+        const selectedItem = location
+          ? { value: location.value, label: location.label }
+          : null;
+
+        return (
+          <>
+            <button type="button">outside</button>
+            <ComboBox
+              {...defaultProps}
+              allowCustomValue
+              selectedItem={selectedItem}
+              onChange={({ selectedItem, inputValue }) => {
+                if (
+                  selectedItem &&
+                  typeof selectedItem === 'object' &&
+                  'value' in selectedItem
+                ) {
+                  setLocation({
+                    value: (selectedItem as Item).value,
+                    label: (selectedItem as Item).label,
+                  });
+                } else if (inputValue?.trim()) {
+                  setLocation({ value: '', label: inputValue.trim() });
+                } else {
+                  setLocation(null);
+                }
+              }}
+            />
+          </>
+        );
+      };
+
+      render(<Wrapper />);
+
+      const input = screen.getByRole('combobox');
+      await user.type(input, 'Some Custom Location');
+      await user.click(screen.getByRole('button', { name: 'outside' }));
+
+      await waitFor(() => {
+        expect(input).toHaveValue('Some Custom Location');
+      });
+    });
+  });
+
+  describe('clears the input on the first click', () => {
+    it('should clear immediately on the first click, even right after entering a custom value with allowCustomValue', async () => {
+      const user = userEvent.setup();
+
+      const Wrapper = () => {
+        const [location, setLocation] = useState<Item | null>(null);
+
+        const selectedItem = location
+          ? { value: location.value, label: location.label }
+          : null;
+
+        return (
+          <ComboBox
+            {...defaultProps}
+            allowCustomValue
+            selectedItem={selectedItem}
+            onChange={({ selectedItem, inputValue }) => {
+              if (
+                selectedItem &&
+                typeof selectedItem === 'object' &&
+                'value' in selectedItem
+              ) {
+                setLocation({
+                  value: (selectedItem as Item).value,
+                  label: (selectedItem as Item).label,
+                });
+              } else if (inputValue?.trim()) {
+                setLocation({ value: '', label: inputValue.trim() });
+              } else {
+                setLocation(null);
+              }
+            }}
+          />
+        );
+      };
+
+      render(<Wrapper />);
+
+      const input = screen.getByRole('combobox');
+      await user.type(input, 'New Location');
+      await user.keyboard('{Backspace}');
+
+      await user.click(
+        screen.getByRole('button', { name: /clear selected item/i }),
+      );
+
+      expect(input).toHaveValue('');
     });
   });
 });
