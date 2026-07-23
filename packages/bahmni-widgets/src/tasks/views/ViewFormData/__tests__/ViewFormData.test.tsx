@@ -240,11 +240,7 @@ describe('ViewFormData', () => {
 
   describe('Data fetching - Encounters', () => {
     it.each([
-      [
-        'single encounter',
-        mockObservationAndEncounterBundle,
-        ['encounter-1'],
-      ],
+      ['single encounter', mockObservationAndEncounterBundle, ['encounter-1']],
       [
         'multiple encounters',
         {
@@ -369,7 +365,7 @@ describe('ViewFormData', () => {
     });
   });
 
-  describe('Loading, error and empty states', () => {
+  describe('Loading states', () => {
     it.each([
       [
         'loading observations',
@@ -377,7 +373,6 @@ describe('ViewFormData', () => {
           mockGetPatientObservationsBundle.mockImplementation(
             () => new Promise(() => {}),
           ),
-        '.cds--skeleton__placeholder',
       ],
       [
         'loading encounters',
@@ -389,18 +384,33 @@ describe('ViewFormData', () => {
             () => new Promise(() => {}),
           );
         },
-        '.cds--skeleton__placeholder',
       ],
+    ])(
+      'should display SkeletonPlaceholder when %s',
+      async (_desc, setupMock) => {
+        setupMock();
+
+        renderComponent();
+
+        await waitFor(() => {
+          const element = document.querySelector('.cds--skeleton__placeholder');
+          expect(element).toBeInTheDocument();
+        });
+      },
+    );
+  });
+
+  describe('Error states', () => {
+    it.each([
       [
-        'observations fetch error',
+        'observations fetch fails',
         () =>
           mockGetPatientObservationsBundle.mockRejectedValue(
             new Error('Network error'),
           ),
-        'ERROR_LOADING_OBSERVATIONS',
       ],
       [
-        'encounter fetch error',
+        'encounter fetch fails',
         () => {
           mockGetPatientObservationsBundle.mockResolvedValue(
             mockObservationAndEncounterBundle as Bundle<Observation>,
@@ -409,18 +419,31 @@ describe('ViewFormData', () => {
             new Error('Encounter error'),
           );
         },
-        'ERROR_LOADING_OBSERVATIONS',
       ],
+    ])('should display error message when %s', async (_desc, setupMock) => {
+      setupMock();
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('ERROR_LOADING_OBSERVATIONS'),
+        ).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Empty states', () => {
+    it.each([
       [
-        'empty observations',
+        'no filtered observations',
         () =>
           mockGetPatientObservationsBundle.mockResolvedValue(
             mockEmptyObservationsBundle,
           ),
-        'NO_OBSERVATIONS_FOR_TASK',
       ],
       [
-        'empty encounter groups',
+        'encounterGroups is empty',
         () => {
           mockGetPatientObservationsBundle.mockResolvedValue(
             mockObservationAndEncounterBundle as Bundle<Observation>,
@@ -429,22 +452,18 @@ describe('ViewFormData', () => {
             mockEncounterWithoutProvider,
           );
         },
-        'NO_OBSERVATIONS_FOR_TASK',
       ],
     ])(
-      'should display correct state when %s',
-      async (_desc, setupMock, expectedSelector) => {
+      'should display NO_OBSERVATIONS_FOR_TASK when %s',
+      async (_desc, setupMock) => {
         setupMock();
 
         renderComponent();
 
         await waitFor(() => {
-          if (expectedSelector.startsWith('.')) {
-            const element = document.querySelector(expectedSelector);
-            expect(element).toBeInTheDocument();
-          } else {
-            expect(screen.getByText(expectedSelector)).toBeInTheDocument();
-          }
+          expect(
+            screen.getByText('NO_OBSERVATIONS_FOR_TASK'),
+          ).toBeInTheDocument();
         });
       },
     );
