@@ -8,7 +8,13 @@ jest.mock('@bahmni/services', () => ({
   uploadDocument: jest.fn().mockResolvedValue({ url: 'patient/doc.png' }),
   saveDocument: jest.fn().mockResolvedValue({}),
   getDocumentUploadMaxSizeMb: jest.fn().mockResolvedValue(5),
+  dispatchAuditEvent: jest.fn(),
 }));
+
+global.URL.createObjectURL = jest.fn(
+  () => 'blob:http://localhost/test-blob-url',
+);
+global.URL.revokeObjectURL = jest.fn();
 
 const mockAddNotification = jest.fn();
 jest.mock('../../notification', () => ({
@@ -21,8 +27,12 @@ jest.mock('../../activePractitioner', () => ({
   }),
 }));
 
-const { uploadDocument, saveDocument, getDocumentUploadMaxSizeMb } =
-  jest.requireMock('@bahmni/services');
+const {
+  uploadDocument,
+  saveDocument,
+  getDocumentUploadMaxSizeMb,
+  dispatchAuditEvent,
+} = jest.requireMock('@bahmni/services');
 
 const EXISTING_ENCOUNTER_TARGET = { encounterUuid: 'encounter-uuid' };
 const CREATE_ENCOUNTER_TARGET = {
@@ -70,9 +80,15 @@ describe('DocumentUpload', () => {
     expect(screen.getByText('DOCUMENT_UPLOAD_BUTTON')).toBeInTheDocument();
   });
 
-  it('uploads bytes on file select and shows the pending row', async () => {
+  it('creates pending blob on file select and uploads on save', async () => {
     renderWidget();
     selectFile();
+    expect(
+      await screen.findByTestId('pending-document-row'),
+    ).toBeInTheDocument();
+    expect(uploadDocument).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
     await waitFor(() =>
       expect(uploadDocument).toHaveBeenCalledWith(
         expect.any(File),
@@ -80,9 +96,6 @@ describe('DocumentUpload', () => {
         'patient-uuid',
       ),
     );
-    expect(
-      await screen.findByTestId('pending-document-row'),
-    ).toBeInTheDocument();
   });
 
   it('rejects unsupported file types without uploading', () => {
@@ -170,7 +183,9 @@ describe('DocumentUpload', () => {
     await screen.findByText('DOCUMENT_UPLOAD_SUPPORTED_TYPES');
 
     selectFile('image/png', 8 * 1024 * 1024);
+    await screen.findByTestId('pending-document-row');
 
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
     await waitFor(() => expect(uploadDocument).toHaveBeenCalled());
   });
 
@@ -190,10 +205,13 @@ describe('DocumentUpload', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows the backend error verbatim and no pending row when the upload fails', async () => {
+  it('shows the backend error verbatim and keeps pending row when the upload fails', async () => {
     uploadDocument.mockRejectedValueOnce(new Error('File too large on server'));
     renderWidget();
     selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
 
     await waitFor(() =>
       expect(mockAddNotification).toHaveBeenCalledWith(
@@ -203,9 +221,7 @@ describe('DocumentUpload', () => {
         }),
       ),
     );
-    expect(
-      screen.queryByTestId('pending-document-row'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('pending-document-row')).toBeInTheDocument();
   });
 
   it('adds the typed note as the description on save', async () => {
@@ -279,5 +295,84 @@ describe('DocumentUpload', () => {
     // no data loss: the pending row is retained so the user can retry
     expect(screen.getByTestId('pending-document-row')).toBeInTheDocument();
     expect(onSaved).not.toHaveBeenCalled();
+  });
+
+  it('uploads document before saving metadata', async () => {
+    const callOrder: string[] = [];
+    uploadDocument.mockImplementation(async () => {
+      callOrder.push('upload');
+      return { url: 'server/uploaded.png' };
+    });
+    saveDocument.mockImplementation(async () => {
+      callOrder.push('save');
+      return {};
+    });
+
+    renderWidget();
+    selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+
+    await waitFor(() => {
+      expect(callOrder).toEqual(['upload', 'save']);
+    });
+  });
+
+  it('updates pending URL from blob to server URL after upload', async () => {
+    uploadDocument.mockResolvedValueOnce({ url: 'server/new-url.png' });
+    renderWidget();
+    selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+
+    await waitFor(() =>
+      expect(saveDocument).toHaveBeenCalledWith(
+        expect.objectContaining({ url: 'server/new-url.png' }),
+      ),
+    );
+  });
+
+  it('does not call saveDocument if uploadDocument fails', async () => {
+    uploadDocument.mockRejectedValueOnce(new Error('Upload failed'));
+    renderWidget();
+    selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+
+    await waitFor(() => expect(uploadDocument).toHaveBeenCalled());
+    expect(saveDocument).not.toHaveBeenCalled();
+  });
+
+  it('clears pending document when discard is clicked after file selection', async () => {
+    renderWidget();
+    selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    fireEvent.click(screen.getByLabelText('DOCUMENT_UPLOAD_DISCARD'));
+
+    expect(
+      screen.queryByTestId('pending-document-row'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('dispatchs audit event with correct encounter type on successful save', async () => {
+    renderWidget();
+    selectFile();
+    await screen.findByTestId('pending-document-row');
+
+    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+
+    await waitFor(() =>
+      expect(dispatchAuditEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          patientUuid: 'patient-uuid',
+          messageParams: { encounterType: 'Patient Document' },
+          module: 'Patient Document',
+        }),
+      ),
+    );
   });
 });
