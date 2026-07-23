@@ -8,6 +8,7 @@ export interface DocumentUploadProps {
   encounterTypeName: string;
   saveTarget: DocumentSaveTarget;
   documentTypes?: DocumentType[];
+  defaultOption?: string | null;
   onSaved?: () => void;
 }
 
