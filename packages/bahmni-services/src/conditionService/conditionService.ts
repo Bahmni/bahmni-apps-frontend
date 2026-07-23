@@ -6,12 +6,14 @@ import {
   HL7_CONDITION_CATEGORY_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CONDITION_CODE,
   HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM,
+  FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
 } from '../constants/fhir';
 import {
   createBundleEntry,
   createEncounterBundle,
   ENCOUNTER_BUNDLE_URL,
 } from '../encounterBundle';
+import { getActiveVisit, getEncounterTypeByName } from '../encounterService';
 import { getUserLoginLocation } from '../userService';
 import { generateUUID } from '../utils/utils';
 import {
@@ -86,7 +88,11 @@ export async function getConditionPage(
  * type and visit reference. Participant is not set explicitly — OpenMRS populates
  * it from the authenticated session, the same way it sets changed_by on conditions.
  */
-function buildConditionEncounter(activeEncounter: Encounter): Encounter {
+function buildConditionEncounter(
+  type: Encounter['type'],
+  partOf: Encounter['partOf'],
+  subject: Encounter['subject'],
+): Encounter {
   const locationUuid = getUserLoginLocation().uuid;
   return {
     resourceType: 'Encounter',
@@ -105,9 +111,9 @@ function buildConditionEncounter(activeEncounter: Encounter): Encounter {
         },
       ],
     },
-    type: activeEncounter.type,
-    subject: activeEncounter.subject,
-    partOf: activeEncounter.partOf,
+    type,
+    subject,
+    partOf,
     location: [
       {
         location: {
@@ -126,23 +132,25 @@ function buildConditionEncounter(activeEncounter: Encounter): Encounter {
  * Three code paths:
  *   1. matched=true && activeEncounter?.id present (AC1 — REUSE):
  *      Bundles a PUT Encounter + PUT Condition referencing the existing encounter.
- *   2. matched=false && activeEncounter present (AC2 — CREATE NEW):
- *      Creates a new encounter (reusing type/visit from activeEncounter), then bundles
- *      a POST Encounter + PUT Condition with a urn:uuid: placeholder reference.
- *   3. activeEncounter is null/undefined (NO_ACTIVE_ENCOUNTER fallback):
- *      Falls back to the prior plain PUT without an encounter reference.
- *      Without any session encounter there is no type to build a new encounter from,
- *      so we preserve the prior standalone PUT behavior.
+ *   2. matched=false && activeEncounter present (AC2 — mismatch/SESSION_EXPIRED):
+ *      Creates a new encounter reusing type/visit from activeEncounter; bundles with condition.
+ *   3. activeEncounter is null but encounterTypeName + patientUuid provided (NO_ACTIVE_ENCOUNTER):
+ *      Resolves the encounter type UUID by name, fetches the active visit, and bundles
+ *      a new encounter + condition update. Same result as AC2, different context source.
  *
  * @param condition - The full raw FHIR Condition resource to update
  * @param activeEncounter - Full active encounter from the encounter session store
  * @param matched - True when activeEncounter is the clinician's own MATCHED (resumable) encounter
+ * @param encounterTypeName - Encounter type name from widget config (e.g. "Consultation")
+ * @param patientUuid - Patient UUID for fetching the active visit in the NO_ACTIVE_ENCOUNTER path
  * @returns Promise resolving to the server response
  */
 export async function markConditionAsInactive(
   condition: Condition,
   activeEncounter?: Encounter | null,
   matched: boolean = false,
+  encounterTypeName?: string,
+  patientUuid?: string,
 ): Promise<unknown> {
   const updatedCondition: Condition = {
     ...condition,
@@ -191,10 +199,50 @@ export async function markConditionAsInactive(
     return post<unknown>(ENCOUNTER_BUNDLE_URL, createEncounterBundle(entries));
   }
 
-  // AC2: Mismatch — create a new encounter reusing the active encounter's type and visit
+  // AC2 & fresh-visit: build a new encounter bundle
+  // Source of type/visit differs but the bundle logic is identical.
+  let newEncounterType: Encounter['type'];
+  let newEncounterPartOf: Encounter['partOf'];
+  let newEncounterSubject: Encounter['subject'];
+
   if (!matched && activeEncounter) {
+    // AC2 — mismatch/SESSION_EXPIRED: copy context from the session encounter
+    newEncounterType = activeEncounter.type;
+    newEncounterPartOf = activeEncounter.partOf;
+    newEncounterSubject = activeEncounter.subject;
+  } else if (encounterTypeName && patientUuid) {
+    // NO_ACTIVE_ENCOUNTER — resolve encounter type by name and fetch the active visit
+    const [encounterType, activeVisit] = await Promise.all([
+      getEncounterTypeByName(encounterTypeName),
+      getActiveVisit(patientUuid),
+    ]);
+    if (encounterType?.uuid && activeVisit?.id) {
+      newEncounterType = [
+        {
+          coding: [
+            {
+              system: FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
+              code: encounterType.uuid,
+              display: encounterType.name,
+            },
+          ],
+        },
+      ];
+      newEncounterPartOf = {
+        reference: `Encounter/${activeVisit.id}`,
+        type: 'Encounter',
+      };
+      newEncounterSubject = condition.subject;
+    }
+  }
+
+  if (newEncounterType && newEncounterPartOf) {
     const placeholder = `urn:uuid:${generateUUID()}`;
-    const newEncounter = buildConditionEncounter(activeEncounter);
+    const newEncounter = buildConditionEncounter(
+      newEncounterType,
+      newEncounterPartOf,
+      newEncounterSubject,
+    );
     const conditionWithEncounter: Condition = {
       ...updatedCondition,
       encounter: { reference: placeholder },
@@ -211,8 +259,7 @@ export async function markConditionAsInactive(
     return post<unknown>(ENCOUNTER_BUNDLE_URL, createEncounterBundle(entries));
   }
 
-  // Fallback: no session encounter — preserve prior plain PUT without encounter reference.
-  // Without any session encounter there is no type to build a new encounter from.
+  // Last resort: no encounter context — plain PUT without encounter reference
   return put<Condition, Condition>(
     `${CONDITION_RESOURCE_URL}/${condition.id}`,
     updatedCondition,

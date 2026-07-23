@@ -449,6 +449,8 @@ describe('ConditionsTable', () => {
         rawFhirResource,
         activeEncounterObj,
         true,
+        undefined,
+        'test-patient-uuid',
       );
     });
 

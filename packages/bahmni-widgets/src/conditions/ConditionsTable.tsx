@@ -37,6 +37,7 @@ const ConditionsTable: React.FC<WidgetProps> = ({
 }) => {
   // Number() safely handles non-numeric config values (NaN → falsy → fallback 5)
   const configPageSize = Number(config?.pageSize) || 5;
+  const encounterTypeName = config?.encounterType as string | undefined;
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -96,6 +97,8 @@ const ConditionsTable: React.FC<WidgetProps> = ({
         conditionToMarkInactive.rawFhirResource,
         activeEncounter ?? undefined,
         activeEncounterMatched ?? false,
+        encounterTypeName,
+        patientUUID ?? undefined,
       );
       dispatchAuditEvent({
         eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
