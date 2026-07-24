@@ -21,7 +21,7 @@ import {
   TextInput,
 } from './models';
 
-export type ResultTransform = (value: unknown, t: Translator) => string;
+export type ResultTransform = (value: string, t: Translator) => string | null;
 
 export type DateTimeValue = string | Date | number;
 

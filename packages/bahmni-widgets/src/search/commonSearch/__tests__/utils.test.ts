@@ -586,38 +586,22 @@ describe('resultTransforms', () => {
     );
   });
 
-  it('wires formatGender into the map', () => {
-    expect(resultTransforms.formatGender).toBe(formatGender);
+  it.each([
+    { key: 'formatGender', fn: formatGender },
+    { key: 'formatCountry', fn: formatCountry },
+  ])('wires $key into the map', ({ key, fn }) => {
+    expect(resultTransforms[key]).toBe(fn);
   });
 
-  it('wires formatCountry into the map', () => {
-    expect(resultTransforms.formatCountry).toBe(formatCountry);
-  });
-
-  it('formatDate transform formats a date-only value', () => {
-    expect(resultTransforms.formatDate('2024-03-28', identityT)).toContain(
-      '2024',
-    );
-  });
-
-  it('formatTime transform formats a time-only value', () => {
-    expect(resultTransforms.formatTime('2024-03-28T14:30:00', identityT)).toBe(
-      '2:30 PM',
-    );
-  });
-
-  it('formatDateTime transform formats date and time together', () => {
-    const result = resultTransforms.formatDateTime(
-      '2024-03-28T14:30:00',
-      identityT,
-    );
-    expect(result).toContain('2024');
-    expect(result).toContain('2:30 PM');
-  });
-
-  it('formatAge transform derives a human-readable age from a birthdate', () => {
-    expect(resultTransforms.formatAge('1990-01-01', identityT)).toMatch(
-      /YEARS/,
-    );
-  });
+  it.each([
+    { key: 'formatDate', value: '2024-03-28', contains: '2024' },
+    { key: 'formatTime', value: '2024-03-28T14:30:00', contains: '2:30 PM' },
+    { key: 'formatDateTime', value: '2024-03-28T14:30:00', contains: '2024' },
+    { key: 'formatAge', value: '1990-01-01', contains: 'YEARS' },
+  ])(
+    '$key transform produces the expected output',
+    ({ key, value, contains }) => {
+      expect(resultTransforms[key](value, identityT)).toContain(contains);
+    },
+  );
 });

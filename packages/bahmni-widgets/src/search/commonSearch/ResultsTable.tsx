@@ -41,12 +41,11 @@ const evaluateRows = async (
       };
       for (const { key, expr, transform } of compiled) {
         const value = await expr.evaluate(item as Record<string, unknown>);
-        row[key] =
-          value != null && value !== ''
-            ? transform
-              ? transform(value, t)
-              : value
-            : '-';
+        if (!value) {
+          row[key] = '-';
+          continue;
+        }
+        row[key] = transform ? transform(String(value), t) : value;
       }
       return row as ResultRow;
     }),

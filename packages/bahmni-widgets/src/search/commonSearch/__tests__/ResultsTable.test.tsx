@@ -151,48 +151,20 @@ describe('ResultsTable', () => {
   });
 
   describe('Result field transforms', () => {
-    it('uses the i18n translation when available before falling back to Intl', async () => {
-      mockUseTranslation.mockReturnValue({
-        t: (key: string) =>
-          key === 'COUNTRY_CODE_US' ? 'United States (translated)' : key,
-      });
-      mockJsonata.mockReturnValue({
-        evaluate: jest.fn().mockResolvedValue('US'),
-      });
-      renderTable({
-        resultFields: mockResultFieldsWithTransform,
-        results: [{ id: '1', country: 'US' }],
-      });
-      await waitFor(() => {
-        expect(
-          screen.getByText('United States (translated)'),
-        ).toBeInTheDocument();
-      });
-    });
-
-    it('falls back to Intl when i18n returns the key unchanged', async () => {
-      mockJsonata.mockReturnValue({
-        evaluate: jest.fn().mockResolvedValue('us'),
-      });
-      renderTable({
-        resultFields: mockResultFieldsWithTransform,
-        results: [{ id: '1', country: 'us' }],
-      });
-      await waitFor(() => {
-        expect(screen.getByText('United States')).toBeInTheDocument();
-      });
-    });
-
     it('falls back to the raw value when the transform key is not registered', async () => {
       mockJsonata.mockReturnValue({
-        evaluate: jest.fn().mockResolvedValue('us'),
+        evaluate: jest
+          .fn()
+          .mockResolvedValue('UNREGISTERED_TRANSFORM_RAW_VALUE'),
       });
       renderTable({
         resultFields: mockResultFieldsWithUnknownTransform,
-        results: [{ id: '1', country: 'us' }],
+        results: [{ id: '1', country: 'UNREGISTERED_TRANSFORM_RAW_VALUE' }],
       });
       await waitFor(() => {
-        expect(screen.getByText('us')).toBeInTheDocument();
+        expect(
+          screen.getByText('UNREGISTERED_TRANSFORM_RAW_VALUE'),
+        ).toBeInTheDocument();
       });
     });
 

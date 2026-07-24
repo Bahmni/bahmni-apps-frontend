@@ -408,17 +408,24 @@ export type Translator = (
   options?: { count?: number; defaultValue?: string },
 ) => string;
 
-export const formatGender = (value: unknown, t: Translator): string =>
-  value ? t(`GENDER_${value}`) : '-';
+export const formatGender = (value: string, t: Translator): string | null => {
+  const raw = value.trim();
+  if (!raw) return null;
+  return t(`GENDER_${camelToScreamingSnakeCase(raw)}`);
+};
 
-export const formatSearchResult = (value: unknown, t: Translator): string =>
-  value
-    ? t(`COMMON_SEARCH_RESULT_${camelToScreamingSnakeCase(String(value))}`)
-    : '-';
+export const formatSearchResult = (
+  value: string,
+  t: Translator,
+): string | null => {
+  const raw = value.trim();
+  if (!raw) return null;
+  return t(`COMMON_SEARCH_RESULT_${camelToScreamingSnakeCase(raw)}`);
+};
 
-export const formatCountry = (value: unknown, t: Translator): string => {
-  const code = (typeof value === 'object' ? '' : String(value ?? '')).trim();
-  if (!code) return '';
+export const formatCountry = (value: string, t: Translator): string | null => {
+  const code = value.trim();
+  if (!code) return null;
   const key = `COUNTRY_CODE_${camelToScreamingSnakeCase(code)}`;
   const translated = t(key);
   if (translated !== key) return translated;

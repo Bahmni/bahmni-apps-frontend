@@ -1345,17 +1345,24 @@ describe('formatGender', () => {
   it.each([
     { label: 'maps M to the male label', value: 'M', expected: 'Male' },
     { label: 'maps F to the female label', value: 'F', expected: 'Female' },
-    { label: 'returns hyphen for null', value: null, expected: '-' },
-    { label: 'returns hyphen for undefined', value: undefined, expected: '-' },
-    { label: 'returns hyphen for empty string', value: '', expected: '-' },
+    {
+      label: 'applies camelToScreamingSnakeCase to the value',
+      value: 'nonBinary',
+      expected: 'GENDER_NON_BINARY',
+    },
+    {
+      label: 'returns the i18n key for an unsupported value',
+      value: 'P',
+      expected: 'GENDER_P',
+    },
+    { label: 'returns null for empty string', value: '', expected: null },
+    {
+      label: 'returns null for whitespace-only string',
+      value: '   ',
+      expected: null,
+    },
   ])('$label', ({ value, expected }) => {
     expect(formatGender(value, t)).toBe(expected);
-  });
-
-  it('builds the translation key from the value', () => {
-    const spy = jest.fn().mockReturnValue('Male');
-    formatGender('M', spy);
-    expect(spy).toHaveBeenCalledWith('GENDER_M');
   });
 });
 
@@ -1368,48 +1375,45 @@ describe('formatCountry', () => {
 
   it.each([
     {
-      label: 'falls back to Intl for a lowercase ISO code',
+      label: 'uses i18n translation when the key is resolved',
+      value: 'US',
+      t: withTranslations({ COUNTRY_CODE_US: 'United States (Custom)' }),
+      expected: 'United States (Custom)',
+    },
+    {
+      label:
+        'falls back to Intl for a lowercase ISO code when i18n returns the key unchanged',
       value: 'us',
+      t: noTranslations,
       expected: 'United States',
     },
     {
-      label: 'falls back to Intl for an uppercase ISO code',
+      label:
+        'falls back to Intl for an uppercase ISO code when i18n returns the key unchanged',
       value: 'IN',
+      t: noTranslations,
       expected: 'India',
-    },
-    {
-      label: 'returns empty string for empty input',
-      value: '',
-      expected: '',
-    },
-    { label: 'returns empty string for null', value: null, expected: '' },
-    {
-      label: 'returns empty string for undefined',
-      value: undefined,
-      expected: '',
     },
     {
       label: 'returns the raw code when Intl does not recognise the region',
       value: '1',
+      t: noTranslations,
       expected: '1',
     },
-  ])('$label', ({ value, expected }) => {
-    expect(formatCountry(value, noTranslations)).toBe(expected);
-  });
-
-  it('uses the i18n translation when the key is resolved', () => {
-    const t = withTranslations({ COUNTRY_CODE_US: 'United States (Custom)' });
-    expect(formatCountry('US', t)).toBe('United States (Custom)');
-  });
-
-  it('falls back to Intl when i18n returns the key unchanged', () => {
-    expect(formatCountry('US', noTranslations)).toBe('United States');
-  });
-
-  it('builds the translation key from the value', () => {
-    const spy = jest.fn().mockReturnValue('COUNTRY_CODE_US');
-    formatCountry('US', spy);
-    expect(spy).toHaveBeenCalledWith('COUNTRY_CODE_US');
+    {
+      label: 'returns null for empty input',
+      value: '',
+      t: noTranslations,
+      expected: null,
+    },
+    {
+      label: 'returns null for whitespace-only input',
+      value: '   ',
+      t: noTranslations,
+      expected: null,
+    },
+  ])('$label', ({ value, t, expected }) => {
+    expect(formatCountry(value, t)).toBe(expected);
   });
 });
 
@@ -1436,9 +1440,12 @@ describe('formatSearchResult', () => {
       value: 'unknown',
       expected: 'COMMON_SEARCH_RESULT_UNKNOWN',
     },
-    { label: 'returns hyphen for null', value: null, expected: '-' },
-    { label: 'returns hyphen for undefined', value: undefined, expected: '-' },
-    { label: 'returns hyphen for empty string', value: '', expected: '-' },
+    { label: 'returns null for empty string', value: '', expected: null },
+    {
+      label: 'returns null for whitespace-only string',
+      value: '   ',
+      expected: null,
+    },
   ])('$label', ({ value, expected }) => {
     expect(formatSearchResult(value, t)).toBe(expected);
   });
