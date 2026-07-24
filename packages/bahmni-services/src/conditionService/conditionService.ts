@@ -3,19 +3,22 @@ import { get, post } from '../api';
 import {
   FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
   FHIR_ENCOUNTER_TAG_SYSTEM,
+  FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CONDITION_CODE,
   HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM,
-  FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
 } from '../constants/fhir';
 import {
   createBundleEntry,
   createEncounterBundle,
   ENCOUNTER_BUNDLE_URL,
 } from '../encounterBundle';
-import { getActiveVisit, getEncounterTypeByName } from '../encounterService';
+import {
+  createFhirEncounter,
+  getActiveVisit,
+  getEncounterTypeByName,
+} from '../encounterService';
 import { getUserLoginLocation } from '../userService';
-import { generateUUID } from '../utils/utils';
 import {
   CONDITION_RESOURCE_URL,
   PATIENT_CONDITION_RESOURCE_URL,
@@ -63,16 +66,21 @@ export async function getConditionPage(
   };
 }
 
-// Participant omitted — OpenMRS derives it from the authenticated session user.
 function buildConditionEncounter(
   type: Encounter['type'],
   partOf: Encounter['partOf'],
   subject: Encounter['subject'],
+  practitionerUUID?: string,
 ): Encounter {
-  const locationUuid = getUserLoginLocation().uuid;
+  let locationUuid: string;
+  try {
+    locationUuid = getUserLoginLocation().uuid;
+  } catch {
+    throw new Error('Unable to build encounter: login location unavailable');
+  }
   return {
     resourceType: 'Encounter',
-    status: 'finished',
+    status: 'in-progress',
     class: {
       system: FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
       code: 'AMB',
@@ -90,6 +98,9 @@ function buildConditionEncounter(
     type,
     subject,
     partOf,
+    participant: practitionerUUID
+      ? [{ individual: { reference: `Practitioner/${practitionerUUID}`, type: 'Practitioner' } }]
+      : undefined,
     location: [
       {
         location: {
@@ -108,7 +119,11 @@ export async function markConditionAsInactive(
   matched: boolean = false,
   encounterTypeName?: string,
   patientUuid?: string,
-): Promise<unknown> {
+  practitionerUUID?: string,
+): Promise<Encounter> {
+  // Category is intentionally always set to problem-list-item. Conditions managed via
+  // this widget are problem-list conditions by definition, regardless of their original
+  // stored category (e.g. encounter-diagnosis).
   const updatedCondition: Condition = {
     ...condition,
     category: [
@@ -134,6 +149,20 @@ export async function markConditionAsInactive(
   };
 
   if (matched && activeEncounter?.id) {
+    // Rebuild the encounter resource fresh from its key fields (type, partOf, subject) and
+    // graft the cached id onto it, rather than re-sending the cached snapshot verbatim.
+    // This matches the codebase's established pattern (createEncounterBundleEntry) and
+    // avoids a lost-update if the server-side encounter was modified after the session
+    // snapshot was captured.
+    const freshEncounter: Encounter = {
+      ...buildConditionEncounter(
+        activeEncounter.type,
+        activeEncounter.partOf,
+        activeEncounter.subject,
+        practitionerUUID,
+      ),
+      id: activeEncounter.id,
+    };
     const conditionWithEncounter: Condition = {
       ...updatedCondition,
       encounter: { reference: `Encounter/${activeEncounter.id}` },
@@ -141,7 +170,7 @@ export async function markConditionAsInactive(
     const entries = [
       createBundleEntry(
         `Encounter/${activeEncounter.id}`,
-        activeEncounter,
+        freshEncounter,
         'PUT',
         `Encounter/${activeEncounter.id}`,
       ),
@@ -152,7 +181,8 @@ export async function markConditionAsInactive(
         `Condition/${condition.id}`,
       ),
     ];
-    return post<unknown>(ENCOUNTER_BUNDLE_URL, createEncounterBundle(entries));
+    await post<Bundle>(ENCOUNTER_BUNDLE_URL, createEncounterBundle(entries));
+    return freshEncounter;
   }
 
   let newEncounterType: Encounter['type'];
@@ -160,6 +190,9 @@ export async function markConditionAsInactive(
   let newEncounterSubject: Encounter['subject'];
 
   if (!matched && activeEncounter) {
+    // Intentional: if there is a mismatched active encounter but its type or partOf is
+    // missing, the encounterTypeName/patientUuid lookup path (else-if below) is not
+    // retried — the bundle build simply fails at the newEncounterType guard below.
     newEncounterType = activeEncounter.type;
     newEncounterPartOf = activeEncounter.partOf;
     newEncounterSubject = activeEncounter.subject;
@@ -189,18 +222,27 @@ export async function markConditionAsInactive(
   }
 
   if (newEncounterType && newEncounterPartOf) {
-    const placeholder = `urn:uuid:${generateUUID()}`;
     const newEncounter = buildConditionEncounter(
       newEncounterType,
       newEncounterPartOf,
       newEncounterSubject,
+      practitionerUUID,
     );
+    // Create the encounter first so we have its server-assigned UUID before
+    // building the bundle. OpenMRS does not reliably return entry.response.location
+    // in transaction-response bundles, so a standalone POST is used to obtain the UUID.
+    const createdEncounter = await createFhirEncounter(newEncounter);
     const conditionWithEncounter: Condition = {
       ...updatedCondition,
-      encounter: { reference: placeholder },
+      encounter: { reference: `Encounter/${createdEncounter.id}` },
     };
     const entries = [
-      createBundleEntry(placeholder, newEncounter, 'POST'),
+      createBundleEntry(
+        `Encounter/${createdEncounter.id}`,
+        createdEncounter,
+        'PUT',
+        `Encounter/${createdEncounter.id}`,
+      ),
       createBundleEntry(
         `Condition/${condition.id}`,
         conditionWithEncounter,
@@ -208,7 +250,8 @@ export async function markConditionAsInactive(
         `Condition/${condition.id}`,
       ),
     ];
-    return post<unknown>(ENCOUNTER_BUNDLE_URL, createEncounterBundle(entries));
+    await post<Bundle>(ENCOUNTER_BUNDLE_URL, createEncounterBundle(entries));
+    return createdEncounter;
   }
 
   throw new Error(

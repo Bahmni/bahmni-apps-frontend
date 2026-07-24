@@ -3,6 +3,7 @@ import {
   setEncounterSessionDecision,
   markConditionAsInactive,
   dispatchAuditEvent,
+  dispatchConsultationSaved,
 } from '@bahmni/services';
 import {
   QueryClient,
@@ -11,6 +12,7 @@ import {
 } from '@tanstack/react-query';
 import { render, screen, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { Encounter } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useNotification } from '../../notification';
 import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
@@ -31,8 +33,15 @@ jest.mock('@bahmni/services', () => ({
   getConditions: jest.fn(),
   markConditionAsInactive: jest.fn(),
   dispatchAuditEvent: jest.fn(),
+  dispatchConsultationSaved: jest.fn(),
+  setEncounterSessionDecision: jest.fn(),
 }));
 jest.mock('../../userPrivileges/useHasPrivilege');
+jest.mock('../../activePractitioner', () => ({
+  useActivePractitioner: jest.fn(() => ({
+    practitioner: { uuid: 'test-practitioner-uuid' },
+  })),
+}));
 
 const mockAddNotification = jest.fn();
 
@@ -427,8 +436,13 @@ describe('ConditionsTable', () => {
         isLoading: false,
         refetch: jest.fn().mockResolvedValue(undefined),
       });
+      const mockReturnedEncounter = {
+        resourceType: 'Encounter',
+        id: 'enc-returned-id',
+        status: 'in-progress',
+      } as Encounter;
       (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
-        rawFhirResource,
+        mockReturnedEncounter,
       );
 
       renderTable({
@@ -452,6 +466,7 @@ describe('ConditionsTable', () => {
         true,
         undefined,
         'test-patient-uuid',
+        'test-practitioner-uuid',
       );
     });
 
@@ -476,9 +491,11 @@ describe('ConditionsTable', () => {
         isLoading: false,
         refetch: jest.fn().mockResolvedValue(undefined),
       });
-      (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
-        rawFhirResource,
-      );
+      (markConditionAsInactive as jest.Mock).mockResolvedValueOnce({
+        resourceType: 'Encounter',
+        id: 'enc-modal-close',
+        status: 'in-progress',
+      });
 
       renderTable({ config: actionsConfig });
 
@@ -537,14 +554,23 @@ describe('ConditionsTable', () => {
           expect.objectContaining({ type: 'error' }),
         );
         expect(dispatchAuditEvent).not.toHaveBeenCalled();
+        expect(dispatchConsultationSaved).not.toHaveBeenCalled();
+        expect(setEncounterSessionDecision).not.toHaveBeenCalled();
       });
     });
 
-    describe('AC5 — audit log', () => {
-      it('dispatches audit event with EDIT_ENCOUNTER type on success', async () => {
+    describe('AC5 — audit log and session update', () => {
+      it('dispatches audit event, consultationSaved, and updates session store on success', async () => {
         const user = userEvent.setup();
         setupWithRawCondition('cond-audit');
-        (markConditionAsInactive as jest.Mock).mockResolvedValueOnce({});
+        const mockReturnedEnc = {
+          resourceType: 'Encounter',
+          id: 'enc-audit-returned',
+          status: 'in-progress',
+        } as Encounter;
+        (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
+          mockReturnedEnc,
+        );
 
         renderTable({ config: actionsConfig });
         await user.click(
@@ -559,6 +585,16 @@ describe('ConditionsTable', () => {
             patientUuid: 'test-patient-uuid',
           }),
         );
+        expect(dispatchConsultationSaved).toHaveBeenCalledWith(
+          expect.objectContaining({
+            patientUUID: 'test-patient-uuid',
+            updatedResources: expect.objectContaining({ conditions: true }),
+          }),
+        );
+        expect(setEncounterSessionDecision).toHaveBeenCalledWith({
+          reasons: ['MATCHED'],
+          encounter: mockReturnedEnc,
+        });
       });
     });
 
@@ -566,7 +602,11 @@ describe('ConditionsTable', () => {
       it('invalidates conditions query after confirmation', async () => {
         const user = userEvent.setup();
         setupWithRawCondition('cond-cache');
-        (markConditionAsInactive as jest.Mock).mockResolvedValueOnce({});
+        (markConditionAsInactive as jest.Mock).mockResolvedValueOnce({
+          resourceType: 'Encounter',
+          id: 'enc-cache',
+          status: 'in-progress',
+        });
         const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
 
         renderTable({ config: actionsConfig });

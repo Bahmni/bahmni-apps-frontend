@@ -4,6 +4,7 @@ import {
   canResumeOwnInSessionEncounter,
   MatchReasonCode,
   getUserLoginLocation,
+  getEncounterSessionSnapshot,
 } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
 import { Encounter } from 'fhir/r4';
@@ -59,6 +60,23 @@ export function useEncounterSession(
       loginLocationUUID = getUserLoginLocation().uuid;
     } catch {
       // location cookie unavailable — location check will be skipped in mapper
+    }
+
+    // Seed immediately from the global store when it already reflects a MATCHED
+    // session. This lets the consultation pad inherit an encounter created by a
+    // dashboard widget action (e.g. mark-condition-inactive) without waiting for
+    // the OpenMRS FHIR search index to catch up to the freshly created encounter.
+    const storeState = getEncounterSessionSnapshot();
+    if (
+      storeState.matchReasons.includes('MATCHED') &&
+      storeState.activeEncounter?.id &&
+      !signal.ignored
+    ) {
+      setHasActiveSession(true);
+      setActiveEncounter(storeState.activeEncounter);
+      setIsPractitionerMatch(true);
+      setMatchReason(['MATCHED']);
+      setIsLoading(false);
     }
 
     setIsLoading(true);

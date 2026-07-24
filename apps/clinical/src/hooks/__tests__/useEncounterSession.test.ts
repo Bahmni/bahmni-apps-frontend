@@ -13,6 +13,12 @@ jest.mock('@bahmni/services', () => {
     resolveEncounterMatchDecision: jest.fn(),
     getUserLoginLocation: jest.fn(),
     canResumeOwnInSessionEncounter,
+    getEncounterSessionSnapshot: jest.fn(() => ({
+      matchReasons: [],
+      activeEncounter: null,
+      canEditOrCreate: false,
+      isLoading: false,
+    })),
   };
 });
 

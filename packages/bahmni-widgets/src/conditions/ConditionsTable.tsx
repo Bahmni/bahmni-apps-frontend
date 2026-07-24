@@ -10,6 +10,8 @@ import {
 import {
   markConditionAsInactive,
   dispatchAuditEvent,
+  dispatchConsultationSaved,
+  setEncounterSessionDecision,
   AUDIT_LOG_EVENT_DETAILS,
   type AuditEventType,
   useTranslation,
@@ -20,6 +22,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
 import ConfirmationModal from '../confirmationModal/ConfirmationModal';
+import { useActivePractitioner } from '../activePractitioner';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetActionConfig, WidgetProps } from '../registry/model';
@@ -39,6 +42,7 @@ const ConditionsTable: React.FC<WidgetProps> = ({
   const configPageSize = Number(config?.pageSize) || 5;
   const encounterTypeName = config?.encounterType as string | undefined;
   const patientUUID = usePatientUUID();
+  const { practitioner } = useActivePractitioner();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const queryClient = useQueryClient();
@@ -93,19 +97,35 @@ const ConditionsTable: React.FC<WidgetProps> = ({
     if (!conditionToMarkInactive?.rawFhirResource) return;
     setIsSubmitting(true);
     try {
-      await markConditionAsInactive(
+      const encounter = await markConditionAsInactive(
         conditionToMarkInactive.rawFhirResource,
         activeEncounter ?? undefined,
         activeEncounterMatched ?? false,
         encounterTypeName,
         patientUUID ?? undefined,
+        practitioner?.uuid,
       );
+      if (encounter.id) {
+        setEncounterSessionDecision({ reasons: ['MATCHED'], encounter });
+      }
       dispatchAuditEvent({
         eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
           .eventType as AuditEventType,
         patientUuid: patientUUID!,
         messageParams: { conditionDisplay: conditionToMarkInactive.display },
       });
+      if (patientUUID) {
+        dispatchConsultationSaved({
+          patientUUID,
+          updatedResources: {
+            conditions: true,
+            allergies: false,
+            medications: false,
+            serviceRequests: {},
+          },
+          updatedConcepts: new Map(),
+        });
+      }
     } catch {
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
