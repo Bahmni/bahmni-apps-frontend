@@ -403,27 +403,19 @@ export function convertToSentenceCase(str: string): string {
     .replace(/^./, (char) => char.toUpperCase());
 }
 
-export type Translator = (
-  key: string,
-  options?: { count?: number; defaultValue?: string },
-) => string;
-
-export const formatGender = (value: string, t: Translator): string | null => {
+export const formatGender = (
+  value: string,
+  t: (key: string) => string,
+): string | null => {
   const raw = value.trim();
   if (!raw) return null;
   return t(`GENDER_${camelToScreamingSnakeCase(raw)}`);
 };
 
-export const formatSearchResult = (
+export const formatCountry = (
   value: string,
-  t: Translator,
+  t: (key: string) => string,
 ): string | null => {
-  const raw = value.trim();
-  if (!raw) return null;
-  return t(`COMMON_SEARCH_RESULT_${camelToScreamingSnakeCase(raw)}`);
-};
-
-export const formatCountry = (value: string, t: Translator): string | null => {
   const code = value.trim();
   if (!code) return null;
   const key = `COUNTRY_CODE_${camelToScreamingSnakeCase(code)}`;

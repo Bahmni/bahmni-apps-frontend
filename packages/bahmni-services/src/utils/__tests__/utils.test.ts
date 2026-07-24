@@ -18,8 +18,6 @@ import {
   resolveComboBoxItems,
   formatGender,
   formatCountry,
-  formatSearchResult,
-  type Translator,
 } from '../utils';
 
 describe('common utility functions', () => {
@@ -1340,7 +1338,7 @@ describe('formatGender', () => {
     GENDER_M: 'Male',
     GENDER_F: 'Female',
   };
-  const t: Translator = (key) => translations[key] ?? key;
+  const t = (key: string) => translations[key] ?? key;
 
   it.each([
     { label: 'maps M to the male label', value: 'M', expected: 'Male' },
@@ -1367,11 +1365,9 @@ describe('formatGender', () => {
 });
 
 describe('formatCountry', () => {
-  const noTranslations: Translator = (key) => key;
-  const withTranslations =
-    (map: Record<string, string>): Translator =>
-    (key) =>
-      map[key] ?? key;
+  const noTranslations = (key: string) => key;
+  const withTranslations = (map: Record<string, string>) => (key: string) =>
+    map[key] ?? key;
 
   it.each([
     {
@@ -1414,45 +1410,5 @@ describe('formatCountry', () => {
     },
   ])('$label', ({ value, t, expected }) => {
     expect(formatCountry(value, t)).toBe(expected);
-  });
-});
-
-describe('formatSearchResult', () => {
-  const translations: Record<string, string> = {
-    COMMON_SEARCH_RESULT_SCHEDULED: 'Scheduled',
-    COMMON_SEARCH_RESULT_IN_PROGRESS: 'In Progress',
-  };
-  const t: Translator = (key) => translations[key] ?? key;
-
-  it.each([
-    {
-      label: 'translates a simple value using its i18n key',
-      value: 'Scheduled',
-      expected: 'Scheduled',
-    },
-    {
-      label: 'translates a camelCase value to its i18n key',
-      value: 'inProgress',
-      expected: 'In Progress',
-    },
-    {
-      label: 'returns the i18n key when no translation is available',
-      value: 'unknown',
-      expected: 'COMMON_SEARCH_RESULT_UNKNOWN',
-    },
-    { label: 'returns null for empty string', value: '', expected: null },
-    {
-      label: 'returns null for whitespace-only string',
-      value: '   ',
-      expected: null,
-    },
-  ])('$label', ({ value, expected }) => {
-    expect(formatSearchResult(value, t)).toBe(expected);
-  });
-
-  it('builds the translation key from the value', () => {
-    const spy = jest.fn().mockReturnValue('Scheduled');
-    formatSearchResult('Scheduled', spy);
-    expect(spy).toHaveBeenCalledWith('COMMON_SEARCH_RESULT_SCHEDULED');
   });
 });

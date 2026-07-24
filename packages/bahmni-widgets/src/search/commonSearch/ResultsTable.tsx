@@ -1,10 +1,6 @@
 import { DataTable } from '@bahmni/design-system';
 import type { DataTableColumn } from '@bahmni/design-system';
-import {
-  generateUUID,
-  type Translator,
-  useTranslation,
-} from '@bahmni/services';
+import { generateUUID, useTranslation } from '@bahmni/services';
 import jsonata from 'jsonata';
 import { useEffect, useMemo, useState } from 'react';
 import type { ResultFieldConfig } from './models';
@@ -23,7 +19,7 @@ type ResolvedField = { id: string; field: ResultFieldConfig };
 const evaluateRows = async (
   results: unknown[],
   resolvedFields: ResolvedField[],
-  t: Translator,
+  t: (key: string) => string,
 ): Promise<ResultRow[]> => {
   const compiled = resolvedFields.map(({ id, field }) => ({
     key: id,

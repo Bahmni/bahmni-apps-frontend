@@ -1,6 +1,7 @@
-import { formatCountry, formatGender, type Translator } from '@bahmni/services';
+import { formatCountry, formatGender } from '@bahmni/services';
 import { TextInput } from '../models';
 import {
+  formatSearchResult,
   initialRows,
   availableCriteriaForRow,
   criteriaAvailableToAdd,
@@ -570,7 +571,7 @@ describe('criteriaAvailableToAdd', () => {
 });
 
 describe('resultTransforms', () => {
-  const identityT: Translator = (key, options) => options?.defaultValue ?? key;
+  const identityT = (key: string) => key;
 
   it('registers all supported transform keys', () => {
     expect(Object.keys(resultTransforms).sort()).toEqual(
@@ -604,4 +605,44 @@ describe('resultTransforms', () => {
       expect(resultTransforms[key](value, identityT)).toContain(contains);
     },
   );
+});
+
+describe('formatSearchResult', () => {
+  const translations: Record<string, string> = {
+    COMMON_SEARCH_RESULT_SCHEDULED: 'Scheduled',
+    COMMON_SEARCH_RESULT_IN_PROGRESS: 'In Progress',
+  };
+  const t = (key: string) => translations[key] ?? key;
+
+  it.each([
+    {
+      label: 'translates a simple value using its i18n key',
+      value: 'Scheduled',
+      expected: 'Scheduled',
+    },
+    {
+      label: 'translates a camelCase value to its i18n key',
+      value: 'inProgress',
+      expected: 'In Progress',
+    },
+    {
+      label: 'returns the i18n key when no translation is available',
+      value: 'unknown',
+      expected: 'COMMON_SEARCH_RESULT_UNKNOWN',
+    },
+    { label: 'returns null for empty string', value: '', expected: null },
+    {
+      label: 'returns null for whitespace-only string',
+      value: '   ',
+      expected: null,
+    },
+  ])('$label', ({ value, expected }) => {
+    expect(formatSearchResult(value, t)).toBe(expected);
+  });
+
+  it('builds the translation key from the value', () => {
+    const spy = jest.fn().mockReturnValue('Scheduled');
+    formatSearchResult('Scheduled', spy);
+    expect(spy).toHaveBeenCalledWith('COMMON_SEARCH_RESULT_SCHEDULED');
+  });
 });
