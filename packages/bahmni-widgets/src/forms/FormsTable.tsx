@@ -26,6 +26,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bundle, Observation } from 'fhir/r4';
 import React, { useCallback, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
+import { extractFormFieldPath, extractFormName } from '../observations/utils';
 import { ObservationsRenderer } from '../observationsRenderer';
 import { WidgetProps } from '../registry/model';
 import { CONSULTATION_PAD_PRIVILEGES } from '../userPrivileges/consultationPadPrivileges';
@@ -33,7 +34,6 @@ import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { FormRecordViewModel, GroupedFormRecords } from './models';
 import styles from './styles/FormsTable.module.scss';
-import { extractFormFieldPath, extractFormName } from './utils';
 
 const CONSULTATION_START_EVENT = 'startConsultation';
 

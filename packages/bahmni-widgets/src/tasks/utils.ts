@@ -1,12 +1,7 @@
 import type { ObservationForm, UserPrivilege } from '@bahmni/services';
-import type { TaskViewModel, TaskActionConfig } from './models';
+import { TaskActionType, TaskViewType, FormPermissionType } from './constants';
+import type { TaskViewModel, TaskConfig, TaskView, TaskAction } from './models';
 
-/**
- * Extract form name from task input based on inputType
- * @param task - TaskViewModel containing the full FHIR Task resource
- * @param inputType - The concept UUID to look for in task.input[].type.coding[].code
- * @returns The form name from task.input[].valueString, or null if not found
- */
 export const extractFormNameFromTask = (
   task: TaskViewModel,
   inputType: string,
@@ -27,12 +22,10 @@ export const extractFormNameFromTask = (
   return matchingInput?.valueString ?? null;
 };
 
-/**
- * Check if user can edit a form based on privileges
- */
-export const canUserEditForm = (
+export const canUserAccessForm = (
   userPrivileges: UserPrivilege[] | null,
   form: ObservationForm | undefined,
+  permissionType: FormPermissionType = FormPermissionType.EDITABLE,
 ): boolean => {
   if (!form) {
     return false;
@@ -54,25 +47,102 @@ export const canUserEditForm = (
     const hasFormPrivilege = userPrivilegeNames.has(
       formPrivilege.privilegeName,
     );
-    return hasFormPrivilege && formPrivilege.editable;
+    return hasFormPrivilege && formPrivilege[permissionType];
   });
 };
 
-/**
- * Check if action config has any 'launchForm' type actions for the given task
- * @param actionConfig - Array of task action configurations
- * @param taskCode - The task code to check
- * @returns true if there are launchForm actions, false otherwise
- */
 export const hasLaunchFormActions = (
-  actionConfig: TaskActionConfig[],
+  taskConfig: TaskConfig[],
   taskCode: string,
 ): boolean => {
-  const matchingConfig = actionConfig?.find(
+  const matchingConfig = taskConfig?.find(
     (config) => config.taskCode === taskCode,
   );
   return (
-    matchingConfig?.actions?.some((action) => action.type === 'launchForm') ??
-    false
+    matchingConfig?.actions?.some(
+      (action) => action.type === TaskActionType.LAUNCH_FORM,
+    ) ?? false
   );
+};
+
+export const hasViewFormConfig = (
+  taskConfig: TaskConfig[],
+  taskCode: string,
+): boolean => {
+  const matchingConfig = taskConfig?.find(
+    (config) => config.taskCode === taskCode,
+  );
+  return (
+    matchingConfig?.views?.some(
+      (view) => view.type === TaskViewType.VIEW_FORM,
+    ) ?? false
+  );
+};
+
+export const isFormActionVisible = (
+  action: TaskAction,
+  task: TaskViewModel,
+  allForms: ObservationForm[],
+  userPrivileges: UserPrivilege[] | null,
+): boolean => {
+  if (action.type === TaskActionType.LAUNCH_FORM) {
+    const formName = extractFormNameFromTask(
+      task,
+      action.handlerConfig.formInputCode as string,
+    );
+
+    if (!formName) return false;
+
+    const matchingForm = allForms.find(
+      (form) => form.name.toLowerCase() === formName.toLowerCase(),
+    );
+    return matchingForm
+      ? canUserAccessForm(
+          userPrivileges,
+          matchingForm,
+          FormPermissionType.EDITABLE,
+        )
+      : false;
+  }
+
+  return false;
+};
+
+export const isViewFormDataVisible = (
+  view: TaskView,
+  task: TaskViewModel,
+  userPrivileges: UserPrivilege[] | null,
+): boolean => {
+  if (view.type === TaskViewType.VIEW_FORM) {
+    if (task.status !== 'completed') {
+      return false;
+    }
+
+    const formName = extractFormNameFromTask(
+      task,
+      view.handlerConfig.formInputCode,
+    );
+
+    if (!formName) {
+      return false;
+    }
+
+    if (!userPrivileges || userPrivileges.length === 0) {
+      return false;
+    }
+
+    if (view.requiredPrivileges.length === 0) {
+      return true;
+    }
+
+    const userPrivilegeNames = new Set(
+      userPrivileges.map((privilege) => privilege.name),
+    );
+
+    return view.requiredPrivileges.every((requiredPrivilege) =>
+      userPrivilegeNames.has(requiredPrivilege),
+    );
+  }
+
+  return false;
 };
