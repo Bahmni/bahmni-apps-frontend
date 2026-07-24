@@ -28,6 +28,9 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "../apps/orders"
     }
   ],
   "extends": "../tsconfig.base.json"

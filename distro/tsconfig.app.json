@@ -50,6 +50,9 @@
     },
     {
       "path": "../apps/home/tsconfig.lib.json"
+    },
+    {
+      "path": "../apps/orders/tsconfig.lib.json"
     }
   ]
 }

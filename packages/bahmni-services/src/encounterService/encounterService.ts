@@ -1,12 +1,16 @@
-import { Observation, Encounter, Bundle } from 'fhir/r4';
+import { Observation, Encounter, Bundle,BundleEntry,FhirResource } from 'fhir/r4';
 import { get, post, put } from '../api';
+import { FHIR_ENCOUNTER_TYPE_CODE_SYSTEM } from '../constants/fhir';
 import {
   PATIENT_VISITS_URL,
   PATIENT_ENCOUNTERS_URL,
   ENCOUNTER_TYPE_BY_NAME_URL,
   FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
   FHIR_ENCOUNTER_URL,
+  BAHMNI_ENCOUNTER_URL,
+  CONSULTATION_BUNDLE_URL,
 } from './constants';
+import { FormsEncounter, OrderFulfillmentEncounterParams } from './models';
 
 export interface EncounterTypeRef {
   uuid: string;
@@ -149,4 +153,93 @@ export async function updateFhirEncounter(
   encounter: Encounter,
 ): Promise<Encounter> {
   return await put<Encounter>(`${FHIR_ENCOUNTER_URL}/${uuid}`, encounter);
+}
+
+
+/**
+ * Creates a FHIR Encounter linked to an existing visit via ConsultationBundle.
+ * Used to associate an order fulfillment action with a clinical session.
+ *
+ * @param params - Patient, visit, practitioner, location, and encounter type details
+ * @returns Promise resolving to the created encounter UUID
+ */
+export async function createOrderFulfillmentEncounter(
+  params: OrderFulfillmentEncounterParams,
+): Promise<string> {
+  const {
+    patientUuid,
+    visitUuid,
+    practitionerUuid,
+    locationUuid,
+    encounterTypeUuid,
+  } = params;
+
+  const encounterResource: Encounter = {
+    resourceType: 'Encounter',
+    class: {
+      system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+      code: 'AMB',
+      display: 'ambulatory',
+    },
+    status: 'in-progress',
+    meta: {
+      tag: [
+        {
+          system: 'http://fhir.openmrs.org/ext/encounter-tag',
+          code: 'encounter',
+          display: 'Encounter',
+        },
+      ],
+    },
+    type: [
+      {
+        coding: [
+          {
+            system: FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
+            code: encounterTypeUuid,
+          },
+        ],
+      },
+    ],
+    subject: { reference: `Patient/${patientUuid}` },
+    participant: [
+      {
+        individual: {
+          reference: `Practitioner/${practitionerUuid}`,
+          type: 'Practitioner',
+        },
+      },
+    ],
+    partOf: { reference: `Encounter/${visitUuid}` },
+    location: [{ location: { reference: `Location/${locationUuid}` } }],
+    period: { start: new Date(Date.now() - 1000).toISOString() },
+  };
+
+  const fullUrl = `urn:uuid:${crypto.randomUUID()}`;
+  const bundleEntry: BundleEntry<FhirResource> = {
+    fullUrl,
+    resource: encounterResource,
+    request: { method: 'POST', url: 'Encounter' },
+  };
+
+  const consultationBundle = {
+    resourceType: 'ConsultationBundle' as const,
+    type: 'transaction' as const,
+    id: crypto.randomUUID(),
+    timestamp: new Date().toISOString(),
+    entry: [bundleEntry],
+  };
+
+  const response = await post<Bundle>(
+    CONSULTATION_BUNDLE_URL,
+    consultationBundle,
+  );
+
+  const encounterUuid = (response?.entry?.[0]?.resource as Encounter)?.id;
+  if (!encounterUuid) {
+    throw new Error(
+      'Failed to extract encounter UUID from ConsultationBundle response',
+    );
+  }
+  return encounterUuid;
 }

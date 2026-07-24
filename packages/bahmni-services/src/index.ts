@@ -28,6 +28,8 @@ export {
   getPatientProfile,
   getPersonAttributeTypes,
   getRelationshipTypes,
+  getObservationByConceptName,
+  calculateDaysSince,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -52,6 +54,7 @@ export {
   type AppointmentSearchField,
   type ExpectedFieldConfig,
   type SearchActionConfig,
+  type ObservationData,
   AttributeFormat,
   AttributeInputType,
   getInputTypeForFormat,
@@ -215,7 +218,36 @@ export {
   ORDER_TYPE_QUERY_KEY,
 } from './investigationService';
 
-export { getConfig } from './configService';
+export {
+  getConfig
+  getClinicalConfig,
+  getDashboardConfig,
+  getMedicationConfig,
+  getRegistrationConfig,
+  getOrdersConfig,
+  getOrdersTableConfig,
+  type ClinicalConfig,
+  type DashboardConfig,
+  type MedicationJSONConfig,
+  type DashboardSectionConfig,
+  type Dashboard,
+  type Frequency,
+  type RegistrationConfig,
+  type PatientSearchConfig,
+  type PatientSearchField,
+  type PatientInformationConfig,
+  type SearchActionConfig,
+  type ControlConfig,
+  type AppExtensionConfig,
+  type ExtensionPoint,
+  type OrdersConfig,
+  type OrderExtension,
+  type OrderExtensionParams,
+  type OrdersTableConfig,
+  type OrderColumnConfig,
+  type OrderStatusOption,
+  type TabStatus,
+} from './configService';
 
 export {
   getCurrentUser,
@@ -272,6 +304,8 @@ export {
   createFhirEncounter,
   updateFhirEncounter,
   type FormsEncounter,
+  createOrderFulfillmentEncounter,
+  OrderFulfillmentEncounterParams
 } from './encounterService';
 
 export {
@@ -450,3 +484,11 @@ export type {
   TemplateListResponse,
 } from './templateService';
 export { getTasks } from './taskService';
+
+
+export * from './orders';
+export {
+  createTask,
+  type CreateTaskPayload,
+  type CreateTaskOptions,
+} from './taskService';

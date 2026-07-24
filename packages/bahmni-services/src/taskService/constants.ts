@@ -1,5 +1,7 @@
 import { OPENMRS_FHIR_R4 } from '../constants/app';
 
+export const FHIR_TASK_URL = '/openmrs/ws/fhir2/R4/Task';
+
 export const TASKS_URL = (
   patientUuid?: string,
   basedOnReference?: string,

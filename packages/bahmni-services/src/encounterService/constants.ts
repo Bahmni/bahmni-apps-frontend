@@ -19,3 +19,5 @@ export const FHIR_OBSERVATIONS_BY_ENCOUNTER_URL = (encounterUUID: string) =>
   `${OPENMRS_FHIR_R4}/Observation/$fetch-all?encounter=${encounterUUID}`;
 
 export const FHIR_ENCOUNTER_URL = OPENMRS_FHIR_R4 + '/Encounter';
+
+export const CONSULTATION_BUNDLE_URL = OPENMRS_FHIR_R4 + '/ConsultationBundle';

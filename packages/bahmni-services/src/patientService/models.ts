@@ -455,3 +455,8 @@ export interface PatientSearchField {
 export interface AppointmentSearchField extends PatientSearchField {
   actions: SearchActionConfig[];
 }
+
+export interface ObservationData {
+  date: string;
+  daysSince: number;
+}

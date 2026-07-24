@@ -141,6 +141,17 @@ export const fetchFormMetadata = async (
         translationsData,
         currentLocale,
       );
+
+      const translationsResponse = await fetch(translationsUrl);
+      if (translationsResponse.ok) {
+        const translationsData = await translationsResponse.json();
+        translations = extractObservationFormTranslations(
+          translationsData,
+          currentLocale,
+        );
+      }
+    } catch {
+      // Silently fail with empty translations
     }
   }
 

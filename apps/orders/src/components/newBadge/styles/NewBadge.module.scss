@@ -1,0 +1,14 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.newBadge {
+  @include type-style("label-01");
+  display: inline-flex;
+  align-items: center;
+  padding: $spacing-01 $spacing-03;
+  background-color: #d0e2ff;
+  color: #0043ce;
+  border-radius: 24px;
+  font-weight: 400;
+  white-space: nowrap;
+}
