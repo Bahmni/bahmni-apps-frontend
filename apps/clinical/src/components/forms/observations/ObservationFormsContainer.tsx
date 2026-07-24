@@ -673,9 +673,16 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               // FORM_METADATA_URL was updated to return the OpenMRS record version.
               // For new encounters (no existing obs), use the OpenMRS record version
               // so future formFieldPaths encode the correct version for lookup.
+              //
+              // Read from statusSourceRef (the frozen first FHIR-enriched snapshot),
+              // NOT observationsWithValues[0] — the latter is rebuilt from the store
+              // on every keystroke, so its [0] element (and hence the extracted
+              // version) can change mid-edit. A version change here re-triggers
+              // form2-controls' Container.componentDidUpdate tree rebuild against
+              // observations that no longer line up with the schema, blanking fields.
               version:
                 extractVersionFromFormFieldPath(
-                  observationsWithValues[0]?.formFieldPath,
+                  statusSourceRef.current[0]?.formFieldPath,
                 ) ??
                 formMetadata.version ??
                 '1',
