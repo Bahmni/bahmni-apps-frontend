@@ -4,7 +4,6 @@ import {
   getVisits,
   getActiveVisit,
   getEncounterByUuid,
-  getObservationsBundleByEncounterUuid,
   createFhirEncounter,
   updateFhirEncounter,
   getPatientEncounters,
@@ -143,37 +142,6 @@ describe('encounterService', () => {
         `/openmrs/ws/fhir2/R4/Encounter/${encounterUUID}`,
         options,
       );
-    });
-  });
-
-  describe('getObservationsBundleByEncounterUuid', () => {
-    const encounterUUID = 'e8c5eeb5-86d9-44d4-b37a-9de74a122a6e';
-
-    it('should fetch forms encounter from the FHIR API endpoint', async () => {
-      mockedGet.mockResolvedValueOnce(mockFormsEncounter);
-
-      await getObservationsBundleByEncounterUuid(encounterUUID);
-
-      expect(mockedGet).toHaveBeenCalledWith(
-        FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
-      );
-    });
-
-    it('should return the forms encounter data', async () => {
-      mockedGet.mockResolvedValueOnce(mockFormsEncounter);
-
-      const result = await getObservationsBundleByEncounterUuid(encounterUUID);
-
-      expect(result.resourceType).toBe('Bundle');
-      expect(result.entry).toBeDefined();
-    });
-
-    it('should propagate errors when the FHIR API call fails', async () => {
-      mockedGet.mockRejectedValueOnce(new Error('Network failure'));
-
-      await expect(
-        getObservationsBundleByEncounterUuid(encounterUUID),
-      ).rejects.toThrow('Network failure');
     });
   });
 
