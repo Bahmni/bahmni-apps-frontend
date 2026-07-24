@@ -16,6 +16,9 @@ import {
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
+  formatGender,
+  formatCountry,
+  type Translator,
 } from '../utils';
 
 describe('common utility functions', () => {
@@ -1328,5 +1331,80 @@ describe('common utility functions', () => {
         { uuid: '', name: 'Loading...', disabled: true },
       ]);
     });
+  });
+});
+
+describe('formatGender', () => {
+  const translations: Record<string, string> = {
+    GENDER_M: 'Male',
+    GENDER_F: 'Female',
+  };
+  const t: Translator = (key) => translations[key] ?? key;
+
+  it.each([
+    { label: 'maps M to the male label', value: 'M', expected: 'Male' },
+    { label: 'maps F to the female label', value: 'F', expected: 'Female' },
+  ])('$label', ({ value, expected }) => {
+    expect(formatGender(value, t)).toBe(expected);
+  });
+
+  it('builds the translation key from the value', () => {
+    const spy = jest.fn().mockReturnValue('Male');
+    formatGender('M', spy);
+    expect(spy).toHaveBeenCalledWith('GENDER_M');
+  });
+});
+
+describe('formatCountry', () => {
+  const noTranslations: Translator = (key) => key;
+  const withTranslations =
+    (map: Record<string, string>): Translator =>
+    (key) =>
+      map[key] ?? key;
+
+  it.each([
+    {
+      label: 'falls back to Intl for a lowercase ISO code',
+      value: 'us',
+      expected: 'United States',
+    },
+    {
+      label: 'falls back to Intl for an uppercase ISO code',
+      value: 'IN',
+      expected: 'India',
+    },
+    {
+      label: 'returns empty string for empty input',
+      value: '',
+      expected: '',
+    },
+    { label: 'returns empty string for null', value: null, expected: '' },
+    {
+      label: 'returns empty string for undefined',
+      value: undefined,
+      expected: '',
+    },
+    {
+      label: 'returns the raw code when Intl does not recognise the region',
+      value: '1',
+      expected: '1',
+    },
+  ])('$label', ({ value, expected }) => {
+    expect(formatCountry(value, noTranslations)).toBe(expected);
+  });
+
+  it('uses the i18n translation when the key is resolved', () => {
+    const t = withTranslations({ COUNTRY_CODE_US: 'United States (Custom)' });
+    expect(formatCountry('US', t)).toBe('United States (Custom)');
+  });
+
+  it('falls back to Intl when i18n returns the key unchanged', () => {
+    expect(formatCountry('US', noTranslations)).toBe('United States');
+  });
+
+  it('builds the translation key from the value', () => {
+    const spy = jest.fn().mockReturnValue('COUNTRY_CODE_US');
+    formatCountry('US', spy);
+    expect(spy).toHaveBeenCalledWith('COUNTRY_CODE_US');
   });
 });

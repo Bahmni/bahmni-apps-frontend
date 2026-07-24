@@ -1,7 +1,10 @@
 import {
   DEFAULT_TIME_FORMAT,
+  formatCountry,
   formatDateTime,
+  formatGender,
   getFormattedAge,
+  type Translator,
 } from '@bahmni/services';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -17,32 +20,9 @@ import {
   TextInput,
 } from './models';
 
-export type Translator = (
-  key: string,
-  options?: { count?: number; defaultValue?: string },
-) => string;
-
 export type ResultTransform = (value: unknown, t: Translator) => string;
 
 export type DateTimeValue = string | Date | number;
-
-export const formatGender = (value: unknown, t: Translator): string =>
-  t(`GENDER_${value ?? ''}`, {
-    defaultValue: typeof value === 'object' ? '' : String(value ?? ''),
-  });
-
-export const formatCountry = (value: unknown): string => {
-  const code = (typeof value === 'object' ? '' : String(value ?? '')).trim();
-  if (!code) return '';
-  try {
-    const displayNames = new Intl.DisplayNames([navigator.language], {
-      type: 'region',
-    });
-    return displayNames.of(code.toUpperCase()) ?? code;
-  } catch {
-    return code;
-  }
-};
 
 export const resultTransforms: Record<string, ResultTransform> = {
   formatDate: (value: unknown, t: Translator) =>

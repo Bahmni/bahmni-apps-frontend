@@ -1,4 +1,4 @@
-import { generateUUID } from '@bahmni/services';
+import { generateUUID, useTranslation } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import jsonata from 'jsonata';
@@ -16,11 +16,13 @@ jest.mock('jsonata');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   generateUUID: jest.fn(),
+  useTranslation: jest.fn(),
 }));
 expect.extend(toHaveNoViolations);
 
 const mockJsonata = jsonata as jest.Mock;
 const mockGenerateUUID = generateUUID as jest.Mock;
+const mockUseTranslation = useTranslation as jest.Mock;
 
 const renderTable = (
   overrides: Partial<{
@@ -41,6 +43,7 @@ describe('ResultsTable', () => {
     jest.clearAllMocks();
     let count = 0;
     mockGenerateUUID.mockImplementation(() => `uuid-${count++}`);
+    mockUseTranslation.mockReturnValue({ t: (key: string) => key });
     mockJsonata.mockReturnValue({
       evaluate: jest.fn().mockResolvedValue('evaluated-value'),
     });
@@ -148,7 +151,26 @@ describe('ResultsTable', () => {
   });
 
   describe('Result field transforms', () => {
-    it('applies the configured transform to the column value', async () => {
+    it('uses the i18n translation when available before falling back to Intl', async () => {
+      mockUseTranslation.mockReturnValue({
+        t: (key: string) =>
+          key === 'COUNTRY_CODE_US' ? 'United States (translated)' : key,
+      });
+      mockJsonata.mockReturnValue({
+        evaluate: jest.fn().mockResolvedValue('US'),
+      });
+      renderTable({
+        resultFields: mockResultFieldsWithTransform,
+        results: [{ id: '1', country: 'US' }],
+      });
+      await waitFor(() => {
+        expect(
+          screen.getByText('United States (translated)'),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('falls back to Intl when i18n returns the key unchanged', async () => {
       mockJsonata.mockReturnValue({
         evaluate: jest.fn().mockResolvedValue('us'),
       });
@@ -174,7 +196,7 @@ describe('ResultsTable', () => {
       });
     });
 
-    it('skips the transform when the evaluated value is null', async () => {
+    it('shows "-" when the evaluated value is null', async () => {
       mockJsonata.mockReturnValue({
         evaluate: jest.fn().mockResolvedValue(null),
       });
@@ -183,11 +205,22 @@ describe('ResultsTable', () => {
         results: [{ id: '1', country: null }],
       });
       await waitFor(() => {
-        expect(
-          screen.getByTestId('common-search-results-table'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('-')).toBeInTheDocument();
       });
       expect(screen.queryByText('United States')).not.toBeInTheDocument();
+    });
+
+    it('shows "-" when the evaluated value is an empty string', async () => {
+      mockJsonata.mockReturnValue({
+        evaluate: jest.fn().mockResolvedValue(''),
+      });
+      renderTable({
+        resultFields: mockResultFieldsWithTransform,
+        results: [{ id: '1', country: '' }],
+      });
+      await waitFor(() => {
+        expect(screen.getByText('-')).toBeInTheDocument();
+      });
     });
   });
 });

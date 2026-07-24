@@ -1,11 +1,15 @@
 import { DataTable } from '@bahmni/design-system';
 import type { DataTableColumn } from '@bahmni/design-system';
-import { generateUUID, useTranslation } from '@bahmni/services';
+import {
+  generateUUID,
+  type Translator,
+  useTranslation,
+} from '@bahmni/services';
 import jsonata from 'jsonata';
 import { useEffect, useMemo, useState } from 'react';
 import type { ResultFieldConfig } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
-import { resultTransforms, type Translator } from './utils';
+import { resultTransforms } from './utils';
 
 interface ResultsTableProps {
   resultFields: ResultFieldConfig[];
@@ -37,7 +41,12 @@ const evaluateRows = async (
       };
       for (const { key, expr, transform } of compiled) {
         const value = await expr.evaluate(item as Record<string, unknown>);
-        row[key] = transform && value != null ? transform(value, t) : value;
+        row[key] =
+          value != null && value !== ''
+            ? transform
+              ? transform(value, t)
+              : value
+            : '-';
       }
       return row as ResultRow;
     }),

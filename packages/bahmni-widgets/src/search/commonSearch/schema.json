@@ -94,8 +94,8 @@
         },
         "transform": {
           "type": "string",
-          "minLength": 1,
-          "description": "Name of a transform applied to the extracted value before display. Must match a key in the resultTransforms map."
+          "enum": ["formatDate", "formatTime", "formatDateTime", "formatAge", "formatGender", "formatCountry"],
+          "description": "Name of a transform applied to the extracted value before display"
         }
       }
     },
