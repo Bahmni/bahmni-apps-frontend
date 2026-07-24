@@ -5,7 +5,6 @@ export {
   getPatientEncounters,
   getEncounterTypeByName,
   getEncounterByUuid,
-  getObservationsBundleByEncounterUuid,
   createFhirEncounter,
   updateFhirEncounter,
   type EncounterTypeRef,
