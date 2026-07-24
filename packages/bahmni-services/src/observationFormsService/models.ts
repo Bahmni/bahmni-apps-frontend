@@ -5,6 +5,7 @@ export type { ObservationFormTranslations } from '../i18n';
 export interface FormPrivilege {
   privilegeName: string;
   editable: boolean;
+  viewable?: boolean;
 }
 
 // Domain model (what we use for application logic)
@@ -13,12 +14,6 @@ export interface ObservationForm {
   name: string;
   id: number;
   privileges: FormPrivilege[];
-}
-
-// API response interfaces (what comes from the backend)
-export interface ApiFormPrivilege {
-  privilegeName: string;
-  editable: boolean;
 }
 
 export interface ApiNameTranslation {
@@ -30,7 +25,7 @@ export interface FormApiResponse {
   uuid: string;
   name: string;
   id: number;
-  privileges: ApiFormPrivilege[];
+  privileges: FormPrivilege[];
   nameTranslation: string;
 }
 
