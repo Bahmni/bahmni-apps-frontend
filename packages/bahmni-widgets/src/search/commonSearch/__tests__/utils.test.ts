@@ -580,6 +580,7 @@ describe('resultTransforms', () => {
         'formatDate',
         'formatDateTime',
         'formatGender',
+        'formatSearchResult',
         'formatTime',
       ].sort(),
     );

@@ -3,6 +3,7 @@ import {
   formatCountry,
   formatDateTime,
   formatGender,
+  formatSearchResult,
   getFormattedAge,
   type Translator,
 } from '@bahmni/services';
@@ -36,6 +37,7 @@ export const resultTransforms: Record<string, ResultTransform> = {
     getFormattedAge(value as string | number, t),
   formatGender,
   formatCountry,
+  formatSearchResult,
 };
 
 const isRangeInput = (input: InputConfig): boolean =>

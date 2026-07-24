@@ -20,4 +20,5 @@ export {
   type Translator,
   formatGender,
   formatCountry,
+  formatSearchResult,
 } from './utils';

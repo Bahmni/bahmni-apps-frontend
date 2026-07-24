@@ -94,7 +94,7 @@
         },
         "transform": {
           "type": "string",
-          "enum": ["formatDate", "formatTime", "formatDateTime", "formatAge", "formatGender", "formatCountry"],
+          "enum": ["formatDate", "formatTime", "formatDateTime", "formatAge", "formatGender", "formatCountry", "formatSearchResult"],
           "description": "Name of a transform applied to the extracted value before display"
         }
       }

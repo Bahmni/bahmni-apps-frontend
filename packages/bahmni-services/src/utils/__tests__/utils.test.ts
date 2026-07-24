@@ -18,6 +18,7 @@ import {
   resolveComboBoxItems,
   formatGender,
   formatCountry,
+  formatSearchResult,
   type Translator,
 } from '../utils';
 
@@ -1344,6 +1345,9 @@ describe('formatGender', () => {
   it.each([
     { label: 'maps M to the male label', value: 'M', expected: 'Male' },
     { label: 'maps F to the female label', value: 'F', expected: 'Female' },
+    { label: 'returns hyphen for null', value: null, expected: '-' },
+    { label: 'returns hyphen for undefined', value: undefined, expected: '-' },
+    { label: 'returns hyphen for empty string', value: '', expected: '-' },
   ])('$label', ({ value, expected }) => {
     expect(formatGender(value, t)).toBe(expected);
   });
@@ -1406,5 +1410,42 @@ describe('formatCountry', () => {
     const spy = jest.fn().mockReturnValue('COUNTRY_CODE_US');
     formatCountry('US', spy);
     expect(spy).toHaveBeenCalledWith('COUNTRY_CODE_US');
+  });
+});
+
+describe('formatSearchResult', () => {
+  const translations: Record<string, string> = {
+    COMMON_SEARCH_RESULT_SCHEDULED: 'Scheduled',
+    COMMON_SEARCH_RESULT_IN_PROGRESS: 'In Progress',
+  };
+  const t: Translator = (key) => translations[key] ?? key;
+
+  it.each([
+    {
+      label: 'translates a simple value using its i18n key',
+      value: 'Scheduled',
+      expected: 'Scheduled',
+    },
+    {
+      label: 'translates a camelCase value to its i18n key',
+      value: 'inProgress',
+      expected: 'In Progress',
+    },
+    {
+      label: 'returns the i18n key when no translation is available',
+      value: 'unknown',
+      expected: 'COMMON_SEARCH_RESULT_UNKNOWN',
+    },
+    { label: 'returns hyphen for null', value: null, expected: '-' },
+    { label: 'returns hyphen for undefined', value: undefined, expected: '-' },
+    { label: 'returns hyphen for empty string', value: '', expected: '-' },
+  ])('$label', ({ value, expected }) => {
+    expect(formatSearchResult(value, t)).toBe(expected);
+  });
+
+  it('builds the translation key from the value', () => {
+    const spy = jest.fn().mockReturnValue('Scheduled');
+    formatSearchResult('Scheduled', spy);
+    expect(spy).toHaveBeenCalledWith('COMMON_SEARCH_RESULT_SCHEDULED');
   });
 });

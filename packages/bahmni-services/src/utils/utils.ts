@@ -409,7 +409,12 @@ export type Translator = (
 ) => string;
 
 export const formatGender = (value: unknown, t: Translator): string =>
-  t(`GENDER_${value ?? ''}`);
+  value ? t(`GENDER_${value}`) : '-';
+
+export const formatSearchResult = (value: unknown, t: Translator): string =>
+  value
+    ? t(`COMMON_SEARCH_RESULT_${camelToScreamingSnakeCase(String(value))}`)
+    : '-';
 
 export const formatCountry = (value: unknown, t: Translator): string => {
   const code = (typeof value === 'object' ? '' : String(value ?? '')).trim();
