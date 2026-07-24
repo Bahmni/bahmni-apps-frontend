@@ -40,6 +40,14 @@ import {
   mockRowDateRangeFromOnly,
 } from './__mocks__/utilsMocks';
 
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+jest.mock('date-fns', () => ({
+  format: (_date: Date) => {
+    const shifted = new Date(_date.getTime() + IST_OFFSET_MS);
+    return shifted.toISOString().slice(0, -1) + '+0530';
+  },
+}));
+
 describe('initialRows', () => {
   it('returns one row per criterion marked as default', () => {
     const rows = initialRows(mockPatientContext);
@@ -417,16 +425,6 @@ describe('updateRow', () => {
 });
 
 describe('resolveRows', () => {
-  const originalTZ = process.env.TZ;
-
-  beforeAll(() => {
-    process.env.TZ = 'Asia/Kolkata';
-  });
-
-  afterAll(() => {
-    process.env.TZ = originalTZ;
-  });
-
   const criteria = [
     ...mockPatientContext.criteria,
     {
