@@ -45,7 +45,10 @@ const mockCreatedEncounter: Encounter = {
   resourceType: 'Encounter',
   id: 'created-enc-server-uuid',
   status: 'in-progress',
-  class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
+  class: {
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    code: 'AMB',
+  },
 };
 
 const mockBundleResponse = {
@@ -58,7 +61,12 @@ const mockBundleResponse = {
         location: 'Encounter/mock-server-uuid/_history/1',
       },
     },
-    { response: { status: '200 OK', location: 'Condition/cond-uuid/_history/1' } },
+    {
+      response: {
+        status: '200 OK',
+        location: 'Condition/cond-uuid/_history/1',
+      },
+    },
   ],
 };
 
@@ -393,23 +401,37 @@ describe('conditionService', () => {
 
     describe('matched=false with activeEncounter — CREATE NEW encounter (AC2)', () => {
       it('should call createFhirEncounter then post a bundle when matched=false', async () => {
-        await markConditionAsInactive(mockCondition, mockActiveEncounter, false);
+        await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          false,
+        );
 
         expect(mockedCreateFhirEncounter).toHaveBeenCalledTimes(1);
         expect(mockedPost).toHaveBeenCalledTimes(1);
       });
 
       it('should build encounter reusing type, partOf and subject from active encounter', async () => {
-        await markConditionAsInactive(mockCondition, mockActiveEncounter, false);
+        await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          false,
+        );
 
         const enc = mockedCreateFhirEncounter.mock.calls[0][0];
         expect(enc.type?.[0]?.coding?.[0]?.code).toBe('enc-type-uuid');
         expect(enc.partOf?.reference).toBe('Encounter/visit-uuid-999');
-        expect(enc.subject?.reference).toBe(mockActiveEncounter.subject?.reference);
+        expect(enc.subject?.reference).toBe(
+          mockActiveEncounter.subject?.reference,
+        );
       });
 
       it('should build encounter with login location, in-progress status and AMB class', async () => {
-        await markConditionAsInactive(mockCondition, mockActiveEncounter, false);
+        await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          false,
+        );
 
         const enc = mockedCreateFhirEncounter.mock.calls[0][0];
         expect(enc.status).toBe('in-progress');
@@ -438,7 +460,11 @@ describe('conditionService', () => {
       });
 
       it('should POST an EncounterBundle (PUT encounter + PUT condition) after createFhirEncounter', async () => {
-        await markConditionAsInactive(mockCondition, mockActiveEncounter, false);
+        await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          false,
+        );
 
         expect(mockedPost).toHaveBeenCalledWith(
           ENCOUNTER_BUNDLE_URL,
@@ -447,13 +473,18 @@ describe('conditionService', () => {
         const bundle = mockedPost.mock.calls[0][1] as {
           entry: Array<{
             fullUrl: string;
-            resource: { resourceType: string; encounter?: { reference: string } };
+            resource: {
+              resourceType: string;
+              encounter?: { reference: string };
+            };
             request: { method: string; url: string };
           }>;
         };
         expect(bundle.entry).toHaveLength(2);
         expect(bundle.entry[0].request.method).toBe('PUT');
-        expect(bundle.entry[0].request.url).toBe(`Encounter/${mockCreatedEncounter.id}`);
+        expect(bundle.entry[0].request.url).toBe(
+          `Encounter/${mockCreatedEncounter.id}`,
+        );
         expect(bundle.entry[1].request.method).toBe('PUT');
         expect(bundle.entry[1].resource.encounter?.reference).toBe(
           `Encounter/${mockCreatedEncounter.id}`,
@@ -477,12 +508,16 @@ describe('conditionService', () => {
 
         await expect(
           markConditionAsInactive(mockCondition, mockActiveEncounter, false),
-        ).rejects.toThrow('Unable to build encounter: login location unavailable');
+        ).rejects.toThrow(
+          'Unable to build encounter: login location unavailable',
+        );
         expect(mockedCreateFhirEncounter).not.toHaveBeenCalled();
       });
 
       it('should propagate createFhirEncounter failure (AC4)', async () => {
-        mockedCreateFhirEncounter.mockRejectedValueOnce(new Error('Server error'));
+        mockedCreateFhirEncounter.mockRejectedValueOnce(
+          new Error('Server error'),
+        );
 
         await expect(
           markConditionAsInactive(mockCondition, mockActiveEncounter, false),
@@ -501,7 +536,10 @@ describe('conditionService', () => {
         resourceType: 'Encounter',
         id: 'visit-uuid-fresh',
         status: 'in-progress',
-        class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
+        class: {
+          system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+          code: 'AMB',
+        },
       };
 
       beforeEach(() => {
@@ -518,7 +556,9 @@ describe('conditionService', () => {
           patientUuid,
         );
 
-        expect(mockedGetEncounterTypeByName).toHaveBeenCalledWith(encounterTypeName);
+        expect(mockedGetEncounterTypeByName).toHaveBeenCalledWith(
+          encounterTypeName,
+        );
         expect(mockedGetActiveVisit).toHaveBeenCalledWith(patientUuid);
         expect(mockedCreateFhirEncounter).toHaveBeenCalledTimes(1);
         expect(mockedPost).toHaveBeenCalledTimes(1);
@@ -559,7 +599,9 @@ describe('conditionService', () => {
         };
         expect(bundle.entry).toHaveLength(2);
         expect(bundle.entry[0].request.method).toBe('PUT');
-        expect(bundle.entry[0].request.url).toBe(`Encounter/${mockCreatedEncounter.id}`);
+        expect(bundle.entry[0].request.url).toBe(
+          `Encounter/${mockCreatedEncounter.id}`,
+        );
         expect(bundle.entry[1].request.method).toBe('PUT');
         expect(bundle.entry[1].resource.encounter?.reference).toBe(
           `Encounter/${mockCreatedEncounter.id}`,
@@ -582,8 +624,16 @@ describe('conditionService', () => {
         mockedGetEncounterTypeByName.mockResolvedValueOnce(null);
 
         await expect(
-          markConditionAsInactive(mockCondition, null, false, encounterTypeName, patientUuid),
-        ).rejects.toThrow('Unable to mark condition as inactive: no encounter context available');
+          markConditionAsInactive(
+            mockCondition,
+            null,
+            false,
+            encounterTypeName,
+            patientUuid,
+          ),
+        ).rejects.toThrow(
+          'Unable to mark condition as inactive: no encounter context available',
+        );
         expect(mockedCreateFhirEncounter).not.toHaveBeenCalled();
       });
 
@@ -591,16 +641,32 @@ describe('conditionService', () => {
         mockedGetActiveVisit.mockResolvedValueOnce(null);
 
         await expect(
-          markConditionAsInactive(mockCondition, null, false, encounterTypeName, patientUuid),
-        ).rejects.toThrow('Unable to mark condition as inactive: no encounter context available');
+          markConditionAsInactive(
+            mockCondition,
+            null,
+            false,
+            encounterTypeName,
+            patientUuid,
+          ),
+        ).rejects.toThrow(
+          'Unable to mark condition as inactive: no encounter context available',
+        );
         expect(mockedCreateFhirEncounter).not.toHaveBeenCalled();
       });
 
       it('should propagate createFhirEncounter failure (AC4)', async () => {
-        mockedCreateFhirEncounter.mockRejectedValueOnce(new Error('Server error'));
+        mockedCreateFhirEncounter.mockRejectedValueOnce(
+          new Error('Server error'),
+        );
 
         await expect(
-          markConditionAsInactive(mockCondition, null, false, encounterTypeName, patientUuid),
+          markConditionAsInactive(
+            mockCondition,
+            null,
+            false,
+            encounterTypeName,
+            patientUuid,
+          ),
         ).rejects.toThrow('Server error');
       });
     });

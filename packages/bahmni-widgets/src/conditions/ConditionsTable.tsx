@@ -21,8 +21,8 @@ import {
 } from '@bahmni/services';
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
-import ConfirmationModal from '../confirmationModal/ConfirmationModal';
 import { useActivePractitioner } from '../activePractitioner';
+import ConfirmationModal from '../confirmationModal/ConfirmationModal';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetActionConfig, WidgetProps } from '../registry/model';

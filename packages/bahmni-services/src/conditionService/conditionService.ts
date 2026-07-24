@@ -20,7 +20,6 @@ import {
 } from '../encounterService';
 import { getUserLoginLocation } from '../userService';
 import {
-  CONDITION_RESOURCE_URL,
   PATIENT_CONDITION_RESOURCE_URL,
   PATIENT_CONDITION_PAGE_URL,
 } from './constants';
@@ -99,7 +98,14 @@ function buildConditionEncounter(
     subject,
     partOf,
     participant: practitionerUUID
-      ? [{ individual: { reference: `Practitioner/${practitionerUUID}`, type: 'Practitioner' } }]
+      ? [
+          {
+            individual: {
+              reference: `Practitioner/${practitionerUUID}`,
+              type: 'Practitioner',
+            },
+          },
+        ]
       : undefined,
     location: [
       {
