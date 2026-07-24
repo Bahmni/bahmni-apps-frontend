@@ -113,7 +113,10 @@ const ConditionsTable: React.FC<WidgetProps> = ({
           eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
             .eventType as AuditEventType,
           patientUuid: patientUUID,
-          messageParams: { conditionDisplay: conditionToMarkInactive.display },
+          messageParams: {
+            conditionDisplay: conditionToMarkInactive.display,
+            encounterUuid: encounter.id,
+          },
         });
         dispatchConsultationSaved({
           patientUUID,

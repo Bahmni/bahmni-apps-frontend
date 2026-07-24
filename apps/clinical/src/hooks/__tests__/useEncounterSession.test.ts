@@ -96,6 +96,61 @@ describe('useEncounterSession', () => {
     });
   });
 
+  describe('store snapshot seeding', () => {
+    const snapshotEncounter = {
+      id: 'snap-enc-1',
+      subject: { reference: `Patient/${PATIENT_UUID}` },
+    } as any;
+
+    it('seeds state from store and skips resolver when snapshot is MATCHED and belongs to this patient', async () => {
+      (
+        jest.requireMock('@bahmni/services')
+          .getEncounterSessionSnapshot as jest.Mock
+      ).mockReturnValue({
+        matchReasons: ['MATCHED'],
+        activeEncounter: snapshotEncounter,
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+
+      const { result } = renderHook(() => useEncounterSession(defaultOptions));
+
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.hasActiveSession).toBe(true);
+      expect(result.current.activeEncounter).toBe(snapshotEncounter);
+      expect(result.current.matchReason).toEqual(['MATCHED']);
+      expect(mockResolveEncounterMatchDecision).not.toHaveBeenCalled();
+    });
+
+    it('does not seed and falls through to resolver when snapshot encounter belongs to a different patient', async () => {
+      (
+        jest.requireMock('@bahmni/services')
+          .getEncounterSessionSnapshot as jest.Mock
+      ).mockReturnValue({
+        matchReasons: ['MATCHED'],
+        activeEncounter: {
+          id: 'snap-enc-other',
+          subject: { reference: 'Patient/other-patient' },
+        },
+        canEditOrCreate: true,
+        isLoading: false,
+      });
+      mockResolveEncounterMatchDecision.mockResolvedValue({
+        matched: false,
+        encounter: null,
+        reasons: ['NO_ACTIVE_ENCOUNTER'],
+      });
+
+      const { result } = renderHook(() => useEncounterSession(defaultOptions));
+
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(mockResolveEncounterMatchDecision).toHaveBeenCalled();
+      expect(result.current.matchReason).toEqual(['NO_ACTIVE_ENCOUNTER']);
+    });
+  });
+
   describe('MATCHED', () => {
     it('returns editActiveEncounter=true and matchReason=[MATCHED]', async () => {
       const encounter = { id: 'enc-1' } as any;

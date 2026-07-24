@@ -22,7 +22,12 @@ import {
 
 jest.mock('../../api');
 jest.mock('../../userService');
-jest.mock('../../encounterService');
+jest.mock('../../encounterService', () => ({
+  ...jest.requireActual('../../encounterService'),
+  createFhirEncounter: jest.fn(),
+  getEncounterTypeByName: jest.fn(),
+  getActiveVisit: jest.fn(),
+}));
 jest.mock('../../utils/utils', () => ({
   ...jest.requireActual('../../utils/utils'),
   generateUUID: jest.fn(() => 'test-uuid-1234'),
@@ -92,6 +97,7 @@ const mockActiveEncounter: Encounter = {
   ],
   subject: { reference: 'Patient/02f47490-d657-48ee-98e7-4c9133ea168b' },
   partOf: { reference: 'Encounter/visit-uuid-999', type: 'Encounter' },
+  period: { start: '2023-06-15T09:00:00.000Z' },
   location: [
     {
       location: {
@@ -348,7 +354,7 @@ describe('conditionService', () => {
         );
       });
 
-      it('encounter entry should be rebuilt fresh (not the raw cached snapshot) with id grafted on', async () => {
+      it('encounter entry preserves id, period.start, location, and participant from the cached snapshot', async () => {
         await markConditionAsInactive(
           mockCondition,
           mockActiveEncounter,
@@ -362,6 +368,7 @@ describe('conditionService', () => {
           entry: Array<{
             resource: {
               id?: string;
+              period?: { start?: string };
               location?: Array<{ location: { reference: string } }>;
               participant?: Array<{ individual?: { reference: string } }>;
             };
@@ -370,11 +377,15 @@ describe('conditionService', () => {
         const encounterResource = bundle.entry[0].resource;
         // id is grafted from the cached encounter
         expect(encounterResource.id).toBe(mockActiveEncounter.id);
-        // location comes from the current login location, NOT from the cached snapshot
-        expect(encounterResource.location?.[0]?.location.reference).toBe(
-          'Location/login-location-uuid',
+        // period.start is preserved from the cached encounter, not overwritten with now
+        expect(encounterResource.period?.start).toBe(
+          mockActiveEncounter.period?.start,
         );
-        // participant is wired from the supplied practitionerUUID
+        // location is preserved from the cached encounter, not overwritten with login location
+        expect(encounterResource.location?.[0]?.location.reference).toBe(
+          'Location/loc-uuid-abc',
+        );
+        // participant: snapshot has none, so falls back to the supplied practitionerUUID
         expect(encounterResource.participant?.[0]?.individual?.reference).toBe(
           'Practitioner/practitioner-uuid-ac1',
         );

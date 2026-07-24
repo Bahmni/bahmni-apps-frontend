@@ -1,8 +1,6 @@
 import { Condition, Bundle, Encounter } from 'fhir/r4';
 import { get, post } from '../api';
 import {
-  FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
-  FHIR_ENCOUNTER_TAG_SYSTEM,
   FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CONDITION_CODE,
@@ -14,6 +12,7 @@ import {
   ENCOUNTER_BUNDLE_URL,
 } from '../encounterBundle';
 import {
+  buildEncounterResource,
   createFhirEncounter,
   getActiveVisit,
   getEncounterTypeByName,
@@ -77,48 +76,23 @@ function buildConditionEncounter(
   } catch {
     throw new Error('Unable to build encounter: login location unavailable');
   }
-  return {
-    resourceType: 'Encounter',
-    status: 'in-progress',
-    class: {
-      system: FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
-      code: 'AMB',
-      display: 'ambulatory',
-    },
-    meta: {
-      tag: [
-        {
-          system: FHIR_ENCOUNTER_TAG_SYSTEM,
-          code: 'encounter',
-          display: 'Encounter',
-        },
-      ],
-    },
+  return buildEncounterResource({
     type,
-    subject,
     partOf,
-    participant: practitionerUUID
-      ? [
-          {
-            individual: {
-              reference: `Practitioner/${practitionerUUID}`,
-              type: 'Practitioner',
-            },
-          },
-        ]
-      : undefined,
-    location: [
-      {
-        location: {
-          reference: `Location/${locationUuid}`,
-          type: 'Location',
-        },
-      },
-    ],
-    period: { start: new Date().toISOString() },
-  };
+    subject,
+    locationUuid,
+    periodStart: new Date().toISOString(),
+    practitionerUUIDs: practitionerUUID ? [practitionerUUID] : undefined,
+  });
 }
 
+/**
+ * Marks a condition as inactive, bundled with a FHIR encounter.
+ * Reuses an existing encounter when matched, otherwise creates one.
+ * Create paths are non-atomic: if the bundle POST fails after the encounter POST,
+ * the encounter is left orphaned (urn:uuid refs are unsupported by OpenMRS).
+ * @returns The encounter bundled with the condition update.
+ */
 export async function markConditionAsInactive(
   condition: Condition,
   activeEncounter?: Encounter | null,
@@ -160,14 +134,22 @@ export async function markConditionAsInactive(
     // This matches the codebase's established pattern (createEncounterBundleEntry) and
     // avoids a lost-update if the server-side encounter was modified after the session
     // snapshot was captured.
+    const built = buildConditionEncounter(
+      activeEncounter.type,
+      activeEncounter.partOf,
+      activeEncounter.subject,
+      practitionerUUID,
+    );
     const freshEncounter: Encounter = {
-      ...buildConditionEncounter(
-        activeEncounter.type,
-        activeEncounter.partOf,
-        activeEncounter.subject,
-        practitionerUUID,
-      ),
+      ...built,
       id: activeEncounter.id,
+      // Preserve the original encounter's start time, location, and participants;
+      // only fall back to fresh values when the snapshot lacks them.
+      period: {
+        start: activeEncounter.period?.start ?? new Date().toISOString(),
+      },
+      location: activeEncounter.location ?? built.location,
+      participant: activeEncounter.participant ?? built.participant,
     };
     const conditionWithEncounter: Condition = {
       ...updatedCondition,

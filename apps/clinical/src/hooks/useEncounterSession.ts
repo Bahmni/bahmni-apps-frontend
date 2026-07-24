@@ -70,12 +70,13 @@ export function useEncounterSession(
     if (
       storeState.matchReasons.includes('MATCHED') &&
       storeState.activeEncounter?.id &&
+      storeState.activeEncounter.subject?.reference?.endsWith(patientUUID) &&
       !signal.ignored
     ) {
       setHasActiveSession(true);
       setActiveEncounter(storeState.activeEncounter);
       setIsPractitionerMatch(true);
-      setMatchReason(['MATCHED']);
+      setMatchReason(storeState.matchReasons);
       setIsLoading(false);
       return;
     }

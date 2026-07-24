@@ -583,6 +583,9 @@ describe('ConditionsTable', () => {
           expect.objectContaining({
             eventType: 'EDIT_ENCOUNTER',
             patientUuid: 'test-patient-uuid',
+            messageParams: expect.objectContaining({
+              encounterUuid: mockReturnedEnc.id,
+            }),
           }),
         );
         expect(dispatchConsultationSaved).toHaveBeenCalledWith(
