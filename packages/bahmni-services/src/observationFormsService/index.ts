@@ -1,6 +1,7 @@
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  fetchFormUuidByObservationDate,
   getPatientFormData,
 } from './observationFormsService';
 export {

@@ -1,7 +1,8 @@
 import { OPENMRS_REST_V1 } from '../constants/app';
 
 export const FORM_METADATA_URL = (formUuid: string) =>
-  OPENMRS_REST_V1 + `/form/${formUuid}?v=custom:(resources:(value))`;
+  OPENMRS_REST_V1 +
+  `/form/${formUuid}?v=custom:(uuid,name,version,published,resources:(value))`;
 export const OBSERVATION_FORMS_URL = (episodeUuid?: string) => {
   const baseUrl = OPENMRS_REST_V1 + '/bahmniie/form/latestPublishedForms';
   if (episodeUuid) {
@@ -21,6 +22,10 @@ export const FORM_TRANSLATIONS_URL = (
   `/bahmniie/form/translations?formName=${encodeURIComponent(formName)}&formUuid=${formUuid}&formVersion=${formVersion}&locale=${locale}`;
 
 export const DEFAULT_FORM_NAMESPACE = 'Bahmni';
+
+export const FORM_SEARCH_URL = (formName: string) =>
+  OPENMRS_REST_V1 +
+  `/form?q=${encodeURIComponent(formName)}&v=custom:(uuid,name,version,published,auditInfo:(dateCreated))`;
 
 export const FORM_DATA_URL = (
   patientUuid: string,

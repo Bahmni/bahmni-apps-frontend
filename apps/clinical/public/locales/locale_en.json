@@ -134,6 +134,8 @@
   "CONDITION_TABLE_DURATION": "Duration",
   "CONDITION_TABLE_NOT_AVAILABLE": "Not available",
   "CONDITION_TABLE_RECORDED_BY": "Recorded By",
+  "EDIT_OBSERVATION_FORM": "Edit",
+  "EDIT_OBSERVATION_FORM_TITLE": "Edit Observation Form",
   "CONFIG_ERROR_NOT_FOUND": "Configuration not found",
   "CONFIG_ERROR_SCHEMA_VALIDATION_FAILED": "Configuration does not match required schema",
   "CONFIG_ERROR_VALIDATION_FAILED": "Configuration validation failed",

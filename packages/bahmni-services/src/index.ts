@@ -336,6 +336,7 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  fetchFormUuidByObservationDate,
   transformFormDataToObservations,
   transformObservationsToFormData,
   transformContainerObservationsToForm2Observations,

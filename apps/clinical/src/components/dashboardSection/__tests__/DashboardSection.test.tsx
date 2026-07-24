@@ -454,7 +454,7 @@ describe('DashboardSection Component', () => {
         React.lazy(() => Promise.resolve({ default: ProbeWidget })),
       );
       mockUseEncounterSessionStore.mockReturnValue({
-        matchReasons: [],
+        matchReasons: ['MATCHED'],
         canEditOrCreate: true,
         isLoading: false,
         activeEncounter: { id: 'enc-active-uuid' },
@@ -471,6 +471,65 @@ describe('DashboardSection Component', () => {
         expect(screen.getByTestId('probe-widget-enc')).toBeInTheDocument();
       });
       expect(capturedProps[0].activeEncounterUuid).toBe('enc-active-uuid');
+    });
+
+    it('passes activeEncounterUuid as null when session is expired (not MATCHED)', async () => {
+      const capturedProps: Record<string, unknown>[] = [];
+      const ProbeWidget = (props: Record<string, unknown>) => {
+        capturedProps.push(props);
+        return <div data-testid="probe-widget-expired" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: ['SESSION_EXPIRED'],
+        canEditOrCreate: false,
+        isLoading: false,
+        activeEncounter: { id: 'stale-enc-uuid' },
+      });
+
+      renderSection({
+        id: 'allergies-section',
+        name: 'Allergies',
+        icon: 'test-icon',
+        controls: [{ type: 'allergies', name: '', config: {} }],
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('probe-widget-expired')).toBeInTheDocument();
+      });
+      // Even though activeEncounter exists, uuid must be null when not MATCHED
+      expect(capturedProps[0].activeEncounterUuid).toBeNull();
+    });
+
+    it('passes activeEncounterUuid as null when there is a provider mismatch', async () => {
+      const capturedProps: Record<string, unknown>[] = [];
+      const ProbeWidget = (props: Record<string, unknown>) => {
+        capturedProps.push(props);
+        return <div data-testid="probe-widget-mismatch" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: ['PROVIDER_MISMATCH'],
+        canEditOrCreate: false,
+        isLoading: false,
+        activeEncounter: { id: 'other-provider-enc' },
+      });
+
+      renderSection({
+        id: 'vitals-section',
+        name: 'Vitals',
+        icon: 'test-icon',
+        controls: [{ type: 'vitals', name: '', config: {} }],
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('probe-widget-mismatch')).toBeInTheDocument();
+      });
+      expect(capturedProps[0].activeEncounterUuid).toBeNull();
     });
 
     it('passes activeEncounterUuid as null when no active encounter exists', async () => {
