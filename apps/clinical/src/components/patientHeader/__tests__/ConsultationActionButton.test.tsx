@@ -86,12 +86,24 @@ describe('ConsultationActionButton', () => {
       ).toBeDisabled();
     });
 
-    it('dispatches consultationStart event on click', () => {
+    it('dispatches consultationStart with empty payload for new consultation', () => {
       render(<ConsultationActionButton {...defaultProps} />);
 
       fireEvent.click(screen.getByTestId('consultation-action-button'));
 
-      expect(mockDispatchConsultationStart).toHaveBeenCalled();
+      expect(mockDispatchConsultationStart).toHaveBeenCalledWith({});
+    });
+
+    it('dispatches consultationStart with editTitle when continuing an existing encounter', () => {
+      render(
+        <ConsultationActionButton {...defaultProps} editActiveEncounter />,
+      );
+
+      fireEvent.click(screen.getByTestId('consultation-action-button'));
+
+      expect(mockDispatchConsultationStart).toHaveBeenCalledWith({
+        editTitle: 'CONSULTATION_ACTION_CONTINUE',
+      });
     });
 
     it('shows skeleton when loading', () => {

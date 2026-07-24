@@ -24,7 +24,10 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
   const { matchReasons, canEditOrCreate, activeEncounter } =
     useEncounterSessionStore();
   const noActiveVisit = matchReasons.includes('NO_ACTIVE_VISIT');
-  const activeEncounterUuid = activeEncounter?.id ?? null;
+  const isSessionMatched = matchReasons.includes('MATCHED');
+  const activeEncounterUuid = isSessionMatched
+    ? (activeEncounter?.id ?? null)
+    : null;
 
   const renderControl = (
     control: ControlConfig,

@@ -2381,7 +2381,7 @@ describe('encounterBundleService', () => {
         reference: 'ServiceRequest/service-request-123',
       };
 
-      it('should pass basedOn reference to createObservationResources when provided', () => {
+      it('should pass basedOn reference to createObservationEntries when provided', () => {
         const result = createObservationBundleEntries({
           observationFormsData: [
             {

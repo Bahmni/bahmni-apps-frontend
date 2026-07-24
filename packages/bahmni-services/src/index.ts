@@ -234,6 +234,9 @@ export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
   getPatientObservations,
+  getObservationsBundleByEncounterUuid,
+  groupObservationsByEncounter,
+  type EncounterGroup,
 } from './observationService';
 export {
   getCurrentProvider,
@@ -268,7 +271,6 @@ export {
   getEncounterTypeByName,
   type EncounterTypeRef,
   shouldEnableEncounterFilter,
-  getObservationsBundleByEncounterUuid,
   createFhirEncounter,
   updateFhirEncounter,
   type FormsEncounter,
@@ -332,6 +334,7 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  fetchFormUuidByObservationDate,
   transformFormDataToObservations,
   transformObservationsToFormData,
   transformContainerObservationsToForm2Observations,
@@ -343,7 +346,6 @@ export {
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
-  type ApiFormPrivilege,
   type FormMetadata,
   type FormData,
   type FormControlData,
