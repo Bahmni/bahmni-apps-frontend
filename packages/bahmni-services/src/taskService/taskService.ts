@@ -1,6 +1,6 @@
 import { Bundle, Task } from 'fhir/r4';
 import { get } from '../api';
-import { TASKS_URL,FHIR_TASK_URL } from './constants';
+import { TASKS_URL, FHIR_TASK_URL } from './constants';
 import { CreateTaskOptions, CreateTaskPayload } from './models';
 
 /**
@@ -19,7 +19,6 @@ export async function getTasks(
     TASKS_URL(patientUuid, basedOnReference, encounterUuids),
   );
 }
-
 
 /**
  * Creates a FHIR Task to record fulfillment action on an order.

@@ -1,4 +1,10 @@
-import { Observation, Encounter, Bundle,BundleEntry,FhirResource } from 'fhir/r4';
+import {
+  Observation,
+  Encounter,
+  Bundle,
+  BundleEntry,
+  FhirResource,
+} from 'fhir/r4';
 import { get, post, put } from '../api';
 import { FHIR_ENCOUNTER_TYPE_CODE_SYSTEM } from '../constants/fhir';
 import {
@@ -154,7 +160,6 @@ export async function updateFhirEncounter(
 ): Promise<Encounter> {
   return await put<Encounter>(`${FHIR_ENCOUNTER_URL}/${uuid}`, encounter);
 }
-
 
 /**
  * Creates a FHIR Encounter linked to an existing visit via ConsultationBundle.

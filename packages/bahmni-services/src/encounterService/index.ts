@@ -9,7 +9,7 @@ export {
   createFhirEncounter,
   updateFhirEncounter,
   type EncounterTypeRef,
-  createOrderFulfillmentEncounter
+  createOrderFulfillmentEncounter,
 } from './encounterService';
 
 export { shouldEnableEncounterFilter } from './encounterFilterUtils';

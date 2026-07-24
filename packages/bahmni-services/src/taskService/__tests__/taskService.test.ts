@@ -1,6 +1,6 @@
-import { get,post } from '../../api';
-import { TASKS_URL,FHIR_TASK_URL } from '../constants';
-import { getTasks,createTask } from '../taskService';
+import { get, post } from '../../api';
+import { TASKS_URL, FHIR_TASK_URL } from '../constants';
+import { getTasks, createTask } from '../taskService';
 import { emptyTaskBundle, mockTaskBundle } from './__mocks__/taskServiceMocks';
 
 jest.mock('../../api');

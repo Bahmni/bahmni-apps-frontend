@@ -134,14 +134,7 @@ export const fetchFormMetadata = async (
       currentLocale,
     );
 
-    const translationsResponse = await fetch(translationsUrl);
-    if (translationsResponse.ok) {
-      const translationsData = await translationsResponse.json();
-      translations = extractObservationFormTranslations(
-        translationsData,
-        currentLocale,
-      );
-
+    try {
       const translationsResponse = await fetch(translationsUrl);
       if (translationsResponse.ok) {
         const translationsData = await translationsResponse.json();

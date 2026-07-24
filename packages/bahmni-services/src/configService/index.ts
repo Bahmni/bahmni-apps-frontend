@@ -1,4 +1,8 @@
-export { getConfig,  getOrdersConfig,getOrdersTableConfig, } from './configService';
+export {
+  getConfig,
+  getOrdersConfig,
+  getOrdersTableConfig,
+} from './configService';
 export {
   type OrdersConfig,
   type OrderExtension,

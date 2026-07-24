@@ -219,27 +219,9 @@ export {
 } from './investigationService';
 
 export {
-  getConfig
-  getClinicalConfig,
-  getDashboardConfig,
-  getMedicationConfig,
-  getRegistrationConfig,
+  getConfig,
   getOrdersConfig,
   getOrdersTableConfig,
-  type ClinicalConfig,
-  type DashboardConfig,
-  type MedicationJSONConfig,
-  type DashboardSectionConfig,
-  type Dashboard,
-  type Frequency,
-  type RegistrationConfig,
-  type PatientSearchConfig,
-  type PatientSearchField,
-  type PatientInformationConfig,
-  type SearchActionConfig,
-  type ControlConfig,
-  type AppExtensionConfig,
-  type ExtensionPoint,
   type OrdersConfig,
   type OrderExtension,
   type OrderExtensionParams,
@@ -305,7 +287,7 @@ export {
   updateFhirEncounter,
   type FormsEncounter,
   createOrderFulfillmentEncounter,
-  OrderFulfillmentEncounterParams
+  type OrderFulfillmentEncounterParams,
 } from './encounterService';
 
 export {
@@ -484,7 +466,6 @@ export type {
   TemplateListResponse,
 } from './templateService';
 export { getTasks } from './taskService';
-
 
 export * from './orders';
 export {
