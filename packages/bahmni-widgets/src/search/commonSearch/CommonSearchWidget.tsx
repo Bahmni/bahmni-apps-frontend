@@ -100,7 +100,11 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       setIsSearchResultsLoading(true);
       post(
         context.url,
-        buildPayload(resolveRows(validated, context.criteria), context.context),
+        buildPayload(
+          resolveRows(validated, context.criteria),
+          context.context,
+          location.uuid,
+        ),
       )
         .then((data) => {
           setCurrentSearchState((prev: CurrentSearchState | null) =>

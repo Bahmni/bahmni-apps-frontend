@@ -2,6 +2,12 @@ import { AuditEventType, camelToScreamingSnakeCase } from '@bahmni/services';
 import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import {
+  KEY_TYPE_KIND_SUFFIX,
+  KEY_TYPE_VALUE_SUFFIX,
+  LOCAL_ISO_DATE_FORMAT,
+  LOCATION_UUID_FIELD,
+} from './constants';
+import {
   CriterionConfig,
   CriterionRow,
   CriterionValue,
@@ -164,8 +170,16 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
     return {
       operator: 'AND',
       conditions: [
-        { field: `${field.key}.kind`, comparator: 'eq', value: field.keyType },
-        { field: `${field.key}.value`, comparator: 'eq', value: value.value },
+        {
+          field: `${field.key}${KEY_TYPE_KIND_SUFFIX}`,
+          comparator: 'eq',
+          value: field.keyType,
+        },
+        {
+          field: `${field.key}${KEY_TYPE_VALUE_SUFFIX}`,
+          comparator: 'eq',
+          value: value.value,
+        },
       ],
     };
   }
@@ -173,7 +187,7 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
 };
 
 const toLocalIso = (v: string): string =>
-  format(new Date(v), "yyyy-MM-dd'T'HH:mm:ss.SSSxx");
+  format(new Date(v), LOCAL_ISO_DATE_FORMAT);
 
 const localizeDateTime = (value: CriterionValue): CriterionValue => {
   if (isScalarValue(value)) return { value: toLocalIso(value.value) };
@@ -212,11 +226,15 @@ export const resolveRows = (
 export const buildPayload = (
   resolvedRows: ResolvedRow[],
   entity: string,
+  locationUuid: string,
 ): SearchPayload => ({
   entity,
   criteria: {
     operator: 'AND',
-    conditions: resolvedRows.map(buildCondition),
+    conditions: [
+      ...resolvedRows.map(buildCondition),
+      { field: LOCATION_UUID_FIELD, comparator: 'eq', value: locationUuid },
+    ],
   },
 });
 

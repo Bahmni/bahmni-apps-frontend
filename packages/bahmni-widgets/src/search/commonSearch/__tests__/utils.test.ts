@@ -501,6 +501,13 @@ describe('resolveRows', () => {
   });
 });
 
+const mockLocationUuid = 'test-location-uuid';
+const locationCondition = {
+  field: 'location.uuid',
+  comparator: 'eq',
+  value: mockLocationUuid,
+};
+
 describe('buildPayload', () => {
   it.each([
     {
@@ -513,6 +520,7 @@ describe('buildPayload', () => {
           operator: 'AND',
           conditions: [
             { field: 'patient.givenName', comparator: 'eq', value: 'John' },
+            locationCondition,
           ],
         },
       },
@@ -541,6 +549,7 @@ describe('buildPayload', () => {
                 },
               ],
             },
+            locationCondition,
           ],
         },
       },
@@ -561,29 +570,45 @@ describe('buildPayload', () => {
                 { field: 'patient.age', comparator: 'lt', value: '50' },
               ],
             },
+            locationCondition,
           ],
         },
       },
     },
   ])('$label', ({ resolvedRows, entity, expected }) => {
-    expect(buildPayload(resolvedRows, entity)).toEqual(expected);
+    expect(buildPayload(resolvedRows, entity, mockLocationUuid)).toEqual(
+      expected,
+    );
   });
 
-  it('multiple rows → multiple top-level conditions', () => {
+  it('multiple rows → conditions include all rows plus location', () => {
     const result = buildPayload(
       [mockResolvedScalarRow, mockResolvedKeyTypeRow, mockResolvedRangeRow],
       'patient',
+      mockLocationUuid,
     );
-    expect(result.criteria.conditions).toHaveLength(3);
+    expect(result.criteria.conditions).toHaveLength(4);
+  });
+
+  it('location condition always appears as last condition', () => {
+    const result = buildPayload(
+      [mockResolvedScalarRow],
+      'patient',
+      mockLocationUuid,
+    );
+    const last = result.criteria.conditions.at(-1);
+    expect(last).toEqual(locationCondition);
   });
 
   it('entity maps to different context values', () => {
-    expect(buildPayload([mockResolvedScalarRow], 'appointment').entity).toBe(
-      'appointment',
-    );
-    expect(buildPayload([mockResolvedScalarRow], 'patientProgram').entity).toBe(
-      'patientProgram',
-    );
+    expect(
+      buildPayload([mockResolvedScalarRow], 'appointment', mockLocationUuid)
+        .entity,
+    ).toBe('appointment');
+    expect(
+      buildPayload([mockResolvedScalarRow], 'patientProgram', mockLocationUuid)
+        .entity,
+    ).toBe('patientProgram');
   });
 });
 
