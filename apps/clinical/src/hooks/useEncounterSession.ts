@@ -77,6 +77,7 @@ export function useEncounterSession(
       setIsPractitionerMatch(true);
       setMatchReason(['MATCHED']);
       setIsLoading(false);
+      return;
     }
 
     setIsLoading(true);

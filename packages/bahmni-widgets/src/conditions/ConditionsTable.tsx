@@ -108,13 +108,13 @@ const ConditionsTable: React.FC<WidgetProps> = ({
       if (encounter.id) {
         setEncounterSessionDecision({ reasons: ['MATCHED'], encounter });
       }
-      dispatchAuditEvent({
-        eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
-          .eventType as AuditEventType,
-        patientUuid: patientUUID!,
-        messageParams: { conditionDisplay: conditionToMarkInactive.display },
-      });
       if (patientUUID) {
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
+            .eventType as AuditEventType,
+          patientUuid: patientUUID,
+          messageParams: { conditionDisplay: conditionToMarkInactive.display },
+        });
         dispatchConsultationSaved({
           patientUUID,
           updatedResources: {
