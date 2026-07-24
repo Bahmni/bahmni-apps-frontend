@@ -24,7 +24,7 @@ const LookupCriterionInput = ({
       <ComboBox
         id={`lookup-input-${input.placeholderTranslationKey}`}
         data-testid={`lookup-input-${input.placeholderTranslationKey}-test-id`}
-        titleText={t('ENTER_SEARCH_VALUE')}
+        titleText={t('COMMON_SEARCH_CRITERION_LABEL')}
         placeholder={t(input.placeholderTranslationKey)}
         items={[]}
         selectedItem={value?.value ?? null}

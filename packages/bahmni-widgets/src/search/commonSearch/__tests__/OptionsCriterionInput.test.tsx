@@ -29,7 +29,9 @@ describe('OptionsCriterionInput', () => {
     expect(
       screen.getByTestId('options-criterion-input-test-id'),
     ).toBeInTheDocument();
-    expect(screen.getByText('ENTER_SEARCH_VALUE')).toBeInTheDocument();
+    expect(
+      screen.getByText('COMMON_SEARCH_CRITERION_LABEL'),
+    ).toBeInTheDocument();
     expect(screen.getByText('OPTIONS_PLACEHOLDER')).toBeInTheDocument();
   });
 

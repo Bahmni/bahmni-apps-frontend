@@ -42,12 +42,14 @@ describe('DateCriterionInput', () => {
   beforeEach(() => jest.clearAllMocks());
 
   describe('single mode', () => {
-    it('renders one date input with ENTER_SEARCH_VALUE label', () => {
+    it('renders one date input with COMMON_SEARCH_CRITERION_LABEL label', () => {
       renderInput();
       expect(
         screen.getByTestId('date-criterion-input-test-id'),
       ).toBeInTheDocument();
-      expect(screen.getByText('ENTER_SEARCH_VALUE')).toBeInTheDocument();
+      expect(
+        screen.getByText('COMMON_SEARCH_CRITERION_LABEL'),
+      ).toBeInTheDocument();
     });
 
     it('shows validationError on the input', () => {
@@ -66,7 +68,7 @@ describe('DateCriterionInput', () => {
       'calls onChange when %s',
       (_, date, expected) => {
         renderInput();
-        setFlatpickrDate('ENTER_SEARCH_VALUE', date);
+        setFlatpickrDate('COMMON_SEARCH_CRITERION_LABEL', date);
         expect(mockOnChange).toHaveBeenCalledWith(expected);
       },
     );

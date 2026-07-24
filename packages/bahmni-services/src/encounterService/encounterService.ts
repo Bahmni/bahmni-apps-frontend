@@ -1,10 +1,9 @@
-import { Observation, Encounter, Bundle } from 'fhir/r4';
+import { Encounter, Bundle } from 'fhir/r4';
 import { get, post, put } from '../api';
 import {
   PATIENT_VISITS_URL,
   PATIENT_ENCOUNTERS_URL,
   ENCOUNTER_TYPE_BY_NAME_URL,
-  FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
   FHIR_ENCOUNTER_URL,
 } from './constants';
 
@@ -111,19 +110,6 @@ export async function getEncounterByUuid(
   return await get<Encounter>(
     `/openmrs/ws/fhir2/R4/Encounter/${encounterUUID}`,
     options,
-  );
-}
-
-/**
- * Fetch observations by encounter UUID from FHIR API
- * @param encounterUUID - Encounter UUID
- * @returns Promise resolving to FHIR observation bundle
- */
-export async function getObservationsBundleByEncounterUuid(
-  encounterUUID: string,
-): Promise<Bundle<Observation>> {
-  return await get<Bundle<Observation>>(
-    FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
   );
 }
 

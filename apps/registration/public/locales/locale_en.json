@@ -161,6 +161,9 @@
   "REGISTRATION_PATIENT_SEARCH_APPOINTMENT": "Search by Appointment",
   "REGISTRATION_ACTION_BUTTON_GENERIC_ERROR": "Something went wrong. Please try again.",
   "SUCCESS": "Success",
+  "USER_GLOBAL_ACTION_BUTTON": "User menu",
+  "USER_GLOBAL_ACTION_MENU": "User actions",
+  "USER_LOGOUT_GLOBAL_ACTION": "Logout",
   "VIEWED_REGISTRATION_PATIENT_SEARCH_MESSAGE": "User {{username}} accessed patient search screen in registration app",
   "YEARS_one": " year",
   "YEARS_other": " years"

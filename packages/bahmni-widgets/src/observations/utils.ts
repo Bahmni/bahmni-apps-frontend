@@ -1,4 +1,7 @@
-import { formatDateTime } from '@bahmni/services';
+import {
+  formatDateTime,
+  FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
+} from '@bahmni/services';
 import { Observation, Bundle, Encounter } from 'fhir/r4';
 import { extractId, extractObservationValue } from '../utils/Observations';
 import {
@@ -7,6 +10,34 @@ import {
   ExtractedObservationsResult,
   ObservationsByEncounter,
 } from './models';
+
+export const extractFormFieldPath = (
+  observation: Observation | undefined,
+): string | undefined => {
+  if (!observation) return undefined;
+
+  const formPathExt = observation.extension?.find(
+    (ext) => ext.url === FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
+  );
+
+  return formPathExt?.valueString;
+};
+
+export const extractFormName = (
+  observation: Observation | undefined,
+): string | undefined => {
+  const valueString = extractFormFieldPath(observation);
+  if (!valueString) return undefined;
+
+  const name = valueString
+    .split('/')[0]
+    .split('^')
+    .pop()
+    ?.replace(/\.\d+$/, '');
+
+  if (!name) return undefined;
+  return name;
+};
 
 export const formatEncounterTitle = (
   encounterDetails: EncounterDetails | undefined,

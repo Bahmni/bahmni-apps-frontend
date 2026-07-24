@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
-  mockTaskActionConfig,
+  mockTaskConfig,
   mockTaskViewModelWithInput,
   mockTaskViewModelWithLabForm,
   mockObservationForms,
@@ -68,7 +68,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -79,57 +79,11 @@ describe('TaskActions', () => {
       });
     });
 
-    it('should not render when no permitted actions exist', async () => {
-      mockHasPrivilege.mockReturnValue(false);
-
-      const { container } = render(
-        <TaskActions
-          task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
-        />,
-        { wrapper: createWrapper() },
-      );
-
-      await waitFor(() => {
-        expect(mockFetchObservationForms).toHaveBeenCalled();
-      });
-
-      expect(container).toBeEmptyDOMElement();
-    });
-
-    it('should not render when actionConfig is empty', async () => {
-      const { container } = render(
-        <TaskActions task={mockTaskViewModelWithInput} actionConfig={[]} />,
-        { wrapper: createWrapper() },
-      );
-
-      expect(mockFetchObservationForms).not.toHaveBeenCalled();
-      expect(container).toBeEmptyDOMElement();
-    });
-
-    it('should not render when no matching actionConfig for task code', async () => {
-      const taskWithDifferentCode = {
-        ...mockTaskViewModelWithInput,
-        code: 'non-matching-code',
-      };
-
-      const { container } = render(
-        <TaskActions
-          task={taskWithDifferentCode}
-          actionConfig={mockTaskActionConfig}
-        />,
-        { wrapper: createWrapper() },
-      );
-
-      expect(mockFetchObservationForms).not.toHaveBeenCalled();
-      expect(container).toBeEmptyDOMElement();
-    });
-
     it('should pass correct testId for action button', async () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -142,7 +96,7 @@ describe('TaskActions', () => {
       });
     });
 
-    it('should show only first permitted action when multiple exist', async () => {
+    it('should show overflow menu when multiple actions exist', async () => {
       const configWithMultipleActions = [
         {
           taskCode: mockTaskViewModelWithInput.code,
@@ -160,7 +114,25 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={configWithMultipleActions}
+          taskConfig={configWithMultipleActions}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId(
+            `task-actions-menu-${mockTaskViewModelWithInput.id}`,
+          ),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('should show single IconButton when only one action exists', async () => {
+      render(
+        <TaskActions
+          task={mockTaskViewModelWithInput}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -172,21 +144,69 @@ describe('TaskActions', () => {
       });
 
       expect(
-        screen.queryByRole('button', { name: 'Second Action' }),
+        screen.queryByTestId(
+          `task-actions-menu-${mockTaskViewModelWithInput.id}`,
+        ),
       ).not.toBeInTheDocument();
+    });
+
+    it('should not render when no permitted actions', async () => {
+      mockHasPrivilege.mockReturnValue(false);
+
+      const { container } = render(
+        <TaskActions
+          task={mockTaskViewModelWithInput}
+          taskConfig={mockTaskConfig}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(mockFetchObservationForms).toHaveBeenCalled();
+      });
+
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it('should not render when taskConfig is empty', async () => {
+      const { container } = render(
+        <TaskActions task={mockTaskViewModelWithInput} taskConfig={[]} />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(mockFetchObservationForms).not.toHaveBeenCalled();
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it('should not render when no matching taskConfig for task code', async () => {
+      const taskWithDifferentCode = {
+        ...mockTaskViewModelWithInput,
+        code: 'non-matching-code',
+      };
+
+      const { container } = render(
+        <TaskActions
+          task={taskWithDifferentCode}
+          taskConfig={mockTaskConfig}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      expect(mockFetchObservationForms).not.toHaveBeenCalled();
+      expect(container).toBeEmptyDOMElement();
     });
   });
 
   describe('Privilege Filtering', () => {
     it('should filter actions based on user privileges', async () => {
       mockHasPrivilege.mockImplementation((privileges, required) => {
-        return required.includes('Edit Vitals');
+        return required?.includes('Edit Vitals') ?? false;
       });
 
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -211,7 +231,7 @@ describe('TaskActions', () => {
       const { container } = render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={restrictedConfig}
+          taskConfig={restrictedConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -227,7 +247,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -242,6 +262,22 @@ describe('TaskActions', () => {
   });
 
   describe('Form Edit Permissions', () => {
+    it('should show action when user can edit matching form', async () => {
+      render(
+        <TaskActions
+          task={mockTaskViewModelWithInput}
+          taskConfig={mockTaskConfig}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Fill Form' }),
+        ).toBeInTheDocument();
+      });
+    });
+
     it('should filter actions based on form edit permissions', async () => {
       const formsWithoutEditPrivilege = mockObservationForms.map((form) => ({
         ...form,
@@ -258,7 +294,7 @@ describe('TaskActions', () => {
       const { container } = render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -269,34 +305,16 @@ describe('TaskActions', () => {
 
       expect(container).toBeEmptyDOMElement();
     });
-
-    it('should show action when user can edit matching form', async () => {
-      render(
-        <TaskActions
-          task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
-        />,
-        { wrapper: createWrapper() },
-      );
-
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: 'Fill Form' }),
-        ).toBeInTheDocument();
-      });
-    });
   });
 
   describe('Loading State', () => {
     it('should not show actions while forms are loading', () => {
-      mockFetchObservationForms.mockImplementation(
-        () => new Promise(() => {}), // Never resolves
-      );
+      mockFetchObservationForms.mockImplementation(() => new Promise(() => {}));
 
       const { container } = render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -308,7 +326,7 @@ describe('TaskActions', () => {
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -320,13 +338,13 @@ describe('TaskActions', () => {
   });
 
   describe('Action Handling', () => {
-    it('should call handleTaskAction when button clicked', async () => {
+    it('should dispatch startConsultation event with correct details when button clicked', async () => {
       const user = userEvent.setup();
 
       render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
+          taskConfig={mockTaskConfig}
         />,
         { wrapper: createWrapper() },
       );
@@ -343,32 +361,6 @@ describe('TaskActions', () => {
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'startConsultation',
-        }),
-      );
-    });
-
-    it('should pass correct task and action to handler', async () => {
-      const user = userEvent.setup();
-
-      render(
-        <TaskActions
-          task={mockTaskViewModelWithInput}
-          actionConfig={mockTaskActionConfig}
-        />,
-        { wrapper: createWrapper() },
-      );
-
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: 'Fill Form' }),
-        ).toBeInTheDocument();
-      });
-
-      const button = screen.getByRole('button', { name: 'Fill Form' });
-      await user.click(button);
-
-      expect(dispatchEventSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
           detail: expect.objectContaining({
             task: mockTaskViewModelWithInput.fhirResource,
             taskFormName: 'Vitals',
@@ -383,7 +375,7 @@ describe('TaskActions', () => {
       ['Vitals task', mockTaskViewModelWithInput, 'Fill Form'],
       ['Lab Tests task', mockTaskViewModelWithLabForm, 'Fill Form'],
     ])('should render action for %s', async (_, task, expectedLabel) => {
-      render(<TaskActions task={task} actionConfig={mockTaskActionConfig} />, {
+      render(<TaskActions task={task} taskConfig={mockTaskConfig} />, {
         wrapper: createWrapper(),
       });
 
@@ -402,10 +394,9 @@ describe('TaskActions', () => {
         status: 'completed',
       };
 
-      render(
-        <TaskActions task={taskNotReady} actionConfig={mockTaskActionConfig} />,
-        { wrapper: createWrapper() },
-      );
+      render(<TaskActions task={taskNotReady} taskConfig={mockTaskConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(
@@ -423,10 +414,9 @@ describe('TaskActions', () => {
         status: 'ready',
       };
 
-      render(
-        <TaskActions task={taskReady} actionConfig={mockTaskActionConfig} />,
-        { wrapper: createWrapper() },
-      );
+      render(<TaskActions task={taskReady} taskConfig={mockTaskConfig} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(
@@ -440,17 +430,14 @@ describe('TaskActions', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle missing actionConfig gracefully', async () => {
+    it('should handle missing taskConfig gracefully', async () => {
       const taskWithNoConfig = {
         ...mockTaskViewModelWithInput,
         code: 'undefined-task-code',
       };
 
       const { container } = render(
-        <TaskActions
-          task={taskWithNoConfig}
-          actionConfig={mockTaskActionConfig}
-        />,
+        <TaskActions task={taskWithNoConfig} taskConfig={mockTaskConfig} />,
         { wrapper: createWrapper() },
       );
 
@@ -458,7 +445,7 @@ describe('TaskActions', () => {
       expect(container).toBeEmptyDOMElement();
     });
 
-    it('should handle undefined actionConfig.actions', async () => {
+    it('should handle undefined taskConfig.actions', async () => {
       const configWithoutActions = [
         {
           taskCode: mockTaskViewModelWithInput.code,
@@ -469,7 +456,7 @@ describe('TaskActions', () => {
       const { container } = render(
         <TaskActions
           task={mockTaskViewModelWithInput}
-          actionConfig={configWithoutActions}
+          taskConfig={configWithoutActions}
         />,
         { wrapper: createWrapper() },
       );

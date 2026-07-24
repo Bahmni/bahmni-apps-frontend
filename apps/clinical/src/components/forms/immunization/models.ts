@@ -4,11 +4,13 @@ import { InputControlAttributes } from '../../../providers/clinicalConfig/models
 import {
   IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY,
   IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
+  IMMUNIZATION_WAIVER_INPUT_CONTROL_KEY,
 } from './constants';
 
 export type ImmunizationStoreKey =
   | typeof IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY
-  | typeof IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY;
+  | typeof IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY
+  | typeof IMMUNIZATION_WAIVER_INPUT_CONTROL_KEY;
 
 export interface ImmunizationDrug {
   code?: string;
@@ -17,6 +19,11 @@ export interface ImmunizationDrug {
 
 export interface ImmunizationLocation {
   uuid?: string;
+  display: string;
+}
+
+export interface ImmunizationStatusReason {
+  code: string;
   display: string;
 }
 
@@ -36,6 +43,7 @@ export interface ImmunizationInputEntry {
   batchNumber: string | null;
   stockLocation: string | null;
   doseSequence: number | null;
+  statusReason: ImmunizationStatusReason | null;
   note?: string;
   basedOnReference?: string | null;
   cdsCards?: CDSCard[];
@@ -49,6 +57,7 @@ export interface ImmunizationInputEntry {
     manufacturer?: string;
     batchNumber?: string;
     doseSequence?: string;
+    statusReason?: string;
     note?: string;
   };
   hasBeenValidated: boolean;
@@ -78,11 +87,18 @@ export interface CreateImmunizationBundleEntriesParams {
   encounterReference: string;
   practitionerUUID: string;
   isAdministration: boolean;
+  isWaiver: boolean;
+}
+
+export interface WaiverReasonConfig {
+  otherReasonConceptUuid?: string;
 }
 
 export interface ImmunizationHistoryState {
   selectedImmunizations: ImmunizationInputEntry[];
   attributes: InputControlAttributes[] | undefined;
+  waiverReasonConfig: WaiverReasonConfig | undefined;
+  setWaiverReasonConfig: (config: WaiverReasonConfig) => void;
   addImmunization: (
     vaccineCode: { code: string; display: string },
     defaults?: {
@@ -107,6 +123,10 @@ export interface ImmunizationHistoryState {
   updateBatchNumber: (id: string, value: string) => void;
   updateStockLocation: (id: string, value: string | null) => void;
   updateDoseSequence: (id: string, value: number | null) => void;
+  updateStatusReason: (
+    id: string,
+    value: ImmunizationStatusReason | null,
+  ) => void;
   updateNote: (id: string, value: string) => void;
   validateAll: () => boolean;
   updateItemCDSCards: (itemId: string, cards: CDSCard[]) => void;

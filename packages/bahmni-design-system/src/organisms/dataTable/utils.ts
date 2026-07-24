@@ -1,4 +1,5 @@
 import type {
+  BuiltInFilterFn,
   ColumnDef,
   ExpandedState,
   FilterFn,
@@ -75,16 +76,18 @@ export const defaultRenderCell = <T>(row: T, columnKey: string): ReactNode => {
   return value == null ? '' : (value as ReactNode);
 };
 
-const builtInFilterFnByType: Record<FilterType, string> = {
+const builtInFilterFnByType: Record<
+  Exclude<FilterType, 'dateRange'>,
+  BuiltInFilterFn
+> = {
   text: 'includesString',
   select: 'arrIncludesSome',
-  dateRange: 'inDateRange',
+  numeric: 'weakEquals',
 };
 
 const resolveFilterFn = (filterType: FilterType | undefined) => {
   if (filterType === 'dateRange') return inDateRangeFilterFn;
-  return (builtInFilterFnByType[filterType ?? 'text'] ??
-    'includesString') as 'includesString';
+  return builtInFilterFnByType[filterType ?? 'text'] ?? 'includesString';
 };
 
 export const buildTanStackColumns = <T extends { id: string }>(

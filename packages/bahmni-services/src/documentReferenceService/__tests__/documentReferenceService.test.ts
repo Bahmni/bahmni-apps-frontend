@@ -95,7 +95,7 @@ describe('documentReferenceService', () => {
       await getDocumentReferences(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
 
@@ -396,7 +396,7 @@ describe('documentReferenceService', () => {
       await getFormattedDocumentReferences(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
   });
@@ -477,7 +477,7 @@ describe('documentReferenceService', () => {
       await getDocumentReferencePage(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${PAGE_BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${PAGE_BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
 

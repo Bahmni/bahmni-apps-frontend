@@ -3,7 +3,16 @@ import {
   CommonSearchWidgetConfig,
   CriterionConfig,
   CriterionRow,
+  ResultFieldConfig,
 } from '../../models';
+
+const mockResultFields: ResultFieldConfig[] = [
+  {
+    translationKey: 'PATIENT_NAME',
+    expression: 'name',
+    enableSort: true,
+  },
+];
 
 export const mockCommonSearchWidgetConfig: CommonSearchWidgetConfig = [
   {
@@ -13,6 +22,7 @@ export const mockCommonSearchWidgetConfig: CommonSearchWidgetConfig = [
     locationAware: 'loggedInLocation',
     url: '/openmrs/ws/rest/v1/patient/search',
     pageSize: 20,
+    resultFields: mockResultFields,
     criteria: [
       {
         field: { key: 'patient.name.given' },
@@ -35,6 +45,7 @@ export const mockMultiContextConfig: CommonSearchWidgetConfig = [
     locationAware: 'loggedInLocation',
     url: '/openmrs/ws/rest/v1/patient/search',
     pageSize: 20,
+    resultFields: mockResultFields,
     criteria: [
       {
         field: { key: 'patient.name.given' },
@@ -54,6 +65,7 @@ export const mockMultiContextConfig: CommonSearchWidgetConfig = [
     locationAware: 'allowedLocation',
     url: '/openmrs/ws/rest/v1/appointment/search',
     pageSize: 10,
+    resultFields: mockResultFields,
     criteria: [
       {
         field: { key: 'patient.name.given' },
@@ -118,6 +130,19 @@ export const mockRowWithValidValue: CriterionRow = {
   validationError: null,
   rangeOrderError: null,
 };
+
+export const mockCommonSearchWidgetConfigWithRange: CommonSearchWidgetConfig = [
+  {
+    context: 'patient',
+    translationKey: 'PATIENT_SEARCH',
+    requiredPrivileges: ['View Patients'],
+    locationAware: 'loggedInLocation',
+    url: '/openmrs/ws/rest/v1/patient/search',
+    pageSize: 20,
+    resultFields: mockResultFields,
+    criteria: [mockNumericRangeCriterionConfig],
+  },
+];
 
 export const mockRowWithRangeOrderError: CriterionRow = {
   rowId: 'row-1',
