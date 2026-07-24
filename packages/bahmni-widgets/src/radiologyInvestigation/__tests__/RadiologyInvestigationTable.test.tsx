@@ -21,15 +21,31 @@ import RadiologyInvestigationTable from '../RadiologyInvestigationTable';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('@bahmni/services', () => ({
-  ...jest.requireActual('@bahmni/services'),
-  useTranslation: jest.fn(),
-  getCategoryUuidFromOrderTypes: jest.fn(),
-  getPatientRadiologyInvestigationBundleWithImagingStudy: jest.fn(),
-  getDiagnosticReports: jest.fn(),
-  dispatchAuditEvent: jest.fn(),
-  useSubscribeConsultationSaved: jest.fn(),
-}));
+jest.mock('@bahmni/services', () => {
+  const actualServices = jest.requireActual('@bahmni/services');
+  return {
+    ...actualServices,
+    useTranslation: jest.fn(),
+    getCategoryUuidFromOrderTypes: jest.fn(),
+    getPatientRadiologyInvestigationBundleWithImagingStudy: jest.fn(),
+    getDiagnosticReports: jest.fn(),
+    dispatchAuditEvent: jest.fn(),
+    useSubscribeConsultationSaved: jest.fn(),
+    // Mock formatDateTime to return a fixed date string for testing to avoid local machine date-time format issue
+    formatDateTime: (
+      date: string | Date | number,
+      t?: (key: string, options?: { count?: number }) => string,
+      includeTime = false,
+      dateFormat?: string,
+    ) =>
+      actualServices.formatDateTime(
+        date,
+        t,
+        includeTime,
+        dateFormat ?? (includeTime ? 'MM/dd/yyyy h:mm a' : 'MM/dd/yyyy'),
+      ),
+  };
+});
 
 jest.mock('../../genericServiceRequest/utils', () => ({
   getStatusDotClassName: jest.fn().mockReturnValue(''),
