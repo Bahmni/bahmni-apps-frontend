@@ -395,9 +395,7 @@ describe('CommonSearchWidget', () => {
           <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
           { wrapper },
         );
-        await waitFor(() =>
-          expect(screen.getByTestId('search-form')).toBeInTheDocument(),
-        );
+        await screen.findByTestId('search-form');
         await act(async () => {
           capturedOnSearch!([mockRowWithValidValue], contextConfig);
         });
