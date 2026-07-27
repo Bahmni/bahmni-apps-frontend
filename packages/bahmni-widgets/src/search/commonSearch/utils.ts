@@ -1,3 +1,11 @@
+import {
+  camelToScreamingSnakeCase,
+  DEFAULT_TIME_FORMAT,
+  formatCountry,
+  formatDateTime,
+  formatGender,
+  getFormattedAge,
+} from '@bahmni/services';
 import { v4 as uuidv4 } from 'uuid';
 import {
   CriterionConfig,
@@ -11,6 +19,37 @@ import {
   SearchContextConfig,
   TextInput,
 } from './models';
+
+export type ResultTransform = (
+  value: string,
+  t: (key: string) => string,
+) => string | null;
+
+export type DateTimeValue = string | Date | number;
+
+export const formatSearchResult = (
+  value: string,
+  t: (key: string) => string,
+): string | null => {
+  const raw = value.trim();
+  if (!raw) return null;
+  return t(`COMMON_SEARCH_RESULT_${camelToScreamingSnakeCase(raw)}`);
+};
+
+export const resultTransforms: Record<string, ResultTransform> = {
+  formatDate: (value: unknown, t: (key: string) => string) =>
+    formatDateTime(value as DateTimeValue, t).formattedResult,
+  formatTime: (value: unknown, t: (key: string) => string) =>
+    formatDateTime(value as DateTimeValue, t, false, DEFAULT_TIME_FORMAT)
+      .formattedResult,
+  formatDateTime: (value: unknown, t: (key: string) => string) =>
+    formatDateTime(value as DateTimeValue, t, true).formattedResult,
+  formatAge: (value: unknown, t: (key: string) => string) =>
+    getFormattedAge(value as string | number, t),
+  formatGender,
+  formatCountry,
+  formatSearchResult,
+};
 
 const isRangeInput = (input: InputConfig): boolean =>
   (input.kind === 'date' || input.kind === 'numeric') && !!input.rangeAllowed;

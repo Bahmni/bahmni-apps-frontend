@@ -24,3 +24,37 @@ export const mockResults = [
 ];
 
 export const mockResultWithoutId = { name: 'No ID User', age: 40 };
+
+export const mockResultFieldsWithTransform: ResultFieldConfig[] = [
+  {
+    translationKey: 'PATIENT_COUNTRY',
+    expression: 'country',
+    transform: 'formatCountry',
+  },
+];
+
+export const mockResultFieldsWithUnknownTransform: ResultFieldConfig[] = [
+  {
+    translationKey: 'PATIENT_COUNTRY',
+    expression: 'country',
+    transform: 'nonExistentTransform',
+  },
+];
+
+export const mockResultFieldsWithTimeTransform: ResultFieldConfig[] = [
+  {
+    translationKey: 'APPOINTMENT_TIME',
+    expression: 'startDateTime',
+    transform: 'formatTime',
+  },
+];
+
+export const mockResultFieldsWithDateTimeTransform: ResultFieldConfig[] = [
+  {
+    translationKey: 'APPOINTMENT_DATE_TIME',
+    expression: 'startDateTime',
+    transform: 'formatDateTime',
+  },
+];
+
+export const mockDateTimeValue = '2024-03-28T14:30:00';
