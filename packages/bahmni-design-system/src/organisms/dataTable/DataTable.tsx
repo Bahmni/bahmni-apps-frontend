@@ -20,7 +20,8 @@ export const DataTable = <T extends { id: string }>({
   rows,
   ariaLabel,
   loading = false,
-  emptyStateMessage = 'No data available',
+  emptyStateMessage: emptyStateMessageProp = 'No data available',
+  noFilterResultsMessage,
   errorStateMessage = null,
   renderCell,
   accessor,
@@ -88,6 +89,17 @@ export const DataTable = <T extends { id: string }>({
   const totalForPagination = manualPagination
     ? (totalItems ?? rows.length)
     : table.getFilteredRowModel().rows.length;
+
+  const hasActiveFilters =
+    table.getState().columnFilters.length > 0 ||
+    !!table.getState().globalFilter;
+  const filteredToEmpty =
+    rows.length > 0 &&
+    hasActiveFilters &&
+    table.getFilteredRowModel().rows.length === 0;
+  const emptyStateMessage = filteredToEmpty
+    ? (noFilterResultsMessage ?? emptyStateMessageProp)
+    : emptyStateMessageProp;
 
   return (
     <TableContainer

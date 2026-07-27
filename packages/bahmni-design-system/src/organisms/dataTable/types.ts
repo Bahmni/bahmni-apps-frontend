@@ -35,6 +35,7 @@ export interface DataTableProps<T extends { id: string }> {
   ariaLabel: string;
   loading?: boolean;
   emptyStateMessage?: ReactNode;
+  noFilterResultsMessage?: ReactNode;
   errorStateMessage?: ReactNode | null;
   renderCell?: (row: T, columnKey: string) => ReactNode;
   accessor?: (row: T, columnKey: string) => unknown;

@@ -267,6 +267,77 @@ describe('DataTable column filtering', () => {
   });
 });
 
+describe('DataTable empty states', () => {
+  const filterColumns: DataTableColumn<Medication>[] = [
+    { key: 'name', header: 'Medication', enableFiltering: true },
+    { key: 'status', header: 'Status' },
+    { key: 'orderedBy', header: 'Ordered By' },
+  ];
+
+  it('shows the plain emptyStateMessage when there is no data at all', () => {
+    render(
+      <DataTable
+        columns={filterColumns}
+        rows={[]}
+        renderCell={renderCell}
+        ariaLabel="Medications"
+        emptyStateMessage="No results found for the given search criteria."
+        noFilterResultsMessage="No results match the applied filters."
+      />,
+    );
+
+    expect(
+      screen.getByText('No results found for the given search criteria.'),
+    ).toBeInTheDocument();
+  });
+
+  it('shows noFilterResultsMessage, not emptyStateMessage, when a filter narrows non-empty rows to zero', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable
+        columns={filterColumns}
+        rows={mockRows}
+        renderCell={renderCell}
+        ariaLabel="Medications"
+        emptyStateMessage="No results found for the given search criteria."
+        noFilterResultsMessage="No results match the applied filters."
+      />,
+    );
+
+    await user.click(screen.getByTestId('data-table-filter-toggle'));
+    const input = screen.getByPlaceholderText('Filter Medication');
+    await user.type(input, 'Nonexistent Drug');
+
+    expect(
+      screen.getByText('No results match the applied filters.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('No results found for the given search criteria.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('falls back to emptyStateMessage when noFilterResultsMessage is not provided', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable
+        columns={filterColumns}
+        rows={mockRows}
+        renderCell={renderCell}
+        ariaLabel="Medications"
+        emptyStateMessage="No results found for the given search criteria."
+      />,
+    );
+
+    await user.click(screen.getByTestId('data-table-filter-toggle'));
+    const input = screen.getByPlaceholderText('Filter Medication');
+    await user.type(input, 'Nonexistent Drug');
+
+    expect(
+      screen.getByText('No results found for the given search criteria.'),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('DataTable numeric filter', () => {
   interface Patient {
     id: string;
