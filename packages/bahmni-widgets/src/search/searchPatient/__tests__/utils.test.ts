@@ -55,6 +55,7 @@ describe('formatPatientSearchResult', () => {
         personId: 9,
         deathDate: null,
         identifier: 'ABC200000',
+        isDead: false,
         addressFieldValue: null,
         name: 'Steffi Maria Graf',
         givenName: 'Steffi',

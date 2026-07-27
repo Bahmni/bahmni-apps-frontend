@@ -14,7 +14,7 @@ export type {
   DocumentSaveTarget,
   DocumentTileData,
 } from './documentUpload';
-export { PatientDetails } from './patientDetails';
+export { PatientDetails, DeceasedTag } from './patientDetails';
 export { AllergiesTable } from './allergies';
 export { AppointmentsTable } from './appointments';
 export { ConditionsTable } from './conditions';

@@ -29,9 +29,16 @@
   gap: $spacing-03;
   align-self: stretch;
 
+  .patientNameWrapper {
+    display: flex;
+    align-items: center;
+    gap: $spacing-03;
+  }
+
   .patientName {
     @include type-style("heading-compact-02");
     text-transform: capitalize;
+    margin: 0;
   }
 }
 

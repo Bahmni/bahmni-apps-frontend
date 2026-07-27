@@ -1,4 +1,5 @@
-{
+{ 
+  "PATIENT_STATUS_DECEASED": "Fallecido",
   "ABNORMAL_VALUE": "Valor Anormal",
   "ACTIONS": "Acciones",
   "ADD_ALLERGY_NOTE": "Agregar Nota",

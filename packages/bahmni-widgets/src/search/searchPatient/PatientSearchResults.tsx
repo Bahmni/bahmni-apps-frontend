@@ -17,6 +17,7 @@ import {
 } from '@bahmni/services';
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../../notification';
+import { DeceasedTag } from '../../patientDetails';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import {
   getAppointmentStatusClassName,
@@ -28,6 +29,7 @@ import { PatientSearchViewModel, formatPatientSearchResult } from './utils';
 
 const CELL_IDS = {
   IDENTIFIER: 'identifier',
+  NAME: 'name',
   APPOINTMENT_STATUS: 'appointmentStatus',
   GENDER: 'gender',
   ACTIONS: 'actions',
@@ -212,6 +214,13 @@ const PatientSearchResults = ({
     switch (cellId) {
       case CELL_IDS.IDENTIFIER:
         return renderIdentifier(row.uuid ?? '', row.identifier ?? '');
+      case CELL_IDS.NAME:
+        return (
+          <span className={styles.patientNameWrapper}>
+            {String(row.name ?? '')}
+            <DeceasedTag isDead={row.isDead} />
+          </span>
+        );
       case CELL_IDS.APPOINTMENT_STATUS:
         return renderAppointmentStatus(
           row.uuid ?? '',

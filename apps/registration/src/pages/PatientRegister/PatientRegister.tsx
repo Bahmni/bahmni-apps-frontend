@@ -6,7 +6,11 @@ import {
   AuditEventType,
   dispatchAuditEvent,
 } from '@bahmni/services';
-import { useNotification, UserGlobalAction } from '@bahmni/widgets';
+import {
+  useNotification,
+  UserGlobalAction,
+  DeceasedTag,
+} from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
@@ -299,11 +303,14 @@ const PatientRegister = () => {
                 {patientUuid ? (
                   <div className={styles.infoContainer}>
                     <div
-                      className={styles.patientId}
-                    >{`${t('REGISTRATION_PATIENT_SEARCH_HEADER_ID')} : ${metadata?.patientIdentifier}`}</div>
-                    <div
-                      className={styles.registerDate}
-                    >{`${t('CREATE_PATIENT_REGISTERED_ON')} ${metadata?.registerDate}`}</div>
+                      className={`${styles.patientId} ${styles.patientNameWrapper}`}
+                    >
+                      {`${t('REGISTRATION_PATIENT_SEARCH_HEADER_ID')} : ${metadata?.patientIdentifier}`}
+                      <DeceasedTag isDead={metadata?.isDead} />
+                    </div>
+                    <div className={styles.registerDate}>
+                      {`${t('CREATE_PATIENT_REGISTERED_ON')} ${metadata?.registerDate}`}
+                    </div>
                   </div>
                 ) : (
                   t('CREATE_PATIENT_HEADER_TITLE')

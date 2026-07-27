@@ -585,8 +585,31 @@ describe('Patient Service', () => {
           formattedContact: null,
           identifiers: new Map<string, string>(),
           identifier: null,
+          isDead: false,
         }),
       );
+    });
+
+    it('should set isDead to true when deceasedBoolean is true', () => {
+      const patient: Patient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        deceasedBoolean: true,
+      };
+
+      const result = formatPatientData(patient);
+      expect(result.isDead).toBe(true);
+    });
+
+    it('should set isDead to true when deceasedDateTime is present', () => {
+      const patient: Patient = {
+        resourceType: 'Patient',
+        id: 'test-uuid',
+        deceasedDateTime: '2023-10-10T00:00:00.000Z',
+      };
+
+      const result = formatPatientData(patient);
+      expect(result.isDead).toBe(true);
     });
 
     it('should handle patient with undefined id', () => {
