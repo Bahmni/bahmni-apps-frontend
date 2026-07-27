@@ -78,11 +78,21 @@ export interface CriterionConfig {
 
 export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
 
+export interface NavigateAction {
+  key: string;
+  type: 'navigate';
+  requiredPrivileges?: string[];
+  navigationURL: string;
+}
+
+export type ActionConfig = NavigateAction;
+
 export interface ResultFieldConfig {
   translationKey: string;
   expression: string;
   enableSort?: boolean;
   filterType?: ResultFieldFilterType;
+  action?: string;
   transform?: string;
 }
 
@@ -95,6 +105,7 @@ export interface SearchContextConfig {
   pageSize: number;
   criteria: CriterionConfig[];
   resultFields: ResultFieldConfig[];
+  actions?: ActionConfig[];
 }
 
 export type CommonSearchWidgetConfig = [

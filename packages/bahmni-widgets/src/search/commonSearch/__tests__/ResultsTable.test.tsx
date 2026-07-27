@@ -2,6 +2,7 @@ import { generateUUID, useTranslation } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import jsonata from 'jsonata';
+import { UserPrivilegeProvider } from '../../../userPrivileges/UserPrivilegeProvider';
 import ResultsTable from '../ResultsTable';
 import {
   mockInvalidExpressionFields,
@@ -17,6 +18,10 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   generateUUID: jest.fn(),
   useTranslation: jest.fn(),
+  getFormattedError: jest.fn((error: Error) => ({
+    title: 'Error',
+    message: error.message,
+  })),
 }));
 expect.extend(toHaveNoViolations);
 
@@ -31,11 +36,13 @@ const renderTable = (
   }> = {},
 ) =>
   render(
-    <ResultsTable
-      resultFields={mockResultFields}
-      results={mockResults}
-      {...overrides}
-    />,
+    <UserPrivilegeProvider>
+      <ResultsTable
+        resultFields={mockResultFields}
+        results={mockResults}
+        {...overrides}
+      />
+    </UserPrivilegeProvider>,
   );
 
 describe('ResultsTable', () => {

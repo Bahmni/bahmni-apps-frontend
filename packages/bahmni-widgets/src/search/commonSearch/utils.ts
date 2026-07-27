@@ -8,6 +8,7 @@ import {
   getFormattedAge,
 } from '@bahmni/services';
 import { format } from 'date-fns';
+import jsonata from 'jsonata';
 import { v4 as uuidv4 } from 'uuid';
 import {
   KEY_TYPE_KIND_SUFFIX,
@@ -308,3 +309,73 @@ export const validateRows = (
     );
     return { ...r, validationError, rangeOrderError };
   });
+
+export const validateConfigForActions = (
+  contexts: SearchContextConfig[],
+): string | null => {
+  for (const context of contexts) {
+    const hasActionReferences = context.resultFields.some((f) => f.action);
+
+    if (
+      hasActionReferences &&
+      (!context.actions || context.actions.length === 0)
+    ) {
+      return `Invalid config: resultFields reference actions but no actions array defined in context "${context.context}"`;
+    }
+
+    if (context.actions) {
+      const actionKeys = context.actions.map((a) => a.key);
+      const duplicates = actionKeys.filter(
+        (key, idx) => actionKeys.indexOf(key) !== idx,
+      );
+      if (duplicates.length > 0) {
+        return `Invalid config: duplicate action key "${duplicates[0]}" in context "${context.context}"`;
+      }
+
+      const actionKeySet = new Set(actionKeys);
+
+      for (const field of context.resultFields) {
+        if (field.action && !actionKeySet.has(field.action)) {
+          return `Invalid config: resultField references unknown action key "${field.action}" in context "${context.context}"`;
+        }
+      }
+
+      for (const action of context.actions) {
+        if (action.type === 'navigate') {
+          const placeholders = [
+            ...action.navigationURL.matchAll(/\{([^}]+)\}/g),
+          ];
+          for (const [, expression] of placeholders) {
+            try {
+              jsonata(expression);
+            } catch {
+              return `Invalid config: navigationURL contains invalid JSONata expression "{${expression}}" in action "${action.key}" of context "${context.context}"`;
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
+
+export const resolveNavigationURL = async (
+  template: string,
+  rowData: unknown,
+): Promise<string | null> => {
+  try {
+    const placeholders = [...template.matchAll(/\{([^}]+)\}/g)];
+    let resolved = template;
+
+    for (const [fullMatch, expression] of placeholders) {
+      const compiled = jsonata(expression);
+      const value = await compiled.evaluate(rowData as Record<string, unknown>);
+      if (value == null) return null;
+      resolved = resolved.replace(fullMatch, String(value));
+    }
+
+    return resolved;
+  } catch {
+    return null;
+  }
+};

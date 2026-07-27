@@ -65,6 +65,12 @@
           "items": { "$ref": "#/definitions/resultFieldConfig" },
           "minItems": 1,
           "description": "Defines the columns shown in the results table after a successful search"
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/actionConfig" },
+          "description": "Actions available in this context. Optional at the context level, but required when any resultField references an action key. Each action key must be unique within the context."
         }
       }
     },
@@ -91,6 +97,10 @@
           "type": "string",
           "enum": ["text", "select", "dateRange", "numeric"],
           "description": "When present, a filter control appears for this column"
+        },
+        "action": {
+          "type": "string",
+          "description": "Key of an action defined in the context's actions array. When the referenced action has type navigate, the cell renders as a link. If the user holds none of the action's required privileges, the cell renders as plain text. Referencing a key not present in the actions array is a config error and blocks the widget."
         },
         "transform": {
           "type": "string",
@@ -234,6 +244,36 @@
         "valueSet": {
           "type": "string",
           "description": "UUID of the concept value set to restrict lookup results"
+        }
+      }
+    },
+    "actionConfig": {
+      "oneOf": [
+        { "$ref": "#/definitions/navigateAction" }
+      ]
+    },
+    "navigateAction": {
+      "type": "object",
+      "required": ["key", "type", "navigationURL"],
+      "additionalProperties": true,
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Unique identifier for this action within the context. Referenced by resultField entries via their action field."
+        },
+        "type": {
+          "type": "string",
+          "const": "navigate",
+          "description": "Renders the column cell as a link navigating to navigationURL."
+        },
+        "navigationURL": {
+          "type": "string",
+          "description": "URL template for navigation. Placeholders use {expression} syntax where the content must be a valid JSONata expression evaluated against the result row. For example, {uuid} resolves the uuid field; {patient.uuid} resolves a nested field."
+        },
+        "requiredPrivileges": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Privileges required to activate this action. Any one suffices. An empty array makes the action available to all users."
         }
       }
     }
