@@ -21,7 +21,6 @@ import {
 } from '../models';
 import {
   mockCommonSearchWidgetConfig,
-  mockCommonSearchWidgetConfigWithDuplicateSortPriority,
   mockCommonSearchWidgetConfigWithRange,
   mockMultiContextConfig,
   mockPrivilegeViewAppointments,
@@ -132,15 +131,6 @@ describe('CommonSearchWidget', () => {
           new Error('Failed to fetch privileges'),
         );
       },
-    },
-    {
-      description:
-        'a context has duplicate sortPriority values across resultFields',
-      extensionParams: { configUrl: '/api/config' },
-      setup: () =>
-        (getConfig as jest.Mock).mockResolvedValueOnce(
-          mockCommonSearchWidgetConfigWithDuplicateSortPriority,
-        ),
     },
   ])(
     'should show error notification when $description',

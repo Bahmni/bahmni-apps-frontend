@@ -85,9 +85,7 @@ const ResultsTable = ({ resultFields, results }: ResultsTableProps) => {
         key: id,
         header: t(field.translationKey),
         enableSorting: field.enableSort ?? false,
-        defaultSortDirection:
-          field.sortPriority != null ? (field.sortOrder ?? 'asc') : undefined,
-        defaultSortPriority: field.sortPriority,
+        defaultSortDirection: field.sortOrder,
         enableFiltering: !!field.filterType,
         filterType: field.filterType,
       })),

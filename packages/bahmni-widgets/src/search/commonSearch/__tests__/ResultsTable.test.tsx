@@ -205,12 +205,11 @@ describe('ResultsTable', () => {
         expression: 'name',
         enableSort: true,
         sortOrder: 'asc',
-        sortPriority: 1,
       },
       { translationKey: 'PATIENT_AGE', expression: 'age' },
     ];
 
-    it('applies sortOrder/sortPriority from config as the initial row order', async () => {
+    it('applies sortOrder from config as the initial row order', async () => {
       mockJsonata.mockImplementation((expression: string) => ({
         evaluate: async (item: Record<string, unknown>) => item[expression],
       }));
@@ -234,26 +233,32 @@ describe('ResultsTable', () => {
       expect(rows[2]).toHaveTextContent('Charlie');
     });
 
-    it('defaults sortOrder to ascending when a column declares only sortPriority', async () => {
+    it('uses declaration order as the tiebreak when multiple columns declare sortOrder', async () => {
       mockJsonata.mockImplementation((expression: string) => ({
         evaluate: async (item: Record<string, unknown>) => item[expression],
       }));
 
-      const resultFieldsWithPriorityOnly: ResultFieldConfig[] = [
+      const resultFieldsWithTwoSortColumns: ResultFieldConfig[] = [
         {
           translationKey: 'PATIENT_NAME',
           expression: 'name',
           enableSort: true,
-          sortPriority: 1,
+          sortOrder: 'asc',
+        },
+        {
+          translationKey: 'PATIENT_AGE',
+          expression: 'age',
+          enableSort: true,
+          sortOrder: 'asc',
         },
       ];
 
       renderTable({
-        resultFields: resultFieldsWithPriorityOnly,
+        resultFields: resultFieldsWithTwoSortColumns,
         results: [
-          { id: '1', name: 'Charlie' },
-          { id: '2', name: 'Alice' },
-          { id: '3', name: 'Bob' },
+          { id: '1', name: 'Bob', age: 40 },
+          { id: '2', name: 'Alice', age: 25 },
+          { id: '3', name: 'Bob', age: 20 },
         ],
       });
 
@@ -264,7 +269,9 @@ describe('ResultsTable', () => {
       const rows = screen.getAllByTestId(/^table-row-/);
       expect(rows[0]).toHaveTextContent('Alice');
       expect(rows[1]).toHaveTextContent('Bob');
-      expect(rows[2]).toHaveTextContent('Charlie');
+      expect(rows[1]).toHaveTextContent('20');
+      expect(rows[2]).toHaveTextContent('Bob');
+      expect(rows[2]).toHaveTextContent('40');
     });
 
     it('shows a distinct message when a column filter matches nothing', async () => {

@@ -37,29 +37,6 @@ export const mockCommonSearchWidgetConfig: CommonSearchWidgetConfig = [
   },
 ];
 
-export const mockCommonSearchWidgetConfigWithDuplicateSortPriority: CommonSearchWidgetConfig =
-  [
-    {
-      ...mockCommonSearchWidgetConfig[0],
-      resultFields: [
-        {
-          translationKey: 'PATIENT_NAME',
-          expression: 'name',
-          enableSort: true,
-          sortOrder: 'asc',
-          sortPriority: 1,
-        },
-        {
-          translationKey: 'PATIENT_AGE',
-          expression: 'age',
-          enableSort: true,
-          sortOrder: 'asc',
-          sortPriority: 1,
-        },
-      ],
-    },
-  ];
-
 export const mockMultiContextConfig: CommonSearchWidgetConfig = [
   {
     context: 'patient',
