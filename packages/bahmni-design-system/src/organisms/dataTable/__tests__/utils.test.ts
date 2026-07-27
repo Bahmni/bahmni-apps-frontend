@@ -307,45 +307,6 @@ describe('initialSortingState', () => {
     ];
     expect(initialSortingState(columns)).toEqual([{ id: 'name', desc: false }]);
   });
-
-  it('orders multiple default-sorted columns by defaultSortPriority ascending, regardless of declaration order', () => {
-    const columns: DataTableColumn<{ id: string; name: string }>[] = [
-      {
-        key: 'status',
-        header: 'Status',
-        defaultSortDirection: 'asc',
-        defaultSortPriority: 2,
-      },
-      {
-        key: 'createdDate',
-        header: 'Created Date',
-        defaultSortDirection: 'asc',
-        defaultSortPriority: 1,
-      },
-    ];
-    expect(initialSortingState(columns)).toEqual([
-      { id: 'createdDate', desc: false },
-      { id: 'status', desc: false },
-    ]);
-  });
-
-  it('places columns without a defaultSortPriority after prioritized ones, keeping declaration order among themselves', () => {
-    const columns: DataTableColumn<{ id: string; name: string }>[] = [
-      { key: 'name', header: 'Name', defaultSortDirection: 'asc' },
-      {
-        key: 'createdDate',
-        header: 'Created Date',
-        defaultSortDirection: 'asc',
-        defaultSortPriority: 1,
-      },
-      { key: 'status', header: 'Status', defaultSortDirection: 'desc' },
-    ];
-    expect(initialSortingState(columns).map((s) => s.id)).toEqual([
-      'createdDate',
-      'name',
-      'status',
-    ]);
-  });
 });
 
 describe('initialExpandedState', () => {

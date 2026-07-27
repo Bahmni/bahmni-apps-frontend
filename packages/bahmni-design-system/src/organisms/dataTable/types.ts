@@ -13,7 +13,6 @@ export interface DataTableColumn<T> {
   header: string;
   enableSorting?: boolean;
   defaultSortDirection?: 'asc' | 'desc';
-  defaultSortPriority?: number;
   enableFiltering?: boolean;
   filterType?: FilterType;
   filterOptions?: DataTableFilterOption[];

@@ -123,10 +123,7 @@ export const initialSortingState = <T extends { id: string }>(
     .map((col) => ({
       id: col.key,
       desc: col.defaultSortDirection === 'desc',
-      priority: col.defaultSortPriority ?? Number.POSITIVE_INFINITY,
-    }))
-    .sort((a, b) => a.priority - b.priority)
-    .map(({ id, desc }) => ({ id, desc }));
+    }));
 
 export const initialExpandedState = (
   initialExpandedRows: string[] | undefined,

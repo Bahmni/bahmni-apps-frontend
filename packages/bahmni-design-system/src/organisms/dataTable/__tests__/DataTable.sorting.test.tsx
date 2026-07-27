@@ -181,47 +181,6 @@ describe('DataTable sorting', () => {
     expect(sorted[2]).toHaveTextContent('stopped');
   });
 
-  it('applies default sort priority across multiple columns regardless of declaration order', () => {
-    const rows: Medication[] = [
-      { id: 'a', name: 'B', status: 'stopped', orderedBy: 'Z' },
-      { id: 'b', name: 'A', status: 'active', orderedBy: 'Z' },
-      { id: 'c', name: 'B', status: 'active', orderedBy: 'Z' },
-    ];
-    const columns: DataTableColumn<Medication>[] = [
-      {
-        key: 'status',
-        header: 'Status',
-        enableSorting: true,
-        defaultSortDirection: 'asc',
-        defaultSortPriority: 2,
-      },
-      {
-        key: 'name',
-        header: 'Medication',
-        enableSorting: true,
-        defaultSortDirection: 'asc',
-        defaultSortPriority: 1,
-      },
-      { key: 'orderedBy', header: 'Ordered By' },
-    ];
-
-    render(
-      <DataTable
-        columns={columns}
-        rows={rows}
-        renderCell={renderCell}
-        ariaLabel="Medications"
-      />,
-    );
-
-    const sorted = screen.getAllByTestId(/^table-row-/);
-    expect(sorted[0]).toHaveTextContent('A');
-    expect(sorted[1]).toHaveTextContent('B');
-    expect(sorted[1]).toHaveTextContent('active');
-    expect(sorted[2]).toHaveTextContent('B');
-    expect(sorted[2]).toHaveTextContent('stopped');
-  });
-
   it('reverts to the configured default order once the active sort is cleared', async () => {
     const user = userEvent.setup();
     const columns: DataTableColumn<Medication>[] = [
