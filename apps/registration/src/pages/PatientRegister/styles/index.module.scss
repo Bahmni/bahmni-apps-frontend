@@ -40,6 +40,12 @@
   line-height: 1.5;
 }
 
+.patientNameWrapper {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+}
+
 .registerDate {
   font-weight: normal;
   font-size: ($spacing-04);
@@ -111,7 +117,7 @@
   .nameFields,
   .demographicsFields,
   .birthInfoFields {
-    >* {
+    > * {
       position: relative;
 
       div[class*="cds--form-requirement"] {
@@ -141,7 +147,7 @@
     margin-top: $spacing-05;
     padding-bottom: $spacing-03 + $spacing-01;
 
-    >* {
+    > * {
       flex: 1 1 0;
       min-width: 0;
     }
@@ -323,6 +329,4 @@
   :global(.cds--accordion--start .cds--accordion__content) {
     margin-inline-start: 0 !important;
   }
-
 }
-
