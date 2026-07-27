@@ -1,5 +1,5 @@
 import { formatCountry, formatGender } from '@bahmni/services';
-import { TextInput } from '../models';
+import { ResultFieldConfig, TextInput } from '../models';
 import {
   formatSearchResult,
   initialRows,
@@ -7,6 +7,7 @@ import {
   criteriaAvailableToAdd,
   validateTextInput,
   getRangeOrderError,
+  hasDuplicateSortPriority,
   updateRow,
   validateRows,
   resolveRows,
@@ -644,5 +645,36 @@ describe('formatSearchResult', () => {
     const spy = jest.fn().mockReturnValue('Scheduled');
     formatSearchResult('Scheduled', spy);
     expect(spy).toHaveBeenCalledWith('COMMON_SEARCH_RESULT_SCHEDULED');
+  });
+});
+
+describe('hasDuplicateSortPriority', () => {
+  const field = (overrides: Partial<ResultFieldConfig>): ResultFieldConfig => ({
+    translationKey: 'T',
+    expression: 'e',
+    ...overrides,
+  });
+
+  it('returns false when no field declares a sortPriority', () => {
+    expect(hasDuplicateSortPriority([field({}), field({})])).toBe(false);
+  });
+
+  it('returns false when all declared sortPriority values are unique', () => {
+    expect(
+      hasDuplicateSortPriority([
+        field({ sortPriority: 1 }),
+        field({ sortPriority: 2 }),
+        field({}),
+      ]),
+    ).toBe(false);
+  });
+
+  it('returns true when two fields declare the same sortPriority', () => {
+    expect(
+      hasDuplicateSortPriority([
+        field({ sortPriority: 1 }),
+        field({ sortPriority: 1 }),
+      ]),
+    ).toBe(true);
   });
 });

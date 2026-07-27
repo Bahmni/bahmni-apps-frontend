@@ -27,7 +27,12 @@ import schema from './schema.json';
 import SearchForm from './SearchForm';
 import SearchSummary from './SearchSummary';
 import styles from './styles/CommonSearchWidget.module.scss';
-import { buildPayload, resolveRows, validateRows } from './utils';
+import {
+  buildPayload,
+  hasDuplicateSortPriority,
+  resolveRows,
+  validateRows,
+} from './utils';
 
 const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { t } = useTranslation();
@@ -54,7 +59,17 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
     data: config,
   } = useQuery({
     queryKey: ['commonSearchWidgetConfig', configUrl],
-    queryFn: () => getConfig<CommonSearchWidgetConfig>(configUrl!, schema),
+    queryFn: () =>
+      getConfig<CommonSearchWidgetConfig>(configUrl!, schema).then((cfg) => {
+        if (
+          cfg.some((context) => hasDuplicateSortPriority(context.resultFields))
+        ) {
+          throw new Error(
+            'Common Search config error: duplicate sortPriority values in resultFields',
+          );
+        }
+        return cfg;
+      }),
     enabled: !!configUrl,
   });
 

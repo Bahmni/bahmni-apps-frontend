@@ -82,6 +82,8 @@ export interface ResultFieldConfig {
   translationKey: string;
   expression: string;
   enableSort?: boolean;
+  sortOrder?: 'asc' | 'desc';
+  sortPriority?: number;
   filterType?: ResultFieldFilterType;
   transform?: string;
 }

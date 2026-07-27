@@ -79,14 +79,19 @@ const ResultsTable = ({ resultFields, results }: ResultsTableProps) => {
 
   const errorStateMessage = expressionError ?? evaluationError;
 
-  const columns: DataTableColumn<ResultRow>[] = resolvedFields.map(
-    ({ id, field }) => ({
-      key: id,
-      header: t(field.translationKey),
-      enableSorting: field.enableSort ?? false,
-      enableFiltering: !!field.filterType,
-      filterType: field.filterType,
-    }),
+  const columns: DataTableColumn<ResultRow>[] = useMemo(
+    () =>
+      resolvedFields.map(({ id, field }) => ({
+        key: id,
+        header: t(field.translationKey),
+        enableSorting: field.enableSort ?? false,
+        defaultSortDirection:
+          field.sortPriority != null ? (field.sortOrder ?? 'asc') : undefined,
+        defaultSortPriority: field.sortPriority,
+        enableFiltering: !!field.filterType,
+        filterType: field.filterType,
+      })),
+    [resolvedFields, t],
   );
 
   return (

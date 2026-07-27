@@ -13,6 +13,7 @@ import {
   CriterionValue,
   InputConfig,
   ResolvedRow,
+  ResultFieldConfig,
   ScalarValue,
   SearchCondition,
   SearchPayload,
@@ -105,6 +106,15 @@ export const makeRow = (criterionKey: string | null): CriterionRow => ({
   validationError: null,
   rangeOrderError: null,
 });
+
+export const hasDuplicateSortPriority = (
+  resultFields: ResultFieldConfig[],
+): boolean => {
+  const priorities = resultFields
+    .map((field) => field.sortPriority)
+    .filter((priority): priority is number => priority != null);
+  return new Set(priorities).size !== priorities.length;
+};
 
 export const initialRows = (context: SearchContextConfig): CriterionRow[] => {
   const defaults = context.criteria.filter((c) => c.default);

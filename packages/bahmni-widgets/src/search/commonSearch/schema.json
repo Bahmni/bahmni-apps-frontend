@@ -87,6 +87,16 @@
           "type": "boolean",
           "description": "When true, the column header is clickable to sort results client-side"
         },
+        "sortOrder": {
+          "type": "string",
+          "enum": ["asc", "desc"],
+          "description": "Direction the results are sorted by this column before any user interaction"
+        },
+        "sortPriority": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "When multiple columns declare sortOrder, the order (1..n) in which they are applied as sort keys"
+        },
         "filterType": {
           "type": "string",
           "enum": ["text", "select", "dateRange", "numeric"],
@@ -97,6 +107,9 @@
           "enum": ["formatDate", "formatTime", "formatDateTime", "formatAge", "formatGender", "formatCountry", "formatSearchResult"],
           "description": "Name of a transform applied to the extracted value before display"
         }
+      },
+      "dependencies": {
+        "sortOrder": ["sortPriority"]
       }
     },
     "criterionConfig": {
