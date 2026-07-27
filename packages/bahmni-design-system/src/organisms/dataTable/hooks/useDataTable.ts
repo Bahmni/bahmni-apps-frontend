@@ -53,9 +53,8 @@ export const useDataTable = <T extends { id: string }>({
   onPaginationChange,
   initialExpandedRows,
 }: UseDataTableArgs<T>): Table<T> => {
-  const [sorting, setSorting] = useState<SortingState>(() =>
-    initialSortingState(columns),
-  );
+  const initialSorting = useMemo(() => initialSortingState(columns), [columns]);
+  const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [grouping, setGrouping] = useState<GroupingState>([]);
@@ -83,7 +82,14 @@ export const useDataTable = <T extends { id: string }>({
       expanded,
       ...(enablePagination ? { pagination } : {}),
     },
-    onSortingChange: setSorting,
+    onSortingChange: (updater) => {
+      setSorting((old) => {
+        const next = typeof updater === 'function' ? updater(old) : updater;
+        // Removing the active sort (TanStack's third-click behavior) should
+        // fall back to the column-configured default order, not raw fetch order.
+        return next.length === 0 ? initialSorting : next;
+      });
+    },
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     onGroupingChange: setGrouping,
