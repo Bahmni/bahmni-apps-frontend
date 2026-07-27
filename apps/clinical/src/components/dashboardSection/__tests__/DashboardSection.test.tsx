@@ -583,5 +583,99 @@ describe('DashboardSection Component', () => {
       });
       expect(capturedProps[0].disableActions).toBe(false);
     });
+
+    it('passes activeEncounterMatched=true when matchReasons includes MATCHED', async () => {
+      const capturedProps: Record<string, unknown>[] = [];
+      const ProbeWidget = (props: Record<string, unknown>) => {
+        capturedProps.push(props);
+        return <div data-testid="probe-widget-matched" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: ['MATCHED'],
+        canEditOrCreate: true,
+        isLoading: false,
+        activeEncounter: { id: 'enc-matched' },
+      });
+
+      renderSection({
+        id: 'conditions-section',
+        name: 'Conditions',
+        icon: 'test-icon',
+        controls: [{ type: 'conditions', name: '', config: {} }],
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('probe-widget-matched')).toBeInTheDocument();
+      });
+      expect(capturedProps[0].activeEncounterMatched).toBe(true);
+    });
+
+    it('passes activeEncounterMatched=false when matchReasons does not include MATCHED', async () => {
+      const capturedProps: Record<string, unknown>[] = [];
+      const ProbeWidget = (props: Record<string, unknown>) => {
+        capturedProps.push(props);
+        return <div data-testid="probe-widget-unmatched" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: ['SESSION_EXPIRED'],
+        canEditOrCreate: false,
+        isLoading: false,
+        activeEncounter: { id: 'enc-expired' },
+      });
+
+      renderSection({
+        id: 'conditions-section',
+        name: 'Conditions',
+        icon: 'test-icon',
+        controls: [{ type: 'conditions', name: '', config: {} }],
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('probe-widget-unmatched'),
+        ).toBeInTheDocument();
+      });
+      expect(capturedProps[0].activeEncounterMatched).toBe(false);
+    });
+
+    it('passes the full activeEncounter object to widgets', async () => {
+      const capturedProps: Record<string, unknown>[] = [];
+      const ProbeWidget = (props: Record<string, unknown>) => {
+        capturedProps.push(props);
+        return <div data-testid="probe-widget-enc-obj" />;
+      };
+      mockGetWidget.mockReturnValue(
+        React.lazy(() => Promise.resolve({ default: ProbeWidget })),
+      );
+      const activeEncounter = {
+        id: 'enc-full',
+        resourceType: 'Encounter',
+        status: 'in-progress',
+      };
+      mockUseEncounterSessionStore.mockReturnValue({
+        matchReasons: ['MATCHED'],
+        canEditOrCreate: true,
+        isLoading: false,
+        activeEncounter,
+      });
+
+      renderSection({
+        id: 'conditions-section',
+        name: 'Conditions',
+        icon: 'test-icon',
+        controls: [{ type: 'conditions', name: '', config: {} }],
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('probe-widget-enc-obj')).toBeInTheDocument();
+      });
+      expect(capturedProps[0].activeEncounter).toEqual(activeEncounter);
+    });
   });
 });

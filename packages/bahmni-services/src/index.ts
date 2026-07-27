@@ -275,6 +275,8 @@ export {
   shouldEnableEncounterFilter,
   createFhirEncounter,
   updateFhirEncounter,
+  buildEncounterResource,
+  type BuildEncounterResourceParams,
   type FormsEncounter,
 } from './encounterService';
 
