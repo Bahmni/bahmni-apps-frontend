@@ -104,6 +104,7 @@ const ResultsTable = ({ resultFields, results }: ResultsTableProps) => {
       rows={rows}
       errorStateMessage={errorStateMessage}
       emptyStateMessage={t('COMMON_SEARCH_NO_RESULTS')}
+      noFilterResultsMessage={t('COMMON_SEARCH_NO_FILTER_RESULTS')}
       className={styles.dataTable}
     />
   );

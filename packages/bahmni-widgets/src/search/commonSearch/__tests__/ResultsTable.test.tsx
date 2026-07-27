@@ -266,5 +266,36 @@ describe('ResultsTable', () => {
       expect(rows[1]).toHaveTextContent('Bob');
       expect(rows[2]).toHaveTextContent('Charlie');
     });
+
+    it('shows a distinct message when a column filter matches nothing', async () => {
+      const user = userEvent.setup();
+      const resultFieldsWithFilter: ResultFieldConfig[] = [
+        {
+          translationKey: 'PATIENT_NAME',
+          expression: 'name',
+          filterType: 'text',
+        },
+      ];
+
+      renderTable({ resultFields: resultFieldsWithFilter });
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('common-search-results-table'),
+        ).toBeInTheDocument();
+      });
+
+      await user.click(
+        screen.getByTestId('common-search-results-table-filter-toggle'),
+      );
+      const input = screen.getByPlaceholderText('Filter PATIENT_NAME');
+      await user.type(input, 'Nonexistent');
+
+      expect(
+        screen.getByText('COMMON_SEARCH_NO_FILTER_RESULTS'),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText('COMMON_SEARCH_NO_RESULTS'),
+      ).not.toBeInTheDocument();
+    });
   });
 });
