@@ -226,6 +226,13 @@
   gap: $spacing-01;
 }
 
+.itemLabelWrapper {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+  width: 100%;
+}
+
 .itemLabel {
   @include type-style('body-01');
   color: $text-primary;

@@ -1,4 +1,5 @@
-{
+{ 
+  "PATIENT_STATUS_DECEASED": "Fallecido",
   "COMMAND_PALETTE_ARIA_LABEL": "Paleta de comandos",
   "COMMAND_PALETTE_SEARCH_BY_ANNOTATION": "Buscar por {{annotation}}...",
   "COMMAND_PALETTE_SEARCH_WITH_FILTERS": "Buscar o escriba @ para filtros...",

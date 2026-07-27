@@ -52,6 +52,7 @@ export const formatPatientSearchResult = (
         return {
           ...patient,
           id: patient.identifier,
+          isDead: patient.isDead ?? patient.dead ?? !!patient.deathDate,
           name: [
             patient.givenName,
             patient.middleName,

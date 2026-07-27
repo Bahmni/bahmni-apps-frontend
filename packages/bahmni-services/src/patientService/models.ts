@@ -17,13 +17,16 @@ export interface FormattedPatientData {
   identifiers: Map<string, string>;
   identifier: string | null;
   photoUrl?: string;
+  isDead?: boolean;
 }
 
 export interface PatientSearchResult {
   uuid: string;
+  isDead?: boolean;
   birthDate: Date | string;
   extraIdentifiers: string | null;
   personId: number;
+  dead?: boolean;
   deathDate: Date | null;
   identifier: string;
   addressFieldValue: string | null;

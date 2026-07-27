@@ -2,6 +2,7 @@ import type { PatientSearchResult } from '@bahmni/services';
 import { Command } from 'cmdk';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DeceasedTag } from '../patientDetails';
 import type {
   PatientAction,
   PatientActionContext,
@@ -74,7 +75,12 @@ export const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
       </span>
 
       <span className={styles.itemContent}>
-        <span className={styles.itemLabel}>{primaryText}</span>
+        <span className={styles.itemLabelWrapper}>
+          <span className={styles.itemLabel}>{primaryText}</span>
+          <DeceasedTag
+            isDead={patient.isDead ?? patient.dead ?? !!patient.deathDate}
+          />
+        </span>
         {isExpanded && hasAdditional && (
           <span className={styles.additionalFields}>
             {additionalFields.map((f) => (

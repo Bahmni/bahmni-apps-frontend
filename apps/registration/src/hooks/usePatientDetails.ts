@@ -22,6 +22,7 @@ interface PatientMetadata {
   patientIdentifier: string;
   patientName: string;
   registerDate: string;
+  isDead: boolean;
 }
 
 export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
@@ -35,6 +36,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     patientIdentifier: '',
     patientName: '',
     registerDate: '',
+    isDead: false,
   });
 
   const {
