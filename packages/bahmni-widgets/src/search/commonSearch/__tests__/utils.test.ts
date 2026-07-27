@@ -1,5 +1,7 @@
+import { formatCountry, formatGender } from '@bahmni/services';
 import { TextInput } from '../models';
 import {
+  formatSearchResult,
   initialRows,
   availableCriteriaForRow,
   criteriaAvailableToAdd,
@@ -9,6 +11,7 @@ import {
   validateRows,
   resolveRows,
   buildPayload,
+  resultTransforms,
   toSearchAuditEventType,
 } from '../utils';
 import {
@@ -645,5 +648,82 @@ describe('toSearchAuditEventType', () => {
     },
   ])('returns $expected for context $context', ({ context, expected }) => {
     expect(toSearchAuditEventType(context)).toBe(expected);
+  });
+});
+
+describe('resultTransforms', () => {
+  const identityT = (key: string) => key;
+
+  it('registers all supported transform keys', () => {
+    expect(Object.keys(resultTransforms).sort()).toEqual(
+      [
+        'formatAge',
+        'formatCountry',
+        'formatDate',
+        'formatDateTime',
+        'formatGender',
+        'formatSearchResult',
+        'formatTime',
+      ].sort(),
+    );
+  });
+
+  it.each([
+    { key: 'formatGender', fn: formatGender },
+    { key: 'formatCountry', fn: formatCountry },
+  ])('wires $key into the map', ({ key, fn }) => {
+    expect(resultTransforms[key]).toBe(fn);
+  });
+
+  it.each([
+    { key: 'formatDate', value: '2024-03-28', contains: '2024' },
+    { key: 'formatTime', value: '2024-03-28T14:30:00', contains: '2:30 PM' },
+    { key: 'formatDateTime', value: '2024-03-28T14:30:00', contains: '2024' },
+    { key: 'formatAge', value: '1990-01-01', contains: 'YEARS' },
+  ])(
+    '$key transform produces the expected output',
+    ({ key, value, contains }) => {
+      expect(resultTransforms[key](value, identityT)).toContain(contains);
+    },
+  );
+});
+
+describe('formatSearchResult', () => {
+  const translations: Record<string, string> = {
+    COMMON_SEARCH_RESULT_SCHEDULED: 'Scheduled',
+    COMMON_SEARCH_RESULT_IN_PROGRESS: 'In Progress',
+  };
+  const t = (key: string) => translations[key] ?? key;
+
+  it.each([
+    {
+      label: 'translates a simple value using its i18n key',
+      value: 'Scheduled',
+      expected: 'Scheduled',
+    },
+    {
+      label: 'translates a camelCase value to its i18n key',
+      value: 'inProgress',
+      expected: 'In Progress',
+    },
+    {
+      label: 'returns the i18n key when no translation is available',
+      value: 'unknown',
+      expected: 'COMMON_SEARCH_RESULT_UNKNOWN',
+    },
+    { label: 'returns null for empty string', value: '', expected: null },
+    {
+      label: 'returns null for whitespace-only string',
+      value: '   ',
+      expected: null,
+    },
+  ])('$label', ({ value, expected }) => {
+    expect(formatSearchResult(value, t)).toBe(expected);
+  });
+
+  it('builds the translation key from the value', () => {
+    const spy = jest.fn().mockReturnValue('Scheduled');
+    formatSearchResult('Scheduled', spy);
+    expect(spy).toHaveBeenCalledWith('COMMON_SEARCH_RESULT_SCHEDULED');
   });
 });

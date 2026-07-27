@@ -83,6 +83,7 @@ export interface ResultFieldConfig {
   expression: string;
   enableSort?: boolean;
   filterType?: ResultFieldFilterType;
+  transform?: string;
 }
 
 export interface SearchContextConfig {

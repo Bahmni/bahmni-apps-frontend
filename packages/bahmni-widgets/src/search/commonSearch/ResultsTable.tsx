@@ -5,6 +5,7 @@ import jsonata from 'jsonata';
 import { useEffect, useMemo, useState } from 'react';
 import type { ResultFieldConfig } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
+import { resultTransforms } from './utils';
 
 interface ResultsTableProps {
   resultFields: ResultFieldConfig[];
@@ -18,10 +19,12 @@ type ResolvedField = { id: string; field: ResultFieldConfig };
 const evaluateRows = async (
   results: unknown[],
   resolvedFields: ResolvedField[],
+  t: (key: string) => string,
 ): Promise<ResultRow[]> => {
   const compiled = resolvedFields.map(({ id, field }) => ({
     key: id,
     expr: jsonata(field.expression),
+    transform: field.transform ? resultTransforms[field.transform] : undefined,
   }));
 
   return Promise.all(
@@ -32,8 +35,13 @@ const evaluateRows = async (
             ? String((item as Record<string, unknown>).id)
             : generateUUID(),
       };
-      for (const { key, expr } of compiled) {
-        row[key] = await expr.evaluate(item as Record<string, unknown>);
+      for (const { key, expr, transform } of compiled) {
+        const value = await expr.evaluate(item as Record<string, unknown>);
+        if (!value) {
+          row[key] = '-';
+          continue;
+        }
+        row[key] = transform ? transform(String(value), t) : value;
       }
       return row as ResultRow;
     }),
@@ -64,7 +72,7 @@ const ResultsTable = ({ resultFields, results }: ResultsTableProps) => {
   useEffect(() => {
     if (expressionError) return;
     setEvaluationError(null);
-    evaluateRows(results, resolvedFields)
+    evaluateRows(results, resolvedFields, t)
       .then(setRows)
       .catch(() => setEvaluationError(t('COMMON_SEARCH_EVALUATION_ERROR')));
   }, [results, resolvedFields, expressionError, t]);
