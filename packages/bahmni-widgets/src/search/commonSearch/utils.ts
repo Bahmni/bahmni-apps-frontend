@@ -312,6 +312,7 @@ export const validateRows = (
 
 export const validateConfigForActions = (
   contexts: SearchContextConfig[],
+  t: (key: string, options?: Record<string, string>) => string,
 ): string | null => {
   for (const context of contexts) {
     const hasActionReferences = context.resultFields.some((f) => f.action);
@@ -320,7 +321,7 @@ export const validateConfigForActions = (
       hasActionReferences &&
       (!context.actions || context.actions.length === 0)
     ) {
-      return `Invalid config: resultFields reference actions but no actions array defined in context "${context.context}"`;
+      return t('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION');
     }
 
     if (context.actions) {
@@ -329,14 +330,18 @@ export const validateConfigForActions = (
         (key, idx) => actionKeys.indexOf(key) !== idx,
       );
       if (duplicates.length > 0) {
-        return `Invalid config: duplicate action key "${duplicates[0]}" in context "${context.context}"`;
+        return t('COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_ACTION', {
+          key: duplicates[0],
+        });
       }
 
       const actionKeySet = new Set(actionKeys);
 
       for (const field of context.resultFields) {
         if (field.action && !actionKeySet.has(field.action)) {
-          return `Invalid config: resultField references unknown action key "${field.action}" in context "${context.context}"`;
+          return t('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION', {
+            key: field.action,
+          });
         }
       }
 
@@ -349,7 +354,7 @@ export const validateConfigForActions = (
             try {
               jsonata(expression);
             } catch {
-              return `Invalid config: navigationURL contains invalid JSONata expression "{${expression}}" in action "${action.key}" of context "${context.context}"`;
+              return t('COMMON_SEARCH_INVALID_EXPRESSION');
             }
           }
         }
