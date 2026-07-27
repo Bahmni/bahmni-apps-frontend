@@ -1,4 +1,4 @@
-import { generateUUID } from '@bahmni/services';
+import { generateUUID, useTranslation } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import jsonata from 'jsonata';
@@ -6,6 +6,8 @@ import ResultsTable from '../ResultsTable';
 import {
   mockInvalidExpressionFields,
   mockResultFields,
+  mockResultFieldsWithTransform,
+  mockResultFieldsWithUnknownTransform,
   mockResults,
   mockResultWithoutId,
 } from './__mocks__/resultsTableMocks';
@@ -14,11 +16,13 @@ jest.mock('jsonata');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   generateUUID: jest.fn(),
+  useTranslation: jest.fn(),
 }));
 expect.extend(toHaveNoViolations);
 
 const mockJsonata = jsonata as jest.Mock;
 const mockGenerateUUID = generateUUID as jest.Mock;
+const mockUseTranslation = useTranslation as jest.Mock;
 
 const renderTable = (
   overrides: Partial<{
@@ -39,6 +43,7 @@ describe('ResultsTable', () => {
     jest.clearAllMocks();
     let count = 0;
     mockGenerateUUID.mockImplementation(() => `uuid-${count++}`);
+    mockUseTranslation.mockReturnValue({ t: (key: string) => key });
     mockJsonata.mockReturnValue({
       evaluate: jest.fn().mockResolvedValue('evaluated-value'),
     });
@@ -142,6 +147,52 @@ describe('ResultsTable', () => {
     it('has no a11y violations for empty state', async () => {
       const { container } = renderTable({ results: [] });
       expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('Result field transforms', () => {
+    it('falls back to the raw value when the transform key is not registered', async () => {
+      mockJsonata.mockReturnValue({
+        evaluate: jest
+          .fn()
+          .mockResolvedValue('UNREGISTERED_TRANSFORM_RAW_VALUE'),
+      });
+      renderTable({
+        resultFields: mockResultFieldsWithUnknownTransform,
+        results: [{ id: '1', country: 'UNREGISTERED_TRANSFORM_RAW_VALUE' }],
+      });
+      await waitFor(() => {
+        expect(
+          screen.getByText('UNREGISTERED_TRANSFORM_RAW_VALUE'),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('shows "-" when the evaluated value is null', async () => {
+      mockJsonata.mockReturnValue({
+        evaluate: jest.fn().mockResolvedValue(null),
+      });
+      renderTable({
+        resultFields: mockResultFieldsWithTransform,
+        results: [{ id: '1', country: null }],
+      });
+      await waitFor(() => {
+        expect(screen.getByText('-')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('United States')).not.toBeInTheDocument();
+    });
+
+    it('shows "-" when the evaluated value is an empty string', async () => {
+      mockJsonata.mockReturnValue({
+        evaluate: jest.fn().mockResolvedValue(''),
+      });
+      renderTable({
+        resultFields: mockResultFieldsWithTransform,
+        results: [{ id: '1', country: '' }],
+      });
+      await waitFor(() => {
+        expect(screen.getByText('-')).toBeInTheDocument();
+      });
     });
   });
 });

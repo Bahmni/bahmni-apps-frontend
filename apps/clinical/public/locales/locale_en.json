@@ -258,6 +258,8 @@
   "FORM_FILLING_TASKS": "Form Filling Tasks",
   "FORM_RECORDED_BY": "Recorded By",
   "FORM_RECORDED_ON": "Recorded On",
+  "GENDER_F": "Female",
+  "GENDER_M": "Male",
   "GLOBAL_ACTION_NOTIFICATIONS": "Notifications",
   "GLOBAL_ACTION_SEARCH": "Search",
   "GLOBAL_ACTION_USER": "User",
