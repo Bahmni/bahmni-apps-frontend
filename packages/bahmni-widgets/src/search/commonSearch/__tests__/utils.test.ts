@@ -12,6 +12,8 @@ import {
   resolveRows,
   buildPayload,
   resultTransforms,
+  validateConfigForActions,
+  resolveNavigationURL,
   toSearchAuditEventType,
 } from '../utils';
 import {
@@ -38,6 +40,10 @@ import {
   mockResolvedScalarRow,
   mockResolvedKeyTypeRow,
   mockResolvedRangeRow,
+  mockContextWithValidActions,
+  mockContextWithUnknownActionKey,
+  mockContextWithMissingActionsArray,
+  mockActionsWithDuplicateKeys,
   mockRowDateScalar,
   mockRowDateRange,
   mockRowDateRangeFromOnly,
@@ -725,5 +731,102 @@ describe('formatSearchResult', () => {
     const spy = jest.fn().mockReturnValue('Scheduled');
     formatSearchResult('Scheduled', spy);
     expect(spy).toHaveBeenCalledWith('COMMON_SEARCH_RESULT_SCHEDULED');
+  });
+});
+
+describe('validateConfigForActions', () => {
+  const mockT = jest.fn((key: string) => key);
+
+  beforeEach(() => {
+    mockT.mockClear();
+  });
+
+  it('returns null when no actions are referenced', () => {
+    const contexts = [
+      {
+        ...mockContextWithValidActions,
+        resultFields: [{ translationKey: 'NAME', expression: 'name' }],
+        actions: undefined,
+      },
+    ];
+    expect(validateConfigForActions(contexts, mockT)).toBeNull();
+  });
+
+  it('returns null when actions are valid and properly referenced', () => {
+    expect(
+      validateConfigForActions([mockContextWithValidActions], mockT),
+    ).toBeNull();
+  });
+
+  it('returns error when resultFields reference actions but no actions array is defined', () => {
+    const result = validateConfigForActions(
+      [mockContextWithMissingActionsArray],
+      mockT,
+    );
+    expect(result).toBeTruthy();
+    expect(mockT).toHaveBeenCalledWith(
+      'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION',
+    );
+  });
+
+  it('returns error when action key is duplicated', () => {
+    const contexts = [
+      {
+        ...mockContextWithValidActions,
+        actions: mockActionsWithDuplicateKeys,
+      },
+    ];
+    validateConfigForActions(contexts, mockT);
+    expect(mockT).toHaveBeenCalledWith(
+      'COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_ACTION',
+      { key: 'viewPatient' },
+    );
+  });
+
+  it('returns error when resultField references unknown action key', () => {
+    validateConfigForActions([mockContextWithUnknownActionKey], mockT);
+    expect(mockT).toHaveBeenCalledWith(
+      'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION',
+      { key: 'unknownAction' },
+    );
+  });
+});
+
+describe('resolveNavigationURL', () => {
+  it('resolves placeholders with JSONata expressions', async () => {
+    const result = await resolveNavigationURL('/patient/{name}', {
+      name: 'John Doe',
+    });
+    expect(result).toBe('/patient/John Doe');
+  });
+
+  it('resolves multiple placeholders', async () => {
+    const result = await resolveNavigationURL('/patient/{name}/visit/{id}', {
+      name: 'John Doe',
+      id: '123',
+    });
+    expect(result).toBe('/patient/John Doe/visit/123');
+  });
+
+  it('converts resolved value to string', async () => {
+    const result = await resolveNavigationURL('/patient/{age}', { age: 30 });
+    expect(result).toBe('/patient/30');
+  });
+
+  it.each([
+    ['expression evaluates to null', '/patient/{uuid}', { name: 'John Doe' }],
+    [
+      'expression evaluates to undefined',
+      '/patient/{missing}',
+      { name: 'John Doe' },
+    ],
+    [
+      'JSONata expression throws error',
+      '/patient/{$invalid}',
+      { name: 'John Doe' },
+    ],
+  ])('returns null when %s', async (_description, template, rowData) => {
+    const result = await resolveNavigationURL(template, rowData);
+    expect(result).toBeNull();
   });
 });

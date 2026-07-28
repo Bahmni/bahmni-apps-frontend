@@ -1,4 +1,4 @@
-import { ResultFieldConfig } from '../../models';
+import { ActionConfig, ResultFieldConfig } from '../../models';
 
 export const mockResultFields: ResultFieldConfig[] = [
   {
@@ -23,7 +23,59 @@ export const mockResults = [
   { id: '2', name: 'Jane Smith', age: 25 },
 ];
 
-export const mockResultWithoutId = { name: 'No ID User', age: 40 };
+export const mockResultWithoutId = {
+  name: 'No ID User',
+  age: 40,
+};
+
+export const mockActions: ActionConfig[] = [
+  {
+    key: 'viewPatient',
+    type: 'navigate',
+    requiredPrivileges: ['View Patients'],
+    navigationURL: '/patient/{name}',
+  },
+  {
+    key: 'editPatient',
+    type: 'navigate',
+    requiredPrivileges: ['Edit Patients'],
+    navigationURL: '/patient/{name}/edit',
+  },
+];
+
+export const mockActionsWithInvalidExpression: ActionConfig[] = [
+  {
+    key: 'viewPatient',
+    type: 'navigate',
+    requiredPrivileges: [],
+    navigationURL: '/patient/{$$$invalid}',
+  },
+];
+
+export const mockResultFieldsWithAction: ResultFieldConfig[] = [
+  {
+    translationKey: 'PATIENT_NAME',
+    expression: 'name',
+    action: 'viewPatient',
+  },
+  {
+    translationKey: 'PATIENT_AGE',
+    expression: 'age',
+  },
+];
+
+export const mockResultFieldsWithMultipleActions: ResultFieldConfig[] = [
+  {
+    translationKey: 'PATIENT_NAME',
+    expression: 'name',
+    action: 'viewPatient',
+  },
+  {
+    translationKey: 'PATIENT_ID',
+    expression: 'id',
+    action: 'editPatient',
+  },
+];
 
 export const mockResultFieldsWithTransform: ResultFieldConfig[] = [
   {
