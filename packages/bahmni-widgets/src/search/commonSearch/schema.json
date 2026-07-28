@@ -20,7 +20,7 @@
         "criteria",
         "resultFields"
       ],
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "context": {
           "type": "string",
