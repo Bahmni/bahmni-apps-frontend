@@ -164,11 +164,6 @@
 
 .selectFilter {
   min-width: calc($spacing-12 + $spacing-05);
-
-  :global(.cds--list-box__menu) {
-    inline-size: max-content;
-    min-inline-size: 100%;
-  }
 }
 
 .dateRangeFilter{
