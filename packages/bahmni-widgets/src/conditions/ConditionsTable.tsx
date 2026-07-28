@@ -10,6 +10,8 @@ import {
 import {
   markConditionAsInactive,
   dispatchAuditEvent,
+  dispatchConsultationSaved,
+  setEncounterSessionDecision,
   AUDIT_LOG_EVENT_DETAILS,
   type AuditEventType,
   useTranslation,
@@ -19,6 +21,7 @@ import {
 } from '@bahmni/services';
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
+import { useActivePractitioner } from '../activePractitioner';
 import ConfirmationModal from '../confirmationModal/ConfirmationModal';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
@@ -32,10 +35,14 @@ import styles from './styles/ConditionsTable.module.scss';
 const ConditionsTable: React.FC<WidgetProps> = ({
   config,
   disableActions = false,
+  activeEncounter,
+  activeEncounterMatched,
 }) => {
   // Number() safely handles non-numeric config values (NaN → falsy → fallback 5)
   const configPageSize = Number(config?.pageSize) || 5;
+  const encounterTypeName = config?.encounterType as string | undefined;
   const patientUUID = usePatientUUID();
+  const { practitioner } = useActivePractitioner();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const queryClient = useQueryClient();
@@ -90,13 +97,38 @@ const ConditionsTable: React.FC<WidgetProps> = ({
     if (!conditionToMarkInactive?.rawFhirResource) return;
     setIsSubmitting(true);
     try {
-      await markConditionAsInactive(conditionToMarkInactive.rawFhirResource);
-      dispatchAuditEvent({
-        eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
-          .eventType as AuditEventType,
-        patientUuid: patientUUID!,
-        messageParams: { conditionDisplay: conditionToMarkInactive.display },
-      });
+      const encounter = await markConditionAsInactive(
+        conditionToMarkInactive.rawFhirResource,
+        activeEncounter ?? undefined,
+        activeEncounterMatched ?? false,
+        encounterTypeName,
+        patientUUID ?? undefined,
+        practitioner?.uuid,
+      );
+      if (encounter.id) {
+        setEncounterSessionDecision({ reasons: ['MATCHED'], encounter });
+      }
+      if (patientUUID) {
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
+            .eventType as AuditEventType,
+          patientUuid: patientUUID,
+          messageParams: {
+            conditionDisplay: conditionToMarkInactive.display,
+            encounterUuid: encounter.id,
+          },
+        });
+        dispatchConsultationSaved({
+          patientUUID,
+          updatedResources: {
+            conditions: true,
+            allergies: false,
+            medications: false,
+            serviceRequests: {},
+          },
+          updatedConcepts: new Map(),
+        });
+      }
     } catch {
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
