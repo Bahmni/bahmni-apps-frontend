@@ -3,7 +3,7 @@ import type { DataTableColumn } from '@bahmni/design-system';
 import { generateUUID, useTranslation } from '@bahmni/services';
 import jsonata from 'jsonata';
 import { useEffect, useMemo, useState } from 'react';
-import type { ResultFieldConfig } from './models';
+import { ResultFieldConfig, SortOrder } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
 import { resultTransforms } from './utils';
 
@@ -85,7 +85,9 @@ const ResultsTable = ({ resultFields, results }: ResultsTableProps) => {
         key: id,
         header: t(field.translationKey),
         enableSorting: field.enableSort ?? false,
-        defaultSortDirection: field.sortOrder,
+        defaultSortDirection: field.enableSort
+          ? (field.sortOrder ?? SortOrder.Ascending)
+          : field.sortOrder,
         enableFiltering: !!field.filterType,
         filterType: field.filterType,
       })),

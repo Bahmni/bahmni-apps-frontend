@@ -3,11 +3,12 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import jsonata from 'jsonata';
-import type { ResultFieldConfig } from '../models';
+import { ResultFieldConfig, SortOrder } from '../models';
 import ResultsTable from '../ResultsTable';
 import {
   mockInvalidExpressionFields,
   mockResultFields,
+  mockResultFieldsWithSortOrder,
   mockResultFieldsWithTransform,
   mockResultFieldsWithUnknownTransform,
   mockResults,
@@ -199,27 +200,49 @@ describe('ResultsTable', () => {
   });
 
   describe('Sort and filter config wiring', () => {
-    const mockResultFieldsWithSort: ResultFieldConfig[] = [
-      {
-        translationKey: 'PATIENT_NAME',
-        expression: 'name',
-        enableSort: true,
-        sortOrder: 'asc',
-      },
-      { translationKey: 'PATIENT_AGE', expression: 'age' },
-    ];
-
     it('applies sortOrder from config as the initial row order', async () => {
       mockJsonata.mockImplementation((expression: string) => ({
         evaluate: async (item: Record<string, unknown>) => item[expression],
       }));
 
       renderTable({
-        resultFields: mockResultFieldsWithSort,
+        resultFields: mockResultFieldsWithSortOrder,
         results: [
           { id: '1', name: 'Charlie', age: 30 },
           { id: '2', name: 'Alice', age: 25 },
           { id: '3', name: 'Bob', age: 40 },
+        ],
+      });
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(3);
+      });
+
+      const rows = screen.getAllByTestId(/^table-row-/);
+      expect(rows[0]).toHaveTextContent('Alice');
+      expect(rows[1]).toHaveTextContent('Bob');
+      expect(rows[2]).toHaveTextContent('Charlie');
+    });
+
+    it('defaults sortOrder to ascending for a sortable field when omitted', async () => {
+      mockJsonata.mockImplementation((expression: string) => ({
+        evaluate: async (item: Record<string, unknown>) => item[expression],
+      }));
+
+      const resultFieldsWithOmittedSortOrder: ResultFieldConfig[] = [
+        {
+          translationKey: 'PATIENT_NAME',
+          expression: 'name',
+          enableSort: true,
+        },
+      ];
+
+      renderTable({
+        resultFields: resultFieldsWithOmittedSortOrder,
+        results: [
+          { id: '1', name: 'Charlie' },
+          { id: '2', name: 'Alice' },
+          { id: '3', name: 'Bob' },
         ],
       });
 
@@ -243,13 +266,13 @@ describe('ResultsTable', () => {
           translationKey: 'PATIENT_NAME',
           expression: 'name',
           enableSort: true,
-          sortOrder: 'asc',
+          sortOrder: SortOrder.Ascending,
         },
         {
           translationKey: 'PATIENT_AGE',
           expression: 'age',
           enableSort: true,
-          sortOrder: 'asc',
+          sortOrder: SortOrder.Ascending,
         },
       ];
 
