@@ -11,6 +11,7 @@ import {
   mockNumericRangeRow,
   mockNumericScalarRow,
   mockOptionsRow,
+  mockOptionsWithTranslationRow,
   mockTextRow,
 } from './__mocks__/searchSummaryMocks';
 
@@ -50,7 +51,8 @@ describe('SearchSummary', () => {
       expected: 'APPOINTMENT_NUMBER: AP000H7',
     },
     {
-      label: 'options criterion',
+      label:
+        'options criterion with no matching option (fallback to raw value)',
       row: mockOptionsRow,
       expected: 'APPOINTMENT_SERVICE: US Health',
     },
@@ -63,6 +65,11 @@ describe('SearchSummary', () => {
       label: 'numeric scalar criterion',
       row: mockNumericScalarRow,
       expected: 'AGE_SCALAR: 42',
+    },
+    {
+      label: 'options criterion with matching option',
+      row: mockOptionsWithTranslationRow,
+      expected: 'PATIENT_GENDER: GENDER_MALE',
     },
   ])('renders green tag for $label', ({ row, expected }) => {
     render(
