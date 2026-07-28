@@ -845,6 +845,35 @@ describe('ObservationFormsContainer', () => {
       });
     });
 
+    it('should show mandatory validation error when form is empty but has mandatory errors', async () => {
+      const mockOnFormObservationsChange = jest.fn();
+
+      mockGetValue.mockReturnValue({
+        observations: [],
+        errors: [{ message: 'mandatory' }],
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          onFormObservationsChange={mockOnFormObservationsChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      expect(mockOnFormObservationsChange).not.toHaveBeenCalled();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('inline-notification')).toBeInTheDocument();
+        expect(screen.getByTestId('notification-title')).toHaveTextContent(
+          'translated_OBSERVATION_FORM_VALIDATION_ERROR_TITLE_MANDATORY',
+        );
+      });
+    });
+
     it('should show invalid field validation error but not block submission', async () => {
       const mockOnFormObservationsChange = jest.fn();
       const mockOnViewingFormChange = jest.fn();

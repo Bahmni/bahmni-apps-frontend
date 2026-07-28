@@ -288,11 +288,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       const isEmpty = !hasAnyValue; // Empty if no values (including empty strings), even if there are notes
       const hasErrors = errors && errors.length > 0;
 
-      if (isEmpty) {
-        setValidationErrorType(VALIDATION_STATE_EMPTY);
-        return;
-      }
-
       if (hasErrors) {
         const hasMandatoryError = errors
           .flat()
@@ -305,6 +300,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           ? VALIDATION_STATE_MANDATORY
           : VALIDATION_STATE_INVALID;
         setValidationErrorType(errorType);
+        return;
+      }
+
+      if (isEmpty) {
+        setValidationErrorType(VALIDATION_STATE_EMPTY);
         return;
       }
 
