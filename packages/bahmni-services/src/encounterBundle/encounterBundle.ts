@@ -1,5 +1,6 @@
 import { BundleEntry, FhirResource } from 'fhir/r4';
-import { EncounterBundle } from '../../models/encounterBundle';
+import { generateUUID } from '../utils/utils';
+import { EncounterBundle } from './models';
 
 export const createEncounterBundle = (
   entries: Array<BundleEntry<FhirResource>>,
@@ -7,21 +8,21 @@ export const createEncounterBundle = (
   return {
     resourceType: 'EncounterBundle',
     type: 'transaction',
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     timestamp: new Date().toISOString(),
     entry: entries,
   };
 };
 
 export const createBundleEntry = (
-  fullURL: string,
+  fullUrl: string,
   resource: FhirResource,
   requestMethod: 'POST' | 'PUT' | 'DELETE',
   resourceUrl?: string,
 ): BundleEntry<FhirResource> => {
   return {
-    fullUrl: fullURL,
-    resource: resource,
+    fullUrl,
+    resource,
     request: {
       method: requestMethod,
       url: resourceUrl ?? resource.resourceType,

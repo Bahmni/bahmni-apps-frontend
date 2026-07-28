@@ -244,6 +244,26 @@ describe('encounterBundleService', () => {
         'provisional',
       );
     });
+
+    it('should propagate conceptSystem to condition coding system', () => {
+      const diagnosisWithSystem: DiagnosisInputEntry = {
+        ...mockDiagnosis,
+        conceptSystem: 'http://snomed.info/sct',
+      };
+
+      const result = createDiagnosisBundleEntries({
+        selectedDiagnoses: [diagnosisWithSystem],
+        encounterSubject: mockEncounterSubject,
+        encounterReference: mockDiagnosisEncounterReference,
+        practitionerUUID: mockDiagnosisPractitionerUUID,
+        consultationDate: new Date('2025-01-01T10:00:00Z'),
+      });
+
+      const condition = result[0].resource as Condition;
+      expect(condition.code?.coding?.[0]?.system).toBe(
+        'http://snomed.info/sct',
+      );
+    });
   });
 
   describe('postEncounterBundle', () => {
@@ -2101,6 +2121,26 @@ describe('encounterBundleService', () => {
         expect(result).toHaveLength(1);
         expect(result[0].resource?.resourceType).toBe('Condition');
       });
+
+      it('should propagate conceptSystem to condition coding system', () => {
+        const conditionWithSystem: ConditionInputEntry = {
+          ...mockValidCondition,
+          conceptSystem: 'http://snomed.info/sct',
+        };
+
+        const result = createConditionsBundleEntries({
+          selectedConditions: [conditionWithSystem],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: new Date('2025-01-15T10:30:00Z'),
+        });
+
+        const condition = result[0].resource as Condition;
+        expect(condition.code?.coding?.[0]?.system).toBe(
+          'http://snomed.info/sct',
+        );
+      });
     });
   });
 
@@ -2117,7 +2157,12 @@ describe('encounterBundleService', () => {
 
     it('should create observation bundle entries using FhirObservationTransformer', () => {
       const result = createObservationBundleEntries({
-        observationFormsData: { 'form-uuid-1': mockObservations },
+        observationFormsData: [
+          {
+            formUuid: 'form-uuid-1',
+            observations: mockObservations,
+          },
+        ],
         encounterSubject: mockEncounterSubject,
         encounterReference: mockEncounterReference,
         practitionerUUID: mockPractitionerUUID,
@@ -2148,7 +2193,12 @@ describe('encounterBundleService', () => {
       ];
 
       const result = createObservationBundleEntries({
-        observationFormsData: { 'form-uuid-1': groupedObservations },
+        observationFormsData: [
+          {
+            formUuid: 'form-uuid-1',
+            observations: groupedObservations,
+          },
+        ],
         encounterSubject: mockEncounterSubject,
         encounterReference: mockEncounterReference,
         practitionerUUID: mockPractitionerUUID,
@@ -2174,7 +2224,12 @@ describe('encounterBundleService', () => {
 
     it('should handle empty observations array', () => {
       const result = createObservationBundleEntries({
-        observationFormsData: { 'form-uuid-1': [] },
+        observationFormsData: [
+          {
+            formUuid: 'form-uuid-1',
+            observations: [],
+          },
+        ],
         encounterSubject: mockEncounterSubject,
         encounterReference: mockEncounterReference,
         practitionerUUID: mockPractitionerUUID,
@@ -2198,7 +2253,12 @@ describe('encounterBundleService', () => {
       it('should throw error when encounterSubject is null', () => {
         expect(() =>
           createObservationBundleEntries({
-            observationFormsData: { 'form-uuid-1': mockObservations },
+            observationFormsData: [
+              {
+                formUuid: 'form-uuid-1',
+                observations: mockObservations,
+              },
+            ],
             encounterSubject: null as any,
             encounterReference: mockEncounterReference,
             practitionerUUID: mockPractitionerUUID,
@@ -2209,7 +2269,12 @@ describe('encounterBundleService', () => {
       it('should throw error when encounterReference is empty', () => {
         expect(() =>
           createObservationBundleEntries({
-            observationFormsData: { 'form-uuid-1': mockObservations },
+            observationFormsData: [
+              {
+                formUuid: 'form-uuid-1',
+                observations: mockObservations,
+              },
+            ],
             encounterSubject: mockEncounterSubject,
             encounterReference: '',
             practitionerUUID: mockPractitionerUUID,
@@ -2220,7 +2285,12 @@ describe('encounterBundleService', () => {
       it('should throw error when practitionerUUID is empty', () => {
         expect(() =>
           createObservationBundleEntries({
-            observationFormsData: { 'form-uuid-1': mockObservations },
+            observationFormsData: [
+              {
+                formUuid: 'form-uuid-1',
+                observations: mockObservations,
+              },
+            ],
             encounterSubject: mockEncounterSubject,
             encounterReference: mockEncounterReference,
             practitionerUUID: '',
@@ -2239,10 +2309,16 @@ describe('encounterBundleService', () => {
         ];
 
         const result = createObservationBundleEntries({
-          observationFormsData: {
-            'form-uuid-1': mockObservations,
-            'form-uuid-2': obs2,
-          },
+          observationFormsData: [
+            {
+              formUuid: 'form-uuid-1',
+              observations: mockObservations,
+            },
+            {
+              formUuid: 'form-uuid-2',
+              observations: obs2,
+            },
+          ],
           encounterSubject: mockEncounterSubject,
           encounterReference: mockEncounterReference,
           practitionerUUID: mockPractitionerUUID,
@@ -2256,11 +2332,20 @@ describe('encounterBundleService', () => {
 
       it('should skip null form data in multiple forms', () => {
         const result = createObservationBundleEntries({
-          observationFormsData: {
-            'form-uuid-1': mockObservations,
-            'form-uuid-2': null as any,
-            'form-uuid-3': mockObservations,
-          },
+          observationFormsData: [
+            {
+              formUuid: 'form-uuid-1',
+              observations: mockObservations,
+            },
+            {
+              formUuid: 'form-uuid-2',
+              observations: null as any,
+            },
+            {
+              formUuid: 'form-uuid-3',
+              observations: mockObservations,
+            },
+          ],
           encounterSubject: mockEncounterSubject,
           encounterReference: mockEncounterReference,
           practitionerUUID: mockPractitionerUUID,
@@ -2271,7 +2356,12 @@ describe('encounterBundleService', () => {
 
       it('should create valid bundle structure for all entries', () => {
         const result = createObservationBundleEntries({
-          observationFormsData: { 'form-uuid-1': mockObservations },
+          observationFormsData: [
+            {
+              formUuid: 'form-uuid-1',
+              observations: mockObservations,
+            },
+          ],
           encounterSubject: mockEncounterSubject,
           encounterReference: mockEncounterReference,
           practitionerUUID: mockPractitionerUUID,
@@ -2283,6 +2373,119 @@ describe('encounterBundleService', () => {
           expect(entry.request?.method).toBe('POST');
           expect(entry.request?.url).toBe('Observation');
         });
+      });
+    });
+
+    describe('BasedOn Reference Handling', () => {
+      const mockBasedOn = {
+        reference: 'ServiceRequest/service-request-123',
+      };
+
+      it('should pass basedOn reference to createObservationEntries when provided', () => {
+        const result = createObservationBundleEntries({
+          observationFormsData: [
+            {
+              formUuid: 'form-uuid-1',
+              observations: mockObservations,
+              basedOn: mockBasedOn,
+            },
+          ],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect(result[0].resource?.resourceType).toBe('Observation');
+      });
+
+      it('should handle undefined basedOn reference', () => {
+        const result = createObservationBundleEntries({
+          observationFormsData: [
+            {
+              formUuid: 'form-uuid-1',
+              observations: mockObservations,
+            },
+          ],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect(result[0].resource?.resourceType).toBe('Observation');
+      });
+
+      it('should handle multiple forms with different basedOn references', () => {
+        const basedOn2 = {
+          reference: 'ServiceRequest/service-request-456',
+        };
+
+        const result = createObservationBundleEntries({
+          observationFormsData: [
+            {
+              formUuid: 'form-uuid-1',
+              observations: mockObservations,
+              basedOn: mockBasedOn,
+            },
+            {
+              formUuid: 'form-uuid-2',
+              observations: mockObservations,
+              basedOn: basedOn2,
+            },
+          ],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+        expect(
+          result.every((r) => r.resource?.resourceType === 'Observation'),
+        ).toBe(true);
+      });
+
+      it('should handle mix of forms with and without basedOn references', () => {
+        const result = createObservationBundleEntries({
+          observationFormsData: [
+            {
+              formUuid: 'form-uuid-1',
+              observations: mockObservations,
+              basedOn: mockBasedOn,
+            },
+            {
+              formUuid: 'form-uuid-2',
+              observations: mockObservations,
+            },
+          ],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(2);
+      });
+
+      it.each([
+        ['with basedOn', mockBasedOn],
+        ['without basedOn', undefined],
+      ])('should create bundle entries correctly %s', (_, basedOnRef) => {
+        const result = createObservationBundleEntries({
+          observationFormsData: [
+            {
+              formUuid: 'form-uuid-1',
+              observations: mockObservations,
+              basedOn: basedOnRef,
+            },
+          ],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        expect(result[0].resource?.resourceType).toBe('Observation');
+        expect(result[0].request?.method).toBe('POST');
       });
     });
   });

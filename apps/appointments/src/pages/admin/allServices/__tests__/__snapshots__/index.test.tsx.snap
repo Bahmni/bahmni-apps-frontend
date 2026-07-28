@@ -44,6 +44,14 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
           </li>
         </ol>
       </nav>
+      <div
+        class="cds--header__global"
+        data-testid="header-global-bar"
+      >
+        <div
+          data-testid="user-global-action"
+        />
+      </div>
     </header>
     <div
       aria-label="main-display-area-aria-label"

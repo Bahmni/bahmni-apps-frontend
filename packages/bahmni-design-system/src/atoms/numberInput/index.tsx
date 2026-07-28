@@ -12,9 +12,14 @@ export type NumberInputProps = CarbonNumberInputProps & {
 export const NumberInput: React.FC<NumberInputProps> = ({
   testId,
   'data-testid': dataTestId,
+  disableWheel = true,
   ...carbonProps
 }) => {
   return (
-    <CarbonNumberInput {...carbonProps} data-testid={testId ?? dataTestId} />
+    <CarbonNumberInput
+      {...carbonProps}
+      disableWheel={disableWheel}
+      data-testid={testId ?? dataTestId}
+    />
   );
 };

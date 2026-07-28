@@ -3,6 +3,44 @@
 @use "@carbon/react/scss/theme" as *;
 
 .dataTableBody {
+  padding-block-start: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    @include type-style("heading-compact-02");
+  }
+
+  > div:first-child {
+    flex: 1;
+    align-content: center;
+    border-bottom: none;
+    padding-block: 0;
+    min-height: 3rem;
+  }
+
+  > section {
+    flex: 0 0 auto;
+    width: auto;
+
+    > div {
+      padding: 0;
+      min-height: auto;
+      justify-content: flex-end;
+    }
+  }
+
+  > section:first-child {
+    flex: 0 0 100%;
+  }
+
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
   td {
     @include type-style("body-compact-01");
     background-color: $background !important;
@@ -27,6 +65,10 @@
   }
   th {
     border-block: 1px solid $border-subtle !important;
+  }
+
+  td, th {
+    width: auto;
   }
 }
 

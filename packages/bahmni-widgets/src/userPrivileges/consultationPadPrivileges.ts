@@ -7,6 +7,7 @@ export const CONSULTATION_PAD_PRIVILEGES = {
   ENCOUNTER: ['Add Encounters'],
   ALLERGIES: ['Add Allergies'],
   EDIT_ALLERGIES: ['Edit Allergies'],
+  EDIT_OBSERVATIONS: ['Edit Observations'],
   CONDITIONS_AND_DIAGNOSES: ['Add Diagnoses'],
   INVESTIGATIONS: ['Add Orders'],
   MEDICATIONS: ['Add Orders'],

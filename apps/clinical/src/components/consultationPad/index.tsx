@@ -5,6 +5,7 @@ import {
   dispatchAuditEvent,
   dispatchConsultationSaved,
   dispatchCDSSResults,
+  findActiveEncounterInSession,
   getConfig,
   getEncounterByUuid,
   invokeCDSSRule,
@@ -15,12 +16,7 @@ import {
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import type {
-  Bundle,
-  BundleEntry,
-  Encounter,
-  MedicationRequest,
-} from 'fhir/r4';
+import type { Bundle, BundleEntry, MedicationRequest } from 'fhir/r4';
 import React, {
   useCallback,
   useEffect,
@@ -35,7 +31,6 @@ import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
-import { useEncounterSession } from '../../hooks/useEncounterSession';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
@@ -73,6 +68,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     | undefined;
   const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
     | string
+    | undefined;
+  const directFormMode = encounterSessionStartContext.directFormMode as
+    | boolean
     | undefined;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -164,52 +162,70 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       .setRequestedEncounterType(resolvedEncounterType);
   }, [resolvedEncounterType]);
 
-  const { practitioner } = useActivePractitioner();
-  const { activeEncounter: sessionEncounter, matchReason } =
-    useEncounterSession({
-      practitioner,
-      encounterTypeUUID: selectedEncounterType?.uuid,
-    });
-
-  const [editEncounter, setEditEncounter] = useState<Encounter | null>(null);
-  const [editEncounterLoading, setEditEncounterLoading] = useState(false);
-  useEffect(() => {
-    if (!editEncounterUuid) return;
-    const abortController = new AbortController();
-    setEditEncounterLoading(true);
-    getEncounterByUuid(editEncounterUuid, { signal: abortController.signal })
-      .then((enc) => {
-        if (!abortController.signal.aborted) setEditEncounter(enc);
-      })
-      .catch(() => {
-        if (!abortController.signal.aborted) {
-          setEditEncounter(null);
-          addNotification({
-            title: t('ERROR_DEFAULT_TITLE'),
-            message: t('CONSULTATION_ERROR_GENERIC'),
-            type: 'error',
-            timeout: 5000,
-          });
-        }
-      })
-      .finally(() => {
-        if (!abortController.signal.aborted) setEditEncounterLoading(false);
-      });
-    return () => {
-      abortController.abort();
-    };
-  }, [editEncounterUuid, addNotification, t]);
-
-  const activeEncounter = editEncounterUuid ? editEncounter : sessionEncounter;
-
-  // Only resume the existing encounter on an exact MATCHED case.
-  // SESSION_EXPIRED, LOCATION_MISMATCH, PROVIDER_MISMATCH all silently create a new encounter.
-  const encounterForSubmission = matchReason.includes('MATCHED')
-    ? activeEncounter
-    : null;
-
   const { episodeOfCare, patientId, activeVisitId, activeEpisodeId } =
     useClinicalAppData();
+
+  const { practitioner } = useActivePractitioner();
+  const { data: sessionEncounter, status: sessionEncounterStatus } = useQuery({
+    queryKey: [
+      'activeEncounter',
+      patientId,
+      practitioner?.uuid,
+      selectedEncounterType?.uuid,
+    ],
+    queryFn: () =>
+      findActiveEncounterInSession(
+        patientId!,
+        practitioner?.uuid,
+        undefined,
+        selectedEncounterType?.uuid,
+      ),
+    staleTime: 0,
+    enabled: Boolean(
+      patientId && practitioner?.uuid && selectedEncounterType?.uuid,
+    ),
+  });
+  const {
+    data: editEncounter,
+    isLoading: editEncounterLoading,
+    error: editEncounterError,
+  } = useQuery({
+    queryKey: ['encounter', editEncounterUuid],
+    queryFn: ({ signal }) => getEncounterByUuid(editEncounterUuid!, { signal }),
+    enabled: Boolean(editEncounterUuid),
+  });
+
+  useEffect(() => {
+    if (editEncounterError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('CONSULTATION_ERROR_GENERIC'),
+        type: 'error',
+        timeout: 5000,
+      });
+    }
+  }, [editEncounterError, addNotification, t]);
+
+  const activeEncounter = editEncounterUuid
+    ? (editEncounter ?? null)
+    : sessionEncounter;
+
+  useEffect(() => {
+    const periodStart = sessionEncounter?.period?.start;
+    if (periodStart) {
+      const date = new Date(periodStart);
+      useEncounterDetailsStore
+        .getState()
+        .setConsultationDate(isNaN(date.getTime()) ? new Date() : date);
+    } else if (
+      sessionEncounterStatus === 'success' ||
+      sessionEncounterStatus === 'error'
+    ) {
+      useEncounterDetailsStore.getState().setConsultationDate(new Date());
+    }
+  }, [sessionEncounter, sessionEncounterStatus]);
+
+  const encounterForSubmission = sessionEncounter;
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
@@ -562,6 +578,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           onFormObservationsChange={updateFormData}
           existingObservations={getFormData(viewingForm.uuid)?.observations}
           activeEncounterUuid={activeEncounter?.id ?? null}
+          directMode={directFormMode}
+          onDirectModeSubmit={directFormMode ? handleSubmit : undefined}
+          onDirectModeCancel={directFormMode ? handleCancel : undefined}
+          encounterSessionStartContext={encounterSessionStartContext}
         />
       )}
     </>

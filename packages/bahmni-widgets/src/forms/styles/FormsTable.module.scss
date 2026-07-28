@@ -16,6 +16,12 @@
   }
 }
 
+.modalHeading {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+}
+
 .customAccordianItem {
   background-color: $layer-01;
   :global(.cds--accordion__content) {

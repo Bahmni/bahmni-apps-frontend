@@ -1,0 +1,158 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ResultsTable Snapshot matches snapshot for empty state 1`] = `
+<div>
+  <section
+    class="dataTable _dataTableBody_aje5l_1 cds--data-table-container"
+    data-testid="common-search-results-table"
+    id="common-search-results-table-data-table"
+  >
+    <div
+      class="cds--data-table-header"
+    >
+      <h2
+        class="cds--data-table-header__title"
+        id="tc-_r_f_-title"
+      >
+        COMMON_SEARCH_RESULTS_TABLE_TITLE
+      </h2>
+    </div>
+    <div
+      class="cds--data-table-content"
+    >
+      <table
+        aria-label="common-search-results-table-aria-label"
+        aria-labelledby="tc-_r_f_-title"
+        class="cds--data-table cds--data-table--md"
+      >
+        <thead>
+          <tr>
+            <th
+              data-testid="table-header-uuid-0"
+              scope="col"
+            >
+              <div
+                class="cds--table-header-label"
+              >
+                PATIENT_NAME
+                <div
+                  class="cds--table-header-label--decorator-inner"
+                />
+              </div>
+            </th>
+            <th
+              data-testid="table-header-uuid-1"
+              scope="col"
+            >
+              <div
+                class="cds--table-header-label"
+              >
+                PATIENT_AGE
+                <div
+                  class="cds--table-header-label--decorator-inner"
+                />
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          aria-live="polite"
+        >
+          <tr>
+            <td
+              class="_emptyStateCell_aje5l_81"
+              colspan="2"
+            >
+              COMMON_SEARCH_NO_RESULTS
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+`;
+
+exports[`ResultsTable Snapshot matches snapshot for evaluation error state 1`] = `
+<div>
+  <p
+    class="_statePlaceholder_aje5l_70"
+    data-testid="common-search-results-table-error"
+  >
+    COMMON_SEARCH_EVALUATION_ERROR
+  </p>
+</div>
+`;
+
+exports[`ResultsTable Snapshot matches snapshot with data 1`] = `
+<div>
+  <section
+    class="dataTable _dataTableBody_aje5l_1 cds--data-table-container"
+    data-testid="common-search-results-table"
+    id="common-search-results-table-data-table"
+  >
+    <div
+      class="cds--data-table-header"
+    >
+      <h2
+        class="cds--data-table-header__title"
+        id="tc-_r_l_-title"
+      >
+        COMMON_SEARCH_RESULTS_TABLE_TITLE
+      </h2>
+    </div>
+    <div
+      class="cds--data-table-content"
+    >
+      <table
+        aria-label="common-search-results-table-aria-label"
+        aria-labelledby="tc-_r_l_-title"
+        class="cds--data-table cds--data-table--md"
+      >
+        <thead>
+          <tr>
+            <th
+              data-testid="table-header-uuid-0"
+              scope="col"
+            >
+              <div
+                class="cds--table-header-label"
+              >
+                PATIENT_NAME
+                <div
+                  class="cds--table-header-label--decorator-inner"
+                />
+              </div>
+            </th>
+            <th
+              data-testid="table-header-uuid-1"
+              scope="col"
+            >
+              <div
+                class="cds--table-header-label"
+              >
+                PATIENT_AGE
+                <div
+                  class="cds--table-header-label--decorator-inner"
+                />
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          aria-live="polite"
+        >
+          <tr>
+            <td
+              class="_emptyStateCell_aje5l_81"
+              colspan="2"
+            >
+              COMMON_SEARCH_NO_RESULTS
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+`;

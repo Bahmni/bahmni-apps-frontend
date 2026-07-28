@@ -1,0 +1,96 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+
+// Narrower and more indented than the patient banner.
+.documents {
+  margin-inline: calc($spacing-13 + $spacing-04);
+  background: $layer-02;
+  box-shadow: 0 2px 6px $shadow;
+
+  // Heading and accordion headers are grey; the body is white.
+  :global(.cds--accordion__heading) {
+    background: $layer-01;
+  }
+
+  // align="start" adds a margin-inline-start to the content that shifts rows and the header
+  // underline right on the left side; zero it (same fix the other accordion tables use).
+  :global(.cds--accordion__content) {
+    background: $layer-02;
+    margin-inline: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+.heading {
+  @include type-style("heading-compact-02");
+  color: $text-primary;
+  background: $layer-01;
+  padding: $spacing-05 $spacing-06;
+}
+
+.loadError {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+  padding: $spacing-05 $spacing-06;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+// Shared column widths so headers and rows align.
+.headerRow,
+.docRow {
+  display: grid;
+  grid-template-columns: 175px 1fr 173px;
+  align-items: center;
+  gap: $spacing-05;
+  padding-inline: $spacing-05;
+}
+
+.headerRow {
+  padding-block: $spacing-03;
+  border-block-end: 1px solid $border-subtle-01;
+
+  span {
+    @include type-style("label-01");
+    color: $text-secondary;
+  }
+}
+
+.docRow {
+  padding-block: $spacing-05;
+}
+
+.typeCell {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+}
+
+.note {
+  inline-size: 100%;
+
+  // Inset to match the row so the note box starts/ends with it.
+  padding-inline: $spacing-05;
+  padding-block-end: $spacing-05;
+
+  // Neutralise the global .cds--text-area padding-right (3rem) leak, ours only.
+  & :global(.cds--text-area) {
+    padding-inline: $spacing-05 !important;
+  }
+}
+
+// Below lg the Figma indent starves the row; let the tile fill the width like the banner.
+@include breakpoint-down(lg) {
+  .documents {
+    margin-inline: 0;
+  }
+}
+
+.skeleton {
+  block-size: calc($spacing-12*3);
+  inline-size: 100%;
+}

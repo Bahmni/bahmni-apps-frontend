@@ -1,5 +1,8 @@
 import type { ConsultationPad } from '../../../providers/clinicalConfig/models';
-import { useServiceRequestStore } from '../../../stores';
+import {
+  useServiceRequestStore,
+  useObservationFormsStore,
+} from '../../../stores';
 import type { InputControl } from '../../forms';
 import {
   captureUpdatedResources,
@@ -54,6 +57,10 @@ beforeEach(() => {
   (useServiceRequestStore as unknown as { getState: jest.Mock }).getState = jest
     .fn()
     .mockReturnValue({ selectedServiceRequests: new Map() });
+  (useObservationFormsStore as unknown as { getState: jest.Mock }).getState =
+    jest.fn().mockReturnValue({
+      getObservationFormsData: jest.fn().mockReturnValue([]),
+    });
 });
 
 describe('loadEncounterInputControls', () => {
@@ -285,6 +292,45 @@ describe('getActiveEntries', () => {
     expect(result.find((e) => e.key === 'medication')).toBeDefined();
     expect(result).toHaveLength(2);
   });
+
+  it('excludes onActionTriggered controls from normal consultation', () => {
+    const registryWithTriggered = [
+      ...registry,
+      {
+        key: 'stopMedications',
+        onActionTriggered: true,
+        component: () => null,
+        reset: jest.fn(),
+        validate: jest.fn().mockReturnValue(true),
+        hasData: jest.fn().mockReturnValue(false),
+        subscribe: jest.fn().mockReturnValue(jest.fn()),
+      },
+    ];
+    const result = getActiveEntries(registryWithTriggered, 'Consultation');
+    expect(result.find((e) => e.key === 'stopMedications')).toBeUndefined();
+  });
+
+  it('includes onActionTriggered control when it is the editOnly target', () => {
+    const registryWithTriggered = [
+      ...registry,
+      {
+        key: 'stopMedications',
+        onActionTriggered: true,
+        component: () => null,
+        reset: jest.fn(),
+        validate: jest.fn().mockReturnValue(true),
+        hasData: jest.fn().mockReturnValue(false),
+        subscribe: jest.fn().mockReturnValue(jest.fn()),
+      },
+    ];
+    const result = getActiveEntries(
+      registryWithTriggered,
+      'Consultation',
+      'stopMedications',
+    );
+    expect(result.find((e) => e.key === 'stopMedications')).toBeDefined();
+    expect(result).toHaveLength(2); // stopMedications + encounterDetails
+  });
 });
 
 describe('captureUpdatedResources', () => {
@@ -305,6 +351,7 @@ describe('captureUpdatedResources', () => {
       'immunizationAdministration',
       'immunizationHistory',
     ],
+    ['immunizationWaiver', 'immunizationWaiver', 'immunizationHistory'],
   ])('returns true for %s when hasData is true', (_label, key, resultKey) => {
     const entries = [
       makeMockEntry(key as InputControl['key'], {
@@ -372,6 +419,7 @@ describe('captureUpdatedResources', () => {
       allergies: false,
       medications: false,
       immunizationHistory: false,
+      observationFormsWithBasedOn: false,
       serviceRequests: {},
     });
   });

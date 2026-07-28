@@ -1,0 +1,79 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.pending {
+  display: flex;
+  flex-direction: column;
+}
+
+// Grid matches the saved-docs table so tile, dropdown and actions line up under the headers.
+.pendingRow {
+  display: grid;
+  grid-template-columns: 175px 1fr 173px;
+  align-items: center;
+  gap: $spacing-05;
+  padding: $spacing-05;
+}
+
+.fileCell {
+  flex-shrink: 0;
+}
+
+.typeCell {
+  :global(.cds--dropdown),
+  :global(.cds--list-box) {
+    inline-size: 288px;
+  }
+}
+
+.actionsCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: $spacing-03;
+}
+
+.addNoteLink {
+  align-self: flex-start;
+  padding-inline: $spacing-05;
+  cursor: pointer;
+}
+
+// Inset to match the row content on both sides (margin, since .pending is a stretched flex column).
+.noteArea {
+  margin-inline: $spacing-05;
+  padding-block-end: $spacing-05;
+
+  // Neutralise the global .cds--text-area padding-right (3rem) leaked from TextAreaWClose, ours only.
+  & :global(.cds--text-area) {
+    padding-inline: $spacing-05 !important;
+  }
+}
+
+.uploader {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-05;
+  align-items: flex-start;
+  padding: $spacing-06;
+}
+
+.uploaderTitle {
+  @include type-style("heading-compact-01");
+  color: $text-primary;
+}
+
+.uploaderHelp {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+}
+
+.hiddenInput {
+  display: none;
+}
