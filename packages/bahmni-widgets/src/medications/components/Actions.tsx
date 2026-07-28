@@ -1,6 +1,11 @@
-import { Button, Edit, IconButton } from '@bahmni/design-system';
+import {
+  Button,
+  Edit,
+  IconButton,
+  OverflowMenu,
+  OverflowMenuItem,
+} from '@bahmni/design-system';
 import { hasPrivilege, useTranslation } from '@bahmni/services';
-import { OverflowMenu, OverflowMenuItem } from '@carbon/react';
 import { MedicationRequest } from 'fhir/r4';
 import React, { useMemo } from 'react';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
@@ -68,7 +73,7 @@ const Actions: React.FC<ActionsProps> = ({
         id={`medication-action-${action.type}-button`}
         data-testid={`medication-action-${action.type}-${medication.id}`}
         aria-label={t(action.label)}
-        kind={action.type === 'stop' ? 'danger--ghost' : 'ghost'}
+        kind="ghost"
         disabled={disabled}
         onClick={() => handleAction(action, medication, startDate)}
       >
@@ -80,7 +85,7 @@ const Actions: React.FC<ActionsProps> = ({
   return (
     <OverflowMenu
       id={`medication-actions-menu-${medication.id}`}
-      data-testid={`medication-actions-menu-${medication.id}`}
+      testId={`medication-actions-menu-${medication.id}`}
       aria-label={t('MEDICATIONS_ACTIONS_MENU_LABEL')}
       flipped
       size="sm"
@@ -88,10 +93,10 @@ const Actions: React.FC<ActionsProps> = ({
       {permittedActions.map((action) => (
         <OverflowMenuItem
           id={`medication-action-${action.type}-${medication.id}`}
-          data-testid={`medication-action-${action.type}-${medication.id}`}
+          testId={`medication-action-${action.type}-${medication.id}`}
           key={action.type}
           itemText={t(action.label)}
-          isDelete={action.type === 'stop'}
+          isDelete={false}
           disabled={isActionDisabled(action)}
           onClick={() => handleAction(action, medication, startDate)}
         />

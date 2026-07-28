@@ -1,6 +1,7 @@
 export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
+  checkInAppointment,
   getAppointmentById,
   getUpcomingAppointments,
   getPastAppointments,
@@ -15,6 +16,7 @@ export {
   type AppointmentPage,
   type AppointmentService,
   type AppointmentUnavailability,
+  type CheckInAppointmentResponse,
   type CreateUnavailabilityRequest,
 } from './models';
 export {

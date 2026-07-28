@@ -487,6 +487,93 @@ describe('ObservationForms', () => {
     });
   });
 
+  describe('Submitted Encounter Forms (BAH-4828)', () => {
+    it('should show a submitted form as disabled with (Already added) label', () => {
+      const submittedFormUuids = new Set(['form-1']); // Admission Letter already submitted
+      render(
+        <ObservationForms
+          {...defaultProps}
+          submittedFormUuids={submittedFormUuids}
+        />,
+      );
+
+      const submittedFormButton = screen.getByTestId('combobox-item-form-1');
+      const nonSubmittedFormButton = screen.getByTestId('combobox-item-form-2');
+
+      expect(submittedFormButton).toBeDisabled();
+      expect(nonSubmittedFormButton).not.toBeDisabled();
+
+      expect(
+        screen.getByText(
+          'Admission Letter (translated_OBSERVATION_FORMS_FORM_ALREADY_ADDED)',
+        ),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Death Note')).toBeInTheDocument();
+    });
+
+    it('should disable all forms in submittedFormUuids while keeping others selectable', () => {
+      const submittedFormUuids = new Set(['form-1', 'form-2']); // both submitted
+      render(
+        <ObservationForms
+          {...defaultProps}
+          submittedFormUuids={submittedFormUuids}
+        />,
+      );
+
+      expect(screen.getByTestId('combobox-item-form-1')).toBeDisabled();
+      expect(screen.getByTestId('combobox-item-form-2')).toBeDisabled();
+    });
+
+    it('should not call onFormSelect when clicking a submitted form', async () => {
+      const user = userEvent.setup();
+      const mockOnFormSelect = jest.fn();
+      const submittedFormUuids = new Set(['form-1']);
+
+      render(
+        <ObservationForms
+          {...defaultProps}
+          onFormSelect={mockOnFormSelect}
+          submittedFormUuids={submittedFormUuids}
+        />,
+      );
+
+      const disabledButton = screen.getByTestId('combobox-item-form-1');
+      expect(disabledButton).toBeDisabled();
+      await user.click(disabledButton);
+
+      expect(mockOnFormSelect).not.toHaveBeenCalled();
+    });
+
+    it('should disable and label form that is both selected and submitted', () => {
+      // A form that is in selectedForms AND submittedFormUuids should still be disabled
+      const selectedForms = [mockForms[0]];
+      const submittedFormUuids = new Set(['form-1']);
+
+      render(
+        <ObservationForms
+          {...defaultProps}
+          selectedForms={selectedForms}
+          submittedFormUuids={submittedFormUuids}
+        />,
+      );
+
+      expect(screen.getByTestId('combobox-item-form-1')).toBeDisabled();
+      expect(
+        screen.getByText(
+          'Admission Letter (translated_OBSERVATION_FORMS_FORM_ALREADY_ADDED)',
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it('should default to no submitted forms when submittedFormUuids is not provided', () => {
+      render(<ObservationForms {...defaultProps} />);
+
+      // Both forms should be enabled when no submittedFormUuids prop
+      expect(screen.getByTestId('combobox-item-form-1')).not.toBeDisabled();
+      expect(screen.getByTestId('combobox-item-form-2')).not.toBeDisabled();
+    });
+  });
+
   describe('Loading and Error States', () => {
     it('should show loading state in dropdown', () => {
       render(

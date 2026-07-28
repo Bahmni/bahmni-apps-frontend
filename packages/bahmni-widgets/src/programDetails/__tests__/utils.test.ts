@@ -1,4 +1,5 @@
 import { ProgramEnrollment } from '@bahmni/services';
+import { ProgramField } from '../model';
 import {
   extractProgramAttributeNames,
   createProgramDetailsViewModel,
@@ -14,30 +15,34 @@ describe('Utils', () => {
     });
 
     it('should filter out known fields', () => {
-      const fields = [
-        'programName',
-        'customAttribute1',
-        'startDate',
-        'customAttribute2',
-        'outcome',
+      const fields: ProgramField[] = [
+        { name: 'programName' },
+        { name: 'customAttribute1' },
+        { name: 'startDate' },
+        { name: 'customAttribute2' },
+        { name: 'outcome' },
       ];
       const result = extractProgramAttributeNames(fields);
       expect(result).toEqual(['customAttribute1', 'customAttribute2']);
     });
 
     it('should return all fields when none are known fields', () => {
-      const fields = ['customAttr1', 'customAttr2', 'customAttr3'];
+      const fields: ProgramField[] = [
+        { name: 'customAttr1' },
+        { name: 'customAttr2' },
+        { name: 'customAttr3' },
+      ];
       const result = extractProgramAttributeNames(fields);
       expect(result).toEqual(['customAttr1', 'customAttr2', 'customAttr3']);
     });
 
     it('should return empty array when all fields are known fields', () => {
-      const fields = [
-        'programName',
-        'startDate',
-        'endDate',
-        'outcome',
-        'state',
+      const fields: ProgramField[] = [
+        { name: 'programName' },
+        { name: 'startDate' },
+        { name: 'endDate' },
+        { name: 'outcome' },
+        { name: 'state' },
       ];
       const result = extractProgramAttributeNames(fields);
       expect(result).toEqual([]);

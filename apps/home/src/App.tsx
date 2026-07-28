@@ -1,3 +1,4 @@
+import { CommandPaletteProvider } from '@bahmni/command-palette-app';
 import { initFontAwesome, Loading } from '@bahmni/design-system';
 import { initAppI18n } from '@bahmni/services';
 import {
@@ -40,21 +41,23 @@ export function App() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ActivePractitionerProvider>
-        <UserPrivilegeProvider>
-          <NotificationProvider>
-            <LocationProvider>
-              <NotificationServiceComponent />
-              <Suspense fallback={<Loading />}>
-                <Routes>{renderRoutes(routes)}</Routes>
-              </Suspense>
-              <ReactQueryDevtools initialIsOpen={false} />
-            </LocationProvider>
-          </NotificationProvider>
-        </UserPrivilegeProvider>
-      </ActivePractitionerProvider>
-    </QueryClientProvider>
+    <CommandPaletteProvider>
+      <QueryClientProvider client={queryClient}>
+        <ActivePractitionerProvider>
+          <UserPrivilegeProvider>
+            <NotificationProvider>
+              <LocationProvider>
+                <NotificationServiceComponent />
+                <Suspense fallback={<Loading />}>
+                  <Routes>{renderRoutes(routes)}</Routes>
+                </Suspense>
+                <ReactQueryDevtools initialIsOpen={false} />
+              </LocationProvider>
+            </NotificationProvider>
+          </UserPrivilegeProvider>
+        </ActivePractitionerProvider>
+      </QueryClientProvider>
+    </CommandPaletteProvider>
   );
 }
 

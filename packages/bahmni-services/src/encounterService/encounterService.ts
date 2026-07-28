@@ -1,10 +1,84 @@
-import { Observation, Encounter, Bundle } from 'fhir/r4';
+import { Encounter, Bundle } from 'fhir/r4';
 import { get, post, put } from '../api';
 import {
+  FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
+  FHIR_ENCOUNTER_TAG_SYSTEM,
+} from '../constants/fhir';
+import {
   PATIENT_VISITS_URL,
-  FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
+  PATIENT_ENCOUNTERS_URL,
+  ENCOUNTER_TYPE_BY_NAME_URL,
   FHIR_ENCOUNTER_URL,
 } from './constants';
+
+export interface BuildEncounterResourceParams {
+  type: Encounter['type'];
+  partOf: Encounter['partOf'];
+  subject: Encounter['subject'];
+  locationUuid: string;
+  periodStart: string;
+  practitionerUUIDs?: string[];
+}
+
+/**
+ * Builds the canonical FHIR Encounter shape used by both the condition service
+ * and the consultation-pad submission path. Centralising the shape here makes
+ * `encounterResourceCreator.ts` (apps/clinical) the only other place that
+ * constructs an Encounter, and it can be migrated to delegate here once its
+ * reference-creator helpers are aligned.
+ */
+export function buildEncounterResource({
+  type,
+  partOf,
+  subject,
+  locationUuid,
+  periodStart,
+  practitionerUUIDs,
+}: BuildEncounterResourceParams): Encounter {
+  return {
+    resourceType: 'Encounter',
+    status: 'in-progress',
+    class: {
+      system: FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
+      code: 'AMB',
+      display: 'ambulatory',
+    },
+    meta: {
+      tag: [
+        {
+          system: FHIR_ENCOUNTER_TAG_SYSTEM,
+          code: 'encounter',
+          display: 'Encounter',
+        },
+      ],
+    },
+    type,
+    subject,
+    partOf,
+    participant: practitionerUUIDs?.length
+      ? practitionerUUIDs.map((uuid) => ({
+          individual: {
+            reference: `Practitioner/${uuid}`,
+            type: 'Practitioner' as const,
+          },
+        }))
+      : undefined,
+    location: [
+      {
+        location: {
+          reference: `Location/${locationUuid}`,
+          type: 'Location' as const,
+        },
+      },
+    ],
+    period: { start: periodStart },
+  };
+}
+
+export interface EncounterTypeRef {
+  uuid: string;
+  name: string;
+}
 
 /**
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
@@ -32,6 +106,54 @@ export async function getVisits(patientUUID: string): Promise<Encounter[]> {
 }
 
 /**
+ * Fetches all encounters for a patient (both visits, tagged "visit", and their child encounters,
+ * which carry a partOf reference to the visit). Used to group resources under their visit.
+ * Walks every page (offset-based) so patients with many encounters are not truncated to the
+ * server's default page size.
+ * @param patientUUID - The UUID of the patient
+ * @returns Promise resolving to an array of FHIR Encounters
+ */
+export async function getPatientEncounters(
+  patientUUID: string,
+): Promise<Encounter[]> {
+  const pageSize = 100;
+  const encounters: Encounter[] = [];
+  let offset = 0;
+
+  for (;;) {
+    const bundle = await get<Bundle<Encounter>>(
+      PATIENT_ENCOUNTERS_URL(patientUUID, pageSize, offset),
+    );
+    const page = (bundle.entry ?? [])
+      .map((entry) => entry.resource)
+      .filter((resource): resource is Encounter => resource !== undefined);
+    encounters.push(...page);
+
+    if (page.length < pageSize) {
+      break;
+    }
+    offset += pageSize;
+  }
+
+  return encounters;
+}
+
+/**
+ * Resolves an encounter type by its name via the OpenMRS REST API. `q=` is a fuzzy search, so only
+ * an exact-name match is returned; null otherwise (a wrong pick would corrupt grouping/creation).
+ * @param name - The encounter type name (e.g. "Patient Document")
+ */
+export async function getEncounterTypeByName(
+  name: string,
+): Promise<EncounterTypeRef | null> {
+  const response = await get<{ results: EncounterTypeRef[] }>(
+    ENCOUNTER_TYPE_BY_NAME_URL(name),
+  );
+  const results = response.results ?? [];
+  return results.find((type) => type.name === name) ?? null;
+}
+
+/**
  * Gets the active visit for a patient (encounter with no end date)
  * @param patientUUID - The UUID of the patient
  * @returns Promise resolving to the current FhirEncounter or null if not found
@@ -56,19 +178,6 @@ export async function getEncounterByUuid(
   return await get<Encounter>(
     `/openmrs/ws/fhir2/R4/Encounter/${encounterUUID}`,
     options,
-  );
-}
-
-/**
- * Fetch observations by encounter UUID from FHIR API
- * @param encounterUUID - Encounter UUID
- * @returns Promise resolving to FHIR observation bundle
- */
-export async function getObservationsBundleByEncounterUuid(
-  encounterUUID: string,
-): Promise<Bundle<Observation>> {
-  return await get<Bundle<Observation>>(
-    FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
   );
 }
 

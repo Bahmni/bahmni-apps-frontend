@@ -425,6 +425,12 @@ const mockPatientProgramsWithAttributes: PatientProgramsResponse = {
   ],
 };
 
+const basicFields = [
+  { name: 'programName' },
+  { name: 'startDate' },
+  { name: 'state' },
+];
+
 describe('PatientProgramsTable Integration', () => {
   const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
@@ -455,7 +461,13 @@ describe('PatientProgramsTable Integration', () => {
       <QueryClientProvider client={queryClient}>
         <PatientProgramsTable
           config={{
-            fields: ['programName', 'startDate', 'endDate', 'state', 'outcome'],
+            fields: [
+              { name: 'programName' },
+              { name: 'startDate' },
+              { name: 'endDate' },
+              { name: 'state' },
+              { name: 'outcome' },
+            ],
           }}
         />
       </QueryClientProvider>,
@@ -506,7 +518,12 @@ describe('PatientProgramsTable Integration', () => {
       <QueryClientProvider client={queryClient}>
         <PatientProgramsTable
           config={{
-            fields: ['programName', 'startDate', 'endDate', 'state'],
+            fields: [
+              { name: 'programName' },
+              { name: 'startDate' },
+              { name: 'endDate' },
+              { name: 'state' },
+            ],
           }}
         />
       </QueryClientProvider>,
@@ -533,11 +550,11 @@ describe('PatientProgramsTable Integration', () => {
         <PatientProgramsTable
           config={{
             fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
+              { name: 'programName' },
+              { name: 'Registration Number' },
+              { name: 'Treatment Category' },
+              { name: 'startDate' },
+              { name: 'state' },
             ],
           }}
         />
@@ -563,11 +580,7 @@ describe('PatientProgramsTable Integration', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <PatientProgramsTable
-          config={{
-            fields: ['programName', 'startDate', 'state'],
-          }}
-        />
+        <PatientProgramsTable config={{ fields: basicFields }} />
       </QueryClientProvider>,
     );
 
@@ -592,9 +605,7 @@ describe('PatientProgramsTable Integration', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <PatientProgramsTable
-            config={{ fields: ['programName', 'startDate', 'state'] }}
-          />
+          <PatientProgramsTable config={{ fields: basicFields }} />
         </QueryClientProvider>,
       );
 
@@ -619,12 +630,7 @@ describe('PatientProgramsTable Integration', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <PatientProgramsTable
-            config={{
-              fields: ['programName', 'startDate', 'state'],
-              pageSize: 2,
-            }}
-          />
+          <PatientProgramsTable config={{ fields: basicFields, pageSize: 2 }} />
         </QueryClientProvider>,
       );
 
@@ -651,10 +657,7 @@ describe('PatientProgramsTable Integration', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
-            config={{
-              fields: ['programName', 'startDate', 'state'],
-              pageSize: 10,
-            }}
+            config={{ fields: basicFields, pageSize: 10 }}
           />
         </QueryClientProvider>,
       );
@@ -673,12 +676,7 @@ describe('PatientProgramsTable Integration', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <PatientProgramsTable
-            config={{
-              fields: ['programName', 'startDate', 'state'],
-              pageSize: 2,
-            }}
-          />
+          <PatientProgramsTable config={{ fields: basicFields, pageSize: 2 }} />
         </QueryClientProvider>,
       );
 
@@ -706,12 +704,7 @@ describe('PatientProgramsTable Integration', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <PatientProgramsTable
-            config={{
-              fields: ['programName', 'startDate', 'state'],
-              pageSize: 2,
-            }}
-          />
+          <PatientProgramsTable config={{ fields: basicFields, pageSize: 2 }} />
         </QueryClientProvider>,
       );
 
@@ -750,12 +743,7 @@ describe('PatientProgramsTable Integration', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <PatientProgramsTable
-            config={{
-              fields: ['programName', 'startDate', 'state'],
-              pageSize: 2,
-            }}
-          />
+          <PatientProgramsTable config={{ fields: basicFields, pageSize: 2 }} />
         </QueryClientProvider>,
       );
 
@@ -792,9 +780,7 @@ describe('PatientProgramsTable Integration', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <PatientProgramsTable
-            config={{ fields: ['programName', 'startDate', 'state'] }}
-          />
+          <PatientProgramsTable config={{ fields: basicFields }} />
         </QueryClientProvider>,
       );
 

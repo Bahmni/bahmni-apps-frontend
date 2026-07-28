@@ -1,4 +1,5 @@
 import {
+  createBundleEntry,
   resolveComboBoxItems,
   formatDateTime,
   Location,
@@ -15,7 +16,6 @@ import {
 } from 'fhir/r4';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import { getMedicationDisplay } from '../../../services/medicationService';
-import { createBundleEntry } from '../../../utils/fhir/consultationBundleCreator';
 import {
   createEncounterReferenceFromString,
   createPractitionerReference,
@@ -107,6 +107,49 @@ export function getValueSetComboBoxItems(
   return items;
 }
 
+export function getAllValueSetComboBoxItems(
+  searchTerm: string,
+  valueSet: ValueSet | undefined,
+  emptyMessage: string,
+): ValueSetComboBoxItem[] {
+  const contains = valueSet?.expansion?.contains ?? [];
+  const filtered = searchTerm.trim()
+    ? contains.filter((item) =>
+        item.display?.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : contains;
+  const items = filtered.map(({ code = '', display = '' }) => ({
+    code,
+    display,
+  }));
+  if (!items.length) {
+    return [{ code: '', display: emptyMessage, disabled: true }];
+  }
+  return items;
+}
+
+export function getVaccineComboBoxItems(
+  searchTerm: string,
+  medications: Medication[] | undefined,
+  emptyMessage: string,
+): ValueSetComboBoxItem[] {
+  if (!searchTerm.trim()) return [];
+  const seen = new Set<string>();
+  const items: ValueSetComboBoxItem[] = [];
+  (medications ?? []).forEach((med) => {
+    const code = med.code?.coding?.[0]?.code;
+    if (!code || seen.has(code)) return;
+    const display = med.code?.coding?.[0]?.display ?? med.code?.text ?? code;
+    if (!display.toLowerCase().includes(searchTerm.toLowerCase())) return;
+    seen.add(code);
+    items.push({ code, display });
+  });
+  if (!items.length) {
+    return [{ code: '', display: emptyMessage, disabled: true }];
+  }
+  return items;
+}
+
 export function getMedicationComboBoxItems(
   searchTerm: string,
   medications: Medication[] | undefined,
@@ -186,7 +229,7 @@ export function getLocationComboBoxItems(
 ): LocationComboBoxItem[] {
   if (!searchTerm.trim()) return [];
   return (locations ?? [])
-    .flatMap((location) => [location, ...location.childLocations])
+    .flatMap((location) => [location, ...(location.childLocations ?? [])])
     .filter((location) =>
       location.display.toLowerCase().includes(searchTerm.toLowerCase()),
     )
@@ -251,6 +294,7 @@ export function createImmunizationBundleEntries({
   encounterReference,
   practitionerUUID,
   isAdministration,
+  isWaiver,
 }: CreateImmunizationBundleEntriesParams): BundleEntry[] {
   return selectedImmunizations.map((entry) => {
     const extensions = [
@@ -258,10 +302,26 @@ export function createImmunizationBundleEntries({
       ...resolveBasedOnExtension(entry.basedOnReference),
       ...resolveStockLocationExtension(entry.stockLocation),
     ];
+    const administeredOnlyFields = isWaiver
+      ? {}
+      : {
+          route: entry.route ? { coding: [{ code: entry.route }] } : undefined,
+          site: entry.site ? { coding: [{ code: entry.site }] } : undefined,
+          expirationDate: entry.expiryDate
+            ? entry.expiryDate.toISOString().split('T')[0]
+            : undefined,
+          manufacturer: entry.manufacturer
+            ? { display: entry.manufacturer }
+            : undefined,
+          lotNumber: entry.batchNumber ?? undefined,
+          protocolApplied: entry.doseSequence
+            ? [{ doseNumberPositiveInt: entry.doseSequence }]
+            : undefined,
+        };
     const resource: Immunization = {
       resourceType: 'Immunization',
       id: entry.id,
-      status: 'completed',
+      status: isWaiver ? 'not-done' : 'completed',
       vaccineCode: {
         coding: [
           { code: entry.vaccineCode.code, display: entry.vaccineCode.display },
@@ -273,18 +333,17 @@ export function createImmunizationBundleEntries({
       location: entry.administeredLocation
         ? resolveLocationReference(entry.administeredLocation)
         : undefined,
-      route: entry.route ? { coding: [{ code: entry.route }] } : undefined,
-      site: entry.site ? { coding: [{ code: entry.site }] } : undefined,
-      expirationDate: entry.expiryDate
-        ? entry.expiryDate.toISOString().split('T')[0]
+      statusReason: entry.statusReason
+        ? {
+            coding: [
+              {
+                code: entry.statusReason.code,
+                display: entry.statusReason.display,
+              },
+            ],
+          }
         : undefined,
-      manufacturer: entry.manufacturer
-        ? { display: entry.manufacturer }
-        : undefined,
-      lotNumber: entry.batchNumber ?? undefined,
-      protocolApplied: entry.doseSequence
-        ? [{ doseNumberPositiveInt: entry.doseSequence }]
-        : undefined,
+      ...administeredOnlyFields,
       note: entry.note
         ? [
             {

@@ -234,6 +234,7 @@ describe('BasicForm', () => {
     selectedVisitType: null,
     encounterParticipants: [],
     consultationDate: new Date(),
+    isConsultationDateReady: true,
     requestedEncounterType: null,
     isEncounterDetailsFormReady: true,
     activeVisit: null,
@@ -438,6 +439,43 @@ describe('BasicForm', () => {
       expect(screen.getByTestId('encounter-type-dropdown')).toBeInTheDocument();
       expect(screen.getByTestId('visit-type-dropdown')).toBeInTheDocument();
       expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
+    });
+
+    // Every non-date field renders its dropdown (instead of a skeleton) once its
+    // selected value is populated, so only the encounter-date field is left to
+    // toggle on isConsultationDateReady.
+    const readyStoreState = {
+      ...mockStoreState,
+      selectedLocation: mockLocations[0],
+      selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+      selectedVisitType: mockEncounterConcepts.visitTypes[0],
+    };
+
+    it('should show the date picker skeleton when isConsultationDateReady is false', () => {
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+        ...readyStoreState,
+        isConsultationDateReady: false,
+      });
+
+      renderBasicForm();
+
+      // Only the encounter-date field renders its placeholder (title + body).
+      expect(screen.getAllByTestId('skeleton-placeholder')).toHaveLength(2);
+      expect(screen.queryByTestId('date-picker-input')).not.toBeInTheDocument();
+    });
+
+    it('should show the date picker when isConsultationDateReady is true', () => {
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+        ...readyStoreState,
+        isConsultationDateReady: true,
+      });
+
+      renderBasicForm();
+
+      expect(screen.getByTestId('date-picker-input')).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('skeleton-placeholder'),
+      ).not.toBeInTheDocument();
     });
   });
 

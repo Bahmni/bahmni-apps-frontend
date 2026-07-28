@@ -46,7 +46,6 @@ describe('SearchPatient', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    Element.prototype.scrollIntoView = jest.fn();
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {

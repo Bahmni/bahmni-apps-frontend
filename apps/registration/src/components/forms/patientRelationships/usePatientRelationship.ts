@@ -13,10 +13,12 @@ const RELATIONSHIP_FIELDS = {
 
 interface UsePatientRelationshipProps {
   initialData?: RelationshipData[];
+  currentPatientUuid?: string;
 }
 
 export const usePatientRelationship = ({
   initialData,
+  currentPatientUuid,
 }: UsePatientRelationshipProps) => {
   const [relationships, setRelationships] = useState<RelationshipData[]>(
     initialData?.length
@@ -46,12 +48,45 @@ export const usePatientRelationship = ({
   } = useRelationshipValidation();
 
   const {
-    getPatientSuggestions,
+    getPatientSuggestions: getRawPatientSuggestions,
     handleSearch,
     clearSearch,
     clearAllSearches,
     setSearchTerms,
   } = usePatientSearch();
+
+  // Returns patient suggestions for a row, excluding patients already selected
+  // in other non-deleted rows and the current patient. A uuid selected in the
+  // current row is re-allowed only when it is the sole holder of that uuid, so
+  // duplicates stay excluded everywhere.
+  const getPatientSuggestions = useCallback(
+    (rowId: string): PatientSuggestion[] => {
+      const uuidCounts = relationships
+        .filter((rel) => !rel.isDeleted && rel.patientUuid)
+        .reduce((acc, rel) => {
+          acc.set(rel.patientUuid!, (acc.get(rel.patientUuid!) ?? 0) + 1);
+          return acc;
+        }, new Map<string, number>());
+
+      const currentRow = relationships.find((rel) => rel.id === rowId);
+      const excludedUuids = new Set(uuidCounts.keys());
+
+      if (
+        currentRow?.patientUuid &&
+        uuidCounts.get(currentRow.patientUuid) === 1
+      ) {
+        excludedUuids.delete(currentRow.patientUuid);
+      }
+      if (currentPatientUuid) {
+        excludedUuids.add(currentPatientUuid);
+      }
+
+      return getRawPatientSuggestions(rowId).filter(
+        (suggestion) => !excludedUuids.has(suggestion.id),
+      );
+    },
+    [relationships, currentPatientUuid, getRawPatientSuggestions],
+  );
 
   const updateRelationship = useCallback(
     (id: string, field: keyof RelationshipData, value: string) => {

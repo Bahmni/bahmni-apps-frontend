@@ -25,6 +25,7 @@ jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(),
   useNotification: jest.fn(() => ({ addNotification: mockAddNotification })),
+  UserGlobalAction: jest.fn(() => <div data-testid="user-global-action" />),
 }));
 
 jest.mock('../../../../providers/appointmentsConfig', () => ({

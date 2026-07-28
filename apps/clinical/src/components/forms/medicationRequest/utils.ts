@@ -1,4 +1,5 @@
 import {
+  createBundleEntry,
   resolveComboBoxItems,
   MedicationFrequency as Frequency,
 } from '@bahmni/services';
@@ -15,7 +16,6 @@ import {
 } from '../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import { getMedicationDisplay } from '../../../services/medicationService';
-import { createBundleEntry } from '../../../utils/fhir/consultationBundleCreator';
 import { createMedicationRequestResource } from '../../../utils/fhir/medicationRequestResourceCreator';
 import {
   createEncounterReferenceFromString,

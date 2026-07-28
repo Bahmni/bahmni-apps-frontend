@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../apps/patient-documents"
+    },
+    {
       "path": "../apps/appointments"
     },
     {

@@ -39,13 +39,19 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
       className={styles.newConsultationButton}
       size="md"
       disabled={isActionAreaVisible}
-      onClick={() => dispatchConsultationStart({})}
+      onClick={() =>
+        dispatchConsultationStart(
+          editActiveEncounter
+            ? { editTitle: 'CONSULTATION_ACTION_CONTINUE' }
+            : {},
+        )
+      }
       data-testid="consultation-action-button"
     >
       {isActionAreaVisible
         ? t('CONSULTATION_ACTION_IN_PROGRESS')
         : editActiveEncounter
-          ? t('CONSULTATION_ACTION_EDIT')
+          ? t('CONSULTATION_ACTION_CONTINUE')
           : t('CONSULTATION_ACTION_NEW')}
     </Button>
   );

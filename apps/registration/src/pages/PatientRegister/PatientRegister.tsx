@@ -1,11 +1,4 @@
-import {
-  Button,
-  Tile,
-  BaseLayout,
-  Header,
-  Icon,
-  ICON_SIZE,
-} from '@bahmni/design-system';
+import { Button, Tile, BaseLayout, Header } from '@bahmni/design-system';
 import {
   BAHMNI_HOME_PATH,
   useTranslation,
@@ -13,7 +6,7 @@ import {
   AuditEventType,
   dispatchAuditEvent,
 } from '@bahmni/services';
-import { useNotification } from '@bahmni/widgets';
+import { useNotification, UserGlobalAction } from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
@@ -293,19 +286,10 @@ const PatientRegister = () => {
       isCurrentPage: true,
     },
   ];
-  const globalActions = [
-    {
-      id: 'user',
-      label: 'user',
-      renderIcon: <Icon id="user" name="fa-user" size={ICON_SIZE.LG} />,
-      onClick: () => {},
-    },
-  ];
-
   return (
     <BaseLayout
       header={
-        <Header breadcrumbItems={breadcrumbs} globalActions={globalActions} />
+        <Header breadcrumbItems={breadcrumbs} userMenu={<UserGlobalAction />} />
       }
       main={
         <div>
@@ -375,6 +359,7 @@ const PatientRegister = () => {
                 <RegistrationActions
                   extensionPointId="org.bahmni.registration.navigation"
                   onBeforeNavigate={handleSave}
+                  disabled={isSaving}
                 />
               </div>
             </div>

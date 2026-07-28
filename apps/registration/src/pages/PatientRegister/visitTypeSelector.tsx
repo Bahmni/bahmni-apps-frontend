@@ -16,12 +16,14 @@ interface VisitTypeSelectorProps {
   onVisitTypeSelect: (visitType: { name: string; uuid: string }) => void;
   activeVisitLabel?: string;
   onActiveVisitClick?: () => void;
+  disabled?: boolean;
 }
 
 export const VisitTypeSelector = ({
   onVisitTypeSelect,
   activeVisitLabel,
   onActiveVisitClick,
+  disabled = false,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const { patientUuid } = useParams<{ patientUuid: string }>();
@@ -43,7 +45,9 @@ export const VisitTypeSelector = ({
         data-testid="start-visit-button"
         className={styles.visitButton}
         kind={hasActiveVisit ? 'primary' : 'tertiary'}
-        disabled={isLoadingVisitTypes || visitTypesArray.length === 0}
+        disabled={
+          disabled || isLoadingVisitTypes || visitTypesArray.length === 0
+        }
         onClick={() => {
           if (hasActiveVisit) {
             if (onActiveVisitClick) {
@@ -92,7 +96,9 @@ export const VisitTypeSelector = ({
           label=""
           type="inline"
           size="lg"
-          disabled={isLoadingVisitTypes || visitTypesArray.length === 0}
+          disabled={
+            disabled || isLoadingVisitTypes || visitTypesArray.length === 0
+          }
           titleText=""
           selectedItem={null}
         />

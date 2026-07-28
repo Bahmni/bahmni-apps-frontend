@@ -10,6 +10,7 @@ export { useCamera } from './cameraService';
 export {
   getPatientById,
   getFormattedPatientById,
+  mapGenderFromFhir,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
   getIdentifierTypes,
@@ -76,6 +77,7 @@ export {
 export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
+  checkInAppointment,
   getAppointmentById,
   getUpcomingAppointments,
   getPastAppointments,
@@ -111,10 +113,14 @@ export {
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
+  formatGender,
+  formatCountry,
 } from './utils';
 export {
   type FormatDateResult,
+  type AgeDetails,
   calculateAge,
+  computeAgeDetails,
   formatDateTime,
   formatDateDistance,
   calculateOnsetDate,
@@ -218,18 +224,21 @@ export {
   getUserLoginLocation,
   getAvailableLocations,
   getDefaultDateFormat,
-  logout,
   saveUserLocation,
   updateSessionLocation,
   type User,
   type UserLocation,
   BAHMNI_USER_LOCATION_COOKIE,
 } from './userService';
+export { logout } from './authService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
   getPatientObservations,
+  getObservationsBundleByEncounterUuid,
+  groupObservationsByEncounter,
+  type EncounterGroup,
 } from './observationService';
 export {
   getCurrentProvider,
@@ -260,10 +269,14 @@ export {
   getActiveVisit,
   getEncounterByUuid,
   getVisits,
+  getPatientEncounters,
+  getEncounterTypeByName,
+  type EncounterTypeRef,
   shouldEnableEncounterFilter,
-  getObservationsBundleByEncounterUuid,
   createFhirEncounter,
   updateFhirEncounter,
+  buildEncounterResource,
+  type BuildEncounterResourceParams,
   type FormsEncounter,
 } from './encounterService';
 
@@ -271,6 +284,13 @@ export {
   getEncountersAndVisitsForEOC,
   type EpisodeOfCareDataType,
 } from './episodeOfCareService';
+
+export {
+  createEncounterBundle,
+  createBundleEntry,
+  ENCOUNTER_BUNDLE_URL,
+  type EncounterBundle,
+} from './encounterBundle';
 
 export {
   dispatchAuditEvent,
@@ -281,6 +301,7 @@ export {
 } from './auditLogService';
 
 export {
+  BIRTH_TIME_EXT_URL,
   HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM,
   HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CODE_SYSTEM,
@@ -317,17 +338,18 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  fetchFormUuidByObservationDate,
   transformFormDataToObservations,
   transformObservationsToFormData,
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  hasMissingMandatoryVisibleField,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
-  type ApiFormPrivilege,
   type FormMetadata,
   type FormData,
   type FormControlData,
@@ -375,8 +397,17 @@ export {
   getDocumentReferences,
   getFormattedDocumentReferences,
   getDocumentReferencePage,
+  getDocumentTypes,
+  getDocumentUploadMaxSizeMb,
+  createDocumentReference,
+  saveDocument,
   type DocumentReferencePage,
   type DocumentViewModel,
+  type DocumentType,
+  type DocumentSaveTarget,
+  type CreateEncounterInVisit,
+  type CreateDocumentReferenceInput,
+  type SaveDocumentInput,
   type DocumentReference,
 } from './documentReferenceService';
 
@@ -424,3 +455,4 @@ export type {
   RenderRequest,
   TemplateListResponse,
 } from './templateService';
+export { getTasks } from './taskService';

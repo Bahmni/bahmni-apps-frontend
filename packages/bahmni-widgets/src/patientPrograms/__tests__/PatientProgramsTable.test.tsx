@@ -2,6 +2,7 @@ import {
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
 } from '@bahmni/services';
+import * as BahmniServices from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
@@ -10,6 +11,7 @@ import {
 import { render, screen, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import PatientProgramsTable from '../PatientProgramsTable';
+import { mockProgram } from './__mocks__/patientProgramMocks';
 
 expect.extend(toHaveNoViolations);
 
@@ -48,7 +50,13 @@ describe('PatientProgramsTable', () => {
     <QueryClientProvider client={queryClient}>
       <PatientProgramsTable
         config={{
-          fields: ['programName', 'startDate', 'endDate', 'state', 'outcome'],
+          fields: [
+            { name: 'programName' },
+            { name: 'startDate' },
+            { name: 'endDate' },
+            { name: 'state' },
+            { name: 'outcome' },
+          ],
         }}
       />
     </QueryClientProvider>
@@ -156,11 +164,11 @@ describe('PatientProgramsTable', () => {
         <PatientProgramsTable
           config={{
             fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
+              { name: 'programName' },
+              { name: 'Registration Number' },
+              { name: 'Treatment Category' },
+              { name: 'startDate' },
+              { name: 'state' },
             ],
           }}
         />
@@ -242,7 +250,10 @@ describe('PatientProgramsTable', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
-            config={{ fields: ['programName', 'startDate'], pageSize: 1 }}
+            config={{
+              fields: [{ name: 'programName' }, { name: 'startDate' }],
+              pageSize: 1,
+            }}
           />
         </QueryClientProvider>,
       );
@@ -261,7 +272,10 @@ describe('PatientProgramsTable', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
-            config={{ fields: ['programName', 'startDate'], pageSize: 10 }}
+            config={{
+              fields: [{ name: 'programName' }, { name: 'startDate' }],
+              pageSize: 10,
+            }}
           />
         </QueryClientProvider>,
       );
@@ -278,7 +292,10 @@ describe('PatientProgramsTable', () => {
       render(
         <QueryClientProvider client={queryClient}>
           <PatientProgramsTable
-            config={{ fields: ['programName', 'startDate'], pageSize: 2 }}
+            config={{
+              fields: [{ name: 'programName' }, { name: 'startDate' }],
+              pageSize: 2,
+            }}
           />
         </QueryClientProvider>,
       );
@@ -323,6 +340,86 @@ describe('PatientProgramsTable', () => {
     });
     const { container } = render(wrapper);
     expect(container).toMatchSnapshot();
+  });
+
+  describe('renderAttributeValue', () => {
+    it('should render raw attribute value when field is not in enableTranslation', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { programs: [mockProgram], total: 1 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{ fields: [{ name: 'treatmentCategory' }] }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-uuid-1-treatmentCategory-test-id'),
+      ).toHaveTextContent('categoryI');
+    });
+
+    it('should return "-" for missing attribute when field is in enableTranslation', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { programs: [mockProgram], total: 1 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'missingField', enableTranslation: true }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-uuid-1-missingField-test-id'),
+      ).toHaveTextContent('-');
+    });
+
+    it('should translate attribute value using EOC key when enableTranslation is true', () => {
+      const mockT = jest.fn((key: string, fallback: string) => fallback);
+      const useTranslationSpy = jest
+        .spyOn(BahmniServices, 'useTranslation')
+        .mockReturnValue({ t: mockT });
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { programs: [mockProgram], total: 1 },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'treatmentCategory', enableTranslation: true }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(mockT).toHaveBeenCalledWith(
+        'PROGRAM_ATTRIBUTE_VALUE_TREATMENT_CATEGORY_CATEGORY_I',
+        'categoryI',
+      );
+      expect(
+        screen.getByTestId('program-uuid-1-treatmentCategory-test-id'),
+      ).toHaveTextContent('categoryI');
+
+      useTranslationSpy.mockRestore();
+    });
   });
 
   describe('Accessibility', () => {
