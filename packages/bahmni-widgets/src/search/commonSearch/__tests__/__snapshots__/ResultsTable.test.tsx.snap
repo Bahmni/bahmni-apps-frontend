@@ -3,7 +3,7 @@
 exports[`ResultsTable Snapshot matches snapshot for empty state 1`] = `
 <div>
   <section
-    class="dataTable _dataTableBody_e6bng_1 cds--data-table-container"
+    class="dataTable _dataTableBody_aje5l_1 cds--data-table-container"
     data-testid="common-search-results-table"
     id="common-search-results-table-data-table"
   >
@@ -60,7 +60,7 @@ exports[`ResultsTable Snapshot matches snapshot for empty state 1`] = `
         >
           <tr>
             <td
-              class="_emptyStateCell_e6bng_81"
+              class="_emptyStateCell_aje5l_81"
               colspan="2"
             >
               COMMON_SEARCH_NO_RESULTS
@@ -76,7 +76,7 @@ exports[`ResultsTable Snapshot matches snapshot for empty state 1`] = `
 exports[`ResultsTable Snapshot matches snapshot for evaluation error state 1`] = `
 <div>
   <p
-    class="_statePlaceholder_e6bng_70"
+    class="_statePlaceholder_aje5l_70"
     data-testid="common-search-results-table-error"
   >
     COMMON_SEARCH_EVALUATION_ERROR
@@ -87,7 +87,7 @@ exports[`ResultsTable Snapshot matches snapshot for evaluation error state 1`] =
 exports[`ResultsTable Snapshot matches snapshot with data 1`] = `
 <div>
   <section
-    class="dataTable _dataTableBody_e6bng_1 cds--data-table-container"
+    class="dataTable _dataTableBody_aje5l_1 cds--data-table-container"
     data-testid="common-search-results-table"
     id="common-search-results-table-data-table"
   >
@@ -144,7 +144,7 @@ exports[`ResultsTable Snapshot matches snapshot with data 1`] = `
         >
           <tr>
             <td
-              class="_emptyStateCell_e6bng_81"
+              class="_emptyStateCell_aje5l_81"
               colspan="2"
             >
               COMMON_SEARCH_NO_RESULTS

@@ -91,7 +91,7 @@ const ResultsTable = ({ resultFields, results }: ResultsTableProps) => {
         enableFiltering: !!field.filterType,
         filterType: field.filterType,
       })),
-    [resolvedFields, t],
+    [resolvedFields],
   );
 
   return (

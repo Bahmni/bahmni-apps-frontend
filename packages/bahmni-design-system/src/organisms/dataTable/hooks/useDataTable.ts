@@ -85,8 +85,6 @@ export const useDataTable = <T extends { id: string }>({
     onSortingChange: (updater) => {
       setSorting((old) => {
         const next = typeof updater === 'function' ? updater(old) : updater;
-        // Removing the active sort (TanStack's third-click behavior) should
-        // fall back to the column-configured default order, not raw fetch order.
         return next.length === 0 ? initialSorting : next;
       });
     },
