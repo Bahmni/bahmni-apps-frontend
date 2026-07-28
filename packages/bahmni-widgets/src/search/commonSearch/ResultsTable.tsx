@@ -104,8 +104,26 @@ const ResultsTable = ({
         return t('COMMON_SEARCH_INVALID_EXPRESSION');
       }
     }
+
+    if (actions) {
+      for (const action of actions) {
+        if (action.type === 'navigate') {
+          const placeholders = [
+            ...action.navigationURL.matchAll(/\{([^}]+)\}/g),
+          ];
+          for (const [, expression] of placeholders) {
+            try {
+              jsonata(expression);
+            } catch {
+              return t('COMMON_SEARCH_INVALID_EXPRESSION');
+            }
+          }
+        }
+      }
+    }
+
     return null;
-  }, [resultFields, t]);
+  }, [resultFields, actions, t]);
 
   useEffect(() => {
     if (expressionError) return;

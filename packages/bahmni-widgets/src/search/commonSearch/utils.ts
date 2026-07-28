@@ -344,21 +344,6 @@ export const validateConfigForActions = (
           });
         }
       }
-
-      for (const action of context.actions) {
-        if (action.type === 'navigate') {
-          const placeholders = [
-            ...action.navigationURL.matchAll(/\{([^}]+)\}/g),
-          ];
-          for (const [, expression] of placeholders) {
-            try {
-              jsonata(expression);
-            } catch {
-              return t('COMMON_SEARCH_INVALID_EXPRESSION');
-            }
-          }
-        }
-      }
     }
   }
   return null;
