@@ -12,6 +12,7 @@ import {
   resolveRows,
   buildPayload,
   resultTransforms,
+  toSearchAuditEventType,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -37,7 +38,18 @@ import {
   mockResolvedScalarRow,
   mockResolvedKeyTypeRow,
   mockResolvedRangeRow,
+  mockRowDateScalar,
+  mockRowDateRange,
+  mockRowDateRangeFromOnly,
 } from './__mocks__/utilsMocks';
+
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+jest.mock('date-fns', () => ({
+  format: (_date: Date) => {
+    const shifted = new Date(_date.getTime() + IST_OFFSET_MS);
+    return shifted.toISOString().slice(0, -1) + '+0530';
+  },
+}));
 
 describe('initialRows', () => {
   it('returns one row per criterion marked as default', () => {
@@ -51,7 +63,7 @@ describe('initialRows', () => {
   it('falls back to first criterion when no default is set', () => {
     const rows = initialRows(mockContextNoDefaults);
     expect(rows).toHaveLength(1);
-    expect(rows[0].criterionKey).toBe('episode.identifier');
+    expect(rows[0].criterionKey).toBe('patientProgram.identifier');
   });
 
   it('returns one row per criterion when multiple defaults are set', () => {
@@ -423,6 +435,11 @@ describe('resolveRows', () => {
       translationKey: 'PATIENT_PASSPORT',
       input: { kind: 'text' as const, placeholderTranslationKey: 'PH' },
     },
+    {
+      field: { key: 'patient.birthdate' },
+      translationKey: 'PATIENT_BIRTHDATE',
+      input: { kind: 'date' as const, placeholderTranslationKey: 'DATE_PH' },
+    },
   ];
 
   it.each([
@@ -457,7 +474,40 @@ describe('resolveRows', () => {
     const result = resolveRows([mockRowTextWithValue], criteria);
     expect(result[0].value).toEqual(mockRowTextWithValue.value);
   });
+
+  it.each([
+    {
+      label: 'scalar date value',
+      row: mockRowDateScalar,
+      expected: { value: '2026-07-23T16:00:00.000+0530' },
+    },
+    {
+      label: 'range date with from and to',
+      row: mockRowDateRange,
+      expected: {
+        from: { value: '2026-01-15T05:30:00.000+0530', comparator: null },
+        to: { value: '2026-07-24T05:29:59.000+0530', comparator: null },
+      },
+    },
+    {
+      label: 'range date with from only',
+      row: mockRowDateRangeFromOnly,
+      expected: {
+        from: { value: '2026-01-15T05:30:00.000+0530', comparator: null },
+      },
+    },
+  ])('converts $label to local timezone ISO format', ({ row, expected }) => {
+    const result = resolveRows([row], criteria);
+    expect(result[0].value).toEqual(expected);
+  });
 });
+
+const mockLocationUuid = 'test-location-uuid';
+const locationCondition = {
+  field: 'location.uuid',
+  comparator: 'eq',
+  value: mockLocationUuid,
+};
 
 describe('buildPayload', () => {
   it.each([
@@ -471,6 +521,7 @@ describe('buildPayload', () => {
           operator: 'AND',
           conditions: [
             { field: 'patient.givenName', comparator: 'eq', value: 'John' },
+            locationCondition,
           ],
         },
       },
@@ -499,6 +550,7 @@ describe('buildPayload', () => {
                 },
               ],
             },
+            locationCondition,
           ],
         },
       },
@@ -519,29 +571,45 @@ describe('buildPayload', () => {
                 { field: 'patient.age', comparator: 'lt', value: '50' },
               ],
             },
+            locationCondition,
           ],
         },
       },
     },
   ])('$label', ({ resolvedRows, entity, expected }) => {
-    expect(buildPayload(resolvedRows, entity)).toEqual(expected);
+    expect(buildPayload(resolvedRows, entity, mockLocationUuid)).toEqual(
+      expected,
+    );
   });
 
-  it('multiple rows → multiple top-level conditions', () => {
+  it('multiple rows → conditions include all rows plus location', () => {
     const result = buildPayload(
       [mockResolvedScalarRow, mockResolvedKeyTypeRow, mockResolvedRangeRow],
       'patient',
+      mockLocationUuid,
     );
-    expect(result.criteria.conditions).toHaveLength(3);
+    expect(result.criteria.conditions).toHaveLength(4);
+  });
+
+  it('location condition always appears as last condition', () => {
+    const result = buildPayload(
+      [mockResolvedScalarRow],
+      'patient',
+      mockLocationUuid,
+    );
+    const last = result.criteria.conditions.at(-1);
+    expect(last).toEqual(locationCondition);
   });
 
   it('entity maps to different context values', () => {
-    expect(buildPayload([mockResolvedScalarRow], 'appointment').entity).toBe(
-      'appointment',
-    );
-    expect(buildPayload([mockResolvedScalarRow], 'episodeOfCare').entity).toBe(
-      'episodeOfCare',
-    );
+    expect(
+      buildPayload([mockResolvedScalarRow], 'appointment', mockLocationUuid)
+        .entity,
+    ).toBe('appointment');
+    expect(
+      buildPayload([mockResolvedScalarRow], 'patientProgram', mockLocationUuid)
+        .entity,
+    ).toBe('patientProgram');
   });
 });
 
@@ -567,6 +635,19 @@ describe('criteriaAvailableToAdd', () => {
     }));
     const result = criteriaAvailableToAdd(mockPatientContext.criteria, rows);
     expect(result).toHaveLength(0);
+  });
+});
+
+describe('toSearchAuditEventType', () => {
+  it.each([
+    { context: 'patient' as const, expected: 'SEARCHED_PATIENT' },
+    { context: 'appointment' as const, expected: 'SEARCHED_APPOINTMENT' },
+    {
+      context: 'patientProgram' as const,
+      expected: 'SEARCHED_PATIENT_PROGRAM',
+    },
+  ])('returns $expected for context $context', ({ context, expected }) => {
+    expect(toSearchAuditEventType(context)).toBe(expected);
   });
 });
 

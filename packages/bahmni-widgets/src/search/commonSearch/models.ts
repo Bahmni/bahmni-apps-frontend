@@ -87,7 +87,7 @@ export interface ResultFieldConfig {
 }
 
 export interface SearchContextConfig {
-  context: 'patient' | 'appointment' | 'episodeOfCare';
+  context: 'patient' | 'appointment' | 'patientProgram';
   translationKey: string;
   requiredPrivileges: string[];
   locationAware: 'loggedInLocation' | 'allowedLocation';
