@@ -77,7 +77,6 @@
   "COMMON_SEARCH_INVALID_FORMAT": "Invalid format",
   "COMMON_SEARCH_LABEL": "Common Search",
   "COMMON_SEARCH_MODIFY_SEARCH_BUTTON": "Modify Search",
-  "COMMON_SEARCH_NO_FILTER_RESULTS": "No results match the applied filters.",
   "COMMON_SEARCH_NO_LOCATION_ERROR": "No location selected. Please log in with a location to use search.",
   "COMMON_SEARCH_NO_PRIVILEGE_ERROR": "No search context configured for the current user's role / privileges.",
   "COMMON_SEARCH_NO_RESULTS": "No results found for the given search criteria.",

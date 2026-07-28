@@ -77,7 +77,6 @@
   "COMMON_SEARCH_INVALID_FORMAT": "Formato no válido",
   "COMMON_SEARCH_LABEL": "Búsqueda Común",
   "COMMON_SEARCH_MODIFY_SEARCH_BUTTON": "Modificar Búsqueda",
-  "COMMON_SEARCH_NO_FILTER_RESULTS": "Ningún resultado coincide con los filtros aplicados.",
   "COMMON_SEARCH_NO_LOCATION_ERROR": "No se ha seleccionado ninguna ubicación. Inicie sesión con una ubicación para usar la búsqueda.",
   "COMMON_SEARCH_NO_PRIVILEGE_ERROR": "Ningún contexto de búsqueda configurado para el rol / privilegios del usuario actual.",
   "COMMON_SEARCH_NO_RESULTS": "No se encontraron resultados para los criterios de búsqueda dados.",

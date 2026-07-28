@@ -274,7 +274,7 @@ describe('ResultsTable', () => {
       expect(rows[2]).toHaveTextContent('40');
     });
 
-    it('shows a distinct message when a column filter matches nothing', async () => {
+    it('shows the empty state message when a column filter matches nothing', async () => {
       const user = userEvent.setup();
       const resultFieldsWithFilter: ResultFieldConfig[] = [
         {
@@ -297,12 +297,7 @@ describe('ResultsTable', () => {
       const input = screen.getByPlaceholderText('Filter PATIENT_NAME');
       await user.type(input, 'Nonexistent');
 
-      expect(
-        screen.getByText('COMMON_SEARCH_NO_FILTER_RESULTS'),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByText('COMMON_SEARCH_NO_RESULTS'),
-      ).not.toBeInTheDocument();
+      expect(screen.getByText('COMMON_SEARCH_NO_RESULTS')).toBeInTheDocument();
     });
   });
 });
