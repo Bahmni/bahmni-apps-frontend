@@ -173,8 +173,8 @@ describe('ComboBox', () => {
     });
   });
 
-  describe('prevents update-depth errors from unmemoized selectedItem values', () => {
-    it('should not call onChange when selectedItem rerenders with a value-equal but new-reference object', () => {
+  describe('works correctly when selectedItem is a new object on every render', () => {
+    it('should not call onChange when the selectedItem value stays the same', () => {
       const onChange = jest.fn();
       const { rerender } = render(
         <ComboBox
@@ -198,7 +198,7 @@ describe('ComboBox', () => {
       expect(screen.getByRole('combobox')).toHaveValue('Hypertension');
     });
 
-    it('should allow editing a selected value without clearing it first, even when the parent rerenders with a fresh selectedItem reference on every keystroke', async () => {
+    it('should allow editing the selected value by typing', async () => {
       const user = userEvent.setup();
 
       const Wrapper = () => {
@@ -223,7 +223,7 @@ describe('ComboBox', () => {
       expect(input).toHaveValue('Diabetes');
     });
 
-    it('should not loop when typing a custom value with allowCustomValue, where onChange can receive a raw string instead of the stored object shape', async () => {
+    it('should keep the typed value after entering a custom value', async () => {
       const user = userEvent.setup();
 
       const Wrapper = () => {
@@ -274,7 +274,7 @@ describe('ComboBox', () => {
   });
 
   describe('clears the input on the first click', () => {
-    it('should clear immediately on the first click, even right after entering a custom value with allowCustomValue', async () => {
+    it('should clear the input as soon as the clear button is clicked', async () => {
       const user = userEvent.setup();
 
       const Wrapper = () => {
