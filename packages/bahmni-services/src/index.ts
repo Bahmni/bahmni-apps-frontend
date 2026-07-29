@@ -295,6 +295,7 @@ export {
 export {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
+  MODULE_LABELS,
   initializeAuditListener,
   type AuditEventType,
   logAuditEvent,
@@ -344,7 +345,6 @@ export {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
-  hasMissingMandatoryVisibleField,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
