@@ -1,6 +1,7 @@
 import { formatCountry, formatGender } from '@bahmni/services';
 import { TextInput } from '../models';
 import {
+  criterionId,
   formatSearchResult,
   initialRows,
   availableCriteriaForRow,
@@ -24,6 +25,8 @@ import {
 import {
   mockRowGenderNoValue,
   mockRowGenderWithValue,
+  mockRowImeIdentifier,
+  multiKeyTypeCriteria,
   mockRowNoCriterion,
   mockRowRangeNoBounds,
   mockRowRangePartial,
@@ -34,6 +37,7 @@ import {
   mockRowTextNoValue,
   mockRowTextPassingRegex,
   mockRowTextWithValue,
+  mockRowUmiIdentifier,
   mockRowWithKeyTypeValue,
   mockResolvedScalarRow,
   mockResolvedKeyTypeRow,
@@ -50,6 +54,28 @@ jest.mock('date-fns', () => ({
     return shifted.toISOString().slice(0, -1) + '+0530';
   },
 }));
+
+describe('criterionId', () => {
+  it.each([
+    {
+      label: 'field without keyType returns key as-is',
+      field: { key: 'patient.name.given' },
+      expected: 'patient.name.given',
+    },
+    {
+      label: 'field with keyType returns key:keyType composite',
+      field: { key: 'patient.identifiers', keyType: 'PASSPORT' },
+      expected: 'patient.identifiers:PASSPORT',
+    },
+  ])('$label', ({ field, expected }) => {
+    expect(criterionId(field)).toBe(expected);
+  });
+
+  it('two criteria sharing the same field.key but different keyType produce distinct ids', () => {
+    const [umi, ime] = multiKeyTypeCriteria;
+    expect(criterionId(umi.field)).not.toBe(criterionId(ime.field));
+  });
+});
 
 describe('initialRows', () => {
   it('returns one row per criterion marked as default', () => {
@@ -117,6 +143,16 @@ describe('availableCriteriaForRow', () => {
       mockRowTextNoValue.rowId,
     );
     expect(result).toHaveLength(mockPatientContext.criteria.length);
+  });
+
+  it('treats criteria with same field.key but different keyType as distinct', () => {
+    const result = availableCriteriaForRow(
+      multiKeyTypeCriteria,
+      [mockRowUmiIdentifier],
+      mockRowImeIdentifier.rowId,
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].field.keyType).toBe('IME-UUID');
   });
 });
 
@@ -470,6 +506,16 @@ describe('resolveRows', () => {
     });
   });
 
+  it('resolves distinct fields when two rows share field.key but have different keyType', () => {
+    const result = resolveRows(
+      [mockRowUmiIdentifier, mockRowImeIdentifier],
+      multiKeyTypeCriteria,
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0].field.keyType).toBe('UMI-UUID');
+    expect(result[1].field.keyType).toBe('IME-UUID');
+  });
+
   it('preserves the row value', () => {
     const result = resolveRows([mockRowTextWithValue], criteria);
     expect(result[0].value).toEqual(mockRowTextWithValue.value);
@@ -629,12 +675,21 @@ describe('criteriaAvailableToAdd', () => {
   it('returns empty array when all criteria are active', () => {
     const rows = mockPatientContext.criteria.map((c, i) => ({
       rowId: `row-${i}`,
-      criterionKey: c.field.key,
+      criterionKey: criterionId(c.field),
       value: null,
       validationError: null,
+      rangeOrderError: null,
     }));
     const result = criteriaAvailableToAdd(mockPatientContext.criteria, rows);
     expect(result).toHaveLength(0);
+  });
+
+  it('treats criteria with same field.key but different keyType as distinct', () => {
+    const result = criteriaAvailableToAdd(multiKeyTypeCriteria, [
+      mockRowUmiIdentifier,
+    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0].field.keyType).toBe('IME-UUID');
   });
 });
 

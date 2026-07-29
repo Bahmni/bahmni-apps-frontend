@@ -7,6 +7,7 @@ import {
   CriterionValue,
 } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
+import { criterionId } from './utils';
 
 interface Props {
   row: CriterionRowState;
@@ -51,7 +52,7 @@ const CriterionRow = ({
           }: {
             selectedItem: CriterionConfig | null;
           }) => {
-            onCriterionChange(row.rowId, selectedItem!.field.key);
+            onCriterionChange(row.rowId, criterionId(selectedItem!.field));
           }}
           invalid={!!criterionError}
           invalidText={criterionError}

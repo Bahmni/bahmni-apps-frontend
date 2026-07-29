@@ -7,6 +7,7 @@ import styles from './styles/CommonSearchWidget.module.scss';
 import {
   availableCriteriaForRow,
   criteriaAvailableToAdd,
+  criterionId,
   initialRows,
   makeRow,
   updateRow,
@@ -85,9 +86,13 @@ const SearchForm = ({
   const canAddMore = availableCriteria.length > 0;
 
   const handleAdd = () => {
-    const defaultKey =
-      activeContext.criteria.find((c) => c.default)?.field.key ?? null;
-    const preselect = availableCriteria.some((c) => c.field.key === defaultKey)
+    const defaultCriterion = activeContext.criteria.find((c) => c.default);
+    const defaultKey = defaultCriterion
+      ? criterionId(defaultCriterion.field)
+      : null;
+    const preselect = availableCriteria.some(
+      (c) => criterionId(c.field) === defaultKey,
+    )
       ? defaultKey
       : null;
     setRows((prev) => [...prev, makeRow(preselect)]);
@@ -139,7 +144,7 @@ const SearchForm = ({
             )}
             selectedCriterion={
               activeContext.criteria.find(
-                (c) => c.field.key === row.criterionKey,
+                (c) => criterionId(c.field) === row.criterionKey,
               ) ?? null
             }
             onCriterionChange={handleCriterionChange}
