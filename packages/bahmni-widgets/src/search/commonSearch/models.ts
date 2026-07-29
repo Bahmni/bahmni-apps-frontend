@@ -78,15 +78,22 @@ export interface CriterionConfig {
 
 export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
 
+export enum SortOrder {
+  Ascending = 'asc',
+  Descending = 'desc',
+}
+
 export interface ResultFieldConfig {
   translationKey: string;
   expression: string;
   enableSort?: boolean;
+  sortOrder?: SortOrder;
   filterType?: ResultFieldFilterType;
+  transform?: string;
 }
 
 export interface SearchContextConfig {
-  context: 'patient' | 'appointment' | 'episodeOfCare';
+  context: 'patient' | 'appointment' | 'patientProgram';
   translationKey: string;
   requiredPrivileges: string[];
   locationAware: 'loggedInLocation' | 'allowedLocation';

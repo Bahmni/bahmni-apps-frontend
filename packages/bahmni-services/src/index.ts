@@ -113,6 +113,8 @@ export {
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
+  formatGender,
+  formatCountry,
 } from './utils';
 export {
   type FormatDateResult,
@@ -273,6 +275,8 @@ export {
   shouldEnableEncounterFilter,
   createFhirEncounter,
   updateFhirEncounter,
+  buildEncounterResource,
+  type BuildEncounterResourceParams,
   type FormsEncounter,
 } from './encounterService';
 
@@ -334,6 +338,7 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  fetchFormUuidByObservationDate,
   transformFormDataToObservations,
   transformObservationsToFormData,
   transformContainerObservationsToForm2Observations,

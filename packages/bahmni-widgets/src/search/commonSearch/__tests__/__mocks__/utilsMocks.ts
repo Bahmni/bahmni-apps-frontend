@@ -132,3 +132,32 @@ export const mockResolvedRangeRow: ResolvedRow = {
     to: { value: '50', comparator: null },
   } satisfies RangeValue,
 };
+
+export const mockRowDateScalar: CriterionRow = {
+  rowId: 'row-date-scalar',
+  criterionKey: 'patient.birthdate',
+  value: { value: '2026-07-23T10:30:00.000Z' } satisfies ScalarValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockRowDateRange: CriterionRow = {
+  rowId: 'row-date-range',
+  criterionKey: 'patient.birthdate',
+  value: {
+    from: { value: '2026-01-15T00:00:00.000Z', comparator: null },
+    to: { value: '2026-07-23T23:59:59.000Z', comparator: null },
+  } satisfies RangeValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockRowDateRangeFromOnly: CriterionRow = {
+  rowId: 'row-date-range-from-only',
+  criterionKey: 'patient.birthdate',
+  value: {
+    from: { value: '2026-01-15T00:00:00.000Z', comparator: null },
+  } satisfies RangeValue,
+  validationError: null,
+  rangeOrderError: null,
+};

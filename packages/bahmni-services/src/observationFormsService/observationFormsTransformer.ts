@@ -295,6 +295,22 @@ export function transformObservationsToFormData(
   };
 }
 
+/** Coerces a raw CarbonContainer field value to the typed Form2Observation value. */
+function getObsValue(
+  value: unknown,
+): string | number | boolean | ConceptValue | ComplexValue | null {
+  if (value == null) return null;
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value;
+  }
+  if (typeof value === 'object') return value as ConceptValue | ComplexValue;
+  return null;
+}
+
 /**
  * Transforms raw observations from Container.getValue() to Form2Observation format
  * This ensures comment, interpretation, and other fields are properly included
@@ -303,26 +319,6 @@ export function transformContainerObservationsToForm2Observations(
   containerObservations: Record<string, unknown>[],
 ): Form2Observation[] {
   const transform = (obs: Record<string, unknown>): Form2Observation => {
-    const getValue = (
-      value: unknown,
-    ): string | number | boolean | ConceptValue | ComplexValue | null => {
-      if (value === null || value === undefined) {
-        return null;
-      }
-      if (
-        typeof value === 'string' ||
-        typeof value === 'number' ||
-        typeof value === 'boolean'
-      ) {
-        return value;
-      }
-
-      if (typeof value === 'object') {
-        return value as ConceptValue | ComplexValue;
-      }
-      return null;
-    };
-
     const concept = obs.concept as Record<string, unknown> | string | undefined;
     const conceptUuid: string =
       typeof concept === 'object' && concept !== null && 'uuid' in concept
@@ -338,7 +334,7 @@ export function transformContainerObservationsToForm2Observations(
         uuid: conceptUuid,
         datatype: conceptDatatype,
       },
-      value: getValue(obs.value),
+      value: getObsValue(obs.value),
       obsDatetime:
         typeof obs.observationDateTime === 'string'
           ? obs.observationDateTime
@@ -349,25 +345,28 @@ export function transformContainerObservationsToForm2Observations(
         typeof obs.formFieldPath === 'string' ? obs.formFieldPath : undefined,
     };
 
-    if (obs.comment && typeof obs.comment === 'string') {
+    // Preserve uuid, voided and status so the bundle builder can emit the
+    // correct HTTP verb and status value for each observation.
+    // status is required on PUT/POST-with-uuid by OpenMRS and must echo back
+    // exactly what is stored ("final" on first edit, "amended" on subsequent edits).
+    if (typeof obs.uuid === 'string') observation.uuid = obs.uuid;
+    if (obs.voided === true) observation.voided = true;
+    if (typeof obs.status === 'string') observation.status = obs.status;
+
+    if (typeof obs.comment === 'string') {
       observation.comment = obs.comment;
     }
 
-    if (obs.interpretation && typeof obs.interpretation === 'string') {
+    if (typeof obs.interpretation === 'string') {
       observation.interpretation = obs.interpretation;
     }
 
     if (obs.groupMembers && Array.isArray(obs.groupMembers)) {
-      // Filter out voided group members
-      const nonVoidedGroupMembers = obs.groupMembers.filter((member) => {
-        const isMemberVoided =
-          member.voided ??
-          (member.value &&
-            typeof member.value === 'string' &&
-            member.value.endsWith('voided'));
-        return !isMemberVoided;
-      });
-      observation.groupMembers = nonVoidedGroupMembers.map(transform);
+      // Include ALL group members (including voided ones with uuid) so the
+      // bundle builder can emit DELETE entries for cleared children.
+      observation.groupMembers = (
+        obs.groupMembers as Record<string, unknown>[]
+      ).map(transform);
     }
 
     return observation;

@@ -4,10 +4,12 @@ import {
   Loading,
 } from '@bahmni/design-system';
 import {
+  dispatchAuditEvent,
   getCurrentUserPrivileges,
   getConfig,
   getUserLoginLocation,
   hasPrivilege,
+  post,
   useTranslation,
   UserLocation,
 } from '@bahmni/services';
@@ -15,7 +17,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
-import { post } from './api';
 import {
   CurrentSearchState,
   CommonSearchWidgetConfig,
@@ -27,7 +28,12 @@ import schema from './schema.json';
 import SearchForm from './SearchForm';
 import SearchSummary from './SearchSummary';
 import styles from './styles/CommonSearchWidget.module.scss';
-import { buildPayload, resolveRows, validateRows } from './utils';
+import {
+  buildPayload,
+  resolveRows,
+  toSearchAuditEventType,
+  validateRows,
+} from './utils';
 
 const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { t } = useTranslation();
@@ -94,7 +100,11 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       setIsSearchResultsLoading(true);
       post(
         context.url,
-        buildPayload(resolveRows(validated, context.criteria), context.context),
+        buildPayload(
+          resolveRows(validated, context.criteria),
+          context.context,
+          location.uuid,
+        ),
       )
         .then((data) => {
           setCurrentSearchState((prev: CurrentSearchState | null) =>
@@ -105,17 +115,14 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
                 }
               : null,
           );
+          dispatchAuditEvent({
+            eventType: toSearchAuditEventType(context.context),
+          });
           setIsSearchResultsLoading(false);
         })
         .catch(() => {
-          setCurrentSearchState((prev: CurrentSearchState | null) =>
-            prev
-              ? {
-                  ...prev,
-                }
-              : null,
-          );
           setIsSearchResultsLoading(false);
+          setCurrentSearchState(null);
           addNotification({
             title: t('ERROR_DEFAULT_TITLE'),
             message: t('COMMON_SEARCH_API_ERROR_MESSAGE'),

@@ -24,7 +24,7 @@
       "properties": {
         "context": {
           "type": "string",
-          "enum": ["patient", "appointment", "episodeOfCare"],
+          "enum": ["patient", "appointment", "patientProgram"],
           "description": "The context this search configuration applies to"
         },
         "translationKey": {
@@ -87,10 +87,20 @@
           "type": "boolean",
           "description": "When true, the column header is clickable to sort results client-side"
         },
+        "sortOrder": {
+          "type": "string",
+          "enum": ["asc", "desc"],
+          "description": "Direction the results are sorted by this column before any user interaction"
+        },
         "filterType": {
           "type": "string",
           "enum": ["text", "select", "dateRange", "numeric"],
           "description": "When present, a filter control appears for this column"
+        },
+        "transform": {
+          "type": "string",
+          "enum": ["formatDate", "formatTime", "formatDateTime", "formatAge", "formatGender", "formatCountry", "formatSearchResult"],
+          "description": "Name of a transform applied to the extracted value before display"
         }
       }
     },

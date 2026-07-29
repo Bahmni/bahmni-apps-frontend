@@ -16,6 +16,8 @@ import {
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
+  formatGender,
+  formatCountry,
 } from '../utils';
 
 describe('common utility functions', () => {
@@ -1328,5 +1330,85 @@ describe('common utility functions', () => {
         { uuid: '', name: 'Loading...', disabled: true },
       ]);
     });
+  });
+});
+
+describe('formatGender', () => {
+  const translations: Record<string, string> = {
+    GENDER_M: 'Male',
+    GENDER_F: 'Female',
+  };
+  const t = (key: string) => translations[key] ?? key;
+
+  it.each([
+    { label: 'maps M to the male label', value: 'M', expected: 'Male' },
+    { label: 'maps F to the female label', value: 'F', expected: 'Female' },
+    {
+      label: 'applies camelToScreamingSnakeCase to the value',
+      value: 'nonBinary',
+      expected: 'GENDER_NON_BINARY',
+    },
+    {
+      label: 'returns the i18n key for an unsupported value',
+      value: 'P',
+      expected: 'GENDER_P',
+    },
+    { label: 'returns null for empty string', value: '', expected: null },
+    {
+      label: 'returns null for whitespace-only string',
+      value: '   ',
+      expected: null,
+    },
+  ])('$label', ({ value, expected }) => {
+    expect(formatGender(value, t)).toBe(expected);
+  });
+});
+
+describe('formatCountry', () => {
+  const noTranslations = (key: string) => key;
+  const withTranslations = (map: Record<string, string>) => (key: string) =>
+    map[key] ?? key;
+
+  it.each([
+    {
+      label: 'uses i18n translation when the key is resolved',
+      value: 'US',
+      t: withTranslations({ COUNTRY_CODE_US: 'United States (Custom)' }),
+      expected: 'United States (Custom)',
+    },
+    {
+      label:
+        'falls back to Intl for a lowercase ISO code when i18n returns the key unchanged',
+      value: 'us',
+      t: noTranslations,
+      expected: 'United States',
+    },
+    {
+      label:
+        'falls back to Intl for an uppercase ISO code when i18n returns the key unchanged',
+      value: 'IN',
+      t: noTranslations,
+      expected: 'India',
+    },
+    {
+      label: 'returns the raw code when Intl does not recognise the region',
+      value: '1',
+      t: noTranslations,
+      expected: '1',
+    },
+    {
+      label: 'returns null for empty input',
+      value: '',
+      t: noTranslations,
+      expected: null,
+    },
+    {
+      label: 'returns null for whitespace-only input',
+      value: '   ',
+      t: noTranslations,
+      expected: null,
+    },
+  ])('$label', ({ value, t, expected }) => {
+    expect(formatCountry(value, t)).toBe(expected);
   });
 });
