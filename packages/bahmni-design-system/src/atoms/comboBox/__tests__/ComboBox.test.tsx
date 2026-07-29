@@ -173,7 +173,7 @@ describe('ComboBox', () => {
     });
   });
 
-  describe('works correctly when selectedItem is a new object on every render', () => {
+  describe('handles selectedItem being a new object on every render', () => {
     it('should not call onChange when the selectedItem value stays the same', () => {
       const onChange = jest.fn();
       const { rerender } = render(
