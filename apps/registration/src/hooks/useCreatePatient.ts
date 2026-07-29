@@ -19,11 +19,9 @@ import {
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
-import { createRegistrationEncounterForPatient } from '../services/registrationEncounterService';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
-import { useRegistrationEncounterTypeUuid } from './useRegistrationEncounterTypeUuid';
 
 interface CreatePatientFormData {
   profile: BasicInfoData & {
@@ -54,25 +52,6 @@ export const useCreatePatient = () => {
   const navigate = useNavigate();
   const { personAttributes } = usePersonAttributes();
   const { data: identifierTypes } = useIdentifierTypes();
-  const encounterTypeUuid = useRegistrationEncounterTypeUuid();
-
-  const createRegistrationEncounter = async (patientUuid: string) => {
-    if (!encounterTypeUuid) return;
-
-    try {
-      await createRegistrationEncounterForPatient(
-        patientUuid,
-        encounterTypeUuid,
-      );
-    } catch (error) {
-      addNotification({
-        type: 'error',
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: error instanceof Error ? error.message : String(error),
-        timeout: 5000,
-      });
-    }
-  };
 
   const mutation = useMutation({
     mutationFn: async (formData: CreatePatientFormData) => {
@@ -120,12 +99,6 @@ export const useCreatePatient = () => {
           patientUuid,
           module: AUDIT_LOG_EVENT_DETAILS.REGISTER_NEW_PATIENT.module,
         });
-
-        // Await encounter creation before navigating so the encounter exists
-        // by the time the user can click "Start Visit". createRegistrationEncounter
-        // catches its own errors and shows a notification, so navigation is
-        // never blocked by failure.
-        await createRegistrationEncounter(patientUuid);
 
         const patientDisplay =
           [response.name?.[0]?.given?.join(' '), response.name?.[0]?.family]

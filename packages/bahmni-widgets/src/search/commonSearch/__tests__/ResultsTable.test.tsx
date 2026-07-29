@@ -1,11 +1,14 @@
 import { generateUUID, useTranslation } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import jsonata from 'jsonata';
+import { ResultFieldConfig, SortOrder } from '../models';
 import ResultsTable from '../ResultsTable';
 import {
   mockInvalidExpressionFields,
   mockResultFields,
+  mockResultFieldsWithSortOrder,
   mockResultFieldsWithTransform,
   mockResultFieldsWithUnknownTransform,
   mockResults,
@@ -193,6 +196,131 @@ describe('ResultsTable', () => {
       await waitFor(() => {
         expect(screen.getByText('-')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Sort and filter config wiring', () => {
+    it('applies sortOrder from config as the initial row order', async () => {
+      mockJsonata.mockImplementation((expression: string) => ({
+        evaluate: async (item: Record<string, unknown>) => item[expression],
+      }));
+
+      renderTable({
+        resultFields: mockResultFieldsWithSortOrder,
+        results: [
+          { id: '1', name: 'Charlie', age: 30 },
+          { id: '2', name: 'Alice', age: 25 },
+          { id: '3', name: 'Bob', age: 40 },
+        ],
+      });
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(3);
+      });
+
+      const rows = screen.getAllByTestId(/^table-row-/);
+      expect(rows[0]).toHaveTextContent('Alice');
+      expect(rows[1]).toHaveTextContent('Bob');
+      expect(rows[2]).toHaveTextContent('Charlie');
+    });
+
+    it('defaults sortOrder to ascending for a sortable field when omitted', async () => {
+      mockJsonata.mockImplementation((expression: string) => ({
+        evaluate: async (item: Record<string, unknown>) => item[expression],
+      }));
+
+      const resultFieldsWithOmittedSortOrder: ResultFieldConfig[] = [
+        {
+          translationKey: 'PATIENT_NAME',
+          expression: 'name',
+          enableSort: true,
+        },
+      ];
+
+      renderTable({
+        resultFields: resultFieldsWithOmittedSortOrder,
+        results: [
+          { id: '1', name: 'Charlie' },
+          { id: '2', name: 'Alice' },
+          { id: '3', name: 'Bob' },
+        ],
+      });
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(3);
+      });
+
+      const rows = screen.getAllByTestId(/^table-row-/);
+      expect(rows[0]).toHaveTextContent('Alice');
+      expect(rows[1]).toHaveTextContent('Bob');
+      expect(rows[2]).toHaveTextContent('Charlie');
+    });
+
+    it('uses declaration order as the tiebreak when multiple columns declare sortOrder', async () => {
+      mockJsonata.mockImplementation((expression: string) => ({
+        evaluate: async (item: Record<string, unknown>) => item[expression],
+      }));
+
+      const resultFieldsWithTwoSortColumns: ResultFieldConfig[] = [
+        {
+          translationKey: 'PATIENT_NAME',
+          expression: 'name',
+          enableSort: true,
+          sortOrder: SortOrder.Ascending,
+        },
+        {
+          translationKey: 'PATIENT_AGE',
+          expression: 'age',
+          enableSort: true,
+          sortOrder: SortOrder.Ascending,
+        },
+      ];
+
+      renderTable({
+        resultFields: resultFieldsWithTwoSortColumns,
+        results: [
+          { id: '1', name: 'Bob', age: 40 },
+          { id: '2', name: 'Alice', age: 25 },
+          { id: '3', name: 'Bob', age: 20 },
+        ],
+      });
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(3);
+      });
+
+      const rows = screen.getAllByTestId(/^table-row-/);
+      expect(rows[0]).toHaveTextContent('Alice');
+      expect(rows[1]).toHaveTextContent('Bob');
+      expect(rows[1]).toHaveTextContent('20');
+      expect(rows[2]).toHaveTextContent('Bob');
+      expect(rows[2]).toHaveTextContent('40');
+    });
+
+    it('shows the empty state message when a column filter matches nothing', async () => {
+      const user = userEvent.setup();
+      const resultFieldsWithFilter: ResultFieldConfig[] = [
+        {
+          translationKey: 'PATIENT_NAME',
+          expression: 'name',
+          filterType: 'text',
+        },
+      ];
+
+      renderTable({ resultFields: resultFieldsWithFilter });
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('common-search-results-table'),
+        ).toBeInTheDocument();
+      });
+
+      await user.click(
+        screen.getByTestId('common-search-results-table-filter-toggle'),
+      );
+      const input = screen.getByPlaceholderText('Filter PATIENT_NAME');
+      await user.type(input, 'Nonexistent');
+
+      expect(screen.getByText('COMMON_SEARCH_NO_RESULTS')).toBeInTheDocument();
     });
   });
 });
