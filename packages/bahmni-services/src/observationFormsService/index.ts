@@ -23,7 +23,6 @@ export {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
-  hasMissingMandatoryVisibleField,
   type FormData,
   type FormControlData,
   type Form2Observation,
