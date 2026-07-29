@@ -3,7 +3,7 @@ import type { DataTableColumn } from '@bahmni/design-system';
 import { generateUUID, useTranslation } from '@bahmni/services';
 import jsonata from 'jsonata';
 import { useEffect, useMemo, useState } from 'react';
-import type { ResultFieldConfig } from './models';
+import { ResultFieldConfig, SortOrder } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
 import { resultTransforms } from './utils';
 
@@ -79,14 +79,19 @@ const ResultsTable = ({ resultFields, results }: ResultsTableProps) => {
 
   const errorStateMessage = expressionError ?? evaluationError;
 
-  const columns: DataTableColumn<ResultRow>[] = resolvedFields.map(
-    ({ id, field }) => ({
-      key: id,
-      header: t(field.translationKey),
-      enableSorting: field.enableSort ?? false,
-      enableFiltering: !!field.filterType,
-      filterType: field.filterType,
-    }),
+  const columns: DataTableColumn<ResultRow>[] = useMemo(
+    () =>
+      resolvedFields.map(({ id, field }) => ({
+        key: id,
+        header: t(field.translationKey),
+        enableSorting: field.enableSort ?? false,
+        defaultSortDirection: field.enableSort
+          ? (field.sortOrder ?? SortOrder.Ascending)
+          : field.sortOrder,
+        enableFiltering: !!field.filterType,
+        filterType: field.filterType,
+      })),
+    [resolvedFields],
   );
 
   return (

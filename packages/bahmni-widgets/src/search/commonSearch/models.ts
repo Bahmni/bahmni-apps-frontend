@@ -78,10 +78,16 @@ export interface CriterionConfig {
 
 export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
 
+export enum SortOrder {
+  Ascending = 'asc',
+  Descending = 'desc',
+}
+
 export interface ResultFieldConfig {
   translationKey: string;
   expression: string;
   enableSort?: boolean;
+  sortOrder?: SortOrder;
   filterType?: ResultFieldFilterType;
   transform?: string;
 }

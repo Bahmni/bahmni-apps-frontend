@@ -1,4 +1,4 @@
-import { ResultFieldConfig } from '../../models';
+import { ResultFieldConfig, SortOrder } from '../../models';
 
 export const mockResultFields: ResultFieldConfig[] = [
   {
@@ -58,3 +58,13 @@ export const mockResultFieldsWithDateTimeTransform: ResultFieldConfig[] = [
 ];
 
 export const mockDateTimeValue = '2024-03-28T14:30:00';
+
+export const mockResultFieldsWithSortOrder: ResultFieldConfig[] = [
+  {
+    translationKey: 'PATIENT_NAME',
+    expression: 'name',
+    enableSort: true,
+    sortOrder: SortOrder.Ascending,
+  },
+  { translationKey: 'PATIENT_AGE', expression: 'age' },
+];
