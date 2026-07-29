@@ -15,7 +15,4 @@ export const PATIENT_ENCOUNTERS_URL = (
   OPENMRS_FHIR_R4 +
   `/Encounter?subject:Patient=${patientUUID}&_sort=-_lastUpdated&_count=${count}&_getpagesoffset=${offset}`;
 
-export const FHIR_OBSERVATIONS_BY_ENCOUNTER_URL = (encounterUUID: string) =>
-  `${OPENMRS_FHIR_R4}/Observation/$fetch-all?encounter=${encounterUUID}`;
-
 export const FHIR_ENCOUNTER_URL = OPENMRS_FHIR_R4 + '/Encounter';

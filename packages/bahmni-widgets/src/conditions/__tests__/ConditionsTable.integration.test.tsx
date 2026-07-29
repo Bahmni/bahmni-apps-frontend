@@ -14,6 +14,11 @@ import ConditionsTable from '../ConditionsTable';
 
 jest.mock('../../notification');
 jest.mock('../../userPrivileges/useHasPrivilege');
+jest.mock('../../activePractitioner', () => ({
+  useActivePractitioner: jest.fn(() => ({
+    practitioner: { uuid: 'test-practitioner-uuid' },
+  })),
+}));
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));

@@ -1058,10 +1058,10 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
-"@bahmni/form2-controls@0.0.3-dev.76":
-  version "0.0.3-dev.76"
-  resolved "https://registry.npmjs.org/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.76.tgz#938cb916cf446a2622b27e88922e925b36d06b0e"
-  integrity sha512-Yif0WaCfb4SyQPEeBQuvPLVlZloFjsWhAeFEWakjFWmdytoxAWqLGnPrj0BZpBVcQn+5QX1lk3TDM3EOJDGnBQ==
+"@bahmni/form2-controls@0.0.3-dev.79":
+  version "0.0.3-dev.79"
+  resolved "https://registry.npmjs.org/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.79.tgz#df89ba7dfffd738c8cacaf69c9d34b1a6d8823bd"
+  integrity sha512-cKXQRDI/SkLqAD6+2E+gHNQFjv0Dhs146PH8ZFaltKFyWtJn1jQAfr5POy4v8PYW0zPnQqS4u90l+52h17ufHQ==
   dependencies:
     ajv "^8.17.1"
     base64-inline-loader "^1.1.0"

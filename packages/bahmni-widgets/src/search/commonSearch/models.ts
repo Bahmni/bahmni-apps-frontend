@@ -83,10 +83,11 @@ export interface ResultFieldConfig {
   expression: string;
   enableSort?: boolean;
   filterType?: ResultFieldFilterType;
+  transform?: string;
 }
 
 export interface SearchContextConfig {
-  context: 'patient' | 'appointment' | 'episodeOfCare';
+  context: 'patient' | 'appointment' | 'patientProgram';
   translationKey: string;
   requiredPrivileges: string[];
   locationAware: 'loggedInLocation' | 'allowedLocation';

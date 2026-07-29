@@ -6,7 +6,7 @@ export const mockObservation: Observation = {
   identifier: [
     {
       use: 'official',
-      system: 'http://www.bmc.nl/zorgportal/identifiers/observations',
+      system: 'http://www.bmc.nl/zorgportal/identifiers/observations', // NOSONAR
       value: '6323',
     },
   ],
@@ -14,7 +14,7 @@ export const mockObservation: Observation = {
   code: {
     coding: [
       {
-        system: 'http://loinc.org',
+        system: 'http://loinc.org', // NOSONAR
         code: '15074-8',
         display: 'Glucose [Moles/volume] in Blood',
       },
@@ -35,7 +35,7 @@ export const mockObservation: Observation = {
   valueQuantity: {
     value: 6.3,
     unit: 'mmol/l',
-    system: 'http://unitsofmeasure.org',
+    system: 'http://unitsofmeasure.org', // NOSONAR
     code: 'mmol/L',
   },
   interpretation: [
@@ -43,7 +43,7 @@ export const mockObservation: Observation = {
       coding: [
         {
           system:
-            'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+            'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation', // NOSONAR
           code: 'H',
           display: 'High',
         },
@@ -55,13 +55,13 @@ export const mockObservation: Observation = {
       low: {
         value: 3.1,
         unit: 'mmol/l',
-        system: 'http://unitsofmeasure.org',
+        system: 'http://unitsofmeasure.org', // NOSONAR
         code: 'mmol/L',
       },
       high: {
         value: 6.2,
         unit: 'mmol/l',
-        system: 'http://unitsofmeasure.org',
+        system: 'http://unitsofmeasure.org', // NOSONAR
         code: 'mmol/L',
       },
     },
@@ -93,7 +93,7 @@ export const mockEncounter: Encounter = {
   },
   status: 'unknown',
   class: {
-    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', // NOSONAR
     code: 'AMB',
   },
   subject: {
@@ -137,7 +137,7 @@ export const mockObservationWithEncounter: Observation = {
   valueQuantity: {
     value: 120,
     unit: 'mmHg',
-    system: 'http://unitsofmeasure.org',
+    system: 'http://unitsofmeasure.org', // NOSONAR
     code: 'mmHg',
   },
 };
@@ -155,13 +155,157 @@ export const mockObservationWithEncounterBundle: Bundle<
   entry: [
     {
       fullUrl:
-        'http://localhost/openmrs/ws/fhir2/R4/Observation/0c0e1991-233a-4c4f-ba26-ee9522dd37fc',
+        'http://localhost/openmrs/ws/fhir2/R4/Observation/0c0e1991-233a-4c4f-ba26-ee9522dd37fc', // NOSONAR
       resource: mockObservationWithEncounter,
     },
     {
       fullUrl:
-        'http://localhost/openmrs/ws/fhir2/R4/Encounter/1b5420db-e803-4875-97a1-1636869ebe4d',
+        'http://localhost/openmrs/ws/fhir2/R4/Encounter/1b5420db-e803-4875-97a1-1636869ebe4d', // NOSONAR
       resource: mockEncounter,
     },
   ],
+};
+
+export const mockFormsEncounter = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  total: 1,
+  entry: [
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-uuid-1', // NOSONAR
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-uuid-1',
+        code: {
+          coding: [
+            {
+              system: 'http://loinc.org', // NOSONAR
+              code: '8310-5',
+              display: 'Body temperature',
+            },
+          ],
+        },
+        valueQuantity: {
+          value: 98.6,
+          unit: 'F',
+        },
+        effectiveDateTime: '2024-02-18T09:57:21+00:00',
+        encounter: {
+          reference: 'Encounter/e8c5eeb5-86d9-44d4-b37a-9de74a122a6e',
+        },
+      },
+    },
+  ],
+};
+
+export const mockObservationWithFormPath: Observation = {
+  resourceType: 'Observation',
+  id: 'obs-1',
+  status: 'final',
+  code: {
+    coding: [
+      {
+        code: '5087AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        display: 'Pulse',
+      },
+    ],
+    text: 'Pulse',
+  },
+  subject: {
+    reference: 'Patient/patient-uuid',
+  },
+  encounter: {
+    reference: 'Encounter/encounter-1',
+  },
+  effectiveDateTime: '2026-07-20T09:59:41+00:00',
+  valueQuantity: {
+    value: 76,
+    unit: 'beats/min',
+  },
+};
+
+export const mockObservationsForVitals: Observation[] = [
+  mockObservationWithFormPath,
+  {
+    ...mockObservationWithFormPath,
+    id: 'obs-vitals-2',
+    code: {
+      coding: [
+        {
+          code: '5090AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+          display: 'Height (cm)',
+        },
+      ],
+      text: 'Height (cm)',
+    },
+    valueQuantity: {
+      value: 12.0,
+      unit: 'cm',
+    },
+  },
+];
+
+export const mockEncounterWithProvider: Encounter = {
+  resourceType: 'Encounter',
+  id: 'encounter-1',
+  status: 'unknown',
+  class: {
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', // NOSONAR
+    code: 'AMB',
+  },
+  subject: {
+    reference: 'Patient/patient-uuid',
+  },
+  participant: [
+    {
+      individual: {
+        reference: 'Practitioner/60b31d2a-1d0c-11f1-b099-5a3ed7acdb7e',
+        type: 'Practitioner',
+        display: 'Super Man',
+      },
+    },
+  ],
+  period: {
+    start: '2026-07-20T09:59:41+00:00',
+  },
+};
+
+export const mockEncounterWithoutProvider: Encounter = {
+  resourceType: 'Encounter',
+  id: 'encounter-2',
+  status: 'unknown',
+  class: {
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', // NOSONAR
+    code: 'AMB',
+  },
+  subject: {
+    reference: 'Patient/patient-uuid',
+  },
+  participant: [],
+  period: {
+    start: '2026-07-20T10:00:00+00:00',
+  },
+};
+
+export const mockEncounterWithoutPeriodStart: Encounter = {
+  resourceType: 'Encounter',
+  id: 'encounter-3',
+  status: 'unknown',
+  class: {
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', // NOSONAR
+    code: 'AMB',
+  },
+  subject: {
+    reference: 'Patient/patient-uuid',
+  },
+  participant: [
+    {
+      individual: {
+        reference: 'Practitioner/another-practitioner',
+        type: 'Practitioner',
+        display: 'Dr. Smith',
+      },
+    },
+  ],
+  period: {},
 };

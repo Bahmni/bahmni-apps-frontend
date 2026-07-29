@@ -1,4 +1,20 @@
+import {
+  AuditEventType,
+  camelToScreamingSnakeCase,
+  DEFAULT_TIME_FORMAT,
+  formatCountry,
+  formatDateTime,
+  formatGender,
+  getFormattedAge,
+} from '@bahmni/services';
+import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  KEY_TYPE_KIND_SUFFIX,
+  KEY_TYPE_VALUE_SUFFIX,
+  LOCAL_ISO_DATE_FORMAT,
+  LOCATION_UUID_FIELD,
+} from './constants';
 import {
   CriterionConfig,
   CriterionRow,
@@ -11,6 +27,42 @@ import {
   SearchContextConfig,
   TextInput,
 } from './models';
+
+export type ResultTransform = (
+  value: string,
+  t: (key: string) => string,
+) => string | null;
+
+export type DateTimeValue = string | Date | number;
+
+export const formatSearchResult = (
+  value: string,
+  t: (key: string) => string,
+): string | null => {
+  const raw = value.trim();
+  if (!raw) return null;
+  return t(`COMMON_SEARCH_RESULT_${camelToScreamingSnakeCase(raw)}`);
+};
+
+export const resultTransforms: Record<string, ResultTransform> = {
+  formatDate: (value: unknown, t: (key: string) => string) =>
+    formatDateTime(value as DateTimeValue, t).formattedResult,
+  formatTime: (value: unknown, t: (key: string) => string) =>
+    formatDateTime(value as DateTimeValue, t, false, DEFAULT_TIME_FORMAT)
+      .formattedResult,
+  formatDateTime: (value: unknown, t: (key: string) => string) =>
+    formatDateTime(value as DateTimeValue, t, true).formattedResult,
+  formatAge: (value: unknown, t: (key: string) => string) =>
+    getFormattedAge(value as string | number, t),
+  formatGender,
+  formatCountry,
+  formatSearchResult,
+};
+
+export const toSearchAuditEventType = (
+  context: SearchContextConfig['context'],
+): AuditEventType =>
+  `SEARCHED_${camelToScreamingSnakeCase(context)}` as AuditEventType;
 
 const isRangeInput = (input: InputConfig): boolean =>
   (input.kind === 'date' || input.kind === 'numeric') && !!input.rangeAllowed;
@@ -157,12 +209,39 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
     return {
       operator: 'AND',
       conditions: [
-        { field: `${field.key}.kind`, comparator: 'eq', value: field.keyType },
-        { field: `${field.key}.value`, comparator: 'eq', value: value.value },
+        {
+          field: `${field.key}${KEY_TYPE_KIND_SUFFIX}`,
+          comparator: 'eq',
+          value: field.keyType,
+        },
+        {
+          field: `${field.key}${KEY_TYPE_VALUE_SUFFIX}`,
+          comparator: 'eq',
+          value: value.value,
+        },
       ],
     };
   }
   return { field: field.key, comparator: 'eq', value: value.value };
+};
+
+const toLocalIso = (v: string): string =>
+  format(new Date(v), LOCAL_ISO_DATE_FORMAT);
+
+const localizeDateTime = (value: CriterionValue): CriterionValue => {
+  if (isScalarValue(value)) return { value: toLocalIso(value.value) };
+  return {
+    from: {
+      ...value.from,
+      value: value.from.value ? toLocalIso(value.from.value) : null,
+    },
+    ...(value.to && {
+      to: {
+        ...value.to,
+        value: value.to.value ? toLocalIso(value.to.value) : null,
+      },
+    }),
+  };
 };
 
 export const resolveRows = (
@@ -176,19 +255,25 @@ export const resolveRows = (
       ): r is CriterionRow & { criterionKey: string; value: CriterionValue } =>
         r.criterionKey !== null && r.value !== null,
     )
-    .map((r) => ({
-      field: criteria.find((c) => c.field.key === r.criterionKey)!.field,
-      value: r.value,
-    }));
+    .map((r) => {
+      const criterion = criteria.find((c) => c.field.key === r.criterionKey)!;
+      const value =
+        criterion.input.kind === 'date' ? localizeDateTime(r.value) : r.value;
+      return { field: criterion.field, value };
+    });
 
 export const buildPayload = (
   resolvedRows: ResolvedRow[],
   entity: string,
+  locationUuid: string,
 ): SearchPayload => ({
   entity,
   criteria: {
     operator: 'AND',
-    conditions: resolvedRows.map(buildCondition),
+    conditions: [
+      ...resolvedRows.map(buildCondition),
+      { field: LOCATION_UUID_FIELD, comparator: 'eq', value: locationUuid },
+    ],
   },
 });
 

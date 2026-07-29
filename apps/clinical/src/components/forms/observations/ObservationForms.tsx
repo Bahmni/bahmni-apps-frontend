@@ -106,12 +106,14 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       });
     }, [allForms]);
 
-    // Use API names for filtering (these match the actual form names from backend)
-    const defaultPinnedForms = validatedAvailableForms.filter((form) =>
-      DEFAULT_FORM_API_NAMES.includes(form.name),
+    const defaultPinnedForms = useMemo(
+      () =>
+        validatedAvailableForms.filter((form) =>
+          DEFAULT_FORM_API_NAMES.includes(form.name),
+        ),
+      [validatedAvailableForms],
     );
 
-    // Filter orphaned pinned forms - remove forms that are pinned but no longer available
     const validUserPinnedForms = useMemo(() => {
       return pinnedForms.filter((pinnedForm) => {
         return validatedAvailableForms.some(
@@ -120,21 +122,28 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
       });
     }, [pinnedForms, validatedAvailableForms]);
 
-    // Merge with user-pinned forms (avoid duplicates)
-    const userPinnedUuids = validUserPinnedForms.map((f) => f.uuid);
+    const sortedDefaultForms = useMemo(() => {
+      const userPinnedUuids = validUserPinnedForms.map((f) => f.uuid);
+      return defaultPinnedForms
+        .filter((f) => !userPinnedUuids.includes(f.uuid))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    }, [defaultPinnedForms, validUserPinnedForms]);
 
-    // Step 1: Get default forms that user hasn't pinned, sorted alphabetically
-    const sortedDefaultForms = defaultPinnedForms
-      .filter((f) => !userPinnedUuids.includes(f.uuid))
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    // Step 2: Get user-pinned forms, sorted alphabetically
-    const sortedUserPinnedForms = [...validUserPinnedForms].sort((a, b) =>
-      a.name.localeCompare(b.name),
+    const sortedUserPinnedForms = useMemo(
+      () =>
+        [...validUserPinnedForms].sort((a, b) => a.name.localeCompare(b.name)),
+      [validUserPinnedForms],
     );
 
-    // Step 3: Combine - defaults first, then user-pinned
-    const allPinnedForms = [...sortedDefaultForms, ...sortedUserPinnedForms];
+    const allPinnedForms = useMemo(
+      () => [...sortedDefaultForms, ...sortedUserPinnedForms],
+      [sortedDefaultForms, sortedUserPinnedForms],
+    );
+
+    const visiblePinnedForms = useMemo(
+      () => allPinnedForms.filter((f) => !submittedFormUuids.has(f.uuid)),
+      [allPinnedForms, submittedFormUuids],
+    );
 
     const handleSearch = useCallback((searchQuery: string) => {
       setSearchTerm(searchQuery);
@@ -306,9 +315,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
           <FormCardContainer
             title={t('DEFAULT_AND_PINNED_FORMS_TITLE')}
             showNoFormsMessage={
-              !isAllFormsLoading &&
-              allPinnedForms.length === 0 &&
-              defaultPinnedForms.length === 0
+              !isAllFormsLoading && visiblePinnedForms.length === 0
             }
             noFormsMessage={t('DEFAULT_AND_PINNED_FORMS_NO_FORMS_FOUND')}
             dataTestId="pinned-forms-container"
@@ -320,7 +327,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
                 testId="pinned-forms-skeleton"
               />
             ) : (
-              allPinnedForms.map((form: ObservationForm) => (
+              visiblePinnedForms.map((form: ObservationForm) => (
                 <FormCard
                   key={form.uuid}
                   title={form.name}

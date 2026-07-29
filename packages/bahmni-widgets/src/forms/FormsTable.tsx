@@ -2,6 +2,8 @@ import {
   SortableDataTable,
   Accordion,
   AccordionItem,
+  Edit,
+  IconButton,
   Link,
   Modal,
 } from '@bahmni/design-system';
@@ -24,11 +26,16 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bundle, Observation } from 'fhir/r4';
 import React, { useCallback, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
+import { extractFormFieldPath, extractFormName } from '../observations/utils';
 import { ObservationsRenderer } from '../observationsRenderer';
 import { WidgetProps } from '../registry/model';
+import { CONSULTATION_PAD_PRIVILEGES } from '../userPrivileges/consultationPadPrivileges';
+import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
+import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { FormRecordViewModel, GroupedFormRecords } from './models';
 import styles from './styles/FormsTable.module.scss';
-import { extractFormFieldPath } from './utils';
+
+const CONSULTATION_START_EVENT = 'startConsultation';
 
 interface FormsTableConfig {
   numberOfVisits?: number;
@@ -44,6 +51,8 @@ const FormsTable: React.FC<WidgetProps> = ({
   episodeOfCareUuids,
   encounterUuids,
   config,
+  disableActions = false,
+  activeEncounterUuid = null,
 }) => {
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();
@@ -55,6 +64,13 @@ const FormsTable: React.FC<WidgetProps> = ({
     hideThumbnail = false,
     forms,
   } = (config ?? {}) as FormsTableConfig;
+
+  const canEditObservations = useHasPrivilege(
+    CONSULTATION_PAD_PRIVILEGES.EDIT_OBSERVATIONS,
+  );
+  const { userPrivileges } = useUserPrivilege();
+  const showActions =
+    canEditObservations && !disableActions && !!activeEncounterUuid;
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -96,6 +112,31 @@ const FormsTable: React.FC<WidgetProps> = ({
     queryKey: ['observationForms'],
     queryFn: () => fetchObservationForms(),
   });
+
+  // Per-form privilege check: mirrors the combobox disable logic in ObservationForms.
+  // If a form has privileges configured, the user must have at least one of them
+  // AND that privilege must be marked editable. Forms with no privileges are open to all.
+  const canEditForm = useCallback(
+    (formName: string): boolean => {
+      const form = publishedForms.find((f) => f.name === formName);
+      if (!form?.privileges || form.privileges.length === 0) return true;
+      if (!userPrivileges || userPrivileges.length === 0) return false;
+      const userPrivilegeNames = new Set(userPrivileges.map((p) => p.name));
+      return form.privileges.some(
+        (fp) => userPrivilegeNames.has(fp.privilegeName) && fp.editable,
+      );
+    },
+    [publishedForms, userPrivileges],
+  );
+
+  const isRowEditable = useCallback(
+    (record: FormRecordViewModel): boolean => {
+      if (!activeEncounterUuid) return false;
+      if (record.encounterUuid !== activeEncounterUuid) return false;
+      return canEditForm(record.formName);
+    },
+    [activeEncounterUuid, canEditForm],
+  );
 
   // Get form UUID by matching form name
   const getFormUuidByName = useCallback(
@@ -160,10 +201,18 @@ const FormsTable: React.FC<WidgetProps> = ({
       .filter((entry) => entry.resource?.resourceType === 'Observation')
       .map((entry) => entry.resource as Observation);
 
-    // Filter by form name using formFieldPath
+    // Filter by form name using formFieldPath. Must be an exact form-name
+    // match (not substring) — e.g. formName "Vitals" is a substring of
+    // "Second Vitals", so `.includes()` would incorrectly pull "Second
+    // Vitals" observations into the "Vitals" modal for any encounter that
+    // has both forms recorded against it.
     return allObservations.filter((obs) => {
       const formFieldPath = extractFormFieldPath(obs);
-      return !formFieldPath || formFieldPath.includes(selectedRecord.formName);
+      if (!formFieldPath) return true;
+      return (
+        extractFormName(obs)?.toLowerCase() ===
+        selectedRecord.formName.toLowerCase()
+      );
     });
   }, [fhirObservationBundle, selectedRecord?.formName]);
 
@@ -229,13 +278,32 @@ const FormsTable: React.FC<WidgetProps> = ({
     return undefined;
   }, [metadataError, formDataError]);
 
-  const headers = useMemo(
+  // Base headers without Actions — shared across all groups.
+  const baseHeaders = useMemo(
     () => [
       { key: 'recordedOn', header: t('RECORDED_ON') },
       { key: 'recordedBy', header: t('RECORDED_BY') },
     ],
     [t],
   );
+
+  // Headers WITH the Actions column — used only for groups that have at least
+  // one editable row, so empty Action columns don't appear on non-editable forms.
+  const headersWithActions = useMemo(
+    () => [...baseHeaders, { key: 'actions', header: t('ACTIONS') }],
+    [baseHeaders, t],
+  );
+
+  const getGroupHeaders = useCallback(
+    (records: FormRecordViewModel[]) => {
+      const hasEditableRow =
+        showActions && records.some((r) => isRowEditable(r));
+      return hasEditableRow ? headersWithActions : baseHeaders;
+    },
+    [showActions, isRowEditable, headersWithActions, baseHeaders],
+  );
+
+  const headers = baseHeaders;
 
   const sortable = useMemo(
     () => [
@@ -296,6 +364,20 @@ const FormsTable: React.FC<WidgetProps> = ({
     setSelectedRecord(null);
   }, []);
 
+  const handleRowEdit = useCallback((record: FormRecordViewModel) => {
+    globalThis.dispatchEvent(
+      new CustomEvent(CONSULTATION_START_EVENT, {
+        detail: {
+          editOnly: 'observationForms',
+          editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
+          editEncounterUuid: record.encounterUuid,
+          editFormName: record.formName,
+          directFormMode: true,
+        },
+      }),
+    );
+  }, []);
+
   const renderCell = useCallback(
     (record: FormRecordViewModel, cellId: string) => {
       switch (cellId) {
@@ -307,11 +389,23 @@ const FormsTable: React.FC<WidgetProps> = ({
           );
         case 'recordedBy':
           return record.recordedBy;
+        case 'actions':
+          return isRowEditable(record) ? (
+            <IconButton
+              label={t('EDIT_OBSERVATION_FORM')}
+              kind="ghost"
+              size="sm"
+              testId={`edit-form-${record.encounterUuid}`}
+              onClick={() => handleRowEdit(record)}
+            >
+              <Edit />
+            </IconButton>
+          ) : null;
         default:
           return null;
       }
     },
-    [handleRecordedOnClick],
+    [handleRecordedOnClick, handleRowEdit, isRowEditable, t],
   );
 
   return (
@@ -336,6 +430,7 @@ const FormsTable: React.FC<WidgetProps> = ({
           <Accordion align="start">
             {processedForms.map((formGroup, index) => {
               const { formName, records } = formGroup;
+              const groupHeaders = getGroupHeaders(records);
 
               return (
                 <AccordionItem
@@ -346,7 +441,7 @@ const FormsTable: React.FC<WidgetProps> = ({
                   open={index === 0}
                 >
                   <SortableDataTable
-                    headers={headers}
+                    headers={groupHeaders}
                     ariaLabel={t('FORMS_HEADING')}
                     rows={records}
                     loading={false}
@@ -370,7 +465,25 @@ const FormsTable: React.FC<WidgetProps> = ({
           portalId={'main-display-area'}
           open={isModalOpen}
           onRequestClose={handleCloseModal}
-          modalHeading={selectedRecord.formName}
+          modalHeading={
+            <div className={styles.modalHeading}>
+              <span>{selectedRecord.formName}</span>
+              {showActions && isRowEditable(selectedRecord) && (
+                <IconButton
+                  label={t('EDIT_OBSERVATION_FORM')}
+                  kind="ghost"
+                  size="sm"
+                  testId={`edit-form-modal-${selectedRecord.encounterUuid}`}
+                  onClick={() => {
+                    handleCloseModal();
+                    handleRowEdit(selectedRecord);
+                  }}
+                >
+                  <Edit />
+                </IconButton>
+              )}
+            </div>
+          }
           modalLabel={`${selectedRecord.recordedOn} | ${selectedRecord.recordedBy}`}
           passiveModal
           size="md"

@@ -402,3 +402,31 @@ export function convertToSentenceCase(str: string): string {
     .toLowerCase()
     .replace(/^./, (char) => char.toUpperCase());
 }
+
+export const formatGender = (
+  value: string,
+  t: (key: string) => string,
+): string | null => {
+  const raw = value.trim();
+  if (!raw) return null;
+  return t(`GENDER_${camelToScreamingSnakeCase(raw)}`);
+};
+
+export const formatCountry = (
+  value: string,
+  t: (key: string) => string,
+): string | null => {
+  const code = value.trim();
+  if (!code) return null;
+  const key = `COUNTRY_CODE_${camelToScreamingSnakeCase(code)}`;
+  const translated = t(key);
+  if (translated !== key) return translated;
+  try {
+    const displayNames = new Intl.DisplayNames([navigator.language], {
+      type: 'region',
+    });
+    return displayNames.of(code.toUpperCase()) ?? code;
+  } catch {
+    return code;
+  }
+};

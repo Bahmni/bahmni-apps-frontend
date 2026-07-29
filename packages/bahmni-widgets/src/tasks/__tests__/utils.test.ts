@@ -1,122 +1,212 @@
-import { extractFormNameFromTask, canUserEditForm } from '../utils';
+import { FormPermissionType } from '../constants';
+import type { TaskViewModel } from '../models';
+import {
+  extractFormNameFromTask,
+  hasViewFormConfig,
+  hasLaunchFormActions,
+  isViewFormDataVisible,
+  canUserAccessForm,
+} from '../utils';
+import {
+  mockTaskConfigWithViews,
+  mockTaskConfigEmptyViews,
+  mockTaskConfigNoViews,
+  mockViewFormView,
+  mockViewFormViewRestricted,
+} from './__mocks__/configMocks';
 import {
   mockTaskViewModelWithInput,
   mockTaskViewModelWithoutInput,
   mockTaskViewModelWithEmptyInput,
   mockTaskViewModelWithCaseInsensitiveForm,
-  mockObservationForms,
   mockUserPrivileges,
   mockEmptyUserPrivileges,
+  mockObservationForms,
+  mockTaskConfig,
 } from './__mocks__/taskActionsMocks';
+import { VITALS_TASK_CODE } from './__mocks__/taskListMocks';
 
 describe('extractFormNameFromTask', () => {
-  it('should extract valueString from matching input', () => {
-    const formName = extractFormNameFromTask(
+  it.each([
+    [
+      'matching input',
       mockTaskViewModelWithInput,
       'form-name-input-type',
-    );
-    expect(formName).toBe('Vitals');
-  });
-
-  it('should return null when input array is empty', () => {
-    const formName = extractFormNameFromTask(
-      mockTaskViewModelWithEmptyInput,
-      'form-name-input-type',
-    );
-    expect(formName).toBeNull();
-  });
-
-  it('should return null when no matching inputType found', () => {
-    const formName = extractFormNameFromTask(
-      mockTaskViewModelWithInput,
-      'non-existent-input-type',
-    );
-    expect(formName).toBeNull();
-  });
-
-  it('should return null when fhirTask.input is missing', () => {
-    const formName = extractFormNameFromTask(
-      mockTaskViewModelWithoutInput,
-      'form-name-input-type',
-    );
-    expect(formName).toBeNull();
-  });
-
-  it('should match inputType by code in type.coding[0]', () => {
-    const formName = extractFormNameFromTask(
+      'Vitals',
+    ],
+    [
+      'different input type',
       mockTaskViewModelWithInput,
       'other-input-type',
-    );
-    expect(formName).toBe('Some other value');
-  });
-
-  it('should handle case-insensitive form name extraction', () => {
-    const formName = extractFormNameFromTask(
+      'Some other value',
+    ],
+    [
+      'case-insensitive',
       mockTaskViewModelWithCaseInsensitiveForm,
       'form-name-input-type',
-    );
-    expect(formName).toBe('VITALS');
+      'VITALS',
+    ],
+    [
+      'empty input array',
+      mockTaskViewModelWithEmptyInput,
+      'form-name-input-type',
+      null,
+    ],
+    [
+      'no matching input',
+      mockTaskViewModelWithInput,
+      'non-existent-input-type',
+      null,
+    ],
+    [
+      'missing input',
+      mockTaskViewModelWithoutInput,
+      'form-name-input-type',
+      null,
+    ],
+  ])('should handle %s', (_desc, task, inputType, expected) => {
+    expect(extractFormNameFromTask(task, inputType)).toBe(expected);
   });
 });
 
-describe('canUserEditForm', () => {
+describe('hasViewFormConfig', () => {
+  it.each([
+    ['with viewForm views', mockTaskConfigWithViews, VITALS_TASK_CODE, true],
+    ['empty views array', mockTaskConfigEmptyViews, VITALS_TASK_CODE, false],
+    ['no views property', mockTaskConfigNoViews, VITALS_TASK_CODE, false],
+    ['empty taskConfig', [], VITALS_TASK_CODE, false],
+    [
+      'non-matching task code',
+      mockTaskConfigWithViews,
+      'non-existent-code',
+      false,
+    ],
+    ['null taskConfig', null, VITALS_TASK_CODE, false],
+    ['undefined taskConfig', undefined, VITALS_TASK_CODE, false],
+  ])(
+    'should return correct value for %s',
+    (_desc, config, taskCode, expected) => {
+      expect(hasViewFormConfig(config as any, taskCode)).toBe(expected);
+    },
+  );
+});
+
+describe('isViewFormDataVisible', () => {
+  const mockCompletedTask: TaskViewModel = {
+    ...mockTaskViewModelWithInput,
+    status: 'completed',
+  };
+
+  it.each([
+    [
+      'completed task with form and privileges',
+      mockCompletedTask,
+      mockViewFormView,
+      mockUserPrivileges,
+      true,
+    ],
+    [
+      'in-progress task',
+      { ...mockCompletedTask, status: 'in-progress' },
+      mockViewFormView,
+      mockUserPrivileges,
+      false,
+    ],
+    ['null privileges', mockCompletedTask, mockViewFormView, null, false],
+    [
+      'empty privileges',
+      mockCompletedTask,
+      mockViewFormView,
+      mockEmptyUserPrivileges,
+      false,
+    ],
+    [
+      'no form name',
+      {
+        ...mockCompletedTask,
+        fhirResource: { ...mockCompletedTask.fhirResource, input: [] },
+      },
+      mockViewFormView,
+      mockUserPrivileges,
+      false,
+    ],
+    [
+      'lacks required privilege',
+      mockCompletedTask,
+      mockViewFormViewRestricted,
+      mockUserPrivileges,
+      false,
+    ],
+    [
+      'no required privileges',
+      mockCompletedTask,
+      { ...mockViewFormView, requiredPrivileges: [] },
+      mockUserPrivileges,
+      true,
+    ],
+  ])('should handle %s', (_desc, task, view, privileges, expected) => {
+    expect(isViewFormDataVisible(view, task, privileges)).toBe(expected);
+  });
+});
+
+describe('canUserAccessForm', () => {
   const vitalsForm = mockObservationForms[0];
   const labTestsForm = mockObservationForms[1];
   const generalForm = mockObservationForms[2];
-  const restrictedForm = mockObservationForms[3];
-
-  it('should return false when form is undefined', () => {
-    const canEdit = canUserEditForm(mockUserPrivileges, undefined);
-    expect(canEdit).toBe(false);
-  });
-
-  it('should return false when userPrivileges is null', () => {
-    const canEdit = canUserEditForm(null, vitalsForm);
-    expect(canEdit).toBe(false);
-  });
-
-  it('should return false when userPrivileges is empty array', () => {
-    const canEdit = canUserEditForm(mockEmptyUserPrivileges, vitalsForm);
-    expect(canEdit).toBe(false);
-  });
-
-  it('should return true when form has no privileges configured', () => {
-    const canEdit = canUserEditForm(mockUserPrivileges, generalForm);
-    expect(canEdit).toBe(true);
-  });
-
-  it('should return true when user has editable privilege', () => {
-    const canEdit = canUserEditForm(mockUserPrivileges, vitalsForm);
-    expect(canEdit).toBe(true);
-  });
-
-  it('should return false when user has non-editable privilege', () => {
-    const viewOnlyPrivileges = [{ name: 'View Only Access', retired: false }];
-    const canEdit = canUserEditForm(viewOnlyPrivileges, labTestsForm);
-    expect(canEdit).toBe(false);
-  });
-
-  it('should return false when user lacks required privilege', () => {
-    const canEdit = canUserEditForm(mockUserPrivileges, restrictedForm);
-    expect(canEdit).toBe(false);
-  });
-
-  it('should return true when user has at least one editable privilege among multiple', () => {
-    const canEdit = canUserEditForm(mockUserPrivileges, labTestsForm);
-    expect(canEdit).toBe(true);
-  });
 
   it.each([
-    [null, vitalsForm, false],
-    [mockEmptyUserPrivileges, vitalsForm, false],
-    [mockUserPrivileges, undefined, false],
-    [mockUserPrivileges, generalForm, true],
-    [mockUserPrivileges, vitalsForm, true],
+    [
+      'editable permission with privileges',
+      mockUserPrivileges,
+      vitalsForm,
+      FormPermissionType.EDITABLE,
+      true,
+    ],
+    [
+      'viewable permission with privileges',
+      mockUserPrivileges,
+      labTestsForm,
+      FormPermissionType.VIEWABLE,
+      false,
+    ],
+    ['null privileges', null, vitalsForm, FormPermissionType.EDITABLE, false],
+    [
+      'empty privileges',
+      mockEmptyUserPrivileges,
+      vitalsForm,
+      FormPermissionType.EDITABLE,
+      false,
+    ],
+    [
+      'undefined form',
+      mockUserPrivileges,
+      undefined,
+      FormPermissionType.EDITABLE,
+      false,
+    ],
+    [
+      'form with no privileges',
+      mockUserPrivileges,
+      generalForm,
+      FormPermissionType.EDITABLE,
+      true,
+    ],
   ])(
-    'should return correct value for userPrivileges=%p, form=%p',
-    (privileges, form, expected) => {
-      const canEdit = canUserEditForm(privileges, form);
-      expect(canEdit).toBe(expected);
+    'should handle %s',
+    (_desc, privileges, form, permissionType, expected) => {
+      expect(canUserAccessForm(privileges, form, permissionType)).toBe(
+        expected,
+      );
     },
   );
+});
+
+describe('hasLaunchFormActions', () => {
+  it.each([
+    ['config with launch form actions', mockTaskConfig, VITALS_TASK_CODE, true],
+    ['empty taskConfig', [], VITALS_TASK_CODE, false],
+    ['non-matching task code', mockTaskConfig, 'non-existent-code', false],
+  ])('should handle %s', (_desc, config, taskCode, expected) => {
+    expect(hasLaunchFormActions(config, taskCode)).toBe(expected);
+  });
 });

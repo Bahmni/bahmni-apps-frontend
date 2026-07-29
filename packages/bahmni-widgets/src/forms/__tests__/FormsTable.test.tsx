@@ -16,7 +16,25 @@ import userEvent from '@testing-library/user-event';
 import { Bundle, Observation } from 'fhir/r4';
 import { toHaveNoViolations } from 'jest-axe';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
+import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import FormsTable from '../FormsTable';
+
+jest.mock('../../userPrivileges/useHasPrivilege', () => ({
+  useHasPrivilege: jest.fn(),
+}));
+
+jest.mock('../../userPrivileges/useUserPrivilege', () => ({
+  useUserPrivilege: jest.fn(),
+}));
+
+const mockUseHasPrivilege = useHasPrivilege as jest.MockedFunction<
+  typeof useHasPrivilege
+>;
+
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
 
 expect.extend(toHaveNoViolations);
 
@@ -83,51 +101,38 @@ globalThis.ResizeObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
+// Use recent timestamps so encounters are within the 60-minute session window by default
+const NOW = Date.now();
 const mockFormResponseData: FormResponseData[] = [
   {
     formType: 'v2',
     formName: 'Vitals Form',
     formVersion: 1,
     visitUuid: 'visit-1',
-    visitStartDateTime: 1704672000000,
+    visitStartDateTime: NOW - 10 * 60 * 1000,
     encounterUuid: 'encounter-1',
-    encounterDateTime: 1704672000000, // 2024-01-08
-    providers: [
-      {
-        providerName: 'Dr. Smith',
-        uuid: 'provider-1',
-      },
-    ],
+    encounterDateTime: NOW - 10 * 60 * 1000, // 10 minutes ago — within session, current provider
+    providers: [{ providerName: 'Dr. Smith', uuid: 'provider-1' }],
   },
   {
     formType: 'v2',
     formName: 'Vitals Form',
     formVersion: 1,
     visitUuid: 'visit-1',
-    visitStartDateTime: 1704585600000,
+    visitStartDateTime: NOW - 30 * 60 * 1000,
     encounterUuid: 'encounter-2',
-    encounterDateTime: 1704585600000, // 2024-01-07
-    providers: [
-      {
-        providerName: 'Dr. Johnson',
-        uuid: 'provider-2',
-      },
-    ],
+    encounterDateTime: NOW - 30 * 60 * 1000, // 30 min ago — within session, different provider
+    providers: [{ providerName: 'Dr. Johnson', uuid: 'provider-2' }],
   },
   {
     formType: 'v2',
     formName: 'History Form',
     formVersion: 1,
     visitUuid: 'visit-2',
-    visitStartDateTime: 1704499200000,
+    visitStartDateTime: NOW - 20 * 60 * 1000,
     encounterUuid: 'encounter-3',
-    encounterDateTime: 1704499200000, // 2024-01-06
-    providers: [
-      {
-        providerName: 'Dr. Williams',
-        uuid: 'provider-3',
-      },
-    ],
+    encounterDateTime: NOW - 20 * 60 * 1000, // 20 min ago — within session, different provider
+    providers: [{ providerName: 'Dr. Williams', uuid: 'provider-3' }],
   },
 ];
 
@@ -204,6 +209,8 @@ const renderFormsTable = (props = {}) => {
       },
     },
   });
+  // Pre-populate session duration so isRowEditable works synchronously in tests
+  queryClient.setQueryData(['encounterSessionDuration'], 60);
 
   const renderResult = render(
     <QueryClientProvider client={queryClient}>
@@ -237,6 +244,8 @@ describe('FormsTable', () => {
           ERROR_FETCHING_FORM_METADATA: 'Error fetching form metadata',
           OBSERVATION_FORM_LOADING_METADATA_ERROR:
             'Error loading form metadata',
+          ACTIONS: 'Actions',
+          EDIT_OBSERVATION_FORM: 'Edit',
         };
         return translations[key] || key;
       },
@@ -247,6 +256,17 @@ describe('FormsTable', () => {
     mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
       mockFhirObservationBundle,
     );
+    // Default: no edit privilege
+    mockUseHasPrivilege.mockReturnValue(false);
+    // Default: no user privileges (per-form checks open to all when form has no privileges)
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [],
+      isLoading: false,
+      error: null,
+      setUserPrivileges: jest.fn(),
+      setIsLoading: jest.fn(),
+      setError: jest.fn(),
+    });
   });
 
   describe('Component States', () => {
@@ -782,6 +802,293 @@ describe('FormsTable', () => {
     });
   });
 
+  describe('Edit Icon - Privilege Check', () => {
+    it('does not render Actions column when user lacks Edit Observations privilege', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockUseHasPrivilege.mockReturnValue(false);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('Actions')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('edit-form-encounter-1'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows edit icon only for the active encounter row', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockUseHasPrivilege.mockReturnValue(true);
+      // encounter-1 is the active encounter
+      renderFormsTable({ activeEncounterUuid: 'encounter-1' });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-form-encounter-1')).toBeInTheDocument();
+      });
+
+      // encounter-2 and encounter-3 are not the active encounter — no edit icon
+      expect(
+        screen.queryByTestId('edit-form-encounter-2'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('edit-form-encounter-3'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('hides Actions column when disableActions is true (no active visit)', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      renderFormsTable({
+        disableActions: true,
+        activeEncounterUuid: 'encounter-1',
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('Actions')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('edit-form-encounter-1'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('hides Actions column when activeEncounterUuid is null (session expired)', async () => {
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      // Session expired or not MATCHED — activeEncounterUuid is null
+      renderFormsTable({ activeEncounterUuid: null });
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      });
+
+      // Entire Actions column hidden
+      expect(screen.queryByText('Actions')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('edit-form-encounter-1'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows Actions column only for the accordion group that has an editable row', async () => {
+      // Two form groups: "Vitals Form" (encounter-1 = active, editable) and
+      // "History Form" (encounter-2 = different encounter, not editable).
+      mockGetPatientFormData.mockResolvedValue([
+        {
+          formType: 'v2',
+          formName: 'Vitals Form',
+          formVersion: 1,
+          visitUuid: 'visit-1',
+          visitStartDateTime: NOW,
+          encounterUuid: 'encounter-1',
+          encounterDateTime: NOW - 5 * 60 * 1000,
+          providers: [{ providerName: 'Dr. Smith', uuid: 'provider-1' }],
+        },
+        {
+          formType: 'v2',
+          formName: 'History Form',
+          formVersion: 1,
+          visitUuid: 'visit-1',
+          visitStartDateTime: NOW,
+          encounterUuid: 'encounter-2',
+          encounterDateTime: NOW - 30 * 60 * 1000,
+          providers: [{ providerName: 'Dr. Other', uuid: 'provider-2' }],
+        },
+      ]);
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      renderFormsTable({ activeEncounterUuid: 'encounter-1' });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-form-encounter-1')).toBeInTheDocument();
+      });
+
+      // Vitals Form accordion (has editable row) — edit icon visible
+      expect(screen.getByTestId('edit-form-encounter-1')).toBeInTheDocument();
+
+      // History Form accordion (no editable row) — NO edit icons present
+      const historyTable = screen.getByTestId('forms-table-History Form');
+      expect(
+        historyTable.querySelectorAll('[data-testid^="edit-form-"]'),
+      ).toHaveLength(0);
+    });
+
+    it('fires startConsultation event with correct payload when row edit icon is clicked', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+
+      renderFormsTable({ activeEncounterUuid: 'encounter-1' });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-form-encounter-1')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('edit-form-encounter-1'));
+
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'startConsultation',
+          detail: expect.objectContaining({
+            editOnly: 'observationForms',
+            editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
+            editEncounterUuid: 'encounter-1',
+            editFormName: 'Vitals Form',
+          }),
+        }),
+      );
+
+      dispatchEventSpy.mockRestore();
+    });
+  });
+
+  describe('Edit Icon - Modal', () => {
+    // Use a single-record dataset where the only record belongs to the current practitioner
+    // so the modal always opens for an editable encounter
+    const editableRecord: FormResponseData[] = [
+      {
+        formType: 'v2',
+        formName: 'Vitals Form',
+        formVersion: 1,
+        visitUuid: 'visit-1',
+        visitStartDateTime: NOW - 5 * 60 * 1000,
+        encounterUuid: 'encounter-1',
+        encounterDateTime: NOW - 5 * 60 * 1000,
+        providers: [{ providerName: 'Dr. Smith', uuid: 'provider-1' }],
+      },
+    ];
+
+    it('shows edit icon in modal when encounter is editable by current practitioner', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(editableRecord);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      renderFormsTable({ activeEncounterUuid: 'encounter-1' });
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      });
+
+      const links = document.querySelectorAll('.cds--link');
+      await user.click(links[0] as HTMLElement);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByTestId('edit-form-modal-encounter-1'),
+      ).toBeInTheDocument();
+    });
+
+    it('does not show edit icon in modal when user lacks Edit Observations privilege', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(editableRecord);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+      mockUseHasPrivilege.mockReturnValue(false);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      });
+
+      const links = document.querySelectorAll('.cds--link');
+      await user.click(links[0] as HTMLElement);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByTestId('edit-form-modal-encounter-1'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show edit icon in modal when encounter is not the active encounter', async () => {
+      const user = userEvent.setup();
+      const otherEncounterRecord: FormResponseData[] = [
+        {
+          ...editableRecord[0],
+          encounterUuid: 'encounter-other',
+          providers: [{ providerName: 'Dr. Other', uuid: 'provider-other' }],
+        },
+      ];
+      mockGetPatientFormData.mockResolvedValue(otherEncounterRecord);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      // activeEncounterUuid doesn't match encounter-other
+      renderFormsTable({ activeEncounterUuid: 'encounter-1' });
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Other')).toBeInTheDocument();
+      });
+
+      const links = document.querySelectorAll('.cds--link');
+      await user.click(links[0] as HTMLElement);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByTestId('edit-form-modal-encounter-other'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('closes modal and fires startConsultation event when modal edit icon is clicked', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(editableRecord);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+      mockUseHasPrivilege.mockReturnValue(true);
+
+      const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
+
+      renderFormsTable({ activeEncounterUuid: 'encounter-1' });
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      });
+
+      const links = document.querySelectorAll('.cds--link');
+      await user.click(links[0] as HTMLElement);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('edit-form-modal-encounter-1'));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('form-details-modal'),
+        ).not.toBeInTheDocument();
+      });
+
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'startConsultation',
+          detail: expect.objectContaining({
+            editOnly: 'observationForms',
+            editEncounterUuid: 'encounter-1',
+            editFormName: 'Vitals Form',
+          }),
+        }),
+      );
+
+      dispatchEventSpy.mockRestore();
+    });
+  });
+
   describe('Snapshots', () => {
     it('should match snapshot with form data', async () => {
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
@@ -1172,6 +1479,93 @@ describe('FormsTable', () => {
       expect(mockGetObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
         'encounter-3',
       );
+    });
+
+    it('does not include observations from a form whose name is a substring match (e.g. "Vitals" vs "Second Vitals")', async () => {
+      const user = userEvent.setup();
+      // Encounter carries observations from two forms whose names collide
+      // under a naive substring check: "Second Vitals" contains "Vitals" as
+      // a substring, so `formFieldPath.includes(selectedRecord.formName)`
+      // would incorrectly pull the "Second Vitals" observation into the
+      // "Vitals" modal (BAH-4732).
+      mockGetPatientFormData.mockResolvedValue([
+        {
+          formType: 'v2',
+          formName: 'Vitals',
+          formVersion: 1,
+          visitUuid: 'visit-1',
+          visitStartDateTime: NOW - 10 * 60 * 1000,
+          encounterUuid: 'encounter-collision',
+          encounterDateTime: NOW - 10 * 60 * 1000,
+          providers: [{ providerName: 'Dr. Williams', uuid: 'provider-3' }],
+        },
+      ]);
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        total: 2,
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-vitals',
+              status: 'final',
+              code: {
+                text: 'Pulse',
+                coding: [{ code: 'concept-pulse', display: 'Pulse' }],
+              },
+              valueQuantity: { value: 70, unit: 'beats/min' },
+              extension: [
+                {
+                  url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+                  valueString: 'Bahmni^Vitals.1/1-0',
+                },
+              ],
+            },
+          },
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-second-vitals',
+              status: 'final',
+              code: {
+                text: 'Second Vitals Pulse',
+                coding: [
+                  { code: 'concept-pulse-2', display: 'Second Vitals Pulse' },
+                ],
+              },
+              valueQuantity: { value: 60, unit: 'beats/min' },
+              extension: [
+                {
+                  url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+                  valueString: 'Bahmni^Second Vitals.1/1-0',
+                },
+              ],
+            },
+          },
+        ],
+      } as Bundle<Observation>);
+      mockFetchFormMetadata.mockResolvedValue(mockFormMetadata);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument();
+      });
+
+      const links = document.querySelectorAll('.cds--link');
+      expect(links.length).toBeGreaterThan(0);
+      await user.click(links[0] as HTMLElement);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('form-details-modal')).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Pulse')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('Second Vitals Pulse')).not.toBeInTheDocument();
     });
 
     it('displays error message in modal when FHIR encounter data fetch fails', async () => {
