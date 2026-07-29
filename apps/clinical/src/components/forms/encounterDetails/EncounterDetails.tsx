@@ -17,17 +17,29 @@ import { OpenMRSLocation } from '../../../models/location';
 import { useEncounterDetailsStore } from '../../../stores';
 import styles from './styles/EncounterDetails.module.scss';
 
-const EncounterDetails: React.FC = () => {
+export interface EncounterDetailsProps {
+  mode?: 'consultation' | 'startVisit';
+  allowedVisitTypes?: string[];
+  defaultEncounterType?: string;
+}
+
+const EncounterDetails: React.FC<EncounterDetailsProps> = ({
+  mode = 'consultation',
+  allowedVisitTypes,
+  defaultEncounterType,
+}) => {
   const { t } = useTranslation();
   const practitionerState = useActivePractitioner();
 
   const patientUUID = usePatientUUID();
 
+  const isStartVisitMode = mode === 'startVisit';
+
   const {
     activeVisit,
     loading: loadingActiveVisit,
     error: activeVisitError,
-  } = usePatientVisit(patientUUID);
+  } = usePatientVisit(isStartVisitMode ? null : patientUUID);
   const {
     locations,
     loading: loadingLocations,
@@ -66,23 +78,46 @@ const EncounterDetails: React.FC = () => {
     setUser,
     setPatientUUID,
     setIsError,
+    setConsultationDate,
   } = useEncounterDetailsStore();
 
   const [isEncounterTypeNotFound, setIsEncounterTypeNotFound] = useState(false);
+
+  // In startVisit mode ConsultationPad isn't mounted so it never calls setConsultationDate;
+  // initialize it here so the date picker renders (disabled) rather than showing a skeleton.
+  useEffect(() => {
+    if (!isStartVisitMode) return;
+    setConsultationDate(new Date());
+  }, [isStartVisitMode, setConsultationDate]);
 
   const availablePractitioners = useMemo(
     () => (practitioner ? [practitioner] : []),
     [practitioner],
   );
 
+  const filteredVisitTypes = useMemo(() => {
+    if (!isStartVisitMode || !allowedVisitTypes?.length) {
+      return encounterConcepts?.visitTypes ?? [];
+    }
+    return (
+      encounterConcepts?.visitTypes?.filter((v) =>
+        allowedVisitTypes.includes(v.name),
+      ) ?? []
+    );
+  }, [isStartVisitMode, allowedVisitTypes, encounterConcepts?.visitTypes]);
+
   const allLoadingStates = useMemo(
-    () => ({
-      loadingLocations,
-      loadingEncounterConcepts,
-      loadingPractitioner,
-      loadingActiveVisit,
-    }),
+    () =>
+      isStartVisitMode
+        ? { loadingLocations, loadingEncounterConcepts, loadingPractitioner }
+        : {
+            loadingLocations,
+            loadingEncounterConcepts,
+            loadingPractitioner,
+            loadingActiveVisit,
+          },
     [
+      isStartVisitMode,
       loadingLocations,
       loadingEncounterConcepts,
       loadingPractitioner,
@@ -100,7 +135,9 @@ const EncounterDetails: React.FC = () => {
     if (!encounterConcepts?.encounterTypes?.length || selectedEncounterType)
       return;
 
-    const targetName = requestedEncounterType;
+    const targetName = isStartVisitMode
+      ? (defaultEncounterType ?? requestedEncounterType)
+      : requestedEncounterType;
 
     const match = targetName
       ? encounterConcepts.encounterTypes.find(
@@ -109,21 +146,29 @@ const EncounterDetails: React.FC = () => {
       : undefined;
 
     if (targetName && !match) {
-      setIsEncounterTypeNotFound(true);
+      if (!isStartVisitMode) setIsEncounterTypeNotFound(true);
       return;
     }
 
     setIsEncounterTypeNotFound(false);
     setSelectedEncounterType(match ?? encounterConcepts.encounterTypes[0]);
   }, [
+    isStartVisitMode,
+    defaultEncounterType,
     encounterConcepts?.encounterTypes,
     selectedEncounterType,
     requestedEncounterType,
     setSelectedEncounterType,
   ]);
 
-  // Initialize visit type from active visit
+  // Initialize visit type from active visit (consultation mode) or first filtered option (startVisit mode)
   useEffect(() => {
+    if (isStartVisitMode) {
+      if (filteredVisitTypes.length > 0 && !selectedVisitType) {
+        setSelectedVisitType(filteredVisitTypes[0]);
+      }
+      return;
+    }
     if (encounterConcepts?.visitTypes && activeVisit && !selectedVisitType) {
       const activeVisitId = activeVisit.type?.[0]?.coding?.[0]?.code;
       if (activeVisitId) {
@@ -136,6 +181,8 @@ const EncounterDetails: React.FC = () => {
       }
     }
   }, [
+    isStartVisitMode,
+    filteredVisitTypes,
     encounterConcepts?.visitTypes,
     activeVisit,
     selectedVisitType,
@@ -149,11 +196,18 @@ const EncounterDetails: React.FC = () => {
     }
   }, [practitioner, encounterParticipants.length, setEncounterParticipants]);
 
-  // Update store with activeVisit and error
+  // Update store with activeVisit and error (consultation mode only)
   useEffect(() => {
+    if (isStartVisitMode) return;
     setActiveVisit(activeVisit ?? null);
     setActiveVisitError(activeVisitError ?? null);
-  }, [activeVisit, activeVisitError, setActiveVisit, setActiveVisitError]);
+  }, [
+    isStartVisitMode,
+    activeVisit,
+    activeVisitError,
+    setActiveVisit,
+    setActiveVisitError,
+  ]);
 
   /**
    * Updates the form ready state based on multiple criteria.
@@ -170,6 +224,9 @@ const EncounterDetails: React.FC = () => {
    *    - encounterParticipants (at least one)
    */
   useEffect(() => {
+    // startVisit mode: container drives readiness; do not touch isEncounterDetailsFormReady
+    if (isStartVisitMode) return;
+
     // Check all loading states are false
     const isAllDataLoaded = Object.values(allLoadingStates).every(
       (loading) => !loading,
@@ -193,6 +250,7 @@ const EncounterDetails: React.FC = () => {
 
     setEncounterDetailsFormReady(isFormReady);
   }, [
+    isStartVisitMode,
     allLoadingStates,
     isError,
     selectedLocation,
@@ -226,10 +284,11 @@ const EncounterDetails: React.FC = () => {
       !!locationsError ||
         !!encounterConceptsError ||
         !!practitionerError ||
-        !!activeVisitError ||
+        (!isStartVisitMode && !!activeVisitError) ||
         isEncounterTypeNotFound,
     );
   }, [
+    isStartVisitMode,
     setIsError,
     locationsError,
     encounterConceptsError,
@@ -288,10 +347,20 @@ const EncounterDetails: React.FC = () => {
             data-testid="visit-type-dropdown"
             titleText={t('VISIT_TYPE')}
             label={t('SELECT_VISIT_TYPE')}
-            items={encounterConcepts?.visitTypes ?? []}
+            items={filteredVisitTypes}
             itemToString={(item: Concept) => item?.name ?? ''}
-            initialSelectedItem={selectedVisitType}
-            disabled
+            selectedItem={isStartVisitMode ? selectedVisitType : undefined}
+            initialSelectedItem={
+              isStartVisitMode ? undefined : selectedVisitType
+            }
+            onChange={
+              isStartVisitMode
+                ? ({ selectedItem }: { selectedItem: Concept | null }) => {
+                    if (selectedItem) setSelectedVisitType(selectedItem);
+                  }
+                : undefined
+            }
+            disabled={!isStartVisitMode}
             size="md"
           />
         </FormField>

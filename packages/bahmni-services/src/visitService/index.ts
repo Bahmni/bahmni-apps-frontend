@@ -4,4 +4,9 @@ export {
   checkIfActiveVisitExists,
   createVisitForPatient,
   getActiveVisitByPatient,
+  getVisitLocationUUID,
 } from './visitService';
+export {
+  createFhirVisit,
+  getActiveVisitAtLoginLocation,
+} from './fhirVisitService';

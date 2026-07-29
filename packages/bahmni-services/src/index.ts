@@ -69,6 +69,9 @@ export {
   checkIfActiveVisitExists,
   createVisitForPatient,
   getActiveVisitByPatient,
+  getVisitLocationUUID,
+  createFhirVisit,
+  getActiveVisitAtLoginLocation,
   type VisitType,
   type VisitTypes,
   type VisitData,
@@ -295,6 +298,7 @@ export {
 export {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
+  MODULE_LABELS,
   initializeAuditListener,
   type AuditEventType,
   logAuditEvent,

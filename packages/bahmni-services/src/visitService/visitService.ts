@@ -41,7 +41,7 @@ export const getActiveVisitByPatient = async (
  * @param loginLocation - The login location UUID
  * @returns Promise<VisitLocationResponse> - The visit location details including UUID
  */
-const getVisitLocationUUID = async (
+export const getVisitLocationUUID = async (
   loginLocation: string,
 ): Promise<VisitLocationResponse> => {
   return get<VisitLocationResponse>(GET_VISIT_LOCATION(loginLocation));

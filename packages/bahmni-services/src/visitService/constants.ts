@@ -1,5 +1,8 @@
 import { OPENMRS_REST_V1 } from '../constants/app';
 
+export const FHIR_VISIT_TYPE_SYSTEM =
+  'http://fhir.openmrs.org/code-system/visit-type'; // NOSONAR
+
 export const VISIT_TYPES_URL = () =>
   OPENMRS_REST_V1 +
   `/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS`;
