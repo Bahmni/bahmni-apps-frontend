@@ -11,8 +11,8 @@ export interface ActionAreaProps {
   primaryButtonText: string; // Text for the primary button
   onPrimaryButtonClick: () => void; // Function to be called when primary button is clicked
   isPrimaryButtonDisabled?: boolean; // Whether the primary button should be disabled
-  secondaryButtonText: string; // Text for the secondary button
-  onSecondaryButtonClick: () => void; // Function to be called when secondary button is clicked
+  secondaryButtonText?: string; // Text for the secondary button
+  onSecondaryButtonClick?: () => void; // Function to be called when secondary button is clicked
   isSecondaryButtonDisabled?: boolean; // Whether the secondary button should be disabled
   tertiaryButtonText?: string; // Text for the tertiary button
   onTertiaryButtonClick?: () => void; // Function to be called when tertiary button is clicked
@@ -48,10 +48,17 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
   buttonGroupAriaLabel = 'Action buttons',
   hidden = false,
 }) => {
+  const buttonCount =
+    (secondaryButtonText ? 1 : 0) +
+    (tertiaryButtonText && onTertiaryButtonClick ? 1 : 0) +
+    1; // +1 for primary button
+
   const buttonCountClass =
-    tertiaryButtonText && onTertiaryButtonClick
+    buttonCount === 3
       ? styles.threeButtons
-      : styles.twoButtons;
+      : buttonCount === 2
+        ? styles.twoButtons
+        : styles.singleButton;
 
   // Determine accessible label for the component
   const accessibleLabel = ariaLabel ?? 'Action Area';
@@ -77,16 +84,18 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
       </div>
 
       <ButtonSet className={styles.buttonSet} aria-label={buttonGroupAriaLabel}>
-        <Button
-          kind="secondary"
-          onClick={onSecondaryButtonClick}
-          disabled={isSecondaryButtonDisabled}
-          className={buttonCountClass}
-          aria-label={secondaryButtonText}
-          data-testid="action-area-secondary-button"
-        >
-          {secondaryButtonText}
-        </Button>
+        {secondaryButtonText && (
+          <Button
+            kind="secondary"
+            onClick={onSecondaryButtonClick}
+            disabled={isSecondaryButtonDisabled}
+            className={buttonCountClass}
+            aria-label={secondaryButtonText}
+            data-testid="action-area-secondary-button"
+          >
+            {secondaryButtonText}
+          </Button>
+        )}
 
         {tertiaryButtonText && onTertiaryButtonClick && (
           <Button

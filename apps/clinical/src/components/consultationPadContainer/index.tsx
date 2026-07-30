@@ -193,9 +193,6 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
         title={t('NEW_CONSULTATION')}
         primaryButtonText={t('CLOSE')}
         onPrimaryButtonClick={onClose}
-        secondaryButtonText=""
-        isSecondaryButtonDisabled
-        onSecondaryButtonClick={() => {}}
         content={
           <div className={styles.bannerWrapper}>
             <InlineNotification
