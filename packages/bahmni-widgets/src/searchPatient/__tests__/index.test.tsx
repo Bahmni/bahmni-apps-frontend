@@ -6,7 +6,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { MemoryRouter } from 'react-router-dom';
 import { useNotification } from '../../notification';
+import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import {
   buttonTitle,
   searchBarPlaceholder,
@@ -23,7 +25,11 @@ jest.mock('@bahmni/services', () => ({
   searchPatientByCustomAttribute: jest.fn(),
 }));
 jest.mock('../../notification');
-const mockOnSearch = jest.fn();
+jest.mock('../../userPrivileges/useUserPrivilege');
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: jest.fn(() => jest.fn()),
+}));
 
 const mockAddNotification = jest.fn();
 
@@ -31,30 +37,34 @@ describe('SearchPatient', () => {
   let queryClient: QueryClient;
 
   const renderSearchPatient = (
-    patientSearch?: typeof validPatientSearchConfig,
+    patientSearch?: typeof validPatientSearchConfig & {
+      patientDetailUrl?: string;
+    },
   ) =>
     render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          patientSearch={patientSearch}
-          onSearch={mockOnSearch}
-        />
-      </QueryClientProvider>,
+      <MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <SearchPatient
+            buttonTitle={buttonTitle}
+            searchBarPlaceholder={searchBarPlaceholder}
+            patientSearch={patientSearch}
+          />
+        </QueryClientProvider>
+      </MemoryRouter>,
     );
 
   beforeEach(() => {
     jest.clearAllMocks();
     queryClient = new QueryClient({
       defaultOptions: {
-        queries: {
-          retry: false,
-        },
+        queries: { retry: false },
       },
     });
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
+    });
+    (useUserPrivilege as jest.Mock).mockReturnValue({
+      userPrivileges: [],
     });
   });
 
@@ -82,6 +92,14 @@ describe('SearchPatient', () => {
     expect(screen.getByTestId('advance-search-button')).toHaveTextContent(
       buttonTitle,
     );
+  });
+
+  it('should not show results table before a search is performed', () => {
+    renderSearchPatient(validPatientSearchConfig);
+    expect(screen.queryByTestId(/sortable-table-/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('patient-search-title'),
+    ).not.toBeInTheDocument();
   });
 
   it.each([
@@ -116,22 +134,11 @@ describe('SearchPatient', () => {
         'new value',
         expect.any(Array),
       );
-      expect(mockOnSearch).toHaveBeenCalled();
-      await waitFor(() => {
-        expect(mockOnSearch).toHaveBeenCalledWith(
-          expect.anything(),
-          'new value',
-          expect.any(Boolean),
-          expect.any(Boolean),
-          false,
-          expect.anything(),
-        );
-      });
     },
   );
 
-  it('should return matching patient when searching with complete name', async () => {
-    renderSearchPatient();
+  it('should show results table after a successful search', async () => {
+    renderSearchPatient(validPatientSearchConfig);
     const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
 
     (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
@@ -140,66 +147,101 @@ describe('SearchPatient', () => {
     });
 
     await waitFor(() => {
-      fireEvent.input(searchInput, {
-        target: { value: '    Steffi Maria Graf    ' },
-      });
+      fireEvent.input(searchInput, { target: { value: 'Steffi' } });
       fireEvent.click(screen.getByTestId('search-patient-search-button'));
     });
 
-    expect(searchPatientByNameOrId).toHaveBeenCalledWith(
-      'Steffi Maria Graf',
-      [],
-    );
     await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          pageOfResults: expect.arrayContaining([
-            expect.objectContaining({
-              identifier: 'ABC200000',
-              givenName: 'Steffi',
-              familyName: 'Graf',
-            }),
-          ]),
-          totalCount: mockSearchPatientData.length,
-        }),
-        'Steffi Maria Graf',
-        false,
-        false,
-        false,
-        undefined,
-      );
+      expect(screen.getByTestId('patient-search-title')).toBeInTheDocument();
     });
   });
 
-  it('should return empty results when searching for non-existent patient', async () => {
-    renderSearchPatient();
+  it('should show loading state in title while search is in progress', async () => {
+    renderSearchPatient(validPatientSearchConfig);
     const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
 
-    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
-      pageOfResults: [],
-      totalCount: 0,
-    });
+    (searchPatientByNameOrId as jest.Mock).mockReturnValue(
+      new Promise(() => {}),
+    );
 
     await waitFor(() => {
-      fireEvent.input(searchInput, {
-        target: { value: '    John Doe    ' },
-      });
+      fireEvent.input(searchInput, { target: { value: 'John Doe' } });
       fireEvent.click(screen.getByTestId('search-patient-search-button'));
     });
 
-    expect(searchPatientByNameOrId).toHaveBeenCalledWith('John Doe', []);
     await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          pageOfResults: [],
-          totalCount: 0,
-        }),
-        'John Doe',
-        false,
-        false,
-        false,
-        undefined,
-      );
+      expect(
+        screen.getByTestId('patient-search-title-loading'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('should show error state in title when search fails', async () => {
+    renderSearchPatient(validPatientSearchConfig);
+    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+
+    (searchPatientByNameOrId as jest.Mock).mockRejectedValue(
+      new Error('Login location is missing or invalid. Please reauthenticate.'),
+    );
+
+    await waitFor(() => {
+      fireEvent.input(searchInput, { target: { value: 'new value' } });
+      fireEvent.click(screen.getByTestId('search-patient-search-button'));
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('patient-search-title-error'),
+      ).toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'Login location is missing or invalid. Please reauthenticate.',
+      });
+    });
+  });
+
+  it('should render patient identifier as plain text when no patientDetailUrl is configured', async () => {
+    renderSearchPatient(validPatientSearchConfig);
+    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+
+    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
+      pageOfResults: mockSearchPatientData,
+      totalCount: mockSearchPatientData.length,
+    });
+
+    await waitFor(() => {
+      fireEvent.input(searchInput, { target: { value: 'Steffi' } });
+      fireEvent.click(screen.getByTestId('search-patient-search-button'));
+    });
+
+    await waitFor(() => {
+      const identifiers = screen.getAllByText('ABC200000');
+      expect(identifiers.length).toBeGreaterThan(0);
+      identifiers.forEach((el) => expect(el.tagName).not.toBe('A'));
+    });
+  });
+
+  it('should render patient identifier inside an anchor element when patientDetailUrl is configured', async () => {
+    const { container } = renderSearchPatient({
+      ...validPatientSearchConfig,
+      patientDetailUrl: '#/patient/{{patientUuid}}/edit',
+    });
+    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+
+    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
+      pageOfResults: mockSearchPatientData,
+      totalCount: mockSearchPatientData.length,
+    });
+
+    await waitFor(() => {
+      fireEvent.input(searchInput, { target: { value: 'Steffi' } });
+      fireEvent.click(screen.getByTestId('search-patient-search-button'));
+    });
+
+    await waitFor(() => {
+      const anchors = container.querySelectorAll('a');
+      expect(anchors.length).toBeGreaterThan(0);
     });
   });
 
@@ -232,7 +274,6 @@ describe('SearchPatient', () => {
       });
 
       expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
-      expect(mockOnSearch).toHaveBeenCalled();
       await waitFor(() => {
         expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
           '1234567890',
@@ -242,69 +283,8 @@ describe('SearchPatient', () => {
           expect.any(Function),
         );
       });
-      await waitFor(() => {
-        expect(mockOnSearch).toHaveBeenCalledWith(
-          expect.objectContaining({
-            pageOfResults: expect.any(Array),
-            totalCount: expect.any(Number),
-          }),
-          '1234567890',
-          false,
-          false,
-          true,
-          expect.any(String),
-        );
-      });
     },
   );
-
-  it('should return patient search data back to parent component when search is successfull', async () => {
-    renderSearchPatient(validPatientSearchConfig);
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
-    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
-      pageOfResults: mockSearchPatientData,
-      totalCount: mockSearchPatientData.length,
-    });
-
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'new value' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
-
-    expect(searchPatientByNameOrId).toHaveBeenCalledTimes(1);
-    expect(searchPatientByNameOrId).toHaveBeenCalledWith(
-      'new value',
-      expect.any(Array),
-    );
-    await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        undefined,
-        'new value',
-        true,
-        false,
-        false,
-        expect.anything(),
-      );
-    });
-    await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          pageOfResults: expect.arrayContaining([
-            expect.objectContaining({
-              identifier: 'ABC200000',
-              givenName: 'Steffi',
-            }),
-          ]),
-          totalCount: mockSearchPatientData.length,
-        }),
-        'new value',
-        false,
-        false,
-        false,
-        expect.anything(),
-      );
-    });
-  });
 
   it.each([
     {
@@ -360,128 +340,6 @@ describe('SearchPatient', () => {
       });
     },
   );
-
-  it('should update parent when there is an error', async () => {
-    renderSearchPatient(validPatientSearchConfig);
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
-    const error = new Error(
-      'Login location is missing or invalid. Please reauthenticate.',
-    );
-
-    (searchPatientByNameOrId as jest.Mock).mockRejectedValue(error);
-
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'new value' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
-
-    await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        undefined,
-        'new value',
-        false,
-        true,
-        false,
-      );
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        type: 'error',
-        title: 'ERROR_DEFAULT_TITLE',
-        message: 'Login location is missing or invalid. Please reauthenticate.',
-      });
-    });
-  });
-
-  it('should remove error message when search term is cleared', async () => {
-    renderSearchPatient(validPatientSearchConfig);
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
-    const error = new Error(
-      'Login location is missing or invalid. Please reauthenticate.',
-    );
-
-    (searchPatientByNameOrId as jest.Mock).mockRejectedValue(error);
-
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'new value' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
-
-    await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        undefined,
-        'new value',
-        false,
-        true,
-        false,
-      );
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        type: 'error',
-        title: 'ERROR_DEFAULT_TITLE',
-        message: 'Login location is missing or invalid. Please reauthenticate.',
-      });
-    });
-
-    const searchClear = screen.getAllByRole('button', {
-      name: 'Clear search input',
-    })[0];
-    await waitFor(() => {
-      fireEvent.click(searchClear);
-    });
-    await waitFor(() =>
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        undefined,
-        'new value',
-        false,
-        true,
-        false,
-      ),
-    );
-  });
-
-  it('should remove error message when phone search term is cleared', async () => {
-    renderSearchPatient(validPatientSearchConfig);
-    const phoneSearchInput = screen.getByTestId('advance-search-input');
-    const error = new Error(
-      'Login location is missing or invalid. Please reauthenticate.',
-    );
-
-    (searchPatientByCustomAttribute as jest.Mock).mockRejectedValue(error);
-
-    await waitFor(() => {
-      fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-      fireEvent.click(screen.getByTestId('advance-search-button'));
-    });
-
-    await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        undefined,
-        '1234567890',
-        false,
-        true,
-        true,
-      );
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        type: 'error',
-        title: 'ERROR_DEFAULT_TITLE',
-        message: 'Login location is missing or invalid. Please reauthenticate.',
-      });
-    });
-
-    const phoneSearchClear = screen.getAllByRole('button', {
-      name: 'Clear search input',
-    })[1];
-    await waitFor(() => {
-      fireEvent.click(phoneSearchClear);
-    });
-    await waitFor(() =>
-      expect(mockOnSearch).toHaveBeenCalledWith(
-        undefined,
-        '1234567890',
-        false,
-        true,
-        true,
-      ),
-    );
-  });
 
   it('should render phone validation error message when invalid characters are entered', async () => {
     renderSearchPatient(validPatientSearchConfig);
@@ -588,7 +446,6 @@ describe('SearchPatient', () => {
     await userEvent.click(customSearchButton);
 
     expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
-    expect(mockOnSearch).toHaveBeenCalled();
     expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
       'test@example.com',
       'person',
@@ -600,45 +457,42 @@ describe('SearchPatient', () => {
 
   it('should preserve order of search fields from config', async () => {
     const orderedConfig = {
-      patientSearch: {
-        customAttributes: [
-          {
-            translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',
-            fields: ['phoneNumber', 'alternatePhoneNumber'],
-            columnTranslationKeys: [
-              'REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER',
-              'REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER',
-            ],
-            type: 'person',
-          },
-          {
-            translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL',
-            fields: ['email'],
-            columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_EMAIL'],
-            type: 'person',
-          },
-          {
-            translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_VILLAGE',
-            fields: ['village'],
-            columnTranslationKeys: [
-              'REGISTRATION_PATIENT_SEARCH_HEADER_VILLAGE',
-            ],
-            type: 'address',
-          },
-        ],
-        appointment: [],
-      },
+      customAttributes: [
+        {
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',
+          fields: ['phoneNumber', 'alternatePhoneNumber'],
+          columnTranslationKeys: [
+            'REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER',
+            'REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER',
+          ],
+          type: 'person' as const,
+        },
+        {
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL',
+          fields: ['email'],
+          columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_EMAIL'],
+          type: 'person' as const,
+        },
+        {
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_VILLAGE',
+          fields: ['village'],
+          columnTranslationKeys: ['REGISTRATION_PATIENT_SEARCH_HEADER_VILLAGE'],
+          type: 'address' as const,
+        },
+      ],
+      appointment: [],
     };
 
     render(
-      <QueryClientProvider client={queryClient}>
-        <SearchPatient
-          buttonTitle={buttonTitle}
-          searchBarPlaceholder={searchBarPlaceholder}
-          onSearch={mockOnSearch}
-          patientSearch={orderedConfig.patientSearch}
-        />
-      </QueryClientProvider>,
+      <MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <SearchPatient
+            buttonTitle={buttonTitle}
+            searchBarPlaceholder={searchBarPlaceholder}
+            patientSearch={orderedConfig}
+          />
+        </QueryClientProvider>
+      </MemoryRouter>,
     );
 
     await waitFor(() => {
