@@ -8,7 +8,6 @@ import {
   getCurrentUserPrivileges,
   getConfig,
   getUserLoginLocation,
-  hasPrivilege,
   post,
   useTranslation,
   UserLocation,
@@ -30,6 +29,7 @@ import SearchSummary from './SearchSummary';
 import styles from './styles/CommonSearchWidget.module.scss';
 import {
   buildPayload,
+  processContextConfigs,
   resolveRows,
   toSearchAuditEventType,
   validateRows,
@@ -172,8 +172,9 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       />
     );
 
-  const privilegedContexts = config.filter((c) =>
-    hasPrivilege(userPrivileges ?? null, c.requiredPrivileges),
+  const privilegedContexts = processContextConfigs(
+    config,
+    userPrivileges ?? null,
   );
 
   if (privilegedContexts.length === 0)

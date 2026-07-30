@@ -25,6 +25,7 @@ export const mockCommonSearchWidgetConfig: CommonSearchWidgetConfig = [
     resultFields: mockResultFields,
     criteria: [
       {
+        id: 'patient.name.given',
         field: { key: 'patient.name.given' },
         translationKey: 'PATIENT_GIVEN_NAME',
         default: true,
@@ -48,6 +49,7 @@ export const mockMultiContextConfig: CommonSearchWidgetConfig = [
     resultFields: mockResultFields,
     criteria: [
       {
+        id: 'patient.name.given',
         field: { key: 'patient.name.given' },
         translationKey: 'PATIENT_GIVEN_NAME',
         default: true,
@@ -68,6 +70,7 @@ export const mockMultiContextConfig: CommonSearchWidgetConfig = [
     resultFields: mockResultFields,
     criteria: [
       {
+        id: 'patient.name.given',
         field: { key: 'patient.name.given' },
         translationKey: 'PATIENT_GIVEN_NAME',
         default: true,
@@ -95,6 +98,7 @@ export const mockWidgetLocation: UserLocation = {
 };
 
 export const mockTextCriterionConfig: CriterionConfig = {
+  id: 'patient.name.given',
   field: { key: 'patient.name.given' },
   translationKey: 'PATIENT_GIVEN_NAME',
   default: true,
@@ -105,6 +109,7 @@ export const mockTextCriterionConfig: CriterionConfig = {
 };
 
 export const mockNumericRangeCriterionConfig: CriterionConfig = {
+  id: 'patient.age',
   field: { key: 'patient.age' },
   translationKey: 'PATIENT_AGE',
   default: true,
