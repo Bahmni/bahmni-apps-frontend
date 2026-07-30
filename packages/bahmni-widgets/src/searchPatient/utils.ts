@@ -10,11 +10,6 @@ export type PatientSearchViewModel<T extends PatientSearchResult> = T & {
   [key: string]: unknown;
 };
 
-/**
- * Parses and extracts patient attributes from JSON strings
- * @param patient - The patient search result
- * @returns An object containing parsed custom, address, and program attributes
- */
 const parsePatientAttributes = (patient: PatientSearchResult) => {
   const customAttributes = patient.customAttribute
     ? JSON.parse(patient.customAttribute)
@@ -29,13 +24,6 @@ const parsePatientAttributes = (patient: PatientSearchResult) => {
   return { customAttributes, addressAttributes, programAttributes };
 };
 
-/**
- * Formats Lucene Patient Search To Match View Model
- * @param patientSearchResultBundle - The Lucene Patient Search Bundle
- * @param patientSearchFields - The configured search fields for extracting custom attributes
- * @returns An PatientSearchViewModel Array if there are results
- * @returns An empty array if no results are available
- */
 export const formatPatientSearchResult = (
   patientSearchResultBundle: PatientSearchResultBundle | undefined,
   patientSearchFields: PatientSearchField[] = [],

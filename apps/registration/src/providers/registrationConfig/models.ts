@@ -1,6 +1,7 @@
 import { AppointmentSearchField, PatientSearchField } from '@bahmni/services';
 
 export interface PatientSearchConfig {
+  patientDetailUrl?: string;
   customAttributes: PatientSearchField[];
   appointment: AppointmentSearchField[];
 }
