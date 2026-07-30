@@ -15,8 +15,8 @@ import {
   useTranslation,
 } from '@bahmni/services';
 import { useNavigate } from 'react-router-dom';
-import { useNotification } from '../notification';
-import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
+import { useNotification } from '../../notification';
+import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import {
   getAppointmentStatusClassName,
   handleActionButtonClick,
@@ -67,31 +67,31 @@ const PatientSearchResults = ({
     { key: 'age', header: t('REGISTRATION_PATIENT_SEARCH_HEADER_AGE') },
     ...(selectedFieldType === 'appointment'
       ? [
-          {
-            key: 'birthDate',
-            header: t('REGISTRATION_PATIENT_SEARCH_HEADER_BIRTH_DATE'),
-          },
-        ]
+        {
+          key: 'birthDate',
+          header: t('REGISTRATION_PATIENT_SEARCH_HEADER_BIRTH_DATE'),
+        },
+      ]
       : []),
     ...(searchFields.length > 0
       ? searchFields
-          .flatMap((field) =>
-            field.expectedFields?.map((expectedField) => ({
-              key: expectedField.field,
-              header: expectedField.translationKey
-                ? t(expectedField.translationKey)
-                : expectedField.field,
-            })),
-          )
-          .filter((header) => header !== undefined)
+        .flatMap((field) =>
+          field.expectedFields?.map((expectedField) => ({
+            key: expectedField.field,
+            header: expectedField.translationKey
+              ? t(expectedField.translationKey)
+              : expectedField.field,
+          })),
+        )
+        .filter((header) => header !== undefined)
       : []),
     ...(searchFields.some((field) => field.actions && field.actions.length > 0)
       ? [
-          {
-            key: 'actions',
-            header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ACTIONS'),
-          },
-        ]
+        {
+          key: 'actions',
+          header: t('REGISTRATION_PATIENT_SEARCH_HEADER_ACTIONS'),
+        },
+      ]
       : []),
   ];
 
@@ -205,9 +205,9 @@ const PatientSearchResults = ({
 
     const cellValue =
       row[
-        cellId as keyof PatientSearchViewModel<
-          PatientSearchResult | AppointmentSearchResult
-        >
+      cellId as keyof PatientSearchViewModel<
+        PatientSearchResult | AppointmentSearchResult
+      >
       ];
     if (cellValue instanceof Date) {
       return cellValue.toLocaleDateString();
@@ -217,8 +217,8 @@ const PatientSearchResults = ({
 
   const emptyMessage = isAdvancedSearch
     ? t('REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE', {
-        searchTerm,
-      })
+      searchTerm,
+    })
     : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', { searchTerm });
 
   return (

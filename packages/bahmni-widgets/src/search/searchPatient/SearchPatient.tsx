@@ -6,7 +6,7 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useNotification } from '../notification';
+import { useNotification } from '../../notification';
 import PatientSearchResults from './PatientSearchResults';
 import SearchPatientInput from './SearchPatientInput';
 import { PatientSearchType, SearchContext } from './SearchStrategy.interface';

@@ -7,8 +7,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { MemoryRouter } from 'react-router-dom';
-import { useNotification } from '../../notification';
-import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
+import { useNotification } from '../../../notification';
+import { useUserPrivilege } from '../../../userPrivileges/useUserPrivilege';
 import {
   buttonTitle,
   searchBarPlaceholder,
@@ -159,7 +159,7 @@ describe('SearchPatient', () => {
     const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
 
     (searchPatientByNameOrId as jest.Mock).mockReturnValue(
-      new Promise(() => {}),
+      new Promise(() => { }),
     );
 
     fireEvent.input(searchInput, { target: { value: 'John Doe' } });
