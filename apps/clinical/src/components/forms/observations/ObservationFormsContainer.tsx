@@ -43,9 +43,6 @@ import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
-import EncounterDetails from '../encounterDetails/EncounterDetails';
-import styles from './styles/ObservationFormsContainer.module.scss';
-import { executeOnFormSaveEvent } from './utils/formEventExecutor';
 import {
   detectFormChanges,
   extractVersionFromFormFieldPath,
@@ -56,6 +53,9 @@ import {
   replaceNoteRemovedObs,
   restoreComplexValues,
 } from '../../../utils/fhir/observationReconciliation';
+import EncounterDetails from '../encounterDetails/EncounterDetails';
+import styles from './styles/ObservationFormsContainer.module.scss';
+import { executeOnFormSaveEvent } from './utils/formEventExecutor';
 
 const AGE_DETAILS_DEFAULT: AgeDetails = {
   year: 0,

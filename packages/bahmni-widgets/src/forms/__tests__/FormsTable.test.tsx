@@ -1247,9 +1247,9 @@ describe('FormsTable', () => {
       }
 
       await waitFor(() => {
-        expect(
-          mockGetPatientFormData.mock.calls.length,
-        ).toBeGreaterThan(initialCallCount);
+        expect(mockGetPatientFormData.mock.calls.length).toBeGreaterThan(
+          initialCallCount,
+        );
       });
     });
 
