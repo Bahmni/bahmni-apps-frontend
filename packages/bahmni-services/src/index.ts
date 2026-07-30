@@ -456,3 +456,9 @@ export type {
   TemplateListResponse,
 } from './templateService';
 export { getTasks } from './taskService';
+export {
+  groupExtensionsByPoint,
+  filterExtensionsByPrivileges,
+  type Extension,
+  type ExtensionHandlerProps,
+} from './extensions';
