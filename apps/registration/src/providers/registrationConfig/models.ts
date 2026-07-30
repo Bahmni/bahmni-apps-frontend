@@ -1,4 +1,8 @@
-import { AppointmentSearchField, PatientSearchField } from '@bahmni/services';
+import {
+  AppointmentSearchField,
+  Extension,
+  PatientSearchField,
+} from '@bahmni/services';
 
 export interface PatientSearchConfig {
   patientDetailUrl?: string;
@@ -111,6 +115,7 @@ export interface RegistrationConfig {
   registrationForm?: RegistrationFormConfig;
   extensionPoints?: ExtensionPoint[];
   registrationAppExtensions?: AppExtensionConfig[];
+  extensions?: Extension[];
 }
 
 export interface RegistrationConfigContextType {
