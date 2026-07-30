@@ -105,14 +105,14 @@ describe('SearchPatient', () => {
   it.each([
     {
       description: 'clicking the search button',
-      trigger: () =>
+      trigger: async (_input: Element) =>
         fireEvent.click(screen.getByTestId('search-patient-search-button')),
     },
     {
       description: 'pressing enter',
-      trigger: (searchInput: Element) => {
+      trigger: async (searchInput: Element) => {
         searchInput.focus();
-        userEvent.keyboard('{enter}');
+        await userEvent.keyboard('{enter}');
       },
     },
   ])(
@@ -125,15 +125,15 @@ describe('SearchPatient', () => {
         pageOfResults: [],
         totalCount: 0,
       });
-      await waitFor(() => {
-        fireEvent.input(searchInput, { target: { value: 'new value' } });
-        trigger(searchInput);
-      });
+      fireEvent.input(searchInput, { target: { value: 'new value' } });
+      await trigger(searchInput);
 
-      expect(searchPatientByNameOrId).toHaveBeenCalledWith(
-        'new value',
-        expect.any(Array),
-      );
+      await waitFor(() => {
+        expect(searchPatientByNameOrId).toHaveBeenCalledWith(
+          'new value',
+          expect.any(Array),
+        );
+      });
     },
   );
 
@@ -146,10 +146,8 @@ describe('SearchPatient', () => {
       totalCount: mockSearchPatientData.length,
     });
 
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'Steffi' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
+    fireEvent.input(searchInput, { target: { value: 'Steffi' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
     await waitFor(() => {
       expect(screen.getByTestId('patient-search-title')).toBeInTheDocument();
@@ -164,10 +162,8 @@ describe('SearchPatient', () => {
       new Promise(() => {}),
     );
 
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'John Doe' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
+    fireEvent.input(searchInput, { target: { value: 'John Doe' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
     await waitFor(() => {
       expect(
@@ -184,10 +180,8 @@ describe('SearchPatient', () => {
       new Error('Login location is missing or invalid. Please reauthenticate.'),
     );
 
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'new value' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
+    fireEvent.input(searchInput, { target: { value: 'new value' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
     await waitFor(() => {
       expect(
@@ -221,10 +215,8 @@ describe('SearchPatient', () => {
         totalCount: mockSearchPatientData.length,
       });
 
-      await waitFor(() => {
-        fireEvent.input(searchInput, { target: { value: 'Steffi' } });
-        fireEvent.click(screen.getByTestId('search-patient-search-button'));
-      });
+      fireEvent.input(searchInput, { target: { value: 'Steffi' } });
+      fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
       await waitFor(() => {
         const identifiers = screen.getAllByText('ABC200000');
@@ -246,10 +238,8 @@ describe('SearchPatient', () => {
       totalCount: mockSearchPatientData.length,
     });
 
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'Steffi' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
+    fireEvent.input(searchInput, { target: { value: 'Steffi' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
     await waitFor(() => {
       expect(container.querySelectorAll('a').length).toBeGreaterThan(0);
@@ -264,9 +254,9 @@ describe('SearchPatient', () => {
     },
     {
       description: 'pressing enter',
-      trigger: (phoneSearchInput: Element) => {
+      trigger: async (phoneSearchInput: Element) => {
         phoneSearchInput.focus();
-        userEvent.keyboard('{enter}');
+        await userEvent.keyboard('{enter}');
       },
     },
   ])(
@@ -279,13 +269,11 @@ describe('SearchPatient', () => {
         pageOfResults: [],
         totalCount: 0,
       });
-      await waitFor(() => {
-        fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
-        trigger(phoneSearchInput);
-      });
+      fireEvent.input(phoneSearchInput, { target: { value: '1234567890' } });
+      await trigger(phoneSearchInput);
 
-      expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
       await waitFor(() => {
+        expect(searchPatientByCustomAttribute).toHaveBeenCalledTimes(1);
         expect(searchPatientByCustomAttribute).toHaveBeenCalledWith(
           '1234567890',
           expect.any(String),
@@ -312,9 +300,7 @@ describe('SearchPatient', () => {
     'should not search for patient when $description search input is empty',
     async ({ buttonTestId, mockFn }) => {
       renderSearchPatient(validPatientSearchConfig);
-      await waitFor(() => {
-        fireEvent.click(screen.getByTestId(buttonTestId));
-      });
+      fireEvent.click(screen.getByTestId(buttonTestId));
       expect(mockFn).not.toHaveBeenCalled();
     },
   );
@@ -341,9 +327,9 @@ describe('SearchPatient', () => {
       const input = screen.getByTestId(inputTestId);
       (mockFn as jest.Mock).mockReturnValue([]);
 
+      fireEvent.input(input, { target: { value: inputValue } });
+      fireEvent.click(screen.getByTestId(buttonTestId));
       await waitFor(() => {
-        fireEvent.input(input, { target: { value: inputValue } });
-        fireEvent.click(screen.getByTestId(buttonTestId));
         expect(screen.getByTestId(buttonTestId)).toBeDisabled();
       });
       await waitFor(() => {
@@ -360,9 +346,7 @@ describe('SearchPatient', () => {
       screen.queryByTestId('field-validation-error'),
     ).not.toBeInTheDocument();
 
-    await waitFor(() => {
-      fireEvent.input(phoneSearchInput, { target: { value: '123a' } });
-    });
+    fireEvent.input(phoneSearchInput, { target: { value: '123a' } });
     fireEvent.click(screen.getByTestId('advance-search-button'));
 
     expect(phoneSearchInput).toHaveValue('123a');
@@ -384,9 +368,7 @@ describe('SearchPatient', () => {
       renderSearchPatient(validPatientSearchConfig);
       const phoneSearchInput = screen.getByTestId('advance-search-input');
 
-      await waitFor(() => {
-        fireEvent.input(phoneSearchInput, { target: { value } });
-      });
+      fireEvent.input(phoneSearchInput, { target: { value } });
 
       expect(
         screen.queryByTestId('field-validation-error'),
