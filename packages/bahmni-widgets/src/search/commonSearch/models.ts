@@ -84,12 +84,22 @@ export enum SortOrder {
   Descending = 'desc',
 }
 
+export interface NavigateAction {
+  key: string;
+  type: 'navigate';
+  requiredPrivileges?: string[];
+  navigationURL: string;
+}
+
+export type ActionConfig = NavigateAction;
+
 export interface ResultFieldConfig {
   translationKey: string;
   expression: string;
   enableSort?: boolean;
   sortOrder?: SortOrder;
   filterType?: ResultFieldFilterType;
+  action?: string;
   transform?: string;
 }
 
@@ -102,6 +112,7 @@ export interface SearchContextConfig {
   pageSize: number;
   criteria: CriterionConfig[];
   resultFields: ResultFieldConfig[];
+  actions?: ActionConfig[];
 }
 
 export type CommonSearchWidgetConfig = [
