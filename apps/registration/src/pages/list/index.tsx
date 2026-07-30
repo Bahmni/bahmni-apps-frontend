@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
 import styles from './styles/index.module.scss';
 
-const PatientSearchPage: React.FC = () => {
+const RegistrationList: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { registrationConfig } = useRegistrationConfig();
@@ -71,4 +71,4 @@ const PatientSearchPage: React.FC = () => {
   );
 };
 
-export default PatientSearchPage;
+export default RegistrationList;

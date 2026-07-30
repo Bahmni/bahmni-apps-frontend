@@ -6,7 +6,7 @@ import {
 import { NotificationProvider, UserPrivilegeProvider } from '@bahmni/widgets';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
-import PatientSearchPage from '..';
+import RegistrationList from '..';
 import { useRegistrationConfig } from '../../../providers/registrationConfig';
 
 jest.mock('@bahmni/services', () => ({
@@ -49,7 +49,7 @@ const mockRegistrationConfig = {
   },
 };
 
-describe('PatientSearchPage', () => {
+describe('RegistrationList', () => {
   const mockNavigate = jest.fn();
 
   const renderPage = () =>
@@ -57,7 +57,7 @@ describe('PatientSearchPage', () => {
       <MemoryRouter>
         <NotificationProvider>
           <UserPrivilegeProvider>
-            <PatientSearchPage />
+            <RegistrationList />
           </UserPrivilegeProvider>
         </NotificationProvider>
       </MemoryRouter>,
