@@ -103,7 +103,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
         await createFhirVisit(patientUuid!, visitLocation.uuid, visitTypeUuid);
 
         dispatchAuditEvent({
-          eventType: 'START_VISIT_IN_ABSENTIA',
+          eventType: 'START_VISIT_ON_CONSULTATION',
           patientUuid: patientUuid!,
           messageParams: { visitType: visitTypeName },
           module: MODULE_LABELS.CLINICAL,
