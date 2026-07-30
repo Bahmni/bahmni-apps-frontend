@@ -142,19 +142,18 @@ const ResultsTable = ({
 
       const field = resolvedFields.find((rf) => rf.id === columnId)?.field;
 
-      if (!field?.action || !href) {
-        return <span>{cellValue ?? '-'}</span>;
+      const isNavigable =
+        field?.action && href && allowedActions.has(field.action);
+
+      if (isNavigable) {
+        return (
+          <Link href={href} data-testid={`link-${row.id}-${columnId}`}>
+            {cellValue}
+          </Link>
+        );
       }
 
-      if (!allowedActions.has(field.action)) {
-        return <span>{cellValue ?? '-'}</span>;
-      }
-
-      return (
-        <Link href={href} data-testid={`link-${row.id}-${columnId}`}>
-          {cellValue}
-        </Link>
-      );
+      return <span>{cellValue ?? '-'}</span>;
     },
     [resolvedFields, allowedActions],
   );
