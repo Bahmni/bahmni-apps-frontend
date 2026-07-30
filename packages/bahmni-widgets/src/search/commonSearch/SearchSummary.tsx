@@ -61,7 +61,7 @@ const SearchSummary = ({
     )
     .map((row) => {
       const criterion = context.criteria.find(
-        (c) => c.field.key === row.criterionKey,
+        (c) => c.id === row.criterionKey,
       )!;
       return { key: row.rowId, text: buildTagText(row, criterion, t) };
     });

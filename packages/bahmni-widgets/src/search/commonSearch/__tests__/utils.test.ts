@@ -5,6 +5,7 @@ import {
   initialRows,
   availableCriteriaForRow,
   criteriaAvailableToAdd,
+  processContextConfigs,
   validateTextInput,
   getRangeOrderError,
   updateRow,
@@ -24,6 +25,8 @@ import {
 import {
   mockRowGenderNoValue,
   mockRowGenderWithValue,
+  mockRowImeIdentifier,
+  multiKeyTypeCriteria,
   mockRowNoCriterion,
   mockRowRangeNoBounds,
   mockRowRangePartial,
@@ -34,6 +37,7 @@ import {
   mockRowTextNoValue,
   mockRowTextPassingRegex,
   mockRowTextWithValue,
+  mockRowUmiIdentifier,
   mockRowWithKeyTypeValue,
   mockResolvedScalarRow,
   mockResolvedKeyTypeRow,
@@ -41,6 +45,10 @@ import {
   mockRowDateScalar,
   mockRowDateRange,
   mockRowDateRangeFromOnly,
+  mockUserPrivileges,
+  makeMockContextWithCriteria,
+  mockSimpleFieldCriterion,
+  mockKeyTypeFieldCriterion,
 } from './__mocks__/utilsMocks';
 
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
@@ -50,6 +58,35 @@ jest.mock('date-fns', () => ({
     return shifted.toISOString().slice(0, -1) + '+0530';
   },
 }));
+
+describe('processContextConfigs', () => {
+  it.each([
+    {
+      label: 'field without keyType gets id equal to key',
+      criterion: mockSimpleFieldCriterion,
+      expectedId: 'patient.name.given',
+    },
+    {
+      label: 'field with keyType gets composite key:keyType id',
+      criterion: mockKeyTypeFieldCriterion,
+      expectedId: 'patient.identifiers:PASSPORT',
+    },
+  ])('$label', ({ criterion, expectedId }) => {
+    const [result] = processContextConfigs(
+      [makeMockContextWithCriteria([criterion])],
+      mockUserPrivileges,
+    );
+    expect(result.criteria[0].id).toBe(expectedId);
+  });
+
+  it('two criteria sharing field.key but different keyType get distinct ids', () => {
+    const [result] = processContextConfigs(
+      [makeMockContextWithCriteria(multiKeyTypeCriteria)],
+      mockUserPrivileges,
+    );
+    expect(result.criteria[0].id).not.toBe(result.criteria[1].id);
+  });
+});
 
 describe('initialRows', () => {
   it('returns one row per criterion marked as default', () => {
@@ -117,6 +154,16 @@ describe('availableCriteriaForRow', () => {
       mockRowTextNoValue.rowId,
     );
     expect(result).toHaveLength(mockPatientContext.criteria.length);
+  });
+
+  it('treats criteria with same field.key but different keyType as distinct', () => {
+    const result = availableCriteriaForRow(
+      multiKeyTypeCriteria,
+      [mockRowUmiIdentifier],
+      mockRowImeIdentifier.rowId,
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].field.keyType).toBe('IME-UUID');
   });
 });
 
@@ -431,11 +478,13 @@ describe('resolveRows', () => {
   const criteria = [
     ...mockPatientContext.criteria,
     {
+      id: 'patient.identifiers:PASSPORT',
       field: { key: 'patient.identifiers', keyType: 'PASSPORT' },
       translationKey: 'PATIENT_PASSPORT',
       input: { kind: 'text' as const, placeholderTranslationKey: 'PH' },
     },
     {
+      id: 'patient.birthdate',
       field: { key: 'patient.birthdate' },
       translationKey: 'PATIENT_BIRTHDATE',
       input: { kind: 'date' as const, placeholderTranslationKey: 'DATE_PH' },
@@ -468,6 +517,16 @@ describe('resolveRows', () => {
       key: 'patient.identifiers',
       keyType: 'PASSPORT',
     });
+  });
+
+  it('resolves distinct fields when two rows share field.key but have different keyType', () => {
+    const result = resolveRows(
+      [mockRowUmiIdentifier, mockRowImeIdentifier],
+      multiKeyTypeCriteria,
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0].field.keyType).toBe('UMI-UUID');
+    expect(result[1].field.keyType).toBe('IME-UUID');
   });
 
   it('preserves the row value', () => {
@@ -629,12 +688,21 @@ describe('criteriaAvailableToAdd', () => {
   it('returns empty array when all criteria are active', () => {
     const rows = mockPatientContext.criteria.map((c, i) => ({
       rowId: `row-${i}`,
-      criterionKey: c.field.key,
+      criterionKey: c.id!,
       value: null,
       validationError: null,
+      rangeOrderError: null,
     }));
     const result = criteriaAvailableToAdd(mockPatientContext.criteria, rows);
     expect(result).toHaveLength(0);
+  });
+
+  it('treats criteria with same field.key but different keyType as distinct', () => {
+    const result = criteriaAvailableToAdd(multiKeyTypeCriteria, [
+      mockRowUmiIdentifier,
+    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0].field.keyType).toBe('IME-UUID');
   });
 });
 
