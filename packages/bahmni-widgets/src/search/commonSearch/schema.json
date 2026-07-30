@@ -87,6 +87,11 @@
           "type": "boolean",
           "description": "When true, the column header is clickable to sort results client-side"
         },
+        "sortOrder": {
+          "type": "string",
+          "enum": ["asc", "desc"],
+          "description": "Direction the results are sorted by this column before any user interaction"
+        },
         "filterType": {
           "type": "string",
           "enum": ["text", "select", "dateRange", "numeric"],
