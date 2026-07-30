@@ -20,13 +20,11 @@ import styles from './styles/EncounterDetails.module.scss';
 export interface EncounterDetailsProps {
   mode?: 'consultation' | 'startVisit';
   allowedVisitTypes?: string[];
-  defaultEncounterType?: string;
 }
 
 const EncounterDetails: React.FC<EncounterDetailsProps> = ({
   mode = 'consultation',
   allowedVisitTypes,
-  defaultEncounterType,
 }) => {
   const { t } = useTranslation();
   const practitionerState = useActivePractitioner();
@@ -78,17 +76,9 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
     setUser,
     setPatientUUID,
     setIsError,
-    setConsultationDate,
   } = useEncounterDetailsStore();
 
   const [isEncounterTypeNotFound, setIsEncounterTypeNotFound] = useState(false);
-
-  // In startVisit mode ConsultationPad isn't mounted so it never calls setConsultationDate;
-  // initialize it here so the date picker renders (disabled) rather than showing a skeleton.
-  useEffect(() => {
-    if (!isStartVisitMode) return;
-    setConsultationDate(new Date());
-  }, [isStartVisitMode, setConsultationDate]);
 
   const availablePractitioners = useMemo(
     () => (practitioner ? [practitioner] : []),
@@ -135,9 +125,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
     if (!encounterConcepts?.encounterTypes?.length || selectedEncounterType)
       return;
 
-    const targetName = isStartVisitMode
-      ? (defaultEncounterType ?? requestedEncounterType)
-      : requestedEncounterType;
+    const targetName = requestedEncounterType;
 
     const match = targetName
       ? encounterConcepts.encounterTypes.find(
@@ -154,7 +142,6 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
     setSelectedEncounterType(match ?? encounterConcepts.encounterTypes[0]);
   }, [
     isStartVisitMode,
-    defaultEncounterType,
     encounterConcepts?.encounterTypes,
     selectedEncounterType,
     requestedEncounterType,

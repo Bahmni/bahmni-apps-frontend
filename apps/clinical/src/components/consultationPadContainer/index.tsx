@@ -121,6 +121,16 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     [patientUuid, t, queryClient],
   );
 
+  useEffect(() => {
+    useEncounterDetailsStore.getState().setConsultationDate(new Date());
+  }, []);
+
+  useEffect(() => {
+    useEncounterDetailsStore
+      .getState()
+      .setRequestedEncounterType(defaultEncounterType ?? null);
+  }, [defaultEncounterType]);
+
   const shouldAutoCreate =
     !configLoading &&
     !queryLoading &&
@@ -263,7 +273,6 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
             <EncounterDetails
               mode="startVisit"
               allowedVisitTypes={allowedVisitTypes}
-              defaultEncounterType={defaultEncounterType}
             />
           </>
         }
