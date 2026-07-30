@@ -419,7 +419,7 @@ describe('captureUpdatedResources', () => {
       allergies: false,
       medications: false,
       immunizationHistory: false,
-      observationFormsWithBasedOn: false,
+      observationFormsWithBasedOn: undefined,
       serviceRequests: {},
     });
   });

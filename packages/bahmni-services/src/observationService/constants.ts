@@ -6,7 +6,7 @@ export const FHIR_OBSERVATION_URL = (
   serviceRequestId?: string,
   includeEncounter?: boolean,
 ) => {
-  let url = `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&_sort=-_lastUpdated`;
+  let url = `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&_sort=-_lastUpdated&_count=100`;
 
   if (conceptCodes && conceptCodes.length > 0) {
     const codeParams = conceptCodes.join(',');
