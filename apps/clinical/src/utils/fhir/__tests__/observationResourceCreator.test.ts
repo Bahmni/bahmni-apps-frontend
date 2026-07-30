@@ -121,8 +121,7 @@ describe('createObservationEntries', () => {
       );
 
       expect(entries[0].request?.method).toBe('PUT');
-      // obs.status ('amended') must be echoed back so OpenMRS sees the same
-      // value it already has and does not raise "Editing status not allowed".
+      // obs.status must be echoed back so OpenMRS doesn't raise "Editing status not allowed".
       expect((entries[0].resource as Record<string, unknown>).status).toBe(
         'amended',
       );
@@ -252,8 +251,7 @@ describe('createObservationEntries', () => {
     });
 
     it('skips new parent obsGroup when getFhirObservations returns no entry for parent', () => {
-      // Child call succeeds so hasMemberRefs is non-empty (allChildrenDeleted=false),
-      // but the subsequent parent POST call returns nothing → parent is skipped.
+      // Child succeeds but the subsequent parent POST call returns nothing → parent is skipped.
       (getFhirObservations as jest.Mock)
         .mockReturnValueOnce([mockEntry('urn:uuid:child')]) // child POST
         .mockReturnValueOnce([]); // parent POST returns nothing
@@ -274,8 +272,7 @@ describe('createObservationEntries', () => {
     });
 
     it('skips existing parent obsGroup when getFhirObservations returns no entry for the parent', () => {
-      // Child call succeeds (returns a ref) so not all children are deleted,
-      // but the subsequent parent PUT call returns nothing → parent is skipped.
+      // Child succeeds but the subsequent parent PUT call returns nothing → parent is skipped.
       (getFhirObservations as jest.Mock)
         .mockReturnValueOnce([mockEntry('urn:uuid:child')]) // child POST
         .mockReturnValueOnce([]); // parent PUT returns nothing
@@ -325,13 +322,7 @@ describe('createObservationEntries', () => {
     });
 
     it('does not touch the parent when one member is removed and the rest are unchanged (only the removed child gets a DELETE)', () => {
-      // Regression: OpenMRS's ObsValidator rejects a PUT to a group parent
-      // carrying an empty hasMember with "error.noValue" — the parent has
-      // neither its own value nor any members from that request's point of
-      // view. This happens when the only real change in a group is a
-      // removal and every remaining member is unchanged (correctly omitted
-      // from hasMember) — group membership lives on the child's
-      // obs_group_id, so the parent doesn't need touching at all here.
+      // Regression: OpenMRS rejects a PUT to a group parent with empty hasMember ("error.noValue").
       const groupObs: Form2Observation = {
         concept: { uuid: 'group-concept' },
         value: null,
@@ -398,8 +389,7 @@ describe('createObservationEntries', () => {
         performer,
       );
 
-      // Only the changed child + the parent update — nothing for the
-      // unchanged sibling.
+      // Only the changed child + the parent update — nothing for the unchanged sibling.
       expect(entries).toHaveLength(2);
       const childEntry = entries.find(
         (e) => e.fullUrl === 'Observation/changed-child-uuid',

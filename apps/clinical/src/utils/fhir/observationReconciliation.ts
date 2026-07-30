@@ -1,13 +1,6 @@
 import { ComplexValue, Form2Observation } from '@bahmni/services';
 
-/**
- * OpenMRS FHIR2 performs partial updates on PUT: an absent `note` field leaves
- * the existing comment unchanged in the database. The only reliable way to clear
- * a note is to DELETE the existing obs and POST a new one with the same value
- * but no comment. This function finds obs where the note was cleared (original
- * had comment, current does not) and replaces them in-place with the DELETE+POST
- * pair so createObservationEntries emits the correct bundle entries.
- */
+/** Clears a note via DELETE+POST — OpenMRS FHIR2's PUT can't null out an absent field. */
 export const replaceNoteRemovedObs = (
   transformed: Form2Observation[],
   original: Form2Observation[],
@@ -19,11 +12,7 @@ export const replaceNoteRemovedObs = (
   };
   original.forEach(buildMap);
 
-  // Recurse into group members so obsGroup children (e.g. Blood Pressure ->
-  // Systolic / Diastolic) are also handled, not just top-level obs. Mirrors
-  // replaceInterpretationRemovedObs, which needs the same recursion for the
-  // same reason: obsGroup children are each processed as individual leaf
-  // Observations in the bundle.
+  // Recurse into group members too — obsGroup children are processed as individual leaf Observations.
   const processObsList = (obsList: Form2Observation[]): void => {
     for (let i = obsList.length - 1; i >= 0; i--) {
       const obs = obsList[i];
@@ -49,17 +38,7 @@ export const replaceNoteRemovedObs = (
   processObsList(transformed);
 };
 
-/**
- * OpenMRS FHIR2 performs partial updates on PUT: an absent `interpretation`
- * element leaves the existing interpretation coding unchanged in the database.
- * The only reliable way to clear an interpretation is to DELETE the existing obs
- * and POST a new one with the same value but no interpretation.  This mirrors
- * replaceNoteRemovedObs which handles the same problem for comments.
- *
- * Applies to both top-level obs AND group members (obsGroup children are each
- * processed as individual leaf Observations in the bundle, so the same
- * partial-update issue affects them — e.g. Blood Pressure → Systolic / Diastolic).
- */
+/** Clears an interpretation via DELETE+POST, same reason/pattern as replaceNoteRemovedObs. */
 export const replaceInterpretationRemovedObs = (
   transformed: Form2Observation[],
   original: Form2Observation[],
@@ -87,8 +66,7 @@ export const replaceInterpretationRemovedObs = (
           continue; // spliced entries don't need further recursion
         }
       }
-      // Recurse into group members so obsGroup children (e.g. Systolic, Diastolic)
-      // are also handled.
+      // Recurse into group members too.
       if (obs.groupMembers?.length) {
         processObsList(obs.groupMembers);
       }
@@ -98,16 +76,7 @@ export const replaceInterpretationRemovedObs = (
   processObsList(transformed);
 };
 
-/**
- * When an addMore file-upload item is deleted, form2-controls removes it from
- * the list entirely instead of keeping it as voided. CarbonContainer.getValue()
- * no longer returns it, so the uuid is lost and no DELETE entry is generated.
- *
- * This function diffs `transformed` (what CarbonContainer returned) against
- * `original` (the FHIR-fetched observations in statusSourceRef). Any uuid
- * present in original but absent from transformed is injected as a synthetic
- * voided entry so createObservationEntries emits a DELETE.
- */
+/** Injects a synthetic voided DELETE entry for any obs present in `original` but missing from `transformed`. */
 export const injectMissingDeleteObs = (
   transformed: Form2Observation[],
   original: Form2Observation[],
@@ -146,16 +115,7 @@ export const injectMissingDeleteObs = (
   injectInto(original, transformed);
 };
 
-/**
- * CarbonContainer receives Complex observation values as plain string URLs
- * (OBJECT values are stripped in observationsWithValues to avoid the
- * value.indexOf crash). This function restores the original ComplexValue
- * OBJECT (which carries fileName) from the frozen statusSource so that
- * createObservationResource can persist valueAttachment.title to the DB.
- *
- * For newly uploaded files (not in source), the value remains a string and
- * FhirObservationTransformer's FileNameCache handles the title on save.
- */
+/** Restores the original ComplexValue object (with fileName) from `source` for values CarbonContainer flattened to plain URL strings. */
 export const restoreComplexValues = (
   transformed: Form2Observation[],
   source: Form2Observation[],
@@ -186,14 +146,7 @@ export const restoreComplexValues = (
   transformed.forEach(restore);
 };
 
-/**
- * CarbonContainer does not pass the `status` field through getValue().
- * This function copies the FHIR status from pre-loaded existingObservations
- * into the transformed observations (matched by uuid) so that PUT requests
- * in the bundle echo back the same status OpenMRS currently has stored.
- * Without it, sending no status causes a null error; sending a different
- * status causes "Editing the fields [status] on Obs is not allowed".
- */
+/** Copies FHIR status (uuid-matched) from `existing` onto `transformed` — CarbonContainer's getValue() drops it, but PUT requires it. */
 export const mergeObservationStatuses = (
   transformed: Form2Observation[],
   existing: Form2Observation[],
@@ -210,21 +163,7 @@ export const mergeObservationStatuses = (
   }
 };
 
-/**
- * Marks leaf observations whose value/comment/interpretation exactly match
- * the original FHIR snapshot as `unchanged`, so the bundle builder
- * (observationResourceCreator) skips emitting a PUT for them. Observations
- * are time-bound clinical facts — a field the user never touched shouldn't be
- * rewritten (new dateChanged, extra DB write) just because it's present in
- * the form alongside a field that actually changed.
- *
- * Recurses into obsGroup children too: unchanged group members are safely
- * omitted from their parent's hasMember list, not just from the PUT. Bahmni's
- * FHIR2 extension (BahmniObsDaoImpl.updateObsMember) applies hasMember as
- * `UPDATE obs SET obs_group_id = :parentId WHERE obs_id IN (:members)` — it
- * only touches the rows explicitly listed, so an omitted-but-still-existing
- * child is never unlinked from its group.
- */
+/** Marks leaf observations matching the original snapshot as `unchanged`, so the bundle builder skips PUT-ing them. */
 export const markUnchangedObservations = (
   transformed: Form2Observation[],
   original: Form2Observation[],
@@ -245,11 +184,7 @@ export const markUnchangedObservations = (
       if (!obs.uuid || obs.voided) continue;
       const orig = originalByUuid.get(obs.uuid);
       if (!orig) continue;
-      // Interpretation is compared case-insensitively: getValue() echoes back
-      // CarbonContainer's internal uppercase codes ("ABNORMAL"), while the
-      // frozen FHIR-fetched snapshot holds the raw display string
-      // ("Abnormal") — the container normalises the same way on the way IN
-      // to CarbonContainer, for the same reason.
+      // Interpretation compared case-insensitively (getValue() echoes uppercase codes; snapshot holds display strings).
       if (
         valueFingerprint(obs.value) === valueFingerprint(orig.value) &&
         obs.comment === orig.comment &&
@@ -264,17 +199,7 @@ export const markUnchangedObservations = (
   processObsList(transformed);
 };
 
-/**
- * Converts a single observation value to a stable, comparable string.
- *
- * Handles:
- * - Coded values ({uuid}) — keyed by uuid only, ignoring display/name drift
- * - Complex ({url}) and URL strings — normalised to the URL string
- * - Date objects and ISO date strings — reduced to YYYY-MM-DD (timezone-safe).
- *   The regex match is validated with `new Date()` so numeric-looking strings
- *   like "2024" are never misidentified as dates.
- * - Primitives — String()
- */
+/** Converts a single observation value to a stable, comparable string (coded/complex/date-aware). */
 export const valueFingerprint = (v: unknown): string => {
   if (v == null) return '';
   // Date: validate the parsed date before treating the string as a date value
@@ -287,27 +212,17 @@ export const valueFingerprint = (v: unknown): string => {
   const obj = typeof v === 'object' ? (v as Record<string, unknown>) : null;
   if (obj && 'uuid' in obj) return `uuid:${obj.uuid}`;
   if (typeof v === 'string' && obj == null) return v; // plain string / URL
-  // Normalise Complex { url } to the same fingerprint as a plain URL string so
-  // that an obs whose value was { url, fileName } in FHIR (returned as Complex by
-  // getValue()) matches the plain URL string produced by extractControls.
+  // Normalise Complex { url } to the same fingerprint as a plain URL string.
   if (obj && 'url' in obj) return String(obj.url);
   return JSON.stringify(v);
 };
 
-/**
- * Compares current form observations against the baseline. Returns true when
- * any field was added, removed, or changed.
- *
- * Multiselect fields produce several observations with the same formFieldPath.
- * Collecting into sorted string arrays per path makes the comparison
- * order-independent and avoids Map overwrites that caused the last value to win.
- */
+/** Compares current form observations against the baseline; true if any field was added, removed, or changed. */
 export const detectFormChanges = (
   current: Form2Observation[],
   original: Form2Observation[],
 ): boolean => {
-  // Collect all value fingerprints per formFieldPath into sorted arrays so
-  // multiselect entries (same path, different values) are compared as a set.
+  // Collect value fingerprints per formFieldPath into sorted arrays so multiselect entries compare as a set.
   const collect = (
     list: Form2Observation[],
     map: Map<string, string[]>,
@@ -316,15 +231,11 @@ export const detectFormChanges = (
       if (obs.formFieldPath && obs.value !== null && obs.value !== undefined) {
         const fp = valueFingerprint(obs.value);
         const arr = map.get(obs.formFieldPath) ?? [];
-        // Deduplicate: CarbonContainer may still return the same obs via both a
-        // parent obsGroup's groupMembers and as a standalone entry.  Without
-        // dedup the baseline length is 2 while current is 1, so detectFormChanges
-        // always reports "changed" even after the user restores the original value.
+        // Deduplicate: CarbonContainer may return the same obs both standalone and inside a parent's groupMembers.
         if (!arr.includes(fp)) arr.push(fp);
         map.set(obs.formFieldPath, arr);
       }
-      // Track comment (note) changes independently of value changes so that
-      // adding or editing a note on an existing obs enables the Done button.
+      // Track comment (note) changes independently of value changes.
       if (
         obs.formFieldPath &&
         obs.comment !== null &&
@@ -361,11 +272,7 @@ export const detectFormChanges = (
   return false;
 };
 
-/**
- * Extracts the form version string from an observation's formFieldPath.
- * formFieldPath format: "FormName.version/controlId-instance"
- * Returns null when the path is absent or does not contain version info.
- */
+/** Extracts the form version from a formFieldPath ("FormName.version/controlId-instance"). */
 export function extractVersionFromFormFieldPath(
   formFieldPath: string | undefined,
 ): string | null {

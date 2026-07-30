@@ -1215,11 +1215,7 @@ describe('FormsTable', () => {
     });
 
     it('refetches even when updatedConcepts is empty (e.g. a delete-only save), as long as the patient matches', async () => {
-      // A delete-only save (removing a field with nothing else changed) produces
-      // a FHIR transaction response with no Observation resource body, so
-      // updatedConcepts stays empty even though a save genuinely happened. The
-      // refetch must still fire, or the view modal keeps showing stale,
-      // pre-delete data until the query's staleTime lapses.
+      // A delete-only save has no Observation body, so updatedConcepts stays empty — refetch must still fire.
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
       let capturedCallback: ((payload: any) => void) | null = null;
 

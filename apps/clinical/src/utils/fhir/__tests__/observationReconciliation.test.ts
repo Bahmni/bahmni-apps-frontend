@@ -395,11 +395,7 @@ describe('markUnchangedObservations', () => {
   });
 
   it('treats interpretation case-insensitively (getValue() echoes uppercase codes; FHIR fetch returns display strings)', () => {
-    // Regression: getValue() returns CarbonContainer's internal uppercase
-    // interpretation code ("ABNORMAL"), while the frozen FHIR-fetched
-    // snapshot holds the raw display string ("Abnormal"). A case-sensitive
-    // comparison here previously meant every obs with an interpretation
-    // never got marked unchanged, so unmodified fields kept going as PUT.
+    // Regression: getValue() returns uppercase codes ("ABNORMAL") but the FHIR snapshot holds display strings ("Abnormal").
     const transformed = [obs('obs-1', 2, { interpretation: 'ABNORMAL' })];
     const original = [obs('obs-1', 2, { interpretation: 'Abnormal' })];
     markUnchangedObservations(transformed, original);

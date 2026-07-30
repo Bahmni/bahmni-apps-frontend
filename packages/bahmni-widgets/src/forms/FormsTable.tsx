@@ -43,10 +43,7 @@ interface FormsTableConfig {
   forms?: string[];
 }
 
-/**
- * Component to display patient forms grouped by form name in accordion format
- * Each accordion item contains a SortableDataTable with form records for that form type
- */
+/** Displays patient forms grouped by form name in accordion format. */
 const FormsTable: React.FC<WidgetProps> = ({
   episodeOfCareUuids,
   encounterUuids,
@@ -177,13 +174,7 @@ const FormsTable: React.FC<WidgetProps> = ({
     enabled: !!selectedRecord?.encounterUuid && isModalOpen,
   });
 
-  // Listen to consultation saved events and refetch cached data for this patient.
-  // Deliberately NOT gated on updatedConcepts.size > 0: that map is built from
-  // the FHIR transaction RESPONSE's Observation entries, but a delete-only save
-  // (e.g. removing a single field with nothing else changed) produces a DELETE
-  // response with no resource body — updatedConcepts stays empty even though a
-  // save genuinely happened, which silently skipped this refetch and left the
-  // view modal showing stale, pre-delete data until the query's staleTime lapsed.
+  // Refetch on any save for this patient — not gated on updatedConcepts, which stays empty for delete-only saves.
   useSubscribeConsultationSaved(
     (payload: ConsultationSavedEventPayload) => {
       if (payload.patientUUID === patientUuid) {

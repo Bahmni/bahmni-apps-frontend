@@ -2,51 +2,7 @@ import { getFhirObservations, FhirReference } from '@bahmni/form2-controls';
 import { Form2Observation, createBundleEntry } from '@bahmni/services';
 import { BundleEntry, Observation, Reference } from 'fhir/r4';
 
-/**
- * Creates FHIR bundle entries for a list of Form2Observations, using the
- * correct HTTP verb for each observation based on its uuid and voided state:
- *
- *   uuid present + voided:true          → DELETE  Observation/{uuid}
- *   uuid present + obs.unchanged:true   → skipped (no bundle entry emitted)
- *   uuid present + value/comment/       → PUT     Observation/{uuid}
- *     interpretation changed
- *   no uuid + has value                 → POST    urn:uuid:{newUUID}
- *   no uuid + voided (never saved)      → skipped
- *
- * For grouped observations (groupMembers):
- *   - Children are processed first with the rules above.
- *   - If the parent has a uuid and every child is gone (voided/never existed)
- *     → parent is also DELETE.
- *   - If the parent has a uuid and there's no new/changed child to link →
- *     the parent itself is skipped entirely, no bundle entry for it at all.
- *     This covers both "nothing in the group changed" AND "the only change
- *     was a removal" — group membership lives on the CHILD's obs_group_id,
- *     not as a list owned by the parent, so a removed child's own DELETE
- *     entry is sufficient on its own; touching the parent isn't needed and
- *     risks sending an empty hasMember, which OpenMRS's ObsValidator rejects
- *     as "error.noValue" for a group obs with neither a value nor members.
- *   - If the parent has a uuid and at least one child is new/changed → parent
- *     is PUT at Observation/{uuid} (the backend's applyUpdate override reuses
- *     the existing parent and re-links members via updateObsMember, the same
- *     safe mechanism create()'s POST-with-id path already used). `hasMember`
- *     includes ONLY the new/changed children — unchanged children are safely
- *     omitted (see below) and voided children are naturally excluded.
- *   - If the parent has no uuid → parent is POST as a new group.
- *
- * `obs.unchanged` is set upstream (ObservationFormsContainer, which has both
- * the current and original snapshot in scope) for obs whose value/comment/
- * interpretation exactly match what's already saved. Observations are
- * time-bound clinical facts — fields the user didn't touch shouldn't be
- * rewritten (new dateChanged, extra DB churn) just because they happen to be
- * present in the form.
- *
- * Omitting an unchanged group member from `hasMember` is safe: Bahmni's FHIR2
- * extension module (BahmniObsDaoImpl.updateObsMember) applies the incoming
- * hasMember list as `UPDATE obs SET obs_group_id = :parentId WHERE obs_id IN
- * (:members)` — it only touches rows explicitly listed, never clears
- * obs_group_id for rows that are omitted. So an omitted-but-still-existing
- * child stays linked to its group; it is never orphaned by leaving it out.
- */
+/** Creates FHIR bundle entries for a list of Form2Observations, choosing POST/PUT/DELETE/skip per obs's uuid/voided/unchanged state. */
 export function createObservationEntries(
   observations: Form2Observation[],
   subjectReference: Reference,
@@ -91,19 +47,7 @@ type ObsOptions = {
 
 type ObsEntry = { resource: Observation; fullUrl: string };
 
-/**
- * Outcome of processing one observation (leaf or group), reported to its
- * parent (if any):
- *   ref        — reference to use in a parent's hasMember; null when this obs
- *                doesn't need a hasMember entry (unchanged/removed/never existed).
- *   stillExists — false only when this obs is gone (voided, or never had a
- *                value to begin with). Used to decide whether a parent group
- *                is now completely empty and should itself be DELETEd. A
- *                removed-but-not-all-gone member never needs the parent
- *                touched at all — group membership lives on the CHILD's
- *                obs_group_id, not as a list owned by the parent, so the
- *                child's own DELETE entry is sufficient on its own.
- */
+/** Outcome of processing one observation, reported to its parent: hasMember ref (if any) and whether it still exists. */
 type ChildResult = {
   ref: string | null;
   stillExists: boolean;
@@ -111,10 +55,7 @@ type ChildResult = {
 
 const NONE: ChildResult = { ref: null, stillExists: false };
 
-/**
- * Processes a grouped observation (obsGroup): collects hasMember refs for all
- * children, then delegates to the existing-group or new-group path.
- */
+/** Processes a grouped observation (obsGroup): collects hasMember refs, then delegates to existing/new-group path. */
 function processGroupedObservation(
   obs: Form2Observation,
   processChild: (child: Form2Observation) => ChildResult,
@@ -142,15 +83,7 @@ function processGroupedObservation(
       return { ref: null, stillExists: false };
     }
     if (!anyChangedOrNew) {
-      // Nothing new/changed to link into the parent — either nothing in the
-      // group changed at all, or the only change was a removal. Either way
-      // the parent itself needs no update: group membership lives on the
-      // CHILD's obs_group_id, not as a list owned by the parent, so a
-      // removed child's own DELETE entry is fully sufficient on its own.
-      // Sending the parent here would risk an empty hasMember PUT, which
-      // OpenMRS's ObsValidator rejects as "error.noValue" for a group obs
-      // that (from that single request's perspective) has neither a value
-      // nor any members.
+      // Nothing new/changed to link — skip the parent entirely (a removed child's own DELETE is sufficient).
       return { ref: `Observation/${obs.uuid}`, stillExists: true };
     }
     const url = processExistingGroup(obs, hasMemberRefs, entries, options);
@@ -164,18 +97,7 @@ function processGroupedObservation(
   return url ? { ref: url, stillExists: true } : NONE;
 }
 
-/**
- * Handles an obsGroup that already exists in the DB (has a uuid) and has at
- * least one new/changed/removed member — PUTs the parent at its existing uuid
- * so OpenMRS updates the obsGroup in place, with hasMember containing only the
- * new/changed children (unchanged children are safely omitted).
- *
- * Uses a real PUT rather than POST-with-id: BahmniFhirObservationServiceImpl's
- * `applyUpdate` override (backend, bahmni-module-fhir2-addl-extension) now
- * handles a PUT-to-existing-obsGroup the same safe way `create()` already
- * handled POST-with-id — reusing the existing parent and re-linking members
- * via `updateObsMember` — so PUT is the correct verb to use here.
- */
+/** PUTs an existing obsGroup parent with hasMember set to only its new/changed children. */
 function processExistingGroup(
   obs: Form2Observation,
   hasMemberRefs: string[],
@@ -224,20 +146,14 @@ function postNewGroup(
   return null;
 }
 
-/**
- * Processes a leaf (non-grouped) observation.
- * New obs → POST. Existing, unchanged → skipped entirely (no ref, no entry).
- * Existing, changed → PUT. Existing, voided → DELETE. Never saved + voided → skipped.
- */
+/** Processes a leaf observation: new→POST, unchanged→skip, changed→PUT, voided→DELETE. */
 function processLeafObservation(
   obs: Form2Observation,
   entries: BundleEntry[],
   options: ObsOptions,
 ): ChildResult {
   if (!obs.uuid && !obs.voided) {
-    // Skip observations with no value — these are empty addMore trailing slots
-    // that CarbonContainer includes in getValue(). POSTing them triggers a
-    // ConceptComplex cast error on the backend for Complex-type concepts.
+    // Skip empty addMore trailing slots — POSTing them errors on Complex-type concepts.
     if (obs.value == null) return NONE;
     const [entry] = getFhirObservations([obs], options) as ObsEntry[];
     if (entry) {
@@ -271,12 +187,7 @@ function processLeafObservation(
   return NONE;
 }
 
-/**
- * PUTs an existing leaf observation with its updated value.
- * `obs.status` carries the current FHIR status from the DB ("final" on a
- * first edit, "amended" on subsequent edits) — OpenMRS requires this field
- * to be present on PUT and rejects any value different from what it stores.
- */
+/** PUTs an existing leaf observation, echoing back its current FHIR status as OpenMRS requires. */
 function putExistingLeaf(
   obs: Form2Observation,
   entries: BundleEntry[],

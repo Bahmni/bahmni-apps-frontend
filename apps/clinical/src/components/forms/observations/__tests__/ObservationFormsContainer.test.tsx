@@ -409,9 +409,6 @@ describe('ObservationFormsContainer', () => {
     });
 
     it('should DELETE+POST when interpretation is cleared on a standalone obs (partial-PUT workaround)', () => {
-      // OpenMRS FHIR2 partial PUT leaves interpretation unchanged when the field
-      // is absent. replaceInterpretationRemovedObs detects this and replaces the
-      // obs with a DELETE+POST pair so the interpretation is actually cleared.
       const mockOnFormObservationsChange = jest.fn();
       const mockOnViewingFormChange = jest.fn();
 
@@ -441,8 +438,7 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={mockForm}
-          // Seed existingObservations with ABNORMAL interpretation so
-          // statusSourceRef is populated with the original abnormal obs.
+          // Seed with ABNORMAL interpretation to populate statusSourceRef.
           existingObservations={[
             {
               concept: { uuid: 'c1' },
@@ -478,10 +474,7 @@ describe('ObservationFormsContainer', () => {
     });
 
     it('should DELETE+POST when interpretation is cleared on an obsGroup member (partial-PUT workaround)', () => {
-      // Blood Pressure obsGroup: Systolic and Diastolic are group members.
-      // Each is processed as an individual leaf Observation in the bundle,
-      // so the same partial-update issue applies — omitting interpretation
-      // from the PUT does not clear it. Verify that group members are handled.
+      // Group members are processed as individual leaf Observations, so the same partial-PUT issue applies.
       const mockOnFormObservationsChange = jest.fn();
       const mockOnViewingFormChange = jest.fn();
 

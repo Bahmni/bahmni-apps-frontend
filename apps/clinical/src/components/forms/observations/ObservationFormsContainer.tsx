@@ -106,19 +106,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const isEditMode =
     encounterSessionStartContext?.editOnly === 'observationForms';
 
-  // Init-settle guard: CarbonContainer fires onValueUpdated on mount; all
-  // synchronous fires are skipped. The timer is cancelled and rescheduled on
-  // every init fire so the baseline is always captured AFTER the last init
-  // fire settles — even if CarbonContainer fires slightly asynchronously.
+  // Init-settle guard — skips CarbonContainer's synchronous onValueUpdated fires on mount.
   const initSettledRef = React.useRef(!isEditMode);
   const initSettleTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
 
   // Baseline captured from CarbonContainer's getValue() after init settles.
-  // Using CarbonContainer's own state (not FHIR data) as the baseline ensures
-  // any schema-driven defaults inside layout sections are included, so comparing
-  // against this baseline correctly detects only genuine user changes.
   const [baselineObservations, setBaselineObservations] = React.useState<
     Form2Observation[]
   >([]);
@@ -183,16 +177,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     typeof CarbonContainer
   > | null>(null);
 
-  // Latch onto the first render that has FHIR-enriched observations (uuid + status).
-  // handleFormDataChange overwrites the store on every keystroke with status-less
-  // observations, making existingObservations stale by save time.
-  // This ref freezes the enriched snapshot so mergeObservationStatuses always has
-  // the correct current status ("final" or "amended") to echo back in PUT requests.
-  //
-  // The inline update below intentionally runs during render (not in an effect)
-  // so the ref is updated synchronously on the very first render that carries
-  // uuid-bearing observations — before any child renders or effects run.
-  // It is a one-way latch: once the ref holds uuids it is never overwritten again.
+  // One-way latch onto the first render with FHIR-enriched observations (uuid + status).
   const statusSourceRef = useRef<Form2Observation[]>(
     existingObservations ?? [],
   );
@@ -215,9 +200,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   );
 
   // Snapshot-based change detection (mirrors medication edit's hasEditChanges).
-  // Uses CarbonContainer's own getValue() state (captured after init settles)
-  // as the baseline — this includes schema-driven defaults inside layout sections,
-  // so the comparison correctly detects only genuine user changes.
   const hasFormChanges = React.useMemo(() => {
     if (!isEditMode) return true; // non-edit forms are always saveable
     if (!initSettledRef.current) return false;
@@ -235,15 +217,9 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       if (validationErrorType) {
         setValidationErrorType(null);
       }
-      // Skip all CarbonContainer fires until init has settled. setTimeout(0)
-      // runs after React's synchronous commit phase (including Strict Mode
-      // double-mount), so every init fire — no matter how many — is skipped.
-      // After settling, capture CarbonContainer's current state as the baseline
-      // so that any schema-driven defaults are included in the comparison.
+      // Skip all CarbonContainer fires until init has settled.
       if (!initSettledRef.current) {
-        // Cancel any pending settle — reschedule so the baseline is captured
-        // AFTER the last init fire (handles delayed async fires from
-        // CarbonContainer that might arrive after the initial setTimeout(0)).
+        // Reschedule so the baseline is captured after the last init fire.
         if (initSettleTimerRef.current !== null) {
           clearTimeout(initSettleTimerRef.current);
         }
@@ -284,16 +260,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const observationsWithValues = React.useMemo(() => {
     if (!existingObservations) return [];
 
-    // getObservationsFromFhir (form2-controls) may return children both as
-    // top-level entries AND inside a parent obsGroup's groupMembers.  Passing
-    // the duplicate to CarbonContainer causes two problems:
-    //   1. React "duplicate key" warnings (CarbonContainer uses uuid as key).
-    //   2. getValue() returns the child twice → baseline gets 2 fingerprints
-    //      for that formFieldPath → detectFormChanges always reports "changed".
-    //
-    // Fix: collect every uuid that appears inside any obs's groupMembers, then
-    // exclude top-level obs whose uuid is in that set.  The child will still
-    // pre-populate via the parent's groupMembers property.
+    // Exclude top-level duplicates of obsGroup children (form2-controls returns both).
     const childUuids = new Set<string>();
     const collectChildUuids = (obs: Form2Observation): void => {
       obs.groupMembers?.forEach((child) => {
@@ -303,13 +270,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     };
     existingObservations.forEach(collectChildUuids);
 
-    // Recursively convert Complex { url, fileName } values to plain string URLs.
-    // CarbonContainer's Immutable.js records call value.indexOf('voided'), so
-    // object values crash the render.  This must also apply to values nested
-    // inside groupMembers — without it, getValue() returns the child Complex as
-    // an object whose fingerprint ("url:http://...") never matches the string
-    // fingerprint ("http://...") produced by extractControls, keeping Done enabled
-    // even when the user has made no net change.
+    // Convert Complex { url, fileName } values to plain string URLs — CarbonContainer crashes on object values.
     const convertComplex = (obs: Form2Observation): Form2Observation => {
       const converted =
         typeof obs.value === 'object' &&
@@ -326,11 +287,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       return converted;
     };
 
-    // getObservationsFromFhir (form2-controls) returns interpretation as display
-    // strings ("Abnormal", "Normal") via CODE_TO_INTERPRETATION. CarbonContainer
-    // internally uses uppercase codes ("ABNORMAL", "NORMAL") for comparison and
-    // the abnormal SelectableTag's `selected` state. Normalise to uppercase so
-    // the interpretation is pre-loaded correctly on edit.
+    // Normalise interpretation to uppercase codes to match CarbonContainer's internal format.
     const normalizeInterpretation = (
       obs: Form2Observation,
     ): Form2Observation => {
@@ -679,19 +636,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             metadata={{
               ...(formMetadata.schema as Form2FormMetadata),
               name: viewingForm?.name,
-              // When editing an existing encounter, use the version embedded in
-              // the saved observations' formFieldPath (e.g. "Vitals.1/14-0" → "1").
-              // This ensures pre-population works for encounters saved before the
-              // FORM_METADATA_URL was updated to return the OpenMRS record version.
-              // For new encounters (no existing obs), use the OpenMRS record version
-              // so future formFieldPaths encode the correct version for lookup.
-              //
-              // Read from statusSourceRef (the frozen first FHIR-enriched snapshot),
-              // NOT observationsWithValues[0] — the latter is rebuilt from the store
-              // on every keystroke, so its [0] element (and hence the extracted
-              // version) can change mid-edit. A version change here re-triggers
-              // form2-controls' Container.componentDidUpdate tree rebuild against
-              // observations that no longer line up with the schema, blanking fields.
+              // Use the version embedded in the saved observations' formFieldPath when editing.
               version:
                 extractVersionFromFormFieldPath(
                   statusSourceRef.current[0]?.formFieldPath,
