@@ -123,7 +123,7 @@ const ResultsTable = ({
     }
 
     return null;
-  }, [resultFields, actions, t]);
+  }, [resultFields, actions]);
 
   useEffect(() => {
     if (expressionError) return;

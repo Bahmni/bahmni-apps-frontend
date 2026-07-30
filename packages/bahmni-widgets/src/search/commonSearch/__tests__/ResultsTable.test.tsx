@@ -27,10 +27,6 @@ jest.mock('@bahmni/services', () => ({
   generateUUID: jest.fn(),
   useTranslation: jest.fn(),
   getCurrentUserPrivileges: () => mockGetCurrentUserPrivileges(),
-  getFormattedError: jest.fn((error: Error) => ({
-    title: 'Error',
-    message: error.message,
-  })),
 }));
 expect.extend(toHaveNoViolations);
 

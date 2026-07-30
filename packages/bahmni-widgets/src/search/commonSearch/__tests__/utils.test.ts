@@ -735,12 +735,6 @@ describe('formatSearchResult', () => {
 });
 
 describe('validateConfigForActions', () => {
-  const mockT = jest.fn((key: string) => key);
-
-  beforeEach(() => {
-    mockT.mockClear();
-  });
-
   it('returns null when no actions are referenced', () => {
     const contexts = [
       {
@@ -749,46 +743,36 @@ describe('validateConfigForActions', () => {
         actions: undefined,
       },
     ];
-    expect(validateConfigForActions(contexts, mockT)).toBeNull();
+    expect(validateConfigForActions(contexts)).toBeNull();
   });
 
   it('returns null when actions are valid and properly referenced', () => {
     expect(
-      validateConfigForActions([mockContextWithValidActions], mockT),
+      validateConfigForActions([mockContextWithValidActions]),
     ).toBeNull();
   });
 
-  it('returns error when resultFields reference actions but no actions array is defined', () => {
+  it('returns error key when resultFields reference actions but no actions array is defined', () => {
     const result = validateConfigForActions(
       [mockContextWithMissingActionsArray],
-      mockT,
     );
-    expect(result).toBeTruthy();
-    expect(mockT).toHaveBeenCalledWith(
-      'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION',
-    );
+    expect(result).toBe('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION');
   });
 
-  it('returns error when action key is duplicated', () => {
+  it('returns error key when action key is duplicated', () => {
     const contexts = [
       {
         ...mockContextWithValidActions,
         actions: mockActionsWithDuplicateKeys,
       },
     ];
-    validateConfigForActions(contexts, mockT);
-    expect(mockT).toHaveBeenCalledWith(
-      'COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_ACTION',
-      { key: 'viewPatient' },
-    );
+    const result = validateConfigForActions(contexts);
+    expect(result).toBe('COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_ACTION');
   });
 
-  it('returns error when resultField references unknown action key', () => {
-    validateConfigForActions([mockContextWithUnknownActionKey], mockT);
-    expect(mockT).toHaveBeenCalledWith(
-      'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION',
-      { key: 'unknownAction' },
-    );
+  it('returns error key when resultField references unknown action key', () => {
+    const result = validateConfigForActions([mockContextWithUnknownActionKey]);
+    expect(result).toBe('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION');
   });
 });
 

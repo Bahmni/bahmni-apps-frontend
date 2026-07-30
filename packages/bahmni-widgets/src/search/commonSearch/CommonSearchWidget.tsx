@@ -76,8 +76,8 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   });
 
   const configValidationError = useMemo(
-    () => (config ? validateConfigForActions(config, t) : null),
-    [config, t],
+    () => (config ? validateConfigForActions(config) : null),
+    [config],
   );
 
   const isLoading = isConfigLoading || isPrivilegesLoading;
@@ -162,6 +162,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
         kind="error"
         lowContrast
         title={t('COMMON_SEARCH_CONFIG_ERROR')}
+        subtitle={configValidationError ? t(configValidationError) : ''}
         className={styles.fullWidth}
       />
     );

@@ -312,7 +312,6 @@ export const validateRows = (
 
 export const validateConfigForActions = (
   contexts: SearchContextConfig[],
-  t: (key: string, options?: Record<string, string>) => string,
 ): string | null => {
   for (const context of contexts) {
     const hasActionReferences = context.resultFields.some((f) => f.action);
@@ -321,7 +320,7 @@ export const validateConfigForActions = (
       hasActionReferences &&
       (!context.actions || context.actions.length === 0)
     ) {
-      return t('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION');
+      return 'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION';
     }
 
     if (context.actions) {
@@ -330,18 +329,14 @@ export const validateConfigForActions = (
         (key, idx) => actionKeys.indexOf(key) !== idx,
       );
       if (duplicates.length > 0) {
-        return t('COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_ACTION', {
-          key: duplicates[0],
-        });
+        return 'COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_ACTION';
       }
 
       const actionKeySet = new Set(actionKeys);
 
       for (const field of context.resultFields) {
         if (field.action && !actionKeySet.has(field.action)) {
-          return t('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION', {
-            key: field.action,
-          });
+          return 'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION';
         }
       }
     }
