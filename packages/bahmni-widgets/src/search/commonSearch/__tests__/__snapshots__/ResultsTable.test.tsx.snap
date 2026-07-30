@@ -142,12 +142,40 @@ exports[`ResultsTable Snapshot matches snapshot with data 1`] = `
         <tbody
           aria-live="polite"
         >
-          <tr>
+          <tr
+            data-testid="table-row-1"
+          >
             <td
-              class="_emptyStateCell_aje5l_81"
-              colspan="2"
+              data-testid="table-cell-1-uuid-0"
             >
-              COMMON_SEARCH_NO_RESULTS
+              <span>
+                evaluated-value
+              </span>
+            </td>
+            <td
+              data-testid="table-cell-1-uuid-1"
+            >
+              <span>
+                evaluated-value
+              </span>
+            </td>
+          </tr>
+          <tr
+            data-testid="table-row-2"
+          >
+            <td
+              data-testid="table-cell-2-uuid-0"
+            >
+              <span>
+                evaluated-value
+              </span>
+            </td>
+            <td
+              data-testid="table-cell-2-uuid-1"
+            >
+              <span>
+                evaluated-value
+              </span>
             </td>
           </tr>
         </tbody>

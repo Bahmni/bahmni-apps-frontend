@@ -13,6 +13,8 @@ import {
   resolveRows,
   buildPayload,
   resultTransforms,
+  validateConfigForActions,
+  resolveNavigationURL,
   toSearchAuditEventType,
 } from '../utils';
 import {
@@ -42,6 +44,10 @@ import {
   mockResolvedScalarRow,
   mockResolvedKeyTypeRow,
   mockResolvedRangeRow,
+  mockContextWithValidActions,
+  mockContextWithUnknownActionKey,
+  mockContextWithMissingActionsArray,
+  mockActionsWithDuplicateKeys,
   mockRowDateScalar,
   mockRowDateRange,
   mockRowDateRangeFromOnly,
@@ -793,5 +799,91 @@ describe('formatSearchResult', () => {
     const spy = jest.fn().mockReturnValue('Scheduled');
     formatSearchResult('Scheduled', spy);
     expect(spy).toHaveBeenCalledWith('COMMON_SEARCH_RESULT_SCHEDULED');
+  });
+});
+
+describe('validateConfigForActions', () => {
+  it('returns null when no actions are referenced', () => {
+    const contexts = [
+      {
+        ...mockContextWithValidActions,
+        resultFields: [{ translationKey: 'NAME', expression: 'name' }],
+        actions: undefined,
+      },
+    ];
+    expect(validateConfigForActions(contexts)).toBeNull();
+  });
+
+  it('returns null when actions are valid and properly referenced', () => {
+    expect(validateConfigForActions([mockContextWithValidActions])).toBeNull();
+  });
+
+  it('returns error key when resultFields reference actions but no actions array is defined', () => {
+    const result = validateConfigForActions([
+      mockContextWithMissingActionsArray,
+    ]);
+    expect(result).toBe('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION');
+  });
+
+  it('returns error key when action key is duplicated', () => {
+    const contexts = [
+      {
+        ...mockContextWithValidActions,
+        actions: mockActionsWithDuplicateKeys,
+      },
+    ];
+    const result = validateConfigForActions(contexts);
+    expect(result).toBe('COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_ACTION');
+  });
+
+  it('returns error key when resultField references unknown action key', () => {
+    const result = validateConfigForActions([mockContextWithUnknownActionKey]);
+    expect(result).toBe('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION');
+  });
+});
+
+describe('resolveNavigationURL', () => {
+  it('resolves placeholders with JSONata expressions', async () => {
+    const result = await resolveNavigationURL('/patient/{name}', {
+      name: 'John Doe',
+    });
+    expect(result).toBe('/patient/John%20Doe');
+  });
+
+  it('resolves multiple placeholders', async () => {
+    const result = await resolveNavigationURL('/patient/{name}/visit/{id}', {
+      name: 'John Doe',
+      id: '123',
+    });
+    expect(result).toBe('/patient/John%20Doe/visit/123');
+  });
+
+  it('converts resolved value to string', async () => {
+    const result = await resolveNavigationURL('/patient/{age}', { age: 30 });
+    expect(result).toBe('/patient/30');
+  });
+
+  it('encodes special characters in resolved values', async () => {
+    const result = await resolveNavigationURL('/patient/{name}', {
+      name: 'John/Doe & Smith',
+    });
+    expect(result).toBe('/patient/John%2FDoe%20%26%20Smith');
+  });
+
+  it.each([
+    ['expression evaluates to null', '/patient/{uuid}', { name: 'John Doe' }],
+    [
+      'expression evaluates to undefined',
+      '/patient/{missing}',
+      { name: 'John Doe' },
+    ],
+    [
+      'JSONata expression throws error',
+      '/patient/{$invalid}',
+      { name: 'John Doe' },
+    ],
+  ])('returns null when %s', async (_description, template, rowData) => {
+    const result = await resolveNavigationURL(template, rowData);
+    expect(result).toBeNull();
   });
 });
