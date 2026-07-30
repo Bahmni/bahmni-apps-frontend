@@ -747,15 +747,13 @@ describe('validateConfigForActions', () => {
   });
 
   it('returns null when actions are valid and properly referenced', () => {
-    expect(
-      validateConfigForActions([mockContextWithValidActions]),
-    ).toBeNull();
+    expect(validateConfigForActions([mockContextWithValidActions])).toBeNull();
   });
 
   it('returns error key when resultFields reference actions but no actions array is defined', () => {
-    const result = validateConfigForActions(
-      [mockContextWithMissingActionsArray],
-    );
+    const result = validateConfigForActions([
+      mockContextWithMissingActionsArray,
+    ]);
     expect(result).toBe('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION');
   });
 
