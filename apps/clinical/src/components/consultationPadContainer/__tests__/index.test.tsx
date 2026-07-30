@@ -240,14 +240,19 @@ describe('ConsultationPadContainer', () => {
     });
   });
 
-  it('renders ConsultationPad when no allowed visit types are configured (bypass)', () => {
+  it('shows warning with close button when no allowed visit types are configured', async () => {
     jest.mocked(useClinicalConfig).mockReturnValue({
       isLoading: false,
       error: null,
       clinicalConfig: { consultationPad: { inputControls: [] } },
     } as any);
-    renderComponent();
-    expect(screen.getByTestId('consultation-pad')).toBeInTheDocument();
+    const onClose = jest.fn();
+    renderComponent({ onClose });
+    expect(
+      screen.getByTestId('consultation-pad-container-no-privilege'),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByTestId('primary-button'));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('renders ConsultationPad when an active visit exists', () => {

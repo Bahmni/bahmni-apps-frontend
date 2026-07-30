@@ -50,6 +50,17 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   const [creating, setCreating] = useState(false);
   const [creationError, setCreationError] = useState<Error | null>(null);
 
+  const {
+    data: activeVisit,
+    error: queryError,
+    isLoading: queryLoading,
+  } = useQuery({
+    queryKey: ['activeVisitAtLoginLocation', patientUuid],
+    queryFn: () => getActiveVisitAtLoginLocation(patientUuid!),
+    enabled: !!patientUuid,
+    retry: false,
+  });
+
   const encounterDetailsMetadata = useMemo(() => {
     if (configLoading) return undefined;
     return clinicalConfig?.consultationPad?.inputControls?.find(
@@ -72,25 +83,13 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     );
   }, [encounterConcepts?.visitTypes, allowedVisitTypes]);
 
-  const {
-    data: activeVisit,
-    error: queryError,
-    isLoading: queryLoading,
-  } = useQuery({
-    queryKey: ['activeVisitAtLoginLocation', patientUuid],
-    queryFn: () => getActiveVisitAtLoginLocation(patientUuid!),
-    enabled: !configLoading && allowedVisitTypes.length > 0,
-    retry: false,
-  });
-
-  const bypass = !configLoading && allowedVisitTypes.length === 0;
+  const isAllowedVisitTypesMissing =
+    !configLoading && allowedVisitTypes.length === 0;
   const noActiveVisit = activeVisit === null;
   const shouldAutoCreate =
     noActiveVisit &&
     hasAddVisitsPrivilege &&
-    allowedVisitTypeObjects.length === 1 &&
-    !visitCreated &&
-    !creating;
+    allowedVisitTypeObjects.length === 1;
 
   const createVisitAndProceed = useCallback(
     async (visitTypeUuid: string, visitTypeName: string) => {
@@ -168,7 +167,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     createVisitAndProceed(selectedVisitType.uuid, selectedVisitType.name);
   }, [selectedVisitType, selectedEncounterType, createVisitAndProceed]);
 
-  if (bypass || activeVisit || visitCreated) {
+  if (activeVisit || visitCreated) {
     return (
       <ConsultationPad
         encounterSessionStartContext={encounterSessionStartContext}
@@ -188,7 +187,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     );
   }
 
-  if (noActiveVisit && !hasAddVisitsPrivilege) {
+  if (noActiveVisit && (!hasAddVisitsPrivilege || isAllowedVisitTypesMissing)) {
     return (
       <ActionArea
         title={t('NEW_CONSULTATION')}
