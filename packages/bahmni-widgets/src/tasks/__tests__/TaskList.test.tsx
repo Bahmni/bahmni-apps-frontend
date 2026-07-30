@@ -40,8 +40,10 @@ const mockShouldEnableEncounterFilter =
     typeof shouldEnableEncounterFilter
   >;
 
+let queryClient: QueryClient;
+
 const createWrapper = () => {
-  const queryClient = new QueryClient({
+  queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         retry: false,
@@ -576,9 +578,15 @@ describe('TaskList', () => {
     });
 
     it('should refetch tasks when observationFormsWithBasedOn is true', async () => {
-      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <TaskList
+          config={mockTasksControlConfigNoFitlers}
+          orderReference="order-123"
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
@@ -592,7 +600,7 @@ describe('TaskList', () => {
         callback({
           patientUUID: 'patient-uuid',
           updatedResources: {
-            observationFormsWithBasedOn: true,
+            observationFormsWithBasedOn: 'order-123',
           },
         });
       }
@@ -603,9 +611,15 @@ describe('TaskList', () => {
     });
 
     it('should not refetch when observationFormsWithBasedOn is false', async () => {
-      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <TaskList
+          config={mockTasksControlConfigNoFitlers}
+          orderReference="order-123"
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
@@ -619,7 +633,7 @@ describe('TaskList', () => {
         callback({
           patientUUID: 'patient-uuid',
           updatedResources: {
-            observationFormsWithBasedOn: false,
+            observationFormsWithBasedOn: undefined,
           },
         });
       }
@@ -630,9 +644,15 @@ describe('TaskList', () => {
     });
 
     it('should not refetch for different patientUUID', async () => {
-      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <TaskList
+          config={mockTasksControlConfigNoFitlers}
+          orderReference="order-123"
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
@@ -646,7 +666,7 @@ describe('TaskList', () => {
         callback({
           patientUUID: 'different-patient-uuid',
           updatedResources: {
-            observationFormsWithBasedOn: true,
+            observationFormsWithBasedOn: 'order-123',
           },
         });
       }
@@ -657,9 +677,15 @@ describe('TaskList', () => {
     });
 
     it('should refetch only for matching patientUUID', async () => {
-      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <TaskList
+          config={mockTasksControlConfigNoFitlers}
+          orderReference="order-123"
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
@@ -672,7 +698,7 @@ describe('TaskList', () => {
       if (callback) {
         callback({
           patientUUID: 'wrong-patient',
-          updatedResources: { observationFormsWithBasedOn: true },
+          updatedResources: { observationFormsWithBasedOn: 'order-123' },
         });
       }
 
@@ -684,12 +710,44 @@ describe('TaskList', () => {
       if (callback) {
         callback({
           patientUUID: 'patient-uuid',
-          updatedResources: { observationFormsWithBasedOn: true },
+          updatedResources: { observationFormsWithBasedOn: 'order-123' },
         });
       }
 
       await waitFor(() => {
         expect(mockGetTasks).toHaveBeenCalledTimes(initialCallCount + 1);
+      });
+    });
+
+    it('should remove observationsByServiceRequest cache for matching orderReference on consultation save', async () => {
+      render(
+        <TaskList
+          config={mockTasksControlConfigNoFitlers}
+          orderReference="order-123"
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      const removeQueriesSpy = jest.spyOn(queryClient, 'removeQueries');
+
+      const callback = (globalThis as any).__consultationSavedCallback;
+      if (callback) {
+        callback({
+          patientUUID: 'patient-uuid',
+          updatedResources: {
+            observationFormsWithBasedOn: 'order-123',
+          },
+        });
+      }
+
+      await waitFor(() => {
+        expect(removeQueriesSpy).toHaveBeenCalledWith({
+          queryKey: ['observationsByServiceRequest', 'order-123'],
+        });
       });
     });
   });
