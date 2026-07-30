@@ -34,6 +34,7 @@ export const mockPatientContext: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'patient.name.given',
       field: { key: 'patient.name.given' },
       translationKey: 'PATIENT_GIVEN_NAME',
       default: true,
@@ -43,6 +44,7 @@ export const mockPatientContext: SearchContextConfig = {
       },
     },
     {
+      id: 'patient.gender',
       field: { key: 'patient.gender' },
       translationKey: 'PATIENT_GENDER',
       input: {
@@ -55,6 +57,7 @@ export const mockPatientContext: SearchContextConfig = {
       },
     },
     {
+      id: 'patient.age',
       field: { key: 'patient.age' },
       translationKey: 'PATIENT_AGE',
       input: {
@@ -75,6 +78,7 @@ export const mockAppointmentContext: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'appointment.number',
       field: { key: 'appointment.number' },
       translationKey: 'APPOINTMENT_NUMBER',
       default: true,
@@ -84,6 +88,7 @@ export const mockAppointmentContext: SearchContextConfig = {
       },
     },
     {
+      id: 'appointment.service',
       field: { key: 'appointment.service' },
       translationKey: 'APPOINTMENT_SERVICE',
       input: {
@@ -105,6 +110,7 @@ export const mockContextNoDefaults: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'patientProgram.identifier',
       field: { key: 'patientProgram.identifier' },
       translationKey: 'PATIENT_PROGRAM_IDENTIFIER',
       input: {
@@ -113,6 +119,7 @@ export const mockContextNoDefaults: SearchContextConfig = {
       },
     },
     {
+      id: 'patientProgram.status',
       field: { key: 'patientProgram.status' },
       translationKey: 'PATIENT_PROGRAM_STATUS',
       input: {
@@ -134,6 +141,7 @@ export const mockPatientContextWithRangeNumeric: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'patient.age',
       field: { key: 'patient.age' },
       translationKey: 'PATIENT_AGE',
       default: true,
@@ -156,6 +164,7 @@ export const mockContextMultipleDefaults: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'patient.name.given',
       field: { key: 'patient.name.given' },
       translationKey: 'PATIENT_GIVEN_NAME',
       default: true,
@@ -165,6 +174,7 @@ export const mockContextMultipleDefaults: SearchContextConfig = {
       },
     },
     {
+      id: 'patient.gender',
       field: { key: 'patient.gender' },
       translationKey: 'PATIENT_GENDER',
       default: true,
@@ -190,6 +200,7 @@ export const mockPatientContextWithRegex: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'patient.name.given',
       field: { key: 'patient.name.given' },
       translationKey: 'PATIENT_GIVEN_NAME',
       default: true,

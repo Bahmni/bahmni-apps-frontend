@@ -7,7 +7,6 @@ import {
   InputConfig,
 } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
-import { criterionId } from './utils';
 
 interface SearchSummaryProps {
   currentSearchState: CurrentSearchState;
@@ -62,7 +61,7 @@ const SearchSummary = ({
     )
     .map((row) => {
       const criterion = context.criteria.find(
-        (c) => criterionId(c.field) === row.criterionKey,
+        (c) => c.id === row.criterionKey,
       )!;
       return { key: row.rowId, text: buildTagText(row, criterion, t) };
     });

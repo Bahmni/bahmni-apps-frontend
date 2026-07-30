@@ -1,6 +1,7 @@
 import { CriterionConfig } from '../../models';
 
 export const mockDateCriterion: CriterionConfig = {
+  id: 'appointment.date',
   field: { key: 'appointment.date' },
   translationKey: 'APPOINTMENT_DATE',
   input: {
@@ -10,6 +11,7 @@ export const mockDateCriterion: CriterionConfig = {
 };
 
 export const mockLookupCriterion: CriterionConfig = {
+  id: 'appointment.service',
   field: { key: 'appointment.service' },
   translationKey: 'APPOINTMENT_SERVICE',
   input: {
@@ -20,6 +22,7 @@ export const mockLookupCriterion: CriterionConfig = {
 };
 
 export const mockRangeNumericCriterion: CriterionConfig = {
+  id: 'patient.weight',
   field: { key: 'patient.weight' },
   translationKey: 'PATIENT_WEIGHT',
   input: {

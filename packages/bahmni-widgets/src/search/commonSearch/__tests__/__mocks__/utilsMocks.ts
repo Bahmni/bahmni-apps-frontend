@@ -1,9 +1,11 @@
+import { type UserPrivilege } from '@bahmni/services';
 import {
   CriterionConfig,
   CriterionRow,
   RangeValue,
   ResolvedRow,
   ScalarValue,
+  SearchContextConfig,
 } from '../../models';
 
 export const mockRowNoCriterion: CriterionRow = {
@@ -181,13 +183,43 @@ export const mockRowDateRangeFromOnly: CriterionRow = {
 
 export const multiKeyTypeCriteria: CriterionConfig[] = [
   {
+    id: 'patient.identifiers:UMI-UUID',
     field: { key: 'patient.identifiers', keyType: 'UMI-UUID' },
     translationKey: 'UMI',
     input: { kind: 'text', placeholderTranslationKey: 'UMI_PH' },
   },
   {
+    id: 'patient.identifiers:IME-UUID',
     field: { key: 'patient.identifiers', keyType: 'IME-UUID' },
     translationKey: 'IME',
     input: { kind: 'text', placeholderTranslationKey: 'IME_PH' },
   },
 ];
+
+export const mockUserPrivileges: UserPrivilege[] = [{ name: 'test-privilege' }];
+
+export const mockSimpleFieldCriterion: CriterionConfig = {
+  field: { key: 'patient.name.given' },
+  translationKey: 'T',
+  input: { kind: 'text', placeholderTranslationKey: 'PH' },
+};
+
+export const mockKeyTypeFieldCriterion: CriterionConfig = {
+  field: { key: 'patient.identifiers', keyType: 'PASSPORT' },
+  translationKey: 'T',
+  input: { kind: 'text', placeholderTranslationKey: 'PH' },
+};
+
+export const makeMockContextWithCriteria = (
+  criteria: CriterionConfig[],
+  requiredPrivileges: string[] = [],
+): SearchContextConfig => ({
+  context: 'patient',
+  translationKey: 'T',
+  requiredPrivileges,
+  locationAware: 'loggedInLocation',
+  url: '/test',
+  pageSize: 10,
+  resultFields: [],
+  criteria,
+});

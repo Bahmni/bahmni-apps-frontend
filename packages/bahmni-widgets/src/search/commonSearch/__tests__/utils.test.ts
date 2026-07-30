@@ -1,11 +1,11 @@
 import { formatCountry, formatGender } from '@bahmni/services';
 import { TextInput } from '../models';
 import {
-  criterionId,
   formatSearchResult,
   initialRows,
   availableCriteriaForRow,
   criteriaAvailableToAdd,
+  processContextConfigs,
   validateTextInput,
   getRangeOrderError,
   updateRow,
@@ -45,6 +45,10 @@ import {
   mockRowDateScalar,
   mockRowDateRange,
   mockRowDateRangeFromOnly,
+  mockUserPrivileges,
+  makeMockContextWithCriteria,
+  mockSimpleFieldCriterion,
+  mockKeyTypeFieldCriterion,
 } from './__mocks__/utilsMocks';
 
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
@@ -55,25 +59,32 @@ jest.mock('date-fns', () => ({
   },
 }));
 
-describe('criterionId', () => {
+describe('processContextConfigs', () => {
   it.each([
     {
-      label: 'field without keyType returns key as-is',
-      field: { key: 'patient.name.given' },
-      expected: 'patient.name.given',
+      label: 'field without keyType gets id equal to key',
+      criterion: mockSimpleFieldCriterion,
+      expectedId: 'patient.name.given',
     },
     {
-      label: 'field with keyType returns key:keyType composite',
-      field: { key: 'patient.identifiers', keyType: 'PASSPORT' },
-      expected: 'patient.identifiers:PASSPORT',
+      label: 'field with keyType gets composite key:keyType id',
+      criterion: mockKeyTypeFieldCriterion,
+      expectedId: 'patient.identifiers:PASSPORT',
     },
-  ])('$label', ({ field, expected }) => {
-    expect(criterionId(field)).toBe(expected);
+  ])('$label', ({ criterion, expectedId }) => {
+    const [result] = processContextConfigs(
+      [makeMockContextWithCriteria([criterion])],
+      mockUserPrivileges,
+    );
+    expect(result.criteria[0].id).toBe(expectedId);
   });
 
-  it('two criteria sharing the same field.key but different keyType produce distinct ids', () => {
-    const [umi, ime] = multiKeyTypeCriteria;
-    expect(criterionId(umi.field)).not.toBe(criterionId(ime.field));
+  it('two criteria sharing field.key but different keyType get distinct ids', () => {
+    const [result] = processContextConfigs(
+      [makeMockContextWithCriteria(multiKeyTypeCriteria)],
+      mockUserPrivileges,
+    );
+    expect(result.criteria[0].id).not.toBe(result.criteria[1].id);
   });
 });
 
@@ -467,11 +478,13 @@ describe('resolveRows', () => {
   const criteria = [
     ...mockPatientContext.criteria,
     {
+      id: 'patient.identifiers:PASSPORT',
       field: { key: 'patient.identifiers', keyType: 'PASSPORT' },
       translationKey: 'PATIENT_PASSPORT',
       input: { kind: 'text' as const, placeholderTranslationKey: 'PH' },
     },
     {
+      id: 'patient.birthdate',
       field: { key: 'patient.birthdate' },
       translationKey: 'PATIENT_BIRTHDATE',
       input: { kind: 'date' as const, placeholderTranslationKey: 'DATE_PH' },
@@ -675,7 +688,7 @@ describe('criteriaAvailableToAdd', () => {
   it('returns empty array when all criteria are active', () => {
     const rows = mockPatientContext.criteria.map((c, i) => ({
       rowId: `row-${i}`,
-      criterionKey: criterionId(c.field),
+      criterionKey: c.id!,
       value: null,
       validationError: null,
       rangeOrderError: null,
