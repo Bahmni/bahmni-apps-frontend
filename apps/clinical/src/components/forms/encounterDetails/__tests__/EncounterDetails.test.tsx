@@ -1,5 +1,5 @@
 import { usePatientUUID, useActivePractitioner } from '@bahmni/widgets';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
 import { useEncounterConcepts } from '../../../../hooks/useEncounterConcepts';
@@ -32,16 +32,14 @@ jest.mock('@bahmni/design-system', () => {
   interface MockDropdownProps {
     id: string;
     titleText: string;
-
     items: Array<any>;
-
     itemToString: (item: any) => string;
     disabled?: boolean;
-
     initialSelectedItem?: any;
     selectedItem?: any;
     invalid?: boolean;
     invalidText?: string;
+    onChange?: (data: { selectedItem: any }) => void;
   }
 
   return {
@@ -56,6 +54,7 @@ jest.mock('@bahmni/design-system', () => {
       selectedItem,
       invalid,
       invalidText,
+      onChange,
     }: MockDropdownProps) => {
       const safeItemToString = (item: any): string => {
         try {
@@ -76,6 +75,15 @@ jest.mock('@bahmni/design-system', () => {
             aria-label={titleText}
             aria-invalid={invalid}
             aria-errormessage={invalid ? `${id}-error` : undefined}
+            onChange={(e) => {
+              if (onChange) {
+                const val = e.target.value;
+                const item = items.find((it: any) =>
+                  typeof it === 'object' && it?.uuid ? it.uuid === val : false,
+                );
+                onChange({ selectedItem: item ?? null });
+              }
+            }}
           >
             {displayItem && (
               <option value="selected">{safeItemToString(displayItem)}</option>
@@ -289,7 +297,9 @@ describe('BasicForm', () => {
     );
   });
 
-  const renderBasicForm = () => render(<BasicForm />);
+  const renderBasicForm = (
+    props?: Partial<React.ComponentProps<typeof BasicForm>>,
+  ) => render(<BasicForm {...props} />);
 
   describe('usePatientUUID Hook Integration', () => {
     it('should call usePatientVisit with patient UUID from hook', () => {
@@ -1511,6 +1521,158 @@ describe('BasicForm', () => {
     });
   });
 
+  describe('startVisit mode', () => {
+    describe('usePatientVisit integration', () => {
+      it('should call usePatientVisit with null in startVisit mode regardless of patientUUID', () => {
+        (usePatientUUID as jest.Mock).mockReturnValue('some-patient-uuid');
+        renderBasicForm({ mode: 'startVisit' });
+        expect(usePatientVisit).toHaveBeenCalledWith(null);
+      });
+    });
+
+    describe('filteredVisitTypes', () => {
+      it('should show only allowed visit types in the dropdown', () => {
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+        });
+        renderBasicForm({
+          mode: 'startVisit',
+          allowedVisitTypes: ['Visit Type 1'],
+        });
+
+        const options = screen
+          .getByTestId('visit-type-dropdown')
+          .querySelectorAll('option');
+        const texts = Array.from(options).map((o) => o.textContent);
+        expect(texts).toContain('Visit Type 1');
+        expect(texts).not.toContain('Visit Type 2');
+      });
+    });
+
+    describe('visit type dropdown behaviour', () => {
+      it('should render visit type dropdown as enabled', () => {
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+        });
+        renderBasicForm({
+          mode: 'startVisit',
+          allowedVisitTypes: ['Visit Type 1', 'Visit Type 2'],
+        });
+
+        expect(
+          screen.getByTestId('visit-type-dropdown').querySelector('select'),
+        ).not.toHaveAttribute('disabled');
+      });
+
+      it('should call setSelectedVisitType when the visit type selection changes', () => {
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedLocation: mockLocations[0],
+          selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+          encounterParticipants: [mockPractitioner],
+        });
+        renderBasicForm({
+          mode: 'startVisit',
+          allowedVisitTypes: ['Visit Type 1', 'Visit Type 2'],
+        });
+
+        const select = screen
+          .getByTestId('visit-type-dropdown')
+          .querySelector('select')!;
+
+        fireEvent.change(select, {
+          target: { value: mockEncounterConcepts.visitTypes[1].uuid },
+        });
+
+        expect(mockStoreState.setSelectedVisitType).toHaveBeenCalledWith(
+          mockEncounterConcepts.visitTypes[1],
+        );
+      });
+    });
+
+    describe('visit type auto-selection', () => {
+      it('should auto-select first filtered visit type when none is selected', () => {
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedVisitType: null,
+        });
+        renderBasicForm({
+          mode: 'startVisit',
+          allowedVisitTypes: ['Visit Type 1'],
+        });
+
+        expect(mockStoreState.setSelectedVisitType).toHaveBeenCalledWith(
+          mockEncounterConcepts.visitTypes[0],
+        );
+      });
+
+      it('should not auto-select visit type when one is already selected', () => {
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          selectedVisitType: mockEncounterConcepts.visitTypes[0],
+        });
+        renderBasicForm({
+          mode: 'startVisit',
+          allowedVisitTypes: ['Visit Type 1'],
+        });
+
+        expect(mockStoreState.setSelectedVisitType).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('error state', () => {
+      it('should not include activeVisitError in setIsError', async () => {
+        (usePatientVisit as jest.Mock).mockReturnValue({
+          activeVisit: null,
+          loading: false,
+          error: new Error('active visit fetch failed'),
+        });
+        renderBasicForm({ mode: 'startVisit' });
+
+        await waitFor(() => {
+          expect(mockStoreState.setIsError).toHaveBeenCalledWith(false);
+        });
+      });
+
+      it('should not set isEncounterTypeNotFound when requested encounter type is missing', async () => {
+        (useEncounterConcepts as jest.Mock).mockReturnValue({
+          encounterConcepts: {
+            ...mockEncounterConcepts,
+            encounterTypes: [{ uuid: '012', name: 'Emergency' }],
+          },
+          loading: false,
+          error: null,
+        });
+        (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+          ...mockStoreState,
+          requestedEncounterType: 'Consultation',
+          selectedEncounterType: null,
+        });
+        renderBasicForm({ mode: 'startVisit' });
+
+        await waitFor(() => {
+          expect(mockStoreState.setIsError).not.toHaveBeenCalledWith(true);
+        });
+      });
+
+      it('should not call setActiveVisit or setActiveVisitError', async () => {
+        renderBasicForm({ mode: 'startVisit' });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(mockStoreState.setActiveVisit).not.toHaveBeenCalled();
+        expect(mockStoreState.setActiveVisitError).not.toHaveBeenCalled();
+      });
+    });
+  });
+
   describe('FormField Component Branches', () => {
     it('should render placeholder when isLoading is true', () => {
       (useLocations as jest.Mock).mockReturnValue({
@@ -1936,6 +2098,16 @@ describe('BasicForm', () => {
         await waitFor(() => {
           expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
         });
+      });
+    });
+
+    describe('startVisit mode skips form-ready computation', () => {
+      it('should not call setEncounterDetailsFormReady in startVisit mode', async () => {
+        renderBasicForm({ mode: 'startVisit' });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(
+          mockStoreState.setEncounterDetailsFormReady,
+        ).not.toHaveBeenCalled();
       });
     });
 
