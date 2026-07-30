@@ -183,6 +183,22 @@ describe('createObservationEntries', () => {
       );
       expect(entries).toHaveLength(0);
     });
+
+    it('skips an existing observation marked unchanged (no dateChanged churn for untouched fields)', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 42,
+        uuid: 'existing-obs-uuid',
+        unchanged: true,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+      expect(entries).toHaveLength(0);
+    });
   });
 
   describe('grouped observations (obsGroup)', () => {
@@ -205,7 +221,7 @@ describe('createObservationEntries', () => {
       expect(parentEntry).toBeDefined();
     });
 
-    it('emits POST (with existing uuid) for parent obsGroup with remaining children', () => {
+    it('emits PUT (at existing uuid) for parent obsGroup with remaining children', () => {
       const groupObs: Form2Observation = {
         concept: { uuid: 'group-concept' },
         value: null,
@@ -213,9 +229,9 @@ describe('createObservationEntries', () => {
         status: 'final',
         groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
       };
-      (getFhirObservations as jest.Mock).mockReturnValue([
-        mockEntry('Observation/parent-obs-uuid'),
-      ]);
+      (getFhirObservations as jest.Mock)
+        .mockReturnValueOnce([mockEntry('urn:uuid:child')]) // child POST
+        .mockReturnValueOnce([mockEntry('Observation/parent-obs-uuid')]); // parent PUT
 
       const entries = createObservationEntries(
         [groupObs],
@@ -228,8 +244,8 @@ describe('createObservationEntries', () => {
         (e) => e.fullUrl === 'Observation/parent-obs-uuid',
       );
       expect(parentEntry).toBeDefined();
-      expect(parentEntry?.request?.method).toBe('POST');
-      expect(parentEntry?.request?.url).toBe('Observation');
+      expect(parentEntry?.request?.method).toBe('PUT');
+      expect(parentEntry?.request?.url).toBe('Observation/parent-obs-uuid');
       expect((parentEntry?.resource as Record<string, unknown>).id).toBe(
         'parent-obs-uuid',
       );
@@ -259,10 +275,10 @@ describe('createObservationEntries', () => {
 
     it('skips existing parent obsGroup when getFhirObservations returns no entry for the parent', () => {
       // Child call succeeds (returns a ref) so not all children are deleted,
-      // but the subsequent parent POST call returns nothing → parent is skipped.
+      // but the subsequent parent PUT call returns nothing → parent is skipped.
       (getFhirObservations as jest.Mock)
         .mockReturnValueOnce([mockEntry('urn:uuid:child')]) // child POST
-        .mockReturnValueOnce([]); // parent POST returns nothing
+        .mockReturnValueOnce([]); // parent PUT returns nothing
       const groupObs: Form2Observation = {
         concept: { uuid: 'group-concept' },
         value: null,
@@ -306,6 +322,133 @@ describe('createObservationEntries', () => {
         (e) => e.request?.url === 'Observation/parent-obs-uuid',
       );
       expect(deleteEntry?.request?.method).toBe('DELETE');
+    });
+
+    it('does not touch the parent when one member is removed and the rest are unchanged (only the removed child gets a DELETE)', () => {
+      // Regression: OpenMRS's ObsValidator rejects a PUT to a group parent
+      // carrying an empty hasMember with "error.noValue" — the parent has
+      // neither its own value nor any members from that request's point of
+      // view. This happens when the only real change in a group is a
+      // removal and every remaining member is unchanged (correctly omitted
+      // from hasMember) — group membership lives on the child's
+      // obs_group_id, so the parent doesn't need touching at all here.
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-obs-uuid',
+        groupMembers: [
+          {
+            concept: { uuid: 'removed-child-concept' },
+            value: null,
+            uuid: 'removed-child-uuid',
+            voided: true,
+          },
+          {
+            concept: { uuid: 'unchanged-child-concept' },
+            value: 3,
+            uuid: 'unchanged-child-uuid',
+            unchanged: true,
+          },
+        ],
+      };
+
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      // Only the removed child's DELETE — no entry at all for the parent.
+      expect(entries).toHaveLength(1);
+      expect(entries[0].fullUrl).toBe('Observation/removed-child-uuid');
+      expect(entries[0].request?.method).toBe('DELETE');
+      expect(
+        entries.some((e) => e.fullUrl === 'Observation/parent-obs-uuid'),
+      ).toBe(false);
+    });
+
+    it('omits unchanged children from hasMember and does not PUT them, but still updates the parent for the changed sibling', () => {
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-obs-uuid',
+        groupMembers: [
+          {
+            concept: { uuid: 'unchanged-child-concept' },
+            value: 2,
+            uuid: 'unchanged-child-uuid',
+            unchanged: true,
+          },
+          {
+            concept: { uuid: 'changed-child-concept' },
+            value: 6,
+            uuid: 'changed-child-uuid',
+          },
+        ],
+      };
+      (getFhirObservations as jest.Mock).mockReturnValue([
+        mockEntry('Observation/changed-child-uuid'),
+      ]);
+
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      // Only the changed child + the parent update — nothing for the
+      // unchanged sibling.
+      expect(entries).toHaveLength(2);
+      const childEntry = entries.find(
+        (e) => e.fullUrl === 'Observation/changed-child-uuid',
+      );
+      expect(childEntry?.request?.method).toBe('PUT');
+
+      const parentEntry = entries.find(
+        (e) => e.fullUrl === 'Observation/parent-obs-uuid',
+      );
+      expect(parentEntry?.request?.method).toBe('PUT');
+      const hasMember = (
+        parentEntry?.resource as unknown as {
+          hasMember: { reference: string }[];
+        }
+      ).hasMember;
+      expect(hasMember).toEqual([
+        { reference: 'Observation/changed-child-uuid' },
+      ]);
+    });
+
+    it('skips the entire group (parent + all children) when every member is unchanged', () => {
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-obs-uuid',
+        groupMembers: [
+          {
+            concept: { uuid: 'child-a-concept' },
+            value: 2,
+            uuid: 'child-a-uuid',
+            unchanged: true,
+          },
+          {
+            concept: { uuid: 'child-b-concept' },
+            value: 3,
+            uuid: 'child-b-uuid',
+            unchanged: true,
+          },
+        ],
+      };
+
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      expect(entries).toHaveLength(0);
     });
   });
 });

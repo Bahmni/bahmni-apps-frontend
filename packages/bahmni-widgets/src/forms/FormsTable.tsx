@@ -177,13 +177,16 @@ const FormsTable: React.FC<WidgetProps> = ({
     enabled: !!selectedRecord?.encounterUuid && isModalOpen,
   });
 
-  // Listen to consultation saved events and refetch cached data if observations were updated
+  // Listen to consultation saved events and refetch cached data for this patient.
+  // Deliberately NOT gated on updatedConcepts.size > 0: that map is built from
+  // the FHIR transaction RESPONSE's Observation entries, but a delete-only save
+  // (e.g. removing a single field with nothing else changed) produces a DELETE
+  // response with no resource body — updatedConcepts stays empty even though a
+  // save genuinely happened, which silently skipped this refetch and left the
+  // view modal showing stale, pre-delete data until the query's staleTime lapsed.
   useSubscribeConsultationSaved(
     (payload: ConsultationSavedEventPayload) => {
-      if (
-        payload.patientUUID === patientUuid &&
-        payload.updatedConcepts.size > 0
-      ) {
+      if (payload.patientUUID === patientUuid) {
         refetchForms();
         queryClient.invalidateQueries({ queryKey: ['formsEncounterFHIR'] });
       }

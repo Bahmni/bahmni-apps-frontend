@@ -1214,7 +1214,12 @@ describe('FormsTable', () => {
       );
     });
 
-    it('should not refetch when consultation is saved but observations were not updated', async () => {
+    it('refetches even when updatedConcepts is empty (e.g. a delete-only save), as long as the patient matches', async () => {
+      // A delete-only save (removing a field with nothing else changed) produces
+      // a FHIR transaction response with no Observation resource body, so
+      // updatedConcepts stays empty even though a save genuinely happened. The
+      // refetch must still fire, or the view modal keeps showing stale,
+      // pre-delete data until the query's staleTime lapses.
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
       let capturedCallback: ((payload: any) => void) | null = null;
 
@@ -1232,7 +1237,7 @@ describe('FormsTable', () => {
 
       const initialCallCount = mockGetPatientFormData.mock.calls.length;
 
-      // Simulate consultation saved event without observation updates
+      // Simulate a delete-only consultation save: matching patient, empty updatedConcepts.
       if (capturedCallback) {
         (capturedCallback as jest.Mock)({
           patientUUID: 'patient-123',
@@ -1241,15 +1246,11 @@ describe('FormsTable', () => {
         });
       }
 
-      // Wait a bit and verify no additional calls were made
-      await waitFor(
-        () => {
-          expect(mockGetPatientFormData.mock.calls).toHaveLength(
-            initialCallCount,
-          );
-        },
-        { timeout: 500 },
-      );
+      await waitFor(() => {
+        expect(
+          mockGetPatientFormData.mock.calls.length,
+        ).toBeGreaterThan(initialCallCount);
+      });
     });
 
     it('should trigger fresh API call when consultation is saved, but use cache on second click', async () => {
@@ -1404,7 +1405,7 @@ describe('FormsTable', () => {
       expect(mockGetPatientFormData.mock.calls).toHaveLength(initialCallCount);
     });
 
-    it('should not refetch when real event is dispatched without observations update', async () => {
+    it('refetches on a real dispatched event for the matching patient even when updatedConcepts is empty', async () => {
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
 
       // Use real event subscription for this test
@@ -1426,6 +1427,7 @@ describe('FormsTable', () => {
       const initialCallCount = mockGetPatientFormData.mock.calls.length;
 
       // Dispatch real event with matching patient but no observations update
+      // (e.g. a delete-only save) — the refetch must still happen.
       dispatchConsultationSaved({
         patientUUID: 'patient-123',
         updatedResources: {
@@ -1440,8 +1442,11 @@ describe('FormsTable', () => {
       // Run all timers to process the setTimeout in dispatchConsultationSaved
       jest.runAllTimers();
 
-      // Verify no additional calls were made
-      expect(mockGetPatientFormData.mock.calls).toHaveLength(initialCallCount);
+      await waitFor(() => {
+        expect(mockGetPatientFormData.mock.calls.length).toBeGreaterThan(
+          initialCallCount,
+        );
+      });
     });
   });
 

@@ -61,6 +61,11 @@ export interface Form2Observation {
   /** True when the observation was cleared/deleted by the user in edit mode.
    *  Combined with uuid, signals the bundle builder to emit DELETE. */
   voided?: boolean;
+  /** True when this leaf obs's value/comment/interpretation exactly match what's
+   *  already saved (set by ObservationFormsContainer by diffing against the
+   *  original FHIR snapshot). Combined with uuid, signals the bundle builder to
+   *  skip emitting a PUT — untouched fields shouldn't be rewritten. */
+  unchanged?: boolean;
   /** Current FHIR status stored in OpenMRS (e.g. "final", "amended").
    *  Preserved from the FHIR fetch so PUT requests echo back the same value —
    *  OpenMRS rejects status changes and also errors when status is absent on PUT. */
