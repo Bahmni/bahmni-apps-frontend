@@ -3,12 +3,16 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import jsonata from 'jsonata';
-import { ResultFieldConfig, SortOrder } from '../models';
+import { UserPrivilegeProvider } from '../../../userPrivileges/UserPrivilegeProvider';
+import { ResultFieldConfig, SortOrder, ActionConfig } from '../models';
 import ResultsTable from '../ResultsTable';
 import {
+  mockActions,
+  mockActionsWithInvalidExpression,
   mockInvalidExpressionFields,
   mockResultFields,
   mockResultFieldsWithSortOrder,
+  mockResultFieldsWithAction,
   mockResultFieldsWithTransform,
   mockResultFieldsWithUnknownTransform,
   mockResults,
@@ -16,10 +20,13 @@ import {
 } from './__mocks__/resultsTableMocks';
 
 jest.mock('jsonata');
+
+const mockGetCurrentUserPrivileges = jest.fn();
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   generateUUID: jest.fn(),
   useTranslation: jest.fn(),
+  getCurrentUserPrivileges: () => mockGetCurrentUserPrivileges(),
 }));
 expect.extend(toHaveNoViolations);
 
@@ -29,16 +36,19 @@ const mockUseTranslation = useTranslation as jest.Mock;
 
 const renderTable = (
   overrides: Partial<{
-    resultFields: typeof mockResultFields;
+    resultFields: ResultFieldConfig[];
     results: unknown[];
+    actions?: ActionConfig[];
   }> = {},
 ) =>
   render(
-    <ResultsTable
-      resultFields={mockResultFields}
-      results={mockResults}
-      {...overrides}
-    />,
+    <UserPrivilegeProvider>
+      <ResultsTable
+        resultFields={mockResultFields}
+        results={mockResults}
+        {...overrides}
+      />
+    </UserPrivilegeProvider>,
   );
 
 describe('ResultsTable', () => {
@@ -50,6 +60,7 @@ describe('ResultsTable', () => {
     mockJsonata.mockReturnValue({
       evaluate: jest.fn().mockResolvedValue('evaluated-value'),
     });
+    mockGetCurrentUserPrivileges.mockResolvedValue([]);
   });
 
   it('shows expression error notification when a field has an invalid expression', () => {
@@ -321,6 +332,90 @@ describe('ResultsTable', () => {
       await user.type(input, 'Nonexistent');
 
       expect(screen.getByText('COMMON_SEARCH_NO_RESULTS')).toBeInTheDocument();
+    });
+  });
+
+  describe('Navigate action and link rendering', () => {
+    it('shows expression error when action navigationURL has invalid JSONata expression', () => {
+      mockJsonata.mockImplementation((expr: string) => {
+        if (expr === '$$$invalid') {
+          throw new Error('Parse error');
+        }
+        return { evaluate: jest.fn().mockResolvedValue('evaluated-value') };
+      });
+
+      renderTable({
+        resultFields: mockResultFieldsWithAction,
+        actions: mockActionsWithInvalidExpression,
+      });
+
+      expect(
+        screen.getByTestId('common-search-results-table-error'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('COMMON_SEARCH_INVALID_EXPRESSION'),
+      ).toBeInTheDocument();
+    });
+
+    it('renders cell as link when field has action and href is resolved', async () => {
+      mockGetCurrentUserPrivileges.mockResolvedValue([
+        { name: 'View Patients', retired: false },
+      ]);
+      mockJsonata.mockReturnValue({
+        evaluate: jest.fn().mockResolvedValue('John Doe'),
+      });
+
+      renderTable({
+        resultFields: mockResultFieldsWithAction,
+        actions: mockActions,
+      });
+
+      await waitFor(() => {
+        const link = screen.getByTestId('link-1-uuid-0');
+        expect(link).toBeInTheDocument();
+        expect(link).toHaveAttribute('href', '/patient/John%20Doe');
+      });
+    });
+
+    it('renders cell as plain text when action key does not exist in actions array', async () => {
+      mockJsonata.mockReturnValue({
+        evaluate: jest.fn().mockResolvedValue('evaluated-value'),
+      });
+
+      const fieldWithNonExistentAction: ResultFieldConfig[] = [
+        {
+          translationKey: 'PATIENT_NAME',
+          expression: 'name',
+          action: 'nonExistentAction',
+        },
+      ];
+
+      renderTable({
+        resultFields: fieldWithNonExistentAction,
+        actions: mockActions,
+      });
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('link-1-uuid-0')).not.toBeInTheDocument();
+      });
+    });
+
+    it('renders cell as plain text when href resolution returns null', async () => {
+      mockJsonata.mockReturnValue({
+        evaluate: jest
+          .fn()
+          .mockResolvedValueOnce('evaluated-value')
+          .mockResolvedValue(null),
+      });
+
+      renderTable({
+        resultFields: mockResultFieldsWithAction,
+        actions: mockActions,
+      });
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('link-1-uuid-0')).not.toBeInTheDocument();
+      });
     });
   });
 });

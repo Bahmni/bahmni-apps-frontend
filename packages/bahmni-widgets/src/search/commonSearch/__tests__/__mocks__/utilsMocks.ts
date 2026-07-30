@@ -1,5 +1,6 @@
 import { type UserPrivilege } from '@bahmni/services';
 import {
+  ActionConfig,
   CriterionConfig,
   CriterionRow,
   RangeValue,
@@ -150,6 +151,64 @@ export const mockResolvedRangeRow: ResolvedRow = {
     from: { value: '20', comparator: null },
     to: { value: '50', comparator: null },
   } satisfies RangeValue,
+};
+
+export const mockValidActions: ActionConfig[] = [
+  {
+    key: 'viewPatient',
+    type: 'navigate',
+    requiredPrivileges: ['View Patients'],
+    navigationURL: '/patient/{name}',
+  },
+];
+
+export const mockActionsWithDuplicateKeys: ActionConfig[] = [
+  {
+    key: 'viewPatient',
+    type: 'navigate',
+    requiredPrivileges: [],
+    navigationURL: '/patient/{name}',
+  },
+  {
+    key: 'viewPatient',
+    type: 'navigate',
+    requiredPrivileges: [],
+    navigationURL: '/patient/{id}',
+  },
+];
+
+export const mockContextWithValidActions: SearchContextConfig = {
+  context: 'patient',
+  translationKey: 'PATIENT_CONTEXT',
+  requiredPrivileges: [],
+  locationAware: 'loggedInLocation',
+  url: '/api/patient',
+  pageSize: 10,
+  criteria: [],
+  resultFields: [
+    {
+      translationKey: 'PATIENT_NAME',
+      expression: 'name',
+      action: 'viewPatient',
+    },
+  ],
+  actions: mockValidActions,
+};
+
+export const mockContextWithUnknownActionKey: SearchContextConfig = {
+  ...mockContextWithValidActions,
+  resultFields: [
+    {
+      translationKey: 'PATIENT_NAME',
+      expression: 'name',
+      action: 'unknownAction',
+    },
+  ],
+};
+
+export const mockContextWithMissingActionsArray: SearchContextConfig = {
+  ...mockContextWithValidActions,
+  actions: undefined,
 };
 
 export const mockRowDateScalar: CriterionRow = {

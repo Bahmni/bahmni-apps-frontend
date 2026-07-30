@@ -10,6 +10,7 @@ import {
   type UserPrivilege,
 } from '@bahmni/services';
 import { format } from 'date-fns';
+import jsonata from 'jsonata';
 import { v4 as uuidv4 } from 'uuid';
 import {
   KEY_TYPE_KIND_SUFFIX,
@@ -330,3 +331,58 @@ export const validateRows = (
     );
     return { ...r, validationError, rangeOrderError };
   });
+
+export const validateConfigForActions = (
+  contexts: SearchContextConfig[],
+): string | null => {
+  for (const context of contexts) {
+    const hasActionReferences = context.resultFields.some((f) => f.action);
+
+    if (
+      hasActionReferences &&
+      (!context.actions || context.actions.length === 0)
+    ) {
+      return 'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION';
+    }
+
+    if (context.actions) {
+      const actionKeys = context.actions.map((a) => a.key);
+      const duplicates = actionKeys.filter(
+        (key, idx) => actionKeys.indexOf(key) !== idx,
+      );
+      if (duplicates.length > 0) {
+        return 'COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_ACTION';
+      }
+
+      const actionKeySet = new Set(actionKeys);
+
+      for (const field of context.resultFields) {
+        if (field.action && !actionKeySet.has(field.action)) {
+          return 'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION';
+        }
+      }
+    }
+  }
+  return null;
+};
+
+export const resolveNavigationURL = async (
+  template: string,
+  rowData: unknown,
+): Promise<string | null> => {
+  try {
+    const placeholders = [...template.matchAll(/\{([^}]+)\}/g)];
+    let resolved = template;
+
+    for (const [fullMatch, expression] of placeholders) {
+      const compiled = jsonata(expression);
+      const value = await compiled.evaluate(rowData as Record<string, unknown>);
+      if (value == null) return null;
+      resolved = resolved.replace(fullMatch, encodeURIComponent(String(value)));
+    }
+
+    return resolved;
+  } catch {
+    return null;
+  }
+};
