@@ -779,7 +779,7 @@ describe('resolveNavigationURL', () => {
     const result = await resolveNavigationURL('/patient/{name}', {
       name: 'John Doe',
     });
-    expect(result).toBe('/patient/John Doe');
+    expect(result).toBe('/patient/John%20Doe');
   });
 
   it('resolves multiple placeholders', async () => {
@@ -787,12 +787,19 @@ describe('resolveNavigationURL', () => {
       name: 'John Doe',
       id: '123',
     });
-    expect(result).toBe('/patient/John Doe/visit/123');
+    expect(result).toBe('/patient/John%20Doe/visit/123');
   });
 
   it('converts resolved value to string', async () => {
     const result = await resolveNavigationURL('/patient/{age}', { age: 30 });
     expect(result).toBe('/patient/30');
+  });
+
+  it('encodes special characters in resolved values', async () => {
+    const result = await resolveNavigationURL('/patient/{name}', {
+      name: 'John/Doe & Smith',
+    });
+    expect(result).toBe('/patient/John%2FDoe%20%26%20Smith');
   });
 
   it.each([

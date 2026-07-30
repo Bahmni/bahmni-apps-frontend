@@ -373,7 +373,7 @@ describe('ResultsTable', () => {
       await waitFor(() => {
         const link = screen.getByTestId('link-1-uuid-0');
         expect(link).toBeInTheDocument();
-        expect(link).toHaveAttribute('href', '/patient/John Doe');
+        expect(link).toHaveAttribute('href', '/patient/John%20Doe');
       });
     });
 

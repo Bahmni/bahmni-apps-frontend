@@ -356,7 +356,7 @@ export const resolveNavigationURL = async (
       const compiled = jsonata(expression);
       const value = await compiled.evaluate(rowData as Record<string, unknown>);
       if (value == null) return null;
-      resolved = resolved.replace(fullMatch, String(value));
+      resolved = resolved.replace(fullMatch, encodeURIComponent(String(value)));
     }
 
     return resolved;
