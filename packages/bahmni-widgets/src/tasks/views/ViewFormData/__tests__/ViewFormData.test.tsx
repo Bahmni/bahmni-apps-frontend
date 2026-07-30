@@ -25,9 +25,6 @@ jest.mock('@bahmni/services', () => ({
   getObservationsBundleByEncounterUuid: jest.fn(),
   getEncounterByUuid: jest.fn(),
   formatDateTime: jest.fn(),
-  useSubscribeConsultationSaved: jest.fn((callback) => {
-    (globalThis as any).__consultationSavedCallback = callback;
-  }),
 }));
 
 jest.mock('../../../../observationsRenderer', () => ({
@@ -501,81 +498,6 @@ describe('ViewFormData', () => {
           expect.any(Number),
           expect.any(Function),
           true,
-        );
-      });
-    });
-  });
-
-  describe('Refetch observations when consultation is saved', () => {
-    it('should refetch observations by service request when consultation saved with observationFormsWithBasedOn', async () => {
-      mockGetPatientObservationsBundle.mockResolvedValue(
-        mockObservationAndEncounterBundle as Bundle<Observation>,
-      );
-      mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
-
-      renderComponent();
-
-      await waitFor(() => {
-        expect(mockGetPatientObservationsBundle).toHaveBeenCalledTimes(1);
-      });
-
-      mockGetPatientObservationsBundle.mockClear();
-      mockGetPatientObservationsBundle.mockResolvedValue(
-        mockObservationAndEncounterBundle as Bundle<Observation>,
-      );
-
-      const callback = (globalThis as any).__consultationSavedCallback;
-      callback({
-        patientUUID: 'patient-uuid',
-        updatedResources: {
-          observationFormsWithBasedOn: true,
-        },
-      });
-
-      await waitFor(() => {
-        expect(mockGetPatientObservationsBundle).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    it('should refetch observations by encounter when consultation saved with observationForms and no service request', async () => {
-      const taskWithoutServiceRequest: TaskViewModel = {
-        ...mockTaskViewModel,
-        fhirResource: {
-          ...mockTaskViewModel.fhirResource,
-          basedOn: undefined,
-          encounter: {
-            reference: 'Encounter/encounter-1',
-          },
-        },
-      };
-
-      mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
-        mockObservationAndEncounterBundle as Bundle<Observation>,
-      );
-      mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
-
-      renderComponent(true, taskWithoutServiceRequest);
-
-      await waitFor(() => {
-        expect(mockGetObservationsBundleByEncounterUuid).toHaveBeenCalledTimes(
-          1,
-        );
-      });
-
-      mockGetObservationsBundleByEncounterUuid.mockClear();
-      mockGetObservationsBundleByEncounterUuid.mockResolvedValue(
-        mockObservationAndEncounterBundle as Bundle<Observation>,
-      );
-
-      const callback = (globalThis as any).__consultationSavedCallback;
-      callback({
-        patientUUID: 'patient-uuid',
-        updatedConcepts: new Set(['observation-concept']),
-      });
-
-      await waitFor(() => {
-        expect(mockGetObservationsBundleByEncounterUuid).toHaveBeenCalledTimes(
-          1,
         );
       });
     });

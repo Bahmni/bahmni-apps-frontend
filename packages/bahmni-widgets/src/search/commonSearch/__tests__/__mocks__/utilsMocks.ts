@@ -1,8 +1,12 @@
+import { type UserPrivilege } from '@bahmni/services';
 import {
+  ActionConfig,
+  CriterionConfig,
   CriterionRow,
   RangeValue,
   ResolvedRow,
   ScalarValue,
+  SearchContextConfig,
 } from '../../models';
 
 export const mockRowNoCriterion: CriterionRow = {
@@ -109,8 +113,24 @@ export const mockRowTextPassingRegex: CriterionRow = {
 
 export const mockRowWithKeyTypeValue: CriterionRow = {
   rowId: 'row-key-type',
-  criterionKey: 'patient.identifiers',
+  criterionKey: 'patient.identifiers:PASSPORT',
   value: { value: 'P123' } satisfies ScalarValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockRowUmiIdentifier: CriterionRow = {
+  rowId: 'row-umi',
+  criterionKey: 'patient.identifiers:UMI-UUID',
+  value: { value: 'UMI-001' } satisfies ScalarValue,
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockRowImeIdentifier: CriterionRow = {
+  rowId: 'row-ime',
+  criterionKey: 'patient.identifiers:IME-UUID',
+  value: { value: 'IME-001' } satisfies ScalarValue,
   validationError: null,
   rangeOrderError: null,
 };
@@ -131,6 +151,64 @@ export const mockResolvedRangeRow: ResolvedRow = {
     from: { value: '20', comparator: null },
     to: { value: '50', comparator: null },
   } satisfies RangeValue,
+};
+
+export const mockValidActions: ActionConfig[] = [
+  {
+    key: 'viewPatient',
+    type: 'navigate',
+    requiredPrivileges: ['View Patients'],
+    navigationURL: '/patient/{name}',
+  },
+];
+
+export const mockActionsWithDuplicateKeys: ActionConfig[] = [
+  {
+    key: 'viewPatient',
+    type: 'navigate',
+    requiredPrivileges: [],
+    navigationURL: '/patient/{name}',
+  },
+  {
+    key: 'viewPatient',
+    type: 'navigate',
+    requiredPrivileges: [],
+    navigationURL: '/patient/{id}',
+  },
+];
+
+export const mockContextWithValidActions: SearchContextConfig = {
+  context: 'patient',
+  translationKey: 'PATIENT_CONTEXT',
+  requiredPrivileges: [],
+  locationAware: 'loggedInLocation',
+  url: '/api/patient',
+  pageSize: 10,
+  criteria: [],
+  resultFields: [
+    {
+      translationKey: 'PATIENT_NAME',
+      expression: 'name',
+      action: 'viewPatient',
+    },
+  ],
+  actions: mockValidActions,
+};
+
+export const mockContextWithUnknownActionKey: SearchContextConfig = {
+  ...mockContextWithValidActions,
+  resultFields: [
+    {
+      translationKey: 'PATIENT_NAME',
+      expression: 'name',
+      action: 'unknownAction',
+    },
+  ],
+};
+
+export const mockContextWithMissingActionsArray: SearchContextConfig = {
+  ...mockContextWithValidActions,
+  actions: undefined,
 };
 
 export const mockRowDateScalar: CriterionRow = {
@@ -161,3 +239,46 @@ export const mockRowDateRangeFromOnly: CriterionRow = {
   validationError: null,
   rangeOrderError: null,
 };
+
+export const multiKeyTypeCriteria: CriterionConfig[] = [
+  {
+    id: 'patient.identifiers:UMI-UUID',
+    field: { key: 'patient.identifiers', keyType: 'UMI-UUID' },
+    translationKey: 'UMI',
+    input: { kind: 'text', placeholderTranslationKey: 'UMI_PH' },
+  },
+  {
+    id: 'patient.identifiers:IME-UUID',
+    field: { key: 'patient.identifiers', keyType: 'IME-UUID' },
+    translationKey: 'IME',
+    input: { kind: 'text', placeholderTranslationKey: 'IME_PH' },
+  },
+];
+
+export const mockUserPrivileges: UserPrivilege[] = [{ name: 'test-privilege' }];
+
+export const mockSimpleFieldCriterion: CriterionConfig = {
+  field: { key: 'patient.name.given' },
+  translationKey: 'T',
+  input: { kind: 'text', placeholderTranslationKey: 'PH' },
+};
+
+export const mockKeyTypeFieldCriterion: CriterionConfig = {
+  field: { key: 'patient.identifiers', keyType: 'PASSPORT' },
+  translationKey: 'T',
+  input: { kind: 'text', placeholderTranslationKey: 'PH' },
+};
+
+export const makeMockContextWithCriteria = (
+  criteria: CriterionConfig[],
+  requiredPrivileges: string[] = [],
+): SearchContextConfig => ({
+  context: 'patient',
+  translationKey: 'T',
+  requiredPrivileges,
+  locationAware: 'loggedInLocation',
+  url: '/test',
+  pageSize: 10,
+  resultFields: [],
+  criteria,
+});

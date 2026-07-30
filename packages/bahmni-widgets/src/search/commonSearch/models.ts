@@ -70,6 +70,7 @@ export type InputConfig =
   | LookupInput;
 
 export interface CriterionConfig {
+  id?: string;
   field: FieldConfig;
   translationKey: string;
   default?: boolean;
@@ -78,11 +79,27 @@ export interface CriterionConfig {
 
 export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
 
+export enum SortOrder {
+  Ascending = 'asc',
+  Descending = 'desc',
+}
+
+export interface NavigateAction {
+  key: string;
+  type: 'navigate';
+  requiredPrivileges?: string[];
+  navigationURL: string;
+}
+
+export type ActionConfig = NavigateAction;
+
 export interface ResultFieldConfig {
   translationKey: string;
   expression: string;
   enableSort?: boolean;
+  sortOrder?: SortOrder;
   filterType?: ResultFieldFilterType;
+  action?: string;
   transform?: string;
 }
 
@@ -95,6 +112,7 @@ export interface SearchContextConfig {
   pageSize: number;
   criteria: CriterionConfig[];
   resultFields: ResultFieldConfig[];
+  actions?: ActionConfig[];
 }
 
 export type CommonSearchWidgetConfig = [

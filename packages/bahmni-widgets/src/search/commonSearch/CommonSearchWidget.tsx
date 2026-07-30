@@ -8,13 +8,12 @@ import {
   getCurrentUserPrivileges,
   getConfig,
   getUserLoginLocation,
-  hasPrivilege,
   post,
   useTranslation,
   UserLocation,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
 import {
@@ -30,8 +29,10 @@ import SearchSummary from './SearchSummary';
 import styles from './styles/CommonSearchWidget.module.scss';
 import {
   buildPayload,
+  processContextConfigs,
   resolveRows,
   toSearchAuditEventType,
+  validateConfigForActions,
   validateRows,
 } from './utils';
 
@@ -74,8 +75,13 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
     enabled: !!config,
   });
 
+  const configValidationError = useMemo(
+    () => (config ? validateConfigForActions(config) : null),
+    [config],
+  );
+
   const isLoading = isConfigLoading || isPrivilegesLoading;
-  const error = configError ?? privilegesError;
+  const error = configError ?? privilegesError ?? configValidationError;
 
   const handleSearch = (
     rows: CriterionRow[],
@@ -156,6 +162,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
         kind="error"
         lowContrast
         title={t('COMMON_SEARCH_CONFIG_ERROR')}
+        subtitle={configValidationError ? t(configValidationError) : ''}
         className={styles.fullWidth}
       />
     );
@@ -172,8 +179,9 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       />
     );
 
-  const privilegedContexts = config.filter((c) =>
-    hasPrivilege(userPrivileges ?? null, c.requiredPrivileges),
+  const privilegedContexts = processContextConfigs(
+    config,
+    userPrivileges ?? null,
   );
 
   if (privilegedContexts.length === 0)
@@ -203,6 +211,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
           <ResultsTable
             resultFields={currentSearchState.resultFields}
             results={currentSearchState.results}
+            actions={currentSearchState.context.actions}
           />
         </>
       ) : (
