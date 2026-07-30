@@ -5,7 +5,6 @@ import {
   getObservationsBundleByEncounterUuid,
   getPatientObservationsBundle,
   groupObservationsByEncounter,
-  useSubscribeConsultationSaved,
   useTranslation,
   type EncounterGroup,
 } from '@bahmni/services';
@@ -42,7 +41,7 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
   }, [task, view]);
 
   const serviceRequestRef = task?.fhirResource.basedOn?.[0]?.reference;
-  const serviceRequestId = extractId(serviceRequestRef!);
+  const serviceRequestId = extractId(serviceRequestRef ?? '') ?? undefined;
   const encounterRef = task?.fhirResource.encounter?.reference;
 
   const {
