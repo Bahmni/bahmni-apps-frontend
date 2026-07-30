@@ -1,4 +1,4 @@
-interface SearchExtensionParam {
+export interface SearchExtensionParam {
   searchHandler?: string;
   configUrl?: string;
 }

@@ -461,4 +461,5 @@ export {
   filterExtensionsByPrivileges,
   type Extension,
   type ExtensionHandlerProps,
+  type SearchExtensionParam,
 } from './extensions';
