@@ -1,102 +1,156 @@
-import {
-  AUDIT_LOG_EVENT_DETAILS,
-  AuditEventType,
-  dispatchAuditEvent,
-} from '@bahmni/services';
-import { NotificationProvider, UserPrivilegeProvider } from '@bahmni/widgets';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, useNavigate } from 'react-router-dom';
-import RegistrationList from '..';
+import * as services from '@bahmni/services';
+import { NotificationProvider, useUserPrivilege } from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { useRegistrationConfig } from '../../../providers/registrationConfig';
+import RegistrationList from '../index';
+import {
+  mockOtherExtension,
+  mockPrivilegedSearchExtension,
+  mockSearchExtension,
+} from './__mocks__/listMocks';
 
-jest.mock('@bahmni/services', () => ({
-  ...jest.requireActual('@bahmni/services'),
-  dispatchAuditEvent: jest.fn(),
-  getCurrentUser: jest.fn().mockResolvedValue({
-    username: 'testuser',
-    uuid: 'test-uuid',
-  }),
-  notificationService: {
-    register: jest.fn(),
-    showError: jest.fn(),
-    showSuccess: jest.fn(),
-    showWarning: jest.fn(),
-    showInfo: jest.fn(),
+expect.extend(toHaveNoViolations);
+
+jest.mock('../constants', () => ({
+  EXTENSION_HANDLERS: {
+    'org.bahmni.registration.v2.search': () => (
+      <div data-testid="mock-search-handler-test-id" />
+    ),
   },
 }));
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: jest.fn(),
-}));
-
-jest.mock('../../../providers/registrationConfig', () => ({
-  ...jest.requireActual('../../../providers/registrationConfig'),
-  useRegistrationConfig: jest.fn(),
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  useTranslation: () => ({ t: (key: string) => key }),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
-  UserGlobalAction: jest.fn(() => <div data-testid="user-global-action" />),
-  register: jest.fn(),
-  SearchPatient: jest.fn(() => <div data-testid="search-patient-widget" />),
+  useUserPrivilege: jest.fn(),
 }));
 
-const mockRegistrationConfig = {
-  patientSearch: {
-    customAttributes: [],
-    appointment: [],
-  },
-};
+jest.mock('../../../providers/registrationConfig');
+
+const mockUseRegistrationConfig = useRegistrationConfig as jest.MockedFunction<
+  typeof useRegistrationConfig
+>;
+
+const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
+  typeof useUserPrivilege
+>;
 
 describe('RegistrationList', () => {
-  const mockNavigate = jest.fn();
+  let queryClient: QueryClient;
 
   const renderPage = () =>
     render(
-      <MemoryRouter>
+      <QueryClientProvider client={queryClient}>
         <NotificationProvider>
-          <UserPrivilegeProvider>
-            <RegistrationList />
-          </UserPrivilegeProvider>
+          <RegistrationList />
         </NotificationProvider>
-      </MemoryRouter>,
+      </QueryClientProvider>,
     );
 
   beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
     jest.clearAllMocks();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
-    (useRegistrationConfig as jest.Mock).mockReturnValue({
-      registrationConfig: mockRegistrationConfig,
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [{ uuid: 'priv-1', name: 'app:registration' }],
+      isLoading: false,
+      error: null,
+      setUserPrivileges: jest.fn(),
+      setIsLoading: jest.fn(),
+      setError: jest.fn(),
+    });
+    mockUseRegistrationConfig.mockReturnValue({
+      registrationConfig: { extensions: [] } as any,
+      isLoading: false,
+      error: null,
     });
   });
 
-  it("should log the user's visit to page", () => {
-    renderPage();
-    expect(dispatchAuditEvent).toHaveBeenCalledWith({
-      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH
-        .eventType as AuditEventType,
-      module: AUDIT_LOG_EVENT_DETAILS.VIEWED_REGISTRATION_PATIENT_SEARCH.module,
-    });
+  afterEach(() => {
+    queryClient.clear();
   });
 
-  it('should render the header with breadcrumbs, globalActions, and Create New Patient button', () => {
+  it('renders breadcrumb navigation', () => {
     renderPage();
-    expect(screen.getByTestId('user-global-action')).toBeInTheDocument();
+    const homeLink = screen.getByRole('link', { name: /HOME_LABEL/i });
+    expect(homeLink).toHaveAttribute('href', services.BAHMNI_HOME_PATH);
+    expect(screen.getByText('REGISTRATION_LABEL')).toBeInTheDocument();
+  });
+
+  it('renders extension handler container when a registered extension is configured', () => {
+    mockUseRegistrationConfig.mockReturnValue({
+      registrationConfig: { extensions: [mockSearchExtension] } as any,
+      isLoading: false,
+      error: null,
+    });
+    renderPage();
     expect(
-      screen.getByRole('button', { name: /create new patient/i }),
+      screen.getByTestId('org.bahmni.registration.v2.search-test-id'),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('search-patient-widget')).toBeInTheDocument();
   });
 
-  it('should navigate to new patient page when Create New Patient is clicked', async () => {
-    renderPage();
-    const createButton = screen.getByRole('button', {
-      name: /create new patient/i,
+  it.each([
+    {
+      description: 'extensions array is empty',
+      registrationConfig: { extensions: [] },
+      userPrivileges: [{ uuid: 'priv-1', name: 'app:registration' }],
+    },
+    {
+      description: 'registrationConfig has no extensions property',
+      registrationConfig: {},
+      userPrivileges: [{ uuid: 'priv-1', name: 'app:registration' }],
+    },
+    {
+      description: 'user lacks required privilege',
+      registrationConfig: { extensions: [mockPrivilegedSearchExtension] },
+      userPrivileges: [{ uuid: 'priv-2', name: 'app:admin' }],
+    },
+    {
+      description: 'extension point has no registered handler',
+      registrationConfig: { extensions: [mockOtherExtension] },
+      userPrivileges: [{ uuid: 'priv-1', name: 'app:registration' }],
+    },
+  ])(
+    'shows no extensions configured message when $description',
+    ({ registrationConfig, userPrivileges }) => {
+      mockUseUserPrivilege.mockReturnValue({
+        userPrivileges,
+        isLoading: false,
+        error: null,
+        setUserPrivileges: jest.fn(),
+        setIsLoading: jest.fn(),
+        setError: jest.fn(),
+      });
+      mockUseRegistrationConfig.mockReturnValue({
+        registrationConfig: registrationConfig as any,
+        isLoading: false,
+        error: null,
+      });
+      renderPage();
+      expect(
+        screen.getByTestId('no-extensions-configured-test-id'),
+      ).toBeInTheDocument();
+    },
+  );
+
+  describe('Accessibility', () => {
+    it('has no accessibility violations', async () => {
+      const { container } = renderPage();
+      expect(await axe(container)).toHaveNoViolations();
     });
-    fireEvent.click(createButton);
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/registration/patient/new');
+  });
+
+  describe('Snapshot', () => {
+    it('matches snapshot', () => {
+      const { container } = renderPage();
+      expect(container.firstChild).toMatchSnapshot();
     });
   });
 });

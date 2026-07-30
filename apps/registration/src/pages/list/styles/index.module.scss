@@ -1,34 +1,32 @@
 @use "@carbon/react/scss/spacing" as *;
-@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/breakpoint" as *;
 
-.main {
-  background-color: $layer-02;
-  padding: $spacing-06 $spacing-12;
-  padding-inline: calc($spacing-12 + $spacing-02);
-  padding-top: $spacing-08;
-}
-
-.headerButton {
-  position: fixed !important;
-  top: $spacing-02;
-  right: $spacing-09;
-  padding-inline: $spacing-05 !important;
-  z-index: 9999;
-  background-color: $support-success;
-
-  &:hover {
-    background-color: $green-60;
-  }
-
-  &:active {
-    background-color: $green-70;
-  }
+.page {
+  padding-top: $spacing-10;
+  padding-inline: calc($spacing-12 + $spacing-05);
 }
 
 @include breakpoint-down(lg) {
-  .main {
-    padding: $spacing-06 $spacing-08;
+  .page {
+    padding-top: $spacing-08;
+    padding-inline: $spacing-09;
   }
+}
+
+.loading {
+  max-inline-size: 100% !important;
+}
+
+.tabs {
+  box-shadow: 0 3px 6px 0 $shadow;
+}
+
+.message {
+  @include type-style('body-compact-01');
+  color: $support-error;
+  font-style: italic;
+  text-align: center;
+  padding: $spacing-10;
 }
