@@ -201,26 +201,38 @@ describe('SearchPatient', () => {
     });
   });
 
-  it('should render patient identifier as plain text when no patientDetailUrl is configured', async () => {
-    renderSearchPatient(validPatientSearchConfig);
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+  it.each([
+    {
+      description: 'no patientDetailUrl is configured',
+      patientDetailUrl: undefined,
+    },
+    {
+      description: 'patientDetailUrl is an unsafe scheme',
+      patientDetailUrl: 'javascript' + ':alert(1)',
+    },
+  ])(
+    'should render patient identifier as plain text when $description',
+    async ({ patientDetailUrl }) => {
+      renderSearchPatient({ ...validPatientSearchConfig, patientDetailUrl });
+      const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
 
-    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
-      pageOfResults: mockSearchPatientData,
-      totalCount: mockSearchPatientData.length,
-    });
+      (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
+        pageOfResults: mockSearchPatientData,
+        totalCount: mockSearchPatientData.length,
+      });
 
-    await waitFor(() => {
-      fireEvent.input(searchInput, { target: { value: 'Steffi' } });
-      fireEvent.click(screen.getByTestId('search-patient-search-button'));
-    });
+      await waitFor(() => {
+        fireEvent.input(searchInput, { target: { value: 'Steffi' } });
+        fireEvent.click(screen.getByTestId('search-patient-search-button'));
+      });
 
-    await waitFor(() => {
-      const identifiers = screen.getAllByText('ABC200000');
-      expect(identifiers.length).toBeGreaterThan(0);
-      identifiers.forEach((el) => expect(el.tagName).not.toBe('A'));
-    });
-  });
+      await waitFor(() => {
+        const identifiers = screen.getAllByText('ABC200000');
+        expect(identifiers.length).toBeGreaterThan(0);
+        identifiers.forEach((el) => expect(el.tagName).not.toBe('A'));
+      });
+    },
+  );
 
   it('should render patient identifier inside an anchor element when patientDetailUrl is configured', async () => {
     const { container } = renderSearchPatient({
@@ -240,8 +252,7 @@ describe('SearchPatient', () => {
     });
 
     await waitFor(() => {
-      const anchors = container.querySelectorAll('a');
-      expect(anchors.length).toBeGreaterThan(0);
+      expect(container.querySelectorAll('a').length).toBeGreaterThan(0);
     });
   });
 

@@ -120,6 +120,9 @@ const PatientSearchResults = ({
       return <span>{identifier}</span>;
     }
     const url = formatUrl(patientDetailUrl, { patientUuid: uuid }, true);
+    if (!/^(#|\/|https?:\/\/)/i.test(url.trim())) {
+      return <span>{identifier}</span>;
+    }
     return <a href={url}>{identifier}</a>;
   };
 
