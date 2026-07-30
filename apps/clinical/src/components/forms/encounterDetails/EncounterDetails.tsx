@@ -148,7 +148,6 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
     setSelectedEncounterType,
   ]);
 
-  // Initialize visit type from active visit (consultation mode) or first filtered option (startVisit mode)
   useEffect(() => {
     if (isStartVisitMode) {
       if (filteredVisitTypes.length > 0 && !selectedVisitType) {
@@ -183,7 +182,6 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
     }
   }, [practitioner, encounterParticipants.length, setEncounterParticipants]);
 
-  // Update store with activeVisit and error (consultation mode only)
   useEffect(() => {
     if (isStartVisitMode) return;
     setActiveVisit(activeVisit ?? null);
@@ -211,7 +209,6 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
    *    - encounterParticipants (at least one)
    */
   useEffect(() => {
-    // startVisit mode: container drives readiness; do not touch isEncounterDetailsFormReady
     if (isStartVisitMode) return;
 
     // Check all loading states are false

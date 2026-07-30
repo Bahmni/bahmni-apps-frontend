@@ -13,10 +13,6 @@ const FHIR_ENCOUNTER_URL = '/openmrs/ws/fhir2/R4/Encounter';
 
 const VISIT_TAG = 'visit';
 
-/**
- * Creates a FHIR Encounter resource representing a visit (tagged "visit").
- * Does NOT dispatch any audit event — the caller is responsible for that.
- */
 export async function createFhirVisit(
   patientUuid: string,
   locationUuid: string,
@@ -63,11 +59,6 @@ export async function createFhirVisit(
   return post<Encounter>(FHIR_ENCOUNTER_URL, resource);
 }
 
-/**
- * Returns the open (no period.end) visit at the user's login visit-location,
- * or null if none exists.
- * Surfaces getUserLoginLocation()'s synchronous throw as a rejected promise.
- */
 export async function getActiveVisitAtLoginLocation(
   patientUuid: string,
 ): Promise<Encounter | null> {

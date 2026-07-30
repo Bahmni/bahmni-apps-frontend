@@ -43,6 +43,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   const hasAddVisitsPrivilege = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.ADD_VISITS,
   );
+
   const queryClient = useQueryClient();
 
   const [visitCreated, setVisitCreated] = useState(false);
@@ -82,21 +83,25 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     retry: false,
   });
 
+  const bypass = !configLoading && allowedVisitTypes.length === 0;
+  const noActiveVisit = activeVisit === null;
+  const shouldAutoCreate =
+    noActiveVisit &&
+    hasAddVisitsPrivilege &&
+    allowedVisitTypeObjects.length === 1 &&
+    !visitCreated &&
+    !creating;
+
   const createVisitAndProceed = useCallback(
     async (visitTypeUuid: string, visitTypeName: string) => {
       setCreating(true);
       setCreationError(null);
       try {
-        let loginLocationUuid: string;
-        try {
-          loginLocationUuid = getUserLoginLocation().uuid;
-        } catch (err) {
-          throw err instanceof Error
-            ? err
-            : new Error(t('START_VISIT_ERROR_MESSAGE'));
-        }
-        const visitLocation = await getVisitLocationUUID(loginLocationUuid);
+        const visitLocation = await getVisitLocationUUID(
+          getUserLoginLocation().uuid,
+        );
         await createFhirVisit(patientUuid!, visitLocation.uuid, visitTypeUuid);
+
         dispatchAuditEvent({
           eventType: 'START_VISIT_IN_ABSENTIA',
           patientUuid: patientUuid!,
@@ -131,17 +136,6 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
       .setRequestedEncounterType(defaultEncounterType ?? null);
   }, [defaultEncounterType]);
 
-  const shouldAutoCreate =
-    !configLoading &&
-    !queryLoading &&
-    !queryError &&
-    activeVisit === null &&
-    hasAddVisitsPrivilege &&
-    allowedVisitTypeObjects.length === 1 &&
-    !visitCreated &&
-    !creating &&
-    !creationError;
-
   useEffect(() => {
     if (!shouldAutoCreate) return;
     const visitType = allowedVisitTypeObjects[0];
@@ -157,11 +151,6 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     });
   }, [creationError, queryError, addNotification, t]);
 
-  const handleCancel = useCallback(() => {
-    useEncounterDetailsStore.getState().reset();
-    onClose();
-  }, [onClose]);
-
   const selectedVisitType = useEncounterDetailsStore(
     (encounterDetails) => encounterDetails.selectedVisitType,
   );
@@ -169,22 +158,17 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     (encounterDetails) => encounterDetails.selectedEncounterType,
   );
 
+  const handleCancel = useCallback(() => {
+    useEncounterDetailsStore.getState().reset();
+    onClose();
+  }, [onClose]);
+
   const handleStart = useCallback(() => {
     if (!selectedVisitType || !selectedEncounterType) return;
     createVisitAndProceed(selectedVisitType.uuid, selectedVisitType.name);
   }, [selectedVisitType, selectedEncounterType, createVisitAndProceed]);
 
-  const bypass = !configLoading && allowedVisitTypes.length === 0;
-
-  const hasActiveVisit =
-    !configLoading &&
-    !queryLoading &&
-    !queryError &&
-    allowedVisitTypes.length > 0 &&
-    activeVisit !== null &&
-    activeVisit !== undefined;
-
-  if (bypass || hasActiveVisit || visitCreated) {
+  if (bypass || activeVisit || visitCreated) {
     return (
       <ConsultationPad
         encounterSessionStartContext={encounterSessionStartContext}
@@ -193,15 +177,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     );
   }
 
-  if (
-    configLoading ||
-    queryLoading ||
-    (activeVisit === null &&
-      hasAddVisitsPrivilege &&
-      allowedVisitTypeObjects.length === 1 &&
-      !creationError) ||
-    creating
-  ) {
+  if (configLoading || queryLoading || creating) {
     return (
       <div
         className={styles.loadingWrapper}
@@ -212,13 +188,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     );
   }
 
-  if (
-    !configLoading &&
-    !queryLoading &&
-    !queryError &&
-    activeVisit === null &&
-    !hasAddVisitsPrivilege
-  ) {
+  if (noActiveVisit && !hasAddVisitsPrivilege) {
     return (
       <ActionArea
         title={t('NEW_CONSULTATION')}
@@ -226,6 +196,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
         onPrimaryButtonClick={onClose}
         secondaryButtonText=""
         isSecondaryButtonDisabled
+        onSecondaryButtonClick={() => {}}
         content={
           <div className={styles.bannerWrapper}>
             <InlineNotification
@@ -243,10 +214,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   }
 
   if (
-    !configLoading &&
-    !queryLoading &&
-    !queryError &&
-    activeVisit === null &&
+    noActiveVisit &&
     hasAddVisitsPrivilege &&
     allowedVisitTypeObjects.length > 1
   ) {
