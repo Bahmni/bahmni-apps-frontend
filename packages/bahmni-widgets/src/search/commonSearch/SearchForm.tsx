@@ -85,9 +85,9 @@ const SearchForm = ({
   const canAddMore = availableCriteria.length > 0;
 
   const handleAdd = () => {
-    const defaultKey =
-      activeContext.criteria.find((c) => c.default)?.field.key ?? null;
-    const preselect = availableCriteria.some((c) => c.field.key === defaultKey)
+    const defaultCriterion = activeContext.criteria.find((c) => c.default);
+    const defaultKey = defaultCriterion ? defaultCriterion.id! : null;
+    const preselect = availableCriteria.some((c) => c.id === defaultKey)
       ? defaultKey
       : null;
     setRows((prev) => [...prev, makeRow(preselect)]);
@@ -138,9 +138,8 @@ const SearchForm = ({
               row.rowId,
             )}
             selectedCriterion={
-              activeContext.criteria.find(
-                (c) => c.field.key === row.criterionKey,
-              ) ?? null
+              activeContext.criteria.find((c) => c.id === row.criterionKey) ??
+              null
             }
             onCriterionChange={handleCriterionChange}
             onValueChange={handleValueChange}

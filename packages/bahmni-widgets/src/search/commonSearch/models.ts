@@ -70,6 +70,7 @@ export type InputConfig =
   | LookupInput;
 
 export interface CriterionConfig {
+  id?: string;
   field: FieldConfig;
   translationKey: string;
   default?: boolean;

@@ -6,6 +6,8 @@ import {
   formatDateTime,
   formatGender,
   getFormattedAge,
+  hasPrivilege,
+  type UserPrivilege,
 } from '@bahmni/services';
 import { format } from 'date-fns';
 import jsonata from 'jsonata';
@@ -20,6 +22,7 @@ import {
   CriterionConfig,
   CriterionRow,
   CriterionValue,
+  FieldConfig,
   InputConfig,
   ResolvedRow,
   ScalarValue,
@@ -112,6 +115,23 @@ export const getRangeOrderError = (
   return new Date(fromVal) > new Date(toVal) ? errorMessage : null;
 };
 
+const getCriterionId = (field: FieldConfig): string =>
+  field.keyType ? `${field.key}:${field.keyType}` : field.key;
+
+export const processContextConfigs = (
+  contexts: SearchContextConfig[],
+  userPrivileges: UserPrivilege[] | null,
+): SearchContextConfig[] =>
+  contexts
+    .filter((ctx) => hasPrivilege(userPrivileges, ctx.requiredPrivileges))
+    .map((ctx) => ({
+      ...ctx,
+      criteria: ctx.criteria.map((c) => ({
+        ...c,
+        id: getCriterionId(c.field),
+      })),
+    }));
+
 export const makeRow = (criterionKey: string | null): CriterionRow => ({
   rowId: uuidv4(),
   criterionKey,
@@ -122,8 +142,8 @@ export const makeRow = (criterionKey: string | null): CriterionRow => ({
 
 export const initialRows = (context: SearchContextConfig): CriterionRow[] => {
   const defaults = context.criteria.filter((c) => c.default);
-  if (defaults.length > 0) return defaults.map((c) => makeRow(c.field.key));
-  return [makeRow(context.criteria[0].field.key)];
+  if (defaults.length > 0) return defaults.map((c) => makeRow(c.id!));
+  return [makeRow(context.criteria[0].id!)];
 };
 
 const activeKeysFrom = (
@@ -145,7 +165,7 @@ export const availableCriteriaForRow = (
   currentRowId: string,
 ): CriterionConfig[] => {
   const activeKeys = activeKeysFrom(rows, currentRowId);
-  return criteria.filter((c) => !activeKeys.has(c.field.key));
+  return criteria.filter((c) => !activeKeys.has(c.id!));
 };
 
 export const criteriaAvailableToAdd = (
@@ -153,7 +173,7 @@ export const criteriaAvailableToAdd = (
   rows: CriterionRow[],
 ): CriterionConfig[] => {
   const activeKeys = activeKeysFrom(rows);
-  return criteria.filter((c) => !activeKeys.has(c.field.key));
+  return criteria.filter((c) => !activeKeys.has(c.id!));
 };
 
 export const updateRow = (
@@ -256,11 +276,12 @@ export const resolveRows = (
       ): r is CriterionRow & { criterionKey: string; value: CriterionValue } =>
         r.criterionKey !== null && r.value !== null,
     )
-    .map((r) => {
-      const criterion = criteria.find((c) => c.field.key === r.criterionKey)!;
+    .flatMap((r) => {
+      const criterion = criteria.find((c) => c.id === r.criterionKey);
+      if (!criterion) return [];
       const value =
         criterion.input.kind === 'date' ? localizeDateTime(r.value) : r.value;
-      return { field: criterion.field, value };
+      return [{ field: criterion.field, value }];
     });
 
 export const buildPayload = (
@@ -289,7 +310,8 @@ export const validateRows = (
   rows.map((r) => {
     if (!r.criterionKey)
       return { ...r, validationError: criterionError, rangeOrderError: null };
-    const criterion = criteria.find((c) => c.field.key === r.criterionKey)!;
+    const criterion = criteria.find((c) => c.id === r.criterionKey);
+    if (!criterion) return r;
     const valueValidationError = getValueError(
       r.value,
       criterion.input,
