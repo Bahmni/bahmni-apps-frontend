@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
-import type { ActionConfig, ResultFieldConfig } from './models';
+import { ActionConfig, ResultFieldConfig, SortOrder } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
 import { resolveNavigationURL, resultTransforms } from './utils';
 
@@ -159,14 +159,19 @@ const ResultsTable = ({
     [resolvedFields, allowedActions],
   );
 
-  const columns: DataTableColumn<ResultRow>[] = resolvedFields.map(
-    ({ id, field }) => ({
-      key: id,
-      header: t(field.translationKey),
-      enableSorting: field.enableSort ?? false,
-      enableFiltering: !!field.filterType,
-      filterType: field.filterType,
-    }),
+  const columns: DataTableColumn<ResultRow>[] = useMemo(
+    () =>
+      resolvedFields.map(({ id, field }) => ({
+        key: id,
+        header: t(field.translationKey),
+        enableSorting: field.enableSort ?? false,
+        defaultSortDirection: field.enableSort
+          ? (field.sortOrder ?? SortOrder.Ascending)
+          : field.sortOrder,
+        enableFiltering: !!field.filterType,
+        filterType: field.filterType,
+      })),
+    [resolvedFields],
   );
 
   return (

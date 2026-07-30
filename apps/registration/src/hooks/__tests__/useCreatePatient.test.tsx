@@ -263,51 +263,10 @@ describe('useCreatePatient', () => {
     );
   });
 
-  it('should create a registration encounter after patient is saved when encounter type is configured', async () => {
+  it('should not create a registration encounter during registration even when encounter type is configured', async () => {
     mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
     mockUseRegistrationEncounterTypeUuid.mockReturnValue(
       'reg-encounter-type-uuid',
-    );
-
-    const { result } = renderHook(() => useCreatePatient(), {
-      wrapper: createWrapper(),
-    });
-    result.current.mutate(mockFormData);
-
-    await waitFor(() => {
-      expect(mockCreateRegistrationEncounterForPatient).toHaveBeenCalledWith(
-        'patient-uuid-123',
-        'reg-encounter-type-uuid',
-      );
-    });
-  });
-
-  it('should not create a registration encounter when encounter type is not configured', async () => {
-    mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
-    mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
-
-    const { result } = renderHook(() => useCreatePatient(), {
-      wrapper: createWrapper(),
-    });
-    result.current.mutate(mockFormData);
-
-    await waitFor(() => {
-      expect(mockAddNotification).toHaveBeenCalled();
-    });
-
-    // Give time for fire-and-forget to settle
-    await new Promise((resolve) => setTimeout(resolve, 50));
-
-    expect(mockCreateRegistrationEncounterForPatient).not.toHaveBeenCalled();
-  });
-
-  it('should show error notification and not block patient save when encounter creation fails', async () => {
-    mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
-    mockUseRegistrationEncounterTypeUuid.mockReturnValue(
-      'reg-encounter-type-uuid',
-    );
-    mockCreateRegistrationEncounterForPatient.mockRejectedValue(
-      new Error('Encounter creation failed'),
     );
 
     const { result } = renderHook(() => useCreatePatient(), {
@@ -319,16 +278,10 @@ describe('useCreatePatient', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    await waitFor(() => {
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'error',
-          message: 'Encounter creation failed',
-        }),
-      );
-    });
+    // The registration encounter is now created at visit save, not at
+    // registration time. Give any stray fire-and-forget a chance to settle.
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // Patient save succeeds regardless
-    expect(result.current.isSuccess).toBe(true);
+    expect(mockCreateRegistrationEncounterForPatient).not.toHaveBeenCalled();
   });
 });

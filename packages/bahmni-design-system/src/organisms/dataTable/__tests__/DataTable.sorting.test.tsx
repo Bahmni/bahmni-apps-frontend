@@ -180,4 +180,43 @@ describe('DataTable sorting', () => {
     expect(sorted[2]).toHaveTextContent('B');
     expect(sorted[2]).toHaveTextContent('stopped');
   });
+
+  it('reverts to the configured default order once the active sort is cleared', async () => {
+    const user = userEvent.setup();
+    const columns: DataTableColumn<Medication>[] = [
+      {
+        key: 'name',
+        header: 'Medication',
+        enableSorting: true,
+        defaultSortDirection: 'asc',
+      },
+      { key: 'status', header: 'Status' },
+      { key: 'orderedBy', header: 'Ordered By' },
+    ];
+
+    render(
+      <DataTable
+        columns={columns}
+        rows={mockRows}
+        renderCell={renderCell}
+        ariaLabel="Medications"
+      />,
+    );
+
+    const header = screen.getByText('Medication');
+
+    const ascRows = screen.getAllByTestId(/^table-row-/);
+    expect(ascRows[0]).toHaveTextContent('Acetylsalicylic acid');
+    expect(ascRows[2]).toHaveTextContent('Paracetamol 650 mg');
+
+    await user.click(header); // asc -> desc
+    const descRows = screen.getAllByTestId(/^table-row-/);
+    expect(descRows[0]).toHaveTextContent('Paracetamol 650 mg');
+    expect(descRows[2]).toHaveTextContent('Acetylsalicylic acid');
+
+    await user.click(header); // desc -> removed -> falls back to configured default (asc)
+    const revertedRows = screen.getAllByTestId(/^table-row-/);
+    expect(revertedRows[0]).toHaveTextContent('Acetylsalicylic acid');
+    expect(revertedRows[2]).toHaveTextContent('Paracetamol 650 mg');
+  });
 });

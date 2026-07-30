@@ -5,7 +5,6 @@ import {
   getObservationsBundleByEncounterUuid,
   getPatientObservationsBundle,
   groupObservationsByEncounter,
-  useSubscribeConsultationSaved,
   useTranslation,
   type EncounterGroup,
 } from '@bahmni/services';
@@ -42,31 +41,29 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
   }, [task, view]);
 
   const serviceRequestRef = task?.fhirResource.basedOn?.[0]?.reference;
+  const serviceRequestId = extractId(serviceRequestRef ?? '') ?? undefined;
   const encounterRef = task?.fhirResource.encounter?.reference;
 
   const {
     data: bundleByServiceRequest,
     isLoading: isLoadingByServiceRequest,
     error: errorByServiceRequest,
-    refetch: refetchByServiceRequest,
   } = useQuery<Bundle<Observation>, Error>({
-    queryKey: ['observationsByServiceRequest', serviceRequestRef],
+    queryKey: ['observationsByServiceRequest', serviceRequestId],
     queryFn: async () => {
-      const serviceRequestId = extractId(serviceRequestRef!);
       return await getPatientObservationsBundle(
         patientUuid,
         undefined,
         serviceRequestId,
       );
     },
-    enabled: open && !!task && !!formName && !!serviceRequestRef,
+    enabled: open && !!task && !!formName && !!serviceRequestId,
   });
 
   const {
     data: bundleByEncounter,
     isLoading: isLoadingByEncounter,
     error: errorByEncounter,
-    refetch: refetchByEncounter,
   } = useQuery<Bundle<Observation>, Error>({
     queryKey: ['observationsByEncounter', encounterRef],
     queryFn: async () => {
@@ -76,32 +73,6 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
     enabled:
       open && !!task && !!formName && !serviceRequestRef && !!encounterRef,
   });
-
-  useSubscribeConsultationSaved(
-    (payload) => {
-      if (payload.patientUUID === patientUuid) {
-        if (
-          payload.updatedResources?.observationFormsWithBasedOn &&
-          serviceRequestRef
-        ) {
-          refetchByServiceRequest();
-        } else if (
-          payload.updatedConcepts?.size > 0 &&
-          !serviceRequestRef &&
-          encounterRef
-        ) {
-          refetchByEncounter();
-        }
-      }
-    },
-    [
-      patientUuid,
-      serviceRequestRef,
-      encounterRef,
-      refetchByServiceRequest,
-      refetchByEncounter,
-    ],
-  );
 
   const bundle = bundleByServiceRequest ?? bundleByEncounter;
   const isLoadingObservations =
