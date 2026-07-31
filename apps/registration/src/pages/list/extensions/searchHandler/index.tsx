@@ -61,6 +61,7 @@ const Search = ({ extensions }: ExtensionHandlerProps) => {
               id={`${ext.id}-panel`}
               data-testid={`${ext.id}-panel-test-id`}
               aria-label={`Panel ${ext.id}`}
+              className={styles.panel}
             >
               {Widget ? (
                 <Suspense

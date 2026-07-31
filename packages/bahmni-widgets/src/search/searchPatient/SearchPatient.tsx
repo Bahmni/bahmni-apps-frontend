@@ -123,8 +123,8 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
   useEffect(() => {
     if (config?.customAttributes || config?.appointment) {
       const combinedFields = [
-        ...(config.customAttributes ?? []),
         ...(config.appointment ?? []),
+        ...(config.customAttributes ?? []),
       ];
       setSearchFields(combinedFields);
 
