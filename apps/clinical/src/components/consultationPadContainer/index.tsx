@@ -197,8 +197,8 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   if (noActiveVisit && (!hasAddVisitsPrivilege || isAllowedVisitTypesMissing)) {
     return (
       <ActionArea
-        title={t('NEW_CONSULTATION')}
-        primaryButtonText={t('CLOSE')}
+        title={t('CONSULTATION_PAD_TITLE')}
+        primaryButtonText={t('CLOSE_BUTTON')}
         onPrimaryButtonClick={onClose}
         content={
           <div className={styles.bannerWrapper}>
@@ -211,7 +211,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
             />
           </div>
         }
-        ariaLabel={t('NEW_CONSULTATION')}
+        ariaLabel={t('CONSULTATION_PAD_TITLE')}
       />
     );
   }
@@ -223,13 +223,13 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   ) {
     return (
       <ActionArea
-        title={t('NEW_CONSULTATION')}
+        title={t('CONSULTATION_PAD_TITLE')}
         primaryButtonText={t('START_VISIT_BUTTON')}
         onPrimaryButtonClick={handleStart}
         isPrimaryButtonDisabled={
           !selectedVisitType || !selectedEncounterType || creating
         }
-        secondaryButtonText={t('CANCEL')}
+        secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
         onSecondaryButtonClick={handleCancel}
         content={
           <>
@@ -247,7 +247,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
             />
           </>
         }
-        ariaLabel={t('NEW_CONSULTATION')}
+        ariaLabel={t('CONSULTATION_PAD_TITLE')}
       />
     );
   }
