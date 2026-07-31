@@ -89,6 +89,7 @@
   "COMMON_SEARCH_SELECT_CONTEXT_TITLE": "Search Context",
   "COMMON_SEARCH_SELECT_LOCATION_LABEL": "Location",
   "COMMON_SEARCH_SELECT_SEARCH_CRITERIA": "Search Criteria",
+  "COMMON_SEARCH_SELECTED_CRITERIA_LABEL": "Selected {{context}} search criteria:",
   "COMMON_SEARCH_SELECT_SEARCH_CRITERIA_PLACEHOLDER": "Select a search criteria",
   "COMMON_SEARCH_SUCCESS": "Search Complete",
   "COMMON_SEARCH_SUCCESS_MESSAGE": "Your search criteria have been submitted.",
