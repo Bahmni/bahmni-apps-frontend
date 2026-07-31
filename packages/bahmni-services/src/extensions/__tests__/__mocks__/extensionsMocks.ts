@@ -1,4 +1,4 @@
-import { UserPrivilege } from '@bahmni/services';
+import { UserPrivilege } from '../../../privilegeService';
 import { Extension } from '../../models';
 
 export const mockExtensionWithPrivilege: Extension = {

@@ -1,4 +1,4 @@
-import { hasPrivilege, UserPrivilege } from '@bahmni/services';
+import { hasPrivilege, UserPrivilege } from '../privilegeService';
 import { Extension } from './models';
 
 export const groupExtensionsByPoint = (
