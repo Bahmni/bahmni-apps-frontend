@@ -51,7 +51,7 @@ const CriterionRow = ({
           }: {
             selectedItem: CriterionConfig | null;
           }) => {
-            onCriterionChange(row.rowId, selectedItem!.field.key);
+            onCriterionChange(row.rowId, selectedItem!.id!);
           }}
           invalid={!!criterionError}
           invalidText={criterionError}

@@ -7,7 +7,7 @@ import {
   camelToScreamingSnakeCase,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Task } from 'fhir/r4';
 import React, { useMemo, useCallback } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
@@ -110,6 +110,7 @@ const TaskList: React.FC<TaskListProps> = ({
 }) => {
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();
+  const queryClient = useQueryClient();
 
   const taskListConfig = config as TaskListConfig | undefined;
   const showOnlyLeafTasks = taskListConfig?.showOnlyLeafTasks ?? false;
@@ -130,9 +131,12 @@ const TaskList: React.FC<TaskListProps> = ({
     (payload) => {
       if (
         payload.patientUUID === patientUuid &&
-        payload.updatedResources.observationFormsWithBasedOn
+        payload.updatedResources.observationFormsWithBasedOn === orderReference
       ) {
         refetch();
+        queryClient.removeQueries({
+          queryKey: ['observationsByServiceRequest', orderReference],
+        });
       }
     },
     [patientUuid, refetch],

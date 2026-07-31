@@ -210,9 +210,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   // so the comparison correctly detects only genuine user changes.
   const hasFormChanges = React.useMemo(() => {
     if (!isEditMode) return true; // non-edit forms are always saveable
-    // Baseline not yet captured (init still settling) or no user changes yet.
-    if (baselineObservations.length === 0 || observations.length === 0)
+    if (!initSettledRef.current) return false;
+    if (observations.length === 0) return false;
+
+    // Baseline not yet captured (init still settling) — wait for capture.
+    if (baselineObservations.length > 0 && observations.length === 0)
       return false;
+    // Compare current against baseline to detect changes.
     return detectFormChanges(observations, baselineObservations);
   }, [isEditMode, observations, baselineObservations]);
 
