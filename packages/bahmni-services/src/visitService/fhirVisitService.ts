@@ -17,6 +17,7 @@ export async function createFhirVisit(
   patientUuid: string,
   locationUuid: string,
   visitTypeUuid: string,
+  episodeUuid?: string,
 ): Promise<Encounter> {
   const resource: Encounter = {
     resourceType: 'Encounter',
@@ -55,6 +56,9 @@ export async function createFhirVisit(
       },
     ],
     period: { start: new Date().toISOString() },
+    ...(episodeUuid && {
+      episodeOfCare: [{ reference: `EpisodeOfCare/${episodeUuid}` }],
+    }),
   };
   return post<Encounter>(FHIR_ENCOUNTER_URL, resource);
 }

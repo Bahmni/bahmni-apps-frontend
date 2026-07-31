@@ -17,6 +17,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
+import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import type { EncounterDetailsMetadata } from '../../providers/clinicalConfig/models';
@@ -38,6 +39,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const patientUuid = usePatientUUID();
+  const { activeEpisodeId } = useClinicalAppData();
   const { clinicalConfig, isLoading: configLoading } = useClinicalConfig();
   const { encounterConcepts } = useEncounterConcepts();
   const hasAddVisitsPrivilege = useHasPrivilege(
@@ -99,7 +101,12 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
         const visitLocation = await getVisitLocationUUID(
           getUserLoginLocation().uuid,
         );
-        await createFhirVisit(patientUuid!, visitLocation.uuid, visitTypeUuid);
+        await createFhirVisit(
+          patientUuid!,
+          visitLocation.uuid,
+          visitTypeUuid,
+          activeEpisodeId ?? undefined,
+        );
 
         dispatchAuditEvent({
           eventType: 'START_VISIT_ON_CONSULTATION',
@@ -122,7 +129,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
         setCreating(false);
       }
     },
-    [patientUuid, t, queryClient],
+    [patientUuid, t, queryClient, activeEpisodeId],
   );
 
   useEffect(() => {

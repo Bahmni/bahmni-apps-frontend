@@ -14,6 +14,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
@@ -75,6 +76,7 @@ jest.mock('@tanstack/react-query', () => ({
   useQueryClient: jest.fn(),
 }));
 
+jest.mock('../../../hooks/useClinicalAppData');
 jest.mock('../../../hooks/useEncounterConcepts');
 jest.mock('../../../providers/clinicalConfig');
 jest.mock('../../../stores/encounterDetailsStore');
@@ -157,6 +159,9 @@ const renderComponent = (
   );
 
 beforeEach(() => {
+  jest
+    .mocked(useClinicalAppData)
+    .mockReturnValue({ activeEpisodeId: null } as any);
   jest
     .mocked(useTranslation)
     .mockReturnValue({ t: (key: string) => key } as any);
@@ -310,6 +315,7 @@ describe('ConsultationPadContainer', () => {
         PATIENT_UUID,
         MOCK_VISIT_LOCATION.uuid,
         VISIT_TYPE_OPD.uuid,
+        undefined,
       );
     });
     expect(dispatchAuditEvent).toHaveBeenCalledWith(
@@ -410,10 +416,36 @@ describe('ConsultationPadContainer', () => {
         PATIENT_UUID,
         MOCK_VISIT_LOCATION.uuid,
         VISIT_TYPE_OPD.uuid,
+        undefined,
       );
     });
     await waitFor(() => {
       expect(screen.getByTestId('consultation-pad')).toBeInTheDocument();
+    });
+  });
+
+  it('passes activeEpisodeId to createFhirVisit when available', async () => {
+    const EPISODE_UUID = 'episode-uuid-1';
+    jest
+      .mocked(useClinicalAppData)
+      .mockReturnValue({ activeEpisodeId: EPISODE_UUID } as any);
+    jest.mocked(useClinicalConfig).mockReturnValue(buildConfig(['OPD']) as any);
+    jest.mocked(useEncounterConcepts).mockReturnValue({
+      ...defaultEncounterConceptsResult,
+      encounterConcepts: {
+        ...defaultEncounterConceptsResult.encounterConcepts,
+        visitTypes: [VISIT_TYPE_OPD],
+      },
+    } as any);
+    renderComponent();
+
+    await waitFor(() => {
+      expect(createFhirVisit).toHaveBeenCalledWith(
+        PATIENT_UUID,
+        MOCK_VISIT_LOCATION.uuid,
+        VISIT_TYPE_OPD.uuid,
+        EPISODE_UUID,
+      );
     });
   });
 

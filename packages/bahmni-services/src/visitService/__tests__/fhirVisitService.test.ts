@@ -81,6 +81,32 @@ describe('fhirVisitService', () => {
     );
   });
 
+  it('does not include episodeOfCare when episodeUuid is omitted', async () => {
+    await createFhirVisit(PATIENT_UUID, LOCATION_UUID, VISIT_TYPE_UUID);
+
+    expect(mockPost).toHaveBeenCalledWith(
+      '/openmrs/ws/fhir2/R4/Encounter',
+      expect.not.objectContaining({ episodeOfCare: expect.anything() }),
+    );
+  });
+
+  it('includes episodeOfCare reference when episodeUuid is provided', async () => {
+    const EPISODE_UUID = 'episode-uuid-1';
+    await createFhirVisit(
+      PATIENT_UUID,
+      LOCATION_UUID,
+      VISIT_TYPE_UUID,
+      EPISODE_UUID,
+    );
+
+    expect(mockPost).toHaveBeenCalledWith(
+      '/openmrs/ws/fhir2/R4/Encounter',
+      expect.objectContaining({
+        episodeOfCare: [{ reference: `EpisodeOfCare/${EPISODE_UUID}` }],
+      }),
+    );
+  });
+
   it('returns the resolved value from post', async () => {
     const mockEncounter = { resourceType: 'Encounter', id: 'new-enc-1' };
     mockPost.mockResolvedValue(mockEncounter);
