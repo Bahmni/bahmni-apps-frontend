@@ -197,7 +197,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
           <div className={styles.bannerWrapper}>
             <InlineNotification
               kind="warning"
-              title={t('START_VISIT_NO_ACTIVE_VISIT_BANNER')}
+              title={t('START_VISIT_REQUEST_TO_BE_STARTED')}
               lowContrast
               hideCloseButton
               testId="consultation-pad-container-no-privilege"

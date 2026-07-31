@@ -10,6 +10,10 @@
 }
 
 .bannerWrapper {
-  padding: $spacing-04 $spacing-06 0;
+  padding: $spacing-04 $spacing-06;
+
+  :global(.cds--inline-notification) {
+    max-inline-size: 100%;
+  }
 }
 

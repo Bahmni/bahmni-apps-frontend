@@ -594,7 +594,7 @@
   "START_VISIT_BUTTON": "Iniciar visita",
   "STARTING_VISIT": "Iniciando visita…",
   "START_VISIT_NO_ACTIVE_VISIT_BANNER": "No hay una visita activa para esta ubicación. Necesita iniciar una visita.",
-  "START_VISIT_NO_ADD_VISITS_PRIVILEGE": "No tiene permiso para iniciar una visita. Por favor contacte a su administrador.",
+  "START_VISIT_REQUEST_TO_BE_STARTED": "No hay una visita activa para esta ubicación. Por favor solicite que se inicie la visita.",
   "START_VISIT_ERROR_TITLE": "No se pudo iniciar la visita",
   "START_VISIT_ERROR_MESSAGE": "Ocurrió un error al iniciar la visita. Por favor intente de nuevo."
 }

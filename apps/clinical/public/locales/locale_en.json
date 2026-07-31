@@ -599,7 +599,7 @@
   "START_VISIT_BUTTON": "Start visit",
   "STARTING_VISIT": "Starting visit…",
   "START_VISIT_NO_ACTIVE_VISIT_BANNER": "There is no active visit for this location. You need to start a visit.",
-  "START_VISIT_NO_ADD_VISITS_PRIVILEGE": "You do not have permission to start a visit. Please contact your administrator.",
+  "START_VISIT_REQUEST_TO_BE_STARTED": "There is no active visit for this location. Please request the visit to be started.",
   "START_VISIT_ERROR_TITLE": "Visit could not be started",
   "START_VISIT_ERROR_MESSAGE": "An error occurred while starting the visit. Please try again."
 }
