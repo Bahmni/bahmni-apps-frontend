@@ -1,7 +1,5 @@
 import { PatientSearchResult } from '@bahmni/services';
-
-export const buttonTitle = 'Search';
-export const searchBarPlaceholder = 'Search by name or patient ID';
+import { SearchPatientConfig } from '../models';
 
 export const mockPatient: PatientSearchResult = {
   uuid: '02f47490-d657-48ee-98e7-4c9133ea168b',
@@ -32,7 +30,13 @@ export const mockSearchPatientData: PatientSearchResult[] = [
   mockPatient,
 ];
 
-export const validPatientSearchConfig = {
+export const mockExtensionParams = {
+  configUrl: 'test-config-url',
+  searchHandler: 'defaultSearch',
+};
+
+export const mockSearchPatientConfig: SearchPatientConfig = {
+  patientDetailUrl: '#/patient/{{patientUuid}}/dashboard',
   customAttributes: [
     {
       translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',

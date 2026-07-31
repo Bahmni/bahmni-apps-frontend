@@ -1,4 +1,5 @@
 import {
+  getConfig,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
 } from '@bahmni/services';
@@ -10,22 +11,23 @@ import { MemoryRouter } from 'react-router-dom';
 import { useNotification } from '../../../notification';
 import { useUserPrivilege } from '../../../userPrivileges/useUserPrivilege';
 import {
-  buttonTitle,
-  searchBarPlaceholder,
-  validPatientSearchConfig,
+  mockExtensionParams,
+  mockSearchPatientConfig,
   mockSearchPatientData,
 } from '../__mocks__/mocks';
+import { SearchPatientConfig } from '../models';
 import SearchPatient from '../SearchPatient';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
+  getConfig: jest.fn(),
   searchPatientByNameOrId: jest.fn(),
   searchPatientByCustomAttribute: jest.fn(),
 }));
-jest.mock('../../notification');
-jest.mock('../../userPrivileges/useUserPrivilege');
+jest.mock('../../../notification');
+jest.mock('../../../userPrivileges/useUserPrivilege');
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: jest.fn(() => jest.fn()),
@@ -33,25 +35,24 @@ jest.mock('react-router-dom', () => ({
 
 const mockAddNotification = jest.fn();
 
+const BUTTON_TITLE = 'REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE';
+const SEARCH_PLACEHOLDER = 'REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER';
+
 describe('SearchPatient', () => {
   let queryClient: QueryClient;
 
   const renderSearchPatient = (
-    patientSearch?: typeof validPatientSearchConfig & {
-      patientDetailUrl?: string;
-    },
-  ) =>
-    render(
+    config: SearchPatientConfig = mockSearchPatientConfig,
+  ) => {
+    (getConfig as jest.Mock).mockResolvedValue(config);
+    return render(
       <MemoryRouter>
         <QueryClientProvider client={queryClient}>
-          <SearchPatient
-            buttonTitle={buttonTitle}
-            searchBarPlaceholder={searchBarPlaceholder}
-            patientSearch={patientSearch}
-          />
+          <SearchPatient extensionParams={mockExtensionParams} />
         </QueryClientProvider>
       </MemoryRouter>,
     );
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -72,30 +73,35 @@ describe('SearchPatient', () => {
     queryClient.clear();
   });
 
-  it('should render the searchbar and the search button', () => {
-    renderSearchPatient(validPatientSearchConfig);
-    expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+  it('should render the searchbar and the search button', async () => {
+    renderSearchPatient();
+    await waitFor(() => {
+      expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    });
     expect(screen.getByTestId('search-patient-searchbar')).toBeInTheDocument();
     expect(screen.getByTestId('search-patient-searchbar')).toHaveAttribute(
       'placeholder',
-      searchBarPlaceholder,
+      SEARCH_PLACEHOLDER,
     );
     expect(
       screen.getByTestId('search-patient-search-button'),
     ).toBeInTheDocument();
     expect(
       screen.getByTestId('search-patient-search-button'),
-    ).toHaveTextContent(buttonTitle);
+    ).toHaveTextContent(BUTTON_TITLE);
     expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
     expect(screen.getByTestId('search-type-dropdown')).toBeInTheDocument();
     expect(screen.getByTestId('advance-search-button')).toBeInTheDocument();
     expect(screen.getByTestId('advance-search-button')).toHaveTextContent(
-      buttonTitle,
+      BUTTON_TITLE,
     );
   });
 
-  it('should not show results table before a search is performed', () => {
-    renderSearchPatient(validPatientSearchConfig);
+  it('should not show results table before a search is performed', async () => {
+    renderSearchPatient();
+    await waitFor(() => {
+      expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    });
     expect(screen.queryByTestId(/sortable-table-/)).not.toBeInTheDocument();
     expect(
       screen.queryByTestId('patient-search-title'),
@@ -118,8 +124,11 @@ describe('SearchPatient', () => {
   ])(
     'should search for patient when name input has valid text by $description',
     async ({ trigger }) => {
-      renderSearchPatient(validPatientSearchConfig);
-      const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+      renderSearchPatient();
+      await waitFor(() => {
+        expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+      });
+      const searchInput = screen.getByPlaceholderText(SEARCH_PLACEHOLDER);
 
       (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
         pageOfResults: [],
@@ -138,8 +147,11 @@ describe('SearchPatient', () => {
   );
 
   it('should show results table after a successful search', async () => {
-    renderSearchPatient(validPatientSearchConfig);
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+    renderSearchPatient();
+    await waitFor(() => {
+      expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    });
+    const searchInput = screen.getByPlaceholderText(SEARCH_PLACEHOLDER);
 
     (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
       pageOfResults: mockSearchPatientData,
@@ -155,11 +167,14 @@ describe('SearchPatient', () => {
   });
 
   it('should show loading state in title while search is in progress', async () => {
-    renderSearchPatient(validPatientSearchConfig);
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+    renderSearchPatient();
+    await waitFor(() => {
+      expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    });
+    const searchInput = screen.getByPlaceholderText(SEARCH_PLACEHOLDER);
 
     (searchPatientByNameOrId as jest.Mock).mockReturnValue(
-      new Promise(() => { }),
+      new Promise(() => {}),
     );
 
     fireEvent.input(searchInput, { target: { value: 'John Doe' } });
@@ -173,8 +188,11 @@ describe('SearchPatient', () => {
   });
 
   it('should show error state in title when search fails', async () => {
-    renderSearchPatient(validPatientSearchConfig);
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+    renderSearchPatient();
+    await waitFor(() => {
+      expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    });
+    const searchInput = screen.getByPlaceholderText(SEARCH_PLACEHOLDER);
 
     (searchPatientByNameOrId as jest.Mock).mockRejectedValue(
       new Error('Login location is missing or invalid. Please reauthenticate.'),
@@ -207,8 +225,11 @@ describe('SearchPatient', () => {
   ])(
     'should render patient identifier as plain text when $description',
     async ({ patientDetailUrl }) => {
-      renderSearchPatient({ ...validPatientSearchConfig, patientDetailUrl });
-      const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+      renderSearchPatient({ ...mockSearchPatientConfig, patientDetailUrl });
+      await waitFor(() => {
+        expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+      });
+      const searchInput = screen.getByPlaceholderText(SEARCH_PLACEHOLDER);
 
       (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
         pageOfResults: mockSearchPatientData,
@@ -228,10 +249,13 @@ describe('SearchPatient', () => {
 
   it('should render patient identifier inside an anchor element when patientDetailUrl is configured', async () => {
     const { container } = renderSearchPatient({
-      ...validPatientSearchConfig,
+      ...mockSearchPatientConfig,
       patientDetailUrl: '#/patient/{{patientUuid}}/edit',
     });
-    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+    await waitFor(() => {
+      expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    });
+    const searchInput = screen.getByPlaceholderText(SEARCH_PLACEHOLDER);
 
     (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
       pageOfResults: mockSearchPatientData,
@@ -262,7 +286,10 @@ describe('SearchPatient', () => {
   ])(
     'should search for patient when phone input has valid text by $description',
     async ({ trigger }) => {
-      renderSearchPatient(validPatientSearchConfig);
+      renderSearchPatient();
+      await waitFor(() => {
+        expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
+      });
       const phoneSearchInput = screen.getByTestId('advance-search-input');
 
       (searchPatientByCustomAttribute as jest.Mock).mockResolvedValue({
@@ -299,7 +326,10 @@ describe('SearchPatient', () => {
   ])(
     'should not search for patient when $description search input is empty',
     async ({ buttonTestId, mockFn }) => {
-      renderSearchPatient(validPatientSearchConfig);
+      renderSearchPatient();
+      await waitFor(() => {
+        expect(screen.getByTestId(buttonTestId)).toBeInTheDocument();
+      });
       fireEvent.click(screen.getByTestId(buttonTestId));
       expect(mockFn).not.toHaveBeenCalled();
     },
@@ -323,7 +353,10 @@ describe('SearchPatient', () => {
   ])(
     'should disable $description search button when search call is happening',
     async ({ inputTestId, buttonTestId, inputValue, mockFn }) => {
-      renderSearchPatient(validPatientSearchConfig);
+      renderSearchPatient();
+      await waitFor(() => {
+        expect(screen.getByTestId(inputTestId)).toBeInTheDocument();
+      });
       const input = screen.getByTestId(inputTestId);
       (mockFn as jest.Mock).mockReturnValue([]);
 
@@ -339,7 +372,10 @@ describe('SearchPatient', () => {
   );
 
   it('should render phone validation error message when invalid characters are entered', async () => {
-    renderSearchPatient(validPatientSearchConfig);
+    renderSearchPatient();
+    await waitFor(() => {
+      expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
+    });
     const phoneSearchInput = screen.getByTestId('advance-search-input');
 
     expect(
@@ -365,7 +401,10 @@ describe('SearchPatient', () => {
   ])(
     'should not render phone validation error message when entered with $description',
     async ({ value }) => {
-      renderSearchPatient(validPatientSearchConfig);
+      renderSearchPatient();
+      await waitFor(() => {
+        expect(screen.getByTestId('advance-search-input')).toBeInTheDocument();
+      });
       const phoneSearchInput = screen.getByTestId('advance-search-input');
 
       fireEvent.input(phoneSearchInput, { target: { value } });
@@ -400,7 +439,10 @@ describe('SearchPatient', () => {
       secondInputTestId,
       secondInputValue,
     }) => {
-      renderSearchPatient(validPatientSearchConfig);
+      renderSearchPatient();
+      await waitFor(() => {
+        expect(screen.getByTestId(firstInputTestId)).toBeInTheDocument();
+      });
       const firstInput = screen.getByTestId(firstInputTestId);
       const secondInput = screen.getByTestId(secondInputTestId);
 
@@ -414,7 +456,10 @@ describe('SearchPatient', () => {
   );
 
   it('should search by email when email is selected from dropdown', async () => {
-    renderSearchPatient(validPatientSearchConfig);
+    renderSearchPatient();
+    await waitFor(() => {
+      expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    });
 
     const dropdownButton = screen.getByRole('combobox', {
       name: /PATIENT_SEARCH_ATTRIBUTE_SELECTOR/,
@@ -449,7 +494,7 @@ describe('SearchPatient', () => {
   });
 
   it('should preserve order of search fields from config', async () => {
-    const orderedConfig = {
+    const orderedConfig: SearchPatientConfig = {
       customAttributes: [
         {
           translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',
@@ -476,17 +521,7 @@ describe('SearchPatient', () => {
       appointment: [],
     };
 
-    render(
-      <MemoryRouter>
-        <QueryClientProvider client={queryClient}>
-          <SearchPatient
-            buttonTitle={buttonTitle}
-            searchBarPlaceholder={searchBarPlaceholder}
-            patientSearch={orderedConfig}
-          />
-        </QueryClientProvider>
-      </MemoryRouter>,
-    );
+    renderSearchPatient(orderedConfig);
 
     await waitFor(() => {
       const dropdownButton = screen.getByRole('combobox', {
@@ -520,8 +555,56 @@ describe('SearchPatient', () => {
     });
   });
 
+  it('should show loading skeleton while config is loading', () => {
+    (getConfig as jest.Mock).mockReturnValue(new Promise(() => {}));
+    render(
+      <MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <SearchPatient extensionParams={mockExtensionParams} />
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+    expect(
+      screen.getByTestId('search-patient-config-loading-test-id'),
+    ).toBeInTheDocument();
+  });
+
+  it('should show error notification when config fails to load', async () => {
+    (getConfig as jest.Mock).mockRejectedValue(
+      new Error('Config fetch failed'),
+    );
+    render(
+      <MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <SearchPatient extensionParams={mockExtensionParams} />
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('search-patient-config-error-test-id'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('should show error notification when no configUrl is provided', () => {
+    render(
+      <MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <SearchPatient extensionParams={{ searchHandler: 'defaultSearch' }} />
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+    expect(
+      screen.getByTestId('search-patient-config-error-test-id'),
+    ).toBeInTheDocument();
+  });
+
   it('should have no accessibility violations', async () => {
-    const { container } = renderSearchPatient(validPatientSearchConfig);
+    const { container } = renderSearchPatient();
+    await waitFor(() => {
+      expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    });
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });

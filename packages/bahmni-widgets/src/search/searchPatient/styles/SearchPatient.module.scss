@@ -4,6 +4,10 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/breakpoint" as *;
 
+.fullWidth {
+  max-inline-size: 100% !important;
+}
+
 .searchPatientContainer {
   display: flex;
   align-items: center;

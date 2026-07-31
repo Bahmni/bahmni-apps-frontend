@@ -1,5 +1,6 @@
+import { CodeSnippetSkeleton, InlineNotification } from '@bahmni/design-system';
 import {
-  AppointmentSearchField,
+  getConfig,
   PatientSearchField,
   PatientSearchResultBundle,
   useTranslation,
@@ -7,26 +8,27 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../../notification';
+import { SearchWidgetProps } from '../models';
+import { SearchPatientConfig } from './models';
 import PatientSearchResults from './PatientSearchResults';
+import schema from './schema.json';
 import SearchPatientInput from './SearchPatientInput';
 import { PatientSearchType, SearchContext } from './SearchStrategy.interface';
 import searchStrategyRegistry from './strategies/SearchStrategyRegistry';
+import styles from './styles/SearchPatient.module.scss';
 
-interface SearchPatientProps {
-  buttonTitle: string;
-  searchBarPlaceholder: string;
-  patientSearch?: {
-    patientDetailUrl?: string;
-    customAttributes: PatientSearchField[];
-    appointment: AppointmentSearchField[];
-  };
-}
+const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
+  const configUrl = extensionParams?.configUrl;
 
-const SearchPatient = ({
-  buttonTitle,
-  searchBarPlaceholder,
-  patientSearch,
-}: SearchPatientProps) => {
+  const {
+    isLoading: isConfigLoading,
+    error: configError,
+    data: config,
+  } = useQuery({
+    queryKey: ['searchPatientConfig', configUrl],
+    queryFn: () => getConfig<SearchPatientConfig>(configUrl!, schema),
+    enabled: !!configUrl,
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [advanceSearchInput, setAdvanceSearchInput] = useState('');
@@ -119,10 +121,10 @@ const SearchPatient = ({
   }, [isError, searchTerm, error]);
 
   useEffect(() => {
-    if (patientSearch?.customAttributes || patientSearch?.appointment) {
+    if (config?.customAttributes || config?.appointment) {
       const combinedFields = [
-        ...(patientSearch.customAttributes ?? []),
-        ...(patientSearch.appointment ?? []),
+        ...(config.customAttributes ?? []),
+        ...(config.appointment ?? []),
       ];
       setSearchFields(combinedFields);
 
@@ -131,16 +133,16 @@ const SearchPatient = ({
       );
       setDropdownItems(labels);
       setSelectedDropdownItem(labels[0] || '');
-    } else if (patientSearch && dropdownItems.length === 0) {
+    } else if (config && dropdownItems.length === 0) {
       addNotification({
         title: t('CONFIG_ERROR_NOT_FOUND'),
-        message: 'No patient search configuration found',
+        message: t('PATIENT_SEARCH_NO_CONFIG_FOUND'),
         type: 'error',
       });
       setDropdownItems([]);
       setSelectedDropdownItem('');
     }
-  }, [patientSearch]);
+  }, [config]);
 
   const handleNameChange = (inputValue: string) => {
     setValidationError('');
@@ -222,11 +224,34 @@ const SearchPatient = ({
 
   const selectedFieldType = getSelectedField()?.type ?? '';
 
+  if (isConfigLoading)
+    return (
+      <CodeSnippetSkeleton
+        id="search-patient-config-loading"
+        testId="search-patient-config-loading-test-id"
+        type="multi"
+        className={styles.fullWidth}
+      />
+    );
+
+  if (configError || !configUrl || !config)
+    return (
+      <InlineNotification
+        id="search-patient-config-error"
+        testId="search-patient-config-error-test-id"
+        kind="error"
+        lowContrast
+        title={t('PATIENT_SEARCH_CONFIG_ERROR')}
+      />
+    );
+
   return (
     <div>
       <SearchPatientInput
-        buttonTitle={buttonTitle}
-        searchBarPlaceholder={searchBarPlaceholder}
+        buttonTitle={t('REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE')}
+        searchBarPlaceholder={t(
+          'REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER',
+        )}
         isLoading={isLoading}
         searchInput={searchInput}
         advanceSearchInput={advanceSearchInput}
@@ -250,7 +275,7 @@ const SearchPatient = ({
           isAdvancedSearch={isAdvancedSearch}
           searchFields={isAdvancedSearch ? searchFields : []}
           selectedFieldType={isAdvancedSearch ? selectedFieldType : ''}
-          patientDetailUrl={patientSearch?.patientDetailUrl}
+          patientDetailUrl={config.patientDetailUrl}
           setData={setPatientSearchData}
         />
       )}

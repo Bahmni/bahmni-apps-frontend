@@ -129,6 +129,8 @@
   "MONTHS_other": " months",
   "NO_EXTENSIONS_CONFIGURED": "No extensions configured",
   "PATIENT_SAVED_SUCCESSFULLY": "Patient saved successfully",
+  "PATIENT_SEARCH_CONFIG_ERROR": "Unable to load patient search configuration. Please try refreshing the page.",
+  "PATIENT_SEARCH_NO_CONFIG_FOUND": "No patient search configuration found.",
   "PATIENT_UPDATED_SUCCESSFULLY": "Patient updated successfully",
   "PHONE_NUMBER": "Phone Number",
   "PHONE_NUMBER_VALIDATION_ERROR": "Please enter only numbers.",
