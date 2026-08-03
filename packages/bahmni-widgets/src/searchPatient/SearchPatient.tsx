@@ -1,4 +1,3 @@
-import { Button, Dropdown, Search, Tag } from '@bahmni/design-system';
 import {
   AppointmentSearchField,
   PatientSearchField,
@@ -8,32 +7,25 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../notification';
+import PatientSearchResults from './PatientSearchResults';
+import SearchPatientInput from './SearchPatientInput';
 import { PatientSearchType, SearchContext } from './SearchStrategy.interface';
 import searchStrategyRegistry from './strategies/SearchStrategyRegistry';
-import styles from './styles/SearchPatient.module.scss';
 
 interface SearchPatientProps {
   buttonTitle: string;
   searchBarPlaceholder: string;
   patientSearch?: {
+    patientDetailUrl?: string;
     customAttributes: PatientSearchField[];
     appointment: AppointmentSearchField[];
   };
-  onSearch: (
-    data: PatientSearchResultBundle | undefined,
-    searchTerm: string,
-    isLoading: boolean,
-    isError: boolean,
-    isAdvancedSearch: boolean,
-    selectedFieldType?: string,
-  ) => void;
 }
 
 const SearchPatient = ({
   buttonTitle,
   searchBarPlaceholder,
   patientSearch,
-  onSearch,
 }: SearchPatientProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -45,6 +37,14 @@ const SearchPatient = ({
   const [dropdownItems, setDropdownItems] = useState<string[]>([]);
   const [selectedDropdownItem, setSelectedDropdownItem] = useState<string>('');
   const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
+  const [patientSearchData, setPatientSearchData] = useState<
+    PatientSearchResultBundle | undefined
+  >(undefined);
+
+  const getSelectedField = () =>
+    searchFields.find(
+      (field) => t(field.translationKey) === selectedDropdownItem,
+    );
 
   const getSearchType = (
     searchField?: PatientSearchField,
@@ -56,28 +56,17 @@ const SearchPatient = ({
       : 'nameOrId';
   };
 
-  /**
-   * Execute search using the appropriate strategy
-   */
   const getSearchQuery = async (): Promise<PatientSearchResultBundle> => {
-    const selectedField = searchFields.find(
-      (field) => t(field.translationKey) === selectedDropdownItem,
-    );
-
-    // Determine which strategy to use
+    const selectedField = getSelectedField();
     const searchType: PatientSearchType = getSearchType(selectedField);
-
-    // Get the appropriate strategy
     const strategy = searchStrategyRegistry.getStrategy(searchType);
 
-    // Build context for the strategy
     const context: SearchContext = {
       selectedField,
       searchFields,
       translator: t,
     };
 
-    // Validate input if strategy supports it
     if (strategy.validate) {
       const validation = strategy.validate(searchTerm, context);
       if (!validation.valid) {
@@ -85,12 +74,10 @@ const SearchPatient = ({
       }
     }
 
-    // Format input if strategy supports it
     const formattedTerm = strategy.formatInput
       ? strategy.formatInput(searchTerm, context)
       : searchTerm;
 
-    // Execute the search
     return await strategy.execute(formattedTerm, context);
   };
 
@@ -108,9 +95,7 @@ const SearchPatient = ({
   });
 
   const isPhoneSearch = () => {
-    const selectedField = searchFields.find(
-      (field) => t(field.translationKey) === selectedDropdownItem,
-    );
+    const selectedField = getSelectedField();
     return (
       selectedField?.fields.some(
         (fieldName) =>
@@ -119,86 +104,26 @@ const SearchPatient = ({
     );
   };
 
-  const handleChange = (inputValue: string, type: 'name' | 'advance') => {
-    if (type === 'advance') {
-      if (isPhoneSearch()) {
-        setAdvanceSearchInput(inputValue);
-        setSearchInput('');
-        const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
-        const numericValue = inputValue.replace(/[^0-9]/g, '');
-        const formattedValue = hasPlusAtStart
-          ? '+' + numericValue
-          : numericValue;
-        setValidationError(
-          validationError && inputValue !== formattedValue
-            ? t('PHONE_NUMBER_VALIDATION_ERROR')
-            : '',
-        );
-      } else {
-        setValidationError('');
-        setAdvanceSearchInput(inputValue);
-        setSearchInput('');
-      }
-    } else {
-      setValidationError('');
-      setAdvanceSearchInput('');
-      setSearchInput(inputValue);
+  useEffect(() => {
+    setPatientSearchData(data);
+  }, [data]);
+
+  useEffect(() => {
+    if (isError && searchTerm) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: error instanceof Error ? error.message : String(error),
+        type: 'error',
+      });
     }
-  };
-
-  const handleClick = (type: 'name' | 'advance') => {
-    const inputValue = type === 'advance' ? advanceSearchInput : searchInput;
-    if (!inputValue.trim()) return;
-
-    const trimmedValue = inputValue.trim();
-
-    if (type === 'advance') {
-      if (isPhoneSearch()) {
-        const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
-        const numericValue = inputValue.replace(/[^0-9]/g, '');
-        const formattedValue = hasPlusAtStart
-          ? '+' + numericValue
-          : numericValue;
-
-        const hasInvalidChars =
-          inputValue !== formattedValue && inputValue.length > 0;
-
-        if (hasInvalidChars) {
-          setValidationError(t('PHONE_NUMBER_VALIDATION_ERROR'));
-          return;
-        } else {
-          setValidationError('');
-          setSearchTerm(formattedValue);
-          setAdvanceSearchInput(trimmedValue);
-        }
-      } else {
-        setValidationError('');
-        setAdvanceSearchInput(trimmedValue);
-        setSearchTerm(trimmedValue);
-      }
-    } else {
-      setSearchInput(trimmedValue);
-      setSearchTerm(trimmedValue);
-    }
-
-    setIsAdvancedSearch(type === 'advance');
-  };
-
-  const handleOnClear = (type: 'name' | 'advance') => {
-    if (type === 'advance') {
-      setAdvanceSearchInput('');
-      setValidationError('');
-    } else {
-      setSearchInput('');
-    }
-    setSearchTerm('');
-  };
+  }, [isError, searchTerm, error]);
 
   useEffect(() => {
     if (patientSearch?.customAttributes || patientSearch?.appointment) {
-      const combinedFields = Object.values(patientSearch)
-        .filter(Array.isArray)
-        .flat();
+      const combinedFields = [
+        ...(patientSearch.customAttributes ?? []),
+        ...(patientSearch.appointment ?? []),
+      ];
       setSearchFields(combinedFields);
 
       const labels = combinedFields.map((field: PatientSearchField) =>
@@ -217,140 +142,118 @@ const SearchPatient = ({
     }
   }, [patientSearch]);
 
-  useEffect(() => {
-    if (isError && searchTerm) {
-      onSearch(data, searchTerm, isLoading, isError, isAdvancedSearch);
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: error instanceof Error ? error.message : String(error),
-        type: 'error',
-      });
+  const handleNameChange = (inputValue: string) => {
+    setValidationError('');
+    setAdvanceSearchInput('');
+    setSearchInput(inputValue);
+  };
+
+  const handleAdvanceChange = (inputValue: string) => {
+    if (isPhoneSearch()) {
+      setAdvanceSearchInput(inputValue);
+      setSearchInput('');
+      const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
+      const numericValue = inputValue.replace(/[^0-9]/g, '');
+      const formattedValue = hasPlusAtStart ? '+' + numericValue : numericValue;
+      setValidationError(
+        validationError && inputValue !== formattedValue
+          ? t('PHONE_NUMBER_VALIDATION_ERROR')
+          : '',
+      );
+    } else {
+      setValidationError('');
+      setAdvanceSearchInput(inputValue);
+      setSearchInput('');
     }
-    const selectedField = searchFields.find(
-      (field) => t(field.translationKey) === selectedDropdownItem,
-    );
-    onSearch(
-      data,
-      searchTerm,
-      isLoading,
-      isError,
-      isAdvancedSearch,
-      selectedField?.type,
-    );
-  }, [
-    searchTerm,
-    isLoading,
-    isError,
-    onSearch,
-    data,
-    isAdvancedSearch,
-    selectedDropdownItem,
-    searchFields,
-    addNotification,
-    t,
-    error,
-  ]);
+  };
+
+  const handleNameSearch = () => {
+    if (!searchInput.trim()) return;
+    setSearchInput(searchInput.trim());
+    setSearchTerm(searchInput.trim());
+    setIsAdvancedSearch(false);
+  };
+
+  const handleAdvanceSearch = () => {
+    if (!advanceSearchInput.trim()) return;
+    const trimmedValue = advanceSearchInput.trim();
+
+    if (isPhoneSearch()) {
+      const hasPlusAtStart =
+        advanceSearchInput.length > 0 && advanceSearchInput[0] === '+';
+      const numericValue = advanceSearchInput.replace(/[^0-9]/g, '');
+      const formattedValue = hasPlusAtStart ? '+' + numericValue : numericValue;
+      const hasInvalidChars =
+        advanceSearchInput !== formattedValue && advanceSearchInput.length > 0;
+
+      if (hasInvalidChars) {
+        setValidationError(t('PHONE_NUMBER_VALIDATION_ERROR'));
+        return;
+      }
+      setValidationError('');
+      setAdvanceSearchInput(trimmedValue);
+      setSearchTerm(formattedValue);
+    } else {
+      setValidationError('');
+      setAdvanceSearchInput(trimmedValue);
+      setSearchTerm(trimmedValue);
+    }
+    setIsAdvancedSearch(true);
+  };
+
+  const handleNameClear = () => {
+    setSearchInput('');
+    setSearchTerm('');
+  };
+
+  const handleAdvanceClear = () => {
+    setAdvanceSearchInput('');
+    setValidationError('');
+    setSearchTerm('');
+  };
+
+  const handleDropdownChange = (item: string) => {
+    setSelectedDropdownItem(item);
+    setAdvanceSearchInput('');
+    setSearchInput('');
+    setSearchTerm('');
+    setValidationError('');
+  };
+
+  const selectedFieldType = getSelectedField()?.type ?? '';
 
   return (
-    <div
-      id="search-patient-tile"
-      data-testid="search-patient-tile"
-      className={styles.searchPatientContainer}
-    >
-      <div
-        id="search-patient-input"
-        className={styles.searchPatient}
-        data-testid="search-patient-input"
-      >
-        <Search
-          id="search-patient-searchbar"
-          testId="search-patient-searchbar"
-          placeholder={searchBarPlaceholder}
-          labelText="Search"
-          value={searchInput}
-          onChange={(e) => handleChange(e.target.value, 'name')}
-          onKeyDown={(e) => {
-            if (e.code === 'Enter') {
-              handleClick('name');
-            }
-          }}
-          onClear={() => handleOnClear('name')}
+    <div>
+      <SearchPatientInput
+        buttonTitle={buttonTitle}
+        searchBarPlaceholder={searchBarPlaceholder}
+        isLoading={isLoading}
+        searchInput={searchInput}
+        advanceSearchInput={advanceSearchInput}
+        validationError={validationError}
+        dropdownItems={dropdownItems}
+        selectedDropdownItem={selectedDropdownItem}
+        onNameChange={handleNameChange}
+        onAdvanceChange={handleAdvanceChange}
+        onNameSearch={handleNameSearch}
+        onAdvanceSearch={handleAdvanceSearch}
+        onNameClear={handleNameClear}
+        onAdvanceClear={handleAdvanceClear}
+        onDropdownChange={handleDropdownChange}
+      />
+      {searchTerm && (
+        <PatientSearchResults
+          data={patientSearchData}
+          searchTerm={searchTerm}
+          isLoading={isLoading}
+          isError={isError}
+          isAdvancedSearch={isAdvancedSearch}
+          searchFields={isAdvancedSearch ? searchFields : []}
+          selectedFieldType={isAdvancedSearch ? selectedFieldType : ''}
+          patientDetailUrl={patientSearch?.patientDetailUrl}
+          setData={setPatientSearchData}
         />
-        <Button
-          id="search-patient-search-button"
-          testId="search-patient-search-button"
-          size="md"
-          onClick={() => handleClick('name')}
-          disabled={isLoading || searchInput.trim().length === 0}
-          className={styles.searchButton}
-        >
-          {buttonTitle}
-        </Button>
-      </div>
-
-      <div className={styles.orDivider}>
-        <Tag type="cool-gray">{t('OR')}</Tag>
-      </div>
-
-      <div className={styles.searchPatient}>
-        <div className={styles.advanceSearchContainer}>
-          <div className={styles.advanceInputWrapper}>
-            <Search
-              id="advance-search-input"
-              testId="advance-search-input"
-              labelText="Advance Search"
-              placeholder={t('SEARCH_BY_CUSTOM_ATTRIBUTE', {
-                attribute: String(selectedDropdownItem),
-              })}
-              value={advanceSearchInput}
-              onChange={(e) => handleChange(e.target.value, 'advance')}
-              onKeyDown={(e) => {
-                if (e.code === 'Enter') {
-                  handleClick('advance');
-                }
-              }}
-              onClear={() => handleOnClear('advance')}
-              inputMode="numeric"
-            />
-            {validationError && (
-              <div
-                className={styles.errorMessage}
-                data-testid="field-validation-error"
-              >
-                {validationError}
-              </div>
-            )}
-          </div>
-          <Dropdown
-            id="search-type-dropdown"
-            testId="search-type-dropdown"
-            titleText=""
-            label={selectedDropdownItem}
-            className={styles.searchTypeDropdown}
-            size="md"
-            items={dropdownItems}
-            selectedItem={selectedDropdownItem}
-            onChange={(event) => {
-              setSelectedDropdownItem(event.selectedItem ?? '');
-              setAdvanceSearchInput('');
-              setSearchInput('');
-              setSearchTerm('');
-              setValidationError('');
-            }}
-            aria-label={t('PATIENT_SEARCH_ATTRIBUTE_SELECTOR')}
-          />
-        </div>
-        <Button
-          size="md"
-          id="advance-search-button"
-          testId="advance-search-button"
-          disabled={isLoading || advanceSearchInput.trim().length === 0}
-          className={styles.searchButton}
-          onClick={() => handleClick('advance')}
-        >
-          {buttonTitle}
-        </Button>
-      </div>
+      )}
     </div>
   );
 };
