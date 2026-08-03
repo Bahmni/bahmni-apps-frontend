@@ -25,6 +25,15 @@ const PatientSearchPage: React.FC = () => {
     });
   }, []);
 
+  const patientSearchConfig = registrationConfig?.patientSearch
+    ? {
+        ...registrationConfig.patientSearch,
+        patientDetailUrl:
+          registrationConfig.patientSearch.patientDetailUrl ??
+          '/registration/patient/{{patientUuid}}',
+      }
+    : undefined;
+
   const breadcrumbs = [
     {
       id: 'home',
@@ -59,7 +68,7 @@ const PatientSearchPage: React.FC = () => {
       main={
         <div className={styles.main}>
           <SearchPatient
-            patientSearch={registrationConfig?.patientSearch}
+            patientSearch={patientSearchConfig}
             buttonTitle={t('REGISTRATION_PATIENT_SEARCH_BUTTON_TITLE')}
             searchBarPlaceholder={t(
               'REGISTRATION_PATIENT_SEARCH_INPUT_PLACEHOLDER',
