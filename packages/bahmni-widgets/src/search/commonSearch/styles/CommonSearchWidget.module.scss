@@ -131,13 +131,11 @@
 }
 
 .searchCriteriaAccordionItem {
- :global(.cds--accordion__content){
-  padding-inline-end: $spacing-05 !important;
-  padding-inline-start: $spacing-06 !important;
+  > div > div {
+  padding-inline: $spacing-06;
   margin-inline-start: 0 !important;
- }
-
-  :global(.cds--accordion__heading) {
-    background-color: $layer-01 !important;
+  }
+  > button:first-of-type {
+    background-color: $layer-01;
   }
 }
