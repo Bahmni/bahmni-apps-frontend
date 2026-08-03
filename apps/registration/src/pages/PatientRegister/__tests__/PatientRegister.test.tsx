@@ -41,6 +41,7 @@ jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(),
   UserGlobalAction: jest.fn(() => <div data-testid="user-global-action" />),
+  useUserPrivilege: jest.fn(() => ({ userPrivileges: [] })),
 }));
 
 jest.mock('react-router-dom', () => ({

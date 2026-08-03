@@ -5,8 +5,15 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
+  hasPrivilege,
 } from '@bahmni/services';
-import { useNotification, UserGlobalAction } from '@bahmni/widgets';
+import {
+  useNotification,
+  UserGlobalAction,
+  useUserPrivilege,
+  DocumentPrintButton,
+  type PrintOption,
+} from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
@@ -46,6 +53,14 @@ const PatientRegister = () => {
   const { shouldShowAdditionalIdentifiers } = useAdditionalIdentifiers();
   const { relationshipTypes } = useRelationshipValidation();
   const { registrationConfig } = useRegistrationConfig();
+  const { userPrivileges } = useUserPrivilege();
+
+  const filteredPrintOptions = useMemo<PrintOption[]>(() => {
+    if (!registrationConfig?.printOptions || !userPrivileges) return [];
+    return registrationConfig.printOptions.filter((option) =>
+      hasPrivilege(userPrivileges, option.privileges),
+    );
+  }, [registrationConfig, userPrivileges]);
 
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);
@@ -356,6 +371,17 @@ const PatientRegister = () => {
                 >
                   {t('CREATE_PATIENT_SAVE')}
                 </Button>
+                {patientUuid && (
+                  <DocumentPrintButton
+                    printOptions={filteredPrintOptions}
+                    renderContext={{
+                      patientUuid,
+                      patientUUID: patientUuid,
+                    }}
+                    disabled={isSaving}
+                    data-testid="print-registration-card"
+                  />
+                )}
                 <RegistrationActions
                   extensionPointId="org.bahmni.registration.navigation"
                   onBeforeNavigate={handleSave}
