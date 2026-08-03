@@ -20,11 +20,11 @@ import type { EncounterSessionStartContext } from '../../events/startConsultatio
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
-import type { EncounterDetailsMetadata } from '../../providers/clinicalConfig/models';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import ConsultationPad from '../consultationPad';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from '../consultationPad/constants';
 import EncounterDetails from '../forms/encounterDetails/EncounterDetails';
+import type { EncounterDetailsMetadata } from './models';
 import styles from './styles/ConsultationPadContainer.module.scss';
 
 interface ConsultationPadContainerProps {
@@ -109,7 +109,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
         );
 
         dispatchAuditEvent({
-          eventType: 'START_VISIT_ON_CONSULTATION',
+          eventType: 'START_VISIT',
           patientUuid: patientUuid!,
           messageParams: { visitType: visitTypeName },
           module: MODULE_LABELS.CLINICAL,

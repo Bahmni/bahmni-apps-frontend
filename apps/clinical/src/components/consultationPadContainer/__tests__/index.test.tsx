@@ -320,7 +320,7 @@ describe('ConsultationPadContainer', () => {
     });
     expect(dispatchAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({
-        eventType: 'START_VISIT_ON_CONSULTATION',
+        eventType: 'START_VISIT',
         messageParams: { visitType: 'OPD' },
       }),
     );

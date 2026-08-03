@@ -49,16 +49,15 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
   hidden = false,
 }) => {
   const buttonCount =
-    (secondaryButtonText ? 1 : 0) +
-    (tertiaryButtonText && onTertiaryButtonClick ? 1 : 0) +
-    1; // +1 for primary button
+    1 + // primary button (always present)
+    Number(secondaryButtonText && onSecondaryButtonClick) +
+    Number(tertiaryButtonText && onTertiaryButtonClick);
 
-  const buttonCountClass =
-    buttonCount === 3
-      ? styles.threeButtons
-      : buttonCount === 2
-        ? styles.twoButtons
-        : styles.singleButton;
+  const buttonCountClass = {
+    3: styles.threeButtons,
+    2: styles.twoButtons,
+    1: styles.singleButton,
+  }[buttonCount];
 
   // Determine accessible label for the component
   const accessibleLabel = ariaLabel ?? 'Action Area';
@@ -84,7 +83,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
       </div>
 
       <ButtonSet className={styles.buttonSet} aria-label={buttonGroupAriaLabel}>
-        {secondaryButtonText && (
+        {secondaryButtonText && onSecondaryButtonClick && (
           <Button
             kind="secondary"
             onClick={onSecondaryButtonClick}
