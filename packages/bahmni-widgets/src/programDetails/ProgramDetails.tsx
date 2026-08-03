@@ -8,6 +8,7 @@ import {
   Button,
   MenuButton,
   MenuItem,
+  Loading,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -118,7 +119,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     );
   }, [config?.fields]);
 
-  if (isLoading || isUpdatingState) {
+  if (isLoading) {
     return (
       <div
         id="patient-programs-table-loading"
@@ -279,6 +280,15 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           </Column>
         ))}
       </Grid>
+      {isUpdatingState && (
+        <div
+          id="program-details-loading-overlay"
+          data-testid="program-details-loading-overlay-test-id"
+          aria-label="program-details-loading-overlay-aria-label"
+        >
+          <Loading active withOverlay />
+        </div>
+      )}
     </div>
   );
 };
