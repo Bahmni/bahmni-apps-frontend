@@ -208,7 +208,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       >
         <AccordionItem
           title={
-            lastSearchRef.current
+            currentSearchState
               ? t('COMMON_SEARCH_MODIFY_SEARCH_BUTTON')
               : t('COMMON_SEARCH_SELECT_SEARCH_CRITERIA')
           }
