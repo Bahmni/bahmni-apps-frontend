@@ -19,7 +19,7 @@ export interface FormattedLabInvestigations {
   readonly result?: string | LabTestResult[];
   readonly testType: string; // "Panel" or not
   readonly note?: string;
-  readonly reportId?: string; // DiagnosticReport ID if report exists
+  readonly reportIds?: string[]; // Array of DiagnosticReport IDs if reports exist
   readonly attachments?: Attachment[]; // For panel test attachments
   readonly reportedBy?: string;
   readonly reportedDate?: string;

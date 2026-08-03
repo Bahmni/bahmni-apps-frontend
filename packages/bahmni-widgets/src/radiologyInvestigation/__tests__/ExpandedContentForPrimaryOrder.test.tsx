@@ -37,7 +37,7 @@ describe('ExpandedContentForPrimaryOrder', () => {
       orderedBy: 'Dr. Smith',
       orderedDate: '2023-12-01T10:30:00.000Z',
       status: 'completed',
-      reportId: 'report-123',
+      reportIds: ['report-123'],
       linkedOrders: [
         {
           id: 'linked-1',
@@ -75,7 +75,7 @@ describe('ExpandedContentForPrimaryOrder', () => {
       orderedBy: 'Dr. Smith',
       orderedDate: '2023-12-01T10:30:00.000Z',
       status: 'completed',
-      reportId: 'report-123',
+      reportIds: ['report-123'],
       linkedOrders: [
         {
           id: 'linked-1',
@@ -114,7 +114,7 @@ describe('ExpandedContentForPrimaryOrder', () => {
       orderedBy: 'Dr. Smith',
       orderedDate: '2023-12-01T10:30:00.000Z',
       status: 'completed',
-      reportId: 'report-123',
+      reportIds: ['report-123'],
       reportedBy: 'Dr. Radiologist',
       reportedDate: '2023-12-02T14:30:00.000Z',
       linkedOrders: [
@@ -199,7 +199,7 @@ describe('ExpandedContentForPrimaryOrder', () => {
       orderedBy: 'Dr. Smith',
       orderedDate: '2023-12-01T10:30:00.000Z',
       status: 'completed',
-      reportId: 'report-123',
+      reportIds: ['report-123'],
       reportedBy: 'Dr. Radiologist',
       reportedDate: '2023-12-02T14:30:00.000Z',
     };
@@ -232,7 +232,7 @@ describe('ExpandedContentForPrimaryOrder', () => {
       orderedBy: 'Dr. Smith',
       orderedDate: '2023-12-01T10:30:00.000Z',
       status: 'completed',
-      reportId: 'report-123',
+      reportIds: ['report-123'],
       linkedOrders: [
         {
           id: 'linked-1',
