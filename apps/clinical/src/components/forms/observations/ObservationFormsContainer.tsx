@@ -25,7 +25,6 @@ import {
   extractNotesFromFormData,
   type AgeDetails,
   computeAgeDetails,
-  hasMissingMandatoryVisibleField,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -211,9 +210,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   // so the comparison correctly detects only genuine user changes.
   const hasFormChanges = React.useMemo(() => {
     if (!isEditMode) return true; // non-edit forms are always saveable
-    // Baseline not yet captured (init still settling) or no user changes yet.
-    if (baselineObservations.length === 0 || observations.length === 0)
+    if (!initSettledRef.current) return false;
+    if (observations.length === 0) return false;
+
+    // Baseline not yet captured (init still settling) — wait for capture.
+    if (baselineObservations.length > 0 && observations.length === 0)
       return false;
+    // Compare current against baseline to detect changes.
     return detectFormChanges(observations, baselineObservations);
   }, [isEditMode, observations, baselineObservations]);
 
@@ -456,36 +459,23 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       const isEmpty = !hasAnyValue; // Empty if no values (including empty strings), even if there are notes
       const hasErrors = errors && errors.length > 0;
 
-      const containerStateData = (
-        formContainerRef.current as {
-          state?: { data?: Record<string, unknown> | { toJS?: () => unknown } };
-        } | null
-      )?.state?.data;
-      const hasMissingMandatory = hasMissingMandatoryVisibleField(
-        convertImmutableToPlainObject(containerStateData) as
-          | Record<string, unknown>
-          | undefined,
-      );
-
-      if (isEmpty && !hasMissingMandatory) {
-        setValidationErrorType(VALIDATION_STATE_EMPTY);
-        return;
-      }
-
-      if (hasErrors || hasMissingMandatory) {
-        const hasMandatoryError =
-          hasMissingMandatory ||
-          errors
-            .flat()
-            .some(
-              (err: { get?: (key: string) => string; message?: string }) =>
-                (err.get?.('message') ?? err.message) ===
-                VALIDATION_STATE_MANDATORY,
-            );
+      if (hasErrors) {
+        const hasMandatoryError = errors
+          .flat()
+          .some(
+            (err: { get?: (key: string) => string; message?: string }) =>
+              (err.get?.('message') ?? err.message) ===
+              VALIDATION_STATE_MANDATORY,
+          );
         const errorType = hasMandatoryError
           ? VALIDATION_STATE_MANDATORY
           : VALIDATION_STATE_INVALID;
         setValidationErrorType(errorType);
+        return;
+      }
+
+      if (isEmpty) {
+        setValidationErrorType(VALIDATION_STATE_EMPTY);
         return;
       }
 

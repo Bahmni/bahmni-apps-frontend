@@ -11,6 +11,7 @@ import {
 } from './constants';
 import type {
   ActiveVisit,
+  CreatedVisit,
   VisitData,
   VisitLocationResponse,
   VisitType,
@@ -50,10 +51,10 @@ export const getVisitLocationUUID = async (
 /**
  * Create a new visit for a patient
  * @param visitData - The visit data including patient UUID, visit type, and location
- * @returns Promise<string> - The created visit UUID
+ * @returns Promise<CreatedVisit> - The created visit object
  */
-const createVisit = async (visitData: VisitData): Promise<string> => {
-  return post<string>(CREATE_VISIT_URL, visitData);
+const createVisit = async (visitData: VisitData): Promise<CreatedVisit> => {
+  return post<CreatedVisit>(CREATE_VISIT_URL, visitData);
 };
 
 /**
@@ -75,12 +76,12 @@ export const checkIfActiveVisitExists = async (
  * Dispatches an audit event after successful visit creation
  * @param patientUuid - The UUID of the patient
  * @param visitType - The visit type object containing name and uuid
- * @returns Promise<string> - The created visit UUID
+ * @returns Promise<CreatedVisit> - The created visit object
  */
 export const createVisitForPatient = async (
   patientUuid: string,
   visitType: VisitType,
-) => {
+): Promise<CreatedVisit> => {
   const visitLocationUUID = await getVisitLocationUUID(
     getUserLoginLocation().uuid,
   );

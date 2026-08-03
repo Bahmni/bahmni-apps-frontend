@@ -7,7 +7,8 @@ export const VISIT_TYPES_URL = () =>
   OPENMRS_REST_V1 +
   `/bahmnicore/config/bahmniencounter?callerContext=REGISTRATION_CONCEPTS`;
 
-export const CREATE_VISIT_URL = OPENMRS_REST_V1 + '/visit';
+export const CREATE_VISIT_URL =
+  OPENMRS_REST_V1 + '/visit?v=custom:(uuid,startDatetime)';
 
 export const GET_ACTIVE_VISIT_URL = (patientUuid: string) =>
   OPENMRS_REST_V1 +

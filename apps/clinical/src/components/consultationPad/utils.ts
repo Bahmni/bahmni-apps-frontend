@@ -1,3 +1,4 @@
+import { extractId } from '../../../../../packages/bahmni-widgets/src/utils/Observations';
 import type { ConsultationPad } from '../../providers/clinicalConfig/models';
 import { useServiceRequestStore, useObservationFormsStore } from '../../stores';
 import type { InputControl } from '../forms';
@@ -75,7 +76,7 @@ export function captureUpdatedResources(entries: InputControl[]) {
   const observationFormsData = useObservationFormsStore
     .getState()
     .getObservationFormsData();
-  const hasObservationFormsWithBasedOn = observationFormsData.some(
+  const observationFormsBasedOn = observationFormsData.find(
     (formData: { basedOn?: unknown }) => formData.basedOn !== undefined,
   );
 
@@ -91,6 +92,6 @@ export function captureUpdatedResources(entries: InputControl[]) {
       hasData('immunizationAdministration') ||
       hasData('immunizationWaiver'),
     serviceRequests,
-    observationFormsWithBasedOn: hasObservationFormsWithBasedOn,
+    observationFormsWithBasedOn: extractId(observationFormsBasedOn?.basedOn),
   };
 }

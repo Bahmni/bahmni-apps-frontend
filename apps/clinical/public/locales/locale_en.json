@@ -65,6 +65,8 @@
   "COMMON_SEARCH_ADD_CRITERIA_BUTTON": "Add Search Criteria",
   "COMMON_SEARCH_API_ERROR_MESSAGE": "An error occurred while fetching search results. Please try again.",
   "COMMON_SEARCH_CONFIG_ERROR": "Unable to load Common Search configuration. Please try refreshing the page.",
+  "COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_ACTION": "Invalid config - duplicate action key in context",
+  "COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION": "Invalid config - unknown action key in context",
   "COMMON_SEARCH_CRITERIA_DATE_INPUT_FIELD_FROM": "Enter From",
   "COMMON_SEARCH_CRITERIA_DATE_INPUT_FIELD_TO": "Enter To",
   "COMMON_SEARCH_CRITERIA_NUMERIC_INPUT_FIELD_FROM": "Enter From",
