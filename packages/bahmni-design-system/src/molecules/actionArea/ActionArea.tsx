@@ -50,8 +50,8 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
 }) => {
   const buttonCount =
     1 + // primary button (always present)
-    Number(secondaryButtonText && onSecondaryButtonClick) +
-    Number(tertiaryButtonText && onTertiaryButtonClick);
+    Number(!!(secondaryButtonText && onSecondaryButtonClick)) +
+    Number(!!(tertiaryButtonText && onTertiaryButtonClick));
 
   const buttonCountClass = {
     3: styles.threeButtons,
