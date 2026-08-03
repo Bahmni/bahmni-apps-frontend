@@ -245,6 +245,20 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
       />
     );
 
+  const patientSearchConfig = config
+    ? {
+        ...config,
+        patientDetailUrl:
+          config.patientDetailUrl ?? '/registration/patient/{{patientUuid}}',
+      }
+    : undefined;
+
+  const resultsFieldType = isAdvancedSearch ? selectedFieldType : '';
+  const resultsSearchFields =
+    resultsFieldType === 'appointment'
+      ? (patientSearchConfig?.appointment ?? [])
+      : (patientSearchConfig?.customAttributes ?? []);
+
   return (
     <div>
       <SearchPatientInput
@@ -273,9 +287,9 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
           isLoading={isLoading}
           isError={isError}
           isAdvancedSearch={isAdvancedSearch}
-          searchFields={isAdvancedSearch ? searchFields : []}
-          selectedFieldType={isAdvancedSearch ? selectedFieldType : ''}
-          patientDetailUrl={config.patientDetailUrl}
+          searchFields={resultsSearchFields}
+          selectedFieldType={resultsFieldType}
+          patientDetailUrl={patientSearchConfig?.patientDetailUrl}
           setData={setPatientSearchData}
         />
       )}

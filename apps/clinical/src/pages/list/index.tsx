@@ -57,7 +57,6 @@ const ClinicalList = () => {
                 key={pointId}
                 id={pointId}
                 data-testid={`${pointId}-test-id`}
-                className={styles.tabs}
               >
                 <Suspense
                   fallback={

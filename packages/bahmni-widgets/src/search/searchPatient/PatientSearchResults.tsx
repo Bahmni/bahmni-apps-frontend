@@ -1,5 +1,6 @@
 import {
   Button,
+  Link,
   SkeletonText,
   SortableDataTable,
   Stack,
@@ -31,6 +32,9 @@ const CELL_IDS = {
   GENDER: 'gender',
   ACTIONS: 'actions',
 } as const;
+
+const INTERNAL_PATH_PATTERN = /^\//;
+const EXTERNAL_OR_HASH_PATTERN = /^(https?:\/\/|#)/i;
 
 interface PatientSearchResultsProps {
   data: PatientSearchResultBundle | undefined;
@@ -119,11 +123,27 @@ const PatientSearchResults = ({
     if (!patientDetailUrl) {
       return <span>{identifier}</span>;
     }
-    const url = formatUrl(patientDetailUrl, { patientUuid: uuid }, true);
-    if (!/^(#|\/|https?:\/\/)/i.test(url.trim())) {
-      return <span>{identifier}</span>;
+    const url = formatUrl(patientDetailUrl, { patientUuid: uuid }, true).trim();
+
+    if (INTERNAL_PATH_PATTERN.test(url)) {
+      return (
+        <Link
+          href={url}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate(url);
+          }}
+        >
+          {identifier}
+        </Link>
+      );
     }
-    return <a href={url}>{identifier}</a>;
+
+    if (EXTERNAL_OR_HASH_PATTERN.test(url)) {
+      return <a href={url}>{identifier}</a>;
+    }
+
+    return <span>{identifier}</span>;
   };
 
   const renderAppointmentStatus = (uuid: string, status: string) => {

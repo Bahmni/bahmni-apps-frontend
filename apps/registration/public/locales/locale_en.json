@@ -123,6 +123,8 @@
   "ERROR_SAVING_PATIENT": "Error saving patient",
   "ERROR_UPDATING_PATIENT": "Error updating patient",
   "EXTENSION_WIDGET_NOT_REGISTERED": "Extension widget not registered",
+  "GENDER_M" : "Male",
+  "GENDER_F" : "Female",
   "HOME_LABEL": "Home",
   "LOADING_PATIENT_DETAILS": "Navigating to patient details...",
   "MONTHS_one": " month",

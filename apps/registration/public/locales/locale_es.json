@@ -123,6 +123,8 @@
   "ERROR_SAVING_PATIENT": "Error al guardar el paciente",
   "ERROR_UPDATING_PATIENT": "Error al actualizar el paciente",
   "EXTENSION_WIDGET_NOT_REGISTERED": "Widget de extensión no registrado",
+  "GENDER_M" : "Masculino",
+  "GENDER_F" : "Femenino",
   "HOME_LABEL": "Inicio",
   "LOADING_PATIENT_DETAILS": "Navegando a los detalles del paciente...",
   "MONTHS_one": " mes",

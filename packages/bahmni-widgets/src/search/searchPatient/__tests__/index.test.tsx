@@ -213,19 +213,39 @@ describe('SearchPatient', () => {
     });
   });
 
+  it('should render patient identifier as plain text when patientDetailUrl is an unsafe scheme', async () => {
+    const patientDetailUrl = 'javascript:alert("XSS")';
+    renderSearchPatient({ ...mockSearchPatientConfig, patientDetailUrl });
+    await waitFor(() => {
+      expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+    });
+    const searchInput = screen.getByPlaceholderText(SEARCH_PLACEHOLDER);
+
+    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
+      pageOfResults: mockSearchPatientData,
+      totalCount: mockSearchPatientData.length,
+    });
+
+    fireEvent.input(searchInput, { target: { value: 'Steffi' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
+
+    await waitFor(() => {
+      const identifiers = screen.getAllByText('ABC200000');
+      expect(identifiers.length).toBeGreaterThan(0);
+      identifiers.forEach((el) => expect(el.tagName).not.toBe('A'));
+    });
+  });
+
   it.each([
-    {
-      description: 'no patientDetailUrl is configured',
-      patientDetailUrl: undefined,
-    },
-    {
-      description: 'patientDetailUrl is an unsafe scheme',
-      patientDetailUrl: 'javascript' + ':alert(1)',
-    },
+    { element: 'a', patientDetailUrl: '#/patient/{{patientUuid}}/edit' },
+    { element: 'link', patientDetailUrl: '/patient/{{patientUuid}}/edit' },
   ])(
-    'should render patient identifier as plain text when $description',
+    'should render patient identifier inside $element when patientDetailUrl is configured',
     async ({ patientDetailUrl }) => {
-      renderSearchPatient({ ...mockSearchPatientConfig, patientDetailUrl });
+      const { container } = renderSearchPatient({
+        ...mockSearchPatientConfig,
+        patientDetailUrl,
+      });
       await waitFor(() => {
         expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
       });
@@ -240,9 +260,7 @@ describe('SearchPatient', () => {
       fireEvent.click(screen.getByTestId('search-patient-search-button'));
 
       await waitFor(() => {
-        const identifiers = screen.getAllByText('ABC200000');
-        expect(identifiers.length).toBeGreaterThan(0);
-        identifiers.forEach((el) => expect(el.tagName).not.toBe('A'));
+        expect(container.querySelectorAll('a').length).toBeGreaterThan(0);
       });
     },
   );
