@@ -1,4 +1,6 @@
 import {
+  Accordion,
+  AccordionItem,
   CodeSnippetSkeleton,
   InlineNotification,
   Loading,
@@ -50,6 +52,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   });
   const [currentSearchState, setCurrentSearchState] =
     useState<CurrentSearchState | null>(null);
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(true);
   const lastSearchRef = useRef<{
     rows: CriterionRow[];
     contextKey: SearchContextConfig['context'];
@@ -113,18 +116,17 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
         ),
       )
         .then((data) => {
+          const results = (data as { results: unknown[] }).results;
           setCurrentSearchState((prev: CurrentSearchState | null) =>
-            prev
-              ? {
-                  ...prev,
-                  results: (data as { results: unknown[] }).results,
-                }
-              : null,
+            prev ? { ...prev, results } : null,
           );
           dispatchAuditEvent({
             eventType: toSearchAuditEventType(context.context),
           });
           setIsSearchResultsLoading(false);
+          if (results.length > 0) {
+            setIsSearchPanelOpen(false);
+          }
         })
         .catch(() => {
           setIsSearchResultsLoading(false);
@@ -138,10 +140,6 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
         });
     }
     return validated;
-  };
-
-  const handleModifySearch = () => {
-    setCurrentSearchState(null);
   };
 
   if (isLoading)
@@ -202,26 +200,41 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       data-testid="common-search-widget-test-id"
       aria-label="Common Search"
     >
-      {!isSearchResultsLoading && currentSearchState ? (
-        <>
-          <SearchSummary
-            currentSearchState={currentSearchState}
-            onModifySearch={handleModifySearch}
+      <Accordion
+        testId="common-search-criteria-accordion"
+        aria-label="Common Search Criteria Accordion"
+        className={styles.searchCriteriaAccordion}
+        align="start"
+      >
+        <AccordionItem
+          title={
+            currentSearchState
+              ? t('COMMON_SEARCH_MODIFY_SEARCH_BUTTON')
+              : t('COMMON_SEARCH_SELECT_SEARCH_CRITERIA')
+          }
+          open={isSearchPanelOpen}
+          onHeadingClick={() => setIsSearchPanelOpen((prev) => !prev)}
+          testId="common-search-criteria-accordion-test-id"
+          className={styles.searchCriteriaAccordionItem}
+        >
+          <SearchForm
+            config={privilegedContexts}
+            location={location}
+            onSearch={handleSearch}
+            savedRows={lastSearchRef.current?.rows}
+            savedContextKey={lastSearchRef.current?.contextKey}
           />
+        </AccordionItem>
+      </Accordion>
+      {!isSearchResultsLoading && currentSearchState && (
+        <>
+          <SearchSummary currentSearchState={currentSearchState} />
           <ResultsTable
             resultFields={currentSearchState.resultFields}
             results={currentSearchState.results}
             actions={currentSearchState.context.actions}
           />
         </>
-      ) : (
-        <SearchForm
-          config={privilegedContexts}
-          location={location}
-          onSearch={handleSearch}
-          savedRows={lastSearchRef.current?.rows}
-          savedContextKey={lastSearchRef.current?.contextKey}
-        />
       )}
       {isSearchResultsLoading && (
         <div

@@ -222,6 +222,12 @@ const SearchPatient = ({
 
   const selectedFieldType = getSelectedField()?.type ?? '';
 
+  const resultsFieldType = isAdvancedSearch ? selectedFieldType : '';
+  const resultsSearchFields =
+    resultsFieldType === 'appointment'
+      ? (patientSearch?.appointment ?? [])
+      : (patientSearch?.customAttributes ?? []);
+
   return (
     <div>
       <SearchPatientInput
@@ -248,8 +254,8 @@ const SearchPatient = ({
           isLoading={isLoading}
           isError={isError}
           isAdvancedSearch={isAdvancedSearch}
-          searchFields={isAdvancedSearch ? searchFields : []}
-          selectedFieldType={isAdvancedSearch ? selectedFieldType : ''}
+          searchFields={resultsSearchFields}
+          selectedFieldType={resultsFieldType}
           patientDetailUrl={patientSearch?.patientDetailUrl}
           setData={setPatientSearchData}
         />
