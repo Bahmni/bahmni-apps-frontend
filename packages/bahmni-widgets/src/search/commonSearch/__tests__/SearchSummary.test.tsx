@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import SearchSummary from '../SearchSummary';
 import {
@@ -26,22 +25,11 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 describe('SearchSummary', () => {
-  const onModifySearch = jest.fn();
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('renders the context label', () => {
-    render(
-      <SearchSummary
-        currentSearchState={mockActiveSearchState}
-        onModifySearch={onModifySearch}
-      />,
-    );
+    render(<SearchSummary currentSearchState={mockActiveSearchState} />);
     expect(
       screen.getByTestId('search-summary-context-label-test-id'),
-    ).toHaveTextContent('APPOINTMENT_SEARCH:');
+    ).toHaveTextContent('COMMON_SEARCH_SELECTED_CRITERIA_LABEL');
   });
 
   it.each([
@@ -75,7 +63,6 @@ describe('SearchSummary', () => {
     render(
       <SearchSummary
         currentSearchState={{ ...mockActiveSearchState, rows: [row] }}
-        onModifySearch={onModifySearch}
       />,
     );
     expect(screen.getByText(expected)).toBeInTheDocument();
@@ -88,7 +75,6 @@ describe('SearchSummary', () => {
           ...mockActiveSearchState,
           rows: [mockNumericRangeRow],
         }}
-        onModifySearch={onModifySearch}
       />,
     );
     expect(
@@ -103,7 +89,6 @@ describe('SearchSummary', () => {
           ...mockActiveSearchState,
           rows: [mockNumericFromOnlyRow],
         }}
-        onModifySearch={onModifySearch}
       />,
     );
     expect(screen.getByText('PATIENT_AGE: 20')).toBeInTheDocument();
@@ -116,7 +101,6 @@ describe('SearchSummary', () => {
           ...mockActiveSearchState,
           rows: [mockDateScalarRow],
         }}
-        onModifySearch={onModifySearch}
       />,
     );
     expect(
@@ -131,7 +115,6 @@ describe('SearchSummary', () => {
           ...mockActiveSearchState,
           rows: [mockDateRangeRow],
         }}
-        onModifySearch={onModifySearch}
       />,
     );
     expect(
@@ -139,43 +122,10 @@ describe('SearchSummary', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders Modify Search button with Edit icon', () => {
-    render(
-      <SearchSummary
-        currentSearchState={mockActiveSearchState}
-        onModifySearch={onModifySearch}
-      />,
-    );
-    expect(
-      screen.getByRole('button', {
-        name: /COMMON_SEARCH_MODIFY_SEARCH_BUTTON/i,
-      }),
-    ).toBeInTheDocument();
-  });
-
-  it('calls onModifySearch when Modify Search button is clicked', async () => {
-    const user = userEvent.setup();
-    render(
-      <SearchSummary
-        currentSearchState={mockActiveSearchState}
-        onModifySearch={onModifySearch}
-      />,
-    );
-    await user.click(
-      screen.getByRole('button', {
-        name: /COMMON_SEARCH_MODIFY_SEARCH_BUTTON/i,
-      }),
-    );
-    expect(onModifySearch).toHaveBeenCalledTimes(1);
-  });
-
   describe('Snapshot', () => {
     it('matches snapshot', () => {
       const { container } = render(
-        <SearchSummary
-          currentSearchState={mockActiveSearchState}
-          onModifySearch={onModifySearch}
-        />,
+        <SearchSummary currentSearchState={mockActiveSearchState} />,
       );
       expect(container).toMatchSnapshot();
     });
@@ -184,10 +134,7 @@ describe('SearchSummary', () => {
   describe('Accessibility', () => {
     it('has no a11y violations', async () => {
       const { container } = render(
-        <SearchSummary
-          currentSearchState={mockActiveSearchState}
-          onModifySearch={onModifySearch}
-        />,
+        <SearchSummary currentSearchState={mockActiveSearchState} />,
       );
       expect(await axe(container)).toHaveNoViolations();
     });

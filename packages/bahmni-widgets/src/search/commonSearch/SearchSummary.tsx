@@ -1,4 +1,4 @@
-import { Button, Edit, Tag } from '@bahmni/design-system';
+import { Tag } from '@bahmni/design-system';
 import { formatDateTime, useTranslation } from '@bahmni/services';
 import {
   CurrentSearchState,
@@ -10,7 +10,6 @@ import styles from './styles/CommonSearchWidget.module.scss';
 
 interface SearchSummaryProps {
   currentSearchState: CurrentSearchState;
-  onModifySearch: () => void;
 }
 
 const formatValue = (
@@ -45,10 +44,7 @@ const buildTagText = (
 ): string =>
   `${t(criterion.translationKey)}: ${formatValue(row.value, criterion.input, t)}`;
 
-const SearchSummary = ({
-  currentSearchState,
-  onModifySearch,
-}: SearchSummaryProps) => {
+const SearchSummary = ({ currentSearchState }: SearchSummaryProps) => {
   const { t } = useTranslation();
   const { context, rows } = currentSearchState;
 
@@ -72,37 +68,25 @@ const SearchSummary = ({
       data-testid="search-summary-test-id"
       className={styles.searchSummary}
     >
+      <p
+        id="search-summary-context-label"
+        data-testid="search-summary-context-label-test-id"
+        className={styles.summaryLabel}
+      >
+        {t('COMMON_SEARCH_SELECTED_CRITERIA_LABEL', {
+          context: t(context.translationKey),
+        })}
+      </p>
       <div
         id="search-summary-context"
         data-testid="search-summary-context-test-id"
-        className={styles.summaryLeft}
+        className={styles.criteriaSummary}
       >
-        <span
-          id="search-summary-context-label"
-          data-testid="search-summary-context-label-test-id"
-        >
-          {t(context.translationKey) + ': '}
-        </span>
         {tags.map((tag) => (
           <Tag key={tag.key} type="green">
             {tag.text}
           </Tag>
         ))}
-      </div>
-      <div
-        id="search-summary-modify"
-        data-testid="search-summary-modify-test-id"
-        className={styles.summaryRight}
-      >
-        <Button
-          kind="ghost"
-          renderIcon={Edit}
-          onClick={onModifySearch}
-          id="common-search-modify-button"
-          data-testid="common-search-modify-button-test-id"
-        >
-          {t('COMMON_SEARCH_MODIFY_SEARCH_BUTTON')}
-        </Button>
       </div>
     </div>
   );
