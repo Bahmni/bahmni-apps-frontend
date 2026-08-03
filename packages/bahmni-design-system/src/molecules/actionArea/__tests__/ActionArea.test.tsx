@@ -261,6 +261,63 @@ describe('ActionArea', () => {
     });
   });
 
+  describe('Expand/Collapse Toggle', () => {
+    it('does not render the toggle button when onToggleExpand is not provided', () => {
+      render(<ActionArea {...defaultProps} />);
+
+      expect(
+        screen.queryByTestId('action-area-expand-toggle'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders the toggle button when onToggleExpand is provided', () => {
+      render(<ActionArea {...defaultProps} onToggleExpand={jest.fn()} />);
+
+      expect(
+        screen.getByTestId('action-area-expand-toggle'),
+      ).toBeInTheDocument();
+    });
+
+    it('shows the expand icon and label when isExpanded is false', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          onToggleExpand={jest.fn()}
+          isExpanded={false}
+          expandAriaLabel="Expand consultation pad"
+          collapseAriaLabel="Collapse consultation pad"
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).toHaveAccessibleName('Expand consultation pad');
+    });
+
+    it('shows the collapse icon and label when isExpanded is true', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          onToggleExpand={jest.fn()}
+          isExpanded
+          expandAriaLabel="Expand consultation pad"
+          collapseAriaLabel="Collapse consultation pad"
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).toHaveAccessibleName('Collapse consultation pad');
+    });
+
+    it('calls onToggleExpand when the toggle button is clicked', () => {
+      const onToggleExpand = jest.fn();
+      render(<ActionArea {...defaultProps} onToggleExpand={onToggleExpand} />);
+
+      fireEvent.click(screen.getByTestId('action-area-expand-toggle'));
+
+      expect(onToggleExpand).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('Hidden State', () => {
     it('applies hidden class and aria-hidden when hidden prop is true', () => {
       const { container } = render(<ActionArea {...defaultProps} hidden />);

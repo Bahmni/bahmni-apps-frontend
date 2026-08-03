@@ -1,7 +1,11 @@
+import { Maximize, Minimize } from '@carbon/icons-react';
 import { Button, ButtonSet } from '@carbon/react';
 import classNames from 'classnames';
 import React, { ReactNode } from 'react';
+import { IconButton } from '../../atoms/iconButton';
 import styles from './styles/ActionArea.module.scss';
+
+const TOGGLE_ICON_SIZE = 16;
 
 /**
  * ActionArea component props
@@ -22,6 +26,10 @@ export interface ActionAreaProps {
   ariaLabel?: string; // Accessible label for the component
   buttonGroupAriaLabel?: string; // Aria label for the button group
   hidden?: boolean;
+  isExpanded?: boolean; // Whether the ActionArea is expanded to full width
+  onToggleExpand?: () => void; // Function to be called when the expand/collapse toggle is clicked
+  expandAriaLabel?: string; // Accessible label for the expand toggle button
+  collapseAriaLabel?: string; // Accessible label for the collapse toggle button
 }
 
 /**
@@ -47,6 +55,10 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
   ariaLabel,
   buttonGroupAriaLabel = 'Action buttons',
   hidden = false,
+  isExpanded = false,
+  onToggleExpand,
+  expandAriaLabel = 'Expand',
+  collapseAriaLabel = 'Collapse',
 }) => {
   const buttonCountClass =
     tertiaryButtonText && onTertiaryButtonClick
@@ -65,9 +77,26 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
       aria-label={accessibleLabel}
       aria-hidden={hidden}
     >
-      <h2 className={styles.title} id="action-area-title">
-        {title}
-      </h2>
+      <div className={styles.header}>
+        <h2 className={styles.title} id="action-area-title">
+          {title}
+        </h2>
+        {onToggleExpand && (
+          <IconButton
+            kind="ghost"
+            size="sm"
+            label={isExpanded ? collapseAriaLabel : expandAriaLabel}
+            onClick={onToggleExpand}
+            testId="action-area-expand-toggle"
+          >
+            {isExpanded ? (
+              <Minimize size={TOGGLE_ICON_SIZE} />
+            ) : (
+              <Maximize size={TOGGLE_ICON_SIZE} />
+            )}
+          </IconButton>
+        )}
+      </div>
       <div
         className={styles.content}
         role="region"

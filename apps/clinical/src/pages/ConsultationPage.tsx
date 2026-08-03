@@ -82,6 +82,7 @@ const ConsultationPage: React.FC = () => {
   const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
+  const [isActionAreaExpanded, setIsActionAreaExpanded] = useState(false);
   const [encounterSessionStartContext, setEncounterSessionStartContext] =
     useState<EncounterSessionStartContext | null>(null);
 
@@ -335,12 +336,17 @@ const ConsultationPage: React.FC = () => {
           </Suspense>
         }
         isActionAreaVisible={isActionAreaVisible}
+        isActionAreaExpanded={isActionAreaExpanded}
         layoutVariant={viewingForm ? 'extended' : 'default'}
         actionArea={
           encounterSessionStartContext && (
             <ConsultationPad
               encounterSessionStartContext={encounterSessionStartContext}
               onClose={() => setIsActionAreaVisible((prev) => !prev)}
+              isActionAreaExpanded={isActionAreaExpanded}
+              onToggleActionAreaExpand={() =>
+                setIsActionAreaExpanded((prev) => !prev)
+              }
             />
           )
         }

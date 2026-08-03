@@ -1,11 +1,12 @@
 import classNames from 'classnames';
-import React, { ReactNode } from 'react';
-import { Group, Panel, Separator } from 'react-resizable-panels';
+import React, { ReactNode, useEffect } from 'react';
+import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
 import { ICON_SIZE } from '../../molecules/icon/constants';
 import { Icon } from '../../molecules/icon/Icon';
 import styles from './styles/index.module.scss';
 
 const MAIN_DISPLAY_PANEL_DEFAULT_SIZE = 40;
+const MAIN_DISPLAY_PANEL_EXPANDED_SIZE = 0;
 const ACTION_AREA_PANEL_DEFAULT_SIZE = 60;
 const PANEL_MIN_SIZE = 40;
 
@@ -18,6 +19,7 @@ interface ActionAreaLayoutProps {
   isActionAreaVisible: boolean;
   hasSideNav?: boolean;
   layoutVariant?: LayoutVariant;
+  isActionAreaExpanded?: boolean;
 }
 
 /**
@@ -39,7 +41,19 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
   isActionAreaVisible,
   hasSideNav = true,
   layoutVariant = 'default',
+  isActionAreaExpanded = false,
 }) => {
+  const mainDisplayPanelRef = usePanelRef();
+
+  useEffect(() => {
+    if (!isActionAreaVisible) return;
+    mainDisplayPanelRef.current?.resize(
+      isActionAreaExpanded
+        ? MAIN_DISPLAY_PANEL_EXPANDED_SIZE
+        : MAIN_DISPLAY_PANEL_DEFAULT_SIZE,
+    );
+  }, [isActionAreaExpanded, isActionAreaVisible, mainDisplayPanelRef]);
+
   return (
     <div
       id="action-area-layout"
@@ -52,10 +66,22 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
       )}
     >
       {headerWSideNav}
-      <Group orientation="horizontal" className={styles.panelGroup}>
+      <Group
+        orientation="horizontal"
+        className={classNames(
+          styles.panelGroup,
+          isActionAreaExpanded && styles.expanded,
+        )}
+      >
         <Panel
+          id="main-display-panel"
+          panelRef={mainDisplayPanelRef}
           defaultSize={MAIN_DISPLAY_PANEL_DEFAULT_SIZE}
-          minSize={PANEL_MIN_SIZE}
+          minSize={
+            isActionAreaExpanded
+              ? MAIN_DISPLAY_PANEL_EXPANDED_SIZE
+              : PANEL_MIN_SIZE
+          }
         >
           <div
             id="main-display-area"
@@ -94,6 +120,7 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
               </div>
             </Separator>
             <Panel
+              id="action-area-panel"
               defaultSize={ACTION_AREA_PANEL_DEFAULT_SIZE}
               minSize={PANEL_MIN_SIZE}
             >

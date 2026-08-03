@@ -52,11 +52,15 @@ import {
 interface ConsultationPadProps {
   encounterSessionStartContext: EncounterSessionStartContext;
   onClose: () => void;
+  isActionAreaExpanded?: boolean;
+  onToggleActionAreaExpand?: () => void;
 }
 
 const ConsultationPad: React.FC<ConsultationPadProps> = ({
   encounterSessionStartContext,
   onClose,
+  isActionAreaExpanded,
+  onToggleActionAreaExpand,
 }) => {
   const preloadedAllergies = encounterSessionStartContext.preloadedAllergies;
   const encounterType = encounterSessionStartContext.encounterType;
@@ -569,6 +573,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
         onSecondaryButtonClick={handleCancel}
         content={renderPadContent}
+        isExpanded={isActionAreaExpanded}
+        onToggleExpand={onToggleActionAreaExpand}
+        expandAriaLabel={t('CONSULTATION_PAD_EXPAND_ARIA_LABEL')}
+        collapseAriaLabel={t('CONSULTATION_PAD_COLLAPSE_ARIA_LABEL')}
       />
       {viewingForm && (
         <ObservationFormsContainer

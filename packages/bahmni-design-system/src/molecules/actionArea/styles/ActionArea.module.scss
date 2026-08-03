@@ -18,10 +18,18 @@
   pointer-events: none;
 }
 
-.title {
-  @include type-style("heading-03");
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: $spacing-06;
   padding-bottom: $spacing-04;
+  gap: $spacing-04;
+}
+
+.title {
+  @include type-style("heading-03");
+  padding: 0;
 }
 
 .content {
