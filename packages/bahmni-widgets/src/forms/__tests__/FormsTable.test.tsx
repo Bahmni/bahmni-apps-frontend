@@ -9,6 +9,7 @@ import {
   getObservationsBundleByEncounterUuid,
   useSubscribeConsultationSaved,
   dispatchConsultationSaved,
+  formatDateTime,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
@@ -93,6 +94,9 @@ const mockUseSubscribeConsultationSaved =
   useSubscribeConsultationSaved as jest.MockedFunction<
     typeof useSubscribeConsultationSaved
   >;
+const mockFormatDateTime = formatDateTime as jest.MockedFunction<
+  typeof formatDateTime
+>;
 
 // Mock ResizeObserver to avoid "ResizeObserver is not defined" errors
 globalThis.ResizeObserver = jest.fn().mockImplementation(() => ({
@@ -1769,6 +1773,72 @@ describe('FormsTable', () => {
         patientIdEl.compareDocumentPosition(temperatureEl) &
           Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
+    });
+
+    it('shows time for a midnight DateAndTime value when schema declares the concept datatype as Datetime', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      mockFetchFormMetadata.mockResolvedValue({
+        ...mockFormMetadata,
+        schema: {
+          controls: [
+            {
+              id: 30,
+              type: 'obsControl',
+              concept: {
+                uuid: 'concept-incident-datetime',
+                datatype: 'Datetime',
+              },
+            },
+          ],
+        },
+      });
+
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-incident-datetime',
+              status: 'final',
+              code: {
+                text: 'Incident response date/time',
+                coding: [{ code: 'concept-incident-datetime' }],
+              },
+              valueDateTime: '2026-07-28T00:00:00+00:00',
+              extension: [
+                {
+                  url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+                  valueString: 'History Form.1/30-0',
+                },
+              ],
+            },
+          },
+        ],
+      } as Bundle<Observation>);
+
+      renderFormsTable();
+
+      await waitFor(() =>
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument(),
+      );
+      const links = document.querySelectorAll('.cds--link');
+      await user.click(links[0] as HTMLElement);
+
+      await waitFor(() =>
+        expect(
+          screen.getByText('Incident response date/time'),
+        ).toBeInTheDocument(),
+      );
+
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        '2026-07-28T00:00:00+00:00',
+        expect.anything(),
+        true,
+      );
     });
 
     it('renders section header when schema contains a type:section control', async () => {

@@ -23,6 +23,8 @@ import {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  formatDateForControl,
+  DATETIME_REGEX_PATTERN,
   type AgeDetails,
   computeAgeDetails,
 } from '@bahmni/services';
@@ -44,13 +46,10 @@ import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import {
-  detectFormChanges,
   extractVersionFromFormFieldPath,
   injectMissingDeleteObs,
   markUnchangedObservations,
   mergeObservationStatuses,
-  replaceInterpretationRemovedObs,
-  replaceNoteRemovedObs,
   restoreComplexValues,
 } from '../../../utils/fhir/observationReconciliation';
 import EncounterDetails from '../encounterDetails/EncounterDetails';
@@ -106,16 +105,9 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const isEditMode =
     encounterSessionStartContext?.editOnly === 'observationForms';
 
-  // Init-settle guard — skips CarbonContainer's synchronous onValueUpdated fires on mount.
-  const initSettledRef = React.useRef(!isEditMode);
-  const initSettleTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-
-  // Baseline captured from CarbonContainer's getValue() after init settles.
-  const [baselineObservations, setBaselineObservations] = React.useState<
-    Form2Observation[]
-  >([]);
+  // Tracks whether the form differs from its initial values — driven by CarbonContainer's
+  // own setIsFormUpdated (uuid-based comparison against the observations it was mounted with).
+  const [isFormUpdated, setIsFormUpdated] = React.useState(false);
 
   const task = encounterSessionStartContext?.task as Task | undefined;
   const basedOn = task?.basedOn?.[0];
@@ -199,44 +191,13 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     viewingForm?.uuid ? { formUuid: viewingForm.uuid } : undefined,
   );
 
-  // Snapshot-based change detection (mirrors medication edit's hasEditChanges).
-  const hasFormChanges = React.useMemo(() => {
-    if (!isEditMode) return true; // non-edit forms are always saveable
-    if (!initSettledRef.current) return false;
-    if (observations.length === 0) return false;
-
-    // Baseline not yet captured (init still settling) — wait for capture.
-    if (baselineObservations.length > 0 && observations.length === 0)
-      return false;
-    // Compare current against baseline to detect changes.
-    return detectFormChanges(observations, baselineObservations);
-  }, [isEditMode, observations, baselineObservations]);
+  // Non-edit forms are always saveable; edit forms gate on CarbonContainer's setIsFormUpdated.
+  const hasFormChanges = !isEditMode || isFormUpdated;
 
   const handleFormDataChange = React.useCallback(
     (data: unknown) => {
       if (validationErrorType) {
         setValidationErrorType(null);
-      }
-      // Skip all CarbonContainer fires until init has settled.
-      if (!initSettledRef.current) {
-        // Reschedule so the baseline is captured after the last init fire.
-        if (initSettleTimerRef.current !== null) {
-          clearTimeout(initSettleTimerRef.current);
-        }
-        initSettleTimerRef.current = setTimeout(() => {
-          initSettleTimerRef.current = null;
-          initSettledRef.current = true;
-          if (formContainerRef.current) {
-            const { observations: initObs } =
-              formContainerRef.current.getValue();
-            if (initObs && initObs.length > 0) {
-              const baseline =
-                transformContainerObservationsToForm2Observations(initObs);
-              setBaselineObservations(baseline);
-            }
-          }
-        }, 0);
-        return;
       }
 
       if (viewingForm && onFormObservationsChange) {
@@ -287,6 +248,20 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       return converted;
     };
 
+    const convertDateTime = (obs: Form2Observation): Form2Observation => {
+      const converted =
+        typeof obs.value === 'string' && DATETIME_REGEX_PATTERN.test(obs.value)
+          ? { ...obs, value: formatDateForControl(new Date(obs.value)) }
+          : obs;
+      if (converted.groupMembers) {
+        return {
+          ...converted,
+          groupMembers: converted.groupMembers.map(convertDateTime),
+        };
+      }
+      return converted;
+    };
+
     // Normalise interpretation to uppercase codes to match CarbonContainer's internal format.
     const normalizeInterpretation = (
       obs: Form2Observation,
@@ -314,6 +289,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         );
       })
       .map(convertComplex)
+      .map(convertDateTime)
       .map(normalizeInterpretation);
   }, [existingObservations]);
 
@@ -377,11 +353,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             : [];
 
         mergeObservationStatuses(
-          transformedObservations,
-          statusSourceRef.current,
-        );
-        replaceNoteRemovedObs(transformedObservations, statusSourceRef.current);
-        replaceInterpretationRemovedObs(
           transformedObservations,
           statusSourceRef.current,
         );
@@ -458,11 +429,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           transformedObservations,
           statusSourceRef.current,
         );
-        replaceNoteRemovedObs(transformedObservations, statusSourceRef.current);
-        replaceInterpretationRemovedObs(
-          transformedObservations,
-          statusSourceRef.current,
-        );
         restoreComplexValues(transformedObservations, statusSourceRef.current);
         injectMissingDeleteObs(
           transformedObservations,
@@ -530,11 +496,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       );
 
       mergeObservationStatuses(
-        transformedObservations,
-        statusSourceRef.current,
-      );
-      replaceNoteRemovedObs(transformedObservations, statusSourceRef.current);
-      replaceInterpretationRemovedObs(
         transformedObservations,
         statusSourceRef.current,
       );
@@ -652,6 +613,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             collapse={false}
             locale={getUserPreferredLocale()}
             onValueUpdated={handleFormDataChange}
+            setIsFormUpdated={setIsFormUpdated}
           />
         ) : (
           <div>{t('OBSERVATION_FORM_LOADING_METADATA_ERROR')}</div>

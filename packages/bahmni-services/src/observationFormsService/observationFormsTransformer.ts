@@ -1,4 +1,3 @@
-import { DATETIME_REGEX_PATTERN } from '../constants/fhir';
 import { DEFAULT_FORM_NAMESPACE } from './constants';
 import {
   FormMetadata,
@@ -25,7 +24,6 @@ export interface FormControlData {
     | string
     | number
     | boolean
-    | Date
     | ConceptValue
     | ConceptValue[]
     | ComplexValue
@@ -40,6 +38,17 @@ export interface FormControlData {
 export interface FormData {
   controls: FormControlData[];
   metadata?: Record<string, unknown>;
+}
+
+export function formatDateForControl(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const yyyy = date.getFullYear();
+  const mm = pad(date.getMonth() + 1);
+  const dd = pad(date.getDate());
+  const hh = pad(date.getHours());
+  const min = pad(date.getMinutes());
+  const ss = pad(date.getSeconds());
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
 }
 
 function transformControlValue(
@@ -257,18 +266,12 @@ export function transformObservationsToFormData(
 
       existingControl.type = 'multiselect';
     } else {
-      let controlValue: string | number | boolean | Date | ConceptValue | null =
-        obs.value as string | number | boolean | Date | ConceptValue | null;
-
-      if (
-        typeof obs.value === 'string' &&
-        DATETIME_REGEX_PATTERN.test(obs.value)
-      ) {
-        const parsedDate = new Date(obs.value);
-        if (!isNaN(parsedDate.getTime())) {
-          controlValue = parsedDate;
-        }
-      }
+      const controlValue = obs.value as
+        | string
+        | number
+        | boolean
+        | ConceptValue
+        | null;
 
       const control: FormControlData = {
         id: fieldPath,

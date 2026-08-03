@@ -53,6 +53,7 @@ export const formatEncounterTitle = (
 export const formatObservationValue = (
   observation: ExtractedObservation,
   t?: (key: string) => string,
+  conceptDatatypeMap?: Record<string, string>,
 ): string => {
   if (observation.observationValue?.value == null) {
     return '';
@@ -60,7 +61,15 @@ export const formatObservationValue = (
   const { value, unit, type } = observation.observationValue;
 
   if (type === 'dateTime') {
-    return formatDateTime(String(value), t).formattedResult;
+    const knownDatatype = observation.conceptId
+      ? conceptDatatypeMap?.[observation.conceptId]
+      : undefined;
+    const hasTimeComponent =
+      knownDatatype != null
+        ? knownDatatype === 'Datetime'
+        : /T\d{2}:\d{2}:\d{2}/.test(String(value)) &&
+          !/T00:00:00/.test(String(value));
+    return formatDateTime(String(value), t, hasTimeComponent).formattedResult;
   }
 
   if (type === 'boolean') {

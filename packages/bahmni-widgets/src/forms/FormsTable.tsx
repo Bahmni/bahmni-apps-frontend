@@ -262,6 +262,29 @@ const FormsTable: React.FC<WidgetProps> = ({
     return Object.keys(map).length > 0 ? map : undefined;
   }, [formMetadata]);
 
+  const conceptDatatypeMap = useMemo(() => {
+    if (!formMetadata?.schema) return undefined;
+    const map: Record<string, string> = {};
+
+    const collectDatatypes = (controls: unknown[]) => {
+      (controls ?? []).forEach((ctrl: unknown) => {
+        const c = ctrl as {
+          concept?: { uuid?: string; datatype?: string };
+          controls?: unknown[];
+        };
+        if (c.concept?.uuid && c.concept?.datatype) {
+          map[c.concept.uuid] = c.concept.datatype;
+        }
+        if (c.controls) collectDatatypes(c.controls);
+      });
+    };
+
+    collectDatatypes(
+      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
+    );
+    return Object.keys(map).length > 0 ? map : undefined;
+  }, [formMetadata]);
+
   const modalErrorMessage = useMemo(() => {
     if (metadataError) {
       return getFormattedError(metadataError).message;
@@ -493,6 +516,7 @@ const FormsTable: React.FC<WidgetProps> = ({
             hideThumbnail={hideThumbnail}
             controlOrder={controlOrder}
             sectionMap={sectionMap}
+            conceptDatatypeMap={conceptDatatypeMap}
           />
         </Modal>
       )}

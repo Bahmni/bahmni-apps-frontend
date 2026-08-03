@@ -380,7 +380,7 @@ describe('observationFormsTransformer', () => {
       });
     });
 
-    it('should transform ISO date string to Date object', () => {
+    it('should transform an ISO date string as-is', () => {
       const isoDate = '2024-01-15T10:30:00.000Z';
       const observations: Form2Observation[] = [
         {
@@ -398,8 +398,7 @@ describe('observationFormsTransformer', () => {
       );
 
       expect(result.controls).toHaveLength(1);
-      expect(result.controls[0].value).toBeInstanceOf(Date);
-      expect((result.controls[0].value as Date).toISOString()).toBe(isoDate);
+      expect(result.controls[0].value).toBe(isoDate);
     });
 
     it('should transform coded value (ConceptValue)', () => {

@@ -1,11 +1,8 @@
 import {
-  detectFormChanges,
   extractVersionFromFormFieldPath,
   injectMissingDeleteObs,
   markUnchangedObservations,
   mergeObservationStatuses,
-  replaceInterpretationRemovedObs,
-  replaceNoteRemovedObs,
   restoreComplexValues,
   valueFingerprint,
 } from '../observationReconciliation';
@@ -56,8 +53,20 @@ describe('valueFingerprint', () => {
     expect(valueFingerprint(d)).toBe('date:2024-03-15');
   });
 
-  it('returns date: prefix for an ISO date string', () => {
-    expect(valueFingerprint('2024-03-15T10:00:00Z')).toBe('date:2024-03-15');
+  it('returns date: prefix for a date-only string', () => {
+    expect(valueFingerprint('2024-03-15')).toBe('date:2024-03-15');
+  });
+
+  it('includes the time-of-day for an ISO datetime string', () => {
+    expect(valueFingerprint('2024-03-15T10:00:00Z')).toBe(
+      'date:2024-03-15 10:00',
+    );
+  });
+
+  it('distinguishes two datetime values that only differ by time', () => {
+    expect(valueFingerprint('2024-03-15 10:00:00')).not.toBe(
+      valueFingerprint('2024-03-15 13:00:00'),
+    );
   });
 
   it('does not treat plain numeric string as date', () => {
@@ -82,164 +91,6 @@ describe('valueFingerprint', () => {
 
   it('returns JSON.stringify for unknown object', () => {
     expect(valueFingerprint({ foo: 'bar' })).toBe('{"foo":"bar"}');
-  });
-});
-
-describe('detectFormChanges', () => {
-  const obs = (formFieldPath: string, value: unknown, comment?: string) => ({
-    concept: { uuid: 'c1' },
-    value: value as string,
-    obsDatetime: '2024-01-01',
-    formNamespace: 'Bahmni',
-    formFieldPath,
-    comment,
-  });
-
-  it('returns false when current and original are identical', () => {
-    const current = [obs('Form.1/1-0', 'hello')];
-    const original = [obs('Form.1/1-0', 'hello')];
-    expect(detectFormChanges(current, original)).toBe(false);
-  });
-
-  it('returns true when a field is added', () => {
-    const current = [obs('Form.1/1-0', 'a'), obs('Form.1/2-0', 'b')];
-    const original = [obs('Form.1/1-0', 'a')];
-    expect(detectFormChanges(current, original)).toBe(true);
-  });
-
-  it('returns true when a field is removed', () => {
-    const current = [obs('Form.1/1-0', 'a')];
-    const original = [obs('Form.1/1-0', 'a'), obs('Form.1/2-0', 'b')];
-    expect(detectFormChanges(current, original)).toBe(true);
-  });
-
-  it('returns true when a value changes', () => {
-    const current = [obs('Form.1/1-0', 'new value')];
-    const original = [obs('Form.1/1-0', 'old value')];
-    expect(detectFormChanges(current, original)).toBe(true);
-  });
-
-  it('returns true when a comment changes', () => {
-    const current = [obs('Form.1/1-0', 'val', 'new note')];
-    const original = [obs('Form.1/1-0', 'val', 'old note')];
-    expect(detectFormChanges(current, original)).toBe(true);
-  });
-
-  it('returns false for multiselect with same set in different order', () => {
-    const current = [obs('Form.1/1-0', 'b'), obs('Form.1/1-0', 'a')];
-    const original = [obs('Form.1/1-0', 'a'), obs('Form.1/1-0', 'b')];
-    expect(detectFormChanges(current, original)).toBe(false);
-  });
-
-  it('deduplicates duplicate observations at the same path', () => {
-    const current = [obs('Form.1/1-0', 'x'), obs('Form.1/1-0', 'x')];
-    const original = [obs('Form.1/1-0', 'x')];
-    expect(detectFormChanges(current, original)).toBe(false);
-  });
-
-  it('recurses into groupMembers', () => {
-    const current = [
-      {
-        ...obs('Form.1/1-0', null),
-        groupMembers: [obs('Form.1/2-0', 'changed')],
-      },
-    ];
-    const original = [
-      {
-        ...obs('Form.1/1-0', null),
-        groupMembers: [obs('Form.1/2-0', 'original')],
-      },
-    ];
-    expect(detectFormChanges(current, original)).toBe(true);
-  });
-});
-
-describe('replaceNoteRemovedObs', () => {
-  const obs = (uuid: string, comment?: string) => ({
-    concept: { uuid: 'c1' },
-    value: 'val',
-    obsDatetime: '2024-01-01',
-    formNamespace: 'Bahmni',
-    uuid,
-    comment,
-  });
-
-  it('replaces obs where comment was cleared with DELETE+POST pair', () => {
-    const transformed = [obs('obs-1')]; // no comment now
-    const original = [obs('obs-1', 'old note')];
-    replaceNoteRemovedObs(transformed, original);
-    expect(transformed).toHaveLength(2);
-    expect(transformed[0].voided).toBe(true);
-    expect(transformed[0].uuid).toBe('obs-1');
-    expect(transformed[1].uuid).toBeUndefined();
-    expect(transformed[1].comment).toBeUndefined();
-  });
-
-  it('does not replace obs that still has a comment', () => {
-    const transformed = [obs('obs-1', 'still here')];
-    const original = [obs('obs-1', 'old note')];
-    replaceNoteRemovedObs(transformed, original);
-    expect(transformed).toHaveLength(1);
-  });
-
-  it('does not replace obs that had no comment originally', () => {
-    const transformed = [obs('obs-1')];
-    const original = [obs('obs-1')];
-    replaceNoteRemovedObs(transformed, original);
-    expect(transformed).toHaveLength(1);
-  });
-
-  it('recurses into group members', () => {
-    const child = obs('child-1');
-    const originalChild = obs('child-1', 'old note');
-    const transformed = [{ ...obs('grp-1'), groupMembers: [child] }];
-    const original = [{ ...obs('grp-1'), groupMembers: [originalChild] }];
-    replaceNoteRemovedObs(transformed, original);
-    const groupMembers = transformed[0].groupMembers as (typeof child)[];
-    expect(groupMembers).toHaveLength(2);
-    expect(groupMembers[0].voided).toBe(true);
-    expect(groupMembers[0].uuid).toBe('child-1');
-    expect(groupMembers[1].uuid).toBeUndefined();
-    expect(groupMembers[1].comment).toBeUndefined();
-  });
-});
-
-describe('replaceInterpretationRemovedObs', () => {
-  const obs = (uuid: string, interpretation?: string) => ({
-    concept: { uuid: 'c1' },
-    value: 80,
-    obsDatetime: '2024-01-01',
-    formNamespace: 'Bahmni',
-    uuid,
-    interpretation,
-  });
-
-  it('replaces obs where interpretation was cleared', () => {
-    const transformed = [obs('obs-1')];
-    const original = [obs('obs-1', 'ABNORMAL')];
-    replaceInterpretationRemovedObs(transformed, original);
-    expect(transformed).toHaveLength(2);
-    expect(transformed[0].voided).toBe(true);
-    expect(transformed[1].uuid).toBeUndefined();
-    expect(transformed[1].interpretation).toBeUndefined();
-  });
-
-  it('recurses into group members', () => {
-    const child = obs('child-1');
-    const originalChild = obs('child-1', 'HIGH');
-    const transformed = [{ ...obs('grp-1'), groupMembers: [child] }];
-    const original = [{ ...obs('grp-1'), groupMembers: [originalChild] }];
-    replaceInterpretationRemovedObs(transformed, original);
-    const groupMembers = transformed[0].groupMembers as (typeof child)[];
-    expect(groupMembers).toHaveLength(2);
-    expect(groupMembers[0].voided).toBe(true);
-  });
-
-  it('leaves obs unchanged when interpretation is still present', () => {
-    const transformed = [obs('obs-1', 'NORMAL')];
-    const original = [obs('obs-1', 'NORMAL')];
-    replaceInterpretationRemovedObs(transformed, original);
-    expect(transformed).toHaveLength(1);
   });
 });
 

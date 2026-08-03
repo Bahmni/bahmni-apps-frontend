@@ -408,7 +408,7 @@ describe('ObservationFormsContainer', () => {
       expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
     });
 
-    it('should DELETE+POST when interpretation is cleared on a standalone obs (partial-PUT workaround)', () => {
+    it('should PUT with interpretation omitted when interpretation is cleared on a standalone obs', () => {
       const mockOnFormObservationsChange = jest.fn();
       const mockOnViewingFormChange = jest.fn();
 
@@ -459,21 +459,18 @@ describe('ObservationFormsContainer', () => {
       expect(mockOnFormObservationsChange).toHaveBeenCalledWith(
         mockForm.uuid,
         expect.arrayContaining([
-          // DELETE entry for old obs with interpretation
-          expect.objectContaining({ uuid: 'obs-uuid-1', voided: true }),
-          // POST entry for new obs without interpretation
-          expect.objectContaining({
-            uuid: undefined,
-            interpretation: undefined,
-            value: 60,
-          }),
+          // Single PUT entry — backend's unsetMissingFields clears interpretation when omitted
+          expect.objectContaining({ uuid: 'obs-uuid-1', value: 60 }),
         ]),
         null,
         undefined,
       );
+      const savedObservations = mockOnFormObservationsChange.mock.calls[0][1];
+      expect(savedObservations).toHaveLength(1);
+      expect(savedObservations[0].interpretation).toBeUndefined();
     });
 
-    it('should DELETE+POST when interpretation is cleared on an obsGroup member (partial-PUT workaround)', () => {
+    it('should PUT with interpretation omitted when interpretation is cleared on an obsGroup member', () => {
       // Group members are processed as individual leaf Observations, so the same partial-PUT issue applies.
       const mockOnFormObservationsChange = jest.fn();
       const mockOnViewingFormChange = jest.fn();
@@ -542,23 +539,18 @@ describe('ObservationFormsContainer', () => {
           expect.objectContaining({
             uuid: 'group-uuid',
             groupMembers: expect.arrayContaining([
-              // DELETE entry for the group member that had interpretation
-              expect.objectContaining({
-                uuid: 'systolic-uuid',
-                voided: true,
-              }),
-              // POST entry for new group member without interpretation
-              expect.objectContaining({
-                uuid: undefined,
-                interpretation: undefined,
-                value: 106,
-              }),
+              // Single PUT entry — backend's unsetMissingFields clears interpretation when omitted
+              expect.objectContaining({ uuid: 'systolic-uuid', value: 106 }),
             ]),
           }),
         ]),
         null,
         undefined,
       );
+      const savedGroupMembers =
+        mockOnFormObservationsChange.mock.calls[0][1][0].groupMembers;
+      expect(savedGroupMembers).toHaveLength(1);
+      expect(savedGroupMembers[0].interpretation).toBeUndefined();
     });
   });
 
