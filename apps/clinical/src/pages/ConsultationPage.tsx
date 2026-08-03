@@ -279,6 +279,8 @@ const ConsultationPage: React.FC = () => {
           programUUID={programUUID}
           config={{
             fields: clinicalConfig.contextInformation?.program?.fields ?? [],
+            overlayStates:
+              clinicalConfig.contextInformation?.program?.overlayStates ?? [],
           }}
         />
       );

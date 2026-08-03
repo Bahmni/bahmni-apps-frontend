@@ -136,6 +136,13 @@
                   }
                 }
               }
+            },
+            "overlayStates": {
+              "type": "array",
+              "description": "Program workflow state names that should show a blocking loading overlay while the transition to that state is in progress",
+              "items": {
+                "type": "string"
+              }
             }
           }
         }

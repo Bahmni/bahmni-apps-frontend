@@ -70,6 +70,7 @@ describe('ProgramDetails', () => {
             { name: 'state' },
             { name: 'outcome' },
           ],
+          overlayStates: ['Follow-up Phase'],
         }}
       />
     </QueryClientProvider>
@@ -455,7 +456,10 @@ describe('ProgramDetails', () => {
     await userEvent.click(button);
 
     expect(
-      screen.getByTestId('patient-programs-table-loading-test-id'),
+      screen.getByTestId('program-details-loading-overlay-test-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('patient-programs-tile-test-id'),
     ).toBeInTheDocument();
 
     await waitFor(() => {
@@ -475,6 +479,61 @@ describe('ProgramDetails', () => {
       expect(
         screen.getByTestId('patient-programs-allowed-state-2-button-test-id'),
       ).toHaveTextContent('Follow-up Phase');
+    });
+  });
+
+  it('should not show the loading overlay when the target state is not in overlayStates', async () => {
+    const mockRefetch = jest.fn();
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 'program-1',
+        uuid: 'program-uuid-1',
+        programName: 'TB Program',
+        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+        dateCompleted: null,
+        outcomeName: null,
+        outcomeDetails: null,
+        currentStateName: 'Treatment Phase',
+        attributes: {},
+        allowedStates: [
+          { uuid: 'allowed-state-2', display: 'Follow-up Phase' },
+          { uuid: 'allowed-state-3', display: 'Completed' },
+        ],
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+      refetch: mockRefetch,
+    });
+
+    (updateProgramState as jest.Mock).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve(mockProgramWithAttributes), 100);
+        }),
+    );
+
+    render(wrapper);
+
+    const button = screen.getByTestId(
+      'patient-programs-allowed-state-3-button-test-id',
+    );
+
+    await userEvent.click(button);
+
+    expect(
+      screen.queryByTestId('program-details-loading-overlay-test-id'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByTestId('patient-programs-tile-test-id'),
+    ).toBeInTheDocument();
+    expect(button).toBeDisabled();
+
+    await waitFor(() => {
+      expect(updateProgramState).toHaveBeenCalledWith(
+        'test-program-uuid',
+        'allowed-state-3',
+      );
     });
   });
 

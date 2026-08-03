@@ -50,6 +50,7 @@ export interface ProgramField {
 
 export interface ProgramConfig {
   fields: ProgramField[];
+  overlayStates?: string[];
 }
 
 export interface ContextInformation {

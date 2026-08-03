@@ -8,6 +8,7 @@ import {
   Button,
   MenuButton,
   MenuItem,
+  Loading,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -44,6 +45,7 @@ interface ProgramDetailsProps {
   programUUID: string;
   config: {
     fields: ProgramField[];
+    overlayStates?: string[];
   };
 }
 
@@ -57,6 +59,9 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isUpdatingState, setIsUpdatingState] = useState(false);
+  const [pendingStateDisplay, setPendingStateDisplay] = useState<string | null>(
+    null,
+  );
   const { userPrivileges } = useUserPrivilege();
   const hasEditPatientProgramsPrivilege = hasPrivilege(
     userPrivileges,
@@ -74,9 +79,10 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     enabled: !!programUUID,
   });
 
-  const handleButtonClick = (stateUuid: string) => {
+  const handleButtonClick = (state: { uuid: string; display: string }) => {
     setIsUpdatingState(true);
-    updateProgramState(programUUID, stateUuid)
+    setPendingStateDisplay(state.display);
+    updateProgramState(programUUID, state.uuid)
       .then(() => {
         refetch();
         addNotification({
@@ -102,6 +108,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
       })
       .finally(() => {
         setIsUpdatingState(false);
+        setPendingStateDisplay(null);
       });
   };
 
@@ -118,7 +125,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     );
   }, [config?.fields]);
 
-  if (isLoading || isUpdatingState) {
+  if (isLoading) {
     return (
       <div
         id="patient-programs-table-loading"
@@ -155,7 +162,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           kind="ghost"
           key={state.uuid}
           disabled={isUpdatingState}
-          onClick={() => handleButtonClick(state.uuid)}
+          onClick={() => handleButtonClick(state)}
         >
           {t(
             `PROGRAMS_STATE_BUTTON_${camelToScreamingSnakeCase(state.display)}`,
@@ -181,12 +188,17 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
               `PROGRAMS_STATE_BUTTON_${camelToScreamingSnakeCase(state.display)}`,
               state.display,
             )}
-            onClick={() => handleButtonClick(state.uuid)}
+            onClick={() => handleButtonClick(state)}
           />
         ))}
       </MenuButton>
     );
   };
+
+  const showLoadingOverlay =
+    isUpdatingState &&
+    !!pendingStateDisplay &&
+    (config?.overlayStates ?? []).includes(pendingStateDisplay);
 
   const enableButtons =
     data.allowedStates &&
@@ -279,6 +291,15 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           </Column>
         ))}
       </Grid>
+      {showLoadingOverlay && (
+        <div
+          id="program-details-loading-overlay"
+          data-testid="program-details-loading-overlay-test-id"
+          aria-label="program-details-loading-overlay-aria-label"
+        >
+          <Loading active withOverlay />
+        </div>
+      )}
     </div>
   );
 };
