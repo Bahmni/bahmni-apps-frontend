@@ -19,10 +19,6 @@
   max-inline-size: 100% !important;
 }
 
-.tabs {
-  box-shadow: 0 3px 6px 0 $shadow;
-}
-
 .message {
   @include type-style('body-compact-01');
   color: $support-error;

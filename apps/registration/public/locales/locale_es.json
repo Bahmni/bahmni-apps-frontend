@@ -27,6 +27,7 @@
   "COMMON_SEARCH_SELECT_LOCATION_LABEL": "Ubicación",
   "COMMON_SEARCH_SELECT_SEARCH_CRITERIA": "Criterios de Búsqueda",
   "COMMON_SEARCH_SELECT_SEARCH_CRITERIA_PLACEHOLDER": "Seleccionar un criterio de búsqueda",
+  "COMMON_SEARCH_SELECTED_CRITERIA_LABEL": "Criterios de búsqueda de {{context}} seleccionados:",
   "COMMON_SEARCH_SUCCESS": "Búsqueda Completa",
   "COMMON_SEARCH_SUCCESS_MESSAGE": "Sus criterios de búsqueda han sido enviados.",
   "COMMON_SEARCH_VALUE_REQUIRED": "Por favor ingrese un valor de búsqueda",
