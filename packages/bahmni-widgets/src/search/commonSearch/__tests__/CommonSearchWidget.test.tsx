@@ -15,11 +15,7 @@ import {
 } from '@testing-library/react';
 import React from 'react';
 import CommonSearchWidget from '../CommonSearchWidget';
-import {
-  CurrentSearchState,
-  CriterionRow,
-  SearchContextConfig,
-} from '../models';
+import { CriterionRow, SearchContextConfig } from '../models';
 import {
   mockCommonSearchWidgetConfig,
   mockCommonSearchWidgetConfigWithRange,
@@ -65,16 +61,7 @@ jest.mock('../SearchForm', () => ({
 
 jest.mock('../SearchSummary', () => ({
   __esModule: true,
-  default: ({
-    onModifySearch,
-  }: {
-    currentSearchState: CurrentSearchState;
-    onModifySearch: () => void;
-  }) => (
-    <div data-testid="search-summary">
-      <button onClick={onModifySearch}>Modify Search</button>
-    </div>
-  ),
+  default: () => <div data-testid="search-summary" />,
 }));
 
 jest.mock('../ResultsTable', () => ({
@@ -427,8 +414,66 @@ describe('CommonSearchWidget', () => {
     });
   });
 
-  describe('handleModifySearch', () => {
-    it('returns to search form and hides results when Modify Search is clicked', async () => {
+  describe('accordion panel behavior', () => {
+    const renderAndSearch = async (results: unknown[] = [{ id: '1' }]) => {
+      mockPost.mockResolvedValue({ results });
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfig,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await screen.findByTestId('search-form');
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+    };
+
+    it('collapses accordion and show results table below accordion after successful search with results', async () => {
+      await renderAndSearch([{ id: '1' }]);
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      ).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.getByTestId('search-summary')).toBeInTheDocument();
+      expect(screen.getByTestId('results-table')).toBeInTheDocument();
+    });
+
+    it('keeps accordion open after search returns empty results', async () => {
+      await renderAndSearch([]);
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      ).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('results table remains visible when accordion is toggled open', async () => {
+      await renderAndSearch([{ id: '1' }]);
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      );
+      expect(screen.getByTestId('search-summary')).toBeInTheDocument();
+      expect(screen.getByTestId('results-table')).toBeInTheDocument();
+    });
+
+    it('accordion title changes to modify search after first successful search', async () => {
+      await renderAndSearch([{ id: '1' }]);
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      ).toBeInTheDocument();
+    });
+
+    it('accordion title shows select criteria before any search', async () => {
       (getConfig as jest.Mock).mockResolvedValueOnce(
         mockCommonSearchWidgetConfig,
       );
@@ -439,19 +484,11 @@ describe('CommonSearchWidget', () => {
       await waitFor(() =>
         expect(screen.getByTestId('search-form')).toBeInTheDocument(),
       );
-      await act(async () => {
-        capturedOnSearch!(
-          [mockRowWithValidValue],
-          mockCommonSearchWidgetConfig[0],
-        );
-      });
-      expect(screen.getByTestId('search-summary')).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button', { name: 'Modify Search' }));
-      await waitFor(() =>
-        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
-      );
-      expect(screen.queryByTestId('search-summary')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('results-table')).not.toBeInTheDocument();
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_SELECT_SEARCH_CRITERIA',
+        }),
+      ).toBeInTheDocument();
     });
   });
 });

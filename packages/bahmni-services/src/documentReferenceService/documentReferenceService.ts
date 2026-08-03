@@ -50,7 +50,7 @@ function mapDocumentReferencesToViewModels(
     .filter((entry) => entry.resource?.resourceType === 'DocumentReference')
     .map((entry) => {
       const doc = entry.resource;
-      const masterIdentifier = doc.masterIdentifier?.value ?? doc.id ?? '';
+      const masterIdentifier = doc.masterIdentifier?.value ?? '';
       const encounterId = doc.context?.encounter?.[0]?.reference
         ?.split('/')
         .pop();
