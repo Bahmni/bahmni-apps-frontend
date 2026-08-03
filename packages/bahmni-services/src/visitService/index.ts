@@ -7,6 +7,6 @@ export {
   getVisitLocationUUID,
 } from './visitService';
 export {
-  createFhirVisit,
+  createVisitWithFhirR4,
   getActiveVisitAtLoginLocation,
 } from './fhirVisitService';

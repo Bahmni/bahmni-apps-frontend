@@ -1,5 +1,5 @@
 import {
-  createFhirVisit,
+  createVisitWithFhirR4,
   getActiveVisitAtLoginLocation,
 } from '../fhirVisitService';
 
@@ -49,7 +49,7 @@ describe('fhirVisitService', () => {
   });
 
   it('posts correct FHIR Encounter resource to create a visit', async () => {
-    await createFhirVisit(PATIENT_UUID, LOCATION_UUID, VISIT_TYPE_UUID);
+    await createVisitWithFhirR4(PATIENT_UUID, LOCATION_UUID, VISIT_TYPE_UUID);
 
     expect(mockPost).toHaveBeenCalledWith(
       '/openmrs/ws/fhir2/R4/Encounter',
@@ -82,7 +82,7 @@ describe('fhirVisitService', () => {
   });
 
   it('does not include episodeOfCare when episodeUuid is omitted', async () => {
-    await createFhirVisit(PATIENT_UUID, LOCATION_UUID, VISIT_TYPE_UUID);
+    await createVisitWithFhirR4(PATIENT_UUID, LOCATION_UUID, VISIT_TYPE_UUID);
 
     expect(mockPost).toHaveBeenCalledWith(
       '/openmrs/ws/fhir2/R4/Encounter',
@@ -92,7 +92,7 @@ describe('fhirVisitService', () => {
 
   it('includes episodeOfCare reference when episodeUuid is provided', async () => {
     const EPISODE_UUID = 'episode-uuid-1';
-    await createFhirVisit(
+    await createVisitWithFhirR4(
       PATIENT_UUID,
       LOCATION_UUID,
       VISIT_TYPE_UUID,
@@ -111,7 +111,7 @@ describe('fhirVisitService', () => {
     const mockEncounter = { resourceType: 'Encounter', id: 'new-enc-1' };
     mockPost.mockResolvedValue(mockEncounter);
 
-    const result = await createFhirVisit(
+    const result = await createVisitWithFhirR4(
       PATIENT_UUID,
       LOCATION_UUID,
       VISIT_TYPE_UUID,
@@ -124,7 +124,7 @@ describe('fhirVisitService', () => {
     mockPost.mockRejectedValue(new Error('Network error'));
 
     await expect(
-      createFhirVisit(PATIENT_UUID, LOCATION_UUID, VISIT_TYPE_UUID),
+      createVisitWithFhirR4(PATIENT_UUID, LOCATION_UUID, VISIT_TYPE_UUID),
     ).rejects.toThrow('Network error');
   });
 

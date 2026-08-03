@@ -70,7 +70,7 @@ export {
   createVisitForPatient,
   getActiveVisitByPatient,
   getVisitLocationUUID,
-  createFhirVisit,
+  createVisitWithFhirR4,
   getActiveVisitAtLoginLocation,
   type VisitType,
   type VisitTypes,

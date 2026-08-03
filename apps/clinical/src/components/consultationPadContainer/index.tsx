@@ -1,7 +1,7 @@
 import { ActionArea, InlineNotification, Loading } from '@bahmni/design-system';
 import {
   MODULE_LABELS,
-  createFhirVisit,
+  createVisitWithFhirR4,
   dispatchAuditEvent,
   getActiveVisitAtLoginLocation,
   getVisitLocationUUID,
@@ -101,7 +101,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
         const visitLocation = await getVisitLocationUUID(
           getUserLoginLocation().uuid,
         );
-        await createFhirVisit(
+        await createVisitWithFhirR4(
           patientUuid!,
           visitLocation.uuid,
           visitTypeUuid,

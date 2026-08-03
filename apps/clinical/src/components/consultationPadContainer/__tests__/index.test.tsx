@@ -1,5 +1,5 @@
 import {
-  createFhirVisit,
+  createVisitWithFhirR4,
   dispatchAuditEvent,
   getVisitLocationUUID,
   getUserLoginLocation,
@@ -56,7 +56,7 @@ jest.mock('@bahmni/design-system', () => ({
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  createFhirVisit: jest.fn(),
+  createVisitWithFhirR4: jest.fn(),
   dispatchAuditEvent: jest.fn(),
   getVisitLocationUUID: jest.fn(),
   getUserLoginLocation: jest.fn(),
@@ -188,7 +188,7 @@ beforeEach(() => {
   jest
     .mocked(getUserLoginLocation)
     .mockReturnValue({ uuid: 'login-loc-uuid' } as any);
-  jest.mocked(createFhirVisit).mockResolvedValue(undefined as any);
+  jest.mocked(createVisitWithFhirR4).mockResolvedValue(undefined as any);
   jest.mocked(dispatchAuditEvent).mockReturnValue(undefined);
   jest
     .mocked(useEncounterDetailsStore)
@@ -236,7 +236,7 @@ describe('ConsultationPadContainer', () => {
         visitTypes: [VISIT_TYPE_OPD],
       },
     } as any);
-    jest.mocked(createFhirVisit).mockReturnValue(new Promise(() => {}));
+    jest.mocked(createVisitWithFhirR4).mockReturnValue(new Promise(() => {}));
     renderComponent();
     await waitFor(() => {
       expect(
@@ -279,7 +279,7 @@ describe('ConsultationPadContainer', () => {
         visitTypes: [VISIT_TYPE_OPD],
       },
     } as any);
-    jest.mocked(createFhirVisit).mockResolvedValue(undefined as any);
+    jest.mocked(createVisitWithFhirR4).mockResolvedValue(undefined as any);
     renderComponent();
     await waitFor(() => {
       expect(screen.getByTestId('consultation-pad')).toBeInTheDocument();
@@ -299,7 +299,7 @@ describe('ConsultationPadContainer', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('calls createFhirVisit with correct args, dispatches audit event, and resets store on auto-create', async () => {
+  it('calls createVisitWithFhirR4 with correct args, dispatches audit event, and resets store on auto-create', async () => {
     jest.mocked(useClinicalConfig).mockReturnValue(buildConfig(['OPD']) as any);
     jest.mocked(useEncounterConcepts).mockReturnValue({
       ...defaultEncounterConceptsResult,
@@ -311,7 +311,7 @@ describe('ConsultationPadContainer', () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(createFhirVisit).toHaveBeenCalledWith(
+      expect(createVisitWithFhirR4).toHaveBeenCalledWith(
         PATIENT_UUID,
         MOCK_VISIT_LOCATION.uuid,
         VISIT_TYPE_OPD.uuid,
@@ -337,7 +337,7 @@ describe('ConsultationPadContainer', () => {
       },
     } as any);
     jest
-      .mocked(createFhirVisit)
+      .mocked(createVisitWithFhirR4)
       .mockRejectedValue(new Error('Failed to create visit'));
     renderComponent();
 
@@ -412,7 +412,7 @@ describe('ConsultationPadContainer', () => {
     await userEvent.click(screen.getByTestId('primary-button'));
 
     await waitFor(() => {
-      expect(createFhirVisit).toHaveBeenCalledWith(
+      expect(createVisitWithFhirR4).toHaveBeenCalledWith(
         PATIENT_UUID,
         MOCK_VISIT_LOCATION.uuid,
         VISIT_TYPE_OPD.uuid,
@@ -424,7 +424,7 @@ describe('ConsultationPadContainer', () => {
     });
   });
 
-  it('passes activeEpisodeId to createFhirVisit when available', async () => {
+  it('passes activeEpisodeId to createVisitWithFhirR4 when available', async () => {
     const EPISODE_UUID = 'episode-uuid-1';
     jest
       .mocked(useClinicalAppData)
@@ -440,7 +440,7 @@ describe('ConsultationPadContainer', () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(createFhirVisit).toHaveBeenCalledWith(
+      expect(createVisitWithFhirR4).toHaveBeenCalledWith(
         PATIENT_UUID,
         MOCK_VISIT_LOCATION.uuid,
         VISIT_TYPE_OPD.uuid,
