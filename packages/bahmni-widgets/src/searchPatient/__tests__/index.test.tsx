@@ -14,6 +14,7 @@ import {
   searchBarPlaceholder,
   validPatientSearchConfig,
   mockSearchPatientData,
+  mockPatient,
 } from '../__mocks__/mocks';
 import SearchPatient from '../SearchPatient';
 
@@ -26,9 +27,10 @@ jest.mock('@bahmni/services', () => ({
 }));
 jest.mock('../../notification');
 jest.mock('../../userPrivileges/useUserPrivilege');
+const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useNavigate: jest.fn(() => jest.fn()),
+  useNavigate: () => mockNavigate,
 }));
 
 const mockAddNotification = jest.fn();
@@ -244,6 +246,71 @@ describe('SearchPatient', () => {
     await waitFor(() => {
       expect(container.querySelectorAll('a').length).toBeGreaterThan(0);
     });
+  });
+
+  it('should navigate via react-router (not a full page reload) when clicking an internal identifier link', async () => {
+    renderSearchPatient({
+      ...validPatientSearchConfig,
+      patientDetailUrl: '/registration/patient/{{patientUuid}}',
+    });
+    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+
+    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
+      pageOfResults: [mockPatient],
+      totalCount: 1,
+    });
+
+    fireEvent.input(searchInput, { target: { value: 'Steffi' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
+
+    const identifier = await screen.findByText('ABC200000');
+    fireEvent.click(identifier);
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      `/registration/patient/${mockPatient.uuid}`,
+    );
+  });
+
+  it('should render the configured custom-attribute columns for a name/ID search', async () => {
+    const configWithColumns = {
+      customAttributes: [
+        {
+          translationKey: 'REGISTRATION_PATIENT_SEARCH_DROPDOWN_PHONE_NUMBER',
+          fields: ['phoneNumber', 'alternatePhoneNumber'],
+          columnTranslationKeys: [],
+          expectedFields: [
+            {
+              field: 'phoneNumber',
+              translationKey: 'REGISTRATION_PATIENT_SEARCH_HEADER_PHONE_NUMBER',
+            },
+            {
+              field: 'alternatePhoneNumber',
+              translationKey:
+                'REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER',
+            },
+          ],
+          type: 'person' as const,
+        },
+      ],
+      appointment: [],
+    };
+
+    renderSearchPatient(configWithColumns);
+    const searchInput = screen.getByPlaceholderText(searchBarPlaceholder);
+
+    (searchPatientByNameOrId as jest.Mock).mockResolvedValue({
+      pageOfResults: [mockPatient],
+      totalCount: 1,
+    });
+
+    fireEvent.input(searchInput, { target: { value: 'Steffi' } });
+    fireEvent.click(screen.getByTestId('search-patient-search-button'));
+    expect(
+      await screen.findByTestId('table-header-phoneNumber'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('table-header-alternatePhoneNumber'),
+    ).toBeInTheDocument();
   });
 
   it.each([
