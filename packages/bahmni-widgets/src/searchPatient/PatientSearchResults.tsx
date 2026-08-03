@@ -130,7 +130,6 @@ const PatientSearchResults = ({
         <Link
           href={url}
           onClick={(e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
             e.preventDefault();
             navigate(url);
           }}
