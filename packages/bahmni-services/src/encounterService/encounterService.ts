@@ -156,13 +156,30 @@ export async function getEncounterTypeByName(
 /**
  * Gets the active visit for a patient (encounter with no end date)
  * @param patientUUID - The UUID of the patient
+ * @param locationUuid - Optional location UUID to filter visits by location
  * @returns Promise resolving to the current FhirEncounter or null if not found
  */
 export async function getActiveVisit(
   patientUUID: string,
+  locationUuid?: string,
 ): Promise<Encounter | null> {
   const encounters = await getVisits(patientUUID);
-  return encounters.find((encounter) => !encounter.period?.end) ?? null;
+
+  return (
+    encounters.find((encounter) => {
+      const isActive = !encounter.period?.end;
+      if (!isActive) return false;
+
+      if (locationUuid) {
+        const locationRef = `Location/${locationUuid}`;
+        return encounter.location?.some(
+          (l) => l.location?.reference === locationRef,
+        );
+      }
+
+      return true;
+    }) ?? null
+  );
 }
 
 /**

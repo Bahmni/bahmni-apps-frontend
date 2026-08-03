@@ -9,16 +9,11 @@ import {
   getPatientEncounters,
   getEncounterTypeByName,
 } from '../../encounterService';
-import {
-  mockVisitBundle,
-  mockActiveVisit,
-  mockFormsEncounter,
-} from '../__mocks__/mocks';
+import { mockVisitBundle, mockActiveVisit } from '../__mocks__/mocks';
 import {
   PATIENT_VISITS_URL,
   PATIENT_ENCOUNTERS_URL,
   ENCOUNTER_TYPE_BY_NAME_URL,
-  FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
   FHIR_ENCOUNTER_URL,
 } from '../constants';
 
@@ -101,6 +96,88 @@ describe('encounterService', () => {
       const activeVisit = await getActiveVisit(patientUUID);
 
       expect(activeVisit).toBeNull();
+    });
+
+    it('should filter by location when locationUuid is provided', async () => {
+      const locationUuid = 'location-123';
+      const visitWithMatchingLocation = {
+        ...mockActiveVisit,
+        location: [
+          {
+            location: {
+              reference: `Location/${locationUuid}`,
+            },
+          },
+        ],
+      };
+      const visitWithDifferentLocation = {
+        ...mockActiveVisit,
+        id: 'different-visit',
+        location: [
+          {
+            location: {
+              reference: 'Location/different-location',
+            },
+          },
+        ],
+      };
+
+      mockedGet.mockResolvedValueOnce({
+        entry: [
+          { resource: visitWithMatchingLocation },
+          { resource: visitWithDifferentLocation },
+        ],
+      });
+
+      const activeVisit = await getActiveVisit(patientUUID, locationUuid);
+
+      expect(activeVisit).toEqual(visitWithMatchingLocation);
+    });
+
+    it('should return null when no active visit matches the location', async () => {
+      const locationUuid = 'location-123';
+      const visitWithDifferentLocation = {
+        ...mockActiveVisit,
+        location: [
+          {
+            location: {
+              reference: 'Location/different-location',
+            },
+          },
+        ],
+      };
+
+      mockedGet.mockResolvedValueOnce({
+        entry: [{ resource: visitWithDifferentLocation }],
+      });
+
+      const activeVisit = await getActiveVisit(patientUUID, locationUuid);
+
+      expect(activeVisit).toBeNull();
+    });
+
+    it('should return null when active visit has no location array', async () => {
+      const locationUuid = 'location-123';
+      const visitWithNoLocation = {
+        ...mockActiveVisit,
+        location: undefined,
+      };
+
+      mockedGet.mockResolvedValueOnce({
+        entry: [{ resource: visitWithNoLocation }],
+      });
+
+      const activeVisit = await getActiveVisit(patientUUID, locationUuid);
+
+      expect(activeVisit).toBeNull();
+    });
+
+    it('should ignore location filter when locationUuid is not provided', async () => {
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
+
+      const activeVisit = await getActiveVisit(patientUUID);
+
+      expect(activeVisit).toEqual(mockActiveVisit);
     });
   });
 

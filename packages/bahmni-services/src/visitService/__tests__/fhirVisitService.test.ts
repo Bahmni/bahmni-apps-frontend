@@ -4,7 +4,7 @@ import {
 } from '../fhirVisitService';
 
 const mockPost = jest.fn();
-const mockGetVisits = jest.fn();
+const mockGetActiveVisit = jest.fn();
 const mockGetUserLoginLocation = jest.fn();
 const mockGetVisitLocationUUID = jest.fn();
 
@@ -13,7 +13,7 @@ jest.mock('../../api', () => ({
 }));
 
 jest.mock('../../encounterService', () => ({
-  getVisits: (...args: any[]) => mockGetVisits(...args),
+  getActiveVisit: (...args: any[]) => mockGetActiveVisit(...args),
 }));
 
 jest.mock('../../userService', () => ({
@@ -45,7 +45,7 @@ describe('fhirVisitService', () => {
     mockPost.mockResolvedValue({});
     mockGetUserLoginLocation.mockReturnValue({ uuid: LOGIN_LOCATION_UUID });
     mockGetVisitLocationUUID.mockResolvedValue({ uuid: VISIT_LOCATION_UUID });
-    mockGetVisits.mockResolvedValue([]);
+    mockGetActiveVisit.mockResolvedValue(null);
   });
 
   it('posts correct FHIR Encounter resource to create a visit', async () => {
@@ -128,53 +128,29 @@ describe('fhirVisitService', () => {
     ).rejects.toThrow('Network error');
   });
 
-  it('returns null when no visits exist', async () => {
-    const result = await getActiveVisitAtLoginLocation(PATIENT_UUID);
-
-    expect(result).toBeNull();
-  });
-
-  it('returns null when no visit matches the login location', async () => {
-    mockGetVisits.mockResolvedValue([makeVisit('Location/different-location')]);
+  it('returns null when no active visit exists at login location', async () => {
+    mockGetActiveVisit.mockResolvedValue(null);
 
     const result = await getActiveVisitAtLoginLocation(PATIENT_UUID);
 
     expect(result).toBeNull();
-  });
-
-  it('returns null when the matching visit has ended', async () => {
-    mockGetVisits.mockResolvedValue([
-      makeVisit(`Location/${VISIT_LOCATION_UUID}`, true),
-    ]);
-
-    const result = await getActiveVisitAtLoginLocation(PATIENT_UUID);
-
-    expect(result).toBeNull();
+    expect(mockGetActiveVisit).toHaveBeenCalledWith(
+      PATIENT_UUID,
+      VISIT_LOCATION_UUID,
+    );
   });
 
   it('returns the active visit at the login location', async () => {
     const activeVisit = makeVisit(`Location/${VISIT_LOCATION_UUID}`);
-    mockGetVisits.mockResolvedValue([activeVisit]);
+    mockGetActiveVisit.mockResolvedValue(activeVisit);
 
     const result = await getActiveVisitAtLoginLocation(PATIENT_UUID);
 
     expect(result).toBe(activeVisit);
-  });
-
-  it('returns the first active visit when multiple visits match the location', async () => {
-    const first = {
-      ...makeVisit(`Location/${VISIT_LOCATION_UUID}`),
-      id: 'visit-first',
-    };
-    const second = {
-      ...makeVisit(`Location/${VISIT_LOCATION_UUID}`),
-      id: 'visit-second',
-    };
-    mockGetVisits.mockResolvedValue([first, second]);
-
-    const result = await getActiveVisitAtLoginLocation(PATIENT_UUID);
-
-    expect(result).toBe(first);
+    expect(mockGetActiveVisit).toHaveBeenCalledWith(
+      PATIENT_UUID,
+      VISIT_LOCATION_UUID,
+    );
   });
 
   it('rejects when getUserLoginLocation throws', async () => {
@@ -195,8 +171,8 @@ describe('fhirVisitService', () => {
     );
   });
 
-  it('rejects when getVisits rejects', async () => {
-    mockGetVisits.mockRejectedValue(new Error('Fetch error'));
+  it('rejects when getActiveVisit rejects', async () => {
+    mockGetActiveVisit.mockRejectedValue(new Error('Fetch error'));
 
     await expect(getActiveVisitAtLoginLocation(PATIENT_UUID)).rejects.toThrow(
       'Fetch error',
@@ -207,5 +183,14 @@ describe('fhirVisitService', () => {
     await getActiveVisitAtLoginLocation(PATIENT_UUID);
 
     expect(mockGetVisitLocationUUID).toHaveBeenCalledWith(LOGIN_LOCATION_UUID);
+  });
+
+  it('passes patient UUID and visit location UUID to getActiveVisit', async () => {
+    await getActiveVisitAtLoginLocation(PATIENT_UUID);
+
+    expect(mockGetActiveVisit).toHaveBeenCalledWith(
+      PATIENT_UUID,
+      VISIT_LOCATION_UUID,
+    );
   });
 });

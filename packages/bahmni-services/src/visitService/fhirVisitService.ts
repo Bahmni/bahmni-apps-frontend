@@ -1,6 +1,6 @@
 import type { Encounter } from 'fhir/r4';
 import { post } from '../api';
-import { getVisits } from '../encounterService';
+import { getActiveVisit } from '../encounterService';
 import { getUserLoginLocation } from '../userService';
 import { createFhirEncounterResource } from './constants';
 import { getVisitLocationUUID } from './visitService';
@@ -29,14 +29,5 @@ export async function getActiveVisitAtLoginLocation(
   const visitLocationResponse = await getVisitLocationUUID(loginLocationUuid);
   const visitLocationUuid = visitLocationResponse.uuid;
 
-  const visits = await getVisits(patientUuid);
-
-  const locationRef = `Location/${visitLocationUuid}`;
-  return (
-    visits.find(
-      (v) =>
-        !v.period?.end &&
-        v.location?.some((l) => l.location?.reference === locationRef),
-    ) ?? null
-  );
+  return getActiveVisit(patientUuid, visitLocationUuid);
 }
