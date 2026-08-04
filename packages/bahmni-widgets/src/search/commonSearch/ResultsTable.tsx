@@ -164,9 +164,7 @@ const ResultsTable = ({
         key: id,
         header: t(field.translationKey),
         enableSorting: field.enableSort ?? false,
-        defaultSortDirection: field.enableSort
-          ? (field.sortOrder ?? undefined)
-          : field.sortOrder,
+        defaultSortDirection: field.sortOrder,
         enableFiltering: !!field.filterType,
         filterType: field.filterType,
       })),
