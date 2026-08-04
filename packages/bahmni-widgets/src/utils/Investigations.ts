@@ -33,6 +33,7 @@ export function updateInvestigationsWithReportInfo(
   }
 
   // Build a map of test IDs to report info in a single pass
+  // Now stores arrays of report info to support multiple reports per test
   const testIdToReportInfo = new Map<
     string,
     {
@@ -40,7 +41,7 @@ export function updateInvestigationsWithReportInfo(
       attachments?: Attachment[];
       reportedBy?: string;
       reportedDate?: string;
-    }
+    }[]
   >();
 
   diagnosticReports
@@ -64,26 +65,41 @@ export function updateInvestigationsWithReportInfo(
       report?.basedOn?.forEach((ref) => {
         const testId = ref.reference?.split('/').pop();
         if (testId) {
-          testIdToReportInfo.set(testId, {
+          const reportInfo = {
             reportId,
             attachments,
             reportedDate,
             reportedBy,
-          });
+          };
+
+          // Add to array of reports for this test
+          const existingReports = testIdToReportInfo.get(testId) ?? [];
+          testIdToReportInfo.set(testId, [...existingReports, reportInfo]);
         }
       });
     });
 
   // return tests with report info
   return tests.map((test) => {
-    const reportInfo = testIdToReportInfo.get(test.id);
-    if (reportInfo) {
+    const reportInfoArray = testIdToReportInfo.get(test.id);
+    if (reportInfoArray && reportInfoArray.length > 0) {
+      // Collect all reportIds
+      const reportIds = reportInfoArray.map((info) => info.reportId);
+
+      // Merge all attachments from all reports
+      const allAttachments = reportInfoArray.flatMap(
+        (info) => info.attachments ?? [],
+      );
+
+      // Use the most recent report's metadata (last in array)
+      const latestReport = reportInfoArray.at(-1)!;
+
       return {
         ...test,
-        reportId: reportInfo.reportId,
-        attachments: reportInfo.attachments,
-        reportedDate: reportInfo.reportedDate,
-        reportedBy: reportInfo.reportedBy,
+        reportIds,
+        attachments: allAttachments.length > 0 ? allAttachments : undefined,
+        reportedDate: latestReport.reportedDate,
+        reportedBy: latestReport.reportedBy,
       };
     }
     return test;
