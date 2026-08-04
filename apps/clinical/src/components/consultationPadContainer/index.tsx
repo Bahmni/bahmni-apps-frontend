@@ -242,7 +242,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
               />
             </div>
             <EncounterDetails
-              mode="startVisit"
+              isVisitActive
               allowedVisitTypes={allowedVisitTypes}
             />
           </>

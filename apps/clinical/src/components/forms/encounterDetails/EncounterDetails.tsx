@@ -18,12 +18,12 @@ import { useEncounterDetailsStore } from '../../../stores';
 import styles from './styles/EncounterDetails.module.scss';
 
 export interface EncounterDetailsProps {
-  mode?: 'consultation' | 'startVisit';
+  isVisitActive?: boolean;
   allowedVisitTypes?: string[];
 }
 
 const EncounterDetails: React.FC<EncounterDetailsProps> = ({
-  mode = 'consultation',
+  isVisitActive = false,
   allowedVisitTypes,
 }) => {
   const { t } = useTranslation();
@@ -31,13 +31,11 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
 
   const patientUUID = usePatientUUID();
 
-  const isStartVisitMode = mode === 'startVisit';
-
   const {
     activeVisit,
     loading: loadingActiveVisit,
     error: activeVisitError,
-  } = usePatientVisit(isStartVisitMode ? null : patientUUID);
+  } = usePatientVisit(isVisitActive ? null : patientUUID);
   const {
     locations,
     loading: loadingLocations,
@@ -86,7 +84,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
   );
 
   const filteredVisitTypes = useMemo(() => {
-    if (!isStartVisitMode || !allowedVisitTypes?.length) {
+    if (!isVisitActive || !allowedVisitTypes?.length) {
       return encounterConcepts?.visitTypes ?? [];
     }
     return (
@@ -94,11 +92,11 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
         allowedVisitTypes.includes(v.name),
       ) ?? []
     );
-  }, [isStartVisitMode, allowedVisitTypes, encounterConcepts?.visitTypes]);
+  }, [isVisitActive, allowedVisitTypes, encounterConcepts?.visitTypes]);
 
   const allLoadingStates = useMemo(
     () =>
-      isStartVisitMode
+      isVisitActive
         ? { loadingLocations, loadingEncounterConcepts, loadingPractitioner }
         : {
             loadingLocations,
@@ -107,7 +105,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
             loadingActiveVisit,
           },
     [
-      isStartVisitMode,
+      isVisitActive,
       loadingLocations,
       loadingEncounterConcepts,
       loadingPractitioner,
@@ -134,14 +132,14 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
       : undefined;
 
     if (targetName && !match) {
-      if (!isStartVisitMode) setIsEncounterTypeNotFound(true);
+      if (!isVisitActive) setIsEncounterTypeNotFound(true);
       return;
     }
 
     setIsEncounterTypeNotFound(false);
     setSelectedEncounterType(match ?? encounterConcepts.encounterTypes[0]);
   }, [
-    isStartVisitMode,
+    isVisitActive,
     encounterConcepts?.encounterTypes,
     selectedEncounterType,
     requestedEncounterType,
@@ -149,7 +147,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
   ]);
 
   useEffect(() => {
-    if (isStartVisitMode) {
+    if (isVisitActive) {
       if (filteredVisitTypes.length > 0 && !selectedVisitType) {
         setSelectedVisitType(filteredVisitTypes[0]);
       }
@@ -167,7 +165,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
       }
     }
   }, [
-    isStartVisitMode,
+    isVisitActive,
     filteredVisitTypes,
     encounterConcepts?.visitTypes,
     activeVisit,
@@ -183,11 +181,11 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
   }, [practitioner, encounterParticipants.length, setEncounterParticipants]);
 
   useEffect(() => {
-    if (isStartVisitMode) return;
+    if (isVisitActive) return;
     setActiveVisit(activeVisit ?? null);
     setActiveVisitError(activeVisitError ?? null);
   }, [
-    isStartVisitMode,
+    isVisitActive,
     activeVisit,
     activeVisitError,
     setActiveVisit,
@@ -209,7 +207,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
    *    - encounterParticipants (at least one)
    */
   useEffect(() => {
-    if (isStartVisitMode) return;
+    if (isVisitActive) return;
 
     // Check all loading states are false
     const isAllDataLoaded = Object.values(allLoadingStates).every(
@@ -234,7 +232,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
 
     setEncounterDetailsFormReady(isFormReady);
   }, [
-    isStartVisitMode,
+    isVisitActive,
     allLoadingStates,
     isError,
     selectedLocation,
@@ -268,11 +266,11 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
       !!locationsError ||
         !!encounterConceptsError ||
         !!practitionerError ||
-        (!isStartVisitMode && !!activeVisitError) ||
+        (!isVisitActive && !!activeVisitError) ||
         isEncounterTypeNotFound,
     );
   }, [
-    isStartVisitMode,
+    isVisitActive,
     setIsError,
     locationsError,
     encounterConceptsError,
@@ -333,18 +331,16 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
             label={t('SELECT_VISIT_TYPE')}
             items={filteredVisitTypes}
             itemToString={(item: Concept) => item?.name ?? ''}
-            selectedItem={isStartVisitMode ? selectedVisitType : undefined}
-            initialSelectedItem={
-              isStartVisitMode ? undefined : selectedVisitType
-            }
+            selectedItem={isVisitActive ? selectedVisitType : undefined}
+            initialSelectedItem={isVisitActive ? undefined : selectedVisitType}
             onChange={
-              isStartVisitMode
+              isVisitActive
                 ? ({ selectedItem }: { selectedItem: Concept | null }) => {
                     if (selectedItem) setSelectedVisitType(selectedItem);
                   }
                 : undefined
             }
-            disabled={!isStartVisitMode}
+            disabled={!isVisitActive}
             size="md"
           />
         </FormField>

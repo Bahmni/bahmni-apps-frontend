@@ -1951,7 +1951,7 @@ describe('BasicForm', () => {
 
     describe('startVisit mode skips form-ready computation', () => {
       it('should not call setEncounterDetailsFormReady in startVisit mode', async () => {
-        renderBasicForm({ mode: 'startVisit' });
+        renderBasicForm({ isVisitActive: true });
         await new Promise((resolve) => setTimeout(resolve, 0));
         expect(
           mockStoreState.setEncounterDetailsFormReady,

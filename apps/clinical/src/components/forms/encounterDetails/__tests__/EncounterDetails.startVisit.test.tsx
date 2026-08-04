@@ -294,7 +294,7 @@ describe('EncounterDetails - startVisit mode', () => {
   describe('usePatientVisit integration', () => {
     it('should call usePatientVisit with null in startVisit mode regardless of patientUUID', () => {
       (usePatientUUID as jest.Mock).mockReturnValue('some-patient-uuid');
-      renderBasicForm({ mode: 'startVisit' });
+      renderBasicForm({ isVisitActive: true });
       expect(usePatientVisit).toHaveBeenCalledWith(null);
     });
   });
@@ -309,7 +309,7 @@ describe('EncounterDetails - startVisit mode', () => {
         encounterParticipants: [mockPractitioner],
       });
       renderBasicForm({
-        mode: 'startVisit',
+        isVisitActive: true,
         allowedVisitTypes: ['Visit Type 1'],
       });
 
@@ -332,7 +332,7 @@ describe('EncounterDetails - startVisit mode', () => {
         encounterParticipants: [mockPractitioner],
       });
       renderBasicForm({
-        mode: 'startVisit',
+        isVisitActive: true,
         allowedVisitTypes: ['Visit Type 1', 'Visit Type 2'],
       });
 
@@ -350,7 +350,7 @@ describe('EncounterDetails - startVisit mode', () => {
         encounterParticipants: [mockPractitioner],
       });
       renderBasicForm({
-        mode: 'startVisit',
+        isVisitActive: true,
         allowedVisitTypes: ['Visit Type 1', 'Visit Type 2'],
       });
 
@@ -375,7 +375,7 @@ describe('EncounterDetails - startVisit mode', () => {
         selectedVisitType: null,
       });
       renderBasicForm({
-        mode: 'startVisit',
+        isVisitActive: true,
         allowedVisitTypes: ['Visit Type 1'],
       });
 
@@ -390,7 +390,7 @@ describe('EncounterDetails - startVisit mode', () => {
         selectedVisitType: mockEncounterConcepts.visitTypes[0],
       });
       renderBasicForm({
-        mode: 'startVisit',
+        isVisitActive: true,
         allowedVisitTypes: ['Visit Type 1'],
       });
 
@@ -405,7 +405,7 @@ describe('EncounterDetails - startVisit mode', () => {
         loading: false,
         error: new Error('active visit fetch failed'),
       });
-      renderBasicForm({ mode: 'startVisit' });
+      renderBasicForm({ isVisitActive: true });
 
       await waitFor(() => {
         expect(mockStoreState.setIsError).toHaveBeenCalledWith(false);
@@ -426,7 +426,7 @@ describe('EncounterDetails - startVisit mode', () => {
         requestedEncounterType: 'Consultation',
         selectedEncounterType: null,
       });
-      renderBasicForm({ mode: 'startVisit' });
+      renderBasicForm({ isVisitActive: true });
 
       await waitFor(() => {
         expect(mockStoreState.setIsError).not.toHaveBeenCalledWith(true);
@@ -434,7 +434,7 @@ describe('EncounterDetails - startVisit mode', () => {
     });
 
     it('should not call setActiveVisit or setActiveVisitError', async () => {
-      renderBasicForm({ mode: 'startVisit' });
+      renderBasicForm({ isVisitActive: true });
       await new Promise((resolve) => setTimeout(resolve, 0));
       expect(mockStoreState.setActiveVisit).not.toHaveBeenCalled();
       expect(mockStoreState.setActiveVisitError).not.toHaveBeenCalled();
