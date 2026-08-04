@@ -5,7 +5,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { useFilteredExtensions } from '../../../hooks/useFilteredExtensions';
-import { useCreateVisit } from '../../../hooks/useVisit';
+import { useCreateVisit, useIsCreatingVisit } from '../../../hooks/useVisit';
 import { AppExtensionConfig } from '../../../providers/registrationConfig';
 import * as extensionNavigation from '../../../utils/extensionNavigation';
 import { RegistrationActions } from '../RegistrationActions';
@@ -18,6 +18,9 @@ const mockCreateVisit = jest.fn();
 const mockUseCreateVisit = useCreateVisit as jest.MockedFunction<
   typeof useCreateVisit
 >;
+const mockUseIsCreatingVisit = useIsCreatingVisit as jest.MockedFunction<
+  typeof useIsCreatingVisit
+>;
 
 jest.mock('../../../pages/PatientRegister/visitTypeSelector', () => ({
   VisitTypeSelector: ({
@@ -25,11 +28,13 @@ jest.mock('../../../pages/PatientRegister/visitTypeSelector', () => ({
     activeVisitLabel,
     onActiveVisitClick,
     disabled,
+    isLoading,
   }: {
     onVisitTypeSelect: (visitType: VisitType) => void;
     activeVisitLabel?: string;
     onActiveVisitClick?: () => void;
     disabled?: boolean;
+    isLoading?: boolean;
   }) => (
     <div data-testid="visit-type-selector">
       <button
@@ -39,7 +44,7 @@ jest.mock('../../../pages/PatientRegister/visitTypeSelector', () => ({
           onVisitTypeSelect({ name: 'OPD', uuid: 'opd-visit-type-uuid' })
         }
       >
-        Select Visit Type
+        {isLoading ? 'Loading' : 'Select Visit Type'}
       </button>
       {onActiveVisitClick && (
         <button data-testid="active-visit-button" onClick={onActiveVisitClick}>
@@ -100,6 +105,7 @@ describe('RegistrationActions', () => {
     mockUseCreateVisit.mockReturnValue({
       createVisit: mockCreateVisit,
     });
+    mockUseIsCreatingVisit.mockReturnValue(false);
   });
 
   it('should render nothing while loading', () => {
@@ -532,6 +538,50 @@ describe('RegistrationActions', () => {
 
       expect(mockCreateVisit).not.toHaveBeenCalled();
       expect(mockHandleExtensionNavigation).not.toHaveBeenCalled();
+    });
+
+    it('should disable the button and show the loading state while a visit creation is in flight, as reported by useIsCreatingVisit', () => {
+      // useIsCreatingVisit is backed by the shared QueryClient cache (see
+      // useVisit.ts), not component state, so it keeps reporting the correct
+      // pending state even if RegistrationActions itself remounts mid-flow
+      // (e.g. navigating from the "new patient" to the "existing patient"
+      // route). The dedup guard against a duplicate createVisit call lives in
+      // useCreateVisit itself and is covered by useVisit.test.tsx.
+      mockUseIsCreatingVisit.mockReturnValue(true);
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={jest.fn().mockResolvedValue('patient-uuid-123')}
+        />,
+      );
+
+      const selectButton = screen.getByTestId('select-visit-type-button');
+      expect(selectButton).toBeDisabled();
+      expect(selectButton).toHaveTextContent('Loading');
+    });
+
+    it('should not disable the button or show the loading state when useIsCreatingVisit reports no visit creation in flight', () => {
+      mockUseIsCreatingVisit.mockReturnValue(false);
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={jest.fn().mockResolvedValue('patient-uuid-123')}
+        />,
+      );
+
+      const selectButton = screen.getByTestId('select-visit-type-button');
+      expect(selectButton).not.toBeDisabled();
+      expect(selectButton).toHaveTextContent('Select Visit Type');
     });
   });
 });

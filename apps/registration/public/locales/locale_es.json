@@ -131,6 +131,7 @@
   "REGISTRATION_SEARCH_PAGE_APPOINTMENT_STATUS_SCHEDULED": "Programado",
   "REGISTRATION_SEARCH_PAGE_APPOINTMENT_STATUS_WAIT_LIST": "Lista de espera",
   "SEARCH_BY_CUSTOM_ATTRIBUTE": "Buscar por {{attribute}}",
+  "STARTING_VISIT": "Iniciando visita...",
   "START_VISIT_TYPE": "Empezar Visita {{visitType}}",
   "REGISTRATION_RELATIONSHIP_TYPE": "Relación",
   "REGISTRATION_PATIENT_NAME_OR_ID": "Nombre o ID del Paciente",

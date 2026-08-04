@@ -4,6 +4,7 @@ import {
   Icon,
   ICON_PADDING,
   ICON_SIZE,
+  InlineLoading,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useParams } from 'react-router-dom';
@@ -17,6 +18,7 @@ interface VisitTypeSelectorProps {
   activeVisitLabel?: string;
   onActiveVisitClick?: () => void;
   disabled?: boolean;
+  isLoading?: boolean;
 }
 
 export const VisitTypeSelector = ({
@@ -24,6 +26,7 @@ export const VisitTypeSelector = ({
   activeVisitLabel,
   onActiveVisitClick,
   disabled = false,
+  isLoading = false,
 }: VisitTypeSelectorProps) => {
   const { t } = useTranslation();
   const { patientUuid } = useParams<{ patientUuid: string }>();
@@ -46,7 +49,10 @@ export const VisitTypeSelector = ({
         className={styles.visitButton}
         kind={hasActiveVisit ? 'primary' : 'tertiary'}
         disabled={
-          disabled || isLoadingVisitTypes || visitTypesArray.length === 0
+          disabled ||
+          isLoading ||
+          isLoadingVisitTypes ||
+          visitTypesArray.length === 0
         }
         onClick={() => {
           if (hasActiveVisit) {
@@ -73,11 +79,17 @@ export const VisitTypeSelector = ({
             : undefined
         }
       >
-        {!isLoadingVisitTypes && defaultVisitType
-          ? hasActiveVisit
-            ? (activeVisitLabel ?? t('ENTER_VISIT_DETAILS'))
-            : t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
-          : ''}
+        {isLoading ? (
+          <InlineLoading description={t('STARTING_VISIT')} />
+        ) : !isLoadingVisitTypes && defaultVisitType ? (
+          hasActiveVisit ? (
+            (activeVisitLabel ?? t('ENTER_VISIT_DETAILS'))
+          ) : (
+            t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
+          )
+        ) : (
+          ''
+        )}
       </Button>
       {!hasActiveVisit && (
         <Dropdown
@@ -97,7 +109,10 @@ export const VisitTypeSelector = ({
           type="inline"
           size="lg"
           disabled={
-            disabled || isLoadingVisitTypes || visitTypesArray.length === 0
+            disabled ||
+            isLoading ||
+            isLoadingVisitTypes ||
+            visitTypesArray.length === 0
           }
           titleText=""
           selectedItem={null}

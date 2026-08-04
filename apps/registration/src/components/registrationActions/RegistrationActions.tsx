@@ -2,7 +2,7 @@ import { Button, Icon, ICON_SIZE } from '@bahmni/design-system';
 import { useTranslation, type VisitType } from '@bahmni/services';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFilteredExtensions } from '../../hooks/useFilteredExtensions';
-import { useCreateVisit } from '../../hooks/useVisit';
+import { useCreateVisit, useIsCreatingVisit } from '../../hooks/useVisit';
 import { VisitTypeSelector } from '../../pages/PatientRegister/visitTypeSelector';
 import { AppExtensionConfig } from '../../providers/registrationConfig';
 import { handleExtensionNavigation } from '../../utils/extensionNavigation';
@@ -35,6 +35,7 @@ export const RegistrationActions = ({
   const { filteredExtensions, isLoading } = useFilteredExtensions({
     extensionPointId,
   });
+  const isCreatingVisit = useIsCreatingVisit(routeParams.patientUuid);
 
   // Auto-extract URL context from route params as key-value pairs, filtering out undefined values
   const routeContext: Record<string, string> = Object.fromEntries(
@@ -89,7 +90,8 @@ export const RegistrationActions = ({
               }
               activeVisitLabel={t('PATIENT_DASHBOARD_REDIRECT')}
               onActiveVisitClick={() => handleActiveVisitClick(extension)}
-              disabled={disabled}
+              disabled={disabled || isCreatingVisit}
+              isLoading={isCreatingVisit}
               data-testid="visit-type-selector"
             />
           );

@@ -7,7 +7,6 @@ import {
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
 import { createRegistrationEncounterForPatient } from '../services/registrationEncounterService';
 import { useRegistrationEncounterTypeUuid } from './useRegistrationEncounterTypeUuid';
 
@@ -37,19 +36,36 @@ export const useActiveVisit = (patientUuid?: string) => {
   return { hasActiveVisit, isLoading };
 };
 
+// Backed by the shared QueryClient cache (not component state) so the
+// in-flight flag survives the remount that happens when navigating from
+// the "new patient" route to the "existing patient" route mid-click.
+export const useIsCreatingVisit = (patientUuid?: string) => {
+  const { data } = useQuery({
+    queryKey: ['isCreatingVisit', patientUuid],
+    queryFn: () => false,
+    enabled: false,
+    initialData: false,
+  });
+
+  return Boolean(data);
+};
+
 export const useCreateVisit = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
-  const { patientUuid } = useParams<{ patientUuid: string }>();
-  const { hasActiveVisit } = useActiveVisit(patientUuid);
   const queryClient = useQueryClient();
   const encounterTypeUuid = useRegistrationEncounterTypeUuid();
 
   const createVisit = async (patientUuid: string, visitType: VisitType) => {
+    if (
+      queryClient.getQueryData(['isCreatingVisit', patientUuid]) ||
+      queryClient.getQueryData(['hasActiveVisit', patientUuid])
+    ) {
+      return;
+    }
+
+    queryClient.setQueryData(['isCreatingVisit', patientUuid], true);
     try {
-      if (hasActiveVisit) {
-        return;
-      }
       const createdVisit = await createVisitForPatient(patientUuid, visitType);
       queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
 
@@ -79,6 +95,8 @@ export const useCreateVisit = () => {
         type: 'error',
         timeout: 5000,
       });
+    } finally {
+      queryClient.setQueryData(['isCreatingVisit', patientUuid], false);
     }
   };
 

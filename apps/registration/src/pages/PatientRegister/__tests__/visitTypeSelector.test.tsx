@@ -29,6 +29,9 @@ jest.mock('@bahmni/services', () => ({
       if (key === 'PATIENT_DASHBOARD_REDIRECT') {
         return 'Patient Dashboard';
       }
+      if (key === 'STARTING_VISIT') {
+        return 'Starting visit...';
+      }
       return key;
     },
   }),
@@ -72,6 +75,7 @@ describe('VisitTypeSelector', () => {
       activeVisitLabel?: string;
       onActiveVisitClick?: () => void;
       disabled?: boolean;
+      isLoading?: boolean;
     },
   ) => {
     const initialEntries = patientUuid
@@ -302,6 +306,18 @@ describe('VisitTypeSelector', () => {
       name: /Start OPD visit/i,
     });
 
+    expect(button).toBeDisabled();
+    expect(screen.getByRole('combobox')).toBeDisabled();
+  });
+
+  it('disables the button and dropdown and shows a loading indicator when isLoading prop is true', async () => {
+    renderComponent(undefined, { isLoading: true });
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+
+    expect(screen.getByText('Starting visit...')).toBeInTheDocument();
+
+    const button = screen.getByRole('button');
     expect(button).toBeDisabled();
     expect(screen.getByRole('combobox')).toBeDisabled();
   });
