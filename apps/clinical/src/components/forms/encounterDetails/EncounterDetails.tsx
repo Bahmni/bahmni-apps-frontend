@@ -9,23 +9,32 @@ import {
 import { useTranslation, type Provider } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import React, { useEffect, useMemo, useState } from 'react';
+import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useLocations } from '../../../hooks/useLocations';
 import { usePatientVisit } from '../../../hooks/usePatientVisit';
 import { Concept } from '../../../models/encounterConcepts';
 import { OpenMRSLocation } from '../../../models/location';
+import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
 import { useEncounterDetailsStore } from '../../../stores';
 import styles from './styles/EncounterDetails.module.scss';
 
 export interface EncounterDetailsProps {
-  isVisitActive?: boolean;
-  allowedVisitTypes?: string[];
+  encounterSessionStartContext?: EncounterSessionStartContext;
+  inputControlConfig?: ClinicalInputControlConfig;
 }
 
 const EncounterDetails: React.FC<EncounterDetailsProps> = ({
-  isVisitActive = false,
-  allowedVisitTypes,
+  encounterSessionStartContext,
+  inputControlConfig,
 }) => {
+  const isVisitActive =
+    (encounterSessionStartContext?.isVisitActive as boolean | undefined) ??
+    false;
+  const allowedVisitTypes = useMemo(
+    () => (inputControlConfig?.metadata?.allowedVisitTypes as string[]) ?? [],
+    [inputControlConfig],
+  );
   const { t } = useTranslation();
   const practitionerState = useActivePractitioner();
 

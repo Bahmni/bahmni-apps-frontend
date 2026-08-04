@@ -24,7 +24,6 @@ import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import ConsultationPad from '../consultationPad';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from '../consultationPad/constants';
 import EncounterDetails from '../forms/encounterDetails/EncounterDetails';
-import type { EncounterDetailsMetadata } from './models';
 import styles from './styles/ConsultationPadContainer.module.scss';
 
 interface ConsultationPadContainerProps {
@@ -63,11 +62,11 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     retry: false,
   });
 
-  const encounterDetailsMetadata = useMemo(() => {
+  const encounterDetailsControl = useMemo(() => {
     if (configLoading) return undefined;
     return clinicalConfig?.consultationPad?.inputControls?.find(
       (c) => c.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY,
-    )?.metadata as EncounterDetailsMetadata | undefined;
+    );
   }, [configLoading, clinicalConfig]);
 
   const allowedVisitTypes = useMemo<string[]>(
@@ -75,7 +74,16 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     [clinicalConfig],
   );
 
-  const defaultEncounterType = encounterDetailsMetadata?.defaultEncounterType;
+  const inputControlConfig = useMemo(() => {
+    if (!encounterDetailsControl) return undefined;
+    return {
+      ...encounterDetailsControl,
+      metadata: { ...encounterDetailsControl?.metadata, allowedVisitTypes },
+    };
+  }, [encounterDetailsControl, allowedVisitTypes]);
+
+  const defaultEncounterType = encounterDetailsControl?.metadata
+    ?.defaultEncounterType as string;
 
   const allowedVisitTypeObjects = useMemo(() => {
     if (!encounterConcepts?.visitTypes || allowedVisitTypes.length === 0)
@@ -242,8 +250,11 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
               />
             </div>
             <EncounterDetails
-              isVisitActive
-              allowedVisitTypes={allowedVisitTypes}
+              encounterSessionStartContext={{
+                ...encounterSessionStartContext,
+                isVisitActive: true,
+              }}
+              inputControlConfig={inputControlConfig}
             />
           </>
         }
