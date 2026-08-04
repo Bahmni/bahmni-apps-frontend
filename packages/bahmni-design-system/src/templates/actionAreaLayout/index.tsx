@@ -47,11 +47,24 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
 
   useEffect(() => {
     if (!isActionAreaVisible) return;
-    mainDisplayPanelRef.current?.resize(
-      isActionAreaExpanded
-        ? MAIN_DISPLAY_PANEL_EXPANDED_SIZE
-        : MAIN_DISPLAY_PANEL_DEFAULT_SIZE,
-    );
+    // Deferred to the next frame: the action area's panel/separator are
+    // added to the Group in this same render, and react-resizable-panels
+    // hasn't finished registering them yet, so calling resize() synchronously
+    // here throws ("Panel constraints not found for index -1"). The
+    // try/catch is a backstop in case the race is still lost.
+    const frame = requestAnimationFrame(() => {
+      try {
+        mainDisplayPanelRef.current?.resize(
+          isActionAreaExpanded
+            ? MAIN_DISPLAY_PANEL_EXPANDED_SIZE
+            : MAIN_DISPLAY_PANEL_DEFAULT_SIZE,
+        );
+      } catch {
+        // Panel not yet registered with the group; defaultSize/minSize
+        // props already establish the correct initial layout.
+      }
+    });
+    return () => cancelAnimationFrame(frame);
   }, [isActionAreaExpanded, isActionAreaVisible, mainDisplayPanelRef]);
 
   return (

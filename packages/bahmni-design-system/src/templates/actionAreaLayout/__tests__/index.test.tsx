@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import ActionAreaLayout from '../index';
 
@@ -225,7 +225,10 @@ describe('ActionAreaLayout', () => {
       mockResize.mockClear();
     });
 
-    test('calls resize(0) on the main display panel when toggled to expanded, and resize(40) when toggled back', () => {
+    test('calls resize(0) on the main display panel when toggled to expanded, and resize(40) when toggled back', async () => {
+      // resize() is deferred to requestAnimationFrame in the component (to
+      // avoid a race with react-resizable-panels registering the panel), so
+      // assertions have to wait for that frame to flush.
       const { rerender } = render(
         <ActionAreaLayout
           {...defaultProps}
@@ -241,7 +244,7 @@ describe('ActionAreaLayout', () => {
           isActionAreaExpanded
         />,
       );
-      expect(mockResize).toHaveBeenCalledWith(0);
+      await waitFor(() => expect(mockResize).toHaveBeenCalledWith(0));
 
       rerender(
         <ActionAreaLayout
@@ -250,7 +253,7 @@ describe('ActionAreaLayout', () => {
           isActionAreaExpanded={false}
         />,
       );
-      expect(mockResize).toHaveBeenLastCalledWith(40);
+      await waitFor(() => expect(mockResize).toHaveBeenLastCalledWith(40));
     });
   });
 });
