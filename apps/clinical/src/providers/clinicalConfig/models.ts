@@ -1,6 +1,5 @@
-import { type CDSSRule } from '@bahmni/services';
+import { type CDSSRule, Extension } from '@bahmni/services';
 import type { PrintOption } from '@bahmni/widgets';
-import type { Extension } from '../../extensions';
 
 export interface AllergyConceptMap {
   medicationAllergenUuid: string;

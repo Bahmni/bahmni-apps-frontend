@@ -50,6 +50,7 @@ export {
   type PersonAttributeConcept,
   type PatientSearchField,
   type AppointmentSearchField,
+  type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
   AttributeFormat,
@@ -459,3 +460,10 @@ export type {
   TemplateListResponse,
 } from './templateService';
 export { getTasks } from './taskService';
+export {
+  groupExtensionsByPoint,
+  filterExtensionsByPrivileges,
+  type Extension,
+  type ExtensionHandlerProps,
+  type SearchExtensionParam,
+} from './extensions';
