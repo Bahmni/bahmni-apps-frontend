@@ -20,6 +20,7 @@ import type { EncounterSessionStartContext } from '../../events/startConsultatio
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
+import { InputControl } from '../../providers/clinicalConfig/models';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import ConsultationPad from '../consultationPad';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from '../consultationPad/constants';
@@ -62,25 +63,22 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     retry: false,
   });
 
-  const encounterDetailsControl = useMemo(() => {
-    if (configLoading) return undefined;
-    return clinicalConfig?.consultationPad?.inputControls?.find(
-      (c) => c.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY,
-    );
-  }, [configLoading, clinicalConfig]);
-
   const allowedVisitTypes = useMemo<string[]>(
     () => clinicalConfig?.consultationPad?.allowedVisitTypes ?? [],
     [clinicalConfig],
   );
 
-  const inputControlConfig = useMemo(() => {
-    if (!encounterDetailsControl) return undefined;
+  const encounterDetailsControl = useMemo(() => {
+    if (configLoading) return undefined;
+    const inputControlConfig =
+      clinicalConfig?.consultationPad?.inputControls?.find(
+        (c) => c.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY,
+      );
     return {
-      ...encounterDetailsControl,
-      metadata: { ...encounterDetailsControl?.metadata, allowedVisitTypes },
-    };
-  }, [encounterDetailsControl, allowedVisitTypes]);
+      ...inputControlConfig,
+      metadata: { ...inputControlConfig?.metadata, allowedVisitTypes },
+    } as InputControl;
+  }, [configLoading, clinicalConfig, allowedVisitTypes]);
 
   const defaultEncounterType = encounterDetailsControl?.metadata
     ?.defaultEncounterType as string;
@@ -254,7 +252,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
                 ...encounterSessionStartContext,
                 isVisitActive: true,
               }}
-              inputControlConfig={inputControlConfig}
+              inputControlConfig={encounterDetailsControl}
             />
           </>
         }
