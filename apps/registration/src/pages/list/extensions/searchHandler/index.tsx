@@ -59,9 +59,9 @@ const Search = ({ extensions }: ExtensionHandlerProps) => {
             <TabPanel
               key={ext.id}
               id={`${ext.id}-panel`}
-              className={styles.panel}
               data-testid={`${ext.id}-panel-test-id`}
               aria-label={`Panel ${ext.id}`}
+              className={styles.panel}
             >
               {Widget && ext.extensionParams ? (
                 <Suspense

@@ -5,7 +5,7 @@ export const EXTENSION_HANDLERS: Record<
   string,
   LazyExoticComponent<ComponentType<ExtensionHandlerProps>>
 > = {
-  'org.bahmni.clinical.v2.search': lazy(
+  'org.bahmni.registration.v2.search': lazy(
     () => import('./extensions/searchHandler'),
   ),
 };

@@ -7,26 +7,30 @@ import {
 } from '@bahmni/services';
 import { useUserPrivilege } from '@bahmni/widgets';
 import { Suspense, useMemo } from 'react';
-import { useClinicalConfig } from '../../providers/clinicalConfig';
+import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { EXTENSION_HANDLERS } from './constants';
 import styles from './styles/index.module.scss';
 
-const ClinicalList = () => {
+const RegistrationList = () => {
   const { t } = useTranslation();
-  const { clinicalConfig } = useClinicalConfig();
+  const { registrationConfig } = useRegistrationConfig();
   const { userPrivileges } = useUserPrivilege();
 
   const breadcrumbItems = useMemo(
     () => [
       { id: 'home', label: t('HOME_LABEL'), href: BAHMNI_HOME_PATH },
-      { id: 'clinical', label: t('CLINICAL_LABEL'), isCurrentPage: true },
+      {
+        id: 'registration',
+        label: t('REGISTRATION_LABEL'),
+        isCurrentPage: true,
+      },
     ],
     [t],
   );
 
   const extensionsByPoint = useMemo(
-    () => groupExtensionsByPoint(clinicalConfig?.extensions ?? []),
-    [clinicalConfig],
+    () => groupExtensionsByPoint(registrationConfig?.extensions ?? []),
+    [registrationConfig],
   );
 
   const visibleHandlers = useMemo(
@@ -46,9 +50,9 @@ const ClinicalList = () => {
       header={<Header breadcrumbItems={breadcrumbItems} />}
       main={
         <div
-          id="clinical-list-page"
-          data-testid="clinical-list-page-test-id"
-          aria-label="Clinical List Page"
+          id="registration-list-page"
+          data-testid="registration-list-page-test-id"
+          aria-label="Registration List Page"
           className={styles.page}
         >
           {visibleHandlers.length > 0 ? (
@@ -86,4 +90,4 @@ const ClinicalList = () => {
   );
 };
 
-export default ClinicalList;
+export default RegistrationList;

@@ -61,7 +61,6 @@ describe('VisitTypeSelector', () => {
     mockGetVisitTypes.mockResolvedValue(mockVisitTypes);
     mockCheckIfActiveVisitExists.mockResolvedValue(false);
     mockGetConfig.mockResolvedValue({
-      patientSearch: { customAttributes: [], appointment: [] },
       defaultVisitType: 'OPD',
     });
   });
