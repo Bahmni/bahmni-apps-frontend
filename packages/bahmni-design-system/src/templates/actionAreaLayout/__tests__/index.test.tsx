@@ -4,6 +4,28 @@ import ActionAreaLayout from '../index';
 
 expect.extend(toHaveNoViolations);
 
+// jsdom has no real layout engine, so react-resizable-panels can't compute
+// real pixel/percentage sizes for its panels, making it impossible to
+// observe mainDisplayPanelRef.current.resize() calls via rendered styles.
+// Instead, override usePanelRef so the ref it exposes always reads back our
+// own stub handle (silently ignoring whatever the real Panel tries to
+// publish into it). Panel/Group/Separator still render exactly as before -
+// this only affects what ActionAreaLayout's effect calls resize() on.
+const mockResize = jest.fn();
+
+jest.mock('react-resizable-panels', () => {
+  const actual = jest.requireActual('react-resizable-panels');
+  return {
+    ...actual,
+    usePanelRef: () => ({
+      get current() {
+        return { resize: mockResize };
+      },
+      set current(_value: unknown) {},
+    }),
+  };
+});
+
 describe('ActionAreaLayout', () => {
   const defaultProps = {
     headerWSideNav: <div data-testid="mock-header">Mock Header</div>,
@@ -171,6 +193,64 @@ describe('ActionAreaLayout', () => {
         container.querySelector('#main-display-panel'),
       ).toBeInTheDocument();
       expect(container.querySelector('#action-area-panel')).toBeInTheDocument();
+    });
+
+    test('hides the separator when isActionAreaExpanded is true', () => {
+      render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded
+        />,
+      );
+
+      expect(screen.queryByRole('separator')).not.toBeInTheDocument();
+    });
+
+    test('shows the separator when isActionAreaExpanded is false', () => {
+      render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded={false}
+        />,
+      );
+
+      expect(screen.getByRole('separator')).toBeInTheDocument();
+    });
+  });
+
+  describe('panel resize behavior', () => {
+    beforeEach(() => {
+      mockResize.mockClear();
+    });
+
+    test('calls resize(0) on the main display panel when toggled to expanded, and resize(40) when toggled back', () => {
+      const { rerender } = render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded={false}
+        />,
+      );
+
+      rerender(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded
+        />,
+      );
+      expect(mockResize).toHaveBeenCalledWith(0);
+
+      rerender(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded={false}
+        />,
+      );
+      expect(mockResize).toHaveBeenLastCalledWith(40);
     });
   });
 });

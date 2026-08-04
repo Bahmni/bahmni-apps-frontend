@@ -342,7 +342,10 @@ const ConsultationPage: React.FC = () => {
           encounterSessionStartContext && (
             <ConsultationPad
               encounterSessionStartContext={encounterSessionStartContext}
-              onClose={() => setIsActionAreaVisible((prev) => !prev)}
+              onClose={() => {
+                setIsActionAreaVisible((prev) => !prev);
+                setIsActionAreaExpanded(false);
+              }}
               isActionAreaExpanded={isActionAreaExpanded}
               onToggleActionAreaExpand={() =>
                 setIsActionAreaExpanded((prev) => !prev)

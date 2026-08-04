@@ -98,27 +98,29 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
         </Panel>
         {isActionAreaVisible && (
           <>
-            <Separator
-              id="panel-separator"
-              data-testid="panel-separator-test-id"
-              aria-label="panel-separator-aria-label"
-              className={styles.separator}
-            >
-              <div
-                id="panel-separator-grip"
-                data-testid="panel-separator-grip-test-id"
-                aria-label="panel-separator-grip-aria-label"
-                className={styles.separatorGrip}
+            {!isActionAreaExpanded && (
+              <Separator
+                id="panel-separator"
+                data-testid="panel-separator-test-id"
+                aria-label="panel-separator-aria-label"
+                className={styles.separator}
               >
-                <Icon
-                  id="separator-grip-icon"
-                  data-testid="separator-grip-icon-test-id"
-                  aria-label="separator-grip-icon-aria-label"
-                  name="fa-grip-vertical"
-                  size={ICON_SIZE.XS}
-                />
-              </div>
-            </Separator>
+                <div
+                  id="panel-separator-grip"
+                  data-testid="panel-separator-grip-test-id"
+                  aria-label="panel-separator-grip-aria-label"
+                  className={styles.separatorGrip}
+                >
+                  <Icon
+                    id="separator-grip-icon"
+                    data-testid="separator-grip-icon-test-id"
+                    aria-label="separator-grip-icon-aria-label"
+                    name="fa-grip-vertical"
+                    size={ICON_SIZE.XS}
+                  />
+                </div>
+              </Separator>
+            )}
             <Panel
               id="action-area-panel"
               defaultSize={ACTION_AREA_PANEL_DEFAULT_SIZE}
