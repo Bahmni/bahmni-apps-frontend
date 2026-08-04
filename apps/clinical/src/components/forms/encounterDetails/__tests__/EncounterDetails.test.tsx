@@ -1952,7 +1952,7 @@ describe('BasicForm', () => {
     describe('startVisit mode skips form-ready computation', () => {
       it('should not call setEncounterDetailsFormReady in startVisit mode', async () => {
         renderBasicForm({
-          encounterSessionStartContext: { isVisitActive: true },
+          encounterSessionStartContext: { isVisitActive: false },
         });
         await new Promise((resolve) => setTimeout(resolve, 0));
         expect(

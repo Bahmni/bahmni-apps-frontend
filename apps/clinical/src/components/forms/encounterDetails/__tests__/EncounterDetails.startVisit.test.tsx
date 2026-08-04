@@ -295,7 +295,7 @@ describe('EncounterDetails - startVisit mode', () => {
     it('should call usePatientVisit with null in startVisit mode regardless of patientUUID', () => {
       (usePatientUUID as jest.Mock).mockReturnValue('some-patient-uuid');
       renderBasicForm({
-        encounterSessionStartContext: { isVisitActive: true },
+        encounterSessionStartContext: { isVisitActive: false },
       });
       expect(usePatientVisit).toHaveBeenCalledWith(null);
     });
@@ -311,7 +311,7 @@ describe('EncounterDetails - startVisit mode', () => {
         encounterParticipants: [mockPractitioner],
       });
       renderBasicForm({
-        encounterSessionStartContext: { isVisitActive: true },
+        encounterSessionStartContext: { isVisitActive: false },
         inputControlConfig: {
           type: 'encounterDetails',
           metadata: { allowedVisitTypes: ['Visit Type 1'] },
@@ -340,7 +340,7 @@ describe('EncounterDetails - startVisit mode', () => {
         encounterParticipants: [mockPractitioner],
       });
       renderBasicForm({
-        encounterSessionStartContext: { isVisitActive: true },
+        encounterSessionStartContext: { isVisitActive: false },
         inputControlConfig: {
           type: 'encounterDetails',
           metadata: { allowedVisitTypes: ['Visit Type 1', 'Visit Type 2'] },
@@ -364,7 +364,7 @@ describe('EncounterDetails - startVisit mode', () => {
         encounterParticipants: [mockPractitioner],
       });
       renderBasicForm({
-        encounterSessionStartContext: { isVisitActive: true },
+        encounterSessionStartContext: { isVisitActive: false },
         inputControlConfig: {
           type: 'encounterDetails',
           metadata: { allowedVisitTypes: ['Visit Type 1', 'Visit Type 2'] },
@@ -395,7 +395,7 @@ describe('EncounterDetails - startVisit mode', () => {
         selectedVisitType: null,
       });
       renderBasicForm({
-        encounterSessionStartContext: { isVisitActive: true },
+        encounterSessionStartContext: { isVisitActive: false },
         inputControlConfig: {
           type: 'encounterDetails',
           metadata: { allowedVisitTypes: ['Visit Type 1'] },
@@ -416,7 +416,7 @@ describe('EncounterDetails - startVisit mode', () => {
         selectedVisitType: mockEncounterConcepts.visitTypes[0],
       });
       renderBasicForm({
-        encounterSessionStartContext: { isVisitActive: true },
+        encounterSessionStartContext: { isVisitActive: false },
         inputControlConfig: {
           type: 'encounterDetails',
           metadata: { allowedVisitTypes: ['Visit Type 1'] },
@@ -438,7 +438,7 @@ describe('EncounterDetails - startVisit mode', () => {
         error: new Error('active visit fetch failed'),
       });
       renderBasicForm({
-        encounterSessionStartContext: { isVisitActive: true },
+        encounterSessionStartContext: { isVisitActive: false },
       });
 
       await waitFor(() => {
@@ -461,7 +461,7 @@ describe('EncounterDetails - startVisit mode', () => {
         selectedEncounterType: null,
       });
       renderBasicForm({
-        encounterSessionStartContext: { isVisitActive: true },
+        encounterSessionStartContext: { isVisitActive: false },
       });
 
       await waitFor(() => {
@@ -471,7 +471,7 @@ describe('EncounterDetails - startVisit mode', () => {
 
     it('should not call setActiveVisit or setActiveVisitError', async () => {
       renderBasicForm({
-        encounterSessionStartContext: { isVisitActive: true },
+        encounterSessionStartContext: { isVisitActive: false },
       });
       await new Promise((resolve) => setTimeout(resolve, 0));
       expect(mockStoreState.setActiveVisit).not.toHaveBeenCalled();

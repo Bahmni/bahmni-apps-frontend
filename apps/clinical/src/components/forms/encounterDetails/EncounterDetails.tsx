@@ -29,8 +29,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
   inputControlConfig,
 }) => {
   const isVisitActive =
-    (encounterSessionStartContext?.isVisitActive as boolean | undefined) ??
-    false;
+    (encounterSessionStartContext?.isVisitActive as boolean) ?? true;
   const { t } = useTranslation();
   const practitionerState = useActivePractitioner();
 
@@ -40,7 +39,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
     activeVisit,
     loading: loadingActiveVisit,
     error: activeVisitError,
-  } = usePatientVisit(isVisitActive ? null : patientUUID);
+  } = usePatientVisit(isVisitActive ? patientUUID : null);
   const {
     locations,
     loading: loadingLocations,
@@ -92,7 +91,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
     const allowedVisitTypes =
       (inputControlConfig?.metadata?.allowedVisitTypes as string[]) ?? [];
 
-    if (!isVisitActive || !allowedVisitTypes?.length) {
+    if (isVisitActive || !allowedVisitTypes?.length) {
       return encounterConcepts?.visitTypes ?? [];
     }
     return (
@@ -105,13 +104,13 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
   const allLoadingStates = useMemo(
     () =>
       isVisitActive
-        ? { loadingLocations, loadingEncounterConcepts, loadingPractitioner }
-        : {
+        ? {
             loadingLocations,
             loadingEncounterConcepts,
             loadingPractitioner,
             loadingActiveVisit,
-          },
+          }
+        : { loadingLocations, loadingEncounterConcepts, loadingPractitioner },
     [
       isVisitActive,
       loadingLocations,
@@ -140,7 +139,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
       : undefined;
 
     if (targetName && !match) {
-      if (!isVisitActive) setIsEncounterTypeNotFound(true);
+      if (isVisitActive) setIsEncounterTypeNotFound(true);
       return;
     }
 
@@ -156,21 +155,21 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
 
   useEffect(() => {
     if (isVisitActive) {
-      if (filteredVisitTypes.length > 0 && !selectedVisitType) {
-        setSelectedVisitType(filteredVisitTypes[0]);
+      if (encounterConcepts?.visitTypes && activeVisit && !selectedVisitType) {
+        const activeVisitId = activeVisit.type?.[0]?.coding?.[0]?.code;
+        if (activeVisitId) {
+          const visitType = encounterConcepts.visitTypes.find(
+            (item) => item.uuid === activeVisitId,
+          );
+          if (visitType) {
+            setSelectedVisitType(visitType);
+          }
+        }
       }
       return;
     }
-    if (encounterConcepts?.visitTypes && activeVisit && !selectedVisitType) {
-      const activeVisitId = activeVisit.type?.[0]?.coding?.[0]?.code;
-      if (activeVisitId) {
-        const visitType = encounterConcepts.visitTypes.find(
-          (item) => item.uuid === activeVisitId,
-        );
-        if (visitType) {
-          setSelectedVisitType(visitType);
-        }
-      }
+    if (filteredVisitTypes.length > 0 && !selectedVisitType) {
+      setSelectedVisitType(filteredVisitTypes[0]);
     }
   }, [
     isVisitActive,
@@ -189,9 +188,10 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
   }, [practitioner, encounterParticipants.length, setEncounterParticipants]);
 
   useEffect(() => {
-    if (isVisitActive) return;
-    setActiveVisit(activeVisit ?? null);
-    setActiveVisitError(activeVisitError ?? null);
+    if (isVisitActive) {
+      setActiveVisit(activeVisit ?? null);
+      setActiveVisitError(activeVisitError ?? null);
+    }
   }, [
     isVisitActive,
     activeVisit,
@@ -215,8 +215,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
    *    - encounterParticipants (at least one)
    */
   useEffect(() => {
-    if (isVisitActive) return;
-
+    if (!isVisitActive) return;
     // Check all loading states are false
     const isAllDataLoaded = Object.values(allLoadingStates).every(
       (loading) => !loading,
@@ -274,7 +273,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
       !!locationsError ||
         !!encounterConceptsError ||
         !!practitionerError ||
-        (!isVisitActive && !!activeVisitError) ||
+        (isVisitActive && !!activeVisitError) ||
         isEncounterTypeNotFound,
     );
   }, [
@@ -339,16 +338,16 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
             label={t('SELECT_VISIT_TYPE')}
             items={filteredVisitTypes}
             itemToString={(item: Concept) => item?.name ?? ''}
-            selectedItem={isVisitActive ? selectedVisitType : undefined}
-            initialSelectedItem={isVisitActive ? undefined : selectedVisitType}
+            selectedItem={isVisitActive ? undefined : selectedVisitType}
+            initialSelectedItem={isVisitActive ? selectedVisitType : undefined}
             onChange={
               isVisitActive
-                ? ({ selectedItem }: { selectedItem: Concept | null }) => {
+                ? undefined
+                : ({ selectedItem }: { selectedItem: Concept | null }) => {
                     if (selectedItem) setSelectedVisitType(selectedItem);
                   }
-                : undefined
             }
-            disabled={!isVisitActive}
+            disabled={isVisitActive}
             size="md"
           />
         </FormField>

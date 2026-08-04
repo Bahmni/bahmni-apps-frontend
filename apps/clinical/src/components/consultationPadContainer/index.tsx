@@ -250,7 +250,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
             <EncounterDetails
               encounterSessionStartContext={{
                 ...encounterSessionStartContext,
-                isVisitActive: true,
+                isVisitActive: false,
               }}
               inputControlConfig={encounterDetailsControl}
             />
