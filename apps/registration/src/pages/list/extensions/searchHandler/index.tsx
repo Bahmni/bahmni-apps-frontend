@@ -63,7 +63,7 @@ const Search = ({ extensions }: ExtensionHandlerProps) => {
               aria-label={`Panel ${ext.id}`}
               className={styles.panel}
             >
-              {Widget ? (
+              {Widget && ext.extensionParams ? (
                 <Suspense
                   fallback={
                     <CodeSnippetSkeleton
