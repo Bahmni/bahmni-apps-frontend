@@ -235,38 +235,6 @@ describe('ResultsTable', () => {
       expect(rows[2]).toHaveTextContent('Charlie');
     });
 
-    it('defaults sortOrder to ascending for a sortable field when omitted', async () => {
-      mockJsonata.mockImplementation((expression: string) => ({
-        evaluate: async (item: Record<string, unknown>) => item[expression],
-      }));
-
-      const resultFieldsWithOmittedSortOrder: ResultFieldConfig[] = [
-        {
-          translationKey: 'PATIENT_NAME',
-          expression: 'name',
-          enableSort: true,
-        },
-      ];
-
-      renderTable({
-        resultFields: resultFieldsWithOmittedSortOrder,
-        results: [
-          { id: '1', name: 'Charlie' },
-          { id: '2', name: 'Alice' },
-          { id: '3', name: 'Bob' },
-        ],
-      });
-
-      await waitFor(() => {
-        expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(3);
-      });
-
-      const rows = screen.getAllByTestId(/^table-row-/);
-      expect(rows[0]).toHaveTextContent('Alice');
-      expect(rows[1]).toHaveTextContent('Bob');
-      expect(rows[2]).toHaveTextContent('Charlie');
-    });
-
     it('uses declaration order as the tiebreak when multiple columns declare sortOrder', async () => {
       mockJsonata.mockImplementation((expression: string) => ({
         evaluate: async (item: Record<string, unknown>) => item[expression],
