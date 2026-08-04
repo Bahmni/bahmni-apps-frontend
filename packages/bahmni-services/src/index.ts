@@ -71,7 +71,6 @@ export {
   getActiveVisitByPatient,
   getVisitLocationUUID,
   createVisitWithFhirR4,
-  getActiveVisitAtLoginLocation,
   type VisitType,
   type VisitTypes,
   type VisitData,
@@ -270,6 +269,7 @@ export {
 
 export {
   getActiveVisit,
+  getActiveVisitAtLoginLocation,
   getEncounterByUuid,
   getVisits,
   getPatientEncounters,

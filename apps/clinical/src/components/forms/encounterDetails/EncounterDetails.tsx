@@ -31,10 +31,6 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
   const isVisitActive =
     (encounterSessionStartContext?.isVisitActive as boolean | undefined) ??
     false;
-  const allowedVisitTypes = useMemo(
-    () => (inputControlConfig?.metadata?.allowedVisitTypes as string[]) ?? [],
-    [inputControlConfig],
-  );
   const { t } = useTranslation();
   const practitionerState = useActivePractitioner();
 
@@ -93,6 +89,9 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
   );
 
   const filteredVisitTypes = useMemo(() => {
+    const allowedVisitTypes =
+      (inputControlConfig?.metadata?.allowedVisitTypes as string[]) ?? [];
+
     if (!isVisitActive || !allowedVisitTypes?.length) {
       return encounterConcepts?.visitTypes ?? [];
     }
@@ -101,7 +100,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
         allowedVisitTypes.includes(v.name),
       ) ?? []
     );
-  }, [isVisitActive, allowedVisitTypes, encounterConcepts?.visitTypes]);
+  }, [isVisitActive, inputControlConfig, encounterConcepts?.visitTypes]);
 
   const allLoadingStates = useMemo(
     () =>

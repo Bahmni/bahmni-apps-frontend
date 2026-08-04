@@ -6,7 +6,4 @@ export {
   getActiveVisitByPatient,
   getVisitLocationUUID,
 } from './visitService';
-export {
-  createVisitWithFhirR4,
-  getActiveVisitAtLoginLocation,
-} from './fhirVisitService';
+export { createVisitWithFhirR4 } from './fhirVisitService';
