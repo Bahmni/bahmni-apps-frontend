@@ -27,6 +27,7 @@ export const createFhirEncounterResource = (
   locationUuid: string,
   visitTypeUuid: string,
   episodeUuid?: string,
+  endTime?: string,
 ): Encounter => ({
   resourceType: 'Encounter',
   status: 'in-progress',
@@ -63,7 +64,10 @@ export const createFhirEncounterResource = (
       },
     },
   ],
-  period: { start: new Date().toISOString() },
+  period: {
+    start: new Date().toISOString(),
+    ...(endTime && { end: endTime }),
+  },
   ...(episodeUuid && {
     episodeOfCare: [{ reference: `EpisodeOfCare/${episodeUuid}` }],
   }),

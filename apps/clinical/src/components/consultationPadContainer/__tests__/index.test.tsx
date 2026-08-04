@@ -106,11 +106,11 @@ const buildConfig = (
   error: null,
   clinicalConfig: {
     consultationPad: {
+      allowedVisitTypes,
       inputControls: [
         {
           type: 'encounterDetails',
           metadata: {
-            allowedVisitTypes,
             ...(defaultEncounterType !== undefined
               ? { defaultEncounterType }
               : {}),
@@ -249,7 +249,9 @@ describe('ConsultationPadContainer', () => {
     jest.mocked(useClinicalConfig).mockReturnValue({
       isLoading: false,
       error: null,
-      clinicalConfig: { consultationPad: { inputControls: [] } },
+      clinicalConfig: {
+        consultationPad: { allowedVisitTypes: [], inputControls: [] },
+      },
     } as any);
     const onClose = jest.fn();
     renderComponent({ onClose });

@@ -12,12 +12,14 @@ export async function createVisitWithFhirR4(
   locationUuid: string,
   visitTypeUuid: string,
   episodeUuid?: string,
+  endTime?: string,
 ): Promise<Encounter> {
   const resource = createFhirEncounterResource(
     patientUuid,
     locationUuid,
     visitTypeUuid,
     episodeUuid,
+    endTime,
   );
   return post<Encounter>(FHIR_ENCOUNTER_URL, resource);
 }

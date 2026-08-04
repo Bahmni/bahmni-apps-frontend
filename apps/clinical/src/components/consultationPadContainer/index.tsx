@@ -71,8 +71,8 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   }, [configLoading, clinicalConfig]);
 
   const allowedVisitTypes = useMemo<string[]>(
-    () => encounterDetailsMetadata?.allowedVisitTypes ?? [],
-    [encounterDetailsMetadata],
+    () => clinicalConfig?.consultationPad?.allowedVisitTypes ?? [],
+    [clinicalConfig],
   );
 
   const defaultEncounterType = encounterDetailsMetadata?.defaultEncounterType;
