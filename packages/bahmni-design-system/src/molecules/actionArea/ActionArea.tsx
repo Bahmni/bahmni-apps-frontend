@@ -72,6 +72,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
     <div
       className={classNames(styles.actionArea, className, {
         [styles.hidden]: hidden,
+        [styles.noBorder]: isExpanded,
       })}
       role="region"
       aria-label={accessibleLabel}

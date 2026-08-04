@@ -18,6 +18,12 @@
   pointer-events: none;
 }
 
+// When expanded to fill the whole screen, there's no adjacent main-display
+// panel to divide from, so the separator border no longer makes sense.
+.noBorder {
+  border-left: none;
+}
+
 .header {
   display: flex;
   align-items: center;

@@ -54,6 +54,14 @@
   background: $background;
 }
 
+// When the pad is expanded to fill the whole screen, cap its content to a
+// comfortable reading width and center it instead of letting every field
+// stretch edge-to-edge on wide viewports.
+.expandedContent {
+  max-width: 75rem;
+  margin: 0 auto;
+}
+
 .extended {
   height: 200%;
   display: flex;

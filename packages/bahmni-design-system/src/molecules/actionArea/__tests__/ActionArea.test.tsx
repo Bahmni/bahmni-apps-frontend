@@ -316,6 +316,20 @@ describe('ActionArea', () => {
 
       expect(onToggleExpand).toHaveBeenCalledTimes(1);
     });
+
+    it('removes the left border when isExpanded is true', () => {
+      render(<ActionArea {...defaultProps} isExpanded />);
+
+      const actionArea = screen.getByRole('region', { name: 'Action Area' });
+      expect(actionArea).toHaveClass('noBorder');
+    });
+
+    it('keeps the left border when isExpanded is false', () => {
+      render(<ActionArea {...defaultProps} isExpanded={false} />);
+
+      const actionArea = screen.getByRole('region', { name: 'Action Area' });
+      expect(actionArea).not.toHaveClass('noBorder');
+    });
   });
 
   describe('Hidden State', () => {
