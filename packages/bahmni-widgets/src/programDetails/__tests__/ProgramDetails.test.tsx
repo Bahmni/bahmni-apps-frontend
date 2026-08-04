@@ -455,7 +455,10 @@ describe('ProgramDetails', () => {
     await userEvent.click(button);
 
     expect(
-      screen.getByTestId('patient-programs-table-loading-test-id'),
+      screen.getByTestId('program-details-loading-overlay-test-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('patient-programs-tile-test-id'),
     ).toBeInTheDocument();
 
     await waitFor(() => {
