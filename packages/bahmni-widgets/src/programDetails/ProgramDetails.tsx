@@ -8,6 +8,7 @@ import {
   Button,
   MenuButton,
   MenuItem,
+  Loading,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -19,6 +20,7 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNotification } from '../notification';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { EDIT_PATIENT_PROGRAMS_PRIVILEGE, KNOWN_FIELDS } from './constants';
@@ -118,7 +120,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     );
   }, [config?.fields]);
 
-  if (isLoading || isUpdatingState) {
+  if (isLoading) {
     return (
       <div
         id="patient-programs-table-loading"
@@ -279,6 +281,17 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           </Column>
         ))}
       </Grid>
+      {isUpdatingState &&
+        createPortal(
+          <div
+            id="program-details-loading-overlay"
+            data-testid="program-details-loading-overlay-test-id"
+            aria-label="program-details-loading-overlay-aria-label"
+          >
+            <Loading active withOverlay />
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };
