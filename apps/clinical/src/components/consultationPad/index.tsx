@@ -590,6 +590,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           onDirectModeSubmit={directFormMode ? handleSubmit : undefined}
           onDirectModeCancel={directFormMode ? handleCancel : undefined}
           encounterSessionStartContext={encounterSessionStartContext}
+          isActionAreaExpanded={isActionAreaExpanded}
+          onToggleActionAreaExpand={onToggleActionAreaExpand}
         />
       )}
     </>

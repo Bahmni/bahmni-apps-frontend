@@ -76,6 +76,8 @@ interface ObservationFormsContainerProps {
   onDirectModeSubmit?: () => void | Promise<void>;
   onDirectModeCancel?: () => void;
   encounterSessionStartContext?: EncounterSessionStartContext;
+  isActionAreaExpanded?: boolean;
+  onToggleActionAreaExpand?: () => void;
 }
 
 const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
@@ -89,6 +91,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onDirectModeSubmit,
   onDirectModeCancel,
   encounterSessionStartContext,
+  isActionAreaExpanded,
+  onToggleActionAreaExpand,
 }) => {
   const { t } = useTranslation();
 
@@ -751,6 +755,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         secondaryButtonText={secondaryButtonText}
         onSecondaryButtonClick={handleSecondaryClick}
         content={formViewContent}
+        isExpanded={isActionAreaExpanded}
+        onToggleExpand={onToggleActionAreaExpand}
+        expandAriaLabel={t('CONSULTATION_PAD_EXPAND_ARIA_LABEL')}
+        collapseAriaLabel={t('CONSULTATION_PAD_COLLAPSE_ARIA_LABEL')}
       />
     );
   }
