@@ -109,9 +109,17 @@
     }
   }
 
+  // Forces the 0/100 split visually via CSS, overriding the library's own
+  // (non-!important) inline flex-grow, so no imperative resize() call is
+  // needed - avoids fighting the library's internal panel/drag bookkeeping.
   &.expanded {
     > [data-panel]:first-child {
       min-width: 0 !important;
+      flex: 0 1 0% !important;
+    }
+
+    > [data-panel]:last-child {
+      flex: 1 1 100% !important;
     }
   }
 }
