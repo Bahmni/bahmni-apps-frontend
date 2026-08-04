@@ -297,7 +297,7 @@ const ConsultationPage: React.FC = () => {
             breadcrumbItems={breadcrumbItems}
             globalActions={globalActions}
             userMenu={<UserGlobalAction />}
-            sideNavItems={sidebarItems}
+            sideNavItems={isActionAreaExpanded ? [] : sidebarItems}
             activeSideNavItemId={activeItemId}
             onSideNavItemClick={handleItemClick}
             isRail={isActionAreaVisible}

@@ -6,10 +6,17 @@ import {
   usePatientUUID,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import {
+  act,
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+} from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React, { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import { dispatchConsultationStart } from '../../events/startConsultation';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationPage from '../ConsultationPage';
 
@@ -51,6 +58,20 @@ jest.mock('../../stores/observationFormsStore', () => ({
 jest.mock('../../components/patientHeader/PatientHeader', () => ({
   __esModule: true,
   default: jest.fn(() => <div data-testid="mocked-patient-header" />),
+}));
+
+jest.mock('../../components/consultationPad/', () => ({
+  __esModule: true,
+  default: jest.fn(({ isActionAreaExpanded, onToggleActionAreaExpand }) => (
+    <div data-testid="mocked-consultation-pad">
+      <button
+        data-testid="toggle-expand-button"
+        onClick={onToggleActionAreaExpand}
+      >
+        {isActionAreaExpanded ? 'Collapse' : 'Expand'}
+      </button>
+    </div>
+  )),
 }));
 
 jest.mock('../../components/dashboardContainer/DashboardContainer', () => ({
@@ -726,6 +747,41 @@ describe('ConsultationPage', () => {
       fireEvent.click(vitalsItem);
       await waitFor(() => {
         expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '2');
+      });
+    });
+  });
+
+  describe('Side nav visibility when consultation pad is expanded', () => {
+    it('hides the side nav rail when the pad is expanded, and restores it when collapsed', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      act(() => {
+        dispatchConsultationStart({ encounterType: 'Consultation' });
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('mocked-consultation-pad'),
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByTestId('sidenav-item-vitals')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId('toggle-expand-button'));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('sidenav-item-vitals'),
+        ).not.toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('toggle-expand-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('sidenav-item-vitals')).toBeInTheDocument();
       });
     });
   });
