@@ -11,7 +11,7 @@ const TOGGLE_ICON_SIZE = 16;
  * ActionArea component props
  */
 export interface ActionAreaProps {
-  title: string; // Title of the ActionArea
+  title: ReactNode; // Title of the ActionArea
   primaryButtonText: string; // Text for the primary button
   onPrimaryButtonClick: () => void; // Function to be called when primary button is clicked
   isPrimaryButtonDisabled?: boolean; // Whether the primary button should be disabled
@@ -30,6 +30,7 @@ export interface ActionAreaProps {
   onToggleExpand?: () => void; // Function to be called when the expand/collapse toggle is clicked
   expandAriaLabel?: string; // Accessible label for the expand toggle button
   collapseAriaLabel?: string; // Accessible label for the collapse toggle button
+  headerActions?: ReactNode; // Extra controls rendered alongside the expand/collapse toggle
 }
 
 /**
@@ -59,6 +60,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
   onToggleExpand,
   expandAriaLabel = 'Expand',
   collapseAriaLabel = 'Collapse',
+  headerActions,
 }) => {
   const buttonCountClass =
     tertiaryButtonText && onTertiaryButtonClick
@@ -67,6 +69,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
 
   // Determine accessible label for the component
   const accessibleLabel = ariaLabel ?? 'Action Area';
+  const hasHeaderActions = Boolean(headerActions) || Boolean(onToggleExpand);
 
   return (
     <div
@@ -82,20 +85,25 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
         <h2 className={styles.title} id="action-area-title">
           {title}
         </h2>
-        {onToggleExpand && (
-          <IconButton
-            kind="ghost"
-            size="sm"
-            label={isExpanded ? collapseAriaLabel : expandAriaLabel}
-            onClick={onToggleExpand}
-            testId="action-area-expand-toggle"
-          >
-            {isExpanded ? (
-              <Minimize size={TOGGLE_ICON_SIZE} />
-            ) : (
-              <Maximize size={TOGGLE_ICON_SIZE} />
+        {hasHeaderActions && (
+          <div className={styles.headerActions}>
+            {headerActions}
+            {onToggleExpand && (
+              <IconButton
+                kind="ghost"
+                size="sm"
+                label={isExpanded ? collapseAriaLabel : expandAriaLabel}
+                onClick={onToggleExpand}
+                testId="action-area-expand-toggle"
+              >
+                {isExpanded ? (
+                  <Minimize size={TOGGLE_ICON_SIZE} />
+                ) : (
+                  <Maximize size={TOGGLE_ICON_SIZE} />
+                )}
+              </IconButton>
             )}
-          </IconButton>
+          </div>
         )}
       </div>
       <div

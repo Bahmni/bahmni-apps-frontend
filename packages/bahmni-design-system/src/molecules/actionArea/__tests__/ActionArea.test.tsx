@@ -332,6 +332,45 @@ describe('ActionArea', () => {
     });
   });
 
+  describe('Header Actions', () => {
+    it('does not render a header actions row when neither headerActions nor onToggleExpand is provided', () => {
+      render(<ActionArea {...defaultProps} />);
+
+      expect(screen.queryByTestId('pin-icon')).not.toBeInTheDocument();
+    });
+
+    it('renders headerActions content in the header row', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          headerActions={<span data-testid="pin-icon">Pin</span>}
+        />,
+      );
+
+      expect(screen.getByTestId('pin-icon')).toBeInTheDocument();
+    });
+
+    it('renders headerActions as a sibling of the expand/collapse toggle, not inside the title', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          headerActions={<span data-testid="pin-icon">Pin</span>}
+          onToggleExpand={jest.fn()}
+        />,
+      );
+
+      const title = screen.getByText('Test Title');
+      const pinIcon = screen.getByTestId('pin-icon');
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      const headerActionsRow = pinIcon.parentElement;
+
+      // The pin icon must not live inside the title element...
+      expect(title).not.toContainElement(pinIcon);
+      // ...and must share a common header-actions container with the toggle button instead.
+      expect(headerActionsRow).toContainElement(toggleButton);
+    });
+  });
+
   describe('Hidden State', () => {
     it('applies hidden class and aria-hidden when hidden prop is true', () => {
       const { container } = render(<ActionArea {...defaultProps} hidden />);
