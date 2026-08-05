@@ -330,6 +330,34 @@ describe('ActionArea', () => {
       const actionArea = screen.getByRole('region', { name: 'Action Area' });
       expect(actionArea).not.toHaveClass('noBorder');
     });
+
+    it('moves focus back to the toggle button after isExpanded changes, so it is not lost to the now-inert main display', () => {
+      const { rerender } = render(
+        <ActionArea
+          {...defaultProps}
+          onToggleExpand={jest.fn()}
+          isExpanded={false}
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).not.toHaveFocus();
+
+      rerender(
+        <ActionArea {...defaultProps} onToggleExpand={jest.fn()} isExpanded />,
+      );
+
+      expect(toggleButton).toHaveFocus();
+    });
+
+    it('does not steal focus on initial mount', () => {
+      render(
+        <ActionArea {...defaultProps} onToggleExpand={jest.fn()} isExpanded />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).not.toHaveFocus();
+    });
   });
 
   describe('Header Actions', () => {

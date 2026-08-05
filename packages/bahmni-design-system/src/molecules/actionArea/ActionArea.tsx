@@ -1,9 +1,11 @@
 import { Maximize, Minimize } from '@carbon/icons-react';
 import { Button, ButtonSet } from '@carbon/react';
 import classNames from 'classnames';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useRef } from 'react';
 import { IconButton } from '../../atoms/iconButton';
 import styles from './styles/ActionArea.module.scss';
+
+const TOGGLE_BUTTON_SELECTOR = '[data-testid="action-area-expand-toggle"]';
 
 const TOGGLE_ICON_SIZE = 16;
 
@@ -71,6 +73,22 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
   const accessibleLabel = ariaLabel ?? 'Action Area';
   const hasHeaderActions = Boolean(headerActions) || Boolean(onToggleExpand);
 
+  const headerActionsRef = useRef<HTMLDivElement>(null);
+  const hasMountedRef = useRef(false);
+
+  // Toggling expand/collapse hides the main-display panel from keyboard/AT
+  // users (see ActionAreaLayout's `inert` on that panel); refocus the
+  // toggle so focus isn't silently dropped when it was inside that panel.
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    headerActionsRef.current
+      ?.querySelector<HTMLButtonElement>(TOGGLE_BUTTON_SELECTOR)
+      ?.focus();
+  }, [isExpanded]);
+
   return (
     <div
       className={classNames(styles.actionArea, className, {
@@ -86,7 +104,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
           {title}
         </h2>
         {hasHeaderActions && (
-          <div className={styles.headerActions}>
+          <div className={styles.headerActions} ref={headerActionsRef}>
             {headerActions}
             {onToggleExpand && (
               <IconButton

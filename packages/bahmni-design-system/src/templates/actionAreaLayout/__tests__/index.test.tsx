@@ -222,5 +222,33 @@ describe('ActionAreaLayout', () => {
 
       expect(screen.getByRole('separator')).toBeInTheDocument();
     });
+
+    test('makes the main display inert and hidden from assistive tech when expanded', () => {
+      const { container } = render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded
+        />,
+      );
+
+      const mainDisplay = container.querySelector('#main-display-area');
+      expect(mainDisplay).toHaveAttribute('inert');
+      expect(mainDisplay).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    test('keeps the main display focusable and visible to assistive tech when collapsed', () => {
+      const { container } = render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded={false}
+        />,
+      );
+
+      const mainDisplay = container.querySelector('#main-display-area');
+      expect(mainDisplay).not.toHaveAttribute('inert');
+      expect(mainDisplay).toHaveAttribute('aria-hidden', 'false');
+    });
   });
 });

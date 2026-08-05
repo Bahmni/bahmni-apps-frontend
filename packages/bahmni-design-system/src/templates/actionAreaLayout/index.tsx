@@ -75,6 +75,8 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
             id="main-display-area"
             data-testid="main-display-area-test-id"
             aria-label="main-display-area-aria-label"
+            aria-hidden={isActionAreaExpanded}
+            inert={isActionAreaExpanded}
             className={classNames(styles.mainDisplay, {
               [styles.expand]: !isActionAreaVisible && hasSideNav,
               [styles.collapsedModal]: isActionAreaVisible,

@@ -80,6 +80,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
           style="max-height: 100%; max-width: 100%; flex-grow: 1;"
         >
           <div
+            aria-hidden="false"
             aria-label="main-display-area-aria-label"
             class="_mainDisplay_11frm_108"
             data-testid="main-display-area-test-id"
@@ -221,6 +222,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
           style="max-height: 100%; max-width: 100%; flex-grow: 1;"
         >
           <div
+            aria-hidden="false"
             aria-label="main-display-area-aria-label"
             class="_mainDisplay_11frm_108"
             data-testid="main-display-area-test-id"
