@@ -30,6 +30,7 @@ export interface InputControl<
 export interface ConsultationPad {
   allergyConceptMap: AllergyConceptMap;
   statDurationInMilliseconds?: number;
+  allowedVisitTypes?: string[];
   inputControls: InputControl[];
 }
 
