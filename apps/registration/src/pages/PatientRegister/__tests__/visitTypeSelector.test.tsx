@@ -2,9 +2,43 @@ import { NotificationProvider } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { RegistrationConfigProvider } from '../../../providers/registrationConfig';
 import { VisitTypeSelector } from '../visitTypeSelector';
+
+jest.mock('@bahmni/design-system', () => ({
+  ...jest.requireActual('@bahmni/design-system'),
+  Icon: ({ id }: { id?: string; [key: string]: unknown }) => (
+    <g data-testid={id} />
+  ),
+  ComboButton: ({
+    label,
+    onClick,
+    children,
+    disabled,
+    id,
+    'data-testid': dataTestId,
+  }: {
+    label: string;
+    onClick?: () => void;
+    children?: React.ReactNode;
+    disabled?: boolean;
+    id?: string;
+    'data-testid'?: string;
+  }) => (
+    <div data-testid={dataTestId} id={id}>
+      <button onClick={onClick} disabled={disabled}>
+        {label}
+      </button>
+      <button aria-label="Additional actions" disabled={disabled} />
+      {children}
+    </div>
+  ),
+  MenuItem: ({ label, onClick }: { label: string; onClick?: () => void }) => (
+    <button onClick={onClick}>{label}</button>
+  ),
+}));
 
 Element.prototype.scrollIntoView = jest.fn();
 
@@ -110,7 +144,6 @@ describe('VisitTypeSelector', () => {
       name: /Start OPD visit/i,
     });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveAttribute('id', 'visit-button');
   });
 
   it('shows "Enter Visit Details" when patient has active visit and no activeVisitLabel provided', async () => {
@@ -212,7 +245,8 @@ describe('VisitTypeSelector', () => {
       expect(mockCheckIfActiveVisitExists).toHaveBeenCalledWith(patientUuid),
     );
 
-    expect(screen.getByTestId('patient-dashboard-arrow')).toBeInTheDocument();
+    const button = screen.getByRole('button');
+    expect(button.querySelector('svg')).not.toBeNull();
   });
 
   it('does not show arrow icon when hasActiveVisit is false', async () => {
@@ -226,20 +260,16 @@ describe('VisitTypeSelector', () => {
   });
 
   it('shows the dropdown with the correct list of items when no active visit', async () => {
-    const user = userEvent.setup();
     renderComponent();
 
     await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
 
-    const dropdown = screen.getByRole('combobox');
-    expect(dropdown).toBeInTheDocument();
-
-    await user.click(dropdown);
-
-    await waitFor(() => {
-      const options = screen.getAllByRole('option');
-      expect(options).toHaveLength(2);
-    });
+    expect(
+      await screen.findByRole('button', { name: 'Start EMERGENCY visit' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Start IPD visit' }),
+    ).toBeInTheDocument();
   });
 
   it('hides dropdown when patient has active visit', async () => {
@@ -263,7 +293,9 @@ describe('VisitTypeSelector', () => {
 
     await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
 
-    const button = screen.getByRole('button');
+    const button = await screen.findByRole('button', {
+      name: /Start OPD visit/i,
+    });
     await user.click(button);
 
     await waitFor(() => {
@@ -280,11 +312,10 @@ describe('VisitTypeSelector', () => {
 
     await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
 
-    const dropdown = screen.getByRole('combobox');
-    await user.click(dropdown);
-
-    const optionToSelect = screen.getByText('Start IPD visit');
-    await user.click(optionToSelect);
+    const ipdItem = await screen.findByRole('button', {
+      name: 'Start IPD visit',
+    });
+    await user.click(ipdItem);
 
     await waitFor(() => {
       expect(mockOnVisitTypeSelect).toHaveBeenCalledWith({
@@ -300,8 +331,9 @@ describe('VisitTypeSelector', () => {
     const button = await screen.findByRole('button', {
       name: /Start OPD visit/i,
     });
+    const trigger = screen.getByRole('button', { name: /Additional actions/i });
 
     expect(button).toBeDisabled();
-    expect(screen.getByRole('combobox')).toBeDisabled();
+    expect(trigger).toBeDisabled();
   });
 });
