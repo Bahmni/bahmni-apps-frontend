@@ -36,7 +36,6 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
 
   return (
     <Button
-      className={styles.newConsultationButton}
       size="md"
       disabled={isActionAreaVisible}
       onClick={() =>
