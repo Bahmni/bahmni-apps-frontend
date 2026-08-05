@@ -120,7 +120,10 @@ describe('useStopMedicationStore', () => {
       expect(result.current.errors.stopReason).toBeDefined();
 
       act(() => {
-        result.current.setStopReason({ uuid: 'reason-uuid-2', display: 'Patient request' });
+        result.current.setStopReason({
+          uuid: 'reason-uuid-2',
+          display: 'Patient request',
+        });
       });
 
       expect(result.current.errors.stopReason).toBeUndefined();
@@ -166,7 +169,10 @@ describe('useStopMedicationStore', () => {
           note: { isMandatory: true },
         });
         result.current.setMedicationToStop(mockMedicationRequest);
-        result.current.setStopReason({ uuid: 'reason-uuid-1', display: 'some reason' });
+        result.current.setStopReason({
+          uuid: 'reason-uuid-1',
+          display: 'some reason',
+        });
       });
       act(() => {
         result.current.validate();
@@ -257,7 +263,10 @@ describe('useStopMedicationStore', () => {
 
       act(() => {
         result.current.setMedicationToStop(mockMedicationRequest);
-        result.current.setStopReason({ uuid: 'reason-uuid-2', display: 'Patient request' });
+        result.current.setStopReason({
+          uuid: 'reason-uuid-2',
+          display: 'Patient request',
+        });
         result.current.setStopDate(new Date());
       });
 
@@ -297,7 +306,10 @@ describe('useStopMedicationStore', () => {
 
       act(() => {
         result.current.setMedicationToStop(mockMedicationRequest);
-        result.current.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
+        result.current.setStopReason({
+          uuid: 'reason-uuid-1',
+          display: 'reason',
+        });
         result.current.setStopDate(new Date());
       });
 
@@ -318,7 +330,10 @@ describe('useStopMedicationStore', () => {
           note: { isMandatory: true },
         });
         result.current.setMedicationToStop(mockMedicationRequest);
-        result.current.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
+        result.current.setStopReason({
+          uuid: 'reason-uuid-1',
+          display: 'reason',
+        });
         result.current.setStopDate(new Date());
       });
 
@@ -398,7 +413,10 @@ describe('useStopMedicationStore', () => {
       // Set everything
       act(() => {
         result.current.setMedicationToStop(mockMedicationRequest);
-        result.current.setStopReason({ uuid: 'reason-uuid-1', display: 'Adverse reaction' });
+        result.current.setStopReason({
+          uuid: 'reason-uuid-1',
+          display: 'Adverse reaction',
+        });
         result.current.setNote('Patient had rash');
         result.current.setFieldConfig({
           note: { isMandatory: true },

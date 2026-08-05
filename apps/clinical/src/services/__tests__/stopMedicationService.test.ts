@@ -166,7 +166,9 @@ describe('stopMedicationService', () => {
             {
               name: 'reason',
               valueCodableConcept: {
-                coding: [{ code: 'reason-uuid-1', display: 'Adverse reaction' }],
+                coding: [
+                  { code: 'reason-uuid-1', display: 'Adverse reaction' },
+                ],
                 text: 'Adverse reaction',
               },
             },

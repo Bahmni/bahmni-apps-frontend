@@ -120,7 +120,10 @@ describe('stopMedications input control', () => {
         intent: 'order',
         subject: { reference: 'Patient/patient-uuid-1' },
       });
-      store.setStopReason({ uuid: 'reason-uuid-1', display: 'Adverse reaction' });
+      store.setStopReason({
+        uuid: 'reason-uuid-1',
+        display: 'Adverse reaction',
+      });
       store.setStopDate(stopDate);
       store.setNote('Patient had rash');
 
@@ -153,7 +156,10 @@ describe('stopMedications input control', () => {
         intent: 'order',
         subject: { reference: 'Patient/patient-uuid-1' },
       });
-      store.setStopReason({ uuid: 'reason-uuid-2', display: 'Patient request' });
+      store.setStopReason({
+        uuid: 'reason-uuid-2',
+        display: 'Patient request',
+      });
       store.setStopDate(new Date());
 
       await control.onDirectSubmit!();
