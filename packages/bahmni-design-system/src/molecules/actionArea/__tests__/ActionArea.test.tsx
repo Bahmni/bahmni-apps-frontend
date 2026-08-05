@@ -1,6 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
 import ActionArea from '../ActionArea';
 
 expect.extend(toHaveNoViolations);
@@ -25,6 +24,43 @@ describe('ActionArea', () => {
     expect(screen.getByText('Done')).toBeInTheDocument();
     expect(screen.getByText('Cancel')).toBeInTheDocument();
     expect(screen.getByTestId('test-content')).toBeInTheDocument();
+  });
+
+  it('renders with only primary button when secondaryButtonText is not provided', () => {
+    const propsWithoutSecondary = {
+      title: 'Test Title',
+      primaryButtonText: 'Save',
+      onPrimaryButtonClick: jest.fn(),
+      content: <div data-testid="test-content">Test Content</div>,
+    };
+
+    render(<ActionArea {...propsWithoutSecondary} />);
+
+    expect(screen.getByText('Test Title')).toBeInTheDocument();
+    expect(screen.getByText('Save')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('action-area-secondary-button'),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('test-content')).toBeInTheDocument();
+  });
+
+  it('renders primary and tertiary buttons without secondary button', () => {
+    const propsWithoutSecondary = {
+      title: 'Test Title',
+      primaryButtonText: 'Save',
+      onPrimaryButtonClick: jest.fn(),
+      tertiaryButtonText: 'Cancel',
+      onTertiaryButtonClick: jest.fn(),
+      content: <div data-testid="test-content">Test Content</div>,
+    };
+
+    render(<ActionArea {...propsWithoutSecondary} />);
+
+    expect(screen.getByText('Save')).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('action-area-secondary-button'),
+    ).not.toBeInTheDocument();
   });
 
   it('renders with all props', () => {
