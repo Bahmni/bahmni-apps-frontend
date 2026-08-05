@@ -1,7 +1,7 @@
 import * as services from '@bahmni/services';
 import { NotificationProvider, useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useRegistrationConfig } from '../../../providers/registrationConfig';
 import RegistrationList from '../index';
@@ -29,9 +29,16 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(),
+  UserGlobalAction: () => <div data-testid="user-global-action-test-id" />,
 }));
 
 jest.mock('../../../providers/registrationConfig');
+
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
 
 const mockUseRegistrationConfig = useRegistrationConfig as jest.MockedFunction<
   typeof useRegistrationConfig
@@ -82,6 +89,12 @@ describe('RegistrationList', () => {
     const homeLink = screen.getByRole('link', { name: /HOME_LABEL/i });
     expect(homeLink).toHaveAttribute('href', services.BAHMNI_HOME_PATH);
     expect(screen.getByText('REGISTRATION_LABEL')).toBeInTheDocument();
+  });
+
+  it('navigates to the new patient page when the create patient button is clicked', () => {
+    renderPage();
+    fireEvent.click(screen.getByTestId('create-new-patient-button'));
+    expect(mockNavigate).toHaveBeenCalledWith('/registration/patient/new');
   });
 
   it('renders extension handler container when a registered extension is configured', () => {

@@ -1,6 +1,7 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/breakpoint" as *;
 
 .page {
@@ -25,4 +26,21 @@
   font-style: italic;
   text-align: center;
   padding: $spacing-10;
+}
+
+.headerButton {
+  position: fixed !important;
+  top: $spacing-02;
+  right: $spacing-09;
+  padding-inline: $spacing-05 !important;
+  z-index: 9999;
+  background-color: $support-success;
+
+  &:hover {
+    background-color: $green-60;
+  }
+
+  &:active {
+    background-color: $green-70;
+  }
 }
