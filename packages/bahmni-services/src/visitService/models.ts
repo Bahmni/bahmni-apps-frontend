@@ -27,3 +27,9 @@ export interface ActiveVisitResult {
 export interface ActiveVisit {
   results: ActiveVisitResult[];
 }
+
+/**
+ * Minimal shape of the visit object returned by POST /visit.
+ * Reuses the fields already modelled on ActiveVisitResult so the two stay in sync.
+ */
+export type CreatedVisit = Pick<ActiveVisitResult, 'uuid' | 'startDatetime'>;

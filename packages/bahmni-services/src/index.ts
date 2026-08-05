@@ -50,6 +50,7 @@ export {
   type PersonAttributeConcept,
   type PatientSearchField,
   type AppointmentSearchField,
+  type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
   AttributeFormat,
@@ -113,6 +114,8 @@ export {
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
+  formatGender,
+  formatCountry,
 } from './utils';
 export {
   type FormatDateResult,
@@ -222,18 +225,21 @@ export {
   getUserLoginLocation,
   getAvailableLocations,
   getDefaultDateFormat,
-  logout,
   saveUserLocation,
   updateSessionLocation,
   type User,
   type UserLocation,
   BAHMNI_USER_LOCATION_COOKIE,
 } from './userService';
+export { logout } from './authService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
   getPatientObservations,
+  getObservationsBundleByEncounterUuid,
+  groupObservationsByEncounter,
+  type EncounterGroup,
 } from './observationService';
 export {
   getCurrentProvider,
@@ -268,9 +274,10 @@ export {
   getEncounterTypeByName,
   type EncounterTypeRef,
   shouldEnableEncounterFilter,
-  getObservationsBundleByEncounterUuid,
   createFhirEncounter,
   updateFhirEncounter,
+  buildEncounterResource,
+  type BuildEncounterResourceParams,
   type FormsEncounter,
 } from './encounterService';
 
@@ -289,6 +296,7 @@ export {
 export {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
+  MODULE_LABELS,
   initializeAuditListener,
   type AuditEventType,
   logAuditEvent,
@@ -332,18 +340,17 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  fetchFormUuidByObservationDate,
   transformFormDataToObservations,
   transformObservationsToFormData,
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
-  hasMissingMandatoryVisibleField,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
-  type ApiFormPrivilege,
   type FormMetadata,
   type FormData,
   type FormControlData,
@@ -450,3 +457,10 @@ export type {
   TemplateListResponse,
 } from './templateService';
 export { getTasks } from './taskService';
+export {
+  groupExtensionsByPoint,
+  filterExtensionsByPrivileges,
+  type Extension,
+  type ExtensionHandlerProps,
+  type SearchExtensionParam,
+} from './extensions';

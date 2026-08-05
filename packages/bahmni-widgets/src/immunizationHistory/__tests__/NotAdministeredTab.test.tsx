@@ -48,9 +48,12 @@ const mockRow = createNotAdministeredImmunizationViewModel(
 
 describe('NotAdministeredTab', () => {
   beforeEach(() => {
-    mockFormatDateTime.mockReturnValue({
-      formattedResult: '19-3-2026',
-    } as ReturnType<typeof formatDateTime>);
+    mockFormatDateTime.mockImplementation(
+      (_date, _t, includeTime) =>
+        ({
+          formattedResult: includeTime ? '19-3-2026 10:30 AM' : '19-3-2026',
+        }) as ReturnType<typeof formatDateTime>,
+    );
     mockUseSubscribeConsultationSaved.mockImplementation(() => {});
     mockUseQuery.mockReturnValue({
       data: [mockRow],
@@ -69,13 +72,16 @@ describe('NotAdministeredTab', () => {
       <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
     );
     expect(
-      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_CODE'),
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_TYPE'),
     ).toBeInTheDocument();
     expect(
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_REASON'),
     ).toBeInTheDocument();
     expect(
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_DATE'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_ON'),
     ).toBeInTheDocument();
     expect(
       screen.getByText('IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY'),
@@ -88,8 +94,16 @@ describe('NotAdministeredTab', () => {
     );
     expect(screen.getByText('Hepatitis B')).toBeInTheDocument();
     expect(screen.getByText('Patient refused')).toBeInTheDocument();
-    expect(screen.getByText('19-3-2026')).toBeInTheDocument();
     expect(screen.getByText('John Davis')).toBeInTheDocument();
+    expect(mockFormatDateTime).toHaveBeenCalledWith(
+      mockRow.date,
+      expect.anything(),
+    );
+    expect(mockFormatDateTime).toHaveBeenCalledWith(
+      mockRow.recordedOn,
+      expect.anything(),
+      true,
+    );
   });
 
   it.each([
@@ -236,6 +250,7 @@ describe('NotAdministeredTab', () => {
     { field: 'code', override: { code: null } },
     { field: 'reason', override: { reason: null } },
     { field: 'date', override: { date: null } },
+    { field: 'recordedOn', override: { recordedOn: null } },
   ])('renders - for $field when value is null', ({ field, override }) => {
     mockUseQuery.mockReturnValue({
       data: [{ ...mockRow, ...override }],
@@ -249,6 +264,39 @@ describe('NotAdministeredTab', () => {
     expect(
       screen.getByTestId(`table-cell-${mockRow.id}-${field}`),
     ).toHaveTextContent('-');
+  });
+
+  it('displays tooltip icon when the not-administered immunization has notes', () => {
+    render(
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
+    expect(
+      screen.getByLabelText('Discussed alternative options with patient.'),
+    ).toBeInTheDocument();
+  });
+
+  it('does not display tooltip icon when the not-administered immunization has no notes', () => {
+    mockUseQuery.mockReturnValue({
+      data: [{ ...mockRow, notes: null }],
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
+    render(
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
+    expect(
+      screen.queryByLabelText('Discussed alternative options with patient.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('applies the notAdministeredTable layout class to the table', () => {
+    render(
+      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
+    );
+    expect(
+      screen.getByTestId('not-administered-immunizations-table'),
+    ).toHaveClass('notAdministeredTable');
   });
 
   it('passes accessibility tests', async () => {

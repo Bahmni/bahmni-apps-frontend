@@ -295,6 +295,22 @@ export function transformObservationsToFormData(
   };
 }
 
+/** Coerces a raw CarbonContainer field value to the typed Form2Observation value. */
+function getObsValue(
+  value: unknown,
+): string | number | boolean | ConceptValue | ComplexValue | null {
+  if (value == null) return null;
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value;
+  }
+  if (typeof value === 'object') return value as ConceptValue | ComplexValue;
+  return null;
+}
+
 /**
  * Transforms raw observations from Container.getValue() to Form2Observation format
  * This ensures comment, interpretation, and other fields are properly included
@@ -303,26 +319,6 @@ export function transformContainerObservationsToForm2Observations(
   containerObservations: Record<string, unknown>[],
 ): Form2Observation[] {
   const transform = (obs: Record<string, unknown>): Form2Observation => {
-    const getValue = (
-      value: unknown,
-    ): string | number | boolean | ConceptValue | ComplexValue | null => {
-      if (value === null || value === undefined) {
-        return null;
-      }
-      if (
-        typeof value === 'string' ||
-        typeof value === 'number' ||
-        typeof value === 'boolean'
-      ) {
-        return value;
-      }
-
-      if (typeof value === 'object') {
-        return value as ConceptValue | ComplexValue;
-      }
-      return null;
-    };
-
     const concept = obs.concept as Record<string, unknown> | string | undefined;
     const conceptUuid: string =
       typeof concept === 'object' && concept !== null && 'uuid' in concept
@@ -338,7 +334,7 @@ export function transformContainerObservationsToForm2Observations(
         uuid: conceptUuid,
         datatype: conceptDatatype,
       },
-      value: getValue(obs.value),
+      value: getObsValue(obs.value),
       obsDatetime:
         typeof obs.observationDateTime === 'string'
           ? obs.observationDateTime
@@ -349,25 +345,28 @@ export function transformContainerObservationsToForm2Observations(
         typeof obs.formFieldPath === 'string' ? obs.formFieldPath : undefined,
     };
 
-    if (obs.comment && typeof obs.comment === 'string') {
+    // Preserve uuid, voided and status so the bundle builder can emit the
+    // correct HTTP verb and status value for each observation.
+    // status is required on PUT/POST-with-uuid by OpenMRS and must echo back
+    // exactly what is stored ("final" on first edit, "amended" on subsequent edits).
+    if (typeof obs.uuid === 'string') observation.uuid = obs.uuid;
+    if (obs.voided === true) observation.voided = true;
+    if (typeof obs.status === 'string') observation.status = obs.status;
+
+    if (typeof obs.comment === 'string') {
       observation.comment = obs.comment;
     }
 
-    if (obs.interpretation && typeof obs.interpretation === 'string') {
+    if (typeof obs.interpretation === 'string') {
       observation.interpretation = obs.interpretation;
     }
 
     if (obs.groupMembers && Array.isArray(obs.groupMembers)) {
-      // Filter out voided group members
-      const nonVoidedGroupMembers = obs.groupMembers.filter((member) => {
-        const isMemberVoided =
-          member.voided ??
-          (member.value &&
-            typeof member.value === 'string' &&
-            member.value.endsWith('voided'));
-        return !isMemberVoided;
-      });
-      observation.groupMembers = nonVoidedGroupMembers.map(transform);
+      // Include ALL group members (including voided ones with uuid) so the
+      // bundle builder can emit DELETE entries for cleared children.
+      observation.groupMembers = (
+        obs.groupMembers as Record<string, unknown>[]
+      ).map(transform);
     }
 
     return observation;
@@ -521,97 +520,4 @@ function processControlForNotesExtraction(
       }
     });
   }
-}
-
-/**
- * Returns true when a leaf control's value is considered empty.
- *
- * form2-controls serializes values differently per control type:
- * - Free-text / numeric / date: { value: "abc" | 123 | null }
- * - Coded / select:             { value: null, concept: { uuid, name } }
- * - Multi-select:               { value: null, concept: [{ uuid, name }] }
- *
- * A field is empty only when both `value.value` AND `value.concept` are absent.
- */
-function isLeafValueEmpty(data: Record<string, unknown>): boolean {
-  const valueObj =
-    data.value && typeof data.value === 'object'
-      ? (data.value as Record<string, unknown>)
-      : null;
-
-  if (!valueObj) {
-    return data.value === null || data.value === undefined || data.value === '';
-  }
-
-  // Direct value (text, number, date)
-  const directValue = valueObj.value;
-  if (directValue !== null && directValue !== undefined && directValue !== '') {
-    return false;
-  }
-
-  // Coded / select answer lives under value.concept
-  const concept = valueObj.concept;
-  if (concept !== null && concept !== undefined) {
-    // multi-select returns an array
-    if (Array.isArray(concept)) return concept.length === 0;
-    return false;
-  }
-
-  return true;
-}
-
-/**
- * Checks if any visible, non-voided mandatory leaf fields in the Container data
- * have no values.
- *
- * form2-controls does not propagate mandatory errors back to the Container's internal
- * data structure when a field has never been interacted with by the user — this includes
- * always-visible mandatory fields that were never touched, and fields that transition
- * from hidden to visible via isHidden scripting without user interaction.
- * As a result, getValue().errors is empty for such fields even when they are required.
- *
- * This function traverses the Container's Immutable data (converted to plain JS via toJS())
- * to detect these missed violations directly.
- *
- * Only leaf nodes (no children) are checked for emptiness. Group/section controls
- * carry value: null themselves while the real data lives in their children — checking
- * the group node's own value would produce false positives.
- */
-export function hasMissingMandatoryVisibleField(
-  data: Record<string, unknown> | undefined,
-): boolean {
-  if (!data || typeof data !== 'object') return false;
-
-  const children = data.children;
-  const hasChildren = Array.isArray(children) && children.length > 0;
-
-  const control = data.control as Record<string, unknown> | undefined;
-  const properties = control?.properties as Record<string, unknown> | undefined;
-
-  // Only validate leaf nodes — group/section controls have no value of their own
-  if (
-    !hasChildren &&
-    properties?.mandatory === true &&
-    !data.hidden &&
-    !data.voided
-  ) {
-    if (isLeafValueEmpty(data)) {
-      return true;
-    }
-  }
-
-  // Skip hidden/voided subtrees entirely — their children are not visible
-  if (data.hidden || data.voided) return false;
-
-  // Recurse into children
-  if (hasChildren) {
-    return (children as unknown[]).some(
-      (child) =>
-        child &&
-        typeof child === 'object' &&
-        hasMissingMandatoryVisibleField(child as Record<string, unknown>),
-    );
-  }
-
-  return false;
 }

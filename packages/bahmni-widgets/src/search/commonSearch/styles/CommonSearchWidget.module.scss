@@ -1,3 +1,141 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+
 .fullWidth {
   max-inline-size: 100% !important;
+}
+
+.searchForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-05;
+  align-items: flex-start;
+}
+
+.dropdownCol {
+  flex: 0 0 100%;
+
+  @include breakpoint(md) {
+    flex: 1 1 0;
+    max-width: 30%;
+  }
+
+  @include breakpoint(lg) {
+    max-width: 25%;
+  }
+}
+
+.fullWidthCol {
+  flex: 0 0 100%;
+}
+
+.criterionRow {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-04;
+}
+
+.criterionSelector {
+  flex: 0 0 30%;
+
+  @include breakpoint(lg) {
+    flex: 0 0 25%;
+  }
+}
+
+.criterionInput {
+  flex: 1 1 0;
+}
+
+.criterionClose {
+  flex: 0 0 auto;
+  align-self: start;
+  padding-top: calc($spacing-05 + 1px);
+}
+
+.rangeContainer {
+  display: flex;
+  gap: $spacing-04;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.rangeInputCol {
+  flex: 1 1 0;
+}
+
+.datePicker {
+  margin-inline-end: 0;
+  > div {
+    > div {
+      display: block;
+      min-inline-size: -webkit-fill-available !important;
+      > div {
+        display: block;
+        > div {
+          display: block;
+        }
+        input {
+          inline-size: -webkit-fill-available !important;
+        }
+      }
+    }
+  }
+}
+
+.numericInput {
+  margin-inline-end: 0;
+}
+
+.dataTable {
+  box-shadow: 0px 2px 6px 0px $shadow;
+  table {
+    table-layout: fixed;
+  }
+}
+
+.searchSummary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $spacing-03;
+  margin-block-start: $spacing-08;
+  margin-block-end: $spacing-05;
+}
+
+.summaryLabel {
+  @include type-style("body-compact-01");
+}
+
+.criteriaSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-03;
+}
+
+.error {
+  @include type-style("body-compact-02");
+  padding: $spacing-07;
+  justify-self: center;
+  font-style: italic;
+}
+
+.searchCriteriaAccordion {
+  box-shadow: 0px 2px 6px 0px $shadow;
+}
+
+.searchCriteriaAccordionItem {
+  > div > div {
+  padding-inline: $spacing-06;
+  margin-inline-start: 0 !important;
+  }
+  > button:first-of-type {
+    background-color: $layer-01;
+  }
 }

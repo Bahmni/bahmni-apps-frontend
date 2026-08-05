@@ -89,7 +89,7 @@ const visitGroups = [
   },
 ];
 
-const renderSection = () => {
+const renderSection = (topLevelConcept?: string | null) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -98,6 +98,7 @@ const renderSection = () => {
       <DocumentsSection
         patientUuid="patient-uuid"
         documentEncounterType={documentEncounterType}
+        topLevelConcept={topLevelConcept}
       />
     </QueryClientProvider>,
   );
@@ -122,6 +123,7 @@ describe('DocumentsSection', () => {
 
     const { container } = renderSection();
 
+    expect(screen.getByTestId('document-section-skeleton')).toBeInTheDocument();
     expect(screen.queryAllByTestId('document-upload')).toHaveLength(0);
     expect(container.querySelectorAll('.cds--accordion__heading')).toHaveLength(
       0,
@@ -146,7 +148,7 @@ describe('DocumentsSection', () => {
     const { getDocumentTypes } = jest.requireMock('@bahmni/services');
     getDocumentTypes.mockRejectedValueOnce(new Error('types boom'));
 
-    renderSection();
+    renderSection('Patient Document');
 
     await waitFor(() =>
       expect(mockAddNotification).toHaveBeenCalledWith(
@@ -215,9 +217,8 @@ describe('DocumentsSection', () => {
   it('passes the patient and document encounter type to the visit-documents hook', () => {
     renderSection();
 
-    expect(mockUseVisitDocuments).toHaveBeenCalledWith(
-      'patient-uuid',
+    expect(mockUseVisitDocuments).toHaveBeenCalledWith('patient-uuid', [
       'doc-enc-type-uuid',
-    );
+    ]);
   });
 });

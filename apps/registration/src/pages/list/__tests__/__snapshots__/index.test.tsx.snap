@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RegistrationList Snapshot matches snapshot 1`] = `
+<div
+  aria-label="base-layout-aria-label"
+  class="_layout_ma379_85"
+  data-testid="base-layout-test-id"
+  id="base-layout"
+>
+  <header
+    aria-label="Header"
+    class="cds--header"
+    data-testid="header"
+  >
+    <nav
+      aria-label="Breadcrumb"
+      class="_breadcrumb_fbh29_74"
+      data-testid="breadcrumb"
+    >
+      <ol
+        class="cds--breadcrumb cds--breadcrumb--no-trailing-slash"
+      >
+        <li
+          class="cds--breadcrumb-item"
+        >
+          <a
+            class="cds--link"
+            href="/bahmni-v2/home"
+          >
+            HOME_LABEL
+          </a>
+        </li>
+        <li
+          class="cds--breadcrumb-item cds--breadcrumb-item--current"
+        >
+          <span
+            aria-current="true"
+            class="cds--link"
+            dir="auto"
+          >
+            REGISTRATION_LABEL
+          </span>
+        </li>
+      </ol>
+    </nav>
+  </header>
+  <div
+    aria-label="main-display-area-aria-label"
+    class="_main_ma379_93"
+    data-testid="main-display-area-test-id"
+    id="main-display-area"
+  >
+    <div
+      aria-label="Registration List Page"
+      class="page"
+      data-testid="registration-list-page-test-id"
+      id="registration-list-page"
+    >
+      <p
+        aria-label="No extensions configured"
+        class="message"
+        data-testid="no-extensions-configured-test-id"
+        id="no-extensions-configured"
+      >
+        NO_EXTENSIONS_CONFIGURED
+      </p>
+    </div>
+  </div>
+</div>
+`;

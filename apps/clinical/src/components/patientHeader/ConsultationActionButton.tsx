@@ -38,7 +38,13 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
     <Button
       size="md"
       disabled={isActionAreaVisible}
-      onClick={() => dispatchConsultationStart({})}
+      onClick={() =>
+        dispatchConsultationStart(
+          editActiveEncounter
+            ? { editTitle: 'CONSULTATION_ACTION_CONTINUE' }
+            : {},
+        )
+      }
       data-testid="consultation-action-button"
     >
       {isActionAreaVisible

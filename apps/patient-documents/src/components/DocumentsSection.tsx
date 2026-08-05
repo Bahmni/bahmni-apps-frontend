@@ -1,4 +1,8 @@
-import { Accordion, AccordionItem, Loading } from '@bahmni/design-system';
+import {
+  Accordion,
+  AccordionItem,
+  SkeletonPlaceholder,
+} from '@bahmni/design-system';
 import {
   DocumentViewModel,
   formatDateTime,
@@ -26,6 +30,8 @@ interface DocumentEncounterType {
 interface DocumentsSectionProps {
   patientUuid: string;
   documentEncounterType: DocumentEncounterType;
+  topLevelConcept?: string | null;
+  defaultOption?: string | null;
 }
 
 const renderTile = (document: DocumentViewModel) =>
@@ -39,17 +45,20 @@ const renderTile = (document: DocumentViewModel) =>
 export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   patientUuid,
   documentEncounterType,
+  topLevelConcept,
+  defaultOption,
 }) => {
   const { t } = useTranslation(BAHMNI_PATIENT_DOCUMENTS_NAMESPACE);
   const { addNotification } = useNotification();
   const { visitGroups, isLoading, error, refetch } = useVisitDocuments(
     patientUuid,
-    documentEncounterType.uuid,
+    [documentEncounterType.uuid],
   );
 
   const { data: documentTypes, error: documentTypesError } = useQuery({
-    queryKey: ['documentTypes', documentEncounterType.name],
-    queryFn: () => getDocumentTypes(documentEncounterType.name),
+    queryKey: ['documentTypes', topLevelConcept],
+    queryFn: () => getDocumentTypes(topLevelConcept!),
+    enabled: !!topLevelConcept,
   });
 
   // Document types populate an optional dropdown, so a failure must not block upload — but the
@@ -62,7 +71,12 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   }, [documentTypesError, addNotification]);
 
   if (isLoading) {
-    return <Loading withOverlay={false} />;
+    return (
+      <SkeletonPlaceholder
+        className={styles.skeleton}
+        testId="document-section-skeleton"
+      />
+    );
   }
 
   if (error) {
@@ -160,6 +174,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 encounterTypeName={documentEncounterType.name}
                 saveTarget={saveTarget}
                 documentTypes={documentTypes}
+                defaultOption={defaultOption}
                 onSaved={refetch}
               />
             </AccordionItem>

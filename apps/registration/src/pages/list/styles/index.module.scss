@@ -1,0 +1,28 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/breakpoint" as *;
+
+.page {
+  padding-top: $spacing-10;
+  padding-inline: calc($spacing-12 + $spacing-05);
+}
+
+@include breakpoint-down(lg) {
+  .page {
+    padding-top: $spacing-08;
+    padding-inline: $spacing-09;
+  }
+}
+
+.loading {
+  max-inline-size: 100% !important;
+}
+
+.message {
+  @include type-style('body-compact-01');
+  color: $support-error;
+  font-style: italic;
+  text-align: center;
+  padding: $spacing-10;
+}

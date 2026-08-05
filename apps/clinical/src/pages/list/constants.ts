@@ -1,5 +1,5 @@
+import type { ExtensionHandlerProps } from '@bahmni/services';
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import type { ExtensionHandlerProps } from '../../extensions';
 
 export const EXTENSION_HANDLERS: Record<
   string,

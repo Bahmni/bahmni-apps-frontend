@@ -2,6 +2,7 @@ export interface ConceptSearch {
   conceptName: string;
   conceptUuid: string;
   matchedName: string;
+  conceptSystem?: string;
   disabled?: boolean;
 }
 

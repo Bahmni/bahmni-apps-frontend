@@ -12,7 +12,11 @@ import {
   hasPrivilege,
   useTranslation,
 } from '@bahmni/services';
-import { useNotification, useUserPrivilege } from '@bahmni/widgets';
+import {
+  useNotification,
+  useUserPrivilege,
+  UserGlobalAction,
+} from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import UnavailabilityForm from './components/UnavailabilityForm';
@@ -147,7 +151,9 @@ const AppointmentUnavailabilityPage: React.FC = () => {
 
   return (
     <ActionAreaLayout
-      headerWSideNav={<Header breadcrumbItems={breadcrumbs} />}
+      headerWSideNav={
+        <Header breadcrumbItems={breadcrumbs} userMenu={<UserGlobalAction />} />
+      }
       hasSideNav={false}
       mainDisplay={
         <div

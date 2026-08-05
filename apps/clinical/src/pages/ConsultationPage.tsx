@@ -20,6 +20,7 @@ import {
   useNotification,
   useUserPrivilege,
   usePatientUUID,
+  UserGlobalAction,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, {
@@ -105,20 +106,6 @@ const ConsultationPage: React.FC = () => {
           <Icon id="search-icon" name="fa-search" size={ICON_SIZE.LG} />
         ),
         onClick: handleSearchOpen,
-      },
-      {
-        id: 'notifications',
-        label: t('GLOBAL_ACTION_NOTIFICATIONS'),
-        renderIcon: (
-          <Icon id="notifications-icon" name="fa-bell" size={ICON_SIZE.LG} />
-        ),
-        onClick: () => {},
-      },
-      {
-        id: 'user',
-        label: t('GLOBAL_ACTION_USER'),
-        renderIcon: <Icon id="user-icon" name="fa-user" size={ICON_SIZE.LG} />,
-        onClick: () => {},
       },
     ],
     [handleSearchOpen, t],
@@ -308,6 +295,7 @@ const ConsultationPage: React.FC = () => {
           <Header
             breadcrumbItems={breadcrumbItems}
             globalActions={globalActions}
+            userMenu={<UserGlobalAction />}
             sideNavItems={sidebarItems}
             activeSideNavItemId={activeItemId}
             onSideNavItemClick={handleItemClick}
