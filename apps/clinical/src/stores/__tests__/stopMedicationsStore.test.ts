@@ -98,12 +98,13 @@ describe('useStopMedicationStore', () => {
   describe('setStopReason', () => {
     it('should update the stop reason', () => {
       const { result } = renderHook(() => useStopMedicationStore());
+      const reason = { uuid: 'reason-uuid-1', display: 'Adverse reaction' };
 
       act(() => {
-        result.current.setStopReason('Adverse reaction');
+        result.current.setStopReason(reason);
       });
 
-      expect(result.current.stopReason).toBe('Adverse reaction');
+      expect(result.current.stopReason).toEqual(reason);
     });
 
     it('should clear stopReason error when a value is set', () => {
@@ -119,7 +120,7 @@ describe('useStopMedicationStore', () => {
       expect(result.current.errors.stopReason).toBeDefined();
 
       act(() => {
-        result.current.setStopReason('Patient request');
+        result.current.setStopReason({ uuid: 'reason-uuid-2', display: 'Patient request' });
       });
 
       expect(result.current.errors.stopReason).toBeUndefined();
@@ -165,7 +166,7 @@ describe('useStopMedicationStore', () => {
           note: { isMandatory: true },
         });
         result.current.setMedicationToStop(mockMedicationRequest);
-        result.current.setStopReason('some reason');
+        result.current.setStopReason({ uuid: 'reason-uuid-1', display: 'some reason' });
       });
       act(() => {
         result.current.validate();
@@ -256,7 +257,7 @@ describe('useStopMedicationStore', () => {
 
       act(() => {
         result.current.setMedicationToStop(mockMedicationRequest);
-        result.current.setStopReason('Patient request');
+        result.current.setStopReason({ uuid: 'reason-uuid-2', display: 'Patient request' });
         result.current.setStopDate(new Date());
       });
 
@@ -296,7 +297,7 @@ describe('useStopMedicationStore', () => {
 
       act(() => {
         result.current.setMedicationToStop(mockMedicationRequest);
-        result.current.setStopReason('reason');
+        result.current.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
         result.current.setStopDate(new Date());
       });
 
@@ -317,7 +318,7 @@ describe('useStopMedicationStore', () => {
           note: { isMandatory: true },
         });
         result.current.setMedicationToStop(mockMedicationRequest);
-        result.current.setStopReason('reason');
+        result.current.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
         result.current.setStopDate(new Date());
       });
 
@@ -397,7 +398,7 @@ describe('useStopMedicationStore', () => {
       // Set everything
       act(() => {
         result.current.setMedicationToStop(mockMedicationRequest);
-        result.current.setStopReason('Adverse reaction');
+        result.current.setStopReason({ uuid: 'reason-uuid-1', display: 'Adverse reaction' });
         result.current.setNote('Patient had rash');
         result.current.setFieldConfig({
           note: { isMandatory: true },

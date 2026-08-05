@@ -151,7 +151,7 @@ describe('stopMedicationService', () => {
 
       const params = {
         medicationRequestId: 'med-req-1',
-        reason: 'Adverse reaction',
+        reason: { uuid: 'reason-uuid-1', display: 'Adverse reaction' },
         effectiveDate: new Date('2025-06-10'),
         note: 'Patient developed rash',
       };
@@ -163,7 +163,13 @@ describe('stopMedicationService', () => {
         {
           resourceType: 'Parameters',
           parameter: [
-            { name: 'reason', valueString: 'Adverse reaction' },
+            {
+              name: 'reason',
+              valueCodableConcept: {
+                coding: [{ code: 'reason-uuid-1', display: 'Adverse reaction' }],
+                text: 'Adverse reaction',
+              },
+            },
             { name: 'effectiveDate', valueDate: '2025-06-10' },
             { name: 'note', valueString: 'Patient developed rash' },
           ],
@@ -178,7 +184,7 @@ describe('stopMedicationService', () => {
 
       await stopMedication({
         medicationRequestId: 'med-req-2',
-        reason: 'Patient request',
+        reason: { uuid: 'reason-uuid-2', display: 'Patient request' },
         effectiveDate: new Date('2025-12-25'),
       });
 
@@ -192,7 +198,7 @@ describe('stopMedicationService', () => {
       expect(
         calledParams.parameter.find(
           (p: { name: string }) => p.name === 'reason',
-        ).valueString,
+        ).valueCodableConcept.text,
       ).toBe('Patient request');
       expect(
         calledParams.parameter.find(
@@ -206,7 +212,7 @@ describe('stopMedicationService', () => {
 
       await stopMedication({
         medicationRequestId: 'med-req-3',
-        reason: 'Drug interaction',
+        reason: { uuid: 'reason-uuid-3', display: 'Drug interaction' },
         effectiveDate: new Date('2025-06-10'),
       });
 
@@ -229,7 +235,7 @@ describe('stopMedicationService', () => {
 
       await stopMedication({
         medicationRequestId: 'med-1',
-        reason: 'test',
+        reason: { uuid: 'reason-uuid-1', display: 'test' },
         effectiveDate: localMidnight,
       });
 
@@ -254,7 +260,7 @@ describe('stopMedicationService', () => {
 
       const result = await stopMedication({
         medicationRequestId: 'med-req-1',
-        reason: 'reason',
+        reason: { uuid: 'reason-uuid-1', display: 'reason' },
         effectiveDate: new Date('2025-01-01'),
       });
 

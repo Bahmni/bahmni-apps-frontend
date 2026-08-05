@@ -99,7 +99,7 @@ function makeStoreMock(
 function buildStoreMock(overrides: Record<string, unknown> = {}) {
   return {
     stopDate: new Date('2025-06-10'),
-    stopReason: null as string | null,
+    stopReason: null as { uuid: string; display: string } | null,
     note: '',
     errors: {} as Record<string, string>,
     fieldConfig: defaultFieldConfig,
@@ -299,7 +299,7 @@ describe('StopMedicationForm', () => {
         selectedItem: { uuid: 'reason-uuid-1', display: 'Adverse reaction' },
       });
 
-      expect(setStopReason).toHaveBeenCalledWith('Adverse reaction');
+      expect(setStopReason).toHaveBeenCalledWith({ uuid: 'reason-uuid-1', display: 'Adverse reaction' });
     });
 
     it('calls setStopReason with null when selectedItem has no display', async () => {
@@ -326,7 +326,7 @@ describe('StopMedicationForm', () => {
       const setStopReason = jest.fn();
       // Simulate the store already having 'Adverse reaction' selected
       mockUseStopMedicationStore.mockReturnValue(
-        makeStoreMock({ setStopReason, stopReason: 'Adverse reaction' }) as any,
+        makeStoreMock({ setStopReason, stopReason: { uuid: 'reason-uuid-1', display: 'Adverse reaction' } }) as any,
       );
 
       await act(async () => {
@@ -342,10 +342,10 @@ describe('StopMedicationForm', () => {
       expect(setStopReason).toHaveBeenCalledWith(null);
     });
 
-    it('calls setStopReason with the new display when a different item is selected', async () => {
+    it('calls setStopReason with the full object when a different item is selected', async () => {
       const setStopReason = jest.fn();
       mockUseStopMedicationStore.mockReturnValue(
-        makeStoreMock({ setStopReason, stopReason: 'Adverse reaction' }) as any,
+        makeStoreMock({ setStopReason, stopReason: { uuid: 'reason-uuid-1', display: 'Adverse reaction' } }) as any,
       );
 
       await act(async () => {
@@ -356,7 +356,7 @@ describe('StopMedicationForm', () => {
         selectedItem: { uuid: 'reason-uuid-2', display: 'Patient request' },
       });
 
-      expect(setStopReason).toHaveBeenCalledWith('Patient request');
+      expect(setStopReason).toHaveBeenCalledWith({ uuid: 'reason-uuid-2', display: 'Patient request' });
     });
   });
 
