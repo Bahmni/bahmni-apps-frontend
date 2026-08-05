@@ -194,7 +194,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                 items={stopReasons}
                 itemToString={(item: StopReason) => (item ? item.display : '')}
                 selectedItem={
-                  stopReasons.find((r) => r.display === stopReason) ?? null
+                  stopReasons.find((r) => r.uuid === stopReason?.uuid) ?? null
                 }
                 onChange={({
                   selectedItem,
@@ -202,10 +202,10 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                   selectedItem: StopReason | null;
                 }) => {
                   // Allow deselection if same item clicked
-                  if (selectedItem?.display === stopReason) {
+                  if (selectedItem?.uuid === stopReason?.uuid) {
                     setStopReason(null);
                   } else {
-                    setStopReason(selectedItem?.display ?? null);
+                    setStopReason(selectedItem ?? null);
                   }
                 }}
                 size="sm"

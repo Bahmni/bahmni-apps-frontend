@@ -43,7 +43,7 @@ export async function fetchStopReasons(): Promise<StopReason[]> {
 
 interface StopMedicationParams {
   medicationRequestId: string;
-  reason: string;
+  reason: StopReason;
   effectiveDate: Date;
   note?: string;
 }
@@ -60,7 +60,13 @@ export async function stopMedication(
   const fhirParams = {
     resourceType: 'Parameters' as const,
     parameter: [
-      { name: 'reason', valueString: reason },
+      {
+        name: 'reason',
+        valueCodableConcept: {
+          coding: [{ code: reason.uuid, display: reason.display }],
+          text: reason.display,
+        },
+      },
       {
         name: 'effectiveDate',
         valueDate: `${effectiveDate.getFullYear()}-${String(effectiveDate.getMonth() + 1).padStart(2, '0')}-${String(effectiveDate.getDate()).padStart(2, '0')}`,

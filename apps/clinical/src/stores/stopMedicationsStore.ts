@@ -1,17 +1,18 @@
 import { MedicationRequest } from 'fhir/r4';
 import { create } from 'zustand';
 import { StopMedicationConfig } from '../models/medicationConfig';
+import { StopReason } from '../services/stopMedicationService';
 
 export interface StopMedicationState {
   stopDate: Date;
-  stopReason: string | null;
+  stopReason: StopReason | null;
   note: string;
   medicationToStop: MedicationRequest | null;
   fieldConfig: StopMedicationConfig;
   errors: Record<string, string>;
 
   setStopDate: (date: Date) => void;
-  setStopReason: (reason: string | null) => void;
+  setStopReason: (reason: StopReason | null) => void;
   setNote: (note: string) => void;
   setMedicationToStop: (medication: MedicationRequest | null) => void;
   setFieldConfig: (config: StopMedicationConfig) => void;
@@ -43,7 +44,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
       });
     },
 
-    setStopReason: (reason: string | null) => {
+    setStopReason: (reason: StopReason | null) => {
       set((state) => {
         const errors = { ...state.errors };
         if (reason) delete errors.stopReason;
