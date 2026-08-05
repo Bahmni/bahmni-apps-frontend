@@ -25,6 +25,7 @@ jest.mock('@bahmni/services', () => ({
   dispatchAuditEvent: jest.fn(),
   getPatientProfile: jest.fn(),
   getPatientPhotoDataUrl: jest.fn(),
+  renderAsHtml: jest.fn().mockResolvedValue('<html><body>card</body></html>'),
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -1349,6 +1350,107 @@ describe('PatientRegister', () => {
         // Section should still be expanded (aria-expanded=true) after re-render
         expect(accordionButtons[0]).toHaveAttribute('aria-expanded', 'true');
         expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Print Registration Card', () => {
+    const PRINT_OPTION = {
+      translationKey: 'REGISTRATION_PRINT_REGISTRATION_CARD',
+      templateId: 'REG_CARD_V1',
+    };
+
+    const mockConfig = (printOptions?: unknown) => {
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: {
+            sections: [
+              { name: 'Address Details', controls: [{ type: 'address' }] },
+            ],
+          },
+          ...(printOptions !== undefined && { printOptions }),
+        },
+      });
+    };
+
+    const mockPrivileges = (userPrivileges: { name: string }[]) => {
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({ userPrivileges });
+    };
+
+    // patientUuid is derived from metadata, so this simulates an already-saved patient
+    const mockSavedPatient = () => {
+      (usePatientDetails as jest.Mock).mockReturnValue({
+        metadata: { patientUuid: 'patient-uuid-1' },
+        photo: undefined,
+        isLoading: false,
+      });
+    };
+
+    it('should render the print button for a saved patient when printOptions are configured', async () => {
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        await screen.findByTestId('print-registration-card'),
+      ).toBeInTheDocument();
+    });
+
+    it('should not render the print button before the patient is saved', () => {
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      // usePatientDetails keeps its default metadata: undefined
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('print-registration-card'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not render the print button when printOptions are not configured', () => {
+      mockConfig(undefined);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('print-registration-card'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not render the print button when the user lacks the required privilege', () => {
+      mockConfig([
+        { ...PRINT_OPTION, privileges: ['app:registration:printcard'] },
+      ]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('print-registration-card'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not save the patient when the print button is clicked', async () => {
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      fireEvent.click(await screen.findByTestId('print-registration-card'));
+
+      await waitFor(() => {
+        expect(mockMutateAsync).not.toHaveBeenCalled();
       });
     });
   });
