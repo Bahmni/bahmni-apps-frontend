@@ -120,7 +120,7 @@ describe('stopMedications input control', () => {
         intent: 'order',
         subject: { reference: 'Patient/patient-uuid-1' },
       });
-      store.setStopReason('Adverse reaction');
+      store.setStopReason({ uuid: 'reason-uuid-1', display: 'Adverse reaction' });
       store.setStopDate(stopDate);
       store.setNote('Patient had rash');
 
@@ -128,7 +128,7 @@ describe('stopMedications input control', () => {
 
       expect(mockStopMedication).toHaveBeenCalledWith({
         medicationRequestId: 'med-1',
-        reason: 'Adverse reaction',
+        reason: { uuid: 'reason-uuid-1', display: 'Adverse reaction' },
         effectiveDate: stopDate,
         note: 'Patient had rash',
       });
@@ -153,7 +153,7 @@ describe('stopMedications input control', () => {
         intent: 'order',
         subject: { reference: 'Patient/patient-uuid-1' },
       });
-      store.setStopReason('Patient request');
+      store.setStopReason({ uuid: 'reason-uuid-2', display: 'Patient request' });
       store.setStopDate(new Date());
 
       await control.onDirectSubmit!();
@@ -184,7 +184,7 @@ describe('stopMedications input control', () => {
         intent: 'order',
         subject: { reference: 'Patient/patient-uuid-1' },
       });
-      store.setStopReason('reason');
+      store.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
 
       await control.onDirectSubmit!();
 
@@ -227,7 +227,7 @@ describe('stopMedications input control', () => {
         intent: 'order',
         subject: {},
       });
-      store.setStopReason('reason');
+      store.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
       store.setStopDate(new Date());
 
       await control.onDirectSubmit!();
@@ -255,7 +255,7 @@ describe('stopMedications input control', () => {
         intent: 'order',
         subject: { reference: 'Patient/patient-uuid-1' },
       });
-      store.setStopReason('reason');
+      store.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
       store.setStopDate(new Date());
       // note is empty string by default
 
