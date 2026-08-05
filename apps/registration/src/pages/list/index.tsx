@@ -9,6 +9,7 @@ import {
   useTranslation,
   filterExtensionsByPrivileges,
   groupExtensionsByPoint,
+  type SearchExtension,
 } from '@bahmni/services';
 import { useUserPrivilege, UserGlobalAction } from '@bahmni/widgets';
 import { Suspense, useMemo } from 'react';
@@ -50,7 +51,13 @@ const RegistrationList = () => {
         .map(([pointId, extensions]) => ({
           pointId,
           Handler: EXTENSION_HANDLERS[pointId],
-          filtered: filterExtensionsByPrivileges(extensions, userPrivileges),
+          filtered: filterExtensionsByPrivileges(
+            extensions,
+            userPrivileges,
+          ).filter(
+            (e): e is SearchExtension =>
+              !!e.extensionParams && 'searchHandler' in e.extensionParams,
+          ),
         }))
         .filter(({ Handler, filtered }) => !!Handler && filtered.length > 0),
     [extensionsByPoint, userPrivileges],

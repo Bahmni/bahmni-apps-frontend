@@ -8,12 +8,12 @@ import {
   TabPanels,
   Tabs,
 } from '@bahmni/design-system';
-import { useTranslation, ExtensionHandlerProps } from '@bahmni/services';
+import { useTranslation, type SearchExtension } from '@bahmni/services';
 import { getSearchWidget } from '@bahmni/widgets';
 import { Suspense } from 'react';
 import styles from './styles/index.module.scss';
 
-const Search = ({ extensions }: ExtensionHandlerProps) => {
+const Search = ({ extensions }: { extensions: SearchExtension[] }) => {
   const { t } = useTranslation();
 
   if (extensions.length === 0) return null;

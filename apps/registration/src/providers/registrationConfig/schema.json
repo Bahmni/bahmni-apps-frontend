@@ -4,6 +4,64 @@
   "description": "Schema for validating registration app configuration",
   "type": "object",
   "additionalProperties": false,
+  "definitions": {
+    "searchExtensionParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Params for search-widget extensions",
+      "properties": {
+        "searchHandler": {
+          "type": "string",
+          "description": "Search widget key"
+        },
+        "configUrl": {
+          "type": "string",
+          "description": "Config URL for the search widget"
+        }
+      }
+    },
+    "actionExtensionParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Params for action-button extensions (link | startVisit)",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "link",
+            "startVisit"
+          ],
+          "description": "Registration action extension type"
+        },
+        "order": {
+          "type": "number",
+          "description": "Display order of the action extension"
+        },
+        "url": {
+          "type": "string",
+          "description": "URL path for the action extension"
+        },
+        "shortcutKey": {
+          "type": "string",
+          "description": "Keyboard shortcut key for the extension"
+        },
+        "buttonKind": {
+          "type": "string",
+          "enum": [
+            "primary",
+            "secondary",
+            "tertiary",
+            "ghost",
+            "danger"
+          ],
+          "description": "Button kind/variant (defaults to 'primary' if not specified)"
+        }
+      }
+    }
+  },
   "properties": {
     "id": {
       "type": "string",
@@ -304,36 +362,14 @@
         }
       }
     },
-    "extensionPoints": {
-      "type": "array",
-      "description": "Array of extension point definitions that extensions can attach to",
-      "items": {
-        "type": "object",
-        "required": [
-          "id"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique identifier for the extension point (e.g., 'org.bahmni.registration.navigation')"
-          },
-          "description": {
-            "type": "string",
-            "description": "Human-readable description of what this extension point is for"
-          }
-        }
-      }
-    },
     "extensions": {
       "type": "array",
-      "description": "List of app-specific extension configurations",
+      "description": "List of app-specific extension configurations (search widgets and action buttons). Distinguished by extensionPointId; action extensions carry extensionParams.type (link | startVisit).",
       "items": {
         "type": "object",
         "required": [
           "id",
-          "extensionPointId",
-          "translationKey"
+          "extensionPointId"
         ],
         "additionalProperties": true,
         "properties": {
@@ -356,85 +392,34 @@
             }
           },
           "extensionParams": {
-            "type": "object",
-            "additionalProperties": true,
-            "properties": {
-              "searchHandler": {
-                "type": "string"
+            "oneOf": [
+              { "$ref": "#/definitions/searchExtensionParams" },
+              { "$ref": "#/definitions/actionExtensionParams" }
+            ]
+          }
+        },
+        "if": {
+          "properties": {
+            "extensionParams": {
+              "properties": {
+                "type": {
+                  "const": "startVisit"
+                }
               },
-              "configUrl": {
-                "type": "string"
-              }
+              "required": [
+                "type"
+              ]
             }
-          }
-        }
-      }
-    },
-    "registrationAppExtensions": {
-      "type": "array",
-      "description": "Array of app extension configurations for registration",
-      "items": {
-        "type": "object",
-        "description": "Extension configuration",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "extensionPointId",
-          "type",
-          "requiredPrivilege"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique identifier for the extension"
           },
-          "extensionPointId": {
-            "type": "string",
-            "description": "Extension point identifier this extension attaches to"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "link",
-              "startVisit"
-            ],
-            "description": "Type of extension (e.g., 'link', 'startVisit')"
-          },
-          "translationKey": {
-            "type": "string",
-            "description": "Translation key for the extension label"
-          },
-          "url": {
-            "type": "string",
-            "description": "URL path for the extension"
-          },
-          "shortcutKey": {
-            "type": "string",
-            "description": "Keyboard shortcut key for the extension"
-          },
-          "icon": {
-            "type": "string",
-            "description": "Icon class name (e.g., FontAwesome class like 'fa-search')"
-          },
-          "order": {
-            "type": "number",
-            "description": "Display order of the extension"
-          },
-          "kind": {
-            "type": "string",
-            "enum": [
-              "primary",
-              "secondary",
-              "tertiary",
-              "ghost",
-              "danger"
-            ],
-            "description": "Button kind/variant (defaults to 'primary' if not specified)"
-          },
-          "requiredPrivilege": {
-            "type": "string",
-            "description": "Required privilege to access this extension"
-          }
+          "required": [
+            "extensionParams"
+          ]
+        },
+        "then": {},
+        "else": {
+          "required": [
+            "translationKey"
+          ]
         }
       }
     }
