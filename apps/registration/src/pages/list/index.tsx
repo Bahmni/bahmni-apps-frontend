@@ -59,7 +59,11 @@ const RegistrationList = () => {
   return (
     <BaseLayout
       header={
-        <>
+        <div
+          id="registration-list-page-header"
+          data-testid="registration-list-page-header-test-id"
+          aria-label="Registration List Page Header"
+        >
           <Header
             breadcrumbItems={breadcrumbItems}
             userMenu={<UserGlobalAction />}
@@ -72,7 +76,7 @@ const RegistrationList = () => {
           >
             {t('CREATE_PATIENT_BUTTON_TEXT')}
           </Button>
-        </>
+        </div>
       }
       main={
         <div

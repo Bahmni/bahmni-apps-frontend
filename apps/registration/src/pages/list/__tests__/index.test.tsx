@@ -84,6 +84,19 @@ describe('RegistrationList', () => {
     queryClient.clear();
   });
 
+  it('renders header with breadcrumb, user global actions and create new patient button', () => {
+    renderPage();
+    const header = screen.getByTestId('registration-list-page-header-test-id');
+    const breadcrumb = screen.getByTestId('breadcrumb');
+    const userGlobalAction = screen.getByTestId('user-global-action-test-id');
+    const createNewPatientButton = screen.getByTestId(
+      'create-new-patient-button',
+    );
+    expect(header).toContainElement(breadcrumb);
+    expect(header).toContainElement(userGlobalAction);
+    expect(header).toContainElement(createNewPatientButton);
+  });
+
   it('renders breadcrumb navigation', () => {
     renderPage();
     const homeLink = screen.getByRole('link', { name: /HOME_LABEL/i });
