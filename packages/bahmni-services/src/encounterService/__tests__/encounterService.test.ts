@@ -3,22 +3,18 @@ import {
   getPatientVisits,
   getVisits,
   getActiveVisit,
+  getActiveVisitAtLoginLocation,
   getEncounterByUuid,
   createFhirEncounter,
   updateFhirEncounter,
   getPatientEncounters,
   getEncounterTypeByName,
 } from '../../encounterService';
-import {
-  mockVisitBundle,
-  mockActiveVisit,
-  mockFormsEncounter,
-} from '../__mocks__/mocks';
+import { mockVisitBundle, mockActiveVisit } from '../__mocks__/mocks';
 import {
   PATIENT_VISITS_URL,
   PATIENT_ENCOUNTERS_URL,
   ENCOUNTER_TYPE_BY_NAME_URL,
-  FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
   FHIR_ENCOUNTER_URL,
 } from '../constants';
 
@@ -26,6 +22,20 @@ jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
 const mockedPost = post as jest.MockedFunction<typeof post>;
 const mockedPut = put as jest.MockedFunction<typeof put>;
+
+const mockGetUserLoginLocation = jest.fn();
+const mockGetVisitLocationUUID = jest.fn();
+
+jest.mock('../../userService', () => ({
+  getUserLoginLocation: () => mockGetUserLoginLocation(),
+}));
+
+jest.mock('../../visitService', () => ({
+  getVisitLocationUUID: (...args: any[]) => mockGetVisitLocationUUID(...args),
+}));
+
+const LOGIN_LOCATION_UUID = 'login-loc-uuid';
+const VISIT_LOCATION_UUID = 'visit-loc-uuid';
 
 describe('encounterService', () => {
   const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
@@ -101,6 +111,27 @@ describe('encounterService', () => {
       const activeVisit = await getActiveVisit(patientUUID);
 
       expect(activeVisit).toBeNull();
+    });
+
+    it('should include location query param in URL when locationUuid is provided', async () => {
+      const locationUuid = 'location-123';
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
+
+      await getActiveVisit(patientUUID, locationUuid);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        expect.stringContaining(`&location=${locationUuid}`),
+      );
+    });
+
+    it('should not include location query param in URL when locationUuid is omitted', async () => {
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
+
+      await getActiveVisit(patientUUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        expect.not.stringContaining('&location='),
+      );
     });
   });
 
@@ -324,6 +355,82 @@ describe('encounterService', () => {
       const result = await getEncounterTypeByName(name);
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('getActiveVisitAtLoginLocation', () => {
+    const PATIENT_UUID = 'patient-uuid-1';
+
+    const makeVisit = (locationRef: string) => ({
+      resourceType: 'Encounter' as const,
+      id: 'visit-1',
+      period: { start: '2024-01-01' },
+      location: [{ location: { reference: locationRef } }],
+    });
+
+    beforeEach(() => {
+      mockGetUserLoginLocation.mockReturnValue({ uuid: LOGIN_LOCATION_UUID });
+      mockGetVisitLocationUUID.mockResolvedValue({ uuid: VISIT_LOCATION_UUID });
+      mockedGet.mockResolvedValue({ entry: [] } as any);
+    });
+
+    it('returns null when no active visit exists at login location', async () => {
+      const result = await getActiveVisitAtLoginLocation(PATIENT_UUID);
+
+      expect(result).toBeNull();
+    });
+
+    it('returns the active visit at the login location', async () => {
+      const activeVisit = makeVisit(`Location/${VISIT_LOCATION_UUID}`);
+      mockedGet.mockResolvedValue({
+        entry: [{ resource: activeVisit }],
+      } as any);
+
+      const result = await getActiveVisitAtLoginLocation(PATIENT_UUID);
+
+      expect(result).toEqual(activeVisit);
+    });
+
+    it('rejects when getUserLoginLocation throws', async () => {
+      mockGetUserLoginLocation.mockImplementation(() => {
+        throw new Error('No login location');
+      });
+
+      await expect(getActiveVisitAtLoginLocation(PATIENT_UUID)).rejects.toThrow(
+        'No login location',
+      );
+    });
+
+    it('rejects when getVisitLocationUUID rejects', async () => {
+      mockGetVisitLocationUUID.mockRejectedValue(new Error('Location error'));
+
+      await expect(getActiveVisitAtLoginLocation(PATIENT_UUID)).rejects.toThrow(
+        'Location error',
+      );
+    });
+
+    it('rejects when the underlying fetch rejects', async () => {
+      mockedGet.mockRejectedValue(new Error('Fetch error'));
+
+      await expect(getActiveVisitAtLoginLocation(PATIENT_UUID)).rejects.toThrow(
+        'Fetch error',
+      );
+    });
+
+    it('passes login location UUID to getVisitLocationUUID', async () => {
+      await getActiveVisitAtLoginLocation(PATIENT_UUID);
+
+      expect(mockGetVisitLocationUUID).toHaveBeenCalledWith(
+        LOGIN_LOCATION_UUID,
+      );
+    });
+
+    it('passes patient UUID and visit location UUID to getActiveVisit', async () => {
+      await getActiveVisitAtLoginLocation(PATIENT_UUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        expect.stringContaining(PATIENT_UUID),
+      );
     });
   });
 });

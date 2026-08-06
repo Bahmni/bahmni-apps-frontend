@@ -591,7 +591,9 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     <div className={styles.formView} data-testid="observation-form-view">
       {directMode && (
         <>
-          <EncounterDetails />
+          <EncounterDetails
+            encounterSessionStartContext={encounterSessionStartContext}
+          />
           <MenuItemDivider />
           {isEditMode && viewingForm && (
             <div
