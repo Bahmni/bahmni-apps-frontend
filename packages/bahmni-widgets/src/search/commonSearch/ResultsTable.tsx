@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
-import { ActionConfig, ResultFieldConfig, SortOrder } from './models';
+import { ActionConfig, ResultFieldConfig } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
 import { resolveNavigationURL, resultTransforms } from './utils';
 
@@ -165,7 +165,7 @@ const ResultsTable = ({
         header: t(field.translationKey),
         enableSorting: field.enableSort ?? false,
         defaultSortDirection: field.enableSort
-          ? (field.sortOrder ?? SortOrder.Ascending)
+          ? (field.sortOrder ?? undefined)
           : field.sortOrder,
         enableFiltering: !!field.filterType,
         filterType: field.filterType,

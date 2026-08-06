@@ -1,4 +1,4 @@
-import type { Extension } from '../../../../extensions';
+import type { Extension } from '@bahmni/services';
 
 export const mockSearchExtension: Extension = {
   id: 'ext-1',

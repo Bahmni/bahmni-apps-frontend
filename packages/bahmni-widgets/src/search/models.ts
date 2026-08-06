@@ -1,3 +1,5 @@
+import { SearchExtensionParam } from '@bahmni/services';
+
 export interface SearchWidgetProps {
-  extensionParams?: Record<string, unknown>;
+  extensionParams?: SearchExtensionParam;
 }
