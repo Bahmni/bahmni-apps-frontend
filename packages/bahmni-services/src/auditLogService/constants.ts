@@ -65,6 +65,11 @@ export const AUDIT_LOG_EVENT_DETAILS = {
     eventType: 'SEARCHED_PATIENT_PROGRAM',
     message: 'SEARCHED_PATIENT_PROGRAM_MESSAGE',
   },
+  START_VISIT: {
+    eventType: 'START_VISIT',
+    message: 'START_VISIT_MESSAGE',
+    module: MODULE_LABELS.CLINICAL,
+  },
 };
 
 export const AUDIT_LOG_URL = OPENMRS_REST_V1 + '/auditlog';

@@ -69,6 +69,11 @@
   .threeButtons {
     min-width: calc(100% / 3);
   }
+
+  .singleButton {
+    min-width: 50%;
+    margin-left: auto;
+  }
 }
 
 @include breakpoint-down(lg) {
@@ -89,6 +94,12 @@
 
     .threeButtons {
       min-width: 100%;
+    }
+
+    .singleButton {
+      grid-column: 1 / -1;
+      justify-self: end;
+      min-width: 50%;
     }
   }
 }

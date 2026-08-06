@@ -24,7 +24,7 @@ export { RadiologyInvestigationTable } from './radiologyInvestigation';
 export { RadiologyInvestigationReport } from './radiologyInvestigationReport';
 export { ObservationsRenderer } from './observationsRenderer';
 export { LabInvestigation } from './labinvestigation';
-export { SearchPatient } from './searchPatient';
+export { SearchPatient } from './search/searchPatient';
 export { VitalFlowSheet } from './vitalFlowSheet';
 export { GenericServiceRequestTable } from './genericServiceRequest';
 export { TaskList } from './tasks';

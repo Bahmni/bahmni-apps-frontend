@@ -8,10 +8,9 @@ import {
   TabPanels,
   Tabs,
 } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, ExtensionHandlerProps } from '@bahmni/services';
 import { getSearchWidget } from '@bahmni/widgets';
 import { Suspense } from 'react';
-import type { ExtensionHandlerProps } from '../../../../extensions';
 import styles from './styles/index.module.scss';
 
 const Search = ({ extensions }: ExtensionHandlerProps) => {
@@ -60,10 +59,11 @@ const Search = ({ extensions }: ExtensionHandlerProps) => {
             <TabPanel
               key={ext.id}
               id={`${ext.id}-panel`}
+              className={styles.panel}
               data-testid={`${ext.id}-panel-test-id`}
               aria-label={`Panel ${ext.id}`}
             >
-              {Widget ? (
+              {Widget && ext.extensionParams ? (
                 <Suspense
                   fallback={
                     <CodeSnippetSkeleton

@@ -32,16 +32,14 @@ jest.mock('@bahmni/design-system', () => {
   interface MockDropdownProps {
     id: string;
     titleText: string;
-
     items: Array<any>;
-
     itemToString: (item: any) => string;
     disabled?: boolean;
-
     initialSelectedItem?: any;
     selectedItem?: any;
     invalid?: boolean;
     invalidText?: string;
+    onChange?: (data: { selectedItem: any }) => void;
   }
 
   return {
@@ -56,6 +54,7 @@ jest.mock('@bahmni/design-system', () => {
       selectedItem,
       invalid,
       invalidText,
+      onChange,
     }: MockDropdownProps) => {
       const safeItemToString = (item: any): string => {
         try {
@@ -76,6 +75,15 @@ jest.mock('@bahmni/design-system', () => {
             aria-label={titleText}
             aria-invalid={invalid}
             aria-errormessage={invalid ? `${id}-error` : undefined}
+            onChange={(e) => {
+              if (onChange) {
+                const val = e.target.value;
+                const item = items.find((it: any) =>
+                  typeof it === 'object' && it?.uuid ? it.uuid === val : false,
+                );
+                onChange({ selectedItem: item ?? null });
+              }
+            }}
           >
             {displayItem && (
               <option value="selected">{safeItemToString(displayItem)}</option>
@@ -289,7 +297,9 @@ describe('BasicForm', () => {
     );
   });
 
-  const renderBasicForm = () => render(<BasicForm />);
+  const renderBasicForm = (
+    props?: Partial<React.ComponentProps<typeof BasicForm>>,
+  ) => render(<BasicForm {...props} />);
 
   describe('usePatientUUID Hook Integration', () => {
     it('should call usePatientVisit with patient UUID from hook', () => {
@@ -1936,6 +1946,18 @@ describe('BasicForm', () => {
         await waitFor(() => {
           expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
         });
+      });
+    });
+
+    describe('startVisit mode skips form-ready computation', () => {
+      it('should not call setEncounterDetailsFormReady in startVisit mode', async () => {
+        renderBasicForm({
+          encounterSessionStartContext: { isVisitActive: false },
+        });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(
+          mockStoreState.setEncounterDetailsFormReady,
+        ).not.toHaveBeenCalled();
       });
     });
 
