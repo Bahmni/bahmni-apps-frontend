@@ -4,7 +4,8 @@ import {
   DatePickerInput,
   Dropdown,
   Grid,
-  TextArea,
+  Link,
+  TextAreaWClose,
   Tile,
 } from '@bahmni/design-system';
 import {
@@ -15,7 +16,7 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { MedicationRequest } from 'fhir/r4';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import {
@@ -53,6 +54,8 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       setMedicationToStop,
       setFieldConfig,
     } = useStopMedicationStore();
+
+    const [hasNote, setHasNote] = useState(!!note);
 
     // Stable ref for the DatePicker `value` prop — prevents the controlled-value cycle
     // where Carbon calls fp.setDate(value) on every Zustand update and clears the input
@@ -217,28 +220,38 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
 
           {isNoteVisible && (
             <Column sm={4} md={8} lg={16} className={styles.column}>
-              <div className={styles.noteLabelRow}>
-                <label
-                  htmlFor="stop-medication-note"
-                  className={styles.fieldLabel}
+              {!hasNote && (
+                <Link
+                  href="#"
+                  data-testid="stop-medication-add-note-link"
+                  onClick={(e: React.MouseEvent) => {
+                    e.preventDefault();
+                    setHasNote(true);
+                  }}
                 >
-                  {t('STOP_MEDICATION_NOTE_LABEL')}
-                </label>
-                <span className={styles.noteCounter}>{note.length}/100</span>
-              </div>
-              <TextArea
-                id="stop-medication-note"
-                data-testid="stop-medication-note"
-                labelText=""
-                placeholder={t('STOP_MEDICATION_NOTE_PLACEHOLDER')}
-                value={note}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                  if (e.target.value.length <= 100) {
-                    setNote(e.target.value);
-                  }
-                }}
-                rows={3}
-              />
+                  {t('STOP_MEDICATION_ADD_NOTE')}
+                </Link>
+              )}
+              {hasNote && (
+                <TextAreaWClose
+                  id="stop-medication-note"
+                  data-testid="stop-medication-note"
+                  labelText={t('STOP_MEDICATION_NOTE_LABEL')}
+                  placeholder={t('STOP_MEDICATION_NOTE_PLACEHOLDER')}
+                  value={note}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                    if (e.target.value.length <= 100) {
+                      setNote(e.target.value);
+                    }
+                  }}
+                  onClose={() => {
+                    setHasNote(false);
+                    setNote('');
+                  }}
+                  enableCounter
+                  maxCount={100}
+                />
+              )}
             </Column>
           )}
         </Grid>
