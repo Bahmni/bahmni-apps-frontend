@@ -12,7 +12,11 @@ import {
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import { ActionConfig, ResultFieldConfig } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
-import { resolveNavigationURL, resultTransforms } from './utils';
+import {
+  isValueTransformed,
+  resolveNavigationURL,
+  resultTransforms,
+} from './utils';
 
 interface ResultsTableProps {
   resultFields: ResultFieldConfig[];
@@ -60,12 +64,7 @@ const evaluateRows = async (
           row[key] = '-';
           continue;
         }
-        const isDateTransform =
-          field.transform === 'formatDate' ||
-          field.transform === 'formatTime' ||
-          field.transform === 'formatDateTime';
-
-        if (isDateTransform) {
+        if (isValueTransformed(field.transform)) {
           row[key] = value;
           row[`${key}_display`] = transform
             ? transform(String(value), t)
