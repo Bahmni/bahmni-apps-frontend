@@ -119,6 +119,16 @@ export const mockResultFieldsWithAgeTransform: ResultFieldConfig[] = [
   },
 ];
 
+export const mockResultFieldsWithDateTransform: ResultFieldConfig[] = [
+  {
+    translationKey: 'REGISTRATION_DATE',
+    expression: 'registrationDate',
+    transform: 'formatDate',
+    enableSort: true,
+    sortOrder: SortOrder.Ascending,
+  },
+];
+
 export const mockDateTimeValue = '2024-03-28T14:30:00';
 
 export const mockResultFieldsWithSortOrder: ResultFieldConfig[] = [
