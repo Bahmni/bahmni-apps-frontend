@@ -50,6 +50,11 @@
   overflow-y: auto;
 }
 
+.cappedWidth {
+  max-width: 75rem;
+  margin: 0 auto;
+}
+
 .buttonSet {
   display: flex;
   width: 100%;

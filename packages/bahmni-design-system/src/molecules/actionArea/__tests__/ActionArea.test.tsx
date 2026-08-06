@@ -399,6 +399,58 @@ describe('ActionArea', () => {
     });
   });
 
+  describe('Expanded width capping', () => {
+    it('caps and centers the header row when expanded', () => {
+      render(<ActionArea {...defaultProps} isExpanded />);
+
+      const header = screen.getByText('Test Title').parentElement;
+      expect(header).toHaveClass('cappedWidth');
+    });
+
+    it('does not cap the header row when not expanded', () => {
+      render(<ActionArea {...defaultProps} isExpanded={false} />);
+
+      const header = screen.getByText('Test Title').parentElement;
+      expect(header).not.toHaveClass('cappedWidth');
+    });
+
+    it('caps and centers the rendered content, while the scrollable content region itself stays full width so its scrollbar hugs the true edge', () => {
+      render(<ActionArea {...defaultProps} isExpanded />);
+
+      const contentInner = screen.getByTestId('test-content').parentElement;
+      expect(contentInner).toHaveClass('cappedWidth');
+
+      const contentRegion = contentInner?.parentElement;
+      expect(contentRegion).toHaveClass('content');
+      expect(contentRegion).not.toHaveClass('cappedWidth');
+    });
+
+    it('does not cap the rendered content when not expanded', () => {
+      render(<ActionArea {...defaultProps} isExpanded={false} />);
+
+      const contentInner = screen.getByTestId('test-content').parentElement;
+      expect(contentInner).not.toHaveClass('cappedWidth');
+    });
+
+    it('caps and centers the button row when expanded', () => {
+      render(<ActionArea {...defaultProps} isExpanded />);
+
+      const buttonSet = screen
+        .getByTestId('action-area-primary-button')
+        .closest('.buttonSet');
+      expect(buttonSet).toHaveClass('cappedWidth');
+    });
+
+    it('does not cap the button row when not expanded', () => {
+      render(<ActionArea {...defaultProps} isExpanded={false} />);
+
+      const buttonSet = screen
+        .getByTestId('action-area-primary-button')
+        .closest('.buttonSet');
+      expect(buttonSet).not.toHaveClass('cappedWidth');
+    });
+  });
+
   describe('Hidden State', () => {
     it('applies hidden class and aria-hidden when hidden prop is true', () => {
       const { container } = render(<ActionArea {...defaultProps} hidden />);

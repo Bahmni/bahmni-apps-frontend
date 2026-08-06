@@ -123,7 +123,6 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
                 className={classNames(
                   styles.actionArea,
                   layoutVariant === 'extended' && styles.extended,
-                  isActionAreaExpanded && styles.expandedContent,
                 )}
               >
                 {actionArea}

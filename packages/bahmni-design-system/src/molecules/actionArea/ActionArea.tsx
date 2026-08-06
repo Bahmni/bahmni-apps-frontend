@@ -99,7 +99,9 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
       aria-label={accessibleLabel}
       aria-hidden={hidden}
     >
-      <div className={styles.header}>
+      <div
+        className={classNames(styles.header, isExpanded && styles.cappedWidth)}
+      >
         <h2 className={styles.title} id="action-area-title">
           {title}
         </h2>
@@ -129,10 +131,18 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
         role="region"
         aria-labelledby="action-area-title"
       >
-        {content}
+        <div className={classNames(isExpanded && styles.cappedWidth)}>
+          {content}
+        </div>
       </div>
 
-      <ButtonSet className={styles.buttonSet} aria-label={buttonGroupAriaLabel}>
+      <ButtonSet
+        className={classNames(
+          styles.buttonSet,
+          isExpanded && styles.cappedWidth,
+        )}
+        aria-label={buttonGroupAriaLabel}
+      >
         <Button
           kind="secondary"
           onClick={onSecondaryButtonClick}

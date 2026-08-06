@@ -173,32 +173,6 @@ describe('ActionAreaLayout', () => {
       expect(container.querySelector('#action-area-panel')).toBeInTheDocument();
     });
 
-    test('centers and caps the action display area width when expanded', () => {
-      const { container } = render(
-        <ActionAreaLayout
-          {...defaultProps}
-          isActionAreaVisible
-          isActionAreaExpanded
-        />,
-      );
-
-      const actionDisplayArea = container.querySelector('#action-display-area');
-      expect(actionDisplayArea?.className).toMatch(/expandedContent/);
-    });
-
-    test('does not cap the action display area width when collapsed', () => {
-      const { container } = render(
-        <ActionAreaLayout
-          {...defaultProps}
-          isActionAreaVisible
-          isActionAreaExpanded={false}
-        />,
-      );
-
-      const actionDisplayArea = container.querySelector('#action-display-area');
-      expect(actionDisplayArea?.className).not.toMatch(/expandedContent/);
-    });
-
     test('hides the separator when isActionAreaExpanded is true', () => {
       render(
         <ActionAreaLayout

@@ -4,7 +4,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
 <div>
   <div
     aria-label="action-area-layout-aria-label"
-    class="_layout_11frm_85"
+    class="_layout_95ahm_85"
     data-testid="action-area-layout-test-id"
     id="action-area-layout"
   >
@@ -64,7 +64,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
       </div>
     </header>
     <div
-      class="_panelGroup_11frm_166"
+      class="_panelGroup_95ahm_161"
       data-group="true"
       data-testid="_r_4p_"
       id="_r_4p_"
@@ -82,7 +82,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
           <div
             aria-hidden="false"
             aria-label="main-display-area-aria-label"
-            class="_mainDisplay_11frm_108"
+            class="_mainDisplay_95ahm_108"
             data-testid="main-display-area-test-id"
             id="main-display-area"
           >
@@ -146,7 +146,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
 <div>
   <div
     aria-label="action-area-layout-aria-label"
-    class="_layout_11frm_85"
+    class="_layout_95ahm_85"
     data-testid="action-area-layout-test-id"
     id="action-area-layout"
   >
@@ -206,7 +206,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
       </div>
     </header>
     <div
-      class="_panelGroup_11frm_166"
+      class="_panelGroup_95ahm_161"
       data-group="true"
       data-testid="_r_4g_"
       id="_r_4g_"
@@ -224,7 +224,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
           <div
             aria-hidden="false"
             aria-label="main-display-area-aria-label"
-            class="_mainDisplay_11frm_108"
+            class="_mainDisplay_95ahm_108"
             data-testid="main-display-area-test-id"
             id="main-display-area"
           >
