@@ -36,39 +36,17 @@ export interface HeaderGlobalAction {
  * Props for the Header component
  */
 export interface HeaderProps {
-  /**
-   * App/brand name rendered on the left as a Carbon `HeaderName`. `brandPrefix`
-   * shows as the small prefix label (e.g. "Home") and `brandHref` is its link.
-   * Prefer these over composing a `HeaderName` inside `extraContent`.
-   */
   brandName?: string;
   brandPrefix?: string;
   brandHref?: string;
   breadcrumbItems?: HeaderBreadcrumbItem[];
   globalActions?: HeaderGlobalAction[];
-  /**
-   * Self-contained elements (e.g. a location selector) rendered in the global
-   * bar before `globalActions`/`userMenu`, without the HeaderGlobalAction
-   * icon-button wrapper. Use for controls that manage their own presentation.
-   */
   globalFeatures?: ReactNode[];
   sideNavItems?: HeaderSideNavItem[];
   activeSideNavItemId?: string | null;
   onSideNavItemClick?: (itemId: string) => void;
   isRail?: boolean;
   ariaLabel?: string;
-  /**
-   * @deprecated Use the dedicated slots instead: `brandName`/`brandPrefix`/`brandHref`
-   * for branding, `globalFeatures` for self-contained global-bar controls (e.g. a
-   * location selector), and `userMenu` for the user menu. `extraContent` renders
-   * outside those structured slots and will be removed in the next major (v2).
-   */
   extraContent?: ReactNode;
-  /**
-   * A self-contained component (e.g. the user menu) rendered directly in the
-   * header global bar, without the HeaderGlobalAction icon-button wrapper used
-   * for `globalActions`. Use this for elements that already manage their own
-   * button and menu.
-   */
   userMenu?: ReactNode;
 }
