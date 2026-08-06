@@ -764,14 +764,19 @@ describe('resultTransforms', () => {
 });
 
 describe('needsDisplayKey', () => {
-  it.each(['formatDate', 'formatTime', 'formatDateTime', 'formatAge'])(
-    'returns true for %s',
-    (transform) => {
-      expect(needsDisplayKey(transform)).toBe(true);
-    },
-  );
+  it.each([
+    'formatDate',
+    'formatTime',
+    'formatDateTime',
+    'formatAge',
+    'formatGender',
+    'formatCountry',
+    'formatSearchResult',
+  ])('returns true for %s', (transform) => {
+    expect(needsDisplayKey(transform)).toBe(true);
+  });
 
-  it.each([undefined, 'formatCountry', 'formatGender', 'nonExistentTransform'])(
+  it.each([undefined, 'nonExistentTransform'])(
     'returns false for %s',
     (transform) => {
       expect(needsDisplayKey(transform)).toBe(false);

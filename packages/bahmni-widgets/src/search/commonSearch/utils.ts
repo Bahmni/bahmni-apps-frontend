@@ -48,30 +48,39 @@ export const formatSearchResult = (
   return t(`COMMON_SEARCH_RESULT_${camelToScreamingSnakeCase(raw)}`);
 };
 
+const TRANSFORMED_KEYS = {
+  formatDate: 'formatDate',
+  formatTime: 'formatTime',
+  formatDateTime: 'formatDateTime',
+  formatAge: 'formatAge',
+  formatGender: 'formatGender',
+  formatCountry: 'formatCountry',
+  formatSearchResult: 'formatSearchResult',
+} as const;
+
 export const resultTransforms: Record<string, ResultTransform> = {
-  formatDate: (value: unknown, t: (key: string) => string) =>
+  [TRANSFORMED_KEYS.formatDate]: (value: unknown, t: (key: string) => string) =>
     formatDateTime(value as DateTimeValue, t).formattedResult,
-  formatTime: (value: unknown, t: (key: string) => string) =>
+  [TRANSFORMED_KEYS.formatTime]: (value: unknown, t: (key: string) => string) =>
     formatDateTime(value as DateTimeValue, t, false, DEFAULT_TIME_FORMAT)
       .formattedResult,
-  formatDateTime: (value: unknown, t: (key: string) => string) =>
-    formatDateTime(value as DateTimeValue, t, true).formattedResult,
-  formatAge: (value: unknown, t: (key: string) => string) =>
+  [TRANSFORMED_KEYS.formatDateTime]: (
+    value: unknown,
+    t: (key: string) => string,
+  ) => formatDateTime(value as DateTimeValue, t, true).formattedResult,
+  [TRANSFORMED_KEYS.formatAge]: (value: unknown, t: (key: string) => string) =>
     getFormattedAge(value as string | number, t),
-  formatGender,
-  formatCountry,
-  formatSearchResult,
+  [TRANSFORMED_KEYS.formatGender]: formatGender,
+  [TRANSFORMED_KEYS.formatCountry]: formatCountry,
+  [TRANSFORMED_KEYS.formatSearchResult]: formatSearchResult,
 };
 
-const TRANSFORMED_KEYS = new Set([
-  'formatDate',
-  'formatTime',
-  'formatDateTime',
-  'formatAge',
-]);
+const DISPLAY_KEY_TRANSFORMS: Set<string> = new Set(
+  Object.values(TRANSFORMED_KEYS),
+);
 
 export const needsDisplayKey = (transform?: string): boolean =>
-  !!transform && TRANSFORMED_KEYS.has(transform);
+  !!transform && DISPLAY_KEY_TRANSFORMS.has(transform);
 
 export const toSearchAuditEventType = (
   context: SearchContextConfig['context'],
