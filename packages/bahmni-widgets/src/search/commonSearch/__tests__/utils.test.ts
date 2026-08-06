@@ -16,7 +16,7 @@ import {
   validateConfigForActions,
   resolveNavigationURL,
   toSearchAuditEventType,
-  isValueTransformed,
+  needsDisplayKey,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -763,18 +763,18 @@ describe('resultTransforms', () => {
   );
 });
 
-describe('isValueTransformed', () => {
+describe('needsDisplayKey', () => {
   it.each(['formatDate', 'formatTime', 'formatDateTime', 'formatAge'])(
     'returns true for %s',
     (transform) => {
-      expect(isValueTransformed(transform)).toBe(true);
+      expect(needsDisplayKey(transform)).toBe(true);
     },
   );
 
   it.each([undefined, 'formatCountry', 'formatGender', 'nonExistentTransform'])(
     'returns false for %s',
     (transform) => {
-      expect(isValueTransformed(transform)).toBe(false);
+      expect(needsDisplayKey(transform)).toBe(false);
     },
   );
 });

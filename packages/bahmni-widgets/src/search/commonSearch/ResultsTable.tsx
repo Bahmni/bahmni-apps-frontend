@@ -13,7 +13,7 @@ import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import { ActionConfig, ResultFieldConfig } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
 import {
-  isValueTransformed,
+  needsDisplayKey,
   resolveNavigationURL,
   resultTransforms,
 } from './utils';
@@ -64,7 +64,7 @@ const evaluateRows = async (
           row[key] = '-';
           continue;
         }
-        if (isValueTransformed(field.transform)) {
+        if (needsDisplayKey(field.transform)) {
           row[key] = value;
           row[`${key}_display`] = transform
             ? transform(String(value), t)
