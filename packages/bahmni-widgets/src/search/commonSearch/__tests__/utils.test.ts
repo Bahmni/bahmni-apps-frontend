@@ -16,6 +16,7 @@ import {
   validateConfigForActions,
   resolveNavigationURL,
   toSearchAuditEventType,
+  isValueTransformed,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -758,6 +759,22 @@ describe('resultTransforms', () => {
     '$key transform produces the expected output',
     ({ key, value, contains }) => {
       expect(resultTransforms[key](value, identityT)).toContain(contains);
+    },
+  );
+});
+
+describe('isValueTransformed', () => {
+  it.each(['formatDate', 'formatTime', 'formatDateTime', 'formatAge'])(
+    'returns true for %s',
+    (transform) => {
+      expect(isValueTransformed(transform)).toBe(true);
+    },
+  );
+
+  it.each([undefined, 'formatCountry', 'formatGender', 'nonExistentTransform'])(
+    'returns false for %s',
+    (transform) => {
+      expect(isValueTransformed(transform)).toBe(false);
     },
   );
 });
