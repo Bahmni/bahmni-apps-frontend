@@ -764,24 +764,22 @@ describe('resultTransforms', () => {
 });
 
 describe('needsDisplayKey', () => {
+  it.each(['formatDate', 'formatTime', 'formatDateTime', 'formatAge'])(
+    'returns true for %s',
+    (transform) => {
+      expect(needsDisplayKey(transform)).toBe(true);
+    },
+  );
+
   it.each([
-    'formatDate',
-    'formatTime',
-    'formatDateTime',
-    'formatAge',
+    undefined,
     'formatGender',
     'formatCountry',
     'formatSearchResult',
-  ])('returns true for %s', (transform) => {
-    expect(needsDisplayKey(transform)).toBe(true);
+    'nonExistentTransform',
+  ])('returns false for %s', (transform) => {
+    expect(needsDisplayKey(transform)).toBe(false);
   });
-
-  it.each([undefined, 'nonExistentTransform'])(
-    'returns false for %s',
-    (transform) => {
-      expect(needsDisplayKey(transform)).toBe(false);
-    },
-  );
 });
 
 describe('formatSearchResult', () => {

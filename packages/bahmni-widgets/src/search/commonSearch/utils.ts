@@ -75,9 +75,15 @@ export const resultTransforms: Record<string, ResultTransform> = {
   [TRANSFORM_KEYS.formatSearchResult]: formatSearchResult,
 };
 
+const DISPLAY_KEY_TRANSFORMS: string[] = [
+  TRANSFORM_KEYS.formatDate,
+  TRANSFORM_KEYS.formatTime,
+  TRANSFORM_KEYS.formatDateTime,
+  TRANSFORM_KEYS.formatAge,
+];
+
 export const needsDisplayKey = (transform?: string): boolean =>
-  !!transform &&
-  (Object.values(TRANSFORM_KEYS) as string[]).includes(transform);
+  !!transform && DISPLAY_KEY_TRANSFORMS.includes(transform);
 
 export const toSearchAuditEventType = (
   context: SearchContextConfig['context'],
