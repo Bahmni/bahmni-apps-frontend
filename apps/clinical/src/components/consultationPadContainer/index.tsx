@@ -30,11 +30,15 @@ import styles from './styles/ConsultationPadContainer.module.scss';
 interface ConsultationPadContainerProps {
   encounterSessionStartContext: EncounterSessionStartContext;
   onClose: () => void;
+  isActionAreaExpanded?: boolean;
+  onToggleActionAreaExpand?: () => void;
 }
 
 const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   encounterSessionStartContext,
   onClose,
+  isActionAreaExpanded,
+  onToggleActionAreaExpand,
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -185,6 +189,8 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
       <ConsultationPad
         encounterSessionStartContext={encounterSessionStartContext}
         onClose={onClose}
+        isActionAreaExpanded={isActionAreaExpanded}
+        onToggleActionAreaExpand={onToggleActionAreaExpand}
       />
     );
   }
@@ -218,6 +224,10 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
           </div>
         }
         ariaLabel={t('CONSULTATION_PAD_TITLE')}
+        isExpanded={isActionAreaExpanded}
+        onToggleExpand={onToggleActionAreaExpand}
+        expandAriaLabel={t('CONSULTATION_PAD_EXPAND_ARIA_LABEL')}
+        collapseAriaLabel={t('CONSULTATION_PAD_COLLAPSE_ARIA_LABEL')}
       />
     );
   }
@@ -257,6 +267,10 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
           </>
         }
         ariaLabel={t('CONSULTATION_PAD_TITLE')}
+        isExpanded={isActionAreaExpanded}
+        onToggleExpand={onToggleActionAreaExpand}
+        expandAriaLabel={t('CONSULTATION_PAD_EXPAND_ARIA_LABEL')}
+        collapseAriaLabel={t('CONSULTATION_PAD_COLLAPSE_ARIA_LABEL')}
       />
     );
   }

@@ -60,7 +60,7 @@ jest.mock('../../components/patientHeader/PatientHeader', () => ({
   default: jest.fn(() => <div data-testid="mocked-patient-header" />),
 }));
 
-jest.mock('../../components/consultationPad/', () => ({
+jest.mock('../../components/consultationPadContainer', () => ({
   __esModule: true,
   default: jest.fn(({ isActionAreaExpanded, onToggleActionAreaExpand }) => (
     <div data-testid="mocked-consultation-pad">
