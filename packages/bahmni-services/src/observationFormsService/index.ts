@@ -23,6 +23,7 @@ export {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  formatDateForControl,
   type FormData,
   type FormControlData,
   type Form2Observation,
