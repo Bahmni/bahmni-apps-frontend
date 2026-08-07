@@ -309,14 +309,22 @@ export const resolveRows = (
 export const buildPayload = (
   resolvedRows: ResolvedRow[],
   entity: string,
-  locationUuid: string,
+  locationUuid?: string | undefined,
 ): SearchPayload => ({
   entity,
   criteria: {
     operator: 'AND',
     conditions: [
       ...resolvedRows.map(buildCondition),
-      { field: LOCATION_UUID_FIELD, comparator: 'eq', value: locationUuid },
+      ...(locationUuid
+        ? [
+            {
+              field: LOCATION_UUID_FIELD,
+              comparator: 'eq' as const,
+              value: locationUuid,
+            },
+          ]
+        : []),
     ],
   },
 });

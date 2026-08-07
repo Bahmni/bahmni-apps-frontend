@@ -10,6 +10,7 @@ import {
   mockLocation,
   mockLocationNoDisplay,
   mockPatientContext,
+  mockPatientContextWithoutLocationAware,
   mockPatientContextWithRangeNumeric,
   mockSavedRows,
 } from './__mocks__/searchFormMocks';
@@ -283,6 +284,13 @@ describe('SearchForm', () => {
     it('shows location name when display is absent', () => {
       renderForm(mockConfig, mockLocationNoDisplay);
       expect(screen.getByText('Ward B')).toBeInTheDocument();
+    });
+
+    it('does not render the location dropdown when the active context has no locationAware', () => {
+      renderForm([mockPatientContextWithoutLocationAware]);
+      expect(
+        screen.queryByTestId('location-selector-test-id'),
+      ).not.toBeInTheDocument();
     });
   });
 
