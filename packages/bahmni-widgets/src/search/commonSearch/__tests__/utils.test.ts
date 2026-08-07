@@ -931,19 +931,26 @@ describe('getLookupComboBoxItems', () => {
     mockResolveComboBoxItems.mockReturnValue([]);
   });
 
-  it('passes every option through unfiltered when inputValue is below the minimum filter length', () => {
-    getLookupComboBoxItems('ge', options, false, false, messages);
+  it.each([
+    { label: 'null', inputValue: null },
+    { label: 'empty string', inputValue: '' },
+  ])(
+    'returns an empty array without calling resolveComboBoxItems when inputValue is $label',
+    ({ inputValue }) => {
+      const result = getLookupComboBoxItems(
+        inputValue,
+        options,
+        false,
+        false,
+        messages,
+      );
 
-    expect(mockResolveComboBoxItems).toHaveBeenCalledWith(
-      false,
-      false,
-      options,
-      expect.any(Function),
-      messages,
-    );
-  });
+      expect(result).toEqual([]);
+      expect(mockResolveComboBoxItems).not.toHaveBeenCalled();
+    },
+  );
 
-  it('passes only the substring-matching options once inputValue reaches the minimum filter length', () => {
+  it('passes only the substring-matching options to resolveComboBoxItems once the user types', () => {
     getLookupComboBoxItems('gen', options, false, false, messages);
 
     expect(mockResolveComboBoxItems).toHaveBeenCalledWith(

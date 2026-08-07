@@ -296,11 +296,11 @@ export function getLookupComboBoxItems(
   isError: boolean,
   messages: { loading: string; error: string; empty: string },
 ): (LookupOption & { disabled?: boolean })[] {
-  if(!inputValue) return [];
+  if (!inputValue) return [];
 
-  const filtered =
-    options.filter((option) =>
-      option.label.toLowerCase().includes(inputValue.toLowerCase()));
+  const filtered = options.filter((option) =>
+    option.label.toLowerCase().includes(inputValue.toLowerCase()),
+  );
 
   return resolveComboBoxItems<LookupOption>(
     isLoading,

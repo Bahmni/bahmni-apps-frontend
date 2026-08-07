@@ -57,11 +57,27 @@ describe('LookupCriterionInput', () => {
     mockGetUserLoginLocation.mockReturnValue(mockUserLoginLocation);
   });
 
-  it('shows a loading message while options are being fetched', async () => {
+  it('shows no options until the user starts typing', async () => {
+    mockGetAllAppointmentServices.mockResolvedValue(mockAppointmentServices);
+    const user = userEvent.setup();
+    renderInput();
+
+    await user.click(
+      screen.getByTestId('lookup-input-LOOKUP_PLACEHOLDER-test-id'),
+    );
+
+    expect(screen.queryByRole('option')).not.toBeInTheDocument();
+  });
+
+  it('shows a loading message once the user types while options are being fetched', async () => {
     mockGetAllAppointmentServices.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
     renderInput();
-    await user.click(screen.getByRole('combobox'));
+    const combobox = screen.getByTestId(
+      'lookup-input-LOOKUP_PLACEHOLDER-test-id',
+    );
+    await user.click(combobox);
+    await user.type(combobox, 'a');
     expect(
       await screen.findByRole('option', {
         name: 'COMMON_SEARCH_LOOKUP_LOADING',
@@ -69,11 +85,15 @@ describe('LookupCriterionInput', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows an error message when fetching options fails', async () => {
+  it('shows an error message once the user types when fetching options fails', async () => {
     mockGetAllAppointmentServices.mockRejectedValue(new Error('API Error'));
     const user = userEvent.setup();
     renderInput();
-    await user.click(screen.getByRole('combobox'));
+    const combobox = screen.getByTestId(
+      'lookup-input-LOOKUP_PLACEHOLDER-test-id',
+    );
+    await user.click(combobox);
+    await user.type(combobox, 'a');
     expect(
       await screen.findByRole('option', {
         name: 'COMMON_SEARCH_LOOKUP_ERROR',
@@ -81,11 +101,15 @@ describe('LookupCriterionInput', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows an empty message when no options are returned', async () => {
+  it('shows an empty message once the user types when no options are returned', async () => {
     mockGetAllAppointmentServices.mockResolvedValue([]);
     const user = userEvent.setup();
     renderInput();
-    await user.click(screen.getByRole('combobox'));
+    const combobox = screen.getByTestId(
+      'lookup-input-LOOKUP_PLACEHOLDER-test-id',
+    );
+    await user.click(combobox);
+    await user.type(combobox, 'a');
     expect(
       await screen.findByRole('option', {
         name: 'COMMON_SEARCH_LOOKUP_EMPTY',
@@ -96,7 +120,9 @@ describe('LookupCriterionInput', () => {
   it('shows an unsupported-source message and never calls the loader when the source has no registered loader', async () => {
     const user = userEvent.setup();
     renderInput(null, null, mockUnsupportedLookupInput);
-    await user.click(screen.getByRole('combobox'));
+    await user.click(
+      screen.getByTestId('lookup-input-LOOKUP_PLACEHOLDER-test-id'),
+    );
     expect(
       await screen.findByRole('option', {
         name: 'COMMON_SEARCH_LOOKUP_UNSUPPORTED_SOURCE',
@@ -105,12 +131,16 @@ describe('LookupCriterionInput', () => {
     expect(mockGetAllAppointmentServices).not.toHaveBeenCalled();
   });
 
-  it('lists fetched options and calls onChange with the selected uuid and label', async () => {
+  it('lists matching options once the user types and calls onChange with the selected uuid and label', async () => {
     mockGetAllAppointmentServices.mockResolvedValue(mockAppointmentServices);
     const user = userEvent.setup();
     renderInput();
 
-    await user.click(screen.getByRole('combobox'));
+    const combobox = screen.getByTestId(
+      'lookup-input-LOOKUP_PLACEHOLDER-test-id',
+    );
+    await user.click(combobox);
+    await user.type(combobox, 'us');
     await user.click(
       await screen.findByRole('option', { name: 'US Health Assessment' }),
     );
@@ -127,7 +157,9 @@ describe('LookupCriterionInput', () => {
     renderInput(mockLookupScalarValue);
 
     await waitFor(() =>
-      expect(screen.getByRole('combobox')).toHaveValue('US Health Assessment'),
+      expect(
+        screen.getByTestId('lookup-input-LOOKUP_PLACEHOLDER-test-id'),
+      ).toHaveValue('US Health Assessment'),
     );
     await user.click(
       screen.getByRole('button', { name: /clear selected item/i }),
@@ -136,31 +168,16 @@ describe('LookupCriterionInput', () => {
     expect(mockOnChange).toHaveBeenCalledWith(null);
   });
 
-  it('shows every fetched option when fewer than 3 characters are typed', async () => {
+  it('filters options by substring match as soon as a single character is typed', async () => {
     mockGetAllAppointmentServices.mockResolvedValue(mockAppointmentServices);
     const user = userEvent.setup();
     renderInput();
 
-    const combobox = screen.getByRole('combobox');
+    const combobox = screen.getByTestId(
+      'lookup-input-LOOKUP_PLACEHOLDER-test-id',
+    );
     await user.click(combobox);
-    await user.type(combobox, 'ge');
-
-    expect(
-      await screen.findByRole('option', { name: 'US Health Assessment' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('option', { name: 'General Checkup' }),
-    ).toBeInTheDocument();
-  });
-
-  it('filters options by substring match once 3 or more characters are typed', async () => {
-    mockGetAllAppointmentServices.mockResolvedValue(mockAppointmentServices);
-    const user = userEvent.setup();
-    renderInput();
-
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await user.type(combobox, 'gen');
+    await user.type(combobox, 'g');
 
     expect(
       await screen.findByRole('option', { name: 'General Checkup' }),
@@ -170,12 +187,14 @@ describe('LookupCriterionInput', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('shows the empty message when 3+ typed characters match nothing', async () => {
+  it('shows the empty message when the typed text matches nothing', async () => {
     mockGetAllAppointmentServices.mockResolvedValue(mockAppointmentServices);
     const user = userEvent.setup();
     renderInput();
 
-    const combobox = screen.getByRole('combobox');
+    const combobox = screen.getByTestId(
+      'lookup-input-LOOKUP_PLACEHOLDER-test-id',
+    );
     await user.click(combobox);
     await user.type(combobox, 'xyz');
 

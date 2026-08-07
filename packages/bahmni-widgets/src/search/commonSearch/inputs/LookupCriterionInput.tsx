@@ -51,7 +51,6 @@ const LookupCriterionInput = ({
       error: t('COMMON_SEARCH_LOOKUP_ERROR'),
       empty: t('COMMON_SEARCH_LOOKUP_EMPTY'),
     });
-    
   }, [loader, inputValue, options, isLoading, isError]);
 
   const selectedItem =
