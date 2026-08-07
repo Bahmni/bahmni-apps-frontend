@@ -1,7 +1,12 @@
-import { formatCountry, formatGender } from '@bahmni/services';
-import { TextInput } from '../models';
+import {
+  formatCountry,
+  formatGender,
+  resolveComboBoxItems,
+} from '@bahmni/services';
+import { LookupOption, TextInput } from '../models';
 import {
   formatSearchResult,
+  getLookupComboBoxItems,
   initialRows,
   availableCriteriaForRow,
   criteriaAvailableToAdd,
@@ -64,6 +69,13 @@ jest.mock('date-fns', () => ({
     return shifted.toISOString().slice(0, -1) + '+0530';
   },
 }));
+
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  resolveComboBoxItems: jest.fn(),
+}));
+
+const mockResolveComboBoxItems = jest.mocked(resolveComboBoxItems);
 
 describe('processContextConfigs', () => {
   it.each([
@@ -885,5 +897,41 @@ describe('resolveNavigationURL', () => {
   ])('returns null when %s', async (_description, template, rowData) => {
     const result = await resolveNavigationURL(template, rowData);
     expect(result).toBeNull();
+  });
+});
+
+describe('getLookupComboBoxItems', () => {
+  const messages = { loading: 'Loading', error: 'Error', empty: 'Empty' };
+  const options: LookupOption[] = [
+    { uuid: 'service-uuid-1', label: 'US Health Assessment' },
+    { uuid: 'service-uuid-2', label: 'General Checkup' },
+  ];
+
+  beforeEach(() => {
+    mockResolveComboBoxItems.mockReturnValue([]);
+  });
+
+  it('passes every option through unfiltered when inputValue is below the minimum filter length', () => {
+    getLookupComboBoxItems('ge', options, false, false, messages);
+
+    expect(mockResolveComboBoxItems).toHaveBeenCalledWith(
+      false,
+      false,
+      options,
+      expect.any(Function),
+      messages,
+    );
+  });
+
+  it('passes only the substring-matching options once inputValue reaches the minimum filter length', () => {
+    getLookupComboBoxItems('gen', options, false, false, messages);
+
+    expect(mockResolveComboBoxItems).toHaveBeenCalledWith(
+      false,
+      false,
+      [options[1]],
+      expect.any(Function),
+      messages,
+    );
   });
 });
